@@ -106,3 +106,107 @@ int SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
 
     return SDL_SYS_GetPathInfo(path, info);
 }
+
+static SDL_bool WildcardMatch(const char *pattern, const char *str)
+{
+    SDL_assert(str != NULL);
+
+    if (!pattern) {
+        return SDL_TRUE;  // no pattern? Everything matches.
+    }
+
+    while (SDL_TRUE) {
+        const char pch = *(pattern++);
+        if (pch == '?') {
+            if (*(str++) == '\0') {
+                return SDL_FALSE;
+            }
+        } else if (pch == '*') {
+            const char nextch = *(pattern++);
+            while (SDL_TRUE) {
+                const char nextsch = *(str++);
+                if (nextsch == nextch) {
+                    break;
+                } else if (nextsch == '\0') {
+                    return SDL_FALSE;  // hit end of string without matching next pattern character.
+                }
+            }
+        } else if (pch != *(str++)) {
+            return SDL_FALSE;  // didn't match the next character.
+        } else if (pch == '\0') {
+            break;   // matched to the end of the string!
+        }
+    }
+
+    return SDL_TRUE;   // matched to the end of the string!
+}
+
+typedef struct GlobCallbackData
+{
+    const char *pattern;
+    SDL_IOStream *string_stream;
+    int num_entries;
+} GlobCallbackData;
+
+static int SDLCALL GlobCallback(void *userdata, const char *dirname, const char *fname)
+{
+    GlobCallbackData *data = (GlobCallbackData *) userdata;
+
+    if (WildcardMatch(data->pattern, fname)) {
+        const size_t slen = SDL_strlen(fname) + 1;
+        if (SDL_WriteIO(data->string_stream, fname, slen) != slen) {
+            return -1;  // stop enumerating, return failure to the app.
+        }
+        data->num_entries++;
+    }
+
+    return 1;  // keep enumerating.
+}
+
+char **SDL_GlobDirectory(const char *path, const char *pattern, int *count)
+{
+    int dummycount;
+    if (!count) {
+        count = &dummycount;
+    }
+
+    *count = 0;
+
+    if (!path) {
+        SDL_InvalidParamError("path");
+        return NULL;
+    }
+
+    char **retval = NULL;
+
+    GlobCallbackData data;
+    SDL_zero(data);
+    data.pattern = pattern;
+    data.string_stream = SDL_IOFromDynamicMem();
+    if (data.string_stream) {
+        if (SDL_EnumerateDirectory(path, GlobCallback, &data) == 0) {
+            const size_t streamlen = (size_t) SDL_GetIOSize(data.string_stream);
+            const size_t buflen = streamlen + ((data.num_entries + 1) * sizeof (char *));  // +1 for NULL terminator at end of array.
+            retval = (char **) SDL_malloc(buflen);
+            if (retval) {
+                if (data.num_entries > 0) {
+                    Sint64 iorc = SDL_SeekIO(data.string_stream, 0, SDL_IO_SEEK_SET);
+                    SDL_assert(iorc == 0);  // this should never fail for a memory stream!
+                    char *ptr = (char *) (retval + (data.num_entries + 1));
+                    iorc = SDL_ReadIO(data.string_stream, ptr, streamlen);
+                    SDL_assert(iorc == (Sint64) streamlen);  // this should never fail for a memory stream!
+                    for (int i = 0; i < data.num_entries; i++) {
+                        retval[i] = ptr;
+                        ptr += SDL_strlen(ptr) + 1;
+                    }
+                }
+                retval[data.num_entries] = NULL;  // NULL terminate the list.
+                *count = data.num_entries;
+            }
+        }
+        SDL_CloseIO(data.string_stream);
+    }
+
+    return retval;
+}
+

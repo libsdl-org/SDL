@@ -529,6 +529,7 @@ SDL_DYNAPI_PROC(int,SDL_GetWindowSize,(SDL_Window *a, int *b, int *c),(a,b,c),re
 SDL_DYNAPI_PROC(int,SDL_GetWindowSizeInPixels,(SDL_Window *a, int *b, int *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_GetWindowSurface,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetWindowTitle,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(char**,SDL_GlobDirectory,(const char *a, const char *b, int *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HapticEffectSupported,(SDL_Haptic *a, const SDL_HapticEffect *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HapticRumbleSupported,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasARMSIMD,(void),(),return)
