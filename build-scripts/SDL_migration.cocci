@@ -2994,10 +2994,6 @@ SDL_GamepadBinding *e1;
 - e1->outputType
 + e1->output_type
 @@
-@@
-- SDL_version
-+ SDL_Version
-@@
 typedef SDL_version, SDL_Version;
 @@
 - SDL_version
