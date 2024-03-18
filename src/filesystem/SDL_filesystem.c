@@ -93,10 +93,16 @@ int SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback call
 
 int SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
+    SDL_PathInfo dummy;
+
+    if (!info) {
+        info = &dummy;
+    }
+    SDL_zerop(info);
+
     if (!path) {
         return SDL_InvalidParamError("path");
-    } else if (!info) {
-        return SDL_InvalidParamError("info");
     }
+
     return SDL_SYS_GetPathInfo(path, info);
 }
