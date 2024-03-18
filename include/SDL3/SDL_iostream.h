@@ -265,11 +265,16 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromMem(void *mem, size_t size);
 extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromConstMem(const void *mem, size_t size);
 
 /**
- * Use this function to create an SDL_IOStream that is backed by dynamically allocated memory.
+ * Use this function to create an SDL_IOStream that is backed by dynamically
+ * allocated memory.
  *
- * This supports the following properties to provide access to the memory and control over allocations:
- * - `SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER`: a pointer to the internal memory of the stream. This can be set to NULL to transfer ownership of the memory to the application, which should free the memory with SDL_free(). If this is done, the next operation on the stream must be SDL_CloseIO().
- * - `SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER`: memory will be allocated in multiples of this size, defaulting to 1024.
+ * This supports the following properties to provide access to the memory and
+ * control over allocations: - `SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER`: a
+ * pointer to the internal memory of the stream. This can be set to NULL to
+ * transfer ownership of the memory to the application, which should free the
+ * memory with SDL_free(). If this is done, the next operation on the stream
+ * must be SDL_CloseIO(). - `SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER`:
+ * memory will be allocated in multiples of this size, defaulting to 1024.
  *
  * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails;
  *          call SDL_GetError() for more information.
