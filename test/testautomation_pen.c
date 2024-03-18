@@ -1872,9 +1872,21 @@ pen_memoryLayout(void *arg)
     return TEST_COMPLETED;
 }
 
+/* ================= Test Setup and Teardown ================== */
+
+static void
+pen_test_setup(void *arg) {
+    SDL_PenInit();
+}
+
+static void
+pen_test_teardown(void *arg) {
+    SDL_PenQuit();
+}
+
 /* ================= Test References ================== */
 
-/* Mouse test cases */
+/* Pen test cases */
 static const SDLTest_TestCaseReference penTest1 = { (SDLTest_TestCaseFp)pen_iteration, "pen_iteration", "Iterate over all pens with SDL_PenIDForIndex", TEST_ENABLED };
 
 static const SDLTest_TestCaseReference penTest2 = { (SDLTest_TestCaseFp)pen_hotplugging, "pen_hotplugging", "Hotplug pens and validate their status, including SDL_PenConnected", TEST_ENABLED };
@@ -1893,17 +1905,17 @@ static const SDLTest_TestCaseReference penTest8 = { (SDLTest_TestCaseFp)pen_mous
 
 static const SDLTest_TestCaseReference penTest9 = { (SDLTest_TestCaseFp)pen_memoryLayout, "pen_memoryLayout", "Check that all pen events have compatible layout (required by SDL_pen.c)", TEST_ENABLED };
 
-/* Sequence of Mouse test cases */
+/* Sequence of Pen test cases */
 static const SDLTest_TestCaseReference *penTests[] = {
     &penTest1, &penTest2, &penTest3, &penTest4, &penTest5, &penTest6, &penTest7, &penTest8, &penTest9, NULL
 };
 
-/* Mouse test suite (global) */
+/* Pen test suite (global) */
 SDLTest_TestSuiteReference penTestSuite = {
     "Pen",
-    NULL,
+    (SDLTest_TestCaseSetUpFp)pen_test_setup,
     penTests,
-    NULL
+    (SDLTest_TestCaseTearDownFp)pen_test_teardown
 };
 
 #else
