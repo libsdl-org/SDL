@@ -2005,6 +2005,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                 default:
                     break;
                 }
+                break;
             default:
                 break;
             }
@@ -2095,6 +2096,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                     default:
                         break;
                     }
+                    break;
                 default:
                     break;
                 }

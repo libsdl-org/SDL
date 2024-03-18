@@ -65,7 +65,7 @@ get_channel_name(int channel_index, int channel_count)
         case 8:
             return "Back Left";
         }
-        SDL_assert(0);
+        break;
     case 5:
         switch (channel_count) {
         case 6:
@@ -75,7 +75,7 @@ get_channel_name(int channel_index, int channel_count)
         case 8:
             return "Back Right";
         }
-        SDL_assert(0);
+        break;
     case 6:
         switch (channel_count) {
         case 7:
@@ -83,11 +83,12 @@ get_channel_name(int channel_index, int channel_count)
         case 8:
             return "Side Left";
         }
-        SDL_assert(0);
+        break;
     case 7:
         return "Side Right";
     }
-
+    SDLTest_AssertCheck(SDL_FALSE, "Invalid channel_index for channel_count:  channel_count=%d channel_index=%d", channel_count, channel_index);
+    SDL_assert(0);
     return NULL;
 }
 

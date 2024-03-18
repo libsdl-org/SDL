@@ -1383,7 +1383,7 @@ pen_movementAndAxes(void *arg)
         case SIMPEN_ACTION_PRESS:
             SDLTest_AssertCheck(event.type == SDL_EVENT_PEN_BUTTON_DOWN, "Expected PENBUTTONDOWN event (but got 0x%lx)", (unsigned long) event.type);
             SDLTest_AssertCheck(event.pbutton.state == SDL_PRESSED, "Expected PRESSED button");
-            /* Fall through */
+            SDL_FALLTHROUGH;
         case SIMPEN_ACTION_RELEASE:
             if (last_action->type == SIMPEN_ACTION_RELEASE) {
                 SDLTest_AssertCheck(event.type == SDL_EVENT_PEN_BUTTON_UP, "Expected PENBUTTONUP event (but got 0x%lx)", (unsigned long) event.type);
@@ -1401,7 +1401,7 @@ pen_movementAndAxes(void *arg)
         case SIMPEN_ACTION_DOWN:
             SDLTest_AssertCheck(event.type == SDL_EVENT_PEN_DOWN, "Expected PENBUTTONDOWN event (but got 0x%lx)", (unsigned long) event.type);
             SDLTest_AssertCheck(event.ptip.state == SDL_PRESSED, "Expected PRESSED button");
-            /* Fall through */
+            SDL_FALLTHROUGH;
         case SIMPEN_ACTION_UP:
             if (last_action->type == SIMPEN_ACTION_UP) {
                 SDLTest_AssertCheck(event.type == SDL_EVENT_PEN_UP, "Expected PENBUTTONUP event (but got 0x%lx)", (unsigned long) event.type);

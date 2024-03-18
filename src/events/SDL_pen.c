@@ -573,6 +573,7 @@ int SDL_SendPenMotion(Uint64 timestamp,
                 event.motion.yrel = last_y - y;
                 return (SDL_PushEvent(&event) > 0) || posted;
             }
+            break;
 
         default:
             break;
