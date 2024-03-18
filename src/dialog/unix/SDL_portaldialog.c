@@ -263,7 +263,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     DBusMessage *msg;
     DBusMessageIter params, options;
-    const char *signal_id;
+    const char *signal_id = NULL;
     char *handle_str, *filter;
     int filter_len;
     static uint32_t handle_id = 0;
@@ -271,13 +271,13 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
 
     if (dbus == NULL) {
-        SDL_SetError("%s", "Failed to connect to DBus!");
+        SDL_SetError("Failed to connect to DBus");
         return;
     }
 
     msg = dbus->message_new_method_call(PORTAL_DESTINATION, PORTAL_PATH, PORTAL_INTERFACE, method);
     if (msg == NULL) {
-        SDL_SetError("%s", "Failed to send message to portal!");
+        SDL_SetError("Failed to send message to portal");
         return;
     }
 
@@ -320,7 +320,6 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
     handle_str = SDL_malloc(sizeof(char) * (HANDLE_LEN + 1));
     if (!handle_str) {
-        SDL_OutOfMemory();
         return;
     }
     SDL_snprintf(handle_str, HANDLE_LEN, "%u", ++handle_id);
@@ -347,12 +346,14 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
         DBusMessageIter reply_iter;
         dbus->message_iter_init(reply, &reply_iter);
 
-        if (dbus->message_iter_get_arg_type(&reply_iter) != DBUS_TYPE_OBJECT_PATH)
-        {
-            SDL_SetError("%s", "Invalid response received by DBus!");
-            goto incorrect_type;
+        if (dbus->message_iter_get_arg_type(&reply_iter) == DBUS_TYPE_OBJECT_PATH) {
+            dbus->message_iter_get_basic(&reply_iter, &signal_id);
         }
-        dbus->message_iter_get_basic(&reply_iter, &signal_id);
+    }
+
+    if (!signal_id) {
+        SDL_SetError("Invalid response received by DBus");
+        goto incorrect_type;
     }
 
     dbus->message_unref(msg);
@@ -360,7 +361,6 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     filter_len = SDL_strlen(SIGNAL_FILTER) + SDL_strlen(signal_id) + 2;
     filter = SDL_malloc(sizeof(char) * filter_len);
     if (!filter) {
-        SDL_OutOfMemory();
         goto incorrect_type;
     }
 
@@ -370,14 +370,12 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
     SignalCallback *data = SDL_malloc(sizeof(SignalCallback));
     if (!data) {
-        SDL_OutOfMemory();
         goto incorrect_type;
     }
     data->callback = callback;
     data->userdata = userdata;
     data->path = SDL_strdup(signal_id);
     if (!data->path) {
-        SDL_OutOfMemory();
         SDL_free(data);
         goto incorrect_type;
     }
