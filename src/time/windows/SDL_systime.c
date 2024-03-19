@@ -111,7 +111,7 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
                 /* Calculate the difference for the UTC offset. */
                 SystemTimeToFileTime(&local_st, &local_ft);
                 const SDL_Time local_ticks = SDL_TimeFromWindows(local_ft.dwLowDateTime, local_ft.dwHighDateTime);
-                dt->utc_offset = SDL_NS_TO_SECONDS(local_ticks - ticks);
+                dt->utc_offset = (int)SDL_NS_TO_SECONDS(local_ticks - ticks);
                 st = &local_st;
             }
         } else {
