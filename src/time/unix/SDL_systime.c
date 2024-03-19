@@ -182,7 +182,7 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
         dt->second = tm->tm_sec;
         dt->nanosecond = ticks % SDL_NS_PER_SECOND;
         dt->day_of_week = tm->tm_wday;
-        dt->utc_offset = tm->tm_gmtoff;
+        dt->utc_offset = (int)tm->tm_gmtoff;
 
         return 0;
     }
