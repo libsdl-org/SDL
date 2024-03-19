@@ -58,7 +58,7 @@ typedef Uint32 SDL_WindowID;
  *    if one was set prior to initialization, or NULL. See
  *    docs/README-wayland.md for more information.
  */
-#define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "video.wayland.wl_display"
+#define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
 
 /**
  *  System theme
