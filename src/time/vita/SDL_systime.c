@@ -33,6 +33,11 @@
 void SDL_GetSystemTimeLocalePreferences(SDL_DATE_FORMAT *df, SDL_TIME_FORMAT *tf)
 {
     int val;
+    SceAppUtilInitParam initParam;
+    SceAppUtilBootParam bootParam;
+    SDL_zero(initParam);
+    SDL_zero(bootParam);
+    sceAppUtilInit(&initParam, &bootParam);
 
     if (sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_DATE_FORMAT, &val) == 0) {
         switch (val) {
@@ -62,6 +67,8 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DATE_FORMAT *df, SDL_TIME_FORMAT *tf
             break;
         }
     }
+
+    sceAppUtilShutdown();
 }
 
 int SDL_GetCurrentTime(SDL_Time *ticks)
