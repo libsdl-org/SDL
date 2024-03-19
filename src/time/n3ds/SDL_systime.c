@@ -58,7 +58,44 @@ static void civil_from_days(int days, int *year, int *month, int *day)
 
 void SDL_GetSystemTimeLocalePreferences(SDL_DATE_FORMAT *df, SDL_TIME_FORMAT *tf)
 {
-    /* NOP */
+    /* The 3DS only has 12 supported languages, so take the standard for each */
+    static const SDL_DATE_FORMAT LANG_TO_DATE_FORMAT[] = {
+        SDL_DATE_FORMAT_YYYYMMDD, /* JP */
+        SDL_DATE_FORMAT_DDMMYYYY, /* EN, assume non-american format */
+        SDL_DATE_FORMAT_DDMMYYYY, /* FR */
+        SDL_DATE_FORMAT_DDMMYYYY, /* DE */
+        SDL_DATE_FORMAT_DDMMYYYY, /* IT */
+        SDL_DATE_FORMAT_DDMMYYYY, /* ES */
+        SDL_DATE_FORMAT_YYYYMMDD, /* ZH (CN) */
+        SDL_DATE_FORMAT_YYYYMMDD, /* KR */
+        SDL_DATE_FORMAT_DDMMYYYY, /* NL */
+        SDL_DATE_FORMAT_DDMMYYYY, /* PT */
+        SDL_DATE_FORMAT_DDMMYYYY, /* RU */
+        SDL_DATE_FORMAT_YYYYMMDD  /* ZH (TW) */
+    };
+    u8 system_language, is_north_america;
+    Result result, has_region;
+
+    if (R_FAILED(cfguInit())) {
+        return;
+    }
+    result = CFGU_GetSystemLanguage(&system_language);
+    has_region = CFGU_GetRegionCanadaUSA(&is_north_america);
+    cfguExit();
+    if (R_FAILED(result)) {
+        return;
+    }
+
+    *df = LANG_TO_DATE_FORMAT[system_language];
+    *tf = SDL_TIME_FORMAT_24HR;
+
+    /* Only American English (en_US) uses MM/DD/YYYY and 12hr system, this gets
+       the formats wrong for canadians though (en_CA) */
+    if (system_language == CFG_LANGUAGE_EN &&
+        R_SUCCEEDED(has_region) && is_north_america) {
+        *df = SDL_DATE_FORMAT_MMDDYYYY;
+        *tf = SDL_TIME_FORMAT_12HR;
+    }
 }
 
 int SDL_GetCurrentTime(SDL_Time *ticks)
