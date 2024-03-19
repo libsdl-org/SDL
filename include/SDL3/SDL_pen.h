@@ -45,9 +45,9 @@
 #ifndef SDL_pen_h_
 #define SDL_pen_h_
 
-#include "SDL_error.h"
-#include "SDL_guid.h"
-#include "SDL_stdinc.h"
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_guid.h>
+#include <SDL3/SDL_stdinc.h>
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus

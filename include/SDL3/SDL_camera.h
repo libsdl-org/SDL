@@ -28,7 +28,7 @@
 #ifndef SDL_camera_h_
 #define SDL_camera_h_
 
-#include "SDL3/SDL_video.h"
+#include <SDL3/SDL_video.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
