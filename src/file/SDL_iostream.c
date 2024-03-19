@@ -430,7 +430,7 @@ static SDL_IOStream *SDL_IOFromFP(FILE *fp, SDL_bool autoclose)
     } else {
         const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
         if (props) {
-            SDL_SetProperty(props, SDL_PROP_IOSTREAM_STDIO_HANDLE_POINTER, fp);
+            SDL_SetProperty(props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, fp);
         }
     }
 

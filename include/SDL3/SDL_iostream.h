@@ -169,7 +169,7 @@ typedef struct SDL_IOStream SDL_IOStream;
  *   to a win32 `HANDLE`, that this SDL_IOStream is using to access the
  *   filesystem. If the program isn't running on Windows, or SDL used some
  *   other method to access the filesystem, this property will not be set.
- * - `SDL_PROP_IOSTREAM_STDIO_HANDLE_POINTER`: a pointer, that can be cast to
+ * - `SDL_PROP_IOSTREAM_STDIO_FILE_POINTER`: a pointer, that can be cast to
  *   a stdio `FILE *`, that this SDL_IOStream is using to access the
  *   filesystem. If SDL used some other method to access the filesystem, this
  *   property will not be set. PLEASE NOTE that if SDL is using a different C
@@ -197,9 +197,9 @@ typedef struct SDL_IOStream SDL_IOStream;
  */
 extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromFile(const char *file, const char *mode);
 
-#define SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER "SDL.iostream.windows.handle"
-#define SDL_PROP_IOSTREAM_STDIO_HANDLE_POINTER "SDL.iostream.stdio.handle"
-#define SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER "SDL.iostream.android.aasset"
+#define SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER    "SDL.iostream.windows.handle"
+#define SDL_PROP_IOSTREAM_STDIO_FILE_POINTER        "SDL.iostream.stdio.file"
+#define SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER    "SDL.iostream.android.aasset"
 
 /**
  * Use this function to prepare a read-write memory buffer for use with
