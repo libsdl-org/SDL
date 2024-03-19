@@ -169,13 +169,13 @@ typedef struct SDL_IOStream SDL_IOStream;
  *   to a win32 `HANDLE`, that this SDL_IOStream is using to access the
  *   filesystem. If the program isn't running on Windows, or SDL used some
  *   other method to access the filesystem, this property will not be set.
- * - `SDL_PROP_IOSTREAM_STDIO_FILE_POINTER`: a pointer, that can be cast to
- *   a stdio `FILE *`, that this SDL_IOStream is using to access the
- *   filesystem. If SDL used some other method to access the filesystem, this
- *   property will not be set. PLEASE NOTE that if SDL is using a different C
- *   runtime than your app, trying to use this pointer will almost certainly
- *   result in a crash! This is mostly a problem on Windows; make sure you
- *   build SDL and your app with the same compiler and settings to avoid it.
+ * - `SDL_PROP_IOSTREAM_STDIO_FILE_POINTER`: a pointer, that can be cast to a
+ *   stdio `FILE *`, that this SDL_IOStream is using to access the filesystem.
+ *   If SDL used some other method to access the filesystem, this property
+ *   will not be set. PLEASE NOTE that if SDL is using a different C runtime
+ *   than your app, trying to use this pointer will almost certainly result in
+ *   a crash! This is mostly a problem on Windows; make sure you build SDL and
+ *   your app with the same compiler and settings to avoid it.
  * - `SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER`: a pointer, that can be cast
  *   to an Android NDK `AAsset *`, that this SDL_IOStream is using to access
  *   the filesystem. If SDL used some other method to access the filesystem,
