@@ -535,10 +535,16 @@ static SDL_bool IsRegularFileOrPipe(FILE *f)
 SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 {
     SDL_IOStream *iostr = NULL;
-    if (!file || !*file || !mode || !*mode) {
-        SDL_SetError("SDL_IOFromFile(): No file or no mode specified");
+
+    if (!file || !*file) {
+        SDL_InvalidParamError("file");
         return NULL;
     }
+    if (!mode || !*mode) {
+        SDL_InvalidParamError("mode");
+        return NULL;
+    }
+
 #ifdef SDL_PLATFORM_ANDROID
 #ifdef HAVE_STDIO_H
     /* Try to open the file on the filesystem first */
@@ -599,9 +605,6 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         }
     }
 
-    return iostr;
-
-
 #elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_WINRT)
     IOStreamWindowsData *iodata = (IOStreamWindowsData *) SDL_malloc(sizeof (*iodata));
     if (!iodata) {
@@ -630,8 +633,6 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
             SDL_SetProperty(props, SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER, iodata->h);
         }
     }
-
-    return iostr;
 
 #elif defined(HAVE_STDIO_H)
     {
