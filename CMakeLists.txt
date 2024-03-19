@@ -1298,10 +1298,6 @@ if(ANDROID)
   sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
   set(HAVE_SDL_FSOPS TRUE)
 
-  set(SDL_FSOPS_POSIX 1)  # !!! FIXME: this might need something else for .apk data?
-  sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
-  set(HAVE_SDL_FSOPS TRUE)
-
   if(SDL_HAPTIC)
     set(SDL_HAPTIC_ANDROID 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/haptic/android/*.c")
@@ -1463,10 +1459,6 @@ elseif(EMSCRIPTEN)
   set(SDL_FILESYSTEM_EMSCRIPTEN 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/emscripten/*.c")
   set(HAVE_SDL_FILESYSTEM TRUE)
-
-  set(SDL_FSOPS_POSIX 1)
-  sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
-  set(HAVE_SDL_FSOPS TRUE)
 
   set(SDL_FSOPS_POSIX 1)
   sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
@@ -2480,10 +2472,6 @@ elseif(HAIKU)
   sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
   set(HAVE_SDL_FSOPS TRUE)
 
-  set(SDL_FSOPS_POSIX 1)
-  sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
-  set(HAVE_SDL_FSOPS TRUE)
-
   set(SDL_TIME_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
   set(HAVE_SDL_TIME TRUE)
@@ -2519,10 +2507,6 @@ elseif(RISCOS)
   set(SDL_FILESYSTEM_RISCOS 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/riscos/*.c")
   set(HAVE_SDL_FILESYSTEM TRUE)
-
-  set(SDL_FSOPS_POSIX 1)
-  sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
-  set(HAVE_SDL_FSOPS TRUE)
 
   set(SDL_FSOPS_POSIX 1)
   sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
@@ -2568,8 +2552,6 @@ elseif(VITA)
   set(SDL_FILESYSTEM_VITA 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/vita/*.c")
   set(HAVE_SDL_FILESYSTEM TRUE)
-
-  # !!! FIXME: do we need a FSops implementation for this?
 
   # !!! FIXME: do we need a FSops implementation for this?
 
@@ -2713,8 +2695,6 @@ elseif(PSP)
 
   # !!! FIXME: do we need a FSops implementation for this?
 
-  # !!! FIXME: do we need a FSops implementation for this?
-
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_PSP 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/psp/*.c")
@@ -2784,8 +2764,6 @@ elseif(PS2)
 
   # !!! FIXME: do we need a FSops implementation for this?
 
-  # !!! FIXME: do we need a FSops implementation for this?
-
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_PS2 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/ps2/*.c")
@@ -2840,8 +2818,6 @@ elseif(N3DS)
   set(SDL_FILESYSTEM_N3DS 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/n3ds/*.c")
   set(HAVE_SDL_FILESYSTEM TRUE)
-
-  # !!! FIXME: do we need a FSops implementation for this?
 
   # !!! FIXME: do we need a FSops implementation for this?
 
@@ -2963,10 +2939,6 @@ endif()
 if(NOT HAVE_SDL_STORAGE)
   set(SDL_STORAGE_GENERIC 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/storage/generic/*.c")
-endif()
-if(NOT HAVE_SDL_FSOPS)
-  set(SDL_FSOPS_DUMMY 1)
-  sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/dummy/SDL_sysfsops.c")
 endif()
 if(NOT HAVE_SDL_FSOPS)
   set(SDL_FSOPS_DUMMY 1)
