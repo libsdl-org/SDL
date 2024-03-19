@@ -177,6 +177,9 @@
 #define SDL_THREAD_PTHREAD  1
 #define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX  1
 
+/* Enable various RTC system */
+#define SDL_TIME_UNIX  1
+
 /* Enable various timer systems */
 #define SDL_TIMER_UNIX  1
 
