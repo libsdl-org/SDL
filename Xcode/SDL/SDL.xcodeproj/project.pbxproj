@@ -370,6 +370,10 @@
 		A7D8BBE923E2574800DCD162 /* SDL_uikitvulkan.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A62523E2513D00DCD162 /* SDL_uikitvulkan.m */; };
 		A7D8BBEA23E2574800DCD162 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */; };
 		A7D8BBEB23E2574800DCD162 /* SDL_uikitwindow.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A61A23E2513D00DCD162 /* SDL_uikitwindow.m */; };
+		E41D20152BA9577D003073FA /* SDL_storage.h in Headers */ = {isa = PBXBuildFile; fileRef = E41D20142BA9577D003073FA /* SDL_storage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E479118D2BA9555500CE3B7F /* SDL_storage.c in Sources */ = {isa = PBXBuildFile; fileRef = E47911872BA9555500CE3B7F /* SDL_storage.c */; };
+		E479118E2BA9555500CE3B7F /* SDL_sysstorage.h in Headers */ = {isa = PBXBuildFile; fileRef = E47911882BA9555500CE3B7F /* SDL_sysstorage.h */; };
+		E479118F2BA9555500CE3B7F /* SDL_genericstorage.c in Sources */ = {isa = PBXBuildFile; fileRef = E479118A2BA9555500CE3B7F /* SDL_genericstorage.c */; };
 		E4A568B62AF763940062EEC4 /* SDL_sysmain_callbacks.c in Sources */ = {isa = PBXBuildFile; fileRef = E4A568B52AF763940062EEC4 /* SDL_sysmain_callbacks.c */; };
 		E4F7981A2AD8D84800669F54 /* SDL_core_unsupported.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F798192AD8D84800669F54 /* SDL_core_unsupported.c */; };
 		E4F7981C2AD8D85500669F54 /* SDL_dynapi_unsupported.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F7981B2AD8D85500669F54 /* SDL_dynapi_unsupported.h */; };
@@ -888,6 +892,10 @@
 		BECDF66B0761BA81005FE872 /* Info-Framework.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
 		BECDF66C0761BA81005FE872 /* SDL3.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SDL3.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2D187D228A5673500D2B4F1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E41D20142BA9577D003073FA /* SDL_storage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_storage.h; path = SDL3/SDL_storage.h; sourceTree = "<group>"; };
+		E47911872BA9555500CE3B7F /* SDL_storage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_storage.c; sourceTree = "<group>"; };
+		E47911882BA9555500CE3B7F /* SDL_sysstorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysstorage.h; sourceTree = "<group>"; };
+		E479118A2BA9555500CE3B7F /* SDL_genericstorage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_genericstorage.c; sourceTree = "<group>"; };
 		E4A568B52AF763940062EEC4 /* SDL_sysmain_callbacks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysmain_callbacks.c; sourceTree = "<group>"; };
 		E4F798192AD8D84800669F54 /* SDL_core_unsupported.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_core_unsupported.c; sourceTree = "<group>"; };
 		E4F7981B2AD8D85500669F54 /* SDL_dynapi_unsupported.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dynapi_unsupported.h; sourceTree = "<group>"; };
@@ -1175,6 +1183,7 @@
 				F3F7D8C12933074B00816151 /* SDL_scancode.h */,
 				F3F7D8C22933074B00816151 /* SDL_sensor.h */,
 				F3F7D8AC2933074900816151 /* SDL_stdinc.h */,
+				E41D20142BA9577D003073FA /* SDL_storage.h */,
 				F3F7D8BB2933074A00816151 /* SDL_surface.h */,
 				F3F7D8E82933074E00816151 /* SDL_system.h */,
 				F3F7D8CD2933074C00816151 /* SDL_thread.h */,
@@ -1241,6 +1250,7 @@
 				A7D8A8DA23E2514000DCD162 /* render */,
 				A7D8A57623E2513D00DCD162 /* sensor */,
 				A7D8A8D223E2514000DCD162 /* stdlib */,
+				E47911832BA9555500CE3B7F /* storage */,
 				A7D8A77623E2513E00DCD162 /* thread */,
 				A7D8A5DE23E2513D00DCD162 /* timer */,
 				A7D8A5EB23E2513D00DCD162 /* video */,
@@ -2149,6 +2159,24 @@
 			path = SDL3;
 			sourceTree = "<group>";
 		};
+		E47911832BA9555500CE3B7F /* storage */ = {
+			isa = PBXGroup;
+			children = (
+				E47911872BA9555500CE3B7F /* SDL_storage.c */,
+				E47911882BA9555500CE3B7F /* SDL_sysstorage.h */,
+				E47911892BA9555500CE3B7F /* generic */,
+			);
+			path = storage;
+			sourceTree = "<group>";
+		};
+		E47911892BA9555500CE3B7F /* generic */ = {
+			isa = PBXGroup;
+			children = (
+				E479118A2BA9555500CE3B7F /* SDL_genericstorage.c */,
+			);
+			path = generic;
+			sourceTree = "<group>";
+		};
 		E4A568B42AF763940062EEC4 /* generic */ = {
 			isa = PBXGroup;
 			children = (
@@ -2281,6 +2309,7 @@
 				A7D8B8A223E2514400DCD162 /* SDL_diskaudio.h in Headers */,
 				A7D8BB3F23E2514500DCD162 /* SDL_displayevents_c.h in Headers */,
 				A7D8BA1923E2514400DCD162 /* SDL_draw.h in Headers */,
+				E479118E2BA9555500CE3B7F /* SDL_sysstorage.h in Headers */,
 				A7D8BA0723E2514400DCD162 /* SDL_drawline.h in Headers */,
 				A7D8B9EF23E2514400DCD162 /* SDL_drawpoint.h in Headers */,
 				A7D8BB2D23E2514500DCD162 /* SDL_dropevents_c.h in Headers */,
@@ -2458,6 +2487,7 @@
 				A7D8B26C23E2514200DCD162 /* vulkan.hpp in Headers */,
 				A7D8B2B423E2514200DCD162 /* vulkan_android.h in Headers */,
 				A7D8B2A823E2514200DCD162 /* vulkan_core.h in Headers */,
+				E41D20152BA9577D003073FA /* SDL_storage.h in Headers */,
 				F37E18522BA50E760098C111 /* SDL_dialog.h in Headers */,
 				A7D8B27223E2514200DCD162 /* vulkan_fuchsia.h in Headers */,
 				A7D8B2A223E2514200DCD162 /* vulkan_ios.h in Headers */,
@@ -2618,6 +2648,7 @@
 				A7D8B98623E2514400DCD162 /* SDL_render_metal.m in Sources */,
 				A7D8AE7623E2514100DCD162 /* SDL_clipboard.c in Sources */,
 				A7D8AEC423E2514100DCD162 /* SDL_cocoaevents.m in Sources */,
+				E479118F2BA9555500CE3B7F /* SDL_genericstorage.c in Sources */,
 				A7D8B86623E2514400DCD162 /* SDL_audiocvt.c in Sources */,
 				A7D8B9F523E2514400DCD162 /* SDL_rotate.c in Sources */,
 				A7D8BBE323E2574800DCD162 /* SDL_uikitvideo.m in Sources */,
@@ -2661,6 +2692,7 @@
 				A7D8AB6723E2514100DCD162 /* SDL_offscreenevents.c in Sources */,
 				A7D8ABF123E2514100DCD162 /* SDL_nullevents.c in Sources */,
 				A7D8B81823E2514400DCD162 /* SDL_audiodev.c in Sources */,
+				E479118D2BA9555500CE3B7F /* SDL_storage.c in Sources */,
 				A7D8AF0C23E2514100DCD162 /* SDL_cocoaclipboard.m in Sources */,
 				A7D8BBE523E2574800DCD162 /* SDL_uikitview.m in Sources */,
 				A7D8BBE923E2574800DCD162 /* SDL_uikitvulkan.m in Sources */,
