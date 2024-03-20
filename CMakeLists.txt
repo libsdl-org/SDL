@@ -1149,6 +1149,7 @@ if(SDL_LIBC)
     endif()
 
     check_struct_has_member("struct sigaction" "sa_sigaction" "signal.h" HAVE_SA_SIGACTION)
+    check_struct_has_member("struct stat" "st_mtim" "sys/stat.h" HAVE_ST_MTIM)
   endif()
 else()
   set(headers
