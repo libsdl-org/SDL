@@ -82,6 +82,31 @@ typedef enum
 /* Function prototypes */
 
 /**
+ * Return whether a mouse is currently connected.
+ *
+ * \returns SDL_TRUE if a mouse is connected, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetMice
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
+
+/**
+ * Get a list of currently connected mice.
+ *
+ * \param count a pointer filled in with the number of mice returned
+ * \returns a 0 terminated array of mouse instance IDs which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_HasMouse
+ */
+extern DECLSPEC SDL_MouseID *SDLCALL SDL_GetMice(int *count);
+
+/**
  * Get the window which currently has mouse focus.
  *
  * \returns the window with mouse focus.

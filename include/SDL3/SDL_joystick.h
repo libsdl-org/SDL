@@ -138,6 +138,17 @@ extern DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lo
 extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_lock);
 
 /**
+ * Return whether a joystick is currently connected.
+ *
+ * \returns SDL_TRUE if a joystick is connected, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetJoysticks
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
+
+/**
  * Get a list of currently connected joysticks.
  *
  * \param count a pointer filled in with the number of joysticks returned
@@ -147,6 +158,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_HasJoystick
  * \sa SDL_OpenJoystick
  */
 extern DECLSPEC SDL_JoystickID *SDLCALL SDL_GetJoysticks(int *count);

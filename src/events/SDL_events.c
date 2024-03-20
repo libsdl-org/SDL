@@ -325,6 +325,15 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DESTROYED);
 #undef SDL_WINDOWEVENT_CASE
 
+#define PRINT_KEYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u)", (uint)event->kdevice.timestamp, (uint)event->kdevice.which)
+        SDL_EVENT_CASE(SDL_EVENT_KEYBOARD_ADDED)
+        PRINT_KEYDEV_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_KEYBOARD_REMOVED)
+        PRINT_KEYDEV_EVENT(event);
+        break;
+#undef PRINT_KEYDEV_EVENT
+
 #define PRINT_KEY_EVENT(event)                                                                                                   \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u state=%s repeat=%s scancode=%u keycode=%u mod=%u)", \
                        (uint)event->key.timestamp, (uint)event->key.windowID,                                                    \
@@ -350,6 +359,15 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_EVENT_TEXT_INPUT)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u text='%s')", (uint)event->text.timestamp, (uint)event->text.windowID, event->text.text);
         break;
+
+#define PRINT_MOUSEDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u)", (uint)event->mdevice.timestamp, (uint)event->mdevice.which)
+        SDL_EVENT_CASE(SDL_EVENT_MOUSE_ADDED)
+        PRINT_MOUSEDEV_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_MOUSE_REMOVED)
+        PRINT_MOUSEDEV_EVENT(event);
+        break;
+#undef PRINT_MOUSEDEV_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_MOTION)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u state=%u x=%g y=%g xrel=%g yrel=%g)",

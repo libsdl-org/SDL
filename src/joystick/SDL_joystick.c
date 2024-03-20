@@ -682,6 +682,25 @@ SDL_bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, U
     return result;
 }
 
+SDL_bool SDL_HasJoystick(void)
+{
+    int i;
+    int total_joysticks = 0;
+
+    SDL_LockJoysticks();
+    {
+        for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+            total_joysticks += SDL_joystick_drivers[i]->GetCount();
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    if (total_joysticks > 0) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 SDL_JoystickID *SDL_GetJoysticks(int *count)
 {
     int i, num_joysticks, device_index;

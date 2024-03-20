@@ -205,7 +205,7 @@ int Android_OnPadDown(int device_id, int keycode)
         if (item && item->joystick) {
             SDL_SendJoystickButton(timestamp, item->joystick, button, SDL_PRESSED);
         } else {
-            SDL_SendKeyboardKey(timestamp, SDL_PRESSED, button_to_scancode(button));
+            SDL_SendKeyboardKey(timestamp, 0, SDL_PRESSED, button_to_scancode(button));
         }
         SDL_UnlockJoysticks();
         return 0;
@@ -225,7 +225,7 @@ int Android_OnPadUp(int device_id, int keycode)
         if (item && item->joystick) {
             SDL_SendJoystickButton(timestamp, item->joystick, button, SDL_RELEASED);
         } else {
-            SDL_SendKeyboardKey(timestamp, SDL_RELEASED, button_to_scancode(button));
+            SDL_SendKeyboardKey(timestamp, 0, SDL_RELEASED, button_to_scancode(button));
         }
         SDL_UnlockJoysticks();
         return 0;
