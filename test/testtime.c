@@ -17,10 +17,10 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-#define CAL_Y_OFF   100
-#define CAL_X_OFF   19
-#define CELL_WIDTH  86
-#define CELL_HEIGHT 60
+#define CAL_Y_OFF   100.0f
+#define CAL_X_OFF   19.0f
+#define CELL_WIDTH  86.0f
+#define CELL_HEIGHT 60.0f
 
 static int cal_year;
 static int cal_month;
@@ -34,10 +34,11 @@ static void RenderDateTime(SDL_Renderer *r)
                                   "Aug", "Sep", "Oct", "Nov", "Dec" };
     const char *const TIMEPOST[] = { "", " AM", " PM" };
 
-    int x, y, day, len;
+    int day, len;
     const char *postfix = TIMEPOST[0];
-    const int x_max = CAL_X_OFF + (CELL_WIDTH * 7);
-    const int y_max = CAL_Y_OFF + (CELL_HEIGHT * 6);
+    float x, y;
+    const float x_max = CAL_X_OFF + (CELL_WIDTH * 7);
+    const float y_max = CAL_Y_OFF + (CELL_HEIGHT * 6);
     char str[256];
     char short_date[128];
     SDL_Time ticks;
@@ -105,8 +106,8 @@ static void RenderDateTime(SDL_Renderer *r)
 
     /* Draw day names */
     for (x = 0; x < 7; ++x) {
-        int offset = ((CAL_X_OFF + (CELL_WIDTH * x)) + (CELL_WIDTH / 2)) - ((FONT_CHARACTER_SIZE * 3) / 2);
-        SDLTest_DrawString(r, offset, CAL_Y_OFF - FONT_LINE_HEIGHT, WDAY[x]);
+        float offset = ((CAL_X_OFF + (CELL_WIDTH * x)) + (CELL_WIDTH / 2)) - ((FONT_CHARACTER_SIZE * 3) / 2);
+        SDLTest_DrawString(r, offset, CAL_Y_OFF - FONT_LINE_HEIGHT, WDAY[(int)x]);
     }
 
     day = SDL_GetDayOfWeek(cal_year, cal_month, 1);
