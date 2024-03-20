@@ -81,7 +81,7 @@ static int time_dateTimeConversion(void *arg)
     SDLTest_AssertPass("Call to SDL_DateTimeToTime() (one day advanced)");
     SDLTest_AssertCheck(result == 0, "Check result value, expected 0, got: %i", result);
 
-    result = (ticks[0] + SDL_SECONDS_TO_NS(86400)) == ticks[1];
+    result = (ticks[0] + (Sint64)SDL_SECONDS_TO_NS(86400)) == ticks[1];
     SDLTest_AssertCheck(result, "Check that the difference is exactly 86400 seconds, got: %" SDL_PRIs64, (Sint64)SDL_NS_TO_SECONDS(ticks[1] - ticks[0]));
 
     /* Check dates that overflow/underflow an SDL_Time */
