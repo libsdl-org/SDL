@@ -10,9 +10,7 @@
   freely.
 */
 
-/* Test program to check the resolution of the SDL timer on the current
-   platform
-*/
+/* Test program to verify the SDL date/time APIs */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
