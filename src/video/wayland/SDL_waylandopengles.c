@@ -126,7 +126,7 @@ int Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
         struct wl_display *display = videodata->display;
         SDL_VideoDisplay *sdldisplay = SDL_GetDisplayForWindow(window);
         /* 1/3 speed (or 20hz), so we'll progress even if throttled to zero. */
-        const Uint32 max_wait = SDL_GetTicks() + (sdldisplay->current_mode.refresh_rate ? (3000 / sdldisplay->current_mode.refresh_rate) : 50);
+        const Uint32 max_wait = SDL_GetTicks() + (sdldisplay && sdldisplay->current_mode.refresh_rate ? (3000 / sdldisplay->current_mode.refresh_rate) : 50);
         while (SDL_AtomicGet(&data->swap_interval_ready) == 0) {
             Uint32 now;
 
