@@ -345,11 +345,13 @@
 #define SDL_GetKeyName SDL_GetKeyName_REAL
 #define SDL_GetKeyboardFocus SDL_GetKeyboardFocus_REAL
 #define SDL_GetKeyboardState SDL_GetKeyboardState_REAL
+#define SDL_GetKeyboards SDL_GetKeyboards_REAL
 #define SDL_GetLogOutputFunction SDL_GetLogOutputFunction_REAL
 #define SDL_GetMasksForPixelFormatEnum SDL_GetMasksForPixelFormatEnum_REAL
 #define SDL_GetMaxHapticEffects SDL_GetMaxHapticEffects_REAL
 #define SDL_GetMaxHapticEffectsPlaying SDL_GetMaxHapticEffectsPlaying_REAL
 #define SDL_GetMemoryFunctions SDL_GetMemoryFunctions_REAL
+#define SDL_GetMice SDL_GetMice_REAL
 #define SDL_GetModState SDL_GetModState_REAL
 #define SDL_GetMouseFocus SDL_GetMouseFocus_REAL
 #define SDL_GetMouseState SDL_GetMouseState_REAL
@@ -512,9 +514,13 @@
 #define SDL_HasClipboardText SDL_HasClipboardText_REAL
 #define SDL_HasEvent SDL_HasEvent_REAL
 #define SDL_HasEvents SDL_HasEvents_REAL
+#define SDL_HasGamepad SDL_HasGamepad_REAL
+#define SDL_HasJoystick SDL_HasJoystick_REAL
+#define SDL_HasKeyboard SDL_HasKeyboard_REAL
 #define SDL_HasLASX SDL_HasLASX_REAL
 #define SDL_HasLSX SDL_HasLSX_REAL
 #define SDL_HasMMX SDL_HasMMX_REAL
+#define SDL_HasMouse SDL_HasMouse_REAL
 #define SDL_HasNEON SDL_HasNEON_REAL
 #define SDL_HasPrimarySelectionText SDL_HasPrimarySelectionText_REAL
 #define SDL_HasProperty SDL_HasProperty_REAL

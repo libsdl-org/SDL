@@ -28,6 +28,7 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../SDL_hints_c.h"
+#include "../../core/windows/SDL_hid.h"
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsframebuffer.h"
@@ -455,6 +456,8 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
 
     WIN_InitKeyboard(_this);
     WIN_InitMouse(_this);
+    WIN_InitDeviceNotification();
+    WIN_CheckKeyboardAndMouseHotplug(SDL_TRUE);
 #endif
 
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
@@ -472,6 +475,7 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     WIN_QuitModes(_this);
+    WIN_QuitDeviceNotification();
     WIN_QuitKeyboard(_this);
     WIN_QuitMouse(_this);
 #endif

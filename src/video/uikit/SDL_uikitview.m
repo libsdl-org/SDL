@@ -229,7 +229,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
-                if (!SDL_HasGCMouse()) {
+                if (!SDL_HasMouse()) {
                     int i;
 
                     for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
@@ -285,7 +285,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
-                if (!SDL_HasGCMouse()) {
+                if (!SDL_HasMouse()) {
                     int i;
 
                     for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
@@ -411,10 +411,10 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    if (!SDL_HasGCKeyboard()) {
+    if (!SDL_HasKeyboard()) {
         for (UIPress *press in presses) {
             SDL_Scancode scancode = [self scancodeFromPress:press];
-            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_PRESSED, scancode);
+            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), 0, SDL_PRESSED, scancode);
         }
     }
     if (SDL_TextInputActive()) {
@@ -424,10 +424,10 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    if (!SDL_HasGCKeyboard()) {
+    if (!SDL_HasKeyboard()) {
         for (UIPress *press in presses) {
             SDL_Scancode scancode = [self scancodeFromPress:press];
-            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), 0, SDL_RELEASED, scancode);
         }
     }
     if (SDL_TextInputActive()) {
@@ -437,10 +437,10 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 - (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    if (!SDL_HasGCKeyboard()) {
+    if (!SDL_HasKeyboard()) {
         for (UIPress *press in presses) {
             SDL_Scancode scancode = [self scancodeFromPress:press];
-            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), 0, SDL_RELEASED, scancode);
         }
     }
     if (SDL_TextInputActive()) {

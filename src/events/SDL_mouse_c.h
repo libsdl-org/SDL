@@ -128,8 +128,17 @@ extern int SDL_PreInitMouse(void);
 /* Finish initializing the mouse subsystem, called after the main video driver was initialized */
 extern void SDL_PostInitMouse(void);
 
+/* Return whether a device is actually a mouse */
+extern SDL_bool SDL_IsMouse(Uint16 vendor, Uint16 product);
+
+/* A mouse has been added to the system */
+extern void SDL_PrivateMouseAdded(SDL_MouseID mouseID);
+
+/* A mouse has been removed from the system */
+extern void SDL_PrivateMouseRemoved(SDL_MouseID mouseID);
+
 /* Get the mouse state structure */
-SDL_Mouse *SDL_GetMouse(void);
+extern SDL_Mouse *SDL_GetMouse(void);
 
 /* Set the default mouse cursor */
 extern void SDL_SetDefaultCursor(SDL_Cursor *cursor);

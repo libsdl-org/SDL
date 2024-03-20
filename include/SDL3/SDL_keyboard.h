@@ -39,6 +39,8 @@
 extern "C" {
 #endif
 
+typedef Uint32 SDL_KeyboardID;
+
 /**
  *  The SDL keysym structure, used in key events.
  *
@@ -53,6 +55,31 @@ typedef struct SDL_Keysym
 } SDL_Keysym;
 
 /* Function prototypes */
+
+/**
+ * Return whether a keyboard is currently connected.
+ *
+ * \returns SDL_TRUE if a keyboard is connected, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetKeyboards
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
+
+/**
+ * Get a list of currently connected keyboards.
+ *
+ * \param count a pointer filled in with the number of keyboards returned
+ * \returns a 0 terminated array of keyboards instance IDs which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_HasKeyboard
+ */
+extern DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
 
 /**
  * Query the window which currently has keyboard focus.

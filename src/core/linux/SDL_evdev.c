@@ -375,9 +375,9 @@ void SDL_EVDEV_Poll(void)
                     scan_code = SDL_EVDEV_translate_keycode(event->code);
                     if (scan_code != SDL_SCANCODE_UNKNOWN) {
                         if (event->value == 0) {
-                            SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), SDL_RELEASED, scan_code);
+                            SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, SDL_RELEASED, scan_code);
                         } else if (event->value == 1 || event->value == 2 /* key repeated */) {
-                            SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), SDL_PRESSED, scan_code);
+                            SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, SDL_PRESSED, scan_code);
                         }
                     }
                     SDL_EVDEV_kbd_keycode(_this->kbd, event->code, event->value);

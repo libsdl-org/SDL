@@ -437,13 +437,13 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_LGUI:
             case SDLK_RGUI:
             case SDLK_MODE:
-                SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, 0, SDL_PRESSED, scancode);
                 break;
             default:
                 break;
             }
         } else if (!x11KeyPressed && sdlKeyPressed) {
-            SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(0, 0, SDL_RELEASED, scancode);
         }
     }
 }
@@ -957,9 +957,9 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             videodata->filter_time = xevent->xkey.time;
 
             if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, 0, SDL_PRESSED, scancode);
             } else {
-                SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
+                SDL_SendKeyboardKey(0, 0, SDL_RELEASED, scancode);
             }
 #endif
         }
@@ -1262,7 +1262,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             if (xevent->type == KeyPress) {
                 /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
                 if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                    SDL_SendKeyboardKey(0, SDL_PRESSED, videodata->key_layout[keycode]);
+                    SDL_SendKeyboardKey(0, 0, SDL_PRESSED, videodata->key_layout[keycode]);
                 }
                 if (*text) {
                     SDL_SendKeyboardText(text);
@@ -1272,7 +1272,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     /* We're about to get a repeated key down, ignore the key up */
                     break;
                 }
-                SDL_SendKeyboardKey(0, SDL_RELEASED, videodata->key_layout[keycode]);
+                SDL_SendKeyboardKey(0, 0, SDL_RELEASED, videodata->key_layout[keycode]);
             }
         }
 

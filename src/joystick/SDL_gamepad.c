@@ -2369,6 +2369,26 @@ int SDL_InitGamepads(void)
     return 0;
 }
 
+SDL_bool SDL_HasGamepad(void)
+{
+    int num_joysticks = 0;
+    int num_gamepads = 0;
+    SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
+    if (joysticks) {
+        int i;
+        for (i = num_joysticks - 1; i >= 0 && num_gamepads == 0; --i) {
+            if (SDL_IsGamepad(joysticks[i])) {
+                ++num_gamepads;
+            }
+        }
+        SDL_free(joysticks);
+    }
+    if (num_gamepads > 0) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 SDL_JoystickID *SDL_GetGamepads(int *count)
 {
     int num_joysticks = 0;

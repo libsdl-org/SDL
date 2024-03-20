@@ -320,11 +320,13 @@ SDL3_0.0.0 {
     SDL_GetKeyName;
     SDL_GetKeyboardFocus;
     SDL_GetKeyboardState;
+    SDL_GetKeyboards;
     SDL_GetLogOutputFunction;
     SDL_GetMasksForPixelFormatEnum;
     SDL_GetMaxHapticEffects;
     SDL_GetMaxHapticEffectsPlaying;
     SDL_GetMemoryFunctions;
+    SDL_GetMice;
     SDL_GetModState;
     SDL_GetMouseFocus;
     SDL_GetMouseState;
@@ -487,9 +489,13 @@ SDL3_0.0.0 {
     SDL_HasClipboardText;
     SDL_HasEvent;
     SDL_HasEvents;
+    SDL_HasGamepad;
+    SDL_HasJoystick;
+    SDL_HasKeyboard;
     SDL_HasLASX;
     SDL_HasLSX;
     SDL_HasMMX;
+    SDL_HasMouse;
     SDL_HasNEON;
     SDL_HasPrimarySelectionText;
     SDL_HasProperty;

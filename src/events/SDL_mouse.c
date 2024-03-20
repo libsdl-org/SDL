@@ -35,6 +35,8 @@
 
 /* The mouse state */
 static SDL_Mouse SDL_mouse;
+static int SDL_mouse_count;
+static SDL_MouseID *SDL_mice;
 
 /* for mapping mouse events to touch */
 static SDL_bool track_mouse_down = SDL_FALSE;
@@ -226,6 +228,118 @@ void SDL_PostInitMouse(void)
 
     SDL_PenInit();
 }
+
+SDL_bool SDL_IsMouse(Uint16 vendor, Uint16 product)
+{
+    /* Eventually we'll have a blacklist of devices that enumerate as mice but aren't really */
+    return SDL_TRUE;
+}
+
+void SDL_PrivateMouseAdded(SDL_MouseID mouseID)
+{
+    int mouse_index = -1;
+
+    SDL_assert(mouseID != 0);
+
+    for (int i = 0; i < SDL_mouse_count; ++i) {
+        if (mouseID == SDL_mice[i]) {
+            mouse_index = i;
+            break;
+        }
+    }
+
+    if (mouse_index >= 0) {
+        /* We already know about this mouse */
+        return;
+    }
+
+    SDL_MouseID *mice = (SDL_MouseID *)SDL_realloc(SDL_mice, (SDL_mouse_count + 1) * sizeof(*mice));
+    if (!mice) {
+        return;
+    }
+    mice[SDL_mouse_count] = mouseID;
+    SDL_mice = mice;
+    ++SDL_mouse_count;
+
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_EVENT_MOUSE_ADDED;
+    event.mdevice.which = mouseID;
+    SDL_PushEvent(&event);
+}
+
+void SDL_PrivateMouseRemoved(SDL_MouseID mouseID)
+{
+    int mouse_index = -1;
+
+    SDL_assert(mouseID != 0);
+
+    for (int i = 0; i < SDL_mouse_count; ++i) {
+        if (mouseID == SDL_mice[i]) {
+            mouse_index = i;
+            break;
+        }
+    }
+
+    if (mouse_index < 0) {
+        /* We don't know about this mouse */
+        return;
+    }
+
+    if (mouse_index != SDL_mouse_count - 1) {
+        SDL_memcpy(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
+    }
+    --SDL_mouse_count;
+
+    /* Remove any mouse input sources for this mouseID */
+    SDL_Mouse *mouse = SDL_GetMouse();
+    for (int i = 0; i < mouse->num_sources; ++i) {
+        SDL_MouseInputSource *source = &mouse->sources[i];
+        if (source->mouseID == mouseID) {
+            if (i != mouse->num_sources - 1) {
+                SDL_memcpy(&mouse->sources[i], &mouse->sources[i + 1], (mouse->num_sources - i - 1) * sizeof(mouse->sources[i]));
+            }
+            --mouse->num_sources;
+            break;
+        }
+    }
+
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_EVENT_MOUSE_REMOVED;
+    event.mdevice.which = mouseID;
+    SDL_PushEvent(&event);
+}
+
+SDL_bool SDL_HasMouse(void)
+{
+    return (SDL_mouse_count > 0);
+}
+
+SDL_MouseID *SDL_GetMice(int *count)
+{
+    int i;
+    SDL_MouseID *mice;
+
+    mice = (SDL_JoystickID *)SDL_malloc((SDL_mouse_count + 1) * sizeof(*mice));
+    if (mice) {
+        if (count) {
+            *count = SDL_mouse_count;
+        }
+
+        for (i = 0; i < SDL_mouse_count; ++i) {
+            mice[i] = SDL_mice[i];
+        }
+        mice[i] = 0;
+    } else {
+        if (count) {
+            *count = 0;
+        }
+    }
+
+    return mice;
+}
+
 
 void SDL_SetDefaultCursor(SDL_Cursor *cursor)
 {
@@ -687,16 +801,33 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
     return posted;
 }
 
-static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID mouseID)
+static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID mouseID, Uint8 state, Uint8 button)
 {
-    SDL_MouseInputSource *source, *sources;
+    SDL_MouseInputSource *source, *match = NULL, *sources;
     int i;
 
     for (i = 0; i < mouse->num_sources; ++i) {
         source = &mouse->sources[i];
         if (source->mouseID == mouseID) {
-            return source;
+            match = source;
+            break;
         }
+    }
+
+    if (!state && (!match || !(match->buttonstate & SDL_BUTTON(button)))) {
+        /* This might be a button release from a transition between mouse messages and raw input.
+         * See if there's another mouse source that already has that button down and use that.
+         */
+        for (i = 0; i < mouse->num_sources; ++i) {
+            source = &mouse->sources[i];
+            if ((source->buttonstate & SDL_BUTTON(button))) {
+                match = source;
+                break;
+            }
+        }
+    }
+    if (match) {
+        return match;
     }
 
     sources = (SDL_MouseInputSource *)SDL_realloc(mouse->sources, (mouse->num_sources + 1) * sizeof(*mouse->sources));
@@ -737,7 +868,7 @@ static int SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_
     Uint32 buttonstate;
     SDL_MouseInputSource *source;
 
-    source = GetMouseInputSource(mouse, mouseID);
+    source = GetMouseInputSource(mouse, mouseID, state, button);
     if (!source) {
         return 0;
     }
@@ -823,7 +954,7 @@ static int SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_
         event.type = type;
         event.common.timestamp = timestamp;
         event.button.windowID = mouse->focus ? mouse->focus->id : 0;
-        event.button.which = mouseID;
+        event.button.which = source->mouseID;
         event.button.state = state;
         event.button.button = button;
         event.button.clicks = (Uint8)SDL_min(clicks, 255);
@@ -957,6 +1088,10 @@ void SDL_QuitMouse(void)
 
     SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
                         SDL_MouseRelativeWarpMotionChanged, mouse);
+
+    SDL_mouse_count = 0;
+    SDL_free(SDL_mice);
+    SDL_mice = NULL;
 }
 
 Uint32 SDL_GetMouseState(float *x, float *y)
