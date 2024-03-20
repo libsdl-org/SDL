@@ -198,9 +198,10 @@
 #define SDL_CAMERA_DRIVER_ANDROID 1
 #define SDL_CAMERA_DRIVER_DUMMY 1
 
-/* Enable nl_langinfo on version 26 and higher. */
+/* Enable nl_langinfo and high-res file times on version 26 and higher. */
 #if __ANDROID_API__ >= 26
 #define HAVE_NL_LANGINFO 1
+#define HAVE_ST_MTIM 1
 #endif
 
 #endif /* SDL_build_config_android_h_ */

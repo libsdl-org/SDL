@@ -124,11 +124,16 @@ int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         info->size = (Uint64) statbuf.st_size;
     }
 
-#if (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L) || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700)
-    /* Use high-res file times, if available. */
+#if defined(HAVE_ST_MTIM)
+    /* POSIX.1-2008 standard */
     info->create_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_ctim.tv_sec) + statbuf.st_ctim.tv_nsec;
     info->modify_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_mtim.tv_sec) + statbuf.st_mtim.tv_nsec;
     info->access_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_atim.tv_sec) + statbuf.st_atim.tv_nsec;
+#elif defined(SDL_PLATFORM_APPLE)
+    /* Apple platform stat structs use 'st_*timespec' naming. */
+    info->create_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_ctimespec.tv_sec) + statbuf.st_ctimespec.tv_nsec;
+    info->modify_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_mtimespec.tv_sec) + statbuf.st_mtimespec.tv_nsec;
+    info->access_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_atimespec.tv_sec) + statbuf.st_atimespec.tv_nsec;
 #else
     info->create_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_ctime);
     info->modify_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_mtime);

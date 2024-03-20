@@ -190,6 +190,7 @@
 #cmakedefine HAVE_POSIX_FALLOCATE 1
 #cmakedefine HAVE_SIGACTION 1
 #cmakedefine HAVE_SA_SIGACTION 1
+#cmakedefine HAVE_ST_MTIM 1
 #cmakedefine HAVE_SETJMP 1
 #cmakedefine HAVE_NANOSLEEP 1
 #cmakedefine HAVE_GMTIME_R 1
