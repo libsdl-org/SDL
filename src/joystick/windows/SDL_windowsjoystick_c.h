@@ -77,6 +77,7 @@ struct joystick_hwdata
     LPDIRECTINPUTDEVICE8 InputDevice;
     DIDEVCAPS Capabilities;
     SDL_bool buffered;
+    SDL_bool first_update;
     input_t Inputs[MAX_INPUTS];
     int NumInputs;
     int NumSliders;
