@@ -131,7 +131,11 @@ static void SDL_DecrementSubsystemRefCount(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] > 0)) {
-        --SDL_SubsystemRefCount[subsystem_index];
+        if (SDL_bInMainQuit) {
+            SDL_SubsystemRefCount[subsystem_index] = 0;
+        } else {
+            --SDL_SubsystemRefCount[subsystem_index];
+        }
     }
 }
 
