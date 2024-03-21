@@ -10,6 +10,7 @@
   freely.
 */
 
+#include <libavutil/hwcontext.h>
 #include <libavutil/hwcontext_vulkan.h>
 
 
