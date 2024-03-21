@@ -264,7 +264,7 @@ static SDL_bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, U
     while (elapsed >= repeat_info->next_repeat_ns) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             const Uint64 timestamp = repeat_info->wl_press_time_ns + repeat_info->next_repeat_ns;
-            SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetEventTimestamp(timestamp), 0, SDL_PRESSED, repeat_info->scancode);
+            SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetEventTimestamp(timestamp), repeat_info->keyboard_id, SDL_PRESSED, repeat_info->scancode);
         }
         if (repeat_info->text[0]) {
             SDL_SendKeyboardText(repeat_info->text);
@@ -515,7 +515,7 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
     if (input->pointer_focus) {
         float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale.x);
         float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale.y);
-        SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window_data->sdlwindow, 0, 0, sx, sy);
+        SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window_data->sdlwindow, input->pointer_id, 0, sx, sy);
     }
 
     if (window && window->hit_test) {
@@ -585,11 +585,11 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
             /* Clear the capture flag and raise all buttons */
             wind->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
 
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_LEFT);
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_RIGHT);
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_MIDDLE);
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_X1);
-            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, 0, SDL_RELEASED, SDL_BUTTON_X2);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_RIGHT);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_MIDDLE);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_X1);
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, 0), wind->sdlwindow, input->pointer_id, SDL_RELEASED, SDL_BUTTON_X2);
         }
 
 
@@ -739,7 +739,7 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
             Wayland_UpdateImplicitGrabSerial(input, serial);
         }
 
-        SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, 0,
+        SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, input->pointer_id,
                             state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
     }
 }
@@ -776,7 +776,7 @@ static void pointer_handle_axis_common_v1(struct SDL_WaylandInput *input,
         x /= WAYLAND_WHEEL_AXIS_UNIT;
         y /= WAYLAND_WHEEL_AXIS_UNIT;
 
-        SDL_SendMouseWheel(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, input->pointer_id, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
 
@@ -925,7 +925,7 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
 
     if (x != 0.0f || y != 0.0f) {
         SDL_SendMouseWheel(input->pointer_curr_axis_info.timestamp_ns,
-                           window->sdlwindow, 0, x, y, direction);
+                           window->sdlwindow, input->pointer_id, x, y, direction);
     }
 }
 
@@ -1483,7 +1483,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         case SDLK_RGUI:
         case SDLK_MODE:
             Wayland_HandleModifierKeys(input, scancode, SDL_TRUE);
-            SDL_SendKeyboardKeyIgnoreModifiers(0, 0, SDL_PRESSED, scancode);
+            SDL_SendKeyboardKeyIgnoreModifiers(0, input->keyboard_id, SDL_PRESSED, scancode);
             break;
         default:
             break;
@@ -1618,7 +1618,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     if (!handled_by_ime) {
         scancode = Wayland_get_scancode_from_key(input, key + 8);
         Wayland_HandleModifierKeys(input, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
-        SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetKeyboardTimestamp(input, time), 0, state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
+        SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetKeyboardTimestamp(input, time), input->keyboard_id, state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
     }
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
@@ -1712,8 +1712,10 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         Wayland_CreateCursorShapeDevice(input);
 
         wl_pointer_set_user_data(input->pointer, input);
-        wl_pointer_add_listener(input->pointer, &pointer_listener,
-                                input);
+        wl_pointer_add_listener(input->pointer, &pointer_listener, input);
+
+        input->pointer_id = SDL_GetNextObjectID();
+        SDL_PrivateMouseAdded(input->pointer_id);
     } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
         if (input->cursor_shape) {
             wp_cursor_shape_device_v1_destroy(input->cursor_shape);
@@ -1722,6 +1724,9 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         wl_pointer_destroy(input->pointer);
         input->pointer = NULL;
         input->display->pointer = NULL;
+
+        SDL_PrivateMouseRemoved(input->pointer_id);
+        input->pointer_id = 0;
     }
 
     if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !input->touch) {
@@ -1741,9 +1746,15 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         wl_keyboard_set_user_data(input->keyboard, input);
         wl_keyboard_add_listener(input->keyboard, &keyboard_listener,
                                  input);
+
+        input->keyboard_id = SDL_GetNextObjectID();
+        SDL_PrivateKeyboardAdded(input->keyboard_id);
     } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
         wl_keyboard_destroy(input->keyboard);
         input->keyboard = NULL;
+
+        SDL_PrivateKeyboardRemoved(input->keyboard_id);
+        input->keyboard_id = 0;
     }
 
     Wayland_RegisterTimestampListeners(input);
@@ -3167,7 +3178,7 @@ static void relative_pointer_handle_relative_motion(void *data,
     dy_unaccel = wl_fixed_to_double(dy_unaccel_w);
 
     if (input->pointer_focus && d->relative_mouse_mode) {
-        SDL_SendMouseMotion(Wayland_GetEventTimestamp(timestamp), window->sdlwindow, 0, 1, (float)dx_unaccel, (float)dy_unaccel);
+        SDL_SendMouseMotion(Wayland_GetEventTimestamp(timestamp), window->sdlwindow, input->pointer_id, 1, (float)dx_unaccel, (float)dy_unaccel);
     }
 }
 

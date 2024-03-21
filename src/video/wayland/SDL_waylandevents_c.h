@@ -81,6 +81,7 @@ typedef struct
 {
     int32_t repeat_rate;     /* Repeat rate in range of [1, 1000] character(s) per second */
     int32_t repeat_delay_ms; /* Time to first repeat event in milliseconds */
+    Uint32 keyboard_id;      /* ID of the source keyboard. */
     SDL_bool is_initialized;
 
     SDL_bool is_key_down;
@@ -109,6 +110,8 @@ struct SDL_WaylandInput
     struct zwp_input_timestamps_v1 *touch_timestamps;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
+    Uint32 keyboard_id;
+    Uint32 pointer_id;
     uint32_t pointer_enter_serial;
 
     /* High-resolution event timestamps */
