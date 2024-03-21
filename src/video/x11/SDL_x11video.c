@@ -25,6 +25,8 @@
 #include <unistd.h> /* For getpid() and readlink() */
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../events/SDL_keyboard_c.h"
+#include "../../events/SDL_mouse_c.h"
 #include "../SDL_pixels_c.h"
 #include "../SDL_sysvideo.h"
 
@@ -415,7 +417,13 @@ int X11_VideoInit(SDL_VideoDevice *_this)
         return -1;
     }
 
-    X11_InitXinput2(_this);
+    if (!X11_InitXinput2(_this)) {
+        /* Assume a mouse and keyboard are attached */
+        data->keyboardID = SDL_GetNextObjectID();
+        SDL_AddKeyboard(data->keyboardID, SDL_FALSE);
+        data->mouseID = SDL_GetNextObjectID();
+        SDL_AddMouse(data->mouseID, SDL_FALSE);
+    }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     X11_InitXfixes(_this);
