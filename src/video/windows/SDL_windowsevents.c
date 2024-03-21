@@ -293,6 +293,7 @@ static void WIN_CheckRawMouseButtons(Uint64 timestamp, HANDLE hDevice, ULONG raw
 
 static void WIN_CheckAsyncMouseRelease(Uint64 timestamp, SDL_WindowData *data)
 {
+    SDL_MouseID mouseID = data->videodata->mouseID;
     Uint32 mouseFlags;
     SHORT keyState;
     SDL_bool swapButtons;
@@ -305,23 +306,23 @@ static void WIN_CheckAsyncMouseRelease(Uint64 timestamp, SDL_WindowData *data)
 
     keyState = GetAsyncKeyState(VK_LBUTTON);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
     }
     keyState = GetAsyncKeyState(VK_RBUTTON);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
     }
     keyState = GetAsyncKeyState(VK_MBUTTON);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
     }
     keyState = GetAsyncKeyState(VK_XBUTTON1);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X1, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
     }
     keyState = GetAsyncKeyState(VK_XBUTTON2);
     if (!(keyState & 0x8000)) {
-        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X2, 0);
+        WIN_CheckWParamMouseButton(timestamp, SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
     }
     data->mouse_button_flags = (WPARAM)-1;
 }
@@ -363,7 +364,7 @@ static void WIN_UpdateFocus(SDL_Window *window, SDL_bool expect_focus)
         if (!SDL_GetMouse()->relative_mode) {
             GetCursorPos(&cursorPos);
             ScreenToClient(hwnd, &cursorPos);
-            SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, 0, 0, (float)cursorPos.x, (float)cursorPos.y);
+            SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, data->videodata->mouseID, SDL_FALSE, (float)cursorPos.x, (float)cursorPos.y);
         }
 
         WIN_CheckAsyncMouseRelease(WIN_GetEventTimestamp(), data);
@@ -504,9 +505,9 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     }
 
     if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
-        SDL_SendKeyboardKey(0, 0, SDL_PRESSED, scanCode);
+        SDL_SendKeyboardKey(0, data->keyboardID, SDL_PRESSED, scanCode);
     } else {
-        SDL_SendKeyboardKey(0, 0, SDL_RELEASED, scanCode);
+        SDL_SendKeyboardKey(0, data->keyboardID, SDL_RELEASED, scanCode);
 
         /* If the key was down prior to our hook being installed, allow the
            key up message to pass normally the first time. This ensures other
@@ -534,7 +535,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HAND
 
     if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
         if (rawmouse->lLastX || rawmouse->lLastY) {
-            SDL_SendMouseMotion(timestamp, data->window, mouseID, 1, (float)rawmouse->lLastX, (float)rawmouse->lLastY);
+            SDL_SendMouseMotion(timestamp, data->window, mouseID, SDL_TRUE, (float)rawmouse->lLastX, (float)rawmouse->lLastY);
         }
     } else if (rawmouse->lLastX || rawmouse->lLastY) {
         /* This is absolute motion, either using a tablet or mouse over RDP
@@ -591,7 +592,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HAND
                     const int MAX_RELATIVE_MOTION = (h / 6);
                     if (SDL_abs(relX) < MAX_RELATIVE_MOTION &&
                         SDL_abs(relY) < MAX_RELATIVE_MOTION) {
-                        SDL_SendMouseMotion(timestamp, data->window, mouseID, 1, (float)relX, (float)relY);
+                        SDL_SendMouseMotion(timestamp, data->window, mouseID, SDL_TRUE, (float)relX, (float)relY);
                     }
                 }
             }
@@ -601,7 +602,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HAND
                 SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
                 /* Ignore this motion, probably a pen lift and drop */
             } else {
-                SDL_SendMouseMotion(timestamp, data->window, mouseID, 1, (float)relX, (float)relY);
+                SDL_SendMouseMotion(timestamp, data->window, mouseID, SDL_TRUE, (float)relX, (float)relY);
             }
         }
 
@@ -719,8 +720,9 @@ static SDL_bool HasDeviceID(Uint32 deviceID, Uint32 *list, int count)
     return SDL_FALSE;
 }
 
-void WIN_CheckKeyboardAndMouseHotplug(SDL_bool initial_check)
+void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_check)
 {
+    SDL_VideoData *data = _this->driverdata;
     PRAWINPUTDEVICELIST raw_devices = NULL;
     UINT raw_device_count = 0;
     int old_keyboard_count = 0;
@@ -731,6 +733,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_bool initial_check)
     SDL_MouseID *old_mice = NULL;
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
+    SDL_bool send_event = !initial_check;
 
     /* Check to see if anything has changed */
     static Uint64 s_last_device_change;
@@ -792,13 +795,18 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_bool initial_check)
     old_keyboards = SDL_GetKeyboards(&old_keyboard_count);
     for (int i = old_keyboard_count; i--;) {
         if (!HasDeviceID(old_keyboards[i], new_keyboards, new_keyboard_count)) {
-            SDL_PrivateKeyboardRemoved(old_keyboards[i]);
+            SDL_RemoveKeyboard(old_keyboards[i]);
         }
     }
     for (int i = 0; i < new_keyboard_count; ++i) {
         if (!HasDeviceID(new_keyboards[i], old_keyboards, old_keyboard_count)) {
-            SDL_PrivateKeyboardAdded(new_keyboards[i]);
+            SDL_AddKeyboard(new_keyboards[i], send_event);
         }
+    }
+    if (new_keyboard_count > 0) {
+        data->keyboardID = new_keyboards[0];
+    } else {
+        data->keyboardID = 0;
     }
     SDL_free(new_keyboards);
     SDL_free(old_keyboards);
@@ -806,13 +814,18 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_bool initial_check)
     old_mice = SDL_GetMice(&old_mouse_count);
     for (int i = old_mouse_count; i--;) {
         if (!HasDeviceID(old_mice[i], new_mice, new_mouse_count)) {
-            SDL_PrivateMouseRemoved(old_mice[i]);
+            SDL_RemoveMouse(old_mice[i]);
         }
     }
     for (int i = 0; i < new_mouse_count; ++i) {
         if (!HasDeviceID(new_mice[i], old_mice, old_mouse_count)) {
-            SDL_PrivateMouseAdded(new_mice[i]);
+            SDL_AddMouse(new_mice[i], send_event);
         }
+    }
+    if (new_mouse_count > 0) {
+        data->mouseID = new_mice[0];
+    } else {
+        data->mouseID = 0;
     }
     SDL_free(new_mice);
     SDL_free(old_mice);
@@ -928,7 +941,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             /* Only generate mouse events for real mouse */
             if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
-                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, 0, 0, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, data->videodata->mouseID, SDL_FALSE, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
         }
     } break;
@@ -950,7 +963,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (!mouse->relative_mode || mouse->relative_mode_warp) {
             if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
-                WIN_CheckWParamMouseButtons(WIN_GetEventTimestamp(), wParam, data, 0);
+                WIN_CheckWParamMouseButtons(WIN_GetEventTimestamp(), wParam, data, data->videodata->mouseID);
             }
         }
     } break;
@@ -988,9 +1001,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         short amount = GET_WHEEL_DELTA_WPARAM(wParam);
         float fAmount = (float)amount / WHEEL_DELTA;
         if (msg == WM_MOUSEWHEEL) {
-            SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, 0, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
+            SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, data->videodata->mouseID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
         } else {
-            SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, 0, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
+            SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, data->videodata->mouseID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
         }
     } break;
 
@@ -1003,13 +1016,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 ScreenToClient(hwnd, &cursorPos);
                 mouse = SDL_GetMouse();
                 if (!mouse->was_touch_mouse_events) { /* we're not a touch handler causing a mouse leave? */
-                    SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, 0, 0, (float)cursorPos.x, (float)cursorPos.y);
+                    SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, data->videodata->mouseID, SDL_FALSE, (float)cursorPos.x, (float)cursorPos.y);
                 } else {                                       /* touch handling? */
                     mouse->was_touch_mouse_events = SDL_FALSE; /* not anymore */
                     if (mouse->touch_mouse_events) {           /* convert touch to mouse events */
-                        SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_TOUCH_MOUSEID, 0, (float)cursorPos.x, (float)cursorPos.y);
+                        SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_TOUCH_MOUSEID, SDL_FALSE, (float)cursorPos.x, (float)cursorPos.y);
                     } else { /* normal handling */
-                        SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, 0, 0, (float)cursorPos.x, (float)cursorPos.y);
+                        SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, data->videodata->mouseID, SDL_FALSE, (float)cursorPos.x, (float)cursorPos.y);
                     }
                 }
             }
@@ -1042,7 +1055,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
 
         if (code != SDL_SCANCODE_UNKNOWN) {
-            SDL_SendKeyboardKey(WIN_GetEventTimestamp(), 0, SDL_PRESSED, code);
+            SDL_SendKeyboardKey(WIN_GetEventTimestamp(), data->videodata->keyboardID, SDL_PRESSED, code);
         }
     }
 
@@ -1058,9 +1071,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (code != SDL_SCANCODE_UNKNOWN) {
             if (code == SDL_SCANCODE_PRINTSCREEN &&
                 keyboardState[code] == SDL_RELEASED) {
-                SDL_SendKeyboardKey(WIN_GetEventTimestamp(), 0, SDL_PRESSED, code);
+                SDL_SendKeyboardKey(WIN_GetEventTimestamp(), data->videodata->keyboardID, SDL_PRESSED, code);
             }
-            SDL_SendKeyboardKey(WIN_GetEventTimestamp(), 0, SDL_RELEASED, code);
+            SDL_SendKeyboardKey(WIN_GetEventTimestamp(), data->videodata->keyboardID, SDL_RELEASED, code);
         }
     }
         returnCode = 0;
@@ -1777,9 +1790,9 @@ static void WIN_UpdateMouseCapture()
 
             if (GetCursorPos(&cursorPos) && ScreenToClient(data->hwnd, &cursorPos)) {
                 SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-                SDL_MouseID mouseID = SDL_GetMouse()->mouseID;
+                SDL_MouseID mouseID = data->videodata->mouseID;
 
-                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, mouseID, 0, (float)cursorPos.x, (float)cursorPos.y);
+                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, mouseID, SDL_FALSE, (float)cursorPos.x, (float)cursorPos.y);
                 SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID, GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED,
                                     !swapButtons ? SDL_BUTTON_LEFT : SDL_BUTTON_RIGHT);
                 SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID, GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED,
@@ -1927,10 +1940,10 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
        and if we think a key is pressed when Windows doesn't, unstick it in SDL's state. */
     keystate = SDL_GetKeyboardState(NULL);
     if ((keystate[SDL_SCANCODE_LSHIFT] == SDL_PRESSED) && !(GetKeyState(VK_LSHIFT) & 0x8000)) {
-        SDL_SendKeyboardKey(0, 0, SDL_RELEASED, SDL_SCANCODE_LSHIFT);
+        SDL_SendKeyboardKey(0, _this->driverdata->keyboardID, SDL_RELEASED, SDL_SCANCODE_LSHIFT);
     }
     if ((keystate[SDL_SCANCODE_RSHIFT] == SDL_PRESSED) && !(GetKeyState(VK_RSHIFT) & 0x8000)) {
-        SDL_SendKeyboardKey(0, 0, SDL_RELEASED, SDL_SCANCODE_RSHIFT);
+        SDL_SendKeyboardKey(0, _this->driverdata->keyboardID, SDL_RELEASED, SDL_SCANCODE_RSHIFT);
     }
 
     /* The Windows key state gets lost when using Windows+Space or Windows+G shortcuts and
@@ -1939,10 +1952,10 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     focusWindow = SDL_GetKeyboardFocus();
     if (!focusWindow || !(focusWindow->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
         if ((keystate[SDL_SCANCODE_LGUI] == SDL_PRESSED) && !(GetKeyState(VK_LWIN) & 0x8000)) {
-            SDL_SendKeyboardKey(0, 0, SDL_RELEASED, SDL_SCANCODE_LGUI);
+            SDL_SendKeyboardKey(0, _this->driverdata->keyboardID, SDL_RELEASED, SDL_SCANCODE_LGUI);
         }
         if ((keystate[SDL_SCANCODE_RGUI] == SDL_PRESSED) && !(GetKeyState(VK_RWIN) & 0x8000)) {
-            SDL_SendKeyboardKey(0, 0, SDL_RELEASED, SDL_SCANCODE_RGUI);
+            SDL_SendKeyboardKey(0, _this->driverdata->keyboardID, SDL_RELEASED, SDL_SCANCODE_RGUI);
         }
     }
 
@@ -1952,7 +1965,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     /* Update mouse capture */
     WIN_UpdateMouseCapture();
 
-    WIN_CheckKeyboardAndMouseHotplug(SDL_FALSE);
+    WIN_CheckKeyboardAndMouseHotplug(_this, SDL_FALSE);
 
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 

@@ -614,7 +614,7 @@ static EM_BOOL Emscripten_HandlePointerLockChange(int eventType, const Emscripte
 static EM_BOOL Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    const int isPointerLocked = window_data->has_pointer_lock;
+    const SDL_bool isPointerLocked = window_data->has_pointer_lock;
     float mx, my;
 
     /* rescale (in case canvas is being scaled)*/
@@ -631,7 +631,7 @@ static EM_BOOL Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEv
         my = (float)(mouseEvent->targetY * yscale);
     }
 
-    SDL_SendMouseMotion(0, window_data->window, 0, isPointerLocked, mx, my);
+    SDL_SendMouseMotion(0, window_data->window, EMSCRIPTEN_MOUSE_ID, isPointerLocked, mx, my);
     return 0;
 }
 
@@ -669,7 +669,7 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
         sdl_event_type = SDL_EVENT_MOUSE_BUTTON_UP;
         prevent_default = SDL_EventEnabled(sdl_event_type);
     }
-    SDL_SendMouseButton(0, window_data->window, 0, sdl_button_state, sdl_button);
+    SDL_SendMouseButton(0, window_data->window, EMSCRIPTEN_MOUSE_ID, sdl_button_state, sdl_button);
 
     /* Do not consume the event if the mouse is outside of the canvas. */
     emscripten_get_element_css_size(window_data->canvas_id, &css_w, &css_h);
@@ -685,7 +685,7 @@ static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseE
 {
     SDL_WindowData *window_data = userData;
 
-    const int isPointerLocked = window_data->has_pointer_lock;
+    const SDL_bool isPointerLocked = window_data->has_pointer_lock;
 
     if (!isPointerLocked) {
         /* rescale (in case canvas is being scaled)*/
@@ -695,7 +695,7 @@ static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseE
 
         mx = (float)(mouseEvent->targetX * (window_data->window->w / client_w));
         my = (float)(mouseEvent->targetY * (window_data->window->h / client_h));
-        SDL_SendMouseMotion(0, window_data->window, 0, isPointerLocked, mx, my);
+        SDL_SendMouseMotion(0, window_data->window, EMSCRIPTEN_MOUSE_ID, isPointerLocked, mx, my);
     }
 
     SDL_SetMouseFocus(eventType == EMSCRIPTEN_EVENT_MOUSEENTER ? window_data->window : NULL);
@@ -720,7 +720,7 @@ static EM_BOOL Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent 
         break;
     }
 
-    SDL_SendMouseWheel(0, window_data->window, 0, (float)wheelEvent->deltaX, -deltaY, SDL_MOUSEWHEEL_NORMAL);
+    SDL_SendMouseWheel(0, window_data->window, EMSCRIPTEN_MOUSE_ID, (float)wheelEvent->deltaX, -deltaY, SDL_MOUSEWHEEL_NORMAL);
     return SDL_EventEnabled(SDL_EVENT_MOUSE_WHEEL);
 }
 
@@ -811,7 +811,7 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
     }
 
     if (scancode != SDL_SCANCODE_UNKNOWN) {
-        SDL_SendKeyboardKeyAndKeycode(0, 0, eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED, scancode, keycode);
+        SDL_SendKeyboardKeyAndKeycode(0, EMSCRIPTEN_KEYBOARD_ID, eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED, scancode, keycode);
     }
 
     /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress

@@ -330,12 +330,12 @@ static SDL_Scancode TranslateKeycode(int keycode)
 
 int Android_OnKeyDown(int keycode)
 {
-    return SDL_SendKeyboardKey(0, 0, SDL_PRESSED, TranslateKeycode(keycode));
+    return SDL_SendKeyboardKey(0, Android_KeyboardID, SDL_PRESSED, TranslateKeycode(keycode));
 }
 
 int Android_OnKeyUp(int keycode)
 {
-    return SDL_SendKeyboardKey(0, 0, SDL_RELEASED, TranslateKeycode(keycode));
+    return SDL_SendKeyboardKey(0, Android_KeyboardID, SDL_RELEASED, TranslateKeycode(keycode));
 }
 
 SDL_bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)

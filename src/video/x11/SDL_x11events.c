@@ -351,8 +351,8 @@ static void X11_HandleGenericEvent(SDL_VideoDevice *_this, XEvent *xev)
 
 static unsigned X11_GetNumLockModifierMask(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *viddata = _this->driverdata;
-    Display *display = viddata->display;
+    SDL_VideoData *videodata = _this->driverdata;
+    Display *display = videodata->display;
     unsigned num_mask = 0;
     int i, j;
     XModifierKeymap *xmods;
@@ -363,7 +363,7 @@ static unsigned X11_GetNumLockModifierMask(SDL_VideoDevice *_this)
     for (i = 3; i < 8; i++) {
         for (j = 0; j < n; j++) {
             KeyCode kc = xmods->modifiermap[i * n + j];
-            if (viddata->key_layout[kc] == SDL_SCANCODE_NUMLOCKCLEAR) {
+            if (videodata->key_layout[kc] == SDL_SCANCODE_NUMLOCKCLEAR) {
                 num_mask = 1 << i;
                 break;
             }
@@ -376,8 +376,8 @@ static unsigned X11_GetNumLockModifierMask(SDL_VideoDevice *_this)
 
 static unsigned X11_GetScrollLockModifierMask(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *viddata = _this->driverdata;
-    Display *display = viddata->display;
+    SDL_VideoData *videodata = _this->driverdata;
+    Display *display = videodata->display;
     unsigned num_mask = 0;
     int i, j;
     XModifierKeymap *xmods;
@@ -388,7 +388,7 @@ static unsigned X11_GetScrollLockModifierMask(SDL_VideoDevice *_this)
     for (i = 3; i < 8; i++) {
         for (j = 0; j < n; j++) {
             KeyCode kc = xmods->modifiermap[i * n + j];
-            if (viddata->key_layout[kc] == SDL_SCANCODE_SCROLLLOCK) {
+            if (videodata->key_layout[kc] == SDL_SCANCODE_SCROLLLOCK) {
                 num_mask = 1 << i;
                 break;
             }
@@ -401,8 +401,8 @@ static unsigned X11_GetScrollLockModifierMask(SDL_VideoDevice *_this)
 
 void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *viddata = _this->driverdata;
-    Display *display = viddata->display;
+    SDL_VideoData *videodata = _this->driverdata;
+    Display *display = videodata->display;
     char keys[32];
     int keycode;
     Window junk_window;
@@ -420,8 +420,8 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
     }
 
     keyboardState = SDL_GetKeyboardState(0);
-    for (keycode = 0; keycode < SDL_arraysize(viddata->key_layout); ++keycode) {
-        SDL_Scancode scancode = viddata->key_layout[keycode];
+    for (keycode = 0; keycode < SDL_arraysize(videodata->key_layout); ++keycode) {
+        SDL_Scancode scancode = videodata->key_layout[keycode];
         SDL_bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
         SDL_bool sdlKeyPressed = keyboardState[scancode] == SDL_PRESSED;
 
@@ -437,13 +437,13 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_LGUI:
             case SDLK_RGUI:
             case SDLK_MODE:
-                SDL_SendKeyboardKey(0, 0, SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_PRESSED, scancode);
                 break;
             default:
                 break;
             }
         } else if (!x11KeyPressed && sdlKeyPressed) {
-            SDL_SendKeyboardKey(0, 0, SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_RELEASED, scancode);
         }
     }
 }
@@ -508,9 +508,9 @@ static void X11_DispatchUnmapNotify(SDL_WindowData *data)
 
 static void DispatchWindowMove(SDL_VideoDevice *_this, const SDL_WindowData *data, const SDL_Point *point)
 {
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     SDL_Window *window = data->window;
-    Display *display = viddata->display;
+    Display *display = videodata->display;
     XEvent evt;
 
     /* !!! FIXME: we need to regrab this if necessary when the drag is done. */
@@ -539,9 +539,9 @@ static void ScheduleWindowMove(SDL_VideoDevice *_this, SDL_WindowData *data, con
 
 static void InitiateWindowResize(SDL_VideoDevice *_this, const SDL_WindowData *data, const SDL_Point *point, int direction)
 {
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
     SDL_Window *window = data->window;
-    Display *display = viddata->display;
+    Display *display = videodata->display;
     XEvent evt;
 
     if (direction < _NET_WM_MOVERESIZE_SIZE_TOPLEFT || direction > _NET_WM_MOVERESIZE_SIZE_LEFT) {
@@ -842,7 +842,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, i
     printf("window %p: ButtonPress (X11 button = %d)\n", window, button);
 #endif
     if (X11_IsWheelEvent(display, button, &xticks, &yticks)) {
-        SDL_SendMouseWheel(0, window, 0, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(0, window, videodata->mouseID, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
     } else {
         SDL_bool ignore_click = SDL_FALSE;
         if (button == Button1) {
@@ -863,7 +863,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, i
             windowdata->last_focus_event_time = 0;
         }
         if (!ignore_click) {
-            SDL_SendMouseButton(0, window, 0, SDL_PRESSED, button);
+            SDL_SendMouseButton(0, window, videodata->mouseID, SDL_PRESSED, button);
         }
     }
     X11_UpdateUserTime(windowdata, time);
@@ -884,7 +884,7 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
             /* see explanation at case ButtonPress */
             button -= (8 - SDL_BUTTON_X1);
         }
-        SDL_SendMouseButton(0, window, 0, SDL_RELEASED, button);
+        SDL_SendMouseButton(0, window, videodata->mouseID, SDL_RELEASED, button);
     }
 }
 
@@ -957,9 +957,9 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             videodata->filter_time = xevent->xkey.time;
 
             if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(0, 0, SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_PRESSED, scancode);
             } else {
-                SDL_SendKeyboardKey(0, 0, SDL_RELEASED, scancode);
+                SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_RELEASED, scancode);
             }
 #endif
         }
@@ -1106,7 +1106,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
 
         if (!mouse->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, videodata->mouseID, SDL_FALSE, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
         /* We ungrab in LeaveNotify, so we may need to grab again here */
@@ -1130,7 +1130,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         }
 #endif
         if (!SDL_GetMouse()->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, videodata->mouseID, SDL_FALSE, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
         if (xevent->xcrossing.mode != NotifyGrab &&
@@ -1262,7 +1262,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             if (xevent->type == KeyPress) {
                 /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
                 if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                    SDL_SendKeyboardKey(0, 0, SDL_PRESSED, videodata->key_layout[keycode]);
+                    SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_PRESSED, videodata->key_layout[keycode]);
                 }
                 if (*text) {
                     SDL_SendKeyboardText(text);
@@ -1272,7 +1272,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     /* We're about to get a repeated key down, ignore the key up */
                     break;
                 }
-                SDL_SendKeyboardKey(0, 0, SDL_RELEASED, videodata->key_layout[keycode]);
+                SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_RELEASED, videodata->key_layout[keycode]);
             }
         }
 
@@ -1525,7 +1525,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
 
             X11_ProcessHitTest(_this, data, (float)xevent->xmotion.x, (float)xevent->xmotion.y, SDL_FALSE);
-            SDL_SendMouseMotion(0, data->window, 0, 0, (float)xevent->xmotion.x, (float)xevent->xmotion.y);
+            SDL_SendMouseMotion(0, data->window, videodata->mouseID, SDL_FALSE, (float)xevent->xmotion.x, (float)xevent->xmotion.y);
         }
     } break;
 

@@ -72,10 +72,10 @@
 #define SDL_SetMouseFocus         SDL_Mock_SetMouseFocus
 
 /* Mock mouse API */
-static int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, int relative, float x, float y);
+static int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, SDL_bool relative, float x, float y);
 static int SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button);
 static SDL_Mouse *SDL_GetMouse(void);
-static SDL_bool SDL_MousePositionInWindow(SDL_Window *window, SDL_MouseID mouseID, float x, float y);
+static SDL_bool SDL_MousePositionInWindow(SDL_Window *window, float x, float y);
 static void SDL_SetMouseFocus(SDL_Window *window);
 
 /* Import SUT code with macro-renamed function names  */
@@ -88,7 +88,7 @@ static void SDL_SetMouseFocus(SDL_Window *window);
 /* Mock implementations of Pen -> Mouse calls */
 /* Not thread-safe! */
 
-static SDL_bool SDL_MousePositionInWindow(SDL_Window *window, SDL_MouseID mouseID, float x, float y)
+static SDL_bool SDL_MousePositionInWindow(SDL_Window *window, float x, float y)
 {
     return SDL_TRUE;
 }
@@ -98,7 +98,7 @@ static float _mouseemu_last_x = 0.0f;
 static float _mouseemu_last_y = 0.0f;
 static int _mouseemu_last_mouseid = 0;
 static int _mouseemu_last_button = 0;
-static int _mouseemu_last_relative = 0;
+static SDL_bool _mouseemu_last_relative = SDL_FALSE;
 static int _mouseemu_last_focus = -1;
 
 static int SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button)
@@ -111,7 +111,7 @@ static int SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID
     return 1;
 }
 
-static int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, int relative, float x, float y)
+static int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, SDL_bool relative, float x, float y)
 {
     if (mouseID == SDL_PEN_MOUSEID) {
         _mouseemu_last_event = SDL_EVENT_MOUSE_MOTION;
@@ -126,9 +126,6 @@ static int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID
 static SDL_Mouse *SDL_GetMouse(void)
 {
     static SDL_Mouse dummy_mouse;
-
-    dummy_mouse.focus = NULL;
-    dummy_mouse.mouseID = 0;
 
     return &dummy_mouse;
 }

@@ -515,7 +515,7 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
     if (input->pointer_focus) {
         float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale.x);
         float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale.y);
-        SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window_data->sdlwindow, input->pointer_id, 0, sx, sy);
+        SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window_data->sdlwindow, input->pointer_id, SDL_FALSE, sx, sy);
     }
 
     if (window && window->hit_test) {
@@ -1715,7 +1715,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         wl_pointer_add_listener(input->pointer, &pointer_listener, input);
 
         input->pointer_id = SDL_GetNextObjectID();
-        SDL_PrivateMouseAdded(input->pointer_id);
+        SDL_AddMouse(input->pointer_id, SDL_TRUE);
     } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
         if (input->cursor_shape) {
             wp_cursor_shape_device_v1_destroy(input->cursor_shape);
@@ -1725,7 +1725,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         input->pointer = NULL;
         input->display->pointer = NULL;
 
-        SDL_PrivateMouseRemoved(input->pointer_id);
+        SDL_RemoveMouse(input->pointer_id);
         input->pointer_id = 0;
     }
 
@@ -1748,12 +1748,12 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
                                  input);
 
         input->keyboard_id = SDL_GetNextObjectID();
-        SDL_PrivateKeyboardAdded(input->keyboard_id);
+        SDL_AddKeyboard(input->keyboard_id, SDL_TRUE);
     } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
         wl_keyboard_destroy(input->keyboard);
         input->keyboard = NULL;
 
-        SDL_PrivateKeyboardRemoved(input->keyboard_id);
+        SDL_RemoveKeyboard(input->keyboard_id);
         input->keyboard_id = 0;
     }
 
@@ -2709,7 +2709,7 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
             input->current_pen.update_window = window;
         } else {
             /* Plain mouse event */
-            SDL_SendMouseMotion(0, window->sdlwindow, 0, 0, sx, sy);
+            SDL_SendMouseMotion(0, window->sdlwindow, 0, SDL_FALSE, sx, sy);
         }
     }
 }
@@ -3178,7 +3178,7 @@ static void relative_pointer_handle_relative_motion(void *data,
     dy_unaccel = wl_fixed_to_double(dy_unaccel_w);
 
     if (input->pointer_focus && d->relative_mouse_mode) {
-        SDL_SendMouseMotion(Wayland_GetEventTimestamp(timestamp), window->sdlwindow, input->pointer_id, 1, (float)dx_unaccel, (float)dy_unaccel);
+        SDL_SendMouseMotion(Wayland_GetEventTimestamp(timestamp), window->sdlwindow, input->pointer_id, SDL_TRUE, (float)dx_unaccel, (float)dy_unaccel);
     }
 }
 

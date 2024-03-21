@@ -351,7 +351,7 @@ static int KMSDRM_WarpMouseGlobal(float x, float y)
         SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
 
         /* Update internal mouse position. */
-        SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 0, x, y);
+        SDL_SendMouseMotion(0, mouse->focus, 0, SDL_FALSE, x, y);
 
         /* And now update the cursor graphic position on screen. */
         if (dispdata->cursor_bo) {
