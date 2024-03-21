@@ -58,7 +58,7 @@ typedef Uint32 SDL_PenID; /**< SDL_PenIDs identify pens uniquely within a sessio
 
 #define SDL_PEN_INVALID ((SDL_PenID)0) /**< Reserved invalid ::SDL_PenID is valid */
 
-#define SDL_PEN_MOUSEID ((SDL_PenID)-2) /**< Device ID for mouse events triggered by pen events */
+#define SDL_PEN_MOUSEID ((SDL_MouseID)-2) /**< Device ID for mouse events triggered by pen events */
 
 #define SDL_PEN_INFO_UNKNOWN (-1) /**< Marks unknown information when querying the pen */
 

@@ -46,5 +46,7 @@ extern int Android_SurfaceHeight;
 extern float Android_ScreenDensity;
 extern SDL_Semaphore *Android_PauseSem, *Android_ResumeSem;
 extern SDL_Mutex *Android_ActivityMutex;
+extern SDL_KeyboardID Android_KeyboardID;
+extern SDL_MouseID Android_MouseID;
 
 #endif /* SDL_androidvideo_h_ */

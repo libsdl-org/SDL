@@ -605,10 +605,19 @@ static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode)
     return scancode;
 }
 
+static int SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
+{
+    SDL_AddKeyboard((SDL_KeyboardID)item->fd, SDL_TRUE);
+
+    return 0;
+}
+
 static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
 {
     int ret;
     struct input_absinfo abs_info;
+
+    SDL_AddMouse((SDL_MouseID)item->fd, SDL_TRUE);
 
     ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
     if (ret < 0) {
@@ -916,6 +925,14 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
         }
     } else if (udev_class & SDL_UDEV_DEVICE_MOUSE) {
         int ret = SDL_EVDEV_init_mouse(item, udev_class);
+        if (ret < 0) {
+            close(item->fd);
+            SDL_free(item->path);
+            SDL_free(item);
+            return ret;
+        }
+    } else if (udev_class & SDL_UDEV_DEVICE_KEYBOARD) {
+        int ret = SDL_EVDEV_init_keyboard(item, udev_class);
         if (ret < 0) {
             close(item->fd);
             SDL_free(item->path);

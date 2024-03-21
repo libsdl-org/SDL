@@ -178,7 +178,7 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)keyboard;
 
-    SDL_PrivateKeyboardAdded(keyboardID);
+    SDL_AddKeyboard(keyboardID, SDL_TRUE);
 
     keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed) {
         SDL_SendKeyboardKey(0, keyboardID, pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
@@ -193,7 +193,7 @@ static void OnGCKeyboardDisconnected(GCKeyboard *keyboard) API_AVAILABLE(macos(1
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)keyboard;
 
-    SDL_PrivateKeyboardRemoved(keyboardID);
+    SDL_RemoveKeyboard(keyboardID);
 
     keyboard.keyboardInput.keyChangedHandler = nil;
 }
@@ -319,7 +319,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 {
     SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)mouse;
 
-    SDL_PrivateMouseAdded(mouseID);
+    SDL_AddMouse(mouseID, SDL_TRUE);
 
     mouse.mouseInput.leftButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
       OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
@@ -385,7 +385,7 @@ static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios
 
     UpdatePointerLock();
 
-    SDL_PrivateMouseRemoved(mouseID);
+    SDL_RemoveMouse(mouseID);
 }
 
 void SDL_InitGCMouse(void)

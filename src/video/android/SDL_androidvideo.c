@@ -67,6 +67,8 @@ SDL_Semaphore *Android_PauseSem = NULL;
 SDL_Semaphore *Android_ResumeSem = NULL;
 SDL_Mutex *Android_ActivityMutex = NULL;
 static SDL_SystemTheme Android_SystemTheme;
+SDL_KeyboardID Android_KeyboardID = 0;
+SDL_MouseID Android_MouseID = 0;
 
 static int Android_SuspendScreenSaver(SDL_VideoDevice *_this)
 {

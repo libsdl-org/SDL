@@ -191,7 +191,6 @@
         NSData *data;
         NSArray *array;
         NSPoint point;
-        SDL_Mouse *mouse;
         float x, y;
 
         if (desiredType == nil) {
@@ -208,11 +207,10 @@
 
         /* Code addon to update the mouse location */
         point = [sender draggingLocation];
-        mouse = SDL_GetMouse();
         x = point.x;
         y = (sdlwindow->h - point.y);
         if (x >= 0.0f && x < (float)sdlwindow->w && y >= 0.0f && y < (float)sdlwindow->h) {
-            SDL_SendMouseMotion(0, sdlwindow, mouse->mouseID, 0, x, y);
+            SDL_SendMouseMotion(0, sdlwindow, 0, SDL_FALSE, x, y);
         }
         /* Code addon to update the mouse location */
 
@@ -1091,7 +1089,7 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
         y = (window->h - point.y);
 
         if (x >= 0.0f && x < (float)window->w && y >= 0.0f && y < (float)window->h) {
-            SDL_SendMouseMotion(0, window, mouse->mouseID, 0, x, y);
+            SDL_SendMouseMotion(0, window, 0, SDL_FALSE, x, y);
         }
     }
 
@@ -1378,11 +1376,13 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 
     /* Also note that SDL_SendKeyboardKey expects all capslock events to be
        keypresses; it won't toggle the mod state if you send a keyrelease.  */
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
     const SDL_bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE;
     const SDL_bool sdlenabled = (SDL_GetModState() & SDL_KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
     if (osenabled ^ sdlenabled) {
-        SDL_SendKeyboardKey(0, 0, SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
-        SDL_SendKeyboardKey(0, 0, SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+        SDL_SendKeyboardKey(0, videodata.keyboardID, SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+        SDL_SendKeyboardKey(0, videodata.keyboardID, SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
     }
 }
 - (void)keyDown:(NSEvent *)theEvent
@@ -1457,7 +1457,9 @@ static SDL_bool Cocoa_IsZoomed(SDL_Window *window)
 
 static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_Window *window, const Uint8 state, const Uint8 button)
 {
-    const SDL_MouseID mouseID = mouse->mouseID;
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+    SDL_MouseID mouseID = videodata.mouseID;
     const int clicks = (int)[theEvent clickCount];
     SDL_Window *focus = SDL_GetKeyboardFocus();
     int rc;
@@ -1589,8 +1591,10 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+    SDL_MouseID mouseID = videodata.mouseID;
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_MouseID mouseID;
     NSPoint point;
     float x, y;
     SDL_Window *window;
@@ -1599,7 +1603,6 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
         return;
     }
 
-    mouseID = mouse->mouseID;
     window = _data.window;
 
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
@@ -1631,7 +1634,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
         }
     }
 
-    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, 0, x, y);
+    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, SDL_FALSE, x, y);
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent

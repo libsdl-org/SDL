@@ -75,7 +75,6 @@ typedef struct
     Uint32 (*GetGlobalMouseState)(float *x, float *y);
 
     /* Data common to all mice */
-    SDL_MouseID mouseID;
     SDL_Window *focus;
     float x;
     float y;
@@ -132,10 +131,10 @@ extern void SDL_PostInitMouse(void);
 extern SDL_bool SDL_IsMouse(Uint16 vendor, Uint16 product);
 
 /* A mouse has been added to the system */
-extern void SDL_PrivateMouseAdded(SDL_MouseID mouseID);
+extern void SDL_AddMouse(SDL_MouseID mouseID, SDL_bool send_event);
 
 /* A mouse has been removed from the system */
-extern void SDL_PrivateMouseRemoved(SDL_MouseID mouseID);
+extern void SDL_RemoveMouse(SDL_MouseID mouseID);
 
 /* Get the mouse state structure */
 extern SDL_Mouse *SDL_GetMouse(void);
@@ -153,7 +152,7 @@ extern int SDL_UpdateMouseCapture(SDL_bool force_release);
 extern int SDL_SetMouseSystemScale(int num_values, const float *values);
 
 /* Send a mouse motion event */
-extern int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, int relative, float x, float y);
+extern int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, SDL_bool relative, float x, float y);
 
 /* Send a mouse button event */
 extern int SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 state, Uint8 button);
@@ -173,7 +172,7 @@ extern void SDL_ResetMouse(void);
 #endif /* 0 */
 
 /* Check if mouse position is within window or captured by window */
-extern SDL_bool SDL_MousePositionInWindow(SDL_Window *window, SDL_MouseID mouseID, float x, float y);
+extern SDL_bool SDL_MousePositionInWindow(SDL_Window *window, float x, float y);
 
 /* Shutdown the mouse subsystem */
 extern void SDL_QuitMouse(void);

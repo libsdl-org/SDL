@@ -496,7 +496,6 @@ int SDL_SendPenMotion(Uint64 timestamp,
                       SDL_bool window_relative,
                       const SDL_PenStatusInfo *status)
 {
-    const SDL_Mouse *mouse = SDL_GetMouse();
     int i;
     SDL_Pen *pen = SDL_GetPenPtr(instance_id);
     SDL_Event event;
@@ -539,7 +538,7 @@ int SDL_SendPenMotion(Uint64 timestamp,
 
     send_mouse_update = (x != last_x) || (y != last_y);
 
-    if (!(SDL_MousePositionInWindow(window, mouse->mouseID, x, y))) {
+    if (!(SDL_MousePositionInWindow(window, x, y))) {
         return SDL_FALSE;
     }
 
@@ -557,7 +556,7 @@ int SDL_SendPenMotion(Uint64 timestamp,
     if (send_mouse_update) {
         switch (pen_mouse_emulation_mode) {
         case PEN_MOUSE_EMULATE:
-            return (SDL_SendMouseMotion(0, window, SDL_PEN_MOUSEID, 0, x, y)) || posted;
+            return (SDL_SendMouseMotion(0, window, SDL_PEN_MOUSEID, SDL_FALSE, x, y)) || posted;
 
         case PEN_MOUSE_STATELESS:
             /* Report mouse event but don't update mouse state */
@@ -584,7 +583,6 @@ int SDL_SendPenMotion(Uint64 timestamp,
 
 int SDL_SendPenTipEvent(Uint64 timestamp, SDL_PenID instance_id, Uint8 state)
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Pen *pen = SDL_GetPenPtr(instance_id);
     SDL_Event event;
     SDL_bool posted = SDL_FALSE;
@@ -597,7 +595,7 @@ int SDL_SendPenTipEvent(Uint64 timestamp, SDL_PenID instance_id, Uint8 state)
     }
     window = pen->header.window;
 
-    if ((state == SDL_PRESSED) && !(window && SDL_MousePositionInWindow(window, mouse->mouseID, last->x, last->y))) {
+    if ((state == SDL_PRESSED) && !(window && SDL_MousePositionInWindow(window, last->x, last->y))) {
         return SDL_FALSE;
     }
 
@@ -663,7 +661,6 @@ int SDL_SendPenButton(Uint64 timestamp,
                       SDL_PenID instance_id,
                       Uint8 state, Uint8 button)
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Pen *pen = SDL_GetPenPtr(instance_id);
     SDL_Event event;
     SDL_bool posted = SDL_FALSE;
@@ -676,7 +673,7 @@ int SDL_SendPenButton(Uint64 timestamp,
     }
     window = pen->header.window;
 
-    if ((state == SDL_PRESSED) && !(window && SDL_MousePositionInWindow(window, mouse->mouseID, last->x, last->y))) {
+    if ((state == SDL_PRESSED) && !(window && SDL_MousePositionInWindow(window, last->x, last->y))) {
         return SDL_FALSE;
     }
 

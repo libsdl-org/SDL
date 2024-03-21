@@ -238,6 +238,11 @@ int WINRT_VideoInit(SDL_VideoDevice *_this)
         /* Initialize screensaver-disabling support */
         driverdata->displayRequest = WINRT_CreateDisplayRequest(_this);
     }
+
+    /* Assume we have a mouse and keyboard */
+    SDL_AddKeyboard(WINRT_KEYBOARD_ID, SDL_FALSE);
+    SDL_AddMouse(WINRT_MOUSE_ID, SDL_FALSE);
+
     return 0;
 }
 

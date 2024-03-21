@@ -61,6 +61,8 @@ struct SDL_VideoData
 
     CFbsBitGc::TGraphicsOrientation NGAGE_ScreenOrientation;
 
+    SDL_KeyboardID keyboardID;
+    SDL_MouseID mouseID;
 };
 
 #endif /* SDL_ngagevideo_h */

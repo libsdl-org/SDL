@@ -691,7 +691,7 @@ SDL_bool SDL_IsKeyboard(Uint16 vendor, Uint16 product, int num_keys)
     return SDL_TRUE;
 }
 
-void SDL_PrivateKeyboardAdded(SDL_KeyboardID keyboardID)
+void SDL_AddKeyboard(SDL_KeyboardID keyboardID, SDL_bool send_event)
 {
     int keyboard_index = -1;
 
@@ -717,14 +717,16 @@ void SDL_PrivateKeyboardAdded(SDL_KeyboardID keyboardID)
     SDL_keyboards = keyboards;
     ++SDL_keyboard_count;
 
-    SDL_Event event;
-    SDL_zero(event);
-    event.type = SDL_EVENT_KEYBOARD_ADDED;
-    event.kdevice.which = keyboardID;
-    SDL_PushEvent(&event);
+    if (send_event) {
+        SDL_Event event;
+        SDL_zero(event);
+        event.type = SDL_EVENT_KEYBOARD_ADDED;
+        event.kdevice.which = keyboardID;
+        SDL_PushEvent(&event);
+    }
 }
 
-void SDL_PrivateKeyboardRemoved(SDL_KeyboardID keyboardID)
+void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID)
 {
     int keyboard_index = -1;
 
@@ -935,13 +937,6 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
     Uint32 type;
     Uint8 repeat = SDL_FALSE;
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
-
-    if (keyboardID == 0) {
-        if (source == KEYBOARD_HARDWARE && SDL_keyboard_count > 0) {
-            /* Assume it's from the first keyboard */
-            keyboardID = SDL_keyboards[0];
-        }
-    }
 
     if (scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         return 0;

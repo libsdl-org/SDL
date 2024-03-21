@@ -457,7 +457,7 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
     WIN_InitKeyboard(_this);
     WIN_InitMouse(_this);
     WIN_InitDeviceNotification();
-    WIN_CheckKeyboardAndMouseHotplug(SDL_TRUE);
+    WIN_CheckKeyboardAndMouseHotplug(_this, SDL_TRUE);
 #endif
 
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);

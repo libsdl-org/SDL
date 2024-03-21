@@ -348,7 +348,7 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
         }
 
-        SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 1, (float)processed_coords[0], (float)processed_coords[1]);
+        SDL_SendMouseMotion(0, mouse->focus, videodata->mouseID, SDL_TRUE, (float)processed_coords[0], (float)processed_coords[1]);
         devinfo->prev_coords[0] = coords[0];
         devinfo->prev_coords[1] = coords[1];
         return 1;
@@ -468,7 +468,7 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
                 SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                 if (window) {
                     X11_ProcessHitTest(_this, window->driverdata, (float)xev->event_x, (float)xev->event_y, SDL_FALSE);
-                    SDL_SendMouseMotion(0, window, 0, 0, (float)xev->event_x, (float)xev->event_y);
+                    SDL_SendMouseMotion(0, window, videodata->mouseID, SDL_FALSE, (float)xev->event_x, (float)xev->event_y);
                 }
             }
         }
