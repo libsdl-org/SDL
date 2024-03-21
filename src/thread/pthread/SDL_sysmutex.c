@@ -141,7 +141,8 @@ void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang do
                 pthread_mutex_unlock(&mutex->id);
             }
         } else {
-            return SDL_SetError("mutex not owned by this thread");
+            SDL_SetError("mutex not owned by this thread");
+            return;
         }
 
 #else
