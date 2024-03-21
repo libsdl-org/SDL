@@ -338,23 +338,6 @@ typedef struct SDL_MouseMotionEvent
 } SDL_MouseMotionEvent;
 
 /**
- *  \brief Joystick trackball motion event structure (event.jball.*)
- */
-typedef struct SDL_JoyBallEvent
-{
-    Uint32 type;        /**< ::SDL_JOYBALLMOTION */
-    Uint32 reserved;
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_JoystickID which; /**< The joystick instance id */
-    Uint8 ball;         /**< The joystick trackball index */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
-    Sint16 xrel;        /**< The relative motion in the X direction */
-    Sint16 yrel;        /**< The relative motion in the Y direction */
-} SDL_JoyBallEvent;
-
-/**
  *  Mouse button event structure (event.button.*)
  */
 typedef struct SDL_MouseButtonEvent
@@ -405,6 +388,23 @@ typedef struct SDL_JoyAxisEvent
     Sint16 value;       /**< The axis value (range: -32768 to 32767) */
     Uint16 padding4;
 } SDL_JoyAxisEvent;
+
+/**
+ *  \brief Joystick trackball motion event structure (event.jball.*)
+ */
+typedef struct SDL_JoyBallEvent
+{
+    Uint32 type;        /**< ::SDL_JOYBALLMOTION */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_JoystickID which; /**< The joystick instance id */
+    Uint8 ball;         /**< The joystick trackball index */
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
+    Sint16 xrel;        /**< The relative motion in the X direction */
+    Sint16 yrel;        /**< The relative motion in the Y direction */
+} SDL_JoyBallEvent;
 
 /**
  *  Joystick hat position change event structure (event.jhat.*)
