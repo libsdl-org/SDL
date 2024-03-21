@@ -108,11 +108,17 @@ static void xinput2_init_device_list(SDL_VideoData *videodata)
         switch (dev->use) {
         case XIMasterKeyboard:
             videodata->keyboardID = (SDL_KeyboardID)dev->deviceid;
-            SDL_AddKeyboard(videodata->keyboardID, SDL_FALSE);
+            SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, SDL_FALSE);
+            break;
+        case XISlaveKeyboard:
+            SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, SDL_FALSE);
             break;
         case XIMasterPointer:
             videodata->mouseID = (SDL_MouseID)dev->deviceid;
-            SDL_AddMouse(videodata->mouseID, SDL_FALSE);
+            SDL_AddMouse((SDL_MouseID)dev->deviceid, SDL_FALSE);
+            break;
+        case XISlavePointer:
+            SDL_AddMouse((SDL_MouseID)dev->deviceid, SDL_FALSE);
             break;
         default:
             break;
@@ -471,10 +477,10 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
 
             if (pressed) {
-                X11_HandleButtonPress(_this, windowdata, button,
+                X11_HandleButtonPress(_this, windowdata, (SDL_MouseID)xev->sourceid, button,
                                       xev->event_x, xev->event_y, xev->time);
             } else {
-                X11_HandleButtonRelease(_this, windowdata, button);
+                X11_HandleButtonRelease(_this, windowdata, (SDL_MouseID)xev->sourceid, button);
             }
         }
     } break;
@@ -521,7 +527,7 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
                 SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
                 if (window) {
                     X11_ProcessHitTest(_this, window->driverdata, (float)xev->event_x, (float)xev->event_y, SDL_FALSE);
-                    SDL_SendMouseMotion(0, window, videodata->mouseID, SDL_FALSE, (float)xev->event_x, (float)xev->event_y);
+                    SDL_SendMouseMotion(0, window, (SDL_MouseID)xev->sourceid, SDL_FALSE, (float)xev->event_x, (float)xev->event_y);
                 }
             }
         }

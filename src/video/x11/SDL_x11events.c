@@ -832,7 +832,7 @@ SDL_WindowData *X11_FindWindow(SDL_VideoDevice *_this, Window window)
     return NULL;
 }
 
-void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, int button, const float x, const float y, const unsigned long time)
+void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, const float x, const float y, const unsigned long time)
 {
     SDL_Window *window = windowdata->window;
     const SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
@@ -842,7 +842,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, i
     printf("window %p: ButtonPress (X11 button = %d)\n", window, button);
 #endif
     if (X11_IsWheelEvent(display, button, &xticks, &yticks)) {
-        SDL_SendMouseWheel(0, window, videodata->mouseID, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(0, window, mouseID, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
     } else {
         SDL_bool ignore_click = SDL_FALSE;
         if (button == Button1) {
@@ -863,13 +863,13 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, i
             windowdata->last_focus_event_time = 0;
         }
         if (!ignore_click) {
-            SDL_SendMouseButton(0, window, videodata->mouseID, SDL_PRESSED, button);
+            SDL_SendMouseButton(0, window, mouseID, SDL_PRESSED, button);
         }
     }
     X11_UpdateUserTime(windowdata, time);
 }
 
-void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata, int button)
+void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button)
 {
     SDL_Window *window = windowdata->window;
     const SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
@@ -884,7 +884,7 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
             /* see explanation at case ButtonPress */
             button -= (8 - SDL_BUTTON_X1);
         }
-        SDL_SendMouseButton(0, window, videodata->mouseID, SDL_RELEASED, button);
+        SDL_SendMouseButton(0, window, mouseID, SDL_RELEASED, button);
     }
 }
 
@@ -1531,13 +1531,13 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
     case ButtonPress:
     {
-        X11_HandleButtonPress(_this, data, xevent->xbutton.button,
+        X11_HandleButtonPress(_this, data, videodata->mouseID, xevent->xbutton.button,
                               xevent->xbutton.x, xevent->xbutton.y, xevent->xbutton.time);
     } break;
 
     case ButtonRelease:
     {
-        X11_HandleButtonRelease(_this, data, xevent->xbutton.button);
+        X11_HandleButtonRelease(_this, data, videodata->mouseID, xevent->xbutton.button);
     } break;
 #endif /* !SDL_VIDEO_DRIVER_X11_XINPUT2 */
 
