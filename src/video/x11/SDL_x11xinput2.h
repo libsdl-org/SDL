@@ -30,7 +30,7 @@ struct XGenericEventCookie;
 typedef struct XGenericEventCookie XGenericEventCookie;
 #endif
 
-extern void X11_InitXinput2(SDL_VideoDevice *_this);
+extern SDL_bool X11_InitXinput2(SDL_VideoDevice *_this);
 extern void X11_InitXinput2Multitouch(SDL_VideoDevice *_this);
 extern int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie);
 extern int X11_Xinput2IsInitialized(void);
