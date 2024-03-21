@@ -16,9 +16,6 @@
 
 #ifdef FFMPEG_VULKAN_SUPPORT
 
-#include <libavutil/hwcontext.h>
-#include <libavutil/hwcontext_vulkan.h>
-
 #define VULKAN_FUNCTIONS()                                             \
     VULKAN_GLOBAL_FUNCTION(vkCreateInstance)                           \
     VULKAN_GLOBAL_FUNCTION(vkEnumerateInstanceExtensionProperties)     \
