@@ -39,7 +39,7 @@ void VITA_InitMouse(void)
     sceHidMouseEnumerate(&mouse_hid_handle, 1);
 
     if (mouse_hid_handle > 0) {
-        SDL_AddMouse((SDL_MouseID)mouse_hid_handle, SDL_FALSE);
+        SDL_AddMouse((SDL_MouseID)mouse_hid_handle, NULL, SDL_FALSE);
     }
 }
 

@@ -102,9 +102,24 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetMouseInstanceName
  * \sa SDL_HasMouse
  */
 extern DECLSPEC SDL_MouseID *SDLCALL SDL_GetMice(int *count);
+
+/**
+ * Get the name of a mouse.
+ *
+ * This function returns "" if the mouse doesn't have a name.
+ *
+ * \param instance_id the mouse instance ID
+ * \returns the name of the selected mouse, or NULL on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetMice
+ */
+extern DECLSPEC const char *SDLCALL SDL_GetMouseInstanceName(SDL_MouseID instance_id);
 
 /**
  * Get the window which currently has mouse focus.

@@ -607,9 +607,14 @@ static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode)
 
 static int SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
 {
-    SDL_AddKeyboard((SDL_KeyboardID)item->fd, SDL_TRUE);
+    SDL_AddKeyboard((SDL_KeyboardID)item->fd, NULL, SDL_TRUE);
 
     return 0;
+}
+
+static void SDL_EVDEV_destroy_keyboard(SDL_evdevlist_item *item)
+{
+    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd);
 }
 
 static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
@@ -617,7 +622,7 @@ static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
     int ret;
     struct input_absinfo abs_info;
 
-    SDL_AddMouse((SDL_MouseID)item->fd, SDL_TRUE);
+    SDL_AddMouse((SDL_MouseID)item->fd, NULL, SDL_TRUE);
 
     ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
     if (ret < 0) {
@@ -638,6 +643,11 @@ static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
     item->range_y = abs_info.maximum - abs_info.minimum;
 
     return 0;
+}
+
+static void SDL_EVDEV_destroy_mouse(SDL_evdevlist_item *item)
+{
+    SDL_RemoveMouse((SDL_MouseID)item->fd);
 }
 
 static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
@@ -974,6 +984,10 @@ static int SDL_EVDEV_device_removed(const char *dev_path)
             }
             if (item->is_touchscreen) {
                 SDL_EVDEV_destroy_touchscreen(item);
+            } else if (item->udev_class & SDL_UDEV_DEVICE_MOUSE) {
+                SDL_EVDEV_destroy_mouse(item);
+            } else if (item->udev_class & SDL_UDEV_DEVICE_KEYBOARD) {
+                SDL_EVDEV_destroy_keyboard(item);
             }
             close(item->fd);
             SDL_free(item->path);

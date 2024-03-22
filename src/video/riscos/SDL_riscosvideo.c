@@ -110,9 +110,9 @@ static int RISCOS_VideoInit(SDL_VideoDevice *_this)
 
     /* Assume we have a mouse and keyboard */
     data->keyboardID = SDL_GetNextObjectID();
-    SDL_AddKeyboard(data->keyboardID, SDL_FALSE);
+    SDL_AddKeyboard(data->keyboardID, NULL, SDL_FALSE);
     data->mouseID = SDL_GetNextObjectID();
-    SDL_AddMouse(data->mouseID, SDL_FALSE);
+    SDL_AddMouse(data->mouseID, NULL, SDL_FALSE);
 
     if (RISCOS_InitModes(_this) < 0) {
         return -1;

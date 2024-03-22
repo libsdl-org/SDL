@@ -77,9 +77,24 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetKeyboardInstanceName
  * \sa SDL_HasKeyboard
  */
 extern DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
+
+/**
+ * Get the name of a keyboard.
+ *
+ * This function returns "" if the keyboard doesn't have a name.
+ *
+ * \param instance_id the keyboard instance ID
+ * \returns the name of the selected keyboard, or NULL on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetKeyboards
+ */
+extern DECLSPEC const char *SDLCALL SDL_GetKeyboardInstanceName(SDL_KeyboardID instance_id);
 
 /**
  * Query the window which currently has keyboard focus.

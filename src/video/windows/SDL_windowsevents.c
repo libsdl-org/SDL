@@ -32,6 +32,9 @@
 /* Dropfile support */
 #include <shellapi.h>
 
+/* Device names */
+#include <setupapi.h>
+
 /* For GET_X_LPARAM, GET_Y_LPARAM. */
 #include <windowsx.h>
 
@@ -720,6 +723,33 @@ static SDL_bool HasDeviceID(Uint32 deviceID, Uint32 *list, int count)
     return SDL_FALSE;
 }
 
+static void GetDeviceName(HDEVINFO devinfo, const char *instance, char *name, size_t len)
+{
+    name[0] = '\0';
+
+    SP_DEVINFO_DATA data;
+    SDL_zero(data);
+    data.cbSize = sizeof(data);
+    for (DWORD i = 0;; ++i) {
+        if (!SetupDiEnumDeviceInfo(devinfo, i, &data)) {
+            if (GetLastError() == ERROR_NO_MORE_ITEMS) {
+                break;
+            } else {
+                continue;
+            }
+        }
+
+        char DeviceInstanceId[64];
+        if (!SetupDiGetDeviceInstanceIdA(devinfo, &data, DeviceInstanceId, sizeof(DeviceInstanceId), NULL))
+            continue;
+
+        if (SDL_strcasecmp(instance, DeviceInstanceId) == 0) {
+            SetupDiGetDeviceRegistryPropertyA(devinfo, &data, SPDRP_DEVICEDESC, NULL, (PBYTE)name, len, NULL);
+            return;
+        }
+    }
+}
+
 void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_check)
 {
     SDL_VideoData *data = _this->driverdata;
@@ -759,48 +789,79 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_c
         return; /* oh well. */
     }
 
+    HDEVINFO devinfo = SetupDiGetClassDevsA(NULL, NULL, NULL, (DIGCF_ALLCLASSES | DIGCF_PRESENT));
+
+    old_keyboards = SDL_GetKeyboards(&old_keyboard_count);
+    old_mice = SDL_GetMice(&old_mouse_count);
+
     for (UINT i = 0; i < raw_device_count; i++) {
         RID_DEVICE_INFO rdi;
         char devName[MAX_PATH] = { 0 };
         UINT rdiSize = sizeof(rdi);
         UINT nameSize = SDL_arraysize(devName);
         int vendor = 0, product = 0;
+        DWORD dwType = raw_devices[i].dwType;
+        char *instance, *ptr, name[64];
+
+        if (dwType != RIM_TYPEKEYBOARD && dwType != RIM_TYPEMOUSE) {
+            continue;
+        }
 
         rdi.cbSize = sizeof(rdi);
-
         if (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) == ((UINT)-1) ||
             GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) == ((UINT)-1)) {
             continue;
         }
 
-        SDL_sscanf(devName, "\\\\?\\HID#VID_%X&PID_%X&", &vendor, &product);
+        /* Extract the device instance */
+        instance = devName;
+        while (*instance == '\\' || *instance == '?') {
+            ++instance;
+        }
+        for (ptr = instance; *ptr; ++ptr) {
+            if (*ptr == '#') {
+                *ptr = '\\';
+            }
+            if (*ptr == '{') {
+                if (ptr > instance && ptr[-1] == '\\') {
+                    --ptr;
+                }
+                break;
+            }
+        }
+        *ptr = '\0';
 
-        switch (raw_devices[i].dwType) {
+        SDL_sscanf(instance, "HID\\VID_%X&PID_%X&", &vendor, &product);
+
+        switch (dwType) {
         case RIM_TYPEKEYBOARD:
             if (SDL_IsKeyboard((Uint16)vendor, (Uint16)product, rdi.keyboard.dwNumberOfKeysTotal)) {
-                AddDeviceID((Uint32)(uintptr_t)raw_devices[i].hDevice, &new_keyboards, &new_keyboard_count);
+                SDL_KeyboardID keyboardID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
+                AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
+                if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
+                    GetDeviceName(devinfo, instance, name, sizeof(name));
+                    SDL_AddKeyboard(keyboardID, name, send_event);
+                }
             }
             break;
         case RIM_TYPEMOUSE:
             if (SDL_IsMouse((Uint16)vendor, (Uint16)product)) {
-                AddDeviceID((Uint32)(uintptr_t)raw_devices[i].hDevice, &new_mice, &new_mouse_count);
+                SDL_MouseID mouseID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
+                AddDeviceID(mouseID, &new_mice, &new_mouse_count);
+                if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
+                    GetDeviceName(devinfo, instance, name, sizeof(name));
+                    SDL_AddMouse(mouseID, name, send_event);
+                }
             }
             break;
         default:
             break;
         }
     }
-    SDL_free(raw_devices);
 
-    old_keyboards = SDL_GetKeyboards(&old_keyboard_count);
     for (int i = old_keyboard_count; i--;) {
         if (!HasDeviceID(old_keyboards[i], new_keyboards, new_keyboard_count)) {
             SDL_RemoveKeyboard(old_keyboards[i]);
-        }
-    }
-    for (int i = 0; i < new_keyboard_count; ++i) {
-        if (!HasDeviceID(new_keyboards[i], old_keyboards, old_keyboard_count)) {
-            SDL_AddKeyboard(new_keyboards[i], send_event);
         }
     }
     if (new_keyboard_count > 0) {
@@ -808,18 +869,10 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_c
     } else {
         data->keyboardID = 0;
     }
-    SDL_free(new_keyboards);
-    SDL_free(old_keyboards);
 
-    old_mice = SDL_GetMice(&old_mouse_count);
     for (int i = old_mouse_count; i--;) {
         if (!HasDeviceID(old_mice[i], new_mice, new_mouse_count)) {
             SDL_RemoveMouse(old_mice[i]);
-        }
-    }
-    for (int i = 0; i < new_mouse_count; ++i) {
-        if (!HasDeviceID(new_mice[i], old_mice, old_mouse_count)) {
-            SDL_AddMouse(new_mice[i], send_event);
         }
     }
     if (new_mouse_count > 0) {
@@ -827,8 +880,15 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_c
     } else {
         data->mouseID = 0;
     }
-    SDL_free(new_mice);
+
+    SDL_free(old_keyboards);
     SDL_free(old_mice);
+    SDL_free(new_keyboards);
+    SDL_free(new_mice);
+
+    SetupDiDestroyDeviceInfoList(devinfo);
+
+    SDL_free(raw_devices);
 }
 
 LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
