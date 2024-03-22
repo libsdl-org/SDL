@@ -323,24 +323,14 @@ Uint64 SDL_GetStorageSpaceRemaining(SDL_Storage *storage)
     return storage->iface.space_remaining(storage->userdata);
 }
 
+static int GlobStorageDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata)
+{
+    return SDL_EnumerateStorageDirectory((SDL_Storage *) userdata, path, cb, cbuserdata);
+}
+
 char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, int *count)
 {
-    int dummycount;
-    if (!count) {
-        count = &dummycount;
-    }
-    *count = 0;
-
     CHECK_STORAGE_MAGIC_RET(NULL)
-
-    char **retval = NULL;
-    SDL_GlobDirCallbackData data;
-
-    if (SDL_InitGlobDirectoryCallback(path, pattern, &data) < 0) {
-        return NULL;
-    } else if (SDL_EnumerateStorageDirectory(storage, path, SDL_GlobDirectoryCallback, &data) == 0) {
-        retval = SDL_ProcessGlobDirectoryCallback(&data, count);
-    }
-    SDL_QuitGlobDirectoryCallback(&data);
-    return retval;
+    return SDL_InternalGlobDirectory(path, pattern, count, GlobStorageDirectoryEnumerator, storage);
 }
+
