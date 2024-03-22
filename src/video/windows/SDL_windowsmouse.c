@@ -493,7 +493,7 @@ static int WIN_WarpMouse(SDL_Window *window, float x, float y)
     WIN_SetCursorPos(pt.x, pt.y);
 
     /* Send the exact mouse motion associated with this warp */
-    SDL_SendMouseMotion(0, window, data->videodata->mouseID, SDL_FALSE, x, y);
+    SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
     return 0;
 }
 

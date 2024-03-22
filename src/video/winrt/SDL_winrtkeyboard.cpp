@@ -77,7 +77,7 @@ void WINRT_ProcessAcceleratorKeyActivated(Windows::UI::Core::AcceleratorKeyEvent
     }
 
     code = WINRT_TranslateKeycode(args->VirtualKey, args->KeyStatus);
-    SDL_SendKeyboardKey(0, WINRT_KEYBOARD_ID, state, code);
+    SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, state, code);
 }
 
 void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::CharacterReceivedEventArgs ^ args)

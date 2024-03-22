@@ -23,6 +23,12 @@
 #ifndef SDL_mouse_c_h_
 #define SDL_mouse_c_h_
 
+/* Mouse events not associated with a specific input device */
+#define SDL_GLOBAL_MOUSE_ID     0
+
+/* The default mouse input device, for platforms that don't have multiple mice */
+#define SDL_DEFAULT_MOUSE_ID    1
+
 struct SDL_Cursor
 {
     struct SDL_Cursor *next;

@@ -302,7 +302,7 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
         SDL_SetMouseFocus(win);
         if (win) {
             SDL_assert(win == mouse->focus);
-            SDL_SendMouseMotion(0, win, 0, SDL_FALSE, x - win->x, y - win->y);
+            SDL_SendMouseMotion(0, win, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x - win->x, y - win->y);
         }
     }
 
@@ -450,8 +450,7 @@ static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
 
 void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
-    SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
-    SDL_MouseID mouseID = videodata.mouseID;
+    SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_Mouse *mouse;
     SDL_MouseData *driverdata;
     NSPoint location;
@@ -529,8 +528,7 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
-    SDL_CocoaVideoData *videodata = ((__bridge SDL_CocoaWindowData *)window->driverdata).videodata;
-    SDL_MouseID mouseID = videodata.mouseID;
+    SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_MouseWheelDirection direction;
     CGFloat x, y;
 

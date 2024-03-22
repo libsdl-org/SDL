@@ -110,9 +110,6 @@ struct SDL_VideoData
     SDL_Point global_mouse_position;
     Uint32 global_mouse_buttons;
 
-    SDL_KeyboardID keyboardID;
-    SDL_MouseID mouseID;
-
     SDL_XInput2DeviceInfo *mouse_device_info;
 
     int xrandr_event_base;

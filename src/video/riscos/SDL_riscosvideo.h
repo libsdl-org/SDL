@@ -29,8 +29,6 @@
 
 struct SDL_VideoData
 {
-    SDL_KeyboardID keyboardID;
-    SDL_MouseID mouseID;
     int last_mouse_buttons;
     Uint8 key_pressed[RISCOS_MAX_KEYS_PRESSED];
 };

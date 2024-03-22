@@ -2709,7 +2709,7 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
             input->current_pen.update_window = window;
         } else {
             /* Plain mouse event */
-            SDL_SendMouseMotion(0, window->sdlwindow, 0, SDL_FALSE, sx, sy);
+            SDL_SendMouseMotion(0, window->sdlwindow, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, sx, sy);
         }
     }
 }

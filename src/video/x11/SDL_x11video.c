@@ -419,10 +419,8 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 
     if (!X11_InitXinput2(_this)) {
         /* Assume a mouse and keyboard are attached */
-        data->keyboardID = SDL_GetNextObjectID();
-        SDL_AddKeyboard(data->keyboardID, NULL, SDL_FALSE);
-        data->mouseID = SDL_GetNextObjectID();
-        SDL_AddMouse(data->mouseID, NULL, SDL_FALSE);
+        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
+        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
     }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES

@@ -24,9 +24,6 @@ extern "C" {
 #include "../SDL_sysvideo.h"
 }
 
-#define WINRT_KEYBOARD_ID    1
-#define WINRT_MOUSE_ID       1
-
 /*
  * Internal-use, C-style functions:
  */

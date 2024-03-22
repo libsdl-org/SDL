@@ -23,6 +23,12 @@
 #ifndef SDL_keyboard_c_h_
 #define SDL_keyboard_c_h_
 
+/* Keyboard events not associated with a specific input device */
+#define SDL_GLOBAL_KEYBOARD_ID     0
+
+/* The default keyboard input device, for platforms that don't have multiple keyboards */
+#define SDL_DEFAULT_KEYBOARD_ID    1
+
 /* Initialize the keyboard subsystem */
 extern int SDL_InitKeyboard(void);
 
