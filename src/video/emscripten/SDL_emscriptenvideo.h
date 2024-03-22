@@ -28,9 +28,6 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
 
-#define EMSCRIPTEN_KEYBOARD_ID    1
-#define EMSCRIPTEN_MOUSE_ID       1
-
 struct SDL_WindowData
 {
     SDL_Window *window;

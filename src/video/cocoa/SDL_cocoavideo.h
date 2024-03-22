@@ -101,8 +101,6 @@ DECLARE_ALERT_STYLE(Critical);
 @property(nonatomic) int trackpad_is_touch_only;
 @property(nonatomic) unsigned int modifierFlags;
 @property(nonatomic) void *key_layout;
-@property(nonatomic) SDL_KeyboardID keyboardID;
-@property(nonatomic) SDL_MouseID mouseID;
 @property(nonatomic) SDLTranslatorResponder *fieldEdit;
 @property(nonatomic) NSInteger clipboard_count;
 @property(nonatomic) IOPMAssertionID screensaver_assertion;

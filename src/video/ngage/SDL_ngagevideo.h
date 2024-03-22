@@ -60,9 +60,6 @@ struct SDL_VideoData
     TPoint NGAGE_ScreenOffset;
 
     CFbsBitGc::TGraphicsOrientation NGAGE_ScreenOrientation;
-
-    SDL_KeyboardID keyboardID;
-    SDL_MouseID mouseID;
 };
 
 #endif /* SDL_ngagevideo_h */

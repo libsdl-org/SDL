@@ -437,13 +437,13 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_LGUI:
             case SDLK_RGUI:
             case SDLK_MODE:
-                SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, scancode);
                 break;
             default:
                 break;
             }
         } else if (!x11KeyPressed && sdlKeyPressed) {
-            SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, scancode);
         }
     }
 }
@@ -957,9 +957,9 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             videodata->filter_time = xevent->xkey.time;
 
             if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_PRESSED, scancode);
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, scancode);
             } else {
-                SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_RELEASED, scancode);
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, scancode);
             }
 #endif
         }
@@ -1106,7 +1106,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
 
         if (!mouse->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, videodata->mouseID, SDL_FALSE, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
         /* We ungrab in LeaveNotify, so we may need to grab again here */
@@ -1130,7 +1130,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         }
 #endif
         if (!SDL_GetMouse()->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, videodata->mouseID, SDL_FALSE, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
         if (xevent->xcrossing.mode != NotifyGrab &&
@@ -1262,7 +1262,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             if (xevent->type == KeyPress) {
                 /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
                 if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                    SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_PRESSED, videodata->key_layout[keycode]);
+                    SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, videodata->key_layout[keycode]);
                 }
                 if (*text) {
                     SDL_SendKeyboardText(text);
@@ -1272,7 +1272,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     /* We're about to get a repeated key down, ignore the key up */
                     break;
                 }
-                SDL_SendKeyboardKey(0, videodata->keyboardID, SDL_RELEASED, videodata->key_layout[keycode]);
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, videodata->key_layout[keycode]);
             }
         }
 
@@ -1525,19 +1525,19 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
 
             X11_ProcessHitTest(_this, data, (float)xevent->xmotion.x, (float)xevent->xmotion.y, SDL_FALSE);
-            SDL_SendMouseMotion(0, data->window, videodata->mouseID, SDL_FALSE, (float)xevent->xmotion.x, (float)xevent->xmotion.y);
+            SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, (float)xevent->xmotion.x, (float)xevent->xmotion.y);
         }
     } break;
 
     case ButtonPress:
     {
-        X11_HandleButtonPress(_this, data, videodata->mouseID, xevent->xbutton.button,
+        X11_HandleButtonPress(_this, data, SDL_GLOBAL_MOUSE_ID, xevent->xbutton.button,
                               xevent->xbutton.x, xevent->xbutton.y, xevent->xbutton.time);
     } break;
 
     case ButtonRelease:
     {
-        X11_HandleButtonRelease(_this, data, videodata->mouseID, xevent->xbutton.button);
+        X11_HandleButtonRelease(_this, data, SDL_GLOBAL_MOUSE_ID, xevent->xbutton.button);
     } break;
 #endif /* !SDL_VIDEO_DRIVER_X11_XINPUT2 */
 

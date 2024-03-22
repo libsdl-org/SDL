@@ -33,9 +33,6 @@ typedef struct
     EGLConfig       conf;
 } window_impl_t;
 
-#define QNX_KEYBOARD_ID    1
-#define QNX_MOUSE_ID       1
-
 extern void handleKeyboardEvent(screen_event_t event);
 
 extern int glGetConfig(EGLConfig *pconf, int *pformat);

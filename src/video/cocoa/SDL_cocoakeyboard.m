@@ -200,7 +200,6 @@ static bool IsModifierKeyPressed(unsigned int flags,
 
 static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned int modifierFlags)
 {
-    SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
     bool pressed = false;
 
     if (code == SDL_SCANCODE_LSHIFT) {
@@ -232,9 +231,9 @@ static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned 
     }
 
     if (pressed) {
-        SDL_SendKeyboardKey(0, videodata.keyboardID, SDL_PRESSED, code);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, SDL_PRESSED, code);
     } else {
-        SDL_SendKeyboardKey(0, videodata.keyboardID, SDL_RELEASED, code);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, SDL_RELEASED, code);
     }
 }
 
@@ -415,7 +414,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
             UpdateKeymap(data, SDL_TRUE);
         }
 
-        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), data ? data.keyboardID : 0, SDL_PRESSED, code);
+        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, SDL_PRESSED, code);
 #ifdef DEBUG_SCANCODES
         if (code == SDL_SCANCODE_UNKNOWN) {
             SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
@@ -434,7 +433,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
         }
         break;
     case NSEventTypeKeyUp:
-        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), data ? data.keyboardID : 0, SDL_RELEASED, code);
+        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, SDL_RELEASED, code);
         break;
     case NSEventTypeFlagsChanged: {
         // see if the new modifierFlags mean any existing keys should be pressed/released...

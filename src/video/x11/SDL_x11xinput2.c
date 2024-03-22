@@ -107,14 +107,12 @@ static void xinput2_init_device_list(SDL_VideoData *videodata)
 
         switch (dev->use) {
         case XIMasterKeyboard:
-            videodata->keyboardID = (SDL_KeyboardID)dev->deviceid;
             SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, dev->name, SDL_FALSE);
             break;
         case XISlaveKeyboard:
             SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, dev->name, SDL_FALSE);
             break;
         case XIMasterPointer:
-            videodata->mouseID = (SDL_MouseID)dev->deviceid;
             SDL_AddMouse((SDL_MouseID)dev->deviceid, dev->name, SDL_FALSE);
             break;
         case XISlavePointer:
@@ -407,7 +405,7 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
         }
 
-        SDL_SendMouseMotion(0, mouse->focus, videodata->mouseID, SDL_TRUE, (float)processed_coords[0], (float)processed_coords[1]);
+        SDL_SendMouseMotion(0, mouse->focus, (SDL_MouseID)rawev->sourceid, SDL_TRUE, (float)processed_coords[0], (float)processed_coords[1]);
         devinfo->prev_coords[0] = coords[0];
         devinfo->prev_coords[1] = coords[1];
         return 1;

@@ -154,10 +154,10 @@ int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
 
     switch (aWsEvent.Type()) {
     case EEventKeyDown: /* Key events */
-        SDL_SendKeyboardKey(0, data->keyboardID, SDL_PRESSED, ConvertScancode(_this, aWsEvent.Key()->iScanCode));
+        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, ConvertScancode(_this, aWsEvent.Key()->iScanCode));
         break;
     case EEventKeyUp: /* Key events */
-        SDL_SendKeyboardKey(0, data->keyboardID, SDL_RELEASED, ConvertScancode(_this, aWsEvent.Key()->iScanCode));
+        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, ConvertScancode(_this, aWsEvent.Key()->iScanCode));
         break;
     case EEventFocusGained: /* SDL window got focus */
         data->NGAGE_IsWindowFocused = ETrue;

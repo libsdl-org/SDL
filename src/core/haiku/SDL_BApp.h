@@ -46,8 +46,6 @@ extern "C" {
 
 #include <vector>
 
-#define BAPP_KEYBOARD_ID    1
-#define BAPP_MOUSE_ID       1
 
 /* Forward declarations */
 class SDL_BLooper;
@@ -251,12 +249,12 @@ class SDL_BLooper : public BLooper
             SDL_GetWindowPosition(win, &winPosX, &winPosY);
             int dx = x - (winWidth / 2);
             int dy = y - (winHeight / 2);
-            SDL_SendMouseMotion(0, win, BAPP_MOUSE_ID, SDL_GetMouse()->relative_mode, (float)dx, (float)dy);
+            SDL_SendMouseMotion(0, win, SDL_DEFAULT_MOUSE_ID, SDL_GetMouse()->relative_mode, (float)dx, (float)dy);
             set_mouse_position((winPosX + winWidth / 2), (winPosY + winHeight / 2));
             if (!be_app->IsCursorHidden())
                 be_app->HideCursor();
         } else {
-            SDL_SendMouseMotion(0, win, BAPP_MOUSE_ID, SDL_FALSE, (float)x, (float)y);
+            SDL_SendMouseMotion(0, win, SDL_DEFAULT_MOUSE_ID, SDL_FALSE, (float)x, (float)y);
             if (SDL_CursorVisible() && be_app->IsCursorHidden())
                 be_app->ShowCursor();
         }
@@ -274,7 +272,7 @@ class SDL_BLooper : public BLooper
             return;
         }
         win = GetSDLWindow(winID);
-        SDL_SendMouseButton(0, win, BAPP_MOUSE_ID, state, button);
+        SDL_SendMouseButton(0, win, SDL_DEFAULT_MOUSE_ID, state, button);
     }
 
     void _HandleMouseWheel(BMessage *msg)
@@ -289,7 +287,7 @@ class SDL_BLooper : public BLooper
             return;
         }
         win = GetSDLWindow(winID);
-        SDL_SendMouseWheel(0, win, BAPP_MOUSE_ID, xTicks, -yTicks, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(0, win, SDL_DEFAULT_MOUSE_ID, xTicks, -yTicks, SDL_MOUSEWHEEL_NORMAL);
     }
 
     void _HandleKey(BMessage *msg)
@@ -306,7 +304,7 @@ class SDL_BLooper : public BLooper
             return;
         }
         HAIKU_SetKeyState(scancode, state);
-        SDL_SendKeyboardKey(0, BAPP_KEYBOARD_ID, state, HAIKU_GetScancodeFromBeKey(scancode));
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, state, HAIKU_GetScancodeFromBeKey(scancode));
 
         if (state == SDL_PRESSED && SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
             const int8 *keyUtf8;
