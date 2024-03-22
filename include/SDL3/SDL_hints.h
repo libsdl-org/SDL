@@ -121,9 +121,9 @@ extern "C" {
  *
  * For *nix platforms, this string should be formatted in reverse-DNS notation and follow some basic rules to be valid:
  *
- * - The application ID must be composed of two or more elements separated by a period (‘.’) character.
+ * - The application ID must be composed of two or more elements separated by a period (.) character.
  *
- * - Each element must contain one or more of the alphanumeric characters (A-Z, a-z, 0-9) plus underscore (‘_’) and hyphen (‘-’) and must not start with a digit. Note that hyphens, while technically allowed, should not be used if possible, as they are not supported by all components that use the ID, such as D-Bus. For maximum compatibility, replace hyphens with an underscore.
+ * - Each element must contain one or more of the alphanumeric characters (A-Z, a-z, 0-9) plus underscore (_) and hyphen (-) and must not start with a digit. Note that hyphens, while technically allowed, should not be used if possible, as they are not supported by all components that use the ID, such as D-Bus. For maximum compatibility, replace hyphens with an underscore.
  *
  * - The empty string is not a valid element (ie: your application ID may not start or end with a period and it is not valid to have two periods in a row).
  *
