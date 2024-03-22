@@ -131,7 +131,7 @@ extern void SDL_PostInitMouse(void);
 extern SDL_bool SDL_IsMouse(Uint16 vendor, Uint16 product);
 
 /* A mouse has been added to the system */
-extern void SDL_AddMouse(SDL_MouseID mouseID, SDL_bool send_event);
+extern void SDL_AddMouse(SDL_MouseID mouseID, const char *name, SDL_bool send_event);
 
 /* A mouse has been removed from the system */
 extern void SDL_RemoveMouse(SDL_MouseID mouseID);

@@ -30,7 +30,7 @@ extern int SDL_InitKeyboard(void);
 extern SDL_bool SDL_IsKeyboard(Uint16 vendor, Uint16 product, int num_keys);
 
 /* A keyboard has been added to the system */
-extern void SDL_AddKeyboard(SDL_KeyboardID keyboardID, SDL_bool send_event);
+extern void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, SDL_bool send_event);
 
 /* A keyboard has been removed from the system */
 extern void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID);

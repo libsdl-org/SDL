@@ -40,9 +40,13 @@ typedef enum
 
 #define KEYBOARD_SOURCE_MASK (KEYBOARD_HARDWARE | KEYBOARD_AUTORELEASE)
 
-typedef struct SDL_Keyboard SDL_Keyboard;
+typedef struct SDL_KeyboardInstance
+{
+    SDL_KeyboardID instance_id;
+    char *name;
+} SDL_KeyboardInstance;
 
-struct SDL_Keyboard
+typedef struct SDL_Keyboard
 {
     /* Data common to all keyboards */
     SDL_Window *focus;
@@ -52,11 +56,11 @@ struct SDL_Keyboard
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
     SDL_bool autorelease_pending;
     Uint64 hardware_timestamp;
-};
+} SDL_Keyboard;
 
 static SDL_Keyboard SDL_keyboard;
 static int SDL_keyboard_count;
-static SDL_KeyboardID *SDL_keyboards;
+static SDL_KeyboardInstance *SDL_keyboards;
 
 static const SDL_Keycode SDL_default_keymap[SDL_NUM_SCANCODES] = {
     /* 0 */ SDLK_UNKNOWN,
@@ -691,29 +695,33 @@ SDL_bool SDL_IsKeyboard(Uint16 vendor, Uint16 product, int num_keys)
     return SDL_TRUE;
 }
 
-void SDL_AddKeyboard(SDL_KeyboardID keyboardID, SDL_bool send_event)
+static int SDL_GetKeyboardIndex(SDL_KeyboardID keyboardID)
 {
-    int keyboard_index = -1;
-
-    SDL_assert(keyboardID != 0);
-
     for (int i = 0; i < SDL_keyboard_count; ++i) {
-        if (keyboardID == SDL_keyboards[i]) {
-            keyboard_index = i;
-            break;
+        if (keyboardID == SDL_keyboards[i].instance_id) {
+            return i;
         }
     }
+    return -1;
+}
 
+void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, SDL_bool send_event)
+{
+    int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index >= 0) {
         /* We already know about this keyboard */
         return;
     }
 
-    SDL_KeyboardID *keyboards = (SDL_KeyboardID *)SDL_realloc(SDL_keyboards, (SDL_keyboard_count + 1) * sizeof(*keyboards));
+    SDL_assert(keyboardID != 0);
+
+    SDL_KeyboardInstance *keyboards = (SDL_KeyboardInstance *)SDL_realloc(SDL_keyboards, (SDL_keyboard_count + 1) * sizeof(*keyboards));
     if (!keyboards) {
         return;
     }
-    keyboards[SDL_keyboard_count] = keyboardID;
+    SDL_KeyboardInstance *instance = &keyboards[SDL_keyboard_count];
+    instance->instance_id = keyboardID;
+    instance->name = SDL_strdup(name ? name : "");
     SDL_keyboards = keyboards;
     ++SDL_keyboard_count;
 
@@ -728,21 +736,13 @@ void SDL_AddKeyboard(SDL_KeyboardID keyboardID, SDL_bool send_event)
 
 void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID)
 {
-    int keyboard_index = -1;
-
-    SDL_assert(keyboardID != 0);
-
-    for (int i = 0; i < SDL_keyboard_count; ++i) {
-        if (keyboardID == SDL_keyboards[i]) {
-            keyboard_index = i;
-            break;
-        }
-    }
-
+    int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index < 0) {
         /* We don't know about this keyboard */
         return;
     }
+
+    SDL_free(SDL_keyboards[keyboard_index].name);
 
     if (keyboard_index != SDL_keyboard_count - 1) {
         SDL_memcpy(&SDL_keyboards[keyboard_index], &SDL_keyboards[keyboard_index + 1], (SDL_keyboard_count - keyboard_index - 1) * sizeof(SDL_keyboards[keyboard_index]));
@@ -773,7 +773,7 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
         }
 
         for (i = 0; i < SDL_keyboard_count; ++i) {
-            keyboards[i] = SDL_keyboards[i];
+            keyboards[i] = SDL_keyboards[i].instance_id;
         }
         keyboards[i] = 0;
     } else {
@@ -783,6 +783,15 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
     }
 
     return keyboards;
+}
+
+const char *SDL_GetKeyboardInstanceName(SDL_KeyboardID instance_id)
+{
+    int keyboard_index = SDL_GetKeyboardIndex(instance_id);
+    if (keyboard_index < 0) {
+        return NULL;
+    }
+    return SDL_keyboards[keyboard_index].name;
 }
 
 void SDL_ResetKeyboard(void)

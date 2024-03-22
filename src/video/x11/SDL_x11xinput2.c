@@ -108,17 +108,17 @@ static void xinput2_init_device_list(SDL_VideoData *videodata)
         switch (dev->use) {
         case XIMasterKeyboard:
             videodata->keyboardID = (SDL_KeyboardID)dev->deviceid;
-            SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, SDL_FALSE);
+            SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, dev->name, SDL_FALSE);
             break;
         case XISlaveKeyboard:
-            SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, SDL_FALSE);
+            SDL_AddKeyboard((SDL_KeyboardID)dev->deviceid, dev->name, SDL_FALSE);
             break;
         case XIMasterPointer:
             videodata->mouseID = (SDL_MouseID)dev->deviceid;
-            SDL_AddMouse((SDL_MouseID)dev->deviceid, SDL_FALSE);
+            SDL_AddMouse((SDL_MouseID)dev->deviceid, dev->name, SDL_FALSE);
             break;
         case XISlavePointer:
-            SDL_AddMouse((SDL_MouseID)dev->deviceid, SDL_FALSE);
+            SDL_AddMouse((SDL_MouseID)dev->deviceid, dev->name, SDL_FALSE);
             break;
         default:
             break;

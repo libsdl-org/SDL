@@ -33,10 +33,16 @@
 
 /* #define DEBUG_MOUSE */
 
+typedef struct SDL_MouseInstance
+{
+    SDL_MouseID instance_id;
+    char *name;
+} SDL_MouseInstance;
+
 /* The mouse state */
 static SDL_Mouse SDL_mouse;
 static int SDL_mouse_count;
-static SDL_MouseID *SDL_mice;
+static SDL_MouseInstance *SDL_mice;
 
 /* for mapping mouse events to touch */
 static SDL_bool track_mouse_down = SDL_FALSE;
@@ -235,29 +241,33 @@ SDL_bool SDL_IsMouse(Uint16 vendor, Uint16 product)
     return SDL_TRUE;
 }
 
-void SDL_AddMouse(SDL_MouseID mouseID, SDL_bool send_event)
+static int SDL_GetMouseIndex(SDL_MouseID mouseID)
 {
-    int mouse_index = -1;
-
-    SDL_assert(mouseID != 0);
-
     for (int i = 0; i < SDL_mouse_count; ++i) {
-        if (mouseID == SDL_mice[i]) {
-            mouse_index = i;
-            break;
+        if (mouseID == SDL_mice[i].instance_id) {
+            return i;
         }
     }
+    return -1;
+}
 
+void SDL_AddMouse(SDL_MouseID mouseID, const char *name, SDL_bool send_event)
+{
+    int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index >= 0) {
         /* We already know about this mouse */
         return;
     }
 
-    SDL_MouseID *mice = (SDL_MouseID *)SDL_realloc(SDL_mice, (SDL_mouse_count + 1) * sizeof(*mice));
+    SDL_assert(mouseID != 0);
+
+    SDL_MouseInstance *mice = (SDL_MouseInstance *)SDL_realloc(SDL_mice, (SDL_mouse_count + 1) * sizeof(*mice));
     if (!mice) {
         return;
     }
-    mice[SDL_mouse_count] = mouseID;
+    SDL_MouseInstance *instance = &mice[SDL_mouse_count];
+    instance->instance_id = mouseID;
+    instance->name = SDL_strdup(name ? name : "");
     SDL_mice = mice;
     ++SDL_mouse_count;
 
@@ -272,21 +282,13 @@ void SDL_AddMouse(SDL_MouseID mouseID, SDL_bool send_event)
 
 void SDL_RemoveMouse(SDL_MouseID mouseID)
 {
-    int mouse_index = -1;
-
-    SDL_assert(mouseID != 0);
-
-    for (int i = 0; i < SDL_mouse_count; ++i) {
-        if (mouseID == SDL_mice[i]) {
-            mouse_index = i;
-            break;
-        }
-    }
-
+    int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index < 0) {
         /* We don't know about this mouse */
         return;
     }
+
+    SDL_free(SDL_mice[mouse_index].name);
 
     if (mouse_index != SDL_mouse_count - 1) {
         SDL_memcpy(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
@@ -330,7 +332,7 @@ SDL_MouseID *SDL_GetMice(int *count)
         }
 
         for (i = 0; i < SDL_mouse_count; ++i) {
-            mice[i] = SDL_mice[i];
+            mice[i] = SDL_mice[i].instance_id;
         }
         mice[i] = 0;
     } else {
@@ -342,6 +344,14 @@ SDL_MouseID *SDL_GetMice(int *count)
     return mice;
 }
 
+const char *SDL_GetMouseInstanceName(SDL_MouseID instance_id)
+{
+    int mouse_index = SDL_GetMouseIndex(instance_id);
+    if (mouse_index < 0) {
+        return NULL;
+    }
+    return SDL_mice[mouse_index].name;
+}
 
 void SDL_SetDefaultCursor(SDL_Cursor *cursor)
 {

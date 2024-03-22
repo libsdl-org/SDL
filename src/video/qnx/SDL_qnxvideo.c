@@ -53,8 +53,8 @@ static int videoInit(SDL_VideoDevice *_this)
     }
 
     /* Assume we have a mouse and keyboard */
-    SDL_AddKeyboard(QNX_KEYBOARD_ID, SDL_FALSE);
-    SDL_AddMouse(QNX_MOUSE_ID, SDL_FALSE);
+    SDL_AddKeyboard(QNX_KEYBOARD_ID, NULL, SDL_FALSE);
+    SDL_AddMouse(QNX_MOUSE_ID, NULL, SDL_FALSE);
 
     return 0;
 }
