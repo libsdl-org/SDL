@@ -154,6 +154,9 @@ extern void SDL_SetMouseFocus(SDL_Window *window);
 /* Update the mouse capture window */
 extern int SDL_UpdateMouseCapture(SDL_bool force_release);
 
+/* Get the current mouse button state for a mouse */
+Uint32 SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch);
+
 /* You can set either a single scale, or a set of {speed, scale} values in sorted order */
 extern int SDL_SetMouseSystemScale(int num_values, const float *values);
 
