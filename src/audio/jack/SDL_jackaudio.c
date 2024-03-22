@@ -416,6 +416,7 @@ static SDL_bool JACK_Init(SDL_AudioDriverImpl *impl)
         jack_client_t *client = JACK_jack_client_open("SDL", JackNoStartServer, &status, NULL);
         if (!client) {
             UnloadJackLibrary();
+            SDL_SetError("Can't open JACK client");
             return SDL_FALSE;
         }
         JACK_jack_client_close(client);
