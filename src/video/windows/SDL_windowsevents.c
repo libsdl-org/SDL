@@ -234,7 +234,9 @@ static void WIN_CheckWParamMouseButton(Uint64 timestamp, SDL_bool bwParamMousePr
  */
 static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
 {
-    if (wParam != data->mouse_button_flags) {
+    Uint64 unique_bits = wParam;
+
+    if (unique_bits != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
 
         /* WM_LBUTTONDOWN and friends handle button swapping for us. No need to check SM_SWAPBUTTON here.  */
@@ -244,17 +246,19 @@ static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_Win
         WIN_CheckWParamMouseButton(timestamp, (wParam & MK_XBUTTON1), mouseFlags, SDL_FALSE, data, SDL_BUTTON_X1, mouseID);
         WIN_CheckWParamMouseButton(timestamp, (wParam & MK_XBUTTON2), mouseFlags, SDL_FALSE, data, SDL_BUTTON_X2, mouseID);
 
-        data->mouse_button_flags = wParam;
+        data->mouse_button_flags = unique_bits;
     }
 }
 
 static void WIN_CheckRawMouseButtons(Uint64 timestamp, HANDLE hDevice, ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     // Add a flag to distinguish raw mouse buttons from wParam above
-    rawButtons |= 0x8000000;
+    Uint64 unique_bits = 0x8000000 | (uintptr_t)hDevice;
+    unique_bits <<= 32;
+    unique_bits |= rawButtons;
 
-    if (rawButtons != data->mouse_button_flags) {
-        Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
+    if (unique_bits != data->mouse_button_flags) {
+        Uint32 mouseFlags = SDL_GetMouseButtonState(SDL_GetMouse(), mouseID, SDL_FALSE);
         SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
         if (swapButtons && hDevice == NULL) {
             /* Touchpad, already has buttons swapped */
@@ -290,7 +294,7 @@ static void WIN_CheckRawMouseButtons(Uint64 timestamp, HANDLE hDevice, ULONG raw
         if (rawButtons & RI_MOUSE_BUTTON_5_UP) {
             WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_5_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
         }
-        data->mouse_button_flags = rawButtons;
+        data->mouse_button_flags = unique_bits;
     }
 }
 

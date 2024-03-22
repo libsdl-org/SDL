@@ -402,14 +402,21 @@ SDL_Mouse *SDL_GetMouse(void)
     return &SDL_mouse;
 }
 
-static Uint32 GetButtonState(SDL_Mouse *mouse, SDL_bool include_touch)
+Uint32 SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch)
 {
     int i;
     Uint32 buttonstate = 0;
 
     for (i = 0; i < mouse->num_sources; ++i) {
-        if (include_touch || mouse->sources[i].mouseID != SDL_TOUCH_MOUSEID) {
-            buttonstate |= mouse->sources[i].buttonstate;
+        if (mouseID == SDL_GLOBAL_MOUSE_ID || mouseID == SDL_TOUCH_MOUSEID) {
+            if (include_touch || mouse->sources[i].mouseID != SDL_TOUCH_MOUSEID) {
+                buttonstate |= mouse->sources[i].buttonstate;
+            }
+        } else {
+            if (mouseID == mouse->sources[i].mouseID) {
+                buttonstate |= mouse->sources[i].buttonstate;
+                break;
+            }
         }
     }
     return buttonstate;
@@ -433,7 +440,7 @@ SDL_Window *SDL_GetMouseFocus(void)
 void SDL_ResetMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    Uint32 buttonState = GetButtonState(mouse, SDL_FALSE);
+    Uint32 buttonState = SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, SDL_FALSE);
     int i;
 
     for (i = 1; i <= sizeof(buttonState)*8; ++i) {
@@ -441,7 +448,7 @@ void SDL_ResetMouse(void)
             SDL_SendMouseButton(0, mouse->focus, mouse->mouseID, SDL_RELEASED, i);
         }
     }
-    SDL_assert(GetButtonState(mouse, SDL_FALSE) == 0);
+    SDL_assert(SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, SDL_FALSE) == 0);
 }
 #endif /* 0 */
 
@@ -530,7 +537,7 @@ int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
 {
     if (window && !relative) {
         SDL_Mouse *mouse = SDL_GetMouse();
-        if (!SDL_UpdateMouseFocus(window, x, y, GetButtonState(mouse, SDL_TRUE), (mouseID != SDL_TOUCH_MOUSEID))) {
+        if (!SDL_UpdateMouseFocus(window, x, y, SDL_GetMouseButtonState(mouse, mouseID, SDL_TRUE), (mouseID != SDL_TOUCH_MOUSEID))) {
             return 0;
         }
     }
@@ -760,7 +767,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
     }
 
     /* Ignore relative motion positioning the first touch */
-    if (mouseID == SDL_TOUCH_MOUSEID && !GetButtonState(mouse, SDL_TRUE)) {
+    if (mouseID == SDL_TOUCH_MOUSEID && !SDL_GetMouseButtonState(mouse, mouseID, SDL_TRUE)) {
         xrel = 0.0f;
         yrel = 0.0f;
     }
@@ -800,7 +807,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
         event.motion.which = mouseID;
         /* Set us pending (or clear during a normal mouse movement event) as having triggered */
         mouse->was_touch_mouse_events = (mouseID == SDL_TOUCH_MOUSEID);
-        event.motion.state = GetButtonState(mouse, SDL_TRUE);
+        event.motion.state = SDL_GetMouseButtonState(mouse, mouseID, SDL_TRUE);
         event.motion.x = mouse->x;
         event.motion.y = mouse->y;
         event.motion.xrel = xrel;
@@ -1126,7 +1133,7 @@ Uint32 SDL_GetMouseState(float *x, float *y)
     if (y) {
         *y = mouse->y;
     }
-    return GetButtonState(mouse, SDL_TRUE);
+    return SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, SDL_TRUE);
 }
 
 Uint32 SDL_GetRelativeMouseState(float *x, float *y)
@@ -1141,7 +1148,7 @@ Uint32 SDL_GetRelativeMouseState(float *x, float *y)
     }
     mouse->xdelta = 0.0f;
     mouse->ydelta = 0.0f;
-    return GetButtonState(mouse, SDL_TRUE);
+    return SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, SDL_TRUE);
 }
 
 Uint32 SDL_GetGlobalMouseState(float *x, float *y)
@@ -1318,7 +1325,7 @@ int SDL_UpdateMouseCapture(SDL_bool force_release)
 
     if (!force_release) {
         if (SDL_GetMessageBoxCount() == 0 &&
-            (mouse->capture_desired || (mouse->auto_capture && GetButtonState(mouse, SDL_FALSE) != 0))) {
+            (mouse->capture_desired || (mouse->auto_capture && SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, SDL_FALSE) != 0))) {
             if (!mouse->relative_mode) {
                 capture_window = mouse->focus;
             }

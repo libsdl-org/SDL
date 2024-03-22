@@ -52,7 +52,7 @@ struct SDL_WindowData
     HBITMAP hbm;
     WNDPROC wndproc;
     HHOOK keyboard_hook;
-    WPARAM mouse_button_flags;
+    Uint64 mouse_button_flags;
     LPARAM last_pointer_update;
     WCHAR high_surrogate;
     SDL_bool initializing;
