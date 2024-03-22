@@ -95,6 +95,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
 /**
  * Get a list of currently connected mice.
  *
+ * Note that this will include any device or virtual driver that includes mouse functionality, including some game controllers, KVM switches, etc. You should wait for input from a device before you consider it actively in use.
+ *
  * \param count a pointer filled in with the number of mice returned
  * \returns a 0 terminated array of mouse instance IDs which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
