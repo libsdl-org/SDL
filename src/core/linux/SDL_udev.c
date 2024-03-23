@@ -31,6 +31,7 @@
 #ifdef SDL_USE_LIBUDEV
 
 #include <linux/input.h>
+#include <sys/stat.h>
 
 #include "SDL_assert.h"
 #include "SDL_evdev_capabilities.h"
@@ -227,61 +228,59 @@ void SDL_UDEV_Scan(void)
 
 SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class)
 {
-    struct udev_enumerate *enumerate = NULL;
-    struct udev_list_entry *devs = NULL;
-    struct udev_list_entry *item = NULL;
-    SDL_bool found = SDL_FALSE;
+    struct stat statbuf;
+    char type;
+    struct udev_device *dev;
+    const char* val;
+    int class_temp;
 
     if (!_this) {
         return SDL_FALSE;
     }
 
-    enumerate = _this->syms.udev_enumerate_new(_this->udev);
-    if (!enumerate) {
-        SDL_SetError("udev_enumerate_new() failed");
+    if (stat(device_path, &statbuf) == -1) {
         return SDL_FALSE;
     }
 
-    _this->syms.udev_enumerate_scan_devices(enumerate);
-    devs = _this->syms.udev_enumerate_get_list_entry(enumerate);
-    for (item = devs; item && !found; item = _this->syms.udev_list_entry_get_next(item)) {
-        const char *path = _this->syms.udev_list_entry_get_name(item);
-        struct udev_device *dev = _this->syms.udev_device_new_from_syspath(_this->udev, path);
-        if (dev) {
-            const char *val = NULL;
-            const char *existing_path;
-
-            existing_path = _this->syms.udev_device_get_devnode(dev);
-            if (existing_path && SDL_strcmp(device_path, existing_path) == 0) {
-                int class_temp;
-                found = SDL_TRUE;
-
-                val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
-                if (val) {
-                    *vendor = (Uint16)SDL_strtol(val, NULL, 16);
-                }
-
-                val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
-                if (val) {
-                    *product = (Uint16)SDL_strtol(val, NULL, 16);
-                }
-
-                val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
-                if (val) {
-                    *version = (Uint16)SDL_strtol(val, NULL, 16);
-                }
-
-                class_temp = device_class(dev);
-                if (class_temp) {
-                    *class = class_temp;
-                }
-            }
-            _this->syms.udev_device_unref(dev);
-        }
+    if (S_ISBLK(statbuf.st_mode)) {
+        type = 'b';
     }
-    _this->syms.udev_enumerate_unref(enumerate);
+    else if (S_ISCHR(statbuf.st_mode)) {
+        type = 'c';
+    }
+    else {
+        return SDL_FALSE;
+    }
 
-    return found;
+    dev = _this->syms.udev_device_new_from_devnum(_this->udev, type, statbuf.st_rdev);
+
+    if (!dev) {
+        return SDL_FALSE;
+    }
+
+    val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
+    if (val) {
+        *vendor = (Uint16)SDL_strtol(val, NULL, 16);
+    }
+
+    val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
+    if (val) {
+        *product = (Uint16)SDL_strtol(val, NULL, 16);
+    }
+
+    val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
+    if (val) {
+        *version = (Uint16)SDL_strtol(val, NULL, 16);
+    }
+
+    class_temp = device_class(dev);
+    if (class_temp) {
+        *class = class_temp;
+    }
+
+    _this->syms.udev_device_unref(dev);
+
+    return SDL_TRUE;
 }
 
 void SDL_UDEV_UnloadLibrary(void)
