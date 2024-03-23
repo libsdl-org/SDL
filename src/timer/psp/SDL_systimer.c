@@ -32,24 +32,35 @@
 #include <pspthreadman.h>
 #include <psprtc.h>
 
-void SDL_TicksInit(void)
-{
-}
+static Uint64 start_tick;
 
-void SDL_TicksQuit(void)
-{
-}
-
-Uint64 SDL_GetTicks64(void)
+static Uint64 PSP_Ticks(void)
 {
     Uint64 ticks;
     sceRtcGetCurrentTick(&ticks);
     return ticks;
 }
 
+void SDL_TicksInit(void)
+{
+    if (start_tick == 0) {
+        start_tick = PSP_Ticks();
+    }
+}
+
+void SDL_TicksQuit(void)
+{
+}
+
+/* return ticks as milliseconds */
+Uint64 SDL_GetTicks64(void)
+{
+    return (PSP_Ticks() - start_tick) / 1000ULL;
+}
+
 Uint64 SDL_GetPerformanceCounter(void)
 {
-    return SDL_GetTicks64();
+    return PSP_Ticks();
 }
 
 Uint64 SDL_GetPerformanceFrequency(void)
