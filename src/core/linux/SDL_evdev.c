@@ -607,7 +607,12 @@ static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode)
 
 static int SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
 {
-    SDL_AddKeyboard((SDL_KeyboardID)item->fd, NULL, SDL_TRUE);
+    char name[128];
+
+    name[0] = '\0';
+    ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
+
+    SDL_AddKeyboard((SDL_KeyboardID)item->fd, name, SDL_TRUE);
 
     return 0;
 }
@@ -619,10 +624,14 @@ static void SDL_EVDEV_destroy_keyboard(SDL_evdevlist_item *item)
 
 static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
 {
+    char name[128];
     int ret;
     struct input_absinfo abs_info;
 
-    SDL_AddMouse((SDL_MouseID)item->fd, NULL, SDL_TRUE);
+    name[0] = '\0';
+    ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
+
+    SDL_AddMouse((SDL_MouseID)item->fd, name, SDL_TRUE);
 
     ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
     if (ret < 0) {
