@@ -27,23 +27,19 @@
 #include <time.h>
 #include <sys/time.h>
 #include <pspthreadman.h>
+#include <psprtc.h>
 
 
 Uint64 SDL_GetPerformanceCounter(void)
 {
     Uint64 ticks;
-	struct timeval now;
-
-	gettimeofday(&now, NULL);
-	ticks = now.tv_sec;
-	ticks *= SDL_US_PER_SECOND;
-	ticks += now.tv_usec;
+    sceRtcGetCurrentTick(&ticks);
     return ticks;
 }
 
 Uint64 SDL_GetPerformanceFrequency(void)
 {
-    return SDL_US_PER_SECOND;
+    return sceRtcGetTickResolution();
 }
 
 void SDL_DelayNS(Uint64 ns)
