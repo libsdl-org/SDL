@@ -21,14 +21,18 @@
 
 #include "SDL_internal.h"
 
-#ifndef SDL_waylandmouse_h_
-#define SDL_waylandmouse_h_
+#ifndef SDL_waylandshmbuffer_h_
+#define SDL_waylandshmbuffer_h_
 
-extern void Wayland_InitMouse(void);
-extern void Wayland_FiniMouse(SDL_VideoData *data);
-extern void Wayland_SetHitTestCursor(SDL_HitTestResult rc);
-#if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
-extern void Wayland_RecreateCursors(void);
-#endif /* 0 */
+struct Wayland_SHMBuffer
+{
+    struct wl_buffer *wl_buffer;
+    void *shm_data;
+    int shm_data_size;
+};
+
+/* Allocates an SHM buffer with the format WL_SHM_FORMAT_ARGB8888 */
+extern int Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shmBuffer);
+extern void Wayland_ReleaseSHMBuffer(struct Wayland_SHMBuffer *shmBuffer);
 
 #endif
