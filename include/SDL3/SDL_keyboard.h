@@ -70,7 +70,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
 /**
  * Get a list of currently connected keyboards.
  *
- * Note that this will include any device or virtual driver that includes keyboard functionality, including some mice, KVM switches, motherboard power buttons, etc. You should wait for input from a device before you consider it actively in use.
+ * Note that this will include any device or virtual driver that includes
+ * keyboard functionality, including some mice, KVM switches, motherboard
+ * power buttons, etc. You should wait for input from a device before you
+ * consider it actively in use.
  *
  * \param count a pointer filled in with the number of keyboards returned
  * \returns a 0 terminated array of keyboards instance IDs which should be
@@ -90,7 +93,8 @@ extern DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
  * This function returns "" if the keyboard doesn't have a name.
  *
  * \param instance_id the keyboard instance ID
- * \returns the name of the selected keyboard, or NULL on failure; call SDL_GetError() for more information.
+ * \returns the name of the selected keyboard, or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

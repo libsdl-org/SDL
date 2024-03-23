@@ -216,8 +216,8 @@ extern DECLSPEC int SDLCALL SDL_GetJoystickInstancePlayerIndex(SDL_JoystickID in
  * This can be called before any joysticks are opened.
  *
  * \param instance_id the joystick instance ID
- * \returns the GUID of the selected joystick. If called with an invalid instance_id,
- *          this function returns a zero GUID.
+ * \returns the GUID of the selected joystick. If called with an invalid
+ *          instance_id, this function returns a zero GUID.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -284,7 +284,8 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceProductVersion(SDL_Joystic
  *
  * \param instance_id the joystick instance ID
  * \returns the SDL_JoystickType of the selected joystick. If called with an
- *          invalid instance_id, this function returns `SDL_JOYSTICK_TYPE_UNKNOWN`.
+ *          invalid instance_id, this function returns
+ *          `SDL_JOYSTICK_TYPE_UNKNOWN`.
  *
  * \since This function is available since SDL 3.0.0.
  *
