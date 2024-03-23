@@ -23,10 +23,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: 'Fetch releaser.py'
+      - name: 'Fetch build-release.py'
         uses: actions/checkout@v4
         with:
-          sparse-checkout: 'build-scripts/releaser.py'
+          sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Set up SDL sources'
         uses: actions/checkout@v4
         with:
@@ -36,7 +36,7 @@ jobs:
         id: releaser
         shell: bash
         run: |
-          python build-scripts/releaser.py \
+          python build-scripts/build-release.py \
             --create source \
             --commit ${{ inputs.commit }} \
             --project SDL3 \
@@ -94,10 +94,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: 'Fetch releaser.py'
+      - name: 'Fetch build-release.py'
         uses: actions/checkout@v4
         with:
-          sparse-checkout: 'build-scripts/releaser.py'
+          sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Download source archives'
         uses: actions/download-artifact@v4
         with:
@@ -113,7 +113,7 @@ jobs:
         id: releaser
         shell: bash
         run: |
-          python build-scripts/releaser.py \
+          python build-scripts/build-release.py \
             --create xcframework \
             --commit ${{ inputs.commit }} \
             --project SDL3 \
@@ -230,10 +230,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: 'Fetch releaser.py'
+      - name: 'Fetch build-release.py'
         uses: actions/checkout@v4
         with:
-          sparse-checkout: 'build-scripts/releaser.py'
+          sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Download source archives'
         uses: actions/download-artifact@v4
         with:
@@ -249,7 +249,7 @@ jobs:
       - name: 'Build MSVC binary archives'
         id: releaser
         run: |
-          python build-scripts/releaser.py          `
+          python build-scripts/build-release.py          `
             --create win32                          `
             --commit ${{ inputs.commit }}           `
             --project SDL3                          `
@@ -325,10 +325,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: 'Fetch releaser.py'
+      - name: 'Fetch build-release.py'
         uses: actions/checkout@v4
         with:
-          sparse-checkout: 'build-scripts/releaser.py'
+          sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Install Mingw toolchain'
         run: |
           sudo apt-get update -y
@@ -347,7 +347,7 @@ jobs:
       - name: 'Build MinGW binary archives'
         id: releaser
         run: |
-          python build-scripts/releaser.py          \
+          python build-scripts/build-release.py     \
             --create mingw                          \
             --commit ${{ inputs.commit }}           \
             --project SDL3                          \
