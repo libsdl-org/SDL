@@ -73,6 +73,9 @@
 #define XKB_MOD_NAME_MODE "Mod5"
 #endif
 
+/* Keyboard and mouse names to match XWayland */
+#define WAYLAND_DEFAULT_KEYBOARD_NAME "Virtual core keyboard"
+#define WAYLAND_DEFAULT_POINTER_NAME "Virtual core pointer"
 
 struct SDL_WaylandTouchPoint
 {
@@ -1715,7 +1718,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         wl_pointer_add_listener(input->pointer, &pointer_listener, input);
 
         input->pointer_id = SDL_GetNextObjectID();
-        SDL_AddMouse(input->pointer_id, NULL, SDL_TRUE);
+        SDL_AddMouse(input->pointer_id, WAYLAND_DEFAULT_POINTER_NAME, SDL_TRUE);
     } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
         if (input->cursor_shape) {
             wp_cursor_shape_device_v1_destroy(input->cursor_shape);
@@ -1748,7 +1751,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
                                  input);
 
         input->keyboard_id = SDL_GetNextObjectID();
-        SDL_AddKeyboard(input->keyboard_id, NULL, SDL_TRUE);
+        SDL_AddKeyboard(input->keyboard_id, WAYLAND_DEFAULT_KEYBOARD_NAME, SDL_TRUE);
     } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
         wl_keyboard_destroy(input->keyboard);
         input->keyboard = NULL;
