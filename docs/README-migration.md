@@ -855,6 +855,8 @@ The following symbols have been removed:
 
 ## SDL_keyboard.h
 
+Text input is no longer automatically enabled when initializing video, you should call SDL_StartTextInput() when you want to receive text input and call SDL_StopTextInput() when you are done. Starting text input may shown an input method editor (IME) and cause key up/down events to be skipped, so should only be enabled when the application wants text input.
+
 The following functions have been renamed:
 * SDL_IsScreenKeyboardShown() => SDL_ScreenKeyboardShown()
 * SDL_IsTextInputActive() => SDL_TextInputActive()

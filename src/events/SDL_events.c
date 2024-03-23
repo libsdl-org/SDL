@@ -729,14 +729,6 @@ int SDL_StartEventLoop(void)
     }
 #endif /* !SDL_THREADS_DISABLED */
 
-    /* Process most event types */
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_INPUT, SDL_FALSE);
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_EDITING, SDL_FALSE);
-#if 0 /* Leave these events enabled so apps can respond to items being dragged onto them at startup */
-    SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_FALSE);
-    SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_FALSE);
-#endif
-
     SDL_EventQ.active = SDL_TRUE;
     SDL_UnlockMutex(SDL_EventQ.lock);
     return 0;

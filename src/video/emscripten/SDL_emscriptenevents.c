@@ -828,7 +828,7 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
         is_nav_key = SDL_TRUE;
     }
 
-    if ((eventType == EMSCRIPTEN_EVENT_KEYDOWN) && SDL_EventEnabled(SDL_EVENT_TEXT_INPUT) && !is_nav_key) {
+    if ((eventType == EMSCRIPTEN_EVENT_KEYDOWN) && SDL_TextInputActive() && !is_nav_key) {
         prevent_default = SDL_FALSE;
     }
 

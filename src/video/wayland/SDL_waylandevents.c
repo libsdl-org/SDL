@@ -377,7 +377,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     WAYLAND_wl_display_flush(d->display);
 
 #ifdef SDL_USE_IME
-    if (!d->text_input_manager && SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+    if (!d->text_input_manager && SDL_TextInputActive()) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -450,7 +450,7 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     int err;
 
 #ifdef SDL_USE_IME
-    if (!d->text_input_manager && SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+    if (!d->text_input_manager && SDL_TextInputActive()) {
         SDL_IME_PumpEvents();
     }
 #endif
