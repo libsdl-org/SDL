@@ -215,7 +215,6 @@
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvideo.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvulkan.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowswindow.c" />
-    <ClCompile Include="..\..\src\video\windows\SDL_xboxkeyboard.cpp" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfilesystem.c" />
     <ClCompile Include="..\..\src\video\SDL_video_capture.c" />
