@@ -365,6 +365,7 @@ struct SDL_VideoDevice
     SDL_bool setting_display_mode;
     Uint32 device_caps;
     SDL_SystemTheme system_theme;
+    SDL_bool text_input_active;
 
     /* * * */
     /* Data used by the GL drivers */

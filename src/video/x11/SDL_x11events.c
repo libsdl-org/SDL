@@ -1254,7 +1254,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
 
 #ifdef SDL_USE_IME
-        if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+        if (SDL_TextInputActive()) {
             handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
         }
 #endif
@@ -1355,7 +1355,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
 
 #ifdef SDL_USE_IME
-                if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+                if (SDL_TextInputActive()) {
                     /* Update IME candidate list position */
                     SDL_IME_UpdateTextRect(NULL);
                 }
@@ -1937,7 +1937,7 @@ int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     X11_DispatchEvent(_this, &xevent);
 
 #ifdef SDL_USE_IME
-    if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+    if (SDL_TextInputActive()) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -1998,7 +1998,7 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     }
 
 #ifdef SDL_USE_IME
-    if (SDL_EventEnabled(SDL_EVENT_TEXT_INPUT)) {
+    if (SDL_TextInputActive()) {
         SDL_IME_PumpEvents();
     }
 #endif

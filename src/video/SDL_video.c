@@ -562,22 +562,6 @@ int SDL_VideoInit(const char *driver_name)
         SDL_DisableScreenSaver();
     }
 
-#if !defined(SDL_VIDEO_DRIVER_N3DS)
-    {
-        /* In the initial state we don't want to pop up an on-screen keyboard,
-         * but we do want to allow text input from other mechanisms.
-         */
-        const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-        if (!hint) {
-            SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, "0");
-        }
-        SDL_StartTextInput();
-        if (!hint) {
-            SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, NULL);
-        }
-    }
-#endif /* !SDL_VIDEO_DRIVER_N3DS */
-
     SDL_PostInitMouse();
 
     /* We're ready to go! */
@@ -4808,24 +4792,25 @@ void SDL_WM_SetIcon(SDL_Surface *icon, Uint8 *mask)
 
 void SDL_StartTextInput(void)
 {
-    SDL_Window *window;
+    if (!_this) {
+        return;
+    }
 
-    /* First, enable text events */
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_INPUT, SDL_TRUE);
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_EDITING, SDL_TRUE);
-
-    /* Then show the on-screen keyboard, if any */
-    if (SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
-        window = SDL_GetKeyboardFocus();
-        if (window && _this && _this->ShowScreenKeyboard) {
+    /* Show the on-screen keyboard, if desired */
+    const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
+    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+        SDL_GetStringBoolean(hint, SDL_FALSE)) {
+        SDL_Window *window = SDL_GetKeyboardFocus();
+        if (window && _this->ShowScreenKeyboard) {
             _this->ShowScreenKeyboard(_this, window);
         }
     }
 
     /* Finally start the text input system */
-    if (_this && _this->StartTextInput) {
+    if (_this->StartTextInput) {
         _this->StartTextInput(_this);
     }
+    _this->text_input_active = SDL_TRUE;
 }
 
 void SDL_ClearComposition(void)
@@ -4846,29 +4831,29 @@ SDL_bool SDL_TextInputShown(void)
 
 SDL_bool SDL_TextInputActive(void)
 {
-    return SDL_EventEnabled(SDL_EVENT_TEXT_INPUT);
+    return _this && _this->text_input_active;
 }
 
 void SDL_StopTextInput(void)
 {
-    SDL_Window *window;
+    if (!_this) {
+        return;
+    }
 
     /* Stop the text input system */
-    if (_this && _this->StopTextInput) {
+    if (_this->StopTextInput) {
         _this->StopTextInput(_this);
     }
 
-    /* Hide the on-screen keyboard, if any */
-    if (SDL_GetHintBoolean(SDL_HINT_ENABLE_SCREEN_KEYBOARD, SDL_TRUE)) {
-        window = SDL_GetKeyboardFocus();
-        if (window && _this && _this->HideScreenKeyboard) {
+    /* Hide the on-screen keyboard, if desired */
+    const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
+    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+        SDL_GetStringBoolean(hint, SDL_FALSE)) {
+        SDL_Window *window = SDL_GetKeyboardFocus();
+        if (window && _this->HideScreenKeyboard) {
             _this->HideScreenKeyboard(_this, window);
         }
     }
-
-    /* Finally disable text events */
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_INPUT, SDL_FALSE);
-    SDL_SetEventEnabled(SDL_EVENT_TEXT_EDITING, SDL_FALSE);
 }
 
 int SDL_SetTextInputRect(const SDL_Rect *rect)
