@@ -285,8 +285,8 @@ extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
  * mouse while the user is dragging something, until the user releases a mouse
  * button. It is not recommended that you capture the mouse for long periods
  * of time, such as the entire time your app is running. For that, you should
- * probably use SDL_SetRelativeMouseMode() or SDL_SetWindowGrab(), depending
- * on your goals.
+ * probably use SDL_SetRelativeMouseMode() or SDL_SetWindowMouseGrab(),
+ * depending on your goals.
  *
  * While captured, mouse events still report coordinates relative to the
  * current (foreground) window, but those coordinates may be outside the

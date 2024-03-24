@@ -1152,7 +1152,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window *win
  * \sa SDL_MaximizeWindow
  * \sa SDL_MinimizeWindow
  * \sa SDL_SetWindowFullscreen
- * \sa SDL_SetWindowGrab
+ * \sa SDL_SetWindowMouseGrab
  * \sa SDL_ShowWindow
  */
 extern DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *window);
@@ -1777,28 +1777,6 @@ extern DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(SDL_Window *window, con
 extern DECLSPEC int SDLCALL SDL_DestroyWindowSurface(SDL_Window *window);
 
 /**
- * Set a window's input grab mode.
- *
- * When input is grabbed, the mouse is confined to the window. This function
- * will also grab the keyboard if `SDL_HINT_GRAB_KEYBOARD` is set. To grab the
- * keyboard without also grabbing the mouse, use SDL_SetWindowKeyboardGrab().
- *
- * If the caller enables a grab while another window is currently grabbed, the
- * other window loses its grab in favor of the caller's window.
- *
- * \param window the window for which the input grab mode should be set
- * \param grabbed SDL_TRUE to grab input or SDL_FALSE to release input
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetGrabbedWindow
- * \sa SDL_GetWindowGrab
- */
-extern DECLSPEC int SDLCALL SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabbed);
-
-/**
  * Set a window's keyboard grab mode.
  *
  * Keyboard grab enables capture of system keyboard shortcuts like Alt+Tab or
@@ -1826,7 +1804,6 @@ extern DECLSPEC int SDLCALL SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabb
  *
  * \sa SDL_GetWindowKeyboardGrab
  * \sa SDL_SetWindowMouseGrab
- * \sa SDL_SetWindowGrab
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed);
 
@@ -1844,21 +1821,8 @@ extern DECLSPEC int SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bo
  *
  * \sa SDL_GetWindowMouseGrab
  * \sa SDL_SetWindowKeyboardGrab
- * \sa SDL_SetWindowGrab
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed);
-
-/**
- * Get a window's input grab mode.
- *
- * \param window the window to query
- * \returns SDL_TRUE if input is grabbed, SDL_FALSE otherwise.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_SetWindowGrab
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowGrab(SDL_Window *window);
 
 /**
  * Get a window's keyboard grab mode.
@@ -1869,7 +1833,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowGrab(SDL_Window *window);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetWindowKeyboardGrab
- * \sa SDL_GetWindowGrab
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowKeyboardGrab(SDL_Window *window);
 
@@ -1882,7 +1845,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowKeyboardGrab(SDL_Window *window);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetWindowKeyboardGrab
- * \sa SDL_GetWindowGrab
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowMouseGrab(SDL_Window *window);
 
@@ -1893,8 +1855,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowMouseGrab(SDL_Window *window);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetWindowGrab
- * \sa SDL_SetWindowGrab
+ * \sa SDL_SetWindowMouseGrab
+ * \sa SDL_SetWindowKeyboardGrab
  */
 extern DECLSPEC SDL_Window *SDLCALL SDL_GetGrabbedWindow(void);
 

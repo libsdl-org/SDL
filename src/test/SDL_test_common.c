@@ -2300,7 +2300,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 /* Ctrl-G toggle mouse grab */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    SDL_SetWindowGrab(window, !SDL_GetWindowGrab(window));
+                    SDL_SetWindowMouseGrab(window, !SDL_GetWindowMouseGrab(window));
                 }
             }
             break;

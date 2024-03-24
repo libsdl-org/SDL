@@ -487,7 +487,6 @@
 #define SDL_GetWindowFlags SDL_GetWindowFlags_REAL
 #define SDL_GetWindowFromID SDL_GetWindowFromID_REAL
 #define SDL_GetWindowFullscreenMode SDL_GetWindowFullscreenMode_REAL
-#define SDL_GetWindowGrab SDL_GetWindowGrab_REAL
 #define SDL_GetWindowICCProfile SDL_GetWindowICCProfile_REAL
 #define SDL_GetWindowID SDL_GetWindowID_REAL
 #define SDL_GetWindowKeyboardGrab SDL_GetWindowKeyboardGrab_REAL
@@ -776,7 +775,6 @@
 #define SDL_SetWindowFocusable SDL_SetWindowFocusable_REAL
 #define SDL_SetWindowFullscreen SDL_SetWindowFullscreen_REAL
 #define SDL_SetWindowFullscreenMode SDL_SetWindowFullscreenMode_REAL
-#define SDL_SetWindowGrab SDL_SetWindowGrab_REAL
 #define SDL_SetWindowHitTest SDL_SetWindowHitTest_REAL
 #define SDL_SetWindowIcon SDL_SetWindowIcon_REAL
 #define SDL_SetWindowInputFocus SDL_SetWindowInputFocus_REAL
