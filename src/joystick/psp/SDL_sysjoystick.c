@@ -96,6 +96,9 @@ static int PSP_JoystickInit(void)
         analog_map[127 - i] = -1 * analog_map[i + 128];
     }
 
+    /* Fire off a joystick add event */
+    SDL_PrivateJoystickAdded(0);
+
     return 1;
 }
 
