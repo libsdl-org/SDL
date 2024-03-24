@@ -69,11 +69,17 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_COCOA
     &COCOA_bootstrap,
 #endif
-#ifdef SDL_VIDEO_DRIVER_WAYLAND
-    &Wayland_bootstrap,
-#endif
+/*
+ * Prefer X11 over Wayland for now until fifo-v1 + commit-timing-v1 are released
+ * and available in compositors otherwise we will suffer large performance/frame pacing
+ * regressions in GPU-bound apps or when the window is obscured when the application is
+ * using FIFO (vsync).
+ */
 #ifdef SDL_VIDEO_DRIVER_X11
     &X11_bootstrap,
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+    &Wayland_bootstrap,
 #endif
 #ifdef SDL_VIDEO_DRIVER_VIVANTE
     &VIVANTE_bootstrap,
@@ -4904,11 +4910,11 @@ int SDL_GetMessageBoxCount(void)
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #include "uikit/SDL_uikitmessagebox.h"
 #endif
-#ifdef SDL_VIDEO_DRIVER_WAYLAND
-#include "wayland/SDL_waylandmessagebox.h"
-#endif
 #ifdef SDL_VIDEO_DRIVER_X11
 #include "x11/SDL_x11messagebox.h"
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+#include "wayland/SDL_waylandmessagebox.h"
 #endif
 #ifdef SDL_VIDEO_DRIVER_HAIKU
 #include "haiku/SDL_bmessagebox.h"
