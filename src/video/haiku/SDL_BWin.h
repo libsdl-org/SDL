@@ -125,8 +125,8 @@ class SDL_BWin : public BWindow
 
 #ifdef SDL_VIDEO_OPENGL
         if (_SDL_GLView) {
-            if (SDL_Looper->GetCurrentContext() == _SDL_GLView)
-                SDL_Looper->SetCurrentContext(NULL);
+            if (SDL_Handler->GetCurrentContext() == _SDL_GLView)
+                SDL_Handler->SetCurrentContext(NULL);
             if (_SDL_GLView == _cur_view)
                 RemoveChild(_SDL_GLView);
             _SDL_GLView = NULL;
@@ -209,8 +209,8 @@ class SDL_BWin : public BWindow
     {
         Lock();
         if (_SDL_GLView != NULL) {
-            if (SDL_Looper->GetCurrentContext() == _SDL_GLView)
-                SDL_Looper->SetCurrentContext(NULL);
+            if (SDL_Handler->GetCurrentContext() == _SDL_GLView)
+                SDL_Handler->SetCurrentContext(NULL);
             _SDL_GLView = NULL;
             UpdateCurrentView();
             // _SDL_GLView deleted by HAIKU_GL_DeleteContext
@@ -572,7 +572,7 @@ class SDL_BWin : public BWindow
         if (keyUtf8 != NULL) {
             msg.AddData("key-utf8", B_INT8_TYPE, (const void *)keyUtf8, len);
         }
-        SDL_Looper->PostMessage(&msg);
+        be_app->PostMessage(&msg, SDL_Handler);
     }
 
     void _RepaintEvent()
@@ -584,7 +584,7 @@ class SDL_BWin : public BWindow
     void _PostWindowEvent(BMessage &msg)
     {
         msg.AddInt32("window-id", _id);
-        SDL_Looper->PostMessage(&msg);
+        be_app->PostMessage(&msg, SDL_Handler);
     }
 
     /* Command methods (functions called upon by SDL) */

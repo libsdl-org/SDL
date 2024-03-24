@@ -31,7 +31,7 @@
 #include <storage/File.h>
 #include <unistd.h>
 
-#include "SDL_BApp.h"   /* SDL_BLooper class definition */
+#include "SDL_BApp.h"   /* SDL_BHandler class definition */
 #include "SDL_BeApp.h"
 #include "SDL_timer.h"
 #include "SDL_error.h"
@@ -47,7 +47,7 @@ extern "C" {
 /* Flag to tell whether or not the Be application and looper are active or not */
 static int SDL_BeAppActive = 0;
 static SDL_Thread *SDL_AppThread = NULL;
-SDL_BLooper *SDL_Looper = NULL;
+SDL_BHandler *SDL_Handler = NULL;
 
 
 /* Default application signature */
@@ -137,8 +137,11 @@ static int StartBeLooper()
         }
     }
 
-    SDL_Looper = new SDL_BLooper("SDLLooper");
-    SDL_Looper->Run();
+    SDL_Handler = new SDL_BHandler("SDLHandler");
+    bool locked = be_app->Lock();
+    be_app->AddHandler(SDL_Handler);
+    if (locked)
+        be_app->Unlock();
     return (0);
 }
 
@@ -169,9 +172,6 @@ void SDL_QuitBeApp(void)
 
     /* If the reference count reached zero, clean up the app */
     if (SDL_BeAppActive == 0) {
-        SDL_Looper->Lock();
-        SDL_Looper->Quit();
-        SDL_Looper = NULL;
         if (SDL_AppThread) {
             if (be_app != NULL) {       /* Not tested */
                 be_app->PostMessage(B_QUIT_REQUESTED);
@@ -188,7 +188,7 @@ void SDL_QuitBeApp(void)
 #endif
 
 /* SDL_BApp functions */
-void SDL_BLooper::ClearID(SDL_BWin *bwin) {
+void SDL_BHandler::ClearID(SDL_BWin *bwin) {
     _SetSDLWindow(NULL, bwin->GetID());
     int32 i = _GetNumWindowSlots() - 1;
     while (i >= 0 && GetSDLWindow(i) == NULL) {

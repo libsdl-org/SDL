@@ -49,7 +49,7 @@ extern "C" {
 #include <vector>
 
 /* Forward declarations */
-class SDL_BLooper;
+class SDL_BHandler;
 class SDL_BWin;
 
 /* Message constants */
@@ -76,21 +76,21 @@ enum ToSDL
 };
 
 
-extern "C" SDL_BLooper *SDL_Looper;
+extern "C" SDL_BHandler *SDL_Handler;
 
 
-/* Create a descendant of BLooper */
-class SDL_BLooper : public BLooper
+/* Create a descendant of BHandler */
+class SDL_BHandler : public BHandler
 {
   public:
-    SDL_BLooper(const char* name) : BLooper(name)
+    SDL_BHandler(const char* name) : BHandler(name)
     {
 #ifdef SDL_VIDEO_OPENGL
         _current_context = NULL;
 #endif
     }
 
-    virtual ~SDL_BLooper()
+    virtual ~SDL_BHandler()
     {
     }
 
@@ -164,7 +164,7 @@ class SDL_BLooper : public BLooper
             break;
 
         default:
-            BLooper::MessageReceived(message);
+            BHandler::MessageReceived(message);
             break;
         }
     }
