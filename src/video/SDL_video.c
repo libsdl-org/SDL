@@ -4798,7 +4798,7 @@ void SDL_StartTextInput(void)
 
     /* Show the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+    if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, SDL_FALSE)) {
         SDL_Window *window = SDL_GetKeyboardFocus();
         if (window && _this->ShowScreenKeyboard) {
@@ -4847,7 +4847,7 @@ void SDL_StopTextInput(void)
 
     /* Hide the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-    if (((!hint || SDL_strcasecmp(hint, "auto")) && !SDL_HasKeyboard()) ||
+    if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, SDL_FALSE)) {
         SDL_Window *window = SDL_GetKeyboardFocus();
         if (window && _this->HideScreenKeyboard) {
