@@ -5,17 +5,27 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-get_filename_component(_sdl3_xcframework_parent_path "../.." ABSOLUTE)
-
-set(_sdl3_xcframework "${_sdl3_xcframework_parent_path}/SDL3.xcframework")
-set(_sdl3_version_h "${_sdl3_xcframework}/macos-arm64_x86_64/SDL3.framework/Headers/SDL_version.h")
+get_filename_component(_sdl3_xcframework_parent_path "${CMAKE_CURRENT_LIST_DIR}" REALPATH)              # /share/cmake/SDL3/
+get_filename_component(_sdl3_xcframework_parent_path "${_sdl3_xcframework_parent_path}" REALPATH)       # /share/cmake/SDL3/
+get_filename_component(_sdl3_xcframework_parent_path "${_sdl3_xcframework_parent_path}" PATH)           # /share/cmake
+get_filename_component(_sdl3_xcframework_parent_path "${_sdl3_xcframework_parent_path}" PATH)           # /share
+get_filename_component(_sdl3_xcframework_parent_path "${_sdl3_xcframework_parent_path}" PATH)           # /
+set(_sdl3_xcframework "${_sdl3_xcframework_parent_path}/SDL3.xcframework")                              # /SDL3.xcframework
+set(_sdl3_framework "${_sdl3_xcframework}/macos-arm64_x86_64/SDL3.framework")                           # /SDL3.xcframework/macos-arm64_x86_64/SDL3.framework
+set(_sdl3_version_h "${_sdl3_framework}/Headers/SDL_version.h")                                         # /SDL3.xcframework/macos-arm64_x86_64/SDL3.framework/Headers/SDL_version.h
 
 if(NOT EXISTS "${_sdl3_version_h}")
-    message(AUTHOR_WARNING "Cannot not find SDL_version.h. This script is meant to be placed in share/cmake/SDL3, next to SDL3.xcframework")
+    message(AUTHOR_WARNING "Cannot not find ${_sdl3_framework}. This script is meant to be placed in share/cmake/SDL3, next to SDL3.xcframework")
     return()
 endif()
 
 file(READ "${_sdl3_version_h}" _sdl_version_h)
+
+unset(_sdl3_xcframework_parent_path)
+unset(_sdl3_framework)
+unset(_sdl3_xcframework)
+unset(_sdl3_version_h)
+
 string(REGEX MATCH "#define[ \t]+SDL_MAJOR_VERSION[ \t]+([0-9]+)" _sdl_major_re "${_sdl_version_h}")
 set(_sdl_major "${CMAKE_MATCH_1}")
 string(REGEX MATCH "#define[ \t]+SDL_MINOR_VERSION[ \t]+([0-9]+)" _sdl_minor_re "${_sdl_version_h}")
@@ -29,8 +39,12 @@ else()
     return()
 endif()
 
-unset(_sdl3_xcframework)
-unset(_sdl3_version_h)
+unset(_sdl_major_re)
+unset(_sdl_major)
+unset(_sdl_minor_re)
+unset(_sdl_minor)
+unset(_sdl_patch_re)
+unset(_sdl_patch)
 
 if(PACKAGE_FIND_VERSION_RANGE)
     # Package version must be in the requested version range
