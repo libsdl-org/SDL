@@ -452,7 +452,7 @@ static simulated_pen_action _simpen_event(int type, int pen_index, int index, fl
 
     /* Sanity check-- turned out to be necessary */
     if ((type == SIMPEN_ACTION_PRESS || type == SIMPEN_ACTION_RELEASE) && index == 0) {
-	SDL_Log("Error: SIMPEN_EVENT_BUTTON must have button > 0  (first button has number 1!), in line %d!", line_nr);
+        SDL_Log("Error: SIMPEN_EVENT_BUTTON must have button > 0  (first button has number 1!), in line %d!", line_nr);
         exit(1);
     }
     return action;
@@ -478,7 +478,7 @@ static simulated_pen_action _simpen_event(int type, int pen_index, int index, fl
 #define SIMPEN_EVENT_BUTTON(pen_index, push, button) \
     STEP _simpen_event((push) ? SIMPEN_ACTION_PRESS : SIMPEN_ACTION_RELEASE, (pen_index), (button), 0.0f, __LINE__)
 
-#define SIMPEN_EVENT_TIP(pen_index, touch, tip)				\
+#define SIMPEN_EVENT_TIP(pen_index, touch, tip) \
     STEP _simpen_event((touch) ? SIMPEN_ACTION_DOWN : SIMPEN_ACTION_UP, (pen_index), tip, 0.0f, __LINE__)
 
 #define SIMPEN_SET_ERASER(pen_index, eraser_mode) \
@@ -599,22 +599,22 @@ _pen_simulate(simulated_pen_action *steps, int *step_counter, SDL_Pen *simulated
             break;
 
         case SIMPEN_ACTION_ERASER_MODE: {
-	    Uint32 pmask;
-	    SDL_Pen *pen = SDL_PenModifyBegin(simpen->header.id);
+            Uint32 pmask;
+            SDL_Pen *pen = SDL_PenModifyBegin(simpen->header.id);
 
-	    if (step.index) {
-		pmask = SDL_PEN_ERASER_MASK;
-	    } else {
-		pmask = SDL_PEN_INK_MASK;
-	    }
+            if (step.index) {
+                pmask = SDL_PEN_ERASER_MASK;
+            } else {
+                pmask = SDL_PEN_INK_MASK;
+            }
 
-	    SDL_PenModifyAddCapabilities(pen, pmask);
-	    SDL_PenModifyEnd(pen, SDL_TRUE);
+            SDL_PenModifyAddCapabilities(pen, pmask);
+            SDL_PenModifyEnd(pen, SDL_TRUE);
 
-	    simpen->header.flags &= ~(SDL_PEN_INK_MASK | SDL_PEN_ERASER_MASK);
-	    simpen->header.flags |= pmask;
-	    break;
-	}
+            simpen->header.flags &= ~(SDL_PEN_INK_MASK | SDL_PEN_ERASER_MASK);
+            simpen->header.flags |= pmask;
+            break;
+        }
 
         default:
             SDLTest_AssertCheck(0,
@@ -1044,40 +1044,40 @@ pen_buttonReporting(void *arg)
 
     for (pen_nr = 0; pen_nr < 2; ++pen_nr) {
         float *expected_axes = axes + pen_nr;
-	SDL_bool found_event = SDL_FALSE;
+        SDL_bool found_event = SDL_FALSE;
         Uint16 pen_state = 0x0000 | SDL_PEN_DOWN_MASK;
-	Uint8 tip = SDL_PEN_TIP_INK;
+        Uint8 tip = SDL_PEN_TIP_INK;
 
         if (pen_nr == 1) {
             pen_state |= SDL_PEN_ERASER_MASK;
-	    tip = SDL_PEN_TIP_ERASER;
+            tip = SDL_PEN_TIP_ERASER;
         }
 
-	SDL_SendPenTipEvent(0, ptest.ids[pen_nr], SDL_PRESSED);
+        SDL_SendPenTipEvent(0, ptest.ids[pen_nr], SDL_PRESSED);
 
-	while (SDL_PollEvent(&event)) {
-	    if (event.type == SDL_EVENT_PEN_DOWN) {
-		SDLTest_AssertCheck(event.ptip.which == ptest.ids[pen_nr],
-			    "Received SDL_EVENT_PEN_DOWN from correct pen");
-		SDLTest_AssertCheck(event.ptip.tip == (pen_nr == 0)? SDL_PEN_TIP_INK : SDL_PEN_TIP_ERASER,
-				    "Received SDL_EVENT_PEN_DOWN for correct tip");
-		SDLTest_AssertCheck(event.ptip.state == SDL_PRESSED,
-				    "Received SDL_EVENT_PEN_DOWN but and marked SDL_PRESSED");
-		SDLTest_AssertCheck(event.ptip.tip == tip,
-				    "Received tip %x but expected %x", event.ptip.tip, tip);
-		SDLTest_AssertCheck(event.ptip.pen_state == pen_state,
-				    "Received SDL_EVENT_PEN_DOWN, and state %04x == %04x (expected)",
-				    event.pbutton.pen_state, pen_state);
-		SDLTest_AssertCheck((event.ptip.x == expected_x[pen_nr]) && (event.ptip.y == expected_y[pen_nr]),
-				    "Received SDL_EVENT_PEN_DOWN event at correct coordinates: (%f, %f) vs (%f, %f) (expected)",
-				    event.pbutton.x, event.pbutton.y, expected_x[pen_nr], expected_y[pen_nr]);
-		SDLTest_AssertCheck(0 == SDL_memcmp(expected_axes, event.pbutton.axes, sizeof(float) * SDL_PEN_NUM_AXES),
-				    "Received SDL_EVENT_PEN_DOWN event with correct axis values");
-		found_event = SDL_TRUE;
-	    }
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_PEN_DOWN) {
+                SDLTest_AssertCheck(event.ptip.which == ptest.ids[pen_nr],
+                            "Received SDL_EVENT_PEN_DOWN from correct pen");
+                SDLTest_AssertCheck(event.ptip.tip == (pen_nr == 0)? SDL_PEN_TIP_INK : SDL_PEN_TIP_ERASER,
+                                    "Received SDL_EVENT_PEN_DOWN for correct tip");
+                SDLTest_AssertCheck(event.ptip.state == SDL_PRESSED,
+                                    "Received SDL_EVENT_PEN_DOWN but and marked SDL_PRESSED");
+                SDLTest_AssertCheck(event.ptip.tip == tip,
+                                    "Received tip %x but expected %x", event.ptip.tip, tip);
+                SDLTest_AssertCheck(event.ptip.pen_state == pen_state,
+                                    "Received SDL_EVENT_PEN_DOWN, and state %04x == %04x (expected)",
+                                    event.pbutton.pen_state, pen_state);
+                SDLTest_AssertCheck((event.ptip.x == expected_x[pen_nr]) && (event.ptip.y == expected_y[pen_nr]),
+                                    "Received SDL_EVENT_PEN_DOWN event at correct coordinates: (%f, %f) vs (%f, %f) (expected)",
+                                    event.pbutton.x, event.pbutton.y, expected_x[pen_nr], expected_y[pen_nr]);
+                SDLTest_AssertCheck(0 == SDL_memcmp(expected_axes, event.pbutton.axes, sizeof(float) * SDL_PEN_NUM_AXES),
+                                    "Received SDL_EVENT_PEN_DOWN event with correct axis values");
+                found_event = SDL_TRUE;
+            }
             SDLTest_AssertCheck(found_event,
                                 "Received the expected SDL_EVENT_PEN_DOWN event");
-	}
+        }
     }
 
     SDLTest_AssertPass("Pen and eraser set up for button testing");
@@ -1171,40 +1171,40 @@ pen_buttonReporting(void *arg)
 
     for (pen_nr = 0; pen_nr < 2; ++pen_nr) {
         float *expected_axes = axes + pen_nr;
-	SDL_bool found_event = SDL_FALSE;
+        SDL_bool found_event = SDL_FALSE;
         Uint16 pen_state = 0x0000;
-	Uint8 tip = SDL_PEN_TIP_INK;
+        Uint8 tip = SDL_PEN_TIP_INK;
 
         if (pen_nr == 1) {
             pen_state |= SDL_PEN_ERASER_MASK;
-	    tip = SDL_PEN_TIP_ERASER;
+            tip = SDL_PEN_TIP_ERASER;
         }
 
-	SDL_SendPenTipEvent(0, ptest.ids[pen_nr], SDL_RELEASED);
+        SDL_SendPenTipEvent(0, ptest.ids[pen_nr], SDL_RELEASED);
 
-	while (SDL_PollEvent(&event)) {
-	    if (event.type == SDL_EVENT_PEN_UP) {
-		SDLTest_AssertCheck(event.ptip.which == ptest.ids[pen_nr],
-			    "Received SDL_EVENT_PEN_UP from correct pen");
-		SDLTest_AssertCheck(event.ptip.tip == (pen_nr == 0)? SDL_PEN_TIP_INK : SDL_PEN_TIP_ERASER,
-				    "Received SDL_EVENT_PEN_UP for correct tip");
-		SDLTest_AssertCheck(event.ptip.state == SDL_RELEASED,
-				    "Received SDL_EVENT_PEN_UP but and marked SDL_RELEASED");
-		SDLTest_AssertCheck(event.ptip.tip == tip,
-				    "Received tip %x but expected %x", event.ptip.tip, tip);
-		SDLTest_AssertCheck((event.ptip.pen_state & 0xff00) == (pen_state & 0xff00),
-				    "Received SDL_EVENT_PEN_UP, and state %04x == %04x (expected)",
-				    event.pbutton.pen_state, pen_state);
-		SDLTest_AssertCheck((event.ptip.x == expected_x[pen_nr]) && (event.ptip.y == expected_y[pen_nr]),
-				    "Received SDL_EVENT_PEN_UP event at correct coordinates: (%f, %f) vs (%f, %f) (expected)",
-				    event.pbutton.x, event.pbutton.y, expected_x[pen_nr], expected_y[pen_nr]);
-		SDLTest_AssertCheck(0 == SDL_memcmp(expected_axes, event.pbutton.axes, sizeof(float) * SDL_PEN_NUM_AXES),
-				    "Received SDL_EVENT_PEN_UP event with correct axis values");
-		found_event = SDL_TRUE;
-	    }
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_PEN_UP) {
+                SDLTest_AssertCheck(event.ptip.which == ptest.ids[pen_nr],
+                            "Received SDL_EVENT_PEN_UP from correct pen");
+                SDLTest_AssertCheck(event.ptip.tip == (pen_nr == 0)? SDL_PEN_TIP_INK : SDL_PEN_TIP_ERASER,
+                                    "Received SDL_EVENT_PEN_UP for correct tip");
+                SDLTest_AssertCheck(event.ptip.state == SDL_RELEASED,
+                                    "Received SDL_EVENT_PEN_UP but and marked SDL_RELEASED");
+                SDLTest_AssertCheck(event.ptip.tip == tip,
+                                    "Received tip %x but expected %x", event.ptip.tip, tip);
+                SDLTest_AssertCheck((event.ptip.pen_state & 0xff00) == (pen_state & 0xff00),
+                                    "Received SDL_EVENT_PEN_UP, and state %04x == %04x (expected)",
+                                    event.pbutton.pen_state, pen_state);
+                SDLTest_AssertCheck((event.ptip.x == expected_x[pen_nr]) && (event.ptip.y == expected_y[pen_nr]),
+                                    "Received SDL_EVENT_PEN_UP event at correct coordinates: (%f, %f) vs (%f, %f) (expected)",
+                                    event.pbutton.x, event.pbutton.y, expected_x[pen_nr], expected_y[pen_nr]);
+                SDLTest_AssertCheck(0 == SDL_memcmp(expected_axes, event.pbutton.axes, sizeof(float) * SDL_PEN_NUM_AXES),
+                                    "Received SDL_EVENT_PEN_UP event with correct axis values");
+                found_event = SDL_TRUE;
+            }
             SDLTest_AssertCheck(found_event,
                                 "Received the expected SDL_EVENT_PEN_UP event");
-	}
+        }
     }
 
     /* Cleanup */
@@ -1358,8 +1358,8 @@ pen_movementAndAxes(void *arg)
                 return TEST_ABORTED;
             }
         } while (event.type != SDL_EVENT_PEN_DOWN
-		 && event.type != SDL_EVENT_PEN_UP
-		 && event.type != SDL_EVENT_PEN_MOTION
+                 && event.type != SDL_EVENT_PEN_UP
+                 && event.type != SDL_EVENT_PEN_MOTION
                  && event.type != SDL_EVENT_PEN_BUTTON_UP
                  && event.type != SDL_EVENT_PEN_BUTTON_DOWN); /* skip boring events */
 
@@ -1415,7 +1415,7 @@ pen_movementAndAxes(void *arg)
             break;
 
         case SIMPEN_ACTION_ERASER_MODE:
-	    break;
+            break;
 
         default:
             SDLTest_AssertCheck(0, "Error in pen simulator: unexpected action %d", last_action->type);
@@ -1817,10 +1817,10 @@ pen_mouseEmulationDelayed(void *arg)
         SDL_SendPenButton(0, ptest.ids[0], SDL_PRESSED, (Uint8)i);
         SDLTest_AssertCheck(0 == _mouseemu_last_event,
                             "Non-touching button press suppressed (A.1): %d", _mouseemu_last_event);
-	SDL_SendPenTipEvent(0, ptest.ids[0], SDL_PRESSED);
+        SDL_SendPenTipEvent(0, ptest.ids[0], SDL_PRESSED);
         _penmouse_expect_button(SDL_PRESSED, i + 1);
 
-	SDL_SendPenTipEvent(0, ptest.ids[0], SDL_RELEASED);
+        SDL_SendPenTipEvent(0, ptest.ids[0], SDL_RELEASED);
         _penmouse_expect_button(SDL_RELEASED, i + 1);
 
         SDL_SendPenButton(0, ptest.ids[0], SDL_RELEASED, (Uint8)i);
@@ -1834,13 +1834,13 @@ pen_mouseEmulationDelayed(void *arg)
         SDL_SendPenButton(0, ptest.ids[0], SDL_PRESSED, (Uint8)i);
         SDLTest_AssertCheck(0 == _mouseemu_last_event,
                             "Non-touching button press suppressed (B.1): %d", _mouseemu_last_event);
-	SDL_SendPenTipEvent(0, ptest.ids[0], SDL_PRESSED);
+        SDL_SendPenTipEvent(0, ptest.ids[0], SDL_PRESSED);
         _penmouse_expect_button(SDL_PRESSED, i + 1);
 
         SDL_SendPenButton(0, ptest.ids[0], SDL_RELEASED, (Uint8)i);
         SDLTest_AssertCheck(0 == _mouseemu_last_event,
                             "Non-touching button press suppressed (B.2): %d", _mouseemu_last_event);
-	SDL_SendPenTipEvent(0, ptest.ids[0], SDL_RELEASED);
+        SDL_SendPenTipEvent(0, ptest.ids[0], SDL_RELEASED);
         _penmouse_expect_button(SDL_RELEASED, i + 1);
     }
     SDLTest_AssertPass("Delayed button press mouse emulation, touching and then releasing button");
@@ -1858,11 +1858,11 @@ pen_mouseEmulationDelayed(void *arg)
 static int
 pen_memoryLayout(void *arg)
 {
-#define LAYOUT_COMPATIBLE(field)					\
+#define LAYOUT_COMPATIBLE(field) \
     SDLTest_AssertCheck(offsetof(SDL_PenTipEvent, field) == offsetof(SDL_PenMotionEvent, field), \
-			"Memory layout SDL_PenTipEvent and SDL_PenMotionEvent compatibility: '" #field "'"); \
+                        "Memory layout SDL_PenTipEvent and SDL_PenMotionEvent compatibility: '" #field "'"); \
     SDLTest_AssertCheck(offsetof(SDL_PenTipEvent, field) == offsetof(SDL_PenButtonEvent, field), \
-			"Memory layout SDL_PenTipEvent and SDL_PenBUttonEvent compatibility: '" #field "'");
+                        "Memory layout SDL_PenTipEvent and SDL_PenBUttonEvent compatibility: '" #field "'");
 
     LAYOUT_COMPATIBLE(which);
     LAYOUT_COMPATIBLE(x);
