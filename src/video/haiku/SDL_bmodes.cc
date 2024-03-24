@@ -52,8 +52,8 @@ static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
     return (SDL_BWin *)(window->driverdata);
 }
 
-static SDL_INLINE SDL_BLooper *_GetBeLooper() {
-    return SDL_Looper;
+static SDL_INLINE SDL_BHandler *_GetBeLooper() {
+    return SDL_Handler;
 }
 
 static SDL_INLINE display_mode * _ExtractBMode(SDL_DisplayMode *mode) {
