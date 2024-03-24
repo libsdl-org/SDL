@@ -269,7 +269,7 @@ static void pen_sort(void)
               pen_compare);
     pen_handler.sorted = SDL_TRUE;
 }
-#include<stdio.h>
+
 SDL_Pen *SDL_PenModifyBegin(Uint32 instance_id)
 {
     SDL_PenID id = { 0 };
