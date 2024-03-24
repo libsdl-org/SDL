@@ -655,19 +655,6 @@ extern "C" {
 #define SDL_HINT_GDK_TEXTINPUT_TITLE "SDL_GDK_TEXTINPUT_TITLE"
 
 /**
- * A variable controlling whether grabbing input grabs the keyboard
- *
- * The variable can be set to the following values:
- *   "0"       - Grab will affect only the mouse. (default)
- *   "1"       - Grab will affect mouse and keyboard.
- *
- * By default SDL will not grab the keyboard so system shortcuts still work.
- *
- * This hint can be set anytime.
- */
-#define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
-
-/**
  * A variable to control whether SDL_hid_enumerate() enumerates all HID devices or only controllers.
  *
  * The variable can be set to the following values:

@@ -462,7 +462,6 @@ SDL3_0.0.0 {
     SDL_GetWindowFlags;
     SDL_GetWindowFromID;
     SDL_GetWindowFullscreenMode;
-    SDL_GetWindowGrab;
     SDL_GetWindowICCProfile;
     SDL_GetWindowID;
     SDL_GetWindowKeyboardGrab;
@@ -752,7 +751,6 @@ SDL3_0.0.0 {
     SDL_SetWindowFocusable;
     SDL_SetWindowFullscreen;
     SDL_SetWindowFullscreenMode;
-    SDL_SetWindowGrab;
     SDL_SetWindowHitTest;
     SDL_SetWindowIcon;
     SDL_SetWindowInputFocus;

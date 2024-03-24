@@ -709,6 +709,7 @@ Calling SDL_GetHint() with the name of the hint being changed from within a hint
 The following hints have been removed:
 * SDL_HINT_ACCELEROMETER_AS_JOYSTICK
 * SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS - gamepad buttons are always positional
+* SDL_HINT_GRAB_KEYBOARD - use SDL_SetWindowKeyboardGrab() instead
 * SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver() instead
 * SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has extended text
 * SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
@@ -1717,6 +1718,8 @@ SDL_GL_SwapWindow() returns 0 if the function succeeds or a negative error code 
 SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
 SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
+
+SDL_SetWindowGrab() and SDL_GetWindowGrab() have been removed. Use SDL_SetWindowMouseGrab()/SDL_GetWindowMouseGrab() or SDL_SetWindowKeyboardGrab()/SDL_GetWindowKeyboardGrab() for grabbing mouse and/or keyboard input respectively.
 
 The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported on Windows, Mac (Cocoa), X11, and Wayland. Creating windows with these flags must happen via the `SDL_CreatePopupWindow()` function. This function requires passing in the handle to a valid parent window for the popup, and the popup window is positioned relative to the parent.
 

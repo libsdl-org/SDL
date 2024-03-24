@@ -1911,12 +1911,7 @@ static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)
     }
 
     if (flags & SDL_WINDOW_MOUSE_GRABBED) {
-        /* We must specifically call SDL_SetWindowGrab() and not
-           SDL_SetWindowMouseGrab() here because older applications may use
-           this flag plus SDL_HINT_GRAB_KEYBOARD to indicate that they want
-           the keyboard grabbed too and SDL_SetWindowMouseGrab() won't do that.
-        */
-        SDL_SetWindowGrab(window, SDL_TRUE);
+        SDL_SetWindowMouseGrab(window, SDL_TRUE);
     }
     if (flags & SDL_WINDOW_KEYBOARD_GRABBED) {
         SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
@@ -3311,23 +3306,6 @@ void SDL_UpdateWindowGrab(SDL_Window *window)
     }
 }
 
-int SDL_SetWindowGrab(SDL_Window *window, SDL_bool grabbed)
-{
-    int ret_mouse_grab = 0;
-    int ret_keyboard_grab = 0;
-
-    CHECK_WINDOW_MAGIC(window, -1);
-    CHECK_WINDOW_NOT_POPUP(window, -1);
-
-    ret_mouse_grab = SDL_SetWindowMouseGrab(window, grabbed);
-
-    if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
-        ret_keyboard_grab = SDL_SetWindowKeyboardGrab(window, grabbed);
-    }
-
-    return (!ret_mouse_grab && !ret_keyboard_grab) ? 0 : -1;
-}
-
 int SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed)
 {
     CHECK_WINDOW_MAGIC(window, -1);
@@ -3386,11 +3364,6 @@ int SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed)
         return -1;
     }
     return 0;
-}
-
-SDL_bool SDL_GetWindowGrab(SDL_Window *window)
-{
-    return SDL_GetWindowKeyboardGrab(window) || SDL_GetWindowMouseGrab(window);
 }
 
 SDL_bool SDL_GetWindowKeyboardGrab(SDL_Window *window)
