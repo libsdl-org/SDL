@@ -838,7 +838,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     Display *display = videodata->display;
     KeyCode keycode = xevent->xkey.keycode;
     KeySym keysym = NoSymbol;
-    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+    char text[64];
     Status status = 0;
     SDL_bool handled_by_ime = SDL_FALSE;
 

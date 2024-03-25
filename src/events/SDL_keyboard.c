@@ -1184,6 +1184,10 @@ int SDL_SendKeyboardText(const char *text)
         return 0;
     }
 
+    if (!text || !*text) {
+        return 0;
+    }
+
     /* Don't post text events for unprintable characters */
     if (SDL_iscntrl((unsigned char)*text)) {
         return 0;
@@ -1215,6 +1219,10 @@ int SDL_SendEditingText(const char *text, int start, int length)
     int posted;
 
     if (!SDL_TextInputActive()) {
+        return 0;
+    }
+
+    if (!text) {
         return 0;
     }
 

@@ -320,7 +320,6 @@ typedef struct SDL_TextEditingEvent
     Sint32 length;      /**< The length of selected editing text */
 } SDL_TextEditingEvent;
 
-#define SDL_TEXTINPUTEVENT_TEXT_SIZE 64
 /**
  *  Keyboard text input event structure (event.text.*)
  *

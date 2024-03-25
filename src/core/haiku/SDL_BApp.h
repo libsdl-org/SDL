@@ -310,7 +310,7 @@ class SDL_BLooper : public BLooper
             const int8 *keyUtf8;
             ssize_t count;
             if (msg->FindData("key-utf8", B_INT8_TYPE, (const void **)&keyUtf8, &count) == B_OK) {
-                char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+                char text[64];
                 SDL_zeroa(text);
                 SDL_memcpy(text, keyUtf8, count);
                 SDL_SendKeyboardText(text);
