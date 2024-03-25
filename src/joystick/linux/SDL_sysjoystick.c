@@ -1036,21 +1036,24 @@ static int LINUX_JoystickInit(void)
     }
 
     if (enumeration_method == ENUMERATION_LIBUDEV) {
-        if (SDL_UDEV_Init() < 0) {
-            return SDL_SetError("Could not initialize UDEV");
-        }
+        if (SDL_UDEV_Init() == 0) {
+            /* Set up the udev callback */
+            if (SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
+                SDL_UDEV_Quit();
+                return SDL_SetError("Could not set up joystick <-> udev callback");
+            }
 
-        /* Set up the udev callback */
-        if (SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
-            SDL_UDEV_Quit();
-            return SDL_SetError("Could not set up joystick <-> udev callback");
+            /* Force a scan to build the initial device list */
+            SDL_UDEV_Scan();
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "udev init failed, disabling udev integration");
+            enumeration_method = ENUMERATION_FALLBACK;
         }
-
-        /* Force a scan to build the initial device list */
-        SDL_UDEV_Scan();
-    } else
+    }
 #endif
-    {
+
+    if (enumeration_method != ENUMERATION_LIBUDEV) {
 #if defined(HAVE_INOTIFY)
         inotify_fd = SDL_inotify_init1();
 
