@@ -765,7 +765,6 @@ static int DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
 
-    joystick->instance_id = device->instance_id;
     joystick->hwdata = device;
     device->joystick = joystick;
     joystick->name = device->product;

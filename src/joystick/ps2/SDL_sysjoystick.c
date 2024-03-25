@@ -214,7 +214,6 @@ static int PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = PS2_BUTTONS;
     joystick->naxes = PS2_TOTAL_AXIS;
     joystick->nhats = 0;
-    joystick->instance_id = device_index;
 
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
 

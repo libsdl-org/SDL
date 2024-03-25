@@ -139,7 +139,6 @@ extern "C"
         BJoystick *stick;
 
         /* Create the joystick data structure */
-        joystick->instance_id = device_index;
         joystick->hwdata = (struct joystick_hwdata *) SDL_calloc(1, sizeof(*joystick->hwdata));
         if (joystick->hwdata == NULL) {
             return -1;

@@ -91,7 +91,6 @@ static int N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = NB_BUTTONS;
     joystick->naxes = 4;
     joystick->nhats = 0;
-    joystick->instance_id = device_index;
 
     return 0;
 }

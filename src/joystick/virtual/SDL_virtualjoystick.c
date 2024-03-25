@@ -422,7 +422,6 @@ static int VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
     if (!hwdata) {
         return SDL_SetError("No such device");
     }
-    joystick->instance_id = hwdata->instance_id;
     joystick->hwdata = hwdata;
     joystick->naxes = hwdata->desc.naxes;
     joystick->nbuttons = hwdata->desc.nbuttons;

@@ -948,7 +948,6 @@ static int IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     joystick->hwdata = device;
-    joystick->instance_id = device->instance_id;
 
     joystick->naxes = device->naxes;
     joystick->nhats = device->nhats;

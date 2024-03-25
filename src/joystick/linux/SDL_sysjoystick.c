@@ -1593,7 +1593,6 @@ static int LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
         return SDL_SetError("No such device");
     }
 
-    joystick->instance_id = item->device_instance;
     joystick->hwdata = (struct joystick_hwdata *)
         SDL_calloc(1, sizeof(*joystick->hwdata));
     if (!joystick->hwdata) {
