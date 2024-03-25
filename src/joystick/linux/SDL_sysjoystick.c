@@ -970,7 +970,7 @@ static void LINUX_JoystickDetect(void)
     } else
 #endif
 #ifdef HAVE_INOTIFY
-        if (inotify_fd >= 0 && last_joy_detect_time != 0) {
+    if (inotify_fd >= 0 && last_joy_detect_time != 0) {
         LINUX_InotifyJoystickDetect();
     } else
 #endif
