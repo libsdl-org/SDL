@@ -29,6 +29,7 @@
 #include <limits.h> /* For INT_MAX */
 
 #include "SDL_x11video.h"
+#include "SDL_x11pen.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
@@ -2032,6 +2033,12 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
             SDL_GetTicks() >= data->windowlist[i]->flash_cancel_time) {
             X11_FlashWindow(_this, data->windowlist[i]->window, SDL_FLASH_CANCEL);
         }
+    }
+
+    if (data->xinput_hierarchy_changed) {
+        X11_InitPen(_this);
+        X11_Xinput2UpdateDevices(_this, SDL_FALSE);
+        data->xinput_hierarchy_changed = SDL_FALSE;
     }
 }
 
