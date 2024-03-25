@@ -35,7 +35,6 @@ static int IME_Init(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
-static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
 #ifndef MAPVK_VK_TO_VSC
@@ -291,11 +290,6 @@ int WIN_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
 
 void WIN_ClearComposition(SDL_VideoDevice *_this)
 {
-}
-
-SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this)
-{
-    return SDL_FALSE;
 }
 
 SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
@@ -774,15 +768,6 @@ static void IME_ClearComposition(SDL_VideoData *videodata)
     ImmNotifyIME(himc, NI_CLOSECANDIDATE, 0, 0);
     ImmReleaseContext(videodata->ime_hwnd_current, himc);
     SDL_SendEditingText("", 0, 0);
-}
-
-static SDL_bool IME_IsTextInputShown(SDL_VideoData *videodata)
-{
-    if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
-        return SDL_FALSE;
-    }
-
-    return videodata->ime_uicontext != 0;
 }
 
 static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
@@ -1731,12 +1716,6 @@ void IME_Present(SDL_VideoData *videodata)
     }
 
     /* FIXME: Need to show the IME bitmap */
-}
-
-SDL_bool WIN_IsTextInputShown(SDL_VideoDevice *_this)
-{
-    SDL_VideoData *videodata = _this->driverdata;
-    return IME_IsTextInputShown(videodata);
 }
 
 void WIN_ClearComposition(SDL_VideoDevice *_this)

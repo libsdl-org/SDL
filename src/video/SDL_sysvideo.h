@@ -308,7 +308,6 @@ struct SDL_VideoDevice
     void (*StopTextInput)(SDL_VideoDevice *_this);
     int (*SetTextInputRect)(SDL_VideoDevice *_this, const SDL_Rect *rect);
     void (*ClearComposition)(SDL_VideoDevice *_this);
-    SDL_bool (*IsTextInputShown)(SDL_VideoDevice *_this);
 
     /* Screen keyboard */
     SDL_bool (*HasScreenKeyboardSupport)(SDL_VideoDevice *_this);

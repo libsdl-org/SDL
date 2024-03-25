@@ -256,7 +256,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->StopTextInput = WIN_StopTextInput;
     device->SetTextInputRect = WIN_SetTextInputRect;
     device->ClearComposition = WIN_ClearComposition;
-    device->IsTextInputShown = WIN_IsTextInputShown;
 
     device->SetClipboardData = WIN_SetClipboardData;
     device->GetClipboardData = WIN_GetClipboardData;
@@ -270,7 +269,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->StopTextInput = GDK_StopTextInput;
     device->SetTextInputRect = GDK_SetTextInputRect;
     device->ClearComposition = GDK_ClearComposition;
-    device->IsTextInputShown = GDK_IsTextInputShown;
 
     device->HasScreenKeyboardSupport = GDK_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = GDK_ShowScreenKeyboard;

@@ -4793,15 +4793,6 @@ void SDL_ClearComposition(void)
     }
 }
 
-SDL_bool SDL_TextInputShown(void)
-{
-    if (_this && _this->IsTextInputShown) {
-        return _this->IsTextInputShown(_this);
-    }
-
-    return SDL_FALSE;
-}
-
 SDL_bool SDL_TextInputActive(void)
 {
     return _this && _this->text_input_active;
