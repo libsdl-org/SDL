@@ -93,6 +93,8 @@ static int PSP_JoystickInit(void)
         analog_map[127 - i] = -1 * analog_map[i + 128];
     }
 
+    SDL_PrivateJoystickAdded(1);
+
     return 1;
 }
 

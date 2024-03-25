@@ -70,12 +70,14 @@ extern "C"
         for (i = 0; (numjoysticks < MAX_JOYSTICKS) && (i < nports); ++i) {
             if (joystick.GetDeviceName(i, name) == B_OK) {
                 if (joystick.Open(name) != B_ERROR) {
-                      BString stick_name;
-                      joystick.GetControllerName(&stick_name);
-                      SDL_joyport[numjoysticks] = SDL_strdup(name);
-                      SDL_joyname[numjoysticks] = SDL_CreateJoystickName(0, 0, NULL, stick_name.String());
-                      numjoysticks++;
-                      joystick.Close();
+                    BString stick_name;
+                    joystick.GetControllerName(&stick_name);
+                    SDL_joyport[numjoysticks] = SDL_strdup(name);
+                    SDL_joyname[numjoysticks] = SDL_CreateJoystickName(0, 0, NULL, stick_name.String());
+                    numjoysticks++;
+                    joystick.Close();
+
+                    SDL_PrivateJoystickAdded(numjoysticks);
                 }
             }
         }

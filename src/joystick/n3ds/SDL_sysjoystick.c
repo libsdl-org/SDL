@@ -62,6 +62,7 @@ static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
 static int N3DS_JoystickInit(void)
 {
     hidInit();
+    SDL_PrivateJoystickAdded(1);
     return 0;
 }
 

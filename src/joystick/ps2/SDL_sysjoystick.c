@@ -122,6 +122,7 @@ static int PS2_JoystickInit(void)
                 info->slot = (uint8_t)slot;
                 info->opened = 1;
                 enabled_pads++;
+                SDL_PrivateJoystickAdded(enabled_pads);
             }
         }
     }
