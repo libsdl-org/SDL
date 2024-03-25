@@ -192,7 +192,7 @@
     <ClInclude Include="..\src\camera\SDL_syscamera.h">
       <Filter>camera</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\filesystem\SDL_filesystem.h">
+    <ClInclude Include="..\src\filesystem\SDL_sysfilesystem.h">
       <Filter>filesystem</Filter>
     </ClInclude>
     <ClInclude Include="..\src\joystick\SDL_gamepad_c.h">

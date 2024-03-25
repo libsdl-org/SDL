@@ -423,7 +423,7 @@
     <ClInclude Include="..\..\src\camera\SDL_syscamera.h">
       <Filter>camera</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\filesystem\SDL_filesystem.h">
+    <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h">
       <Filter>filesystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h">
@@ -805,9 +805,6 @@
       <Filter>video\khronos\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan.h">
-      <Filter>video\khronos\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan.hpp">
       <Filter>video\khronos\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_android.h">
