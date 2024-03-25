@@ -423,6 +423,41 @@ int X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         X11_InitPen(_this);
     } break;
 
+    case XI_KeyPress:
+    case XI_KeyRelease:
+    {
+        const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
+        SDL_WindowData *windowdata = X11_FindWindow(_this, xev->event);
+        XEvent xevent;
+
+        if (xev->deviceid != xev->sourceid) {
+            /* Discard events from "Master" devices to avoid duplicates. */
+            return 1;
+        }
+
+        if (cookie->evtype == XI_KeyPress) {
+            xevent.type = KeyPress;
+        } else {
+            xevent.type = KeyRelease;
+        }
+        xevent.xkey.serial = xev->serial;
+        xevent.xkey.send_event = xev->send_event;
+        xevent.xkey.display = xev->display;
+        xevent.xkey.window = xev->event;
+        xevent.xkey.root = xev->root;
+        xevent.xkey.subwindow = xev->child;
+        xevent.xkey.time = xev->time;
+        xevent.xkey.x = xev->event_x;
+        xevent.xkey.y = xev->event_y;
+        xevent.xkey.x_root = xev->root_x;
+        xevent.xkey.y_root = xev->root_y;
+        xevent.xkey.state = xev->mods.effective;
+        xevent.xkey.keycode = xev->detail;
+        xevent.xkey.same_screen = 1;
+
+        X11_HandleKeyEvent(_this, windowdata, (SDL_KeyboardID)xev->sourceid, &xevent);
+    } break;
+
     case XI_RawButtonPress:
     case XI_RawButtonRelease:
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
@@ -608,7 +643,7 @@ int X11_Xinput2IsInitialized(void)
 #endif
 }
 
-SDL_bool X11_Xinput2SelectMouse(SDL_VideoDevice *_this, SDL_Window *window)
+SDL_bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     const SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
@@ -620,6 +655,8 @@ SDL_bool X11_Xinput2SelectMouse(SDL_VideoDevice *_this, SDL_Window *window)
     eventmask.mask = mask;
     eventmask.deviceid = XIAllDevices;
 
+    XISetMask(mask, XI_KeyPress);
+    XISetMask(mask, XI_KeyRelease);
     XISetMask(mask, XI_ButtonPress);
     XISetMask(mask, XI_ButtonRelease);
     XISetMask(mask, XI_Motion);

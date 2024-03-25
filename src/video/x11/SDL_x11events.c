@@ -832,6 +832,99 @@ SDL_WindowData *X11_FindWindow(SDL_VideoDevice *_this, Window window)
     return NULL;
 }
 
+void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_KeyboardID keyboardID, XEvent *xevent)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    Display *display = videodata->display;
+    KeyCode keycode = xevent->xkey.keycode;
+    KeySym keysym = NoSymbol;
+    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+    Status status = 0;
+    SDL_bool handled_by_ime = SDL_FALSE;
+
+    /* Save the original keycode for dead keys, which are filtered out by
+       the XFilterEvent() call below.
+    */
+    int orig_event_type = xevent->type;
+    KeyCode orig_keycode = xevent->xkey.keycode;
+
+    /* filter events catches XIM events and sends them to the correct handler */
+    if (X11_XFilterEvent(xevent, None)) {
+#if 0
+        printf("Filtered event type = %d display = %d window = %d\n",
+               xevent->type, xevent->xany.display, xevent->xany.window);
+#endif
+        /* Make sure dead key press/release events are sent */
+        /* But only if we're using one of the DBus IMEs, otherwise
+           some XIM IMEs will generate duplicate events */
+#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX)
+        SDL_Scancode scancode = videodata->key_layout[orig_keycode];
+        videodata->filter_code = orig_keycode;
+        videodata->filter_time = xevent->xkey.time;
+
+        if (orig_event_type == KeyPress) {
+            SDL_SendKeyboardKey(0, keyboardID, SDL_PRESSED, scancode);
+        } else {
+            SDL_SendKeyboardKey(0, keyboardID, SDL_RELEASED, scancode);
+        }
+#endif
+        return;
+    }
+
+#ifdef DEBUG_XEVENTS
+    printf("window %p: %s (X11 keycode = 0x%X)\n", data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
+#endif
+#ifdef DEBUG_SCANCODES
+    if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
+        int min_keycode, max_keycode;
+        X11_XDisplayKeycodes(display, &min_keycode, &max_keycode);
+        keysym = X11_KeyCodeToSym(_this, keycode, xevent->xkey.state >> 13);
+        SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
+                keycode, keycode - min_keycode, keysym,
+                X11_XKeysymToString(keysym));
+    }
+#endif /* DEBUG SCANCODES */
+
+    SDL_zeroa(text);
+#ifdef X_HAVE_UTF8_STRING
+    if (windowdata->ic && xevent->type == KeyPress) {
+        X11_Xutf8LookupString(windowdata->ic, &xevent->xkey, text, sizeof(text),
+                              &keysym, &status);
+    } else {
+        XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+    }
+#else
+    XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+#endif
+
+#ifdef SDL_USE_IME
+    if (SDL_TextInputActive()) {
+        handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
+    }
+#endif
+    if (!handled_by_ime) {
+        if (xevent->type == KeyPress) {
+            /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
+            if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, videodata->key_layout[keycode]);
+            }
+            if (*text) {
+                SDL_SendKeyboardText(text);
+            }
+        } else {
+            if (X11_KeyRepeat(display, xevent)) {
+                /* We're about to get a repeated key down, ignore the key up */
+                return;
+            }
+            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, videodata->key_layout[keycode]);
+        }
+    }
+
+    if (xevent->type == KeyPress) {
+        X11_UpdateUserTime(windowdata, xevent->xkey.time);
+    }
+}
+
 void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, const float x, const float y, const unsigned long time)
 {
     SDL_Window *window = windowdata->window;
@@ -923,47 +1016,22 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     SDL_VideoData *videodata = _this->driverdata;
     Display *display;
     SDL_WindowData *data;
-    int orig_event_type;
-    KeyCode orig_keycode;
     XClientMessageEvent m;
     int i;
 
     SDL_assert(videodata != NULL);
     display = videodata->display;
 
-    /* Save the original keycode for dead keys, which are filtered out by
-       the XFilterEvent() call below.
-    */
-    orig_event_type = xevent->type;
-    if (orig_event_type == KeyPress || orig_event_type == KeyRelease) {
-        orig_keycode = xevent->xkey.keycode;
-    } else {
-        orig_keycode = 0;
-    }
-
     /* filter events catches XIM events and sends them to the correct handler */
-    if (X11_XFilterEvent(xevent, None) == True) {
+    /* Key press/release events are filtered in X11_HandleKeyEvent() */
+    if (xevent->type != KeyPress && xevent->type != KeyRelease) {
+        if (X11_XFilterEvent(xevent, None)) {
 #if 0
-        printf("Filtered event type = %d display = %d window = %d\n",
-               xevent->type, xevent->xany.display, xevent->xany.window);
+            printf("Filtered event type = %d display = %d window = %d\n",
+                   xevent->type, xevent->xany.display, xevent->xany.window);
 #endif
-        /* Make sure dead key press/release events are sent */
-        /* But only if we're using one of the DBus IMEs, otherwise
-           some XIM IMEs will generate duplicate events */
-        if (orig_keycode) {
-#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX)
-            SDL_Scancode scancode = videodata->key_layout[orig_keycode];
-            videodata->filter_code = orig_keycode;
-            videodata->filter_time = xevent->xkey.time;
-
-            if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, scancode);
-            } else {
-                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, scancode);
-            }
-#endif
+            return;
         }
-        return;
     }
 
 #ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
@@ -1217,69 +1285,6 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
     } break;
 
-        /* Key press/release? */
-    case KeyPress:
-    case KeyRelease:
-    {
-        KeyCode keycode = xevent->xkey.keycode;
-        KeySym keysym = NoSymbol;
-        char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
-        Status status = 0;
-        SDL_bool handled_by_ime = SDL_FALSE;
-
-#ifdef DEBUG_XEVENTS
-        printf("window %p: %s (X11 keycode = 0x%X)\n", data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
-#endif
-#ifdef DEBUG_SCANCODES
-        if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
-            int min_keycode, max_keycode;
-            X11_XDisplayKeycodes(display, &min_keycode, &max_keycode);
-            keysym = X11_KeyCodeToSym(_this, keycode, xevent->xkey.state >> 13);
-            SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
-                    keycode, keycode - min_keycode, keysym,
-                    X11_XKeysymToString(keysym));
-        }
-#endif /* DEBUG SCANCODES */
-
-        SDL_zeroa(text);
-#ifdef X_HAVE_UTF8_STRING
-        if (data->ic && xevent->type == KeyPress) {
-            X11_Xutf8LookupString(data->ic, &xevent->xkey, text, sizeof(text),
-                                  &keysym, &status);
-        } else {
-            XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
-        }
-#else
-        XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
-#endif
-
-#ifdef SDL_USE_IME
-        if (SDL_TextInputActive()) {
-            handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
-        }
-#endif
-        if (!handled_by_ime) {
-            if (xevent->type == KeyPress) {
-                /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
-                if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                    SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, videodata->key_layout[keycode]);
-                }
-                if (*text) {
-                    SDL_SendKeyboardText(text);
-                }
-            } else {
-                if (X11_KeyRepeat(display, xevent)) {
-                    /* We're about to get a repeated key down, ignore the key up */
-                    break;
-                }
-                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, videodata->key_layout[keycode]);
-            }
-        }
-
-        if (xevent->type == KeyPress) {
-            X11_UpdateUserTime(data, xevent->xkey.time);
-        }
-    } break;
 
         /* Have we been iconified? */
     case UnmapNotify:
@@ -1511,11 +1516,19 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     } break;
 
     /* Use XInput2 instead of the xevents API if possible, for:
+       - KeyPress
+       - KeyRelease
        - MotionNotify
        - ButtonPress
        - ButtonRelease
        XInput2 has more precise information, e.g., to distinguish different input devices. */
 #ifndef SDL_VIDEO_DRIVER_X11_XINPUT2
+    case KeyPress:
+    case KeyRelease:
+    {
+        X11_HandleKeyEvent(_this, data, SDL_GLOBAL_KEYBOARD_ID, xevent);
+    } break;
+
     case MotionNotify:
     {
         SDL_Mouse *mouse = SDL_GetMouse();
