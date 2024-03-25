@@ -33,24 +33,24 @@ DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
 static SDL_Cursor *SDL_blank_cursor = NULL;
 
-static int rawInputEnableCount = 0;
-
 typedef struct
 {
     HANDLE ready_event;
     HANDLE done_event;
     HANDLE thread;
-} RawMouseThreadData;
+} RawInputThreadData;
 
-static RawMouseThreadData thread_data = {
+static RawInputThreadData thread_data = {
     INVALID_HANDLE_VALUE,
     INVALID_HANDLE_VALUE,
     INVALID_HANDLE_VALUE
 };
 
-static DWORD WINAPI WIN_RawMouseThread(LPVOID param)
+static DWORD WINAPI WIN_RawInputThread(LPVOID param)
 {
-    RAWINPUTDEVICE rawMouse;
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    RawInputThreadData *data = (RawInputThreadData *)param;
+    RAWINPUTDEVICE devices[2];
     HWND window;
 
     window = CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
@@ -58,76 +58,83 @@ static DWORD WINAPI WIN_RawMouseThread(LPVOID param)
         return 0;
     }
 
-    rawMouse.usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
-    rawMouse.usUsage = USB_USAGE_GENERIC_MOUSE;
-    rawMouse.dwFlags = 0;
-    rawMouse.hwndTarget = window;
+    devices[0].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
+    devices[0].usUsage = USB_USAGE_GENERIC_MOUSE;
+    devices[0].dwFlags = 0;
+    devices[0].hwndTarget = window;
 
-    if (!RegisterRawInputDevices(&rawMouse, 1, sizeof(rawMouse))) {
+    devices[1].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
+    devices[1].usUsage = USB_USAGE_GENERIC_KEYBOARD;
+    devices[1].dwFlags = 0;
+    devices[1].hwndTarget = window;
+
+    if (!RegisterRawInputDevices(devices, SDL_arraysize(devices), sizeof(devices[0]))) {
         DestroyWindow(window);
         return 0;
     }
 
-    /* Make sure we get mouse events as soon as possible */
+    /* Make sure we get events as soon as possible */
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
     /* Tell the parent we're ready to go! */
-    SetEvent(thread_data.ready_event);
+    SetEvent(data->ready_event);
 
     for ( ; ; ) {
-        if (MsgWaitForMultipleObjects(1, &thread_data.done_event, 0, INFINITE, QS_RAWINPUT) != WAIT_OBJECT_0 + 1) {
+        if (MsgWaitForMultipleObjects(1, &data->done_event, 0, INFINITE, QS_RAWINPUT) != WAIT_OBJECT_0 + 1) {
             break;
         }
 
         /* Clear the queue status so MsgWaitForMultipleObjects() will wait again */
         (void)GetQueueStatus(QS_RAWINPUT);
 
-        WIN_PollRawMouseInput();
+        WIN_PollRawInput(_this);
     }
 
-    rawMouse.dwFlags |= RIDEV_REMOVE;
-    RegisterRawInputDevices(&rawMouse, 1, sizeof(rawMouse));
+    devices[0].dwFlags |= RIDEV_REMOVE;
+    devices[1].dwFlags |= RIDEV_REMOVE;
+    RegisterRawInputDevices(devices, SDL_arraysize(devices), sizeof(devices[0]));
 
     DestroyWindow(window);
 
     return 0;
 }
 
-static void CleanupRawMouseThreadData(void)
+static void CleanupRawInputThreadData(RawInputThreadData *data)
 {
-    if (thread_data.thread != INVALID_HANDLE_VALUE) {
-        SetEvent(thread_data.done_event);
-        WaitForSingleObject(thread_data.thread, 500);
-        CloseHandle(thread_data.thread);
-        thread_data.thread = INVALID_HANDLE_VALUE;
+    if (data->thread != INVALID_HANDLE_VALUE) {
+        SetEvent(data->done_event);
+        WaitForSingleObject(data->thread, 500);
+        CloseHandle(data->thread);
+        data->thread = INVALID_HANDLE_VALUE;
     }
 
-    if (thread_data.ready_event != INVALID_HANDLE_VALUE) {
-        CloseHandle(thread_data.ready_event);
-        thread_data.ready_event = INVALID_HANDLE_VALUE;
+    if (data->ready_event != INVALID_HANDLE_VALUE) {
+        CloseHandle(data->ready_event);
+        data->ready_event = INVALID_HANDLE_VALUE;
     }
 
-    if (thread_data.done_event != INVALID_HANDLE_VALUE) {
-        CloseHandle(thread_data.done_event);
-        thread_data.done_event = INVALID_HANDLE_VALUE;
+    if (data->done_event != INVALID_HANDLE_VALUE) {
+        CloseHandle(data->done_event);
+        data->done_event = INVALID_HANDLE_VALUE;
     }
 }
 
-static int ToggleRawInput(SDL_bool enabled)
+static int ToggleRawInput(SDL_VideoDevice *_this, SDL_bool enabled)
 {
+    SDL_VideoData *data = _this->driverdata;
     int result = -1;
 
     if (enabled) {
-        rawInputEnableCount++;
-        if (rawInputEnableCount > 1) {
+        ++data->raw_input_enable_count;
+        if (data->raw_input_enable_count > 1) {
             return 0; /* already done. */
         }
     } else {
-        if (rawInputEnableCount == 0) {
+        if (data->raw_input_enable_count == 0) {
             return 0; /* already done. */
         }
-        rawInputEnableCount--;
-        if (rawInputEnableCount > 0) {
+        --data->raw_input_enable_count;
+        if (data->raw_input_enable_count > 0) {
             return 0; /* not time to disable yet */
         }
     }
@@ -147,7 +154,7 @@ static int ToggleRawInput(SDL_bool enabled)
             goto done;
         }
 
-        thread_data.thread = CreateThread(NULL, 0, WIN_RawMouseThread, &thread_data, 0, NULL);
+        thread_data.thread = CreateThread(NULL, 0, WIN_RawInputThread, &thread_data, 0, NULL);
         if (thread_data.thread == INVALID_HANDLE_VALUE) {
             WIN_SetError("CreateThread");
             goto done;
@@ -162,16 +169,16 @@ static int ToggleRawInput(SDL_bool enabled)
         }
         result = 0;
     } else {
-        CleanupRawMouseThreadData();
+        CleanupRawInputThreadData(&thread_data);
         result = 0;
     }
 
 done:
     if (enabled && result < 0) {
-        CleanupRawMouseThreadData();
+        CleanupRawInputThreadData(&thread_data);
 
-        /* Reset rawInputEnableCount so we can try again */
-        rawInputEnableCount = 0;
+        /* Reset so we can try again */
+        data->raw_input_enable_count = 0;
     }
     return result;
 }
@@ -509,7 +516,7 @@ static int WIN_WarpMouseGlobal(float x, float y)
 
 static int WIN_SetRelativeMouseMode(SDL_bool enabled)
 {
-    return ToggleRawInput(enabled);
+    return ToggleRawInput(SDL_GetVideoDevice(), enabled);
 }
 
 static int WIN_CaptureMouse(SDL_Window *window)
@@ -574,9 +581,10 @@ void WIN_InitMouse(SDL_VideoDevice *_this)
 
 void WIN_QuitMouse(SDL_VideoDevice *_this)
 {
-    if (rawInputEnableCount) { /* force RAWINPUT off here. */
-        rawInputEnableCount = 1;
-        ToggleRawInput(SDL_FALSE);
+    SDL_VideoData *data = _this->driverdata;
+    if (data->raw_input_enable_count) { /* force RAWINPUT off here. */
+        data->raw_input_enable_count = 1;
+        ToggleRawInput(_this, SDL_FALSE);
     }
 
     if (SDL_blank_cursor) {
