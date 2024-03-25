@@ -748,7 +748,7 @@ static void GetDeviceName(HDEVINFO devinfo, const char *instance, char *name, si
             continue;
 
         if (SDL_strcasecmp(instance, DeviceInstanceId) == 0) {
-            SetupDiGetDeviceRegistryPropertyA(devinfo, &data, SPDRP_DEVICEDESC, NULL, (PBYTE)name, len, NULL);
+            SetupDiGetDeviceRegistryPropertyA(devinfo, &data, SPDRP_DEVICEDESC, NULL, (PBYTE)name, (DWORD)len, NULL);
             return;
         }
     }
