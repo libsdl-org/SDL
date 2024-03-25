@@ -339,7 +339,6 @@
 /* ##SDL_keyboard.h */
 #define SDL_IsScreenKeyboardShown SDL_ScreenKeyboardShown
 #define SDL_IsTextInputActive SDL_TextInputActive
-#define SDL_IsTextInputShown SDL_TextInputShown
 
 /* ##SDL_keycode.h */
 #define KMOD_ALT SDL_KMOD_ALT
@@ -840,7 +839,6 @@
 /* ##SDL_keyboard.h */
 #define SDL_IsScreenKeyboardShown SDL_IsScreenKeyboardShown_renamed_SDL_ScreenKeyboardShown
 #define SDL_IsTextInputActive SDL_IsTextInputActive_renamed_SDL_TextInputActive
-#define SDL_IsTextInputShown SDL_IsTextInputShown_renamed_SDL_TextInputShown
 
 /* ##SDL_keycode.h */
 #define KMOD_ALT KMOD_ALT_renamed_SDL_KMOD_ALT

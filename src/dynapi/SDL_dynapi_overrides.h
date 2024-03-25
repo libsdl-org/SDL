@@ -813,7 +813,6 @@
 #define SDL_SyncWindow SDL_SyncWindow_REAL
 #define SDL_TellIO SDL_TellIO_REAL
 #define SDL_TextInputActive SDL_TextInputActive_REAL
-#define SDL_TextInputShown SDL_TextInputShown_REAL
 #define SDL_TimeFromWindows SDL_TimeFromWindows_REAL
 #define SDL_TimeToDateTime SDL_TimeToDateTime_REAL
 #define SDL_TimeToWindows SDL_TimeToWindows_REAL

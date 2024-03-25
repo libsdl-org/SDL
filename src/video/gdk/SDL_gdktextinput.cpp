@@ -217,17 +217,6 @@ void GDK_ClearComposition(SDL_VideoDevice *_this)
     /* See notice in GDK_StartTextInput */
 }
 
-SDL_bool GDK_IsTextInputShown(SDL_VideoDevice *_this)
-{
-    /*
-     * The XGameUiShowTextEntryAsync window
-     * does specify potential input candidates
-     * just below the text box, so technically
-     * this is true whenever the window is shown.
-     */
-    return (g_TextBlock != NULL);
-}
-
 SDL_bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     /* Currently always true for this input method */
@@ -287,8 +276,7 @@ void GDK_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 
 SDL_bool GDK_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* See notice in GDK_IsTextInputShown */
-    return GDK_IsTextInputShown(_this);
+    return (g_TextBlock != NULL);
 }
 
 #ifdef __cplusplus

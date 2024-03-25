@@ -343,15 +343,6 @@ extern DECLSPEC void SDLCALL SDL_StopTextInput(void);
 extern DECLSPEC void SDLCALL SDL_ClearComposition(void);
 
 /**
- * Returns if an IME Composite or Candidate window is currently shown.
- *
- * \returns SDL_TRUE if shown, else SDL_FALSE
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_TextInputShown(void);
-
-/**
  * Set the rectangle used to type Unicode text inputs.
  *
  * Native input methods will place a window with word suggestions near it,
