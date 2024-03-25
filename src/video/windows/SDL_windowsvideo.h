@@ -406,7 +406,9 @@ struct SDL_VideoData
 
     SDL_bool cleared;
 
-    int raw_input_enable_count;
+    SDL_bool raw_mouse_enabled;
+    SDL_bool raw_keyboard_enabled;
+    SDL_bool raw_input_enabled;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_bool ime_com_initialized;
