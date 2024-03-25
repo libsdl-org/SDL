@@ -837,11 +837,14 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
 
 static EM_BOOL Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
-    char text[5];
-    if (Emscripten_ConvertUTF32toUTF8(keyEvent->charCode, text)) {
-        SDL_SendKeyboardText(text);
+    if (SDL_TextInputActive()) {
+        char text[5];
+        if (Emscripten_ConvertUTF32toUTF8(keyEvent->charCode, text)) {
+            SDL_SendKeyboardText(text);
+        }
+        return EM_TRUE;
     }
-    return SDL_EventEnabled(SDL_EVENT_TEXT_INPUT);
+    return EM_FALSE;
 }
 
 static EM_BOOL Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)

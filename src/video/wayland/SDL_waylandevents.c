@@ -1605,7 +1605,9 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     Wayland_UpdateImplicitGrabSerial(input, serial);
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-        has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
+        if (SDL_TextInputActive()) {
+            has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
+        }
     } else {
         if (keyboard_repeat_key_is_set(&input->keyboard_repeat, key)) {
             /* Send any due key repeat events before stopping the repeat and generating the key up event.

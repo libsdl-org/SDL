@@ -1180,6 +1180,10 @@ int SDL_SendKeyboardText(const char *text)
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
 
+    if (!SDL_TextInputActive()) {
+        return 0;
+    }
+
     /* Don't post text events for unprintable characters */
     if (SDL_iscntrl((unsigned char)*text)) {
         return 0;
@@ -1209,6 +1213,10 @@ int SDL_SendEditingText(const char *text, int start, int length)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
+
+    if (!SDL_TextInputActive()) {
+        return 0;
+    }
 
     /* Post the event, if desired */
     posted = 0;
