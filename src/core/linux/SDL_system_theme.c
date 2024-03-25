@@ -22,7 +22,7 @@
 
 #include "SDL_dbus.h"
 #include "SDL_system_theme.h"
-#include "../SDL_sysvideo.h"
+#include "../../video/SDL_sysvideo.h"
 
 #include <unistd.h>
 
