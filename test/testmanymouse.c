@@ -60,11 +60,56 @@ static const char *arrow[] = {
     "0,0"
 };
 
+static const char *cross[] = {
+    /* width height num_colors chars_per_pixel */
+    "    32    32        3            1",
+    /* colors */
+    "o c #ffffff",
+    ". c #000000",
+    "  c None",
+    /* pixels */
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "    oooooooooooooooooooooooo    ",
+    "    oooooooooooooooooooooooo    ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "               oo               ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "                                ",
+    "0,0"
+};
+
 static SDLTest_CommonState *state;
 static int done;
 
-#define PROP_CURSOR_TEXTURE "cursor_texture"
-#define MAX_MICE    3
+#define PROP_ARROW_CURSOR_TEXTURE "arrow_cursor_texture"
+#define PROP_CROSS_CURSOR_TEXTURE "cross_cursor_texture"
+#define MAX_MICE        3
+#define MAX_KEYBOARDS   3
 #define CURSOR_SIZE 48.0f
 #define MAX_TRAIL   500
 #define TRAIL_SIZE  8.0f
@@ -74,7 +119,8 @@ static SDL_Color colors[] = {
     { 255,   0, 255, 255 }, /* mouse 2, magenta */
     { 255, 255,   0, 255 }, /* mouse 3, yellow */
 };
-SDL_COMPILE_TIME_ASSERT(colors, SDL_arraysize(colors) == MAX_MICE);
+SDL_COMPILE_TIME_ASSERT(mouse_colors, SDL_arraysize(colors) == MAX_MICE);
+SDL_COMPILE_TIME_ASSERT(keyboard_colors, SDL_arraysize(colors) == MAX_KEYBOARDS);
 
 typedef struct
 {
@@ -89,7 +135,17 @@ typedef struct
 
 static MouseState mice[MAX_MICE];
 
-static SDL_Texture *CreateCursor(const char *image[], SDL_Renderer *renderer)
+typedef struct
+{
+    SDL_KeyboardID instance_id;
+    SDL_bool active;
+    Uint8 button_state;
+    SDL_FPoint position;
+} KeyboardState;
+
+static KeyboardState keyboards[MAX_KEYBOARDS];
+
+static SDL_Texture *CreateTexture(const char *image[], SDL_Renderer *renderer)
 {
     SDL_Surface *surface;
     SDL_Palette *palette;
@@ -109,6 +165,9 @@ static SDL_Texture *CreateCursor(const char *image[], SDL_Renderer *renderer)
     palette->colors['.'].r = 0xFF;
     palette->colors['.'].g = 0xFF;
     palette->colors['.'].b = 0xFF;
+    palette->colors['o'].r = 0xFF;
+    palette->colors['o'].g = 0xFF;
+    palette->colors['o'].b = 0xFF;
     palette->colors['X'].r = 0x00;
     palette->colors['X'].g = 0x00;
     palette->colors['X'].b = 0x00;
@@ -271,6 +330,115 @@ static void DrawMouseState(SDL_Window *window, SDL_Renderer *renderer, MouseStat
     SDL_RenderTexture(renderer, cursor, NULL, &rect);
 }
 
+static void HandleKeyboardAdded(SDL_KeyboardID instance_id)
+{
+    SDL_Window *window = state->windows[0];
+    int i, w = 0, h = 0;
+
+    SDL_GetWindowSize(window, &w, &h);
+
+    for (i = 0; i < SDL_arraysize(keyboards); ++i) {
+        KeyboardState *keyboard_state = &keyboards[i];
+        if (!keyboard_state->active) {
+            keyboard_state->instance_id = instance_id;
+            keyboard_state->active = SDL_TRUE;
+            keyboard_state->position.x = w * 0.5f;
+            keyboard_state->position.y = h * 0.5f;
+            return;
+        }
+    }
+}
+
+static void HandleKeyboardRemoved(SDL_KeyboardID instance_id)
+{
+    int i;
+
+    for (i = 0; i < SDL_arraysize(keyboards); ++i) {
+        KeyboardState *keyboard_state = &keyboards[i];
+        if (instance_id == keyboard_state->instance_id) {
+            SDL_zerop(keyboard_state);
+            return;
+        }
+    }
+}
+
+static void ActivateKeyboard(SDL_KeyboardID instance_id)
+{
+    int i;
+
+    for (i = 0; i < SDL_arraysize(keyboards); ++i) {
+        KeyboardState *keyboard_state = &keyboards[i];
+        if (keyboard_state->active && instance_id == keyboard_state->instance_id) {
+            return;
+        }
+    }
+
+    HandleKeyboardAdded(instance_id);
+}
+
+static void HandleKeyboardKeyDown(SDL_KeyboardEvent *event)
+{
+    SDL_Window *window = state->windows[0];
+    int i, w = 0, h = 0;
+
+    SDL_GetWindowSize(window, &w, &h);
+
+    ActivateKeyboard(event->which);
+
+    for (i = 0; i < SDL_arraysize(keyboards); ++i) {
+        KeyboardState *keyboard_state = &keyboards[i];
+        if (!keyboard_state->active) {
+            continue;
+        }
+        if (event->which == keyboard_state->instance_id) {
+            switch (event->keysym.sym) {
+            case SDLK_LEFT:
+                keyboard_state->position.x -= CURSOR_SIZE;
+                if (keyboard_state->position.x < 0.0f) {
+                    keyboard_state->position.x = 0.0f;
+                }
+                break;
+            case SDLK_RIGHT:
+                keyboard_state->position.x += CURSOR_SIZE;
+                if (keyboard_state->position.x > w) {
+                    keyboard_state->position.x = w;
+                }
+                break;
+            case SDLK_UP:
+                keyboard_state->position.y -= CURSOR_SIZE;
+                if (keyboard_state->position.y < 0.0f) {
+                    keyboard_state->position.y = 0.0f;
+                }
+                break;
+            case SDLK_DOWN:
+                keyboard_state->position.y += CURSOR_SIZE;
+                if (keyboard_state->position.y > h) {
+                    keyboard_state->position.y = h;
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
+static void DrawKeyboardState(SDL_Window *window, SDL_Renderer *renderer, KeyboardState *keyboard_state, SDL_Texture *cursor, SDL_Color *color)
+{
+    SDL_FRect rect;
+
+    if (!keyboard_state->active) {
+        return;
+    }
+
+    rect.x = keyboard_state->position.x - CURSOR_SIZE / 2;
+    rect.y = keyboard_state->position.y - CURSOR_SIZE / 2;
+    rect.w = CURSOR_SIZE;
+    rect.h = CURSOR_SIZE;
+    SDL_SetTextureColorMod(cursor, color->r, color->g, color->b);
+    SDL_RenderTexture(renderer, cursor, NULL, &rect);
+}
+
 static void loop(void)
 {
     int i, j;
@@ -281,6 +449,15 @@ static void loop(void)
         SDLTest_CommonEvent(state, &event, &done);
 
         switch (event.type) {
+        case SDL_EVENT_KEYBOARD_ADDED:
+            /* Wait for events before activating this keyboard */
+            break;
+        case SDL_EVENT_KEYBOARD_REMOVED:
+            HandleKeyboardRemoved(event.kdevice.which);
+            break;
+        case SDL_EVENT_KEY_DOWN:
+            HandleKeyboardKeyDown(&event.key);
+            break;
         case SDL_EVENT_MOUSE_ADDED:
             /* Wait for events before activating this mouse */
             break;
@@ -302,13 +479,18 @@ static void loop(void)
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
-        SDL_Texture *cursor = (SDL_Texture *)SDL_GetProperty(SDL_GetRendererProperties(renderer), PROP_CURSOR_TEXTURE, NULL);
+        SDL_Texture *arrow_cursor = (SDL_Texture *)SDL_GetProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, NULL);
+        SDL_Texture *cross_cursor = (SDL_Texture *)SDL_GetProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, NULL);
 
         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
         SDL_RenderClear(renderer);
 
         for (j = 0; j < SDL_arraysize(mice); ++j) {
-            DrawMouseState(window, renderer, &mice[j], cursor, &colors[j]);
+            DrawMouseState(window, renderer, &mice[j], arrow_cursor, &colors[j]);
+        }
+
+        for (j = 0; j < SDL_arraysize(keyboards); ++j) {
+            DrawKeyboardState(window, renderer, &keyboards[j], cross_cursor, &colors[j]);
         }
 
         SDL_RenderPresent(renderer);
@@ -349,9 +531,11 @@ int main(int argc, char *argv[])
     /* Create the cursor textures */
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
+        SDL_Texture *cursor_arrow = CreateTexture(arrow, renderer);
+        SDL_Texture *cursor_cross = CreateTexture(cross, renderer);
 
-        SDL_Texture *cursor = CreateCursor(arrow, renderer);
-        SDL_SetProperty(SDL_GetRendererProperties(renderer), PROP_CURSOR_TEXTURE, cursor);
+        SDL_SetProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, cursor_arrow);
+        SDL_SetProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, cursor_cross);
     }
 
     /* We only get mouse motion for distinct devices when relative mode is enabled */

@@ -74,7 +74,6 @@ static const char *cross[] = {
     ". c #ffffff",
     "  c None",
     /* pixels */
-    /* pixels */
     "                                ",
     "                                ",
     "                                ",
