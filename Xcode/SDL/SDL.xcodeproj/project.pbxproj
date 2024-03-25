@@ -177,14 +177,12 @@
 		A7D8B25A23E2514200DCD162 /* vulkan_vi.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72F23E2513E00DCD162 /* vulkan_vi.h */; };
 		A7D8B26023E2514200DCD162 /* vulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73023E2513E00DCD162 /* vulkan.h */; };
 		A7D8B26623E2514200DCD162 /* vk_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73123E2513E00DCD162 /* vk_platform.h */; };
-		A7D8B26C23E2514200DCD162 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
 		A7D8B27223E2514200DCD162 /* vulkan_fuchsia.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73323E2513E00DCD162 /* vulkan_fuchsia.h */; };
 		A7D8B27823E2514200DCD162 /* vulkan_wayland.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73423E2513E00DCD162 /* vulkan_wayland.h */; };
 		A7D8B27E23E2514200DCD162 /* vulkan_win32.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73523E2513E00DCD162 /* vulkan_win32.h */; };
 		A7D8B28423E2514200DCD162 /* vulkan_macos.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73623E2513E00DCD162 /* vulkan_macos.h */; };
 		A7D8B28A23E2514200DCD162 /* vulkan_xlib_xrandr.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73723E2513E00DCD162 /* vulkan_xlib_xrandr.h */; };
 		A7D8B29023E2514200DCD162 /* vulkan_xcb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73823E2513E00DCD162 /* vulkan_xcb.h */; };
-		A7D8B29623E2514200DCD162 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
 		A7D8B29C23E2514200DCD162 /* vulkan_xlib.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */; };
 		A7D8B2A223E2514200DCD162 /* vulkan_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73B23E2513E00DCD162 /* vulkan_ios.h */; };
 		A7D8B2A823E2514200DCD162 /* vulkan_core.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73C23E2513E00DCD162 /* vulkan_core.h */; };
@@ -725,14 +723,12 @@
 		A7D8A72F23E2513E00DCD162 /* vulkan_vi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_vi.h; sourceTree = "<group>"; };
 		A7D8A73023E2513E00DCD162 /* vulkan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan.h; sourceTree = "<group>"; };
 		A7D8A73123E2513E00DCD162 /* vk_platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vk_platform.h; sourceTree = "<group>"; };
-		A7D8A73223E2513E00DCD162 /* vulkan.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vulkan.hpp; sourceTree = "<group>"; };
 		A7D8A73323E2513E00DCD162 /* vulkan_fuchsia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_fuchsia.h; sourceTree = "<group>"; };
 		A7D8A73423E2513E00DCD162 /* vulkan_wayland.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_wayland.h; sourceTree = "<group>"; };
 		A7D8A73523E2513E00DCD162 /* vulkan_win32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_win32.h; sourceTree = "<group>"; };
 		A7D8A73623E2513E00DCD162 /* vulkan_macos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_macos.h; sourceTree = "<group>"; };
 		A7D8A73723E2513E00DCD162 /* vulkan_xlib_xrandr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_xlib_xrandr.h; sourceTree = "<group>"; };
 		A7D8A73823E2513E00DCD162 /* vulkan_xcb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_xcb.h; sourceTree = "<group>"; };
-		A7D8A73923E2513E00DCD162 /* vulkan_mir.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_mir.h; sourceTree = "<group>"; };
 		A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_xlib.h; sourceTree = "<group>"; };
 		A7D8A73B23E2513E00DCD162 /* vulkan_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_ios.h; sourceTree = "<group>"; };
 		A7D8A73C23E2513E00DCD162 /* vulkan_core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_core.h; sourceTree = "<group>"; };
@@ -1707,7 +1703,6 @@
 				A7D8A73323E2513E00DCD162 /* vulkan_fuchsia.h */,
 				A7D8A73B23E2513E00DCD162 /* vulkan_ios.h */,
 				A7D8A73623E2513E00DCD162 /* vulkan_macos.h */,
-				A7D8A73923E2513E00DCD162 /* vulkan_mir.h */,
 				A7D8A72F23E2513E00DCD162 /* vulkan_vi.h */,
 				A7D8A73423E2513E00DCD162 /* vulkan_wayland.h */,
 				A7D8A73523E2513E00DCD162 /* vulkan_win32.h */,
@@ -1715,7 +1710,6 @@
 				A7D8A73723E2513E00DCD162 /* vulkan_xlib_xrandr.h */,
 				A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */,
 				A7D8A73023E2513E00DCD162 /* vulkan.h */,
-				A7D8A73223E2513E00DCD162 /* vulkan.hpp */,
 			);
 			path = vulkan;
 			sourceTree = "<group>";
@@ -2515,7 +2509,6 @@
 				A7D8B26623E2514200DCD162 /* vk_platform.h in Headers */,
 				A7D8B2AE23E2514200DCD162 /* vk_sdk_platform.h in Headers */,
 				A7D8B26023E2514200DCD162 /* vulkan.h in Headers */,
-				A7D8B26C23E2514200DCD162 /* vulkan.hpp in Headers */,
 				A7D8B2B423E2514200DCD162 /* vulkan_android.h in Headers */,
 				A7D8B2A823E2514200DCD162 /* vulkan_core.h in Headers */,
 				E41D20152BA9577D003073FA /* SDL_storage.h in Headers */,
@@ -2523,7 +2516,6 @@
 				A7D8B27223E2514200DCD162 /* vulkan_fuchsia.h in Headers */,
 				A7D8B2A223E2514200DCD162 /* vulkan_ios.h in Headers */,
 				A7D8B28423E2514200DCD162 /* vulkan_macos.h in Headers */,
-				A7D8B29623E2514200DCD162 /* vulkan_mir.h in Headers */,
 				A7D8B25A23E2514200DCD162 /* vulkan_vi.h in Headers */,
 				A7D8B27823E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8B27E23E2514200DCD162 /* vulkan_win32.h in Headers */,
