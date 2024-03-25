@@ -512,11 +512,11 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     }
 
     if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
-        if (data->raw_input_enable_count == 0) {
+        if (!data->raw_keyboard_enabled) {
             SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, scanCode);
         }
     } else {
-        if (data->raw_input_enable_count == 0) {
+        if (!data->raw_keyboard_enabled) {
             SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, scanCode);
         }
 
@@ -536,11 +536,9 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseID mouseID;
 
-    /* We only use raw mouse input in relative mode */
-    if (!mouse->relative_mode || mouse->relative_mode_warp) {
+    if (!data->videodata->raw_mouse_enabled) {
         return;
     }
 
@@ -633,6 +631,10 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_WindowData *data, H
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)hDevice;
 
+    if (!data->videodata->raw_keyboard_enabled) {
+        return;
+    }
+
     Uint8 state = (rawkeyboard->Flags & RI_KEY_BREAK) ? SDL_RELEASED : SDL_PRESSED;
     Uint16 scanCode = rawkeyboard->MakeCode;
     if (rawkeyboard->Flags & RI_KEY_E0) {
@@ -655,10 +657,6 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
     UINT size, count, i, total = 0;
     RAWINPUT *input;
     Uint64 now;
-
-    if (_this->driverdata->raw_input_enable_count == 0) {
-        return;
-    }
 
     /* Relative mouse motion is delivered to the window with keyboard focus */
     window = SDL_GetKeyboardFocus();
@@ -905,8 +903,8 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_c
     }
 
     SDL_free(old_keyboards);
-    SDL_free(old_mice);
     SDL_free(new_keyboards);
+    SDL_free(old_mice);
     SDL_free(new_mice);
 
     SetupDiDestroyDeviceInfoList(devinfo);
@@ -1058,10 +1056,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         RAWINPUT inp;
         UINT size = sizeof(inp);
 
-        if (data->raw_input_enable_count == 0) {
-            break;
-        }
-
         /* Relative mouse motion is delivered to the window with keyboard focus */
         if (data->window != SDL_GetKeyboardFocus()) {
             break;
@@ -1135,7 +1129,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
         }
 
-        if (data->videodata->raw_input_enable_count == 0 && code != SDL_SCANCODE_UNKNOWN) {
+        if (!data->videodata->raw_keyboard_enabled && code != SDL_SCANCODE_UNKNOWN) {
             SDL_SendKeyboardKey(WIN_GetEventTimestamp(), SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, code);
         }
     }
@@ -1149,7 +1143,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
-        if (data->videodata->raw_input_enable_count == 0 && code != SDL_SCANCODE_UNKNOWN) {
+        if (!data->videodata->raw_keyboard_enabled && code != SDL_SCANCODE_UNKNOWN) {
             if (code == SDL_SCANCODE_PRINTSCREEN &&
                 keyboardState[code] == SDL_RELEASED) {
                 SDL_SendKeyboardKey(WIN_GetEventTimestamp(), SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, code);
