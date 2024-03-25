@@ -2320,17 +2320,7 @@ static void text_input_commit_string(void *data,
                                      struct zwp_text_input_v3 *zwp_text_input_v3,
                                      const char *text)
 {
-    if (text && *text) {
-        char buf[SDL_TEXTINPUTEVENT_TEXT_SIZE];
-        size_t text_bytes = SDL_strlen(text), i = 0;
-
-        while (i < text_bytes) {
-            size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
-            SDL_SendKeyboardText(buf);
-
-            i += sz;
-        }
-    }
+    SDL_SendKeyboardText(text);
 }
 
 static void text_input_delete_surrounding_text(void *data,

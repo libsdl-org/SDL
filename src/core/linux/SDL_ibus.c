@@ -228,17 +228,7 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
         dbus->message_iter_init(msg, &iter);
         text = IBus_GetVariantText(conn, &iter, dbus);
 
-        if (text && *text) {
-            char buf[SDL_TEXTINPUTEVENT_TEXT_SIZE];
-            size_t text_bytes = SDL_strlen(text), i = 0;
-
-            while (i < text_bytes) {
-                size_t sz = SDL_utf8strlcpy(buf, text + i, sizeof(buf));
-                SDL_SendKeyboardText(buf);
-
-                i += sz;
-            }
-        }
+        SDL_SendKeyboardText(text);
 
         return DBUS_HANDLER_RESULT_HANDLED;
     }
