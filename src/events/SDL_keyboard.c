@@ -945,9 +945,6 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
     Uint8 repeat = SDL_FALSE;
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
 
-    /* We currently don't have raw keyboard mode, so all key events are global */
-    keyboardID = SDL_GLOBAL_KEYBOARD_ID;
-
     if (scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
         return 0;
     }

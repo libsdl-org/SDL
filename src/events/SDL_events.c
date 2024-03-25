@@ -335,8 +335,8 @@ static void SDL_LogEvent(const SDL_Event *event)
 #undef PRINT_KEYDEV_EVENT
 
 #define PRINT_KEY_EVENT(event)                                                                                                   \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u state=%s repeat=%s scancode=%u keycode=%u mod=%u)", \
-                       (uint)event->key.timestamp, (uint)event->key.windowID,                                                    \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u state=%s repeat=%s scancode=%u keycode=%u mod=%u)", \
+                       (uint)event->key.timestamp, (uint)event->key.windowID, (uint)event->key.which,                            \
                        event->key.state == SDL_PRESSED ? "pressed" : "released",                                                 \
                        event->key.repeat ? "true" : "false",                                                                     \
                        (uint)event->key.keysym.scancode,                                                                         \

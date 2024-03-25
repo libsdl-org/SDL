@@ -908,7 +908,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
         if (xevent->type == KeyPress) {
             /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
             if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, videodata->key_layout[keycode]);
+                SDL_SendKeyboardKey(0, keyboardID, SDL_PRESSED, videodata->key_layout[keycode]);
             }
             if (*text) {
                 SDL_SendKeyboardText(text);
@@ -918,7 +918,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
                 /* We're about to get a repeated key down, ignore the key up */
                 return;
             }
-            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, videodata->key_layout[keycode]);
+            SDL_SendKeyboardKey(0, keyboardID, SDL_RELEASED, videodata->key_layout[keycode]);
         }
     }
 
