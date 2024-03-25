@@ -290,6 +290,7 @@ static Uint32 initial_flightstick_devices[] = {
     MAKE_VIDPID(0x046d, 0xc215), /* Logitech Extreme 3D */
     MAKE_VIDPID(0x231d, 0x0126), /* Gunfighter Mk.III ‘Space Combat Edition’ (right) */
     MAKE_VIDPID(0x231d, 0x0127), /* Gunfighter Mk.III ‘Space Combat Edition’ (left) */
+    MAKE_VIDPID(0x362c, 0x0001), /* Yawman Arrow */
 };
 static SDL_vidpid_list flightstick_devices = {
     SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES, 0, 0, NULL,
