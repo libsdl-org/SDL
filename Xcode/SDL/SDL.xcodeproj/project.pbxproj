@@ -206,7 +206,6 @@
 		A75FCD4823E25AB700529352 /* SDL_keycode.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557DB1595D4D800BBD41B /* SDL_keycode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCD4A23E25AB700529352 /* SDL_cocoakeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68023E2513E00DCD162 /* SDL_cocoakeyboard.h */; };
 		A75FCD4B23E25AB700529352 /* SDL_uikitvulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A63323E2513D00DCD162 /* SDL_uikitvulkan.h */; };
-		A75FCD4E23E25AB700529352 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
 		A75FCD4F23E25AB700529352 /* SDL_loadso.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557DC1595D4D800BBD41B /* SDL_loadso.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCD5023E25AB700529352 /* gl2ext.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72323E2513E00DCD162 /* gl2ext.h */; };
 		A75FCD5123E25AB700529352 /* SDL_clipboardevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93923E2514000DCD162 /* SDL_clipboardevents_c.h */; };
@@ -282,7 +281,6 @@
 		A75FCDA123E25AB700529352 /* vulkan_xlib.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */; };
 		A75FCDA223E25AB700529352 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */; };
 		A75FCDA323E25AB700529352 /* vulkan_vi.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72F23E2513E00DCD162 /* vulkan_vi.h */; };
-		A75FCDA423E25AB700529352 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
 		A75FCDA523E25AB700529352 /* SDL_quit.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557E81595D4D800BBD41B /* SDL_quit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCDA623E25AB700529352 /* default_cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93323E2514000DCD162 /* default_cursor.h */; };
 		A75FCDA723E25AB700529352 /* SDL_render_sw_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8F523E2514000DCD162 /* SDL_render_sw_c.h */; };
@@ -580,7 +578,6 @@
 		A75FCF0123E25AC700529352 /* SDL_keycode.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557DB1595D4D800BBD41B /* SDL_keycode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCF0323E25AC700529352 /* SDL_cocoakeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68023E2513E00DCD162 /* SDL_cocoakeyboard.h */; };
 		A75FCF0423E25AC700529352 /* SDL_uikitvulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A63323E2513D00DCD162 /* SDL_uikitvulkan.h */; };
-		A75FCF0723E25AC700529352 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
 		A75FCF0823E25AC700529352 /* SDL_loadso.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557DC1595D4D800BBD41B /* SDL_loadso.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCF0923E25AC700529352 /* gl2ext.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72323E2513E00DCD162 /* gl2ext.h */; };
 		A75FCF0A23E25AC700529352 /* SDL_clipboardevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93923E2514000DCD162 /* SDL_clipboardevents_c.h */; };
@@ -656,7 +653,6 @@
 		A75FCF5A23E25AC700529352 /* vulkan_xlib.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */; };
 		A75FCF5B23E25AC700529352 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */; };
 		A75FCF5C23E25AC700529352 /* vulkan_vi.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72F23E2513E00DCD162 /* vulkan_vi.h */; };
-		A75FCF5D23E25AC700529352 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
 		A75FCF5E23E25AC700529352 /* SDL_quit.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557E81595D4D800BBD41B /* SDL_quit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A75FCF5F23E25AC700529352 /* default_cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93323E2514000DCD162 /* default_cursor.h */; };
 		A75FCF6023E25AC700529352 /* SDL_render_sw_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8F523E2514000DCD162 /* SDL_render_sw_c.h */; };
@@ -974,7 +970,6 @@
 		A769B0CD23E259AE00872273 /* SDL_systhread_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A78423E2513E00DCD162 /* SDL_systhread_c.h */; };
 		A769B0D023E259AE00872273 /* SDL_cocoakeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A68023E2513E00DCD162 /* SDL_cocoakeyboard.h */; };
 		A769B0D123E259AE00872273 /* SDL_uikitvulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A63323E2513D00DCD162 /* SDL_uikitvulkan.h */; };
-		A769B0D423E259AE00872273 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
 		A769B0D623E259AE00872273 /* gl2ext.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72323E2513E00DCD162 /* gl2ext.h */; };
 		A769B0D723E259AE00872273 /* SDL_clipboardevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93923E2514000DCD162 /* SDL_clipboardevents_c.h */; };
 		A769B0D923E259AE00872273 /* SDL_syshaptic_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A5CF23E2513D00DCD162 /* SDL_syshaptic_c.h */; };
@@ -1036,7 +1031,6 @@
 		A769B12923E259AE00872273 /* vulkan_xlib.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */; };
 		A769B12A23E259AE00872273 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */; };
 		A769B12B23E259AE00872273 /* vulkan_vi.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A72F23E2513E00DCD162 /* vulkan_vi.h */; };
-		A769B12C23E259AE00872273 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
 		A769B12E23E259AE00872273 /* default_cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A93323E2514000DCD162 /* default_cursor.h */; };
 		A769B12F23E259AE00872273 /* SDL_render_sw_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8F523E2514000DCD162 /* SDL_render_sw_c.h */; };
 		A769B13223E259AE00872273 /* SDL_nullvideo.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A60A23E2513D00DCD162 /* SDL_nullvideo.h */; };
@@ -2110,12 +2104,6 @@
 		A7D8B26923E2514200DCD162 /* vk_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73123E2513E00DCD162 /* vk_platform.h */; };
 		A7D8B26A23E2514200DCD162 /* vk_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73123E2513E00DCD162 /* vk_platform.h */; };
 		A7D8B26B23E2514200DCD162 /* vk_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73123E2513E00DCD162 /* vk_platform.h */; };
-		A7D8B26C23E2514200DCD162 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
-		A7D8B26D23E2514200DCD162 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
-		A7D8B26E23E2514200DCD162 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
-		A7D8B26F23E2514200DCD162 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
-		A7D8B27023E2514200DCD162 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
-		A7D8B27123E2514200DCD162 /* vulkan.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73223E2513E00DCD162 /* vulkan.hpp */; };
 		A7D8B27223E2514200DCD162 /* vulkan_fuchsia.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73323E2513E00DCD162 /* vulkan_fuchsia.h */; };
 		A7D8B27323E2514200DCD162 /* vulkan_fuchsia.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73323E2513E00DCD162 /* vulkan_fuchsia.h */; };
 		A7D8B27423E2514200DCD162 /* vulkan_fuchsia.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73323E2513E00DCD162 /* vulkan_fuchsia.h */; };
@@ -2152,12 +2140,6 @@
 		A7D8B29323E2514200DCD162 /* vulkan_xcb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73823E2513E00DCD162 /* vulkan_xcb.h */; };
 		A7D8B29423E2514200DCD162 /* vulkan_xcb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73823E2513E00DCD162 /* vulkan_xcb.h */; };
 		A7D8B29523E2514200DCD162 /* vulkan_xcb.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73823E2513E00DCD162 /* vulkan_xcb.h */; };
-		A7D8B29623E2514200DCD162 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
-		A7D8B29723E2514200DCD162 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
-		A7D8B29823E2514200DCD162 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
-		A7D8B29923E2514200DCD162 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
-		A7D8B29A23E2514200DCD162 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
-		A7D8B29B23E2514200DCD162 /* vulkan_mir.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73923E2513E00DCD162 /* vulkan_mir.h */; };
 		A7D8B29C23E2514200DCD162 /* vulkan_xlib.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */; };
 		A7D8B29D23E2514200DCD162 /* vulkan_xlib.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */; };
 		A7D8B29E23E2514200DCD162 /* vulkan_xlib.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */; };
@@ -3968,14 +3950,12 @@
 		A7D8A72F23E2513E00DCD162 /* vulkan_vi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_vi.h; sourceTree = "<group>"; };
 		A7D8A73023E2513E00DCD162 /* vulkan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan.h; sourceTree = "<group>"; };
 		A7D8A73123E2513E00DCD162 /* vk_platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vk_platform.h; sourceTree = "<group>"; };
-		A7D8A73223E2513E00DCD162 /* vulkan.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vulkan.hpp; sourceTree = "<group>"; };
 		A7D8A73323E2513E00DCD162 /* vulkan_fuchsia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_fuchsia.h; sourceTree = "<group>"; };
 		A7D8A73423E2513E00DCD162 /* vulkan_wayland.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_wayland.h; sourceTree = "<group>"; };
 		A7D8A73523E2513E00DCD162 /* vulkan_win32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_win32.h; sourceTree = "<group>"; };
 		A7D8A73623E2513E00DCD162 /* vulkan_macos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_macos.h; sourceTree = "<group>"; };
 		A7D8A73723E2513E00DCD162 /* vulkan_xlib_xrandr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_xlib_xrandr.h; sourceTree = "<group>"; };
 		A7D8A73823E2513E00DCD162 /* vulkan_xcb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_xcb.h; sourceTree = "<group>"; };
-		A7D8A73923E2513E00DCD162 /* vulkan_mir.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_mir.h; sourceTree = "<group>"; };
 		A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_xlib.h; sourceTree = "<group>"; };
 		A7D8A73B23E2513E00DCD162 /* vulkan_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_ios.h; sourceTree = "<group>"; };
 		A7D8A73C23E2513E00DCD162 /* vulkan_core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vulkan_core.h; sourceTree = "<group>"; };
@@ -5003,7 +4983,6 @@
 				A7D8A73323E2513E00DCD162 /* vulkan_fuchsia.h */,
 				A7D8A73B23E2513E00DCD162 /* vulkan_ios.h */,
 				A7D8A73623E2513E00DCD162 /* vulkan_macos.h */,
-				A7D8A73923E2513E00DCD162 /* vulkan_mir.h */,
 				A7D8A72F23E2513E00DCD162 /* vulkan_vi.h */,
 				A7D8A73423E2513E00DCD162 /* vulkan_wayland.h */,
 				A7D8A73523E2513E00DCD162 /* vulkan_win32.h */,
@@ -5011,7 +4990,6 @@
 				A7D8A73723E2513E00DCD162 /* vulkan_xlib_xrandr.h */,
 				A7D8A73A23E2513E00DCD162 /* vulkan_xlib.h */,
 				A7D8A73023E2513E00DCD162 /* vulkan.h */,
-				A7D8A73223E2513E00DCD162 /* vulkan.hpp */,
 			);
 			path = vulkan;
 			sourceTree = "<group>";
@@ -5596,7 +5574,6 @@
 				5616CA63252BB35F005D5928 /* SDL_sysurl.h in Headers */,
 				A75FCD4A23E25AB700529352 /* SDL_cocoakeyboard.h in Headers */,
 				A75FCD4B23E25AB700529352 /* SDL_uikitvulkan.h in Headers */,
-				A75FCD4E23E25AB700529352 /* vulkan.hpp in Headers */,
 				A75FCD4F23E25AB700529352 /* SDL_loadso.h in Headers */,
 				A75FCD5023E25AB700529352 /* gl2ext.h in Headers */,
 				A75FCD5123E25AB700529352 /* SDL_clipboardevents_c.h in Headers */,
@@ -5680,7 +5657,6 @@
 				A75FCDA123E25AB700529352 /* vulkan_xlib.h in Headers */,
 				A75FCDA223E25AB700529352 /* SDL_uikitwindow.h in Headers */,
 				A75FCDA323E25AB700529352 /* vulkan_vi.h in Headers */,
-				A75FCDA423E25AB700529352 /* vulkan_mir.h in Headers */,
 				A75FCDA523E25AB700529352 /* SDL_quit.h in Headers */,
 				A75FCDA623E25AB700529352 /* default_cursor.h in Headers */,
 				A75FCDA723E25AB700529352 /* SDL_render_sw_c.h in Headers */,
@@ -5833,7 +5809,6 @@
 				5616CA66252BB361005D5928 /* SDL_sysurl.h in Headers */,
 				A75FCF0323E25AC700529352 /* SDL_cocoakeyboard.h in Headers */,
 				A75FCF0423E25AC700529352 /* SDL_uikitvulkan.h in Headers */,
-				A75FCF0723E25AC700529352 /* vulkan.hpp in Headers */,
 				A75FCF0823E25AC700529352 /* SDL_loadso.h in Headers */,
 				A75FCF0923E25AC700529352 /* gl2ext.h in Headers */,
 				A75FCF0A23E25AC700529352 /* SDL_clipboardevents_c.h in Headers */,
@@ -5917,7 +5892,6 @@
 				A75FCF5A23E25AC700529352 /* vulkan_xlib.h in Headers */,
 				A75FCF5B23E25AC700529352 /* SDL_uikitwindow.h in Headers */,
 				A75FCF5C23E25AC700529352 /* vulkan_vi.h in Headers */,
-				A75FCF5D23E25AC700529352 /* vulkan_mir.h in Headers */,
 				A75FCF5E23E25AC700529352 /* SDL_quit.h in Headers */,
 				A75FCF5F23E25AC700529352 /* default_cursor.h in Headers */,
 				A75FCF6023E25AC700529352 /* SDL_render_sw_c.h in Headers */,
@@ -6043,7 +6017,6 @@
 				A769B0D023E259AE00872273 /* SDL_cocoakeyboard.h in Headers */,
 				5616CA5D252BB35E005D5928 /* SDL_sysurl.h in Headers */,
 				A769B0D123E259AE00872273 /* SDL_uikitvulkan.h in Headers */,
-				A769B0D423E259AE00872273 /* vulkan.hpp in Headers */,
 				A769B0D623E259AE00872273 /* gl2ext.h in Headers */,
 				A769B0D723E259AE00872273 /* SDL_clipboardevents_c.h in Headers */,
 				A769B0D923E259AE00872273 /* SDL_syshaptic_c.h in Headers */,
@@ -6114,7 +6087,6 @@
 				F386F6F52884663E001840AA /* SDL_utils_c.h in Headers */,
 				A769B12A23E259AE00872273 /* SDL_uikitwindow.h in Headers */,
 				A769B12B23E259AE00872273 /* vulkan_vi.h in Headers */,
-				A769B12C23E259AE00872273 /* vulkan_mir.h in Headers */,
 				A769B12E23E259AE00872273 /* default_cursor.h in Headers */,
 				A769B12F23E259AE00872273 /* SDL_render_sw_c.h in Headers */,
 				A769B13223E259AE00872273 /* SDL_nullvideo.h in Headers */,
@@ -6387,13 +6359,11 @@
 				A7D8B26723E2514200DCD162 /* vk_platform.h in Headers */,
 				A7D8B2AF23E2514200DCD162 /* vk_sdk_platform.h in Headers */,
 				A7D8B26123E2514200DCD162 /* vulkan.h in Headers */,
-				A7D8B26D23E2514200DCD162 /* vulkan.hpp in Headers */,
 				A7D8B2B523E2514200DCD162 /* vulkan_android.h in Headers */,
 				A7D8B2A923E2514200DCD162 /* vulkan_core.h in Headers */,
 				A7D8B27323E2514200DCD162 /* vulkan_fuchsia.h in Headers */,
 				A7D8B2A323E2514200DCD162 /* vulkan_ios.h in Headers */,
 				A7D8B28523E2514200DCD162 /* vulkan_macos.h in Headers */,
-				A7D8B29723E2514200DCD162 /* vulkan_mir.h in Headers */,
 				A7D8B25B23E2514200DCD162 /* vulkan_vi.h in Headers */,
 				A7D8B27923E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8B27F23E2514200DCD162 /* vulkan_win32.h in Headers */,
@@ -6629,13 +6599,11 @@
 				A7D8B26823E2514200DCD162 /* vk_platform.h in Headers */,
 				A7D8B2B023E2514200DCD162 /* vk_sdk_platform.h in Headers */,
 				A7D8B26223E2514200DCD162 /* vulkan.h in Headers */,
-				A7D8B26E23E2514200DCD162 /* vulkan.hpp in Headers */,
 				A7D8B2B623E2514200DCD162 /* vulkan_android.h in Headers */,
 				A7D8B2AA23E2514200DCD162 /* vulkan_core.h in Headers */,
 				A7D8B27423E2514200DCD162 /* vulkan_fuchsia.h in Headers */,
 				A7D8B2A423E2514200DCD162 /* vulkan_ios.h in Headers */,
 				A7D8B28623E2514200DCD162 /* vulkan_macos.h in Headers */,
-				A7D8B29823E2514200DCD162 /* vulkan_mir.h in Headers */,
 				A7D8B25C23E2514200DCD162 /* vulkan_vi.h in Headers */,
 				A7D8B27A23E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8B28023E2514200DCD162 /* vulkan_win32.h in Headers */,
@@ -6704,7 +6672,6 @@
 				A7D8AE9223E2514100DCD162 /* SDL_cocoakeyboard.h in Headers */,
 				5616CA5A252BB35D005D5928 /* SDL_sysurl.h in Headers */,
 				A7D8ACE523E2514100DCD162 /* SDL_uikitvulkan.h in Headers */,
-				A7D8B27023E2514200DCD162 /* vulkan.hpp in Headers */,
 				A7D8B22823E2514200DCD162 /* gl2ext.h in Headers */,
 				A7D8BB7323E2514500DCD162 /* SDL_clipboardevents_c.h in Headers */,
 				A7D8AAE423E2514100DCD162 /* SDL_syshaptic_c.h in Headers */,
@@ -6775,7 +6742,6 @@
 				F386F6F42884663E001840AA /* SDL_utils_c.h in Headers */,
 				A7D8AC9D23E2514100DCD162 /* SDL_uikitwindow.h in Headers */,
 				A7D8B25E23E2514200DCD162 /* vulkan_vi.h in Headers */,
-				A7D8B29A23E2514200DCD162 /* vulkan_mir.h in Headers */,
 				A7D8BB4F23E2514500DCD162 /* default_cursor.h in Headers */,
 				A7D8B9FF23E2514400DCD162 /* SDL_render_sw_c.h in Headers */,
 				A7D8ABFB23E2514100DCD162 /* SDL_nullvideo.h in Headers */,
@@ -7048,13 +7014,11 @@
 				A7D8B26623E2514200DCD162 /* vk_platform.h in Headers */,
 				A7D8B2AE23E2514200DCD162 /* vk_sdk_platform.h in Headers */,
 				A7D8B26023E2514200DCD162 /* vulkan.h in Headers */,
-				A7D8B26C23E2514200DCD162 /* vulkan.hpp in Headers */,
 				A7D8B2B423E2514200DCD162 /* vulkan_android.h in Headers */,
 				A7D8B2A823E2514200DCD162 /* vulkan_core.h in Headers */,
 				A7D8B27223E2514200DCD162 /* vulkan_fuchsia.h in Headers */,
 				A7D8B2A223E2514200DCD162 /* vulkan_ios.h in Headers */,
 				A7D8B28423E2514200DCD162 /* vulkan_macos.h in Headers */,
-				A7D8B29623E2514200DCD162 /* vulkan_mir.h in Headers */,
 				A7D8B25A23E2514200DCD162 /* vulkan_vi.h in Headers */,
 				A7D8B27823E2514200DCD162 /* vulkan_wayland.h in Headers */,
 				A7D8B27E23E2514200DCD162 /* vulkan_win32.h in Headers */,
@@ -7118,7 +7082,6 @@
 				A7D8BA7623E2514400DCD162 /* SDL_shaders_gl.h in Headers */,
 				A7D8B42B23E2514300DCD162 /* SDL_systhread_c.h in Headers */,
 				A7D8AE9123E2514100DCD162 /* SDL_cocoakeyboard.h in Headers */,
-				A7D8B26F23E2514200DCD162 /* vulkan.hpp in Headers */,
 				A7D8B22723E2514200DCD162 /* gl2ext.h in Headers */,
 				A7D8BB7223E2514500DCD162 /* SDL_clipboardevents_c.h in Headers */,
 				A7D8AAE323E2514100DCD162 /* SDL_syshaptic_c.h in Headers */,
@@ -7189,7 +7152,6 @@
 				A7D8B29F23E2514200DCD162 /* vulkan_xlib.h in Headers */,
 				A7D8B25D23E2514200DCD162 /* vulkan_vi.h in Headers */,
 				F316AB882B5A02C3002EF551 /* yuv_rgb_common.h in Headers */,
-				A7D8B29923E2514200DCD162 /* vulkan_mir.h in Headers */,
 				A1BB8B6F27F6CF330057CFA8 /* SDL_list.h in Headers */,
 				A7D8BB4E23E2514500DCD162 /* default_cursor.h in Headers */,
 				A7D8B9FE23E2514400DCD162 /* SDL_render_sw_c.h in Headers */,
@@ -7325,7 +7287,6 @@
 				DB313FDB17554B71006C0E22 /* SDL_keycode.h in Headers */,
 				A7D8AE9323E2514100DCD162 /* SDL_cocoakeyboard.h in Headers */,
 				A7D8ACE623E2514100DCD162 /* SDL_uikitvulkan.h in Headers */,
-				A7D8B27123E2514200DCD162 /* vulkan.hpp in Headers */,
 				DB313FDC17554B71006C0E22 /* SDL_loadso.h in Headers */,
 				A7D8B22923E2514200DCD162 /* gl2ext.h in Headers */,
 				A7D8BB7423E2514500DCD162 /* SDL_clipboardevents_c.h in Headers */,
@@ -7409,7 +7370,6 @@
 				A7D8B2A123E2514200DCD162 /* vulkan_xlib.h in Headers */,
 				A7D8AC9E23E2514100DCD162 /* SDL_uikitwindow.h in Headers */,
 				A7D8B25F23E2514200DCD162 /* vulkan_vi.h in Headers */,
-				A7D8B29B23E2514200DCD162 /* vulkan_mir.h in Headers */,
 				DB313FE817554B71006C0E22 /* SDL_quit.h in Headers */,
 				A7D8BB5023E2514500DCD162 /* default_cursor.h in Headers */,
 				A7D8BA0023E2514400DCD162 /* SDL_render_sw_c.h in Headers */,
