@@ -406,6 +406,8 @@ struct SDL_VideoData
 
     SDL_bool cleared;
 
+    int raw_input_enable_count;
+
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_bool ime_com_initialized;
     struct ITfThreadMgr *ime_threadmgr;
