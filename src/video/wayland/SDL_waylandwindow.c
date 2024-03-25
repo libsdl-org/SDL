@@ -2224,11 +2224,11 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     /* Cache the app_id at creation time, as it may change before the window is mapped. */
     data->app_id = SDL_strdup(SDL_GetAppID());
 
-    data->requested.width = window->w;
-    data->requested.height = window->h;
+    data->requested.width = window->floating.w;
+    data->requested.height = window->floating.h;
     if (data->scale_to_display) {
-        data->requested.logical_width = PixelToPoint(window, window->w);
-        data->requested.logical_height = PixelToPoint(window, window->h);
+        data->requested.logical_width = PixelToPoint(window, window->floating.w);
+        data->requested.logical_height = PixelToPoint(window, window->floating.h);
     }
 
     if (!external_surface) {
