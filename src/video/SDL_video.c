@@ -4817,6 +4817,7 @@ void SDL_StopTextInput(void)
     if (_this->StopTextInput) {
         _this->StopTextInput(_this);
     }
+    _this->text_input_active = SDL_FALSE;
 
     /* Hide the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
