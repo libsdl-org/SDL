@@ -780,9 +780,6 @@
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan.h">
       <Filter>video\khronos\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan.hpp">
-      <Filter>video\khronos\vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_android.h">
       <Filter>video\khronos\vulkan</Filter>
     </ClInclude>
