@@ -842,35 +842,6 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     Status status = 0;
     SDL_bool handled_by_ime = SDL_FALSE;
 
-    /* Save the original keycode for dead keys, which are filtered out by
-       the XFilterEvent() call below.
-    */
-    int orig_event_type = xevent->type;
-    KeyCode orig_keycode = xevent->xkey.keycode;
-
-    /* filter events catches XIM events and sends them to the correct handler */
-    if (X11_XFilterEvent(xevent, None)) {
-#if 0
-        printf("Filtered event type = %d display = %d window = %d\n",
-               xevent->type, xevent->xany.display, xevent->xany.window);
-#endif
-        /* Make sure dead key press/release events are sent */
-        /* But only if we're using one of the DBus IMEs, otherwise
-           some XIM IMEs will generate duplicate events */
-#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX)
-        SDL_Scancode scancode = videodata->key_layout[orig_keycode];
-        videodata->filter_code = orig_keycode;
-        videodata->filter_time = xevent->xkey.time;
-
-        if (orig_event_type == KeyPress) {
-            SDL_SendKeyboardKey(0, keyboardID, SDL_PRESSED, scancode);
-        } else {
-            SDL_SendKeyboardKey(0, keyboardID, SDL_RELEASED, scancode);
-        }
-#endif
-        return;
-    }
-
 #ifdef DEBUG_XEVENTS
     printf("window %p: %s (X11 keycode = 0x%X)\n", data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
 #endif
@@ -885,23 +856,54 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     }
 #endif /* DEBUG SCANCODES */
 
-    SDL_zeroa(text);
+    text[0] = '\0';
+
+    if (SDL_TextInputActive()) {
+        /* Save the original keycode for dead keys, which are filtered out by
+           the XFilterEvent() call below.
+        */
+        int orig_event_type = xevent->type;
+        KeyCode orig_keycode = xevent->xkey.keycode;
+
+        /* filter events catches XIM events and sends them to the correct handler */
+        if (X11_XFilterEvent(xevent, None)) {
+#if 0
+            printf("Filtered event type = %d display = %d window = %d\n",
+                   xevent->type, xevent->xany.display, xevent->xany.window);
+#endif
+            /* Make sure dead key press/release events are sent */
+            /* But only if we're using one of the DBus IMEs, otherwise
+               some XIM IMEs will generate duplicate events */
+#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX)
+            SDL_Scancode scancode = videodata->key_layout[orig_keycode];
+            videodata->filter_code = orig_keycode;
+            videodata->filter_time = xevent->xkey.time;
+
+            if (orig_event_type == KeyPress) {
+                SDL_SendKeyboardKey(0, keyboardID, SDL_PRESSED, scancode);
+            } else {
+                SDL_SendKeyboardKey(0, keyboardID, SDL_RELEASED, scancode);
+            }
+#endif
+            return;
+        }
+
 #ifdef X_HAVE_UTF8_STRING
-    if (windowdata->ic && xevent->type == KeyPress) {
-        X11_Xutf8LookupString(windowdata->ic, &xevent->xkey, text, sizeof(text),
-                              &keysym, &status);
-    } else {
-        XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
-    }
+        if (windowdata->ic && xevent->type == KeyPress) {
+            X11_Xutf8LookupString(windowdata->ic, &xevent->xkey, text, sizeof(text),
+                                  &keysym, &status);
+        } else {
+            XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+        }
 #else
-    XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+        XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
 #endif
 
 #ifdef SDL_USE_IME
-    if (SDL_TextInputActive()) {
         handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode, (xevent->type == KeyPress ? SDL_PRESSED : SDL_RELEASED));
-    }
 #endif
+    }
+
     if (!handled_by_ime) {
         if (xevent->type == KeyPress) {
             /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
