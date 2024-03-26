@@ -674,6 +674,8 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
     /* Relative mouse motion is delivered to the window with keyboard focus */
     window = SDL_GetKeyboardFocus();
     if (!window) {
+        // Clear the queue status so MsgWaitForMultipleObjects() will wait again
+        (void)GetQueueStatus(QS_RAWINPUT);
         return;
     }
     data = window->driverdata;
