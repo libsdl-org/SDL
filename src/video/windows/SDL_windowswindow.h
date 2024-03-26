@@ -70,7 +70,7 @@ struct SDL_WindowData
     UINT windowed_mode_corner_rounding;
     COLORREF dwma_border_color;
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    RAWINPUT *rawinput;
+    BYTE *rawinput;
     UINT rawinput_offset;
     UINT rawinput_size;
     UINT rawinput_count;
