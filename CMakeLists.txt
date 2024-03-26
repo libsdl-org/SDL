@@ -1028,7 +1028,6 @@ if(SDL_LIBC)
   set(available_headers)
   set(HAVE_LIBC TRUE)
   set(headers_to_check
-    ctype.h
     float.h
     iconv.h
     inttypes.h
@@ -1081,11 +1080,11 @@ if(SDL_LIBC)
   )
   if(WINDOWS)
     list(APPEND symbols_to_check
-      _stricmp _strlwr _strnicmp _strrev _strupr _ui64toa _uitoa _ultoa _wcsdup _wcsicmp _wcsnicmp
+      _strrev _ui64toa _uitoa _ultoa _wcsdup
     )
   else()
     list(APPEND symbols_to_check
-        strcasecmp strcasestr strncasecmp wcscasecmp wcsncasecmp
+        strcasestr
     )
   endif()
   check_library_exists(m pow "" HAVE_LIBM)

@@ -1401,6 +1401,18 @@ This header has been removed and a simplified version of this API has been added
 The standard C headers like stdio.h and stdlib.h are no longer included, you should include them directly in your project if you use non-SDL C runtime functions.
 M_PI is no longer defined in SDL_stdinc.h, you can use the new symbols SDL_PI_D (double) and SDL_PI_F (float) instead.
 
+SDL3 attempts to apply consistency to case-insensitive string functions. In SDL2, things like SDL_strcasecmp() would usually only work on English letters, and depending on the user's locale, possibly not even those. In SDL3, consistency is applied:
+
+- Many things that don't care about case-insensitivity, like SDL_strcmp(), continue to work with any null-terminated string of bytes, even if it happens to be malformed UTF-8.
+- SDL_strcasecmp() expects valid UTF-8 strings, and will attempt to support _most_ Unicode characters with a technique known as "case-folding," which is to say it can match 'A' and 'a', and also 'Η' and 'η', but ALSO 'ß' and "ss". This is _probably_ how most apps assumed it worked in SDL2 and won't need any changes.
+- SDL_strncasecmp() works the same, but the third parameter takes _bytes_, as before, so SDL_strlen() can continue to be used with it. If a string hits the limit in the middle of a codepoint, the half-processed bytes of the codepoint will be treated as a collection of U+0xFFFD (REPLACEMENT CHARACTER) codepoints, which you probably don't want.
+- SDL_wcscasecmp() and SDL_wcsncasecmp() work the same way but operate on UTF-16 or UTF-32 encoded strings, depending on what the platform considers "wchar_t" to be. SDL_wcsncasecmp's third parameter is number of wchar_t values, not bytes, but UTF-16 has the same concerns as UTF-8 for variable-length codepoints.
+- SDL_strcasestr() expects valid UTF-8 strings, and will compare codepoints using case-folding.
+- SDL_tolower() and SDL_toupper() continue to only work on single bytes (even though the parameter is an `int`) and _only_ converts low-ASCII English A through Z.
+- SDL_strlwr() and SDL_strupr() operates on individual bytes (not UTF-8 codepoints) and only change low-ASCII English 'A' through 'Z'. These functions do not check the string for valid UTF-8 encoding.
+- The ctype.h replacement SDL_is*() functions (SDL_isalpha, SDL_isdigit, etc) only work on low-ASCII characters and ignore user locale, assuming English. This makes these functions consistent in SDL3, but applications need to be careful to understand their limits.
+
+Please note that the case-folding technique used by SDL3 will not produce correct results for the "Turkish 'I'"; this one letter is a surprisingly hard problem in the Unicode world, and since these functions do not specify the human language in use, we have chosen to ignore this problem.
 
 The following functions have been renamed:
 * SDL_strtokr() => SDL_strtok_r()

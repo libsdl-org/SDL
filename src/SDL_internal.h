@@ -114,9 +114,6 @@
 #elif defined(HAVE_STDINT_H)
 #include <stdint.h>
 #endif
-#ifdef HAVE_CTYPE_H
-#include <ctype.h>
-#endif
 #ifdef HAVE_MATH_H
 #include <math.h>
 #endif

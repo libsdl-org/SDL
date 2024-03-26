@@ -50,7 +50,6 @@
 
 /* Useful headers */
 #cmakedefine HAVE_ALLOCA_H 1
-#cmakedefine HAVE_CTYPE_H 1
 #cmakedefine HAVE_FLOAT_H 1
 #cmakedefine HAVE_ICONV_H 1
 #cmakedefine HAVE_INTTYPES_H 1
@@ -97,10 +96,6 @@
 #cmakedefine HAVE_WCSSTR 1
 #cmakedefine HAVE_WCSCMP 1
 #cmakedefine HAVE_WCSNCMP 1
-#cmakedefine HAVE_WCSCASECMP 1
-#cmakedefine HAVE__WCSICMP 1
-#cmakedefine HAVE_WCSNCASECMP 1
-#cmakedefine HAVE__WCSNICMP 1
 #cmakedefine HAVE_WCSTOL 1
 #cmakedefine HAVE_STRLEN 1
 #cmakedefine HAVE_STRNLEN 1
@@ -131,10 +126,6 @@
 #cmakedefine HAVE_ATOF 1
 #cmakedefine HAVE_STRCMP 1
 #cmakedefine HAVE_STRNCMP 1
-#cmakedefine HAVE__STRICMP 1
-#cmakedefine HAVE_STRCASECMP 1
-#cmakedefine HAVE__STRNICMP 1
-#cmakedefine HAVE_STRNCASECMP 1
 #cmakedefine HAVE_STRCASESTR 1
 #cmakedefine HAVE_SSCANF 1
 #cmakedefine HAVE_VSSCANF 1
