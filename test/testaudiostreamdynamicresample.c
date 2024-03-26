@@ -137,8 +137,8 @@ static void queue_audio()
 static void skip_audio(float amount)
 {
     float speed;
-    SDL_AudioSpec dst_spec, new_spec;
-    int num_frames;
+    SDL_AudioSpec dst_spec;
+    int num_bytes;
     int retval = 0;
     void* buf = NULL;
 
@@ -147,23 +147,16 @@ static void skip_audio(float amount)
     speed = SDL_GetAudioStreamFrequencyRatio(stream);
     SDL_GetAudioStreamFormat(stream, NULL, &dst_spec);
 
-    /* Gimme that crunchy audio */
-    new_spec.format = SDL_AUDIO_S8;
-    new_spec.channels = 1;
-    new_spec.freq = 4000;
-
     SDL_SetAudioStreamFrequencyRatio(stream, 100.0f);
-    SDL_SetAudioStreamFormat(stream, NULL, &new_spec);
 
-    num_frames = (int)(new_spec.freq * ((speed * amount) / 100.0f));
-    buf = SDL_malloc(num_frames);
+    num_bytes = (int)(SDL_AUDIO_FRAMESIZE(dst_spec) * dst_spec.freq * ((speed * amount) / 100.0f));
+    buf = SDL_malloc(num_bytes);
 
     if (buf) {
-        retval = SDL_GetAudioStreamData(stream, buf, num_frames);
+        retval = SDL_GetAudioStreamData(stream, buf, num_bytes);
         SDL_free(buf);
     }
 
-    SDL_SetAudioStreamFormat(stream, NULL, &dst_spec);
     SDL_SetAudioStreamFrequencyRatio(stream, speed);
 
     SDL_UnlockAudioStream(stream);
@@ -411,14 +404,15 @@ int main(int argc, char *argv[])
 
     filename = GetResourceFilename(filename, "sample.wav");
     rc = SDL_LoadWAV(filename, &spec, &audio_buf, &audio_len);
-    SDL_free(filename);
 
     if (rc < 0) {
         SDL_Log("Failed to load '%s': %s", filename, SDL_GetError());
+        SDL_free(filename);
         SDL_Quit();
         return 1;
     }
 
+    SDL_free(filename);
     init_slider(0, "Speed: %3.2fx", 0x0, 1.0f, 0.2f, 5.0f);
     init_slider(1, "Freq: %g", 0x2, (float)spec.freq, 4000.0f, 192000.0f);
     init_slider(2, "Channels: %g", 0x3, (float)spec.channels, 1.0f, 8.0f);
