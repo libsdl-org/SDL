@@ -667,7 +667,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
 {
     SDL_Window *window;
     SDL_WindowData *data;
-    UINT size, count, i, total = 0;
+    UINT size, i, count, total = 0;
     RAWINPUT *input;
     Uint64 now;
 
@@ -678,7 +678,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
     }
     data = window->driverdata;
 
-    if (data->rawinput_size == 0) {
+    if (data->rawinput_offset == 0) {
         BOOL isWow64;
 
         data->rawinput_offset = sizeof(RAWINPUTHEADER);
@@ -686,33 +686,34 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
             /* We're going to get 64-bit data, so use the 64-bit RAWINPUTHEADER size */
             data->rawinput_offset += 8;
         }
-
-        if (GetRawInputBuffer(NULL, &data->rawinput_size, sizeof(RAWINPUTHEADER)) == (UINT)-1) {
-            return;
-        }
-        if (data->rawinput_size == 0) {
-            return;
-        }
     }
 
     /* Get all available events */
+    input = (RAWINPUT *)data->rawinput;
     for (;;) {
-        if (total == data->rawinput_count) {
-            count = total + 8;
-            input = (RAWINPUT *)SDL_realloc(data->rawinput, count * data->rawinput_size);
-            if (!input) {
-                return;
+        size = data->rawinput_size - ((BYTE *)input - data->rawinput);
+        count = GetRawInputBuffer(input, &size, sizeof(RAWINPUTHEADER));
+        if (count == 0 || count == (UINT)-1) {
+            if (!data->rawinput || (count == (UINT)-1 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)) {
+                const size_t RAWINPUT_BUFFER_SIZE_INCREMENT = 96;   // 2 64-bit raw mouse packets
+                BYTE *rawinput = (BYTE *)SDL_realloc(data->rawinput, data->rawinput_size + RAWINPUT_BUFFER_SIZE_INCREMENT);
+                if (!rawinput) {
+                    break;
+                }
+                input = (RAWINPUT *)(rawinput + ((BYTE *)input - data->rawinput));
+                data->rawinput = rawinput;
+                data->rawinput_size += RAWINPUT_BUFFER_SIZE_INCREMENT;
+            } else {
+                break;
             }
-            data->rawinput = input;
-            data->rawinput_count = count;
-        }
+        } else {
+            total += count;
 
-        size = (data->rawinput_count - total) * data->rawinput_size;
-        count = GetRawInputBuffer((RAWINPUT *)((BYTE *)data->rawinput + (total * data->rawinput_size)), &size, sizeof(RAWINPUTHEADER));
-        if (count == (UINT)-1 || count == 0) {
-            break;
+            // Advance input to the end of the buffer
+            while (count--) {
+                input = NEXTRAWINPUTBLOCK(input);
+            }
         }
-        total += count;
     }
 
     now = SDL_GetTicksNS();
@@ -728,7 +729,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
             timestamp = now;
             increment = 0;
         }
-        for (i = 0, input = data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
+        for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
             timestamp += increment;
             if (input->header.dwType == RIM_TYPEMOUSE) {
                 RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
