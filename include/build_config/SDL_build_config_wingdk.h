@@ -57,7 +57,6 @@
 #endif
 
 /* Useful headers */
-#define HAVE_CTYPE_H 1
 #define HAVE_FLOAT_H 1
 #define HAVE_LIMITS_H 1
 #define HAVE_MATH_H 1
@@ -100,10 +99,6 @@
 #define HAVE_ATOF 1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP 1
-#define HAVE__STRICMP 1
-#define HAVE__STRNICMP 1
-#define HAVE__WCSICMP 1
-#define HAVE__WCSNICMP 1
 #define HAVE__WCSDUP 1
 #define HAVE_ACOS   1
 #define HAVE_ASIN   1
