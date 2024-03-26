@@ -755,6 +755,7 @@ static SDL_bool HasDeviceID(Uint32 deviceID, Uint32 *list, int count)
     return SDL_FALSE;
 }
 
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 static void GetDeviceName(HDEVINFO devinfo, const char *instance, char *name, size_t len)
 {
     name[0] = '\0';
@@ -911,6 +912,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_c
 
     SDL_free(raw_devices);
 }
+#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
 LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

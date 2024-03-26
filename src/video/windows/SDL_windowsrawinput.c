@@ -22,9 +22,10 @@
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
 
+#include "SDL_windowsvideo.h"
+
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-#include "SDL_windowsvideo.h"
 #include "SDL_windowsevents.h"
 
 #include "../../joystick/usb_ids.h"
