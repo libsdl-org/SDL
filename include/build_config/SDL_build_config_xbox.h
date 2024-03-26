@@ -199,6 +199,9 @@
 #define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS  1
 
+/* Enable various time systems */
+#define SDL_TIME_WINDOWS   1
+
 /* Enable various timer systems */
 #define SDL_TIMER_WINDOWS   1
 
