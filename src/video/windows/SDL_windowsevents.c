@@ -1004,7 +1004,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_MOUSEMOVE:
     {
-        SDL_Mouse *mouse = SDL_GetMouse();
+        /* SDL_Mouse *mouse = SDL_GetMouse(); */
 
         if (!data->mouse_tracked) {
             TRACKMOUSEEVENT trackMouseEvent;
@@ -1040,7 +1040,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_XBUTTONDOWN:
     case WM_XBUTTONDBLCLK:
     {
-        SDL_Mouse *mouse = SDL_GetMouse();
+        /* SDL_Mouse *mouse = SDL_GetMouse(); */
         if (!data->videodata->raw_mouse_enabled) {
             if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
