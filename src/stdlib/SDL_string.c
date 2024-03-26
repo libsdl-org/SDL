@@ -28,6 +28,197 @@
 #include <psp2/kernel/clib.h>
 #endif
 
+#include "SDL_casefolding.h"
+
+// this expects `from` and `to` to be UCS-4 encoding!
+static int SDL_UnicodeCaseFold(const Uint32 from, Uint32 *to)
+{
+    // !!! FIXME: since the hashtable is static, maybe we should binary
+    // !!! FIXME: search it instead of walking the whole bucket.
+
+    if (from < 128) {   // low-ASCII, easy!
+        if ((from >= 'A') && (from <= 'Z')) {
+            *to = from - ('A' - 'a');
+        } else {
+            *to = from;
+        }
+    } else if (from <= 0xFFFF) {  // the Basic Multilingual Plane.
+        const Uint8 hash = ((from ^ (from >> 8)) & 0xFF);
+        const Uint16 from16 = (Uint16) from;
+
+        // see if it maps to a single char (most common)...
+        {
+            const CaseFoldHashBucket1_16 *bucket = &case_fold_hash1_16[hash];
+            const int count = (int) bucket->count;
+            for (int i = 0; i < count; i++) {
+                const CaseFoldMapping1_16 *mapping = &bucket->list[i];
+                if (mapping->from == from16) {
+                    *to = mapping->to0;
+                    return 1;
+                }
+            }
+        }
+
+        // see if it folds down to two chars...
+        {
+            const CaseFoldHashBucket2_16 *bucket = &case_fold_hash2_16[hash & 15];
+            const int count = (int) bucket->count;
+            for (int i = 0; i < count; i++) {
+                const CaseFoldMapping2_16 *mapping = &bucket->list[i];
+                if (mapping->from == from16) {
+                    to[0] = mapping->to0;
+                    to[1] = mapping->to1;
+                    return 2;
+                }
+            }
+        }
+
+        // okay, maybe it's _three_ characters!
+        {
+            const CaseFoldHashBucket3_16 *bucket = &case_fold_hash3_16[hash & 3];
+            const int count = (int) bucket->count;
+            for (int i = 0; i < count; i++) {
+                const CaseFoldMapping3_16 *mapping = &bucket->list[i];
+                if (mapping->from == from16) {
+                    to[0] = mapping->to0;
+                    to[1] = mapping->to1;
+                    to[2] = mapping->to2;
+                    return 3;
+                }
+            }
+        }
+
+    } else {  // codepoint that doesn't fit in 16 bits.
+        const Uint8 hash = ((from ^ (from >> 8)) & 0xFF);
+        const CaseFoldHashBucket1_32 *bucket = &case_fold_hash1_32[hash & 15];
+        const int count = (int) bucket->count;
+        for (int i = 0; i < count; i++) {
+            const CaseFoldMapping1_32 *mapping = &bucket->list[i];
+            if (mapping->from == from) {
+                *to = mapping->to0;
+                return 1;
+            }
+        }
+    }
+
+    // Not found...there's no folding needed for this codepoint.
+    *to = from;
+    return 1;
+}
+
+#define UNICODE_STRCASECMP(encoding) \
+    Uint32 folded1[3], folded2[3]; \
+    int head1 = 0, tail1 = 0, head2 = 0, tail2 = 0; \
+    while (SDL_TRUE) { \
+        Uint32 cp1, cp2; \
+        if (head1 != tail1) { \
+            cp1 = folded1[tail1++]; \
+        } else { \
+            head1 = SDL_UnicodeCaseFold(SDL_Step##encoding(&str1), folded1); \
+            cp1 = folded1[0]; \
+            tail1 = 1; \
+        } \
+        if (head2 != tail2) { \
+            cp2 = folded2[tail2++]; \
+        } else { \
+            head2 = SDL_UnicodeCaseFold(SDL_Step##encoding(&str2), folded2); \
+            cp2 = folded2[0]; \
+            tail2 = 1; \
+        } \
+        if (cp1 < cp2) { \
+            return -1; \
+        } else if (cp1 > cp2) { \
+            return 1; \
+        } else if (cp1 == 0) { \
+            break;  /* complete match. */ \
+        } \
+    } \
+    return 0
+
+
+static Uint32 SDL_StepUTF8(const char **_str)
+{
+    const char *str = *_str;
+    const Uint32 octet = (Uint32) ((Uint8) *str);
+
+    // !!! FIXME: this could have _way_ more error checking! Illegal surrogate codepoints, unexpected bit patterns, etc.
+
+    if (octet == 0) {  // null terminator, end of string.
+        return 0;  // don't advance `*_str`.
+    } else if ((octet & 0x80) == 0) {  // 0xxxxxxx: one byte codepoint.
+        (*_str)++;
+        return octet;
+    } else if ((octet & 0xE0) == 0xC0) {  // 110xxxxx 10xxxxxx: two byte codepoint.
+        *_str += 2;
+        return ((octet & 0x1F) << 6) | (((Uint8) str[1]) & 0x3F);
+    } else if ((octet & 0xF0) == 0xE0) {  // 1110xxxx 10xxxxxx 10xxxxxx: three byte codepoint.
+        *_str += 3;
+        const Uint32 octet2 = ((Uint32) (((Uint8) str[1]) & 0x1F)) << 6;
+        const Uint32 octet3 = (Uint32) (((Uint8) str[2]) & 0x3F);
+        return ((octet & 0x0F) << 12) | octet2 | octet3;
+    } else if ((octet & 0xF8) == 0xF0) {  // 11110xxxx 10xxxxxx 10xxxxxx 10xxxxxx: four byte codepoint.
+        *_str += 4;
+        const Uint32 octet2 = ((Uint32) (((Uint8) str[1]) & 0x1F)) << 12;
+        const Uint32 octet3 = ((Uint32) (((Uint8) str[2]) & 0x3F)) << 6;
+        const Uint32 octet4 = (Uint32) (((Uint8) str[3]) & 0x3F);
+        return ((octet & 0x07) << 18) | octet2 | octet3 | octet4;
+    }
+
+    // bogus byte, skip ahead, return a '?' char.
+    (*_str)++;
+    return '?';   // !!! FIXME: maybe a different Unicode char?
+}
+
+int SDL_utf8casecmp(const char *str1, const char *str2)
+{
+    UNICODE_STRCASECMP(UTF8);
+}
+
+static Uint32 SDL_StepUTF16(const Uint16 **_str)
+{
+    const Uint16 *str = *_str;
+    Uint32 cp = (Uint32) *(str++);
+    if (cp == 0) {
+        return 0;  // don't advance string pointer.
+    } else if ((cp >= 0xDC00) && (cp <= 0xDFFF)) {
+        cp = '?';  // Orphaned second half of surrogate pair
+    } else if ((cp >= 0xD800) && (cp <= 0xDBFF)) {  // start of surrogate pair!
+        const Uint32 pair = (Uint32) *str;
+        if ((pair == 0) || ((pair < 0xDC00) || (pair > 0xDFFF))) {
+            cp = '?';
+        } else {
+            str++;  // eat the other surrogate.
+            cp = 0x10000 + (((cp - 0xD800) << 10) | (pair - 0xDC00));
+        }
+    }
+
+    *_str = str;
+    return cp;
+}
+
+int SDL_utf16casecmp(const Uint16 *str1, const Uint16 *str2)
+{
+    UNICODE_STRCASECMP(UTF16);
+}
+
+static Uint32 SDL_StepUTF32(const Uint32 **_str)
+{
+    const Uint32 *str = *_str;
+    const Uint32 cp = *str;
+    if (cp == 0) {
+        return 0;  // don't advance string pointer.
+    }
+
+    (*_str)++;
+    return cp;
+}
+
+int SDL_utf32casecmp(const Uint32 *str1, const Uint32 *str2)
+{
+    UNICODE_STRCASECMP(UTF32);
+}
+
+
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_WCSTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
 #define SDL_isupperhex(X) (((X) >= 'A') && ((X) <= 'F'))
 #define SDL_islowerhex(X) (((X) >= 'a') && ((X) <= 'f'))
