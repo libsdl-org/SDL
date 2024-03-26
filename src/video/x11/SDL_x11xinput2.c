@@ -350,6 +350,11 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             break;
         }
 
+        /* Relative mouse motion is delivered to the window with keyboard focus */
+        if (!SDL_GetKeyboardFocus()) {
+            break;
+        }
+
         devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
         if (!devinfo) {
             break; /* oh well. */
