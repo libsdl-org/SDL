@@ -1017,8 +1017,6 @@
 #define SDL_uitoa SDL_uitoa_REAL
 #define SDL_ulltoa SDL_ulltoa_REAL
 #define SDL_ultoa SDL_ultoa_REAL
-#define SDL_utf16casecmp SDL_utf16casecmp_REAL
-#define SDL_utf32casecmp SDL_utf32casecmp_REAL
 #define SDL_utf8casecmp SDL_utf8casecmp_REAL
 #define SDL_utf8strlcpy SDL_utf8strlcpy_REAL
 #define SDL_utf8strlen SDL_utf8strlen_REAL

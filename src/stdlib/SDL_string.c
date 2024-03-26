@@ -174,6 +174,9 @@ int SDL_utf8casecmp(const char *str1, const char *str2)
     UNICODE_STRCASECMP(UTF8);
 }
 
+// UTF-16 and UTF-32 versions are not currently used, but we might want these
+//  for Windows (or Unix wchar_t) work later.
+#if 0
 static Uint32 SDL_StepUTF16(const Uint16 **_str)
 {
     const Uint16 *str = *_str;
@@ -217,6 +220,7 @@ int SDL_utf32casecmp(const Uint32 *str1, const Uint32 *str2)
 {
     UNICODE_STRCASECMP(UTF32);
 }
+#endif
 
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_WCSTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)

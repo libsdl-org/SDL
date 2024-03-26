@@ -631,8 +631,6 @@ extern DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
 extern DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, size_t len);
 
 extern DECLSPEC int SDLCALL SDL_utf8casecmp(const char *str1, const char *str2);
-extern DECLSPEC int SDLCALL SDL_utf16casecmp(const Uint16 *str1, const Uint16 *str2);
-extern DECLSPEC int SDLCALL SDL_utf32casecmp(const Uint32 *str1, const Uint32 *str2);
 
 extern DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, ...) SDL_SCANF_VARARG_FUNC(2);
 extern DECLSPEC int SDLCALL SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_list ap) SDL_SCANF_VARARG_FUNCV(2);
