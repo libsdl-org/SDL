@@ -314,9 +314,12 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
     *format = info.texture_formats[0];
 
     for (i = 0; i < info.num_texture_formats; ++i) {
-        if (!SDL_ISPIXELFORMAT_FOURCC(info.texture_formats[i]) &&
-            transparent == SDL_ISPIXELFORMAT_ALPHA(info.texture_formats[i])) {
-            *format = info.texture_formats[i];
+        SDL_PixelFormatEnum texture_format = info.texture_formats[i];
+        if (!SDL_ISPIXELFORMAT_FOURCC(texture_format) &&
+            !SDL_ISPIXELFORMAT_10BIT(texture_format) &&
+            !SDL_ISPIXELFORMAT_FLOAT(texture_format) &&
+            transparent == SDL_ISPIXELFORMAT_ALPHA(texture_format)) {
+            *format = texture_format;
             break;
         }
     }
