@@ -601,9 +601,9 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HAND
                     }
                 } else {
                     /* Send relative motion if we didn't warp last frame (had good position data)
-                               We also sometimes get large deltas due to coalesced mouse motion and warping,
-                               so ignore those.
-                             */
+                       We also sometimes get large deltas due to coalesced mouse motion and warping,
+                       so ignore those.
+                     */
                     const int MAX_RELATIVE_MOTION = (h / 6);
                     if (SDL_abs(relX) < MAX_RELATIVE_MOTION &&
                         SDL_abs(relY) < MAX_RELATIVE_MOTION) {
@@ -635,18 +635,31 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_WindowData *data, H
         return;
     }
 
-    Uint8 state = (rawkeyboard->Flags & RI_KEY_BREAK) ? SDL_RELEASED : SDL_PRESSED;
-    Uint16 scanCode = rawkeyboard->MakeCode;
-    if (rawkeyboard->Flags & RI_KEY_E0) {
-        scanCode |= (0xE0 << 8);
-    } else if (rawkeyboard->Flags & RI_KEY_E1) {
-        scanCode |= (0xE1 << 8);
+    if (rawkeyboard->Flags & RI_KEY_E1) {
+        // First key in a Ctrl+{key} sequence
+        data->videodata->pending_E1_key_sequence = SDL_TRUE;
+        return;
     }
 
-    // Pack scan code into one byte to make the index
-    Uint8 index = LOBYTE(scanCode) | (HIBYTE(scanCode) ? 0x80 : 0x00);
-    SDL_Scancode code = windows_scancode_table[index];
-
+    Uint8 state = (rawkeyboard->Flags & RI_KEY_BREAK) ? SDL_RELEASED : SDL_PRESSED;
+    SDL_Scancode code;
+    if (data->videodata->pending_E1_key_sequence) {
+        if (rawkeyboard->MakeCode == 0x45) {
+            // Ctrl+NumLock == Pause
+            code = SDL_SCANCODE_PAUSE;
+        } else {
+            // Ctrl+ScrollLock == Break (no SDL scancode?)
+            code = SDL_SCANCODE_UNKNOWN;
+        }
+        data->videodata->pending_E1_key_sequence = SDL_FALSE;
+    } else {
+        // The code is in the lower 7 bits, the high bit is set for the E0 prefix
+        Uint8 index = (Uint8)rawkeyboard->MakeCode;
+        if (rawkeyboard->Flags & RI_KEY_E0) {
+            index |= 0x80;
+        }
+        code = windows_scancode_table[index];
+    }
     SDL_SendKeyboardKey(timestamp, keyboardID, state, code);
 }
 
