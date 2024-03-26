@@ -1525,15 +1525,24 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
        - ButtonPress
        - ButtonRelease
        XInput2 has more precise information, e.g., to distinguish different input devices. */
-#ifndef SDL_VIDEO_DRIVER_X11_XINPUT2
     case KeyPress:
     case KeyRelease:
     {
+        if (data->using_xinput2) {
+            // This input is being handled by XInput2
+            break;
+        }
+
         X11_HandleKeyEvent(_this, data, SDL_GLOBAL_KEYBOARD_ID, xevent);
     } break;
 
     case MotionNotify:
     {
+        if (data->using_xinput2) {
+            // This input is being handled by XInput2
+            break;
+        }
+
         SDL_Mouse *mouse = SDL_GetMouse();
         if (!mouse->relative_mode || mouse->relative_mode_warp) {
 #ifdef DEBUG_MOTION
@@ -1547,15 +1556,24 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
     case ButtonPress:
     {
+        if (data->using_xinput2) {
+            // This input is being handled by XInput2
+            break;
+        }
+
         X11_HandleButtonPress(_this, data, SDL_GLOBAL_MOUSE_ID, xevent->xbutton.button,
                               xevent->xbutton.x, xevent->xbutton.y, xevent->xbutton.time);
     } break;
 
     case ButtonRelease:
     {
+        if (data->using_xinput2) {
+            // This input is being handled by XInput2
+            break;
+        }
+
         X11_HandleButtonRelease(_this, data, SDL_GLOBAL_MOUSE_ID, xevent->xbutton.button);
     } break;
-#endif /* !SDL_VIDEO_DRIVER_X11_XINPUT2 */
 
     case PropertyNotify:
     {

@@ -363,7 +363,10 @@ static int X11_WarpMouseGlobal(float x, float y)
 
 static int X11_SetRelativeMouseMode(SDL_bool enabled)
 {
-    return X11_Xinput2IsInitialized() ? 0 : SDL_Unsupported();
+    if (!X11_Xinput2IsInitialized()) {
+        return SDL_Unsupported();
+    }
+    return 0;
 }
 
 static int X11_CaptureMouse(SDL_Window *window)

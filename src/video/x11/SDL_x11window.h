@@ -59,6 +59,7 @@ struct SDL_WindowData
     int border_right;
     int border_top;
     int border_bottom;
+    SDL_bool using_xinput2;
     SDL_bool mouse_grabbed;
     Uint64 last_focus_event_time;
     PendingFocusEnum pending_focus;
