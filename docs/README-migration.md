@@ -1088,13 +1088,6 @@ to decide for you.
 
 The SDL_RENDERER_TARGETTEXTURE flag has been removed, all current renderers support target texture functionality.
 
-When a renderer is created, it will automatically set the logical size to the size of
-the window in points. For high DPI displays, this will set up scaling from points to
-pixels. You can disable this scaling with:
-```c
-    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
-```
-
 Mouse and touch events are no longer filtered to change their coordinates, instead you
 can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
 the rendering viewport.
