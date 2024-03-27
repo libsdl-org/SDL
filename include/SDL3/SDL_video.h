@@ -2110,7 +2110,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowShape(SDL_Window *window, SDL_Surface *
 extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOperation operation);
 
 /**
- * Destroy a window.
+ * Destroy a window. If the window has an associated SDL_Renderer, it will be implicitly destroyed as well.
  *
  * If `window` is NULL, this function will return immediately after setting
  * the SDL error message to "Invalid window". See SDL_GetError().
