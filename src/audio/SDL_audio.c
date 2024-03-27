@@ -1903,7 +1903,7 @@ void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
     // Finalize and unlock everything.
     for (int i = 0; i < num_streams; i++) {
         SDL_AudioStream *stream = streams[i];
-        if (stream && stream->bound_device) {
+        if (stream) {
             SDL_LogicalAudioDevice *logdev = stream->bound_device;
             stream->bound_device = NULL;
             SDL_UnlockMutex(stream->lock);
