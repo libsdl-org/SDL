@@ -42,7 +42,7 @@ static int fillerup(void)
     return 0;
 }
 
-int SDL_AppInit(int argc, char *argv[])
+int SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     int i;
     char *filename = NULL;
@@ -119,17 +119,17 @@ int SDL_AppInit(int argc, char *argv[])
     return 0;
 }
 
-int SDL_AppEvent(const SDL_Event *event)
+int SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     return (event->type == SDL_EVENT_QUIT) ? 1 : 0;
 }
 
-int SDL_AppIterate(void)
+int SDL_AppIterate(void *appstate)
 {
     return fillerup();
 }
 
-void SDL_AppQuit(void)
+void SDL_AppQuit(void *appstate)
 {
     SDL_DestroyAudioStream(stream);
     SDL_free(wave.sound);

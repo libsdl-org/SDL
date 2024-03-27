@@ -26,7 +26,7 @@ static SDL_Surface *frame_current = NULL;
 static SDL_CameraDeviceID front_camera = 0;
 static SDL_CameraDeviceID back_camera = 0;
 
-int SDL_AppInit(int argc, char *argv[])
+int SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     int devcount = 0;
     int i;
@@ -159,7 +159,7 @@ static int FlipCamera(void)
     return 0;
 }
 
-int SDL_AppEvent(const SDL_Event *event)
+int SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     switch (event->type) {
         case SDL_EVENT_KEY_DOWN: {
@@ -209,7 +209,7 @@ int SDL_AppEvent(const SDL_Event *event)
     return SDLTest_CommonEventMainCallbacks(state, event);
 }
 
-int SDL_AppIterate(void)
+int SDL_AppIterate(void *appstate)
 {
     SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, 255);
     SDL_RenderClear(renderer);
@@ -262,7 +262,7 @@ int SDL_AppIterate(void)
     return 0;  /* keep iterating. */
 }
 
-void SDL_AppQuit(void)
+void SDL_AppQuit(void *appstate)
 {
     SDL_ReleaseCameraFrame(camera, frame_current);
     SDL_CloseCamera(camera);
