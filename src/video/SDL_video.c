@@ -71,10 +71,13 @@ static VideoBootStrap *bootstrap[] = {
     &COCOA_bootstrap,
 #endif
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
-    &Wayland_bootstrap,
+    &Wayland_preferred_bootstrap,
 #endif
 #ifdef SDL_VIDEO_DRIVER_X11
     &X11_bootstrap,
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+    &Wayland_fallback_bootstrap,
 #endif
 #ifdef SDL_VIDEO_DRIVER_VIVANTE
     &VIVANTE_bootstrap,
