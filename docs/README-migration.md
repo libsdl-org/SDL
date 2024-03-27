@@ -1134,7 +1134,6 @@ The following functions have been renamed:
 * SDL_RenderIsClipEnabled() => SDL_RenderClipEnabled()
 * SDL_RenderLogicalToWindow() => SDL_RenderCoordinatesToWindow()
 * SDL_RenderSetClipRect() => SDL_SetRenderClipRect()
-* SDL_RenderSetIntegerScale() => SDL_SetRenderIntegerScale()
 * SDL_RenderSetLogicalSize() => SDL_SetRenderLogicalPresentation()
 * SDL_RenderSetScale() => SDL_SetRenderScale()
 * SDL_RenderSetVSync() => SDL_SetRenderVSync()
