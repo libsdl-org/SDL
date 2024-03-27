@@ -129,6 +129,7 @@ static const SDL_RenderDriver *render_drivers[] = {
 char SDL_renderer_magic;
 char SDL_texture_magic;
 
+static SDL_Renderer *renderer_list;
 
 void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props)
 {
@@ -1058,6 +1059,13 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     if (window) {
         SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
     }
+
+    /* Add the renderer to the list. */
+    renderer->next = renderer_list;
+    if (renderer_list) {
+        renderer_list->prev = renderer;
+    }
+    renderer_list = renderer;
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->info.name);
@@ -4517,6 +4525,16 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer,);
 
+    /* Unlink the renderer from the list. */
+    if (renderer->next) {
+        renderer->next->prev = renderer->prev;
+    }
+    if (renderer->prev) {
+        renderer->prev->next = renderer->next;
+    } else {
+        renderer_list = renderer->next;
+    }
+
     SDL_DestroyProperties(renderer->props);
 
     SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
@@ -4708,4 +4726,11 @@ int SDL_GetRenderVSync(SDL_Renderer *renderer, int *vsync)
     }
     *vsync = renderer->wanted_vsync;
     return 0;
+}
+
+void SDL_QuitRenderer()
+{
+    while (renderer_list) {
+        SDL_DestroyRenderer(renderer_list);
+    }
 }

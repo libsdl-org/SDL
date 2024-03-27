@@ -289,6 +289,8 @@ struct SDL_Renderer
     SDL_PropertiesID props;
 
     void *driverdata;
+
+    SDL_Renderer *prev, *next;
 };
 
 /* Define the SDL render driver structure */
@@ -333,6 +335,9 @@ extern SDL_BlendOperation SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode
    for a vertex buffer during RunCommandQueue(). Pointers returned here are only valid until
    the next call, because it might be in an array that gets realloc()'d. */
 extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset);
+
+/* Clean up any remaining renderers on quit. */
+extern void SDL_QuitRenderer();
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

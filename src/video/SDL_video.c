@@ -34,6 +34,7 @@
 #include "../SDL_properties_c.h"
 #include "../timer/SDL_timer_c.h"
 #include "../camera/SDL_camera_c.h"
+#include "../render/SDL_sysrender.h"
 
 #ifdef SDL_VIDEO_OPENGL
 #include <SDL3/SDL_opengl.h>
@@ -3635,11 +3636,6 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DESTROYED, 0, 0);
 
-    SDL_Renderer *renderer = SDL_GetRenderer(window);
-    if (renderer) {
-        SDL_DestroyRenderer(renderer);
-    }
-
     SDL_DestroyProperties(window->props);
 
     /* If this is a child window, unlink it from its siblings */
@@ -3789,6 +3785,9 @@ void SDL_VideoQuit(void)
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
 
     SDL_EnableScreenSaver();
+
+    /* Clean up any renderers */
+    SDL_QuitRenderer();
 
     /* Clean up the system video */
     while (_this->windows) {
