@@ -392,11 +392,13 @@ The following symbols have been renamed:
 * SDL_RENDER_DEVICE_RESET => SDL_EVENT_RENDER_DEVICE_RESET
 * SDL_RENDER_TARGETS_RESET => SDL_EVENT_RENDER_TARGETS_RESET
 * SDL_SENSORUPDATE => SDL_EVENT_SENSOR_UPDATE
-* SDL_SYSWMEVENT => SDL_EVENT_SYSWM
 * SDL_TEXTEDITING => SDL_EVENT_TEXT_EDITING
 * SDL_TEXTEDITING_EXT => SDL_EVENT_TEXT_EDITING_EXT
 * SDL_TEXTINPUT => SDL_EVENT_TEXT_INPUT
 * SDL_USEREVENT => SDL_EVENT_USER
+
+The following symbols have been removed:
+* SDL_SYSWMEVENT - you can use SDL_SetWindowsMessageHook() and SDL_SetX11EventHook() to watch and modify system events before SDL sees them.
 
 The following structures have been renamed:
 * SDL_ControllerAxisEvent => SDL_GamepadAxisEvent
