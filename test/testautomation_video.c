@@ -2226,6 +2226,41 @@ minimize_test:
     return skipFlags != (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)  ? TEST_COMPLETED : TEST_SKIPPED;
 }
 
+static int video_createMinimized(void *arg)
+{
+    const char *title = "video_createMinimized Test Window";
+    int result;
+    SDL_Window *window;
+    int windowedX, windowedY;
+    int windowedW, windowedH;
+
+    /* Call against new test window */
+    window = SDL_CreateWindow(title, 320, 200, SDL_WINDOW_MINIMIZED);
+    if (!window) {
+        return TEST_ABORTED;
+    }
+
+    SDL_GetWindowSize(window, &windowedW, &windowedH);
+    SDLTest_AssertPass("SDL_GetWindowSize()");
+    SDLTest_AssertCheck(windowedW > 0 && windowedH > 0, "Verify return value; expected: 320x200, got: %dx%d", windowedW, windowedH);
+
+    SDL_GetWindowSizeInPixels(window, &windowedW, &windowedH);
+    SDLTest_AssertPass("SDL_GetWindowSizeInPixels()");
+    SDLTest_AssertCheck(windowedW > 0 && windowedH > 0, "Verify return value; expected: > 0, got: %dx%d", windowedW, windowedH);
+
+    SDL_GetWindowPosition(window, &windowedX, &windowedY);
+    SDLTest_AssertPass("SDL_GetWindowPosition()");
+    SDLTest_AssertCheck(windowedX >= 0 && windowedY >= 0, "Verify return value; expected: >= 0, got: %d,%d", windowedX, windowedY);
+
+    result = SDL_RestoreWindow(window);
+    SDLTest_AssertPass("SDL_RestoreWindow()");
+    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+
+    SDL_DestroyWindow(window);
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Video test cases */
@@ -2305,12 +2340,16 @@ static const SDLTest_TestCaseReference videoTest19 = {
     (SDLTest_TestCaseFp)video_getSetWindowState, "video_getSetWindowState", "Checks transitioning between windowed, minimized, maximized, and fullscreen states", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference videoTest20 = {
+    (SDLTest_TestCaseFp)video_createMinimized, "video_createMinimized", "Checks window state for windows created minimized", TEST_ENABLED
+};
+
 /* Sequence of Video test cases */
 static const SDLTest_TestCaseReference *videoTests[] = {
     &videoTest1, &videoTest2, &videoTest3, &videoTest4, &videoTest5, &videoTest6,
     &videoTest7, &videoTest8, &videoTest9, &videoTest10, &videoTest11, &videoTest12,
     &videoTest13, &videoTest14, &videoTest15, &videoTest16, &videoTest17,
-    &videoTest18, &videoTest19, NULL
+    &videoTest18, &videoTest19, &videoTest20, NULL
 };
 
 /* Video test suite (global) */
