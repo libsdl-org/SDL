@@ -57,7 +57,6 @@
 #define HAVE_TPCSHRD_H 1
 
 #define HAVE_LIBC 1
-#define HAVE_CTYPE_H 1
 #define HAVE_FLOAT_H 1
 #define HAVE_LIMITS_H 1
 #define HAVE_MATH_H 1
@@ -96,8 +95,6 @@
 #define HAVE_ATOF 1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP 1
-#define HAVE__STRICMP 1
-#define HAVE__STRNICMP 1
 #define HAVE_VSNPRINTF 1
 /* TODO, WinRT: consider using ??_s versions of the following */
 /* #undef HAVE__STRLWR */

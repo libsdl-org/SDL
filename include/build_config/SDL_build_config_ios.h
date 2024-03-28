@@ -28,7 +28,6 @@
 #define HAVE_GCC_ATOMICS    1
 
 #define HAVE_ALLOCA_H 1
-#define HAVE_CTYPE_H 1
 #define HAVE_FLOAT_H 1
 #define HAVE_INTTYPES_H 1
 #define HAVE_LIMITS_H 1
@@ -77,8 +76,6 @@
 #define HAVE_ATOF   1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP    1
-#define HAVE_STRCASECMP 1
-#define HAVE_STRNCASECMP 1
 #define HAVE_STRCASESTR 1
 #define HAVE_VSSCANF 1
 #define HAVE_VSNPRINTF  1
