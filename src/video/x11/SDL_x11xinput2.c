@@ -757,7 +757,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
 
     /* SDL_TouchID is 64-bit, but our helper functions take Uint32 */
     old_touch_devices64 = SDL_GetTouchDevices(&old_touch_count);
-    if (&old_touch_count > 0) {
+    if (old_touch_count > 0) {
         old_touch_devices = (Uint32 *)SDL_malloc(old_touch_count * sizeof(*old_touch_devices));
         if (old_touch_devices) {
             for (int i = 0; i < old_touch_count; ++i) {
