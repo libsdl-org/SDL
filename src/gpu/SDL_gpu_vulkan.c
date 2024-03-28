@@ -7939,11 +7939,14 @@ static void VULKAN_INTERNAL_SetCurrentViewport(
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer*) commandBuffer;
 
     vulkanCommandBuffer->currentViewport.x = viewport->x;
-    vulkanCommandBuffer->currentViewport.y = viewport->y;
     vulkanCommandBuffer->currentViewport.width = viewport->w;
-    vulkanCommandBuffer->currentViewport.height = viewport->h;
     vulkanCommandBuffer->currentViewport.minDepth = viewport->minDepth;
     vulkanCommandBuffer->currentViewport.maxDepth = viewport->maxDepth;
+
+    /* Viewport flip for consistency with other backends */
+    /* FIXME: need moltenVK hack */
+    vulkanCommandBuffer->currentViewport.y = viewport->y + viewport->h;
+    vulkanCommandBuffer->currentViewport.height = -viewport->h;
 }
 
 static void VULKAN_SetViewport(
