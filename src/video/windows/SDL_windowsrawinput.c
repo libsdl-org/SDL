@@ -32,12 +32,14 @@
 
 typedef struct
 {
+    SDL_bool done;
     HANDLE ready_event;
     HANDLE done_event;
     HANDLE thread;
 } RawInputThreadData;
 
 static RawInputThreadData thread_data = {
+    SDL_FALSE,
     INVALID_HANDLE_VALUE,
     INVALID_HANDLE_VALUE,
     INVALID_HANDLE_VALUE
@@ -76,8 +78,8 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
     /* Tell the parent we're ready to go! */
     SetEvent(data->ready_event);
 
-    for ( ; ; ) {
-        if (MsgWaitForMultipleObjects(1, &data->done_event, 0, INFINITE, QS_RAWINPUT) != WAIT_OBJECT_0 + 1) {
+    while (!data->done) {
+        if (MsgWaitForMultipleObjects(1, &data->done_event, FALSE, INFINITE, QS_RAWINPUT) != (WAIT_OBJECT_0 + 1)) {
             break;
         }
 
@@ -96,8 +98,9 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
 static void CleanupRawInputThreadData(RawInputThreadData *data)
 {
     if (data->thread != INVALID_HANDLE_VALUE) {
+        data->done = SDL_TRUE;
         SetEvent(data->done_event);
-        WaitForSingleObject(data->thread, 500);
+        WaitForSingleObject(data->thread, 3000);
         CloseHandle(data->thread);
         data->thread = INVALID_HANDLE_VALUE;
     }
@@ -126,6 +129,7 @@ static int WIN_SetRawInputEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
             goto done;
         }
 
+        thread_data.done = SDL_FALSE;
         thread_data.done_event = CreateEvent(NULL, FALSE, FALSE, NULL);
         if (thread_data.done_event == INVALID_HANDLE_VALUE) {
             WIN_SetError("CreateEvent");

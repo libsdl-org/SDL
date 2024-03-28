@@ -587,9 +587,6 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
             }
         }
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-        SDL_free(data->rawinput);
-#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
         SDL_free(data);
     }
     window->driverdata = NULL;

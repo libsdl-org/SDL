@@ -107,6 +107,7 @@ static void WIN_DeleteDevice(SDL_VideoDevice *device)
     if (device->wakeup_lock) {
         SDL_DestroyMutex(device->wakeup_lock);
     }
+    SDL_free(device->driverdata->rawinput);
     SDL_free(device->driverdata);
     SDL_free(device);
 }

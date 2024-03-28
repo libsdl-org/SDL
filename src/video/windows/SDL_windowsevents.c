@@ -534,11 +534,15 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
-static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
+static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
-    SDL_MouseID mouseID;
+    if (!data->raw_mouse_enabled) {
+        return;
+    }
 
-    if (!data->videodata->raw_mouse_enabled) {
+    // Relative mouse motion is delivered to the window with keyboard focus
+    SDL_Window *window = SDL_GetKeyboardFocus();
+    if (!window) {
         return;
     }
 
@@ -546,11 +550,12 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HAND
         return;
     }
 
-    mouseID = (SDL_MouseID)(uintptr_t)hDevice;
+    SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)hDevice;
+    SDL_WindowData *windowdata = window->driverdata;
 
     if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
         if (rawmouse->lLastX || rawmouse->lLastY) {
-            SDL_SendMouseMotion(timestamp, data->window, mouseID, SDL_TRUE, (float)rawmouse->lLastX, (float)rawmouse->lLastY);
+            SDL_SendMouseMotion(timestamp, window, mouseID, SDL_TRUE, (float)rawmouse->lLastX, (float)rawmouse->lLastY);
         }
     } else if (rawmouse->lLastX || rawmouse->lLastY) {
         /* This is absolute motion, either using a tablet or mouse over RDP
@@ -581,7 +586,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HAND
         relY = y - data->last_raw_mouse_position.y;
 
         if (remote_desktop) {
-            if (!data->in_title_click && !data->focus_click_pending) {
+            if (!windowdata->in_title_click && !windowdata->focus_click_pending) {
                 static int wobble;
                 float floatX = (float)x / w;
                 float floatY = (float)y / h;
@@ -589,7 +594,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HAND
                 /* See if the mouse is at the edge of the screen, or in the RDP title bar area */
                 if (floatX <= 0.01f || floatX >= 0.99f || floatY <= 0.01f || floatY >= 0.99f || y < 32) {
                     /* Wobble the cursor position so it's not ignored if the last warp didn't have any effect */
-                    RECT rect = data->cursor_clipped_rect;
+                    RECT rect = windowdata->cursor_clipped_rect;
                     int warpX = rect.left + ((rect.right - rect.left) / 2) + wobble;
                     int warpY = rect.top + ((rect.bottom - rect.top) / 2);
 
@@ -607,7 +612,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HAND
                     const int MAX_RELATIVE_MOTION = (h / 6);
                     if (SDL_abs(relX) < MAX_RELATIVE_MOTION &&
                         SDL_abs(relY) < MAX_RELATIVE_MOTION) {
-                        SDL_SendMouseMotion(timestamp, data->window, mouseID, SDL_TRUE, (float)relX, (float)relY);
+                        SDL_SendMouseMotion(timestamp, window, mouseID, SDL_TRUE, (float)relX, (float)relY);
                     }
                 }
             }
@@ -617,33 +622,33 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_WindowData *data, HAND
                 SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
                 /* Ignore this motion, probably a pen lift and drop */
             } else {
-                SDL_SendMouseMotion(timestamp, data->window, mouseID, SDL_TRUE, (float)relX, (float)relY);
+                SDL_SendMouseMotion(timestamp, window, mouseID, SDL_TRUE, (float)relX, (float)relY);
             }
         }
 
         data->last_raw_mouse_position.x = x;
         data->last_raw_mouse_position.y = y;
     }
-    WIN_CheckRawMouseButtons(timestamp, hDevice, rawmouse->usButtonFlags, data, mouseID);
+    WIN_CheckRawMouseButtons(timestamp, hDevice, rawmouse->usButtonFlags, windowdata, mouseID);
 }
 
-static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_WindowData *data, HANDLE hDevice, RAWKEYBOARD *rawkeyboard)
+static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWKEYBOARD *rawkeyboard)
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)hDevice;
 
-    if (!data->videodata->raw_keyboard_enabled) {
+    if (!data->raw_keyboard_enabled) {
         return;
     }
 
     if (rawkeyboard->Flags & RI_KEY_E1) {
         // First key in a Ctrl+{key} sequence
-        data->videodata->pending_E1_key_sequence = SDL_TRUE;
+        data->pending_E1_key_sequence = SDL_TRUE;
         return;
     }
 
     Uint8 state = (rawkeyboard->Flags & RI_KEY_BREAK) ? SDL_RELEASED : SDL_PRESSED;
     SDL_Scancode code;
-    if (data->videodata->pending_E1_key_sequence) {
+    if (data->pending_E1_key_sequence) {
         if (rawkeyboard->MakeCode == 0x45) {
             // Ctrl+NumLock == Pause
             code = SDL_SCANCODE_PAUSE;
@@ -651,7 +656,7 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_WindowData *data, H
             // Ctrl+ScrollLock == Break (no SDL scancode?)
             code = SDL_SCANCODE_UNKNOWN;
         }
-        data->videodata->pending_E1_key_sequence = SDL_FALSE;
+        data->pending_E1_key_sequence = SDL_FALSE;
     } else {
         // The code is in the lower 7 bits, the high bit is set for the E0 prefix
         Uint8 index = (Uint8)rawkeyboard->MakeCode;
@@ -660,25 +665,18 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_WindowData *data, H
         }
         code = windows_scancode_table[index];
     }
+    if (state && !SDL_GetKeyboardFocus()) {
+        return;
+    }
     SDL_SendKeyboardKey(timestamp, keyboardID, state, code);
 }
 
 void WIN_PollRawInput(SDL_VideoDevice *_this)
 {
-    SDL_Window *window;
-    SDL_WindowData *data;
+    SDL_VideoData *data = _this->driverdata;
     UINT size, i, count, total = 0;
     RAWINPUT *input;
     Uint64 now;
-
-    /* Relative mouse motion is delivered to the window with keyboard focus */
-    window = SDL_GetKeyboardFocus();
-    if (!window) {
-        // Clear the queue status so MsgWaitForMultipleObjects() will wait again
-        (void)GetQueueStatus(QS_RAWINPUT);
-        return;
-    }
-    data = window->driverdata;
 
     if (data->rawinput_offset == 0) {
         BOOL isWow64;
@@ -735,10 +733,10 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
             timestamp += increment;
             if (input->header.dwType == RIM_TYPEMOUSE) {
                 RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
-                WIN_HandleRawMouseInput(timestamp, window->driverdata, input->header.hDevice, rawmouse);
+                WIN_HandleRawMouseInput(timestamp, data, input->header.hDevice, rawmouse);
             } else if (input->header.dwType == RIM_TYPEKEYBOARD) {
                 RAWKEYBOARD *rawkeyboard = (RAWKEYBOARD *)((BYTE *)input + data->rawinput_offset);
-                WIN_HandleRawKeyboardInput(timestamp, window->driverdata, input->header.hDevice, rawkeyboard);
+                WIN_HandleRawKeyboardInput(timestamp, data, input->header.hDevice, rawkeyboard);
             }
         }
     }
