@@ -1735,7 +1735,7 @@ The following functions have been renamed:
 
 The following functions have been removed:
 * SDL_GetClosestFullscreenDisplayMode()
-* SDL_GetDisplayDPI() - not reliable across platforms, approximately replaced by multiplying `display_scale` in the structure returned by SDL_GetDesktopDisplayMode() times 160 on iPhone and Android, and 96 on other platforms.
+* SDL_GetDisplayDPI() - not reliable across platforms, approximately replaced by multiplying SDL_GetWindowDisplayScale() times 160 on iPhone and Android, and 96 on other platforms.
 * SDL_GetDisplayMode()
 * SDL_GetNumDisplayModes() - replaced with SDL_GetFullscreenDisplayModes()
 * SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
