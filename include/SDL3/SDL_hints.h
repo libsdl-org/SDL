@@ -2569,6 +2569,29 @@ extern "C" {
 #define SDL_HINT_XINPUT_ENABLED "SDL_XINPUT_ENABLED"
 
 /**
+ * Request early return from SDL_EnterAppMainCallbacks() to allow an external runloop.
+ *
+ * On some platforms, or if you are using SDL_main instead of SDL_AppIterate,
+ * this hint is ignored. This mirrors the iOS behaviour, allowing the use of an
+ * external runloop (e.g dispatchMain() for Swift.
+ *
+ * This allows interoperability of applications that use other runloops or event
+ * processsing mechanisms or libraries, or do significant processing or
+ * work outside a display-linked loop.
+ *
+ * Whatever mechanism is used must call SDL_IterateMainCallbacks() regularly and
+ * frequently to drive SDL, and SDL_QuitMainCallbacks() when the application is exiting.
+ *
+ * SDL_IterateMainCallbacks() will then call the application-defined SDL_AppInterate()
+ * and SDL_AppEvent() callbacks as required.
+ *
+ * This defaults to false, and specifying NULL for the hint's value will restore
+ * the default.
+ *
+ */
+#define SDL_HINT_MAIN_CALLBACK_EXTERNAL_RUNLOOP "SDL_HINT_MAIN_CALLBACK_EXTERNAL_RUNLOOP"
+
+/**
  *  An enumeration of hint priorities
  */
 typedef enum
