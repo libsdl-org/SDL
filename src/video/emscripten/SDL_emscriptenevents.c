@@ -220,7 +220,7 @@ static const SDL_Keycode emscripten_keycode_table[] = {
     /* 178 */ SDLK_UNKNOWN,
     /* 179 */ SDLK_AUDIOPLAY, /*IE, Chrome*/
     /* 180 */ SDLK_UNKNOWN,
-    /* 181 */ SDLK_AUDIOMUTE,  /*FX*/
+    /* 181 */ SDLK_MUTE,  /*FX*/
     /* 182 */ SDLK_VOLUMEDOWN, /*FX*/
     /* 183 */ SDLK_VOLUMEUP,   /*FX*/
     /* 184 */ SDLK_UNKNOWN,
@@ -422,7 +422,7 @@ static SDL_Scancode Emscripten_MapScanCode(const char *code)
     case DOM_PK_CONTROL_RIGHT:
         return SDL_SCANCODE_RCTRL;
     case DOM_PK_AUDIO_VOLUME_MUTE:
-        return SDL_SCANCODE_AUDIOMUTE;
+        return SDL_SCANCODE_MUTE;
     case DOM_PK_LAUNCH_APP_2:
         return SDL_SCANCODE_CALCULATOR;
     case DOM_PK_MEDIA_PLAY_PAUSE:

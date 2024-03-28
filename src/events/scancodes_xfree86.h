@@ -328,8 +328,8 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 145, 0x091 */   SDL_SCANCODE_UNKNOWN,            /* XF86Send */
     /* 146, 0x092 */   SDL_SCANCODE_UNKNOWN,            /* NoSymbol */
     /* 147, 0x093 */   SDL_SCANCODE_UNKNOWN,            /* XF86Xfer */
-    /* 148, 0x094 */   SDL_SCANCODE_APP1,               /* XF86Launch1 */
-    /* 149, 0x095 */   SDL_SCANCODE_APP2,               /* XF86Launch2 */
+    /* 148, 0x094 */   SDL_SCANCODE_UNKNOWN,            /* XF86Launch1 */
+    /* 149, 0x095 */   SDL_SCANCODE_UNKNOWN,            /* XF86Launch2 */
     /* 150, 0x096 */   SDL_SCANCODE_WWW,                /* XF86WWW */
     /* 151, 0x097 */   SDL_SCANCODE_UNKNOWN,            /* XF86DOS */
     /* 152, 0x098 */   SDL_SCANCODE_UNKNOWN,            /* XF86ScreenSaver */
