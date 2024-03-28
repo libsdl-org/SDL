@@ -118,7 +118,6 @@ typedef unsigned int uintptr_t;
 
 #if HAVE_LIBC
 /* Useful headers */
-#define HAVE_CTYPE_H 1
 #define HAVE_FLOAT_H 1
 #define HAVE_LIMITS_H 1
 #define HAVE_MATH_H 1
@@ -159,10 +158,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_ATOF 1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP 1
-#define HAVE__STRICMP 1
-#define HAVE__STRNICMP 1
-#define HAVE__WCSICMP 1
-#define HAVE__WCSNICMP 1
 #define HAVE__WCSDUP 1
 #define HAVE_SSCANF 1
 #define HAVE_VSSCANF 1

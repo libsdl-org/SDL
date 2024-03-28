@@ -993,7 +993,6 @@ SDL3_0.0.0 {
     SDL_uitoa;
     SDL_ulltoa;
     SDL_ultoa;
-    SDL_utf8casecmp;
     SDL_utf8strlcpy;
     SDL_utf8strlen;
     SDL_utf8strnlen;

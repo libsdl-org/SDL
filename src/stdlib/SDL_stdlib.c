@@ -474,28 +474,7 @@ int SDL_abs(int x)
 #endif
 }
 
-#ifdef HAVE_CTYPE_H
-int SDL_isalpha(int x)
-{
-    return isalpha(x);
-}
-int SDL_isalnum(int x) { return isalnum(x); }
-int SDL_isdigit(int x) { return isdigit(x); }
-int SDL_isxdigit(int x) { return isxdigit(x); }
-int SDL_ispunct(int x) { return ispunct(x); }
-int SDL_isspace(int x) { return isspace(x); }
-int SDL_isupper(int x) { return isupper(x); }
-int SDL_islower(int x) { return islower(x); }
-int SDL_isprint(int x) { return isprint(x); }
-int SDL_isgraph(int x) { return isgraph(x); }
-int SDL_iscntrl(int x) { return iscntrl(x); }
-int SDL_toupper(int x) { return toupper(x); }
-int SDL_tolower(int x) { return tolower(x); }
-#else
-int SDL_isalpha(int x)
-{
-    return (SDL_isupper(x)) || (SDL_islower(x));
-}
+int SDL_isalpha(int x) { return (SDL_isupper(x)) || (SDL_islower(x)); }
 int SDL_isalnum(int x) { return (SDL_isalpha(x)) || (SDL_isdigit(x)); }
 int SDL_isdigit(int x) { return ((x) >= '0') && ((x) <= '9'); }
 int SDL_isxdigit(int x) { return (((x) >= 'A') && ((x) <= 'F')) || (((x) >= 'a') && ((x) <= 'f')) || (SDL_isdigit(x)); }
@@ -508,19 +487,7 @@ int SDL_isgraph(int x) { return (SDL_isprint(x)) && ((x) != ' '); }
 int SDL_iscntrl(int x) { return (((x) >= '\0') && ((x) <= '\x1f')) || ((x) == '\x7f'); }
 int SDL_toupper(int x) { return ((x) >= 'a') && ((x) <= 'z') ? ('A' + ((x) - 'a')) : (x); }
 int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a' + ((x) - 'A')) : (x); }
-#endif
-
-#if defined(HAVE_CTYPE_H) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-int SDL_isblank(int x)
-{
-    return isblank(x);
-}
-#else
-int SDL_isblank(int x)
-{
-    return ((x) == ' ') || ((x) == '\t');
-}
-#endif
+int SDL_isblank(int x) { return ((x) == ' ') || ((x) == '\t'); }
 
 void *SDL_aligned_alloc(size_t alignment, size_t size)
 {
