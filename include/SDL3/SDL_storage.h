@@ -268,7 +268,11 @@ extern DECLSPEC int SDL_WriteStorageFile(SDL_Storage *storage, const char *path,
 extern DECLSPEC int SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path);
 
 /**
- * Enumerate a directory in a storage container.
+ * Enumerate a directory in a storage container through a callback function.
+ *
+ * This function provides every directory entry through an app-provided
+ * callback, called once for each directory entry, until all results have
+ * been provided or the callback returns <= 0.
  *
  * \param storage a storage container
  * \param path the path of the directory to enumerate
@@ -282,6 +286,35 @@ extern DECLSPEC int SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage, con
  * \sa SDL_StorageReady
  */
 extern DECLSPEC int SDLCALL SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata);
+
+/**
+ * Enumerate a directory, optionally filtered by pattern, and return a list.
+ *
+ * Files are filtered out if they don't match the string in `pattern`, which
+ * may contain wildcard characters '*' (match everything) and '?' (match one
+ * character). If pattern is NULL, no filtering is done and all results are
+ * returned.
+ *
+ * The returned array is always NULL-terminated, for your iterating
+ * convenience, but if `count` is non-NULL, on return it will contain the
+ * number of items in the array, not counting the NULL terminator.
+ *
+ * Subdirectories of `path` aren't descended into, so using a path separator
+ * in `pattern` will result in all entries being filtered out.
+ *
+ * You must free the returned pointer with SDL_free() when done with it.
+ *
+ * \param storage a storage container
+ * \param path the path of the directory to enumerate
+ * \param pattern the pattern that files in the directory must match. Can be NULL.
+ * \param count on return, will be set to the number of items in the returned array. Can be NULL.
+ * \returns an array of strings on success or NULL on failure; call
+ *          SDL_GetError() for more information. The caller should pass the
+ *          returned pointer to SDL_free when done with it.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC char **SDLCALL SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, int *count);
 
 /**
  * Remove a file or an empty directory in a writable storage container.
