@@ -1715,8 +1715,6 @@ SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0
 
 SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
 
-SDL_SetWindowGrab() and SDL_GetWindowGrab() have been removed. Use SDL_SetWindowMouseGrab()/SDL_GetWindowMouseGrab() or SDL_SetWindowKeyboardGrab()/SDL_GetWindowKeyboardGrab() for grabbing mouse and/or keyboard input respectively.
-
 The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported on Windows, Mac (Cocoa), X11, and Wayland. Creating windows with these flags must happen via the `SDL_CreatePopupWindow()` function. This function requires passing in the handle to a valid parent window for the popup, and the popup window is positioned relative to the parent.
 
 
@@ -1739,6 +1737,8 @@ The following functions have been removed:
 * SDL_GetDisplayMode()
 * SDL_GetNumDisplayModes() - replaced with SDL_GetFullscreenDisplayModes()
 * SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
+* SDL_SetWindowGrab() - use SDL_SetWindowMouseGrab() instead, along with SDL_SetWindowKeyboardGrab() if you also set SDL_HINT_GRAB_KEYBOARD.
+* SDL_GetWindowGrab() - use SDL_GetWindowMouseGrab() instead, along with SDL_GetWindowKeyboardGrab() if you also set SDL_HINT_GRAB_KEYBOARD.
 * SDL_GetWindowData() - use SDL_GetWindowProperties() instead
 * SDL_SetWindowData() - use SDL_GetWindowProperties() instead
 * SDL_CreateWindowFrom() - use SDL_CreateWindowWithProperties() with the properties that allow you to wrap an existing window
