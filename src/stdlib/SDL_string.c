@@ -42,8 +42,7 @@ static int SDL_UnicodeCaseFold(const Uint32 from, Uint32 *to)
     if (from < 128) {   // low-ASCII, easy!
         if ((from >= 'A') && (from <= 'Z')) {
             *to = from - ('A' - 'a');
-        } else {
-            *to = from;
+            return 1;
         }
     } else if (from <= 0xFFFF) {  // the Basic Multilingual Plane.
         const Uint8 hash = ((from ^ (from >> 8)) & 0xFF);
