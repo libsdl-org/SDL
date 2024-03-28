@@ -117,10 +117,11 @@ char *SDLTest_GenerateRunSeed(const int length);
  * \param userExecKey Custom execution key provided by user, or 0 to autogenerate one.
  * \param filter Filter specification. NULL disables. Case sensitive.
  * \param testIterations Number of iterations to run each test case.
+ * \param randomOrder allow to run suites and tests in random order when there is no filter
  *
  * \returns the test run result: 0 when all tests passed, 1 if any tests failed.
  */
-int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *userRunSeed, Uint64 userExecKey, const char *filter, int testIterations);
+int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *userRunSeed, Uint64 userExecKey, const char *filter, int testIterations, SDL_bool randomOrder);
 
 
 /* Ends C function definitions when using C++ */
