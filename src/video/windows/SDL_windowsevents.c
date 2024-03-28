@@ -693,11 +693,11 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
     /* Get all available events */
     input = (RAWINPUT *)data->rawinput;
     for (;;) {
-        size = data->rawinput_size - ((BYTE *)input - data->rawinput);
+        size = data->rawinput_size - (UINT)((BYTE *)input - data->rawinput);
         count = GetRawInputBuffer(input, &size, sizeof(RAWINPUTHEADER));
         if (count == 0 || count == (UINT)-1) {
             if (!data->rawinput || (count == (UINT)-1 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)) {
-                const size_t RAWINPUT_BUFFER_SIZE_INCREMENT = 96;   // 2 64-bit raw mouse packets
+                const UINT RAWINPUT_BUFFER_SIZE_INCREMENT = 96;   // 2 64-bit raw mouse packets
                 BYTE *rawinput = (BYTE *)SDL_realloc(data->rawinput, data->rawinput_size + RAWINPUT_BUFFER_SIZE_INCREMENT);
                 if (!rawinput) {
                     break;
