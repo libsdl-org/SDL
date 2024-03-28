@@ -1528,7 +1528,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     case KeyPress:
     case KeyRelease:
     {
-        if (data->using_xinput2) {
+        if (data->xinput2_keyboard_enabled) {
             // This input is being handled by XInput2
             break;
         }
@@ -1538,7 +1538,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
     case MotionNotify:
     {
-        if (data->using_xinput2) {
+        if (data->xinput2_mouse_enabled) {
             // This input is being handled by XInput2
             break;
         }
@@ -1556,7 +1556,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
     case ButtonPress:
     {
-        if (data->using_xinput2) {
+        if (data->xinput2_mouse_enabled) {
             // This input is being handled by XInput2
             break;
         }
@@ -1567,7 +1567,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
     case ButtonRelease:
     {
-        if (data->using_xinput2) {
+        if (data->xinput2_mouse_enabled) {
             // This input is being handled by XInput2
             break;
         }

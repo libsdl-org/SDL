@@ -607,27 +607,38 @@ SDL_bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *w
         eventmask.mask = mask;
         eventmask.deviceid = XIAllDevices;
 
+/* This is not enabled by default because these events are only delivered to the window with mouse focus, not keyboard focus */
+#ifdef USE_XINPUT2_KEYBOARD
         XISetMask(mask, XI_KeyPress);
         XISetMask(mask, XI_KeyRelease);
+        windowdata->xinput2_keyboard_enabled = SDL_TRUE;
+#endif
+
         XISetMask(mask, XI_ButtonPress);
         XISetMask(mask, XI_ButtonRelease);
         XISetMask(mask, XI_Motion);
+        windowdata->xinput2_mouse_enabled = SDL_TRUE;
+
         XISetMask(mask, XI_Enter);
         XISetMask(mask, XI_Leave);
+
         /* Hotplugging: */
         XISetMask(mask, XI_DeviceChanged);
         XISetMask(mask, XI_HierarchyChanged);
         XISetMask(mask, XI_PropertyEvent); /* E.g., when swapping tablet pens */
 
-        if (X11_XISelectEvents(data->display, windowdata->xwindow, &eventmask, 1) == Success) {
-            windowdata->using_xinput2 = SDL_TRUE;
-        } else {
+        if (X11_XISelectEvents(data->display, windowdata->xwindow, &eventmask, 1) != Success) {
             SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Could not enable XInput2 event handling\n");
-            windowdata->using_xinput2 = SDL_FALSE;
+            windowdata->xinput2_keyboard_enabled = SDL_FALSE;
+            windowdata->xinput2_mouse_enabled = SDL_FALSE;
         }
     }
 #endif
-    return windowdata->using_xinput2;
+
+    if (windowdata->xinput2_keyboard_enabled || windowdata->xinput2_mouse_enabled) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 int X11_Xinput2IsMultitouchSupported(void)
