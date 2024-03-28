@@ -74,6 +74,7 @@ static SDL_GUID pen_guid_zero = { { 0 } };
     penvar = SDL_GetPenPtr(instance_id);          \
     if (!(penvar)) {                              \
         SDL_SetError("Stale SDL_PenID");          \
+        SDL_UNLOCK_PENS();                        \
         return (err_return);                      \
     }
 
