@@ -1147,7 +1147,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
         }
 
-        if (!data->videodata->raw_keyboard_enabled && code != SDL_SCANCODE_UNKNOWN) {
+        /* Ignore auto-repeat keys from the Caps Lock, Num Lock and Scroll Lock keys,
+         * otherwise the toggle states will get out of sync with physical keyboard state.
+         */
+        SDL_bool isToggleKey = wParam == VK_CAPITAL || wParam == VK_NUMLOCK || wParam == VK_SCROLL;
+        SDL_bool isRepeat = (lParam & (1 << 30)) != 0;
+
+        if (!data->videodata->raw_keyboard_enabled && code != SDL_SCANCODE_UNKNOWN && !(isToggleKey && isRepeat)) {
             SDL_SendKeyboardKey(WIN_GetEventTimestamp(), SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, code);
         }
     }
