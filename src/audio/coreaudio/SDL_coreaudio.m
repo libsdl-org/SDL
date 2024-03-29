@@ -621,7 +621,12 @@ static void InputBufferReadyCallback(void *inUserData, AudioQueueRef inAQ, Audio
     SDL_assert(device->hidden->current_buffer == NULL);  // shouldn't have anything pending
     device->hidden->current_buffer = inBuffer;
     SDL_CaptureAudioThreadIterate(device);
-    SDL_assert(device->hidden->current_buffer == NULL);  // CaptureFromDevice/FlushCapture should have enqueued and cleaned it out.
+
+    // buffer is unexpectedly here? We're probably dying, but try to requeue this buffer anyhow.
+    if (device->hidden->current_buffer != NULL) {
+        SDL_assert(SDL_AtomicGet(&device->shutdown) != 0);
+        COREAUDIO_FlushCapture(device);  // just flush it manually, which will requeue it.
+    }
 }
 
 static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
