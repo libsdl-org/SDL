@@ -3208,9 +3208,10 @@ endif()
 
 add_library(SDL3_Headers INTERFACE)
 add_library(SDL3::Headers ALIAS SDL3_Headers)
-set_target_properties(SDL3_Headers PROPERTIES
-  EXPORT_NAME "Headers"
-)
+set_property(TARGET SDL3_Headers PROPERTY EXPORT_NAME "Headers")
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.25")
+  set_property(TARGET SDL3_Headers PROPERTY EXPORT_NO_SYSTEM "TRUE")
+endif()
 target_include_directories(SDL3_Headers
   INTERFACE
     "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
