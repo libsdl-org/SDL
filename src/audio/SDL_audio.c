@@ -594,6 +594,9 @@ static SDL_AudioDevice *CreateAudioOutputDevice(const char *name, const SDL_Audi
 // The audio backends call this when a new device is plugged in.
 SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, const SDL_AudioSpec *inspec, void *handle)
 {
+    // device handles MUST be unique! If the target reuses the same handle for hardware with both input and output interfaces, wrap it in a pointer you SDL_malloc'd!
+    SDL_assert(SDL_FindPhysicalAudioDeviceByHandle(handle) == NULL);
+
     const SDL_AudioFormat default_format = iscapture ? DEFAULT_AUDIO_CAPTURE_FORMAT : DEFAULT_AUDIO_OUTPUT_FORMAT;
     const int default_channels = iscapture ? DEFAULT_AUDIO_CAPTURE_CHANNELS : DEFAULT_AUDIO_OUTPUT_CHANNELS;
     const int default_freq = iscapture ? DEFAULT_AUDIO_CAPTURE_FREQUENCY : DEFAULT_AUDIO_OUTPUT_FREQUENCY;
