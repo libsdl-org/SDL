@@ -16,10 +16,6 @@ jobs:
       run: |
         apk update
         apk add cmake gmp mpc1 mpfr4 make pkgconf
-    - name: Patch the pspdev toolchain to use -isystem instead of -I
-      run: |
-        # https://github.com/pspdev/pspsdk/issues/123
-        sed -E s/-I/-isystem/g -i $PSPDEV/psp/share/pspdev.cmake
     - name: Configure (CMake)
       run: |
         cmake -S . -B build \
