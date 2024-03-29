@@ -207,8 +207,6 @@ static void RefreshPhysicalDevices(void)
                        (int)i, name, (int)dev);
                 #endif
 
-                devs[i] = 0;  // don't bother checking this one on the next iscapture iteration of the loop
-
                 SDL_AudioDevice *device = SDL_AddAudioDevice(iscapture ? SDL_TRUE : SDL_FALSE, name, &spec, (void *)((size_t)dev));
                 if (device) {
                     AudioObjectAddPropertyListener(dev, &alive_address, DeviceAliveNotification, device);
