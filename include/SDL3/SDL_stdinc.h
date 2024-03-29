@@ -521,8 +521,8 @@ extern DECLSPEC int SDLCALL SDL_abs(int x);
 /**
  * Query if a character is alphabetic (a letter).
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * ASCII values for English 'a-z' and 'A-Z' as true.
+ * **WARNING**: Regardless of system locale, this will only treat ASCII values
+ * for English 'a-z' and 'A-Z' as true.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -536,8 +536,8 @@ extern DECLSPEC int SDLCALL SDL_isalpha(int x);
 /**
  * Query if a character is alphabetic (a letter) or a number.
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * ASCII values for English 'a-z', 'A-Z', and '0-9' as true.
+ * **WARNING**: Regardless of system locale, this will only treat ASCII values
+ * for English 'a-z', 'A-Z', and '0-9' as true.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -551,8 +551,8 @@ extern DECLSPEC int SDLCALL SDL_isalnum(int x);
 /**
  * Report if a character is blank (a space or tab).
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * ASCII values 0x20 (space) or 0x9 (tab) as true.
+ * **WARNING**: Regardless of system locale, this will only treat ASCII values
+ * 0x20 (space) or 0x9 (tab) as true.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -566,8 +566,8 @@ extern DECLSPEC int SDLCALL SDL_isblank(int x);
 /**
  * Report if a character is a control character.
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * ASCII values 0 through 0x1F, and 0x7F, as true.
+ * **WARNING**: Regardless of system locale, this will only treat ASCII values
+ * 0 through 0x1F, and 0x7F, as true.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -581,8 +581,8 @@ extern DECLSPEC int SDLCALL SDL_iscntrl(int x);
 /**
  * Report if a character is a numeric digit.
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * ASCII values '0' (0x30) through '9' (0x39), as true.
+ * **WARNING**: Regardless of system locale, this will only treat ASCII values
+ * '0' (0x30) through '9' (0x39), as true.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -596,9 +596,8 @@ extern DECLSPEC int SDLCALL SDL_isdigit(int x);
 /**
  * Report if a character is a hexadecimal digit.
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * ASCII values 'A' through 'F', 'a' through 'f', and '0' through
- * '9', as true.
+ * **WARNING**: Regardless of system locale, this will only treat ASCII values
+ * 'A' through 'F', 'a' through 'f', and '0' through '9', as true.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -612,8 +611,8 @@ extern DECLSPEC int SDLCALL SDL_isxdigit(int x);
 /**
  * Report if a character is a punctuation mark.
  *
- * **WARNING**: Regardless of system locale, this is equivalent
- * to `((SDL_isgraph(x)) && (!SDL_isalnum(x)))`.
+ * **WARNING**: Regardless of system locale, this is equivalent to
+ * `((SDL_isgraph(x)) && (!SDL_isalnum(x)))`.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -630,8 +629,8 @@ extern DECLSPEC int SDLCALL SDL_ispunct(int x);
 /**
  * Report if a character is whitespace.
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * the following ASCII values as true:
+ * **WARNING**: Regardless of system locale, this will only treat the
+ * following ASCII values as true:
  *
  * - space (0x20)
  * - tab (0x09)
@@ -652,8 +651,8 @@ extern DECLSPEC int SDLCALL SDL_isspace(int x);
 /**
  * Report if a character is upper case.
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * ASCII values 'A' through 'Z' as true.
+ * **WARNING**: Regardless of system locale, this will only treat ASCII values
+ * 'A' through 'Z' as true.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -667,8 +666,8 @@ extern DECLSPEC int SDLCALL SDL_isupper(int x);
 /**
  * Report if a character is lower case.
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * ASCII values 'a' through 'z' as true.
+ * **WARNING**: Regardless of system locale, this will only treat ASCII values
+ * 'a' through 'z' as true.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -682,13 +681,12 @@ extern DECLSPEC int SDLCALL SDL_islower(int x);
 /**
  * Report if a character is "printable".
  *
- * Be advised that "printable" has a definition that goes back to
- * text terminals from the dawn of computing, making this a sort of
- * special case function that is not suitable for Unicode (or most
- * any) text management.
+ * Be advised that "printable" has a definition that goes back to text
+ * terminals from the dawn of computing, making this a sort of special case
+ * function that is not suitable for Unicode (or most any) text management.
  *
- * **WARNING**: Regardless of system locale, this will only treat
- * ASCII values ' ' (0x20) through '~' (0x7E) as true.
+ * **WARNING**: Regardless of system locale, this will only treat ASCII values
+ * ' ' (0x20) through '~' (0x7E) as true.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -702,13 +700,12 @@ extern DECLSPEC int SDLCALL SDL_isprint(int x);
 /**
  * Report if a character is any "printable" except space.
  *
- * Be advised that "printable" has a definition that goes back to
- * text terminals from the dawn of computing, making this a sort of
- * special case function that is not suitable for Unicode (or most
- * any) text management.
+ * Be advised that "printable" has a definition that goes back to text
+ * terminals from the dawn of computing, making this a sort of special case
+ * function that is not suitable for Unicode (or most any) text management.
  *
- * **WARNING**: Regardless of system locale, this is equivalent
- * to `(SDL_isprint(x)) && ((x) != ' ')`.
+ * **WARNING**: Regardless of system locale, this is equivalent to
+ * `(SDL_isprint(x)) && ((x) != ' ')`.
  *
  * \param x character value to check.
  * \returns non-zero if x falls within the character class, zero otherwise.
@@ -724,12 +721,11 @@ extern DECLSPEC int SDLCALL SDL_isgraph(int x);
 /**
  * Convert low-ASCII English letters to uppercase.
  *
- * **WARNING**: Regardless of system locale, this will only
- * convert ASCII values 'a' through 'z' to uppercase.
+ * **WARNING**: Regardless of system locale, this will only convert ASCII
+ * values 'a' through 'z' to uppercase.
  *
- * This function returns the uppercase equivalent of `x`.
- * If a character cannot be converted, or is already
- * uppercase, this function returns `x`.
+ * This function returns the uppercase equivalent of `x`. If a character
+ * cannot be converted, or is already uppercase, this function returns `x`.
  *
  * \param x character value to check.
  * \returns Capitalized version of x, or x if no conversion available.
@@ -743,12 +739,11 @@ extern DECLSPEC int SDLCALL SDL_toupper(int x);
 /**
  * Convert low-ASCII English letters to lowercase.
  *
- * **WARNING**: Regardless of system locale, this will only
- * convert ASCII values 'A' through 'Z' to lowercase.
+ * **WARNING**: Regardless of system locale, this will only convert ASCII
+ * values 'A' through 'Z' to lowercase.
  *
- * This function returns the lowercase equivalent of `x`.
- * If a character cannot be converted, or is already
- * lowercase, this function returns `x`.
+ * This function returns the lowercase equivalent of `x`. If a character
+ * cannot be converted, or is already lowercase, this function returns `x`.
  *
  * \param x character value to check.
  * \returns Lowercase version of x, or x if no conversion available.
@@ -814,15 +809,14 @@ extern DECLSPEC wchar_t *SDLCALL SDL_wcsnstr(const wchar_t *haystack, const wcha
 /**
  * Compare two null-terminated wide strings.
  *
- * This only compares wchar_t values until it hits a
- * null-terminating character; it does not care if the string is
- * well-formed UTF-16 (or UTF-32, depending on your platform's
- * wchar_t size), or uses valid Unicode values.
+ * This only compares wchar_t values until it hits a null-terminating
+ * character; it does not care if the string is well-formed UTF-16 (or UTF-32,
+ * depending on your platform's wchar_t size), or uses valid Unicode values.
  *
  * \param str1 The first string to compare. NULL is not permitted!
  * \param str2 The second string to compare. NULL is not permitted!
- * \returns less than zero if str1 is "less than" str2, greater than zero
- *          if str1 is "greater than" str2, and zero if the strings match
+ * \returns less than zero if str1 is "less than" str2, greater than zero if
+ *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -835,15 +829,14 @@ extern DECLSPEC int SDLCALL SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
  * Compare two wide strings up to a number of wchar_t values.
  *
  * This only compares wchar_t values; it does not care if the string is
- * well-formed UTF-16 (or UTF-32, depending on your platform's
- * wchar_t size), or uses valid Unicode values.
+ * well-formed UTF-16 (or UTF-32, depending on your platform's wchar_t size),
+ * or uses valid Unicode values.
  *
  * Note that while this function is intended to be used with UTF-16 (or
  * UTF-32, depending on your platform's definition of wchar_t), it is
- * comparing raw wchar_t values and not Unicode codepoints: `maxlen`
- * specifies a wchar_t limit! If the limit lands in the middle of a
- * multi-wchar UTF-16 sequence, it will only compare a portion of the final
- * character.
+ * comparing raw wchar_t values and not Unicode codepoints: `maxlen` specifies
+ * a wchar_t limit! If the limit lands in the middle of a multi-wchar UTF-16
+ * sequence, it will only compare a portion of the final character.
  *
  * `maxlen` specifies a maximum number of wchar_t to compare; if the strings
  * match to this number of wide chars (or both have matched to a
@@ -853,8 +846,8 @@ extern DECLSPEC int SDLCALL SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
  * \param str1 The first string to compare. NULL is not permitted!
  * \param str2 The second string to compare. NULL is not permitted!
  * \param maxlen The maximum number of wchar_t to compare.
- * \returns less than zero if str1 is "less than" str2, greater than zero
- *          if str1 is "greater than" str2, and zero if the strings match
+ * \returns less than zero if str1 is "less than" str2, greater than zero if
+ *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -867,26 +860,24 @@ extern DECLSPEC int SDLCALL SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2
  * Compare two null-terminated wide strings, case-insensitively.
  *
  * This will work with Unicode strings, using a technique called
- * "case-folding" to handle the vast majority of case-sensitive
- * human languages regardless of system locale. It can deal with
- * expanding values: a German Eszett character can compare against
- * two ASCII 's' chars and be considered a match, for example.
- * A notable exception: it does not handle the Turkish 'i' character;
- * human language is complicated!
+ * "case-folding" to handle the vast majority of case-sensitive human
+ * languages regardless of system locale. It can deal with expanding values: a
+ * German Eszett character can compare against two ASCII 's' chars and be
+ * considered a match, for example. A notable exception: it does not handle
+ * the Turkish 'i' character; human language is complicated!
  *
- * Depending on your platform, "wchar_t" might be 2 bytes, and expected
- * to be UTF-16 encoded (like Windows), or 4 bytes in UTF-32 format. Since
- * this handles Unicode, it expects the string to be well-formed
- * and not a null-terminated string of arbitrary bytes. Characters
- * that are not valid UTF-16 (or UTF-32) are treated as Unicode character
- * U+FFFD (REPLACEMENT CHARACTER), which is to say two strings of random
- * bits may turn out to match if they convert to the same amount of
- * replacement characters.
+ * Depending on your platform, "wchar_t" might be 2 bytes, and expected to be
+ * UTF-16 encoded (like Windows), or 4 bytes in UTF-32 format. Since this
+ * handles Unicode, it expects the string to be well-formed and not a
+ * null-terminated string of arbitrary bytes. Characters that are not valid
+ * UTF-16 (or UTF-32) are treated as Unicode character U+FFFD (REPLACEMENT
+ * CHARACTER), which is to say two strings of random bits may turn out to
+ * match if they convert to the same amount of replacement characters.
  *
  * \param str1 The first string to compare. NULL is not permitted!
  * \param str2 The second string to compare. NULL is not permitted!
- * \returns less than zero if str1 is "less than" str2, greater than zero
- *          if str1 is "greater than" str2, and zero if the strings match
+ * \returns less than zero if str1 is "less than" str2, greater than zero if
+ *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -899,38 +890,36 @@ extern DECLSPEC int SDLCALL SDL_wcscasecmp(const wchar_t *str1, const wchar_t *s
  * Compare two wide strings, case-insensitively, up to a number of wchar_t.
  *
  * This will work with Unicode strings, using a technique called
- * "case-folding" to handle the vast majority of case-sensitive
- * human languages regardless of system locale. It can deal with
- * expanding values: a German Eszett character can compare against
- * two ASCII 's' chars and be considered a match, for example.
- * A notable exception: it does not handle the Turkish 'i' character;
- * human language is complicated!
+ * "case-folding" to handle the vast majority of case-sensitive human
+ * languages regardless of system locale. It can deal with expanding values: a
+ * German Eszett character can compare against two ASCII 's' chars and be
+ * considered a match, for example. A notable exception: it does not handle
+ * the Turkish 'i' character; human language is complicated!
  *
- * Depending on your platform, "wchar_t" might be 2 bytes, and expected
- * to be UTF-16 encoded (like Windows), or 4 bytes in UTF-32 format. Since
- * this handles Unicode, it expects the string to be well-formed
- * and not a null-terminated string of arbitrary bytes. Characters
- * that are not valid UTF-16 (or UTF-32) are treated as Unicode character
- * U+FFFD (REPLACEMENT CHARACTER), which is to say two strings of random
- * bits may turn out to match if they convert to the same amount of
- * replacement characters.
+ * Depending on your platform, "wchar_t" might be 2 bytes, and expected to be
+ * UTF-16 encoded (like Windows), or 4 bytes in UTF-32 format. Since this
+ * handles Unicode, it expects the string to be well-formed and not a
+ * null-terminated string of arbitrary bytes. Characters that are not valid
+ * UTF-16 (or UTF-32) are treated as Unicode character U+FFFD (REPLACEMENT
+ * CHARACTER), which is to say two strings of random bits may turn out to
+ * match if they convert to the same amount of replacement characters.
  *
  * Note that while this function might deal with variable-sized characters,
- * `maxlen` specifies a _wchar_ limit! If the limit lands in the middle
- * of a multi-byte UTF-16 sequence, it may convert a portion of the final
- * character to one or more Unicode character U+FFFD (REPLACEMENT
- * CHARACTER) so as not to overflow a buffer.
+ * `maxlen` specifies a _wchar_ limit! If the limit lands in the middle of a
+ * multi-byte UTF-16 sequence, it may convert a portion of the final character
+ * to one or more Unicode character U+FFFD (REPLACEMENT CHARACTER) so as not
+ * to overflow a buffer.
  *
- * `maxlen` specifies a maximum number of wchar_t values to compare; if
- * the strings match to this number of wchar_t (or both have matched to a
+ * `maxlen` specifies a maximum number of wchar_t values to compare; if the
+ * strings match to this number of wchar_t (or both have matched to a
  * null-terminator character before this number of bytes), they will be
  * considered equal.
  *
  * \param str1 The first string to compare. NULL is not permitted!
  * \param str2 The second string to compare. NULL is not permitted!
  * \param maxlen The maximum number of wchar_t values to compare.
- * \returns less than zero if str1 is "less than" str2, greater than zero
- *          if str1 is "greater than" str2, and zero if the strings match
+ * \returns less than zero if str1 is "less than" str2, greater than zero if
+ *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -953,12 +942,12 @@ extern DECLSPEC char *SDLCALL SDL_strrev(char *str);
 /**
  * Convert a string to uppercase.
  *
- * **WARNING**: Regardless of system locale, this will only
- * convert ASCII values 'A' through 'Z' to uppercase.
+ * **WARNING**: Regardless of system locale, this will only convert ASCII
+ * values 'A' through 'Z' to uppercase.
  *
- * This function operates on a null-terminated string of bytes--even if it
- * is malformed UTF-8!--and converts ASCII characters 'a' through 'z' to
- * their uppercase equivalents in-place, returning the original `str` pointer.
+ * This function operates on a null-terminated string of bytes--even if it is
+ * malformed UTF-8!--and converts ASCII characters 'a' through 'z' to their
+ * uppercase equivalents in-place, returning the original `str` pointer.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -971,12 +960,12 @@ extern DECLSPEC char *SDLCALL SDL_strupr(char *str);
 /**
  * Convert a string to lowercase.
  *
- * **WARNING**: Regardless of system locale, this will only
- * convert ASCII values 'A' through 'Z' to lowercase.
+ * **WARNING**: Regardless of system locale, this will only convert ASCII
+ * values 'A' through 'Z' to lowercase.
  *
- * This function operates on a null-terminated string of bytes--even if it
- * is malformed UTF-8!--and converts ASCII characters 'A' through 'Z' to
- * their lowercase equivalents in-place, returning the original `str` pointer.
+ * This function operates on a null-terminated string of bytes--even if it is
+ * malformed UTF-8!--and converts ASCII characters 'A' through 'Z' to their
+ * lowercase equivalents in-place, returning the original `str` pointer.
  *
  * \param str The string to convert in-place.
  * \returns The `str` pointer passed into this function.
@@ -1018,13 +1007,13 @@ extern DECLSPEC double SDLCALL SDL_strtod(const char *str, char **endp);
  *
  * Due to the nature of UTF-8 encoding, this will work with Unicode strings,
  * since effectively this function just compares bytes until it hits a
- * null-terminating character. Also due to the nature of UTF-8, this can
- * be used with SDL_qsort() to put strings in (roughly) alphabetical order.
+ * null-terminating character. Also due to the nature of UTF-8, this can be
+ * used with SDL_qsort() to put strings in (roughly) alphabetical order.
  *
  * \param str1 The first string to compare. NULL is not permitted!
  * \param str2 The second string to compare. NULL is not permitted!
- * \returns less than zero if str1 is "less than" str2, greater than zero
- *          if str1 is "greater than" str2, and zero if the strings match
+ * \returns less than zero if str1 is "less than" str2, greater than zero if
+ *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1038,13 +1027,13 @@ extern DECLSPEC int SDLCALL SDL_strcmp(const char *str1, const char *str2);
  *
  * Due to the nature of UTF-8 encoding, this will work with Unicode strings,
  * since effectively this function just compares bytes until it hits a
- * null-terminating character. Also due to the nature of UTF-8, this can
- * be used with SDL_qsort() to put strings in (roughly) alphabetical order.
+ * null-terminating character. Also due to the nature of UTF-8, this can be
+ * used with SDL_qsort() to put strings in (roughly) alphabetical order.
  *
  * Note that while this function is intended to be used with UTF-8, it is
- * doing a bytewise comparison, and `maxlen` specifies a _byte_ limit! If
- * the limit lands in the middle of a multi-byte UTF-8 sequence, it will
- * only compare a portion of the final character.
+ * doing a bytewise comparison, and `maxlen` specifies a _byte_ limit! If the
+ * limit lands in the middle of a multi-byte UTF-8 sequence, it will only
+ * compare a portion of the final character.
  *
  * `maxlen` specifies a maximum number of bytes to compare; if the strings
  * match to this number of bytes (or both have matched to a null-terminator
@@ -1053,8 +1042,8 @@ extern DECLSPEC int SDLCALL SDL_strcmp(const char *str1, const char *str2);
  * \param str1 The first string to compare. NULL is not permitted!
  * \param str2 The second string to compare. NULL is not permitted!
  * \param maxlen The maximum number of _bytes_ to compare.
- * \returns less than zero if str1 is "less than" str2, greater than zero
- *          if str1 is "greater than" str2, and zero if the strings match
+ * \returns less than zero if str1 is "less than" str2, greater than zero if
+ *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1067,24 +1056,22 @@ extern DECLSPEC int SDLCALL SDL_strncmp(const char *str1, const char *str2, size
  * Compare two null-terminated UTF-8 strings, case-insensitively.
  *
  * This will work with Unicode strings, using a technique called
- * "case-folding" to handle the vast majority of case-sensitive
- * human languages regardless of system locale. It can deal with
- * expanding values: a German Eszett character can compare against
- * two ASCII 's' chars and be considered a match, for example.
- * A notable exception: it does not handle the Turkish 'i' character;
- * human language is complicated!
+ * "case-folding" to handle the vast majority of case-sensitive human
+ * languages regardless of system locale. It can deal with expanding values: a
+ * German Eszett character can compare against two ASCII 's' chars and be
+ * considered a match, for example. A notable exception: it does not handle
+ * the Turkish 'i' character; human language is complicated!
  *
- * Since this handles Unicode, it expects the string to be well-formed
- * UTF-8 and not a null-terminated string of arbitrary bytes. Bytes
- * that are not valid UTF-8 are treated as Unicode character U+FFFD
- * (REPLACEMENT CHARACTER), which is to say two strings of random bits
- * may turn out to match if they convert to the same amount of
- * replacement characters.
+ * Since this handles Unicode, it expects the string to be well-formed UTF-8
+ * and not a null-terminated string of arbitrary bytes. Bytes that are not
+ * valid UTF-8 are treated as Unicode character U+FFFD (REPLACEMENT
+ * CHARACTER), which is to say two strings of random bits may turn out to
+ * match if they convert to the same amount of replacement characters.
  *
  * \param str1 The first string to compare. NULL is not permitted!
  * \param str2 The second string to compare. NULL is not permitted!
- * \returns less than zero if str1 is "less than" str2, greater than zero
- *          if str1 is "greater than" str2, and zero if the strings match
+ * \returns less than zero if str1 is "less than" str2, greater than zero if
+ *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1098,25 +1085,23 @@ extern DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
  * Compare two UTF-8 strings, case-insensitively, up to a number of bytes.
  *
  * This will work with Unicode strings, using a technique called
- * "case-folding" to handle the vast majority of case-sensitive
- * human languages regardless of system locale. It can deal with
- * expanding values: a German Eszett character can compare against
- * two ASCII 's' chars and be considered a match, for example.
- * A notable exception: it does not handle the Turkish 'i' character;
- * human language is complicated!
+ * "case-folding" to handle the vast majority of case-sensitive human
+ * languages regardless of system locale. It can deal with expanding values: a
+ * German Eszett character can compare against two ASCII 's' chars and be
+ * considered a match, for example. A notable exception: it does not handle
+ * the Turkish 'i' character; human language is complicated!
  *
- * Since this handles Unicode, it expects the string to be well-formed
- * UTF-8 and not a null-terminated string of arbitrary bytes. Bytes
- * that are not valid UTF-8 are treated as Unicode character U+FFFD
- * (REPLACEMENT CHARACTER), which is to say two strings of random bits
- * may turn out to match if they convert to the same amount of
- * replacement characters.
+ * Since this handles Unicode, it expects the string to be well-formed UTF-8
+ * and not a null-terminated string of arbitrary bytes. Bytes that are not
+ * valid UTF-8 are treated as Unicode character U+FFFD (REPLACEMENT
+ * CHARACTER), which is to say two strings of random bits may turn out to
+ * match if they convert to the same amount of replacement characters.
  *
- * Note that while this function is intended to be used with UTF-8,
- * `maxlen` specifies a _byte_ limit! If the limit lands in the middle
- * of a multi-byte UTF-8 sequence, it may convert a portion of the final
- * character to one or more Unicode character U+FFFD (REPLACEMENT
- * CHARACTER) so as not to overflow a buffer.
+ * Note that while this function is intended to be used with UTF-8, `maxlen`
+ * specifies a _byte_ limit! If the limit lands in the middle of a multi-byte
+ * UTF-8 sequence, it may convert a portion of the final character to one or
+ * more Unicode character U+FFFD (REPLACEMENT CHARACTER) so as not to overflow
+ * a buffer.
  *
  * `maxlen` specifies a maximum number of bytes to compare; if the strings
  * match to this number of bytes (or both have matched to a null-terminator
@@ -1125,8 +1110,8 @@ extern DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
  * \param str1 The first string to compare. NULL is not permitted!
  * \param str2 The second string to compare. NULL is not permitted!
  * \param maxlen The maximum number of bytes to compare.
- * \returns less than zero if str1 is "less than" str2, greater than zero
- *          if str1 is "greater than" str2, and zero if the strings match
+ * \returns less than zero if str1 is "less than" str2, greater than zero if
+ *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
  *
  * \threadsafety It is safe to call this function from any thread.
