@@ -1447,7 +1447,6 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
     joystick->nbuttons = SDL_GAMEPAD_NUM_SWITCH_BUTTONS;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
-    joystick->epowerlevel = device->is_bluetooth ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
 
     /* Set up for input */
     ctx->m_bSyncWrite = SDL_FALSE;
@@ -2095,28 +2094,32 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, ~axis);
     }
 
-    if (ctx->device->is_bluetooth) {
-        /* High nibble of battery/connection byte is battery level, low nibble is connection status
-         * LSB of connection nibble is USB/Switch connection status
-         */
-        if (packet->controllerState.ucBatteryAndConnection & 0x1) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
-        } else {
-            /* LSB of the battery nibble is used to report charging.
-             * The battery level is reported from 0(empty)-8(full)
-             */
-            int level = (packet->controllerState.ucBatteryAndConnection & 0xE0) >> 4;
-            if (level == 0) {
-                SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
-            } else if (level <= 2) {
-                SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
-            } else if (level <= 6) {
-                SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
-            } else {
-                SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
-            }
-        }
+    /* High nibble of battery/connection byte is battery level, low nibble is connection status
+     * LSB of connection nibble is USB/Switch connection status
+     * LSB of the battery nibble is used to report charging.
+     * The battery level is reported from 0(empty)-8(full)
+     */
+    SDL_PowerState state;
+    int charging = (packet->controllerState.ucBatteryAndConnection & 0x10);
+    int level = (packet->controllerState.ucBatteryAndConnection & 0xE0) >> 4;
+    int percent = (int)SDL_roundf((level / 8.0f) * 100.0f);
+
+    if (packet->controllerState.ucBatteryAndConnection & 0x01) {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
+    } else {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
     }
+
+    if (charging) {
+        if (level == 8) {
+            state = SDL_POWERSTATE_CHARGED;
+        } else {
+            state = SDL_POWERSTATE_CHARGING;
+        }
+    } else {
+        state = SDL_POWERSTATE_ON_BATTERY;
+    }
+    SDL_SendJoystickPowerInfo(joystick, state, percent);
 
     if (ctx->m_bReportSensors) {
         SDL_bool bHasSensorData = (packet->imuState[0].sAccelZ != 0 ||

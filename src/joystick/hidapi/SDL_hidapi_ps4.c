@@ -720,7 +720,7 @@ static void HIDAPI_DriverPS4_SetEnhancedModeAvailable(SDL_DriverPS4_Context *ctx
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 250.0f);
     }
 
-    if (ctx->device->is_bluetooth && ctx->official_controller) {
+    if (ctx->official_controller) {
         ctx->report_battery = SDL_TRUE;
     }
 
@@ -833,12 +833,6 @@ static SDL_bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     }
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
-    if (device->is_bluetooth) {
-        /* We'll update this once we're in enhanced mode */
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
-    } else {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
-    }
 
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
                         SDL_PS4RumbleHintChanged, ctx);
@@ -1073,17 +1067,26 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
     if (size > 9 && ctx->report_battery && ctx->enhanced_reports) {
-        /* Battery level ranges from 0 to 10 */
-        int level = (packet->ucBatteryLevel & 0xF);
-        if (level == 0) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
-        } else if (level <= 2) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
-        } else if (level <= 7) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+        SDL_PowerState state;
+        int percent;
+        Uint8 level = (packet->ucBatteryLevel & 0x0F);
+
+        if (packet->ucBatteryLevel & 0x10) {
+            if (level <= 10) {
+                state = SDL_POWERSTATE_CHARGING;
+                percent = SDL_min(level * 10 + 5, 100);
+            } else if (level == 11) {
+                state = SDL_POWERSTATE_CHARGED;
+                percent = 100;
+            } else {
+                state = SDL_POWERSTATE_UNKNOWN;
+                percent = 0;
+            }
         } else {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+            state = SDL_POWERSTATE_ON_BATTERY;
+            percent = SDL_min(level * 10 + 5, 100);
         }
+        SDL_SendJoystickPowerInfo(joystick, state, percent);
     }
 
     if (size > 9 && ctx->report_touchpad && ctx->enhanced_reports) {

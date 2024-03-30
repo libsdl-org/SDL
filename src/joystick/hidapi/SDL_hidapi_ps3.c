@@ -279,7 +279,6 @@ static SDL_bool HIDAPI_DriverPS3_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     joystick->nbuttons = 11;
     joystick->naxes = 16;
     joystick->nhats = 1;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
 
@@ -682,7 +681,6 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *devic
     joystick->nbuttons = 11;
     joystick->naxes = 16;
     joystick->nhats = 1;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
     return SDL_TRUE;
 }
@@ -1127,7 +1125,6 @@ static SDL_bool HIDAPI_DriverPS3SonySixaxis_OpenJoystick(SDL_HIDAPI_Device *devi
     joystick->nbuttons = 11;
     joystick->naxes = 16;
     joystick->nhats = 1;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
 

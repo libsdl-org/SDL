@@ -488,7 +488,8 @@ typedef struct SDL_JoyBatteryEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
-    SDL_JoystickPowerLevel level; /**< The joystick battery level */
+    SDL_PowerState state; /**< The joystick battery state */
+    int percent;          /**< The joystick battery percent charge remaining */
 } SDL_JoyBatteryEvent;
 
 /**

@@ -289,30 +289,36 @@ int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
 
 static void UpdateXInputJoystickBatteryInformation(SDL_Joystick *joystick, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
 {
-    if (pBatteryInformation->BatteryType != BATTERY_TYPE_UNKNOWN) {
-        SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
-        if (pBatteryInformation->BatteryType == BATTERY_TYPE_WIRED) {
-            ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
-        } else {
-            switch (pBatteryInformation->BatteryLevel) {
-            case BATTERY_LEVEL_EMPTY:
-                ePowerLevel = SDL_JOYSTICK_POWER_EMPTY;
-                break;
-            case BATTERY_LEVEL_LOW:
-                ePowerLevel = SDL_JOYSTICK_POWER_LOW;
-                break;
-            case BATTERY_LEVEL_MEDIUM:
-                ePowerLevel = SDL_JOYSTICK_POWER_MEDIUM;
-                break;
-            default:
-            case BATTERY_LEVEL_FULL:
-                ePowerLevel = SDL_JOYSTICK_POWER_FULL;
-                break;
-            }
-        }
-
-        SDL_SendJoystickBatteryLevel(joystick, ePowerLevel);
+    SDL_PowerState state;
+    int percent;
+    switch (pBatteryInformation->BatteryType) {
+    case BATTERY_TYPE_WIRED:
+        state = SDL_POWERSTATE_CHARGING;
+        break;
+    case BATTERY_TYPE_UNKNOWN:
+    case BATTERY_TYPE_DISCONNECTED:
+        state = SDL_POWERSTATE_UNKNOWN;
+        break;
+    default:
+        state = SDL_POWERSTATE_ON_BATTERY;
+        break;
     }
+    switch (pBatteryInformation->BatteryLevel) {
+    case BATTERY_LEVEL_EMPTY:
+        percent = 10;
+        break;
+    case BATTERY_LEVEL_LOW:
+        percent = 40;
+        break;
+    case BATTERY_LEVEL_MEDIUM:
+        percent = 70;
+        break;
+    default:
+    case BATTERY_LEVEL_FULL:
+        percent = 100;
+        break;
+    }
+    SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
 
 static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)

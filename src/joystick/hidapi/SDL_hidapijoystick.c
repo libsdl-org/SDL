@@ -1517,6 +1517,13 @@ static int HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
         return SDL_SetError("HIDAPI device disconnected while opening");
     }
 
+    /* Set the default connection state, can be overridden below */
+    if (device->is_bluetooth) {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
+    } else {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
+    }
+
     if (!device->driver->OpenJoystick(device, joystick)) {
         /* The open failed, mark this device as disconnected and update devices */
         HIDAPI_JoystickDisconnected(device, joystickID);

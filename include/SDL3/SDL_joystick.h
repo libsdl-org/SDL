@@ -42,6 +42,7 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_guid.h>
 #include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL_power.h>
 #include <SDL3/SDL_properties.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -99,14 +100,11 @@ typedef enum
 
 typedef enum
 {
-    SDL_JOYSTICK_POWER_UNKNOWN = -1,
-    SDL_JOYSTICK_POWER_EMPTY,   /* <= 5% */
-    SDL_JOYSTICK_POWER_LOW,     /* <= 20% */
-    SDL_JOYSTICK_POWER_MEDIUM,  /* <= 70% */
-    SDL_JOYSTICK_POWER_FULL,    /* <= 100% */
-    SDL_JOYSTICK_POWER_WIRED,
-    SDL_JOYSTICK_POWER_MAX
-} SDL_JoystickPowerLevel;
+    SDL_JOYSTICK_CONNECTION_INVALID = -1,
+    SDL_JOYSTICK_CONNECTION_UNKNOWN,
+    SDL_JOYSTICK_CONNECTION_WIRED,
+    SDL_JOYSTICK_CONNECTION_WIRELESS,
+} SDL_JoystickConnectionState;
 
 #define SDL_JOYSTICK_AXIS_MAX   32767
 #define SDL_JOYSTICK_AXIS_MIN   -32768
@@ -1082,15 +1080,31 @@ extern DECLSPEC int SDLCALL SDL_SendJoystickEffect(SDL_Joystick *joystick, const
 extern DECLSPEC void SDLCALL SDL_CloseJoystick(SDL_Joystick *joystick);
 
 /**
- * Get the battery level of a joystick as SDL_JoystickPowerLevel.
+ * Get the connection state of a joystick.
  *
- * \param joystick the SDL_Joystick to query
- * \returns the current battery level as SDL_JoystickPowerLevel on success or
- *          `SDL_JOYSTICK_POWER_UNKNOWN` if it is unknown
+ * \param joystick The joystick to query
+ * \returns the connection state on success or `SDL_JOYSTICK_CONNECTION_INVALID` on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_JoystickPowerLevel SDLCALL SDL_GetJoystickPowerLevel(SDL_Joystick *joystick);
+extern DECLSPEC SDL_JoystickConnectionState SDLCALL SDL_GetJoystickConnectionState(SDL_Joystick *joystick);
+
+/**
+ * Get the battery state of a joystick.
+ *
+ * You should never take a battery status as absolute truth. Batteries
+ * (especially failing batteries) are delicate hardware, and the values
+ * reported here are best estimates based on what that hardware reports. It's
+ * not uncommon for older batteries to lose stored power much faster than it
+ * reports, or completely drain when reporting it has 20 percent left, etc.
+ *
+ * \param joystick The joystick to query
+ * \param percent a pointer filled in with the percentage of battery life left, between 0 and 100, or NULL to ignore. This will be filled in with -1 we can't determine a value or there is no battery.
+ * \returns the current battery state or `SDL_POWERSTATE_ERROR` on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC SDL_PowerState SDLCALL SDL_GetJoystickPowerInfo(SDL_Joystick *joystick, int *percent);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

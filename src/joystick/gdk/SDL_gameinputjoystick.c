@@ -341,17 +341,36 @@ static SDL_JoystickID GAMEINPUT_JoystickGetDeviceInstanceID(int device_index)
     return GAMEINPUT_InternalFindByIndex(device_index)->device_instance;
 }
 
-static SDL_JoystickPowerLevel GAMEINPUT_InternalGetPowerLevel(IGameInputDevice *device)
+static void GAMEINPUT_UpdatePowerInfo(SDL_Joystick *joystick, IGameInputDevice *device)
 {
     GameInputBatteryState battery_state;
+    SDL_PowerState state;
+    int percent = 0;
 
     SDL_zero(battery_state);
     IGameInputDevice_GetBatteryState(device, &battery_state);
 
-    if (battery_state.status == GameInputBatteryDischarging) {
-        /* FIXME: What are the units for remainingCapacity? */
+    switch (battery_state.status) {
+    case GameInputBatteryNotPresent:
+        state = SDL_POWERSTATE_NO_BATTERY;
+        break;
+    case GameInputBatteryDischarging:
+        state = SDL_POWERSTATE_ON_BATTERY;
+        break;
+    case GameInputBatteryIdle:
+        state = SDL_POWERSTATE_CHARGED;
+        break;
+    case GameInputBatteryCharging:
+        state = SDL_POWERSTATE_CHARGING;
+        break;
+    default:
+        state = SDL_POWERSTATE_UNKNOWN;
+        break;
     }
-    return SDL_JOYSTICK_POWER_UNKNOWN;
+    if (battery_state.fullChargeCapacity > 0.0f) {
+        percent = (int)SDL_roundf((battery_state.remainingCapacity / battery_state.fullChargeCapacity) * 100.0f);
+    }
+    SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
 
 #if 0
@@ -417,9 +436,9 @@ static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     if (info->capabilities & GameInputDeviceCapabilityWireless) {
-        joystick->epowerlevel = GAMEINPUT_InternalGetPowerLevel(elem->device);
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
     } else {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
     }
     return 0;
 }
@@ -580,10 +599,8 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
 
     IGameInputReading_Release(reading);
 
-    if (joystick->epowerlevel != SDL_JOYSTICK_POWER_WIRED) {
-        /* FIXME: We can poll this at a much lower rate */
-        SDL_SendJoystickBatteryLevel(joystick, GAMEINPUT_InternalGetPowerLevel(device));
-    }
+    /* FIXME: We can poll this at a much lower rate */
+    GAMEINPUT_UpdatePowerInfo(joystick, device);
 }
 
 static void GAMEINPUT_JoystickClose(SDL_Joystick* joystick)
