@@ -20,8 +20,6 @@
 */
 #include "SDL_internal.h"
 
-/* TODO: Macro? */
-
 #import <Cocoa/Cocoa.h>
 
 typedef enum
@@ -33,6 +31,10 @@ typedef enum
 
 void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
 {
+#if defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_IOS)
+    SDL_SetError("tvOS and iOS don't support path-based file dialogs");
+    callback(userdata, NULL, -1);
+#else
     /* NSOpenPanel inherits from NSSavePanel */
     NSSavePanel *dialog;
     NSOpenPanel *dialog_as_open;
@@ -151,6 +153,7 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
             callback(userdata, files, -1);
         }
     }
+#endif // defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_IOS)
 }
 
 void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
