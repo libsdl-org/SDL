@@ -234,9 +234,7 @@ static void WIN_CheckWParamMouseButton(Uint64 timestamp, SDL_bool bwParamMousePr
  */
 static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
 {
-    Uint64 unique_bits = wParam;
-
-    if (unique_bits != data->mouse_button_flags) {
+    if (wParam != data->mouse_button_flags) {
         Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
 
         /* WM_LBUTTONDOWN and friends handle button swapping for us. No need to check SM_SWAPBUTTON here.  */
@@ -246,55 +244,7 @@ static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_Win
         WIN_CheckWParamMouseButton(timestamp, (wParam & MK_XBUTTON1), mouseFlags, SDL_FALSE, data, SDL_BUTTON_X1, mouseID);
         WIN_CheckWParamMouseButton(timestamp, (wParam & MK_XBUTTON2), mouseFlags, SDL_FALSE, data, SDL_BUTTON_X2, mouseID);
 
-        data->mouse_button_flags = unique_bits;
-    }
-}
-
-static void WIN_CheckRawMouseButtons(Uint64 timestamp, HANDLE hDevice, ULONG rawButtons, SDL_WindowData *data, SDL_MouseID mouseID)
-{
-    // Add a flag to distinguish raw mouse buttons from wParam above
-    Uint64 unique_bits = 0x8000000 | (uintptr_t)hDevice;
-    unique_bits <<= 32;
-    unique_bits |= rawButtons;
-
-    if (unique_bits != data->mouse_button_flags) {
-        Uint32 mouseFlags = SDL_GetMouseButtonState(SDL_GetMouse(), mouseID, SDL_FALSE);
-        SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-        if (swapButtons && hDevice == NULL) {
-            /* Touchpad, already has buttons swapped */
-            swapButtons = SDL_FALSE;
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_1_DOWN) {
-            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_1_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_1_UP) {
-            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_1_UP), mouseFlags, swapButtons, data, SDL_BUTTON_LEFT, mouseID);
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_2_DOWN) {
-            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_2_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_2_UP) {
-            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_2_UP), mouseFlags, swapButtons, data, SDL_BUTTON_RIGHT, mouseID);
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_3_DOWN) {
-            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_3_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_3_UP) {
-            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_3_UP), mouseFlags, swapButtons, data, SDL_BUTTON_MIDDLE, mouseID);
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_4_DOWN) {
-            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_4_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_4_UP) {
-            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_4_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X1, mouseID);
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_5_DOWN) {
-            WIN_CheckWParamMouseButton(timestamp, (rawButtons & RI_MOUSE_BUTTON_5_DOWN), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
-        }
-        if (rawButtons & RI_MOUSE_BUTTON_5_UP) {
-            WIN_CheckWParamMouseButton(timestamp, !(rawButtons & RI_MOUSE_BUTTON_5_UP), mouseFlags, swapButtons, data, SDL_BUTTON_X2, mouseID);
-        }
-        data->mouse_button_flags = unique_bits;
+        data->mouse_button_flags = wParam;
     }
 }
 
@@ -534,6 +484,15 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
+static SDL_bool WIN_SwapButtons(HANDLE hDevice)
+{
+    if (hDevice == NULL) {
+        /* Touchpad, already has buttons swapped */
+        return SDL_FALSE;
+    }
+    return GetSystemMetrics(SM_SWAPBUTTON) != 0;
+}
+
 static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
     if (!data->raw_mouse_enabled) {
@@ -629,7 +588,43 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         data->last_raw_mouse_position.x = x;
         data->last_raw_mouse_position.y = y;
     }
-    WIN_CheckRawMouseButtons(timestamp, hDevice, rawmouse->usButtonFlags, windowdata, mouseID);
+
+    if (rawmouse->usButtonFlags) {
+        static struct {
+            USHORT usButtonFlags;
+            Uint8 button;
+            Uint8 state;
+        } raw_buttons[] = {
+            { RI_MOUSE_LEFT_BUTTON_DOWN, SDL_BUTTON_LEFT, SDL_PRESSED },
+            { RI_MOUSE_LEFT_BUTTON_UP, SDL_BUTTON_LEFT, SDL_RELEASED },
+            { RI_MOUSE_RIGHT_BUTTON_DOWN, SDL_BUTTON_RIGHT, SDL_PRESSED },
+            { RI_MOUSE_RIGHT_BUTTON_UP, SDL_BUTTON_RIGHT, SDL_RELEASED },
+            { RI_MOUSE_MIDDLE_BUTTON_DOWN, SDL_BUTTON_MIDDLE, SDL_PRESSED },
+            { RI_MOUSE_MIDDLE_BUTTON_UP, SDL_BUTTON_MIDDLE, SDL_RELEASED },
+            { RI_MOUSE_BUTTON_4_DOWN, SDL_BUTTON_X1, SDL_PRESSED },
+            { RI_MOUSE_BUTTON_4_UP, SDL_BUTTON_X1, SDL_RELEASED },
+            { RI_MOUSE_BUTTON_5_DOWN, SDL_BUTTON_X2, SDL_PRESSED },
+            { RI_MOUSE_BUTTON_5_UP, SDL_BUTTON_X2, SDL_RELEASED }
+        };
+
+        for (int i = 0; i < SDL_arraysize(raw_buttons); ++i) {
+            if (rawmouse->usButtonFlags & raw_buttons[i].usButtonFlags) {
+                Uint8 button = raw_buttons[i].button;
+                Uint8 state = raw_buttons[i].state;
+
+                if (button == SDL_BUTTON_LEFT) {
+                    if (WIN_SwapButtons(hDevice)) {
+                        button = SDL_BUTTON_RIGHT;
+                    }
+                } else if (button == SDL_BUTTON_RIGHT) {
+                    if (WIN_SwapButtons(hDevice)) {
+                        button = SDL_BUTTON_LEFT;
+                    }
+                }
+                SDL_SendMouseButton(timestamp, window, mouseID, state, button);
+            }
+        }
+    }
 }
 
 static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWKEYBOARD *rawkeyboard)
