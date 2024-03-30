@@ -20,9 +20,6 @@
 */
 #include "SDL_internal.h"
 
-/* TODO: Macro? */
-
-/* TODO: Better includes? */
 #include <windows.h>
 #include <shlobj.h>
 #include "../../core/windows/SDL_windows.h"

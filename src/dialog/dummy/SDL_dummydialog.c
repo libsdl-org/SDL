@@ -20,8 +20,6 @@
 */
 #include "SDL_internal.h"
 
-/* TODO: Macro? */
-
 void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
 {
   SDL_Unsupported();
