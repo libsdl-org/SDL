@@ -68,7 +68,6 @@
 #include <libdecor.h>
 #endif
 
-#define WAYLANDVID_PREFERRED_DRIVER_NAME "wayland_preferred"
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
 /* Clamp certain core protocol versions on older versions of libwayland. */
@@ -420,7 +419,7 @@ static SDL_bool Wayland_IsPreferred(struct wl_display *display)
     return preferred_data.has_fifo_v1 && preferred_data.has_commit_timing_v1;
 }
 
-static SDL_VideoDevice *Wayland_CreateDevice(SDL_bool fallback)
+static SDL_VideoDevice *Wayland_CreateDevice(SDL_bool require_preferred_protocols)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
@@ -451,11 +450,11 @@ static SDL_VideoDevice *Wayland_CreateDevice(SDL_bool fallback)
 
     /*
      * If we are checking for preferred Wayland, then let's query for
-     * fifo-v1 and commit-timing-v1's existance so we don't regress
+     * fifo-v1 and commit-timing-v1's existence, so we don't regress
      * GPU-bound performance and frame-pacing by default due to
      * swapchain starvation.
      */
-    if (!fallback && !Wayland_IsPreferred(display)) {
+    if (require_preferred_protocols && !Wayland_IsPreferred(display)) {
         WAYLAND_wl_display_disconnect(display);
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
@@ -596,21 +595,21 @@ static SDL_VideoDevice *Wayland_CreateDevice(SDL_bool fallback)
 
 static SDL_VideoDevice *Wayland_Preferred_CreateDevice(void)
 {
-    return Wayland_CreateDevice(SDL_FALSE);
+    return Wayland_CreateDevice(SDL_TRUE);
 }
 
 static SDL_VideoDevice *Wayland_Fallback_CreateDevice(void)
 {
-    return Wayland_CreateDevice(SDL_TRUE);
+    return Wayland_CreateDevice(SDL_FALSE);
 }
 
 VideoBootStrap Wayland_preferred_bootstrap = {
-    WAYLANDVID_PREFERRED_DRIVER_NAME, "SDL Wayland video driver",
+    WAYLANDVID_DRIVER_NAME, "SDL Wayland video driver",
     Wayland_Preferred_CreateDevice,
     Wayland_ShowMessageBox
 };
 
-VideoBootStrap Wayland_fallback_bootstrap = {
+VideoBootStrap Wayland_bootstrap = {
     WAYLANDVID_DRIVER_NAME, "SDL Wayland video driver",
     Wayland_Fallback_CreateDevice,
     Wayland_ShowMessageBox

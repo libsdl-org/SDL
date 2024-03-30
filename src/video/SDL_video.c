@@ -70,14 +70,14 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_COCOA
     &COCOA_bootstrap,
 #endif
+#ifdef SDL_VIDEO_DRIVER_X11
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
     &Wayland_preferred_bootstrap,
 #endif
-#ifdef SDL_VIDEO_DRIVER_X11
     &X11_bootstrap,
 #endif
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
-    &Wayland_fallback_bootstrap,
+    &Wayland_bootstrap,
 #endif
 #ifdef SDL_VIDEO_DRIVER_VIVANTE
     &VIVANTE_bootstrap,
@@ -514,15 +514,41 @@ static int SDL_UninitializedVideo(void)
     return SDL_SetError("Video subsystem has not been initialized");
 }
 
+/* Deduplicated list of video bootstrap drivers. */
+static const VideoBootStrap *deduped_bootstrap[SDL_arraysize(bootstrap) - 1];
+
 int SDL_GetNumVideoDrivers(void)
 {
-    return SDL_arraysize(bootstrap) - 1;
+    static int num_drivers = -1;
+
+    if (num_drivers >= 0) {
+        return num_drivers;
+    }
+
+    num_drivers = 0;
+
+    /* Build a list of unique video drivers. */
+    for (int i = 0; bootstrap[i] != NULL; ++i) {
+        SDL_bool duplicate = SDL_FALSE;
+        for (int j = 0; j < i; ++j) {
+            if (SDL_strcmp(bootstrap[i]->name, bootstrap[j]->name) == 0) {
+                duplicate = SDL_TRUE;
+                break;
+            }
+        }
+
+        if (!duplicate) {
+            deduped_bootstrap[num_drivers++] = bootstrap[i];
+        }
+    }
+
+    return num_drivers;
 }
 
 const char *SDL_GetVideoDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumVideoDrivers()) {
-        return bootstrap[index]->name;
+        return deduped_bootstrap[index]->name;
     }
     return NULL;
 }
@@ -580,7 +606,9 @@ int SDL_VideoInit(const char *driver_name)
                 if ((driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
                     (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0)) {
                     video = bootstrap[i]->create();
-                    break;
+                    if (video) {
+                        break;
+                    }
                 }
             }
 
