@@ -624,6 +624,16 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                 SDL_SendMouseButton(timestamp, window, mouseID, state, button);
             }
         }
+
+        if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
+            short amount = (short)rawmouse->usButtonData;
+            float fAmount = (float)amount / WHEEL_DELTA;
+            SDL_SendMouseWheel(WIN_GetEventTimestamp(), window, mouseID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
+        } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
+            short amount = (short)rawmouse->usButtonData;
+            float fAmount = (float)amount / WHEEL_DELTA;
+            SDL_SendMouseWheel(WIN_GetEventTimestamp(), window, mouseID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
+        }
     }
 }
 
@@ -1084,12 +1094,14 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     {
-        short amount = GET_WHEEL_DELTA_WPARAM(wParam);
-        float fAmount = (float)amount / WHEEL_DELTA;
-        if (msg == WM_MOUSEWHEEL) {
-            SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
-        } else {
-            SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
+        if (!data->videodata->raw_mouse_enabled) {
+            short amount = GET_WHEEL_DELTA_WPARAM(wParam);
+            float fAmount = (float)amount / WHEEL_DELTA;
+            if (msg == WM_MOUSEWHEEL) {
+                SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
+            } else {
+                SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
+            }
         }
     } break;
 
