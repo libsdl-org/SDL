@@ -815,9 +815,7 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
         }
     }
 
-    if (ctx->device->is_bluetooth) {
-        ctx->report_battery = SDL_TRUE;
-    }
+    ctx->report_battery = SDL_TRUE;
 
     HIDAPI_UpdateDeviceProperties(ctx->device);
 }
@@ -956,12 +954,6 @@ static SDL_bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     }
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
-    if (device->is_bluetooth) {
-        /* We'll update this once we're in enhanced mode */
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
-    } else {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
-    }
     joystick->firmware_version = ctx->firmware_version;
 
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
@@ -1387,17 +1379,30 @@ static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     }
 
     if (ctx->report_battery) {
-        /* Battery level ranges from 0 to 10 */
-        int level = (packet->ucBatteryLevel & 0xF);
-        if (level == 0) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
-        } else if (level <= 2) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
-        } else if (level <= 7) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
-        } else {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+        SDL_PowerState state;
+        int percent;
+        Uint8 status = (packet->ucBatteryLevel >> 4) & 0x0F;
+        Uint8 level = (packet->ucBatteryLevel & 0x0F);
+
+        switch (status) {
+        case 0:
+            state = SDL_POWERSTATE_ON_BATTERY;
+            percent = SDL_min(level * 10 + 5, 100);
+            break;
+        case 1:
+            state = SDL_POWERSTATE_CHARGING;
+            percent = SDL_min(level * 10 + 5, 100);
+            break;
+        case 2:
+            state = SDL_POWERSTATE_CHARGED;
+            percent = 100;
+            break;
+        default:
+            state = SDL_POWERSTATE_UNKNOWN;
+            percent = 0;
+            break;
         }
+        SDL_SendJoystickPowerInfo(joystick, state, percent);
     }
 
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));

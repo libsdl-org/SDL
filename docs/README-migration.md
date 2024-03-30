@@ -333,6 +333,8 @@ The mouseX and mouseY fields of SDL_MouseWheelEvent have been renamed mouse_x an
 
 The touchId and fingerId fields of SDL_TouchFingerEvent have been renamed touchID and fingerID.
 
+The level field of SDL_JoyBatteryEvent has been split into state and percent.
+
 SDL_QUERY, SDL_IGNORE, SDL_ENABLE, and SDL_DISABLE have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
 
 SDL_AddEventWatch() now returns -1 if it fails because it ran out of memory and couldn't add the event watch callback.
@@ -793,7 +795,6 @@ The following functions have been renamed:
 * SDL_JoystickAttachVirtual() => SDL_AttachVirtualJoystick()
 * SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystickEx()
 * SDL_JoystickClose() => SDL_CloseJoystick()
-* SDL_JoystickCurrentPowerLevel() => SDL_GetJoystickPowerLevel()
 * SDL_JoystickDetachVirtual() => SDL_DetachVirtualJoystick()
 * SDL_JoystickFromInstanceID() => SDL_GetJoystickFromInstanceID()
 * SDL_JoystickFromPlayerIndex() => SDL_GetJoystickFromPlayerIndex()
@@ -836,6 +837,7 @@ The following symbols have been renamed:
 * SDL_JOYSTICK_TYPE_GAMECONTROLLER => SDL_JOYSTICK_TYPE_GAMEPAD
 
 The following functions have been removed:
+* SDL_JoystickCurrentPowerLevel() - replaced with SDL_GetJoystickConnectionState() and SDL_GetJoystickPowerInfo()
 * SDL_JoystickEventState() - replaced with SDL_SetJoystickEventsEnabled() and SDL_JoystickEventsEnabled()
 * SDL_JoystickGetDeviceGUID() - replaced with SDL_GetJoystickInstanceGUID()
 * SDL_JoystickGetDeviceInstanceID()

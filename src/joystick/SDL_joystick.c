@@ -1054,7 +1054,6 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     SDL_Joystick *joysticklist;
     const char *joystickname = NULL;
     const char *joystickpath = NULL;
-    SDL_JoystickPowerLevel initial_power_level;
     SDL_bool invert_sensors = SDL_FALSE;
     const SDL_SteamVirtualGamepadInfo *info;
 
@@ -1089,8 +1088,8 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->driver = driver;
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
     joystick->led_expiration = SDL_GetTicks();
+    joystick->battery_percent = -1;
 
     if (driver->Open(joystick, device_index) < 0) {
         SDL_free(joystick);
@@ -1158,11 +1157,6 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     /* Link the joystick in the list */
     joystick->next = SDL_joysticks;
     SDL_joysticks = joystick;
-
-    /* send initial battery event */
-    initial_power_level = joystick->epowerlevel;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
-    SDL_SendJoystickBatteryLevel(joystick, initial_power_level);
 
     driver->Update(joystick);
 
@@ -3410,35 +3404,58 @@ SDL_JoystickGUID SDL_GetJoystickGUIDFromString(const char *pchGUID)
     return SDL_GUIDFromString(pchGUID);
 }
 
-/* update the power level for this joystick */
-void SDL_SendJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLevel ePowerLevel)
+void SDL_SendJoystickPowerInfo(SDL_Joystick *joystick, SDL_PowerState state, int percent)
 {
     SDL_AssertJoysticksLocked();
 
-    SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialization */
-    if (ePowerLevel != joystick->epowerlevel) {
+    if (state != joystick->battery_state || percent != joystick->battery_percent) {
+        joystick->battery_state = state;
+        joystick->battery_percent = percent;
+
         if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_BATTERY_UPDATED)) {
             SDL_Event event;
             event.type = SDL_EVENT_JOYSTICK_BATTERY_UPDATED;
             event.common.timestamp = 0;
             event.jbattery.which = joystick->instance_id;
-            event.jbattery.level = ePowerLevel;
+            event.jbattery.state = state;
+            event.jbattery.percent = percent;
             SDL_PushEvent(&event);
         }
-        joystick->epowerlevel = ePowerLevel;
     }
 }
 
-/* return its power level */
-SDL_JoystickPowerLevel SDL_GetJoystickPowerLevel(SDL_Joystick *joystick)
+SDL_JoystickConnectionState SDL_GetJoystickConnectionState(SDL_Joystick *joystick)
 {
-    SDL_JoystickPowerLevel retval;
+    SDL_JoystickConnectionState retval;
 
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick, SDL_JOYSTICK_POWER_UNKNOWN);
+        CHECK_JOYSTICK_MAGIC(joystick, SDL_JOYSTICK_CONNECTION_INVALID);
 
-        retval = joystick->epowerlevel;
+        retval = joystick->connection_state;
+    }
+    SDL_UnlockJoysticks();
+
+    return retval;
+}
+
+SDL_PowerState SDL_GetJoystickPowerInfo(SDL_Joystick *joystick, int *percent)
+{
+    SDL_PowerState retval;
+
+    if (percent) {
+        *percent = -1;
+    }
+
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, SDL_POWERSTATE_ERROR);
+
+        retval = joystick->battery_state;
+
+        if (percent) {
+            *percent = joystick->battery_percent;
+        }
     }
     SDL_UnlockJoysticks();
 

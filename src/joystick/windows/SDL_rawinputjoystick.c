@@ -1426,8 +1426,6 @@ static int RAWINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         }
     }
 
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
-
 #ifdef SDL_JOYSTICK_RAWINPUT_XINPUT
     if (ctx->is_xinput) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
@@ -1961,30 +1959,36 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
             }
             has_trigger_data = SDL_TRUE;
 
-            if (battery_info->BatteryType != BATTERY_TYPE_UNKNOWN &&
-                battery_info->BatteryType != BATTERY_TYPE_DISCONNECTED) {
-                SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
-                if (battery_info->BatteryType == BATTERY_TYPE_WIRED) {
-                    ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
-                } else {
-                    switch (battery_info->BatteryLevel) {
-                    case BATTERY_LEVEL_EMPTY:
-                        ePowerLevel = SDL_JOYSTICK_POWER_EMPTY;
-                        break;
-                    case BATTERY_LEVEL_LOW:
-                        ePowerLevel = SDL_JOYSTICK_POWER_LOW;
-                        break;
-                    case BATTERY_LEVEL_MEDIUM:
-                        ePowerLevel = SDL_JOYSTICK_POWER_MEDIUM;
-                        break;
-                    default:
-                    case BATTERY_LEVEL_FULL:
-                        ePowerLevel = SDL_JOYSTICK_POWER_FULL;
-                        break;
-                    }
-                }
-                SDL_SendJoystickBatteryLevel(joystick, ePowerLevel);
+            SDL_PowerState state;
+            int percent;
+            switch (battery_info->BatteryType) {
+            case BATTERY_TYPE_WIRED:
+                state = SDL_POWERSTATE_CHARGING;
+                break;
+            case BATTERY_TYPE_UNKNOWN:
+            case BATTERY_TYPE_DISCONNECTED:
+                state = SDL_POWERSTATE_UNKNOWN;
+                break;
+            default:
+                state = SDL_POWERSTATE_ON_BATTERY;
+                break;
             }
+            switch (battery_info->BatteryLevel) {
+            case BATTERY_LEVEL_EMPTY:
+                percent = 10;
+                break;
+            case BATTERY_LEVEL_LOW:
+                percent = 40;
+                break;
+            case BATTERY_LEVEL_MEDIUM:
+                percent = 70;
+                break;
+            default:
+            case BATTERY_LEVEL_FULL:
+                percent = 100;
+                break;
+            }
+            SDL_SendJoystickPowerInfo(joystick, state, percent);
         }
     }
 #endif /* SDL_JOYSTICK_RAWINPUT_XINPUT */

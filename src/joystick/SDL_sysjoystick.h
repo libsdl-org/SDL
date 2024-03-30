@@ -121,8 +121,11 @@ struct SDL_Joystick
 
     SDL_bool attached _guarded;
     SDL_bool is_gamepad _guarded;
+    SDL_JoystickConnectionState connection_state _guarded;
+    SDL_PowerState battery_state _guarded;
+    int battery_percent _guarded;
+
     SDL_bool delayed_guide_button _guarded;      /* SDL_TRUE if this device has the guide button event delayed */
-    SDL_JoystickPowerLevel epowerlevel _guarded; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
 
     SDL_SensorID accel_sensor _guarded;
     SDL_Sensor *accel _guarded;
