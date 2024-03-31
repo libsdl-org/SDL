@@ -1180,8 +1180,8 @@ size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size, size_t maxn
 But now they look more like POSIX:
 
 ```c
-size_t SDL_ReadIO(void *userdata, void *ptr, size_t size);
-size_t SDL_WriteIO(void *userdata, const void *ptr, size_t size);
+size_t SDL_ReadIO(SDL_IOStream *context, void *ptr, size_t size);
+size_t SDL_WriteIO(SDL_IOStream *context, const void *ptr, size_t size);
 ```
 
 Code that used to look like this:
