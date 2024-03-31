@@ -29,6 +29,8 @@ my $warn_about_missing = 0;
 my $copy_direction = 0;
 my $optionsfname = undef;
 my $wikipreamble = undef;
+my $wikiheaderfiletext = 'Defined in %fname%';
+my $manpageheaderfiletext = 'Defined in %fname%';
 my $changeformat = undef;
 my $manpath = undef;
 my $gitrev = undef;
@@ -93,6 +95,8 @@ if (defined $optionsfname) {
             $wikiurl = $val, next if $key eq 'wikiurl';
             $bugreporturl = $val, next if $key eq 'bugreporturl';
             $wikipreamble = $val, next if $key eq 'wikipreamble';
+            $wikiheaderfiletext = $val, next if $key eq 'wikiheaderfiletext';
+            $manpageheaderfiletext = $val, next if $key eq 'manpageheaderfiletext';
         }
     }
     close(OPTIONS);
@@ -498,6 +502,7 @@ my @standard_wiki_sections = (
     'Draft',
     '[Brief]',
     'Deprecated',
+    'Header File',
     'Syntax',
     'Function Parameters',
     'Return Value',
@@ -512,7 +517,8 @@ my @standard_wiki_sections = (
 #  not found in the headers.
 my %only_wiki_sections = (  # The ones don't mean anything, I just need to check for key existence.
     'Draft', 1,
-    'Code Examples', 1
+    'Code Examples', 1,
+    'Header File', 1
 );
 
 
@@ -1272,6 +1278,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
             }
         }
 
+        my $hfiletext = $wikiheaderfiletext;
+        $hfiletext =~ s/\%fname\%/$headerfuncslocation{$fn}/g;
+        $sections{'Header File'} = "$hfiletext\n";
+
         # Make sure this ends with a double-newline.
         $sections{'Related Functions'} .= "\n" if defined $sections{'Related Functions'};
 
@@ -1516,6 +1526,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $related = $sectionsref->{'Related Functions'};
         my $examples = $sectionsref->{'Code Examples'};
         my $deprecated = $sectionsref->{'Deprecated'};
+        my $headerfile = $manpageheaderfiletext;
+        $headerfile =~ s/\%fname\%/$headerfuncslocation{$fn}/g;
+        $headerfile .= "\n";
+
         my $brief = $sectionsref->{'[Brief]'};
         my $decl = $headerdecls{$fn};
         my $str = '';
@@ -1561,6 +1575,16 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= " \\- $brief" if (defined $brief);
         $str .= "\n";
 
+        if (defined $deprecated) {
+            $str .= ".SH DEPRECATED\n";
+            $str .= dewikify($wikitype, $deprecated) . "\n";
+        }
+
+        if (defined $headerfile) {
+            $str .= ".SH HEADER FILE\n";
+            $str .= dewikify($wikitype, $headerfile) . "\n";
+        }
+
         $str .= ".SH SYNOPSIS\n";
         $str .= ".nf\n";
         $str .= ".B #include \\(dq$mainincludefname\\(dq\n";
@@ -1575,11 +1599,6 @@ if ($copy_direction == 1) {  # --copy-to-headers
         if (defined $remarks) {
             $str .= ".SH DESCRIPTION\n";
             $str .= $remarks . "\n";
-        }
-
-        if (defined $deprecated) {
-            $str .= ".SH DEPRECATED\n";
-            $str .= dewikify($wikitype, $deprecated) . "\n";
         }
 
         if (defined $params) {

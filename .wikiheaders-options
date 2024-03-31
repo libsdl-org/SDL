@@ -15,3 +15,5 @@ wikiurl = https://wiki.libsdl.org
 bugreporturl = https://github.com/libsdl-org/sdlwiki/issues/new
 warn_about_missing = 0
 wikipreamble = (This is the documentation for SDL3, which is under heavy development and the API is changing! [SDL2](https://wiki.libsdl.org/SDL2/) is the current stable version!)
+wikiheaderfiletext = Defined in [%fname%](https://github.com/libsdl-org/SDL/blob/main/include/SDL3/%fname%), but apps should _only_ `#include <SDL3/SDL.h>`!
+manpageheaderfiletext = Defined in %fname%, but apps should only #include <SDL3/SDL.h>!
