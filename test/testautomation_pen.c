@@ -587,14 +587,14 @@ _pen_simulate(simulated_pen_action *steps, int *step_counter, SDL_Pen *simulated
         case SIMPEN_ACTION_DOWN:
             simpen->last.buttons |= SDL_PEN_DOWN_MASK;
             SDLTest_AssertCheck(SDL_SendPenTipEvent(0, simpen->header.id, SDL_PRESSED),
-                                "SIMPEN_ACTION_DOWN [pen %d]: (mask %lx)", step.pen_index, SDL_PEN_DOWN_MASK);
+                                "SIMPEN_ACTION_DOWN [pen %d]: (mask %x)", step.pen_index, SDL_PEN_DOWN_MASK);
             done = SDL_TRUE;
             break;
 
         case SIMPEN_ACTION_UP:
             simpen->last.buttons &= ~SDL_PEN_DOWN_MASK;
             SDLTest_AssertCheck(SDL_SendPenTipEvent(0, simpen->header.id, SDL_RELEASED),
-                                "SIMPEN_ACTION_UP [pen %d]: (mask %lx)", step.pen_index, ~SDL_PEN_DOWN_MASK);
+                                "SIMPEN_ACTION_UP [pen %d]: (mask %x)", step.pen_index, ~SDL_PEN_DOWN_MASK);
             done = SDL_TRUE;
             break;
 
