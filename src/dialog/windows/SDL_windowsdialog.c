@@ -186,7 +186,7 @@ void windows_ShowFileDialog(void *ptr)
     dialog.nMaxFileTitle = MAX_PATH;
     dialog.lpstrInitialDir = *initfolder ? initfolder : NULL;
     dialog.lpstrTitle = NULL;
-    dialog.Flags = flags | OFN_EXPLORER | OFN_HIDEREADONLY;
+    dialog.Flags = flags | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
     dialog.nFileOffset = 0;
     dialog.nFileExtension = 0;
     dialog.lpstrDefExt = NULL;
