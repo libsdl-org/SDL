@@ -83,6 +83,9 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
             break;
         }
 
+        /* Clear the queue status so MsgWaitForMultipleObjects() will wait again */
+        (void)GetQueueStatus(QS_RAWINPUT);
+
         WIN_PollRawInput(_this);
     }
 
