@@ -95,7 +95,7 @@ typedef enum
 #define SDL_PEN_FLAG_ERASER_BIT_INDEX 15 /* Bit for storing is-eraser or has-eraser-capability property */
 #define SDL_PEN_FLAG_AXIS_BIT_OFFSET  16 /* Bit for storing has-axis-0 property */
 
-#define SDL_PEN_CAPABILITY(capbit)    (1ul << (capbit))
+#define SDL_PEN_CAPABILITY(capbit)    (1u << (capbit))
 #define SDL_PEN_AXIS_CAPABILITY(axis) SDL_PEN_CAPABILITY((axis) + SDL_PEN_FLAG_AXIS_BIT_OFFSET)
 
 /**

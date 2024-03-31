@@ -184,7 +184,7 @@ typedef struct SDL_Haptic SDL_Haptic;
  *
  *  \sa SDL_HapticPeriodic
  */
-#define SDL_HAPTIC_SQUARE       (1<<2)
+#define SDL_HAPTIC_SQUARE       (1u<<2)
 
 /**
  *  Triangle wave effect supported.
