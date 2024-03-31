@@ -185,8 +185,6 @@ SDL_GetDefaultAudioInfo() is removed; SDL_GetAudioDeviceFormat() with SDL_AUDIO_
 
 SDL_MixAudio() has been removed, as it relied on legacy SDL 1.2 quirks; SDL_MixAudioFormat() remains and offers the same functionality.
 
-SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
-
 SDL_FreeWAV has been removed and calls can be replaced with SDL_free.
 
 SDL_LoadWAV() is a proper function now and no longer a macro (but offers the same functionality otherwise).
