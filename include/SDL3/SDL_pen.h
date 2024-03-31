@@ -47,6 +47,7 @@
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_guid.h>
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_stdinc.h>
 
 /* Set up for C function definitions, even when using C++ */
