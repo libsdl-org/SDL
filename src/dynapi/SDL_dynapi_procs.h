@@ -654,7 +654,7 @@ SDL_DYNAPI_PROC(int,SDL_PremultiplyAlpha,(int a, int b, SDL_PixelFormatEnum c, c
 SDL_DYNAPI_PROC(void,SDL_PumpEvents,(void),(),)
 SDL_DYNAPI_PROC(int,SDL_PushEvent,(SDL_Event *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_PutAudioStreamData,(SDL_AudioStream *a, const void *b, int c),(a,b,c),return)
-SDL_DYNAPI_PROC(int,SDL_QueryTexture,(SDL_Texture *a, Uint32 *b, int *c, int *d, int *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(int,SDL_QueryTexture,(SDL_Texture *a, SDL_PixelFormatEnum *b, int *c, int *d, int *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(void,SDL_Quit,(void),(),)
 SDL_DYNAPI_PROC(void,SDL_QuitSubSystem,(Uint32 a),(a),)
 SDL_DYNAPI_PROC(int,SDL_RaiseWindow,(SDL_Window *a),(a),return)
