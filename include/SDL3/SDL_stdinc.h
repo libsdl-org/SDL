@@ -978,6 +978,47 @@ extern DECLSPEC char *SDLCALL SDL_strupr(char *str);
  */
 extern DECLSPEC char *SDLCALL SDL_strlwr(char *str);
 
+/**
+ * "Fold" a Unicode codepoint to a single case.
+ *
+ * This function takes a Unicode codepoint, and converts it into a
+ * format that's useful for case-insensitive comparisons. For example,
+ * the codepoint for an uppercase English 'A' might return the codepoint
+ * for lowercase English 'a'. If there is no case-insensitive equivalent
+ * of a codepoint, this reports the original value unchanged. This is
+ * a process called "folding."
+ *
+ * Two Unicode strings, both completely folded, can be compared directly
+ * to see if they are equal in a case-insensitive manner. This is what
+ * SDL_strcasecmp() does internally: it breaks down the UTF-8 strings
+ * into codepoints, folds each codepoint, and compares the folded values.
+ *
+ * Note that this might expand a character to multiple codepoints! The
+ * codepoint for a German Eszett might fold into two lowercase 's' chars,
+ * for example.
+ *
+ * Note that folding is not necessarily the same thing as lowercasing,
+ * and folding is generally only useful for comparing strings.
+ *
+ * This function does not handle the "Turkish 'i'" correctly because it
+ * does not know what language is in use. Most other Unicode codepoints
+ * work as expected.
+ *
+ * `to` must point to a buffer that holds at least 3 Uint32 values; no
+ * codepoint folds to more than this; most fold to exactly one. Unused
+ * slots in this buffer are not initialized.
+ *
+ * \param from the Unicode codepoint to fold.
+ * \param to a pointer to at least _three_ Uint32 to be filled with
+ *        folding results.
+ * \returns The number of Uint32 values written to `to`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern DECLSPEC int SDLCALL SDL_UnicodeCaseFold(const Uint32 from, Uint32 *to);
+
 extern DECLSPEC char *SDLCALL SDL_strchr(const char *str, int c);
 extern DECLSPEC char *SDLCALL SDL_strrchr(const char *str, int c);
 extern DECLSPEC char *SDLCALL SDL_strstr(const char *haystack, const char *needle);

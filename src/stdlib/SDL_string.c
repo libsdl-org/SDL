@@ -42,9 +42,7 @@
 #endif
 SDL_COMPILE_TIME_ASSERT(sizeof_wchar_t, sizeof(wchar_t) == SDL_SIZEOF_WCHAR_T);
 
-
-// this expects `from` and `to` to be UTF-32 encoding!
-static int SDL_UnicodeCaseFold(const Uint32 from, Uint32 *to)
+int SDL_UnicodeCaseFold(const Uint32 from, Uint32 *to)
 {
     // !!! FIXME: since the hashtable is static, maybe we should binary
     // !!! FIXME: search it instead of walking the whole bucket.

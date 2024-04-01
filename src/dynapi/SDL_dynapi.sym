@@ -801,6 +801,7 @@ SDL3_0.0.0 {
     SDL_TryWaitSemaphore;
     SDL_UnbindAudioStream;
     SDL_UnbindAudioStreams;
+    SDL_UnicodeCaseFold;
     SDL_UnloadObject;
     SDL_UnlockAudioStream;
     SDL_UnlockJoysticks;

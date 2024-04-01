@@ -825,6 +825,7 @@
 #define SDL_TryWaitSemaphore SDL_TryWaitSemaphore_REAL
 #define SDL_UnbindAudioStream SDL_UnbindAudioStream_REAL
 #define SDL_UnbindAudioStreams SDL_UnbindAudioStreams_REAL
+#define SDL_UnicodeCaseFold SDL_UnicodeCaseFold_REAL
 #define SDL_UnloadObject SDL_UnloadObject_REAL
 #define SDL_UnlockAudioStream SDL_UnlockAudioStream_REAL
 #define SDL_UnlockJoysticks SDL_UnlockJoysticks_REAL
