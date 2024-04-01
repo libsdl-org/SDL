@@ -1065,7 +1065,7 @@ static void HIDAPI_DriverXboxOneBluetooth_HandleBatteryPacket(SDL_Joystick *joys
     Uint8 flags = data[1];
     SDL_bool on_usb = (((flags & 0x0C) >> 2) == 0);
     SDL_PowerState state;
-    int percent;
+    int percent = 0;
 
     // Mapped percentage value from:
     // https://learn.microsoft.com/en-us/gaming/gdk/_content/gc/reference/input/gameinput/interfaces/igameinputdevice/methods/igameinputdevice_getbatterystate
