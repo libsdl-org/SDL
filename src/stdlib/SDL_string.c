@@ -718,9 +718,8 @@ int SDL_wcscasecmp(const wchar_t *wstr1, const wchar_t *wstr2)
     UNICODE_STRCASECMP(32, 1, 1, (void) str1start, (void) str2start);  // always NULL-terminated, no need to adjust lengths.
 #else
     #error Unexpected wchar_t size
-#endif
-
     return -1;
+#endif
 }
 
 int SDL_wcsncasecmp(const wchar_t *wstr1, const wchar_t *wstr2, size_t maxlen)
@@ -738,9 +737,8 @@ int SDL_wcsncasecmp(const wchar_t *wstr1, const wchar_t *wstr2, size_t maxlen)
     UNICODE_STRCASECMP(32, slen1, slen2, slen1 -= (size_t) (str1 - str1start), slen2 -= (size_t) (str2 - str2start));
 #else
     #error Unexpected wchar_t size
-#endif
-
     return -1;
+#endif
 }
 
 long SDL_wcstol(const wchar_t *string, wchar_t **endp, int base)
