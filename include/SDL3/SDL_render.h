@@ -814,7 +814,7 @@ extern DECLSPEC SDL_Renderer *SDLCALL SDL_GetRendererFromTexture(SDL_Texture *te
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_QueryTexture(SDL_Texture *texture, Uint32 *format, int *access, int *w, int *h);
+extern DECLSPEC int SDLCALL SDL_QueryTexture(SDL_Texture *texture, SDL_PixelFormatEnum *format, int *access, int *w, int *h);
 
 /**
  * Set an additional color value multiplied into render copy operations.

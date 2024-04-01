@@ -388,7 +388,7 @@ static int render_testBlit(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     int checkFailCount1;
@@ -456,7 +456,7 @@ static int render_testBlitColor(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     int checkFailCount1;
@@ -530,7 +530,7 @@ static int render_testBlitAlpha(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     int checkFailCount1;
@@ -604,7 +604,7 @@ static void
 testBlitBlendMode(SDL_Texture *tface, int mode)
 {
     int ret;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     SDL_FRect rect;
@@ -659,7 +659,7 @@ static int render_testBlitBlend(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     int mode;

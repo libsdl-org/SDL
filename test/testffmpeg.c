@@ -285,7 +285,7 @@ static void MoveSprite(void)
     }
 }
 
-static Uint32 GetTextureFormat(enum AVPixelFormat format)
+static SDL_PixelFormatEnum GetTextureFormat(enum AVPixelFormat format)
 {
     switch (format) {
     case AV_PIX_FMT_RGB8:
@@ -509,7 +509,7 @@ static SDL_Colorspace GetFrameColorspace(AVFrame *frame)
     return colorspace;
 }
 
-static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, Uint32 format, int access)
+static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, SDL_PixelFormatEnum format, int access)
 {
     AVFrameSideData *pSideData;
     SDL_PropertiesID props;
@@ -569,8 +569,8 @@ static void SDLCALL FreeSwsContextContainer(void *userdata, void *value)
 static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
 {
     int texture_width = 0, texture_height = 0;
-    Uint32 texture_format = SDL_PIXELFORMAT_UNKNOWN;
-    Uint32 frame_format = GetTextureFormat(frame->format);
+    SDL_PixelFormatEnum texture_format = SDL_PIXELFORMAT_UNKNOWN;
+    SDL_PixelFormatEnum frame_format = GetTextureFormat(frame->format);
 
     if (*texture) {
         SDL_QueryTexture(*texture, &texture_format, NULL, &texture_width, &texture_height);

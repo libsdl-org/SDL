@@ -1603,7 +1603,7 @@ SDL_PropertiesID SDL_GetTextureProperties(SDL_Texture *texture)
     return texture->props;
 }
 
-int SDL_QueryTexture(SDL_Texture *texture, Uint32 *format, int *access, int *w, int *h)
+int SDL_QueryTexture(SDL_Texture *texture, SDL_PixelFormatEnum *format, int *access, int *w, int *h)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
