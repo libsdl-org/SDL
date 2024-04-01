@@ -132,8 +132,8 @@ char *alloca();
 /**
  * A boolean type.
  */
-#define SDL_FALSE 0
-#define SDL_TRUE 1
+#define SDL_FALSE ((SDL_bool)0)
+#define SDL_TRUE  ((SDL_bool)1)
 typedef int SDL_bool;
 
 /**
@@ -192,8 +192,8 @@ typedef uint64_t Uint64;
  * They can be converted between POSIX time_t values with SDL_NS_TO_SECONDS() and SDL_SECONDS_TO_NS(),
  * and between Windows FILETIME values with SDL_TimeToWindows() and SDL_TimeFromWindows().
  */
-#define SDL_MAX_TIME SDL_MAX_SINT64
-#define SDL_MIN_TIME SDL_MIN_SINT64
+#define SDL_MAX_TIME ((SDL_Time)SDL_MAX_SINT64)
+#define SDL_MIN_TIME ((SDL_Time)SDL_MIN_SINT64)
 typedef Sint64 SDL_Time;
 
 /* @} *//* Basic data types */
