@@ -79,13 +79,19 @@ found_date:
 
 int SDL_GetCurrentTime(SDL_Time *ticks)
 {
-    static pfnGetSystemTimePreciseAsFileTime pGetSystemTimePreciseAsFileTime = NULL;
-    static SDL_bool load_attempted = SDL_FALSE;
     FILETIME ft;
 
     if (!ticks) {
         return SDL_InvalidParamError("ticks");
     }
+
+    SDL_zero(ft);
+
+#ifdef SDL_PLATFORM_WINRT
+    GetSystemTimePreciseAsFileTime(&ft);
+#else
+    static pfnGetSystemTimePreciseAsFileTime pGetSystemTimePreciseAsFileTime = NULL;
+    static SDL_bool load_attempted = SDL_FALSE;
 
     /* Only available in Win8/Server 2012 or higher. */
     if (!pGetSystemTimePreciseAsFileTime && !load_attempted) {
@@ -96,12 +102,13 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
         load_attempted = SDL_TRUE;
     }
 
-    SDL_zero(ft);
     if (pGetSystemTimePreciseAsFileTime) {
         pGetSystemTimePreciseAsFileTime(&ft);
     } else {
         GetSystemTimeAsFileTime(&ft);
     }
+#endif
+
     *ticks = SDL_TimeFromWindows(ft.dwLowDateTime, ft.dwHighDateTime);
 
     return 0;
