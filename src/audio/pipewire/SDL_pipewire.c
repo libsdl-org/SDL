@@ -29,6 +29,17 @@
 #include <spa/param/audio/format-utils.h>
 #include <spa/utils/json.h>
 
+#include "../../core/linux/SDL_dbus.h"
+
+static SDL_bool CheckPipewirePulseService()
+{
+#ifdef SDL_USE_LIBDBUS
+    return SDL_DBus_QuerySystemdUnitRunning("pipewire-pulse.service", SDL_TRUE);
+#else
+    return SDL_FALSE;
+#endif
+}
+
 /*
  * The following keys are defined for compatibility when building against older versions of Pipewire
  * prior to their introduction and can be removed if the minimum required Pipewire build version is
@@ -1251,7 +1262,7 @@ static void PIPEWIRE_Deinitialize(void)
     }
 }
 
-static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
+static SDL_bool PipewireInitialize(SDL_AudioDriverImpl *impl)
 {
     if (!pipewire_initialized) {
         if (init_pipewire_library() < 0) {
@@ -1282,6 +1293,25 @@ static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
     return SDL_TRUE;
 }
 
-AudioBootStrap PIPEWIRE_bootstrap = { "pipewire", "Pipewire", PIPEWIRE_Init, SDL_FALSE };
+static SDL_bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
+{
+    if (CheckPipewirePulseService()) {
+        return PipewireInitialize(impl);
+    }
+
+    return SDL_FALSE;
+}
+
+static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
+{
+    return PipewireInitialize(impl);
+}
+
+AudioBootStrap PIPEWIRE_PREFERRED_bootstrap = {
+    "pipewire", "Pipewire", PIPEWIRE_PREFERRED_Init, SDL_FALSE
+};
+AudioBootStrap PIPEWIRE_bootstrap = {
+    "pipewire", "Pipewire", PIPEWIRE_Init, SDL_FALSE
+};
 
 #endif // SDL_AUDIO_DRIVER_PIPEWIRE

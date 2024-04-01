@@ -28,6 +28,9 @@
 // Available audio drivers
 static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO
+#ifdef SDL_AUDIO_DRIVER_PIPEWIRE
+    &PIPEWIRE_PREFERRED_bootstrap,
+#endif
     &PULSEAUDIO_bootstrap,
 #endif
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE
@@ -98,15 +101,41 @@ static const AudioBootStrap *const bootstrap[] = {
 
 static SDL_AudioDriver current_audio;
 
+// Deduplicated list of audio bootstrap drivers.
+static const AudioBootStrap *deduped_bootstrap[SDL_arraysize(bootstrap) - 1];
+
 int SDL_GetNumAudioDrivers(void)
 {
-    return SDL_arraysize(bootstrap) - 1;
+    static int num_drivers = -1;
+
+    if (num_drivers >= 0) {
+        return num_drivers;
+    }
+
+    num_drivers = 0;
+
+    // Build a list of unique audio drivers.
+    for (int i = 0; bootstrap[i] != NULL; ++i) {
+        SDL_bool duplicate = SDL_FALSE;
+        for (int j = 0; j < i; ++j) {
+            if (SDL_strcmp(bootstrap[i]->name, bootstrap[j]->name) == 0) {
+                duplicate = SDL_TRUE;
+                break;
+            }
+        }
+
+        if (!duplicate) {
+            deduped_bootstrap[num_drivers++] = bootstrap[i];
+        }
+    }
+
+    return num_drivers;
 }
 
 const char *SDL_GetAudioDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
-        return bootstrap[index]->name;
+        return deduped_bootstrap[index]->name;
     }
     return NULL;
 }
@@ -884,8 +913,8 @@ int SDL_InitAudio(const char *driver_name)
                         current_audio.name = bootstrap[i]->name;
                         current_audio.desc = bootstrap[i]->desc;
                         initialized = SDL_TRUE;
+                        break;
                     }
-                    break;
                 }
             }
 
