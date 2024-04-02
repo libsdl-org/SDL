@@ -814,30 +814,21 @@ size_t SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size
 size_t SDL_utf8strlen(const char *str)
 {
     size_t retval = 0;
-    const char *p = str;
-    unsigned char ch;
-
-    while ((ch = *(p++)) != 0) {
-        /* if top two bits are 1 and 0, it's a continuation byte. */
-        if ((ch & 0xc0) != 0x80) {
-            retval++;
-        }
+    while (SDL_StepUTF8(&str, 4)) {
+        retval++;
     }
-
     return retval;
 }
 
 size_t SDL_utf8strnlen(const char *str, size_t bytes)
 {
     size_t retval = 0;
-    const char *p = str;
-    unsigned char ch;
+    const char *strstart = str;
 
-    while ((ch = *(p++)) != 0 && bytes-- > 0) {
-        /* if top two bits are 1 and 0, it's a continuation byte. */
-        if ((ch & 0xc0) != 0x80) {
-            retval++;
-        }
+    while (SDL_StepUTF8(&str, bytes)) {
+        bytes -= (size_t) (str - strstart);
+        strstart = str;
+        retval++;
     }
 
     return retval;
