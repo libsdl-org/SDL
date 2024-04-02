@@ -3266,9 +3266,13 @@ if(SDL_SHARED)
     endif()
   endif()
   if(APPLE)
+    cmake_minimum_required(VERSION 3.17)
     set_target_properties(SDL3-shared PROPERTIES
       MACOSX_RPATH TRUE
       FRAMEWORK "${SDL_FRAMEWORK}"
+      SOVERSION "${SDL_SO_VERSION_MAJOR}"
+      MACHO_COMPATIBILITY_VERSION "${SDL_DYLIB_COMPAT_VERSION}"
+      MACHO_CURRENT_VERSION "${SDL_DYLIB_CURRENT_VERSION}"
     )
     if(SDL_FRAMEWORK)
       set_target_properties(SDL3-shared PROPERTIES
@@ -3278,10 +3282,6 @@ if(SDL_SHARED)
         RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
       )
     endif()
-    set_target_properties(SDL3-shared PROPERTIES
-      SOVERSION "${SDL_DYLIB_COMPAT_VERSION}" # SOVERSION corresponds to compatibility version
-      VERSION "${SDL_DYLIB_CURRENT_VERSION}"  # VERSION corresponds to the current version
-    )
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL3-shared PROPERTIES
       VERSION "${SDL_SO_VERSION}"
