@@ -767,6 +767,7 @@
 #define SDL_SetLogOutputFunction SDL_SetLogOutputFunction_REAL
 #define SDL_SetLogPriorities SDL_SetLogPriorities_REAL
 #define SDL_SetLogPriority SDL_SetLogPriority_REAL
+#define SDL_SetLogPriorityPrefix SDL_SetLogPriorityPrefix_REAL
 #define SDL_SetMainReady SDL_SetMainReady_REAL
 #define SDL_SetMemoryFunctions SDL_SetMemoryFunctions_REAL
 #define SDL_SetModState SDL_SetModState_REAL

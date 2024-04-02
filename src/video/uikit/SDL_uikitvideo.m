@@ -286,9 +286,9 @@ void SDL_NSLog(const char *prefix, const char *text)
 {
     @autoreleasepool {
         NSString *nsText = [NSString stringWithUTF8String:text];
-        if (prefix) {
+        if (prefix && *prefix) {
             NSString *nsPrefix = [NSString stringWithUTF8String:prefix];
-            NSLog(@"%@: %@", nsPrefix, nsText);
+            NSLog(@"%@%@", nsPrefix, nsText);
         } else {
             NSLog(@"%@", nsText);
         }

@@ -1058,6 +1058,8 @@ SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and sh
 
 ## SDL_log.h
 
+SDL_Log() no longer prints a log prefix by default for SDL_LOG_PRIORITY_INFO and below. The log prefixes can be customized with SDL_SetLogPriorityPrefix().
+
 The following macros have been removed:
 * SDL_MAX_LOG_MESSAGE - there's no message length limit anymore. If you need an artificial limit, this used to be 4096 in SDL versions before 2.0.24.
 
