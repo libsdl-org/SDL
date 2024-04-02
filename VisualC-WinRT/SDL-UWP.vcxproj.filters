@@ -31,6 +31,9 @@
     <Filter Include="time\windows">
       <UniqueIdentifier>{0000012051ca8361c8e1013aee1d0000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dialog">
+      <UniqueIdentifier>{0000c99bfadbbcb05a474a8472910000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h">
@@ -566,6 +569,9 @@
     </ClCompile>
     <ClCompile Include="..\src\cpuinfo\SDL_cpuinfo.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dialog\SDL_dialog_utils.c">
+      <Filter>dialog</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dynapi\SDL_dynapi.c">
       <Filter>Source Files</Filter>

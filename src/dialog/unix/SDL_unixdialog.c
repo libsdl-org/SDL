@@ -27,31 +27,56 @@ static void (*detected_open)(SDL_DialogFileCallback callback, void* userdata, SD
 static void (*detected_save)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location) = NULL;
 static void (*detected_folder)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many) = NULL;
 
-/* Returns non-zero on success, 0 on failure */
-static int detect_available_methods(void)
+static int detect_available_methods(const char *value);
+
+void SDLCALL hint_callback(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
-    if (SDL_Portal_detect()) {
-        detected_open = SDL_Portal_ShowOpenFileDialog;
-        detected_save = SDL_Portal_ShowSaveFileDialog;
-        detected_folder = SDL_Portal_ShowOpenFolderDialog;
-        return 1;
+    detect_available_methods(newValue);
+}
+
+static void set_callback(void)
+{
+    static SDL_bool is_set = SDL_FALSE;
+
+    if (is_set == SDL_FALSE) {
+        is_set = SDL_TRUE;
+        SDL_AddHintCallback(SDL_HINT_FILE_DIALOG_DRIVER, hint_callback, NULL);
+    }
+}
+
+/* Returns non-zero on success, 0 on failure */
+static int detect_available_methods(const char *value)
+{
+    const char *driver = value ? value : SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER);
+
+    set_callback();
+
+    if (driver == NULL || SDL_strcmp(driver, "portal") == 0) {
+        if (SDL_Portal_detect()) {
+            detected_open = SDL_Portal_ShowOpenFileDialog;
+            detected_save = SDL_Portal_ShowSaveFileDialog;
+            detected_folder = SDL_Portal_ShowOpenFolderDialog;
+            return 1;
+        }
     }
 
-    if (SDL_Zenity_detect()) {
-        detected_open = SDL_Zenity_ShowOpenFileDialog;
-        detected_save = SDL_Zenity_ShowSaveFileDialog;
-        detected_folder = SDL_Zenity_ShowOpenFolderDialog;
-        return 2;
+    if (driver == NULL || SDL_strcmp(driver, "zenity") == 0) {
+        if (SDL_Zenity_detect()) {
+            detected_open = SDL_Zenity_ShowOpenFileDialog;
+            detected_save = SDL_Zenity_ShowSaveFileDialog;
+            detected_folder = SDL_Zenity_ShowOpenFolderDialog;
+            return 2;
+        }
     }
 
-    SDL_SetError("No supported method for file dialogs");
+    SDL_SetError("File dialog driver unsupported");
     return 0;
 }
 
 void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
 {
     /* Call detect_available_methods() again each time in case the situation changed */
-    if (!detected_open && !detect_available_methods()) {
+    if (!detected_open && !detect_available_methods(NULL)) {
         /* SetError() done by detect_available_methods() */
         callback(userdata, NULL, -1);
         return;
@@ -63,7 +88,7 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
 void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location)
 {
     /* Call detect_available_methods() again each time in case the situation changed */
-    if (!detected_save && !detect_available_methods()) {
+    if (!detected_save && !detect_available_methods(NULL)) {
         /* SetError() done by detect_available_methods() */
         callback(userdata, NULL, -1);
         return;
@@ -75,7 +100,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
 void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)
 {
     /* Call detect_available_methods() again each time in case the situation changed */
-    if (!detected_folder && !detect_available_methods()) {
+    if (!detected_folder && !detect_available_methods(NULL)) {
         /* SetError() done by detect_available_methods() */
         callback(userdata, NULL, -1);
         return;

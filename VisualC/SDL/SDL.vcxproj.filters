@@ -196,6 +196,9 @@
     <Filter Include="time\windows">
       <UniqueIdentifier>{0000d7fda065b13b0ca4ab262c380000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dialog">
+      <UniqueIdentifier>{00008dfdfa0190856fbf3c7db52d0000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -882,6 +885,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\camera\SDL_camera.c">
       <Filter>camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c">
+      <Filter>dialog</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c">
       <Filter>filesystem</Filter>
