@@ -742,6 +742,7 @@ SDL3_0.0.0 {
     SDL_SetLogOutputFunction;
     SDL_SetLogPriorities;
     SDL_SetLogPriority;
+    SDL_SetLogPriorityPrefix;
     SDL_SetMainReady;
     SDL_SetMemoryFunctions;
     SDL_SetModState;
