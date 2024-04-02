@@ -16,7 +16,7 @@ macro(SDL_DetectCMakePlatform)
       set(SDL_CMAKE_PLATFORM iOS)
     elseif (CMAKE_SYSTEM_NAME MATCHES "visionOS")
       set(SDL_CMAKE_PLATFORM visionOS)
-      set(VISIONOS ON)       # CMAKE does not set this automatically yet 
+      set(VISIONOS ON)       # CMAKE does not set this automatically yet
     endif()
   elseif(CMAKE_SYSTEM_NAME MATCHES "Haiku.*")
     set(SDL_CMAKE_PLATFORM Haiku)
@@ -64,7 +64,7 @@ macro(SDL_DetectCMakePlatform)
     string(TOUPPER "${SDL_CMAKE_PLATFORM}" _upper_platform)
     set(${_upper_platform} TRUE)
   else()
-    set(SDL_CMAKE_PLATFORM} "unknown")
+    set(SDL_CMAKE_PLATFORM "unknown")
   endif()
 endmacro()
 
