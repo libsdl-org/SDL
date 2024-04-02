@@ -1962,13 +1962,26 @@ static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
     SDL_Appname = NULL;
 }
 
+static BOOL CALLBACK WIN_ResourceNameCallback(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG_PTR lParam)
+{
+    WNDCLASSEX *wcex = (WNDCLASSEX *)lParam;
+
+    (void)lpType; /* We already know that the resource type is RT_GROUP_ICON. */
+
+    /* We leave hIconSm as NULL as it will allow Windows to automatically
+       choose the appropriate small icon size to suit the current DPI. */
+    wcex->hIcon = LoadIcon(hModule, lpName);
+
+    /* Do not bother enumerating any more. */
+    return FALSE;
+}
+
 /* Register the class for this application */
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     WNDCLASSEX wcex;
 #if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     const char *hint;
-    TCHAR path[MAX_PATH];
 #endif
 
     /* Only do this once... */
@@ -2011,9 +2024,8 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
             wcex.hIconSm = LoadIcon(SDL_Instance, MAKEINTRESOURCE(SDL_atoi(hint)));
         }
     } else {
-        /* Use the first icon as a default icon, like in the Explorer */
-        GetModuleFileName(SDL_Instance, path, MAX_PATH);
-        ExtractIconEx(path, 0, &wcex.hIcon, &wcex.hIconSm, 1);
+        /* Use the first icon as a default icon, like in the Explorer. */
+        EnumResourceNames(SDL_Instance, RT_GROUP_ICON, WIN_ResourceNameCallback, (LONG_PTR)&wcex);
     }
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
