@@ -4,6 +4,9 @@
     <ClCompile Include="..\..\src\core\gdk\SDL_gdk.cpp" />
     <ClCompile Include="..\..\src\core\windows\pch.c" />
     <ClCompile Include="..\..\src\core\windows\pch_cpp.cpp" />
+    <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c">
+      <Filter>dialog</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c">
       <Filter>filesystem</Filter>
     </ClCompile>

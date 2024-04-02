@@ -19,6 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+extern "C" {
+#include "../SDL_dialog_utils.h"
+}
 #include "../../core/haiku/SDL_BeApp.h"
 
 #include <string>
@@ -197,10 +200,33 @@ void ShowDialog(bool save, SDL_DialogFileCallback callback, void *userdata, bool
         return;
     }
 
+    const char *msg = validate_filters(filters);
+
+    if (msg) {
+        SDL_SetError("%s", msg);
+        callback(userdata, NULL, -1);
+        return;
+    }
+
+    if (SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER) != NULL) {
+        SDL_SetError("File dialog driver unsupported");
+        callback(userdata, NULL, -1);
+        return;
+    }
+
     // No unique_ptr's because they need to survive the end of the function
-    CallbackLooper *looper = new CallbackLooper(callback, userdata);
-    BMessenger *messenger = new BMessenger(NULL, looper);
-    SDLBRefFilter *filter = new SDLBRefFilter(filters);
+    CallbackLooper *looper = new(std::nothrow) CallbackLooper(callback, userdata);
+    BMessenger *messenger = new(std::nothrow) BMessenger(NULL, looper);
+    SDLBRefFilter *filter = new(std::nothrow) SDLBRefFilter(filters);
+
+    if (looper == NULL || messenger == NULL || filter == NULL) {
+        SDL_free(looper);
+        SDL_free(messenger);
+        SDL_free(filter);
+        SDL_OutOfMemory();
+        callback(userdata, NULL, -1);
+        return;
+    }
 
     BEntry entry;
     entry_ref entryref;

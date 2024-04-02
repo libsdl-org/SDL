@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include "../SDL_dialog_utils.h"
 
 #include <windows.h>
 #include <shlobj.h>
@@ -122,61 +123,42 @@ void windows_ShowFileDialog(void *ptr)
         MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, default_folder, -1, filebuffer, MAX_PATH);
     }
 
-    size_t len = 0;
-    for (const SDL_DialogFileFilter *filter = filters; filter && filter->name && filter->pattern; filter++) {
-        const char *pattern_ptr = filter->pattern;
-        len += SDL_strlen(filter->name) + SDL_strlen(filter->pattern) + 4;
-        while (*pattern_ptr) {
-            if (*pattern_ptr == ';') {
-                len += 2;
-            }
-            pattern_ptr++;
-        }
-    }
-    wchar_t *filterlist = SDL_malloc((len + 1) * sizeof(wchar_t));
+    /* '\x01' is used in place of a null byte */
+    char *filterlist = convert_filters(filters, NULL, "", "", "\x01", "",
+                                       "\x01", "\x01", "*.", ";*.", "");
 
     if (!filterlist) {
-        SDL_OutOfMemory();
         callback(userdata, NULL, -1);
         return;
     }
 
-    wchar_t *filter_ptr = filterlist;
-    for (const SDL_DialogFileFilter *filter = filters; filter && filter->name && filter->pattern; filter++) {
-        size_t l = SDL_strlen(filter->name);
-        const char *pattern_ptr = filter->pattern;
+    int filter_len = SDL_strlen(filterlist);
 
-        MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, filter->name, -1, filter_ptr, MAX_PATH);
-        filter_ptr += l + 1;
-
-        *filter_ptr++ = L'*';
-        *filter_ptr++ = L'.';
-        while (*pattern_ptr) {
-            if (*pattern_ptr == ';') {
-                *filter_ptr++ = L';';
-                *filter_ptr++ = L'*';
-                *filter_ptr++ = L'.';
-            } else if (*pattern_ptr == '*' && (pattern_ptr[1] == '\0' || pattern_ptr[1] == ';')) {
-                *filter_ptr++ = L'*';
-            } else if (!((*pattern_ptr >= 'a' && *pattern_ptr <= 'z') || (*pattern_ptr >= 'A' && *pattern_ptr <= 'Z') || (*pattern_ptr >= '0' && *pattern_ptr <= '9') || *pattern_ptr == '.' || *pattern_ptr == '_' || *pattern_ptr == '-')) {
-                SDL_SetError("Illegal character in pattern name: %c (Only alphanumeric characters, periods, underscores and hyphens allowed)", *pattern_ptr);
-                callback(userdata, NULL, -1);
-            } else {
-                MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, pattern_ptr, 1, filter_ptr, 1);
-                filter_ptr++;
-            }
-            pattern_ptr++;
+    for (char *c = filterlist; *c; c++) {
+        if (*c == '\x01') {
+            *c = '\0';
         }
-        *filter_ptr++ = '\0';
     }
-    *filter_ptr = '\0';
 
+    int filter_wlen = MultiByteToWideChar(CP_UTF8, 0, filterlist, filter_len, NULL, 0);
+    wchar_t *filter_wchar = SDL_malloc(filter_wlen * sizeof(wchar_t));
+
+    if (!filter_wchar) {
+        SDL_OutOfMemory();
+        SDL_free(filterlist);
+        callback(userdata, NULL, -1);
+        return;
+    }
+
+    MultiByteToWideChar(CP_UTF8, 0, filterlist, filter_len, filter_wchar, filter_wlen);
+
+    SDL_free(filterlist);
 
     OPENFILENAMEW dialog;
     dialog.lStructSize = sizeof(OPENFILENAME);
     dialog.hwndOwner = window;
     dialog.hInstance = 0;
-    dialog.lpstrFilter = filterlist;
+    dialog.lpstrFilter = filter_wchar;
     dialog.lpstrCustomFilter = NULL;
     dialog.nMaxCustFilter = 0;
     dialog.nFilterIndex = 0;
@@ -198,7 +180,7 @@ void windows_ShowFileDialog(void *ptr)
 
     BOOL result = pGetAnyFileName(&dialog);
 
-    SDL_free(filterlist);
+    SDL_free(filter_wchar);
 
     if (result) {
         if (!(flags & OFN_ALLOWMULTISELECT)) {
@@ -401,6 +383,13 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
     winArgs *args;
     SDL_Thread *thread;
 
+    if (SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER) != NULL) {
+        SDL_Log("%s", SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER));
+        SDL_SetError("File dialog driver unsupported");
+        callback(userdata, NULL, -1);
+        return;
+    }
+
     args = SDL_malloc(sizeof(winArgs));
     if (args == NULL) {
         SDL_OutOfMemory();
@@ -421,6 +410,7 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
 
     if (thread == NULL) {
         callback(userdata, NULL, -1);
+        SDL_free(args);
         return;
     }
 
@@ -431,6 +421,12 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
 {
     winArgs *args;
     SDL_Thread *thread;
+
+    if (SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER) != NULL) {
+        SDL_SetError("File dialog driver unsupported");
+        callback(userdata, NULL, -1);
+        return;
+    }
 
     args = SDL_malloc(sizeof(winArgs));
     if (args == NULL) {
@@ -452,6 +448,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
 
     if (thread == NULL) {
         callback(userdata, NULL, -1);
+        SDL_free(args);
         return;
     }
 
@@ -462,6 +459,12 @@ void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, S
 {
     winFArgs *args;
     SDL_Thread *thread;
+
+    if (SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER) != NULL) {
+        SDL_SetError("File dialog driver unsupported");
+        callback(userdata, NULL, -1);
+        return;
+    }
 
     args = SDL_malloc(sizeof(winFArgs));
     if (args == NULL) {
@@ -479,6 +482,7 @@ void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, S
 
     if (thread == NULL) {
         callback(userdata, NULL, -1);
+        SDL_free(args);
         return;
     }
 

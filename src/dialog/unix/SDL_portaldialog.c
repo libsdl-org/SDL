@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "./SDL_dialog.h"
+#include "../SDL_dialog_utils.h"
 
 #include "../../core/linux/SDL_dbus.h"
 
@@ -269,6 +269,14 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     static uint32_t handle_id = 0;
     static char *default_parent_window = "";
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
+
+    const char *err_msg = validate_filters(filters);
+
+    if (err_msg) {
+        SDL_SetError("%s", err_msg);
+        callback(userdata, NULL, -1);
+        return;
+    }
 
     if (dbus == NULL) {
         SDL_SetError("Failed to connect to DBus");
