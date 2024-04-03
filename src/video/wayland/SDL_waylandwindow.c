@@ -582,11 +582,9 @@ static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time
      * on compositor version 4 and above.
      */
     if (wl_compositor_get_version(wind->waylandData->compositor) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
-        wl_surface_damage_buffer(wind->surface, 0, 0,
-                                 wind->current.drawable_width, wind->current.drawable_height);
+        wl_surface_damage_buffer(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
     } else {
-        wl_surface_damage(wind->surface, 0, 0,
-                          wind->current.logical_width, wind->current.logical_height);
+        wl_surface_damage(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
     }
 
     if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME) {
