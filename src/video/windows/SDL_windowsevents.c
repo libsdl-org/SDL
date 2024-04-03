@@ -621,6 +621,18 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                         button = SDL_BUTTON_LEFT;
                     }
                 }
+
+                if (windowdata->focus_click_pending & SDL_BUTTON(button)) {
+                    /* Ignore the button click for activation */
+                    if (!state) {
+                        windowdata->focus_click_pending &= ~SDL_BUTTON(button);
+                        WIN_UpdateClipCursor(window);
+                    }
+                    if (WIN_ShouldIgnoreFocusClick(windowdata)) {
+                        continue;
+                    }
+                }
+
                 SDL_SendMouseButton(timestamp, window, mouseID, state, button);
             }
         }
