@@ -1569,6 +1569,15 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 zxdg_exported_v2_add_listener(data->exported, &exported_v2_listener, data);
             }
 
+            if (window->flags & SDL_WINDOW_MODAL) {
+                if (window->parent->driverdata->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
+                    libdecor_frame_set_parent(data->shell_surface.libdecor.frame, window->parent->driverdata->shell_surface.libdecor.frame);
+                } else if (window->parent->driverdata->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
+                    struct xdg_toplevel *modal_toplevel = libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame);
+                    xdg_toplevel_set_parent(modal_toplevel, window->parent->driverdata->shell_surface.xdg.roleobj.toplevel);
+                }
+            }
+
             SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, libdecor_frame_get_xdg_surface(data->shell_surface.libdecor.frame));
             SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, libdecor_frame_get_xdg_toplevel(data->shell_surface.libdecor.frame));
         }
@@ -1647,6 +1656,15 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             if (c->zxdg_exporter_v2) {
                 data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
                 zxdg_exported_v2_add_listener(data->exported, &exported_v2_listener, data);
+            }
+
+            if (window->flags & SDL_WINDOW_MODAL) {
+                if (window->parent->driverdata->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL) {
+                    xdg_toplevel_set_parent(data->shell_surface.xdg.roleobj.toplevel, window->parent->driverdata->shell_surface.xdg.roleobj.toplevel);
+                } else if (window->parent->driverdata->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
+                    struct xdg_toplevel *parent_toplevel = libdecor_frame_get_xdg_toplevel(window->parent->driverdata->shell_surface.libdecor.frame);
+                    xdg_toplevel_set_parent(data->shell_surface.xdg.roleobj.toplevel, parent_toplevel);
+                }
             }
 
             SDL_SetProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, data->shell_surface.xdg.roleobj.toplevel);

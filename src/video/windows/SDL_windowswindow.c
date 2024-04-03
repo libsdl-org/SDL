@@ -558,7 +558,15 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->driverdata;
 
     if (data) {
+        /* Clear modality *before* destroying the window, else the focus will go elsewhere */
+        /* https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463 */
+        WIN_SetWindowModalFor(_this, window, NULL);
+
         SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
+
+        if (data->modal_parent) {
+            EnableWindow(data->modal_parent->driverdata->hwnd, TRUE);
+        }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         if (data->ICMFileName) {
@@ -777,6 +785,20 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
 #endif
     }
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
+
+    /* TODO: Where to put this? */
+    SDL_bool modal = SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN, SDL_FALSE);
+    if (modal == SDL_TRUE) {
+        SDL_Window *win_parent = (SDL_Window *) SDL_GetProperty(create_props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
+
+        if (!parent) {
+            /* FIXME: Clean stuff before returning? */
+            SDL_SetError("Attempt to create modal Wayland window without parent");
+            return -1;
+        }
+
+        WIN_SetWindowModalFor(_this, window, win_parent);
+    }
 
     return 0;
 }
@@ -1715,6 +1737,31 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
         }
         SDL_UnloadObject(handle);
     }
+}
+
+int WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
+{
+    if (!modal_window) {
+        SDL_SetError("Cannot make NULL window modal");
+        return -1;
+    }
+
+    SDL_Window *old_parent = modal_window->driverdata->modal_parent;
+
+    HWND parent_hwnd = parent_window ? parent_window->driverdata->hwnd : NULL;
+    HWND old_hwnd = old_parent ? old_parent->driverdata->hwnd : NULL;
+
+    if (old_hwnd) {
+        EnableWindow(old_hwnd, TRUE);
+    }
+
+    if (parent_hwnd) {
+        EnableWindow(parent_hwnd, FALSE);
+    }
+
+    modal_window->driverdata->modal_parent = parent_window;
+
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

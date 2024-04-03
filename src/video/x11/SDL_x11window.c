@@ -791,6 +791,10 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     }
 #endif
 
+    if (window->flags & SDL_WINDOW_MODAL) {
+        X11_XSetTransientForHint(display, w, window->parent->driverdata->xwindow);
+    }
+
     X11_Xinput2SelectTouch(_this, window);
 
     {

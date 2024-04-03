@@ -88,8 +88,8 @@ class SDL_BWin : public BWindow
 {
   public:
     /* Constructor/Destructor */
-    SDL_BWin(BRect bounds, window_look look, uint32 flags)
-        : BWindow(bounds, "Untitled", look, B_NORMAL_WINDOW_FEEL, flags)
+    SDL_BWin(BRect bounds, window_look look, window_feel feel, uint32 flags, BWindow *parent)
+        : BWindow(bounds, "Untitled", look, feel, flags)
     {
         _last_buttons = 0;
 
@@ -109,6 +109,10 @@ class SDL_BWin : public BWindow
         /* Handle framebuffer stuff */
         _buffer_locker = new BLocker();
         _bitmap = NULL;
+
+        if (parent) {
+            AddToSubset(parent);
+        }
     }
 
     virtual ~SDL_BWin()

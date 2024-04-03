@@ -39,9 +39,10 @@ static SDL_INLINE SDL_BLooper *_GetBeLooper() {
     return SDL_Looper;
 }
 
-static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window) {
+static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props) {
     uint32 flags = 0;
     window_look look = B_TITLED_WINDOW_LOOK;
+    window_feel feel = B_NORMAL_WINDOW_FEEL;
 
     BRect bounds(
         window->x,
@@ -64,7 +65,25 @@ static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window) {
         look = B_NO_BORDER_WINDOW_LOOK;
     }
 
-    SDL_BWin *bwin = new(std::nothrow) SDL_BWin(bounds, look, flags);
+    SDL_bool modal = SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN, SDL_FALSE);
+    BWindow *b_parent = NULL;
+
+    if (modal == SDL_TRUE) {
+        SDL_Window *parent = (SDL_Window *) SDL_GetProperty(create_props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
+
+        if (!parent) {
+            SDL_SetError("Attempt to create modal Haiku window without parent");
+            return -1;
+        }
+
+        /* TODO: This presumes that all windows are BWindows; is this safe? */
+        b_parent = (BWindow *) parent->driverdata;
+
+        look = B_MODAL_WINDOW_LOOK;
+        feel = B_MODAL_SUBSET_WINDOW_FEEL;
+    }
+
+    SDL_BWin *bwin = new(std::nothrow) SDL_BWin(bounds, look, feel, flags, b_parent);
     if (!bwin) {
         return -1;
     }
@@ -77,7 +96,7 @@ static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window) {
 }
 
 int HAIKU_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props) {
-    if (_InitWindow(_this, window) < 0) {
+    if (_InitWindow(_this, window, create_props) < 0) {
         return -1;
     }
 

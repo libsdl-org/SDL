@@ -78,6 +78,7 @@ struct SDL_WindowData
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
+    SDL_Window *modal_parent;
 
     /* Whether we retain the content of the window when changing state */
     UINT copybits_flag;
@@ -118,6 +119,7 @@ extern void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern int WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
 extern int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type);
 extern int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi);
+extern int WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

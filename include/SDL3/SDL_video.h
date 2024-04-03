@@ -144,6 +144,7 @@ typedef Uint32 SDL_WindowFlags;
 #define SDL_WINDOW_INPUT_FOCUS          0x00000200U /**< window has input focus */
 #define SDL_WINDOW_MOUSE_FOCUS          0x00000400U /**< window has mouse focus */
 #define SDL_WINDOW_EXTERNAL             0x00000800U /**< window not created by SDL */
+#define SDL_WINDOW_MODAL                0x00001000U /**< window is modal */
 #define SDL_WINDOW_HIGH_PIXEL_DENSITY   0x00002000U /**< window uses high pixel density back buffer if possible */
 #define SDL_WINDOW_MOUSE_CAPTURE        0x00004000U /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
 #define SDL_WINDOW_ALWAYS_ON_TOP        0x00008000U /**< window should always be above others */
@@ -906,13 +907,15 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  *   with Metal rendering
  * - `SDL_PROP_WINDOW_CREATE_MINIMIZED_BOOLEAN`: true if the window should
  *   start minimized
+ * - `SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN`: true if the window is modal to its
+ *   parent
  * - `SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN`: true if the window starts
  *   with grabbed mouse focus
  * - `SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN`: true if the window will be used
  *   with OpenGL rendering
  * - `SDL_PROP_WINDOW_CREATE_PARENT_POINTER`: an SDL_Window that will be the
- *   parent of this window, required for windows with the "toolip" and "menu"
- *   properties
+ *   parent of this window, required for windows with the "toolip", "menu" and
+ *   "modal" properties
  * - `SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN`: true if the window should be
  *   resizable
  * - `SDL_PROP_WINDOW_CREATE_TITLE_STRING`: the title of the window, in UTF-8
@@ -1006,6 +1009,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_Propertie
 #define SDL_PROP_WINDOW_CREATE_MENU_BOOLEAN                        "menu"
 #define SDL_PROP_WINDOW_CREATE_METAL_BOOLEAN                       "metal"
 #define SDL_PROP_WINDOW_CREATE_MINIMIZED_BOOLEAN                   "minimized"
+#define SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN                       "modal"
 #define SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN               "mouse_grabbed"
 #define SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN                      "opengl"
 #define SDL_PROP_WINDOW_CREATE_PARENT_POINTER                      "parent"
