@@ -984,6 +984,10 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WIN_SetWindowPosition(_this, window);
     }
 
+    if (window->flags & SDL_WINDOW_MODAL) {
+        EnableWindow(window->parent->driverdata->hwnd, FALSE);
+    }
+
     hwnd = window->driverdata->hwnd;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
@@ -1006,6 +1010,11 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     HWND hwnd = window->driverdata->hwnd;
+
+    if (window->flags & SDL_WINDOW_MODAL) {
+        EnableWindow(window->parent->driverdata->hwnd, TRUE);
+    }
+
     ShowWindow(hwnd, SW_HIDE);
 
     /* Transfer keyboard focus back to the parent */
@@ -1718,6 +1727,41 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
         }
         SDL_UnloadObject(handle);
     }
+}
+
+int WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
+{
+    SDL_WindowData *modal_data = modal_window->driverdata;
+    const LONG_PTR parent_hwnd = (LONG_PTR)(parent_window ? parent_window->driverdata->hwnd : NULL);
+    const LONG_PTR old_ptr = GetWindowLongPtr(modal_data->hwnd, GWLP_HWNDPARENT);
+    const DWORD style = GetWindowLong(modal_data->hwnd, GWL_STYLE);
+
+    if (old_ptr == parent_hwnd) {
+        return 0;
+    }
+
+    /* Reenable the old parent window. */
+    if (old_ptr) {
+        EnableWindow((HWND)old_ptr, TRUE);
+    }
+
+    if (!(style & WS_CHILD)) {
+        /* Despite the name, this changes the *owner* of a toplevel window, not
+         * the parent of a child window.
+         *
+         * https://devblogs.microsoft.com/oldnewthing/20100315-00/?p=14613
+         */
+        SetWindowLongPtr(modal_data->hwnd, GWLP_HWNDPARENT, parent_hwnd);
+    } else {
+        SetParent(modal_data->hwnd, (HWND)parent_hwnd);
+    }
+
+    /* Disable the new parent window if the modal window is visible. */
+    if (!(modal_window->flags & SDL_WINDOW_HIDDEN) && parent_hwnd) {
+        EnableWindow((HWND)parent_hwnd, FALSE);
+    }
+
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

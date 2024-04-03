@@ -138,6 +138,7 @@ void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags f
     Atom _NET_WM_STATE_ABOVE = videodata->_NET_WM_STATE_ABOVE;
     Atom _NET_WM_STATE_SKIP_TASKBAR = videodata->_NET_WM_STATE_SKIP_TASKBAR;
     Atom _NET_WM_STATE_SKIP_PAGER = videodata->_NET_WM_STATE_SKIP_PAGER;
+    Atom _NET_WM_STATE_MODAL = videodata->_NET_WM_STATE_MODAL;
     Atom atoms[16];
     int count = 0;
 
@@ -166,6 +167,9 @@ void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags f
     }
     if (flags & SDL_WINDOW_FULLSCREEN) {
         atoms[count++] = _NET_WM_STATE_FULLSCREEN;
+    }
+    if (flags & SDL_WINDOW_MODAL) {
+        atoms[count++] = _NET_WM_STATE_MODAL;
     }
 
     SDL_assert(count <= SDL_arraysize(atoms));
@@ -1204,10 +1208,43 @@ int X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opaci
 int X11_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
 {
     SDL_WindowData *data = modal_window->driverdata;
-    SDL_WindowData *parent_data = parent_window->driverdata;
-    Display *display = data->videodata->display;
+    SDL_WindowData *parent_data = parent_window ? parent_window->driverdata : NULL;
+    SDL_VideoData *video_data = _this->driverdata;
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(modal_window);
+    Display *display = video_data->display;
+    Uint32 flags = modal_window->flags;
+    Atom _NET_WM_STATE = data->videodata->_NET_WM_STATE;
+    Atom _NET_WM_STATE_MODAL = data->videodata->_NET_WM_STATE_MODAL;
 
-    X11_XSetTransientForHint(display, data->xwindow, parent_data->xwindow);
+    if (parent_data) {
+        flags |= SDL_WINDOW_MODAL;
+        X11_XSetTransientForHint(display, data->xwindow, parent_data->xwindow);
+    } else {
+        flags &= ~SDL_WINDOW_MODAL;
+        X11_XDeleteProperty(display, data->xwindow, video_data->WM_TRANSIENT_FOR);
+    }
+
+    if (X11_IsWindowMapped(_this, modal_window)) {
+        XEvent e;
+
+        SDL_zero(e);
+        e.xany.type = ClientMessage;
+        e.xclient.message_type = _NET_WM_STATE;
+        e.xclient.format = 32;
+        e.xclient.window = data->xwindow;
+        e.xclient.data.l[0] =
+            parent_data ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+        e.xclient.data.l[1] = _NET_WM_STATE_MODAL;
+        e.xclient.data.l[3] = 0l;
+
+        X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
+                       SubstructureNotifyMask | SubstructureRedirectMask, &e);
+    } else {
+        X11_SetNetWMState(_this, data->xwindow, flags);
+    }
+
+    X11_XFlush(display);
+
     return 0;
 }
 

@@ -96,6 +96,7 @@ struct SDL_WindowData
     struct wp_viewport *viewport;
     struct wp_fractional_scale_v1 *fractional_scale;
     struct zxdg_exported_v2 *exported;
+    struct xdg_dialog_v1 *xdg_dialog_v1;
 
     SDL_AtomicInt swap_interval_ready;
 
@@ -172,6 +173,7 @@ struct SDL_WindowData
     SDL_bool fullscreen_was_positioned;
     SDL_bool show_hide_sync_required;
     SDL_bool scale_to_display;
+    SDL_bool modal_reparenting_required;
 
     SDL_HitTestResult hit_test_result;
 

@@ -39,6 +39,7 @@
 #include "viewporter-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
 #include "xdg-foreign-unstable-v2-client-protocol.h"
+#include "xdg-dialog-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -654,6 +655,8 @@ static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time
         for (SDL_Window *w = wind->sdlwindow->first_child; w; w = w->next_sibling) {
             if (w->driverdata->surface_status == WAYLAND_SURFACE_STATUS_SHOW_PENDING) {
                 Wayland_ShowWindow(SDL_GetVideoDevice(), w);
+            } else if ((w->flags & SDL_WINDOW_MODAL) && w->driverdata->modal_reparenting_required) {
+                Wayland_SetWindowModalFor(SDL_GetVideoDevice(), w, w->parent);
             }
         }
 
@@ -1434,35 +1437,56 @@ int Wayland_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, 
 {
     SDL_VideoData *viddata = _this->driverdata;
     SDL_WindowData *modal_data = modal_window->driverdata;
-    SDL_WindowData *parent_data = parent_window->driverdata;
+    SDL_WindowData *parent_data = parent_window ? parent_window->driverdata : NULL;
+    struct xdg_toplevel *modal_toplevel = NULL;
+    struct xdg_toplevel *parent_toplevel = NULL;
 
-    if (modal_data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP || parent_data->shell_surface_type == WAYLAND_SURFACE_XDG_POPUP) {
-        return SDL_SetError("Modal/Parent was a popup, not a toplevel");
+    modal_data->modal_reparenting_required = SDL_FALSE;
+
+    if (parent_data && parent_data->surface_status != WAYLAND_SURFACE_STATUS_SHOWN) {
+        /* Need to wait for the parent to become mapped, or it's the same as setting a null parent. */
+        modal_data->modal_reparenting_required = SDL_TRUE;
+        return 0;
     }
 
+    /* Libdecor crashes on attempts to unset the parent by passing null, which is allowed by the
+     * toplevel spec, so just use the raw xdg-toplevel instead (that's what libdecor does
+     * internally anyways).
+     */
 #ifdef HAVE_LIBDECOR_H
-    if (viddata->shell.libdecor) {
-        if (!modal_data->shell_surface.libdecor.frame) {
-            return SDL_SetError("Modal window was hidden");
-        }
-        if (!parent_data->shell_surface.libdecor.frame) {
-            return SDL_SetError("Parent window was hidden");
-        }
-        libdecor_frame_set_parent(modal_data->shell_surface.libdecor.frame,
-                                  parent_data->shell_surface.libdecor.frame);
+    if (modal_data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR && modal_data->shell_surface.libdecor.frame) {
+        modal_toplevel = libdecor_frame_get_xdg_toplevel(modal_data->shell_surface.libdecor.frame);
     } else
 #endif
-        if (viddata->shell.xdg) {
-        if (modal_data->shell_surface.xdg.roleobj.toplevel == NULL) {
-            return SDL_SetError("Modal window was hidden");
+        if (modal_data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && modal_data->shell_surface.xdg.roleobj.toplevel) {
+        modal_toplevel = modal_data->shell_surface.xdg.roleobj.toplevel;
+    }
+
+    if (parent_data) {
+#ifdef HAVE_LIBDECOR_H
+        if (parent_data->shell_surface_type == WAYLAND_SURFACE_LIBDECOR && parent_data->shell_surface.libdecor.frame) {
+            parent_toplevel = libdecor_frame_get_xdg_toplevel(parent_data->shell_surface.libdecor.frame);
+        } else
+#endif
+            if (parent_data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && parent_data->shell_surface.xdg.roleobj.toplevel) {
+            parent_toplevel = parent_data->shell_surface.xdg.roleobj.toplevel;
         }
-        if (parent_data->shell_surface.xdg.roleobj.toplevel == NULL) {
-            return SDL_SetError("Parent window was hidden");
+    }
+
+    if (modal_toplevel) {
+        xdg_toplevel_set_parent(modal_toplevel, parent_toplevel);
+
+        if (viddata->xdg_wm_dialog_v1) {
+            if (parent_toplevel) {
+                if (!modal_data->xdg_dialog_v1) {
+                    modal_data->xdg_dialog_v1 = xdg_wm_dialog_v1_get_xdg_dialog(viddata->xdg_wm_dialog_v1, modal_toplevel);
+                }
+
+                xdg_dialog_v1_set_modal(modal_data->xdg_dialog_v1);
+            } else if (modal_data->xdg_dialog_v1) {
+                xdg_dialog_v1_unset_modal(modal_data->xdg_dialog_v1);
+            }
         }
-        xdg_toplevel_set_parent(modal_data->shell_surface.xdg.roleobj.toplevel,
-                                parent_data->shell_surface.xdg.roleobj.toplevel);
-    } else {
-        return SDL_Unsupported();
     }
 
     return 0;
@@ -1653,6 +1677,10 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     /* Restore state that was set prior to this call */
+    if (window->flags & SDL_WINDOW_MODAL) {
+        Wayland_SetWindowModalFor(_this, window, window->parent);
+    }
+
     Wayland_SetWindowTitle(_this, window);
 
     /* We have to wait until the surface gets a "configure" event, or use of
@@ -2588,6 +2616,10 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         if (wind->fractional_scale) {
             wp_fractional_scale_v1_destroy(wind->fractional_scale);
+        }
+
+        if (wind->xdg_dialog_v1) {
+            xdg_dialog_v1_destroy(wind->xdg_dialog_v1);
         }
 
         SDL_free(wind->outputs);

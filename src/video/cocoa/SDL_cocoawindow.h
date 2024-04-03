@@ -138,6 +138,7 @@ typedef enum
 @property(nonatomic) NSInteger flash_request;
 @property(nonatomic) SDL_Window *keyboard_focus;
 @property(nonatomic) Cocoa_WindowListener *listener;
+@property(nonatomic) NSModalSession modal_session;
 @property(nonatomic) SDL_CocoaVideoData *videodata;
 @property(nonatomic) SDL_bool send_floating_size;
 @property(nonatomic) SDL_bool send_floating_position;
@@ -178,6 +179,7 @@ extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept);
 extern int Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
 extern int Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
+extern int Cocoa_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
 extern int Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif /* SDL_cocoawindow_h_ */

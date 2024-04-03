@@ -67,6 +67,7 @@ struct SDL_VideoData
     Atom WM_DELETE_WINDOW;
     Atom WM_TAKE_FOCUS;
     Atom WM_NAME;
+    Atom WM_TRANSIENT_FOR;
     Atom _NET_WM_STATE;
     Atom _NET_WM_STATE_HIDDEN;
     Atom _NET_WM_STATE_FOCUSED;
@@ -76,6 +77,7 @@ struct SDL_VideoData
     Atom _NET_WM_STATE_ABOVE;
     Atom _NET_WM_STATE_SKIP_TASKBAR;
     Atom _NET_WM_STATE_SKIP_PAGER;
+    Atom _NET_WM_STATE_MODAL;
     Atom _NET_WM_ALLOWED_ACTIONS;
     Atom _NET_WM_ACTION_FULLSCREEN;
     Atom _NET_WM_NAME;
