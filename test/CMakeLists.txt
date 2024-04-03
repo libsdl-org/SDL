@@ -414,6 +414,7 @@ add_sdl_test_executable(testpopup SOURCES testpopup.c)
 add_sdl_test_executable(testdialog SOURCES testdialog.c)
 add_sdl_test_executable(testtime SOURCES testtime.c)
 add_sdl_test_executable(testmanymouse SOURCES testmanymouse.c)
+add_sdl_test_executable(testmodal SOURCES testmodal.c)
 
 if (HAVE_WAYLAND)
     # Set the GENERATED property on the protocol file, since it is first created at build time

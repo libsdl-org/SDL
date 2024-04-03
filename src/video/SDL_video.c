@@ -200,6 +200,33 @@ static void SDL_SyncIfRequired(SDL_Window *window)
     }
 }
 
+static void SDL_SetWindowParent(SDL_Window *window, SDL_Window *parent)
+{
+    /* Unlink the window from the existing parent. */
+    if (window->parent) {
+        if (window->next_sibling) {
+            window->next_sibling->prev_sibling = window->prev_sibling;
+        }
+        if (window->prev_sibling) {
+            window->prev_sibling->next_sibling = window->next_sibling;
+        } else {
+            window->parent->first_child = window->next_sibling;
+        }
+
+        window->parent = NULL;
+    }
+
+    if (parent) {
+        window->parent = parent;
+
+        window->next_sibling = parent->first_child;
+        if (parent->first_child) {
+            parent->first_child->prev_sibling = window;
+        }
+        parent->first_child = window;
+    }
+}
+
 /* Support for framebuffer emulation using an accelerated renderer */
 
 #define SDL_PROP_WINDOW_TEXTUREDATA_POINTER "SDL.internal.window.texturedata"
@@ -2002,6 +2029,7 @@ static struct {
     { SDL_PROP_WINDOW_CREATE_MENU_BOOLEAN,               SDL_WINDOW_POPUP_MENU,          SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_METAL_BOOLEAN,              SDL_WINDOW_METAL,               SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_MINIMIZED_BOOLEAN,          SDL_WINDOW_MINIMIZED,           SDL_FALSE },
+    { SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN,              SDL_WINDOW_MODAL,               SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN,      SDL_WINDOW_MOUSE_GRABBED,       SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN,             SDL_WINDOW_OPENGL,              SDL_FALSE },
     { SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN,          SDL_WINDOW_RESIZABLE,           SDL_FALSE },
@@ -2057,6 +2085,11 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         }
     }
 
+    if ((flags & SDL_WINDOW_MODAL) && (!parent || parent->magic != &_this->window_magic)) {
+        SDL_SetError("Modal windows must specify a parent window");
+        return NULL;
+    }
+
     if ((flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU)) != 0) {
         if (!(_this->device_caps & VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT)) {
             SDL_Unsupported();
@@ -2074,7 +2107,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     }
 
     /* Ensure no more than one of these flags is set */
-    type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
+    type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_MODAL);
     if (type_flags & (type_flags - 1)) {
         SDL_SetError("Conflicting window type flags specified: 0x%.8x", (unsigned int)type_flags);
         return NULL;
@@ -2200,14 +2233,9 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     }
     _this->windows = window;
 
-    if (parent) {
-        window->parent = parent;
-
-        window->next_sibling = parent->first_child;
-        if (parent->first_child) {
-            parent->first_child->prev_sibling = window;
-        }
-        parent->first_child = window;
+    /* Set the parent before creation if this is non-modal, otherwise it will be set later. */
+    if (!(flags & SDL_WINDOW_MODAL)) {
+        SDL_SetWindowParent(window, parent);
     }
 
     if (_this->CreateSDLWindow && _this->CreateSDLWindow(_this, window, props) < 0) {
@@ -2236,6 +2264,9 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     flags = window->flags;
 #endif
 
+    if (flags & SDL_WINDOW_MODAL) {
+        SDL_SetWindowModalFor(window, parent);
+    }
     if (title) {
         SDL_SetWindowTitle(window, title);
     }
@@ -2293,6 +2324,7 @@ int SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
     SDL_bool need_vulkan_unload = SDL_FALSE;
     SDL_bool need_vulkan_load = SDL_FALSE;
     SDL_WindowFlags graphics_flags;
+    SDL_Window *parent = window->parent;
 
     /* ensure no more than one of these flags is set */
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
@@ -2315,6 +2347,11 @@ int SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         flags |= SDL_WINDOW_EXTERNAL;
     } else {
         flags &= ~SDL_WINDOW_EXTERNAL;
+    }
+
+    /* If this is a modal dialog, clear the modal status. */
+    if (window->flags & SDL_WINDOW_MODAL) {
+        SDL_SetWindowModalFor(window, NULL);
     }
 
     /* Restore video mode, etc. */
@@ -2408,6 +2445,10 @@ int SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
 
     if (flags & SDL_WINDOW_EXTERNAL) {
         window->flags |= SDL_WINDOW_EXTERNAL;
+    }
+
+    if (flags & SDL_WINDOW_MODAL) {
+        SDL_SetWindowModalFor(window, parent);
     }
 
     if (_this->SetWindowTitle && window->title) {
@@ -3259,15 +3300,35 @@ int SDL_GetWindowOpacity(SDL_Window *window, float *out_opacity)
 int SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
 {
     CHECK_WINDOW_MAGIC(modal_window, -1);
-    CHECK_WINDOW_MAGIC(parent_window, -1);
     CHECK_WINDOW_NOT_POPUP(modal_window, -1);
-    CHECK_WINDOW_NOT_POPUP(parent_window, -1);
+
+    if (parent_window) {
+        CHECK_WINDOW_MAGIC(parent_window, -1);
+        CHECK_WINDOW_NOT_POPUP(parent_window, -1);
+    }
 
     if (!_this->SetWindowModalFor) {
         return SDL_Unsupported();
     }
 
-    return _this->SetWindowModalFor(_this, modal_window, parent_window);
+    if (parent_window) {
+        modal_window->flags |= SDL_WINDOW_MODAL;
+    } else if (modal_window->flags & SDL_WINDOW_MODAL) {
+        modal_window->flags &= ~SDL_WINDOW_MODAL;
+    } else {
+        return 0; /* Not modal; nothing to do. */
+    }
+
+    const int ret = _this->SetWindowModalFor(_this, modal_window, parent_window);
+
+    /* The existing parent might be needed when changing the modal status,
+     * so don't change the heirarchy until after setting the new modal state.
+     */
+    if (!ret) {
+        SDL_SetWindowParent(modal_window, !ret ? parent_window : NULL);
+    }
+
+    return ret;
 }
 
 int SDL_SetWindowInputFocus(SDL_Window *window)
@@ -3686,16 +3747,12 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     SDL_DestroyProperties(window->props);
 
-    /* If this is a child window, unlink it from its siblings */
-    if (window->parent) {
-        if (window->next_sibling) {
-            window->next_sibling->prev_sibling = window->prev_sibling;
-        }
-        if (window->prev_sibling) {
-            window->prev_sibling->next_sibling = window->next_sibling;
-        } else {
-            window->parent->first_child = window->next_sibling;
-        }
+    /* Clear the modal status, but don't unset the parent, as it may be
+     * needed later in the destruction process if a backend needs to
+     * update the input focus.
+     */
+    if (_this->SetWindowModalFor && (window->flags & SDL_WINDOW_MODAL)) {
+        _this->SetWindowModalFor(_this, window, NULL);
     }
 
     /* Restore video mode, etc. */
@@ -3764,6 +3821,9 @@ void SDL_DestroyWindow(SDL_Window *window)
     /* Free memory associated with the window */
     SDL_free(window->title);
     SDL_DestroySurface(window->icon);
+
+    /* Unlink the window from its siblings. */
+    SDL_SetWindowParent(window, NULL);
 
     /* Unlink the window from the list */
     if (window->next) {
