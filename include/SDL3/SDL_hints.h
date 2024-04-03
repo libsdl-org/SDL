@@ -503,7 +503,7 @@ extern "C" {
  *
  * This hint can be set anytime.
  */
-#define SDL_HINT_FORCE_RAISEWINDOW    "SDL_HINT_FORCE_RAISEWINDOW"
+#define SDL_HINT_FORCE_RAISEWINDOW    "SDL_FORCE_RAISEWINDOW"
 
 /**
  * A variable controlling how 3D acceleration is used to accelerate the SDL screen surface.
@@ -1690,7 +1690,7 @@ extern "C" {
  *
  * This hint can be set anytime.
  */
-#define SDL_HINT_PEN_DELAY_MOUSE_BUTTON    "SDL_HINT_PEN_DELAY_MOUSE_BUTTON"
+#define SDL_HINT_PEN_DELAY_MOUSE_BUTTON    "SDL_PEN_DELAY_MOUSE_BUTTON"
 
 /**
  * A variable controlling whether to treat pen movement as separate from mouse movement
@@ -1707,7 +1707,7 @@ extern "C" {
  *
  * This hint can be set anytime.
  */
-#define SDL_HINT_PEN_NOT_MOUSE    "SDL_HINT_PEN_NOT_MOUSE"
+#define SDL_HINT_PEN_NOT_MOUSE    "SDL_PEN_NOT_MOUSE"
 
 /**
  * A variable controlling the use of a sentinel event when polling the event queue
@@ -2283,7 +2283,7 @@ extern "C" {
  *
  * This hint can be set anytime.
  */
-#define SDL_HINT_VITA_TOUCH_MOUSE_DEVICE    "SDL_HINT_VITA_TOUCH_MOUSE_DEVICE"
+#define SDL_HINT_VITA_TOUCH_MOUSE_DEVICE    "SDL_VITA_TOUCH_MOUSE_DEVICE"
 
 /**
  * A variable controlling how the fact chunk affects the loading of a WAVE file.
