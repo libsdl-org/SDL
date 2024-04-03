@@ -1,0 +1,6 @@
+{
+  "name": "libSDL2d.so",
+  "types": "./index.d.ts",
+  "version": "",
+  "description": "Please describe the basic information."
+}

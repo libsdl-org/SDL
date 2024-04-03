@@ -112,6 +112,10 @@
 #undef SDL_PLATFORM_LINUX
 #endif
 
+#if defined(OHOS) || defined(__OHOS__)
+#define SDL_PLATFORM_OHOS 1
+#endif
+
 #if defined(__unix__) || defined(__unix) || defined(unix)
 
 /**

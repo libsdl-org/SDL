@@ -65,6 +65,10 @@
 #define SDL_DYNAMIC_API 0 // devkitARM doesn't support dynamic linking
 #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
 #define SDL_DYNAMIC_API 0 // we need dlopen(), but don't have it....
+#elif defined(__clang_analyzer__)
+#define SDL_DYNAMIC_API 0  /* Turn off for static analysis, so reports are more clear. */
+#elif defined(SDL_PLATFORM_OHOS)
+#define SDL_DYNAMIC_API 0
 #endif
 
 // everyone else. This is where we turn on the API if nothing forced it off.

@@ -1,0 +1,48 @@
+{
+  "float": [
+    {
+      "name": "title_text_font_size",
+      "value": "24fp"
+    },
+    {
+      "name": "title_text_margin_left",
+      "value": "24vp"
+    },
+    {
+      "name": "title_text_margin_top",
+      "value": "12vp"
+    },
+    {
+      "name": "title_margin_top",
+      "value": "24vp"
+    },
+    {
+      "name": "title_height",
+      "value": "56vp"
+    },
+    {
+      "name": "xcomponent_margin_top",
+      "value": "27vp"
+    },
+    {
+      "name": "xcomponent_margin_left",
+      "value": "12vp"
+    },
+    {
+      "name": "xcomponent_margin_right",
+      "value": "12vp"
+    },
+    {
+      "name": "button_font_size",
+      "value": "16fp"
+    },
+    {
+      "name": "button_margin_bottom",
+      "value": "24vp"
+    },
+    {
+      "name": "button_height",
+      "value": "40vp"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License,Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#!/bin/bash
+
+# ----------------------------------------------------------------------------
+#  Hvigor startup script, version 1.0.0
+#
+#  Required ENV vars:
+#  ------------------
+#    NODE_HOME - location of a Node home dir
+#    or
+#    Add /usr/local/nodejs/bin to the PATH environment variable
+# ----------------------------------------------------------------------------
+
+HVIGOR_APP_HOME="`pwd -P`"
+HVIGOR_WRAPPER_SCRIPT=${HVIGOR_APP_HOME}/hvigor/hvigor-wrapper.js
+#NODE_OPTS="--max-old-space-size=4096"
+
+fail() {
+  echo "$*"
+  exit 1
+}
+
+set_executable_node() {
+  EXECUTABLE_NODE="${NODE_HOME}/bin/node"
+  if [ -x "$EXECUTABLE_NODE" ]; then
+    return
+  fi
+
+  EXECUTABLE_NODE="${NODE_HOME}/node"
+  if [ -x "$EXECUTABLE_NODE" ]; then
+    return
+  fi
+  fail "ERROR: NODE_HOME is set to an invalid directory,check $NODE_HOME\n\nPlease set NODE_HOME in your environment to the location where your nodejs installed"
+}
+
+# Determine node to start hvigor wrapper script
+if [ -n "${NODE_HOME}" ]; then
+  set_executable_node
+else
+  EXECUTABLE_NODE="node"
+  command -v ${EXECUTABLE_NODE} &> /dev/null || fail "ERROR: NODE_HOME not set and 'node' command not found"
+fi
+
+# Check hvigor wrapper script
+if [ ! -r "$HVIGOR_WRAPPER_SCRIPT" ]; then
+  fail "ERROR: Couldn't find hvigor/hvigor-wrapper.js in ${HVIGOR_APP_HOME}"
+fi
+
+if [ -z "${NODE_OPTS}" ]; then
+  NODE_OPTS="--"
+fi
+
+# start hvigor-wrapper script
+exec "${EXECUTABLE_NODE}" "${NODE_OPTS}" \
+  "${HVIGOR_WRAPPER_SCRIPT}" "$@"

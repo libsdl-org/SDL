@@ -45,6 +45,8 @@
 #include "SDL_build_config_ios.h"
 #elif defined(SDL_PLATFORM_ANDROID)
 #include "SDL_build_config_android.h"
+#elif defined(SDL_PLATFORM_OHOS)
+#include "SDL_build_config_ohos.h"
 #else
 /* This is a minimal configuration just to get SDL running on new platforms. */
 #include "SDL_build_config_minimal.h"

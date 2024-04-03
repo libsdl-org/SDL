@@ -21,9 +21,10 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     bool needs_renderer = false;
     bool needs_events_pumped = false;
 
+<<<<<<< HEAD
     /* Standard window */
-    w = SDLTest_RandomIntegerInRange(320, 1024);
-    h = SDLTest_RandomIntegerInRange(320, 768);
+#ifdef __OHOS__                                        #include "../SDL/src/video/ohos/SDL_ohosvideo.h"           w = SDLTest_RandomIntegerInRange(320, OHOS_DeviceWidth);                                                      h = SDLTest_RandomIntegerInRange(320, OHOS_DeviceHeight);                                                 #else                                                      w = SDLTest_RandomIntegerInRange(320, 720);            h = SDLTest_RandomIntegerInRange(320, 1136);       #endif
+
     flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
 
     window = SDL_CreateWindow(title, w, h, flags);

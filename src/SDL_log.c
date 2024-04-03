@@ -34,6 +34,8 @@
 
 #ifdef SDL_PLATFORM_ANDROID
 #include <android/log.h>
+#elif defined(__OHOS__)
+#include <hilog/log.h>
 #endif
 
 #include "stdlib/SDL_vacopy.h"
@@ -43,6 +45,8 @@
 
 #define DEFAULT_CATEGORY -1
 
+#define LOG_NULL                        0
+#define LOG_VERBOSE                     LOG_DEBUG /* The log level of SDL is one more than that of Hongmeng, so add a LOG_DEBUG to fill in */
 typedef struct SDL_LogLevel
 {
     int category;
@@ -119,6 +123,28 @@ static int SDL_android_priority[] = {
 };
 SDL_COMPILE_TIME_ASSERT(android_priority, SDL_arraysize(SDL_android_priority) == SDL_LOG_PRIORITY_COUNT);
 #endif // SDL_PLATFORM_ANDROID
+
+#ifdef __OHOS__
+static const char *SDL_category_prefixes[SDL_LOG_CATEGORY_RESERVED2] = {
+    "APP",
+	"ERROR",
+	"SYSTEM",
+	"AUDIO",
+	"VIDEO",
+	"RENDER",
+	"INPUT"
+};
+
+static int SDL_ohos_priority[SDL_NUM_LOG_PRIORITIES] = {
+    LOG_NULL,
+    LOG_VERBOSE,
+    LOG_DEBUG,
+    LOG_INFO,
+    LOG_WARN,
+    LOG_ERROR,
+    LOG_FATAL
+};
+#endif /* __OHOS__ */
 
 static void SDLCALL SDL_LoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -569,6 +595,20 @@ static const char *GetCategoryPrefix(int category)
 }
 #endif // SDL_PLATFORM_ANDROID
 
+#ifdef __OHOS__
+static const char *
+GetCategoryPrefix(int category)
+{
+    if (category < SDL_LOG_CATEGORY_RESERVED2) {
+        return SDL_category_prefixes[category];
+    }
+    if (category < SDL_LOG_CATEGORY_CUSTOM) {
+        return "RESERVED";
+    }
+    return "CUSTOM";
+}
+#endif /* __OHOS__ */
+
 void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
     char *message = NULL;
@@ -731,6 +771,13 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 
         SDL_snprintf(tag, SDL_arraysize(tag), "SDL/%s", GetCategoryPrefix(category));
         __android_log_write(SDL_android_priority[priority], tag, message);
+    }
+#elif defined(__OHOS__)
+    {
+        char tag[32];
+
+        SDL_snprintf(tag, SDL_arraysize(tag), "SDL/%s", GetCategoryPrefix(category));
+        OH_LOG_Print(LOG_APP, SDL_ohos_priority[priority], 0, tag, "%{public}s", message);
     }
 #elif defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))
     /* Technically we don't need Cocoa/UIKit, but that's where this function is defined for now.

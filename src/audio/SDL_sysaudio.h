@@ -395,5 +395,6 @@ extern AudioBootStrap VITAAUD_bootstrap;
 extern AudioBootStrap N3DSAUDIO_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 extern AudioBootStrap QSAAUDIO_bootstrap;
+extern AudioBootStrap OHOSAUDIO_bootstrap;
 
 #endif // SDL_sysaudio_h_

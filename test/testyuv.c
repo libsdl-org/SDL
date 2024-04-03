@@ -654,6 +654,15 @@ int main(int argc, char **argv)
                         ++current;
                     }
                 }
+                if (event.type == SDL_WINDOWEVENT) {
+                    if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                        int width = event.window.data1;
+                        int height = event.window.data2;
+                        SDL_RenderSetLogicalSize(renderer, width, height);
+                        current = 2;
+                        SDL_Log("SDL_WINDOWEVENT_SIZE_CHANGED: %d, %d",width,height);
+                    }
+                }
             }
 
             /* Handle wrapping */
