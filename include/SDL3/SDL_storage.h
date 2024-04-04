@@ -355,8 +355,8 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *storage
  * separator of '/'. Wildcard characters '*' and '?' never match a path
  * separator.
  *
- * `flags` may be set to SDL_GLOB_CASEINSENSITIVE to make the pattern
- * matching case-insensitive.
+ * `flags` may be set to SDL_GLOB_CASEINSENSITIVE to make the pattern matching
+ * case-insensitive.
  *
  * The returned array is always NULL-terminated, for your iterating
  * convenience, but if `count` is non-NULL, on return it will contain the
