@@ -190,16 +190,12 @@ struct SDL_AudioStream
     float freq_ratio;
 
     struct SDL_AudioQueue* queue;
-    Uint64 total_bytes_queued;
 
     SDL_AudioSpec input_spec; // The spec of input data currently being processed
     Sint64 resample_offset;
 
     Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
     size_t work_buffer_allocation;
-
-    Uint8 *history_buffer;  // history for left padding and future sample rate changes.
-    size_t history_buffer_allocation;
 
     SDL_bool simplified;  // SDL_TRUE if created via SDL_OpenAudioDeviceStream
 

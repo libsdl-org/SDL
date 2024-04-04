@@ -821,11 +821,6 @@ static double sine_wave_sample(const Sint64 idx, const Sint64 rate, const Sint64
   return SDL_sin(((double)(idx * freq % rate)) / ((double)rate) * (SDL_PI_D * 2) + phase);
 }
 
-static void free_audio_buffer(void* userdata, const void* buf, int len)
-{
-  SDL_free((void*) buf);
-}
-
 /* Split the data into randomly sized chunks */
 static int put_audio_data_split(SDL_AudioStream* stream, const void* buf, int len)
 {
