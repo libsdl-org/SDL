@@ -28,6 +28,8 @@
 #include <psp2/kernel/clib.h>
 #endif
 
+#include "SDL_sysstdlib.h"
+
 #include "SDL_casefolding.h"
 
 // this is the Unicode REPLACEMENT CHARACTER, used for invalid codepoint values.
@@ -44,7 +46,7 @@ SDL_COMPILE_TIME_ASSERT(sizeof_wchar_t, sizeof(wchar_t) == SDL_SIZEOF_WCHAR_T);
 
 
 // this expects `from` and `to` to be UTF-32 encoding!
-static int SDL_UnicodeCaseFold(const Uint32 from, Uint32 *to)
+int SDL_CaseFoldUnicode(const Uint32 from, Uint32 *to)
 {
     // !!! FIXME: since the hashtable is static, maybe we should binary
     // !!! FIXME: search it instead of walking the whole bucket.
@@ -127,7 +129,7 @@ static int SDL_UnicodeCaseFold(const Uint32 from, Uint32 *to)
             cp1 = folded1[tail1++]; \
         } else { \
             const Uint##bits *str1start = (const Uint##bits *) str1; \
-            head1 = SDL_UnicodeCaseFold(SDL_StepUTF##bits(&str1, slen1), folded1); \
+            head1 = SDL_CaseFoldUnicode(SDL_StepUTF##bits(&str1, slen1), folded1); \
             update_slen1; \
             cp1 = folded1[0]; \
             tail1 = 1; \
@@ -136,7 +138,7 @@ static int SDL_UnicodeCaseFold(const Uint32 from, Uint32 *to)
             cp2 = folded2[tail2++]; \
         } else { \
             const Uint##bits *str2start = (const Uint##bits *) str2; \
-            head2 = SDL_UnicodeCaseFold(SDL_StepUTF##bits(&str2, slen2), folded2); \
+            head2 = SDL_CaseFoldUnicode(SDL_StepUTF##bits(&str2, slen2), folded2); \
             update_slen2; \
             cp2 = folded2[0]; \
             tail2 = 1; \
@@ -152,7 +154,7 @@ static int SDL_UnicodeCaseFold(const Uint32 from, Uint32 *to)
     return 0
 
 
-static Uint32 SDL_StepUTF8(const char **_str, const size_t slen)
+Uint32 SDL_StepUTF8(const char **_str, const size_t slen)
 {
     const char *str = *_str;
     const Uint32 octet = (Uint32) (slen ? ((Uint8) *str) : 0);
