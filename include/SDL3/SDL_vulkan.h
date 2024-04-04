@@ -28,6 +28,7 @@
 #ifndef SDL_vulkan_h_
 #define SDL_vulkan_h_
 
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_video.h>
 
 #include <SDL3/SDL_begin_code.h>
