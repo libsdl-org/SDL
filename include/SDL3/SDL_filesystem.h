@@ -325,7 +325,7 @@ extern DECLSPEC int SDLCALL SDL_RenamePath(const char *oldpath, const char *newp
 extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info);
 
 
-#define SDL_GLOBDIR_CASEINSENSITIVE (1 << 0)
+#define SDL_GLOB_CASEINSENSITIVE (1 << 0)
 
 /**
  * Enumerate a directory tree, filtered by pattern, and return a list.
@@ -337,7 +337,7 @@ extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info
  * separator of '/'. Wildcard characters '*' and '?' never match a path
  * separator.
  *
- * `flags` may be set to SDL_GLOBDIR_CASEINSENSITIVE to make the pattern
+ * `flags` may be set to SDL_GLOB_CASEINSENSITIVE to make the pattern
  * matching case-insensitive.
  *
  * The returned array is always NULL-terminated, for your iterating
@@ -349,7 +349,7 @@ extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info
  * \param path the path of the directory to enumerate
  * \param pattern the pattern that files in the directory must match. Can be
  *                NULL.
- * \param flags `SDL_GLOBDIR_*` bitflags that affect this search.
+ * \param flags `SDL_GLOB_*` bitflags that affect this search.
  * \param count on return, will be set to the number of items in the returned
  *              array. Can be NULL.
  * \returns an array of strings on success or NULL on failure; call

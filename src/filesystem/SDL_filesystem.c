@@ -204,7 +204,7 @@ static int SDLCALL GlobDirectoryCallback(void *userdata, const char *dirname, co
     }
 
     char *folded = NULL;
-    if (data->flags & SDL_GLOBDIR_CASEINSENSITIVE) {
+    if (data->flags & SDL_GLOB_CASEINSENSITIVE) {
         folded = CaseFoldUtf8String(fullpath);
         if (!folded) {
             return -1;
@@ -271,7 +271,7 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, Uint32 f
     }
 
     char *folded = NULL;
-    if (pattern && (flags & SDL_GLOBDIR_CASEINSENSITIVE)) {
+    if (pattern && (flags & SDL_GLOB_CASEINSENSITIVE)) {
         folded = CaseFoldUtf8String(pattern);
         if (!folded) {
             SDL_free(pathcpy);
@@ -292,7 +292,7 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, Uint32 f
         data.matcher = EverythingMatch;  // no pattern? Everything matches.
 
     // !!! FIXME
-    //} else if (flags & SDL_GLOBDIR_GITIGNORE) {
+    //} else if (flags & SDL_GLOB_GITIGNORE) {
     //    data.matcher = GitIgnoreMatch;
 
     } else {

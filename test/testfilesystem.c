@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Base path enumeration failed!");
         }
 
-        globlist = SDL_GlobDirectory(base_path, "*/test*/Test*", SDL_GLOBDIR_CASEINSENSITIVE, NULL);
+        globlist = SDL_GlobDirectory(base_path, "*/test*/Test*", SDL_GLOB_CASEINSENSITIVE, NULL);
         if (!globlist) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Base path globbing failed!");
         } else {
