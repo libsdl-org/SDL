@@ -29,6 +29,7 @@
 #define SDL_storage_h_
 
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_properties.h>
 
