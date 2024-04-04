@@ -844,7 +844,7 @@ static int audio_resampleLoss(void *arg)
     double signal_to_noise;
     double max_error;
   } test_specs[] = {
-    { 50, 440, 0, 44100, 48000, 80, 0.0009 },
+    { 50, 440, 0, 44100, 48000, 80, 0.0010 },
     { 50, 5000, SDL_PI_D / 2, 20000, 10000, 999, 0.0001 },
     { 50, 440, 0, 22050, 96000, 79, 0.0120 },
     { 50, 440, 0, 96000, 22050, 80, 0.0002 },
@@ -888,7 +888,7 @@ static int audio_resampleLoss(void *arg)
     tmpspec2.channels = num_channels;
     tmpspec2.freq = spec->rate_out;
     stream = SDL_CreateAudioStream(&tmpspec1, &tmpspec2);
-    SDLTest_AssertPass("Call to SDL_CreateAudioStream(SDL_AUDIO_F32, 1, %i, SDL_AUDIO_F32, 1, %i)", spec->rate_in, spec->rate_out);
+    SDLTest_AssertPass("Call to SDL_CreateAudioStream(SDL_AUDIO_F32, %i, %i, SDL_AUDIO_F32, %i, %i)", num_channels, spec->rate_in, num_channels, spec->rate_out);
     SDLTest_AssertCheck(stream != NULL, "Expected SDL_CreateAudioStream to succeed.");
     if (stream == NULL) {
       return TEST_ABORTED;
