@@ -270,8 +270,13 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, Uint32 f
         path = pathcpy;
     }
 
+    if (!pattern) {
+        flags &= ~SDL_GLOB_CASEINSENSITIVE;  // avoid some unnecessary allocations and work later.
+    }
+
     char *folded = NULL;
-    if (pattern && (flags & SDL_GLOB_CASEINSENSITIVE)) {
+    if (flags & SDL_GLOB_CASEINSENSITIVE) {
+        SDL_assert(pattern != NULL);
         folded = CaseFoldUtf8String(pattern);
         if (!folded) {
             SDL_free(pathcpy);
