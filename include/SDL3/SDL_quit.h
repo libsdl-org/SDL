@@ -29,7 +29,6 @@
 #define SDL_quit_h_
 
 #include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_error.h>
 
 /**
  *  \file SDL_quit.h
