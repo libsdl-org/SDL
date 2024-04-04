@@ -10,8 +10,6 @@
   freely.
 */
 
-/* !!! FIXME: this code is not up to standards for SDL3 test apps. Someone should improve this. */
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -117,6 +115,7 @@ static void queue_audio()
 
     SDL_Log("Converting audio from %i to %i", spec.freq, new_spec.freq);
 
+    /* You shouldn't actually use SDL_ConvertAudioSamples like this (just put the data straight into the stream and let it handle conversion) */
     retval = retval ? retval : SDL_ConvertAudioSamples(&spec, audio_buf, audio_len, &new_spec, &new_data, &new_len);
     retval = retval ? retval : SDL_SetAudioStreamFormat(stream, &new_spec, NULL);
     retval = retval ? retval : SDL_PutAudioStreamData(stream, new_data, new_len);
@@ -207,6 +206,7 @@ static void loop(void)
     SDL_Event e;
     SDL_FPoint p;
     SDL_AudioSpec src_spec, dst_spec;
+    int queued_bytes = 0;
     int available_bytes = 0;
     float available_seconds = 0;
 
@@ -294,6 +294,8 @@ static void loop(void)
         }
     }
 
+    queued_bytes = SDL_GetAudioStreamQueued(stream);
+
     for (i = 0; i < state->num_windows; i++) {
         int draw_y = 0;
         SDL_Renderer* rend = state->renderers[i];
@@ -324,6 +326,9 @@ static void loop(void)
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Available: %4.2f (%i bytes)", available_seconds, available_bytes);
+        draw_y += FONT_LINE_HEIGHT;
+
+        draw_textf(rend, 0, draw_y, "Queued: %i bytes", queued_bytes);
         draw_y += FONT_LINE_HEIGHT;
 
         SDL_LockAudioStream(stream);
