@@ -39,12 +39,24 @@ enum SDL_WaylandAxisEvent
     AXIS_EVENT_VALUE120
 };
 
-struct SDL_WaylandTabletSeat;
-
-struct SDL_WaylandTabletObjectListNode
+struct SDL_WaylandTablet
 {
-    void *object;
-    struct SDL_WaylandTabletObjectListNode *next;
+    struct zwp_tablet_v2 *tablet;
+    struct wl_list node;
+};
+
+struct SDL_WaylandTool
+{
+    SDL_PenID penid;
+    struct zwp_tablet_tool_v2 *tool;
+    struct SDL_WaylandTabletInput *tablet_input;
+    struct wl_list node;
+};
+
+struct SDL_WaylandPad
+{
+    struct zwp_tablet_pad_v2 *pad;
+    struct wl_list node;
 };
 
 struct SDL_WaylandTabletInput
@@ -52,9 +64,9 @@ struct SDL_WaylandTabletInput
     struct SDL_WaylandInput *sdlWaylandInput;
     struct zwp_tablet_seat_v2 *seat;
 
-    struct SDL_WaylandTabletObjectListNode *tablets;
-    struct SDL_WaylandTabletObjectListNode *tools;
-    struct SDL_WaylandTabletObjectListNode *pads;
+    struct wl_list tablets;
+    struct wl_list tools;
+    struct wl_list pads;
 
     Uint32 id;
     Uint32 num_pens; /* next pen ID is num_pens+1 */
@@ -179,12 +191,6 @@ struct SDL_WaylandInput
     /* Current SDL modifier flags */
     SDL_Keymod pressed_modifiers;
     SDL_Keymod locked_modifiers;
-};
-
-struct SDL_WaylandTool
-{
-    SDL_PenID penid;
-    struct SDL_WaylandTabletInput *tablet;
 };
 
 extern Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms);

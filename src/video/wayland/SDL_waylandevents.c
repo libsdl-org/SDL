@@ -2435,6 +2435,99 @@ void Wayland_create_text_input(SDL_VideoData *d)
     }
 }
 
+void tablet_handle_name(void *data, struct zwp_tablet_v2 *zwp_tablet_v2, const char *name)
+{
+}
+
+void tablet_handle_id(void *data, struct zwp_tablet_v2 *zwp_tablet_v2, uint32_t vid, uint32_t pid)
+{
+}
+
+void tablet_handle_path(void *data, struct zwp_tablet_v2 *zwp_tablet_v2, const char *path)
+{
+}
+
+void tablet_handle_done(void *data, struct zwp_tablet_v2 *zwp_tablet_v2)
+{
+}
+
+static void Wayland_tablet_destroy(struct SDL_WaylandTablet *wayland_tablet)
+{
+    if (wayland_tablet) {
+        zwp_tablet_v2_destroy(wayland_tablet->tablet);
+        WAYLAND_wl_list_remove(&wayland_tablet->node);
+        SDL_free(wayland_tablet);
+    }
+}
+
+void tablet_handle_removed(void *data, struct zwp_tablet_v2 *zwp_tablet_v2)
+{
+    struct SDL_WaylandTablet *sdltablet = (struct SDL_WaylandTablet*)data;
+    Wayland_tablet_destroy(sdltablet);
+}
+
+static const struct zwp_tablet_v2_listener tablet_listener = {
+    tablet_handle_name,
+    tablet_handle_id,
+    tablet_handle_path,
+    tablet_handle_done,
+    tablet_handle_removed
+};
+
+void tablet_pad_handle_group(void *data, struct zwp_tablet_pad_v2 *zwp_tablet_pad_v2, struct zwp_tablet_pad_group_v2 *pad_group)
+{
+}
+
+void tablet_pad_handle_path(void *data, struct zwp_tablet_pad_v2 *zwp_tablet_pad_v2, const char *path)
+{
+}
+
+void tablet_pad_handle_buttons(void *data, struct zwp_tablet_pad_v2 *zwp_tablet_pad_v2, uint32_t buttons)
+{
+}
+
+void tablet_pad_handle_done(void *data, struct zwp_tablet_pad_v2 *zwp_tablet_pad_v2)
+{
+}
+
+void tablet_pad_handle_button(void *data, struct zwp_tablet_pad_v2 *zwp_tablet_pad_v2, uint32_t time, uint32_t button, uint32_t state)
+{
+}
+
+void tablet_pad_handle_enter(void *data, struct zwp_tablet_pad_v2 *zwp_tablet_pad_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface)
+{
+}
+
+void tablet_pad_handle_leave(void *data, struct zwp_tablet_pad_v2 *zwp_tablet_pad_v2, uint32_t serial, struct wl_surface *surface)
+{
+}
+
+static void Wayland_pad_destroy(struct SDL_WaylandPad *wayland_pad)
+{
+    if (wayland_pad) {
+        zwp_tablet_pad_v2_destroy(wayland_pad->pad);
+        WAYLAND_wl_list_remove(&wayland_pad->node);
+        SDL_free(wayland_pad);
+    }
+}
+
+void tablet_pad_handle_removed(void *data, struct zwp_tablet_pad_v2 *zwp_tablet_pad_v2)
+{
+    struct SDL_WaylandPad *sdlpad = (struct SDL_WaylandPad*)data;
+    Wayland_pad_destroy(sdlpad);
+}
+
+static const struct zwp_tablet_pad_v2_listener tablet_pad_listener = {
+    tablet_pad_handle_group,
+    tablet_pad_handle_path,
+    tablet_pad_handle_buttons,
+    tablet_pad_handle_done,
+    tablet_pad_handle_button,
+    tablet_pad_handle_enter,
+    tablet_pad_handle_leave,
+    tablet_pad_handle_removed
+};
+
 static SDL_PenID Wayland_get_penid(void *data, struct zwp_tablet_tool_v2 *tool)
 {
     struct SDL_WaylandTool *sdltool = data;
@@ -2442,10 +2535,10 @@ static SDL_PenID Wayland_get_penid(void *data, struct zwp_tablet_tool_v2 *tool)
 }
 
 /* For registering pens */
-static SDL_Pen *Wayland_get_current_pen(void *data, struct zwp_tablet_tool_v2 *tool)
+static SDL_Pen *Wayland_get_current_pen(void *data)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
 
     if (!input->current_pen.builder) {
         /* Starting new pen or updating one? */
@@ -2467,7 +2560,7 @@ static SDL_Pen *Wayland_get_current_pen(void *data, struct zwp_tablet_tool_v2 *t
 
 static void tablet_tool_handle_type(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t type)
 {
-    SDL_Pen *pen = Wayland_get_current_pen(data, tool);
+    SDL_Pen *pen = Wayland_get_current_pen(data);
 
     switch (type) {
     case ZWP_TABLET_TOOL_V2_TYPE_ERASER:
@@ -2504,10 +2597,10 @@ static void tablet_tool_handle_hardware_serial(void *data, struct zwp_tablet_too
 {
 #if !(SDL_PEN_DEBUG_NOID)
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
 
     if (!input->current_pen.builder_guid_complete) {
-        SDL_Pen *pen = Wayland_get_current_pen(data, tool);
+        SDL_Pen *pen = Wayland_get_current_pen(data);
         SDL_PenUpdateGUIDForGeneric(&pen->guid, serial_hi, serial_lo);
         if (serial_hi || serial_lo) {
             input->current_pen.builder_guid_complete = SDL_TRUE;
@@ -2520,8 +2613,8 @@ static void tablet_tool_handle_hardware_id_wacom(void *data, struct zwp_tablet_t
 {
 #if !(SDL_PEN_DEBUG_NOID | SDL_PEN_DEBUG_NONWACOM)
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
-    SDL_Pen *pen = Wayland_get_current_pen(data, tool);
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
+    SDL_Pen *pen = Wayland_get_current_pen(data);
     Uint32 axis_flags;
 
 #if SDL_PEN_DEBUG_NOSERIAL_WACOM /* Check: have we disabled pen serial ID decoding for testing? */
@@ -2541,7 +2634,7 @@ static void tablet_tool_handle_hardware_id_wacom(void *data, struct zwp_tablet_t
 
 static void tablet_tool_handle_capability(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t capability)
 {
-    SDL_Pen *pen = Wayland_get_current_pen(data, tool);
+    SDL_Pen *pen = Wayland_get_current_pen(data);
 
     switch (capability) {
     case ZWP_TABLET_TOOL_V2_CAPABILITY_TILT:
@@ -2581,9 +2674,9 @@ static void Wayland_tool_builder_reset(struct SDL_WaylandTabletInput *input)
 
 static void tablet_tool_handle_done(void *data, struct zwp_tablet_tool_v2 *tool)
 {
-    SDL_Pen *pen = Wayland_get_current_pen(data, tool);
+    SDL_Pen *pen = Wayland_get_current_pen(data);
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
 
     if (!input->current_pen.builder_guid_complete) {
         /* No complete GUID?  Use tablet and tool device index */
@@ -2595,40 +2688,32 @@ static void tablet_tool_handle_done(void *data, struct zwp_tablet_tool_v2 *tool)
     Wayland_tool_builder_reset(input);
 }
 
-static void Wayland_tool_destroy(struct zwp_tablet_tool_v2 *tool)
+static void Wayland_tool_destroy(struct SDL_WaylandTool *wayland_tool)
 {
-    if (tool) {
-        struct SDL_WaylandTool *waypen = zwp_tablet_tool_v2_get_user_data(tool);
-        if (waypen) {
-            SDL_free(waypen);
-        }
-        zwp_tablet_tool_v2_destroy(tool);
+    if (wayland_tool) {
+        zwp_tablet_tool_v2_destroy(wayland_tool->tool);
+        WAYLAND_wl_list_remove(&wayland_tool->node);
+        SDL_free(wayland_tool);
     }
 }
 
-static void tablet_object_list_remove(struct SDL_WaylandTabletObjectListNode *head, void *object);
-
 static void tablet_tool_handle_removed(void *data, struct zwp_tablet_tool_v2 *tool)
 {
-    struct SDL_WaylandTool *waypen = zwp_tablet_tool_v2_get_user_data(tool);
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
-    SDL_Pen *pen = Wayland_get_current_pen(data, tool);
+    SDL_Pen *pen = Wayland_get_current_pen(data);
     if (pen) {
         SDL_PenModifyEnd(pen, SDL_FALSE);
-        Wayland_tool_builder_reset(waypen->tablet);
-        Wayland_tool_destroy(tool);
+        Wayland_tool_builder_reset(sdltool->tablet_input);
+        Wayland_tool_destroy(sdltool);
     } else {
         zwp_tablet_tool_v2_destroy(tool);
     }
-
-    tablet_object_list_remove(input->tools, tool);
 }
 
 static void tablet_tool_handle_proximity_in(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     SDL_WindowData *window;
     SDL_PenID penid = Wayland_get_penid(data, tool);
 
@@ -2654,7 +2739,7 @@ static void tablet_tool_handle_proximity_in(void *data, struct zwp_tablet_tool_v
 static void tablet_tool_handle_proximity_out(void *data, struct zwp_tablet_tool_v2 *tool)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     SDL_PenID penid = Wayland_get_penid(data, tool);
     if (input->tool_focus) {
         if (penid) {
@@ -2669,7 +2754,7 @@ static void tablet_tool_handle_proximity_out(void *data, struct zwp_tablet_tool_
 static void tablet_tool_handle_down(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t serial)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
 
     input->current_pen.buttons_pressed |= SDL_PEN_DOWN_MASK;
 
@@ -2679,14 +2764,14 @@ static void tablet_tool_handle_down(void *data, struct zwp_tablet_tool_v2 *tool,
 static void tablet_tool_handle_up(void *data, struct zwp_tablet_tool_v2 *tool)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     input->current_pen.buttons_released |= SDL_PEN_DOWN_MASK;
 }
 
 static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *tool, wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     SDL_WindowData *window = input->tool_focus;
     SDL_PenID penid = Wayland_get_penid(data, tool);
 
@@ -2713,7 +2798,7 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
 static void tablet_tool_handle_pressure(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t pressure)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     input->current_pen.update_status.axes[SDL_PEN_AXIS_PRESSURE] = pressure / 65535.0f;
     if (pressure) {
         input->current_pen.update_status.axes[SDL_PEN_AXIS_DISTANCE] = 0.0f;
@@ -2723,7 +2808,7 @@ static void tablet_tool_handle_pressure(void *data, struct zwp_tablet_tool_v2 *t
 static void tablet_tool_handle_distance(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t distance)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     input->current_pen.update_status.axes[SDL_PEN_AXIS_DISTANCE] = distance / 65535.0f;
     if (distance) {
         input->current_pen.update_status.axes[SDL_PEN_AXIS_PRESSURE] = 0.0f;
@@ -2733,7 +2818,7 @@ static void tablet_tool_handle_distance(void *data, struct zwp_tablet_tool_v2 *t
 static void tablet_tool_handle_tilt(void *data, struct zwp_tablet_tool_v2 *tool, wl_fixed_t xtilt, wl_fixed_t ytilt)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
 
     input->current_pen.update_status.axes[SDL_PEN_AXIS_XTILT] = (float)(wl_fixed_to_double(xtilt));
     input->current_pen.update_status.axes[SDL_PEN_AXIS_YTILT] = (float)(wl_fixed_to_double(ytilt));
@@ -2742,7 +2827,7 @@ static void tablet_tool_handle_tilt(void *data, struct zwp_tablet_tool_v2 *tool,
 static void tablet_tool_handle_button(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t serial, uint32_t button, uint32_t state)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     Uint16 mask = 0;
     SDL_bool pressed = state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED ? SDL_TRUE : SDL_FALSE;
 
@@ -2772,7 +2857,7 @@ static void tablet_tool_handle_button(void *data, struct zwp_tablet_tool_v2 *too
 static void tablet_tool_handle_rotation(void *data, struct zwp_tablet_tool_v2 *tool, wl_fixed_t degrees)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     float rotation = (float)(wl_fixed_to_double(degrees));
 
     /* map to -180.0f ... 179.0f range: */
@@ -2782,7 +2867,7 @@ static void tablet_tool_handle_rotation(void *data, struct zwp_tablet_tool_v2 *t
 static void tablet_tool_handle_slider(void *data, struct zwp_tablet_tool_v2 *tool, int32_t position)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     input->current_pen.update_status.axes[SDL_PEN_AXIS_SLIDER] = position / 65535.0;
 }
 
@@ -2794,7 +2879,7 @@ static void tablet_tool_handle_wheel(void *data, struct zwp_tablet_tool_v2 *tool
 static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t time)
 {
     struct SDL_WaylandTool *sdltool = data;
-    struct SDL_WaylandTabletInput *input = sdltool->tablet;
+    struct SDL_WaylandTabletInput *input = sdltool->tablet_input;
     SDL_PenID penid = Wayland_get_penid(data, tool);
     SDL_WindowData *window = input->current_pen.update_window;
     SDL_PenStatusInfo *status = &input->current_pen.update_status;
@@ -2874,72 +2959,15 @@ static const struct zwp_tablet_tool_v2_listener tablet_tool_listener = {
     tablet_tool_handle_frame
 };
 
-static struct SDL_WaylandTabletObjectListNode *tablet_object_list_new_node(void *object)
-{
-    struct SDL_WaylandTabletObjectListNode *node;
-
-    node = SDL_calloc(1, sizeof(*node));
-    if (!node) {
-        return NULL;
-    }
-
-    node->next = NULL;
-    node->object = object;
-
-    return node;
-}
-
-static void tablet_object_list_append(struct SDL_WaylandTabletObjectListNode *head, void *object)
-{
-    if (!head->object) {
-        head->object = object;
-        return;
-    }
-
-    while (head->next) {
-        head = head->next;
-    }
-
-    head->next = tablet_object_list_new_node(object);
-}
-
-static void tablet_object_list_destroy(struct SDL_WaylandTabletObjectListNode *head, void (*deleter)(void *object))
-{
-    while (head) {
-        struct SDL_WaylandTabletObjectListNode *next = head->next;
-        if (head->object) {
-            (*deleter)(head->object);
-        }
-        SDL_free(head);
-        head = next;
-    }
-}
-
-void tablet_object_list_remove(struct SDL_WaylandTabletObjectListNode *head, void *object)
-{
-    struct SDL_WaylandTabletObjectListNode **head_p = &head;
-    while (*head_p && (*head_p)->object != object) {
-        head_p = &((*head_p)->next);
-    }
-
-    if (*head_p) {
-        struct SDL_WaylandTabletObjectListNode *object_head = *head_p;
-
-        if (object_head == head) {
-            /* Must not remove head node */
-            head->object = NULL;
-        } else {
-            *head_p = object_head->next;
-            SDL_free(object_head);
-        }
-    }
-}
-
 static void tablet_seat_handle_tablet_added(void *data, struct zwp_tablet_seat_v2 *seat, struct zwp_tablet_v2 *tablet)
 {
     struct SDL_WaylandTabletInput *input = data;
+    struct SDL_WaylandTablet *sdltablet = SDL_calloc(1, sizeof(struct SDL_WaylandTablet));
 
-    tablet_object_list_append(input->tablets, tablet);
+    zwp_tablet_v2_add_listener(tablet, &tablet_listener, sdltablet);
+
+    sdltablet->tablet = tablet;
+    WAYLAND_wl_list_insert(&input->tablets, &sdltablet->node);
 }
 
 static void tablet_seat_handle_tool_added(void *data, struct zwp_tablet_seat_v2 *seat, struct zwp_tablet_tool_v2 *tool)
@@ -2948,18 +2976,21 @@ static void tablet_seat_handle_tool_added(void *data, struct zwp_tablet_seat_v2 
     struct SDL_WaylandTool *sdltool = SDL_calloc(1, sizeof(struct SDL_WaylandTool));
 
     zwp_tablet_tool_v2_add_listener(tool, &tablet_tool_listener, sdltool);
-    zwp_tablet_tool_v2_set_user_data(tool, sdltool);
 
-    sdltool->tablet = input;
-
-    tablet_object_list_append(input->tools, tool);
+    sdltool->tool = tool;
+    sdltool->tablet_input = input;
+    WAYLAND_wl_list_insert(&input->tools, &sdltool->node);
 }
 
 static void tablet_seat_handle_pad_added(void *data, struct zwp_tablet_seat_v2 *seat, struct zwp_tablet_pad_v2 *pad)
 {
     struct SDL_WaylandTabletInput *input = data;
+    struct SDL_WaylandPad *sdlpad = SDL_calloc(1, sizeof(struct SDL_WaylandPad));
 
-    tablet_object_list_append(input->pads, pad);
+    zwp_tablet_pad_v2_add_listener(pad, &tablet_pad_listener, sdlpad);
+    
+    sdlpad->pad = pad;
+    WAYLAND_wl_list_insert(&input->pads, &sdlpad->node);
 }
 
 static const struct zwp_tablet_seat_v2_listener tablet_seat_listener = {
@@ -2987,9 +3018,9 @@ void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_Wayland
     tablet_input->sdlWaylandInput = input;
     tablet_input->seat = zwp_tablet_manager_v2_get_tablet_seat((struct zwp_tablet_manager_v2 *)tablet_manager, input->seat);
 
-    tablet_input->tablets = tablet_object_list_new_node(NULL);
-    tablet_input->tools = tablet_object_list_new_node(NULL);
-    tablet_input->pads = tablet_object_list_new_node(NULL);
+    WAYLAND_wl_list_init(&tablet_input->tablets);
+    WAYLAND_wl_list_init(&tablet_input->tools);
+    WAYLAND_wl_list_init(&tablet_input->pads);
     tablet_input->id = num_tablets++;
 
     zwp_tablet_seat_v2_add_listener((struct zwp_tablet_seat_v2 *)tablet_input->seat, &tablet_seat_listener, tablet_input);
@@ -2998,9 +3029,21 @@ void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_Wayland
 #define TABLET_OBJECT_LIST_DELETER(fun) (void (*)(void *)) fun
 void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input)
 {
-    tablet_object_list_destroy(input->tablet->pads, TABLET_OBJECT_LIST_DELETER(zwp_tablet_pad_v2_destroy));
-    tablet_object_list_destroy(input->tablet->tools, TABLET_OBJECT_LIST_DELETER(Wayland_tool_destroy));
-    tablet_object_list_destroy(input->tablet->tablets, TABLET_OBJECT_LIST_DELETER(zwp_tablet_v2_destroy));
+    struct SDL_WaylandPad *pad, *pad_temp;
+    struct SDL_WaylandTool *tool, *tool_temp;
+    struct SDL_WaylandTablet *tablet, *tablet_temp;
+
+    wl_list_for_each_safe (pad, pad_temp, &input->tablet->pads, node) {
+        Wayland_pad_destroy(pad);
+    }
+
+    wl_list_for_each_safe (tool, tool_temp, &input->tablet->tools, node) {
+        Wayland_tool_destroy(tool);
+    }
+
+    wl_list_for_each_safe (tablet, tablet_temp, &input->tablet->tablets, node) {
+        Wayland_tablet_destroy(tablet);
+    }
 
     zwp_tablet_seat_v2_destroy(input->tablet->seat);
 
