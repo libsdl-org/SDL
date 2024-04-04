@@ -1131,6 +1131,7 @@ SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface, SDL_PropertiesID
         return NULL;
     }
     renderer->magic = &SDL_renderer_magic;
+    renderer->software = SDL_TRUE;
 
     data = (SW_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
@@ -1217,8 +1218,8 @@ static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
 
 SDL_RenderDriver SW_RenderDriver = {
     SW_CreateRenderer,
-    { "software",
-      (SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC),
+    { SDL_SOFTWARE_RENDERER,
+      SDL_RENDERER_PRESENTVSYNC,
       0,
       { /* formats filled in later */
         SDL_PIXELFORMAT_UNKNOWN },

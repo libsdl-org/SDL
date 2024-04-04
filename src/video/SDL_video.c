@@ -253,7 +253,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
         const SDL_bool specific_accelerated_renderer = (hint && *hint != '0' && *hint != '1' &&
                                                         SDL_strcasecmp(hint, "true") != 0 &&
                                                         SDL_strcasecmp(hint, "false") != 0 &&
-                                                        SDL_strcasecmp(hint, "software") != 0);
+                                                        SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) != 0);
 
         /* Check to see if there's a specific driver requested */
         if (specific_accelerated_renderer) {
@@ -264,19 +264,14 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
                 }
                 return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
             }
-            /* if it was specifically requested, even if SDL_RENDERER_ACCELERATED isn't set, we'll accept this renderer. */
         } else {
             const int total = SDL_GetNumRenderDrivers();
             for (i = 0; i < total; ++i) {
                 const char *name = SDL_GetRenderDriver(i);
-                if (name && (SDL_strcmp(name, "software") != 0)) {
+                if (name && (SDL_strcmp(name, SDL_SOFTWARE_RENDERER) != 0)) {
                     renderer = SDL_CreateRenderer(window, name, 0);
-                    if (renderer && (SDL_GetRendererInfo(renderer, &info) == 0) && (info.flags & SDL_RENDERER_ACCELERATED)) {
+                    if (renderer) {
                         break; /* this will work. */
-                    }
-                    if (renderer) { /* wasn't accelerated, etc, skip it. */
-                        SDL_DestroyRenderer(renderer);
-                        renderer = NULL;
                     }
                 }
             }
@@ -3049,7 +3044,7 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
         /* See if the user or application wants to specifically disable the framebuffer */
         const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
         if (hint) {
-            if ((*hint == '0') || (SDL_strcasecmp(hint, "false") == 0) || (SDL_strcasecmp(hint, "software") == 0)) {
+            if ((*hint == '0') || (SDL_strcasecmp(hint, "false") == 0) || (SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) == 0)) {
                 attempt_texture_framebuffer = SDL_FALSE;
             }
         }

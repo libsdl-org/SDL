@@ -62,15 +62,16 @@ extern "C" {
 #endif
 
 /**
+ * The name of the software renderer
+ */
+#define SDL_SOFTWARE_RENDERER   "software"
+
+/**
  * Flags used when creating a rendering context
  */
 typedef enum
 {
-    SDL_RENDERER_SOFTWARE = 0x00000001,         /**< The renderer is a software fallback */
-    SDL_RENDERER_ACCELERATED = 0x00000002,      /**< The renderer uses hardware
-                                                     acceleration */
-    SDL_RENDERER_PRESENTVSYNC = 0x00000004      /**< Present is synchronized
-                                                     with the refresh rate */
+    SDL_RENDERER_PRESENTVSYNC = 0x00000004  /**< Present is synchronized with the refresh rate */
 } SDL_RendererFlags;
 
 /**
@@ -203,10 +204,6 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, S
  * times, with indices from 0 to SDL_GetNumRenderDrivers()-1. If you don't
  * need a specific renderer, specify NULL and SDL will attempt to choose the
  * best option for you, based on what is available on the user's system.
- *
- * If you pass SDL_RENDERER_SOFTWARE in the flags, you will get a software
- * renderer, otherwise you will get a hardware accelerated renderer if
- * available.
  *
  * By default the rendering size matches the window size in pixels, but you
  * can call SDL_SetRenderLogicalPresentation() to change the content size and

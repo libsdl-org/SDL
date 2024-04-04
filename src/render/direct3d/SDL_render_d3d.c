@@ -1631,7 +1631,6 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->DestroyRenderer = D3D_DestroyRenderer;
     renderer->SetVSync = D3D_SetVSync;
     renderer->info = D3D_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     D3D_InvalidateCachedState(renderer);
 
@@ -1748,7 +1747,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
 SDL_RenderDriver D3D_RenderDriver = {
     D3D_CreateRenderer,
     { "direct3d",
-      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+      SDL_RENDERER_PRESENTVSYNC,
       1,
       { SDL_PIXELFORMAT_ARGB8888 },
       0,

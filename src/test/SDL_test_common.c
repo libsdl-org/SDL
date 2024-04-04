@@ -955,12 +955,6 @@ static void SDLTest_PrintButtonMask(char *text, size_t maxlen, Uint32 flags)
 static void SDLTest_PrintRendererFlag(char *text, size_t maxlen, Uint32 flag)
 {
     switch (flag) {
-    case SDL_RENDERER_SOFTWARE:
-        SDL_snprintfcat(text, maxlen, "Software");
-        break;
-    case SDL_RENDERER_ACCELERATED:
-        SDL_snprintfcat(text, maxlen, "Accelerated");
-        break;
     case SDL_RENDERER_PRESENTVSYNC:
         SDL_snprintfcat(text, maxlen, "PresentVSync");
         break;

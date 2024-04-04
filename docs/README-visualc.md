@@ -88,7 +88,7 @@ Here's a sample SDL snippet to verify everything is setup in your IDE:
 
         SDL_Init(SDL_INIT_VIDEO);
         window = SDL_CreateWindow("Hello SDL", WIDTH, HEIGHT, 0);
-        renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+        renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_PRESENTVSYNC);
 
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
