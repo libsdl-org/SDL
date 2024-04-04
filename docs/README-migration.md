@@ -1064,8 +1064,6 @@ which index is the "opengl" or whatnot driver, you can just pass that string dir
 here, now. Passing NULL is the same as passing -1 here in SDL2, to signify you want SDL
 to decide for you.
 
-The SDL_RENDERER_TARGETTEXTURE flag has been removed, all current renderers support target texture functionality.
-
 Mouse and touch events are no longer filtered to change their coordinates, instead you
 can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
 the rendering viewport.
@@ -1130,6 +1128,11 @@ The following symbols have been renamed:
 * SDL_ScaleModeBest => SDL_SCALEMODE_BEST
 * SDL_ScaleModeLinear => SDL_SCALEMODE_LINEAR
 * SDL_ScaleModeNearest => SDL_SCALEMODE_NEAREST
+
+The following symbols have been removed:
+* SDL_RENDERER_ACCELERATED - all renderers except `SDL_SOFTWARE_RENDERER` are accelerated
+* SDL_RENDERER_SOFTWARE - you can check whether the name of the renderer is `SDL_SOFTWARE_RENDERER`
+* SDL_RENDERER_TARGETTEXTURE - all renderers support target texture functionality
 
 ## SDL_rwops.h
 

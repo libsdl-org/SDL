@@ -704,7 +704,6 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
     renderer->DestroyRenderer = PS2_DestroyRenderer;
     renderer->SetVSync = PS2_SetVSync;
     renderer->info = PS2_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     PS2_InvalidateCachedState(renderer);
     renderer->window = window;
@@ -719,7 +718,7 @@ SDL_RenderDriver PS2_RenderDriver = {
     .CreateRenderer = PS2_CreateRenderer,
     .info = {
         .name = "PS2 gsKit",
-        .flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        .flags = SDL_RENDERER_PRESENTVSYNC,
         .num_texture_formats = 2,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_ABGR1555,

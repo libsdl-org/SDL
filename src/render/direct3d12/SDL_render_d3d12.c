@@ -3232,7 +3232,6 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     renderer->DestroyTexture = D3D12_DestroyTexture;
     renderer->DestroyRenderer = D3D12_DestroyRenderer;
     renderer->info = D3D12_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     D3D12_InvalidateCachedState(renderer);
 
@@ -3263,8 +3262,7 @@ SDL_RenderDriver D3D12_RenderDriver = {
     D3D12_CreateRenderer,
     {
         "direct3d12",
-        (SDL_RENDERER_ACCELERATED |
-         SDL_RENDERER_PRESENTVSYNC), /* flags.  see SDL_RendererFlags */
+        SDL_RENDERER_PRESENTVSYNC,   /* flags.  see SDL_RendererFlags */
         9,                           /* num_texture_formats */
         {                            /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,

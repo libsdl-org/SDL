@@ -4094,7 +4094,6 @@ SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_
     renderer->DestroyTexture = VULKAN_DestroyTexture;
     renderer->DestroyRenderer = VULKAN_DestroyRenderer;
     renderer->info = VULKAN_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = rendererData;
     VULKAN_InvalidateCachedState(renderer);
 
@@ -4135,8 +4134,7 @@ SDL_RenderDriver VULKAN_RenderDriver = {
     VULKAN_CreateRenderer,
     {
         "vulkan",
-        (SDL_RENDERER_ACCELERATED |
-         SDL_RENDERER_PRESENTVSYNC), /* flags.  see SDL_RendererFlags */
+        SDL_RENDERER_PRESENTVSYNC,   /* flags.  see SDL_RendererFlags */
         4,                           /* num_texture_formats */
         {                            /* texture_formats */
           SDL_PIXELFORMAT_ARGB8888,

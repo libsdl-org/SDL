@@ -2155,7 +2155,6 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
 
         renderer->info = METAL_RenderDriver.info;
-        renderer->info.flags = SDL_RENDERER_ACCELERATED;
 
 #if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
         if (@available(macOS 10.13, *)) {
@@ -2214,7 +2213,7 @@ SDL_RenderDriver METAL_RenderDriver = {
     METAL_CreateRenderer,
     {
         "metal",
-        (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        SDL_RENDERER_PRESENTVSYNC,
         10,
         { SDL_PIXELFORMAT_ARGB8888,
           SDL_PIXELFORMAT_ABGR8888,

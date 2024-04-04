@@ -1017,7 +1017,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     /* new textures start at zero, so we start at 1 so first render doesn't flush by accident. */
     renderer->render_command_generation = 1;
 
-    if (renderer->info.flags & SDL_RENDERER_SOFTWARE) {
+    if (renderer->software) {
         /* Software renderer always uses line method, for speed */
         renderer->line_method = SDL_RENDERLINEMETHOD_LINES;
     } else {
@@ -1085,11 +1085,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 fl
     SDL_Renderer *renderer;
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
-    if (flags & SDL_RENDERER_SOFTWARE) {
-        SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, "software");
-    } else {
-        SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, name);
-    }
+    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, name);
     if (flags & SDL_RENDERER_PRESENTVSYNC) {
         SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_TRUE);
     }
@@ -4250,7 +4246,7 @@ int SDL_RenderGeometryRawFloat(SDL_Renderer *renderer,
 
     /* For the software renderer, try to reinterpret triangles as SDL_Rect */
 #if SDL_VIDEO_RENDER_SW
-    if (renderer->info.flags & SDL_RENDERER_SOFTWARE) {
+    if (renderer->software) {
         return SDL_SW_RenderGeometryRaw(renderer, texture,
                                         xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
                                         indices, num_indices, size_indices);
@@ -4678,7 +4674,7 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
 
     /* for the software renderer, forward eventually the call to the WindowTexture renderer */
 #if SDL_VIDEO_RENDER_SW
-    if (renderer->info.flags & SDL_RENDERER_SOFTWARE) {
+    if (renderer->software) {
         if (SDL_SetWindowTextureVSync(renderer->window, vsync) == 0) {
             renderer->simulate_vsync = SDL_FALSE;
             return 0;

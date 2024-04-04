@@ -103,7 +103,7 @@ SDL_RenderDriver VITA_GXM_RenderDriver = {
     .CreateRenderer = VITA_GXM_CreateRenderer,
     .info = {
         .name = "VITA gxm",
-        .flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+        .flags = SDL_RENDERER_PRESENTVSYNC,
         .num_texture_formats = 8,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_ABGR8888,
@@ -261,7 +261,6 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID creat
     renderer->SetVSync = VITA_GXM_SetVSync;
 
     renderer->info = VITA_GXM_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     VITA_GXM_InvalidateCachedState(renderer);
     renderer->window = window;
