@@ -1037,6 +1037,9 @@ static SDL_bool LINUX_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_i
 static int LINUX_JoystickInit(void)
 {
     const char *devices = SDL_GetHint(SDL_HINT_JOYSTICK_DEVICE);
+#ifdef SDL_USE_LIBUDEV
+    int udev_status = SDL_UDEV_Init();
+#endif
 
     SDL_classic_joysticks = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_LINUX_CLASSIC, SDL_FALSE);
 
@@ -1087,7 +1090,7 @@ static int LINUX_JoystickInit(void)
     }
 
     if (enumeration_method == ENUMERATION_LIBUDEV) {
-        if (SDL_UDEV_Init() == 0) {
+        if (udev_status == 0) {
             /* Set up the udev callback */
             if (SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
                 SDL_UDEV_Quit();
