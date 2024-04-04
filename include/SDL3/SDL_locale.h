@@ -84,7 +84,8 @@ typedef struct SDL_Locale
  * preferred locales.
  *
  * \returns array of locales, terminated with a locale with a NULL language
- *          field. Will return NULL on error.
+ *          field. Will return NULL on error; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
