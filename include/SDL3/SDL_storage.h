@@ -271,8 +271,8 @@ extern DECLSPEC int SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage, con
  * Enumerate a directory in a storage container through a callback function.
  *
  * This function provides every directory entry through an app-provided
- * callback, called once for each directory entry, until all results have
- * been provided or the callback returns <= 0.
+ * callback, called once for each directory entry, until all results have been
+ * provided or the callback returns <= 0.
  *
  * \param storage a storage container
  * \param path the path of the directory to enumerate
@@ -366,16 +366,19 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *storage
  *
  * \param storage a storage container
  * \param path the path of the directory to enumerate
- * \param pattern the pattern that files in the directory must match. Can be NULL.
+ * \param pattern the pattern that files in the directory must match. Can be
+ *                NULL.
  * \param flags `SDL_GLOBDIR_*` bitflags that affect this search.
- * \param count on return, will be set to the number of items in the returned array. Can be NULL.
+ * \param count on return, will be set to the number of items in the returned
+ *              array. Can be NULL.
  * \returns an array of strings on success or NULL on failure; call
  *          SDL_GetError() for more information. The caller should pass the
  *          returned pointer to SDL_free when done with it.
  *
- * \since This function is available since SDL 3.0.0.
+ * \threadsafety It is safe to call this function from any thread, assuming
+ *               the `storage` object is thread-safe.
  *
- * \threadsafety It is safe to call this function from any thread, assuming the `storage` object is thread-safe.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC char **SDLCALL SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, Uint32 flags, int *count);
 

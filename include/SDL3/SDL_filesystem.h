@@ -275,8 +275,8 @@ typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char
  * Enumerate a directory through a callback function.
  *
  * This function provides every directory entry through an app-provided
- * callback, called once for each directory entry, until all results have
- * been provided or the callback returns <= 0.
+ * callback, called once for each directory entry, until all results have been
+ * provided or the callback returns <= 0.
  *
  * \param path the path of the directory to enumerate
  * \param callback a function that is called for each entry in the directory
@@ -347,16 +347,18 @@ extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info
  * You must free the returned pointer with SDL_free() when done with it.
  *
  * \param path the path of the directory to enumerate
- * \param pattern the pattern that files in the directory must match. Can be NULL.
+ * \param pattern the pattern that files in the directory must match. Can be
+ *                NULL.
  * \param flags `SDL_GLOBDIR_*` bitflags that affect this search.
- * \param count on return, will be set to the number of items in the returned array. Can be NULL.
+ * \param count on return, will be set to the number of items in the returned
+ *              array. Can be NULL.
  * \returns an array of strings on success or NULL on failure; call
  *          SDL_GetError() for more information. The caller should pass the
  *          returned pointer to SDL_free when done with it.
  *
- * \since This function is available since SDL 3.0.0.
- *
  * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, Uint32 flags, int *count);
 
