@@ -174,7 +174,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir)</Command>
+      <Command>$(ProjectDir)..\shaders\buildshaders.bat $(ProjectDir)..\</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox Series)</Message>
@@ -208,7 +208,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir) one</Command>
+      <Command>$(ProjectDir)..\shaders\buildshaders.bat $(ProjectDir)..\ one</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox One)</Message>
@@ -272,7 +272,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir)</Command>
+      <Command>$(ProjectDir)..\shaders\buildshaders.bat $(ProjectDir)..\</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox Series)</Message>
@@ -307,7 +307,7 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\shaders\buildshaders.bat $(SolutionDir) one</Command>
+      <Command>$(ProjectDir)..\shaders\buildshaders.bat $(ProjectDir)..\ one</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox One)</Message>
