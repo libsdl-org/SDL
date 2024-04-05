@@ -181,6 +181,24 @@ static void SDL_Convert_F32_to_S32_Scalar(Sint32 *dst, const float *src, int num
 
 #undef SIGNMASK
 
+static void SDL_Convert_Swap16_Scalar(Uint16* dst, const Uint16* src, int num_samples)
+{
+    int i;
+
+    for (i = 0; i < num_samples; ++i) {
+        dst[i] = SDL_Swap16(src[i]);
+    }
+}
+
+static void SDL_Convert_Swap32_Scalar(Uint32* dst, const Uint32* src, int num_samples)
+{
+    int i;
+
+    for (i = 0; i < num_samples; ++i) {
+        dst[i] = SDL_Swap32(src[i]);
+    }
+}
+
 // end fallback scalar converters
 
 // Convert forwards, when sizeof(*src) >= sizeof(*dst)
@@ -463,6 +481,51 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
 }
 #endif
 
+// FIXME: SDL doesn't have SSSE3 detection, so use the next one up
+#ifdef SDL_SSE4_1_INTRINSICS
+static void SDL_TARGETING("ssse3") SDL_Convert_Swap16_SSSE3(Uint16* dst, const Uint16* src, int num_samples)
+{
+    const __m128i shuffle = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
+
+    CONVERT_16_FWD({
+        dst[i] = SDL_Swap16(src[i]);
+    }, {
+        __m128i ints0 = _mm_loadu_si128((const __m128i*)&src[i]);
+        __m128i ints1 = _mm_loadu_si128((const __m128i*)&src[i + 8]);
+
+        ints0 = _mm_shuffle_epi8(ints0, shuffle);
+        ints1 = _mm_shuffle_epi8(ints1, shuffle);
+
+        _mm_store_si128((__m128i*)&dst[i], ints0);
+        _mm_store_si128((__m128i*)&dst[i + 8], ints1);
+    })
+}
+
+static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32* dst, const Uint32* src, int num_samples)
+{
+    const __m128i shuffle = _mm_set_epi8(12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3);
+
+    CONVERT_16_FWD({
+        dst[i] = SDL_Swap32(src[i]);
+    }, {
+        __m128i ints0 = _mm_loadu_si128((const __m128i*)&src[i]);
+        __m128i ints1 = _mm_loadu_si128((const __m128i*)&src[i + 4]);
+        __m128i ints2 = _mm_loadu_si128((const __m128i*)&src[i + 8]);
+        __m128i ints3 = _mm_loadu_si128((const __m128i*)&src[i + 12]);
+
+        ints0 = _mm_shuffle_epi8(ints0, shuffle);
+        ints1 = _mm_shuffle_epi8(ints1, shuffle);
+        ints2 = _mm_shuffle_epi8(ints2, shuffle);
+        ints3 = _mm_shuffle_epi8(ints3, shuffle);
+
+        _mm_store_si128((__m128i*)&dst[i], ints0);
+        _mm_store_si128((__m128i*)&dst[i + 4], ints1);
+        _mm_store_si128((__m128i*)&dst[i + 8], ints2);
+        _mm_store_si128((__m128i*)&dst[i + 12], ints3);
+    })
+}
+#endif
+
 #ifdef SDL_NEON_INTRINSICS
 static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_samples)
 {
@@ -666,17 +729,144 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
         vst1q_s32(&dst[i + 12], ints3);
     })
 }
+
+static void SDL_Convert_Swap16_NEON(Uint16* dst, const Uint16* src, int num_samples)
+{
+    CONVERT_16_FWD({
+        dst[i] = SDL_Swap16(src[i]);
+    }, {
+        uint8x16_t ints0 = vld1q_u8((const Uint8*)&src[i]);
+        uint8x16_t ints1 = vld1q_u8((const Uint8*)&src[i + 8]);
+
+        ints0 = vrev16q_u8(ints0);
+        ints1 = vrev16q_u8(ints1);
+
+        vst1q_u8((Uint8*)&dst[i], ints0);
+        vst1q_u8((Uint8*)&dst[i + 8], ints1);
+    })
+}
+
+static void SDL_Convert_Swap32_NEON(Uint32* dst, const Uint32* src, int num_samples)
+{
+    CONVERT_16_FWD({
+        dst[i] = SDL_Swap32(src[i]);
+    }, {
+        uint8x16_t ints0 = vld1q_u8((const Uint8*)&src[i]);
+        uint8x16_t ints1 = vld1q_u8((const Uint8*)&src[i + 4]);
+        uint8x16_t ints2 = vld1q_u8((const Uint8*)&src[i + 8]);
+        uint8x16_t ints3 = vld1q_u8((const Uint8*)&src[i + 12]);
+
+        ints0 = vrev32q_u8(ints0);
+        ints1 = vrev32q_u8(ints1);
+        ints2 = vrev32q_u8(ints2);
+        ints3 = vrev32q_u8(ints3);
+
+        vst1q_u8((Uint8*)&dst[i], ints0);
+        vst1q_u8((Uint8*)&dst[i + 4], ints1);
+        vst1q_u8((Uint8*)&dst[i + 8], ints2);
+        vst1q_u8((Uint8*)&dst[i + 12], ints3);
+    })
+}
 #endif
 
+#undef CONVERT_16_FWD
+#undef CONVERT_16_REV
+
 // Function pointers set to a CPU-specific implementation.
-void (*SDL_Convert_S8_to_F32)(float *dst, const Sint8 *src, int num_samples) = NULL;
-void (*SDL_Convert_U8_to_F32)(float *dst, const Uint8 *src, int num_samples) = NULL;
-void (*SDL_Convert_S16_to_F32)(float *dst, const Sint16 *src, int num_samples) = NULL;
-void (*SDL_Convert_S32_to_F32)(float *dst, const Sint32 *src, int num_samples) = NULL;
-void (*SDL_Convert_F32_to_S8)(Sint8 *dst, const float *src, int num_samples) = NULL;
-void (*SDL_Convert_F32_to_U8)(Uint8 *dst, const float *src, int num_samples) = NULL;
-void (*SDL_Convert_F32_to_S16)(Sint16 *dst, const float *src, int num_samples) = NULL;
-void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_samples) = NULL;
+static void (*SDL_Convert_S8_to_F32)(float *dst, const Sint8 *src, int num_samples) = NULL;
+static void (*SDL_Convert_U8_to_F32)(float *dst, const Uint8 *src, int num_samples) = NULL;
+static void (*SDL_Convert_S16_to_F32)(float *dst, const Sint16 *src, int num_samples) = NULL;
+static void (*SDL_Convert_S32_to_F32)(float *dst, const Sint32 *src, int num_samples) = NULL;
+static void (*SDL_Convert_F32_to_S8)(Sint8 *dst, const float *src, int num_samples) = NULL;
+static void (*SDL_Convert_F32_to_U8)(Uint8 *dst, const float *src, int num_samples) = NULL;
+static void (*SDL_Convert_F32_to_S16)(Sint16 *dst, const float *src, int num_samples) = NULL;
+static void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_samples) = NULL;
+
+static void (*SDL_Convert_Swap16)(Uint16* dst, const Uint16* src, int num_samples) = NULL;
+static void (*SDL_Convert_Swap32)(Uint32* dst, const Uint32* src, int num_samples) = NULL;
+
+void ConvertAudioToFloat(float *dst, const void *src, int num_samples, SDL_AudioFormat src_fmt)
+{
+    switch (src_fmt) {
+        case SDL_AUDIO_S8:
+            SDL_Convert_S8_to_F32(dst, (const Sint8 *) src, num_samples);
+            break;
+
+        case SDL_AUDIO_U8:
+            SDL_Convert_U8_to_F32(dst, (const Uint8 *) src, num_samples);
+            break;
+
+        case SDL_AUDIO_S16:
+            SDL_Convert_S16_to_F32(dst, (const Sint16 *) src, num_samples);
+            break;
+
+        case SDL_AUDIO_S16 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+            SDL_Convert_Swap16((Uint16*) dst, (const Uint16*) src, num_samples);
+            SDL_Convert_S16_to_F32(dst, (const Sint16 *) dst, num_samples);
+            break;
+
+        case SDL_AUDIO_S32:
+            SDL_Convert_S32_to_F32(dst, (const Sint32 *) src, num_samples);
+            break;
+
+        case SDL_AUDIO_S32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples);
+            SDL_Convert_S32_to_F32(dst, (const Sint32 *) dst, num_samples);
+            break;
+
+        case SDL_AUDIO_F32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples);
+            break;
+
+        default: SDL_assert(!"Unexpected audio format!"); break;
+    }
+}
+
+void ConvertAudioFromFloat(void *dst, const float *src, int num_samples, SDL_AudioFormat dst_fmt)
+{
+    switch (dst_fmt) {
+        case SDL_AUDIO_S8:
+            SDL_Convert_F32_to_S8((Sint8 *) dst, src, num_samples);
+            break;
+
+        case SDL_AUDIO_U8:
+            SDL_Convert_F32_to_U8((Uint8 *) dst, src, num_samples);
+            break;
+
+        case SDL_AUDIO_S16:
+            SDL_Convert_F32_to_S16((Sint16 *) dst, src, num_samples);
+            break;
+
+        case SDL_AUDIO_S16 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+            SDL_Convert_F32_to_S16((Sint16 *) dst, src, num_samples);
+            SDL_Convert_Swap16((Uint16*) dst, (const Uint16*) dst, num_samples);
+            break;
+
+        case SDL_AUDIO_S32:
+            SDL_Convert_F32_to_S32((Sint32 *) dst, src, num_samples);
+            break;
+
+        case SDL_AUDIO_S32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+            SDL_Convert_F32_to_S32((Sint32 *) dst, src, num_samples);
+            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) dst, num_samples);
+            break;
+
+        case SDL_AUDIO_F32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples);
+            break;
+
+        default: SDL_assert(!"Unexpected audio format!"); break;
+    }
+}
+
+void ConvertAudioSwapEndian(void* dst, const void* src, int num_samples, int bitsize)
+{
+    switch (bitsize) {
+        case 16: SDL_Convert_Swap16((Uint16*) dst, (const Uint16*) src, num_samples); break;
+        case 32: SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples); break;
+        default: SDL_assert(!"Unexpected audio format!"); break;
+    }
+}
 
 void SDL_ChooseAudioConverters(void)
 {
@@ -684,6 +874,26 @@ void SDL_ChooseAudioConverters(void)
     if (converters_chosen) {
         return;
     }
+
+#define SET_CONVERTER_FUNCS(fntype) \
+    SDL_Convert_Swap16 = SDL_Convert_Swap16_##fntype; \
+    SDL_Convert_Swap32 = SDL_Convert_Swap32_##fntype;
+
+#ifdef SDL_SSE4_1_INTRINSICS
+    if (SDL_HasSSE41()) {
+        SET_CONVERTER_FUNCS(SSSE3);
+    } else
+#endif
+#ifdef SDL_NEON_INTRINSICS
+    if (SDL_HasNEON()) {
+        SET_CONVERTER_FUNCS(NEON);
+    } else
+#endif
+    {
+        SET_CONVERTER_FUNCS(Scalar);
+    }
+
+#undef SET_CONVERTER_FUNCS
 
 #define SET_CONVERTER_FUNCS(fntype) \
     SDL_Convert_S8_to_F32 = SDL_Convert_S8_to_F32_##fntype; \
@@ -694,25 +904,22 @@ void SDL_ChooseAudioConverters(void)
     SDL_Convert_F32_to_U8 = SDL_Convert_F32_to_U8_##fntype; \
     SDL_Convert_F32_to_S16 = SDL_Convert_F32_to_S16_##fntype; \
     SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype; \
-    converters_chosen = SDL_TRUE
 
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
         SET_CONVERTER_FUNCS(SSE2);
-        return;
-    }
+    } else
 #endif
-
 #ifdef SDL_NEON_INTRINSICS
     if (SDL_HasNEON()) {
         SET_CONVERTER_FUNCS(NEON);
-        return;
-    }
+    } else
 #endif
-
-    SET_CONVERTER_FUNCS(Scalar);
+    {
+        SET_CONVERTER_FUNCS(Scalar);
+    }
 
 #undef SET_CONVERTER_FUNCS
 
-    SDL_assert(converters_chosen == SDL_TRUE);
+    converters_chosen = SDL_TRUE;
 }
