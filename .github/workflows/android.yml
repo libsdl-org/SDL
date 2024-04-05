@@ -68,7 +68,7 @@ jobs:
       - name: Build test apk's (CMake)
         if: ${{ contains(matrix.platform.name, 'CMake') }}
         run: |
-          cmake --build build --config Release --parallel --verbose --target testaudiocapture-apk testcontroller-apk testmultiaudio-apk testsprite-apk
+          cmake --build build --config Release --parallel --verbose --target testautomation-apk testaudiocapture-apk testcontroller-apk testmultiaudio-apk testsprite-apk
       - name: Install (CMake)
         if: ${{ contains(matrix.platform.name, 'CMake') }}
         run: |
