@@ -48,6 +48,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
                                    ext_suffix);
 
         if (!converted) {
+            SDL_free(combined);
             return NULL;
         }
 
@@ -68,6 +69,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
 
         SDL_strlcat(combined, converted, new_length);
         SDL_strlcat(combined, terminator, new_length);
+        SDL_free(converted);
     }
 
     return combined;
