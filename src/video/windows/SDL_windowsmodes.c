@@ -407,6 +407,8 @@ static SDL_bool WIN_GetMonitorPathInfo(HMONITOR hMonitor, DISPLAYCONFIG_PATH_INF
 
     do {
         if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &num_path_array_elements, &num_mode_info_array_elements) != ERROR_SUCCESS) {
+            SDL_free(path_infos);
+            SDL_free(mode_infos);
             return SDL_FALSE;
         }
 
