@@ -523,11 +523,53 @@ my %only_wiki_sections = (  # The ones don't mean anything, I just need to check
 
 
 my %headers = ();       # $headers{"SDL_audio.h"} -> reference to an array of all lines of text in SDL_audio.h.
-my %headerfuncs = ();   # $headerfuncs{"SDL_OpenAudio"} -> string of header documentation for SDL_OpenAudio, with comment '*' bits stripped from the start. Newlines embedded!
+my %headersyms = ();   # $headersyms{"SDL_OpenAudio"} -> string of header documentation for SDL_OpenAudio, with comment '*' bits stripped from the start. Newlines embedded!
 my %headerdecls = ();
-my %headerfuncslocation = ();   # $headerfuncslocation{"SDL_OpenAudio"} -> name of header holding SDL_OpenAudio define ("SDL_audio.h" in this case).
-my %headerfuncschunk = ();   # $headerfuncschunk{"SDL_OpenAudio"} -> offset in array in %headers that should be replaced for this function.
-my %headerfuncshasdoxygen = ();   # $headerfuncschunk{"SDL_OpenAudio"} -> 1 if there was no existing doxygen for this function.
+my %headersymslocation = ();   # $headersymslocation{"SDL_OpenAudio"} -> name of header holding SDL_OpenAudio define ("SDL_audio.h" in this case).
+my %headersymschunk = ();   # $headersymschunk{"SDL_OpenAudio"} -> offset in array in %headers that should be replaced for this symbol.
+my %headersymshasdoxygen = ();   # $headersymshasdoxygen{"SDL_OpenAudio"} -> 1 if there was no existing doxygen for this function.
+my %headersymstype = ();   # $headersymstype{"SDL_OpenAudio"} -> 1 (function), 2 (macro), 3 (struct), 4 (enum)
+
+my %wikitypes = ();  # contains string of wiki page extension, like $wikitypes{"SDL_OpenAudio"} == 'mediawiki'
+my %wikisyms = ();  # contains references to hash of strings, each string being the full contents of a section of a wiki page, like $wikisyms{"SDL_OpenAudio"}{"Remarks"}.
+my %wikisectionorder = ();   # contains references to array, each array item being a key to a wikipage section in the correct order, like $wikisectionorder{"SDL_OpenAudio"}[2] == 'Remarks'
+
+sub print_undocumented_section {
+    my $fh = shift;
+    my $typestr = shift;
+    my $typeval = shift;
+
+    print $fh "## $typestr defined in the headers, but not in the wiki\n\n";
+    my $header_only_sym = 0;
+    foreach (sort keys %headersyms) {
+        my $sym = $_;
+        if ((not defined $wikisyms{$sym}) && ($headersymstype{$sym} == $typeval)) {
+            print $fh "- [$sym]($sym)\n";
+            $header_only_sym = 1;
+        }
+    }
+    if (!$header_only_sym) {
+        print $fh "(none)\n";
+    }
+    print $fh "\n";
+
+    if (0) {  # !!! FIXME: this lists things that _shouldn't_ be in the headers, like MigrationGuide, etc, but also we don't know if they're functions, macros, etc at this point (can we parse that from the wiki page, though?)
+    print $fh "## $typestr defined in the wiki, but not in the headers\n\n";
+
+    my $wiki_only_sym = 0;
+    foreach (sort keys %wikisyms) {
+        my $sym = $_;
+        if ((not defined $headersyms{$sym}) && ($headersymstype{$sym} == $typeval)) {
+            print $fh "- [$sym]($sym)\n";
+            $wiki_only_sym = 1;
+        }
+    }
+    if (!$wiki_only_sym) {
+        print $fh "(none)\n";
+    }
+    print $fh "\n";
+    }
+}
 
 my $incpath = "$srcpath";
 $incpath .= "/$incsubdir" if $incsubdir ne '';
@@ -548,11 +590,17 @@ while (my $d = readdir(DH)) {
 
     while (<FH>) {
         chomp;
+        my $symtype = 0;  # nothing, yet.
         my $decl;
         my @templines;
         my $str;
         my $has_doxygen = 1;
+
+        # Since a lot of macros are just preprocessor logic spam and not all macros are worth documenting anyhow, we only pay attention to them when they have a Doxygen comment attached.
+        # Functions and other things are a different story, though!
+
         if (/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {  # a function declaration without a doxygen comment?
+            $symtype = 1;   # function declaration
             @templines = ();
             $decl = $_;
             $str = '';
@@ -588,7 +636,11 @@ while (my $d = readdir(DH)) {
             $decl = <FH>;
             $decl = '' if not defined $decl;
             chomp($decl);
-            if (not $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {
+            if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {
+                $symtype = 1;   # function declaration
+            } elsif ($decl =~ /\A\s*\#\s*define\s+/) {
+                $symtype = 2;   # macro
+            } else {
                 #print "Found doxygen but no function sig:\n$str\n\n";
                 foreach (@templines) {
                     push @contents, $_;
@@ -599,76 +651,106 @@ while (my $d = readdir(DH)) {
         }
 
         my @decllines = ( $decl );
+        my $sym = '';
 
-        if (not $decl =~ /\)\s*;/) {
-            while (<FH>) {
-                chomp;
-                push @decllines, $_;
-                s/\A\s+//;
-                s/\s+\Z//;
-                $decl .= " $_";
-                last if /\)\s*;/;
+        if ($symtype == 1) {  # a function
+            if (not $decl =~ /\)\s*;/) {
+                while (<FH>) {
+                    chomp;
+                    push @decllines, $_;
+                    s/\A\s+//;
+                    s/\s+\Z//;
+                    $decl .= " $_";
+                    last if /\)\s*;/;
+                }
             }
+
+            $decl =~ s/\s+\);\Z/);/;
+            $decl =~ s/\s+\Z//;
+
+            if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
+                $sym = $6;
+                #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
+            } else {
+                #print "Found doxygen but no function sig:\n$str\n\n";
+                foreach (@templines) {
+                    push @contents, $_;
+                }
+                foreach (@decllines) {
+                    push @contents, $_;
+                }
+                next;
+            }
+
+            $decl = '';  # build this with the line breaks, since it looks better for syntax highlighting.
+            foreach (@decllines) {
+                if ($decl eq '') {
+                    $decl = $_;
+                    $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$2$3 /;
+                } else {
+                    my $trimmed = $_;
+                    # !!! FIXME: trim space for SDL_DEPRECATED if it was used, too.
+                    $trimmed =~ s/\A\s{24}//;  # 24 for shrinking to match the removed "extern DECLSPEC SDLCALL "
+                    $decl .= $trimmed;
+                }
+                $decl .= "\n";
+            }
+        } elsif ($symtype == 2) {  # a macro
+            if ($decl =~ /\A\s*\#\s*define\s+(.*?)(\(.*?\)|)\s+/) {
+                $sym = $1;
+                #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
+            } else {
+                #print "Found doxygen but no macro:\n$str\n\n";
+                foreach (@templines) {
+                    push @contents, $_;
+                }
+                foreach (@decllines) {
+                    push @contents, $_;
+                }
+                next;
+            }
+
+            while ($decl =~ /\\\Z/) {
+                my $l = <FH>;
+                last if not $l;
+                chomp($l);
+                push @decllines, $l;
+                #$l =~ s/\A\s+//;
+                $l =~ s/\s+\Z//;
+                $decl .= "\n$l";
+            }
+        } else {
+            die("Unexpected symtype $symtype\n");
         }
 
-        $decl =~ s/\s+\);\Z/);/;
-        $decl =~ s/\s+\Z//;
         #print("DECL: [$decl]\n");
 
-        my $fn = '';
-        if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
-            $fn = $6;
-            #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
-        } else {
-            #print "Found doxygen but no function sig:\n$str\n\n";
-            foreach (@templines) {
-                push @contents, $_;
-            }
-            foreach (@decllines) {
-                push @contents, $_;
-            }
-            next;
-        }
-
-        $decl = '';  # build this with the line breaks, since it looks better for syntax highlighting.
-        foreach (@decllines) {
-            if ($decl eq '') {
-                $decl = $_;
-                $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$2$3 /;
-            } else {
-                my $trimmed = $_;
-                # !!! FIXME: trim space for SDL_DEPRECATED if it was used, too.
-                $trimmed =~ s/\A\s{24}//;  # 24 for shrinking to match the removed "extern DECLSPEC SDLCALL "
-                $decl .= $trimmed;
-            }
-            $decl .= "\n";
-        }
-
-        #print("$fn:\n$str\n\n");
+        #print("$sym:\n$str\n\n");
 
         # There might be multiple declarations of a function due to #ifdefs,
         #  and only one of them will have documentation. If we hit an
         #  undocumented one before, delete the placeholder line we left for
         #  it so it doesn't accumulate a new blank line on each run.
-        my $skipfn = 0;
-        if (defined $headerfuncshasdoxygen{$fn}) {
-            if ($headerfuncshasdoxygen{$fn} == 0) {  # An undocumented declaration already exists, nuke its placeholder line.
-                delete $contents[$headerfuncschunk{$fn}];  # delete DOES NOT RENUMBER existing elements!
+        my $skipsym = 0;
+        if (defined $headersymshasdoxygen{$sym}) {
+            if ($headersymshasdoxygen{$sym} == 0) {  # An undocumented declaration already exists, nuke its placeholder line.
+                delete $contents[$headersymschunk{$sym}];  # delete DOES NOT RENUMBER existing elements!
             } else {  # documented function already existed?
-                $skipfn = 1;  # don't add this copy to the list of functions.
+                $skipsym = 1;  # don't add this copy to the list of functions.
                 if ($has_doxygen) {
-                    print STDERR "WARNING: Function '$fn' appears to be documented in multiple locations. Only keeping the first one we saw!\n";
+                    print STDERR "WARNING: Symbol '$sym' appears to be documented in multiple locations. Only keeping the first one we saw!\n";
                 }
                 push @contents, join("\n", @decllines);  # just put the existing declation in as-is.
             }
         }
 
-        if (!$skipfn) {
-            $headerfuncs{$fn} = $str;
-            $headerdecls{$fn} = $decl;
-            $headerfuncslocation{$fn} = $dent;
-            $headerfuncschunk{$fn} = scalar(@contents);
-            $headerfuncshasdoxygen{$fn} = $has_doxygen;
+        if (!$skipsym) {
+            $headersyms{$sym} = $str;
+            $headerdecls{$sym} = $decl;
+            $headersymslocation{$sym} = $dent;
+            $headersymschunk{$sym} = scalar(@contents);
+            $headersymshasdoxygen{$sym} = $has_doxygen;
+            $headersymstype{$sym} = $symtype;
             push @contents, join("\n", @templines);
             push @contents, join("\n", @decllines);
         }
@@ -684,9 +766,6 @@ closedir(DH);
 # !!! FIXME: we need to parse enums and typedefs and structs and defines and and and and and...
 # !!! FIXME:  (but functions are good enough for now.)
 
-my %wikitypes = ();  # contains string of wiki page extension, like $wikitypes{"SDL_OpenAudio"} == 'mediawiki'
-my %wikifuncs = ();  # contains references to hash of strings, each string being the full contents of a section of a wiki page, like $wikifuncs{"SDL_OpenAudio"}{"Remarks"}.
-my %wikisectionorder = ();   # contains references to array, each array item being a key to a wikipage section in the correct order, like $wikisectionorder{"SDL_OpenAudio"}[2] == 'Remarks'
 opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
 while (my $d = readdir(DH)) {
     my $dent = $d;
@@ -697,14 +776,14 @@ while (my $d = readdir(DH)) {
         next;  # only dealing with wiki pages.
     }
 
-    my $fn = $dent;
-    $fn =~ s/\..*\Z//;
+    my $sym = $dent;
+    $sym =~ s/\..*\Z//;
 
     # Ignore FrontPage.
-    next if $fn eq 'FrontPage';
+    next if $sym eq 'FrontPage';
 
     # Ignore "Category*" pages.
-    next if ($fn =~ /\ACategory/);
+    next if ($sym =~ /\ACategory/);
 
     open(FH, '<', "$wikipath/$dent") or die("Can't open '$wikipath/$dent': $!\n");
 
@@ -727,13 +806,13 @@ while (my $d = readdir(DH)) {
                 next;
             } elsif (/\A\= (.*?) \=\Z/) {
                 $firstline = 0;
-                $current_section = ($1 eq $fn) ? '[Brief]' : $1;
+                $current_section = ($1 eq $sym) ? '[Brief]' : $1;
                 die("Doubly-defined section '$current_section' in '$dent'!\n") if defined $sections{$current_section};
                 push @section_order, $current_section;
                 $sections{$current_section} = '';
             } elsif (/\A\=\= (.*?) \=\=\Z/) {
                 $firstline = 0;
-                $current_section = ($1 eq $fn) ? '[Brief]' : $1;
+                $current_section = ($1 eq $sym) ? '[Brief]' : $1;
                 die("Doubly-defined section '$current_section' in '$dent'!\n") if defined $sections{$current_section};
                 push @section_order, $current_section;
                 $sections{$current_section} = '';
@@ -752,7 +831,7 @@ while (my $d = readdir(DH)) {
                 next;
             } elsif (/\A\#+ (.*?)\Z/) {
                 $firstline = 0;
-                $current_section = ($1 eq $fn) ? '[Brief]' : $1;
+                $current_section = ($1 eq $sym) ? '[Brief]' : $1;
                 die("Doubly-defined section '$current_section' in '$dent'!\n") if defined $sections{$current_section};
                 push @section_order, $current_section;
                 $sections{$current_section} = '';
@@ -786,70 +865,43 @@ while (my $d = readdir(DH)) {
 
     if (0) {
         foreach (@section_order) {
-            print("$fn SECTION '$_':\n");
+            print("$sym SECTION '$_':\n");
             print($sections{$_});
             print("\n\n");
         }
     }
 
-    $wikitypes{$fn} = $type;
-    $wikifuncs{$fn} = \%sections;
-    $wikisectionorder{$fn} = \@section_order;
+    $wikitypes{$sym} = $type;
+    $wikisyms{$sym} = \%sections;
+    $wikisectionorder{$sym} = \@section_order;
 }
 closedir(DH);
 
-delete $wikifuncs{"Undocumented"};
+delete $wikisyms{"Undocumented"};
 
 {
     my $path = "$wikipath/Undocumented.md";
-    open(FH, '>', $path) or die("Can't open '$path': $!\n");
+    open(my $fh, '>', $path) or die("Can't open '$path': $!\n");
 
-    print FH "# Undocumented\n\n";
+    print $fh "# Undocumented\n\n";
+    print_undocumented_section($fh, 'Functions', 1);
+    print_undocumented_section($fh, 'Macros', 2);
 
-    print FH "## Functions defined in the headers, but not in the wiki\n\n";
-    my $header_only_func = 0;
-    foreach (sort keys %headerfuncs) {
-        my $fn = $_;
-        if (not defined $wikifuncs{$fn}) {
-            print FH "- [$fn]($fn)\n";
-            $header_only_func = 1;
-        }
-    }
-    if (!$header_only_func) {
-        print FH "(none)\n";
-    }
-    print FH "\n";
-
-    print FH "## Functions defined in the wiki, but not in the headers\n\n";
-
-    my $wiki_only_func = 0;
-    foreach (sort keys %wikifuncs) {
-        my $fn = $_;
-        if (not defined $headerfuncs{$fn}) {
-            print FH "- [$fn]($fn)\n";
-            $wiki_only_func = 1;
-        }
-    }
-    if (!$wiki_only_func) {
-        print FH "(none)\n";
-    }
-    print FH "\n";
-
-    close(FH);
+    close($fh);
 }
 
 if ($warn_about_missing) {
-    foreach (keys %wikifuncs) {
-        my $fn = $_;
-        if (not defined $headerfuncs{$fn}) {
-            print("WARNING: $fn defined in the wiki but not the headers!\n");
+    foreach (keys %wikisyms) {
+        my $sym = $_;
+        if (not defined $headersyms{$sym}) {
+            print("WARNING: $sym defined in the wiki but not the headers!\n");
         }
     }
 
-    foreach (keys %headerfuncs) {
-        my $fn = $_;
-        if (not defined $wikifuncs{$fn}) {
-            print("WARNING: $fn defined in the headers but not the wiki!\n");
+    foreach (keys %headersyms) {
+        my $sym = $_;
+        if (not defined $wikisyms{$sym}) {
+            print("WARNING: $sym defined in the headers but not the wiki!\n");
         }
     }
 }
@@ -860,11 +912,11 @@ if ($copy_direction == 1) {  # --copy-to-headers
     $dewikify_mode = 'md';
     $wordwrap_mode = 'md';   # the headers use Markdown format.
 
-    foreach (keys %headerfuncs) {
-        my $fn = $_;
-        next if not defined $wikifuncs{$fn};  # don't have a page for that function, skip it.
-        my $wikitype = $wikitypes{$fn};
-        my $sectionsref = $wikifuncs{$fn};
+    foreach (keys %headersyms) {
+        my $sym = $_;
+        next if not defined $wikisyms{$sym};  # don't have a page for that function, skip it.
+        my $wikitype = $wikitypes{$sym};
+        my $sectionsref = $wikisyms{$sym};
         my $remarks = $sectionsref->{'Remarks'};
         my $params = $sectionsref->{'Function Parameters'};
         my $returns = $sectionsref->{'Return Value'};
@@ -876,7 +928,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $addblank = 0;
         my $str = '';
 
-        $headerfuncshasdoxygen{$fn} = 1;  # Added/changed doxygen for this header.
+        $headersymshasdoxygen{$sym} = 1;  # Added/changed doxygen for this header.
 
         $brief = dewikify($wikitype, $brief);
         $brief =~ s/\A(.*?\.) /$1\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.
@@ -926,7 +978,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     $name =~ s/\A\*\*(.*?)\*\*/$1/;
                     $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
                     $desc =~ s/\A\|\s*//;
-                    #print STDERR "FN: $fn   NAME: $name   DESC: $desc TERM: $terminator\n";
+                    #print STDERR "SYM: $sym   NAME: $name   DESC: $desc TERM: $terminator\n";
                     my $whitespacelen = length($name) + 8;
                     my $whitespace = ' ' x $whitespacelen;
                     $desc = wordwrap($desc, -$whitespacelen);
@@ -950,7 +1002,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                         my $desc = $2;
                         $name =~ s/\A\*\*(.*?)\*\*/$1/;
                         $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
-                        #print STDERR "FN: $fn   NAME: $name   DESC: $desc\n";
+                        #print STDERR "SYM: $sym   NAME: $name   DESC: $desc\n";
                         my $whitespacelen = length($name) + 8;
                         my $whitespace = ' ' x $whitespacelen;
                         $desc = wordwrap($desc, -$whitespacelen);
@@ -1033,9 +1085,9 @@ if ($copy_direction == 1) {  # --copy-to-headers
             }
         }
 
-        my $header = $headerfuncslocation{$fn};
+        my $header = $headersymslocation{$sym};
         my $contentsref = $headers{$header};
-        my $chunk = $headerfuncschunk{$fn};
+        my $chunk = $headersymschunk{$sym};
 
         my @lines = split /\n/, $str;
 
@@ -1053,10 +1105,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
         }
         $output .= " */";
 
-        #print("$fn:\n$output\n\n");
+        #print("$sym:\n$output\n\n");
 
         $$contentsref[$chunk] = $output;
-        #$$contentsref[$chunk+1] = $headerdecls{$fn};
+        #$$contentsref[$chunk+1] = $headerdecls{$sym};
 
         $changed_headers{$header} = 1;
     }
@@ -1066,12 +1118,12 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         # this is kinda inefficient, but oh well.
         my @removelines = ();
-        foreach (keys %headerfuncslocation) {
-            my $fn = $_;
-            next if $headerfuncshasdoxygen{$fn};
-            next if $headerfuncslocation{$fn} ne $header;
+        foreach (keys %headersymslocation) {
+            my $sym = $_;
+            next if $headersymshasdoxygen{$sym};
+            next if $headersymslocation{$sym} ne $header;
             # the index of the blank line we put before the function declaration in case we needed to replace it with new content from the wiki.
-            push @removelines, $headerfuncschunk{$fn};
+            push @removelines, $headersymschunk{$sym};
         }
 
         my $contentsref = $headers{$header};
@@ -1109,18 +1161,19 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $wordwrap_mode = $changeformat;
     }
 
-    foreach (keys %headerfuncs) {
-        my $fn = $_;
-        next if not $headerfuncshasdoxygen{$fn};
-        my $origwikitype = defined $wikitypes{$fn} ? $wikitypes{$fn} : 'md';  # default to MarkDown for new stuff.
+    foreach (keys %headersyms) {
+        my $sym = $_;
+        next if not $headersymshasdoxygen{$sym};
+        my $symtype = $headersymstype{$sym};
+        my $origwikitype = defined $wikitypes{$sym} ? $wikitypes{$sym} : 'md';  # default to MarkDown for new stuff.
         my $wikitype = (defined $changeformat) ? $changeformat : $origwikitype;
         die("Unexpected wikitype '$wikitype'\n") if (($wikitype ne 'mediawiki') and ($wikitype ne 'md') and ($wikitype ne 'manpage'));
 
-        #print("$fn\n"); next;
+        #print("$sym\n"); next;
 
         $wordwrap_mode = $wikitype;
 
-        my $raw = $headerfuncs{$fn};  # raw doxygen text with comment characters stripped from start/end and start of each line.
+        my $raw = $headersyms{$sym};  # raw doxygen text with comment characters stripped from start/end and start of each line.
         next if not defined $raw;
         $raw =~ s/\A\s*\\brief\s+//;  # Technically we don't need \brief (please turn on JAVADOC_AUTOBRIEF if you use Doxygen), so just in case one is present, strip it.
 
@@ -1138,6 +1191,9 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         $brief =~ s/\A(.*?\.) /$1\n\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.
         my @briefsplit = split /\n/, $brief;
+
+        next if not defined $briefsplit[0];  # No brief text? Probably a bogus Doxygen comment, skip it.
+
         $brief = wikify($wikitype, shift @briefsplit) . "\n";
         @doxygenlines = (@briefsplit, @doxygenlines);
 
@@ -1165,7 +1221,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $remarks =~ s/\A\s*//;
         $remarks =~ s/\s*\Z//;
 
-        my $decl = $headerdecls{$fn};
+        my $decl = $headerdecls{$sym};
         #$decl =~ s/\*\s+SDLCALL/ *SDLCALL/;  # Try to make "void * Function" become "void *Function"
         #$decl =~ s/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL/$2$3/;
 
@@ -1279,7 +1335,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         }
 
         my $hfiletext = $wikiheaderfiletext;
-        $hfiletext =~ s/\%fname\%/$headerfuncslocation{$fn}/g;
+        $hfiletext =~ s/\%fname\%/$headersymslocation{$sym}/g;
         $sections{'Header File'} = "$hfiletext\n";
 
         # Make sure this ends with a double-newline.
@@ -1331,7 +1387,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $path = "$wikipath/$_.${wikitype}.tmp";
         open(FH, '>', $path) or die("Can't open '$path': $!\n");
 
-        my $sectionsref = $wikifuncs{$fn};
+        my $sectionsref = $wikisyms{$sym};
 
         foreach (@standard_wiki_sections) {
             # drop sections we either replaced or removed from the original wiki's contents.
@@ -1340,7 +1396,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             }
         }
 
-        my $wikisectionorderref = $wikisectionorder{$fn};
+        my $wikisectionorderref = $wikisectionorder{$sym};
 
         # Make sure there's a footer in the wiki that puts this function in CategoryAPI...
         if (not $$sectionsref{'[footer]'}) {
@@ -1364,15 +1420,25 @@ if ($copy_direction == 1) {  # --copy-to-headers
             }
         }
 
-        # !!! FIXME: This won't be CategoryAPI if we eventually handle things other than functions.
         my $footer = $$sectionsref{'[footer]'};
+
+        my $symtypename;
+        if ($symtype == 1) {
+            $symtypename = 'Function';
+        } elsif ($symtype == 2) {
+            $symtypename = 'Macro';
+        } else {
+            die("Unexpected symbol type $symtype!\n");
+        }
 
         if ($wikitype eq 'mediawiki') {
             $footer =~ s/\[\[CategoryAPI\]\],?\s*//g;
-            $footer = '[[CategoryAPI]]' . (($footer eq '') ? "\n" : ", $footer");
+            $footer =~ s/\[\[CategoryAPI${symtypename}\]\],?\s*//g;
+            $footer = "[[CategoryAPI]], [[CategoryAPI$symtypename]]" . (($footer eq '') ? "\n" : ", $footer");
         } elsif ($wikitype eq 'md') {
             $footer =~ s/\[CategoryAPI\]\(CategoryAPI\),?\s*//g;
-            $footer = '[CategoryAPI](CategoryAPI)' . (($footer eq '') ? '' : ', ') . $footer;
+            $footer =~ s/\[CategoryAPI${symtypename}\]\(CategoryAPI${symtypename}\),?\s*//g;
+            $footer = "[CategoryAPI](CategoryAPI), [CategoryAPI$symtypename](CategoryAPI$symtypename)" . (($footer eq '') ? '' : ', ') . $footer;
         } else { die("Unexpected wikitype '$wikitype'\n"); }
         $$sectionsref{'[footer]'} = $footer;
 
@@ -1402,9 +1468,9 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 print FH "----\n";   # It's the same in Markdown and MediaWiki.
             } elsif ($sect eq '[Brief]') {
                 if ($wikitype eq 'mediawiki') {
-                    print FH  "= $fn =\n\n";
+                    print FH  "= $sym =\n\n";
                 } elsif ($wikitype eq 'md') {
-                    print FH "# $fn\n\n";
+                    print FH "# $sym\n\n";
                 } else { die("Unexpected wikitype '$wikitype'\n"); }
             } else {
                 if ($wikitype eq 'mediawiki') {
@@ -1513,11 +1579,11 @@ if ($copy_direction == 1) {  # --copy-to-headers
     close(FH);
     my $fullversion = "$majorver.$minorver.$patchver";
 
-    foreach (keys %headerfuncs) {
-        my $fn = $_;
-        next if not defined $wikifuncs{$fn};  # don't have a page for that function, skip it.
-        my $wikitype = $wikitypes{$fn};
-        my $sectionsref = $wikifuncs{$fn};
+    foreach (keys %headersyms) {
+        my $sym = $_;
+        next if not defined $wikisyms{$sym};  # don't have a page for that function, skip it.
+        my $wikitype = $wikitypes{$sym};
+        my $sectionsref = $wikisyms{$sym};
         my $remarks = $sectionsref->{'Remarks'};
         my $params = $sectionsref->{'Function Parameters'};
         my $returns = $sectionsref->{'Return Value'};
@@ -1527,11 +1593,11 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $examples = $sectionsref->{'Code Examples'};
         my $deprecated = $sectionsref->{'Deprecated'};
         my $headerfile = $manpageheaderfiletext;
-        $headerfile =~ s/\%fname\%/$headerfuncslocation{$fn}/g;
+        $headerfile =~ s/\%fname\%/$headersymslocation{$sym}/g;
         $headerfile .= "\n";
 
         my $brief = $sectionsref->{'[Brief]'};
-        my $decl = $headerdecls{$fn};
+        my $decl = $headerdecls{$sym};
         my $str = '';
 
         $brief = "$brief";
@@ -1551,14 +1617,14 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= ".\\\" This manpage content is licensed under Creative Commons\n";
         $str .= ".\\\"  Attribution 4.0 International (CC BY 4.0)\n";
         $str .= ".\\\"   https://creativecommons.org/licenses/by/4.0/\n";
-        $str .= ".\\\" This manpage was generated from ${projectshortname}'s wiki page for $fn:\n";
-        $str .= ".\\\"   $wikiurl/$fn\n";
+        $str .= ".\\\" This manpage was generated from ${projectshortname}'s wiki page for $sym:\n";
+        $str .= ".\\\"   $wikiurl/$sym\n";
         $str .= ".\\\" Generated with SDL/build-scripts/wikiheaders.pl\n";
         $str .= ".\\\"  revision $gitrev\n" if $gitrev ne '';
         $str .= ".\\\" Please report issues in this manpage's content at:\n";
         $str .= ".\\\"   $bugreporturl\n";
         $str .= ".\\\" Please report issues in the generation of this manpage from the wiki at:\n";
-        $str .= ".\\\"   https://github.com/libsdl-org/SDL/issues/new?title=Misgenerated%20manpage%20for%20$fn\n";
+        $str .= ".\\\"   https://github.com/libsdl-org/SDL/issues/new?title=Misgenerated%20manpage%20for%20$sym\n";
         $str .= ".\\\" $projectshortname can be found at $projecturl\n";
 
         # Define a .URL macro. The "www.tmac" thing decides if we're using GNU roff (which has a .URL macro already), and if so, overrides the macro we just created.
@@ -1568,10 +1634,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= "..\n";
         $str .= '.if \n[.g] .mso www.tmac' . "\n";
 
-        $str .= ".TH $fn 3 \"$projectshortname $fullversion\" \"$projectfullname\" \"$projectshortname$majorver FUNCTIONS\"\n";
+        $str .= ".TH $sym 3 \"$projectshortname $fullversion\" \"$projectfullname\" \"$projectshortname$majorver FUNCTIONS\"\n";
         $str .= ".SH NAME\n";
 
-        $str .= "$fn";
+        $str .= "$sym";
         $str .= " \\- $brief" if (defined $brief);
         $str .= "\n";
 
@@ -1616,7 +1682,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
                     $desc =~ s/\A\|\s*//;
                     $desc = dewikify($wikitype, $desc);
-                    #print STDERR "FN: $fn   NAME: $name   DESC: $desc TERM: $terminator\n";
+                    #print STDERR "FN: $sym   NAME: $name   DESC: $desc TERM: $terminator\n";
 
                     $str .= ".TP\n";
                     $str .= ".I $name\n";
@@ -1703,7 +1769,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= ".UE\n";
         $str .= ".PP\n";
         $str .= "This manpage was generated from\n";
-        $str .= ".UR $wikiurl/$fn\n";
+        $str .= ".UR $wikiurl/$sym\n";
         $str .= "${projectshortname}'s wiki\n";
         $str .= ".UE\n";
         $str .= "using SDL/build-scripts/wikiheaders.pl";
