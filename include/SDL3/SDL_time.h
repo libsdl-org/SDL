@@ -58,30 +58,30 @@ typedef struct SDL_DateTime
  *
  * \sa SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER
  */
-typedef enum SDL_DATE_FORMAT
+typedef enum SDL_DateFormat
 {
     SDL_DATE_FORMAT_YYYYMMDD = 0, /**< Year/Month/Day */
     SDL_DATE_FORMAT_DDMMYYYY = 1, /**< Day/Month/Year */
     SDL_DATE_FORMAT_MMDDYYYY = 2, /**< Month/Day/Year */
-} SDL_DATE_FORMAT;
+} SDL_DateFormat;
 
 /**
  * The preferred time format of the current system locale.
  *
  * \sa SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER
  */
-typedef enum SDL_TIME_FORMAT
+typedef enum SDL_TimeFormat
 {
     SDL_TIME_FORMAT_24HR = 0, /**< 24 hour time */
     SDL_TIME_FORMAT_12HR = 1, /**< 12 hour time */
-} SDL_TIME_FORMAT;
+} SDL_TimeFormat;
 
 /**
  *  Global date/time properties
  *
- *  - `SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER`: the SDL_DATE_FORMAT to use as the preferred date display format
+ *  - `SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER`: the SDL_DateFormat to use as the preferred date display format
  *    for the current system locale.
- *  - `SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER`: the SDL_TIME_FORMAT to use as the preferred time display format
+ *  - `SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER`: the SDL_TimeFormat to use as the preferred time display format
  *    for the current system locale.
  */
 #define SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER "SDL.time.date_format"

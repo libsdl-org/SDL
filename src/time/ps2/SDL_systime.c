@@ -28,7 +28,7 @@
 #define UNIX_EPOCH_OFFSET_SEC 946717200
 
 /* TODO: Implement this... */
-void SDL_GetSystemTimeLocalePreferences(SDL_DATE_FORMAT *df, SDL_TIME_FORMAT *tf)
+void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
 }
 

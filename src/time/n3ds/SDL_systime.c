@@ -56,10 +56,10 @@ static void civil_from_days(int days, int *year, int *month, int *day)
     *day = (int)d;
 }
 
-void SDL_GetSystemTimeLocalePreferences(SDL_DATE_FORMAT *df, SDL_TIME_FORMAT *tf)
+void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
     /* The 3DS only has 12 supported languages, so take the standard for each */
-    static const SDL_DATE_FORMAT LANG_TO_DATE_FORMAT[] = {
+    static const SDL_DateFormat LANG_TO_DATE_FORMAT[] = {
         SDL_DATE_FORMAT_YYYYMMDD, /* JP */
         SDL_DATE_FORMAT_DDMMYYYY, /* EN, assume non-american format */
         SDL_DATE_FORMAT_DDMMYYYY, /* FR */
