@@ -1189,6 +1189,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             $brief .= "$l ";
         }
 
+        $brief =~ s/\s+\Z//;
         $brief =~ s/\A(.*?\.) /$1\n\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.
         my @briefsplit = split /\n/, $brief;
 
