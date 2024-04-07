@@ -22,8 +22,8 @@
 
 static int cal_year;
 static int cal_month;
-static SDL_TIME_FORMAT time_format;
-static SDL_DATE_FORMAT date_format;
+static SDL_TimeFormat time_format;
+static SDL_DateFormat date_format;
 
 static void RenderDateTime(SDL_Renderer *r)
 {

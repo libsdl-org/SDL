@@ -34,6 +34,6 @@ extern void SDL_QuitTime(void);
  */
 extern Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_of_year);
 
-extern void SDL_GetSystemTimeLocalePreferences(SDL_DATE_FORMAT *df, SDL_TIME_FORMAT *tf);
+extern void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf);
 
 #endif /* SDL_time_c_h_ */

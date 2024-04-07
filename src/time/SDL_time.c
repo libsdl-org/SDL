@@ -66,8 +66,8 @@ void SDL_InitTime()
     }
 
     /* Default to ISO 8061 date format, as it is unambiguous, and 24 hour time. */
-    SDL_DATE_FORMAT dateFormat = SDL_DATE_FORMAT_YYYYMMDD;
-    SDL_TIME_FORMAT timeFormat = SDL_TIME_FORMAT_24HR;
+    SDL_DateFormat dateFormat = SDL_DATE_FORMAT_YYYYMMDD;
+    SDL_TimeFormat timeFormat = SDL_TIME_FORMAT_24HR;
     SDL_PropertiesID props = SDL_GetGlobalProperties();
 
     SDL_GetSystemTimeLocalePreferences(&dateFormat, &timeFormat);
