@@ -838,6 +838,11 @@ typedef SDL_ControllerTouchpadEvent, SDL_GamepadTouchpadEvent;
 - SDL_ControllerTouchpadEvent
 + SDL_GamepadTouchpadEvent
 @@
+typedef SDL_eventaction, SDL_EventAction;
+@@
+- SDL_eventaction
++ SDL_EventAction
+@@
 @@
 - SDL_CONTROLLER_AXIS_INVALID
 + SDL_GAMEPAD_AXIS_INVALID
