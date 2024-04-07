@@ -32,6 +32,8 @@ jobs:
         - { name: Ubuntu 22.04,                   os: ubuntu-22.04,   shell: sh, artifact: 'SDL-ubuntu22.04' }
         - { name: MacOS (Framework),              os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework', no-static: true }
         - { name: MacOS (GNU prefix),             os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64" -DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-gnu' }
+        - { name: iOS (GNU prefix),               os: macos-latest,   shell: sh,    cmake: '-DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', artifact: 'SDL-ios-gnu' }
+        - { name: tvOS (GNU prefix),              os: macos-latest,   shell: sh,    cmake: '-DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', artifact: 'SDL-tvos-gnu' }
 
     steps:
     - name: Set up MSYS2
