@@ -510,7 +510,7 @@ my @standard_wiki_sections = (
     'Thread Safety',
     'Version',
     'Code Examples',
-    'Related Functions'
+    'See Also'
 );
 
 # Sections that only ever exist in the wiki and shouldn't be deleted when
@@ -863,6 +863,14 @@ while (my $d = readdir(DH)) {
         $sections{$_} .= "\n";
     }
 
+    # older section name we used, migrate over from it.
+    if (defined $sections{'Related Functions'}) {
+        if (not defined $sections{'See Also'}) {
+            $sections{'See Also'} = $sections{'Related Functions'};
+        }
+        delete $sections{'Related Functions'};
+    }
+
     if (0) {
         foreach (@section_order) {
             print("$sym SECTION '$_':\n");
@@ -922,7 +930,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $returns = $sectionsref->{'Return Value'};
         my $threadsafety = $sectionsref->{'Thread Safety'};
         my $version = $sectionsref->{'Version'};
-        my $related = $sectionsref->{'Related Functions'};
+        my $related = $sectionsref->{'See Also'};
         my $deprecated = $sectionsref->{'Deprecated'};
         my $brief = $sectionsref->{'[Brief]'};
         my $addblank = 0;
@@ -1326,11 +1334,11 @@ if ($copy_direction == 1) {  # --copy-to-headers
             } elsif ($l =~ /\A\\sa\s+(.*)\Z/) {
                 my $sa = $1;
                 $sa =~ s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
-                $sections{'Related Functions'} = '' if not defined $sections{'Related Functions'};
+                $sections{'See Also'} = '' if not defined $sections{'See Also'};
                 if ($wikitype eq 'mediawiki') {
-                    $sections{'Related Functions'} .= ":[[$sa]]\n";
+                    $sections{'See Also'} .= ":[[$sa]]\n";
                 } elsif ($wikitype eq 'md') {
-                    $sections{'Related Functions'} .= "* [$sa]($sa)\n";
+                    $sections{'See Also'} .= "* [$sa]($sa)\n";
                 } else { die("Expected wikitype '$wikitype'\n"); }
             }
         }
@@ -1340,7 +1348,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $sections{'Header File'} = "$hfiletext\n";
 
         # Make sure this ends with a double-newline.
-        $sections{'Related Functions'} .= "\n" if defined $sections{'Related Functions'};
+        $sections{'See Also'} .= "\n" if defined $sections{'See Also'};
 
         # We can build the wiki table now that we have all the data.
         if (scalar(@params) > 0) {
@@ -1590,7 +1598,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $returns = $sectionsref->{'Return Value'};
         my $version = $sectionsref->{'Version'};
         my $threadsafety = $sectionsref->{'Thread Safety'};
-        my $related = $sectionsref->{'Related Functions'};
+        my $related = $sectionsref->{'See Also'};
         my $examples = $sectionsref->{'Code Examples'};
         my $deprecated = $sectionsref->{'Deprecated'};
         my $headerfile = $manpageheaderfiletext;
