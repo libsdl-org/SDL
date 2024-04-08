@@ -279,21 +279,13 @@ set(build_options_dependent_tests )
 
 add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c)
 
-if(APPLE)
+if(MACOS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS
         SOURCES
             testnative.c
             testnativecocoa.m
             testnativex11.c
     )
-
-    cmake_push_check_state()
-    check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
-    cmake_pop_check_state()
-    target_link_libraries(testnative PRIVATE "-Wl,-framework,Cocoa")
-    if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
-        set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
-    endif()
 elseif(WINDOWS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
 elseif(HAVE_X11 OR HAVE_WAYLAND)
@@ -363,6 +355,9 @@ add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
 if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
+elseif(IOS OR TVOS)
+    find_library(GLES_LIB OpenGLES REQUIRED)
+    target_link_libraries(testgles PRIVATE "${GLES_LIB}")
 endif()
 check_include_file("GLES2/gl2platform.h" HAVE_GLES2_GL2PLATFORM_H)
 if(HAVE_GLES2_GL2PLATFORM_H OR (TARGET SDL3-static OR SDL3-shared))
@@ -482,6 +477,19 @@ if(EMSCRIPTEN)
             COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/emscripten/server.py" -d "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 endif()
+if(MACOS)
+    target_link_options(testnative PRIVATE "-Wl,-framework,Cocoa")
+endif()
+if(APPLE)
+    cmake_push_check_state()
+    check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+    cmake_pop_check_state()
+    if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+        set_property(SOURCE "testnativecocoa.m" APPEND PROPERTY COMPILE_OPTIONS "-Wno-error=deprecated-declarations")
+        set_property(TARGET testgles APPEND PROPERTY COMPILE_OPTIONS "-Wno-error=deprecated-declarations")
+    endif()
+endif()
+
 
 if(PSP)
     # Build EBOOT files if building for PSP
