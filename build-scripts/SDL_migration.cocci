@@ -3119,3 +3119,8 @@ typedef SDL_RWops, SDL_IOStream;
 - SDL_LogSetOutputFunction
 + SDL_SetLogOutputFunction
   (...)
+@@
+typedef SDL_eventaction, SDL_EventAction;
+@@
+- SDL_eventaction
++ SDL_EventAction

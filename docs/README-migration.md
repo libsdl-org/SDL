@@ -411,6 +411,9 @@ The following functions have been removed:
 * SDL_EventState() - replaced with SDL_SetEventEnabled()
 * SDL_GetEventState() - replaced with SDL_EventEnabled()
 
+The following enums have been renamed:
+* SDL_eventaction => SDL_EventAction
+
 ## SDL_gamecontroller.h
 
 SDL_gamecontroller.h has been renamed SDL_gamepad.h, and all APIs have been renamed to match.
