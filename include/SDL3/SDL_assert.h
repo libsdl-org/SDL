@@ -127,7 +127,7 @@ typedef enum
 
 typedef struct SDL_AssertData
 {
-    int always_ignore;
+    SDL_bool always_ignore;
     unsigned int trigger_count;
     const char *condition;
     const char *filename;
