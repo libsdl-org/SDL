@@ -977,6 +977,9 @@ The following functions have been renamed:
 * SDL_MasksToPixelFormatEnum() => SDL_GetPixelFormatEnumForMasks()
 * SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormatEnum()
 
+The following macros have been removed:
+* SDL_Colour - use SDL_Color instead
+
 ## SDL_platform.h
 
 The following platform preprocessor macros have been renamed:

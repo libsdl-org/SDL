@@ -681,7 +681,6 @@ typedef struct SDL_Color
     Uint8 b;
     Uint8 a;
 } SDL_Color;
-#define SDL_Colour SDL_Color
 
 /**
  * The bits of this structure can be directly reinterpreted as a float-packed
