@@ -828,7 +828,7 @@ typedef enum
     SDL_ADDEVENT,
     SDL_PEEKEVENT,
     SDL_GETEVENT
-} SDL_EventAction;
+} SDL_eventaction;
 
 /**
  * Check the event queue for messages and optionally return them.
@@ -868,7 +868,7 @@ typedef enum
  * \sa SDL_PumpEvents
  * \sa SDL_PushEvent
  */
-extern DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event *events, int numevents, SDL_EventAction action, Uint32 minType, Uint32 maxType);
+extern DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event *events, int numevents, SDL_eventaction action, Uint32 minType, Uint32 maxType);
 /* @} */
 
 /**

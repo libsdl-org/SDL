@@ -839,7 +839,7 @@ static int SDL_SendWakeupEvent(void)
 }
 
 /* Lock the event queue, take a peep at it, and unlock it */
-static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAction action,
+static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_eventaction action,
                                   Uint32 minType, Uint32 maxType, SDL_bool include_sentinel)
 {
     int i, used, sentinels_expected = 0;
@@ -904,7 +904,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
 
     return used;
 }
-int SDL_PeepEvents(SDL_Event *events, int numevents, SDL_EventAction action,
+int SDL_PeepEvents(SDL_Event *events, int numevents, SDL_eventaction action,
                    Uint32 minType, Uint32 maxType)
 {
     return SDL_PeepEventsInternal(events, numevents, action, minType, maxType, SDL_FALSE);
