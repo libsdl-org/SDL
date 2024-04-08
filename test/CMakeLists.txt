@@ -279,7 +279,7 @@ set(build_options_dependent_tests )
 
 add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c)
 
-if(APPLE)
+if(MACOS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS
         SOURCES
             testnative.c
@@ -477,7 +477,7 @@ if(EMSCRIPTEN)
             COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/emscripten/server.py" -d "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 endif()
-if(APPLE)
+if(MACOS)
     cmake_push_check_state()
     check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
     cmake_pop_check_state()
