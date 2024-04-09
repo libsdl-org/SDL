@@ -41,19 +41,15 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
 {
     int rc = SDL_InitMainCallbacks(argc, argv, appinit, appiter, appevent, appquit);
     if (rc == 0) {
+        if (SDL_GetHintBoolean(SDL_HINT_MAIN_CALLBACK_EXTERNAL_RUNLOOP, SDL_FALSE)) {
+            return 0;
+        }
+
         SDL_AddHintCallback(SDL_HINT_MAIN_CALLBACK_RATE, MainCallbackRateHintChanged, NULL);
 
         Uint64 next_iteration = callback_rate_increment ? (SDL_GetTicksNS() + callback_rate_increment) : 0;
 
         while ((rc = SDL_IterateMainCallbacks(SDL_TRUE)) == 0) {
-            // !!! FIXME: this can be made more complicated if we decide to
-            // !!! FIXME: optionally hand off callback responsibility to the
-            // !!! FIXME: video subsystem (for example, if Wayland has a
-            // !!! FIXME: protocol to drive an animation loop, maybe we hand
-            // !!! FIXME: off to them here if/when the video subsystem becomes
-            // !!! FIXME: initialized).
-
-            // !!! FIXME: maybe respect this hint even if there _is_ a window.
             // if there's no window, try to run at about 60fps (or whatever rate
             //  the hint requested). This makes this not eat all the CPU in
             //  simple things like loopwave. If there's a window, we run as fast
