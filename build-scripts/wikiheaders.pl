@@ -178,6 +178,8 @@ sub wordwrap_one_paragraph {  # don't call this directly.
         if ($item ne '') {
             $retval .= wordwrap_with_bullet_indent($bullet, $item);
         }
+    } elsif ($p =~ /\A\s*\|.*\|\s*\n/) {  # Markdown table
+        $retval = "$p\n";  # don't wrap it (!!! FIXME: but maybe parse by lines until we run out of table...)
     } else {
         $retval = wordwrap_atom($p) . "\n";
     }
