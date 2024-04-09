@@ -70,8 +70,7 @@ int main(int argc, char *argv[]) {
         int consumed;
 
         consumed = SDLTest_CommonArg(state, i);
-        if (!consumed) {
-        }
+
         if (consumed <= 0) {
             static const char *options[] = { NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
@@ -87,6 +86,7 @@ int main(int argc, char *argv[]) {
     }
     if (SDL_CreateWindowAndRenderer(640, 480, 0, &w, &r) < 0) {
         SDL_Log("Failed to create window and/or renderer: %s\n", SDL_GetError());
+        SDL_Quit();
         return 1;
     }
 
