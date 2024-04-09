@@ -637,7 +637,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface, co
  */
 extern DECLSPEC int SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect);
 
-/*
+/**
  * Flip a surface vertically or horizontally.
  *
  * \param surface the surface to flip
@@ -649,7 +649,7 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rec
  */
 extern DECLSPEC int SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip);
 
-/*
+/**
  * Creates a new surface identical to the existing surface.
  *
  * The returned surface should be freed with SDL_DestroySurface().
