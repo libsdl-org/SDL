@@ -87,15 +87,15 @@ char *alloca();
 #endif
 
 /**
- *  The number of elements in an array.
+ * The number of elements in an array.
  */
 #define SDL_arraysize(array)    (sizeof(array)/sizeof(array[0]))
 #define SDL_TABLESIZE(table)    SDL_arraysize(table)
 
 /**
- *  Macro useful for building other macros with strings in them.
+ * Macro useful for building other macros with strings in them.
  *
- *  For example:
+ * For example:
  *
  * ```c
  * #define LOG_ERROR(X) OutputDebugString(SDL_STRINGIFY_ARG(__FUNCTION__) ": " X "\n")`
@@ -146,30 +146,35 @@ typedef int SDL_bool;
 #define SDL_MAX_SINT8   ((Sint8)0x7F)           /* 127 */
 #define SDL_MIN_SINT8   ((Sint8)(~0x7F))        /* -128 */
 typedef int8_t Sint8;
+
 /**
  * An unsigned 8-bit integer type.
  */
 #define SDL_MAX_UINT8   ((Uint8)0xFF)           /* 255 */
 #define SDL_MIN_UINT8   ((Uint8)0x00)           /* 0 */
 typedef uint8_t Uint8;
+
 /**
  * A signed 16-bit integer type.
  */
 #define SDL_MAX_SINT16  ((Sint16)0x7FFF)        /* 32767 */
 #define SDL_MIN_SINT16  ((Sint16)(~0x7FFF))     /* -32768 */
 typedef int16_t Sint16;
+
 /**
  * An unsigned 16-bit integer type.
  */
 #define SDL_MAX_UINT16  ((Uint16)0xFFFF)        /* 65535 */
 #define SDL_MIN_UINT16  ((Uint16)0x0000)        /* 0 */
 typedef uint16_t Uint16;
+
 /**
  * A signed 32-bit integer type.
  */
 #define SDL_MAX_SINT32  ((Sint32)0x7FFFFFFF)    /* 2147483647 */
 #define SDL_MIN_SINT32  ((Sint32)(~0x7FFFFFFF)) /* -2147483648 */
 typedef int32_t Sint32;
+
 /**
  * An unsigned 32-bit integer type.
  */
@@ -183,6 +188,7 @@ typedef uint32_t Uint32;
 #define SDL_MAX_SINT64  ((Sint64)0x7FFFFFFFFFFFFFFFll)      /* 9223372036854775807 */
 #define SDL_MIN_SINT64  ((Sint64)(~0x7FFFFFFFFFFFFFFFll))   /* -9223372036854775808 */
 typedef int64_t Sint64;
+
 /**
  * An unsigned 64-bit integer type.
  */
@@ -191,10 +197,12 @@ typedef int64_t Sint64;
 typedef uint64_t Uint64;
 
 /**
- * SDL times are signed, 64-bit integers representing nanoseconds since the Unix epoch (Jan 1, 1970).
+ * SDL times are signed, 64-bit integers representing nanoseconds since the
+ * Unix epoch (Jan 1, 1970).
  *
- * They can be converted between POSIX time_t values with SDL_NS_TO_SECONDS() and SDL_SECONDS_TO_NS(),
- * and between Windows FILETIME values with SDL_TimeToWindows() and SDL_TimeFromWindows().
+ * They can be converted between POSIX time_t values with SDL_NS_TO_SECONDS()
+ * and SDL_SECONDS_TO_NS(), and between Windows FILETIME values with
+ * SDL_TimeToWindows() and SDL_TimeFromWindows().
  */
 #define SDL_MAX_TIME SDL_MAX_SINT64
 #define SDL_MIN_TIME SDL_MIN_SINT64

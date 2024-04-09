@@ -34,7 +34,8 @@ extern "C" {
 /**
  * An entry for filters for file dialogs.
  *
- * `name` is a user-readable label for the filter (for example, "Office document").
+ * `name` is a user-readable label for the filter (for example, "Office
+ * document").
  *
  * `pattern` is a semicolon-separated list of file extensions (for example,
  * "doc;docx"). File extensions may only contain alphanumeric characters,

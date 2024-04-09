@@ -42,9 +42,10 @@ extern "C" {
 typedef Uint32 SDL_KeyboardID;
 
 /**
- *  The SDL keysym structure, used in key events.
+ * The SDL keysym structure, used in key events.
  *
- *  If you are looking for translated character input, see the ::SDL_EVENT_TEXT_INPUT event.
+ * If you are looking for translated character input, see the
+ * ::SDL_EVENT_TEXT_INPUT event.
  */
 typedef struct SDL_Keysym
 {

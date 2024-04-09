@@ -38,7 +38,8 @@ extern "C" {
 #endif
 
 /**
- * A structure holding a calendar date and time broken down into its components.
+ * A structure holding a calendar date and time broken down into its
+ * components.
  */
 typedef struct SDL_DateTime
 {

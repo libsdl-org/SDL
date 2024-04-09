@@ -33,7 +33,9 @@ extern "C" {
 #endif
 
 /**
- * SDL_MessageBox flags. If supported will display warning icon, etc.
+ * SDL_MessageBox flags.
+ *
+ * If supported will display warning icon, etc.
  */
 typedef enum SDL_MessageBoxFlags
 {

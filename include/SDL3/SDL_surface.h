@@ -60,7 +60,7 @@ extern "C" {
 /* @} *//* Surface flags */
 
 /**
- *  Evaluates to true if the surface needs to be locked before access.
+ * Evaluates to true if the surface needs to be locked before access.
  */
 #define SDL_MUSTLOCK(S) (((S)->flags & SDL_RLEACCEL) != 0)
 
@@ -89,21 +89,17 @@ typedef enum SDL_FlipMode
 /**
  * A collection of pixels used in software blitting.
  *
- * Pixels are arranged in memory in rows, with the top row first.
- * Each row occupies an amount of memory given by the pitch (sometimes
- * known as the row stride in non-SDL APIs).
+ * Pixels are arranged in memory in rows, with the top row first. Each row
+ * occupies an amount of memory given by the pitch (sometimes known as the row
+ * stride in non-SDL APIs).
  *
- * Within each row, pixels are arranged from left to right until the
- * width is reached.
- * Each pixel occupies a number of bits appropriate for its format, with
- * most formats representing each pixel as one or more whole bytes
- * (in some indexed formats, instead multiple pixels are packed into
- * each byte), and a byte order given by the format.
- * After encoding all pixels, any remaining bytes to reach the pitch are
- * used as padding to reach a desired alignment, and have undefined contents.
- *
- * \note  This structure should be treated as read-only, except for \c pixels,
- *        which, if not NULL, contains the raw pixel data for the surface.
+ * Within each row, pixels are arranged from left to right until the width is
+ * reached. Each pixel occupies a number of bits appropriate for its format,
+ * with most formats representing each pixel as one or more whole bytes (in
+ * some indexed formats, instead multiple pixels are packed into each byte),
+ * and a byte order given by the format. After encoding all pixels, any
+ * remaining bytes to reach the pitch are used as padding to reach a desired
+ * alignment, and have undefined contents.
  */
 typedef struct SDL_Surface
 {

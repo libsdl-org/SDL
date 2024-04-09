@@ -66,11 +66,12 @@ typedef Uint32 SDL_PenID; /**< SDL_PenIDs identify pens uniquely within a sessio
 /**
  * Pen axis indices
  *
- * Below are the valid indices to the "axis" array from SDL_PenMotionEvent and SDL_PenButtonEvent.
- * The axis indices form a contiguous range of ints from 0 to SDL_PEN_AXIS_LAST, inclusive.
- * All "axis[]" entries are either normalised to  0..1 or report a (positive or negative)
- * angle in degrees, with 0.0 representing the centre.
- * Not all pens/backends support all axes: unsupported entries are always "0.0f".
+ * Below are the valid indices to the "axis" array from SDL_PenMotionEvent and
+ * SDL_PenButtonEvent. The axis indices form a contiguous range of ints from 0
+ * to SDL_PEN_AXIS_LAST, inclusive. All "axis[]" entries are either normalised
+ * to 0..1 or report a (positive or negative) angle in degrees, with 0.0
+ * representing the centre. Not all pens/backends support all axes:
+ * unsupported entries are always "0.0f".
  *
  * To convert angles for tilt and rotation into vector representation, use
  * SDL_sinf on the XTILT, YTILT, or ROTATION component, for example:
@@ -122,7 +123,8 @@ typedef enum SDL_PenAxis
 /**
  * Pen types
  *
- * Some pens identify as a particular type of drawing device (e.g., an airbrush or a pencil).
+ * Some pens identify as a particular type of drawing device (e.g., an
+ * airbrush or a pencil).
  *
  * \since This enum is available since SDL 3.0.0
  */
@@ -221,10 +223,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
  * \returns A string that contains the name of the pen, intended for human
  *          consumption. The string might or might not be localised, depending
  *          on platform settings. It is not guaranteed to be unique; use
- *          SDL_GetPenGUID() for (best-effort) unique identifiers. The
- *          pointer is managed by the SDL pen subsystem and must not be
- *          deallocated. The pointer remains valid until SDL is shut down.
- *          Returns NULL on error (cf. SDL_GetError())
+ *          SDL_GetPenGUID() for (best-effort) unique identifiers. The pointer
+ *          is managed by the SDL pen subsystem and must not be deallocated.
+ *          The pointer remains valid until SDL is shut down. Returns NULL on
+ *          error (cf. SDL_GetError())
  *
  * \since This function is available since SDL 3.0.0
  */
@@ -258,10 +260,10 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetPenCapabilities(SDL_PenID instance_id, SDL
  * \param instance_id The pen to query.
  * \returns The corresponding pen type (cf. SDL_PenSubtype) or 0 on error.
  *          Note that the pen type does not dictate whether the pen tip is
- *          SDL_PEN_TIP_INK or SDL_PEN_TIP_ERASER; to determine whether a
- *          pen is being used for drawing or in eraser mode, check either the
- *          pen tip on SDL_EVENT_PEN_DOWN, or the flag SDL_PEN_ERASER_MASK
- *          in the pen state.
+ *          SDL_PEN_TIP_INK or SDL_PEN_TIP_ERASER; to determine whether a pen
+ *          is being used for drawing or in eraser mode, check either the pen
+ *          tip on SDL_EVENT_PEN_DOWN, or the flag SDL_PEN_ERASER_MASK in the
+ *          pen state.
  *
  * \since This function is available since SDL 3.0.0
  */

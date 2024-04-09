@@ -88,7 +88,7 @@ typedef struct SDL_RendererInfo
 } SDL_RendererInfo;
 
 /**
- *  Vertex structure.
+ * Vertex structure.
  */
 typedef struct SDL_Vertex
 {

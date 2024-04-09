@@ -42,10 +42,10 @@ extern "C" {
 /**
  * A struct to provide locale data.
  *
- * Locale data is split into a spoken language, like English, and an
- * optional country, like Canada. The language will be in ISO-639 format
- * (so English would be "en"), and the country, if not NULL, will be an
- * ISO-3166 country code (so Canada would be "CA").
+ * Locale data is split into a spoken language, like English, and an optional
+ * country, like Canada. The language will be in ISO-639 format (so English
+ * would be "en"), and the country, if not NULL, will be an ISO-3166 country
+ * code (so Canada would be "CA").
  *
  * \since This function is available since SDL 3.0.0.
  *

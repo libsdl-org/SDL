@@ -72,13 +72,13 @@ extern "C" {
 #endif
 
 /**
- *  A handle representing an open HID device
+ * A handle representing an open HID device
  */
 struct SDL_hid_device;
 typedef struct SDL_hid_device SDL_hid_device; /**< opaque hidapi structure */
 
 /**
- *  HID underlying bus types.
+ * HID underlying bus types.
  */
 typedef enum SDL_hid_bus_type {
     /** Unknown bus type */
@@ -109,8 +109,9 @@ typedef enum SDL_hid_bus_type {
 } SDL_hid_bus_type;
 
 /** hidapi info structure */
+
 /**
- *  Information about a connected HID device
+ * Information about a connected HID device
  */
 typedef struct SDL_hid_device_info
 {

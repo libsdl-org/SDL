@@ -37,11 +37,12 @@ extern "C" {
 /**
  * An enumeration of blend modes used in drawing operations.
  *
- * Note that additional values may be obtained from SDL_ComposeCustomBlendMode.
- *
- * \sa SDL_ComposeCustomBlendMode
+ * Note that additional values may be obtained from
+ * SDL_ComposeCustomBlendMode.
  *
  * \since This enum is available since SDL 3.0.0.
+ *
+ * \sa SDL_ComposeCustomBlendMode
  */
 typedef enum SDL_BlendMode
 {
@@ -66,7 +67,8 @@ typedef enum SDL_BlendMode
 } SDL_BlendMode;
 
 /**
- * The blend operation used when combining source and destination pixel components.
+ * The blend operation used when combining source and destination pixel
+ * components.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -82,10 +84,10 @@ typedef enum SDL_BlendOperation
 /**
  * The normalized factor used to multiply pixel components.
  *
- * The blend factors are multiplied with the pixels from a drawing
- * operation (src) and the pixels from the render target (dst) before
- * the blend operation. The comma-separated factors listed above are always
- * applied in the component order red, green, blue, and alpha.
+ * The blend factors are multiplied with the pixels from a drawing operation
+ * (src) and the pixels from the render target (dst) before the blend
+ * operation. The comma-separated factors listed above are always applied in
+ * the component order red, green, blue, and alpha.
  *
  * \since This enum is available since SDL 3.0.0.
  */

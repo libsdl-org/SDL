@@ -142,9 +142,9 @@ extern DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
 /**
  * The type of the OS-provided default folder for a specific purpose.
  *
- * Note that the Trash folder isn't included here, because trashing files usually
- * involves extra OS-specific functionality to remember the file's original
- * location.
+ * Note that the Trash folder isn't included here, because trashing files
+ * usually involves extra OS-specific functionality to remember the file's
+ * original location.
  *
  * The folders supported per platform are:
  *

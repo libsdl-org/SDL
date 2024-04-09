@@ -40,10 +40,10 @@ extern "C" {
 /* As of version 0.5, SDL is loaded dynamically into the application */
 
 /**
- *   Initialization flags for SDL_Init and/or SDL_InitSubSystem
+ * Initialization flags for SDL_Init and/or SDL_InitSubSystem
  *
- * These are the flags which may be passed to SDL_Init().  You should
- * specify the subsystems which you will be using in your application.
+ * These are the flags which may be passed to SDL_Init(). You should specify
+ * the subsystems which you will be using in your application.
  *
  * \sa SDL_Init
  * \sa SDL_Quit

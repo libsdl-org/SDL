@@ -457,7 +457,8 @@ typedef enum SDL_ColorType
 } SDL_ColorType;
 
 /**
- * The color range, as described by https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en
+ * The color range, as described by
+ * https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en
  */
 typedef enum SDL_ColorRange
 {
@@ -467,7 +468,8 @@ typedef enum SDL_ColorRange
 } SDL_ColorRange;
 
 /**
- * The color primaries, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ * The color primaries, as described by
+ * https://www.itu.int/rec/T-REC-H.273-201612-S/en
  */
 typedef enum SDL_ColorPrimaries
 {
@@ -488,7 +490,8 @@ typedef enum SDL_ColorPrimaries
 } SDL_ColorPrimaries;
 
 /**
- * The transfer characteristics, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ * The transfer characteristics, as described by
+ * https://www.itu.int/rec/T-REC-H.273-201612-S/en
  */
 typedef enum SDL_TransferCharacteristics
 {
@@ -514,7 +517,8 @@ typedef enum SDL_TransferCharacteristics
 } SDL_TransferCharacteristics;
 
 /**
- * The matrix coefficients, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ * The matrix coefficients, as described by
+ * https://www.itu.int/rec/T-REC-H.273-201612-S/en
  */
 typedef enum SDL_MatrixCoefficients
 {
@@ -663,9 +667,10 @@ typedef enum SDL_Colorspace
 /**
  * A structure that represents a color as RGBA components.
  *
- * The bits of this structure can be directly reinterpreted as an integer-packed
- * color which uses the SDL_PIXELFORMAT_RGBA32 format (SDL_PIXELFORMAT_ABGR8888
- * on little-endian systems and SDL_PIXELFORMAT_RGBA8888 on big-endian systems).
+ * The bits of this structure can be directly reinterpreted as an
+ * integer-packed color which uses the SDL_PIXELFORMAT_RGBA32 format
+ * (SDL_PIXELFORMAT_ABGR8888 on little-endian systems and
+ * SDL_PIXELFORMAT_RGBA8888 on big-endian systems).
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -712,9 +717,8 @@ typedef struct SDL_Palette
 /**
  * Details about the format of a pixel.
  *
- * Generally this is used with SDL_Surface, and covers many
- * possible configurations, including paletted data and various
- * bit patterns.
+ * Generally this is used with SDL_Surface, and covers many possible
+ * configurations, including paletted data and various bit patterns.
  *
  * \since This struct is available since SDL 3.0.0.
  */

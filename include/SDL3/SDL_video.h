@@ -76,13 +76,13 @@ typedef enum SDL_SystemTheme
 /**
  * The structure that defines a display mode.
  *
- * \sa SDL_GetFullscreenDisplayModes()
- * \sa SDL_GetDesktopDisplayMode()
- * \sa SDL_GetCurrentDisplayMode()
- * \sa SDL_SetWindowFullscreenMode()
- * \sa SDL_GetWindowFullscreenMode()
- *
  * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetFullscreenDisplayModes
+ * \sa SDL_GetDesktopDisplayMode
+ * \sa SDL_GetCurrentDisplayMode
+ * \sa SDL_SetWindowFullscreenMode
+ * \sa SDL_GetWindowFullscreenMode
  */
 typedef struct SDL_DisplayMode
 {
@@ -110,7 +110,7 @@ typedef enum SDL_DisplayOrientation
 } SDL_DisplayOrientation;
 
 /**
- *  The struct used as an opaque handle to a window.
+ * The struct used as an opaque handle to a window.
  *
  * \since This struct is available since SDL 3.0.0.
  *
@@ -155,7 +155,7 @@ typedef Uint32 SDL_WindowFlags;
 #define SDL_WINDOW_NOT_FOCUSABLE        0x80000000U /**< window should not be focusable */
 
 /**
- *  Used to indicate that you don't care what the window position is.
+ * Used to indicate that you don't care what the window position is.
  */
 #define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
 #define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
@@ -164,7 +164,7 @@ typedef Uint32 SDL_WindowFlags;
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)
 
 /**
- *  Used to indicate that the window position should be centered.
+ * Used to indicate that the window position should be centered.
  */
 #define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000u
 #define SDL_WINDOWPOS_CENTERED_DISPLAY(X)  (SDL_WINDOWPOS_CENTERED_MASK|(X))
@@ -207,9 +207,17 @@ typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void);
 /**
  * An enumeration of OpenGL configuration attributes.
  *
- * While you can set most OpenGL attributes normally, the attributes listed above must be known before SDL creates the window that will be used with the OpenGL context. These attributes are set and read with SDL_GL_SetAttribute() and SDL_GL_GetAttribute().
+ * While you can set most OpenGL attributes normally, the attributes listed
+ * above must be known before SDL creates the window that will be used with
+ * the OpenGL context. These attributes are set and read with
+ * SDL_GL_SetAttribute() and SDL_GL_GetAttribute().
  *
- * In some cases, these attributes are minimum requests; the GL does not promise to give you exactly what you asked for. It's possible to ask for a 16-bit depth buffer and get a 24-bit one instead, for example, or to ask for no stencil buffer and still have one available. Context creation should fail if the GL can't provide your requested attributes at a minimum, but you should check to see exactly what you got.
+ * In some cases, these attributes are minimum requests; the GL does not
+ * promise to give you exactly what you asked for. It's possible to ask for a
+ * 16-bit depth buffer and get a 24-bit one instead, for example, or to ask
+ * for no stencil buffer and still have one available. Context creation should
+ * fail if the GL can't provide your requested attributes at a minimum, but
+ * you should check to see exactly what you got.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -271,7 +279,8 @@ typedef enum SDL_GLcontextFlag
 } SDL_GLcontextFlag;
 
 /**
- * Possible values to be set for the SDL_GL_CONTEXT_RELEASE_BEHAVIOR attribute.
+ * Possible values to be set for the SDL_GL_CONTEXT_RELEASE_BEHAVIOR
+ * attribute.
  *
  * \since This enum is available since SDL 3.0.0.
  */

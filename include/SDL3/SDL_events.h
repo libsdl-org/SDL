@@ -240,7 +240,7 @@ typedef enum SDL_EventType
 } SDL_EventType;
 
 /**
- *  Fields shared by every event
+ * Fields shared by every event
  */
 typedef struct SDL_CommonEvent
 {
@@ -250,7 +250,7 @@ typedef struct SDL_CommonEvent
 } SDL_CommonEvent;
 
 /**
- *  Display state change event data (event.display.*)
+ * Display state change event data (event.display.*)
  */
 typedef struct SDL_DisplayEvent
 {
@@ -262,7 +262,7 @@ typedef struct SDL_DisplayEvent
 } SDL_DisplayEvent;
 
 /**
- *  Window state change event data (event.window.*)
+ * Window state change event data (event.window.*)
  */
 typedef struct SDL_WindowEvent
 {
@@ -275,7 +275,7 @@ typedef struct SDL_WindowEvent
 } SDL_WindowEvent;
 
 /**
- *  Keyboard device event structure (event.kdevice.*)
+ * Keyboard device event structure (event.kdevice.*)
  */
 typedef struct SDL_KeyboardDeviceEvent
 {
@@ -286,7 +286,7 @@ typedef struct SDL_KeyboardDeviceEvent
 } SDL_KeyboardDeviceEvent;
 
 /**
- *  Keyboard button event structure (event.key.*)
+ * Keyboard button event structure (event.key.*)
  */
 typedef struct SDL_KeyboardEvent
 {
@@ -303,11 +303,12 @@ typedef struct SDL_KeyboardEvent
 } SDL_KeyboardEvent;
 
 #define SDL_TEXTEDITINGEVENT_TEXT_SIZE 64
+
 /**
- *  Keyboard text editing event structure (event.edit.*)
+ * Keyboard text editing event structure (event.edit.*)
  *
- *  The `text` is owned by SDL and should be copied if the application
- *  wants to hold onto it beyond the scope of handling this event.
+ * The `text` is owned by SDL and should be copied if the application wants to
+ * hold onto it beyond the scope of handling this event.
  */
 typedef struct SDL_TextEditingEvent
 {
@@ -321,10 +322,10 @@ typedef struct SDL_TextEditingEvent
 } SDL_TextEditingEvent;
 
 /**
- *  Keyboard text input event structure (event.text.*)
+ * Keyboard text input event structure (event.text.*)
  *
- *  The `text` is owned by SDL and should be copied if the application
- *  wants to hold onto it beyond the scope of handling this event.
+ * The `text` is owned by SDL and should be copied if the application wants to
+ * hold onto it beyond the scope of handling this event.
  */
 typedef struct SDL_TextInputEvent
 {
@@ -336,7 +337,7 @@ typedef struct SDL_TextInputEvent
 } SDL_TextInputEvent;
 
 /**
- *  Mouse device event structure (event.mdevice.*)
+ * Mouse device event structure (event.mdevice.*)
  */
 typedef struct SDL_MouseDeviceEvent
 {
@@ -347,7 +348,7 @@ typedef struct SDL_MouseDeviceEvent
 } SDL_MouseDeviceEvent;
 
 /**
- *  Mouse motion event structure (event.motion.*)
+ * Mouse motion event structure (event.motion.*)
  */
 typedef struct SDL_MouseMotionEvent
 {
@@ -364,7 +365,7 @@ typedef struct SDL_MouseMotionEvent
 } SDL_MouseMotionEvent;
 
 /**
- *  Mouse button event structure (event.button.*)
+ * Mouse button event structure (event.button.*)
  */
 typedef struct SDL_MouseButtonEvent
 {
@@ -382,7 +383,7 @@ typedef struct SDL_MouseButtonEvent
 } SDL_MouseButtonEvent;
 
 /**
- *  Mouse wheel event structure (event.wheel.*)
+ * Mouse wheel event structure (event.wheel.*)
  */
 typedef struct SDL_MouseWheelEvent
 {
@@ -399,7 +400,7 @@ typedef struct SDL_MouseWheelEvent
 } SDL_MouseWheelEvent;
 
 /**
- *  Joystick axis motion event structure (event.jaxis.*)
+ * Joystick axis motion event structure (event.jaxis.*)
  */
 typedef struct SDL_JoyAxisEvent
 {
@@ -416,7 +417,7 @@ typedef struct SDL_JoyAxisEvent
 } SDL_JoyAxisEvent;
 
 /**
- *  \brief Joystick trackball motion event structure (event.jball.*)
+ * Joystick trackball motion event structure (event.jball.*)
  */
 typedef struct SDL_JoyBallEvent
 {
@@ -433,7 +434,7 @@ typedef struct SDL_JoyBallEvent
 } SDL_JoyBallEvent;
 
 /**
- *  Joystick hat position change event structure (event.jhat.*)
+ * Joystick hat position change event structure (event.jhat.*)
  */
 typedef struct SDL_JoyHatEvent
 {
@@ -454,7 +455,7 @@ typedef struct SDL_JoyHatEvent
 } SDL_JoyHatEvent;
 
 /**
- *  Joystick button event structure (event.jbutton.*)
+ * Joystick button event structure (event.jbutton.*)
  */
 typedef struct SDL_JoyButtonEvent
 {
@@ -469,7 +470,7 @@ typedef struct SDL_JoyButtonEvent
 } SDL_JoyButtonEvent;
 
 /**
- *  Joystick device event structure (event.jdevice.*)
+ * Joystick device event structure (event.jdevice.*)
  */
 typedef struct SDL_JoyDeviceEvent
 {
@@ -480,7 +481,7 @@ typedef struct SDL_JoyDeviceEvent
 } SDL_JoyDeviceEvent;
 
 /**
- *  Joysick battery level change event structure (event.jbattery.*)
+ * Joysick battery level change event structure (event.jbattery.*)
  */
 typedef struct SDL_JoyBatteryEvent
 {
@@ -493,7 +494,7 @@ typedef struct SDL_JoyBatteryEvent
 } SDL_JoyBatteryEvent;
 
 /**
- *  Gamepad axis motion event structure (event.gaxis.*)
+ * Gamepad axis motion event structure (event.gaxis.*)
  */
 typedef struct SDL_GamepadAxisEvent
 {
@@ -511,7 +512,7 @@ typedef struct SDL_GamepadAxisEvent
 
 
 /**
- *  Gamepad button event structure (event.gbutton.*)
+ * Gamepad button event structure (event.gbutton.*)
  */
 typedef struct SDL_GamepadButtonEvent
 {
@@ -527,7 +528,7 @@ typedef struct SDL_GamepadButtonEvent
 
 
 /**
- *  Gamepad device event structure (event.gdevice.*)
+ * Gamepad device event structure (event.gdevice.*)
  */
 typedef struct SDL_GamepadDeviceEvent
 {
@@ -538,7 +539,7 @@ typedef struct SDL_GamepadDeviceEvent
 } SDL_GamepadDeviceEvent;
 
 /**
- *  Gamepad touchpad event structure (event.gtouchpad.*)
+ * Gamepad touchpad event structure (event.gtouchpad.*)
  */
 typedef struct SDL_GamepadTouchpadEvent
 {
@@ -554,7 +555,7 @@ typedef struct SDL_GamepadTouchpadEvent
 } SDL_GamepadTouchpadEvent;
 
 /**
- *  Gamepad sensor event structure (event.gsensor.*)
+ * Gamepad sensor event structure (event.gsensor.*)
  */
 typedef struct SDL_GamepadSensorEvent
 {
@@ -568,7 +569,7 @@ typedef struct SDL_GamepadSensorEvent
 } SDL_GamepadSensorEvent;
 
 /**
- *  Audio device event structure (event.adevice.*)
+ * Audio device event structure (event.adevice.*)
  */
 typedef struct SDL_AudioDeviceEvent
 {
@@ -583,7 +584,7 @@ typedef struct SDL_AudioDeviceEvent
 } SDL_AudioDeviceEvent;
 
 /**
- *  Camera device event structure (event.cdevice.*)
+ * Camera device event structure (event.cdevice.*)
  */
 typedef struct SDL_CameraDeviceEvent
 {
@@ -597,7 +598,7 @@ typedef struct SDL_CameraDeviceEvent
 } SDL_CameraDeviceEvent;
 
 /**
- *  Touch finger event structure (event.tfinger.*)
+ * Touch finger event structure (event.tfinger.*)
  */
 typedef struct SDL_TouchFingerEvent
 {
@@ -616,8 +617,9 @@ typedef struct SDL_TouchFingerEvent
 
 
 #define SDL_DROPEVENT_DATA_SIZE 64
+
 /**
- *  Pressure-sensitive pen touched or stopped touching surface (event.ptip.*)
+ * Pressure-sensitive pen touched or stopped touching surface (event.ptip.*)
  */
 typedef struct SDL_PenTipEvent
 {
@@ -635,7 +637,8 @@ typedef struct SDL_PenTipEvent
 } SDL_PenTipEvent;
 
 /**
- *  Pressure-sensitive pen motion / pressure / angle event structure (event.pmotion.*)
+ * Pressure-sensitive pen motion / pressure / angle event structure
+ * (event.pmotion.*)
  */
 typedef struct SDL_PenMotionEvent
 {
@@ -653,7 +656,7 @@ typedef struct SDL_PenMotionEvent
 } SDL_PenMotionEvent;
 
 /**
- *  Pressure-sensitive pen button event structure (event.pbutton.*)
+ * Pressure-sensitive pen button event structure (event.pbutton.*)
  */
 typedef struct SDL_PenButtonEvent
 {
@@ -671,10 +674,11 @@ typedef struct SDL_PenButtonEvent
 } SDL_PenButtonEvent;
 
 /**
- * An event used to drop text or request a file open by the system (event.drop.*)
+ * An event used to drop text or request a file open by the system
+ * (event.drop.*)
  *
- * The `data` is owned by SDL and should be copied if the application
- * wants to hold onto it beyond the scope of handling this event. Do not free it!
+ * The `data` is owned by SDL and should be copied if the application wants to
+ * hold onto it beyond the scope of handling this event. Do not free it!
  */
 typedef struct SDL_DropEvent
 {
@@ -689,7 +693,8 @@ typedef struct SDL_DropEvent
 } SDL_DropEvent;
 
 /**
- * An event triggered when the clipboard contents have changed (event.clipboard.*)
+ * An event triggered when the clipboard contents have changed
+ * (event.clipboard.*)
  */
 typedef struct SDL_ClipboardEvent
 {
@@ -699,7 +704,7 @@ typedef struct SDL_ClipboardEvent
 } SDL_ClipboardEvent;
 
 /**
- *  Sensor event structure (event.sensor.*)
+ * Sensor event structure (event.sensor.*)
  */
 typedef struct SDL_SensorEvent
 {
@@ -712,7 +717,7 @@ typedef struct SDL_SensorEvent
 } SDL_SensorEvent;
 
 /**
- *  The "quit requested" event
+ * The "quit requested" event
  */
 typedef struct SDL_QuitEvent
 {
@@ -726,9 +731,9 @@ typedef struct SDL_QuitEvent
  *
  * This event is unique; it is never created by SDL, but only by the
  * application. The event can be pushed onto the event queue using
- * SDL_PushEvent(). The contents of the structure members are completely
- * up to the programmer; the only requirement is that '''type''' is a value
- * obtained from SDL_RegisterEvents().
+ * SDL_PushEvent(). The contents of the structure members are completely up to
+ * the programmer; the only requirement is that '''type''' is a value obtained
+ * from SDL_RegisterEvents().
  */
 typedef struct SDL_UserEvent
 {

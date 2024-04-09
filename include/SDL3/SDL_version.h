@@ -41,15 +41,14 @@ extern "C" {
  * Information about the version of SDL in use.
  *
  * Represents the library's version as three levels: major revision
- * (increments with massive changes, additions, and enhancements),
- * minor revision (increments with backwards-compatible changes to the
- * major revision), and patchlevel (increments with fixes to the minor
- * revision).
+ * (increments with massive changes, additions, and enhancements), minor
+ * revision (increments with backwards-compatible changes to the major
+ * revision), and patchlevel (increments with fixes to the minor revision).
+ *
+ * \since This struct is available since SDL 3.0.0.
  *
  * \sa SDL_VERSION
  * \sa SDL_GetVersion
- *
- * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Version
 {
@@ -70,15 +69,15 @@ typedef struct SDL_Version
  * library you compiled against. This is determined by what header the
  * compiler uses. Note that if you dynamically linked the library, you might
  * have a slightly newer or older version at runtime. That version can be
- * determined with SDL_GetVersion(), which, unlike SDL_VERSION(),
- * is not a macro.
+ * determined with SDL_GetVersion(), which, unlike SDL_VERSION(), is not a
+ * macro.
  *
  * \param x A pointer to an SDL_Version struct to initialize.
  *
+ * \since This macro is available since SDL 3.0.0.
+ *
  * \sa SDL_Version
  * \sa SDL_GetVersion
- *
- * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_VERSION(x)                \
 {                                     \
@@ -102,7 +101,7 @@ typedef struct SDL_Version
     ((major) << 24 | (minor) << 8 | (patch) << 0)
 
 /**
- *  This is the version number macro for the current SDL version.
+ * This is the version number macro for the current SDL version.
  *
  * \since This macro is available since SDL 3.0.0.
  */
@@ -110,7 +109,7 @@ typedef struct SDL_Version
     SDL_VERSIONNUM(SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL)
 
 /**
- *  This macro will evaluate to true if compiled with SDL at least X.Y.Z.
+ * This macro will evaluate to true if compiled with SDL at least X.Y.Z.
  *
  * \since This macro is available since SDL 3.0.0.
  */

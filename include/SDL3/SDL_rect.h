@@ -40,10 +40,10 @@ extern "C" {
 /**
  * The structure that defines a point (using integers).
  *
+ * \since This struct is available since SDL 3.0.0.
+ *
  * \sa SDL_GetRectEnclosingPoints
  * \sa SDL_PointInRect
- *
- * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Point
 {
@@ -54,10 +54,10 @@ typedef struct SDL_Point
 /**
  * The structure that defines a point (using floating point values).
  *
+ * \since This struct is available since SDL 3.0.0.
+ *
  * \sa SDL_GetRectEnclosingPointsFloat
  * \sa SDL_PointInRectFloat
- *
- * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_FPoint
 {
@@ -69,6 +69,8 @@ typedef struct SDL_FPoint
 /**
  * A rectangle, with the origin at the upper left (using integers).
  *
+ * \since This struct is available since SDL 3.0.0.
+ *
  * \sa SDL_RectEmpty
  * \sa SDL_RectsEqual
  * \sa SDL_HasRectIntersection
@@ -76,8 +78,6 @@ typedef struct SDL_FPoint
  * \sa SDL_GetRectAndLineIntersection
  * \sa SDL_GetRectUnion
  * \sa SDL_GetRectEnclosingPoints
- *
- * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Rect
 {
@@ -87,7 +87,10 @@ typedef struct SDL_Rect
 
 
 /**
- * A rectangle, with the origin at the upper left (using floating point values).
+ * A rectangle, with the origin at the upper left (using floating point
+ * values).
+ *
+ * \since This struct is available since SDL 3.0.0.
  *
  * \sa SDL_RectEmptyFloat
  * \sa SDL_RectsEqualFloat
@@ -98,8 +101,6 @@ typedef struct SDL_Rect
  * \sa SDL_GetRectUnionFloat
  * \sa SDL_GetRectEnclosingPointsFloat
  * \sa SDL_PointInRectFloat
- *
- * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_FRect
 {
