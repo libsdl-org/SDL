@@ -317,7 +317,9 @@ sub wikify {
 
     #print("WIKIFY WHOLE:\n\n$str\n\n\n");
 
-    while ($str =~ s/\A(.*?)\`\`\`(c\+\+|c)(.*?)\`\`\`//ms) {
+    # !!! FIXME: this shouldn't check language but rather if there are
+    # !!! FIXME: chars immediately after "```" to a newline.
+    while ($str =~ s/\A(.*?)\`\`\`(c\+\+|c|)(.*?)\`\`\`//ms) {
         $retval .= wikify_chunk($wikitype, $1, $2, $3);
     }
     $retval .= wikify_chunk($wikitype, $str, undef, undef);
@@ -505,6 +507,9 @@ my @standard_wiki_sections = (
     'Header File',
     'Syntax',
     'Function Parameters',
+    'Macro Parameters',
+    'Fields',
+    'Values',
     'Return Value',
     'Remarks',
     'Thread Safety',
@@ -640,6 +645,10 @@ while (my $d = readdir(DH)) {
                 $symtype = 1;   # function declaration
             } elsif ($decl =~ /\A\s*\#\s*define\s+/) {
                 $symtype = 2;   # macro
+            } elsif ($decl =~ /\A\s*(typedef\s+|)(struct|union)/) {
+                $symtype = 3;   # struct or union
+            } elsif ($decl =~ /\A\s*(typedef\s+|)enum/) {
+                $symtype = 4;   # enum
             } else {
                 #print "Found doxygen but no function sig:\n$str\n\n";
                 foreach (@templines) {
@@ -718,6 +727,64 @@ while (my $d = readdir(DH)) {
                 #$l =~ s/\A\s+//;
                 $l =~ s/\s+\Z//;
                 $decl .= "\n$l";
+            }
+        } elsif (($symtype == 3) || ($symtype == 4)) {  # struct or union or enum
+            my $has_definition = 0;
+            if ($decl =~ /\A\s*(typedef\s+|)(struct|union|enum)\s*(.*?)\s*(\n|\{|\;|\Z)/) {
+                my $ctype = $2;
+                my $origsym = $3;
+                my $ending = $4;
+                $sym = $origsym;
+                if ($sym =~ s/\A(.*?)(\s+)(.*?)\Z/$1/) {
+                    die("Failed to parse '$origsym' correctly!") if ($sym ne $1);  # Thought this was "typedef struct MySym MySym;" ... it was not.  :(  This is a hack!
+                }
+                if ($sym eq '') {
+                    die("\n\n$0 FAILURE!\n" .
+                        "There's a 'typedef $ctype' in $incpath/$dent without a name at the top.\n" .
+                        "Instead of `typedef $ctype {} x;`, this should be `typedef $ctype x {} x;`.\n" .
+                        "This causes problems for wikiheaders.pl and scripting language bindings.\n" .
+                        "Please fix it!\n\n");
+                }
+                $has_definition = ($ending ne ';');
+            } else {
+                #print "Found doxygen but no datatype:\n$str\n\n";
+                foreach (@templines) {
+                    push @contents, $_;
+                }
+                foreach (@decllines) {
+                    push @contents, $_;
+                }
+                next;
+            }
+
+            # This block attempts to find the whole struct/union/enum definition by counting matching brackets. Kind of yucky.
+            if ($has_definition) {
+                my $started = 0;
+                my $brackets = 0;
+                my $pending = $decl;
+
+                $decl = '';
+                while (!$started || ($brackets != 0)) {
+                    foreach my $seg (split(/([{}])/, $pending)) {
+                        $decl .= $seg;
+                        if ($seg eq '{') {
+                            $started = 1;
+                            $brackets++;
+                        } elsif ($seg eq '}') {
+                            die("Something is wrong with header $incpath/$dent while parsing $sym; is a bracket missing?\n") if ($brackets <= 0);
+                            $brackets--;
+                        }
+                    }
+
+                    if (!$started || ($brackets != 0)) {
+                        $pending = <FH>;
+                        die("EOF/error reading $incpath/$dent while parsing $sym\n") if not $pending;
+                        chomp($pending);
+                        push @decllines, $pending;
+                        $decl .= "\n";
+                    }
+                }
+                # this currently assumes the struct/union/enum ends on the line with the final bracket. I'm not writing a C parser here, fix the header!
             }
         } else {
             die("Unexpected symtype $symtype");
@@ -893,7 +960,7 @@ delete $wikisyms{"Undocumented"};
 
     print $fh "# Undocumented\n\n";
     print_undocumented_section($fh, 'Functions', 1);
-    print_undocumented_section($fh, 'Macros', 2);
+    #print_undocumented_section($fh, 'Macros', 2);
 
     close($fh);
 }
@@ -923,10 +990,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
     foreach (keys %headersyms) {
         my $sym = $_;
         next if not defined $wikisyms{$sym};  # don't have a page for that function, skip it.
+        my $symtype = $headersymstype{$sym};
         my $wikitype = $wikitypes{$sym};
         my $sectionsref = $wikisyms{$sym};
         my $remarks = $sectionsref->{'Remarks'};
-        my $params = $sectionsref->{'Function Parameters'};
         my $returns = $sectionsref->{'Return Value'};
         my $threadsafety = $sectionsref->{'Thread Safety'};
         my $version = $sectionsref->{'Version'};
@@ -935,6 +1002,25 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $brief = $sectionsref->{'[Brief]'};
         my $addblank = 0;
         my $str = '';
+
+        my $params = undef;
+        my $paramstr = undef;
+
+        if ($symtype == 1) {
+            $params = $sectionsref->{'Function Parameters'};
+            $paramstr = '\param';
+        } elsif ($symtype == 2) {
+            $params = $sectionsref->{'Macro Parameters'};
+            $paramstr = '\param';
+        } elsif ($symtype == 3) {
+            $params = $sectionsref->{'Fields'};
+            $paramstr = '\field';
+        } elsif ($symtype == 4) {
+            $params = $sectionsref->{'Values'};
+            $paramstr = '\value';
+        } else {
+            die("Unexpected symtype $symtype");
+        }
 
         $headersymshasdoxygen{$sym} = 1;  # Added/changed doxygen for this header.
 
@@ -992,7 +1078,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     $desc = wordwrap($desc, -$whitespacelen);
                     my @desclines = split /\n/, $desc;
                     my $firstline = shift @desclines;
-                    $str .= "\\param $name $firstline\n";
+                    $str .= "$paramstr $name $firstline\n";
                     foreach (@desclines) {
                         $str .= "${whitespace}$_\n";
                     }
@@ -1016,7 +1102,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                         $desc = wordwrap($desc, -$whitespacelen);
                         my @desclines = split /\n/, $desc;
                         my $firstline = shift @desclines;
-                        $str .= "\\param $name $firstline\n";
+                        $str .= "$paramstr $name $firstline\n";
                         foreach (@desclines) {
                             $str .= "${whitespace}$_\n";
                         }
@@ -1207,21 +1293,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
         @doxygenlines = (@briefsplit, @doxygenlines);
 
         my $remarks = '';
-        # !!! FIXME: wordwrap and wikify might handle this, now.
         while (@doxygenlines) {
             last if $doxygenlines[0] =~ /\A\\/;  # some sort of doxygen command, assume we're past the general remarks.
             my $l = shift @doxygenlines;
-            if ($l =~ /\A\`\`\`/) {  # syntax highlighting, don't reformat.
-                $remarks .= "$l\n";
-                while ((@doxygenlines) && (not $l =~ /\`\`\`\Z/)) {
-                    $l = shift @doxygenlines;
-                    $remarks .= "$l\n";
-                }
-            } else {
-                $l =~ s/\A\s*//;
-                $l =~ s/\s*\Z//;
-                $remarks .= "$l\n";
-            }
+            $remarks .= "$l\n";
         }
 
         #print("REMARKS:\n\n $remarks\n\n");
@@ -1250,9 +1325,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         while (@doxygenlines) {
             my $l = shift @doxygenlines;
-            if ($l =~ /\A\\param\s+(.*?)\s+(.*)\Z/) {
-                my $arg = $1;
-                my $desc = $2;
+            # We allow param/field/value interchangeably, even if it doesn't make sense. The next --copy-to-headers will correct it anyhow.
+            if ($l =~ /\A\\(param|field|value)\s+(.*?)\s+(.*)\Z/) {
+                my $arg = $2;
+                my $desc = $3;
                 while (@doxygenlines) {
                     my $subline = $doxygenlines[0];
                     $subline =~ s/\A\s*//;
@@ -1436,6 +1512,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
             $symtypename = 'Function';
         } elsif ($symtype == 2) {
             $symtypename = 'Macro';
+        } elsif ($symtype == 3) {
+            $symtypename = 'Struct';
+        } elsif ($symtype == 4) {
+            $symtypename = 'Enum';
         } else {
             die("Unexpected symbol type $symtype!");
         }
@@ -1467,6 +1547,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             next if $sect eq '[start]';
             next if (not defined $sections{$sect} and not defined $$sectionsref{$sect});
             my $section = defined $sections{$sect} ? $sections{$sect} : $$sectionsref{$sect};
+
             if ($sect eq '[footer]') {
                 # Make sure previous section ends with two newlines.
                 if (substr($prevsectstr, -1) ne "\n") {
@@ -1482,11 +1563,25 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     print FH "# $sym\n\n";
                 } else { die("Unexpected wikitype '$wikitype'"); }
             } else {
+                my $sectname = $sect;
+                if ($sectname eq 'Function Parameters') {  # We use this same table for different things depending on what we're documenting, so rename it now.
+                    if ($symtype == 1) {  # function
+                    } elsif ($symtype == 2) {  # macro
+                        $sectname = 'Macro Parameters';
+                    } elsif ($symtype == 3) {  # struct/union
+                        $sectname = 'Fields';
+                    } elsif ($symtype == 4) {  # enum
+                        $sectname = 'Values';
+                    } else {
+                        die("Unexpected symtype $symtype");
+                    }
+                }
+
                 if ($wikitype eq 'mediawiki') {
-                    print FH  "\n== $sect ==\n\n";
+                    print FH  "\n== $sectname ==\n\n";
                 } elsif ($wikitype eq 'md') {
-                    print FH "\n## $sect\n\n";
-                } else { die("Unexpected wikitype '$wikitype'\n"); }
+                    print FH "\n## $sectname\n\n";
+                } else { die("Unexpected wikitype '$wikitype'"); }
             }
 
             my $sectstr = defined $sections{$sect} ? $sections{$sect} : $$sectionsref{$sect};
@@ -1591,6 +1686,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
     foreach (keys %headersyms) {
         my $sym = $_;
         next if not defined $wikisyms{$sym};  # don't have a page for that function, skip it.
+        my $symtype = $headersymstype{$sym};
         my $wikitype = $wikitypes{$sym};
         my $sectionsref = $wikisyms{$sym};
         my $remarks = $sectionsref->{'Remarks'};
@@ -1677,7 +1773,18 @@ if ($copy_direction == 1) {  # --copy-to-headers
         }
 
         if (defined $params) {
-            $str .= ".SH FUNCTION PARAMETERS\n";
+            if ($symtype == 1) {
+                $str .= ".SH FUNCTION PARAMETERS\n";
+            } elsif ($symtype == 2) {  # macro
+                $str .= ".SH MACRO PARAMETERS\n";
+            } elsif ($symtype == 3) {  # struct/union
+                $str .= ".SH FIELDS\n";
+            } elsif ($symtype == 4) {  # enum
+                $str .= ".SH VALUES\n";
+            } else {
+                die("Unexpected symtype $symtype");
+            }
+
             my @lines = split /\n/, $params;
             if ($wikitype eq 'mediawiki') {
                 die("Unexpected data parsing MediaWiki table") if (shift @lines ne '{|');  # Dump the '{|' start
