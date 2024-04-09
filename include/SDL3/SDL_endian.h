@@ -325,6 +325,7 @@ SDL_SwapFloat(float x)
 
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * Swap a 16-bit value from littleendian to native format.
  *
