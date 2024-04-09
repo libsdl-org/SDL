@@ -323,52 +323,121 @@ SDL_SwapFloat(float x)
 #undef HAS_BUILTIN_BSWAP32
 #undef HAS_BUILTIN_BSWAP64
 
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
 /**
- *  \name Swap to native
- *  Byteswap item from the specified endianness to the native endianness.
+ * Swap a 16-bit value from littleendian to native format.
+ *
+ * If this is running on a littleendian system, `X` is returned unchanged.
+ *
+ * This macro never references `X` more than once, avoiding side effects.
+ *
+ * \param X the value to swap.
+ * \returns the byte-swapped value.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapLE16(X) SwapOnlyIfNecessary(X)
 
 /**
- * \def SDL_SwapLE16
- * Swap 16-bit little endian integer to 16-bit native endian integer.
+ * Swap a 32-bit value from littleendian to native format.
+ *
+ * If this is running on a littleendian system, `X` is returned unchanged.
+ *
+ * This macro never references `X` more than once, avoiding side effects.
+ *
+ * \param X the value to swap.
+ * \returns the byte-swapped value.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapLE32(X) SwapOnlyIfNecessary(X)
 
 /**
- * \def SDL_SwapLE32
- * Swap 32-bit little endian integer to 32-bit native endian integer.
+ * Swap a 64-bit value from littleendian to native format.
+ *
+ * If this is running on a littleendian system, `X` is returned unchanged.
+ *
+ * This macro never references `X` more than once, avoiding side effects.
+ *
+ * \param X the value to swap.
+ * \returns the byte-swapped value.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapLE64(X) SwapOnlyIfNecessary(X)
 
 /**
- * \def SDL_SwapLE64
- * Swap 64-bit little endian integer to 64-bit native endian integer.
+ * Swap a floating point value from littleendian to native format.
+ *
+ * If this is running on a littleendian system, `X` is returned unchanged.
+ *
+ * This macro never references `X` more than once, avoiding side effects.
+ *
+ * \param X the value to swap.
+ * \returns the byte-swapped value.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapFloatLE(X) SwapOnlyIfNecessary(X)
 
 /**
- * \def SDL_SwapFloatLE
- * Swap little endian float to native endian float.
+ * Swap a 16-bit value from bigendian to native format.
+ *
+ * If this is running on a bigendian system, `X` is returned unchanged.
+ *
+ * This macro never references `X` more than once, avoiding side effects.
+ *
+ * \param X the value to swap.
+ * \returns the byte-swapped value.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
-/**
- * \def SDL_SwapBE16
- * Swap 16-bit big endian integer to 16-bit native endian integer.
- */
+#define SDL_SwapBE16(X) SwapOnlyIfNecessary(X)
 
 /**
- * \def SDL_SwapBE32
- * Swap 32-bit big endian integer to 32-bit native endian integer.
+ * Swap a 32-bit value from bigendian to native format.
+ *
+ * If this is running on a bigendian system, `X` is returned unchanged.
+ *
+ * This macro never references `X` more than once, avoiding side effects.
+ *
+ * \param X the value to swap.
+ * \returns the byte-swapped value.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapBE32(X) SwapOnlyIfNecessary(X)
 
 /**
- * \def SDL_SwapBE64
- * Swap 64-bit big endian integer to 64-bit native endian integer.
+ * Swap a 64-bit value from bigendian to native format.
+ *
+ * If this is running on a bigendian system, `X` is returned unchanged.
+ *
+ * This macro never references `X` more than once, avoiding side effects.
+ *
+ * \param X the value to swap.
+ * \returns the byte-swapped value.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapBE64(X) SwapOnlyIfNecessary(X)
 
 /**
- * \def SDL_SwapFloatBE
- * Swap endian float to native endian float.
+ * Swap a floating point value from bigendian to native format.
+ *
+ * If this is running on a bigendian system, `X` is returned unchanged.
+ *
+ * This macro never references `X` more than once, avoiding side effects.
+ *
+ * \param X the value to swap.
+ * \returns the byte-swapped value.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapFloatBE(X) SwapOnlyIfNecessary(X)
 
-/* @{ */
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#elif SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define SDL_SwapLE16(X)     (X)
 #define SDL_SwapLE32(X)     (X)
 #define SDL_SwapLE64(X)     (X)
@@ -387,7 +456,6 @@ SDL_SwapFloat(float x)
 #define SDL_SwapBE64(X)     (X)
 #define SDL_SwapFloatBE(X)  (X)
 #endif
-/* @} *//* Swap to native */
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
