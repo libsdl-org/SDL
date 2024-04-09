@@ -15,7 +15,9 @@
 
 #include "../../SDL_internal.h"
 
+#ifdef SDL_VIDEO_DRIVER_OHOS
 #if SDL_VIDEO_DRIVER_OHOS
+#endif
 
 #include "SDL_hints.h"
 #include "SDL_events.h"
@@ -30,6 +32,8 @@
 #define ACTION_MOVE 2
 #define ACTION_CANCEL 3
 
+#define FLOOR_HIGHT 10000
+
 void OHOS_InitTouch(void)
 {
 }
@@ -38,7 +42,7 @@ void OHOS_QuitTouch(void)
 {
 }
 
-void OHOS_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_finger_id_in, int action, float x, float y, float p)
+void OHOS_OnTouch(SDL_Window *window, Ohos_TouchId *touchsize)
 {
     SDL_TouchID touchDeviceId = 0;
     SDL_FingerID fingerId = 0;
@@ -48,31 +52,31 @@ void OHOS_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_finger
         return;
     }
 
-    touchDeviceId = (SDL_TouchID)touch_device_id_in;
+    touchDeviceId = (SDL_TouchID)touchsize->touch_device_id_in;
     if (SDL_AddTouch(touchDeviceId, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
         SDL_Log("error: can't add touch %s, %d", __FILE__, __LINE__);
     }
 
-    fingerId = (SDL_FingerID)pointer_finger_id_in;
-    switch (action) {
+    fingerId = (SDL_FingerID)touchsize->pointer_finger_id_in;
+    switch (touchsize->action) {
         case ACTION_DOWN:
 //      case ACTION_POINTER_DOWN:
             if (window->w != 0 && window->h != 0) {
-                tempX = floor(x * 10000) / ((float)window->w * 10000);
-                tempY = floor(y * 10000) / ((float)window->h * 10000);
+                tempX = floor(touchsize->x * FLOOR_HIGHT) / ((float)window->w * FLOOR_HIGHT);
+                tempY = floor(touchsize->y * FLOOR_HIGHT) / ((float)window->h * FLOOR_HIGHT);
             } else {
                 tempX = 0.0;
                 tempY = 0.0;
             }
-            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_TRUE, tempX, tempY, p);
+            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_TRUE, tempX, tempY, touchsize->p);
             break;
 
         case ACTION_MOVE:
-            SDL_SendTouchMotion(touchDeviceId, fingerId, window, x, y, p);
+            SDL_SendTouchMotion(touchDeviceId, fingerId, window, touchsize->x, touchsize->y, touchsize->p);
             break;
 
         case ACTION_UP:
-            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_FALSE, x, y, p);
+            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_FALSE, touchsize->x, touchsize->y, touchsize->p);
             break;
 
         default:

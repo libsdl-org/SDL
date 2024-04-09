@@ -14,9 +14,9 @@
  */
 
 #include "../../SDL_internal.h"
-
+#ifdef SDL_VIDEO_DRIVER_OHOS
 #if SDL_VIDEO_DRIVER_OHOS
-
+#endif
 /* OHOS SDL video driver implementation */
 
 #include "SDL_video.h"
@@ -37,9 +37,9 @@
 #define OHOS_VID_DRIVER_NAME "OHOS"
 
 /* Initialization/Query functions */
-static int OHOS_VideoInit(_THIS);
-static void OHOS_VideoQuit(_THIS);
-int OHOS_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
+static int OHOS_VideoInit(SDL_VideoDevice *_this);
+static void OHOS_VideoQuit(SDL_VideoDevice *_this);
+int OHOS_GetDisplayDPI(SDL_VideoDevice *_this, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi);
 
 #include "../SDL_egl_c.h"
 #define OHOS_GLES_GetProcAddress SDL_EGL_GetProcAddress
@@ -69,9 +69,9 @@ OHOS_Available(void)
 }
 
 static void
-OHOS_SuspendScreenSaver(_THIS)
+OHOS_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
-//     OHOS_JNI_SuspendScreenSaver(_this->suspend_screensaver);
+
 }
 
 static void
@@ -155,7 +155,7 @@ VideoBootStrap OHOS_bootstrap = {
 
 
 int
-OHOS_VideoInit(_THIS)
+OHOS_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     int display_index;
@@ -189,16 +189,16 @@ OHOS_VideoInit(_THIS)
 }
 
 void
-OHOS_VideoQuit(_THIS)
+OHOS_VideoQuit(SDL_VideoDevice *_this)
 {
     OHOS_QuitMouse();
     OHOS_QuitTouch();
 }
 
 int
-OHOS_GetDisplayDPI(_THIS, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
+OHOS_GetDisplayDPI(SDL_VideoDevice *_this, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
 {
-     return 0;
+    return 0;
 }
 
 void OHOS_SetScreenResolution(int deviceWidth, int deviceHeight, Uint32 format, float rate)
@@ -213,8 +213,6 @@ void OHOS_SetScreenSize(int surfaceWidth, int surfaceHeight)
 {
     OHOS_SurfaceWidth  = surfaceWidth;
     OHOS_SurfaceHeight = surfaceHeight;
-//     OHOS_DeviceWidth   = surfaceWidth;
-//     OHOS_DeviceHeight  = surfaceHeight;
 }
 
 

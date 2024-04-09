@@ -225,7 +225,12 @@ static void createInstance(void)
     VkResult result;
 
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+
+#ifdef SDL_PLATFORM_OHOS
+    appInfo.apiVersion = VK_API_VERSION_1_3;
+#else
     appInfo.apiVersion = VK_API_VERSION_1_0;
+#endif
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
 #ifdef __APPLE__

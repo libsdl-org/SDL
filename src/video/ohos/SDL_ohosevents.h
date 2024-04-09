@@ -13,15 +13,14 @@
  * limitations under the License.
  */
 
-#include "../../SDL_internal.h"
-
-#ifndef SDL_ohosevents_h_
-#define SDL_ohosevents_h_
+#ifndef SDL_OHOSEVENTS_H_
+#define SDL_OHOSEVENTS_H_
 
 #include "SDL_ohosvideo.h"
+#include "../../SDL_internal.h"
 
-extern void OHOS_PumpEvents_Blocking(_THIS);
-extern void OHOS_PumpEvents_NonBlocking(_THIS);
+extern void OHOS_PumpEvents_Blocking(SDL_VideoDevice *_this);
+extern void OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *_this);
 
 #endif /* SDL_ohosevents_h_ */
 

@@ -13,16 +13,17 @@
  * limitations under the License.
  */
 
+
+#include "../../events/SDL_mouse_c.h"
+#include "../../core/ohos//SDL_ohos.h"
 #include "../../SDL_internal.h"
-
-#if SDL_VIDEO_DRIVER_OHOS
-
+#include "SDL_events.h"
 #include "SDL_ohosmouse.h"
 
-#include "SDL_events.h"
-#include "../../events/SDL_mouse_c.h"
 
-#include "../../core/ohos//SDL_ohos.h"
+#ifdef SDL_VIDEO_DRIVER_OHOS
+#if SDL_VIDEO_DRIVER_OHOS
+#endif
 
 /* See OHOS's MotionEvent class for constants */
 #define ACTION_DOWN 1
@@ -214,7 +215,7 @@ TranslateButton(int state)
 }
 
 void
-OHOS_OnMouse(SDL_Window *window, int state, int action, float x, float y, SDL_bool relative)
+OHOS_OnMouse(SDL_Window *window, OHOS_Window_Size *windowsize, SDL_bool relative)
 {
     int changes;
     Uint8 button;
@@ -223,25 +224,25 @@ OHOS_OnMouse(SDL_Window *window, int state, int action, float x, float y, SDL_bo
         return;
     }
 
-    switch(action) {
+    switch(windowsize->action) {
         case ACTION_DOWN:
-            changes = state & ~last_state;
+            changes = windowsize->state & ~last_state;
             button = TranslateButton(changes);
-            last_state = state;
-            SDL_SendMouseMotion(window, 0, relative, (int)x, (int)y);
+            last_state = windowsize->state;
+            SDL_SendMouseMotion(window, 0, relative, (int)windowsize->x, (int)windowsize->y);
             SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
             break;
 
         case ACTION_UP:
-            changes = last_state & ~state;
+            changes = last_state & ~windowsize->state;
             button = TranslateButton(changes);
-            last_state = state;
-            SDL_SendMouseMotion(window, 0, relative, (int)x, (int)y);
+            last_state = windowsize->state;
+            SDL_SendMouseMotion(window, 0, relative, (int)windowsize->x, (int)windowsize->y);
             SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
             break;
 
         case ACTION_MOVE:
-            SDL_SendMouseMotion(window, 0, relative, (int)x, (int)y);
+            SDL_SendMouseMotion(window, 0, relative, (int)windowsize->x, (int)windowsize->y);
             break;
 
         default:

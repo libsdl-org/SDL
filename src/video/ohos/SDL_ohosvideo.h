@@ -13,18 +13,15 @@
  * limitations under the License.
  */
 
-#include "../../SDL_internal.h"
+#ifndef SDL_OHOSVIDEO_H_
+#define SDL_OHOSVIDEO_H_
 
-#ifndef SDL_ohosvideo_h_
-#define SDL_ohosvideo_h_
-
+#include <EGL/eglplatform.h>
+#include "../../core/ohos/SDL_ohos.h"
 #include "SDL_mutex.h"
 #include "SDL_rect.h"
 #include "../SDL_sysvideo.h"
-
-#include "../../core/ohos/SDL_ohos.h"
 #include "../SDL_egl_c.h"
-#include <EGL/eglplatform.h>
 #include "../../core/ohos/SDL_ohos_xcomponent.h"
 #include "SDL_ohoswindow.h"
 
@@ -41,6 +38,7 @@ typedef struct SDL_VideoData
     int      isPaused;
     int      isPausing;
 } SDL_VideoData;
+
 
 extern int OHOS_SurfaceWidth;
 extern int OHOS_SurfaceHeight;

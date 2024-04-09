@@ -21,8 +21,12 @@
 static int SDLCALL main_testInitQuitSubSystem(void *arg)
 {
     int i;
-    int subsystems[] = { SDL_INIT_JOYSTICK, SDL_INIT_HAPTIC, SDL_INIT_GAMEPAD };
 
+#if defined (SDL_PLATFORM_OHOS)
+    int subsystems[] = {SDL_INIT_HAPTIC};
+#else
+    int subsystems[] = { SDL_INIT_JOYSTICK, SDL_INIT_HAPTIC, SDL_INIT_GAMECONTROLLER };
+#endif
     for (i = 0; i < SDL_arraysize(subsystems); ++i) {
         int initialized_system;
         int subsystem = subsystems[i];

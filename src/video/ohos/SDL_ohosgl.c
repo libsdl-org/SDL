@@ -15,7 +15,9 @@
 
 #include "../../SDL_internal.h"
 
+#ifdef SDL_VIDEO_DRIVER_OHOS
 #if SDL_VIDEO_DRIVER_OHOS
+#endif
 
 /* OHOS SDL video driver implementation */
 
@@ -30,7 +32,7 @@
 #include <dlfcn.h>
 
 int
-OHOS_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+OHOS_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context)
 {
     if (window && context) {
         return SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *) window->driverdata)->egl_surface, context);
@@ -40,7 +42,7 @@ OHOS_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 }
 
 SDL_GLContext
-OHOS_GLES_CreateContext(_THIS, SDL_Window * window)
+OHOS_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window * window)
 {
     SDL_GLContext ret;
 
@@ -54,7 +56,7 @@ OHOS_GLES_CreateContext(_THIS, SDL_Window * window)
 }
 
 int
-OHOS_GLES_SwapWindow(_THIS, SDL_Window * window)
+OHOS_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window * window)
 {
     int retval;
 
@@ -72,7 +74,8 @@ OHOS_GLES_SwapWindow(_THIS, SDL_Window * window)
 }
 
 int
-OHOS_GLES_LoadLibrary(_THIS, const char *path) {
+OHOS_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+{
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) 0, 0);
 }
 

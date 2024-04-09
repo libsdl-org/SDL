@@ -13,28 +13,26 @@
  * limitations under the License.
  */
 
-#include "../../SDL_internal.h"
-
-#ifndef SDL_ohoswindow_h_
-#define SDL_ohoswindow_h_
+#ifndef SDL_OHOSWINDOW_H_
+#define SDL_OHOSWINDOW_H_
 
 #include "../../core/ohos/SDL_ohos.h"
 #include "../SDL_egl_c.h"
 #include "../../core/ohos/SDL_ohos_xcomponent.h"
 
 
-extern int OHOS_CreateWindow(_THIS, SDL_Window *window);
-extern void OHOS_SetWindowTitle(_THIS, SDL_Window *window);
-extern void OHOS_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
-extern void OHOS_MinimizeWindow(_THIS, SDL_Window *window);
+extern int OHOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void OHOS_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+extern void OHOS_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern void OHOS_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-extern void OHOS_DestroyWindow(_THIS, SDL_Window *window);
-extern SDL_bool OHOS_GetWindowWMInfo(_THIS, SDL_Window *window, struct SDL_SysWMinfo *info);
-extern void OHOS_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable);
-extern void OHOS_SetWindowSize(_THIS, SDL_Window *window);
-extern int OHOS_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
-extern char *OHOS_GetWindowTitle(_THIS, SDL_Window *window);
-extern int SetupWindowData(_THIS, SDL_Window *window, SDL_Window *w);
+extern void OHOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern SDL_bool OHOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
+extern void OHOS_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
+extern void OHOS_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+extern int OHOS_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data);
+extern char *OHOS_GetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+extern int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *w);
 extern SDL_Window *OHOS_Window;
 extern SDL_atomic_t bWindowCreateFlag;
 typedef struct

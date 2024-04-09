@@ -50,6 +50,8 @@ extern "C" {
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include "SDL_ohos_xcomponent.h"
 
+#define OHOS_DELAY_TEN 10
+
 OHNativeWindow *gNative_window = NULL;
 static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
@@ -109,7 +111,7 @@ retry:
             if (nb_attempt == 0) {
                 SDL_SetError("Try to release egl_surface with context probably still active");
             } else {
-                SDL_Delay(10);
+                SDL_Delay(OHOS_DELAY_TEN);
                 goto retry;
             }
         }
@@ -163,7 +165,15 @@ onNativeTouch(OH_NativeXComponent *component, void *window)
     OH_NativeXComponent_GetTouchPointToolType(component, 0, &toolType);
     tiltX = touchEvent.x;
     tiltY = touchEvent.y;
-    OHOS_OnTouch(OHOS_Window, touchEvent.deviceId, touchEvent.id, touchEvent.type, tiltX, tiltY, touchEvent.force);
+
+    Ohos_TouchId ohosTouch;
+    ohosTouch.touch_device_id_in = touchEvent.deviceId;
+    ohosTouch.pointer_finger_id_in = touchEvent.id;
+    ohosTouch.action = touchEvent.type;
+    ohosTouch.x = tiltX;
+    ohosTouch.y = tiltY;
+    ohosTouch.p = touchEvent.force;
+    OHOS_OnTouch(OHOS_Window, &ohosTouch);
 
     SDL_UnlockMutex(OHOS_PageMutex);
 }
@@ -173,10 +183,16 @@ void
 onNativeMouse(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_MouseEvent mouseEvent;
+    OHOS_Window_Size windowsize;
     int32_t ret = OH_NativeXComponent_GetMouseEvent(component, window, &mouseEvent);
     SDL_LockMutex(OHOS_PageMutex);
-
-    OHOS_OnMouse(OHOS_Window, mouseEvent.button, mouseEvent.action, mouseEvent.x, mouseEvent.y, SDL_TRUE);
+    
+    windowsize.action = mouseEvent.action;
+    windowsize.state = mouseEvent.button;
+    windowsize.x = mouseEvent.x;
+    windowsize.y = mouseEvent.y;
+    
+    OHOS_OnMouse(OHOS_Window, &windowsize, SDL_TRUE);
 
     SDL_UnlockMutex(OHOS_PageMutex);
 }
@@ -185,9 +201,16 @@ static void
 OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_TouchEvent touchEvent;
+    Ohos_TouchId ohosTouch;
     int32_t ret = OH_NativeXComponent_GetTouchEvent(component, window, &touchEvent);
     SDL_LockMutex(OHOS_PageMutex);
-    OHOS_OnTouch(OHOS_Window, touchEvent.deviceId, touchEvent.id, touchEvent.type, touchEvent.x, touchEvent.y, touchEvent.force);
+    ohosTouch.touch_device_id_in = touchEvent.deviceId;
+    ohosTouch.pointer_finger_id_in = touchEvent.id;
+    ohosTouch.action = touchEvent.type;
+    ohosTouch.x = touchEvent.x;
+    ohosTouch.y = touchEvent.y;
+    ohosTouch.p = touchEvent.force;
+    OHOS_OnTouch(OHOS_Window, &ohosTouch);
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 

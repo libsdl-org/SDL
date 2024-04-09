@@ -13,11 +13,12 @@
  * limitations under the License.
  */
 
+#include <stdbool.h>
 #include "../../SDL_internal.h"
 
-#include <stdbool.h>
-
+#ifdef SDL_VIDEO_DRIVER_OHOS
 #if SDL_VIDEO_DRIVER_OHOS
+#endif
 
 #include "../../events/SDL_events_c.h"
 
@@ -493,7 +494,7 @@ TranslateKeycode(int keycode)
         {
             return SDL_SCANCODE_0;
         }
-    } 
+    }
     if (keycode >= KEYCODE_F1 && keycode <= KEYCODE_F12)
     {
         return SDL_SCANCODE_F1 + (keycode - KEYCODE_F1);
@@ -540,31 +541,31 @@ OHOS_OnKeyUp(int keycode)
 }
 
 SDL_bool
-OHOS_HasScreenKeyboardSupport(_THIS)
+OHOS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     return SDL_TRUE;
 }
 
 SDL_bool
-OHOS_IsScreenKeyboardShown(_THIS, SDL_Window * window)
+OHOS_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window * window)
 {
     return true;
 }
 
 void
-OHOS_StartTextInput(_THIS)
+OHOS_StartTextInput(SDL_VideoDevice *_this)
 {
     OHOS_NAPI_ShowTextInputKeyboard(SDL_TRUE);
 }
 
 void
-OHOS_StopTextInput(_THIS)
+OHOS_StopTextInput(SDL_VideoDevice *_this)
 {
     OHOS_NAPI_HideTextInput(1);
 }
 
 void
-OHOS_SetTextInputRect(_THIS, SDL_Rect *rect)
+OHOS_SetTextInputRect(SDL_VideoDevice *_this, SDL_Rect *rect)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 

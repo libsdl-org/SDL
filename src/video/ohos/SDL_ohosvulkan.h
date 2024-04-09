@@ -22,15 +22,16 @@
 #include "../SDL_egl_c.h"
 #include "../../core/ohos/SDL_ohos_xcomponent.h"
 
+
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_OHOS
 
-int OHOS_Vulkan_LoadLibrary(_THIS, const char *path);
-void OHOS_Vulkan_UnloadLibrary(_THIS);
-SDL_bool OHOS_Vulkan_GetInstanceExtensions(_THIS,
+int OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
+SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                           SDL_Window *window,
                                           unsigned *count,
                                           const char **names);
-SDL_bool OHOS_Vulkan_CreateSurface(_THIS,
+SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   VkSurfaceKHR *surface);

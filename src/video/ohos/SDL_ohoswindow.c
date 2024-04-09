@@ -15,7 +15,12 @@
 
 #include "../../SDL_internal.h"
 
+#define OHOS_GETWINDOW_DELAY_TIME 2
+#define TIMECONSTANT 3000
+
+#ifdef SDL_VIDEO_DRIVER_OHOS
 #if SDL_VIDEO_DRIVER_OHOS
+#endif
 
 #include "SDL_syswm.h"
 #include "../SDL_sysvideo.h"
@@ -33,15 +38,15 @@ SDL_Window *OHOS_Window = NULL;
 SDL_atomic_t bWindowCreateFlag;
 
 int
-OHOS_CreateWindow(_THIS, SDL_Window * window)
+OHOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window * window)
 {
     SDL_WindowData *data;
     int retval = 0;
     unsigned int delaytime = 0;
 
      while (SDL_AtomicGet(&bWindowCreateFlag) == SDL_FALSE) {
-        SDL_Delay(2);
-    }
+        SDL_Delay(OHOS_GETWINDOW_DELAY_TIME);
+     }
 
     if (OHOS_Window) {
         retval = SDL_SetError("OHOS only supports one window");
@@ -99,13 +104,13 @@ endfunction :
 }
 
 void
-OHOS_SetWindowTitle(_THIS, SDL_Window *window)
+OHOS_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     OHOS_NAPI_SetTitle(window->title);
 }
 
 void
-OHOS_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+OHOS_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     SDL_WindowData *data;
 
@@ -134,12 +139,12 @@ endfunction:
 }
 
 void
-OHOS_MinimizeWindow(_THIS, SDL_Window *window)
+OHOS_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
 void
-OHOS_DestroyWindow(_THIS, SDL_Window *window)
+OHOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_LockMutex(OHOS_PageMutex);
 
@@ -162,7 +167,7 @@ OHOS_DestroyWindow(_THIS, SDL_Window *window)
 }
 
 SDL_bool
-OHOS_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
+OHOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
@@ -179,13 +184,13 @@ OHOS_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
     }
 }
 
-void OHOS_SetWindowResizable(_THIS, SDL_Window *window, SDL_bool resizable) {
+void OHOS_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable) {
     if (resizable) {
         OHOS_NAPI_SetWindowResize(window->windowed.x, window->windowed.y, window->windowed.w, window->windowed.h);
     }
 }
 
-void OHOS_SetWindowSize(_THIS, SDL_Window *window) {
+void OHOS_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window) {
     if ((window->flags & SDL_WINDOW_RESIZABLE) != 0) {
         window->flags &= ~SDL_WINDOW_RESIZABLE;
     }
@@ -194,12 +199,12 @@ void OHOS_SetWindowSize(_THIS, SDL_Window *window) {
         if ((window->w == OHOS_SurfaceWidth) && (window->h == OHOS_SurfaceHeight)) {
             break;
         }
-        SDL_Delay(2);
+        SDL_Delay(OHOS_GETWINDOW_DELAY_TIME);
     }
 }
 
 int 
-OHOS_CreateWindowFrom(_THIS, SDL_Window *window, const void *data) {
+OHOS_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data) {
     SDL_Window *w = (SDL_Window *)data;
 
     window->title = OHOS_GetWindowTitle(_this, w);
@@ -211,7 +216,7 @@ OHOS_CreateWindowFrom(_THIS, SDL_Window *window, const void *data) {
 }
 
 char 
-*OHOS_GetWindowTitle(_THIS, SDL_Window *window) {
+*OHOS_GetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window) {
     char *title = NULL;
     title = window->title;
     if (title) {
@@ -222,7 +227,7 @@ char
 }
 
 int 
-SetupWindowData(_THIS, SDL_Window *window, SDL_Window *w) {
+SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *w) {
     SDL_WindowData *data;
     unsigned int delaytime = 0;
 
@@ -239,9 +244,9 @@ SetupWindowData(_THIS, SDL_Window *window, SDL_Window *w) {
     if (!data) {
         return SDL_OutOfMemory();
     }
-    while (gNative_window == NULL && delaytime < 3000) {
-        delaytime += 2;
-        SDL_Delay(2);
+    while (gNative_window == NULL && delaytime < TIMECONSTANT) {
+        delaytime += OHOS_GETWINDOW_DELAY_TIME;
+        SDL_Delay(OHOS_GETWINDOW_DELAY_TIME);
     }
     data->native_window = gNative_window;
     if (!data->native_window) {

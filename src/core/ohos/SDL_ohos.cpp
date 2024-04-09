@@ -346,15 +346,15 @@ SDLNapi::OHOS_SetResourceManager(napi_env env, napi_callback_info info)
     napi_value args[2];
     napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
     size_t len = 0;
-    napi_get_value_string_utf8(env, args[0], gPath,0,&len);
+    napi_get_value_string_utf8(env, args[0], g_path,0,&len);
     
-    if (gPath != nullptr) {
-        delete gPath;
-        gPath = nullptr;
+    if (g_path != nullptr) {
+        delete g_path;
+        g_path = nullptr;
     }
     
-    gPath = new char[len + 1];
-    napi_get_value_string_utf8(env, args[0], gPath, len + 1, &len);
+    g_path = new char[len + 1];
+    napi_get_value_string_utf8(env, args[0], g_path, len + 1, &len);
     
     gCtx = SDL_AllocRW();
     NativeResourceManager *nativeResourceManager = OH_ResourceManager_InitNativeResourceManager(env, args[1]);

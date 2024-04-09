@@ -654,6 +654,7 @@ int main(int argc, char **argv)
                         ++current;
                     }
                 }
+#ifdef __OHOS__
                 if (event.type == SDL_WINDOWEVENT) {
                     if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
                         int width = event.window.data1;
@@ -663,6 +664,7 @@ int main(int argc, char **argv)
                         SDL_Log("SDL_WINDOWEVENT_SIZE_CHANGED: %d, %d",width,height);
                     }
                 }
+#endif
             }
 
             /* Handle wrapping */

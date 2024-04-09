@@ -13,10 +13,8 @@
  * limitations under the License.
  */
 
-#include "../../SDL_internal.h"
-
-#ifndef SDL_ohoskeyboard_h_
-#define SDL_ohoskeyboard_h_
+#ifndef SDL_OHOSKEYBOARD_H_
+#define SDL_OHOSKEYBOARD_H_
 
 #include "SDL_ohosvideo.h"
 
@@ -24,12 +22,12 @@ extern void OHOS_InitKeyboard(void);
 extern int OHOS_OnKeyDown(int keycode);
 extern int OHOS_OnKeyUp(int keycode);
 
-extern SDL_bool OHOS_HasScreenKeyboardSupport(_THIS);
-extern SDL_bool OHOS_IsScreenKeyboardShown(_THIS, SDL_Window * window);
+extern SDL_bool OHOS_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
+extern SDL_bool OHOS_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window * window);
 
-extern void OHOS_StartTextInput(_THIS);
-extern void OHOS_StopTextInput(_THIS);
-extern void OHOS_SetTextInputRect(_THIS, SDL_Rect *rect);
+extern void OHOS_StartTextInput(SDL_VideoDevice *_this);
+extern void OHOS_StopTextInput(SDL_VideoDevice *_this);
+extern void OHOS_SetTextInputRect(SDL_VideoDevice *_this, SDL_Rect *rect);
 
 #endif /* SDL_ohoskeyboard_h_ */
 

@@ -15,12 +15,12 @@
 
 #include "../../SDL_internal.h"
 
+#ifdef SDL_VIDEO_DRIVER_OHOS
 #if SDL_VIDEO_DRIVER_OHOS
+#endif
 
 #include "SDL_ohosevents.h"
 #include "SDL_events.h"
-//#include "SDL_ohoskeyboard.h"
-//#include "SDL_ohoswindow.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 
@@ -81,7 +81,7 @@ OHOS_EGL_context_backup(SDL_Window *window)
 }
 
 void
-OHOS_PumpEvents_Blocking(_THIS)
+OHOS_PumpEvents_Blocking(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
@@ -146,7 +146,7 @@ OHOS_PumpEvents_Blocking(_THIS)
 }
 
 void
-OHOS_PumpEvents_NonBlocking(_THIS)
+OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     static int backup_context = 0;
