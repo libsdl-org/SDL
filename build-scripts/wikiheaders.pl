@@ -426,7 +426,7 @@ sub dewikify_chunk {
             $str =~ s/^\- /\n\\\(bu /gm;
 
         } else {
-            die("Unexpected wikitype when converting to manpages\n");   # !!! FIXME: need to handle Markdown wiki pages.
+            die("Unexpected wikitype when converting to manpages");   # !!! FIXME: need to handle Markdown wiki pages.
         }
 
         if (defined $code) {
@@ -440,7 +440,7 @@ sub dewikify_chunk {
             $str .= ".EX\n$code\n.EE\n.PP\n";
         }
     } else {
-        die("Unexpected dewikify_mode\n");
+        die("Unexpected dewikify_mode");
     }
 
     #print("\n\nDEWIKIFY CHUNK DONE:\n\n$str\n\n\n");
@@ -720,7 +720,7 @@ while (my $d = readdir(DH)) {
                 $decl .= "\n$l";
             }
         } else {
-            die("Unexpected symtype $symtype\n");
+            die("Unexpected symtype $symtype");
         }
 
         #print("DECL: [$decl]\n");
@@ -845,7 +845,7 @@ while (my $d = readdir(DH)) {
                 next;
             }
         } else {
-            die("Unexpected wiki file type. Fixme!\n");
+            die("Unexpected wiki file type. Fixme!");
         }
 
         if ($firstline) {
@@ -1175,7 +1175,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $symtype = $headersymstype{$sym};
         my $origwikitype = defined $wikitypes{$sym} ? $wikitypes{$sym} : 'md';  # default to MarkDown for new stuff.
         my $wikitype = (defined $changeformat) ? $changeformat : $origwikitype;
-        die("Unexpected wikitype '$wikitype'\n") if (($wikitype ne 'mediawiki') and ($wikitype ne 'md') and ($wikitype ne 'manpage'));
+        die("Unexpected wikitype '$wikitype'") if (($wikitype ne 'mediawiki') and ($wikitype ne 'md') and ($wikitype ne 'manpage'));
 
         #print("$sym\n"); next;
 
@@ -1239,7 +1239,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             $syntax = "<syntaxhighlight lang='c'>\n$decl</syntaxhighlight>\n";
         } elsif ($wikitype eq 'md') {
             $syntax = "```c\n$decl\n```\n";
-        } else { die("Expected wikitype '$wikitype'\n"); }
+        } else { die("Expected wikitype '$wikitype'"); }
 
         my %sections = ();
         $sections{'[Brief]'} = $brief;  # include this section even if blank so we get a title line.
@@ -1339,7 +1339,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     $sections{'See Also'} .= ":[[$sa]]\n";
                 } elsif ($wikitype eq 'md') {
                     $sections{'See Also'} .= "* [$sa]($sa)\n";
-                } else { die("Expected wikitype '$wikitype'\n"); }
+                } else { die("Expected wikitype '$wikitype'"); }
             }
         }
 
@@ -1388,7 +1388,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     $str .= "| **$arg** " . (' ' x ($longest_arg - length($arg))) . "| $desc" . (' ' x ($longest_desc - length($desc))) . " |\n";
                 }
             } else {
-                die("Unexpected wikitype!\n");  # should have checked this elsewhere.
+                die("Unexpected wikitype!");  # should have checked this elsewhere.
             }
             $sections{'Function Parameters'} = $str;
         }
@@ -1437,7 +1437,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         } elsif ($symtype == 2) {
             $symtypename = 'Macro';
         } else {
-            die("Unexpected symbol type $symtype!\n");
+            die("Unexpected symbol type $symtype!");
         }
 
         if ($wikitype eq 'mediawiki') {
@@ -1448,7 +1448,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             $footer =~ s/\[CategoryAPI\]\(CategoryAPI\),?\s*//g;
             $footer =~ s/\[CategoryAPI${symtypename}\]\(CategoryAPI${symtypename}\),?\s*//g;
             $footer = "[CategoryAPI](CategoryAPI), [CategoryAPI$symtypename](CategoryAPI$symtypename)" . (($footer eq '') ? '' : ', ') . $footer;
-        } else { die("Unexpected wikitype '$wikitype'\n"); }
+        } else { die("Unexpected wikitype '$wikitype'"); }
         $$sectionsref{'[footer]'} = $footer;
 
         if (defined $wikipreamble) {
@@ -1457,7 +1457,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 print FH "====== $wikified_preamble ======\n";
             } elsif ($wikitype eq 'md') {
                 print FH "###### $wikified_preamble\n";
-            } else { die("Unexpected wikitype '$wikitype'\n"); }
+            } else { die("Unexpected wikitype '$wikitype'"); }
         }
 
         my $prevsectstr = '';
@@ -1480,7 +1480,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     print FH  "= $sym =\n\n";
                 } elsif ($wikitype eq 'md') {
                     print FH "# $sym\n\n";
-                } else { die("Unexpected wikitype '$wikitype'\n"); }
+                } else { die("Unexpected wikitype '$wikitype'"); }
             } else {
                 if ($wikitype eq 'mediawiki') {
                     print FH  "\n== $sect ==\n\n";
