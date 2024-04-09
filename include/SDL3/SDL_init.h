@@ -51,7 +51,7 @@ extern "C" {
  * \sa SDL_QuitSubSystem
  * \sa SDL_WasInit
  */
-typedef enum
+typedef enum SDL_InitFlags
 {
     SDL_INIT_TIMER        = 0x00000001,
     SDL_INIT_AUDIO        = 0x00000010,  /**< `SDL_INIT_AUDIO` implies `SDL_INIT_EVENTS` */

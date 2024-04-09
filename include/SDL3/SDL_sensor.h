@@ -79,7 +79,7 @@ typedef enum
 } SDL_SensorType;
 
 /**
- * Accelerometer sensor
+ * Accelerometer sensor.
  *
  * The accelerometer returns the current acceleration in SI meters per
  * second squared. This measurement includes the force of gravity, so
@@ -91,9 +91,10 @@ typedef enum
  * values[2]: Acceleration on the z axis
  *
  * For phones and tablets held in natural orientation and game controllers held in front of you, the axes are defined as follows:
- * -X ... +X : left ... right
- * -Y ... +Y : bottom ... top
- * -Z ... +Z : farther ... closer
+ *
+ * - -X ... +X : left ... right
+ * - -Y ... +Y : bottom ... top
+ * - -Z ... +Z : farther ... closer
  *
  * The axis data is not changed when the device is rotated.
  *
@@ -102,7 +103,7 @@ typedef enum
 #define SDL_STANDARD_GRAVITY    9.80665f
 
 /**
- * Gyroscope sensor
+ * Gyroscope sensor.
  *
  * The gyroscope returns the current rate of rotation in radians per second.
  * The rotation is positive in the counter-clockwise direction. That is,
@@ -115,9 +116,10 @@ typedef enum
  * values[2]: Angular speed around the z axis (roll)
  *
  * For phones and tablets held in natural orientation and game controllers held in front of you, the axes are defined as follows:
- * -X ... +X : left ... right
- * -Y ... +Y : bottom ... top
- * -Z ... +Z : farther ... closer
+ *
+ * - -X ... +X : left ... right
+ * - -Y ... +Y : bottom ... top
+ * - -Z ... +Z : farther ... closer
  *
  * The axis data is not changed when the device is rotated.
  *
@@ -205,7 +207,7 @@ extern DECLSPEC SDL_Sensor *SDLCALL SDL_GetSensorFromInstanceID(SDL_SensorID ins
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor *sensor);
 
 /**
- * Get the implementation dependent name of a sensor
+ * Get the implementation dependent name of a sensor.
  *
  * \param sensor The SDL_Sensor object
  * \returns the sensor name, or NULL if `sensor` is NULL.

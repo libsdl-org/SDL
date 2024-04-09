@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
+/*
  *  \file SDL_test_font.h
  *
  *  Font related functions of SDL test framework.
@@ -42,7 +42,7 @@ extern int FONT_CHARACTER_SIZE;
 
 #define FONT_LINE_HEIGHT    (FONT_CHARACTER_SIZE + 2)
 
-/**
+/*
  *  Draw a string in the currently set font.
  *
  *  \param renderer The renderer to draw on.
@@ -54,7 +54,7 @@ extern int FONT_CHARACTER_SIZE;
  */
 int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c);
 
-/**
+/*
  *  Draw a UTF-8 string in the currently set font.
  *
  *  The font currently only supports characters in the Basic Latin and Latin-1 Supplement sets.
@@ -68,7 +68,7 @@ int SDLTest_DrawCharacter(SDL_Renderer *renderer, float x, float y, Uint32 c);
  */
 int SDLTest_DrawString(SDL_Renderer *renderer, float x, float y, const char *s);
 
-/**
+/*
  *  Data used for multi-line text output
  */
 typedef struct SDLTest_TextWindow
@@ -79,7 +79,7 @@ typedef struct SDLTest_TextWindow
     char **lines;
 } SDLTest_TextWindow;
 
-/**
+/*
  *  Create a multi-line text output window
  *
  *  \param x The X coordinate of the upper left corner of the window.
@@ -93,7 +93,7 @@ typedef struct SDLTest_TextWindow
  */
 SDLTest_TextWindow *SDLTest_TextWindowCreate(float x, float y, float w, float h);
 
-/**
+/*
  *  Display a multi-line text output window
  *
  *  This function should be called every frame to display the text
@@ -105,7 +105,7 @@ SDLTest_TextWindow *SDLTest_TextWindowCreate(float x, float y, float w, float h)
  */
 void SDLTest_TextWindowDisplay(SDLTest_TextWindow *textwin, SDL_Renderer *renderer);
 
-/**
+/*
  *  Add text to a multi-line text output window
  *
  *  Adds UTF-8 text to the end of the current text. The newline character starts a
@@ -120,7 +120,7 @@ void SDLTest_TextWindowDisplay(SDLTest_TextWindow *textwin, SDL_Renderer *render
  */
 void SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
-/**
+/*
  *  Add text to a multi-line text output window
  *
  *  Adds UTF-8 text to the end of the current text. The newline character starts a
@@ -135,7 +135,7 @@ void SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, SDL_PRINTF_FORMAT_ST
  */
 void SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, const char *text, size_t len);
 
-/**
+/*
  *  Clear the text in a multi-line text output window
  *
  *  \param textwin The text output window
@@ -144,7 +144,7 @@ void SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, const char
  */
 void SDLTest_TextWindowClear(SDLTest_TextWindow *textwin);
 
-/**
+/*
  *  Free the storage associated with a multi-line text output window
  *
  *  \param textwin The text output window
@@ -153,7 +153,7 @@ void SDLTest_TextWindowClear(SDLTest_TextWindow *textwin);
  */
 void SDLTest_TextWindowDestroy(SDLTest_TextWindow *textwin);
 
-/**
+/*
  *  Cleanup textures used by font drawing functions.
  */
 void SDLTest_CleanupTextDrawing(void);

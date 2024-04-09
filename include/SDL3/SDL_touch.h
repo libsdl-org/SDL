@@ -50,12 +50,23 @@ typedef enum
     SDL_TOUCH_DEVICE_INDIRECT_RELATIVE  /* trackpad with screen cursor-relative coordinates */
 } SDL_TouchDeviceType;
 
+/**
+ * Data about a single finger in a multitouch event.
+ *
+ * Each touch even is a collection of fingers that are simultaneously in
+ * contact with the touch device (so a "touch" can be a "multitouch," in
+ * reality), and this struct reports details of the specific fingers.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetTouchFinger
+ */
 typedef struct SDL_Finger
 {
-    SDL_FingerID id;
-    float x;
-    float y;
-    float pressure;
+    SDL_FingerID id;  /**< the finger ID */
+    float x;  /**< the x-axis location of the touch event, normalized (0...1) */
+    float y;  /**< the y-axis location of the touch event, normalized (0...1) */
+    float pressure; /**< the quantity of pressure applied, normalized (0...1) */
 } SDL_Finger;
 
 /* Used as the device ID for mouse events simulated with touch input */

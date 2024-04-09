@@ -48,19 +48,23 @@ extern "C" {
  */
 typedef Uint32 SDL_CameraDeviceID;
 
-
 /**
- * The structure used to identify an opened SDL camera
+ * The opaque structure used to identify an opened SDL camera.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 struct SDL_Camera;
 typedef struct SDL_Camera SDL_Camera;
 
 /**
- *  SDL_CameraSpec structure
+ * The details of an output format for a camera device.
+ *
+ * Cameras often support multiple formats; each one will be encapsulated in this struct.
  *
  * \sa SDL_GetCameraDeviceSupportedFormats
  * \sa SDL_GetCameraFormat
  *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_CameraSpec
 {
@@ -75,6 +79,8 @@ typedef struct SDL_CameraSpec
  * The position of camera in relation to system device.
  *
  * \sa SDL_GetCameraDevicePosition
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_CameraPosition
 {

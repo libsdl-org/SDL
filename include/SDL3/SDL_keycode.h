@@ -47,7 +47,15 @@ typedef Sint32 SDL_Keycode;
 #define SDLK_SCANCODE_MASK (1<<30)
 #define SDL_SCANCODE_TO_KEYCODE(X)  (X | SDLK_SCANCODE_MASK)
 
-typedef enum
+/**
+ * Possible SDL virtual key values.
+ *
+ * Values from this enum are used to represent keyboard keys using the current
+ * layout of the keyboard.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_KeyCode
 {
     SDLK_UNKNOWN = 0,
 
@@ -328,27 +336,29 @@ typedef enum
 
 /**
  * Enumeration of valid key mods (possibly OR'd together).
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_Keymod
 {
-    SDL_KMOD_NONE = 0x0000,
-    SDL_KMOD_LSHIFT = 0x0001,
-    SDL_KMOD_RSHIFT = 0x0002,
-    SDL_KMOD_LCTRL = 0x0040,
-    SDL_KMOD_RCTRL = 0x0080,
-    SDL_KMOD_LALT = 0x0100,
-    SDL_KMOD_RALT = 0x0200,
-    SDL_KMOD_LGUI = 0x0400,
-    SDL_KMOD_RGUI = 0x0800,
-    SDL_KMOD_NUM = 0x1000,
-    SDL_KMOD_CAPS = 0x2000,
-    SDL_KMOD_MODE = 0x4000,
-    SDL_KMOD_SCROLL = 0x8000,
+    SDL_KMOD_NONE = 0x0000,    /**< no modifier is applicable. */
+    SDL_KMOD_LSHIFT = 0x0001,  /**< the left Shift key is down. */
+    SDL_KMOD_RSHIFT = 0x0002,  /**< the right Shift key is down. */
+    SDL_KMOD_LCTRL = 0x0040,   /**< the left Ctrl (Control) key is down. */
+    SDL_KMOD_RCTRL = 0x0080,   /**< the right Ctrl (Control) key is down. */
+    SDL_KMOD_LALT = 0x0100,    /**< the left Alt key is down. */
+    SDL_KMOD_RALT = 0x0200,    /**< the right Alt key is down. */
+    SDL_KMOD_LGUI = 0x0400,    /**< the left GUI key (often the Windows key) is down. */
+    SDL_KMOD_RGUI = 0x0800,    /**< the right GUI key (often the Windows key) is down. */
+    SDL_KMOD_NUM = 0x1000,     /**< the Num Lock key (may be located on an extended keypad) is down. */
+    SDL_KMOD_CAPS = 0x2000,    /**< the Caps Lock key is down. */
+    SDL_KMOD_MODE = 0x4000,    /**< the !AltGr key is down. */
+    SDL_KMOD_SCROLL = 0x8000,  /**< the Scoll Lock key is down. */
 
-    SDL_KMOD_CTRL = SDL_KMOD_LCTRL | SDL_KMOD_RCTRL,
-    SDL_KMOD_SHIFT = SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT,
-    SDL_KMOD_ALT = SDL_KMOD_LALT | SDL_KMOD_RALT,
-    SDL_KMOD_GUI = SDL_KMOD_LGUI | SDL_KMOD_RGUI,
+    SDL_KMOD_CTRL = SDL_KMOD_LCTRL | SDL_KMOD_RCTRL,    /**< Any Ctrl key is down. */
+    SDL_KMOD_SHIFT = SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT, /**< Any Shift key is down. */
+    SDL_KMOD_ALT = SDL_KMOD_LALT | SDL_KMOD_RALT,       /**< Any Alt key is down. */
+    SDL_KMOD_GUI = SDL_KMOD_LGUI | SDL_KMOD_RGUI,       /**< Any GUI key is down. */
 
     SDL_KMOD_RESERVED = SDL_KMOD_SCROLL /* This is for source-level compatibility with SDL 2.0.0. */
 } SDL_Keymod;

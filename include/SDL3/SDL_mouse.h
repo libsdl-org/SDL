@@ -45,7 +45,7 @@ typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
 /**
  * Cursor types for SDL_CreateSystemCursor().
  */
-typedef enum
+typedef enum SDL_SystemCursor
 {
     SDL_SYSTEM_CURSOR_ARROW,     /**< Arrow */
     SDL_SYSTEM_CURSOR_IBEAM,     /**< I-beam */
@@ -73,7 +73,7 @@ typedef enum
 /**
  * Scroll direction types for the Scroll event
  */
-typedef enum
+typedef enum SDL_MouseWheelDirection
 {
     SDL_MOUSEWHEEL_NORMAL,    /**< The scroll direction is normal */
     SDL_MOUSEWHEEL_FLIPPED    /**< The scroll direction is flipped / natural */

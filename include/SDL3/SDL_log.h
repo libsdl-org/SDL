@@ -47,7 +47,7 @@ extern "C" {
 
 
 /**
- *  The maximum size of a log message prior to SDL 2.0.24
+ *  The maximum size of a log message prior to SDL 2.0.24.
  *
  *  As of 2.0.24 there is no limit to the length of SDL log messages.
  */
@@ -61,7 +61,7 @@ extern "C" {
  *  at the VERBOSE level and all other categories are enabled at the
  *  ERROR level.
  */
-typedef enum
+typedef enum SDL_LogCategory
 {
     SDL_LOG_CATEGORY_APPLICATION,
     SDL_LOG_CATEGORY_ERROR,
@@ -99,7 +99,7 @@ typedef enum
 /**
  *  The predefined log priorities
  */
-typedef enum
+typedef enum SDL_LogPriority
 {
     SDL_LOG_PRIORITY_VERBOSE = 1,
     SDL_LOG_PRIORITY_DEBUG,

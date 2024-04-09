@@ -146,6 +146,13 @@ typedef Uint32 SDL_AudioDeviceID;
 #define SDL_AUDIO_DEVICE_DEFAULT_OUTPUT ((SDL_AudioDeviceID) 0xFFFFFFFF)
 #define SDL_AUDIO_DEVICE_DEFAULT_CAPTURE ((SDL_AudioDeviceID) 0xFFFFFFFE)
 
+/**
+ * Format specifier for audio data.
+ *
+ * \sa SDL_AudioFormat
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_AudioSpec
 {
     SDL_AudioFormat format;     /**< Audio data format */
@@ -156,18 +163,30 @@ typedef struct SDL_AudioSpec
 /* Calculate the size of each audio frame (in bytes) */
 #define SDL_AUDIO_FRAMESIZE(x) (SDL_AUDIO_BYTESIZE((x).format) * (x).channels)
 
-/* SDL_AudioStream is an audio conversion interface.
-    - It can handle resampling data in chunks without generating
-      artifacts, when it doesn't have the complete buffer available.
-    - It can handle incoming data in any variable size.
-    - It can handle input/output format changes on the fly.
-    - You push data as you have it, and pull it when you need it
-    - It can also function as a basic audio data queue even if you
-      just have sound that needs to pass from one place to another.
-    - You can hook callbacks up to them when more data is added or
-      requested, to manage data on-the-fly.
+/**
+ * The opaque handle that represents an audio stream.
+ *
+ * SDL_AudioStream is an audio conversion interface.
+ *
+ * - It can handle resampling data in chunks without generating
+ *   artifacts, when it doesn't have the complete buffer available.
+ * - It can handle incoming data in any variable size.
+ * - It can handle input/output format changes on the fly.
+ * - You push data as you have it, and pull it when you need it
+ * - It can also function as a basic audio data queue even if you
+ *   just have sound that needs to pass from one place to another.
+ * - You can hook callbacks up to them when more data is added or
+ *   requested, to manage data on-the-fly.
+ *
+ * Audio streams are the core of the SDL3 audio interface. You create
+ * one or more of them, bind them to an opened audio device, and feed
+ * data to them (or for recording, consume data from them).
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateAudioStream
  */
-struct SDL_AudioStream;  /* this is opaque to the outside world. */
+struct SDL_AudioStream;  /**< this is opaque to the outside world. */
 typedef struct SDL_AudioStream SDL_AudioStream;
 
 
@@ -903,7 +922,7 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamQueued(SDL_AudioStream *stream);
 extern DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
 
 /**
- * Clear any pending data in the stream without converting it
+ * Clear any pending data in the stream without converting it.
  *
  * \param stream The audio stream to clear
  * \returns 0 on success or a negative error code on failure; call
@@ -1090,7 +1109,7 @@ extern DECLSPEC int SDLCALL SDL_SetAudioStreamPutCallback(SDL_AudioStream *strea
 
 
 /**
- * Free an audio stream
+ * Free an audio stream.
  *
  * \param stream The audio stream to free
  *

@@ -69,7 +69,7 @@ typedef struct SDL_BlitMap SDL_BlitMap;  /* this is an opaque type. */
 /**
  * The scaling mode
  */
-typedef enum
+typedef enum SDL_ScaleMode
 {
     SDL_SCALEMODE_NEAREST, /**< nearest pixel sampling */
     SDL_SCALEMODE_LINEAR,  /**< linear filtering */
@@ -79,7 +79,7 @@ typedef enum
 /**
  * The flip mode
  */
-typedef enum
+typedef enum SDL_FlipMode
 {
     SDL_FLIP_NONE,          /**< Do not flip */
     SDL_FLIP_HORIZONTAL,    /**< flip horizontally */
@@ -419,7 +419,7 @@ extern DECLSPEC int SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *file);
 extern DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface *surface, int flag);
 
 /**
- * Returns whether the surface is RLE enabled
+ * Returns whether the surface is RLE enabled.
  *
  * It is safe to pass a NULL `surface` here; it will return SDL_FALSE.
  *
@@ -459,7 +459,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);
 extern DECLSPEC int SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface, int flag, Uint32 key);
 
 /**
- * Returns whether the surface has a color key
+ * Returns whether the surface has a color key.
  *
  * It is safe to pass a NULL `surface` here; it will return SDL_FALSE.
  *

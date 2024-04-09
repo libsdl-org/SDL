@@ -93,9 +93,13 @@ char *alloca();
 #define SDL_TABLESIZE(table)    SDL_arraysize(table)
 
 /**
- *  Macro useful for building other macros with strings in them
+ *  Macro useful for building other macros with strings in them.
  *
- *  e.g. #define LOG_ERROR(X) OutputDebugString(SDL_STRINGIFY_ARG(__FUNCTION__) ": " X "\n")
+ *  For example:
+ *
+ * ```c
+ * #define LOG_ERROR(X) OutputDebugString(SDL_STRINGIFY_ARG(__FUNCTION__) ": " X "\n")`
+ * ```
  */
 #define SDL_STRINGIFY_ARG(arg)  #arg
 
@@ -187,7 +191,7 @@ typedef int64_t Sint64;
 typedef uint64_t Uint64;
 
 /**
- * SDL times are signed, 64-bit integers representing nanoseconds since the Unix epoch (Jan 1, 1970)
+ * SDL times are signed, 64-bit integers representing nanoseconds since the Unix epoch (Jan 1, 1970).
  *
  * They can be converted between POSIX time_t values with SDL_NS_TO_SECONDS() and SDL_SECONDS_TO_NS(),
  * and between Windows FILETIME values with SDL_TimeToWindows() and SDL_TimeFromWindows().
@@ -417,7 +421,7 @@ typedef void *(SDLCALL *SDL_realloc_func)(void *mem, size_t size);
 typedef void (SDLCALL *SDL_free_func)(void *mem);
 
 /**
- * Get the original set of SDL memory functions
+ * Get the original set of SDL memory functions.
  *
  * \param malloc_func filled with malloc function
  * \param calloc_func filled with calloc function
@@ -432,7 +436,7 @@ extern DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func *mal
                                                             SDL_free_func *free_func);
 
 /**
- * Get the current set of SDL memory functions
+ * Get the current set of SDL memory functions.
  *
  * \param malloc_func filled with malloc function
  * \param calloc_func filled with calloc function
@@ -447,7 +451,7 @@ extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func
                                                     SDL_free_func *free_func);
 
 /**
- * Replace SDL's memory allocation functions with a custom set
+ * Replace SDL's memory allocation functions with a custom set.
  *
  * \param malloc_func custom malloc function
  * \param calloc_func custom calloc function
@@ -464,7 +468,7 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_free_func free_func);
 
 /**
- * Allocate memory aligned to a specific value
+ * Allocate memory aligned to a specific value.
  *
  * If `alignment` is less than the size of `void *`, then it will be increased
  * to match that.
@@ -485,7 +489,7 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 extern DECLSPEC SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
 
 /**
- * Free memory allocated by SDL_aligned_alloc()
+ * Free memory allocated by SDL_aligned_alloc().
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -494,7 +498,7 @@ extern DECLSPEC SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment, siz
 extern DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
 
 /**
- * Get the number of outstanding (unfreed) allocations
+ * Get the number of outstanding (unfreed) allocations.
  *
  * \returns the number of allocations
  *

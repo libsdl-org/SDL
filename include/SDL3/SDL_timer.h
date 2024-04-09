@@ -37,9 +37,7 @@
 extern "C" {
 #endif
 
-/**
- * SDL time constants
- */
+/* SDL time constants */
 #define SDL_MS_PER_SECOND   1000
 #define SDL_US_PER_SECOND   1000000
 #define SDL_NS_PER_SECOND   1000000000LL

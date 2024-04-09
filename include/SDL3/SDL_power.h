@@ -38,9 +38,13 @@ extern "C" {
 #endif
 
 /**
- *  The basic state for the system's power supply.
+ * The basic state for the system's power supply.
+ *
+ * These are results returned by SDL_GetPowerInfo().
+ *
+ * \since This enum is available since SDL 3.0.0
  */
-typedef enum
+typedef enum SDL_PowerState
 {
     SDL_POWERSTATE_ERROR = -1,   /**< error determining power status */
     SDL_POWERSTATE_UNKNOWN,      /**< cannot determine power status */

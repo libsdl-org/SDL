@@ -31,19 +31,20 @@
 #include <SDL3/SDL_stdinc.h>
 
 /**
- *  The SDL keyboard scancode representation.
+ * The SDL keyboard scancode representation.
  *
- *  An SDL scancode is the physical representation of a key on the keyboard,
- *  independent of language and keyboard mapping.
+ * An SDL scancode is the physical representation of a key on the keyboard,
+ * independent of language and keyboard mapping.
  *
- *  Values of this type are used to represent keyboard keys, among other places
- *  in the \link SDL_Keysym::scancode key.keysym.scancode \endlink field of the
- *  SDL_Event structure.
+ * Values of this type are used to represent keyboard keys, among other places
+ * in the `keysym.scancode` field of the SDL_KeyboardEvent structure.
  *
- *  The values in this enumeration are based on the USB usage page standard:
- *  https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
+ * The values in this enumeration are based on the USB usage page standard:
+ * https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_Scancode
 {
     SDL_SCANCODE_UNKNOWN = 0,
 

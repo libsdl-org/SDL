@@ -54,7 +54,7 @@ extern "C" {
 /**
  * The types of events that can be delivered.
  */
-typedef enum
+typedef enum SDL_EventType
 {
     SDL_EVENT_FIRST     = 0,     /**< Unused (do not remove) */
 
@@ -671,10 +671,10 @@ typedef struct SDL_PenButtonEvent
 } SDL_PenButtonEvent;
 
 /**
- *  An event used to drop text or request a file open by the system (event.drop.*)
+ * An event used to drop text or request a file open by the system (event.drop.*)
  *
- *  The `data` is owned by SDL and should be copied if the application
- *  wants to hold onto it beyond the scope of handling this event.
+ * The `data` is owned by SDL and should be copied if the application
+ * wants to hold onto it beyond the scope of handling this event. Do not free it!
  */
 typedef struct SDL_DropEvent
 {
@@ -722,7 +722,13 @@ typedef struct SDL_QuitEvent
 } SDL_QuitEvent;
 
 /**
- *  A user-defined event type (event.user.*)
+ * A user-defined event type (event.user.*)
+ *
+ * This event is unique; it is never created by SDL, but only by the
+ * application. The event can be pushed onto the event queue using
+ * SDL_PushEvent(). The contents of the structure members are completely
+ * up to the programmer; the only requirement is that '''type''' is a value
+ * obtained from SDL_RegisterEvents().
  */
 typedef struct SDL_UserEvent
 {
@@ -737,7 +743,7 @@ typedef struct SDL_UserEvent
 
 
 /**
- *  General event structure
+ * The structure for all events in SDL.
  */
 typedef union SDL_Event
 {
@@ -823,7 +829,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NUL
 extern DECLSPEC void SDLCALL SDL_PumpEvents(void);
 
 /* @{ */
-typedef enum
+typedef enum SDL_eventaction
 {
     SDL_ADDEVENT,
     SDL_PEEKEVENT,
@@ -1263,7 +1269,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_EventEnabled(Uint32 type);
 extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 
 /**
- * Allocate dynamic memory for an SDL event
+ * Allocate dynamic memory for an SDL event.
  *
  * You can use this to allocate memory for user events that will be
  * automatically freed after the event is processed.

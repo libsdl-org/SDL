@@ -59,7 +59,7 @@ extern "C" {
 struct SDL_Gamepad;
 typedef struct SDL_Gamepad SDL_Gamepad;
 
-typedef enum
+typedef enum SDL_GamepadType
 {
     SDL_GAMEPAD_TYPE_UNKNOWN = 0,
     SDL_GAMEPAD_TYPE_STANDARD,
@@ -95,7 +95,7 @@ typedef enum
  *
  *  You can query the labels for the face buttons using SDL_GetGamepadButtonLabel()
  */
-typedef enum
+typedef enum SDL_GamepadButton
 {
     SDL_GAMEPAD_BUTTON_INVALID = -1,
     SDL_GAMEPAD_BUTTON_SOUTH,           /* Bottom face button (e.g. Xbox A button) */
@@ -134,7 +134,7 @@ typedef enum
  *
  *  For a complete set, you should look at the button and gamepad type and have a set of symbols that work well with your art style.
  */
-typedef enum
+typedef enum SDL_GamepadButtonLabel
 {
     SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN,
     SDL_GAMEPAD_BUTTON_LABEL_A,
@@ -158,7 +158,7 @@ typedef enum
  *  (fully pressed) when reported by SDL_GetGamepadAxis(). Note that this is not the
  *  same range that will be reported by the lower-level SDL_GetJoystickAxis().
  */
-typedef enum
+typedef enum SDL_GamepadAxis
 {
     SDL_GAMEPAD_AXIS_INVALID = -1,
     SDL_GAMEPAD_AXIS_LEFTX,
@@ -170,7 +170,7 @@ typedef enum
     SDL_GAMEPAD_AXIS_MAX
 } SDL_GamepadAxis;
 
-typedef enum
+typedef enum SDL_GamepadBindingType
 {
     SDL_GAMEPAD_BINDTYPE_NONE = 0,
     SDL_GAMEPAD_BINDTYPE_BUTTON,
@@ -886,7 +886,7 @@ extern DECLSPEC SDL_PowerState SDLCALL SDL_GetGamepadPowerInfo(SDL_Gamepad *game
 extern DECLSPEC SDL_bool SDLCALL SDL_GamepadConnected(SDL_Gamepad *gamepad);
 
 /**
- * Get the underlying joystick from a gamepad
+ * Get the underlying joystick from a gamepad.
  *
  * This function will give you a SDL_Joystick object, which allows you to use
  * the SDL_Joystick functions with a SDL_Gamepad object. This would be useful
@@ -935,7 +935,7 @@ extern DECLSPEC void SDLCALL SDL_SetGamepadEventsEnabled(SDL_bool enabled);
 extern DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
 
 /**
- * Get the SDL joystick layer bindings for a gamepad
+ * Get the SDL joystick layer bindings for a gamepad.
  *
  * \param gamepad a gamepad
  * \param count a pointer filled in with the number of bindings returned
@@ -1350,7 +1350,7 @@ extern DECLSPEC int SDLCALL SDL_RumbleGamepadTriggers(SDL_Gamepad *gamepad, Uint
 extern DECLSPEC int SDLCALL SDL_SetGamepadLED(SDL_Gamepad *gamepad, Uint8 red, Uint8 green, Uint8 blue);
 
 /**
- * Send a gamepad specific effect packet
+ * Send a gamepad specific effect packet.
  *
  * \param gamepad The gamepad to affect
  * \param data The data to send to the gamepad

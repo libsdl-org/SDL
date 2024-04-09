@@ -162,11 +162,11 @@ extern DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
  * | TEMPLATES   | X       | X         |      | X          |       |            |
  * | VIDEOS      | X       | X*        |      | X          |       |            |
  *
- * * Note that on macOS/iOS, the Videos folder is called "Movies".
+ * Note that on macOS/iOS, the Videos folder is called "Movies".
  *
  * \sa SDL_GetUserFolder
  */
-typedef enum
+typedef enum SDL_Folder
 {
     /** The folder which contains all of the current user's data, preferences,
       and documents. It usually contains most of the other folders. If a

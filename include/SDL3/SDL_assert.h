@@ -125,6 +125,15 @@ typedef enum
     SDL_ASSERTION_ALWAYS_IGNORE  /**< Ignore the assert from now on. */
 } SDL_AssertState;
 
+/**
+ * Information about an assertion failure.
+ *
+ * This structure is filled in with information about a triggered assertion,
+ * used by the assertion handler, then added to the assertion report.
+ * This is returned as a linked list from SDL_GetAssertionReport().
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_AssertData
 {
     SDL_bool always_ignore;

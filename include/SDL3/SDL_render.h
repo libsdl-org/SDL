@@ -62,14 +62,14 @@ extern "C" {
 #endif
 
 /**
- * The name of the software renderer
+ * The name of the software renderer.
  */
 #define SDL_SOFTWARE_RENDERER   "software"
 
 /**
- * Flags used when creating a rendering context
+ * Flags used when creating a rendering context.
  */
-typedef enum
+typedef enum SDL_RendererFlags
 {
     SDL_RENDERER_PRESENTVSYNC = 0x00000004  /**< Present is synchronized with the refresh rate */
 } SDL_RendererFlags;
@@ -88,7 +88,7 @@ typedef struct SDL_RendererInfo
 } SDL_RendererInfo;
 
 /**
- *  Vertex structure
+ *  Vertex structure.
  */
 typedef struct SDL_Vertex
 {
@@ -100,7 +100,7 @@ typedef struct SDL_Vertex
 /**
  * The access pattern allowed for a texture.
  */
-typedef enum
+typedef enum SDL_TextureAccess
 {
     SDL_TEXTUREACCESS_STATIC,    /**< Changes rarely, not lockable */
     SDL_TEXTUREACCESS_STREAMING, /**< Changes frequently, lockable */
@@ -108,9 +108,9 @@ typedef enum
 } SDL_TextureAccess;
 
 /**
- * How the logical size is mapped to the output
+ * How the logical size is mapped to the output.
  */
-typedef enum
+typedef enum SDL_RendererLogicalPresentation
 {
     SDL_LOGICAL_PRESENTATION_DISABLED,  /**< There is no logical size in effect */
     SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
@@ -2078,7 +2078,7 @@ extern DECLSPEC int SDLCALL SDL_FlushRenderer(SDL_Renderer *renderer);
 extern DECLSPEC void *SDLCALL SDL_GetRenderMetalLayer(SDL_Renderer *renderer);
 
 /**
- * Get the Metal command encoder for the current frame
+ * Get the Metal command encoder for the current frame.
  *
  * This function returns `void *`, so SDL doesn't have to include Metal's
  * headers, but it can be safely cast to an `id<MTLRenderCommandEncoder>`.

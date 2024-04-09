@@ -48,6 +48,8 @@ extern "C" {
  *
  * \sa SDL_VERSION
  * \sa SDL_GetVersion
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Version
 {
@@ -56,8 +58,7 @@ typedef struct SDL_Version
     Uint8 patch;        /**< update version */
 } SDL_Version;
 
-/* Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
-*/
+/* Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL */
 #define SDL_MAJOR_VERSION   3
 #define SDL_MINOR_VERSION   1
 #define SDL_PATCHLEVEL      1
@@ -76,6 +77,8 @@ typedef struct SDL_Version
  *
  * \sa SDL_Version
  * \sa SDL_GetVersion
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_VERSION(x)                \
 {                                     \
@@ -85,22 +88,31 @@ typedef struct SDL_Version
 }
 
 /**
- *  This macro turns the version numbers into a numeric value:
- *  \verbatim
-    (1,2,3) -> (0x1000203)
-    \endverbatim
+ * This macro turns the version numbers into a numeric value.
+ *
+ * (1,2,3) becomes 0x1000203.
+ *
+ * \param major the major version number.
+ * \param minor the minorversion number.
+ * \param patch the patch version number.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_VERSIONNUM(X, Y, Z) \
-    ((X) << 24 | (Y) << 8 | (Z) << 0)
+#define SDL_VERSIONNUM(major, minor, patch) \
+    ((major) << 24 | (minor) << 8 | (patch) << 0)
 
 /**
  *  This is the version number macro for the current SDL version.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_COMPILEDVERSION \
     SDL_VERSIONNUM(SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL)
 
 /**
  *  This macro will evaluate to true if compiled with SDL at least X.Y.Z.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_VERSION_ATLEAST(X, Y, Z) \
     (SDL_COMPILEDVERSION >= SDL_VERSIONNUM(X, Y, Z))

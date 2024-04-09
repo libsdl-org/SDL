@@ -76,8 +76,8 @@ typedef enum SDL_TimeFormat
     SDL_TIME_FORMAT_12HR = 1, /**< 12 hour time */
 } SDL_TimeFormat;
 
-/**
- *  Global date/time properties
+/*
+ *  Global date/time properties.
  *
  *  - `SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER`: the SDL_DateFormat to use as the preferred date display format
  *    for the current system locale.
@@ -148,7 +148,7 @@ extern DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDate
 
 /**
  * Converts a Windows FILETIME (100-nanosecond intervals since January 1,
- * 1601) to an SDL time
+ * 1601) to an SDL time.
  *
  * This function takes the two 32-bit values of the FILETIME structure as
  * parameters.

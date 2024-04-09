@@ -46,7 +46,7 @@ extern "C" {
  * \sa SDL_ShowSaveFileDialog
  * \sa SDL_ShowOpenFolderDialog
  */
-typedef struct
+typedef struct SDL_DialogFileFilter
 {
     const char *name;
     const char *pattern;

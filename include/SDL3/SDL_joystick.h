@@ -118,7 +118,7 @@ typedef enum
 /* Function prototypes */
 
 /**
- * Locking for atomic access to the joystick API
+ * Locking for atomic access to the joystick API.
  *
  * The SDL joystick functions are thread-safe, however you can lock the
  * joysticks while processing to guarantee that the joystick list won't change
@@ -129,7 +129,7 @@ typedef enum
 extern DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lock);
 
 /**
- * Unlocking for atomic access to the joystick API
+ * Unlocking for atomic access to the joystick API.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -388,7 +388,7 @@ typedef struct SDL_VirtualJoystickDesc
 } SDL_VirtualJoystickDesc;
 
 /**
- * The current version of the SDL_VirtualJoystickDesc structure
+ * The current version of the SDL_VirtualJoystickDesc structure.
  */
 #define SDL_VIRTUAL_JOYSTICK_DESC_VERSION   1
 
@@ -714,7 +714,7 @@ extern DECLSPEC int SDLCALL SDL_GetJoystickGUIDString(SDL_JoystickGUID guid, cha
 extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUIDFromString(const char *pchGUID);
 
 /**
- * Get the device information encoded in a SDL_JoystickGUID structure
+ * Get the device information encoded in a SDL_JoystickGUID structure.
  *
  * \param guid the SDL_JoystickGUID you wish to get info about
  * \param vendor A pointer filled in with the device VID, or 0 if not
@@ -1007,7 +1007,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick, int 
 extern DECLSPEC int SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
- * Start a rumble effect in the joystick's triggers
+ * Start a rumble effect in the joystick's triggers.
  *
  * Each call to this function cancels any previous trigger rumble effect, and
  * calling it with 0 intensity stops any rumbling.
@@ -1056,7 +1056,7 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, U
 extern DECLSPEC int SDLCALL SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 
 /**
- * Send a joystick specific effect packet
+ * Send a joystick specific effect packet.
  *
  * \param joystick The joystick to affect
  * \param data The data to send to the joystick

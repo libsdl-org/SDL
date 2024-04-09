@@ -45,8 +45,8 @@ extern "C" {
 typedef Uint32 SDL_DisplayID;
 typedef Uint32 SDL_WindowID;
 
-/**
- *  Global video properties
+/*
+ *  Global video properties.
  *
  *  - `SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER`: the pointer to
  *    the global `wl_display` object used by the Wayland video backend. Can be
@@ -62,9 +62,11 @@ typedef Uint32 SDL_WindowID;
 #define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
 
 /**
- *  System theme
+ * System theme.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_SystemTheme
 {
     SDL_SYSTEM_THEME_UNKNOWN,   /**< Unknown system theme */
     SDL_SYSTEM_THEME_LIGHT,     /**< Light colored system theme */
@@ -72,15 +74,17 @@ typedef enum
 } SDL_SystemTheme;
 
 /**
- *  The structure that defines a display mode
+ * The structure that defines a display mode.
  *
- *  \sa SDL_GetFullscreenDisplayModes()
- *  \sa SDL_GetDesktopDisplayMode()
- *  \sa SDL_GetCurrentDisplayMode()
- *  \sa SDL_SetWindowFullscreenMode()
- *  \sa SDL_GetWindowFullscreenMode()
+ * \sa SDL_GetFullscreenDisplayModes()
+ * \sa SDL_GetDesktopDisplayMode()
+ * \sa SDL_GetCurrentDisplayMode()
+ * \sa SDL_SetWindowFullscreenMode()
+ * \sa SDL_GetWindowFullscreenMode()
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
-typedef struct
+typedef struct SDL_DisplayMode
 {
     SDL_DisplayID displayID;    /**< the display this mode is associated with */
     SDL_PixelFormatEnum format; /**< pixel format */
@@ -92,9 +96,11 @@ typedef struct
 } SDL_DisplayMode;
 
 /**
- *  Display orientation
+ * Display orientation values; the way a display is rotated.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_DisplayOrientation
 {
     SDL_ORIENTATION_UNKNOWN,            /**< The display orientation can't be determined */
     SDL_ORIENTATION_LANDSCAPE,          /**< The display is in landscape mode, with the right side up, relative to portrait mode */
@@ -104,14 +110,23 @@ typedef enum
 } SDL_DisplayOrientation;
 
 /**
- *  The type used to identify a window
+ *  The struct used as an opaque handle to a window.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateWindow
  */
 typedef struct SDL_Window SDL_Window;
 
 /**
- *  The flags on a window
+ * The flags on a window.
  *
- *  \sa SDL_GetWindowFlags
+ * These cover a lot of true/false, or on/off, window state. Some of it
+ * is immutable after being set through SDL_CreateWindow(), some of it can
+ * be changed on existing windows by the app, and some of it might be altered
+ * by the user or system outside of the app's control.
+ *
+ * \sa SDL_GetWindowFlags
  */
 typedef Uint32 SDL_WindowFlags;
 
@@ -158,9 +173,11 @@ typedef Uint32 SDL_WindowFlags;
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
 
 /**
- *  Window flash operation
+ * Window flash operation.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_FlashOperation
 {
     SDL_FLASH_CANCEL,                   /**< Cancel any window flash state */
     SDL_FLASH_BRIEFLY,                  /**< Flash the window briefly to get attention */
@@ -188,9 +205,15 @@ typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void);
 typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void);
 
 /**
- *  OpenGL configuration attributes
+ * An enumeration of OpenGL configuration attributes.
+ *
+ * While you can set most OpenGL attributes normally, the attributes listed above must be known before SDL creates the window that will be used with the OpenGL context. These attributes are set and read with SDL_GL_SetAttribute() and SDL_GL_GetAttribute().
+ *
+ * In some cases, these attributes are minimum requests; the GL does not promise to give you exactly what you asked for. It's possible to ask for a 16-bit depth buffer and get a 24-bit one instead, for example, or to ask for no stencil buffer and still have one available. Context creation should fail if the GL can't provide your requested attributes at a minimum, but you should check to see exactly what you got.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_GLattr
 {
     SDL_GL_RED_SIZE,
     SDL_GL_GREEN_SIZE,
@@ -222,14 +245,24 @@ typedef enum
     SDL_GL_EGL_PLATFORM
 } SDL_GLattr;
 
-typedef enum
+/**
+ * Possible values to be set for the SDL_GL_CONTEXT_PROFILE_MASK attribute.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_GLprofile
 {
     SDL_GL_CONTEXT_PROFILE_CORE           = 0x0001,
     SDL_GL_CONTEXT_PROFILE_COMPATIBILITY  = 0x0002,
     SDL_GL_CONTEXT_PROFILE_ES             = 0x0004 /**< GLX_CONTEXT_ES2_PROFILE_BIT_EXT */
 } SDL_GLprofile;
 
-typedef enum
+/**
+ * Possible values to be set for the SDL_GL_CONTEXT_FLAGS attribute.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_GLcontextFlag
 {
     SDL_GL_CONTEXT_DEBUG_FLAG              = 0x0001,
     SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG = 0x0002,
@@ -237,13 +270,23 @@ typedef enum
     SDL_GL_CONTEXT_RESET_ISOLATION_FLAG    = 0x0008
 } SDL_GLcontextFlag;
 
-typedef enum
+/**
+ * Possible values to be set for the SDL_GL_CONTEXT_RELEASE_BEHAVIOR attribute.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_GLcontextReleaseFlag
 {
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE   = 0x0000,
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH  = 0x0001
 } SDL_GLcontextReleaseFlag;
 
-typedef enum
+/**
+ * Possible values to be set SDL_GL_CONTEXT_RESET_NOTIFICATION attribute.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_GLContextResetNotification
 {
     SDL_GL_CONTEXT_RESET_NO_NOTIFICATION = 0x0000,
     SDL_GL_CONTEXT_RESET_LOSE_CONTEXT    = 0x0001
@@ -292,7 +335,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetVideoDriver(int index);
 extern DECLSPEC const char *SDLCALL SDL_GetCurrentVideoDriver(void);
 
 /**
- * Get the current system theme
+ * Get the current system theme.
  *
  * \returns the current system theme, light, dark, or unknown
  *
@@ -2004,18 +2047,18 @@ extern DECLSPEC int SDLCALL SDL_ShowWindowSystemMenu(SDL_Window *window, int x, 
  *
  * \sa SDL_HitTest
  */
-typedef enum
+typedef enum SDL_HitTestResult
 {
-    SDL_HITTEST_NORMAL,  /**< Region is normal. No special properties. */
-    SDL_HITTEST_DRAGGABLE,  /**< Region can drag entire window. */
-    SDL_HITTEST_RESIZE_TOPLEFT,
-    SDL_HITTEST_RESIZE_TOP,
-    SDL_HITTEST_RESIZE_TOPRIGHT,
-    SDL_HITTEST_RESIZE_RIGHT,
-    SDL_HITTEST_RESIZE_BOTTOMRIGHT,
-    SDL_HITTEST_RESIZE_BOTTOM,
-    SDL_HITTEST_RESIZE_BOTTOMLEFT,
-    SDL_HITTEST_RESIZE_LEFT
+    SDL_HITTEST_NORMAL,             /**< Region is normal. No special properties. */
+    SDL_HITTEST_DRAGGABLE,          /**< Region can drag entire window. */
+    SDL_HITTEST_RESIZE_TOPLEFT,     /**< Region is the resizable top-left corner border. */
+    SDL_HITTEST_RESIZE_TOP,         /**< Region is the resizable top border. */
+    SDL_HITTEST_RESIZE_TOPRIGHT,    /**< Region is the resizable top-right corner border. */
+    SDL_HITTEST_RESIZE_RIGHT,       /**< Region is the resizable right border. */
+    SDL_HITTEST_RESIZE_BOTTOMRIGHT, /**< Region is the resizable bottom-right corner border. */
+    SDL_HITTEST_RESIZE_BOTTOM,      /**< Region is the resizable bottom border. */
+    SDL_HITTEST_RESIZE_BOTTOMLEFT,  /**< Region is the resizable bottom-left corner border. */
+    SDL_HITTEST_RESIZE_LEFT         /**< Region is the resizable left border. */
 } SDL_HitTestResult;
 
 /**

@@ -53,6 +53,17 @@ typedef enum SDL_IOStatus
     SDL_IO_STATUS_WRITEONLY  /**< Tried to read a write-only buffer */
 } SDL_IOStatus;
 
+/**
+ * The function pointers that drive an SDL_IOStream.
+ *
+ * Applications can provide this struct to SDL_OpenIO() to
+ * create their own implementation of SDL_IOStream. This is
+ * not necessarily required, as SDL already offers several
+ * common types of I/O streams, via functions like SDL_IOFromFile()
+ * and SDL_IOFromMem().
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_IOStreamInterface
 {
     /**
@@ -107,7 +118,14 @@ typedef struct SDL_IOStreamInterface
 
 
 /**
- * This is the read/write operation structure -- opaque, as of SDL3!
+ * The read/write operation structure.
+ *
+ * This operates as an opaque handle. There are several APIs to create
+ * various types of I/O streams, or an app can supply an
+ * SDL_IOStreamInterface to SDL_OpenIO() to provide their own stream
+ * implementation behind this struct's abstract interface.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_IOStream SDL_IOStream;
 
@@ -304,6 +322,9 @@ extern DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromDynamicMem(void);
  * implementations in SDL, like SDL_IOFromFile() or SDL_IOFromMem(), etc.
  *
  * You must free the returned pointer with SDL_CloseIO().
+ *
+ * This function makes a copy of `iface` and the caller does not need to
+ * keep this data around after this call.
  *
  * \param iface The function pointers that implement this SDL_IOStream.
  * \param userdata The app-controlled pointer that is passed to iface's

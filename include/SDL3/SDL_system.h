@@ -112,7 +112,7 @@ typedef union _XEvent XEvent;
 typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
 
 /**
- * Set a callback for every X11 event
+ * Set a callback for every X11 event.
  *
  * The callback may modify the event, and should return SDL_TRUE if the event
  * should continue to be processed, or SDL_FALSE to prevent further
@@ -125,9 +125,7 @@ typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
  */
 extern DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
 
-/*
- * Platform specific functions for Linux
- */
+/* Platform specific functions for Linux*/
 #ifdef SDL_PLATFORM_LINUX
 
 /**
@@ -483,7 +481,7 @@ extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
 /**
  *  WinRT / Windows Phone path types
  */
-typedef enum
+typedef enum SDL_WinRT_Path
 {
     /** The installed app's root directory.
         Files here are likely to be read-only. */
@@ -507,7 +505,7 @@ typedef enum
 /**
  *  WinRT Device Family
  */
-typedef enum
+typedef enum SDL_WinRT_DeviceFamily
 {
     /** Unknown family  */
     SDL_WINRT_DEVICEFAMILY_UNKNOWN,
