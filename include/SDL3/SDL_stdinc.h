@@ -1179,6 +1179,7 @@ extern DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING 
  * \sa SDL_cos
  */
 extern DECLSPEC double SDLCALL SDL_acos(double x);
+
 /**
  * Compute the arc cosine of `x`.
  *
@@ -1206,6 +1207,7 @@ extern DECLSPEC double SDLCALL SDL_acos(double x);
  * \sa SDL_cosf
  */
 extern DECLSPEC float SDLCALL SDL_acosf(float x);
+
 /**
  * Compute the arc sine of `x`.
  *
@@ -1233,6 +1235,7 @@ extern DECLSPEC float SDLCALL SDL_acosf(float x);
  * \sa SDL_sin
  */
 extern DECLSPEC double SDLCALL SDL_asin(double x);
+
 /**
  * Compute the arc sine of `x`.
  *
@@ -1260,6 +1263,7 @@ extern DECLSPEC double SDLCALL SDL_asin(double x);
  * \sa SDL_sinf
  */
 extern DECLSPEC float SDLCALL SDL_asinf(float x);
+
 /**
  * Compute the arc tangent of `x`.
  *
@@ -1289,6 +1293,7 @@ extern DECLSPEC float SDLCALL SDL_asinf(float x);
  * \sa SDL_tan
  */
 extern DECLSPEC double SDLCALL SDL_atan(double x);
+
 /**
  * Compute the arc tangent of `x`.
  *
@@ -1318,12 +1323,13 @@ extern DECLSPEC double SDLCALL SDL_atan(double x);
  * \sa SDL_tanf
  */
 extern DECLSPEC float SDLCALL SDL_atanf(float x);
+
 /**
  * Compute the arc tangent of `y / x`, using the signs of x and y to adjust
  * the result's quadrant.
  *
- * The definition of `z = atan2(x, y)` is `y = x tan(z)`, where the quadrant of z
- * is determined based on the signs of x and y.
+ * The definition of `z = atan2(x, y)` is `y = x tan(z)`, where the quadrant
+ * of z is determined based on the signs of x and y.
  *
  * Domain: `-INF <= x <= INF`, `-INF <= y <= INF`
  *
@@ -1341,8 +1347,8 @@ extern DECLSPEC float SDLCALL SDL_atanf(float x);
  *
  * \param x floating point value of the denominator (x coordinate).
  * \param y floating point value of the numerator (y coordinate)
- * \returns arc tangent of of `y / x` in radians, or, if `x = 0`,
- *          either `-Pi/2`, `0`, or `Pi/2`, depending on the value of `y`.
+ * \returns arc tangent of of `y / x` in radians, or, if `x = 0`, either
+ *          `-Pi/2`, `0`, or `Pi/2`, depending on the value of `y`.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1351,12 +1357,13 @@ extern DECLSPEC float SDLCALL SDL_atanf(float x);
  * \sa SDL_tan
  */
 extern DECLSPEC double SDLCALL SDL_atan2(double y, double x);
+
 /**
  * Compute the arc tangent of `y / x`, using the signs of x and y to adjust
  * the result's quadrant.
  *
- * The definition of `z = atan2(x, y)` is `y = x tan(z)`, where the quadrant of z
- * is determined based on the signs of x and y.
+ * The definition of `z = atan2(x, y)` is `y = x tan(z)`, where the quadrant
+ * of z is determined based on the signs of x and y.
  *
  * Domain: `-INF <= x <= INF`, `-INF <= y <= INF`
  *
@@ -1374,8 +1381,8 @@ extern DECLSPEC double SDLCALL SDL_atan2(double y, double x);
  *
  * \param x floating point value of the denominator (x coordinate).
  * \param y floating point value of the numerator (y coordinate)
- * \returns arc tangent of of `y / x` in radians, or, if `x = 0`,
- *          either `-Pi/2`, `0`, or `Pi/2`, depending on the value of `y`.
+ * \returns arc tangent of of `y / x` in radians, or, if `x = 0`, either
+ *          `-Pi/2`, `0`, or `Pi/2`, depending on the value of `y`.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1384,6 +1391,7 @@ extern DECLSPEC double SDLCALL SDL_atan2(double y, double x);
  * \sa SDL_tan
  */
 extern DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
+
 /**
  * Compute the ceiling of `x`.
  *
@@ -1409,6 +1417,7 @@ extern DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
  * \sa SDL_lround
  */
 extern DECLSPEC double SDLCALL SDL_ceil(double x);
+
 /**
  * Compute the ceiling of `x`.
  *
@@ -1434,6 +1443,7 @@ extern DECLSPEC double SDLCALL SDL_ceil(double x);
  * \sa SDL_lroundf
  */
 extern DECLSPEC float SDLCALL SDL_ceilf(float x);
+
 /**
  * Copy the sign of one floating-point value to another.
  *
@@ -1456,6 +1466,7 @@ extern DECLSPEC float SDLCALL SDL_ceilf(float x);
  * \sa SDL_fabs
  */
 extern DECLSPEC double SDLCALL SDL_copysign(double x, double y);
+
 /**
  * Copy the sign of one floating-point value to another.
  *
@@ -1478,6 +1489,7 @@ extern DECLSPEC double SDLCALL SDL_copysign(double x, double y);
  * \sa SDL_fabsf
  */
 extern DECLSPEC float SDLCALL SDL_copysignf(float x, float y);
+
 /**
  * Compute the cosine of `x`.
  *
@@ -1503,6 +1515,7 @@ extern DECLSPEC float SDLCALL SDL_copysignf(float x, float y);
  * \sa SDL_sin
  */
 extern DECLSPEC double SDLCALL SDL_cos(double x);
+
 /**
  * Compute the cosine of `x`.
  *
@@ -1528,6 +1541,7 @@ extern DECLSPEC double SDLCALL SDL_cos(double x);
  * \sa SDL_sinf
  */
 extern DECLSPEC float SDLCALL SDL_cosf(float x);
+
 /**
  * Compute the exponential of `x`.
  *
@@ -1557,6 +1571,7 @@ extern DECLSPEC float SDLCALL SDL_cosf(float x);
  * \sa SDL_log
  */
 extern DECLSPEC double SDLCALL SDL_exp(double x);
+
 /**
  * Compute the exponential of `x`.
  *
@@ -1586,6 +1601,7 @@ extern DECLSPEC double SDLCALL SDL_exp(double x);
  * \sa SDL_logf
  */
 extern DECLSPEC float SDLCALL SDL_expf(float x);
+
 /**
  * Compute the absolute value of `x`
  *
@@ -1604,6 +1620,7 @@ extern DECLSPEC float SDLCALL SDL_expf(float x);
  * \sa SDL_fabsf
  */
 extern DECLSPEC double SDLCALL SDL_fabs(double x);
+
 /**
  * Compute the absolute value of `x`
  *
@@ -1622,6 +1639,7 @@ extern DECLSPEC double SDLCALL SDL_fabs(double x);
  * \sa SDL_fabs
  */
 extern DECLSPEC float SDLCALL SDL_fabsf(float x);
+
 /**
  * Compute the floor of `x`.
  *
@@ -1647,6 +1665,7 @@ extern DECLSPEC float SDLCALL SDL_fabsf(float x);
  * \sa SDL_lround
  */
 extern DECLSPEC double SDLCALL SDL_floor(double x);
+
 /**
  * Compute the floor of `x`.
  *
@@ -1672,11 +1691,12 @@ extern DECLSPEC double SDLCALL SDL_floor(double x);
  * \sa SDL_lroundf
  */
 extern DECLSPEC float SDLCALL SDL_floorf(float x);
+
 /**
  * Truncate `x` to an integer.
  *
- * Rounds `x` to the next closest integer to 0. This is equivalent to
- * removing the fractional part of `x`, leaving only the integer part.
+ * Rounds `x` to the next closest integer to 0. This is equivalent to removing
+ * the fractional part of `x`, leaving only the integer part.
  *
  * Domain: `-INF <= x <= INF`
  *
@@ -1698,11 +1718,12 @@ extern DECLSPEC float SDLCALL SDL_floorf(float x);
  * \sa SDL_lround
  */
 extern DECLSPEC double SDLCALL SDL_trunc(double x);
+
 /**
  * Truncate `x` to an integer.
  *
- * Rounds `x` to the next closest integer to 0. This is equivalent to
- * removing the fractional part of `x`, leaving only the integer part.
+ * Rounds `x` to the next closest integer to 0. This is equivalent to removing
+ * the fractional part of `x`, leaving only the integer part.
  *
  * Domain: `-INF <= x <= INF`
  *
@@ -1724,6 +1745,7 @@ extern DECLSPEC double SDLCALL SDL_trunc(double x);
  * \sa SDL_lroundf
  */
 extern DECLSPEC float SDLCALL SDL_truncf(float x);
+
 /**
  * Return the floating-point remainder of `x / y`
  *
@@ -1751,6 +1773,7 @@ extern DECLSPEC float SDLCALL SDL_truncf(float x);
  * \sa SDL_lround
  */
 extern DECLSPEC double SDLCALL SDL_fmod(double x, double y);
+
 /**
  * Return the floating-point remainder of `x / y`
  *
@@ -1778,6 +1801,7 @@ extern DECLSPEC double SDLCALL SDL_fmod(double x, double y);
  * \sa SDL_lroundf
  */
 extern DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
+
 /**
  * Compute the natural logarithm of `x`.
  *
@@ -1805,6 +1829,7 @@ extern DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
  * \sa SDL_exp
  */
 extern DECLSPEC double SDLCALL SDL_log(double x);
+
 /**
  * Compute the natural logarithm of `x`.
  *
@@ -1831,6 +1856,7 @@ extern DECLSPEC double SDLCALL SDL_log(double x);
  * \sa SDL_expf
  */
 extern DECLSPEC float SDLCALL SDL_logf(float x);
+
 /**
  * Compute the base-10 logarithm of `x`.
  *
@@ -1849,7 +1875,7 @@ extern DECLSPEC float SDLCALL SDL_logf(float x);
  * updated.
  *
  * \param x floating point value. Must be greater than 0.
- * \returns the  logarithm of `x`
+ * \returns the logarithm of `x`
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1858,6 +1884,7 @@ extern DECLSPEC float SDLCALL SDL_logf(float x);
  * \sa SDL_pow
  */
 extern DECLSPEC double SDLCALL SDL_log10(double x);
+
 /**
  * Compute the base-10 logarithm of `x`.
  *
@@ -1876,7 +1903,7 @@ extern DECLSPEC double SDLCALL SDL_log10(double x);
  * updated.
  *
  * \param x floating point value. Must be greater than 0.
- * \returns the  logarithm of `x`
+ * \returns the logarithm of `x`
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1885,6 +1912,7 @@ extern DECLSPEC double SDLCALL SDL_log10(double x);
  * \sa SDL_powf
  */
 extern DECLSPEC float SDLCALL SDL_log10f(float x);
+
 /**
  * Split `x` into integer and fractional parts
  *
@@ -1902,6 +1930,7 @@ extern DECLSPEC float SDLCALL SDL_log10f(float x);
  * \sa SDL_fmod
  */
 extern DECLSPEC double SDLCALL SDL_modf(double x, double *y);
+
 /**
  * Split `x` into integer and fractional parts
  *
@@ -1919,6 +1948,7 @@ extern DECLSPEC double SDLCALL SDL_modf(double x, double *y);
  * \sa SDL_fmodf
  */
 extern DECLSPEC float SDLCALL SDL_modff(float x, float *y);
+
 /**
  * Raise `x` to the power `y`
  *
@@ -1948,6 +1978,7 @@ extern DECLSPEC float SDLCALL SDL_modff(float x, float *y);
  * \sa SDL_log
  */
 extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
+
 /**
  * Raise `x` to the power `y`
  *
@@ -1977,6 +2008,7 @@ extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
  * \sa SDL_logf
  */
 extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
+
 /**
  * Round `x` to the nearest integer.
  *
@@ -2003,6 +2035,7 @@ extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
  * \sa SDL_trunc
  */
 extern DECLSPEC double SDLCALL SDL_round(double x);
+
 /**
  * Round `x` to the nearest integer.
  *
@@ -2029,6 +2062,7 @@ extern DECLSPEC double SDLCALL SDL_round(double x);
  * \sa SDL_truncf
  */
 extern DECLSPEC float SDLCALL SDL_roundf(float x);
+
 /**
  * Round `x` to the nearest integer representable as a long
  *
@@ -2055,6 +2089,7 @@ extern DECLSPEC float SDLCALL SDL_roundf(float x);
  * \sa SDL_trunc
  */
 extern DECLSPEC long SDLCALL SDL_lround(double x);
+
 /**
  * Round `x` to the nearest integer representable as a long
  *
@@ -2081,6 +2116,7 @@ extern DECLSPEC long SDLCALL SDL_lround(double x);
  * \sa SDL_truncf
  */
 extern DECLSPEC long SDLCALL SDL_lroundf(float x);
+
 /**
  * Scale `x` by an integer power of two.
  *
@@ -2103,6 +2139,7 @@ extern DECLSPEC long SDLCALL SDL_lroundf(float x);
  * \sa SDL_pow
  */
 extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
+
 /**
  * Scale `x` by an integer power of two.
  *
@@ -2125,6 +2162,7 @@ extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
  * \sa SDL_powf
  */
 extern DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
+
 /**
  * Compute the sine of `x`.
  *
@@ -2150,6 +2188,7 @@ extern DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
  * \sa SDL_cos
  */
 extern DECLSPEC double SDLCALL SDL_sin(double x);
+
 /**
  * Compute the sine of `x`.
  *
@@ -2175,6 +2214,7 @@ extern DECLSPEC double SDLCALL SDL_sin(double x);
  * \sa SDL_cosf
  */
 extern DECLSPEC float SDLCALL SDL_sinf(float x);
+
 /**
  * Compute the square root of `x`.
  *
@@ -2198,6 +2238,7 @@ extern DECLSPEC float SDLCALL SDL_sinf(float x);
  * \sa SDL_sqrtf
  */
 extern DECLSPEC double SDLCALL SDL_sqrt(double x);
+
 /**
  * Compute the square root of `x`.
  *
@@ -2221,6 +2262,7 @@ extern DECLSPEC double SDLCALL SDL_sqrt(double x);
  * \sa SDL_sqrt
  */
 extern DECLSPEC float SDLCALL SDL_sqrtf(float x);
+
 /**
  * Compute the tangent of `x`.
  *
@@ -2248,6 +2290,7 @@ extern DECLSPEC float SDLCALL SDL_sqrtf(float x);
  * \sa SDL_atan2
  */
 extern DECLSPEC double SDLCALL SDL_tan(double x);
+
 /**
  * Compute the tangent of `x`.
  *
