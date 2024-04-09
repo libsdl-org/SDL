@@ -695,7 +695,6 @@ typedef struct SDL_FColor
     float b;
     float a;
 } SDL_FColor;
-#define SDL_FColour SDL_FColor
 
 /**
  * A set of indexed colors representing a palette.
