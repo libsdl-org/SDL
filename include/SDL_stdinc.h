@@ -107,7 +107,7 @@
 # elif defined(__MRC__)
 void *alloca(unsigned);
 # else
-char *alloca();
+void *alloca(size_t);
 # endif
 #endif
 
