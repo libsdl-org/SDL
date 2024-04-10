@@ -120,12 +120,12 @@ disable assertions.
  * Possible outcomes from a triggered assertion.
  *
  * When an enabled assertion triggers, it may call the assertion handler
- * (possibly one provided by the app via SDL_SetAssertionHandler), which
- * will return one of these values, possibly after asking the user.
+ * (possibly one provided by the app via SDL_SetAssertionHandler), which will
+ * return one of these values, possibly after asking the user.
  *
- * Then SDL will respond based on this outcome (loop around to
- * retry the condition, try to break in a debugger, kill the program, or
- * ignore the problem).
+ * Then SDL will respond based on this outcome (loop around to retry the
+ * condition, try to break in a debugger, kill the program, or ignore the
+ * problem).
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -218,21 +218,22 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
 
 /* Enable various levels of assertions. */
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * An assertion test that is normally performed only in debug builds.
  *
- * This macro is enabled when the SDL_ASSERT_LEVEL is >= 2, otherwise it
- * is disabled. This is meant to only do these tests in debug builds, so
- * they can tend to be more expensive, and they are meant to bring everything
- * to a halt when they fail, with the programmer there to assess the problem.
+ * This macro is enabled when the SDL_ASSERT_LEVEL is >= 2, otherwise it is
+ * disabled. This is meant to only do these tests in debug builds, so they can
+ * tend to be more expensive, and they are meant to bring everything to a halt
+ * when they fail, with the programmer there to assess the problem.
  *
  * In short: you can sprinkle these around liberally and assume they will
  * evaporate out of the build when building for end-users.
  *
  * When assertions are disabled, this wraps `condition` in a `sizeof`
- * operator, which means any function calls and side effects will not run,
- * but the compiler will not complain about any otherwise-unused variables
- * that are only referenced in the assertion.
+ * operator, which means any function calls and side effects will not run, but
+ * the compiler will not complain about any otherwise-unused variables that
+ * are only referenced in the assertion.
  *
  * One can set the environment variable "SDL_ASSERT" to one of several strings
  * ("abort", "break", "retry", "ignore", "always_ignore") to force a default
@@ -254,18 +255,18 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
 /**
  * An assertion test that is performed even in release builds.
  *
- * This macro is enabled when the SDL_ASSERT_LEVEL is >= 1, otherwise it
- * is disabled. This is meant to be for tests that are cheap to make and
+ * This macro is enabled when the SDL_ASSERT_LEVEL is >= 1, otherwise it is
+ * disabled. This is meant to be for tests that are cheap to make and
  * extremely unlikely to fail; generally it is frowned upon to have an
- * assertion failure in a release build, so these assertions generally need
- * to be of more than life-and-death importance if there's a chance they
- * might trigger. You should almost always consider handling these cases more
+ * assertion failure in a release build, so these assertions generally need to
+ * be of more than life-and-death importance if there's a chance they might
+ * trigger. You should almost always consider handling these cases more
  * gracefully than an assert allows.
  *
  * When assertions are disabled, this wraps `condition` in a `sizeof`
- * operator, which means any function calls and side effects will not run,
- * but the compiler will not complain about any otherwise-unused variables
- * that are only referenced in the assertion.
+ * operator, which means any function calls and side effects will not run, but
+ * the compiler will not complain about any otherwise-unused variables that
+ * are only referenced in the assertion.
  *
  * One can set the environment variable "SDL_ASSERT" to one of several strings
  * ("abort", "break", "retry", "ignore", "always_ignore") to force a default
@@ -287,15 +288,15 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
 /**
  * An assertion test that is performed only when built with paranoid settings.
  *
- * This macro is enabled when the SDL_ASSERT_LEVEL is >= 3, otherwise it
- * is disabled. This is a higher level than both release and debug, so these
- * tests are meant to be expensive and only run when specifically looking
- * for extremely unexpected failure cases in a special build.
+ * This macro is enabled when the SDL_ASSERT_LEVEL is >= 3, otherwise it is
+ * disabled. This is a higher level than both release and debug, so these
+ * tests are meant to be expensive and only run when specifically looking for
+ * extremely unexpected failure cases in a special build.
  *
  * When assertions are disabled, this wraps `condition` in a `sizeof`
- * operator, which means any function calls and side effects will not run,
- * but the compiler will not complain about any otherwise-unused variables
- * that are only referenced in the assertion.
+ * operator, which means any function calls and side effects will not run, but
+ * the compiler will not complain about any otherwise-unused variables that
+ * are only referenced in the assertion.
  *
  * One can set the environment variable "SDL_ASSERT" to one of several strings
  * ("abort", "break", "retry", "ignore", "always_ignore") to force a default
@@ -338,9 +339,9 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
 /**
  * An assertion test that always performed.
  *
- * This macro is always enabled no matter what SDL_ASSERT_LEVEL is set to.
- * You almost never want to use this, as it could trigger on an end-user's
- * system, crashing your program.
+ * This macro is always enabled no matter what SDL_ASSERT_LEVEL is set to. You
+ * almost never want to use this, as it could trigger on an end-user's system,
+ * crashing your program.
  *
  * One can set the environment variable "SDL_ASSERT" to one of several strings
  * ("abort", "break", "retry", "ignore", "always_ignore") to force a default
