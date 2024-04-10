@@ -25,7 +25,7 @@ extern "C" {
 /* *INDENT-ON* */
 #endif
 
-typedef struct TouchID{
+typedef struct TouchID {
     int touchDeviceIdIn;
     int pointerFingerIdIn;
     int action;

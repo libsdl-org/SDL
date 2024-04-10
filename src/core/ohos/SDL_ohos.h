@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef SDL_OHOS_H_
-#define SDL_OHOS_H_
+#ifndef SDL_OHOS_H
+#define SDL_OHOS_H
 
 #include "../../SDL_internal.h"
 
@@ -70,6 +70,6 @@ extern void OHOS_NAPI_SetWindowResize(int x, int y, int w, int h);
 /* *INDENT-ON* */
 #endif
 
-#endif /* SDL_ohos_h_ */
+#endif /* SDL_OHOS_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

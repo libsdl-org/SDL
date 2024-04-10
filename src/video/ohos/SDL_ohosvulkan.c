@@ -102,8 +102,8 @@ SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateOHOSSurfaceKHR vkCreateOHOSSurfaceKHR =
         (PFN_vkCreateOHOSSurfaceKHR)vkGetInstanceProcAddr(
-                                          instance,
-                                          "vkCreateSurfaceOHOS");
+                                         instance,
+                                         "vkCreateSurfaceOHOS");
     VkOHOSSurfaceCreateInfoKHR createInfo;
     VkResult result;
 

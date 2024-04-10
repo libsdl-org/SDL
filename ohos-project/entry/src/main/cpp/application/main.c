@@ -14,9 +14,8 @@
  */
 #include "SDL.h"
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
-    SDL_Log("entry..");    
+    SDL_Log("entry..");
     return 0;
 }

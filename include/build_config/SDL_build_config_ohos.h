@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-#ifndef SDL_config_ohos_h_
-#define SDL_config_ohos_h_
-#define SDL_config_h_
+#ifndef SDL_CONFIG_OHOS_H
+#define SDL_CONFIG_OHOS_H
+#define SDL_CONFIG_H
 
 #include "SDL_platform.h"
 
@@ -160,7 +160,6 @@
 #define SDL_VIDEO_RENDER_OGL_ES2 0
 
 /* Enable Vulkan support */
-/* Android does not support Vulkan in native code using the "armeabi" ABI. */
 #if defined(__ARM_ARCH) && __ARM_ARCH < 7
 #define SDL_VIDEO_VULKAN 0
 #else
@@ -173,4 +172,4 @@
 /* Enable the filesystem driver */
 #define SDL_FILESYSTEM_OHOS   1
 
-#endif /* SDL_config_ohos_h_ */
+#endif /* SDL_CONFIG_OHOS_H */

@@ -506,8 +506,7 @@ static SDL_Scancode TranslateKeycode(int keycode)
             return SDL_SCANCODE_KP_0;
         }
     }
-    if (keycode >= KEYCODE_F13 && keycode <= KEYCODE_F24)
-    {
+    if (keycode >= KEYCODE_F13 && keycode <= KEYCODE_F24) {
         return SDL_SCANCODE_F13 + (keycode - KEYCODE_F13);
     }
 

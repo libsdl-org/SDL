@@ -123,7 +123,7 @@ static void OHOS_SetDevice(SDL_VideoDevice *device)
     device->SuspendScreenSaver = OHOS_SuspendScreenSaver;
 }
 
-static SDL_VideoDevice * OHOS_CreateDevice(int devindex)
+static SDL_VideoDevice* OHOS_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;

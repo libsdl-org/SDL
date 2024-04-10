@@ -96,8 +96,7 @@ OHOS_SetDisplayOrientation(int orientation)
     displayOrientation = (SDL_DisplayOrientation)orientation;
 }
 
-SDL_DisplayOrientation
-OHOS_GetDisplayOrientation()
+SDL_DisplayOrientation OHOS_GetDisplayOrientation()
 {
     return displayOrientation;
 }
@@ -246,8 +245,7 @@ OHOS_NAPI_ShowTextInputKeyboard(SDL_bool isshow)
     }
 }
 
-void
-OHOS_NAPI_SetOrientation(int w, int h, int resizable, const char *hint)
+void OHOS_NAPI_SetOrientation(int w, int h, int resizable, const char *hint)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -265,8 +263,7 @@ OHOS_NAPI_SetOrientation(int w, int h, int resizable, const char *hint)
     }
 }
 
-int
-OHOS_CreateCustomCursor(SDL_Surface *xcomponent, int hotX, int hotY)
+int OHOS_CreateCustomCursor(SDL_Surface *xcomponent, int hotX, int hotY)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -337,8 +334,7 @@ OHOS_SupportsRelativeMouse(void)
     return SDL_TRUE;
 }
 
-SDL_bool
-OHOS_SetRelativeMouseEnabled(SDL_bool enabled)
+SDL_bool OHOS_SetRelativeMouseEnabled(SDL_bool enabled)
 {
     return SDL_TRUE;
 }
@@ -435,7 +431,7 @@ SDLNapi::OHOS_TextInput(napi_env env, napi_callback_info info)
     SDL_memset(&event, 0, sizeof(SDL_Event)); // 清空event结构体
     event.type = SDL_TEXTINPUT;
     
-	SDL_strlcpy(event.text.text, inputBuffer, sizeof(inputBuffer));
+    SDL_strlcpy(event.text.text, inputBuffer, sizeof(inputBuffer));
     
     SDL_PushEvent(&event); // 推送事件到事件队列
     
@@ -578,8 +574,7 @@ SDLNapi::OHOS_OnNativeFocusChanged(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-static void
-OHOS_NAPI_NativeSetup(void)
+static void OHOS_NAPI_NativeSetup(void)
 {
     SDL_setenv("SDL_VIDEO_GL_DRIVER", "libGLESv3.so", 1);
     SDL_setenv("SDL_VIDEO_EGL_DRIVER", "libEGL.so", 1);
@@ -645,8 +640,7 @@ OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value *argv, cha
     return argc;
 }
 
-static int
-OHOS_NAPI_SetArgs(napi_env& env, char **argvs, int &argcs, size_t &argc, napi_value* argv)
+static int OHOS_NAPI_SetArgs(napi_env& env, char **argvs, int &argcs, size_t &argc, napi_value* argv)
 {
     napi_status status;
     napi_valuetype valuetype;
@@ -674,8 +668,7 @@ OHOS_NAPI_SetArgs(napi_env& env, char **argvs, int &argcs, size_t &argc, napi_va
     return i;
 }
 
-static napi_value
-OHOS_NAPI_SDLAppEntry(napi_env env, napi_callback_info info)
+static napi_value OHOS_NAPI_SDLAppEntry(napi_env env, napi_callback_info info)
 {
     char *library_file;
     char *function_name;
@@ -732,8 +725,7 @@ OHOS_NAPI_SDLAppEntry(napi_env env, napi_callback_info info)
 }
 
 
-napi_value
-SDLNapi::Init(napi_env env, napi_value exports)
+napi_value SDLNapi::Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
         {"sdlAppEntry", nullptr, OHOS_NAPI_SDLAppEntry, nullptr, nullptr, nullptr, napi_default, nullptr},

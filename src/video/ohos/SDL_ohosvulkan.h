@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef SDL_OHOSVULKAN_H_
-#define SDL_OHOSVULKAN_H_
+#ifndef SDL_OHOSVULKAN_H
+#define SDL_OHOSVULKAN_H
 
 #include "../../core/ohos/SDL_ohos.h"
 #include "../SDL_egl_c.h"

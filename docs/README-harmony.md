@@ -1,34 +1,32 @@
-HarmonyOS
+OpenHarmony
 ================================================================================
 
-The rest of this README covers the HarmonyOS hvigor style build process.
+The rest of this README covers the OpenHarmony hvigor style build process.
 
 
 
 Requirements
 ================================================================================
 
-HarmonyOS SDK (HarmonyOS-NEXT-DP0 or later)
-HarmonyOS SDK can be downloaded DevEco Find the sdk compressed package in the SDK folder under the subdirectory and decompress it for use.
+OpenHarmony SDK can be downloaded DevEco Find the sdk compressed package in the SDK folder under the subdirectory and decompress it for use.
 
-HarmonyOS SDK 11 or later
-https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V2/2_1_u6a21_u5757-0000001446810528-V2
+OpenHarmony SDK 11 or later
 
-Minimum API level supported by SDL: 11 (HarmonyOS 4.1.0)
+Minimum API level supported by SDL: 11 (OpenHarmony 4.1.0)
 
 
 
 How the port works
 ================================================================================
 
-- HarmonyOS applications are ArkTS-based, optionally with parts written in C/C++.
+- OpenHarmony applications are ArkTS-based, optionally with parts written in C/C++.
 - As SDL apps are C-based, we use a small ArkTS shim that uses napi_env to talk to
   the SDL library.
-- This means that your application C/C++ code must be placed inside an HarmonyOS
+- This means that your application C/C++ code must be placed inside an OpenHarmony
   ArkTS project, along with some C/C++ support code that communicates with ArkTS.
-- This eventually produces a standard HarmonyOS.hap package.
+- This eventually produces a standard OpenHarmony.hap package.
 
-The HarmonyOS ArkTS code implements an "Page" and can be found in:
+The OpenHarmony ArkTS code implements an "Page" and can be found in:
 ohos-project\entry\src\main\ets\pagse\Index.ets.
 
 The ArkTS code loads your SDL shared library, and dispatches to native functions implemented in the SDL library:
@@ -43,13 +41,13 @@ If you already have a project that uses CMake, the instructions change somewhat:
 
 1. Get the source code for SDL and copy the 'ohos-project' directory located at SDL/ohos-project to a suitable location. Also make sure to rename it to your project name (In these examples: YOURPROJECT).
 
-   (The 'ohos-project' directory can basically be seen as a sort of starting point for the ohos-port of your project. It contains the glue code between the HarmonyOS ArkTS 'frontend' and the SDL code 'backend'. It also contains some standard behaviour, like how events should be handled, which you will be able to change.)
+   (The 'ohos-project' directory can basically be seen as a sort of starting point for the ohos-port of your project. It contains the glue code between the OpenHarmony ArkTS 'frontend' and the SDL code 'backend'. It also contains some standard behaviour, like how events should be handled, which you will be able to change.)
 
 2. Add the dependencies directory (hvigor file directory ) provided under the YOURPROJECT directory .
 
 3. Move or [symlink](https://en.wikipedia.org/wiki/Symbolic_link) the SDL directory into the "YOURPROJECT/entry/src/main/cpp" directory
 
-​	(This is needed as the source of SDL has to be compiled by the HarmonyOS compiler)
+​	(This is needed as the source of SDL has to be compiled by the OpenHarmony compiler)
 
 3. Edit "YOURPROJECT/entry/src/build-profile.json5" to specify the path to the CMakeLists.txt file
 4. Edit "YOURPROJECT/build-profile.json5" to specify the version of the sdk
@@ -57,7 +55,7 @@ If you already have a project that uses CMake, the instructions change somewhat:
    in your CMakeLists.txt file. Also be aware that you should use add_library() instead of
    add_executable() for the target containing your "main" function. "add_library(entry SHARED ${my_files})"
 
-Here's an explanation of the files in the HarmonryOS project, so you can customize them:
+Here's an explanation of the files in the OpenHarmony project, so you can customize them:
 
     ohos-project
      	build-profile.json5					- Application-level configuration information, including signatures, product configuration.
@@ -111,11 +109,10 @@ int OHOS_FileClose(SDL_RWops *ctx, SDL_bool release);
 
 The asset packaging system will, by default, compress certain file extensions.
 SDL includes two asset file access mechanisms, the preferred one is the so
-called "File Descriptor" method, which is faster and doesn't involve the Dalvik
-GC, but given this method does not work on compressed assets, there is also the
-"Input Stream" method, which is automatically used as a fall back by SDL. You
-may want to keep this fact in mind when building your HAP, specially when large
-files are involved.
+called "File Descriptor" method, but given this method does not work on compressed 
+assets, there is also the "Input Stream" method, which is automaticallyused as a fall 
+back by SDL. You may want to keep this fact in mind when building your HAP, specially 
+when large files are involved.
 
 
 
@@ -124,7 +121,7 @@ Pause / Resume behaviour
 
 If SDL_HINT_OHOS_BLOCK_ON_PAUSE hint is set (the default),
 the event loop will block itself when the app is paused (ie, when the user
-returns to the main Harmonry OS dashboard). Blocking is better in terms of battery
+returns to the main OpenHarmony dashboard). Blocking is better in terms of battery
 use, and it allows your app to spring back to life instantaneously after resume
 (versus polling for a resume message).
 
@@ -198,7 +195,7 @@ before creating a window:
 Threads Model
 ================================================================================
 
-When calling onPageShow in the ArsTS source code of HarmonryOS, it will be called through the so library compiled by SDL2:
+When calling onPageShow in the ArsTS source code of OpenHarmony, it will be called through the so library compiled by SDL2:
 
 ```
 sdl.init(callbackRef)
@@ -268,7 +265,7 @@ You can restart the hdc using the following command:
 
 
 
-HarmonyOS 4.1 Beta1 provides the first API Level 11 interfaces
+OpenHarmony 4.1 Beta1 provides the first API Level 11 interfaces
 ================================================================================
 
 The use of the API Level 11 interface provides significant improvements in several areas.
@@ -296,7 +293,7 @@ Building the SDL tests
 
 SDL's CMake build system can create HAP's for the tests.
 It can build all tests with a single command  dependency on  DevEco Studio.
-HarmonyOS relies on Deveco studio to build HAP packages. There are two ways to do this.
+OpenHarmony relies on Deveco studio to build HAP packages. There are two ways to do this.
 
 The first method the test files, in "ohos-project/entry/src/main/cpp/application" directory, connected 
 
@@ -308,8 +305,8 @@ In the second method, the Deveco build project sends the HAP package generated u
 
 ### Requirements
 
-- HarmonyOS Platform SDK 
-- HarmonyOS Build tools
+- OpenHarmony Platform SDK 
+- OpenHarmony Build tools
 
 ### Send HAP to the device
 
@@ -333,9 +330,6 @@ hdc shell bm install -p data/local/tmp/filename
 
 ### Starting the tests
 
-Through the "hdc shell aa start" command to start the package called "com",for example "com.example.myapplication".
+Through the hdc command to start the package called "com",for example "com.example.myapplication".
 
-```
-hdc shell aa start -a EntryAbility -b com.example.myapplication
-```
 

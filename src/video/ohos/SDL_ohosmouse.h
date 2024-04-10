@@ -25,8 +25,7 @@ extern "C" {
 /* *INDENT-ON* */
 #endif
 
-typedef struct MouseSize
-{
+typedef struct MouseSize {
     int state;
     int action;
     float x;

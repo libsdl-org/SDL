@@ -18,6 +18,10 @@
 /* 422 (YUY2, etc) and P010 formats are the largest */
 #define MAX_YUV_SURFACE_SIZE(W, H, P) ((H + 1) * ((W + 1) + P) * 4)
 
+#ifdef __OHOS__
+#define OHOS_NUM_TWO 2 
+#endif
+
 /* Return true if the YUV format is packed pixels */
 static bool is_packed_yuv_format(Uint32 format)
 {
@@ -660,8 +664,8 @@ int main(int argc, char **argv)
                         int width = event.window.data1;
                         int height = event.window.data2;
                         SDL_RenderSetLogicalSize(renderer, width, height);
-                        current = 2;
-                        SDL_Log("SDL_WINDOWEVENT_SIZE_CHANGED: %d, %d",width,height);
+                        current = OHOS_NUM_TWO;
+                        SDL_Log("SDL_WINDOWEVENT_SIZE_CHANGED: %d, %d", width, height);
                     }
                 }
 #endif
