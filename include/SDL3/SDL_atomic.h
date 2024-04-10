@@ -338,20 +338,38 @@ extern DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
  */
 extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
 
+#ifndef SDL_AtomicIncRef
 /**
  * Increment an atomic variable used as a reference count.
+ *
+ * ***Note: If you don't know what this macro is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt to increment.
+ * \returns the previous value of the atomic variable.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_AtomicDecRef
  */
-#ifndef SDL_AtomicIncRef
 #define SDL_AtomicIncRef(a)    SDL_AtomicAdd(a, 1)
 #endif
 
+#ifndef SDL_AtomicDecRef
 /**
  * Decrement an atomic variable used as a reference count.
  *
- * \return SDL_TRUE if the variable reached zero after decrementing,
- *         SDL_FALSE otherwise
+ * ***Note: If you don't know what this macro is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt to increment.
+ * \returns SDL_TRUE if the variable reached zero after decrementing,
+ *          SDL_FALSE otherwise
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_AtomicIncRef
  */
-#ifndef SDL_AtomicDecRef
 #define SDL_AtomicDecRef(a)    (SDL_AtomicAdd(a, -1) == 1)
 #endif
 
