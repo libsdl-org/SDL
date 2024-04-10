@@ -1777,10 +1777,12 @@ a corresponding event has been received:
 * SDL_SetWindowFullscreen() (SDL_EVENT_WINDOW_ENTER_FULLSCREEN / SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
 
 If it is required that operations be applied immediately after one of the preceeding calls, the `SDL_SyncWindow()` function
-will attempt to wait until all pending window operations have completed. Be aware that this function can potentially block for
-long periods of time, as it may have to wait for window animations to complete. Also note that windowing systems can deny or
-not precisely obey these requests (e.g. windows may not be allowed to be larger than the usable desktop space or placed
-offscreen), so a corresponding event may never arrive or not contain the expected values.
+will attempt to wait until all pending window operations have completed. The `SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS` hint
+can also be set to automatically synchronize after all calls to an asynchronous window operation, mimicking the behavior
+of SDL 2. Be aware that synchronizing can potentially block for long periods of time, as it may have to wait for window
+animations to complete. Also note that windowing systems can deny or not precisely obey these requests (e.g. windows may
+not be allowed to be larger than the usable desktop space or placed offscreen), so a corresponding event may never arrive
+or not contain the expected values.
 
 ## SDL_vulkan.h
 
