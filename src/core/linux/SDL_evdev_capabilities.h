@@ -28,6 +28,9 @@
 
 #include <linux/input.h>
 
+#ifndef INPUT_PROP_SEMI_MT
+#define INPUT_PROP_SEMI_MT          0x03
+#endif
 #ifndef INPUT_PROP_TOPBUTTONPAD
 #define INPUT_PROP_TOPBUTTONPAD     0x04
 #endif

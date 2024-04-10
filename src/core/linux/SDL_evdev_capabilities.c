@@ -70,7 +70,8 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
 
     /* We treat buttonpads as equivalent to touchpads */
     if (test_bit(INPUT_PROP_TOPBUTTONPAD, bitmask_props) ||
-        test_bit(INPUT_PROP_BUTTONPAD, bitmask_props)) {
+        test_bit(INPUT_PROP_BUTTONPAD, bitmask_props) ||
+        test_bit(INPUT_PROP_SEMI_MT, bitmask_props)) {
         return SDL_UDEV_DEVICE_TOUCHPAD;
     }
 
