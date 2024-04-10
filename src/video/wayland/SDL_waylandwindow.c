@@ -494,6 +494,58 @@ static void FlushFullscreenEvents(SDL_Window *window)
     }
 }
 
+/* While we can't get window position from the compositor, we do at least know
+ * what monitor we're on, so let's send move events that put the window at the
+ * center of the whatever display the wl_surface_listener events give us.
+ */
+static void Wayland_move_window(SDL_Window *window)
+{
+    SDL_WindowData *wind = window->driverdata;
+    SDL_DisplayData *display = wind->outputs[wind->num_outputs - 1];
+    SDL_DisplayID *displays;
+
+    displays = SDL_GetDisplays(NULL);
+    if (displays) {
+        for (int i = 0; displays[i]; ++i) {
+            if (SDL_GetDisplayDriverData(displays[i]) == display) {
+                /* We want to send a very very specific combination here:
+                 *
+                 * 1. A coordinate that tells the application what display we're on
+                 * 2. Exactly (0, 0)
+                 *
+                 * Part 1 is useful information but is also really important for
+                 * ensuring we end up on the right display for fullscreen, while
+                 * part 2 is important because numerous applications use a specific
+                 * combination of GetWindowPosition and GetGlobalMouseState, and of
+                 * course neither are supported by Wayland. Since global mouse will
+                 * fall back to just GetMouseState, we need the window position to
+                 * be zero so the cursor math works without it going off in some
+                 * random direction. See UE5 Editor for a notable example of this!
+                 *
+                 * This may be an issue some day if we're ever able to implement
+                 * SDL_GetDisplayUsableBounds!
+                 *
+                 * -flibit
+                 */
+
+                if (wind->last_displayID != displays[i]) {
+                    wind->last_displayID = displays[i];
+                    if (wind->shell_surface_type != WAYLAND_SURFACE_XDG_POPUP) {
+                        /* Need to catch up on fullscreen state here, as the video core may try to update
+                         * the fullscreen window, which on Wayland involves a set fullscreen call, which
+                         * can overwrite older pending state.
+                         */
+                        FlushFullscreenEvents(window);
+                        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, display->x, display->y);
+                    }
+                }
+                break;
+            }
+        }
+        SDL_free(displays);
+    }
+}
+
 static void SetFullscreen(SDL_Window *window, struct wl_output *output)
 {
     SDL_WindowData *wind = window->driverdata;
@@ -567,6 +619,11 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
             SDL_UpdateFullscreenMode(window, SDL_FALSE, SDL_FALSE);
             wind->fullscreen_was_positioned = SDL_FALSE;
+
+            /* Send a move event, in case it was deferred while the fullscreen window was moving and
+             * on multiple outputs.
+             */
+            Wayland_move_window(window);
         }
     }
 }
@@ -1249,68 +1306,12 @@ static void Wayland_MaybeUpdateScaleFactor(SDL_WindowData *window)
     Wayland_HandlePreferredScaleChanged(window, factor);
 }
 
-/* While we can't get window position from the compositor, we do at least know
- * what monitor we're on, so let's send move events that put the window at the
- * center of the whatever display the wl_surface_listener events give us.
- */
-static void Wayland_move_window(SDL_Window *window, SDL_DisplayData *driverdata)
-{
-    SDL_WindowData *wind = window->driverdata;
-    SDL_DisplayID *displays;
-    int i;
-
-    displays = SDL_GetDisplays(NULL);
-    if (displays) {
-        for (i = 0; displays[i]; ++i) {
-            if (SDL_GetDisplayDriverData(displays[i]) == driverdata) {
-                /* We want to send a very very specific combination here:
-                 *
-                 * 1. A coordinate that tells the application what display we're on
-                 * 2. Exactly (0, 0)
-                 *
-                 * Part 1 is useful information but is also really important for
-                 * ensuring we end up on the right display for fullscreen, while
-                 * part 2 is important because numerous applications use a specific
-                 * combination of GetWindowPosition and GetGlobalMouseState, and of
-                 * course neither are supported by Wayland. Since global mouse will
-                 * fall back to just GetMouseState, we need the window position to
-                 * be zero so the cursor math works without it going off in some
-                 * random direction. See UE5 Editor for a notable example of this!
-                 *
-                 * This may be an issue some day if we're ever able to implement
-                 * SDL_GetDisplayUsableBounds!
-                 *
-                 * -flibit
-                 */
-                SDL_Rect bounds;
-
-                wind->last_displayID = displays[i];
-                if (wind->shell_surface_type != WAYLAND_SURFACE_XDG_POPUP) {
-                    /* Need to catch up on fullscreen state here, as the video core may try to update
-                     * the fullscreen window, which on Wayland involves a set fullscreen call, which
-                     * can overwrite older pending state.
-                     */
-                    FlushFullscreenEvents(window);
-
-                    SDL_GetDisplayBounds(wind->last_displayID, &bounds);
-                    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, bounds.x, bounds.y);
-                }
-                break;
-            }
-        }
-        SDL_free(displays);
-    }
-}
-
 void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *display_data)
 {
-    SDL_bool send_move_event = SDL_FALSE;
-
     for (int i = 0; i < window->num_outputs; i++) {
         if (window->outputs[i] == display_data) { /* remove this one */
             if (i == (window->num_outputs - 1)) {
                 window->outputs[i] = NULL;
-                send_move_event = SDL_TRUE;
             } else {
                 SDL_memmove(&window->outputs[i],
                             &window->outputs[i + 1],
@@ -1324,12 +1325,10 @@ void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *dis
     if (window->num_outputs == 0) {
         SDL_free(window->outputs);
         window->outputs = NULL;
-    } else if (send_move_event) {
-        Wayland_move_window(window->sdlwindow,
-                            window->outputs[window->num_outputs - 1]);
+    } else if (!window->is_fullscreen || window->num_outputs == 1) {
+        Wayland_move_window(window->sdlwindow);
+        Wayland_MaybeUpdateScaleFactor(window);
     }
-
-    Wayland_MaybeUpdateScaleFactor(window);
 }
 
 static void handle_surface_enter(void *data, struct wl_surface *surface, struct wl_output *output)
@@ -1351,8 +1350,10 @@ static void handle_surface_enter(void *data, struct wl_surface *surface, struct 
     window->outputs[window->num_outputs++] = driverdata;
 
     /* Update the scale factor after the move so that fullscreen outputs are updated. */
-    Wayland_move_window(window->sdlwindow, driverdata);
-    Wayland_MaybeUpdateScaleFactor(window);
+    if (!window->is_fullscreen || window->num_outputs == 1) {
+        Wayland_move_window(window->sdlwindow);
+        Wayland_MaybeUpdateScaleFactor(window);
+    }
 }
 
 static void handle_surface_leave(void *data, struct wl_surface *surface, struct wl_output *output)
