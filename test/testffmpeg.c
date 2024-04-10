@@ -778,6 +778,7 @@ static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     case SDL_COLOR_PRIMARIES_BT2020:
         attr[k++] = EGL_YUV_COLOR_SPACE_HINT_EXT;
         attr[k++] = EGL_ITU_REC2020_EXT;
+        break;
     default:
         break;
     }
