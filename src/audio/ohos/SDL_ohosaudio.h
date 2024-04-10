@@ -12,29 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef SDL_OHOSAUDIO_H
+#define SDL_OHOSAUDIO_H
 
 #include "../../SDL_internal.h"
-
-#ifndef SDL_ohosaudio_h_
-#define SDL_ohosaudio_h_
-
 #include "../SDL_sysaudio.h"
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS   SDL_AudioDevice *this
-
-struct SDL_PrivateAudioData
-{
+struct SDL_PrivateAudioData {
     /* Resume device if it was paused automatically */
     int resume;
 };
 
 void OHOSAUDIO_ResumeDevices(void);
 void OHOSAUDIO_PauseDevices(void);
+void OHOSAUDIO_PageResume(void);
+void OHOSAUDIO_PagePause(void);
 
-extern void OHOSAUDIO_PageResume(void);
-extern void OHOSAUDIO_PagePause(void);
-
-#endif /* SDL_ohosaudio_h_ */
+#endif /* SDL_OHOSAUDIO_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

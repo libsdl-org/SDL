@@ -15,30 +15,25 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_OHOS
-
 /* Output audio to ohos */
 
 #include "SDL_assert.h"
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
-
-#include "SDL_ohosaudio.h"
 #include "SDL_ohosaudiomanager.h"
+#include "SDL_ohosaudio.h"
 
-
+#if SDL_AUDIO_DRIVER_OHOS
 static SDL_AudioDevice* audioDevice = NULL;
 static SDL_AudioDevice* captureDevice = NULL;
-
-static int
-OHOSAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+static int OHOSAUDIO_OpenDevice(SDL_AudioDevice *this, void *handle, const char *devname, int iscapture)
 {
     SDL_AudioFormat test_format;
 
     SDL_assert((captureDevice == NULL) || !iscapture);
     SDL_assert((audioDevice == NULL) || iscapture);
 
-    if (iscapture) {
+    if (iscapture != 0) {
         captureDevice = this;
     } else {
         audioDevice = this;
@@ -52,8 +47,8 @@ OHOSAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     test_format = SDL_FirstAudioFormat(this->spec.format);
     while (test_format != 0) { /* no "UNKNOWN" constant */
         if ((test_format == AUDIO_U8) ||
-			(test_format == AUDIO_S16) ||
-			(test_format == AUDIO_F32)) {
+            (test_format == AUDIO_S16) ||
+            (test_format == AUDIO_F32)) {
             this->spec.format = test_format;
             break;
         }
@@ -74,32 +69,27 @@ OHOSAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     return 0;
 }
 
-static void
-OHOSAUDIO_PlayDevice(_THIS)
+static void OHOSAUDIO_PlayDevice(SDL_AudioDevice *this)
 {
     OHOSAUDIO_NATIVE_WriteAudioBuf();
 }
 
-static Uint8 *
-OHOSAUDIO_GetDeviceBuf(_THIS)
+static Uint8 * OHOSAUDIO_GetDeviceBuf(SDL_AudioDevice *this)
 {
     return (Uint8 *)OHOSAUDIO_NATIVE_GetAudioBuf();
 }
 
-static int
-OHOSAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
+static int OHOSAUDIO_CaptureFromDevice(SDL_AudioDevice *this, void *buffer, int buflen)
 {
     return OHOSAUDIO_NATIVE_CaptureAudioBuffer(buffer, buflen);
 }
 
-static void
-OHOSAUDIO_FlushCapture(_THIS)
+static void OHOSAUDIO_FlushCapture(SDL_AudioDevice *this)
 {
     OHOSAUDIO_NATIVE_FlushCapturedAudio();
 }
 
-static void
-OHOSAUDIO_CloseDevice(_THIS)
+static void OHOSAUDIO_CloseDevice(SDL_AudioDevice *this)
 {
     /* At this point SDL_CloseAudioDevice via close_audio_device took care of terminating the audio thread
        so it's safe to terminate the Java side buffer and AudioTrack
@@ -115,8 +105,7 @@ OHOSAUDIO_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static int
-OHOSAUDIO_Init(SDL_AudioDriverImpl * impl)
+static int OHOSAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = OHOSAUDIO_OpenDevice;
@@ -141,28 +130,25 @@ AudioBootStrap OHOSAUDIO_bootstrap = {
 /* Pause (block) all non already paused audio devices by taking their mixer lock */
 void OHOSAUDIO_PauseDevices(void)
 {
-    /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;
-    if(audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice != NULL && audioDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) audioDevice->hidden;
-        if (SDL_AtomicGet(&audioDevice->paused)) {
+        if (SDL_AtomicGet(&audioDevice->paused) != SDL_FALSE) {
             /* The device is already paused, leave it alone */
             private->resume = SDL_FALSE;
-        }
-        else {
+        } else {
             SDL_LockMutex(audioDevice->mixer_lock);
             SDL_AtomicSet(&audioDevice->paused, 1);
             private->resume = SDL_TRUE;
         }
     }
 
-    if(captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice != NULL && captureDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) captureDevice->hidden;
-        if (SDL_AtomicGet(&captureDevice->paused)) {
+        if (SDL_AtomicGet(&captureDevice->paused) != SDL_FALSE) {
             /* The device is already paused, leave it alone */
             private->resume = SDL_FALSE;
-        }
-        else {
+        } else {
             SDL_LockMutex(captureDevice->mixer_lock);
             SDL_AtomicSet(&captureDevice->paused, 1);
             private->resume = SDL_TRUE;
@@ -173,20 +159,19 @@ void OHOSAUDIO_PauseDevices(void)
 /* Resume (unblock) all non already paused audio devices by releasing their mixer lock */
 void OHOSAUDIO_ResumeDevices(void)
 {
-    /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;
-    if(audioDevice != NULL && audioDevice->hidden != NULL) {
+    if (audioDevice != NULL && audioDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) audioDevice->hidden;
-        if (private->resume) {
+        if (private->resume != SDL_FALSE) {
             SDL_AtomicSet(&audioDevice->paused, 0);
             private->resume = SDL_FALSE;
             SDL_UnlockMutex(audioDevice->mixer_lock);
         }
     }
 
-    if(captureDevice != NULL && captureDevice->hidden != NULL) {
+    if (captureDevice != NULL && captureDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) captureDevice->hidden;
-        if (private->resume) {
+        if (private->resume != SDL_FALSE) {
             SDL_AtomicSet(&captureDevice->paused, 0);
             private->resume = SDL_FALSE;
             SDL_UnlockMutex(captureDevice->mixer_lock);
@@ -194,7 +179,7 @@ void OHOSAUDIO_ResumeDevices(void)
     }
 }
 
-#else 
+#else
 
 void OHOSAUDIO_ResumeDevices(void) {}
 void OHOSAUDIO_PauseDevices(void) {}

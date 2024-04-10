@@ -7,6 +7,7 @@ set(SDL_HOME_PATH ohos_sdl2)
 set(NATIVE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${SDL_HOME_PATH}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/${SDL_HOME_PATH}/src/video/khronos/GLES2)
 set(NATIVE_ENTRY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/application)
+set(NATIVE_TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/SDL/src/test)
 
 
 add_subdirectory(${SDL_HOME_PATH})
@@ -14,7 +15,7 @@ include_directories(${NATIVE_INCLUDE_PATH})
 
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-file(GLOB my_files "${NATIVE_ENTRY_PATH}/*.c" "${NATIVE_ENTRY_PATH}/*.h")
+file(GLOB my_files "${NATIVE_ENTRY_PATH}/*.c" "${NATIVE_ENTRY_PATH}/*.h" "${NATIVE_TEST_PATH}/*.c")
 
 add_library(entry SHARED ${my_files})
 

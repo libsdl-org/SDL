@@ -5,6 +5,11 @@
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
 
+#ifdef __OHOS__
+#define OHOS_MIN_DEVICEWIDTH  320
+#define OHOS_MIN_DEVICEHEIGHT 320
+#endif
+
 /* Private helpers */
 
 /**
@@ -21,9 +26,15 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     bool needs_renderer = false;
     bool needs_events_pumped = false;
 
-<<<<<<< HEAD
     /* Standard window */
-#ifdef __OHOS__                                        #include "../SDL/src/video/ohos/SDL_ohosvideo.h"           w = SDLTest_RandomIntegerInRange(320, OHOS_DeviceWidth);                                                      h = SDLTest_RandomIntegerInRange(320, OHOS_DeviceHeight);                                                 #else                                                      w = SDLTest_RandomIntegerInRange(320, 720);            h = SDLTest_RandomIntegerInRange(320, 1136);       #endif
+#ifdef __OHOS__
+#include "../SDL/src/video/ohos/SDL_ohosvideo.h"
+    w = SDLTest_RandomIntegerInRange(OHOS_MIN_DEVICEWIDTH, g_ohosDeviceWidth);
+    h = SDLTest_RandomIntegerInRange(OHOS_MIN_DEVICEHEIGHT, g_ohosDeviceHeight);
+#else
+    w = SDLTest_RandomIntegerInRange(320, 720);
+    h = SDLTest_RandomIntegerInRange(320, 1136);
+#endif
 
     flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
 

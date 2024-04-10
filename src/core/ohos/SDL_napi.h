@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef SDL_napi_h_
-#define SDL_napi_h_
+#ifndef SDL_NAPI_H
+#define SDL_NAPI_H
 
 #include "SDL_ohosthreadsafe.h"
 
@@ -44,6 +44,6 @@ private:
 } // namespace SDL
 } // namespace OHOS
 
-#endif /* SDL_napi_h_ */
+#endif /* SDL_NAPI_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

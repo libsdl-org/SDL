@@ -44,22 +44,16 @@ static void openslES_PauseDevices(void) {}
 #endif
 
 /* Number of 'type' events in the event queue */
-static int
-SDL_NumberOfEvents(Uint32 type)
-{
-    return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type);
-}
+static int SDL_NumberOfEvents(Uint32 type) { return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type); }
 
-static void
-OHOS_EGL_context_restore(SDL_Window *window)
-{
+static void OHOS_EGL_context_restore(SDL_Window *window) {
     if (window) {
         SDL_Event event;
-        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-        if (SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context) < 0) {
+        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+        if (SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context) < 0) {
             /* The context is no longer valid, create a new one */
-            data->egl_context = (EGLContext) SDL_GL_CreateContext(window);
-            SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context);
+            data->egl_context = (EGLContext)SDL_GL_CreateContext(window);
+            SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context);
             event.type = SDL_RENDER_DEVICE_RESET;
             SDL_PushEvent(&event);
         }
@@ -67,12 +61,10 @@ OHOS_EGL_context_restore(SDL_Window *window)
     }
 }
 
-static void
-OHOS_EGL_context_backup(SDL_Window *window)
-{
+static void OHOS_EGL_context_backup(SDL_Window *window) {
     if (window) {
         /* Keep a copy of the EGL Context so we can try to restore it when we resume */
-        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
         data->egl_context = SDL_GL_GetCurrentContext();
         /* We need to do this so the EGLSurface can be freed */
         SDL_GL_MakeCurrent(window, NULL);
@@ -80,18 +72,14 @@ OHOS_EGL_context_backup(SDL_Window *window)
     }
 }
 
-void
-OHOS_PumpEvents_Blocking(SDL_VideoDevice *_this)
-{
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
-
+void OHOS_PumpEvents_Blocking(SDL_VideoDevice *thisDevice) {
+    SDL_VideoData *videodata = (SDL_VideoData *)thisDevice->driverdata;
     if (videodata->isPaused) {
         SDL_bool isContextExternal = SDL_IsVideoContextExternal();
-
         /* Make sure this is the last thing we do before pausing */
         if (!isContextExternal) {
             SDL_LockMutex(OHOS_PageMutex);
-            OHOS_EGL_context_backup(OHOS_Window);
+            OHOS_EGL_context_backup(g_ohosWindow);
             SDL_UnlockMutex(OHOS_PageMutex);
         }
 
@@ -105,7 +93,7 @@ OHOS_PumpEvents_Blocking(SDL_VideoDevice *_this)
             /* OHOS_ResumeSem was signaled */
             SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
             SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
-            SDL_SendWindowEvent(OHOS_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+            SDL_SendWindowEvent(g_ohosWindow, SDL_WINDOWEVENT_RESTORED, 0, 0);
 
             OHOSAUDIO_ResumeDevices();
             openslES_ResumeDevices();
@@ -113,13 +101,13 @@ OHOS_PumpEvents_Blocking(SDL_VideoDevice *_this)
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!isContextExternal && !SDL_HasEvent(SDL_QUIT)) {
                 SDL_LockMutex(OHOS_PageMutex);
-                OHOS_EGL_context_restore(OHOS_Window);
+                OHOS_EGL_context_restore(g_ohosWindow);
                 SDL_UnlockMutex(OHOS_PageMutex);
             }
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
             if (SDL_IsTextInputActive()) {
-                OHOS_StartTextInput(_this); /* Only showTextInput */
+                OHOS_StartTextInput(thisDevice); /* Only showTextInput */
             }
         }
     } else {
@@ -127,7 +115,7 @@ OHOS_PumpEvents_Blocking(SDL_VideoDevice *_this)
 
             /* OHOS_PauseSem was signaled */
             if (videodata->isPausing == 0) {
-                SDL_SendWindowEvent(OHOS_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+                SDL_SendWindowEvent(g_ohosWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
                 SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
             }
@@ -145,10 +133,8 @@ OHOS_PumpEvents_Blocking(SDL_VideoDevice *_this)
     }
 }
 
-void
-OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
-{
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+void OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *thisDevice) {
+    SDL_VideoData *videodata = (SDL_VideoData *)thisDevice->driverdata;
     static int backup_context = 0;
 
     if (videodata->isPaused) {
@@ -158,7 +144,7 @@ OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 
             if (!isContextExternal) {
                 SDL_LockMutex(OHOS_PageMutex);
-                OHOS_EGL_context_backup(OHOS_Window);
+                OHOS_EGL_context_backup(g_ohosWindow);
                 SDL_UnlockMutex(OHOS_PageMutex);
             }
 
@@ -176,7 +162,7 @@ OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
             /* OHOS_ResumeSem was signaled */
             SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
             SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
-            SDL_SendWindowEvent(OHOS_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+            SDL_SendWindowEvent(g_ohosWindow, SDL_WINDOWEVENT_RESTORED, 0, 0);
 
             OHOSAUDIO_ResumeDevices();
             openslES_ResumeDevices();
@@ -184,21 +170,20 @@ OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!isContextExternal && !SDL_HasEvent(SDL_QUIT)) {
                 SDL_LockMutex(OHOS_PageMutex);
-                OHOS_EGL_context_restore(OHOS_Window);
+                OHOS_EGL_context_restore(g_ohosWindow);
                 SDL_UnlockMutex(OHOS_PageMutex);
             }
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
             if (SDL_IsTextInputActive()) {
-                OHOS_StartTextInput(_this); /* Only showTextInput */
+                OHOS_StartTextInput(thisDevice); /* Only showTextInput */
             }
         }
     } else {
         if (videodata->isPausing || SDL_SemTryWait(OHOS_PauseSem) == 0) {
-
             /* OHOS_PauseSem was signaled */
             if (videodata->isPausing == 0) {
-                SDL_SendWindowEvent(OHOS_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+                SDL_SendWindowEvent(g_ohosWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
                 SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
             }

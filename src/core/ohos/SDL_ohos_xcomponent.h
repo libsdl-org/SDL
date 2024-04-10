@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef SDL_OHOSXCOMPONENT_H_
-#define SDL_OHOSXCOMPONENT_H_
+#ifndef SDL_OHOSXCOMPONENT_H
+#define SDL_OHOSXCOMPONENT_H
 
 #include <native_window/external_window.h>
 #include "napi/native_api.h"
@@ -23,6 +23,6 @@
 extern void OHOS_XcomponentExport(napi_env env, napi_value exports);
 extern OHNativeWindow *gNative_window;
 
-#endif /* SDL_OHOSXCOMPONENT_H_ */
+#endif /* SDL_OHOSXCOMPONENT_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

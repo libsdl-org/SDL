@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-#include "../../SDL_internal.h"
+#ifndef SDL_OHOS_H_
+#define SDL_OHOS_H_
 
-#ifndef SDL_ohos_h_
-#define SDL_ohos_h_
+#include "../../SDL_internal.h"
 
 /* Set up for C function definitions, even when using C++ */
 #include "SDL_ohosfile.h"
@@ -39,7 +39,7 @@ extern SDL_atomic_t bPermissionRequestPending;
 extern SDL_bool bPermissionRequestResult;
 
 /* Cursor support */
-extern int OHOS_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
+extern int OHOS_CreateCustomCursor(SDL_Surface *xcomponent, int hotX, int hotY);
 extern SDL_bool OHOS_SetCustomCursor(int cursorID);
 extern SDL_bool OHOS_SetSystemCursor(int cursorID);
 
@@ -47,13 +47,13 @@ extern SDL_bool OHOS_SetSystemCursor(int cursorID);
 extern SDL_bool OHOS_SupportsRelativeMouse(void);
 extern SDL_bool OHOS_SetRelativeMouseEnabled(SDL_bool enabled);
 
-extern void OHOS_PageMutex_Lock(void);
-extern void OHOS_PageMutex_Unlock(void);
-extern void OHOS_PageMutex_Lock_Running(void);
+extern void OHOS_PAGEMUTEX_Lock(void);
+extern void OHOS_PAGEMUTEX_Unlock(void);
+extern void OHOS_PAGEMUTEX_LockRunning(void);
 
 extern void OHOS_SetDisplayOrientation(int orientation);
 extern SDL_DisplayOrientation OHOS_GetDisplayOrientation();
-extern void OHOS_NAPI_ShowTextInput(int x ,int y, int w, int h);
+extern void OHOS_NAPI_ShowTextInput(int x, int y, int w, int h);
 extern SDL_bool OHOS_NAPI_RequestPermission(const char *Permission);
 extern void OHOS_NAPI_HideTextInput(int a);
 extern void OHOS_NAPI_ShouldMinimizeOnFocusLoss(int a);

@@ -12,15 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef SDL_OHOSAUDIOMANAGER_H
+#define SDL_OHOSAUDIOMANAGER_H
 
 #include "../../SDL_internal.h"
-
-#ifndef SDL_ohosaudiomanager_h_
-#define SDL_ohosaudiomanager_h_
-
 #include "SDL_audio.h"
 
-int arkRunMain(const char *libraryName, const char *fuc, char **argv);
+void OHOSAUDIO_PageResume(void);
+void OHOSAUDIO_PagePause(void);
 
 /* Audio support */
 extern int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec);
@@ -30,6 +29,6 @@ extern int OHOSAUDIO_NATIVE_CaptureAudioBuffer(void *buffer, int buflen);
 extern void OHOSAUDIO_NATIVE_FlushCapturedAudio(void);
 extern void OHOSAUDIO_NATIVE_CloseAudioDevice(const int iscapture);
 
-#endif /* SDL_ohosaudiomanager_h_ */
+#endif /* SDL_OHOSAUDIOMANAGER_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

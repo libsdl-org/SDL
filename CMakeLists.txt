@@ -1484,11 +1484,12 @@ if(ANDROID)
     endif()
   endif()
 elseif(OHOS)
+  set(SDL_SHARED TRUE)
   if(NOT CJSON_USE_SYSTEM_LIBS)
 	if(NOT DEFINED CJSON_SOURCE_DIR)
 		message(STATUS "Downloading cjson to ${CMAKE_BINARY_DIR}/cjson-source (define CJSON_SOURCE_DIR to avoid it)")
 		configure_file(cmake/DownloadCJSON.cmake "${CMAKE_BINARY_DIR}/cjson-download/CMakeLists.txt")
-		execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+		execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM} .
 			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/cjson-download")
 		execute_process(COMMAND "${CMAKE_COMMAND}" --build .
 			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/cjson-download")
@@ -1497,6 +1498,8 @@ elseif(OHOS)
   endif()
   if(NOT TARGET cjson)
 	if(NOT CJSON_USE_SYSTEM_LIBS)
+	        set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE CACHE BOOL "")
+		set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
 		set(ENABLE_CJSON_TEST OFF CACHE BOOL "")
 		add_subdirectory(
 			"${CJSON_SOURCE_DIR}"

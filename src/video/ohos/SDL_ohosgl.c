@@ -31,52 +31,45 @@
 
 #include <dlfcn.h>
 
-int
-OHOS_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context)
+int OHOS_GLES_MakeCurrent(SDL_VideoDevice *thisDevice, SDL_Window * window, SDL_GLContext context)
 {
     if (window && context) {
-        return SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *) window->driverdata)->egl_surface, context);
+        return SDL_EGL_MakeCurrent(thisDevice, ((SDL_WindowData *) window->driverdata)->egl_xcomponent, context);
     } else {
-        return SDL_EGL_MakeCurrent(_this, NULL, NULL);
+        return SDL_EGL_MakeCurrent(thisDevice, NULL, NULL);
     }
 }
 
-SDL_GLContext
-OHOS_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window * window)
+
+SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *thisDevice, SDL_Window * window)
 {
     SDL_GLContext ret;
-
-    OHOS_PageMutex_Lock_Running();
-
-    ret = SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
-
+    OHOS_PAGEMUTEX_LockRunning();
+    ret = SDL_EGL_CreateContext(thisDevice, ((SDL_WindowData *) window->driverdata)->egl_xcomponent);
     SDL_UnlockMutex(OHOS_PageMutex);
-
     return ret;
 }
 
-int
-OHOS_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window * window)
+
+int OHOS_GLES_SwapWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
 {
     int retval;
-
     SDL_LockMutex(OHOS_PageMutex);
 
     /* The following two calls existed in the original Java code
      * If you happen to have a device that's affected by their removal,
      * please report to Bugzilla. -- Gabriel
      */
-    retval = SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
-
+    retval = SDL_EGL_SwapBuffers(thisDevice, ((SDL_WindowData *) window->driverdata)->egl_xcomponent);
     SDL_UnlockMutex(OHOS_PageMutex);
 
     return retval;
 }
 
-int
-OHOS_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+
+int OHOS_GLES_LoadLibrary(SDL_VideoDevice *thisDevice, const char *path)
 {
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) 0, 0);
+    return SDL_EGL_LoadLibrary(thisDevice, path, (NativeDisplayType) 0, 0);
 }
 
 #endif /* SDL_VIDEO_DRIVER_OHOS */

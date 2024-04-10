@@ -32,6 +32,7 @@ size_t OHOS_FileWrite(SDL_RWops *ctx, const void *buffer, size_t size, size_t nu
 int OHOS_FileClose(SDL_RWops *ctx, SDL_bool release);
 size_t OHOS_FileSeekInline(Sint64 *movement);
 size_t OHOS_FileSeekInlineSwitch(Sint64 *offset, int whence);
+size_t OHOS_FileSeekInlineSwitchPos(Sint64 *offset, Sint64 *newPosition, int whence);
 
 extern SDL_RWops *gCtx;
 extern char *g_path;

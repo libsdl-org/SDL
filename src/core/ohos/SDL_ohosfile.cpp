@@ -21,7 +21,7 @@ char *g_path = nullptr;
 
 const char *SDL_OHOSGetInternalStoragePath(void) { return g_path; }
 
-int OHOS_FileOpen(SDL_RWops *ctx, const char *fileName, const char *mode) 
+int OHOS_FileOpen(SDL_RWops *ctx, const char *fileName, const char *mode)
 {
     gCtx->hidden.ohosio.fileName = (char *)fileName;
     gCtx->hidden.ohosio.mode = (char *)mode;
@@ -60,29 +60,47 @@ Sint64 OHOS_FileSize(SDL_RWops *ctx) { return gCtx->hidden.ohosio.size; }
 size_t OHOS_FileSeekInlineSwitch(Sint64 *offset, int whence)
 {
     switch (whence) {
-    case RW_SEEK_SET:
-        if (gCtx->hidden.ohosio.size != -1 && *offset > gCtx->hidden.ohosio.size) {
-            *offset = gCtx->hidden.ohosio.size;
+        case RW_SEEK_SET:
+            if (gCtx->hidden.ohosio.size != -1 && *offset > gCtx->hidden.ohosio.size) {
+                *offset = gCtx->hidden.ohosio.size;
+            }
+            *offset += gCtx->hidden.ohosio.offset;
+            break;
+        case RW_SEEK_CUR:
+            *offset += gCtx->hidden.ohosio.position;
+            if (gCtx->hidden.ohosio.size != -1 && *offset > gCtx->hidden.ohosio.size) {
+                *offset = gCtx->hidden.ohosio.size;
+            }
+            *offset += gCtx->hidden.ohosio.offset;
+            break;
+        case RW_SEEK_END:
+            *offset = gCtx->hidden.ohosio.offset + gCtx->hidden.ohosio.size + *offset;
+            break;
+        default:
+            return -1;
         }
-        *offset += gCtx->hidden.ohosio.offset;
-        break;
-    case RW_SEEK_CUR:
-        *offset += gCtx->hidden.ohosio.position;
-        if (gCtx->hidden.ohosio.size != -1 && *offset > gCtx->hidden.ohosio.size) {
-            *offset = gCtx->hidden.ohosio.size;
-        }
-        *offset += gCtx->hidden.ohosio.offset;
-        break;
-    case RW_SEEK_END:
-        *offset = gCtx->hidden.ohosio.offset + gCtx->hidden.ohosio.size + *offset;
-        break;
-    default:
-        return -1;
-    }
     return 0;
 }
 
-Sint64 OHOS_FileSeek(SDL_RWops *ctx, Sint64 offset, int whence) 
+size_t OHOS_FileSeekInlineSwitchPos(Sint64 *offset, Sint64 *newPosition, int whence)
+{
+    switch (whence) {
+        case RW_SEEK_SET:
+            *newPosition = *offset;
+            break;
+        case RW_SEEK_CUR:
+            *newPosition = gCtx->hidden.ohosio.position + *offset;
+            break;
+        case RW_SEEK_END:
+            *newPosition = gCtx->hidden.ohosio.size + *offset;
+            break;
+        default:
+            return -1;
+        }
+    return 0;
+}
+
+Sint64 OHOS_FileSeek(SDL_RWops *ctx, Sint64 offset, int whence)
 {
     if (gCtx->hidden.ohosio.nativeResourceManager) {
         size_t result = OHOS_FileSeekInlineSwitch(&offset, whence);
@@ -101,18 +119,9 @@ Sint64 OHOS_FileSeek(SDL_RWops *ctx, Sint64 offset, int whence)
     } else {
         Sint64 newPosition;
         Sint64 movement;
-        switch (whence) {
-            case RW_SEEK_SET:
-                newPosition = offset;
-                break;
-            case RW_SEEK_CUR:
-                newPosition = gCtx->hidden.ohosio.position + offset;
-                break;
-            case RW_SEEK_END:
-                newPosition = gCtx->hidden.ohosio.size + offset;
-                break;
-            default:
-                return SDL_SetError("Unknown value for 'whence'");
+        size_t result = OHOS_FileSeekInlineSwitchPos(&offset, &newPosition, whence);
+        if (result == -1) {
+            return SDL_SetError("Unknown value for 'whence'");
         }
         /* Validate the new position */
         if (newPosition < 0) {
@@ -124,7 +133,7 @@ Sint64 OHOS_FileSeek(SDL_RWops *ctx, Sint64 offset, int whence)
         movement = newPosition - gCtx->hidden.ohosio.position;
         if (movement > 0) {
             size_t result = OHOS_FileSeekInline(&movement);
-            if(result == -1){
+            if (result == -1) {
                 return -1;
             }
         } else if (movement < 0) {
@@ -159,7 +168,7 @@ size_t OHOS_FileSeekInline(Sint64 *movement)
     return 0;
 }
 
-size_t OHOS_FileRead(SDL_RWops *ctx, void *buffer, size_t size, size_t maxnum) 
+size_t OHOS_FileRead(SDL_RWops *ctx, void *buffer, size_t size, size_t maxnum)
 {
     if (gCtx->hidden.ohosio.nativeResourceManager) {
         size_t bytesMax = size * maxnum;
@@ -183,7 +192,7 @@ size_t OHOS_FileRead(SDL_RWops *ctx, void *buffer, size_t size, size_t maxnum)
         int bytesRead = 0;
 
         /* Don't read more bytes than those that remain in the file, otherwise we get an exception */
-        if (bytesRemaining > bytesMax){
+        if (bytesRemaining > bytesMax) {
             bytesRemaining = bytesMax;
         }
         unsigned char byteBuffer[bytesRemaining];
@@ -198,21 +207,21 @@ size_t OHOS_FileRead(SDL_RWops *ctx, void *buffer, size_t size, size_t maxnum)
             bytesRead += result;
             gCtx->hidden.ohosio.position += result;
         }
-        if(size != 0){
+        if (size != 0) {
             return bytesRead / size;
-        }else{
+        } else {
             return -1;
         }
     }
 }
 
-size_t OHOS_FileWrite(SDL_RWops *ctx, const void *buffer, size_t size, size_t num) 
+size_t OHOS_FileWrite(SDL_RWops *ctx, const void *buffer, size_t size, size_t num)
 {
     SDL_SetError("Cannot write to OHOS package filesystem");
     return 0;
 }
 
-int OHOS_FileClose(SDL_RWops *ctx, SDL_bool release) 
+int OHOS_FileClose(SDL_RWops *ctx, SDL_bool release)
 {
     int result = 0;
 
@@ -227,7 +236,7 @@ int OHOS_FileClose(SDL_RWops *ctx, SDL_bool release)
     return result;
 }
 
-void OHOS_CloseResourceManager(void) 
+void OHOS_CloseResourceManager(void)
 {
     RawFile *rawFile = static_cast<RawFile *>(gCtx->hidden.ohosio.fileNameRef);
     if (rawFile) {

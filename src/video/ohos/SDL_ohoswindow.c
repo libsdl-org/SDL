@@ -34,21 +34,21 @@
 #include "SDL_hints.h"
 
 /* Currently only one window */
-SDL_Window *OHOS_Window = NULL;
+SDL_Window *g_ohosWindow = NULL;
 SDL_atomic_t bWindowCreateFlag;
 
 int
-OHOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window * window)
+OHOS_CreateWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
 {
     SDL_WindowData *data;
     int retval = 0;
     unsigned int delaytime = 0;
-
-     while (SDL_AtomicGet(&bWindowCreateFlag) == SDL_FALSE) {
+    
+    while (SDL_AtomicGet(&bWindowCreateFlag) == SDL_FALSE) {
         SDL_Delay(OHOS_GETWINDOW_DELAY_TIME);
-     }
+    }
 
-    if (OHOS_Window) {
+    if (g_ohosWindow) {
         retval = SDL_SetError("OHOS only supports one window");
         goto endfunction;
     }
@@ -60,8 +60,8 @@ OHOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window * window)
     /* Adjust the window data to match the screen */
     window->x = window->windowed.x;
     window->y = window->windowed.y;
-    window->w = OHOS_SurfaceWidth;
-    window->h = OHOS_SurfaceHeight;
+    window->w = g_ohosSurfaceWidth;
+    window->h = g_ohosSurfaceHeight;
     
     window->flags &= ~SDL_WINDOW_HIDDEN;
     window->flags |= SDL_WINDOW_SHOWN; /* only one window on OHOS */
@@ -83,9 +83,9 @@ OHOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window * window)
     /* Do not create EGLSurface for Vulkan window since it will then make the window
        incompatible with vkCreateOHOSSurfaceKHR */
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
-        data->egl_surface = (EGLSurface)SDL_EGL_CreateSurface(_this, (NativeWindowType)data->native_window);
+        data->egl_xcomponent = (EGLSurface)SDL_EGL_CreateSurface(thisDevice, (NativeWindowType)data->native_window);
     
-        if (data->egl_surface == EGL_NO_SURFACE) {
+        if (data->egl_xcomponent == EGL_NO_SURFACE) {
             SDL_free(data->native_window);
             SDL_free(data);
             retval = -1;
@@ -94,8 +94,8 @@ OHOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window * window)
     }
 
     window->driverdata = data;
-    OHOS_Window = window;
-    SDL_SendWindowEvent(OHOS_Window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+    g_ohosWindow = window;
+    SDL_SendWindowEvent(g_ohosWindow, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
     
 endfunction :
     SDL_UnlockMutex(OHOS_PageMutex);
@@ -104,19 +104,18 @@ endfunction :
 }
 
 void
-OHOS_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
+OHOS_SetWindowTitle(SDL_VideoDevice *thisDevice, SDL_Window *window)
 {
     OHOS_NAPI_SetTitle(window->title);
 }
 
 void
-OHOS_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+OHOS_SetWindowFullscreen(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     SDL_WindowData *data;
-
     SDL_LockMutex(OHOS_PageMutex);
 
-    if (window == OHOS_Window) {
+    if (window == g_ohosWindow) {
 
         /* If the window is being destroyed don't change visible state */
         if (!window->is_destroying) {
@@ -139,22 +138,21 @@ endfunction:
 }
 
 void
-OHOS_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
+OHOS_MinimizeWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
 {
 }
 
-void
-OHOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
+void OHOS_DestroyWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
 {
     SDL_LockMutex(OHOS_PageMutex);
 
-    if (window == OHOS_Window) {
-        OHOS_Window = NULL;
+    if (window == g_ohosWindow) {
+        g_ohosWindow = NULL;
 
         if (window->driverdata) {
             SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-            if (data->egl_surface != EGL_NO_SURFACE) {
-                SDL_EGL_DestroySurface(_this, data->egl_surface);
+            if (data->egl_xcomponent != EGL_NO_SURFACE) {
+                SDL_EGL_DestroySurface(thisDevice, data->egl_xcomponent);
             }
             if (data->native_window) {
             }
@@ -166,8 +164,7 @@ OHOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
-SDL_bool
-OHOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *info)
+SDL_bool OHOS_GetWindowWMInfo(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
@@ -175,7 +172,7 @@ OHOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *
         info->version.minor == SDL_MINOR_VERSION) {
         info->subsystem = SDL_SYSWM_OHOS;
         info->info.ohos.window = data->native_window;
-        info->info.ohos.surface = data->egl_surface;
+        info->info.ohos.surface = data->egl_xcomponent;
         return SDL_TRUE;
     } else {
         SDL_SetError("Application not compiled with SDL %d.%d",
@@ -184,39 +181,41 @@ OHOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, SDL_SysWMinfo *
     }
 }
 
-void OHOS_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable) {
+void OHOS_SetWindowResizable(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_bool resizable) 
+{
     if (resizable) {
         OHOS_NAPI_SetWindowResize(window->windowed.x, window->windowed.y, window->windowed.w, window->windowed.h);
     }
 }
 
-void OHOS_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window) {
+void OHOS_SetWindowSize(SDL_VideoDevice *thisDevice, SDL_Window *window) 
+{
     if ((window->flags & SDL_WINDOW_RESIZABLE) != 0) {
         window->flags &= ~SDL_WINDOW_RESIZABLE;
     }
     SDL_SetWindowResizable(window, SDL_TRUE);
     while (SDL_TRUE) {
-        if ((window->w == OHOS_SurfaceWidth) && (window->h == OHOS_SurfaceHeight)) {
+        if ((window->w == g_ohosSurfaceWidth) && (window->h == g_ohosSurfaceHeight)) {
             break;
         }
         SDL_Delay(OHOS_GETWINDOW_DELAY_TIME);
     }
 }
 
-int 
-OHOS_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data) {
+int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const void *data) 
+{
     SDL_Window *w = (SDL_Window *)data;
 
-    window->title = OHOS_GetWindowTitle(_this, w);
+    window->title = OHOS_GetWindowTitle(thisDevice, w);
 
-    if (SetupWindowData(_this, window, w) < 0) {
+    if (SetupWindowData(thisDevice, window, w) < 0) {
         return -1;
     }
     return 0;
 }
 
-char 
-*OHOS_GetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window) {
+char *OHOS_GetWindowTitle(SDL_VideoDevice *thisDevice, SDL_Window *window) 
+{
     char *title = NULL;
     title = window->title;
     if (title) {
@@ -227,11 +226,12 @@ char
 }
 
 int 
-SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *w) {
+SetupWindowData(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_Window *w)
+{
     SDL_WindowData *data;
     unsigned int delaytime = 0;
 
-    OHOS_PageMutex_Lock_Running();
+    OHOS_PAGEMUTEX_LockRunning();
     /* Allocate the window data */
     window->flags = w->flags;
     window->x = w->x;
@@ -239,7 +239,7 @@ SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *w) {
     window->w = w->w;
     window->h = w->h;
 
-    OHOS_DestroyWindow(_this, w);
+    OHOS_DestroyWindow(thisDevice, w);
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         return SDL_OutOfMemory();
@@ -255,23 +255,23 @@ SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *w) {
     }
 
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
-        data->egl_surface = (EGLSurface)SDL_EGL_CreateSurface(_this, (NativeWindowType)data->native_window);
+        data->egl_xcomponent = (EGLSurface)SDL_EGL_CreateSurface(thisDevice, (NativeWindowType)data->native_window);
 
-        if (data->egl_surface == EGL_NO_SURFACE) {
+        if (data->egl_xcomponent == EGL_NO_SURFACE) {
             SDL_free(data->native_window);
             SDL_free(data);
             goto endfunction;
         }
     }
     window->driverdata = data;
-    SDL_SendWindowEvent(OHOS_Window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+    SDL_SendWindowEvent(g_ohosWindow, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
 
 endfunction:
     SDL_UnlockMutex(OHOS_PageMutex);
 
     /* All done! */
     return 0;
-}    
+}
 #endif /* SDL_VIDEO_DRIVER_OHOS */
 
 /* vi: set ts=4 sw=4 expandtab: */

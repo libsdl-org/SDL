@@ -475,8 +475,7 @@ OHOS_InitKeyboard(void)
 }
 
 
-static SDL_Scancode
-TranslateKeycode(int keycode)
+static SDL_Scancode TranslateKeycode(int keycode)
 {
     int i;
     
@@ -504,8 +503,7 @@ TranslateKeycode(int keycode)
         if (keycode != KEYCODE_NUMPAD_0)
         {
             return SDL_SCANCODE_KP_1 + (keycode - KEYCODE_NUMPAD_1);
-        }
-        else
+        } else
         {
             return SDL_SCANCODE_KP_0;
         }
@@ -517,15 +515,12 @@ TranslateKeycode(int keycode)
 
     for (i = 0; i < SDL_arraysize(KeyCodeToSDLScancode); ++i)
     {
-        if (keycode == KeyCodeToSDLScancode[i].keycode)
-        {
+        if (keycode == KeyCodeToSDLScancode[i].keycode) {
             return KeyCodeToSDLScancode[i].scancode;
         }
     }
-    
     SDL_Log("OHOS TranslateKeycode, unknown keycode=%d\n", keycode);
     return SDL_SCANCODE_UNKNOWN;
-
 }
 
 int
@@ -534,8 +529,7 @@ OHOS_OnKeyDown(int keycode)
     return SDL_SendKeyboardKey(SDL_PRESSED, TranslateKeycode(keycode));
 }
 
-int
-OHOS_OnKeyUp(int keycode)
+int OHOS_OnKeyUp(int keycode)
 {
     return SDL_SendKeyboardKey(SDL_RELEASED, TranslateKeycode(keycode));
 }
@@ -546,28 +540,26 @@ OHOS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
-SDL_bool
-OHOS_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window * window)
+SDL_bool OHOS_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window* window)
 {
     return true;
 }
 
 void
-OHOS_StartTextInput(SDL_VideoDevice *_this)
+OHOS_StartTextInput(SDL_VideoDevice *thisDevice)
 {
     OHOS_NAPI_ShowTextInputKeyboard(SDL_TRUE);
 }
 
 void
-OHOS_StopTextInput(SDL_VideoDevice *_this)
+OHOS_StopTextInput(SDL_VideoDevice *thisDevice)
 {
     OHOS_NAPI_HideTextInput(1);
 }
 
-void
-OHOS_SetTextInputRect(SDL_VideoDevice *_this, SDL_Rect *rect)
+void OHOS_SetTextInputRect(SDL_VideoDevice *thisDevice, SDL_Rect *rect)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *videodata = (SDL_VideoData *)thisDevice->driverdata;
 
     if (!rect) {
         SDL_InvalidParamError("rect");

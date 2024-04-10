@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef SDL_OHOSVIDEO_H_
-#define SDL_OHOSVIDEO_H_
+#ifndef SDL_OHOSVIDEO_H
+#define SDL_OHOSVIDEO_H
 
 #include <EGL/eglplatform.h>
 #include "../../core/ohos/SDL_ohos.h"
@@ -32,22 +32,21 @@ extern void OHOS_SetScreenSize(int surfaceWidth, int surfaceHeight);
 
 /* Private display data */
 
-typedef struct SDL_VideoData
-{
+typedef struct SDL_VideoData {
     SDL_Rect textRect;
     int      isPaused;
     int      isPausing;
 } SDL_VideoData;
 
 
-extern int OHOS_SurfaceWidth;
-extern int OHOS_SurfaceHeight;
-extern int OHOS_DeviceWidth;
-extern int OHOS_DeviceHeight;
+extern int g_ohosSurfaceWidth;
+extern int g_ohosSurfaceHeight;
+extern int g_ohosDeviceWidth;
+extern int g_ohosDeviceHeight;
 extern SDL_sem *OHOS_PauseSem, *OHOS_ResumeSem;
 extern SDL_mutex *OHOS_PageMutex;
-extern SDL_Window *OHOS_Window;
+extern SDL_Window *g_ohosWindow;
 
-#endif /* SDL_ohosvideo_h_ */
+#endif /* SDL_OHOSVIDEO_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -24,8 +24,6 @@
 
 #define OHOS_TS_CALLBACK_TYPE "ohoscalltype"
 
-using namespace std;
-
 enum NapiCallBackType {
     NAPI_CALLBACK_CREATE_CUSTOMCURSOR,
     NAPI_CALLBACK_SET_CUSTOMCURSOR,
@@ -57,7 +55,7 @@ typedef struct {
     char *libraryFile;
 } OhosSDLEntryInfo;
 
-extern unique_ptr<NapiCallbackContext> napiCallback;
+extern std::unique_ptr<NapiCallbackContext> napiCallback;
 
 #ifdef __cplusplus
 /* *INDENT-OFF* */

@@ -36,7 +36,8 @@ extern "C" {
 #define OHOS_THREADSAFE_ARG4 4
 #define OHOS_THREADSAFE_ARG5 5
 
-unique_ptr<NapiCallbackContext> napiCallback = nullptr;
+std::unique_ptr<NapiCallbackContext> napiCallback = nullptr;
+
 static SDL_Thread *g_sdlMainThread;
 
 typedef void (*OHOS_TS_Fuction)(const cJSON *root);
@@ -69,7 +70,7 @@ static std::unordered_map<NapiCallBackType, OHOS_TS_Fuction> tsFuctions = {
     {NAPI_CALLBACK_REQUEST_PERMISSION, OHOS_TS_RequestPermission}
 };
 
-static void OHOS_TS_SetWindowResize(const cJSON *root) 
+static void OHOS_TS_SetWindowResize(const cJSON *root)
 {
     int x;
     int y;
@@ -102,8 +103,7 @@ static void OHOS_TS_SetWindowResize(const cJSON *root)
     napi_call_function(napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG4, argv, nullptr);
 }
 
-static void
-OHOS_TS_ShowTextInput(const cJSON *root) 
+static void OHOS_TS_ShowTextInput(const cJSON *root)
 {
     int x;
     int y;
@@ -138,8 +138,7 @@ OHOS_TS_ShowTextInput(const cJSON *root)
     return;
 }
 
-static void
-OHOS_TS_RequestPermission(const cJSON *root)
+static void OHOS_TS_RequestPermission(const cJSON *root)
 {
     cJSON *data = cJSON_GetObjectItem(root, "permission");
     const char *permission = data->valuestring;
@@ -156,8 +155,7 @@ OHOS_TS_RequestPermission(const cJSON *root)
     return;
 }
 
-static void
-OHOS_TS_HideTextInput(const cJSON *root)
+static void OHOS_TS_HideTextInput(const cJSON *root)
 {
     cJSON *data = cJSON_GetObjectItem(root, "flag");
     int flag = data->valueint;
@@ -172,8 +170,7 @@ OHOS_TS_HideTextInput(const cJSON *root)
     napi_call_function(napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
-static void
-OHOS_TS_ShouldMinimizeOnFocusLoss(const cJSON *root)
+static void OHOS_TS_ShouldMinimizeOnFocusLoss(const cJSON *root)
 {
     cJSON *data = cJSON_GetObjectItem(root, "flag");
     int flag = data->valueint;
@@ -188,8 +185,7 @@ OHOS_TS_ShouldMinimizeOnFocusLoss(const cJSON *root)
     napi_call_function(napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
-static void
-OHOS_TS_SetTitle(const cJSON *root)
+static void OHOS_TS_SetTitle(const cJSON *root)
 {
     cJSON *data = cJSON_GetObjectItem(root, "title");
     const char *title = data->valuestring;
@@ -205,8 +201,7 @@ OHOS_TS_SetTitle(const cJSON *root)
     napi_call_function(napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
-static void
-OHOS_TS_SetWindowStyle(const cJSON *root)
+static void OHOS_TS_SetWindowStyle(const cJSON *root)
 {
     cJSON *data = cJSON_GetObjectItem(root, "fullscreen");
     SDL_bool fullscreen = (SDL_bool)data->type;
@@ -223,8 +218,7 @@ OHOS_TS_SetWindowStyle(const cJSON *root)
     napi_call_function(napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
-static void
-OHOS_TS_ShowTextInputKeyboard(const cJSON *root)
+static void OHOS_TS_ShowTextInputKeyboard(const cJSON *root)
 {
     cJSON *data = cJSON_GetObjectItem(root, "isshow");
     SDL_bool isshow = (SDL_bool)data->type;
@@ -242,8 +236,7 @@ OHOS_TS_ShowTextInputKeyboard(const cJSON *root)
     napi_call_function(napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
-static void
-OHOS_TS_SetOrientation(const cJSON *root)
+static void OHOS_TS_SetOrientation(const cJSON *root)
 {
     int w;
     int h;
@@ -275,24 +268,23 @@ OHOS_TS_SetOrientation(const cJSON *root)
     napi_call_function(napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG4, argv, nullptr);
 }
 
-static void
-OHOS_TS_CreateCustomCursor(const cJSON *root)
+static void OHOS_TS_CreateCustomCursor(const cJSON *root)
 {
-    int hot_x;
-    int hot_y;
+    int hotX;
+    int hotY;
     int bytesPerPixel;
     int w;
     int h;
-    long long surfacePixels;
-    cJSON *data = cJSON_GetObjectItem(root, "surfacepixel");
-    surfacePixels = static_cast<long long>(data->valuedouble);
-    void *surfacepixelbuffer = reinterpret_cast<void *>(surfacePixels);
+    long long xcomponentPixels;
+    cJSON *data = cJSON_GetObjectItem(root, "xcomponentpixel");
+    xcomponentPixels = static_cast<long long>(data->valuedouble);
+    void *xcomponentpixelbuffer = reinterpret_cast<void *>(xcomponentPixels);
 
     data = cJSON_GetObjectItem(root, "hot_x");
-    hot_x = data->valueint;
+    hotX = data->valueint;
 
     data = cJSON_GetObjectItem(root, "hot_y");
-    hot_y = data->valueint;
+    hotY = data->valueint;
 
     data = cJSON_GetObjectItem(root, "BytesPerPixel");
     bytesPerPixel = data->valueint;
@@ -310,32 +302,31 @@ OHOS_TS_CreateCustomCursor(const cJSON *root)
     createOps.pixelFormat = bytesPerPixel;
     createOps.alphaType = 0;
     size_t bufferSize = createOps.width * createOps.height * bytesPerPixel;
-    int32_t res = OH_PixelMap_CreatePixelMap(napiCallback->env, createOps, 
-                                            (uint8_t *)surfacepixelbuffer, bufferSize, &argv[OHOS_THREADSAFE_ARG0]);
+    int32_t res = OH_PixelMap_CreatePixelMap(napiCallback->env, createOps, (uint8_t *)xcomponentpixelbuffer,
+                                             bufferSize, &argv[OHOS_THREADSAFE_ARG0]);
     if (res != IMAGE_RESULT_SUCCESS || argv[OHOS_THREADSAFE_ARG0] == nullptr) {
         SDL_Log("OH_PixelMap_CreatePixelMap is failed");
     }
-    napi_create_int32(napiCallback->env, hot_x, &argv[OHOS_THREADSAFE_ARG1]); // coordinate x
-    napi_create_int32(napiCallback->env, hot_y, &argv[OHOS_THREADSAFE_ARG2]); // coordinate y
+    napi_create_int32(napiCallback->env, hotX, &argv[OHOS_THREADSAFE_ARG1]); // coordinate x
+    napi_create_int32(napiCallback->env, hotY, &argv[OHOS_THREADSAFE_ARG2]); // coordinate y
     
     napi_value callback = nullptr;
     napi_get_reference_value(napiCallback->env, napiCallback->callbackRef, &callback);
     napi_value jsMethod;
     napi_get_named_property(napiCallback->env, callback, "setCustomCursorandCreate", &jsMethod);
     napi_call_function(napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG3, argv, nullptr);
-    SDL_free(surfacepixelbuffer);
+    SDL_free(xcomponentpixelbuffer);
     return;
 }
 
-static void
-OHOS_TS_SetCustomCursor(const cJSON *root)
+static void OHOS_TS_SetCustomCursor(const cJSON *root)
 {
-    (void)root;//if use root, delete this line
+    // if use root, delete this line
+    (void)root;
     return;
 }
 
-static void
-OHOS_SetSystemCursor(const cJSON *root)
+static void OHOS_SetSystemCursor(const cJSON *root)
 {
     cJSON *data = cJSON_GetObjectItem(root, "cursorID");
     int cursorID = data->valueint;
@@ -350,14 +341,12 @@ OHOS_SetSystemCursor(const cJSON *root)
 }
 
 /* Relative mouse support */
-static SDL_bool
-OHOS_SupportsRelativeMouse(void)
+static SDL_bool OHOS_SupportsRelativeMouse(void)
 {
     return SDL_TRUE;
 }
 
-static SDL_bool
-OHOS_SetRelativeMouseEnabled(SDL_bool enabled)
+static SDL_bool OHOS_SetRelativeMouseEnabled(SDL_bool enabled)
 {
     return SDL_TRUE;
 }
@@ -381,8 +370,7 @@ void OHOS_TS_Call(napi_env env, napi_value jsCb, void *context, void *data)
 }
 
 /* The general mixing thread function */
-static int
-OHOS_RunMain(void *mainFucInfo)
+static int OHOS_RunMain(void *mainFucInfo)
 {
     OhosSDLEntryInfo *info = (OhosSDLEntryInfo *)mainFucInfo;
     void *libraryHandle;
@@ -410,8 +398,7 @@ OHOS_RunMain(void *mainFucInfo)
     return 0;
 }
 
-SDL_bool
-OHOS_RunThread(OhosSDLEntryInfo *info)
+SDL_bool OHOS_RunThread(OhosSDLEntryInfo *info)
 {
     const size_t stacksize = 64 * 1024;
     char threadname[64] = "SDLMain";
@@ -419,14 +406,12 @@ OHOS_RunThread(OhosSDLEntryInfo *info)
     return g_sdlMainThread == NULL ? SDL_FALSE : SDL_TRUE;
 }
 
-SDL_bool
-OHOS_IsThreadRun(void)
+SDL_bool OHOS_IsThreadRun(void)
 {
     return g_sdlMainThread == NULL ? SDL_FALSE : SDL_TRUE;
 }
 
-void
-OHOS_ThreadExit(void)
+void OHOS_ThreadExit(void)
 {
     SDL_free(g_sdlMainThread);
     napi_release_threadsafe_function(napiCallback->tsfn, napi_tsfn_release);

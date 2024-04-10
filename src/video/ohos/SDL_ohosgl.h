@@ -13,17 +13,17 @@
  * limitations under the License.
  */
 
-#ifndef SDL_OHOSGL_H_
-#define SDL_OHOSGL_H_
+#ifndef SDL_OHOSGL_H
+#define SDL_OHOSGL_H
 
 #include "SDL_ohosvideo.h"
 #include "../../SDL_internal.h"
 
-SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window * window);
-int OHOS_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context);
-int OHOS_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window * window);
-int OHOS_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *thisDevice, SDL_Window* window);
+int OHOS_GLES_MakeCurrent(SDL_VideoDevice *thisDevice, SDL_Window* window, SDL_GLContext context);
+int OHOS_GLES_SwapWindow(SDL_VideoDevice *thisDevice, SDL_Window* window);
+int OHOS_GLES_LoadLibrary(SDL_VideoDevice *thisDevice, const char *path);
 
-#endif /* SDL_ohosgl_h_ */
+#endif /* SDL_OHOSGL_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

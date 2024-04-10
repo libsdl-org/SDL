@@ -57,16 +57,15 @@ static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
 
 /* Callbacks*/
-static void
-OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
+static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
 {
     gNative_window = (OHNativeWindow *)window;
     uint64_t width;
     uint64_t height;
     OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
     OHOS_SetScreenSize((int)width, (int)height);
-    if (OHOS_Window) {
-        SDL_WindowData *data = (SDL_WindowData *)OHOS_Window->driverdata;
+    if (g_ohosWindow) {
+        SDL_WindowData *data = (SDL_WindowData *)g_ohosWindow->driverdata;
         data->native_window = (OHNativeWindow *)(window);
         if (data->native_window == NULL) {
             SDL_SetError("Could not fetch native window from UI thread");
@@ -75,50 +74,48 @@ OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
     SDL_AtomicSet(&bWindowCreateFlag, SDL_TRUE);
 }
 
-static void
-OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
+static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
 {
     uint64_t width;
     uint64_t height;
     OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
     OHOS_SetScreenSize((int)width, (int)height);
-    if (OHOS_Window) {
+    if (g_ohosWindow) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_WindowData *data = (SDL_WindowData *)OHOS_Window->driverdata;
-        OHOS_SendResize(OHOS_Window);
+        SDL_WindowData *data = (SDL_WindowData *)g_ohosWindow->driverdata;
+        OHOS_SendResize(g_ohosWindow);
 
-        /* If the surface has been previously destroyed by onNativeSurfaceDestroyed, recreate it here */
-        if (data->egl_surface == EGL_NO_SURFACE) {
-            data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType)data->native_window);
+        /* If the xcomponent has been previously destroyed by onNativeSurfaceDestroyed, recreate it here */
+        if (data->egl_xcomponent == EGL_NO_SURFACE) {
+            data->egl_xcomponent = SDL_EGL_CreateSurface(_this, (NativeWindowType)data->native_window);
         }
     }
 }
 
-static void
-OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
+static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
 {
     int nb_attempt = 50;
     gNative_window = nullptr;
 retry:
 
-    if (OHOS_Window) {
+    if (g_ohosWindow) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_WindowData *data = (SDL_WindowData *)OHOS_Window->driverdata;
+        SDL_WindowData *data = (SDL_WindowData *)g_ohosWindow->driverdata;
 
-        /* Wait for Main thread being paused and context un-activated to release 'egl_surface' */
+        /* Wait for Main thread being paused and context un-activated to release 'xcomponent' */
         if (!data->backup_done) {
             nb_attempt -= 1;
             if (nb_attempt == 0) {
-                SDL_SetError("Try to release egl_surface with context probably still active");
+                SDL_SetError("Try to release egl_xcomponent with context probably still active");
             } else {
                 SDL_Delay(OHOS_DELAY_TEN);
                 goto retry;
             }
         }
 
-        if (data->egl_surface != EGL_NO_SURFACE) {
-            SDL_EGL_DestroySurface(_this, data->egl_surface);
-            data->egl_surface = EGL_NO_SURFACE;
+        if (data->egl_xcomponent != EGL_NO_SURFACE) {
+            SDL_EGL_DestroySurface(_this, data->egl_xcomponent);
+            data->egl_xcomponent = EGL_NO_SURFACE;
         }
 
         if (data->native_window) {
@@ -131,8 +128,7 @@ retry:
 }
 
 /* Key */
-void
-onKeyEvent(OH_NativeXComponent *component, void *window)
+void onKeyEvent(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_KeyEvent *keyEvent = NULL;
     if (OH_NativeXComponent_GetKeyEvent(component, &keyEvent) >= 0) {
@@ -152,8 +148,7 @@ onKeyEvent(OH_NativeXComponent *component, void *window)
 }
 
 /* Touch */
-void
-onNativeTouch(OH_NativeXComponent *component, void *window)
+void onNativeTouch(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_TouchEvent touchEvent;
     float tiltX = 0.0f;
@@ -173,14 +168,13 @@ onNativeTouch(OH_NativeXComponent *component, void *window)
     ohosTouch.x = tiltX;
     ohosTouch.y = tiltY;
     ohosTouch.p = touchEvent.force;
-    OHOS_OnTouch(OHOS_Window, &ohosTouch);
+    OHOS_OnTouch(g_ohosWindow, &ohosTouch);
 
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
 /* Mouse */
-void
-onNativeMouse(OH_NativeXComponent *component, void *window)
+void onNativeMouse(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_MouseEvent mouseEvent;
     OHOS_Window_Size windowsize;
@@ -192,13 +186,12 @@ onNativeMouse(OH_NativeXComponent *component, void *window)
     windowsize.x = mouseEvent.x;
     windowsize.y = mouseEvent.y;
     
-    OHOS_OnMouse(OHOS_Window, &windowsize, SDL_TRUE);
+    OHOS_OnMouse(g_ohosWindow, &windowsize, SDL_TRUE);
 
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
-static void
-OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
+static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_TouchEvent touchEvent;
     Ohos_TouchId ohosTouch;
@@ -210,27 +203,23 @@ OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
     ohosTouch.x = touchEvent.x;
     ohosTouch.y = touchEvent.y;
     ohosTouch.p = touchEvent.force;
-    OHOS_OnTouch(OHOS_Window, &ohosTouch);
+    OHOS_OnTouch(g_ohosWindow, &ohosTouch);
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
-void
-OnHoverEvent(OH_NativeXComponent *component, bool isHover)
+void OnHoverEvent(OH_NativeXComponent *component, bool isHover)
 {
 }
 
-void
-OnFocusEvent(OH_NativeXComponent *component, void *window)
+void OnFocusEvent(OH_NativeXComponent *component, void *window)
 {
 }
 
-void
-OnBlurEvent(OH_NativeXComponent *component, void *window)
+void OnBlurEvent(OH_NativeXComponent *component, void *window)
 {
 }
 
-void
-OHOS_XcomponentExport(napi_env env, napi_value exports)
+void OHOS_XcomponentExport(napi_env env, napi_value exports)
 {
     napi_value exportInstance = NULL;
     OH_NativeXComponent *nativeXComponent = NULL;

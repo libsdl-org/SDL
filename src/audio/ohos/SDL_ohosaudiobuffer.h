@@ -12,9 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef SDL_ohosaudiobuffer_h_
-#define SDL_ohosaudiobuffer_h_
+#ifndef SDL_OHOSAUDIOBUFFER_H
+#define SDL_OHOSAUDIOBUFFER_H
 
 int OHOS_AUDIOBUFFER_InitCapture(unsigned int bufferSize);
 int OHOS_AUDIOBUFFER_DeInitCapture(void);
@@ -22,6 +21,6 @@ int OHOS_AUDIOBUFFER_ReadCaptureBuffer(unsigned char *buffer, unsigned int size)
 int OHOS_AUDIOBUFFER_WriteCaptureBuffer(unsigned char *buffer, unsigned int size);
 void OHOS_AUDIOBUFFER_FlushBuffer(void);
 
-#endif /* SDL_ohosaudiobuffer_h_ */
+#endif /* SDL_OHOSAUDIOBUFFER_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

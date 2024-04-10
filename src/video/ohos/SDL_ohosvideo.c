@@ -52,18 +52,17 @@ int OHOS_GetDisplayDPI(SDL_VideoDevice *_this, SDL_VideoDisplay *display, float 
 
 
 /* These are filled in with real values in OHOS_SetScreenResolution on init (before SDL_main()) */
-int OHOS_SurfaceWidth           = 0;
-int OHOS_SurfaceHeight          = 0;
-int OHOS_DeviceWidth            = 0;
-int OHOS_DeviceHeight           = 0;
+int g_ohosSurfaceWidth           = 0;
+int g_ohosSurfaceHeight          = 0;
+int g_ohosDeviceWidth            = 0;
+int g_ohosDeviceHeight           = 0;
 static Uint32 OHOS_ScreenFormat = SDL_PIXELFORMAT_UNKNOWN;
 static int OHOS_ScreenRate      = 0;
 SDL_sem *OHOS_PauseSem          = NULL;
 SDL_sem *OHOS_ResumeSem         = NULL;
 SDL_mutex *OHOS_PageMutex       = NULL;
 
-static int
-OHOS_Available(void)
+static int OHOS_Available(void)
 {
     return 1;
 }
@@ -71,39 +70,18 @@ OHOS_Available(void)
 static void
 OHOS_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
-
 }
 
-static void
-OHOS_DeleteDevice(SDL_VideoDevice *device)
+static void OHOS_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_free(device->driverdata);
     SDL_free(device);
 }
 
-static SDL_VideoDevice *
-OHOS_CreateDevice(int devindex)
+static  void OHOS_SetDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoDevice *device;
-    SDL_VideoData *data;
     SDL_bool block_on_pause;
-
-    /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (!device) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-
-    data = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
-    if (!data) {
-        SDL_OutOfMemory();
-        SDL_free(device);
-        return NULL;
-    }
-
-    device->driverdata = data;
-
+    
     /* Set the function pointers */
     device->VideoInit = OHOS_VideoInit;
     device->VideoQuit = OHOS_VideoQuit;
@@ -144,7 +122,30 @@ OHOS_CreateDevice(int devindex)
 
     /* Screensaver */
     device->SuspendScreenSaver = OHOS_SuspendScreenSaver;
+}
 
+static SDL_VideoDevice *
+OHOS_CreateDevice(int devindex)
+{
+    SDL_VideoDevice *device;
+    SDL_VideoData *data;
+
+    /* Initialize all variables that we clean on shutdown */
+    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    if (!device) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    data = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
+    if (!data) {
+        SDL_OutOfMemory();
+        SDL_free(device);
+        return NULL;
+    }
+
+    device->driverdata = data;
+    OHOS_SetDevice(device);
     return device;
 }
 
@@ -166,8 +167,8 @@ OHOS_VideoInit(SDL_VideoDevice *_this)
     videodata->isPausing = SDL_FALSE;
 
     mode.format          = OHOS_ScreenFormat;
-    mode.w               = OHOS_DeviceWidth;
-    mode.h               = OHOS_DeviceHeight;
+    mode.w               = g_ohosDeviceWidth;
+    mode.h               = g_ohosDeviceHeight;
     mode.refresh_rate    = OHOS_ScreenRate;
     mode.driverdata      = NULL;
 
@@ -188,15 +189,13 @@ OHOS_VideoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-void
-OHOS_VideoQuit(SDL_VideoDevice *_this)
+void OHOS_VideoQuit(SDL_VideoDevice *_this)
 {
     OHOS_QuitMouse();
     OHOS_QuitTouch();
 }
 
-int
-OHOS_GetDisplayDPI(SDL_VideoDevice *_this, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
+int OHOS_GetDisplayDPI(SDL_VideoDevice *_this, SDL_VideoDisplay *display, float *ddpi, float *hdpi, float *vdpi)
 {
     return 0;
 }
@@ -205,14 +204,14 @@ void OHOS_SetScreenResolution(int deviceWidth, int deviceHeight, Uint32 format, 
 {
     OHOS_ScreenFormat  = format;
     OHOS_ScreenRate    = (int)rate;
-    OHOS_DeviceWidth   = deviceWidth;
-    OHOS_DeviceHeight  = deviceHeight;
+    g_ohosDeviceWidth   = deviceWidth;
+    g_ohosDeviceHeight  = deviceHeight;
 }
 
 void OHOS_SetScreenSize(int surfaceWidth, int surfaceHeight)
 {
-    OHOS_SurfaceWidth  = surfaceWidth;
-    OHOS_SurfaceHeight = surfaceHeight;
+    g_ohosSurfaceWidth  = surfaceWidth;
+    g_ohosSurfaceHeight = surfaceHeight;
 }
 
 
@@ -221,16 +220,14 @@ void OHOS_SendResize(SDL_Window *window)
     /*
       Update the resolution of the desktop mode, so that the window
       can be properly resized. The screen resolution change can for
-      example happen when the Activity enters or exits immersive mode,
       which can happen after VideoInit().
     */
     SDL_VideoDevice *device = SDL_GetVideoDevice();
-    if (device && device->num_displays > 0)
-    {
+    if (device && device->num_displays > 0) {
         SDL_VideoDisplay *display          = &device->displays[0];
         display->desktop_mode.format       = OHOS_ScreenFormat;
-        display->desktop_mode.w            = OHOS_DeviceWidth;
-        display->desktop_mode.h            = OHOS_DeviceHeight;
+        display->desktop_mode.w            = g_ohosDeviceWidth;
+        display->desktop_mode.h            = g_ohosDeviceHeight;
         display->desktop_mode.refresh_rate = OHOS_ScreenRate;
     }
 
@@ -239,12 +236,12 @@ void OHOS_SendResize(SDL_Window *window)
          * will fall back to the old mode */
         SDL_VideoDisplay *display              = SDL_GetDisplayForWindow(window);
         display->display_modes[0].format       = OHOS_ScreenFormat;
-        display->display_modes[0].w            = OHOS_DeviceWidth;
-        display->display_modes[0].h            = OHOS_DeviceHeight;
+        display->display_modes[0].w            = g_ohosDeviceWidth;
+        display->display_modes[0].h            = g_ohosDeviceHeight;
         display->display_modes[0].refresh_rate = OHOS_ScreenRate;
         display->current_mode                  = display->display_modes[0];
 
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, OHOS_SurfaceWidth, OHOS_SurfaceHeight);
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, g_ohosSurfaceWidth, g_ohosSurfaceHeight);
     }
 }
 
