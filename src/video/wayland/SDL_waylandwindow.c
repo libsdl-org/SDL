@@ -557,6 +557,7 @@ static void SetFullscreen(SDL_Window *window, struct wl_output *output)
             return; /* Can't do anything yet, wait for ShowWindow */
         }
 
+        wind->fullscreen_exclusive = output ? window->fullscreen_exclusive : SDL_FALSE;
         ++wind->fullscreen_deadline_count;
         if (output) {
             Wayland_SetWindowResizable(SDL_GetVideoDevice(), window, SDL_TRUE);
@@ -573,6 +574,7 @@ static void SetFullscreen(SDL_Window *window, struct wl_output *output)
             return; /* Can't do anything yet, wait for ShowWindow */
         }
 
+        wind->fullscreen_exclusive = output ? window->fullscreen_exclusive : SDL_FALSE;
         ++wind->fullscreen_deadline_count;
         if (output) {
             Wayland_SetWindowResizable(SDL_GetVideoDevice(), window, SDL_TRUE);
@@ -604,8 +606,10 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
             /* Unconditionally set the output for exclusive fullscreen windows when entering
              * fullscreen from a compositor event, as where the compositor will actually
              * place the fullscreen window is unknown.
+             *
+             * If the higher level
              */
-            if (window->fullscreen_exclusive && !wind->fullscreen_was_positioned) {
+            if (window->fullscreen_exclusive && (!wind->fullscreen_exclusive || !wind->fullscreen_was_positioned)) {
                 SDL_VideoDisplay *disp = SDL_GetVideoDisplay(window->current_fullscreen_mode.displayID);
                 if (disp) {
                     wind->fullscreen_was_positioned = SDL_TRUE;
