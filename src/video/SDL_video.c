@@ -1406,7 +1406,15 @@ static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
     SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
 
     if (!displayID) {
-        displayID = GetDisplayForRect(x, y, window->w, window->h);
+        /* Fullscreen windows may be larger than the display if they were moved between differently sized
+         * displays and the new position was received before the new size or vice versa. Using the center
+         * of the window rect in this case can report the wrong display, so use the origin.
+         */
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            displayID = GetDisplayForRect(x, y, 1, 1);
+        } else {
+            displayID = GetDisplayForRect(x, y, window->w, window->h);
+        }
     }
     if (!displayID) {
         /* Use the primary display for a window if we can't find it anywhere else */
@@ -1436,9 +1444,9 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
     if (!displayID) {
         if (window->flags & SDL_WINDOW_FULLSCREEN && !window->is_repositioning) {
             /* This was a window manager initiated move, use the current position. */
-            displayID = GetDisplayForRect(window->x, window->y, window->w, window->h);
+            displayID = GetDisplayForRect(window->x, window->y, 1, 1);
         } else {
-            displayID = GetDisplayForRect(window->floating.x, window->floating.y, window->w, window->h);
+            displayID = GetDisplayForRect(window->floating.x, window->floating.y, window->floating.w, window->floating.h);
         }
     }
     if (!displayID) {
