@@ -1992,11 +1992,10 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
      * fullscreen. If there is no fullscreen window past the elapsed timeout, revert the mode switch.
      */
     for (i = 0; i < _this->num_displays; ++i) {
-        if (_this->displays[i]->driverdata->mode_switch_deadline_ns &&
-            SDL_GetTicksNS() >= _this->displays[i]->driverdata->mode_switch_deadline_ns) {
+        if (_this->displays[i]->driverdata->mode_switch_deadline_ns) {
             if (_this->displays[i]->fullscreen_window) {
                 _this->displays[i]->driverdata->mode_switch_deadline_ns = 0;
-            } else {
+            } else if (SDL_GetTicksNS() >= _this->displays[i]->driverdata->mode_switch_deadline_ns) {
                 SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
                              "Time out elapsed after mode switch on display %" SDL_PRIu32 " with no window becoming fullscreen; reverting", _this->displays[i]->id);
                 SDL_SetDisplayModeForDisplay(_this->displays[i], NULL);
