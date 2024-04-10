@@ -1193,6 +1193,11 @@ static void Wayland_HandlePreferredScaleChanged(SDL_WindowData *window_data, flo
         return;
     }
 
+    /* Round the scale factor if viewports aren't available. */
+    if (!window_data->viewport) {
+        factor = SDL_ceilf(factor);
+    }
+
     if (!FloatEqual(factor, old_factor)) {
         window_data->windowed_scale_factor = factor;
 
