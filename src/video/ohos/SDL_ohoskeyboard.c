@@ -464,8 +464,7 @@ static const struct {
     { KEYCODE_MEDIA_FAST_FORWARD, SDL_SCANCODE_AUDIOFASTFORWARD },
 };
 
-void
-OHOS_InitKeyboard(void)
+void OHOS_InitKeyboard(void)
 {
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
 
@@ -488,8 +487,7 @@ static SDL_Scancode TranslateKeycode(int keycode)
         if (keycode != KEYCODE_0)
         {
             return SDL_SCANCODE_1 + (keycode - KEYCODE_1);
-        }
-        else
+        } else
         {
             return SDL_SCANCODE_0;
         }
@@ -513,8 +511,7 @@ static SDL_Scancode TranslateKeycode(int keycode)
         return SDL_SCANCODE_F13 + (keycode - KEYCODE_F13);
     }
 
-    for (i = 0; i < SDL_arraysize(KeyCodeToSDLScancode); ++i)
-    {
+    for (i = 0; i < SDL_arraysize(KeyCodeToSDLScancode); ++i) {
         if (keycode == KeyCodeToSDLScancode[i].keycode) {
             return KeyCodeToSDLScancode[i].scancode;
         }
@@ -523,8 +520,7 @@ static SDL_Scancode TranslateKeycode(int keycode)
     return SDL_SCANCODE_UNKNOWN;
 }
 
-int
-OHOS_OnKeyDown(int keycode)
+int OHOS_OnKeyDown(int keycode)
 {
     return SDL_SendKeyboardKey(SDL_PRESSED, TranslateKeycode(keycode));
 }
@@ -534,8 +530,7 @@ int OHOS_OnKeyUp(int keycode)
     return SDL_SendKeyboardKey(SDL_RELEASED, TranslateKeycode(keycode));
 }
 
-SDL_bool
-OHOS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+SDL_bool OHOS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     return SDL_TRUE;
 }
@@ -545,14 +540,12 @@ SDL_bool OHOS_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window* window)
     return true;
 }
 
-void
-OHOS_StartTextInput(SDL_VideoDevice *thisDevice)
+void OHOS_StartTextInput(SDL_VideoDevice *thisDevice)
 {
     OHOS_NAPI_ShowTextInputKeyboard(SDL_TRUE);
 }
 
-void
-OHOS_StopTextInput(SDL_VideoDevice *thisDevice)
+void OHOS_StopTextInput(SDL_VideoDevice *thisDevice)
 {
     OHOS_NAPI_HideTextInput(1);
 }

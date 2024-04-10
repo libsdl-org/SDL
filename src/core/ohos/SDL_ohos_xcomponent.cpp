@@ -35,13 +35,15 @@
 extern "C" {
 #endif
 #include "../../events/SDL_events_c.h"
-#include "../../video/ohos/SDL_ohosvideo.h"
-#include "../../video/ohos/SDL_ohostouch.h"
-#include "../../video/ohos/SDL_ohosmouse.h"
-#include "../../video/ohos/SDL_ohoskeyboard.h"
+#include "../../video/SDL_egl_c.h"
 #ifdef __cplusplus
 }
 #endif
+
+#include "../../video/ohos/SDL_ohostouch.h"
+#include "../../video/ohos/SDL_ohosmouse.h"
+#include "../../video/ohos/SDL_ohoskeyboard.h"
+#include "../../video/ohos/SDL_ohosvideo.h"
 
 #include <ace/xcomponent/native_xcomponent_key_event.h>
 #include <pthread.h>

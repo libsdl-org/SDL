@@ -25,6 +25,12 @@
 #include "../../core/ohos/SDL_ohos_xcomponent.h"
 #include "SDL_ohoswindow.h"
 
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+extern "C" {
+/* *INDENT-ON* */
+#endif
+
 /* Called by the JNI layer when the screen changes size or format */
 extern void OHOS_SetScreenResolution(int deviceWidth, int deviceHeight, Uint32 format, float rate);
 extern void OHOS_SendResize(SDL_Window *window);
@@ -46,6 +52,13 @@ extern int g_ohosDeviceHeight;
 extern SDL_sem *OHOS_PauseSem, *OHOS_ResumeSem;
 extern SDL_mutex *OHOS_PageMutex;
 extern SDL_Window *g_ohosWindow;
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+}
+/* *INDENT-ON* */
+#endif
 
 #endif /* SDL_OHOSVIDEO_H */
 

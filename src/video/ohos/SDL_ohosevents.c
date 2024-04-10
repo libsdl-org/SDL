@@ -46,7 +46,8 @@ static void openslES_PauseDevices(void) {}
 /* Number of 'type' events in the event queue */
 static int SDL_NumberOfEvents(Uint32 type) { return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type); }
 
-static void OHOS_EGL_context_restore(SDL_Window *window) {
+static void OHOS_EGL_context_restore(SDL_Window *window) 
+{
     if (window) {
         SDL_Event event;
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
@@ -61,7 +62,8 @@ static void OHOS_EGL_context_restore(SDL_Window *window) {
     }
 }
 
-static void OHOS_EGL_context_backup(SDL_Window *window) {
+static void OHOS_EGL_context_backup(SDL_Window *window) 
+{
     if (window) {
         /* Keep a copy of the EGL Context so we can try to restore it when we resume */
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
@@ -72,7 +74,8 @@ static void OHOS_EGL_context_backup(SDL_Window *window) {
     }
 }
 
-void OHOS_PumpEvents_Blocking(SDL_VideoDevice *thisDevice) {
+void OHOS_PUMPEVENTS_Blocking(SDL_VideoDevice *thisDevice) 
+{
     SDL_VideoData *videodata = (SDL_VideoData *)thisDevice->driverdata;
     if (videodata->isPaused) {
         SDL_bool isContextExternal = SDL_IsVideoContextExternal();
@@ -133,7 +136,8 @@ void OHOS_PumpEvents_Blocking(SDL_VideoDevice *thisDevice) {
     }
 }
 
-void OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *thisDevice) {
+void OHOS_PUMPEVENTS_NonBlocking(SDL_VideoDevice *thisDevice) 
+{
     SDL_VideoData *videodata = (SDL_VideoData *)thisDevice->driverdata;
     static int backup_context = 0;
 
@@ -153,8 +157,6 @@ void OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *thisDevice) {
 
             backup_context = 0;
         }
-
-
         if (SDL_SemTryWait(OHOS_ResumeSem) == 0) {
 
             videodata->isPaused = 0;
@@ -187,7 +189,6 @@ void OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *thisDevice) {
                 SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
                 SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
             }
-
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */

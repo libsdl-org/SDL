@@ -14,10 +14,16 @@
  */
 
 
-#ifndef SDL_OHOSTOUCH_H_
-#define SDL_OHOSTOUCH_H_
+#ifndef SDL_OHOSTOUCH_H
+#define SDL_OHOSTOUCH_H
 
 #include "SDL_ohosvideo.h"
+
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+extern "C" {
+/* *INDENT-ON* */
+#endif
 
 typedef struct TouchID{
     int touchDeviceIdIn;
@@ -31,6 +37,13 @@ typedef struct TouchID{
 extern void OHOS_InitTouch(void);
 extern void OHOS_QuitTouch(void);
 extern void OHOS_OnTouch(SDL_Window *window, OhosTouchId *touchsize);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+}
+/* *INDENT-ON* */
+#endif
 
 #endif /* SDL_ohostouch_h_ */
 

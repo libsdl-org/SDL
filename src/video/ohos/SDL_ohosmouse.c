@@ -108,17 +108,17 @@ static void OHOS_FreeCursor(SDL_Cursor * cursor)
 static SDL_Cursor *OHOS_CreateEmptyCursor()
 {
     if (!empty_cursor) {
-        SDL_Surface *empty_surface = SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, SDL_PIXELFORMAT_ARGB8888);
-        if (empty_surface) {
-            SDL_memset(empty_surface->pixels, 0, empty_surface->h * empty_surface->pitch);
-            empty_cursor = OHOS_CreateCursor(empty_surface, 0, 0);
-            SDL_FreeSurface(empty_surface);
+        SDL_Surface *empty_xcomponent = SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, SDL_PIXELFORMAT_ARGB8888);
+        if (empty_xcomponent) {
+            SDL_memset(empty_xcomponent->pixels, 0, empty_xcomponent->h * empty_xcomponent->pitch);
+            empty_cursor = OHOS_CreateCursor(empty_xcomponent, 0, 0);
+            SDL_FreeSurface(empty_xcomponent);
         }
     }
     return empty_cursor;
 }
 
-static void OHOS_DestroyEmptyCursor() 
+static void OHOS_DestroyEmptyCursor()
 {
     if (empty_cursor) {
         OHOS_FreeCursor(empty_cursor);
@@ -209,7 +209,7 @@ void OHOS_OnMouse(SDL_Window *window, OHOSWindowSize *windowsize, SDL_bool relat
     if (!window) {
         return;
     }
-    switch(windowsize->action) {
+    switch (windowsize->action) {
         case ACTION_DOWN:
             changes = windowsize->state & ~last_state;
             button = TranslateButton(changes);

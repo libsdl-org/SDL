@@ -69,8 +69,7 @@ fail:
 
 void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
-    if (_this->vulkan_config.loader_handle)
-    {
+    if (_this->vulkan_config.loader_handle) {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
         _this->vulkan_config.loader_handle = NULL;
     }
@@ -89,8 +88,8 @@ SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForOHOS),
-            extensionsForOHOS);
+    count, names, SDL_arraysize(extensionsForOHOS),
+       extensionsForOHOS);
 }
 
 SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
@@ -103,13 +102,12 @@ SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateOHOSSurfaceKHR vkCreateOHOSSurfaceKHR =
         (PFN_vkCreateOHOSSurfaceKHR)vkGetInstanceProcAddr(
-                                           instance,
-                                           "vkCreateSurfaceOHOS");
+                                          instance,
+                                          "vkCreateSurfaceOHOS");
     VkOHOSSurfaceCreateInfoKHR createInfo;
     VkResult result;
 
-    if (!_this->vulkan_config.loader_handle)
-    {
+    if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
@@ -120,14 +118,14 @@ SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         return SDL_FALSE;
     }
     SDL_zero(createInfo);
-    createInfo.sType = VK_STRUCTURE_TYPE_OSOS_SURFACE_CREATE_INFO_KHR;
+    createInfo.sType = VK_STRUCTURE_TYPE_OSOS_XCOMPONENT_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.window = windowData->native_window;
     result = vkCreateOHOSSurfaceKHR(instance, &createInfo,
-                                      NULL, xcomponent);
+                                   NULL, xcomponent);
     if (result != VK_SUCCESS) {
-        SDL_SetError("vkCreateOHOSSurfaceKHR failed: %s",
+        SDL_SetError("vkCreateOHOSXcomponentKHR failed: %s",
                      SDL_Vulkan_GetResultString(result));
         return SDL_FALSE;
     }

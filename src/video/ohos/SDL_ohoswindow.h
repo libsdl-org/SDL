@@ -20,10 +20,15 @@
 #include "../SDL_egl_c.h"
 #include "../../core/ohos/SDL_ohos_xcomponent.h"
 
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+extern "C" {
+/* *INDENT-ON* */
+#endif
 
 extern int OHOS_CreateWindow(SDL_VideoDevice *thisDevice, SDL_Window *window);
 extern void OHOS_SetWindowTitle(SDL_VideoDevice *thisDevice, SDL_Window *window);
-extern void OHOS_SetWindowFullscreen(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_VideoDisplay *display, 
+extern void OHOS_SetWindowFullscreen(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_VideoDisplay *display,
                                      SDL_bool fullscreen);
 extern void OHOS_MinimizeWindow(SDL_VideoDevice *thisDevice, SDL_Window *window);
 
@@ -42,6 +47,13 @@ typedef struct {
     SDL_bool   backup_done;
     OHNativeWindow *native_window;
 } SDL_WindowData;
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+}
+/* *INDENT-ON* */
+#endif
 
 #endif /* SDL_OHOSWINDOW_H */
 

@@ -18,6 +18,12 @@
 #include "../../SDL_internal.h"
 #include "../SDL_sysaudio.h"
 
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+extern "C" {
+/* *INDENT-ON* */
+#endif
+
 struct SDL_PrivateAudioData {
     /* Resume device if it was paused automatically */
     int resume;
@@ -27,6 +33,13 @@ void OHOSAUDIO_ResumeDevices(void);
 void OHOSAUDIO_PauseDevices(void);
 void OHOSAUDIO_PageResume(void);
 void OHOSAUDIO_PagePause(void);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+}
+/* *INDENT-ON* */
+#endif
 
 #endif /* SDL_OHOSAUDIO_H */
 

@@ -33,16 +33,15 @@ extern "C" {
 #include "../../events/SDL_windowevents_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
-#include "../../video/ohos/SDL_ohosvideo.h"
-#include "../../video/ohos/SDL_ohoskeyboard.h"
-#include "../../audio/ohos/SDL_ohosaudio.h"
-#include "SDL_ohos.h"
 #include "SDL_quit.h"
-#include "SDL_ohos.h"
-#include "SDL_ohosfile.h"
 #ifdef __cplusplus
 }
 #endif
+#include "SDL_ohos.h"
+#include "SDL_ohosfile.h"
+#include "../../video/ohos/SDL_ohosvideo.h"
+#include "../../video/ohos/SDL_ohoskeyboard.h"
+#include "../../audio/ohos/SDL_ohosaudio.h"
 #define OHOS_DELAY_FIFTY 50
 #define OHOS_DELAY_TEN 10
 #define OHOS_START_ARGS_INDEX 2
@@ -80,12 +79,10 @@ OHOS_PAGEMUTEX_LockRunning()
 {
     int pauseSignaled = 0;
     int resumeSignaled = 0;
-
 retry:
     SDL_LockMutex(OHOS_PageMutex);
     pauseSignaled = SDL_SemValue(OHOS_PauseSem);
     resumeSignaled = SDL_SemValue(OHOS_ResumeSem);
-
     if (pauseSignaled > resumeSignaled) {
         SDL_UnlockMutex(OHOS_PageMutex);
         SDL_Delay(OHOS_DELAY_FIFTY);
@@ -118,7 +115,7 @@ void OHOS_NAPI_SetWindowResize(int x, int y, int w, int h)
     cJSON_AddNumberToObject(root, "w", w);
     cJSON_AddNumberToObject(root, "h", h);
     napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
-    if(status != napi_ok) {
+    if (status != napi_ok) {
         cJSON_free(root);
     }
 }
@@ -409,9 +406,9 @@ SDLNapi::OHOS_TextInput(napi_env env, napi_callback_info info)
 {
     size_t requireArgc = 2;
     size_t argc = 2;
-    napi_value args[2] = {nullptr}; 
+    napi_value args[2] = {nullptr};
     char* inputBuffer = nullptr;
-    napi_get_cb_info(env, info, &argc, args , nullptr, nullptr);
+    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
     
     napi_valuetype valuetype0;
     napi_typeof(env, args[0], &valuetype0);
@@ -435,12 +432,11 @@ SDLNapi::OHOS_TextInput(napi_env env, napi_callback_info info)
     SDL_PushEvent(&keyEvent);
 
     SDL_Event event;
-    memset(&event, 0, sizeof(SDL_Event)); // 清空event结构体
-
+    SDL_memset(&event, 0, sizeof(SDL_Event)); // 清空event结构体
     event.type = SDL_TEXTINPUT;
     
 	SDL_strlcpy(event.text.text, inputBuffer, sizeof(inputBuffer));
-
+    
     SDL_PushEvent(&event); // 推送事件到事件队列
     
     delete inputBuffer;
@@ -576,7 +572,7 @@ SDLNapi::OHOS_OnNativeFocusChanged(napi_env env, napi_callback_info info)
     bool focus;
     napi_get_value_bool(env, args[0], &focus);
     if (g_ohosWindow) {
-        SDL_SendWindowEvent(g_ohosWindow, 
+        SDL_SendWindowEvent(g_ohosWindow,
             (focus = SDL_TRUE ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST), 0, 0);
     }
     return nullptr;
@@ -614,9 +610,9 @@ OHOS_NAPI_Init(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-static int 
-OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value *argv, char **library_file,
-                    char **function_name) {
+static int
+OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value *argv, char **library_file, char **function_name)
+{
     napi_status status;
     napi_valuetype valuetype;
     size_t buffer_size;
@@ -649,8 +645,9 @@ OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value *argv, cha
     return argc;
 }
 
-static int 
-OHOS_NAPI_SetArgs(napi_env& env, char **argvs, int &argcs, size_t &argc, napi_value* argv) {
+static int
+OHOS_NAPI_SetArgs(napi_env& env, char **argvs, int &argcs, size_t &argc, napi_value* argv)
+{
     napi_status status;
     napi_valuetype valuetype;
     size_t buffer_size;
@@ -678,7 +675,8 @@ OHOS_NAPI_SetArgs(napi_env& env, char **argvs, int &argcs, size_t &argc, napi_va
 }
 
 static napi_value
-OHOS_NAPI_SDLAppEntry(napi_env env, napi_callback_info info) {
+OHOS_NAPI_SDLAppEntry(napi_env env, napi_callback_info info)
+{
     char *library_file;
     char *function_name;
     napi_value argv[10];

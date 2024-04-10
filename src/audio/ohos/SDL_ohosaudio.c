@@ -74,7 +74,7 @@ static void OHOSAUDIO_PlayDevice(SDL_AudioDevice *this)
     OHOSAUDIO_NATIVE_WriteAudioBuf();
 }
 
-static Uint8 * OHOSAUDIO_GetDeviceBuf(SDL_AudioDevice *this)
+static Uint8* OHOSAUDIO_GetDeviceBuf(SDL_AudioDevice *this)
 {
     return (Uint8 *)OHOSAUDIO_NATIVE_GetAudioBuf();
 }

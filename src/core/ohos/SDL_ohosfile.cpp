@@ -104,7 +104,7 @@ Sint64 OHOS_FileSeek(SDL_RWops *ctx, Sint64 offset, int whence)
 {
     if (gCtx->hidden.ohosio.nativeResourceManager) {
         size_t result = OHOS_FileSeekInlineSwitch(&offset, whence);
-        if(result == -1){
+        if (result == -1) {
             return SDL_SetError("Unknown value for 'whence'");
         }
         RawFile *rawFile = static_cast<RawFile *>(gCtx->hidden.ohosio.fileNameRef);
@@ -182,7 +182,7 @@ size_t OHOS_FileRead(SDL_RWops *ctx, void *buffer, size_t size, size_t maxnum)
         if (result > 0  && size != 0) {
             gCtx->hidden.ohosio.position += result;
             return result / size;
-        }else{
+        } else {
             return -1;
         }
         return 0;

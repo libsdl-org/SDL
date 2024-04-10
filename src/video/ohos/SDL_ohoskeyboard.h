@@ -18,6 +18,12 @@
 
 #include "SDL_ohosvideo.h"
 
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+extern "C" {
+/* *INDENT-ON* */
+#endif
+
 extern void OHOS_InitKeyboard(void);
 extern int OHOS_OnKeyDown(int keycode);
 extern int OHOS_OnKeyUp(int keycode);
@@ -28,6 +34,13 @@ extern SDL_bool OHOS_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window* w
 extern void OHOS_StartTextInput(SDL_VideoDevice *thisDevice);
 extern void OHOS_StopTextInput(SDL_VideoDevice *thisDevice);
 extern void OHOS_SetTextInputRect(SDL_VideoDevice *thisDevice, SDL_Rect *rect);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+}
+/* *INDENT-ON* */
+#endif
 
 #endif /* SDL_OHOSKEYBOARD_H */
 

@@ -14,10 +14,16 @@
  */
 
 
-#ifndef SDL_OSOSMOUSE_H_
-#define SDL_OSOSMOUSE_H_
+#ifndef SDL_OSOSMOUSE_H
+#define SDL_OSOSMOUSE_H
 
 #include "SDL_ohosvideo.h"
+
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+extern "C" {
+/* *INDENT-ON* */
+#endif
 
 typedef struct MouseSize
 {
@@ -30,6 +36,13 @@ typedef struct MouseSize
 extern void OHOS_InitMouse(void);
 extern void OHOS_OnMouse(SDL_Window *window, OHOSWindowSize *windowsize, SDL_bool relative);
 extern void OHOS_QuitMouse(void);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+}
+/* *INDENT-ON* */
+#endif
 
 #endif /* SDL_ohosmouse_h_ */
 

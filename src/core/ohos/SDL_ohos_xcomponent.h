@@ -19,9 +19,21 @@
 #include <native_window/external_window.h>
 #include "napi/native_api.h"
 
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+extern "C" {
+/* *INDENT-ON* */
+#endif
 
 extern void OHOS_XcomponentExport(napi_env env, napi_value exports);
 extern OHNativeWindow *gNative_window;
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+}
+/* *INDENT-ON* */
+#endif
 
 #endif /* SDL_OHOSXCOMPONENT_H */
 

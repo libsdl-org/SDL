@@ -67,8 +67,7 @@ static int OHOS_Available(void)
     return 1;
 }
 
-static void
-OHOS_SuspendScreenSaver(SDL_VideoDevice *_this)
+static void OHOS_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
 }
 
@@ -78,7 +77,7 @@ static void OHOS_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static  void OHOS_SetDevice(SDL_VideoDevice *device)
+static void OHOS_SetDevice(SDL_VideoDevice *device)
 {
     SDL_bool block_on_pause;
     
@@ -87,9 +86,9 @@ static  void OHOS_SetDevice(SDL_VideoDevice *device)
     device->VideoQuit = OHOS_VideoQuit;
     block_on_pause = SDL_GetHintBoolean(SDL_HINT_OHOS_BLOCK_ON_PAUSE, SDL_TRUE);
     if (block_on_pause) {
-        device->PumpEvents = OHOS_PumpEvents_Blocking;
+        device->PumpEvents = OHOS_PUMPEVENTS_Blocking;
     } else {
-        device->PumpEvents = OHOS_PumpEvents_NonBlocking;
+        device->PumpEvents = OHOS_PUMPEVENTS_NonBlocking;
     }
 
     device->GetDisplayDPI = OHOS_GetDisplayDPI;
@@ -124,8 +123,7 @@ static  void OHOS_SetDevice(SDL_VideoDevice *device)
     device->SuspendScreenSaver = OHOS_SuspendScreenSaver;
 }
 
-static SDL_VideoDevice *
-OHOS_CreateDevice(int devindex)
+static SDL_VideoDevice * OHOS_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
@@ -155,8 +153,7 @@ VideoBootStrap OHOS_bootstrap = {
 };
 
 
-int
-OHOS_VideoInit(SDL_VideoDevice *_this)
+int OHOS_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     int display_index;

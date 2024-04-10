@@ -19,8 +19,8 @@
 #include "SDL_ohosvideo.h"
 #include "../../SDL_internal.h"
 
-extern void OHOS_PumpEvents_Blocking(SDL_VideoDevice *thisDevice);
-extern void OHOS_PumpEvents_NonBlocking(SDL_VideoDevice *thisDevice);
+extern void OHOS_PUMPEVENTS_Blocking(SDL_VideoDevice *thisDevice);
+extern void OHOS_PUMPEVENTS_NonBlocking(SDL_VideoDevice *thisDevice);
 
 #endif /* SDL_OHOSEVENTS_H */
 

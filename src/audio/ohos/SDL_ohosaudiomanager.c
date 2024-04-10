@@ -56,20 +56,20 @@ static OH_AudioStream_State gAudioRendorStatus;
 /*
  * Audio Capturer Callbacks
  */
-static int32_t OHOSAUDIO_AudioCapturer_OnReadData(OH_AudioCapturer *capturer, void *userData, 
+static int32_t OHOSAUDIO_AudioCapturer_OnReadData(OH_AudioCapturer *capturer, void *userData,
                                                   void *buffer, int32_t length)
 {
     OHOS_AUDIOBUFFER_WriteCaptureBuffer(buffer, length);
     return 0;
 }
 
-static int32_t OHOSAUDIO_AudioCapturer_OnStreamEvent(OH_AudioCapturer *capturer, void *userData, 
+static int32_t OHOSAUDIO_AudioCapturer_OnStreamEvent(OH_AudioCapturer *capturer, void *userData,
                                                      OH_AudioStream_Event event)
 {
     return 1;
 }
 
-static int32_t OHOSAUDIO_AudioCapturer_OnInterruptEvent(OH_AudioCapturer *capturer, void *userData, 
+static int32_t OHOSAUDIO_AudioCapturer_OnInterruptEvent(OH_AudioCapturer *capturer, void *userData,
                                                         OH_AudioInterrupt_ForceType type, OH_AudioInterrupt_Hint hint)
 {
     return 1;
@@ -125,7 +125,7 @@ static int32_t OHOSAUDIO_AudioRenderer_OnStreamEvent(OH_AudioRenderer *renderer,
     return 1;
 }
 
-static int32_t OHOSAUDIO_AudioRenderer_OnInterruptEvent(OH_AudioRenderer *renderer, void *userData, 
+static int32_t OHOSAUDIO_AudioRenderer_OnInterruptEvent(OH_AudioRenderer *renderer, void *userData,
                                                         OH_AudioInterrupt_ForceType type, OH_AudioInterrupt_Hint hint)
 {
     return 1;
@@ -136,7 +136,8 @@ static int32_t OHOSAUDIO_AudioRenderer_OnError(OH_AudioRenderer *renderer, void 
     return 1;
 }
 
-static int OHOSAUDIO_BitSampleFormat(SDL_AudioFormat bitSample) {
+static int OHOSAUDIO_BitSampleFormat(SDL_AudioFormat bitSample)
+{
     // Audio stream sampling format
     switch (bitSample) {
         case AUDIO_U8:
@@ -231,7 +232,7 @@ static int OHOSAUDIO_SetBuilder(int iscapture, SDL_AudioSpec *spec)
 static int OHOSAUDIO_SetCapturerInfo(int iscapture)
 {
     OH_AudioStream_Result iRet;
-   if (iscapture != 0) {
+    if (iscapture != 0) {
         iRet = OH_AudioStreamBuilder_SetCapturerInfo(builder2, AUDIOSTREAM_SOURCE_TYPE_MIC);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
@@ -335,9 +336,8 @@ static int OHOSAUDIO_GetInfo(int iscapture, SDL_AudioSpec *spec)
             return -1;
         }
         
-        OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
-            "iStatus=%{public}d, SourceType=%{public}d, SamplingRate=%{public}d, ChannelCount=%{public}d.",
-            iStatus, audioSourceType, spec->freq, spec->channels);
+        OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice", "iStatus=%{public}d, SourceType=%{public}d,"\
+            " SamplingRate=%{public}d, ChannelCount=%{public}d.", iStatus, audioSourceType, spec->freq, spec->channels);
     } else {
         // Query the current output audio stream status
         OH_AudioRenderer_GetCurrentState(audioRenderer, &iStatus);
@@ -363,9 +363,8 @@ static int OHOSAUDIO_GetInfo(int iscapture, SDL_AudioSpec *spec)
             return -1;
         }
         
-        OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
-            "iStatus=%{public}d, ChannelCount=%{public}d, SamplingRate=%{public}d, Usage=%{public}d.",
-            iStatus, spec->channels, spec->freq, audioUsage);
+        OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice", "iStatus=%{public}d, ChannelCount=%{public}d,"\
+            " SamplingRate=%{public}d, Usage=%{public}d.", iStatus, spec->channels, spec->freq, audioUsage);
     }
     
     spec->freq = audioSamplingRate;
@@ -421,7 +420,8 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
     } else {
         renderBufferLength = spec->samples * spec->channels * audioFormatBitDepth;
         if (NULL == rendererBuffer) {
-            rendererBuffer = (unsigned char *)SDL_malloc((unsigned long long)renderBufferLength * sizeof(unsigned char));
+            rendererBuffer = (unsigned char *)SDL_malloc((unsigned long long)renderBufferLength * 
+                sizeof(unsigned char));
             if (NULL == rendererBuffer) {
                 OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice", "rendererBuffer alloc space faileed");
                 return -1;
@@ -449,7 +449,8 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
 /*
  * Audio Functions
  */
-int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec) {
+int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec)
+{
     int audioFormat;
     int audioFormatBitDepth = 0;
     OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "open device, iscapture=%{public}d", iscapture);
@@ -481,7 +482,6 @@ int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec) {
         return -1;
     }
 
-    // OH_AudioStream_State iStatus;
     audioFormat = OHOSAUDIO_GetInfo(iscapture, spec);
     if (audioFormat < 0) {
         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "OHOSAUDIO_GetInfo run Failed");
@@ -564,7 +564,7 @@ static void OHOSAUDIO_DestroyBuilder(int iscapture)
                 "SDL audio: OH_AudioStreamBuilder_Destroy error,error code = %{public}d", iRet);
         }
         builder = NULL;
-   }
+    }
 }
 
 void OHOSAUDIO_NATIVE_CloseAudioDevice(const int iscapture)
@@ -622,20 +622,18 @@ void OHOSAUDIO_NATIVE_CloseAudioDevice(const int iscapture)
     OHOSAUDIO_DestroyBuilder(iscapture);
 }
 
-void
-OHOSAUDIO_PageResume(void)
+void OHOSAUDIO_PageResume(void)
 {
     if (audioRenderer != NULL && gAudioRendorStatus == AUDIOSTREAM_STATE_RUNNING) {
         OH_AudioRenderer_Start(audioRenderer);
     }
 }
 
-void
-OHOSAUDIO_PagePause(void)
+void OHOSAUDIO_PagePause(void)
 {
-   if (audioRenderer != NULL) {
-       OH_AudioRenderer_GetCurrentState(audioRenderer, &gAudioRendorStatus);
-   }
+    if (audioRenderer != NULL) {
+        OH_AudioRenderer_GetCurrentState(audioRenderer, &gAudioRendorStatus);
+    }
 }
 
 #endif /* SDL_AUDIO_DRIVER_OHOS */
