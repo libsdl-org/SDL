@@ -13,8 +13,9 @@
  * limitations under the License.
  */
 
-#ifndef SDL_ohosmouse_h_
-#define SDL_ohosmouse_h_
+
+#ifndef SDL_OSOSMOUSE_H_
+#define SDL_OSOSMOUSE_H_
 
 #include "SDL_ohosvideo.h"
 
@@ -24,10 +25,10 @@ typedef struct MouseSize
     int action;
     float x;
     float y;
-}OHOS_Window_Size;
+}OHOSWindowSize;
 
 extern void OHOS_InitMouse(void);
-extern void OHOS_OnMouse(SDL_Window *window, OHOS_Window_Size *windowsize, SDL_bool relative);
+extern void OHOS_OnMouse(SDL_Window *window, OHOSWindowSize *windowsize, SDL_bool relative);
 extern void OHOS_QuitMouse(void);
 
 #endif /* SDL_ohosmouse_h_ */

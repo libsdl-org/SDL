@@ -42,22 +42,23 @@ void OHOS_QuitTouch(void)
 {
 }
 
-void OHOS_OnTouch(SDL_Window *window, Ohos_TouchId *touchsize)
+void OHOS_OnTouch(SDL_Window *window, OhosTouchId *touchsize)
 {
     SDL_TouchID touchDeviceId = 0;
     SDL_FingerID fingerId = 0;
-    float tempX = 0.0, tempY = 0.0;
+    float tempX = 0.0;
+    float tempY = 0.0;
 
     if (!window) {
         return;
     }
 
-    touchDeviceId = (SDL_TouchID)touchsize->touch_device_id_in;
+    touchDeviceId = (SDL_TouchID)touchsize->touchDeviceIdIn;
     if (SDL_AddTouch(touchDeviceId, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
         SDL_Log("error: can't add touch %s, %d", __FILE__, __LINE__);
     }
 
-    fingerId = (SDL_FingerID)touchsize->pointer_finger_id_in;
+    fingerId = (SDL_FingerID)touchsize->pointerFingerIdIn;
     switch (touchsize->action) {
         case ACTION_DOWN:
 //      case ACTION_POINTER_DOWN:

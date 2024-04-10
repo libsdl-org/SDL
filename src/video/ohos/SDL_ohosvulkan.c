@@ -31,33 +31,33 @@
 
 int OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    //VkExtensionProperties *extensions = NULL;
-    Uint32 i, extensionCount = 0;
+    Uint32 i = 0;
+    Uint32 extensionCount = 0;
     SDL_bool hasSurfaceExtension = SDL_FALSE;
     SDL_bool hasOHOSSurfaceExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
-    if(_this->vulkan_config.loader_handle)
+    if (_this->vulkan_config.loader_handle)
         return SDL_SetError("Vulkan already loaded");
 
     /* Load the Vulkan loader library */
-    if(!path)
+    if (!path)
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
-    if(!path)
+    if (!path)
         path = "libvulkan.so";
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
-    if(!_this->vulkan_config.loader_handle)
+    if (!_this->vulkan_config.loader_handle)
         return -1;
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
-    if(!vkGetInstanceProcAddr)
+    if (!vkGetInstanceProcAddr)
         goto fail;
     _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
         (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
-    if(!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
+    if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
         goto fail;
     return 0;
 
@@ -69,7 +69,7 @@ fail:
 
 void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
-    if(_this->vulkan_config.loader_handle)
+    if (_this->vulkan_config.loader_handle)
     {
         SDL_UnloadObject(_this->vulkan_config.loader_handle);
         _this->vulkan_config.loader_handle = NULL;
@@ -77,15 +77,14 @@ void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 }
 
 SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          SDL_Window *window,
-                                          unsigned *count,
-                                          const char **names)
+                                           SDL_Window *window,
+                                           unsigned *count,
+                                           const char **names)
 {
     static const char *const extensionsForOHOS[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_OHOS_SURFACE_EXTENSION_NAME
     };
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
@@ -95,41 +94,39 @@ SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 }
 
 SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                  SDL_Window *window,
-                                  VkInstance instance,
-                                  VkSurfaceKHR *surface)
+                                   SDL_Window *window,
+                                   VkInstance instance,
+                                   VkSurfaceKHR *xcomponent)
 {
     SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateOHOSSurfaceKHR vkCreateOHOSSurfaceKHR =
         (PFN_vkCreateOHOSSurfaceKHR)vkGetInstanceProcAddr(
-                                            instance,
-                                            "vkCreateSurfaceOHOS");
+                                           instance,
+                                           "vkCreateSurfaceOHOS");
     VkOHOSSurfaceCreateInfoKHR createInfo;
     VkResult result;
 
-    if(!_this->vulkan_config.loader_handle)
+    if (!_this->vulkan_config.loader_handle)
     {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
 
-    if(!vkCreateOHOSSurfaceKHR)
-    {
+    if (!vkCreateOHOSSurfaceKHR) {
         SDL_SetError(VK_KHR_OHOS_SURFACE_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
     }
     SDL_zero(createInfo);
-    createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    createInfo.sType = VK_STRUCTURE_TYPE_OSOS_SURFACE_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.window = windowData->native_window;
     result = vkCreateOHOSSurfaceKHR(instance, &createInfo,
-                                       NULL, surface);
-    if(result != VK_SUCCESS)
-    {
+                                      NULL, xcomponent);
+    if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateOHOSSurfaceKHR failed: %s",
                      SDL_Vulkan_GetResultString(result));
         return SDL_FALSE;

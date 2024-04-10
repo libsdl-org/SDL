@@ -13,14 +13,15 @@
  * limitations under the License.
  */
 
-//#include "../../SDL_internal.h"
-
-#ifndef SDL_ohosvulkan_h_
-#define SDL_ohosvulkan_h_
+#ifndef SDL_OHOSVULKAN_H_
+#define SDL_OHOSVULKAN_H_
 
 #include "../../core/ohos/SDL_ohos.h"
 #include "../SDL_egl_c.h"
-#include "../../core/ohos/SDL_ohos_xcomponent.h"
+
+typedef enum OhosVkStructureType {
+    VK_STRUCTURE_TYPE_OSOS_SURFACE_CREATE_INFO_KHR = 1000008000,
+}Ohos_Type;
 
 
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_OHOS
@@ -28,13 +29,13 @@
 int OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
 SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          SDL_Window *window,
-                                          unsigned *count,
-                                          const char **names);
+                                           SDL_Window *window,
+                                           unsigned *count,
+                                           const char **names);
 SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                  SDL_Window *window,
-                                  VkInstance instance,
-                                  VkSurfaceKHR *surface);
+                                   SDL_Window *window,
+                                   VkInstance instance,
+                                   VkSurfaceKHR *xcomponent);
 
 #endif
 

@@ -161,9 +161,9 @@ void onNativeTouch(OH_NativeXComponent *component, void *window)
     tiltX = touchEvent.x;
     tiltY = touchEvent.y;
 
-    Ohos_TouchId ohosTouch;
-    ohosTouch.touch_device_id_in = touchEvent.deviceId;
-    ohosTouch.pointer_finger_id_in = touchEvent.id;
+    OhosTouchId ohosTouch;
+    ohosTouch.touchDeviceIdIn = touchEvent.deviceId;
+    ohosTouch.pointerFingerIdIn = touchEvent.id;
     ohosTouch.action = touchEvent.type;
     ohosTouch.x = tiltX;
     ohosTouch.y = tiltY;
@@ -177,7 +177,7 @@ void onNativeTouch(OH_NativeXComponent *component, void *window)
 void onNativeMouse(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_MouseEvent mouseEvent;
-    OHOS_Window_Size windowsize;
+    OHOSWindowSize windowsize;
     int32_t ret = OH_NativeXComponent_GetMouseEvent(component, window, &mouseEvent);
     SDL_LockMutex(OHOS_PageMutex);
     
@@ -194,11 +194,11 @@ void onNativeMouse(OH_NativeXComponent *component, void *window)
 static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_TouchEvent touchEvent;
-    Ohos_TouchId ohosTouch;
+    OhosTouchId ohosTouch;
     int32_t ret = OH_NativeXComponent_GetTouchEvent(component, window, &touchEvent);
     SDL_LockMutex(OHOS_PageMutex);
-    ohosTouch.touch_device_id_in = touchEvent.deviceId;
-    ohosTouch.pointer_finger_id_in = touchEvent.id;
+    ohosTouch.touchDeviceIdIn = touchEvent.deviceId;
+    ohosTouch.pointerFingerIdIn = touchEvent.id;
     ohosTouch.action = touchEvent.type;
     ohosTouch.x = touchEvent.x;
     ohosTouch.y = touchEvent.y;

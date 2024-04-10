@@ -14,24 +14,23 @@
  */
 
 
-#ifndef SDL_ohostouch_h_
-#define SDL_ohostouch_h_
+#ifndef SDL_OHOSTOUCH_H_
+#define SDL_OHOSTOUCH_H_
 
 #include "SDL_ohosvideo.h"
 
-typedef struct TouchID
-{
-    int touch_device_id_in;
-    int pointer_finger_id_in;
+typedef struct TouchID{
+    int touchDeviceIdIn;
+    int pointerFingerIdIn;
     int action;
     float x;
     float y;
     float p;
-}Ohos_TouchId;
+}OhosTouchId;
 
 extern void OHOS_InitTouch(void);
 extern void OHOS_QuitTouch(void);
-extern void OHOS_OnTouch(SDL_Window *window, Ohos_TouchId *touchsize);
+extern void OHOS_OnTouch(SDL_Window *window, OhosTouchId *touchsize);
 
 #endif /* SDL_ohostouch_h_ */
 

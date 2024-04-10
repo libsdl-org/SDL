@@ -36,11 +36,9 @@
 #define BUTTON_BACK 0x08
 #define BUTTON_FORWARD 0x10
 
-typedef struct
-{
+typedef struct {
     int custom_cursor;
     int system_cursor;
-
 } SDL_OHOSCursorData;
 
 /* Last known OHOS mouse button state (includes all buttons) */
@@ -73,19 +71,17 @@ OHOS_WrapCursor(int custom_cursor, int system_cursor)
     return cursor;
 }
 
-static SDL_Cursor *
-OHOS_CreateDefaultCursor()
+static SDL_Cursor *OHOS_CreateDefaultCursor()
 {
     return OHOS_WrapCursor(0, SDL_SYSTEM_CURSOR_ARROW);
 }
 
-static SDL_Cursor *
-OHOS_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static SDL_Cursor *OHOS_CreateCursor(SDL_Surface * xcomponent, int hot_x, int hot_y)
 {
     int custom_cursor;
     SDL_Surface *converted;
 
-    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
+    converted = SDL_ConvertSurfaceFormat(xcomponent, SDL_PIXELFORMAT_ARGB8888, 0);
     if (!converted) {
         return NULL;
     }
@@ -98,21 +94,18 @@ OHOS_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     return OHOS_WrapCursor(custom_cursor, 0);
 }
 
-static SDL_Cursor *
-OHOS_CreateSystemCursor(SDL_SystemCursor id)
+static SDL_Cursor *OHOS_CreateSystemCursor(SDL_SystemCursor id)
 {
     return OHOS_WrapCursor(0, id);
 }
 
-static void
-OHOS_FreeCursor(SDL_Cursor * cursor)
+static void OHOS_FreeCursor(SDL_Cursor * cursor)
 {
     SDL_free(cursor->driverdata);
     SDL_free(cursor);
 }
 
-static SDL_Cursor *
-OHOS_CreateEmptyCursor()
+static SDL_Cursor *OHOS_CreateEmptyCursor()
 {
     if (!empty_cursor) {
         SDL_Surface *empty_surface = SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, SDL_PIXELFORMAT_ARGB8888);
@@ -125,8 +118,7 @@ OHOS_CreateEmptyCursor()
     return empty_cursor;
 }
 
-static void 
-OHOS_DestroyEmptyCursor() 
+static void OHOS_DestroyEmptyCursor() 
 {
     if (empty_cursor) {
         OHOS_FreeCursor(empty_cursor);
@@ -134,8 +126,7 @@ OHOS_DestroyEmptyCursor()
     }
 }
 
-static int
-OHOS_ShowCursor(SDL_Cursor *cursor)
+static int OHOS_ShowCursor(SDL_Cursor *cursor)
 {
     if (!cursor) {
         cursor = OHOS_CreateEmptyCursor();
@@ -158,8 +149,7 @@ OHOS_ShowCursor(SDL_Cursor *cursor)
     }
 }
 
-static int
-OHOS_SetRelativeMouseMode(SDL_bool enabled)
+static int OHOS_SetRelativeMouseMode(SDL_bool enabled)
 {
     if (!OHOS_SupportsRelativeMouse()) {
         return SDL_Unsupported();
@@ -172,8 +162,7 @@ OHOS_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
-void
-OHOS_InitMouse(void)
+void OHOS_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -189,15 +178,13 @@ OHOS_InitMouse(void)
     last_state = 0;
 }
 
-void
-OHOS_QuitMouse(void)
+void OHOS_QuitMouse(void)
 {
     OHOS_DestroyEmptyCursor();
 }
 
 /* Translate OHOS mouse button state to SDL mouse button */
-static Uint8
-TranslateButton(int state)
+static Uint8 TranslateButton(int state)
 {
     if (state & BUTTON_PRIMARY) {
         return SDL_BUTTON_LEFT;
@@ -214,8 +201,7 @@ TranslateButton(int state)
     }
 }
 
-void
-OHOS_OnMouse(SDL_Window *window, OHOS_Window_Size *windowsize, SDL_bool relative)
+void OHOS_OnMouse(SDL_Window *window, OHOSWindowSize *windowsize, SDL_bool relative)
 {
     int changes;
     Uint8 button;
@@ -223,7 +209,6 @@ OHOS_OnMouse(SDL_Window *window, OHOS_Window_Size *windowsize, SDL_bool relative
     if (!window) {
         return;
     }
-
     switch(windowsize->action) {
         case ACTION_DOWN:
             changes = windowsize->state & ~last_state;
