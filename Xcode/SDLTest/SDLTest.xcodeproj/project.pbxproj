@@ -89,6 +89,10 @@
 		00794EF709D237DE003FC8A1 /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
 		453774A5120915E3002F0F45 /* testshape.c in Sources */ = {isa = PBXBuildFile; fileRef = 453774A4120915E3002F0F45 /* testshape.c */; };
 		66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E88E8A203B778F0004D44E /* testyuv_cvt.c */; };
+		A1A8594E2BC72FC20045DD6C /* testautomation_properties.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A859482BC72FC20045DD6C /* testautomation_properties.c */; };
+		A1A859502BC72FC20045DD6C /* testautomation_subsystems.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A859492BC72FC20045DD6C /* testautomation_subsystems.c */; };
+		A1A859522BC72FC20045DD6C /* testautomation_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A8594A2BC72FC20045DD6C /* testautomation_log.c */; };
+		A1A859542BC72FC20045DD6C /* testautomation_time.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A8594B2BC72FC20045DD6C /* testautomation_time.c */; };
 		AAF02FFA1F90092700B9A9FB /* SDL_test_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */; };
 		BBFC08D0164C6876003E6A99 /* testcontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = BBFC088E164C6820003E6A99 /* testcontroller.c */; };
 		BEC566B10761D90300A33029 /* checkkeys.c in Sources */ = {isa = PBXBuildFile; fileRef = 092D6D10FFB30A2C7F000001 /* checkkeys.c */; };
@@ -1256,6 +1260,11 @@
 		4537749212091504002F0F45 /* testshape.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testshape.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		453774A4120915E3002F0F45 /* testshape.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testshape.c; sourceTree = "<group>"; };
 		66E88E8A203B778F0004D44E /* testyuv_cvt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testyuv_cvt.c; sourceTree = "<group>"; };
+		A1A859442BC72FC20045DD6C /* testautomation_pen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_pen.c; sourceTree = "<group>"; };
+		A1A859482BC72FC20045DD6C /* testautomation_properties.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_properties.c; sourceTree = "<group>"; };
+		A1A859492BC72FC20045DD6C /* testautomation_subsystems.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_subsystems.c; sourceTree = "<group>"; };
+		A1A8594A2BC72FC20045DD6C /* testautomation_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_log.c; sourceTree = "<group>"; };
+		A1A8594B2BC72FC20045DD6C /* testautomation_time.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_time.c; sourceTree = "<group>"; };
 		AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_memory.c; sourceTree = "<group>"; };
 		BBFC088E164C6820003E6A99 /* testcontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testcontroller.c; sourceTree = "<group>"; };
 		BBFC08CD164C6862003E6A99 /* testcontroller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testcontroller.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1767,17 +1776,22 @@
 				F399C6502A7892D800C86979 /* testautomation_intrinsics.c */,
 				F35E56C62983130D00A43A5F /* testautomation_joystick.c */,
 				F35E56C72983130E00A43A5F /* testautomation_keyboard.c */,
+				A1A8594A2BC72FC20045DD6C /* testautomation_log.c */,
 				F35E56B62983130A00A43A5F /* testautomation_main.c */,
 				F35E56BA2983130B00A43A5F /* testautomation_math.c */,
 				F35E56CD2983130F00A43A5F /* testautomation_mouse.c */,
+				A1A859442BC72FC20045DD6C /* testautomation_pen.c */,
 				F35E56C02983130C00A43A5F /* testautomation_pixels.c */,
 				F35E56C32983130D00A43A5F /* testautomation_platform.c */,
+				A1A859482BC72FC20045DD6C /* testautomation_properties.c */,
 				F35E56C52983130D00A43A5F /* testautomation_rect.c */,
 				F35E56B82983130A00A43A5F /* testautomation_render.c */,
 				F35E56B92983130B00A43A5F /* testautomation_iostream.c */,
 				F35E56C82983130E00A43A5F /* testautomation_sdltest.c */,
 				F35E56BE2983130C00A43A5F /* testautomation_stdlib.c */,
+				A1A859492BC72FC20045DD6C /* testautomation_subsystems.c */,
 				F35E56CB2983130F00A43A5F /* testautomation_surface.c */,
+				A1A8594B2BC72FC20045DD6C /* testautomation_time.c */,
 				F35E56BD2983130B00A43A5F /* testautomation_timer.c */,
 				F35E56C12983130C00A43A5F /* testautomation_video.c */,
 				F35E56CC2983130F00A43A5F /* testautomation.c */,
@@ -3354,8 +3368,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F35E56D12983130F00A43A5F /* testautomation_render.c in Sources */,
+				A1A859502BC72FC20045DD6C /* testautomation_subsystems.c in Sources */,
 				F399C6512A7892D800C86979 /* testautomation_intrinsics.c in Sources */,
 				F35E56D22983130F00A43A5F /* testautomation_iostream.c in Sources */,
+				A1A859522BC72FC20045DD6C /* testautomation_log.c in Sources */,
 				F35E56E32983130F00A43A5F /* testautomation_surface.c in Sources */,
 				F35E56DB2983130F00A43A5F /* testautomation_platform.c in Sources */,
 				F35E56DD2983130F00A43A5F /* testautomation_rect.c in Sources */,
@@ -3371,10 +3387,12 @@
 				F35E56D32983130F00A43A5F /* testautomation_math.c in Sources */,
 				F35E56E02983130F00A43A5F /* testautomation_sdltest.c in Sources */,
 				F35E56D42983130F00A43A5F /* testautomation_events.c in Sources */,
+				A1A859542BC72FC20045DD6C /* testautomation_time.c in Sources */,
 				F35E56E12983130F00A43A5F /* testautomation_guid.c in Sources */,
 				F35E56D62983130F00A43A5F /* testautomation_timer.c in Sources */,
 				F35E56DA2983130F00A43A5F /* testautomation_video.c in Sources */,
 				F35E56D02983130F00A43A5F /* testautomation_hints.c in Sources */,
+				A1A8594E2BC72FC20045DD6C /* testautomation_properties.c in Sources */,
 				F35E56DF2983130F00A43A5F /* testautomation_keyboard.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

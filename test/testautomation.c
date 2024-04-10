@@ -34,7 +34,9 @@ static SDLTest_TestSuiteReference *testSuites[] = {
     &mainTestSuite,
     &mathTestSuite,
     &mouseTestSuite,
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
     &penTestSuite,
+#endif
     &pixelsTestSuite,
     &platformTestSuite,
     &propertiesTestSuite,
