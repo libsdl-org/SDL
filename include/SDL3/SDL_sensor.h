@@ -69,7 +69,7 @@ typedef Uint32 SDL_SensorID;
  * Hare are the additional Android sensors:
  * https://developer.android.com/reference/android/hardware/SensorEvent.html#values
  */
-typedef enum
+typedef enum SDL_SensorType
 {
     SDL_SENSOR_INVALID = -1,    /**< Returned for an invalid sensor */
     SDL_SENSOR_UNKNOWN,         /**< Unknown sensor type */
