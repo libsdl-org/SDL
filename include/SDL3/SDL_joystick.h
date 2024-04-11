@@ -83,6 +83,8 @@ typedef SDL_GUID SDL_JoystickGUID;
  *
  * The ID value starts at 1 and increments from there. The value 0 is an
  * invalid ID.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint32 SDL_JoystickID;
 
@@ -363,6 +365,8 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystick(SDL_JoystickTyp
  * SDL_AttachVirtualJoystickEx() All other elements of this structure are
  * optional and can be left 0.
  *
+ * \since This struct is available since SDL 3.0.0.
+ *
  * \sa SDL_AttachVirtualJoystickEx
  */
 typedef struct SDL_VirtualJoystickDesc
@@ -393,6 +397,8 @@ typedef struct SDL_VirtualJoystickDesc
 
 /**
  * The current version of the SDL_VirtualJoystickDesc structure.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_VIRTUAL_JOYSTICK_DESC_VERSION   1
 

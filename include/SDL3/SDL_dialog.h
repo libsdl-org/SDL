@@ -42,6 +42,8 @@ extern "C" {
  * hyphens, underscores and periods. Alternatively, the whole string can be a
  * single asterisk ("*"), which serves as an "All files" filter.
  *
+ * \since This struct is available since SDL 3.0.0.
+ *
  * \sa SDL_DialogFileCallback
  * \sa SDL_ShowOpenFileDialog
  * \sa SDL_ShowSaveFileDialog
@@ -71,6 +73,8 @@ typedef struct SDL_DialogFileFilter
  * more than the size of the list (therefore the index of the terminating NULL
  * entry) if no filter was selected, or -1 if the platform or method doesn't
  * support fetching the selected filter or if an error occured.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  *
  * \sa SDL_DialogFileFilter
  * \sa SDL_ShowOpenFileDialog

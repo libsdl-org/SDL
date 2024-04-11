@@ -73,12 +73,16 @@ extern "C" {
 
 /**
  * A handle representing an open HID device
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 struct SDL_hid_device;
 typedef struct SDL_hid_device SDL_hid_device; /**< opaque hidapi structure */
 
 /**
  * HID underlying bus types.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_hid_bus_type {
     /** Unknown bus type */
@@ -112,6 +116,8 @@ typedef enum SDL_hid_bus_type {
 
 /**
  * Information about a connected HID device
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_hid_device_info
 {

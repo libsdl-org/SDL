@@ -61,6 +61,8 @@ extern "C" {
 
 /**
  * Evaluates to true if the surface needs to be locked before access.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MUSTLOCK(S) (((S)->flags & SDL_RLEACCEL) != 0)
 
@@ -68,6 +70,8 @@ typedef struct SDL_BlitMap SDL_BlitMap;  /* this is an opaque type. */
 
 /**
  * The scaling mode
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_ScaleMode
 {
@@ -78,6 +82,8 @@ typedef enum SDL_ScaleMode
 
 /**
  * The flip mode
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_FlipMode
 {
@@ -100,6 +106,8 @@ typedef enum SDL_FlipMode
  * and a byte order given by the format. After encoding all pixels, any
  * remaining bytes to reach the pitch are used as padding to reach a desired
  * alignment, and have undefined contents.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Surface
 {

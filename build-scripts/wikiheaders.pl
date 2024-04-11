@@ -1454,6 +1454,28 @@ if ($copy_direction == 1) {  # --copy-to-headers
         # Make sure this ends with a double-newline.
         $sections{'See Also'} .= "\n" if defined $sections{'See Also'};
 
+        if (0) {  # !!! FIXME: this was a useful hack, but this needs to be generalized if we're going to do this always.
+            # Plug in a \since section if one wasn't listed.
+            if (not defined $sections{'Version'}) {
+                my $symtypename;
+                if ($symtype == 1) {
+                    $symtypename = 'function';
+                } elsif ($symtype == 2) {
+                    $symtypename = 'macro';
+                } elsif ($symtype == 3) {
+                    $symtypename = 'struct';
+                } elsif ($symtype == 4) {
+                    $symtypename = 'enum';
+                } elsif ($symtype == 5) {
+                    $symtypename = 'datatype';
+                } else {
+                    die("Unexpected symbol type $symtype!");
+                }
+                my $str = "This $symtypename is available since SDL 3.0.0.";
+                $sections{'Version'} = wordwrap(wikify($wikitype, $str)) . "\n";
+            }
+        }
+
         # We can build the wiki table now that we have all the data.
         if (scalar(@params) > 0) {
             my $str = '';

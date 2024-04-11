@@ -38,6 +38,8 @@ extern "C" {
 
 /**
  * A handle to a CAMetalLayer-backed NSView (macOS) or UIView (iOS/tvOS).
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef void *SDL_MetalView;
 

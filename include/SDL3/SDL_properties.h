@@ -39,11 +39,15 @@ extern "C" {
 
 /**
  * SDL properties ID
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint32 SDL_PropertiesID;
 
 /**
  * SDL property type
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_PropertyType
 {

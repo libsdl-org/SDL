@@ -448,6 +448,8 @@ typedef enum SDL_PixelFormatEnum
 
 /**
  * The color type
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_ColorType
 {
@@ -459,6 +461,8 @@ typedef enum SDL_ColorType
 /**
  * The color range, as described by
  * https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_ColorRange
 {
@@ -470,6 +474,8 @@ typedef enum SDL_ColorRange
 /**
  * The color primaries, as described by
  * https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_ColorPrimaries
 {
@@ -492,6 +498,8 @@ typedef enum SDL_ColorPrimaries
 /**
  * The transfer characteristics, as described by
  * https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_TransferCharacteristics
 {
@@ -519,6 +527,8 @@ typedef enum SDL_TransferCharacteristics
 /**
  * The matrix coefficients, as described by
  * https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_MatrixCoefficients
 {
@@ -541,6 +551,8 @@ typedef enum SDL_MatrixCoefficients
 
 /**
  * The chroma sample location
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_ChromaLocation
 {

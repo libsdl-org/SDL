@@ -164,6 +164,8 @@ extern DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
  *
  * Note that on macOS/iOS, the Videos folder is called "Movies".
  *
+ * \since This enum is available since SDL 3.0.0.
+ *
  * \sa SDL_GetUserFolder
  */
 typedef enum SDL_Folder

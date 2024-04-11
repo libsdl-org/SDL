@@ -126,6 +126,8 @@ typedef struct SDL_Window SDL_Window;
  * changed on existing windows by the app, and some of it might be altered by
  * the user or system outside of the app's control.
  *
+ * \since This datatype is available since SDL 3.0.0.
+ *
  * \sa SDL_GetWindowFlags
  */
 typedef Uint32 SDL_WindowFlags;
@@ -156,6 +158,8 @@ typedef Uint32 SDL_WindowFlags;
 
 /**
  * Used to indicate that you don't care what the window position is.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
 #define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
@@ -165,6 +169,8 @@ typedef Uint32 SDL_WindowFlags;
 
 /**
  * Used to indicate that the window position should be centered.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000u
 #define SDL_WINDOWPOS_CENTERED_DISPLAY(X)  (SDL_WINDOWPOS_CENTERED_MASK|(X))
@@ -186,11 +192,15 @@ typedef enum SDL_FlashOperation
 
 /**
  * An opaque handle to an OpenGL context.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef void *SDL_GLContext;
 
 /**
  * Opaque EGL types.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef void *SDL_EGLDisplay;
 typedef void *SDL_EGLConfig;
@@ -200,6 +210,8 @@ typedef int SDL_EGLint;
 
 /**
  * EGL attribute initialization callback types.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void);
 typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void);
@@ -2053,6 +2065,8 @@ extern DECLSPEC int SDLCALL SDL_ShowWindowSystemMenu(SDL_Window *window, int x, 
 
 /**
  * Possible return values from the SDL_HitTest callback.
+ *
+ * \since This enum is available since SDL 3.0.0.
  *
  * \sa SDL_HitTest
  */

@@ -51,6 +51,8 @@ extern "C" {
  *
  * GUIDs may be platform-dependent (i.e., the same device may report different
  * GUIDs on different operating systems).
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_GUID {
     Uint8 data[16];

@@ -55,6 +55,8 @@ extern "C" {
 
 /**
  * The structure used to identify an SDL gamepad
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 struct SDL_Gamepad;
 typedef struct SDL_Gamepad SDL_Gamepad;
@@ -95,6 +97,8 @@ typedef enum SDL_GamepadType
  *
  * You can query the labels for the face buttons using
  * SDL_GetGamepadButtonLabel()
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_GamepadButton
 {
@@ -136,6 +140,8 @@ typedef enum SDL_GamepadButton
  *
  * For a complete set, you should look at the button and gamepad type and have
  * a set of symbols that work well with your art style.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_GamepadButtonLabel
 {
@@ -161,6 +167,8 @@ typedef enum SDL_GamepadButtonLabel
  * Trigger axis values range from 0 (released) to SDL_JOYSTICK_AXIS_MAX (fully
  * pressed) when reported by SDL_GetGamepadAxis(). Note that this is not the
  * same range that will be reported by the lower-level SDL_GetJoystickAxis().
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_GamepadAxis
 {

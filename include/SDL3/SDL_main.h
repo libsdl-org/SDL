@@ -367,6 +367,8 @@ extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void *appstate);
 
 /**
  * The prototype for the application's main() function
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);

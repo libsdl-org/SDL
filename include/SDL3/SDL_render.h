@@ -63,11 +63,15 @@ extern "C" {
 
 /**
  * The name of the software renderer.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_SOFTWARE_RENDERER   "software"
 
 /**
  * Flags used when creating a rendering context.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_RendererFlags
 {
@@ -76,6 +80,8 @@ typedef enum SDL_RendererFlags
 
 /**
  * Information on the capabilities of a render driver or context.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_RendererInfo
 {
@@ -89,6 +95,8 @@ typedef struct SDL_RendererInfo
 
 /**
  * Vertex structure.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Vertex
 {
@@ -99,6 +107,8 @@ typedef struct SDL_Vertex
 
 /**
  * The access pattern allowed for a texture.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_TextureAccess
 {
@@ -109,6 +119,8 @@ typedef enum SDL_TextureAccess
 
 /**
  * How the logical size is mapped to the output.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_RendererLogicalPresentation
 {
@@ -121,12 +133,16 @@ typedef enum SDL_RendererLogicalPresentation
 
 /**
  * A structure representing rendering state
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 struct SDL_Renderer;
 typedef struct SDL_Renderer SDL_Renderer;
 
 /**
  * An efficient driver-specific representation of pixel data
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 struct SDL_Texture;
 typedef struct SDL_Texture SDL_Texture;

@@ -3806,6 +3806,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool d
  * \param name what was passed as `name` to SDL_AddHintCallback()
  * \param oldValue the previous hint value
  * \param newValue the new value hint is to be set to
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const char *oldValue, const char *newValue);
 

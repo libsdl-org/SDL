@@ -57,6 +57,8 @@ typedef struct SDL_Sensor SDL_Sensor;
  *
  * The ID value starts at 1 and increments from there. The value 0 is an
  * invalid ID.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint32 SDL_SensorID;
 
@@ -98,6 +100,8 @@ typedef enum
  * - -Z ... +Z : farther ... closer
  *
  * The axis data is not changed when the device is rotated.
+ *
+ * \since This macro is available since SDL 3.0.0.
  *
  * \sa SDL_GetCurrentDisplayOrientation
  */

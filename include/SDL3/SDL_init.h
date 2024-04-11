@@ -45,6 +45,8 @@ extern "C" {
  * These are the flags which may be passed to SDL_Init(). You should specify
  * the subsystems which you will be using in your application.
  *
+ * \since This enum is available since SDL 3.0.0.
+ *
  * \sa SDL_Init
  * \sa SDL_Quit
  * \sa SDL_InitSubSystem

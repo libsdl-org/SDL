@@ -40,6 +40,8 @@ extern "C" {
 /**
  * A structure holding a calendar date and time broken down into its
  * components.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_DateTime
 {
@@ -57,6 +59,8 @@ typedef struct SDL_DateTime
 /**
  * The preferred date format of the current system locale.
  *
+ * \since This enum is available since SDL 3.0.0.
+ *
  * \sa SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER
  */
 typedef enum SDL_DateFormat
@@ -68,6 +72,8 @@ typedef enum SDL_DateFormat
 
 /**
  * The preferred time format of the current system locale.
+ *
+ * \since This enum is available since SDL 3.0.0.
  *
  * \sa SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER
  */

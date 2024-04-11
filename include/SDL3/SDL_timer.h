@@ -150,6 +150,8 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(Uint32 interval, void *param);
 
 /**
  * Definition of the timer ID type.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint32 SDL_TimerID;
 

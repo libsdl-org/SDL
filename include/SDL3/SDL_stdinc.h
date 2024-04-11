@@ -90,6 +90,8 @@ void *alloca(size_t);
 
 /**
  * The number of elements in an array.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_arraysize(array)    (sizeof(array)/sizeof(array[0]))
 #define SDL_TABLESIZE(table)    SDL_arraysize(table)
@@ -102,6 +104,8 @@ void *alloca(size_t);
  * ```c
  * #define LOG_ERROR(X) OutputDebugString(SDL_STRINGIFY_ARG(__FUNCTION__) ": " X "\n")`
  * ```
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_STRINGIFY_ARG(arg)  #arg
 
@@ -165,6 +169,8 @@ typedef int SDL_bool;
 
 /**
  * A signed 8-bit integer type.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_SINT8   ((Sint8)0x7F)           /* 127 */
 #define SDL_MIN_SINT8   ((Sint8)(~0x7F))        /* -128 */
@@ -172,6 +178,8 @@ typedef int8_t Sint8;
 
 /**
  * An unsigned 8-bit integer type.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_UINT8   ((Uint8)0xFF)           /* 255 */
 #define SDL_MIN_UINT8   ((Uint8)0x00)           /* 0 */
@@ -179,6 +187,8 @@ typedef uint8_t Uint8;
 
 /**
  * A signed 16-bit integer type.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_SINT16  ((Sint16)0x7FFF)        /* 32767 */
 #define SDL_MIN_SINT16  ((Sint16)(~0x7FFF))     /* -32768 */
@@ -186,6 +196,8 @@ typedef int16_t Sint16;
 
 /**
  * An unsigned 16-bit integer type.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_UINT16  ((Uint16)0xFFFF)        /* 65535 */
 #define SDL_MIN_UINT16  ((Uint16)0x0000)        /* 0 */
@@ -193,6 +205,8 @@ typedef uint16_t Uint16;
 
 /**
  * A signed 32-bit integer type.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_SINT32  ((Sint32)0x7FFFFFFF)    /* 2147483647 */
 #define SDL_MIN_SINT32  ((Sint32)(~0x7FFFFFFF)) /* -2147483648 */
@@ -200,6 +214,8 @@ typedef int32_t Sint32;
 
 /**
  * An unsigned 32-bit integer type.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_UINT32  ((Uint32)0xFFFFFFFFu)   /* 4294967295 */
 #define SDL_MIN_UINT32  ((Uint32)0x00000000)    /* 0 */
@@ -207,6 +223,8 @@ typedef uint32_t Uint32;
 
 /**
  * A signed 64-bit integer type.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_SINT64  ((Sint64)0x7FFFFFFFFFFFFFFFll)      /* 9223372036854775807 */
 #define SDL_MIN_SINT64  ((Sint64)(~0x7FFFFFFFFFFFFFFFll))   /* -9223372036854775808 */
@@ -214,6 +232,8 @@ typedef int64_t Sint64;
 
 /**
  * An unsigned 64-bit integer type.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_UINT64  ((Uint64)0xFFFFFFFFFFFFFFFFull)     /* 18446744073709551615 */
 #define SDL_MIN_UINT64  ((Uint64)(0x0000000000000000ull))   /* 0 */
@@ -226,6 +246,8 @@ typedef uint64_t Uint64;
  * They can be converted between POSIX time_t values with SDL_NS_TO_SECONDS()
  * and SDL_SECONDS_TO_NS(), and between Windows FILETIME values with
  * SDL_TimeToWindows() and SDL_TimeFromWindows().
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_TIME SDL_MAX_SINT64
 #define SDL_MIN_TIME SDL_MIN_SINT64

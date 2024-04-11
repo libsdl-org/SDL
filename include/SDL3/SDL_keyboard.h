@@ -46,6 +46,8 @@ typedef Uint32 SDL_KeyboardID;
  *
  * If you are looking for translated character input, see the
  * ::SDL_EVENT_TEXT_INPUT event.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Keysym
 {

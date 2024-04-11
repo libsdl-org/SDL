@@ -63,6 +63,8 @@ typedef Uint32 SDL_TLSID;
  * should be aware that calling SDL_SetThreadPriority may alter such state.
  * SDL_HINT_THREAD_PRIORITY_POLICY can be used to control aspects of this
  * behavior.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_ThreadPriority {
     SDL_THREAD_PRIORITY_LOW,
@@ -76,6 +78,8 @@ typedef enum SDL_ThreadPriority {
  *
  * \param data what was passed as `data` to SDL_CreateThread()
  * \returns a value that can be reported through SDL_WaitThread().
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
 

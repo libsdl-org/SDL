@@ -234,6 +234,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetPenName(SDL_PenID instance_id);
 
 /**
  * Pen capabilities, as reported by SDL_GetPenCapabilities()
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_PenCapabilityInfo
 {

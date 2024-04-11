@@ -72,6 +72,8 @@ extern "C" {
  * ```
  *
  * There are macros to query these bits.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint16 SDL_AudioFormat;
 
@@ -140,6 +142,8 @@ typedef Uint16 SDL_AudioFormat;
 
 /**
  * SDL Audio Device instance IDs.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint32 SDL_AudioDeviceID;
 

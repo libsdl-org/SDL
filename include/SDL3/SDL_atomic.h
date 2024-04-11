@@ -266,6 +266,8 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  * A type representing an atomic integer value.
  *
  * It is a struct so people don't accidentally use numeric operations on it.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
 

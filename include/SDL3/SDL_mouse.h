@@ -44,6 +44,8 @@ typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
 
 /**
  * Cursor types for SDL_CreateSystemCursor().
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_SystemCursor
 {
@@ -72,6 +74,8 @@ typedef enum SDL_SystemCursor
 
 /**
  * Scroll direction types for the Scroll event
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
 typedef enum SDL_MouseWheelDirection
 {
@@ -512,6 +516,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_CursorVisible(void);
  * - Button 1: Left mouse button
  * - Button 2: Middle mouse button
  * - Button 3: Right mouse button
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_BUTTON(X)       (1 << ((X)-1))
 #define SDL_BUTTON_LEFT     1
