@@ -38,6 +38,4 @@ struct SDL_WindowData
     gfxScreen_t screen; /**< Keeps track of which N3DS screen is targeted */
 };
 
-#define FRAMEBUFFER_FORMAT SDL_PIXELFORMAT_RGBA8888
-
 #endif /* SDL_n3dsvideo_h_ */

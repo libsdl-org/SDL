@@ -35,6 +35,8 @@ static int AddN3DSDisplay(gfxScreen_t screen);
 
 static int N3DS_VideoInit(SDL_VideoDevice *_this);
 static void N3DS_VideoQuit(SDL_VideoDevice *_this);
+static int N3DS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+static int N3DS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
 static int N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
@@ -42,6 +44,23 @@ static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 struct SDL_DisplayData
 {
     gfxScreen_t screen;
+};
+
+struct SDL_DisplayModeData
+{
+    GSPGPU_FramebufferFormat fmt;
+};
+
+static const struct
+{
+    SDL_PixelFormatEnum pixfmt;
+    GSPGPU_FramebufferFormat gspfmt;
+} format_map[] = {
+    { SDL_PIXELFORMAT_RGBA8888, GSP_RGBA8_OES },
+    { SDL_PIXELFORMAT_BGR24, GSP_BGR8_OES },
+    { SDL_PIXELFORMAT_RGB565, GSP_RGB565_OES },
+    { SDL_PIXELFORMAT_RGBA5551, GSP_RGB5_A1_OES },
+    { SDL_PIXELFORMAT_RGBA4444, GSP_RGBA4_OES }
 };
 
 /* N3DS driver bootstrap functions */
@@ -76,6 +95,8 @@ static SDL_VideoDevice *N3DS_CreateDevice(void)
     device->VideoInit = N3DS_VideoInit;
     device->VideoQuit = N3DS_VideoQuit;
 
+    device->GetDisplayModes = N3DS_GetDisplayModes;
+    device->SetDisplayMode = N3DS_SetDisplayMode;
     device->GetDisplayBounds = N3DS_GetDisplayBounds;
 
     device->CreateSDLWindow = N3DS_CreateWindow;
@@ -92,6 +113,8 @@ static SDL_VideoDevice *N3DS_CreateDevice(void)
     device->DestroyWindowFramebuffer = SDL_N3DS_DestroyWindowFramebuffer;
 
     device->free = N3DS_DeleteDevice;
+
+    device->device_caps = VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY;
 
     return device;
 }
@@ -117,6 +140,7 @@ static int N3DS_VideoInit(SDL_VideoDevice *_this)
 static int AddN3DSDisplay(gfxScreen_t screen)
 {
     SDL_DisplayMode mode;
+    SDL_DisplayModeData *modedata;
     SDL_VideoDisplay display;
     SDL_DisplayData *display_driver_data = SDL_calloc(1, sizeof(SDL_DisplayData));
     if (!display_driver_data) {
@@ -128,10 +152,17 @@ static int AddN3DSDisplay(gfxScreen_t screen)
 
     display_driver_data->screen = screen;
 
+    modedata = SDL_malloc(sizeof(SDL_DisplayModeData));
+    if (!modedata) {
+        return -1;
+    }
+
     mode.w = (screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
     mode.h = GSP_SCREEN_WIDTH;
     mode.refresh_rate = 60.0f;
-    mode.format = FRAMEBUFFER_FORMAT;
+    mode.format = SDL_PIXELFORMAT_RGBA8888;
+    mode.driverdata = modedata;
+    modedata->fmt = GSP_RGBA8_OES;
 
     display.name = (screen == GFX_TOP) ? "N3DS top screen" : "N3DS bottom screen";
     display.desktop_mode = mode;
@@ -147,6 +178,43 @@ static void N3DS_VideoQuit(SDL_VideoDevice *_this)
 
     hidExit();
     gfxExit();
+}
+
+static int N3DS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+{
+    SDL_DisplayData *displaydata = display->driverdata;
+    SDL_DisplayModeData *modedata;
+    SDL_DisplayMode mode;
+    int i;
+
+    for (i = 0; i < SDL_arraysize(format_map); i++) {
+        modedata = SDL_malloc(sizeof(SDL_DisplayModeData));
+        if (!modedata)
+            continue;
+
+        SDL_zero(mode);
+        mode.w = (displaydata->screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
+        mode.h = GSP_SCREEN_WIDTH;
+        mode.refresh_rate = 60;
+        mode.format = format_map[i].pixfmt;
+        mode.driverdata = modedata;
+        modedata->fmt = format_map[i].gspfmt;
+
+        if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
+            SDL_free(modedata);
+        }
+    }
+
+    return 0;
+}
+
+static int N3DS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+{
+    SDL_DisplayData *displaydata = display->driverdata;
+    SDL_DisplayModeData *modedata = mode->driverdata;
+
+    gfxSetScreenFormat(displaydata->screen, modedata->fmt);
+    return 0;
 }
 
 static int N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
