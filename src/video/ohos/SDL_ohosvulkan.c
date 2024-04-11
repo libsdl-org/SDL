@@ -88,7 +88,7 @@ SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-    count, names, SDL_arraysize(extensionsForOHOS),
+       count, names, SDL_arraysize(extensionsForOHOS),
        extensionsForOHOS);
 }
 
@@ -102,8 +102,8 @@ SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateOHOSSurfaceKHR vkCreateOHOSSurfaceKHR =
         (PFN_vkCreateOHOSSurfaceKHR)vkGetInstanceProcAddr(
-                                         instance,
-                                         "vkCreateSurfaceOHOS");
+           instance,
+           "vkCreateSurfaceOHOS");
     VkOHOSSurfaceCreateInfoKHR createInfo;
     VkResult result;
 
