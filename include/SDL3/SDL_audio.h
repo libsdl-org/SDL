@@ -1003,6 +1003,11 @@ extern DECLSPEC int SDLCALL SDL_UnlockAudioStream(SDL_AudioStream *stream);
  * Byte counts might be slightly overestimated due to buffering or
  * resampling, and may change from call to call.
  *
+ * This callback is not required to do anything. Generally this is useful
+ * for adding/reading data on demand, and the app will often put/get data as
+ * appropriate, but the system goes on with the data currently available
+ * to it if this callback does nothing.
+ *
  * \param stream The SDL audio stream associated with this callback.
  * \param additional_amount The amount of data, in bytes, that is needed right now.
  * \param total_amount The total amount of data requested, in bytes, that is requested or available.
