@@ -82,7 +82,8 @@ typedef struct SDL_MessageBoxColor
 } SDL_MessageBoxColor;
 
 /**
- * An enumeration of indices inside the colors array of SDL_MessageBoxColorScheme.
+ * An enumeration of indices inside the colors array of
+ * SDL_MessageBoxColorScheme.
  */
 typedef enum SDL_MessageBoxColorType
 {
