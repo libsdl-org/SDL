@@ -127,14 +127,16 @@ extern DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
 /**
  * Function prototype for the timer callback function.
  *
- * The callback function is passed the current timer interval and returns
- * the next timer interval, in milliseconds. If the returned value is the same as the one
- * passed in, the periodic alarm continues, otherwise a new alarm is
+ * The callback function is passed the current timer interval and returns the
+ * next timer interval, in milliseconds. If the returned value is the same as
+ * the one passed in, the periodic alarm continues, otherwise a new alarm is
  * scheduled. If the callback returns 0, the periodic alarm is cancelled.
  *
  * \param interval the current callback time interval.
- * \param param an arbitrary pointer provided by the app through SDL_AddTimer, for its own use.
- * \returns the new callback time interval, or 0 to disable further runs of the callback.
+ * \param param an arbitrary pointer provided by the app through SDL_AddTimer,
+ *              for its own use.
+ * \returns the new callback time interval, or 0 to disable further runs of
+ *          the callback.
  *
  * \threadsafety SDL may call this callback at any time from a background
  *               thread; the application is responsible for locking resources

@@ -989,32 +989,34 @@ extern DECLSPEC int SDLCALL SDL_UnlockAudioStream(SDL_AudioStream *stream);
 /**
  * A callback that fires when data passes through an SDL_AudioStream.
  *
- * Apps can (optionally) register a callback with an audio stream that
- * is called when data is added with SDL_PutAudioStreamData, or requested
- * with SDL_GetAudioStreamData.
+ * Apps can (optionally) register a callback with an audio stream that is
+ * called when data is added with SDL_PutAudioStreamData, or requested with
+ * SDL_GetAudioStreamData.
  *
- * Two values are offered here: one is the amount of additional data needed
- * to satisfy the immediate request (which might be zero if the stream
- * already has enough data queued) and the other is the total amount
- * being requested. In a Get call triggering a Put callback, these
- * values can be different. In a Put call triggering a Get callback,
- * these values are always the same.
+ * Two values are offered here: one is the amount of additional data needed to
+ * satisfy the immediate request (which might be zero if the stream already
+ * has enough data queued) and the other is the total amount being requested.
+ * In a Get call triggering a Put callback, these values can be different. In
+ * a Put call triggering a Get callback, these values are always the same.
  *
- * Byte counts might be slightly overestimated due to buffering or
- * resampling, and may change from call to call.
+ * Byte counts might be slightly overestimated due to buffering or resampling,
+ * and may change from call to call.
  *
- * This callback is not required to do anything. Generally this is useful
- * for adding/reading data on demand, and the app will often put/get data as
- * appropriate, but the system goes on with the data currently available
- * to it if this callback does nothing.
+ * This callback is not required to do anything. Generally this is useful for
+ * adding/reading data on demand, and the app will often put/get data as
+ * appropriate, but the system goes on with the data currently available to it
+ * if this callback does nothing.
  *
  * \param stream The SDL audio stream associated with this callback.
- * \param additional_amount The amount of data, in bytes, that is needed right now.
- * \param total_amount The total amount of data requested, in bytes, that is requested or available.
- * \param userdata An opaque pointer provided by the app for their personal use.
+ * \param additional_amount The amount of data, in bytes, that is needed right
+ *                          now.
+ * \param total_amount The total amount of data requested, in bytes, that is
+ *                     requested or available.
+ * \param userdata An opaque pointer provided by the app for their personal
+ *                 use.
  *
- * \threadsafety This callbacks may run from any thread, so if you need
- *               to protect shared data, you should use SDL_LockAudioStream to
+ * \threadsafety This callbacks may run from any thread, so if you need to
+ *               protect shared data, you should use SDL_LockAudioStream to
  *               serialize access; this lock will be held before your callback
  *               is called, so your callback does not need to manage the lock
  *               explicitly.
@@ -1202,21 +1204,21 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDevi
  * device, which can cause audio playback problems.
  *
  * The postmix callback _must_ be able to handle any audio data format
- * specified in `spec`, which can change between callbacks if the audio
- * device changed. However, this only covers frequency and channel count;
- * data is always provided here in SDL_AUDIO_F32 format.
+ * specified in `spec`, which can change between callbacks if the audio device
+ * changed. However, this only covers frequency and channel count; data is
+ * always provided here in SDL_AUDIO_F32 format.
  *
  * \param userdata a pointer provided by the app through
- *        SDL_SetAudioDevicePostmixCallback, for its own use.
+ *                 SDL_SetAudioDevicePostmixCallback, for its own use.
  * \param spec the current format of audio that is to be submitted to the
- *        audio device.
- * \param buffer the buffer of audio samples to be submitted. The callback
- *        can inspect and/or modify this data.
+ *             audio device.
+ * \param buffer the buffer of audio samples to be submitted. The callback can
+ *               inspect and/or modify this data.
  * \param buflen the size of `buffer` in bytes.
  *
- * \threadsafety This will run from a background thread owned by SDL.
- *               The application is responsible for locking resources the
- *               callback touches that need to be protected.
+ * \threadsafety This will run from a background thread owned by SDL. The
+ *               application is responsible for locking resources the callback
+ *               touches that need to be protected.
  *
  * \since This datatype is available since SDL 3.0.0.
  *

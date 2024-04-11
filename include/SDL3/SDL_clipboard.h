@@ -134,18 +134,19 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
  * Callback function that will be called when data for the specified mime-type
  * is requested by the OS.
  *
- * The callback function is called with NULL as the mime_type when the clipboard
- * is cleared or new data is set. The clipboard is automatically cleared in SDL_Quit().
+ * The callback function is called with NULL as the mime_type when the
+ * clipboard is cleared or new data is set. The clipboard is automatically
+ * cleared in SDL_Quit().
  *
- * \param userdata  A pointer to provided user data
+ * \param userdata A pointer to provided user data
  * \param mime_type The requested mime-type
- * \param size      A pointer filled in with the length of the returned data
- * \returns a pointer to the data for the provided mime-type. Returning NULL or
- *          setting length to 0 will cause no data to be sent to the "receiver". It is
- *          up to the receiver to handle this. Essentially returning no data is more or
- *          less undefined behavior and may cause breakage in receiving applications.
- *          The returned data will not be freed so it needs to be retained and dealt
- *          with internally.
+ * \param size A pointer filled in with the length of the returned data
+ * \returns a pointer to the data for the provided mime-type. Returning NULL
+ *          or setting length to 0 will cause no data to be sent to the
+ *          "receiver". It is up to the receiver to handle this. Essentially
+ *          returning no data is more or less undefined behavior and may cause
+ *          breakage in receiving applications. The returned data will not be
+ *          freed so it needs to be retained and dealt with internally.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -154,7 +155,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
 typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const char *mime_type, size_t *size);
 
 /**
- * Callback function that will be called when the clipboard is cleared, or new data is set.
+ * Callback function that will be called when the clipboard is cleared, or new
+ * data is set.
  *
  * \param userdata A pointer to provided user data
  *

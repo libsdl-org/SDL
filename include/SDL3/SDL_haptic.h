@@ -851,9 +851,13 @@ typedef union SDL_HapticEffect
 } SDL_HapticEffect;
 
 /**
- * This is a unique ID for a haptic device for the time it is connected to the system, and is never reused for the lifetime of the application. If the haptic device is disconnected and reconnected, it will get a new ID.
+ * This is a unique ID for a haptic device for the time it is connected to the
+ * system, and is never reused for the lifetime of the application.
  *
- * The ID value starts at 1 and increments from there. The value 0 is an invalid ID.
+ * If the haptic device is disconnected and reconnected, it will get a new ID.
+ *
+ * The ID value starts at 1 and increments from there. The value 0 is an
+ * invalid ID.
  */
 typedef Uint32 SDL_HapticID;
 

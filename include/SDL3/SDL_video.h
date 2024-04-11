@@ -121,10 +121,10 @@ typedef struct SDL_Window SDL_Window;
 /**
  * The flags on a window.
  *
- * These cover a lot of true/false, or on/off, window state. Some of it
- * is immutable after being set through SDL_CreateWindow(), some of it can
- * be changed on existing windows by the app, and some of it might be altered
- * by the user or system outside of the app's control.
+ * These cover a lot of true/false, or on/off, window state. Some of it is
+ * immutable after being set through SDL_CreateWindow(), some of it can be
+ * changed on existing windows by the app, and some of it might be altered by
+ * the user or system outside of the app's control.
  *
  * \sa SDL_GetWindowFlags
  */
@@ -185,12 +185,12 @@ typedef enum SDL_FlashOperation
 } SDL_FlashOperation;
 
 /**
- *  An opaque handle to an OpenGL context.
+ * An opaque handle to an OpenGL context.
  */
 typedef void *SDL_GLContext;
 
 /**
- *  Opaque EGL types.
+ * Opaque EGL types.
  */
 typedef void *SDL_EGLDisplay;
 typedef void *SDL_EGLConfig;
@@ -199,7 +199,7 @@ typedef intptr_t SDL_EGLAttrib;
 typedef int SDL_EGLint;
 
 /**
- *  EGL attribute initialization callback types.
+ * EGL attribute initialization callback types.
  */
 typedef SDL_EGLAttrib *(SDLCALL *SDL_EGLAttribArrayCallback)(void);
 typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void);

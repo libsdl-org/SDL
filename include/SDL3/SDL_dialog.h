@@ -58,12 +58,11 @@ typedef struct SDL_DialogFileFilter
  *
  * The specific usage is described in each function.
  *
- * If filelist is...
- * - `NULL`, an error occured. Details can be obtained with SDL_GetError().
- * - A pointer to `NULL`, the user either didn't choose any file or canceled
- *   the dialog.
- * - A pointer to non-`NULL`, the user chose one or more files. The argument is
- *   a null-terminated list of pointers to C strings, each containing a path.
+ * If filelist is... - `NULL`, an error occured. Details can be obtained with
+ * SDL_GetError(). - A pointer to `NULL`, the user either didn't choose any
+ * file or canceled the dialog. - A pointer to non-`NULL`, the user chose one
+ * or more files. The argument is a null-terminated list of pointers to C
+ * strings, each containing a path.
  *
  * The filelist argument does not need to be freed; it will automatically be
  * freed when the callback returns.

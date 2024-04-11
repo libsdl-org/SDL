@@ -1100,11 +1100,11 @@ extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event *event);
 /**
  * A function pointer used for callbacks that watch the event queue.
  *
- * \param userdata what was passed as `userdata` to SDL_SetEventFilter()
- *        or SDL_AddEventWatch, etc
+ * \param userdata what was passed as `userdata` to SDL_SetEventFilter() or
+ *                 SDL_AddEventWatch, etc
  * \param event the event that triggered the callback
- * \returns 1 to permit event to be added to the queue, and 0 to disallow
- *          it. When used with SDL_AddEventWatch, the return value is ignored.
+ * \returns 1 to permit event to be added to the queue, and 0 to disallow it.
+ *          When used with SDL_AddEventWatch, the return value is ignored.
  *
  * \threadsafety SDL may call this callback at any time from any thread; the
  *               application is responsible for locking resources the callback
