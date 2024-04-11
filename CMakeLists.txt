@@ -2915,6 +2915,7 @@ elseif(N3DS)
     list(APPEND SOURCE_FILES ${N3DS_VIDEO_SOURCES})
     set(SDL_VIDEO_OPENGL 0)
     set(HAVE_SDL_VIDEO TRUE)
+    list(APPEND EXTRA_LIBS citro3d)
   endif()
 
   if(SDL_LOCALE)
