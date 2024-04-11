@@ -55,7 +55,7 @@ typedef struct {
     char *libraryFile;
 } OhosSDLEntryInfo;
 
-extern std::unique_ptr<NapiCallbackContext> napiCallback;
+extern std::unique_ptr<NapiCallbackContext> g_napiCallback;
 
 #ifdef __cplusplus
 /* *INDENT-OFF* */
