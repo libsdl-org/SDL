@@ -535,7 +535,7 @@ my %headerdecls = ();
 my %headersymslocation = ();   # $headersymslocation{"SDL_OpenAudio"} -> name of header holding SDL_OpenAudio define ("SDL_audio.h" in this case).
 my %headersymschunk = ();   # $headersymschunk{"SDL_OpenAudio"} -> offset in array in %headers that should be replaced for this symbol.
 my %headersymshasdoxygen = ();   # $headersymshasdoxygen{"SDL_OpenAudio"} -> 1 if there was no existing doxygen for this function.
-my %headersymstype = ();   # $headersymstype{"SDL_OpenAudio"} -> 1 (function), 2 (macro), 3 (struct), 4 (enum)
+my %headersymstype = ();   # $headersymstype{"SDL_OpenAudio"} -> 1 (function), 2 (macro), 3 (struct), 4 (enum), 5 (other typedef)
 
 my %wikitypes = ();  # contains string of wiki page extension, like $wikitypes{"SDL_OpenAudio"} == 'mediawiki'
 my %wikisyms = ();  # contains references to hash of strings, each string being the full contents of a section of a wiki page, like $wikisyms{"SDL_OpenAudio"}{"Remarks"}.
@@ -651,6 +651,8 @@ while (my $d = readdir(DH)) {
                 $symtype = 3;   # struct or union
             } elsif ($decl =~ /\A\s*(typedef\s+|)enum/) {
                 $symtype = 4;   # enum
+            } elsif ($decl =~ /\A\s*typedef\s+.*;\Z/) {
+                $symtype = 5;   # other typedef
             } else {
                 #print "Found doxygen but no function sig:\n$str\n\n";
                 foreach (@templines) {
@@ -788,6 +790,34 @@ while (my $d = readdir(DH)) {
                 }
                 # this currently assumes the struct/union/enum ends on the line with the final bracket. I'm not writing a C parser here, fix the header!
             }
+        } elsif ($symtype == 5) {  # other typedef
+            if ($decl =~ /\A\s*typedef\s+(.*);\Z/) {
+                my $tdstr = $1;
+                #my $datatype;
+                if ($tdstr =~ /\A(.*?)\s*\((.*?)\s*\*\s*(.*?)\)\s*\((.*?)\)\s*\Z/) {  # a function pointer type
+                    $sym = $3;
+                    #$datatype = "$1 ($2 *$sym)($4)";
+                } elsif ($tdstr =~ /\A(.*[\s\*]+)(.*?)\s*\Z/) {
+                    $sym = $2;
+                    #$datatype = $1;
+                } else {
+                    die("Failed to parse typedef '$tdstr' in $incpath/$dent!\n");  # I'm hitting a C grammar nail with a regexp hammer here, y'all.
+                }
+
+                $sym =~ s/\A\s+//;
+                $sym =~ s/\s+\Z//;
+                #$datatype =~ s/\A\s+//;
+                #$datatype =~ s/\s+\Z//;
+            } else {
+                #print "Found doxygen but no datatype:\n$str\n\n";
+                foreach (@templines) {
+                    push @contents, $_;
+                }
+                foreach (@decllines) {
+                    push @contents, $_;
+                }
+                next;
+            }
         } else {
             die("Unexpected symtype $symtype");
         }
@@ -830,10 +860,6 @@ while (my $d = readdir(DH)) {
     $headers{$dent} = \@contents;
 }
 closedir(DH);
-
-
-# !!! FIXME: we need to parse enums and typedefs and structs and defines and and and and and...
-# !!! FIXME:  (but functions are good enough for now.)
 
 opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
 while (my $d = readdir(DH)) {
@@ -1008,7 +1034,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $params = undef;
         my $paramstr = undef;
 
-        if ($symtype == 1) {
+        if (($symtype == 1) && (($symtype == 5))) {  # we'll assume a typedef (5) with a \param is a function pointer typedef.
             $params = $sectionsref->{'Function Parameters'};
             $paramstr = '\param';
         } elsif ($symtype == 2) {
@@ -1518,6 +1544,8 @@ if ($copy_direction == 1) {  # --copy-to-headers
             $symtypename = 'Struct';
         } elsif ($symtype == 4) {
             $symtypename = 'Enum';
+        } elsif ($symtype == 5) {
+            $symtypename = 'Datatype';
         } else {
             die("Unexpected symbol type $symtype!");
         }
@@ -1567,7 +1595,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             } else {
                 my $sectname = $sect;
                 if ($sectname eq 'Function Parameters') {  # We use this same table for different things depending on what we're documenting, so rename it now.
-                    if ($symtype == 1) {  # function
+                    if (($symtype == 1) || ($symtype == 5)) {  # function (or typedef, in case it's a function pointer type).
                     } elsif ($symtype == 2) {  # macro
                         $sectname = 'Macro Parameters';
                     } elsif ($symtype == 3) {  # struct/union
@@ -1775,7 +1803,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         }
 
         if (defined $params) {
-            if ($symtype == 1) {
+            if (($symtype == 1) || ($symtype == 5)) {
                 $str .= ".SH FUNCTION PARAMETERS\n";
             } elsif ($symtype == 2) {  # macro
                 $str .= ".SH MACRO PARAMETERS\n";
@@ -1899,11 +1927,21 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= ".UE\n";
         }
 
-        my $path = "$manpath/$_.3.tmp";
-        open(FH, '>', $path) or die("Can't open '$path': $!\n");
+        my $mansection;
+        if (($symtype == 1) || ($symtype == 2)) {  # functions or macros
+            $mansection = '3';
+        } elsif (($symtype >= 3) && ($symtype <= 5)) {  # struct/union/enum/typedef
+            $mansection = '3type';
+        } else {
+            die("Unexpected symtype $symtype");
+        }
+
+        my $path = "$manpath/$_.$mansection";
+        my $tmppath = "$path.tmp";
+        open(FH, '>', $tmppath) or die("Can't open '$tmppath': $!\n");
         print FH $str;
         close(FH);
-        rename($path, "$manpath/$_.3") or die("Can't rename '$path' to '$manpath/$_.3': $!\n");
+        rename($tmppath, $path) or die("Can't rename '$tmppath' to '$path': $!\n");
     }
 }
 
