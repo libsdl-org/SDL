@@ -102,7 +102,7 @@ typedef enum SDL_TimeFormat
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
 
@@ -118,7 +118,7 @@ extern DECLSPEC int SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime);
 
@@ -133,7 +133,7 @@ extern DECLSPEC int SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt,
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks);
 
@@ -176,7 +176,7 @@ extern DECLSPEC SDL_Time SDLCALL SDL_TimeFromWindows(Uint32 dwLowDateTime, Uint3
  * \returns the number of days in the requested month, otherwise -1; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetDaysInMonth(int year, int month);
 
@@ -189,7 +189,7 @@ extern DECLSPEC int SDLCALL SDL_GetDaysInMonth(int year, int month);
  * \returns the day of year [0-365] if the date is valid, otherwise -1; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetDayOfYear(int year, int month, int day);
 
@@ -202,7 +202,7 @@ extern DECLSPEC int SDLCALL SDL_GetDayOfYear(int year, int month, int day);
  * \returns a value between 0 and 6 (0 being Sunday) if the date is valid,
  *          otherwise -1; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetDayOfWeek(int year, int month, int day);
 

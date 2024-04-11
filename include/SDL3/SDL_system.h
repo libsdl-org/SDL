@@ -676,7 +676,7 @@ extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue)
  *                      handle.
  * \returns 0 if success, -1 if any error occurs.
  *
- * \since This function is available since SDL 2.28.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GDKGetDefaultUser(XUserHandle * outUserHandle);
 
