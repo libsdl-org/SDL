@@ -105,7 +105,7 @@ if (not defined $wikipath) {
         foreach my $fn (keys %funcs) {
             my $revision = $funcs{$fn};
             $revision = $next_release if $revision eq 'HEAD';
-            my $fname = "$fn.mediawiki";
+            my $fname = "$fn.md";
             if ( ! -f $fname ) {
                 #print STDERR "No such file: $fname\n";
                 next;
@@ -117,21 +117,21 @@ if (not defined $wikipath) {
             while (<FH>) {
                 chomp;
                 if ((/\A\-\-\-\-/) && (!$added)) {
-                    push @lines, "== Version ==";
+                    push @lines, "## Version";
                     push @lines, "";
                     push @lines, "This function is available since SDL $revision.";
                     push @lines, "";
                     $added = 1;
                 }
                 push @lines, $_;
-                next if not /\A\=\=\s+Version\s+\=\=/;
+                next if not /\A\#\#\s+Version/;
                 $added = 1;
                 push @lines, "";
                 push @lines, "This function is available since SDL $revision.";
                 push @lines, "";
                 while (<FH>) {
                     chomp;
-                    next if not (/\A\=\=\s+/ || /\A\-\-\-\-/);
+                    next if not (/\A\#\#\s+/ || /\A\-\-\-\-/);
                     push @lines, $_;
                     last;
                 }
@@ -139,7 +139,7 @@ if (not defined $wikipath) {
             close(FH);
 
             if (!$added) {
-                push @lines, "== Version ==";
+                push @lines, "## Version";
                 push @lines, "";
                 push @lines, "This function is available since SDL $revision.";
                 push @lines, "";
