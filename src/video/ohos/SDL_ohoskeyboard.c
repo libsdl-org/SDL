@@ -501,8 +501,7 @@ static SDL_Scancode TranslateKeycode(int keycode)
         if (keycode != KEYCODE_NUMPAD_0)
         {
             return SDL_SCANCODE_KP_1 + (keycode - KEYCODE_NUMPAD_1);
-        } else
-        {
+        } else {
             return SDL_SCANCODE_KP_0;
         }
     }

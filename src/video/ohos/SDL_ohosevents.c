@@ -90,7 +90,6 @@ void OHOS_PUMPEVENTS_Blocking(SDL_VideoDevice *thisDevice)
         openslES_PauseDevices();
 
         if (SDL_SemWait(OHOS_ResumeSem) == 0) {
-
             videodata->isPaused = 0;
 
             /* OHOS_ResumeSem was signaled */
@@ -140,10 +139,8 @@ void OHOS_PUMPEVENTS_NonBlocking(SDL_VideoDevice *thisDevice)
     static int backup_context = 0;
 
     if (videodata->isPaused) {
-
         SDL_bool isContextExternal = SDL_IsVideoContextExternal();
         if (backup_context) {
-
             if (!isContextExternal) {
                 SDL_LockMutex(OHOS_PageMutex);
                 OHOS_EGL_context_backup(g_ohosWindow);

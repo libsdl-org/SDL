@@ -108,8 +108,7 @@ typedef struct SDL_RWops
             int fd;
         } androidio;
 #elif defined(__OHOS__)
-        struct
-		{
+        struct {
             void *nativeResourceManager;
             void *fileDescriptorRef;
             void *fileNameRef;

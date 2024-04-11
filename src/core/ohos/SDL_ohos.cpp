@@ -21,13 +21,13 @@
 #include "SDL_napi.h"
 #include "SDL_log.h"
 #include <rawfile/raw_file_manager.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <unistd.h>
 #include <hilog/log.h>
 #include <dlfcn.h>
 #include "cJSON.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "SDL.h"
 #include "../../video/SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"
@@ -37,6 +37,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
 #include "SDL_ohos.h"
 #include "SDL_ohosfile.h"
 #include "../../video/ohos/SDL_ohosvideo.h"
@@ -62,20 +63,17 @@ SDL_bool bPermissionRequestResult;
 static SDL_atomic_t bQuit;
 
 /* Lock / Unlock Mutex */
-void
-OHOS_PAGEMUTEX_Lock()
+void OHOS_PAGEMUTEX_Lock()
 {
     SDL_LockMutex(OHOS_PageMutex);
 }
 
-void
-OHOS_PAGEMUTEX_Unlock()
+void OHOS_PAGEMUTEX_Unlock()
 {
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
-void
-OHOS_PAGEMUTEX_LockRunning()
+void OHOS_PAGEMUTEX_LockRunning()
 {
     int pauseSignaled = 0;
     int resumeSignaled = 0;
@@ -90,8 +88,7 @@ retry:
     }
 }
 
-void
-OHOS_SetDisplayOrientation(int orientation)
+void OHOS_SetDisplayOrientation(int orientation)
 {
     displayOrientation = (SDL_DisplayOrientation)orientation;
 }
@@ -113,14 +110,13 @@ void OHOS_NAPI_SetWindowResize(int x, int y, int w, int h)
     cJSON_AddNumberToObject(root, "y", y);
     cJSON_AddNumberToObject(root, "w", w);
     cJSON_AddNumberToObject(root, "h", h);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
 }
 
-void
-OHOS_NAPI_ShowTextInput(int x, int y, int w, int h)
+void OHOS_NAPI_ShowTextInput(int x, int y, int w, int h)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -132,14 +128,13 @@ OHOS_NAPI_ShowTextInput(int x, int y, int w, int h)
     cJSON_AddNumberToObject(root, "y", y);
     cJSON_AddNumberToObject(root, "w", w);
     cJSON_AddNumberToObject(root, "h", h);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
 }
 
-SDL_bool
-OHOS_NAPI_RequestPermission(const char *permission)
+SDL_bool OHOS_NAPI_RequestPermission(const char *permission)
 {
     /* Wait for any pending request on another thread */
     while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
@@ -154,7 +149,7 @@ OHOS_NAPI_RequestPermission(const char *permission)
     }
     cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_REQUEST_PERMISSION);
     cJSON_AddStringToObject(root, "permission", permission);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
@@ -165,8 +160,7 @@ OHOS_NAPI_RequestPermission(const char *permission)
     return bPermissionRequestResult;
 }
 
-void
-OHOS_NAPI_HideTextInput(int flag)
+void OHOS_NAPI_HideTextInput(int flag)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -175,14 +169,13 @@ OHOS_NAPI_HideTextInput(int flag)
     }
     cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_HIDE_TEXTINPUT);
     cJSON_AddNumberToObject(root, "flag", flag);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
 }
 
-void
-OHOS_NAPI_ShouldMinimizeOnFocusLoss(int flag)
+void OHOS_NAPI_ShouldMinimizeOnFocusLoss(int flag)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -191,14 +184,13 @@ OHOS_NAPI_ShouldMinimizeOnFocusLoss(int flag)
     }
     cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_SHOULD_MINIMIZEON_FOCUSLOSS);
     cJSON_AddNumberToObject(root, "flag", flag);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
 }
 
-void
-OHOS_NAPI_SetTitle(const char *title)
+void OHOS_NAPI_SetTitle(const char *title)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -207,14 +199,13 @@ OHOS_NAPI_SetTitle(const char *title)
     }
     cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_SET_TITLE);
     cJSON_AddStringToObject(root, "title", title);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
 }
 
-void
-OHOS_NAPI_SetWindowStyle(SDL_bool fullscreen)
+void OHOS_NAPI_SetWindowStyle(SDL_bool fullscreen)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -223,14 +214,13 @@ OHOS_NAPI_SetWindowStyle(SDL_bool fullscreen)
     }
     cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_SET_WINDOWSTYLE);
     cJSON_AddBoolToObject(root, "fullscreen", fullscreen);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
 }
 
-void
-OHOS_NAPI_ShowTextInputKeyboard(SDL_bool isshow)
+void OHOS_NAPI_ShowTextInputKeyboard(SDL_bool isshow)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -239,7 +229,7 @@ OHOS_NAPI_ShowTextInputKeyboard(SDL_bool isshow)
     }
     cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_SHOW_TEXTINPUTKEYBOARD);
     cJSON_AddBoolToObject(root, "isshow", isshow);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
@@ -257,7 +247,7 @@ void OHOS_NAPI_SetOrientation(int w, int h, int resizable, const char *hint)
     cJSON_AddNumberToObject(root, "h", h);
     cJSON_AddNumberToObject(root, "resizable", resizable);
     cJSON_AddStringToObject(root, "hint", hint);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
@@ -281,15 +271,14 @@ int OHOS_CreateCustomCursor(SDL_Surface *xcomponent, int hotX, int hotY)
     SDL_memcpy(buff, xcomponent->pixels, bufferSize);
     long long xcomponentpixel = (long long)buff;
     cJSON_AddNumberToObject(root, "xcomponentpixel", (double)xcomponentpixel);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
     return 1;
 }
 
-SDL_bool
-OHOS_SetCustomCursor(int cursorID)
+SDL_bool OHOS_SetCustomCursor(int cursorID)
 {
     if (SDL_AtomicGet(&bQuit) == SDL_TRUE) {
         return SDL_TRUE;
@@ -300,15 +289,14 @@ OHOS_SetCustomCursor(int cursorID)
         return SDL_FALSE;
     }
     cJSON_AddNumberToObject(root, "cursorID", cursorID);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
     return SDL_FALSE;
 }
 
-SDL_bool
-OHOS_SetSystemCursor(int cursorID)
+SDL_bool OHOS_SetSystemCursor(int cursorID)
 {
     if (SDL_AtomicGet(&bQuit) == SDL_TRUE) {
         return SDL_TRUE;
@@ -320,7 +308,7 @@ OHOS_SetSystemCursor(int cursorID)
     }
     cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_SET_SYSTEMCURSOR);
     cJSON_AddNumberToObject(root, "cursorID", cursorID);
-    napi_status status = napi_call_threadsafe_function(napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         cJSON_free(root);
     }
@@ -328,8 +316,7 @@ OHOS_SetSystemCursor(int cursorID)
 }
 
 /* Relative mouse support */
-SDL_bool
-OHOS_SupportsRelativeMouse(void)
+SDL_bool OHOS_SupportsRelativeMouse(void)
 {
     return SDL_TRUE;
 }
@@ -339,8 +326,7 @@ SDL_bool OHOS_SetRelativeMouseEnabled(SDL_bool enabled)
     return SDL_TRUE;
 }
 
-napi_value
-SDLNapi::OHOS_SetResourceManager(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_SetResourceManager(napi_env env, napi_callback_info info)
 {
     size_t argc = 2;
     napi_value args[OHOS_INDEX_ARG2];
@@ -362,8 +348,7 @@ SDLNapi::OHOS_SetResourceManager(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_NativeSetScreenResolution(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_NativeSetScreenResolution(napi_env env, napi_callback_info info)
 {
     size_t argc = 6;
     napi_value args[6];
@@ -386,8 +371,7 @@ SDLNapi::OHOS_NativeSetScreenResolution(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_OnNativeResize(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_OnNativeResize(napi_env env, napi_callback_info info)
 {
     SDL_LockMutex(OHOS_PageMutex);
     if (g_ohosWindow) {
@@ -397,8 +381,7 @@ SDLNapi::OHOS_OnNativeResize(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_TextInput(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_TextInput(napi_env env, napi_callback_info info)
 {
     size_t requireArgc = 2;
     size_t argc = 2;
@@ -439,8 +422,7 @@ SDLNapi::OHOS_TextInput(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_KeyDown(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_KeyDown(napi_env env, napi_callback_info info)
 {
     int keycode;
     size_t argc = 1;
@@ -451,8 +433,7 @@ SDLNapi::OHOS_KeyDown(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_KeyUp(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_KeyUp(napi_env env, napi_callback_info info)
 {
     int keycode;
     size_t argc = 1;
@@ -463,15 +444,13 @@ SDLNapi::OHOS_KeyUp(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_OnNativeKeyboardFocusLost(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_OnNativeKeyboardFocusLost(napi_env env, napi_callback_info info)
 {
     SDL_StopTextInput();
     return nullptr;
 }
 
-static void
-OHOS_NativeQuit(void)
+static void OHOS_NativeQuit(void)
 {
     const char *str;
     if (OHOS_PageMutex) {
@@ -496,8 +475,7 @@ OHOS_NativeQuit(void)
     return;
 }
 
-napi_value
-SDLNapi::OHOS_NativeSendQuit(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_NativeSendQuit(napi_env env, napi_callback_info info)
 {
     SDL_AtomicSet(&bQuit, SDL_TRUE);
     SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
@@ -512,24 +490,21 @@ SDLNapi::OHOS_NativeSendQuit(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_NativeResume(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_NativeResume(napi_env env, napi_callback_info info)
 {
     SDL_SemPost(OHOS_ResumeSem);
     OHOSAUDIO_PageResume();
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_NativePause(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_NativePause(napi_env env, napi_callback_info info)
 {
     SDL_SemPost(OHOS_PauseSem);
     OHOSAUDIO_PagePause();
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_NativePermissionResult(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_NativePermissionResult(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
     napi_value args[1];
@@ -541,8 +516,7 @@ SDLNapi::OHOS_NativePermissionResult(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_OnNativeOrientationChanged(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_OnNativeOrientationChanged(napi_env env, napi_callback_info info)
 {
     int orientation;
     size_t argc = 1;
@@ -559,8 +533,7 @@ SDLNapi::OHOS_OnNativeOrientationChanged(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-napi_value
-SDLNapi::OHOS_OnNativeFocusChanged(napi_env env, napi_callback_info info)
+napi_value SDLNapi::OHOS_OnNativeFocusChanged(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
     napi_value args[1];
@@ -584,29 +557,27 @@ static void OHOS_NAPI_NativeSetup(void)
     return;
 }
 
-static napi_value
-OHOS_NAPI_Init(napi_env env, napi_callback_info info)
+static napi_value OHOS_NAPI_Init(napi_env env, napi_callback_info info)
 {
-    if (napiCallback == nullptr) {
-        napiCallback = std::make_unique<NapiCallbackContext>();
+    if (g_napiCallback == nullptr) {
+        g_napiCallback = std::make_unique<NapiCallbackContext>();
     }
     OHOS_NAPI_NativeSetup();
-    napiCallback->env = env;
+    g_napiCallback->env = env;
     size_t argc = 1;
     napi_value args[1] = {nullptr};
     napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
-    napi_create_reference(env, args[0], 1, &napiCallback->callbackRef);
+    napi_create_reference(env, args[0], 1, &g_napiCallback->callbackRef);
 
     napi_value resourceName = nullptr;
     napi_create_string_utf8(env, "SDLThreadSafe", NAPI_AUTO_LENGTH, &resourceName);
 
     napi_create_threadsafe_function(env, args[0], nullptr, resourceName, 0, 1, nullptr, nullptr, nullptr, OHOS_TS_Call,
-                                    &napiCallback->tsfn);
+                                    &g_napiCallback->tsfn);
     return nullptr;
 }
 
-static int
-OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value *argv, char **library_file, char **function_name)
+static int OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value *argv, char **library_file, char **function_name)
 {
     napi_status status;
     napi_valuetype valuetype;
