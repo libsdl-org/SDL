@@ -1034,7 +1034,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my $params = undef;
         my $paramstr = undef;
 
-        if (($symtype == 1) && (($symtype == 5))) {  # we'll assume a typedef (5) with a \param is a function pointer typedef.
+        if (($symtype == 1) || (($symtype == 5))) {  # we'll assume a typedef (5) with a \param is a function pointer typedef.
             $params = $sectionsref->{'Function Parameters'};
             $paramstr = '\param';
         } elsif ($symtype == 2) {
