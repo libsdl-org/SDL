@@ -383,7 +383,7 @@ static int OHOSAUDIO_Format2Depth(SDL_AudioSpec *spec, int audioFormat)
     switch (audioFormat) {
         case AUDIOSTREAM_SAMPLE_U8:
             spec->format = AUDIO_U8;
-            audioFormatBitDepth = AUDIO_U8;
+            audioFormatBitDepth = BIT_DEPTH_U8;
             break;
         case AUDIOSTREAM_SAMPLE_S16LE:
             spec->format = AUDIO_S16;
@@ -434,7 +434,7 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
         iRet = OH_AudioRenderer_Start(audioRenderer);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
-                "Capturer_Start Failed, Error=%{public}d.", iRet);
+                "Renderer_Start Failed, Error=%{public}d.", iRet);
             OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
             return -1;
         }
@@ -453,7 +453,7 @@ int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec)
 {
     int audioFormat;
     int audioFormatBitDepth = 0;
-    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "open device, iscapture=%{public}d", iscapture);
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "OpenDevice iscapture=%{public}d", iscapture);
     
     if (OHOSAUDIO_CreateBuilder(iscapture) < 0) {
         return -1;
@@ -500,7 +500,7 @@ int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec)
         OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "OHOSAUDIO_Start run Failed");
         return -1;
     }
-    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "open device leave.");
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "OpenAudioDevice", "OpenDevice end iscapture=%{public}d", iscapture);
     return 0;
 }
 
@@ -570,6 +570,7 @@ static void OHOSAUDIO_DestroyBuilder(int iscapture)
 void OHOSAUDIO_NATIVE_CloseAudioDevice(const int iscapture)
 {
     OH_AudioStream_Result iRet;
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice", "CloseDevice iscapture=%{public}d", iscapture);
     // Release the audio stream
     if (iscapture != 0) {
         if (NULL != audioCapturer) {
@@ -620,6 +621,7 @@ void OHOSAUDIO_NATIVE_CloseAudioDevice(const int iscapture)
         }
     }
     OHOSAUDIO_DestroyBuilder(iscapture);
+    OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice", "CloseDevice end iscapture=%{public}d", iscapture);
 }
 
 void OHOSAUDIO_PageResume(void)
