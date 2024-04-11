@@ -136,10 +136,31 @@ void *alloca(size_t);
 /* @{ */
 
 /**
- * A boolean type.
+ * A boolean false.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_bool
  */
 #define SDL_FALSE 0
+
+/**
+ * A boolean true.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_bool
+ */
 #define SDL_TRUE 1
+
+/**
+ * A boolean type: true or false.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_TRUE
+ * \sa SDL_FALSE
+ */
 typedef int SDL_bool;
 
 /**
