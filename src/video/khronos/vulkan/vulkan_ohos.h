@@ -13,44 +13,47 @@
  * limitations under the License.
  */
 
+#ifndef VULKAN_OHOS_H
+#define VULKAN_OHOS_H 1
+
 #include <vulkan/vulkan_core.h>
-#ifndef VULKAN_OHOS_H_
-#define VULKAN_OHOS_H_ 1
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define VK_KHR_ohos_surface 1
+#define VK_KHR_OHOS_XCOMPONENT 1
 struct ONativeWindow;
 
-#define VK_KHR_OHOS_SURFACE_SPEC_VERSION 6
-#define VK_KHR_OHOS_SURFACE_EXTENSION_NAME "VK_OHOS_surface"
+#define VK_KHR_OHOS_XCOMPONENT_SPEC_VERSION 6
+#define VK_KHR_OHOS_XCOMPONENT_EXTENSION_NAME "VK_OHOS_surface"
 
-typedef VkFlags VkOHOSSurfaceCreateFlagsKHR;
+typedef VkFlags VkOHOSXComponentCreateFlagsKHR;
 
-typedef struct VkOHOSSurfaceCreateInfoKHR {
+typedef struct VkOHOSXComponentCreateInfoKHR {
     VkStructureType                   sType;
     const void*                       pNext;
-    VkOHOSSurfaceCreateFlagsKHR       flags;
+    VkOHOSXComponentCreateFlagsKHR    flags;
     struct OHNativeWindow*             window;
-} VkOHOSSurfaceCreateInfoKHR;
+} VkOHOSXComponentCreateInfoKHR;
 
-typedef VkResult (VKAPI_PTR *PFN_vkCreateOHOSSurfaceKHR)(VkInstance instance, const VkOHOSSurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface);
+typedef VkResult (VKAPI_PTR *PFN_vkCreateOHOSXComponentKHR)(VkInstance instance, 
+    const VkOHOSXComponentCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator,
+        VkSurfaceKHR* pXComponent);
 
 #ifndef VK_NO_PROTOTYPES
-VKAPI_ATTR VkResult VKAPI_CALL vkCreateOHOSSurfaceKHR(
+VKAPI_ATTR VkResult VKAPI_CALL vkCreateOHOSXComponentKHR(
     VkInstance                                  instance,
-    const VkOHOSSurfaceCreateInfoKHR*        pCreateInfo,
+    const VkOHOSXComponentCreateInfoKHR*        pCreateInfo,
     const VkAllocationCallbacks*                pAllocator,
     VkSurfaceKHR*                               pSurface);
 #endif
 
-#define VK_OHOS_external_memory_ohos_hardware_buffer 1
+#define VK_OHOS_EXTERNAL_MEMORY_OHOS_HARDWARE_BUFFER 1
 struct OHardwareBuffer;
 
 #define VK_OHOS_EXTERNAL_MEMORY_OHOS_HARDWARE_BUFFER_SPEC_VERSION 3
-#define VK_OHOS_EXTERNAL_MEMORY_OHOS_HARDWARE_BUFFER_EXTENSION_NAME "VK_OHOS_external_memory_ohos_hardware_buffer"
+#define VK_OHOS_EXTERNAL_MEMORY_OHOS_HARDWARE_BUFFER_EXTENSION_NAME "VK_OHOS_EXTERNAL_MEMORY_OHOS_HARDWARE_BUFFER"
 
 typedef struct VkOHOSHardwareBufferUsageOHOS {
     VkStructureType    sType;
@@ -97,8 +100,10 @@ typedef struct VkExternalFormatOHOS {
 } VkExternalFormatOHOS;
 
 
-typedef VkResult (VKAPI_PTR *PFN_vkGetOHOSHardwareBufferPropertiesOHOS)(VkDevice device, const struct OHardwareBuffer* buffer, VkOHOSHardwareBufferPropertiesOHOS* pProperties);
-typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryOHOSHardwareBufferOHOS)(VkDevice device, const VkMemoryGetOHOSHardwareBufferInfoOHOS* pInfo, struct OHardwareBuffer** pBuffer);
+typedef VkResult (VKAPI_PTR *PFN_vkGetOHOSHardwareBufferPropertiesOHOS)(VkDevice device, 
+    const struct OHardwareBuffer* buffer, VkOHOSHardwareBufferPropertiesOHOS* pProperties);
+typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryOHOSHardwareBufferOHOS)(VkDevice device, 
+    const VkMemoryGetOHOSHardwareBufferInfoOHOS* pInfo, struct OHardwareBuffer** pBuffer);
 
 #ifndef VK_NO_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkGetOHOSHardwareBufferPropertiesOHOS(

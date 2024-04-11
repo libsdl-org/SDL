@@ -123,7 +123,7 @@ static int OHOSAUDIO_Init(SDL_AudioDriverImpl * impl)
     return 1;   /* this audio target is available. */
 }
 
-AudioBootStrap OHOSAUDIO_bootstrap = {
+AudioBootStrap g_ohosaudioBootstrap = {
     "ohos", "SDL Ohos audio driver", OHOSAUDIO_Init, 0
 };
 

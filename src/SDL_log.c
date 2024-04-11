@@ -127,12 +127,12 @@ SDL_COMPILE_TIME_ASSERT(android_priority, SDL_arraysize(SDL_android_priority) ==
 #ifdef __OHOS__
 static const char *SDL_category_prefixes[SDL_LOG_CATEGORY_RESERVED2] = {
     "APP",
-	"ERROR",
-	"SYSTEM",
-	"AUDIO",
-	"VIDEO",
-	"RENDER",
-	"INPUT"
+    "ERROR",
+    "SYSTEM",
+    "AUDIO",
+    "VIDEO",
+    "RENDER",
+    "INPUT"
 };
 
 static int SDL_ohos_priority[SDL_NUM_LOG_PRIORITIES] = {

@@ -327,9 +327,83 @@ static int SDLCALL platform_testSetErrorEmptyInput(void *arg)
     return TEST_COMPLETED;
 }
 
+<<<<<<< HEAD
 #ifdef HAVE_WFORMAT_OVERFLOW
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-overflow"
+=======
+/* !
+ * \brief Tests SDL_SetError with empty input
+ * \sa
+ * http://wiki.libsdl.org/moin.cgi/SDL_SetError
+ */
+int platform_testSetErrorEmptyInput(void *arg)
+{
+   int result;
+   const char *testError = "";
+   char *lastError;
+   size_t len;
+
+   result = SDL_SetError("%s", testError);
+   SDLTest_AssertPass("SDL_SetError()");
+   SDLTest_AssertCheck(result == -1, "SDL_SetError: expected -1, got: %i", result);
+   lastError = (char *)SDL_GetError();
+   SDLTest_AssertCheck(lastError != NULL,
+             "SDL_GetError() != NULL");
+   if (lastError != NULL)
+   {
+     len = SDL_strlen(lastError);
+     SDLTest_AssertCheck(len == SDL_strlen(testError),
+             "SDL_GetError(): expected message len %i, was len: %i",
+             (int) SDL_strlen(testError),
+             (int) len);
+     SDLTest_AssertCheck(SDL_strcmp(lastError, testError) == 0,
+             "SDL_GetError(): expected message '%s', was message: '%s'",
+             testError,
+             lastError);
+   }
+
+   /* Clean up */
+   SDL_ClearError();
+   SDLTest_AssertPass("SDL_ClearError()");
+
+   return TEST_COMPLETED;
+}
+
+/* !
+ * \brief Tests SDL_SetError with invalid input
+ * \sa
+ * http://wiki.libsdl.org/moin.cgi/SDL_SetError
+ */
+int platform_testSetErrorInvalidInput(void *arg)
+{
+   int result;
+   const char *invalidError = NULL;
+   const char *probeError = "Testing";
+   char *lastError;
+   size_t len;
+
+   /* Reset */
+   SDL_ClearError();
+   SDLTest_AssertPass("SDL_ClearError()");
+
+   /* Check for no-op */
+   result = SDL_SetError("%s", invalidError);
+   SDLTest_AssertPass("SDL_SetError()");
+   SDLTest_AssertCheck(result == -1, "SDL_SetError: expected -1, got: %i", result);
+   lastError = (char *)SDL_GetError();
+   SDLTest_AssertCheck(lastError != NULL,
+             "SDL_GetError() != NULL");
+   if (lastError != NULL)
+   {
+     len = SDL_strlen(lastError);
+#if defined (__OHOS__)
+    SDLTest_AssertCheck(len == SDL_strlen("(null)"), "SDL_GetError(): expected message len 6, was len: %i", (int) len);
+#else
+	 SDLTest_AssertCheck(len == 0,
+             "SDL_GetError(): expected message len 0, was len: %i",
+             (int) len);
+>>>>>>> 4e0ca4442 (fix codecheck)
 #endif
 
 /**

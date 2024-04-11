@@ -20,7 +20,7 @@
 #include "../SDL_egl_c.h"
 
 typedef enum OhosVkStructureType {
-    VK_STRUCTURE_TYPE_OSOS_XCOMPONENT_CREATE_INFO_KHR = 1000008000,
+    VK_STRUCTURE_TYPE_OHOS_XCOMPONENT_CREATE_INFO_KHR = 1000008000,
 }OhosType;
 
 
@@ -32,7 +32,7 @@ SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                            SDL_Window *window,
                                            unsigned *count,
                                            const char **names);
-SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+SDL_bool OHOS_Vulkan_CreateXComponent(SDL_VideoDevice *_this,
                                    SDL_Window *window,
                                    VkInstance instance,
                                    VkSurfaceKHR *xcomponent);

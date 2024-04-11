@@ -33,8 +33,8 @@ int OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     Uint32 i = 0;
     Uint32 extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasOHOSSurfaceExtension = SDL_FALSE;
+    SDL_bool hasXComponentExtension = SDL_FALSE;
+    SDL_bool hasOHOSXComponentExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if (_this->vulkan_config.loader_handle)
         return SDL_SetError("Vulkan already loaded");
@@ -81,18 +81,17 @@ SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                            const char **names)
 {
     static const char *const extensionsForOHOS[] = {
-        VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_OHOS_SURFACE_EXTENSION_NAME
+        VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_OHOS_XCOMPONENT_EXTENSION_NAME
     };
     if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-       count, names, SDL_arraysize(extensionsForOHOS),
-       extensionsForOHOS);
+        count, names, SDL_arraysize(extensionsForOHOS), extensionsForOHOS);
 }
 
-SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+SDL_bool OHOS_Vulkan_CreateXComponent(SDL_VideoDevice *_this,
                                    SDL_Window *window,
                                    VkInstance instance,
                                    VkSurfaceKHR *xcomponent)
@@ -100,11 +99,9 @@ SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
-    PFN_vkCreateOHOSSurfaceKHR vkCreateOHOSSurfaceKHR =
-        (PFN_vkCreateOHOSSurfaceKHR)vkGetInstanceProcAddr(
-           instance,
-           "vkCreateSurfaceOHOS");
-    VkOHOSSurfaceCreateInfoKHR createInfo;
+    PFN_vkCreateOHOSXComponentKHR vkCreateOHOSXComponentKHR =
+        (PFN_vkCreateOHOSXComponentKHR)vkGetInstanceProcAddr(instance, "vkCreateSurfaceOHOS");
+    VkOHOSXComponentCreateInfoKHR createInfo;
     VkResult result;
 
     if (!_this->vulkan_config.loader_handle) {
@@ -112,18 +109,17 @@ SDL_bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         return SDL_FALSE;
     }
 
-    if (!vkCreateOHOSSurfaceKHR) {
-        SDL_SetError(VK_KHR_OHOS_SURFACE_EXTENSION_NAME
+    if (!vkCreateOHOSXComponentKHR) {
+        SDL_SetError(VK_KHR_OHOS_XCOMPONENT_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
     }
     SDL_zero(createInfo);
-    createInfo.sType = VK_STRUCTURE_TYPE_OSOS_XCOMPONENT_CREATE_INFO_KHR;
+    createInfo.sType = VK_STRUCTURE_TYPE_OHOS_XCOMPONENT_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.window = windowData->native_window;
-    result = vkCreateOHOSSurfaceKHR(instance, &createInfo,
-                                   NULL, xcomponent);
+    result = vkCreateOHOSXComponentKHR(instance, &createInfo, NULL, xcomponent);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateOHOSXcomponentKHR failed: %s",
                      SDL_Vulkan_GetResultString(result));

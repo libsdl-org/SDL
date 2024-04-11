@@ -80,7 +80,7 @@ int OHOS_CreateWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
     }
 
     /* Do not create EGLSurface for Vulkan window since it will then make the window
-       incompatible with vkCreateOHOSSurfaceKHR */
+       incompatible with vkCreateOHOSXComponentKHR */
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
         data->egl_xcomponent = (EGLSurface)SDL_EGL_CreateSurface(thisDevice, (NativeWindowType)data->native_window);
     
