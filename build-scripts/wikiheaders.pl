@@ -1674,8 +1674,8 @@ if ($copy_direction == 1) {  # --copy-to-headers
 } elsif ($copy_direction == -2) { # --copy-to-manpages
     # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
 
-    $manpath .= "/man3";
-    File::Path::make_path($manpath);
+    File::Path::make_path("$manpath/man3");
+    File::Path::make_path("$manpath/man3type");
 
     $dewikify_mode = 'manpage';
     $wordwrap_mode = 'manpage';
@@ -1731,6 +1731,18 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $headerfile =~ s/\%fname\%/$headersymslocation{$sym}/g;
         $headerfile .= "\n";
 
+        my $mansection;
+        my $mansectionname;
+        if (($symtype == 1) || ($symtype == 2)) {  # functions or macros
+            $mansection = '3';
+            $mansectionname = 'FUNCTIONS';
+        } elsif (($symtype >= 3) && ($symtype <= 5)) {  # struct/union/enum/typedef
+            $mansection = '3type';
+            $mansectionname = 'DATATYPES';
+        } else {
+            die("Unexpected symtype $symtype");
+        }
+
         my $brief = $sectionsref->{'[Brief]'};
         my $decl = $headerdecls{$sym};
         my $str = '';
@@ -1769,7 +1781,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= "..\n";
         $str .= '.if \n[.g] .mso www.tmac' . "\n";
 
-        $str .= ".TH $sym 3 \"$projectshortname $fullversion\" \"$projectfullname\" \"$projectshortname$majorver FUNCTIONS\"\n";
+        $str .= ".TH $sym $mansection \"$projectshortname $fullversion\" \"$projectfullname\" \"$projectshortname$majorver $mansectionname\"\n";
         $str .= ".SH NAME\n";
 
         $str .= "$sym";
@@ -1927,16 +1939,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= ".UE\n";
         }
 
-        my $mansection;
-        if (($symtype == 1) || ($symtype == 2)) {  # functions or macros
-            $mansection = '3';
-        } elsif (($symtype >= 3) && ($symtype <= 5)) {  # struct/union/enum/typedef
-            $mansection = '3type';
-        } else {
-            die("Unexpected symtype $symtype");
-        }
-
-        my $path = "$manpath/$_.$mansection";
+        my $path = "$manpath/man$mansection/$_.$mansection";
         my $tmppath = "$path.tmp";
         open(FH, '>', $tmppath) or die("Can't open '$tmppath': $!\n");
         print FH $str;
