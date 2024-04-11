@@ -577,7 +577,8 @@ static napi_value OHOS_NAPI_Init(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
-static int OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value *argv, char **library_file, char **function_name)
+static int OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value *argv, char **library_file,
+    char **function_name)
 {
     napi_status status;
     napi_valuetype valuetype;

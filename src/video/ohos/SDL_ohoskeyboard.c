@@ -478,28 +478,21 @@ static SDL_Scancode TranslateKeycode(int keycode)
 {
     int i;
     
-    if (keycode >= KEYCODE_A && keycode <= KEYCODE_Z)
-    {
+    if (keycode >= KEYCODE_A && keycode <= KEYCODE_Z) {
         return SDL_SCANCODE_A + (keycode - KEYCODE_A);
     }
-    if (keycode >= KEYCODE_0 && keycode <= KEYCODE_9)
-    {
-        if (keycode != KEYCODE_0)
-        {
+    if (keycode >= KEYCODE_0 && keycode <= KEYCODE_9) {
+        if (keycode != KEYCODE_0) {
             return SDL_SCANCODE_1 + (keycode - KEYCODE_1);
-        } else
-        {
+        } else {
             return SDL_SCANCODE_0;
         }
     }
-    if (keycode >= KEYCODE_F1 && keycode <= KEYCODE_F12)
-    {
+    if (keycode >= KEYCODE_F1 && keycode <= KEYCODE_F12) {
         return SDL_SCANCODE_F1 + (keycode - KEYCODE_F1);
     }
-    if (keycode >= KEYCODE_NUMPAD_0 && keycode <= KEYCODE_NUMPAD_9)
-    {
-        if (keycode != KEYCODE_NUMPAD_0)
-        {
+    if (keycode >= KEYCODE_NUMPAD_0 && keycode <= KEYCODE_NUMPAD_9) {
+        if (keycode != KEYCODE_NUMPAD_0) {
             return SDL_SCANCODE_KP_1 + (keycode - KEYCODE_NUMPAD_1);
         } else {
             return SDL_SCANCODE_KP_0;

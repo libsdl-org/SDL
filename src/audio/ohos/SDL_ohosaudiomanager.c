@@ -420,7 +420,7 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
     } else {
         renderBufferLength = spec->samples * spec->channels * audioFormatBitDepth;
         if (NULL == rendererBuffer) {
-            rendererBuffer = (unsigned char *)SDL_malloc((unsigned long long)renderBufferLength * 
+            rendererBuffer = (unsigned char *)SDL_malloc((unsigned long long)renderBufferLength *
                 sizeof(unsigned char));
             if (NULL == rendererBuffer) {
                 OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice", "rendererBuffer alloc space faileed");
