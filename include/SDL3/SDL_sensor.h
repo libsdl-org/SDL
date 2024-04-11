@@ -62,7 +62,8 @@ typedef struct SDL_Sensor SDL_Sensor;
  */
 typedef Uint32 SDL_SensorID;
 
-/* The different sensors defined by SDL
+/**
+ * The different sensors defined by SDL
  *
  * Additional sensors may be available, using platform dependent semantics.
  *
