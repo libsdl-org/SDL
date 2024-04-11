@@ -895,7 +895,7 @@ static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, int
         X11_XSync(display, False);
         X11_PumpEvents(_this);
 
-        if ((data->pending_operation & X11_PENDING_OP_MOVE) && (window->x == data->expected.x && window->y == data->expected.y)) {
+        if ((data->pending_operation & X11_PENDING_OP_MOVE) && (window->x == data->expected.x + data->border_left && window->y == data->expected.y + data->border_top)) {
             data->pending_operation &= ~X11_PENDING_OP_MOVE;
         }
         if ((data->pending_operation & X11_PENDING_OP_RESIZE) && (window->w == data->expected.w && window->h == data->expected.h)) {
@@ -904,7 +904,7 @@ static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, int
 
         if (data->pending_operation == X11_PENDING_OP_NONE) {
             if (force_exit ||
-                (window->x == data->expected.x && window->y == data->expected.y &&
+                (window->x == data->expected.x + data->border_left && window->y == data->expected.y + data->border_top &&
                  window->w == data->expected.w && window->h == data->expected.h)) {
                 /* The window is in the expected state and nothing is pending. Done. */
                 break;
@@ -1358,6 +1358,29 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (data->border_left == 0 && data->border_right == 0 && data->border_top == 0 && data->border_bottom == 0) {
         X11_GetBorderValues(data);
     }
+
+    /* Some window managers can send garbage coordinates while mapping the window, and need the position sent again
+     * after mapping or the window may not be positioned properly.
+     *
+     * Don't emit size and position events during the initial configure events, they will be sent afterwards, when the
+     * final coordinates are available to avoid sending garbage values.
+     */
+    data->disable_size_position_events = SDL_TRUE;
+    X11_XSync(display, False);
+    X11_PumpEvents(_this);
+
+    int x = data->last_xconfigure.x;
+    int y = data->last_xconfigure.y;
+    SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
+
+    /* If the borders appeared, this happened automatically in the event system, otherwise, set the position now. */
+    if (data->disable_size_position_events && (window->x != x || window->y != y)) {
+        data->pending_operation = X11_PENDING_OP_MOVE;
+        X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+    }
+    data->disable_size_position_events = SDL_FALSE;
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, data->last_xconfigure.width, data->last_xconfigure.height);
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
 }
 
 void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1551,7 +1574,7 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
         XEvent e;
 
         /* Flush any pending fullscreen events. */
-        if (data->pending_operation & (X11_PENDING_OP_FULLSCREEN | X11_PENDING_OP_MAXIMIZE)) {
+        if (data->pending_operation & (X11_PENDING_OP_FULLSCREEN | X11_PENDING_OP_MAXIMIZE | X11_PENDING_OP_MOVE)) {
             X11_SyncWindow(_this, window);
         }
 
@@ -1591,10 +1614,8 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
 
         /* Set the position so the window will be on the target display */
         if (fullscreen) {
+            SDL_DisplayID current = SDL_GetDisplayForWindowPosition(window);
             SDL_copyp(&data->requested_fullscreen_mode, &window->current_fullscreen_mode);
-            if (data->requested_fullscreen_mode.displayID == 0) {
-                data->requested_fullscreen_mode.displayID = _display->id;
-            }
             if (fullscreen != !!(window->flags & SDL_WINDOW_FULLSCREEN)) {
                 data->window_was_maximized = !!(window->flags & SDL_WINDOW_MAXIMIZED);
             }
@@ -1602,7 +1623,12 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
             data->expected.y = displaydata->y;
             data->expected.w = _display->current_mode->w;
             data->expected.h = _display->current_mode->h;
-            X11_XMoveWindow(display, data->xwindow, displaydata->x, displaydata->y);
+
+            /* Only move the window if it isn't fullscreen or already on the target display. */
+            if (!(window->flags & SDL_WINDOW_FULLSCREEN) || (!current || current != _display->id)) {
+                X11_XMoveWindow(display, data->xwindow, displaydata->x, displaydata->y);
+                data->pending_operation |= X11_PENDING_OP_MOVE;
+            }
         } else {
             SDL_zero(data->requested_fullscreen_mode);
 

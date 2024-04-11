@@ -1388,7 +1388,7 @@ SDL_DisplayID SDL_GetDisplayForRect(const SDL_Rect *rect)
     return GetDisplayForRect(rect->x, rect->y, rect->w, rect->h);
 }
 
-static SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
+SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
 {
     int x, y;
     SDL_DisplayID displayID = 0;
