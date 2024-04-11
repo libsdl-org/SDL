@@ -2702,7 +2702,7 @@ extern "C" {
 /**
  *  \brief  An enumeration of hint priorities
  */
-typedef enum
+typedef enum SDL_HintPriority
 {
     SDL_HINT_DEFAULT,
     SDL_HINT_NORMAL,

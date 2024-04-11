@@ -52,7 +52,7 @@ extern "C" {
 /**
  * The types of events that can be delivered.
  */
-typedef enum
+typedef enum SDL_EventType
 {
     SDL_FIRSTEVENT     = 0,     /**< Unused (do not remove) */
 
@@ -696,7 +696,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NUL
 extern DECLSPEC void SDLCALL SDL_PumpEvents(void);
 
 /* @{ */
-typedef enum
+typedef enum SDL_eventaction
 {
     SDL_ADDEVENT,
     SDL_PEEKEVENT,

@@ -40,7 +40,7 @@
  *  The values in this enumeration are based on the USB usage page standard:
  *  https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
  */
-typedef enum
+typedef enum SDL_Scancode
 {
     SDL_SCANCODE_UNKNOWN = 0,
 

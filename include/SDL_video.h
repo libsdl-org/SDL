@@ -50,7 +50,7 @@ extern "C" {
  *  \sa SDL_SetWindowDisplayMode()
  *  \sa SDL_GetWindowDisplayMode()
  */
-typedef struct
+typedef struct SDL_DisplayMode
 {
     Uint32 format;              /**< pixel format */
     int w;                      /**< width, in screen coordinates */
@@ -99,7 +99,7 @@ typedef struct SDL_Window SDL_Window;
  *
  *  \sa SDL_GetWindowFlags()
  */
-typedef enum
+typedef enum SDL_WindowFlags
 {
     SDL_WINDOW_FULLSCREEN = 0x00000001,         /**< fullscreen window */
     SDL_WINDOW_OPENGL = 0x00000002,             /**< window usable with OpenGL context */
@@ -151,7 +151,7 @@ typedef enum
 /**
  *  \brief Event subtype for window events
  */
-typedef enum
+typedef enum SDL_WindowEventID
 {
     SDL_WINDOWEVENT_NONE,           /**< Never used */
     SDL_WINDOWEVENT_SHOWN,          /**< Window has been shown */
@@ -182,7 +182,7 @@ typedef enum
 /**
  *  \brief Event subtype for display events
  */
-typedef enum
+typedef enum SDL_DisplayEventID
 {
     SDL_DISPLAYEVENT_NONE,          /**< Never used */
     SDL_DISPLAYEVENT_ORIENTATION,   /**< Display orientation has changed to data1 */
@@ -194,7 +194,7 @@ typedef enum
 /**
  *  \brief Display orientation
  */
-typedef enum
+typedef enum SDL_DisplayOrientation
 {
     SDL_ORIENTATION_UNKNOWN,            /**< The display orientation can't be determined */
     SDL_ORIENTATION_LANDSCAPE,          /**< The display is in landscape mode, with the right side up, relative to portrait mode */
@@ -206,7 +206,7 @@ typedef enum
 /**
  *  \brief Window flash operation
  */
-typedef enum
+typedef enum SDL_FlashOperation
 {
     SDL_FLASH_CANCEL,                   /**< Cancel any window flash state */
     SDL_FLASH_BRIEFLY,                  /**< Flash the window briefly to get attention */
@@ -221,7 +221,7 @@ typedef void *SDL_GLContext;
 /**
  *  \brief OpenGL configuration attributes
  */
-typedef enum
+typedef enum SDL_GLattr
 {
     SDL_GL_RED_SIZE,
     SDL_GL_GREEN_SIZE,
@@ -253,14 +253,14 @@ typedef enum
     SDL_GL_FLOATBUFFERS
 } SDL_GLattr;
 
-typedef enum
+typedef enum SDL_GLprofile
 {
     SDL_GL_CONTEXT_PROFILE_CORE           = 0x0001,
     SDL_GL_CONTEXT_PROFILE_COMPATIBILITY  = 0x0002,
     SDL_GL_CONTEXT_PROFILE_ES             = 0x0004 /**< GLX_CONTEXT_ES2_PROFILE_BIT_EXT */
 } SDL_GLprofile;
 
-typedef enum
+typedef enum SDL_GLcontextFlag
 {
     SDL_GL_CONTEXT_DEBUG_FLAG              = 0x0001,
     SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG = 0x0002,
@@ -268,13 +268,13 @@ typedef enum
     SDL_GL_CONTEXT_RESET_ISOLATION_FLAG    = 0x0008
 } SDL_GLcontextFlag;
 
-typedef enum
+typedef enum SDL_GLcontextReleaseFlag
 {
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE   = 0x0000,
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH  = 0x0001
 } SDL_GLcontextReleaseFlag;
 
-typedef enum
+typedef enum SDL_GLContextResetNotification
 {
     SDL_GL_CONTEXT_RESET_NO_NOTIFICATION = 0x0000,
     SDL_GL_CONTEXT_RESET_LOSE_CONTEXT    = 0x0001
@@ -1715,7 +1715,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowGammaRamp(SDL_Window * window,
  *
  * \sa SDL_HitTest
  */
-typedef enum
+typedef enum SDL_HitTestResult
 {
     SDL_HITTEST_NORMAL,  /**< Region is normal. No special properties. */
     SDL_HITTEST_DRAGGABLE,  /**< Region can drag entire window. */

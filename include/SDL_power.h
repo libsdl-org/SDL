@@ -39,7 +39,7 @@ extern "C" {
 /**
  *  The basic state for the system's power supply.
  */
-typedef enum
+typedef enum SDL_PowerState
 {
     SDL_POWERSTATE_UNKNOWN,      /**< cannot determine power status */
     SDL_POWERSTATE_ON_BATTERY,   /**< Not plugged in, running on the battery */

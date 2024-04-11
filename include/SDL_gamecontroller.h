@@ -58,7 +58,7 @@ extern "C" {
 struct _SDL_GameController;
 typedef struct _SDL_GameController SDL_GameController;
 
-typedef enum
+typedef enum SDL_GameControllerType
 {
     SDL_CONTROLLER_TYPE_UNKNOWN = 0,
     SDL_CONTROLLER_TYPE_XBOX360,
@@ -77,7 +77,7 @@ typedef enum
     SDL_CONTROLLER_TYPE_MAX
 } SDL_GameControllerType;
 
-typedef enum
+typedef enum SDL_GameControllerBindType
 {
     SDL_CONTROLLER_BINDTYPE_NONE = 0,
     SDL_CONTROLLER_BINDTYPE_BUTTON,
@@ -617,7 +617,7 @@ extern DECLSPEC void SDLCALL SDL_GameControllerUpdate(void);
  *  (fully pressed) when reported by SDL_GameControllerGetAxis(). Note that this is not the
  *  same range that will be reported by the lower-level SDL_GetJoystickAxis().
  */
-typedef enum
+typedef enum SDL_GameControllerAxis
 {
     SDL_CONTROLLER_AXIS_INVALID = -1,
     SDL_CONTROLLER_AXIS_LEFTX,
@@ -727,7 +727,7 @@ SDL_GameControllerGetAxis(SDL_GameController *gamecontroller, SDL_GameController
 /**
  *  The list of buttons available from a controller
  */
-typedef enum
+typedef enum SDL_GameControllerButton
 {
     SDL_CONTROLLER_BUTTON_INVALID = -1,
     SDL_CONTROLLER_BUTTON_A,

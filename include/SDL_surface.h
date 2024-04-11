@@ -105,7 +105,7 @@ typedef int (SDLCALL *SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
 /**
  * \brief The formula used for converting between YUV and RGB
  */
-typedef enum
+typedef enum SDL_YUV_CONVERSION_MODE
 {
     SDL_YUV_CONVERSION_JPEG,        /**< Full range JPEG */
     SDL_YUV_CONVERSION_BT601,       /**< BT.601 (the default) */

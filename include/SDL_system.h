@@ -472,7 +472,7 @@ extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
 /**
  *  \brief WinRT / Windows Phone path types
  */
-typedef enum
+typedef enum SDL_WinRT_Path
 {
     /** \brief The installed app's root directory.
         Files here are likely to be read-only. */
@@ -496,7 +496,7 @@ typedef enum
 /**
  *  \brief WinRT Device Family
  */
-typedef enum
+typedef enum SDL_WinRT_DeviceFamily
 {
     /** \brief Unknown family  */
     SDL_WINRT_DEVICEFAMILY_UNKNOWN,
