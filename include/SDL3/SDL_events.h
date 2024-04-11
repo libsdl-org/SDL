@@ -1106,6 +1106,12 @@ extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event *event);
  * \returns 1 to permit event to be added to the queue, and 0 to disallow
  *          it. When used with SDL_AddEventWatch, the return value is ignored.
  *
+ * \threadsafety SDL may call this callback at any time from any thread; the
+ *               application is responsible for locking resources the callback
+ *               touches that need to be protected.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
  * \sa SDL_SetEventFilter
  * \sa SDL_AddEventWatch
  */
@@ -1144,6 +1150,10 @@ typedef int (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
  *
  * \param filter An SDL_EventFilter function to call when an event happens
  * \param userdata a pointer that is passed to `filter`
+ *
+ * \threadsafety SDL may call the filter callback at any time from any thread;
+ *               the application is responsible for locking resources the
+ *               callback touches that need to be protected.
  *
  * \since This function is available since SDL 3.0.0.
  *
