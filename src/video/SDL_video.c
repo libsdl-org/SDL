@@ -179,6 +179,11 @@ static SDL_bool SDL_SendsFullscreenDimensions(SDL_VideoDevice *_this)
     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS);
 }
 
+static SDL_bool IsFullscreenOnly(SDL_VideoDevice *_this)
+{
+    return !!(_this->device_caps & VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY);
+}
+
 /* Hint to treat all window ops as synchronous */
 static SDL_bool syncHint;
 
@@ -2127,7 +2132,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     window->undefined_x = undefined_x;
     window->undefined_y = undefined_y;
 
-    if (flags & SDL_WINDOW_FULLSCREEN) {
+    if (flags & SDL_WINDOW_FULLSCREEN || IsFullscreenOnly(_this)) {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
         SDL_Rect bounds;
 
@@ -2136,6 +2141,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         window->y = bounds.y;
         window->w = bounds.w;
         window->h = bounds.h;
+        flags |= SDL_WINDOW_FULLSCREEN;
     }
 
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
