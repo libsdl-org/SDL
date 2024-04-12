@@ -91,9 +91,6 @@ static void OHOSAUDIO_FlushCapture(SDL_AudioDevice *this)
 
 static void OHOSAUDIO_CloseDevice(SDL_AudioDevice *this)
 {
-    /* At this point SDL_CloseAudioDevice via close_audio_device took care of terminating the audio thread
-       so it's safe to terminate the Java side buffer and AudioTrack
-     */
     OHOSAUDIO_NATIVE_CloseAudioDevice(this->iscapture);
     if (this->iscapture) {
         SDL_assert(captureDevice == this);

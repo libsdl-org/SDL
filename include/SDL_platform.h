@@ -67,7 +67,7 @@
 #endif
 #if defined(OHOS) || defined(__OHOS__)
 #undef __OHOS__
-#undef __LINUX__ 
+#undef __LINUX__
 #define __OHOS__ 1
 #endif
 
