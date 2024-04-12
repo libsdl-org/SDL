@@ -188,6 +188,11 @@ static SDL_bool DisableUnsetFullscreenOnMinimize(_THIS)
     return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_DISABLE_UNSET_FULLSCREEN_ON_MINIMIZE);
 }
 
+static SDL_bool IsFullscreenOnly(_THIS)
+{
+    return !!(_this->quirk_flags & VIDEO_DEVICE_QUIRK_FULLSCREEN_ONLY);
+}
+
 /* Support for framebuffer emulation using an accelerated renderer */
 
 #define SDL_WINDOWTEXTUREDATA "_SDL_WindowTextureData"
@@ -1752,7 +1757,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
     window->windowed.w = window->w;
     window->windowed.h = window->h;
 
-    if (flags & SDL_WINDOW_FULLSCREEN) {
+    if (flags & SDL_WINDOW_FULLSCREEN || IsFullscreenOnly(_this)) {
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
         int displayIndex;
         SDL_Rect bounds;
@@ -1779,6 +1784,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint
         window->y = bounds.y;
         window->w = bounds.w;
         window->h = bounds.h;
+        flags |= SDL_WINDOW_FULLSCREEN;
     }
 
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);

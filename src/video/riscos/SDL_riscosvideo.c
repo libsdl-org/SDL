@@ -90,6 +90,9 @@ static SDL_VideoDevice *RISCOS_CreateDevice(void)
 
     device->free = RISCOS_DeleteDevice;
 
+    /* TODO: Support windowed mode */
+    device->quirk_flags = VIDEO_DEVICE_QUIRK_FULLSCREEN_ONLY;
+
     return device;
 }
 
