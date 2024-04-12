@@ -20,6 +20,7 @@
 
 /* Set up for C function definitions, even when using C++ */
 #include "SDL_ohosfile.h"
+#include <EGL/eglplatform.h>
 
 #ifdef __cplusplus
 /* *INDENT-OFF* */
@@ -28,7 +29,6 @@ extern "C" {
 #endif
 
 #include "SDL_system.h"
-#include <EGL/eglplatform.h>
 #include "SDL_audio.h"
 #include "SDL_rect.h"
 #include "SDL_video.h"

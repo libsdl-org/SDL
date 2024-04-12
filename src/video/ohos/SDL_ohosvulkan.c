@@ -75,10 +75,8 @@ void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                           SDL_Window *window,
-                                           unsigned *count,
-                                           const char **names)
+SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, SDL_Window *window, unsigned *count,
+    const char **names)
 {
     static const char *const extensionsForOHOS[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_OHOS_XCOMPONENT_EXTENSION_NAME
@@ -91,10 +89,8 @@ SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
         count, names, SDL_arraysize(extensionsForOHOS), extensionsForOHOS);
 }
 
-SDL_bool OHOS_Vulkan_CreateXComponent(SDL_VideoDevice *_this,
-                                   SDL_Window *window,
-                                   VkInstance instance,
-                                   VkSurfaceKHR *xcomponent)
+SDL_bool OHOS_Vulkan_CreateXComponent(SDL_VideoDevice *_this, SDL_Window *window, VkInstance instance,
+    VkSurfaceKHR *xcomponent)
 {
     SDL_WindowData *windowData = (SDL_WindowData *)window->driverdata;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =

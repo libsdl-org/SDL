@@ -28,14 +28,10 @@ typedef enum OhosVkStructureType {
 
 int OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                           SDL_Window *window,
-                                           unsigned *count,
-                                           const char **names);
-SDL_bool OHOS_Vulkan_CreateXComponent(SDL_VideoDevice *_this,
-                                   SDL_Window *window,
-                                   VkInstance instance,
-                                   VkSurfaceKHR *xcomponent);
+SDL_bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, SDL_Window *window, unsigned *count,
+    const char **names);
+SDL_bool OHOS_Vulkan_CreateXComponent(SDL_VideoDevice *_this, SDL_Window *window, VkInstance instance,
+    VkSurfaceKHR *xcomponent);
 
 #endif
 

@@ -37,7 +37,7 @@ typedef struct VkOHOSXComponentCreateInfoKHR {
     struct OHNativeWindow*             window;
 } VkOHOSXComponentCreateInfoKHR;
 
-typedef VkResult (VKAPI_PTR *PFN_vkCreateOHOSXComponentKHR)(VkInstance instance, 
+typedef VkResult (VKAPI_PTR *PFN_vkCreateOHOSXComponentKHR)(VkInstance instance,
     const VkOHOSXComponentCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator,
         VkSurfaceKHR* pXComponent);
 
@@ -100,9 +100,9 @@ typedef struct VkExternalFormatOHOS {
 } VkExternalFormatOHOS;
 
 
-typedef VkResult (VKAPI_PTR *PFN_vkGetOHOSHardwareBufferPropertiesOHOS)(VkDevice device, 
+typedef VkResult (VKAPI_PTR *PFN_vkGetOHOSHardwareBufferPropertiesOHOS)(VkDevice device,
     const struct OHardwareBuffer* buffer, VkOHOSHardwareBufferPropertiesOHOS* pProperties);
-typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryOHOSHardwareBufferOHOS)(VkDevice device, 
+typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryOHOSHardwareBufferOHOS)(VkDevice device,
     const VkMemoryGetOHOSHardwareBufferInfoOHOS* pInfo, struct OHardwareBuffer** pBuffer);
 
 #ifndef VK_NO_PROTOTYPES
