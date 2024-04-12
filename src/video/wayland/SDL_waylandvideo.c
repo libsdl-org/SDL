@@ -255,14 +255,12 @@ static void Wayland_SortOutputs(SDL_VideoData *vid)
         /* Sort the outputs by connector name. */
         WAYLAND_wl_list_init(&sorted_list);
         wl_list_for_each (c, &vid->output_order, link) {
-            if (c->wl_output_name) {
-                wl_list_for_each (d, &vid->output_list, link) {
-                    if (d->wl_output_name && SDL_strcmp(c->wl_output_name, d->wl_output_name) == 0) {
-                        /* Remove from the current list and Append the next node to the end of the new list. */
-                        WAYLAND_wl_list_remove(&d->link);
-                        WAYLAND_wl_list_insert(sorted_list.prev, &d->link);
-                        break;
-                    }
+            wl_list_for_each (d, &vid->output_list, link) {
+                if (d->wl_output_name && SDL_strcmp(c->wl_output_name, d->wl_output_name) == 0) {
+                    /* Remove from the current list and Append the next node to the end of the new list. */
+                    WAYLAND_wl_list_remove(&d->link);
+                    WAYLAND_wl_list_insert(sorted_list.prev, &d->link);
+                    break;
                 }
             }
         }
