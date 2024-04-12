@@ -248,7 +248,7 @@ static void Wayland_SortOutputs(SDL_VideoData *vid)
     /* KDE provides the kde-output-order-v1 protocol, which gives us the full preferred display
      * ordering in the form of a list of wl_output.name strings (connector names).
      */
-    if (!WAYLAND_wl_list_empty(&vid->output_order)) {
+    if (!WAYLAND_wl_list_empty(&vid->output_order) && SDL_WL_OUTPUT_VERSION >= WL_OUTPUT_NAME_SINCE_VERSION) {
         struct wl_list sorted_list;
         SDL_WaylandConnectorName *c;
 
