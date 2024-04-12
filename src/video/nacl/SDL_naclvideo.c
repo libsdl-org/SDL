@@ -128,6 +128,7 @@ static SDL_VideoDevice *NACL_CreateDevice(void) {
     device->GL_SwapWindow = NACL_GLES_SwapWindow;
     device->GL_DeleteContext = NACL_GLES_DeleteContext;
 
+    device->quirk_flags = VIDEO_DEVICE_QUIRK_FULLSCREEN_ONLY;
 
     return device;
 }
