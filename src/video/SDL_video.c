@@ -989,7 +989,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
             match = current;
             continue;
         }
-        if (current->format != match->format) {
+        if (current->format != match->format && match->format != target_format) {
             /* Sorted highest depth to lowest */
             if (current->format == target_format ||
                 (SDL_BITSPERPIXEL(current->format) >=
@@ -1000,7 +1000,7 @@ static SDL_DisplayMode *SDL_GetClosestDisplayModeForDisplay(SDL_VideoDisplay *di
             }
             continue;
         }
-        if (current->refresh_rate != match->refresh_rate) {
+        if (current->refresh_rate != match->refresh_rate && match->refresh_rate != target_refresh_rate) {
             /* Sorted highest refresh to lowest */
             if (current->refresh_rate >= target_refresh_rate) {
                 match = current;
