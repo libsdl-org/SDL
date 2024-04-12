@@ -38,8 +38,6 @@ int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
     }
     driverdata->window = window;
 
-    window->flags |= SDL_WINDOW_FULLSCREEN;
-
     SDL_SetMouseFocus(window);
 
     /* All done! */
