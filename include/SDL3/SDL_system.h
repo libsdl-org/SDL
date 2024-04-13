@@ -540,38 +540,13 @@ typedef enum SDL_WinRT_DeviceFamily
  * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
  *
  * \param pathType the type of path to retrieve, one of SDL_WinRT_Path
- * \returns a UCS-2 string (16-bit, wide-char) containing the path, or NULL if
- *          the path is not available for any reason; call SDL_GetError() for
- *          more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_WinRTGetFSPathUTF8
- */
-extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType);
-
-/**
- * Retrieve a WinRT defined path on the local file system.
- *
- * Not all paths are available on all versions of Windows. This is especially
- * true on Windows Phone. Check the documentation for the given SDL_WinRT_Path
- * for more information on which path types are supported where.
- *
- * Documentation on most app-specific path types on WinRT can be found on
- * MSDN, at the URL:
- *
- * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
- *
- * \param pathType the type of path to retrieve, one of SDL_WinRT_Path
  * \returns a UTF-8 string (8-bit, multi-byte) containing the path, or NULL if
  *          the path is not available for any reason; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_WinRTGetFSPathUNICODE
  */
-extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType);
+extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPath(SDL_WinRT_Path pathType);
 
 /**
  * Detects the device family of WinRT platform at runtime.

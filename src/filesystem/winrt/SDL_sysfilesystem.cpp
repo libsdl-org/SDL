@@ -35,8 +35,7 @@ extern "C" {
 using namespace std;
 using namespace Windows::Storage;
 
-extern "C" const wchar_t *
-SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
+static const wchar_t *SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
 {
     switch (pathType) {
     case SDL_WINRT_PATH_INSTALLED_LOCATION:
@@ -94,8 +93,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
     return NULL;
 }
 
-extern "C" const char *
-SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType)
+extern "C" const char *SDL_WinRTGetFSPath(SDL_WinRT_Path pathType)
 {
     typedef unordered_map<SDL_WinRT_Path, string> UTF8PathMap;
     static UTF8PathMap utf8Paths;
@@ -116,10 +114,9 @@ SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType)
     return utf8Paths[pathType].c_str();
 }
 
-extern "C" char *
-SDL_GetBasePath(void)
+extern "C" char *SDL_GetBasePath(void)
 {
-    const char *srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_INSTALLED_LOCATION);
+    const char *srcPath = SDL_WinRTGetFSPath(SDL_WINRT_PATH_INSTALLED_LOCATION);
     size_t destPathLen;
     char *destPath = NULL;
 
@@ -138,8 +135,7 @@ SDL_GetBasePath(void)
     return destPath;
 }
 
-extern "C" char *
-SDL_GetPrefPath(const char *org, const char *app)
+extern "C" char *SDL_GetPrefPath(const char *org, const char *app)
 {
     /* WinRT note: The 'SHGetFolderPath' API that is used in Windows 7 and
      * earlier is not available on WinRT or Windows Phone.  WinRT provides

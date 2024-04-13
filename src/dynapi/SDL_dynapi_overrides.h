@@ -862,8 +862,7 @@
 #define SDL_WarpMouseInWindow SDL_WarpMouseInWindow_REAL
 #define SDL_WasInit SDL_WasInit_REAL
 #define SDL_WinRTGetDeviceFamily    SDL_WinRTGetDeviceFamily_REAL
-#define SDL_WinRTGetFSPathUNICODE   SDL_WinRTGetFSPathUNICODE_REAL
-#define SDL_WinRTGetFSPathUTF8  SDL_WinRTGetFSPathUTF8_REAL
+#define SDL_WinRTGetFSPath  SDL_WinRTGetFSPath_REAL
 #define SDL_WindowHasSurface SDL_WindowHasSurface_REAL
 #define SDL_WriteIO SDL_WriteIO_REAL
 #define SDL_WriteS16BE SDL_WriteS16BE_REAL

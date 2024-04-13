@@ -3129,3 +3129,8 @@ typedef SDL_Colour, SDL_Color;
 @@
 - SDL_Colour
 + SDL_Color
+@@
+@@
+- SDL_WinRTGetFSPathUTF8
++ SDL_WinRTGetFSPath
+  (...)

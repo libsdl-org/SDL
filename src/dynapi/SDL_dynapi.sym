@@ -838,8 +838,7 @@ SDL3_0.0.0 {
     SDL_WarpMouseInWindow;
     SDL_WasInit;
     SDL_WinRTGetDeviceFamily;
-    SDL_WinRTGetFSPathUNICODE;
-    SDL_WinRTGetFSPathUTF8;
+    SDL_WinRTGetFSPath;
     SDL_WindowHasSurface;
     SDL_WriteIO;
     SDL_WriteS16BE;

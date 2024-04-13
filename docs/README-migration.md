@@ -1491,6 +1491,10 @@ The following functions have been removed:
 * SDL_RenderGetD3D11Device() - replaced with the "SDL.renderer.d3d11.device" property
 * SDL_RenderGetD3D12Device() - replaced with the "SDL.renderer.d3d12.device" property
 * SDL_RenderGetD3D9Device() - replaced with the "SDL.renderer.d3d9.device" property
+* SDL_WinRTGetFSPathUNICODE() - Use SDL_WinRTGetFSPath() and SDL_iconv_string to convert from UTF-8 to UTF-16.
+
+The following functions have been renamed:
+* SDL_WinRTGetFSPathUTF8() => SDL_WinRTGetFSPath()
 
 ## SDL_syswm.h
 
