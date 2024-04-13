@@ -147,8 +147,8 @@ typedef enum SDL_BlendFactor
  * return with an error if the blend mode is not supported.
  *
  * This list describes the support of custom blend modes for each renderer.
- * All renderers support the four blend modes listed in the
- * SDL_BlendMode enumeration.
+ * All renderers support the four blend modes listed in the SDL_BlendMode
+ * enumeration.
  *
  * - **direct3d**: Supports all operations with all factors. However, some
  *   factors produce unexpected results with `SDL_BLENDOPERATION_MINIMUM` and

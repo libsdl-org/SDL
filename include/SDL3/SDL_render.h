@@ -2099,8 +2099,8 @@ extern DECLSPEC void *SDLCALL SDL_GetRenderMetalLayer(SDL_Renderer *renderer);
  * This function returns `void *`, so SDL doesn't have to include Metal's
  * headers, but it can be safely cast to an `id<MTLRenderCommandEncoder>`.
  *
- * This will return NULL if Metal refuses to give SDL a drawable to render
- * to, which might happen if the window is hidden/minimized/offscreen. This
+ * This will return NULL if Metal refuses to give SDL a drawable to render to,
+ * which might happen if the window is hidden/minimized/offscreen. This
  * doesn't apply to command encoders for render targets, just the window's
  * backbuffer. Check your return values!
  *

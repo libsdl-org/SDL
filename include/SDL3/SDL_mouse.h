@@ -304,11 +304,11 @@ extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
  * Please note that SDL will attempt to "auto capture" the mouse while the
  * user is pressing a button; this is to try and make mouse behavior more
  * consistent between platforms, and deal with the common case of a user
- * dragging the mouse outside of the window. This means that if you are calling
- * SDL_CaptureMouse() only to deal with this situation, you do not have to
- * (although it is safe to do so). If this causes problems for your app, you
- * can disable auto capture by setting the `SDL_HINT_MOUSE_AUTO_CAPTURE`
- * hint to zero.
+ * dragging the mouse outside of the window. This means that if you are
+ * calling SDL_CaptureMouse() only to deal with this situation, you do not
+ * have to (although it is safe to do so). If this causes problems for your
+ * app, you can disable auto capture by setting the
+ * `SDL_HINT_MOUSE_AUTO_CAPTURE` hint to zero.
  *
  * \param enabled SDL_TRUE to enable capturing, SDL_FALSE to disable.
  * \returns 0 on success or a negative error code on failure; call
