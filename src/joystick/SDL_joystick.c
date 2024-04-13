@@ -1170,7 +1170,6 @@ SDL_JoystickID SDL_AttachVirtualJoystick(SDL_JoystickType type, int naxes, int n
     SDL_VirtualJoystickDesc desc;
 
     SDL_zero(desc);
-    desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
     desc.type = (Uint16)type;
     desc.naxes = (Uint16)naxes;
     desc.nbuttons = (Uint16)nbuttons;

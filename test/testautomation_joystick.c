@@ -28,7 +28,6 @@ static int TestVirtualJoystick(void *arg)
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 
     SDL_zero(desc);
-    desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
     desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
     desc.naxes = SDL_GAMEPAD_AXIS_MAX;
     desc.nbuttons = SDL_GAMEPAD_BUTTON_MAX;

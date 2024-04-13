@@ -794,6 +794,8 @@ The functions SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystick
 
 SDL_AttachVirtualJoystick() and SDL_AttachVirtualJoystickEx() now return the joystick instance ID instead of a device index, and return 0 if there was an error.
 
+SDL_VirtualJoystickDesc no longer takes a struct version; if we need to extend this in the future, we'll make a second struct and a second SDL_AttachVirtualJoystickEx-style function that uses it. Just zero the struct and don't set a version.
+
 The following functions have been renamed:
 * SDL_JoystickAttachVirtual() => SDL_AttachVirtualJoystick()
 * SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystickEx()
@@ -855,6 +857,7 @@ The following functions have been removed:
 * SDL_JoystickNameForIndex() - replaced with SDL_GetJoystickInstanceName()
 * SDL_JoystickPathForIndex() - replaced with SDL_GetJoystickInstancePath()
 * SDL_NumJoysticks() - replaced with SDL_GetJoysticks()
+* SDL_VIRTUAL_JOYSTICK_DESC_VERSION - no longer needed, version info has been removed from SDL_VirtualJoystickDesc.
 
 The following symbols have been removed:
 * SDL_JOYBALLMOTION
