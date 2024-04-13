@@ -2199,8 +2199,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window *window);
 /**
  * Check whether the screensaver is currently enabled.
  *
- * The screensaver is disabled by default since SDL 2.0.2. Before SDL 2.0.2
- * the screensaver was enabled by default.
+ * The screensaver is disabled by default.
  *
  * The default can also be changed using `SDL_HINT_VIDEO_ALLOW_SCREENSAVER`.
  *
@@ -2233,8 +2232,7 @@ extern DECLSPEC int SDLCALL SDL_EnableScreenSaver(void);
  * If you disable the screensaver, it is automatically re-enabled when SDL
  * quits.
  *
- * The screensaver is disabled by default since SDL 2.0.2. Before SDL 2.0.2
- * the screensaver was enabled by default.
+ * The screensaver is disabled by default.
  *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.

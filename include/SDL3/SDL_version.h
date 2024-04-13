@@ -150,9 +150,6 @@ extern DECLSPEC int SDLCALL SDL_GetVersion(SDL_Version * ver);
  * If SDL wasn't built from a git repository with the appropriate tools, this
  * will return an empty string.
  *
- * Prior to SDL 2.0.16, before development moved to GitHub, this returned a
- * hash for a Mercurial repository.
- *
  * You shouldn't use this function for anything but logging it for debugging
  * purposes. The string is not intended to be reliable in any way.
  *
