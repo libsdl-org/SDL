@@ -31,7 +31,7 @@
 
 #define N3DSVID_DRIVER_NAME "n3ds"
 
-SDL_FORCE_INLINE void AddN3DSDisplay(gfxScreen_t screen);
+SDL_FORCE_INLINE int AddN3DSDisplay(gfxScreen_t screen);
 
 static int N3DS_VideoInit(_THIS);
 static void N3DS_VideoQuit(_THIS);
@@ -56,11 +56,25 @@ static void N3DS_DeleteDevice(SDL_VideoDevice *device)
 
 static SDL_VideoDevice *N3DS_CreateDevice(void)
 {
-    SDL_VideoDevice *device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
+    SDL_VideoDevice *device;
+    SDL_VideoData *phdata;
+
+    /* Initialize all variables that we clean on shutdown */
+    device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         SDL_OutOfMemory();
         return 0;
     }
+
+    /* Initialize internal data */
+    phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
+    if (!phdata) {
+        SDL_OutOfMemory();
+        SDL_free(device);
+        return NULL;
+    }
+
+    device->driverdata = phdata;
 
     device->VideoInit = N3DS_VideoInit;
     device->VideoQuit = N3DS_VideoQuit;
@@ -90,11 +104,13 @@ VideoBootStrap N3DS_bootstrap = { N3DSVID_DRIVER_NAME, "N3DS Video Driver", N3DS
 
 static int N3DS_VideoInit(_THIS)
 {
+    SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
+
     gfxInit(GSP_RGBA8_OES, GSP_RGBA8_OES, false);
     hidInit();
 
-    AddN3DSDisplay(GFX_TOP);
-    AddN3DSDisplay(GFX_BOTTOM);
+    driverdata->top_display = AddN3DSDisplay(GFX_TOP);
+    driverdata->touch_display = AddN3DSDisplay(GFX_BOTTOM);
 
     N3DS_InitTouch();
     N3DS_SwkbInit();
@@ -102,15 +118,14 @@ static int N3DS_VideoInit(_THIS)
     return 0;
 }
 
-SDL_FORCE_INLINE void
+SDL_FORCE_INLINE int
 AddN3DSDisplay(gfxScreen_t screen)
 {
     SDL_DisplayMode mode;
     SDL_VideoDisplay display;
     DisplayDriverData *display_driver_data = SDL_calloc(1, sizeof(DisplayDriverData));
     if (!display_driver_data) {
-        SDL_OutOfMemory();
-        return;
+        return SDL_OutOfMemory();
     }
 
     SDL_zero(mode);
@@ -129,7 +144,7 @@ AddN3DSDisplay(gfxScreen_t screen)
     display.current_mode = mode;
     display.driverdata = display_driver_data;
 
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
+    return SDL_AddVideoDisplay(&display, SDL_FALSE);
 }
 
 static void N3DS_VideoQuit(_THIS)

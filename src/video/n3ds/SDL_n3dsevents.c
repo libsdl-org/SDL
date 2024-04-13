@@ -31,7 +31,7 @@
 void N3DS_PumpEvents(_THIS)
 {
     hidScanInput();
-    N3DS_PollTouch();
+    N3DS_PollTouch(_this);
 
     if (!aptMainLoop()) {
         SDL_Event ev;
