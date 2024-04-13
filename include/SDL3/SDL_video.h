@@ -532,7 +532,7 @@ extern DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displayID
  * - pixel density -> lowest to highest
  *
  * \param displayID the instance ID of the display to query
- * \param count a pointer filled in with the number of displays returned
+ * \param count a pointer filled in with the number of display modes returned
  * \returns a NULL terminated array of display mode pointers which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
