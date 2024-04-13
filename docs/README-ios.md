@@ -117,6 +117,9 @@ e.g.
     }
 
 
+Note that if you are using main callbacks instead of a standard C main() function, your SDL_AppEvent() callback will run as these events arrive and you do not need to use SDL_SetEventFilter.
+
+
 Notes -- Accelerometer as Joystick
 ==============================================================================
 
@@ -253,6 +256,9 @@ e.g.
     #endif
         return 0;
     }
+
+
+Note that if you are using main callbacks instead of a standard C main() function, your SDL_AppIterate() callback is already doing this and you don't need to use SDL_iOSSetAnimationCallback.
 
 
 Deploying to older versions of iOS
