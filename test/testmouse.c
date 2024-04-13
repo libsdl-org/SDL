@@ -18,12 +18,25 @@
 
 #include <stdlib.h> /* exit() */
 
-#ifdef __IPHONEOS__
+#ifdef __3DS__
+/* For mouse-based tests, we want to have the window on the touch screen */
+#define SCREEN_X 40
+#define SCREEN_Y 240
+#define SCREEN_WIDTH    320
+#define SCREEN_HEIGHT   240
+#elif defined(__IPHONEOS__)
 #define SCREEN_WIDTH    320
 #define SCREEN_HEIGHT   480
 #else
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 480
+#endif
+
+#ifndef SCREEN_X
+#define SCREEN_X SDL_WINDOWPOS_CENTERED
+#endif
+#ifndef SCREEN_Y
+#define SCREEN_Y SDL_WINDOWPOS_CENTERED
 #endif
 
 static SDL_Window *window;
@@ -263,9 +276,7 @@ int main(int argc, char *argv[])
     }
 
     /* Create a window to display joystick axis position */
-    window = SDL_CreateWindow("Mouse Test", SDL_WINDOWPOS_CENTERED,
-                              SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,
-                              SCREEN_HEIGHT, 0);
+    window = SDL_CreateWindow("Mouse Test", SCREEN_X, SCREEN_Y, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return SDL_FALSE;
