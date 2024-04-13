@@ -26,6 +26,13 @@
 #include <3ds.h>
 
 #include "../SDL_sysvideo.h"
+
+typedef struct SDL_VideoData
+{
+    int top_display;
+    int touch_display;
+} SDL_VideoData;
+
 typedef struct SDL_WindowData
 {
     gfxScreen_t screen; /**< Keeps track of which N3DS screen is targetted */
