@@ -229,11 +229,32 @@ SDL_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
-/* TODO */
 char *SDL_GetUserFolder(SDL_Folder folder)
 {
-    SDL_Unsupported();
-    return NULL;
+    wstring wpath;
+
+    switch (folder) {
+        #define CASEPATH(sym, var) case sym: wpath = Windows::Storage::UserDataPaths::GetDefault()->var->Data(); break
+        CASEPATH(SDL_FOLDER_HOME, Profile);
+        CASEPATH(SDL_FOLDER_DESKTOP, Desktop);
+        CASEPATH(SDL_FOLDER_DOCUMENTS, Documents);
+        CASEPATH(SDL_FOLDER_DOWNLOADS, Downloads);
+        CASEPATH(SDL_FOLDER_MUSIC, Music);
+        CASEPATH(SDL_FOLDER_PICTURES, Pictures);
+        CASEPATH(SDL_FOLDER_SCREENSHOTS, Screenshots);
+        CASEPATH(SDL_FOLDER_TEMPLATES, Templates);
+        CASEPATH(SDL_FOLDER_VIDEOS, Videos);
+        #undef CASEPATH
+        #define UNSUPPPORTED_CASEPATH(sym) SDL_SetError("The %s folder is unsupported on WinRT", #sym); return NULL;
+        UNSUPPPORTED_CASEPATH(SDL_FOLDER_PUBLICSHARE);
+        UNSUPPPORTED_CASEPATH(SDL_FOLDER_SAVEDGAMES);
+        #undef UNSUPPPORTED_CASEPATH
+        default:
+            SDL_SetError("Invalid SDL_Folder: %d", (int)folder);
+            return NULL;
+    };
+
+    return WIN_StringToUTF8(wpath.c_str());
 }
 
 #endif /* SDL_PLATFORM_WINRT */
