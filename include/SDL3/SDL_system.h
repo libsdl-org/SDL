@@ -544,7 +544,7 @@ typedef enum SDL_WinRT_DeviceFamily
  *          the path is not available for any reason; call SDL_GetError() for
  *          more information.
  *
- * \since This function is available since SDL 2.0.3.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_WinRTGetFSPathUTF8
  */
@@ -567,7 +567,7 @@ extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path
  *          the path is not available for any reason; call SDL_GetError() for
  *          more information.
  *
- * \since This function is available since SDL 2.0.3.
+ * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_WinRTGetFSPathUNICODE
  */
