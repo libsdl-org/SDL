@@ -3134,3 +3134,13 @@ typedef SDL_Colour, SDL_Color;
 - SDL_WinRTGetFSPathUTF8
 + SDL_WinRTGetFSPath
   (...)
+@@
+@@
+- SDL_iPhoneSetAnimationCallback
++ SDL_iOSSetAnimationCallback
+  (...)
+@@
+@@
+- SDL_iPhoneSetEventPump
++ SDL_iOSSetEventPump
+  (...)

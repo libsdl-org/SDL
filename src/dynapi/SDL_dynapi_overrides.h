@@ -935,8 +935,8 @@
 #define SDL_hid_send_feature_report SDL_hid_send_feature_report_REAL
 #define SDL_hid_set_nonblocking SDL_hid_set_nonblocking_REAL
 #define SDL_hid_write SDL_hid_write_REAL
-#define SDL_iPhoneSetAnimationCallback  SDL_iPhoneSetAnimationCallback_REAL
-#define SDL_iPhoneSetEventPump  SDL_iPhoneSetEventPump_REAL
+#define SDL_iOSSetAnimationCallback  SDL_iOSSetAnimationCallback_REAL
+#define SDL_iOSSetEventPump  SDL_iOSSetEventPump_REAL
 #define SDL_iconv SDL_iconv_REAL
 #define SDL_iconv_close SDL_iconv_close_REAL
 #define SDL_iconv_open SDL_iconv_open_REAL

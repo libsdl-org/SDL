@@ -911,8 +911,8 @@ SDL3_0.0.0 {
     SDL_hid_send_feature_report;
     SDL_hid_set_nonblocking;
     SDL_hid_write;
-    SDL_iPhoneSetAnimationCallback;
-    SDL_iPhoneSetEventPump;
+    SDL_iOSSetAnimationCallback;
+    SDL_iOSSetEventPump;
     SDL_iconv;
     SDL_iconv_close;
     SDL_iconv_open;

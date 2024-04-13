@@ -164,8 +164,6 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  */
 #ifdef SDL_PLATFORM_IOS
 
-#define SDL_iOSSetAnimationCallback(window, interval, callback, callbackParam) SDL_iPhoneSetAnimationCallback(window, interval, callback, callbackParam)
-
 /**
  * Use this function to set the animation callback on Apple iOS.
  *
@@ -176,15 +174,12 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  * ```
  *
  * Where its parameter, `callbackParam`, is what was passed as `callbackParam`
- * to SDL_iPhoneSetAnimationCallback().
+ * to SDL_iOSSetAnimationCallback().
  *
  * This function is only available on Apple iOS.
  *
  * For more information see:
  * https://github.com/libsdl-org/SDL/blob/main/docs/README-ios.md
- *
- * This functions is also accessible using the macro
- * SDL_iOSSetAnimationCallback() since SDL 2.0.4.
  *
  * \param window the window for which the animation callback should be set
  * \param interval the number of frames after which **callback** will be
@@ -196,27 +191,22 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_iPhoneSetEventPump
+ * \sa SDL_iOSSetEventPump
  */
-extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (SDLCALL *callback)(void*), void *callbackParam);
-
-#define SDL_iOSSetEventPump(enabled) SDL_iPhoneSetEventPump(enabled)
+extern DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window * window, int interval, void (SDLCALL *callback)(void*), void *callbackParam);
 
 /**
  * Use this function to enable or disable the SDL event pump on Apple iOS.
  *
  * This function is only available on Apple iOS.
  *
- * This functions is also accessible using the macro SDL_iOSSetEventPump()
- * since SDL 2.0.4.
- *
  * \param enabled SDL_TRUE to enable the event pump, SDL_FALSE to disable it
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_iPhoneSetAnimationCallback
+ * \sa SDL_iOSSetAnimationCallback
  */
-extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
+extern DECLSPEC void SDLCALL SDL_iOSSetEventPump(SDL_bool enabled);
 
 #endif /* SDL_PLATFORM_IOS */
 
