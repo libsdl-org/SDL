@@ -1132,8 +1132,10 @@ The following functions have been removed:
 * SDL_RenderTargetSupported() - render targets are always supported
 * SDL_SetTextureUserData() - use SDL_GetTextureProperties() instead
 
+The following enums have been renamed:
+* SDL_RendererFlip => SDL_FlipMode - moved to SDL_surface.h
+
 The following symbols have been renamed:
-* SDL_RendererFlip => SDL_FlipMode
 * SDL_ScaleModeBest => SDL_SCALEMODE_BEST
 * SDL_ScaleModeLinear => SDL_SCALEMODE_LINEAR
 * SDL_ScaleModeNearest => SDL_SCALEMODE_NEAREST

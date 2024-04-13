@@ -433,6 +433,7 @@
 #define SDL_RenderDrawRectsF SDL_RenderRects
 #define SDL_RenderFillRectF SDL_RenderFillRect
 #define SDL_RenderFillRectsF SDL_RenderFillRects
+#define SDL_RendererFlip SDL_FlipMode
 #define SDL_RenderFlush SDL_FlushRenderer
 #define SDL_RenderGetClipRect SDL_GetRenderClipRect
 #define SDL_RenderGetLogicalSize SDL_GetRenderLogicalPresentation
@@ -940,6 +941,7 @@
 #define SDL_RenderDrawRectsF SDL_RenderDrawRectsF_renamed_SDL_RenderRects
 #define SDL_RenderFillRectF SDL_RenderFillRectF_renamed_SDL_RenderFillRect
 #define SDL_RenderFillRectsF SDL_RenderFillRectsF_renamed_SDL_RenderFillRects
+#define SDL_RendererFlip SDL_RendererFlip_renamed_SDL_FlipMode
 #define SDL_RenderFlush SDL_RenderFlush_renamed_SDL_FlushRenderer
 #define SDL_RenderGetClipRect SDL_RenderGetClipRect_renamed_SDL_GetRenderClipRect
 #define SDL_RenderGetLogicalSize SDL_RenderGetLogicalSize_renamed_SDL_GetRenderLogicalPresentation

@@ -3125,6 +3125,11 @@ typedef SDL_eventaction, SDL_EventAction;
 - SDL_eventaction
 + SDL_EventAction
 @@
+typedef SDL_RendererFlip, SDL_FlipMode;
+@@
+- SDL_RendererFlip
++ SDL_FlipMode
+@@
 typedef SDL_Colour, SDL_Color;
 @@
 - SDL_Colour
