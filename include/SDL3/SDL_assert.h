@@ -47,14 +47,32 @@ extern "C" {
 #endif
 #endif /* SDL_ASSERT_LEVEL */
 
-/*
-These are macros and not first class functions so that the debugger breaks
-on the assertion line and not in some random guts of SDL, and so each
-assert can have unique static variables associated with it.
-*/
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+/**
+ * Attempt to tell an attached debugger to pause.
+ *
+ * This allows an app to programmatically halt ("break") the debugger
+ * as if it had hit a breakpoint, allowing the developer to examine
+ * program state, etc.
+ *
+ * This is a macro and not first class functions so that the debugger
+ * breaks on the source code line that used SDL_TriggerBreakpoint and
+ * not in some random guts of SDL. SDL_assert uses this macro for the
+ * same reason.
+ *
+ * If the program is not running under a debugger, SDL_TriggerBreakpoint
+ * will likely terminate the app, possibly without warning. If the
+ * current platform isn't supported (SDL doesn't know how to trigger a
+ * breakpoint), this macro does nothing.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
 
-#ifdef _MSC_VER
-/* Don't include intrin.h here because it contains C++ code */
+#elif defined(_MSC_VER)
+    /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
 #elif defined(ANDROID)
