@@ -145,11 +145,25 @@ extern DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
 /* @} *//* SDL AtomicLock */
 
 
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
 /**
- * The compiler barrier prevents the compiler from reordering
+ * Mark a compiler barrier.
+ *
+ * A compiler barrier prevents the compiler from reordering
  * reads and writes to globally visible variables across the call.
+ *
+ * This macro only prevents the compiler from reordering reads and writes,
+ * it does not prevent the CPU from reordering reads and writes.  However,
+ * all of the atomic operations that modify memory are full memory barriers.
+ *
+ * \threadsafety Obviously this macro is safe to use from any thread at
+ *               any time, but if you find yourself needing this, you are
+ *               probably dealing with some very sensitive code; be careful!
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
-#if defined(_MSC_VER) && (_MSC_VER > 1200) && !defined(__clang__)
+#define SDL_CompilerBarrier() DoCompilerSpecificReadWriteBarrier()
+#elif defined(_MSC_VER) && (_MSC_VER > 1200) && !defined(__clang__)
 void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
 #define SDL_CompilerBarrier()   _ReadWriteBarrier()
@@ -165,6 +179,8 @@ extern __inline void SDL_CompilerBarrier(void);
 #endif
 
 /**
+ * Insert a memory release barrier.
+ *
  * Memory barriers are designed to prevent reads and writes from being
  * reordered by the compiler and being seen out of order on multi-core CPUs.
  *
@@ -183,15 +199,30 @@ extern __inline void SDL_CompilerBarrier(void);
  * For more information on these semantics, take a look at the blog post:
  * http://preshing.com/20120913/acquire-and-release-semantics
  *
+ * \threadsafety Obviously this macro is safe to use from any thread at
+ *               any time, but if you find yourself needing this, you are
+ *               probably dealing with some very sensitive code; be careful!
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
 
-/*
+/**
+ * Insert a memory acquire barrier.
+ *
+ * Please refer to SDL_MemoryBarrierReleaseFunction for the details!
+ *
+ * \threadsafety Obviously this function is safe to use from any thread at
+ *               any time, but if you find yourself needing this, you are
+ *               probably dealing with some very sensitive code; be careful!
+ *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_MemoryBarrierReleaseFunction
  */
 extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 
+/* !!! FIXME: this should have documentation! */
 #if defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("lwsync" : : : "memory")
@@ -242,6 +273,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 #endif
 
 /* "REP NOP" is PAUSE, coded for tools that don't know it by that name. */
+/* !!! FIXME: this should have documentation! */
 #if (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("pause\n")  /* Some assemblers can't do REP NOP, so go with PAUSE. */
 #elif (defined(__arm__) && defined(__ARM_ARCH) && __ARM_ARCH >= 7) || defined(__aarch64__)
