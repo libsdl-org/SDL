@@ -2459,8 +2459,9 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 #endif
 
 /**
- * If a * b would overflow, return -1. Otherwise store a * b via ret
- * and return 0.
+ * If a * b would overflow, return -1.
+ *
+ * Otherwise store a * b via ret and return 0.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -2489,8 +2490,9 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow_builtin (size_t a,
 #endif
 
 /**
- * If a + b would overflow, return -1. Otherwise store a + b via ret
- * and return 0.
+ * If a + b would overflow, return -1.
+ *
+ * Otherwise store a + b via ret and return 0.
  *
  * \since This function is available since SDL 3.0.0.
  */

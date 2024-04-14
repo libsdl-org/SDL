@@ -293,8 +293,8 @@ SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param x the value to byte-swap.
  * \returns x, with its bytes in the opposite endian order.
@@ -322,17 +322,18 @@ SDL_FORCE_INLINE float SDL_SwapFloat(float x)
 
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * Byte-swap an unsigned 16-bit number.
  *
  * This will always byte-swap the value, whether it's currently in the native
- * byteorder of the system or not. You should use SDL_SwapLE16 or
- * SDL_SwapBE16 instead, in most cases.
+ * byteorder of the system or not. You should use SDL_SwapLE16 or SDL_SwapBE16
+ * instead, in most cases.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param x the value to byte-swap.
  * \returns `x`, with its bytes in the opposite endian order.
@@ -347,13 +348,13 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
  * Byte-swap an unsigned 32-bit number.
  *
  * This will always byte-swap the value, whether it's currently in the native
- * byteorder of the system or not. You should use SDL_SwapLE32 or
- * SDL_SwapBE32 instead, in most cases.
+ * byteorder of the system or not. You should use SDL_SwapLE32 or SDL_SwapBE32
+ * instead, in most cases.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param x the value to byte-swap.
  * \returns `x`, with its bytes in the opposite endian order.
@@ -368,13 +369,13 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
  * Byte-swap an unsigned 64-bit number.
  *
  * This will always byte-swap the value, whether it's currently in the native
- * byteorder of the system or not. You should use SDL_SwapLE64 or
- * SDL_SwapBE64 instead, in most cases.
+ * byteorder of the system or not. You should use SDL_SwapLE64 or SDL_SwapBE64
+ * instead, in most cases.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param x the value to byte-swap.
  * \returns `x`, with its bytes in the opposite endian order.

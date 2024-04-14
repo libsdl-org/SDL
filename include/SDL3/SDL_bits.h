@@ -52,13 +52,13 @@ extern __inline int _SDL_bsr_watcom(Uint32);
 /**
  * Get the index of the most significant (set) bit in a 32-bit number.
  *
- * Result is undefined when called with 0. This operation can also be
- * stated as "count leading zeroes" and "log base 2".
+ * Result is undefined when called with 0. This operation can also be stated
+ * as "count leading zeroes" and "log base 2".
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param x the 32-bit value to examine
  * \returns the index of the most significant bit, or -1 if the value is 0.
@@ -125,8 +125,8 @@ SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(Uint32 x)
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param x the 32-bit value to examine
  * \returns SDL_TRUE if exactly one bit is set in `x`, SDL_FALSE otherwise.

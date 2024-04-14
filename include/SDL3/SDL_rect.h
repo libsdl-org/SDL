@@ -114,15 +114,15 @@ typedef struct SDL_FRect
 /**
  * Determine whether a point resides inside a rectangle.
  *
- * A point is considered part of a rectangle if both `p` and `r` are
- * not NULL, and `p`'s x and y coordinates are >= to the rectangle's
- * top left corner, and < the rectangle's x+w and y+h. So a 1x1 rectangle
- * considers point (0,0) as "inside" and (0,1) as not.
+ * A point is considered part of a rectangle if both `p` and `r` are not NULL,
+ * and `p`'s x and y coordinates are >= to the rectangle's top left corner,
+ * and < the rectangle's x+w and y+h. So a 1x1 rectangle considers point (0,0)
+ * as "inside" and (0,1) as not.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param p the point to test.
  * \param r the rectangle to test.
@@ -141,13 +141,13 @@ SDL_FORCE_INLINE SDL_bool SDL_PointInRect(const SDL_Point *p, const SDL_Rect *r)
 /**
  * Determine whether a rectangle has no area.
  *
- * A rectangle is considered "empty" for this function if `r` is NULL,
- * or if `r`'s width and/or height are <= 0.
+ * A rectangle is considered "empty" for this function if `r` is NULL, or if
+ * `r`'s width and/or height are <= 0.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param r the rectangle to test.
  * \returns SDL_TRUE if the rectangle is "empty", SDL_FALSE otherwise.
@@ -164,13 +164,13 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEmpty(const SDL_Rect *r)
 /**
  * Determine whether two rectangles are equal.
  *
- * Rectangles are considered equal if both are not NULL and each of their
- * x, y, width and height match.
+ * Rectangles are considered equal if both are not NULL and each of their x,
+ * y, width and height match.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param a the first rectangle to test.
  * \param b the second rectangle to test.
@@ -290,15 +290,15 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRectAndLineIntersection(const SDL_Rect *
 /**
  * Determine whether a point resides inside a floating point rectangle.
  *
- * A point is considered part of a rectangle if both `p` and `r` are
- * not NULL, and `p`'s x and y coordinates are >= to the rectangle's
- * top left corner, and < the rectangle's x+w and y+h. So a 1x1 rectangle
- * considers point (0,0) as "inside" and (0,1) as not.
+ * A point is considered part of a rectangle if both `p` and `r` are not NULL,
+ * and `p`'s x and y coordinates are >= to the rectangle's top left corner,
+ * and < the rectangle's x+w and y+h. So a 1x1 rectangle considers point (0,0)
+ * as "inside" and (0,1) as not.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param p the point to test.
  * \param r the rectangle to test.
@@ -317,13 +317,13 @@ SDL_FORCE_INLINE SDL_bool SDL_PointInRectFloat(const SDL_FPoint *p, const SDL_FR
 /**
  * Determine whether a floating point rectangle has no area.
  *
- * A rectangle is considered "empty" for this function if `r` is NULL,
- * or if `r`'s width and/or height are <= 0.0f.
+ * A rectangle is considered "empty" for this function if `r` is NULL, or if
+ * `r`'s width and/or height are <= 0.0f.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param r the rectangle to test.
  * \returns SDL_TRUE if the rectangle is "empty", SDL_FALSE otherwise.
@@ -338,17 +338,18 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEmptyFloat(const SDL_FRect *r)
 }
 
 /**
- * Determine whether two floating point rectangles are equal, within some given epsilon.
+ * Determine whether two floating point rectangles are equal, within some
+ * given epsilon.
  *
- * Rectangles are considered equal if both are not NULL and each of their
- * x, y, width and height are within `epsilon` of each other. If you don't
- * know what value to use for `epsilon`, you should call the
- * SDL_RectsEqualFloat function instead.
+ * Rectangles are considered equal if both are not NULL and each of their x,
+ * y, width and height are within `epsilon` of each other. If you don't know
+ * what value to use for `epsilon`, you should call the SDL_RectsEqualFloat
+ * function instead.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param a the first rectangle to test.
  * \param b the second rectangle to test.
@@ -371,18 +372,19 @@ SDL_FORCE_INLINE SDL_bool SDL_RectsEqualEpsilon(const SDL_FRect *a, const SDL_FR
 }
 
 /**
- * Determine whether two floating point rectangles are equal, within a default epsilon.
+ * Determine whether two floating point rectangles are equal, within a default
+ * epsilon.
  *
- * Rectangles are considered equal if both are not NULL and each of their
- * x, y, width and height are within SDL_FLT_EPSILON of each other. This is
- * often a reasonable way to compare two floating point rectangles and
- * deal with the slight precision variations in floating point calculations
- * that tend to pop up.
+ * Rectangles are considered equal if both are not NULL and each of their x,
+ * y, width and height are within SDL_FLT_EPSILON of each other. This is often
+ * a reasonable way to compare two floating point rectangles and deal with the
+ * slight precision variations in floating point calculations that tend to pop
+ * up.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
- * embedded in the calling program and the linker and dynamic loader will
- * not be able to find this function inside SDL itself).
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
  *
  * \param a the first rectangle to test.
  * \param b the second rectangle to test.
