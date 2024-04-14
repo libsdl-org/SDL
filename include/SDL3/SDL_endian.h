@@ -238,8 +238,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
 #pragma intrinsic(_byteswap_uint64)
 #define SDL_Swap64(x) _byteswap_uint64(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
-SDL_FORCE_INLINE Uint64
-SDL_Swap64(Uint64 x)
+SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
 {
     union {
         struct {

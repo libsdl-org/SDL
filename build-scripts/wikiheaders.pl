@@ -594,6 +594,7 @@ while (my $d = readdir(DH)) {
     open(FH, '<', "$incpath/$dent") or die("Can't open '$incpath/$dent': $!\n");
 
     my @contents = ();
+    my $ignoring_lines = 0;
 
     while (<FH>) {
         chomp;
@@ -606,7 +607,18 @@ while (my $d = readdir(DH)) {
         # Since a lot of macros are just preprocessor logic spam and not all macros are worth documenting anyhow, we only pay attention to them when they have a Doxygen comment attached.
         # Functions and other things are a different story, though!
 
-        if (/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {  # a function declaration without a doxygen comment?
+        if ($ignoring_lines && /\A\s*\#\s*endif\s*\Z/) {
+            $ignoring_lines = 0;
+            push @contents, $_;
+            next;
+        } elsif ($ignoring_lines) {
+            push @contents, $_;
+            next;
+        } elsif (/\A\s*\#\s*ifndef\s+SDL_WIKI_DOCUMENTATION_SECTION\s*\Z/) {
+            $ignoring_lines = 1;
+            push @contents, $_;
+            next;
+        } elsif (/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {  # a function declaration without a doxygen comment?
             $symtype = 1;   # function declaration
             @templines = ();
             $decl = $_;

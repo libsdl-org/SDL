@@ -2476,6 +2476,7 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow (size_t a,
     return 0;
 }
 
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
 #if SDL_HAS_BUILTIN(__builtin_mul_overflow)
 /* This needs to be wrapped in an inline rather than being a direct #define,
  * because __builtin_mul_overflow() is type-generic, but we want to be
@@ -2487,6 +2488,7 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow_builtin (size_t a,
     return __builtin_mul_overflow(a, b, ret) == 0 ? 0 : -1;
 }
 #define SDL_size_mul_overflow(a, b, ret) (SDL_size_mul_overflow_builtin(a, b, ret))
+#endif
 #endif
 
 /**
@@ -2507,6 +2509,7 @@ SDL_FORCE_INLINE int SDL_size_add_overflow (size_t a,
     return 0;
 }
 
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
 #if SDL_HAS_BUILTIN(__builtin_add_overflow)
 /* This needs to be wrapped in an inline rather than being a direct #define,
  * the same as the call to __builtin_mul_overflow() above. */
@@ -2517,6 +2520,7 @@ SDL_FORCE_INLINE int SDL_size_add_overflow_builtin (size_t a,
     return __builtin_add_overflow(a, b, ret) == 0 ? 0 : -1;
 }
 #define SDL_size_add_overflow(a, b, ret) (SDL_size_add_overflow_builtin(a, b, ret))
+#endif
 #endif
 
 /* This is a generic function pointer which should be cast to the type you expect */
