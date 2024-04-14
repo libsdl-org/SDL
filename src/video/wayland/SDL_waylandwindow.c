@@ -603,11 +603,10 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
             SDL_UpdateFullscreenMode(window, SDL_TRUE, SDL_FALSE);
 
-            /* Unconditionally set the output for exclusive fullscreen windows when entering
-             * fullscreen from a compositor event, as where the compositor will actually
-             * place the fullscreen window is unknown.
-             *
-             * If the higher level
+            /* Set the output for exclusive fullscreen windows when entering fullscreen from a
+             * compositor event, or if the fullscreen paramaters were changed between the initial
+             * fullscreen request and now, to ensure that the window is on the correct output,
+             * as requested by the client.
              */
             if (window->fullscreen_exclusive && (!wind->fullscreen_exclusive || !wind->fullscreen_was_positioned)) {
                 SDL_VideoDisplay *disp = SDL_GetVideoDisplay(window->current_fullscreen_mode.displayID);
