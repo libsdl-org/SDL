@@ -146,19 +146,20 @@ extern DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
 
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * Mark a compiler barrier.
  *
- * A compiler barrier prevents the compiler from reordering
- * reads and writes to globally visible variables across the call.
+ * A compiler barrier prevents the compiler from reordering reads and writes
+ * to globally visible variables across the call.
  *
- * This macro only prevents the compiler from reordering reads and writes,
- * it does not prevent the CPU from reordering reads and writes.  However,
- * all of the atomic operations that modify memory are full memory barriers.
+ * This macro only prevents the compiler from reordering reads and writes, it
+ * does not prevent the CPU from reordering reads and writes. However, all of
+ * the atomic operations that modify memory are full memory barriers.
  *
- * \threadsafety Obviously this macro is safe to use from any thread at
- *               any time, but if you find yourself needing this, you are
- *               probably dealing with some very sensitive code; be careful!
+ * \threadsafety Obviously this macro is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
  *
  * \since This macro is available since SDL 3.0.0.
  */
@@ -199,9 +200,9 @@ extern __inline void SDL_CompilerBarrier(void);
  * For more information on these semantics, take a look at the blog post:
  * http://preshing.com/20120913/acquire-and-release-semantics
  *
- * \threadsafety Obviously this macro is safe to use from any thread at
- *               any time, but if you find yourself needing this, you are
- *               probably dealing with some very sensitive code; be careful!
+ * \threadsafety Obviously this macro is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -212,9 +213,9 @@ extern DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
  *
  * Please refer to SDL_MemoryBarrierReleaseFunction for the details!
  *
- * \threadsafety Obviously this function is safe to use from any thread at
- *               any time, but if you find yourself needing this, you are
- *               probably dealing with some very sensitive code; be careful!
+ * \threadsafety Obviously this function is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
  *
  * \since This function is available since SDL 3.0.0.
  *
