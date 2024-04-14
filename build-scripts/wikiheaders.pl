@@ -612,6 +612,12 @@ while (my $d = readdir(DH)) {
             $decl = $_;
             $str = '';
             $has_doxygen = 0;
+        } elsif (/\A\s*SDL_FORCE_INLINE/) {  # a (forced-inline) function declaration without a doxygen comment?
+            $symtype = 1;   # function declaration
+            @templines = ();
+            $decl = $_;
+            $str = '';
+            $has_doxygen = 0;
         } elsif (not /\A\/\*\*\s*\Z/) {  # not doxygen comment start?
             push @contents, $_;
             next;
@@ -645,6 +651,8 @@ while (my $d = readdir(DH)) {
             chomp($decl);
             if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {
                 $symtype = 1;   # function declaration
+            } elsif ($decl =~ /\A\s*SDL_FORCE_INLINE/) {
+                $symtype = 1;   # (forced-inline) function declaration
             } elsif ($decl =~ /\A\s*\#\s*define\s+/) {
                 $symtype = 2;   # macro
             } elsif ($decl =~ /\A\s*(typedef\s+|)(struct|union)/) {
@@ -667,23 +675,41 @@ while (my $d = readdir(DH)) {
         my $sym = '';
 
         if ($symtype == 1) {  # a function
-            if (not $decl =~ /\)\s*;/) {
-                while (<FH>) {
-                    chomp;
-                    push @decllines, $_;
-                    s/\A\s+//;
-                    s/\s+\Z//;
-                    $decl .= " $_";
-                    last if /\)\s*;/;
+            my $is_forced_inline = ($decl =~ /\A\s*SDL_FORCE_INLINE/);
+
+            if ($is_forced_inline) {
+                if (not $decl =~ /\)\s*(\{.*|)\s*\Z/) {
+                    while (<FH>) {
+                        chomp;
+                        push @decllines, $_;
+                        s/\A\s+//;
+                        s/\s+\Z//;
+                        $decl .= " $_";
+                        last if /\)\s*(\{.*|)\s*\Z/;
+                    }
                 }
+                $decl =~ s/\s*\)\s*(\{.*|)\s*\Z/);/;
+            } else {
+                if (not $decl =~ /\)\s*;/) {
+                    while (<FH>) {
+                        chomp;
+                        push @decllines, $_;
+                        s/\A\s+//;
+                        s/\s+\Z//;
+                        $decl .= " $_";
+                        last if /\)\s*;/;
+                    }
+                }
+                $decl =~ s/\s+\);\Z/);/;
             }
 
-            $decl =~ s/\s+\);\Z/);/;
             $decl =~ s/\s+\Z//;
 
-            if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
+            if (!$is_forced_inline && $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
                 $sym = $6;
                 #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
+            } elsif ($is_forced_inline && $decl =~ /\A\s*SDL_FORCE_INLINE\s+(SDL_DEPRECATED\s+|)(const\s+|)(unsigned\s+|)(.*?)([\*\s]+)(.*?)\s*\((.*?)\);/) {
+                $sym = $6;
             } else {
                 #print "Found doxygen but no function sig:\n$str\n\n";
                 foreach (@templines) {
@@ -695,18 +721,20 @@ while (my $d = readdir(DH)) {
                 next;
             }
 
-            $decl = '';  # build this with the line breaks, since it looks better for syntax highlighting.
-            foreach (@decllines) {
-                if ($decl eq '') {
-                    $decl = $_;
-                    $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$2$3 /;
-                } else {
-                    my $trimmed = $_;
-                    # !!! FIXME: trim space for SDL_DEPRECATED if it was used, too.
-                    $trimmed =~ s/\A\s{24}//;  # 24 for shrinking to match the removed "extern DECLSPEC SDLCALL "
-                    $decl .= $trimmed;
+            if (!$is_forced_inline) {  # !!! FIXME: maybe we need to do this for forced-inline stuff too?
+                $decl = '';  # build this with the line breaks, since it looks better for syntax highlighting.
+                foreach (@decllines) {
+                    if ($decl eq '') {
+                        $decl = $_;
+                        $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$2$3 /;
+                    } else {
+                        my $trimmed = $_;
+                        # !!! FIXME: trim space for SDL_DEPRECATED if it was used, too.
+                        $trimmed =~ s/\A\s{24}//;  # 24 for shrinking to match the removed "extern DECLSPEC SDLCALL "
+                        $decl .= $trimmed;
+                    }
+                    $decl .= "\n";
                 }
-                $decl .= "\n";
             }
         } elsif ($symtype == 2) {  # a macro
             if ($decl =~ /\A\s*\#\s*define\s+(.*?)(\(.*?\)|)\s+/) {
