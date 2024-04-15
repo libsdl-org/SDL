@@ -1102,7 +1102,7 @@ int SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_data
             if (dstlen >= 0) {
                 dst = (Uint8 *)SDL_malloc(dstlen);
                 if (dst) {
-                    retval = (SDL_GetAudioStreamData(stream, dst, dstlen) >= 0) ? 0 : -1;
+                    retval = (SDL_GetAudioStreamData(stream, dst, dstlen) == dstlen) ? 0 : -1;
                 }
             }
         }
