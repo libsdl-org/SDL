@@ -447,7 +447,7 @@ static float Sinc(float *table, int x, int y)
     return (s * y) / x;
 }
 
-Cubic ResamplerFilter[RESAMPLER_SAMPLES_PER_ZERO_CROSSING][RESAMPLER_SAMPLES_PER_FRAME];
+static Cubic ResamplerFilter[RESAMPLER_SAMPLES_PER_ZERO_CROSSING][RESAMPLER_SAMPLES_PER_FRAME];
 
 static void GenerateResamplerFilter()
 {
