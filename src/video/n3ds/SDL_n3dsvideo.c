@@ -157,8 +157,7 @@ AddN3DSDisplay(gfxScreen_t screen)
 
     modedata = SDL_malloc(sizeof(ModeDriverData));
     if (!modedata) {
-        SDL_OutOfMemory();
-        return;
+        return SDL_OutOfMemory();
     }
 
     mode.w = (screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
