@@ -2471,11 +2471,12 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 void Wayland_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)
 {
     SDL_WindowData *data;
-    if (window->driverdata) {
-        data = window->driverdata;
-        *w = data->current.drawable_width;
-        *h = data->current.drawable_height;
-    }
+
+    SDL_assert(window->driverdata)
+
+    data = window->driverdata;
+    *w = data->current.drawable_width;
+    *h = data->current.drawable_height;
 }
 
 void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
