@@ -145,7 +145,7 @@ SDL_Finger **SDL_GetTouchFingers(SDL_TouchID touchID, int *count)
         return NULL;
     }
 
-    /* Create a snapshot of the current finger state */
+    // Create a snapshot of the current finger state
     fingers = (SDL_Finger **)SDL_malloc((touch->num_fingers + 1) * sizeof(*fingers) + touch->num_fingers * sizeof(**fingers));
     if (!fingers) {
         return NULL;
