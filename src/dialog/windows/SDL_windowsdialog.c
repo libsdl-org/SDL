@@ -132,7 +132,7 @@ void windows_ShowFileDialog(void *ptr)
         return;
     }
 
-    int filter_len = SDL_strlen(filterlist);
+    int filter_len = (int)SDL_strlen(filterlist);
 
     for (char *c = filterlist; *c; c++) {
         if (*c == '\x01') {
