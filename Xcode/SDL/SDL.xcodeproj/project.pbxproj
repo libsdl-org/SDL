@@ -493,7 +493,6 @@
 		F3F7D9B12933074E00816151 /* SDL_power.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DB2933074D00816151 /* SDL_power.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9B92933074E00816151 /* SDL_cpuinfo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DD2933074D00816151 /* SDL_cpuinfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9BD2933074E00816151 /* SDL_render.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DE2933074D00816151 /* SDL_render.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F3F7D9C12933074E00816151 /* SDL_quit.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8DF2933074D00816151 /* SDL_quit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9C52933074E00816151 /* SDL_assert.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8E02933074D00816151 /* SDL_assert.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9C92933074E00816151 /* SDL_opengl.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8E12933074D00816151 /* SDL_opengl.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3F7D9CD2933074E00816151 /* SDL_rect.h in Headers */ = {isa = PBXBuildFile; fileRef = F3F7D8E22933074D00816151 /* SDL_rect.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1032,7 +1031,6 @@
 		F3F7D8DB2933074D00816151 /* SDL_power.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_power.h; path = SDL3/SDL_power.h; sourceTree = "<group>"; };
 		F3F7D8DD2933074D00816151 /* SDL_cpuinfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_cpuinfo.h; path = SDL3/SDL_cpuinfo.h; sourceTree = "<group>"; };
 		F3F7D8DE2933074D00816151 /* SDL_render.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_render.h; path = SDL3/SDL_render.h; sourceTree = "<group>"; };
-		F3F7D8DF2933074D00816151 /* SDL_quit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_quit.h; path = SDL3/SDL_quit.h; sourceTree = "<group>"; };
 		F3F7D8E02933074D00816151 /* SDL_assert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_assert.h; path = SDL3/SDL_assert.h; sourceTree = "<group>"; };
 		F3F7D8E12933074D00816151 /* SDL_opengl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_opengl.h; path = SDL3/SDL_opengl.h; sourceTree = "<group>"; };
 		F3F7D8E22933074D00816151 /* SDL_rect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_rect.h; path = SDL3/SDL_rect.h; sourceTree = "<group>"; };
@@ -1211,7 +1209,6 @@
 				F3F7D8AB2933074900816151 /* SDL_platform.h */,
 				F3F7D8DB2933074D00816151 /* SDL_power.h */,
 				F3E5A6EC2AD5E10800293D83 /* SDL_properties.h */,
-				F3F7D8DF2933074D00816151 /* SDL_quit.h */,
 				F3F7D8E22933074D00816151 /* SDL_rect.h */,
 				F3F7D8DE2933074D00816151 /* SDL_render.h */,
 				F3F7D8B42933074900816151 /* SDL_revision.h */,
@@ -2421,7 +2418,6 @@
 				F3B38CD3296E2E52005DA6D3 /* SDL_platform_defines.h in Headers */,
 				F3F7D9B12933074E00816151 /* SDL_power.h in Headers */,
 				F3E5A6ED2AD5E10800293D83 /* SDL_properties.h in Headers */,
-				F3F7D9C12933074E00816151 /* SDL_quit.h in Headers */,
 				F37E18622BAA40090098C111 /* SDL_sysfilesystem.h in Headers */,
 				F3F7D9CD2933074E00816151 /* SDL_rect.h in Headers */,
 				A7D8AC0323E2514100DCD162 /* SDL_rect_c.h in Headers */,

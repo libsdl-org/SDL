@@ -339,9 +339,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_properties.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_quit.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_rect.h">
       <Filter>API Headers</Filter>
     </ClInclude>

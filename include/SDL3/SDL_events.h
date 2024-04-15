@@ -35,7 +35,6 @@
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_pen.h>
-#include <SDL3/SDL_quit.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>

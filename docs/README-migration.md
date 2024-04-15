@@ -1033,6 +1033,19 @@ The following platform preprocessor macros have been removed:
 * `__PNACL__`
 * `__WINDOWS__`
 
+## SDL_quit.h
+
+SDL_quit.h has been completely removed. It only had one symbol in it--SDL_QuitRequested--and if you want it, you can just add this to your app...
+
+```c
+#define SDL_QuitRequested() (SDL_PumpEvents(), (SDL_PeepEvents(NULL,0,SDL_PEEKEVENT,SDL_EVENT_QUIT,SDL_EVENT_QUIT) > 0))
+```
+
+...but this macro is sort of messy, calling two functions in sequence in an expression.
+
+The following macros have been removed:
+* SDL_QuitRequested - call SDL_PumpEvents() then SDL_PeepEvents() directly, instead.
+
 ## SDL_rect.h
 
 The following functions have been renamed:
