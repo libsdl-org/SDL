@@ -1323,7 +1323,7 @@ extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter, void *user
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_IsEventEnabled
+ * \sa SDL_EventEnabled
  */
 extern DECLSPEC void SDLCALL SDL_SetEventEnabled(Uint32 type, SDL_bool enabled);
 
