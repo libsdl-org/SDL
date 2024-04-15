@@ -20,6 +20,8 @@
 
 int main(int argc, char *argv[])
 {
+    int num_keyboards = 0;
+    int num_mice = 0;
     int num_joysticks = 0;
     SDL_Joystick *joystick = NULL;
     SDL_Haptic *haptic = NULL;
@@ -78,12 +80,18 @@ int main(int argc, char *argv[])
     //SDL_CreateWindow("Dummy", 128, 128, 0);
     */
 
+    SDL_free(SDL_GetKeyboards(&num_keyboards));
+    SDL_Log("There are %d keyboards at startup\n", num_keyboards);
+
+    SDL_free(SDL_GetMice(&num_mice));
+    SDL_Log("There are %d mice at startup\n", num_mice);
+
     SDL_free(SDL_GetJoysticks(&num_joysticks));
     SDL_Log("There are %d joysticks at startup\n", num_joysticks);
+
     if (enable_haptic) {
         int num_haptics;
-        SDL_HapticID *haptics = SDL_GetHaptics(&num_haptics);
-        SDL_free(haptics);
+        SDL_free(SDL_GetHaptics(&num_haptics));
         SDL_Log("There are %d haptic devices at startup\n", num_haptics);
     }
 
@@ -93,6 +101,18 @@ int main(int argc, char *argv[])
             switch (event.type) {
             case SDL_EVENT_QUIT:
                 keepGoing = SDL_FALSE;
+                break;
+            case SDL_EVENT_KEYBOARD_ADDED:
+                SDL_Log("Keyboard '%s' added  : %" SDL_PRIu32 "\n", SDL_GetKeyboardInstanceName(event.kdevice.which), event.kdevice.which);
+                break;
+            case SDL_EVENT_KEYBOARD_REMOVED:
+                SDL_Log("Keyboard removed: %" SDL_PRIu32 "\n", event.kdevice.which);
+                break;
+            case SDL_EVENT_MOUSE_ADDED:
+                SDL_Log("Mouse '%s' added  : %" SDL_PRIu32 "\n", SDL_GetMouseInstanceName(event.mdevice.which), event.mdevice.which);
+                break;
+            case SDL_EVENT_MOUSE_REMOVED:
+                SDL_Log("Mouse removed: %" SDL_PRIu32 "\n", event.mdevice.which);
                 break;
             case SDL_EVENT_JOYSTICK_ADDED:
                 if (joystick) {

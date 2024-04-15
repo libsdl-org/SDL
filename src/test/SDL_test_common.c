@@ -955,12 +955,6 @@ static void SDLTest_PrintButtonMask(char *text, size_t maxlen, Uint32 flags)
 static void SDLTest_PrintRendererFlag(char *text, size_t maxlen, Uint32 flag)
 {
     switch (flag) {
-    case SDL_RENDERER_SOFTWARE:
-        SDL_snprintfcat(text, maxlen, "Software");
-        break;
-    case SDL_RENDERER_ACCELERATED:
-        SDL_snprintfcat(text, maxlen, "Accelerated");
-        break;
     case SDL_RENDERER_PRESENTVSYNC:
         SDL_snprintfcat(text, maxlen, "PresentVSync");
         break;
@@ -1661,6 +1655,14 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
     case SDL_EVENT_WINDOW_DESTROYED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " destroyed", event->window.windowID);
         break;
+    case SDL_EVENT_KEYBOARD_ADDED:
+        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " attached",
+                event->kdevice.which);
+        break;
+    case SDL_EVENT_KEYBOARD_REMOVED:
+        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " removed",
+                event->kdevice.which);
+        break;
     case SDL_EVENT_KEY_DOWN:
     case SDL_EVENT_KEY_UP: {
         char modstr[64];
@@ -1691,6 +1693,14 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
     case SDL_EVENT_KEYMAP_CHANGED:
         SDL_Log("SDL EVENT: Keymap changed");
         break;
+    case SDL_EVENT_MOUSE_ADDED:
+        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " attached",
+                event->mdevice.which);
+        break;
+    case SDL_EVENT_MOUSE_REMOVED:
+        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " removed",
+                event->mdevice.which);
+        break;
     case SDL_EVENT_MOUSE_MOTION:
         SDL_Log("SDL EVENT: Mouse: moved to %g,%g (%g,%g) in window %" SDL_PRIu32,
                 event->motion.x, event->motion.y,
@@ -1712,12 +1722,17 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_EVENT_JOYSTICK_ADDED:
-        SDL_Log("SDL EVENT: Joystick index %" SDL_PRIu32 " attached",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " attached",
                 event->jdevice.which);
         break;
     case SDL_EVENT_JOYSTICK_REMOVED:
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " removed",
                 event->jdevice.which);
+        break;
+    case SDL_EVENT_JOYSTICK_BALL_MOTION:
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": ball %d moved by %d,%d",
+                event->jball.which, event->jball.ball, event->jball.xrel,
+                event->jball.yrel);
         break;
     case SDL_EVENT_JOYSTICK_HAT_MOTION:
     {
@@ -1763,7 +1778,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
                 event->jbutton.which, event->jbutton.button);
         break;
     case SDL_EVENT_GAMEPAD_ADDED:
-        SDL_Log("SDL EVENT: Gamepad index %" SDL_PRIu32 " attached",
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " attached",
                 event->gdevice.which);
         break;
     case SDL_EVENT_GAMEPAD_REMOVED:
@@ -1895,20 +1910,20 @@ static const void *SDLTest_ScreenShotClipboardProvider(void *context, const char
     SDL_Log("Providing screenshot image to clipboard!\n");
 
     if (!data->image) {
-        SDL_RWops *file;
+        SDL_IOStream *file;
 
-        file = SDL_RWFromFile(SCREENSHOT_FILE, "r");
+        file = SDL_IOFromFile(SCREENSHOT_FILE, "r");
         if (file) {
-            size_t length = (size_t)SDL_RWsize(file);
+            size_t length = (size_t)SDL_GetIOSize(file);
             void *image = SDL_malloc(length);
             if (image) {
-                if (SDL_RWread(file, image, length) != length) {
+                if (SDL_ReadIO(file, image, length) != length) {
                     SDL_Log("Couldn't read %s: %s\n", SCREENSHOT_FILE, SDL_GetError());
                     SDL_free(image);
                     image = NULL;
                 }
             }
-            SDL_RWclose(file);
+            SDL_CloseIO(file);
 
             if (image) {
                 data->image = image;
@@ -1972,14 +1987,14 @@ static void SDLTest_PasteScreenShot(void)
         void *data = SDL_GetClipboardData(image_formats[i], &size);
         if (data) {
             char filename[16];
-            SDL_RWops *file;
+            SDL_IOStream *file;
 
             SDL_snprintf(filename, sizeof(filename), "clipboard.%s", image_formats[i] + 6);
-            file = SDL_RWFromFile(filename, "w");
+            file = SDL_IOFromFile(filename, "w");
             if (file) {
                 SDL_Log("Writing clipboard image to %s", filename);
-                SDL_RWwrite(file, data, size);
-                SDL_RWclose(file);
+                SDL_WriteIO(file, data, size);
+                SDL_CloseIO(file);
             }
             SDL_free(data);
             return;
@@ -2279,7 +2294,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 /* Ctrl-G toggle mouse grab */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
-                    SDL_SetWindowGrab(window, !SDL_GetWindowGrab(window));
+                    SDL_SetWindowMouseGrab(window, !SDL_GetWindowMouseGrab(window));
                 }
             }
             break;

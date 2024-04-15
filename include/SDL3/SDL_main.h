@@ -24,6 +24,7 @@
 
 #include <SDL3/SDL_platform_defines.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 
 /*
@@ -158,10 +159,10 @@
 extern "C" {
 #endif
 
-typedef int (SDLCALL *SDL_AppInit_func)(int argc, char *argv[]);
-typedef int (SDLCALL *SDL_AppIterate_func)(void);
-typedef int (SDLCALL *SDL_AppEvent_func)(const SDL_Event *event);
-typedef void (SDLCALL *SDL_AppQuit_func)(void);
+typedef int (SDLCALL *SDL_AppInit_func)(void **appstate, int argc, char *argv[]);
+typedef int (SDLCALL *SDL_AppIterate_func)(void *appstate);
+typedef int (SDLCALL *SDL_AppEvent_func)(void *appstate, const SDL_Event *event);
+typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
 
 /**
  * You can (optionally!) define SDL_MAIN_USE_CALLBACKS before including
@@ -203,6 +204,12 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void);
  * This function should not go into an infinite mainloop; it should do any
  * one-time setup it requires and then return.
  *
+ * The app may optionally assign a pointer to `*appstate`. This pointer will
+ * be provided on every future call to the other entry points, to allow
+ * application state to be preserved between functions without the app
+ * needing to use a global variable. If this isn't set, the pointer will
+ * be NULL in future entry points.
+ *
  * If this function returns 0, the app will proceed to normal operation,
  * and will begin receiving repeated calls to SDL_AppIterate and SDL_AppEvent
  * for the life of the program. If this function returns < 0, SDL will
@@ -210,6 +217,7 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void);
  * an error to the platform. If it returns > 0, the SDL calls SDL_AppQuit
  * and terminates with an exit code that reports success to the platform.
  *
+ * \param appstate a place where the app can optionally store a pointer for future use.
  * \param argc The standard ANSI C main's argc; number of elements in `argv`
  * \param argv The standard ANSI C main's argv; array of command line arguments.
  * \returns -1 to terminate with an error, 1 to terminate with success, 0 to continue.
@@ -222,7 +230,7 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void);
  * \sa SDL_AppEvent
  * \sa SDL_AppQuit
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(int argc, char *argv[]);
+extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[]);
 
 /**
  * App-implemented iteration entry point for SDL_MAIN_USE_CALLBACKS apps.
@@ -248,6 +256,9 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(int argc, char *argv[]);
  * This function should not go into an infinite mainloop; it should do one
  * iteration of whatever the program does and return.
  *
+ * The `appstate` parameter is an optional pointer provided by the app during
+ * SDL_AppInit(). If the app never provided a pointer, this will be NULL.
+ *
  * If this function returns 0, the app will continue normal operation,
  * receiving repeated calls to SDL_AppIterate and SDL_AppEvent for the life
  * of the program. If this function returns < 0, SDL will call SDL_AppQuit
@@ -255,6 +266,7 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(int argc, char *argv[]);
  * platform. If it returns > 0, the SDL calls SDL_AppQuit and terminates with
  * an exit code that reports success to the platform.
  *
+ * \param appstate an optional pointer, provided by the app in SDL_AppInit.
  * \returns -1 to terminate with an error, 1 to terminate with success, 0 to continue.
  *
  * \threadsafety This function is not thread safe.
@@ -263,9 +275,8 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(int argc, char *argv[]);
  *
  * \sa SDL_AppInit
  * \sa SDL_AppEvent
- * \sa SDL_AppQuit
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void);
+extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void *appstate);
 
 /**
  * App-implemented event entry point for SDL_MAIN_USE_CALLBACKS apps.
@@ -294,6 +305,9 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void);
  * This function should not go into an infinite mainloop; it should handle
  * the provided event appropriately and return.
  *
+ * The `appstate` parameter is an optional pointer provided by the app during
+ * SDL_AppInit(). If the app never provided a pointer, this will be NULL.
+ *
  * If this function returns 0, the app will continue normal operation,
  * receiving repeated calls to SDL_AppIterate and SDL_AppEvent for the life
  * of the program. If this function returns < 0, SDL will call SDL_AppQuit
@@ -301,6 +315,8 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void);
  * platform. If it returns > 0, the SDL calls SDL_AppQuit and terminates with
  * an exit code that reports success to the platform.
  *
+ * \param appstate an optional pointer, provided by the app in SDL_AppInit.
+ * \param event the new event for the app to examine.
  * \returns -1 to terminate with an error, 1 to terminate with success, 0 to continue.
  *
  * \threadsafety This function is not thread safe.
@@ -309,9 +325,8 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void);
  *
  * \sa SDL_AppInit
  * \sa SDL_AppIterate
- * \sa SDL_AppQuit
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(const SDL_Event *event);
+extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(void *appstate, const SDL_Event *event);
 
 /**
  * App-implemented deinit entry point for SDL_MAIN_USE_CALLBACKS apps.
@@ -332,21 +347,28 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(const SDL_Event *event);
  * it after this function returns and before the process terminates, but
  * it is safe to do so.
  *
+ * The `appstate` parameter is an optional pointer provided by the app during
+ * SDL_AppInit(). If the app never provided a pointer, this will be NULL.
+ * This function call is the last time this pointer will be provided, so
+ * any resources to it should be cleaned up here.
+ *
+ * \param appstate an optional pointer, provided by the app in SDL_AppInit.
+ *
  * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AppInit
- * \sa SDL_AppIterate
- * \sa SDL_AppEvent
  */
-extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void);
+extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void *appstate);
 
 #endif  /* SDL_MAIN_USE_CALLBACKS */
 
 
 /**
- *  The prototype for the application's main() function
+ * The prototype for the application's main() function
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);

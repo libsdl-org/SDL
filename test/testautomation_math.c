@@ -25,7 +25,7 @@
 #define EULER M_E
 #endif
 
-#define IS_INFINITY(V) fpclassify(V) == FP_INFINITE
+#define IS_INFINITY(V) isinf(V)
 
 /* Square root of 3 (used in atan2) */
 #define SQRT3 1.7320508075688771931766041234368458390235900878906250

@@ -948,7 +948,6 @@ static int IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     joystick->hwdata = device;
-    joystick->instance_id = device->instance_id;
 
     joystick->naxes = device->naxes;
     joystick->nhats = device->nhats;
@@ -1297,33 +1296,24 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
             GCDeviceBattery *battery = controller.battery;
             if (battery) {
-                SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
+                SDL_PowerState state = SDL_POWERSTATE_UNKNOWN;
+                int percent = (int)SDL_roundf(battery.batteryLevel * 100.0f);
 
                 switch (battery.batteryState) {
                 case GCDeviceBatteryStateDischarging:
-                {
-                    float power_level = battery.batteryLevel;
-                    if (power_level <= 0.05f) {
-                        ePowerLevel = SDL_JOYSTICK_POWER_EMPTY;
-                    } else if (power_level <= 0.20f) {
-                        ePowerLevel = SDL_JOYSTICK_POWER_LOW;
-                    } else if (power_level <= 0.70f) {
-                        ePowerLevel = SDL_JOYSTICK_POWER_MEDIUM;
-                    } else {
-                        ePowerLevel = SDL_JOYSTICK_POWER_FULL;
-                    }
-                } break;
+                    state = SDL_POWERSTATE_ON_BATTERY;
+                    break;
                 case GCDeviceBatteryStateCharging:
-                    ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
+                    state = SDL_POWERSTATE_CHARGING;
                     break;
                 case GCDeviceBatteryStateFull:
-                    ePowerLevel = SDL_JOYSTICK_POWER_FULL;
+                    state = SDL_POWERSTATE_CHARGED;
                     break;
                 default:
                     break;
                 }
 
-                SDL_SendJoystickBatteryLevel(joystick, ePowerLevel);
+                SDL_SendJoystickPowerInfo(joystick, state, percent);
             }
         }
 #endif /* ENABLE_MFI_BATTERY */

@@ -47,21 +47,24 @@ extern "C" {
 
 
 /**
- *  The maximum size of a log message prior to SDL 2.0.24
+ * The maximum size of a log message prior to SDL 2.0.24.
  *
- *  As of 2.0.24 there is no limit to the length of SDL log messages.
+ * As of 2.0.24 there is no limit to the length of SDL log messages.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAX_LOG_MESSAGE 4096
 
 /**
- *  The predefined log categories
+ * The predefined log categories
  *
- *  By default the application category is enabled at the INFO level,
- *  the assert category is enabled at the WARN level, test is enabled
- *  at the VERBOSE level and all other categories are enabled at the
- *  ERROR level.
+ * By default the application category is enabled at the INFO level, the
+ * assert category is enabled at the WARN level, test is enabled at the
+ * VERBOSE level and all other categories are enabled at the ERROR level.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_LogCategory
 {
     SDL_LOG_CATEGORY_APPLICATION,
     SDL_LOG_CATEGORY_ERROR,
@@ -97,9 +100,11 @@ typedef enum
 } SDL_LogCategory;
 
 /**
- *  The predefined log priorities
+ * The predefined log priorities
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_LogPriority
 {
     SDL_LOG_PRIORITY_VERBOSE = 1,
     SDL_LOG_PRIORITY_DEBUG,
@@ -118,6 +123,7 @@ typedef enum
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_LogResetPriorities
  * \sa SDL_LogSetPriority
  */
 extern DECLSPEC void SDLCALL SDL_LogSetAllPriority(SDL_LogPriority priority);
@@ -131,6 +137,7 @@ extern DECLSPEC void SDLCALL SDL_LogSetAllPriority(SDL_LogPriority priority);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LogGetPriority
+ * \sa SDL_LogResetPriorities
  * \sa SDL_LogSetAllPriority
  */
 extern DECLSPEC void SDLCALL SDL_LogSetPriority(int category,
@@ -358,10 +365,12 @@ extern DECLSPEC void SDLCALL SDL_LogMessageV(int category,
  *
  * This function is called by SDL when there is new text to be logged.
  *
- * \param userdata what was passed as `userdata` to SDL_LogSetOutputFunction()
+ * \param userdata what was passed as `userdata` to SDL_SetLogOutputFunction()
  * \param category the category of the message
  * \param priority the priority of the message
  * \param message the message being output
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
@@ -375,9 +384,9 @@ typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LogSetOutputFunction
+ * \sa SDL_SetLogOutputFunction
  */
-extern DECLSPEC void SDLCALL SDL_LogGetOutputFunction(SDL_LogOutputFunction *callback, void **userdata);
+extern DECLSPEC void SDLCALL SDL_GetLogOutputFunction(SDL_LogOutputFunction *callback, void **userdata);
 
 /**
  * Replace the default log output function with one of your own.
@@ -387,9 +396,9 @@ extern DECLSPEC void SDLCALL SDL_LogGetOutputFunction(SDL_LogOutputFunction *cal
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LogGetOutputFunction
+ * \sa SDL_GetLogOutputFunction
  */
-extern DECLSPEC void SDLCALL SDL_LogSetOutputFunction(SDL_LogOutputFunction callback, void *userdata);
+extern DECLSPEC void SDLCALL SDL_SetLogOutputFunction(SDL_LogOutputFunction callback, void *userdata);
 
 
 /* Ends C function definitions when using C++ */

@@ -93,8 +93,8 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
 
 #ifndef SDL_VIDEO_DRIVER_UIKIT
 
-DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window *window, int interval, void (*callback)(void *), void *callbackParam);
-int SDL_iPhoneSetAnimationCallback(SDL_Window *window, int interval, void (*callback)(void *), void *callbackParam)
+DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window *window, int interval, void (*callback)(void *), void *callbackParam);
+int SDL_iOSSetAnimationCallback(SDL_Window *window, int interval, void (*callback)(void *), void *callbackParam)
 {
     (void)window;
     (void)interval;
@@ -103,8 +103,8 @@ int SDL_iPhoneSetAnimationCallback(SDL_Window *window, int interval, void (*call
     return SDL_Unsupported();
 }
 
-DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
-void SDL_iPhoneSetEventPump(SDL_bool enabled)
+DECLSPEC void SDLCALL SDL_iOSSetEventPump(SDL_bool enabled);
+void SDL_iOSSetEventPump(SDL_bool enabled)
 {
     (void)enabled;
     SDL_Unsupported();

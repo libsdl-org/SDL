@@ -29,6 +29,7 @@
 #define SDL_init_h_
 
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_error.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -39,10 +40,12 @@ extern "C" {
 /* As of version 0.5, SDL is loaded dynamically into the application */
 
 /**
- *   Initialization flags for SDL_Init and/or SDL_InitSubSystem
+ * Initialization flags for SDL_Init and/or SDL_InitSubSystem
  *
- * These are the flags which may be passed to SDL_Init().  You should
- * specify the subsystems which you will be using in your application.
+ * These are the flags which may be passed to SDL_Init(). You should specify
+ * the subsystems which you will be using in your application.
+ *
+ * \since This enum is available since SDL 3.0.0.
  *
  * \sa SDL_Init
  * \sa SDL_Quit
@@ -50,16 +53,16 @@ extern "C" {
  * \sa SDL_QuitSubSystem
  * \sa SDL_WasInit
  */
-typedef enum
+typedef enum SDL_InitFlags
 {
     SDL_INIT_TIMER        = 0x00000001,
-    SDL_INIT_AUDIO        = 0x00000010,
+    SDL_INIT_AUDIO        = 0x00000010,  /**< `SDL_INIT_AUDIO` implies `SDL_INIT_EVENTS` */
     SDL_INIT_VIDEO        = 0x00000020,  /**< `SDL_INIT_VIDEO` implies `SDL_INIT_EVENTS` */
-    SDL_INIT_JOYSTICK     = 0x00000200,  /**< `SDL_INIT_JOYSTICK` implies `SDL_INIT_EVENTS` */
+    SDL_INIT_JOYSTICK     = 0x00000200,  /**< `SDL_INIT_JOYSTICK` implies `SDL_INIT_EVENTS`, should be initialized on the same thread as SDL_INIT_VIDEO on Windows if you don't set SDL_HINT_JOYSTICK_THREAD */
     SDL_INIT_HAPTIC       = 0x00001000,
     SDL_INIT_GAMEPAD      = 0x00002000,  /**< `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK` */
     SDL_INIT_EVENTS       = 0x00004000,
-    SDL_INIT_SENSOR       = 0x00008000,
+    SDL_INIT_SENSOR       = 0x00008000,  /**< `SDL_INIT_SENSOR` implies `SDL_INIT_EVENTS` */
     SDL_INIT_CAMERA       = 0x00010000   /**< `SDL_INIT_CAMERA` implies `SDL_INIT_EVENTS` */
 } SDL_InitFlags;
 
@@ -70,7 +73,7 @@ typedef enum
  * two may be used interchangeably. Though for readability of your code
  * SDL_InitSubSystem() might be preferred.
  *
- * The file I/O (for example: SDL_RWFromFile) and threading (SDL_CreateThread)
+ * The file I/O (for example: SDL_IOFromFile) and threading (SDL_CreateThread)
  * subsystems are initialized by default. Message boxes
  * (SDL_ShowSimpleMessageBox) also attempt to work without initializing the
  * video subsystem, in hopes of being useful in showing an error dialog when

@@ -301,7 +301,7 @@ Your game probably has data files. Here's how to access them.
 Filesystem access works like a Unix filesystem; you have a single directory
 tree, possibly interpolated from several mounted locations, no drive letters,
 '/' for a path separator. You can access them with standard file APIs like
-open() or fopen() or SDL_RWops. You can read or write from the filesystem.
+open() or fopen() or SDL_IOStream. You can read or write from the filesystem.
 
 By default, you probably have a "MEMFS" filesystem (all files are stored in
 memory, but access to them is immediate and doesn't need to block). There are

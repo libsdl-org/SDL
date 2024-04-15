@@ -53,6 +53,7 @@ static int LoadDBUSSyms(void)
     SDL_DBUS_SYM(void (*)(DBusConnection *, dbus_bool_t), connection_set_exit_on_disconnect);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *), connection_get_is_connected);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusHandleMessageFunction, void *, DBusFreeFunction), connection_add_filter);
+    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusHandleMessageFunction, void *), connection_remove_filter);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, const char *, const DBusObjectPathVTable *, void *, DBusError *), connection_try_register_object_path);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusMessage *, dbus_uint32_t *), connection_send);
     SDL_DBUS_SYM(DBusMessage *(*)(DBusConnection *, DBusMessage *, int, DBusError *), connection_send_with_reply_and_block);
@@ -63,6 +64,7 @@ static int LoadDBUSSyms(void)
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, int), connection_read_write);
     SDL_DBUS_SYM(DBusDispatchStatus (*)(DBusConnection *), connection_dispatch);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *, const char *), message_is_signal);
+    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *), message_has_path);
     SDL_DBUS_SYM(DBusMessage *(*)(const char *, const char *, const char *, const char *), message_new_method_call);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, ...), message_append_args);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, va_list), message_append_args_valist);
@@ -628,6 +630,75 @@ failed:
     }
 
     return NULL;
+}
+
+/* Check to see if a Systemd unit exists and is currently running. */
+SDL_bool SDL_DBus_QuerySystemdUnitRunning(const char *unit_name, SDL_bool user_unit)
+{
+    const char *path, *prop;
+    DBusError err;
+    SDL_bool running = SDL_FALSE;
+
+    /* Make sure we have a connection to the dbus session bus */
+    if (!SDL_DBus_GetContext() || !dbus.session_conn) {
+        /* We either cannot connect to the session bus or were unable to
+         * load the D-Bus library at all. */
+        return SDL_FALSE;
+    }
+
+    /* Make sure the appropriate bus is available. */
+    if ((user_unit && !dbus.session_conn) || (!user_unit && !dbus.system_conn)) {
+        return SDL_FALSE;
+    }
+
+    dbus.error_init(&err);
+
+    /* Get the object path for the unit. */
+    DBusMessage *method = dbus.message_new_method_call("org.freedesktop.systemd1",
+                                                       "/org/freedesktop/systemd1",
+                                                       "org.freedesktop.systemd1.Manager",
+                                                       "GetUnit");
+    if (!method) {
+        return SDL_FALSE;
+    }
+
+    if (!dbus.message_append_args(method, DBUS_TYPE_STRING, &unit_name, DBUS_TYPE_INVALID)) {
+        SDL_OutOfMemory();
+        dbus.message_unref(method);
+        return SDL_FALSE;
+    }
+
+    DBusMessage *reply = dbus.connection_send_with_reply_and_block(user_unit ? dbus.session_conn : dbus.system_conn, method, DBUS_TIMEOUT_USE_DEFAULT, &err);
+    dbus.message_unref(method);
+    if (!reply) {
+        if (dbus.error_is_set(&err)) {
+            SDL_SetError("%s: %s", err.name, err.message);
+            dbus.error_free(&err);
+        }
+        return SDL_FALSE;
+    }
+
+    DBusMessageIter reply_iter;
+    if (!dbus.message_iter_init(reply, &reply_iter)) {
+        goto done;
+    }
+
+    if (dbus.message_iter_get_arg_type(&reply_iter) != DBUS_TYPE_OBJECT_PATH) {
+        goto done;
+    }
+
+    dbus.message_iter_get_basic(&reply_iter, &path);
+
+    /* We want to know the substate of the unit, which should be the string "running". */
+    if (SDL_DBus_QueryPropertyOnConnection(user_unit ? dbus.session_conn : dbus.system_conn,
+                                           "org.freedesktop.systemd1", path, "org.freedesktop.systemd1.Unit",
+                                           "SubState", DBUS_TYPE_STRING, &prop)) {
+        running = SDL_strcmp(prop, "running") == 0;
+    }
+
+done:
+    dbus.message_unref(reply);
+    return running;
 }
 
 #endif

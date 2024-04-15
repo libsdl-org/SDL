@@ -74,17 +74,18 @@
     <ClInclude Include="..\include\SDL3\SDL_platform_defines.h" />
     <ClInclude Include="..\include\SDL3\SDL_power.h" />
     <ClInclude Include="..\include\SDL3\SDL_properties.h" />
-    <ClInclude Include="..\include\SDL3\SDL_quit.h" />
     <ClInclude Include="..\include\SDL3\SDL_rect.h" />
     <ClInclude Include="..\include\SDL3\SDL_render.h" />
     <ClInclude Include="..\include\SDL3\SDL_revision.h" />
-    <ClInclude Include="..\include\SDL3\SDL_rwops.h" />
+    <ClInclude Include="..\include\SDL3\SDL_iostream.h" />
     <ClInclude Include="..\include\SDL3\SDL_scancode.h" />
     <ClInclude Include="..\include\SDL3\SDL_sensor.h" />
     <ClInclude Include="..\include\SDL3\SDL_stdinc.h" />
+    <ClInclude Include="..\include\SDL3\SDL_storage.h" />
     <ClInclude Include="..\include\SDL3\SDL_surface.h" />
     <ClInclude Include="..\include\SDL3\SDL_system.h" />
     <ClInclude Include="..\include\SDL3\SDL_thread.h" />
+    <ClInclude Include="..\include\SDL3\SDL_time.h" />
     <ClInclude Include="..\include\SDL3\SDL_timer.h" />
     <ClInclude Include="..\include\SDL3\SDL_touch.h" />
     <ClInclude Include="..\include\SDL3\SDL_types.h" />
@@ -107,6 +108,7 @@
     <ClInclude Include="..\src\core\winrt\SDL_winrtapp_common.h" />
     <ClInclude Include="..\src\core\winrt\SDL_winrtapp_direct3d.h" />
     <ClInclude Include="..\src\core\winrt\SDL_winrtapp_xaml.h" />
+    <ClInclude Include="..\src\cpuinfo\SDL_cpuinfo_c.h" />
     <ClInclude Include="..\src\dynapi\SDL_dynapi.h" />
     <ClInclude Include="..\src\dynapi\SDL_dynapi_overrides.h" />
     <ClInclude Include="..\src\dynapi\SDL_dynapi_procs.h" />
@@ -120,6 +122,7 @@
     <ClInclude Include="..\src\events\SDL_mouse_c.h" />
     <ClInclude Include="..\src\events\SDL_touch_c.h" />
     <ClInclude Include="..\src\events\SDL_windowevents_c.h" />
+    <ClInclude Include="..\src\filesystem\SDL_sysfilesystem.h" />
     <ClInclude Include="..\src\haptic\SDL_haptic_c.h" />
     <ClInclude Include="..\src\haptic\SDL_syshaptic.h" />
     <ClInclude Include="..\src\haptic\windows\SDL_dinputhaptic_c.h" />
@@ -311,6 +314,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\src\dialog\SDL_dialog_utils.c" />
     <ClCompile Include="..\src\events\SDL_clipboardevents.c" />
     <ClCompile Include="..\src\events\SDL_displayevents.c" />
     <ClCompile Include="..\src\events\SDL_dropevents.c" />
@@ -332,7 +336,9 @@
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
-    <ClCompile Include="..\src\file\SDL_rwops.c" />
+    <ClCompile Include="..\src\file\SDL_iostream.c" />
+    <ClCompile Include="..\src\filesystem\SDL_filesystem.c" />
+    <ClCompile Include="..\src\filesystem\windows\SDL_sysfsops.c" />
     <ClCompile Include="..\src\haptic\dummy\SDL_syshaptic.c" />
     <ClCompile Include="..\src\haptic\SDL_haptic.c" />
     <ClCompile Include="..\src\haptic\windows\SDL_dinputhaptic.c" />
@@ -439,6 +445,8 @@
     <ClCompile Include="..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\src\stdlib\SDL_string.c" />
     <ClCompile Include="..\src\stdlib\SDL_strtokr.c" />
+    <ClCompile Include="..\src\storage\generic\SDL_genericstorage.c" />
+    <ClCompile Include="..\src\storage\SDL_storage.c" />
     <ClCompile Include="..\src\thread\generic\SDL_syssem.c" />
     <ClCompile Include="..\src\thread\SDL_thread.c" />
     <ClCompile Include="..\src\thread\stdcpp\SDL_syscond.cpp">
@@ -515,6 +523,8 @@
     </ClCompile>
     <ClCompile Include="..\src\timer\SDL_timer.c" />
     <ClCompile Include="..\src\timer\windows\SDL_systimer.c" />
+    <ClCompile Include="..\src\time\SDL_time.c" />
+    <ClCompile Include="..\src\time\windows\SDL_systime.c" />
     <ClCompile Include="..\src\video\dummy\SDL_nullevents.c" />
     <ClCompile Include="..\src\video\dummy\SDL_nullframebuffer.c" />
     <ClCompile Include="..\src\video\dummy\SDL_nullvideo.c" />

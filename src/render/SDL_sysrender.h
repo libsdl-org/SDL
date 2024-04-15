@@ -220,6 +220,7 @@ struct SDL_Renderer
 
     /* The current renderer info */
     SDL_RendererInfo info;
+    SDL_bool software;
 
     /* The window associated with the renderer */
     SDL_Window *window;

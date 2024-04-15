@@ -33,7 +33,7 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     /* The 3DS only supports these 12 languages, only one can be active at a time */
     static const char AVAILABLE_LOCALES[][6] = { "ja_JP", "en_US", "fr_FR", "de_DE",
-                                                 "it_IT", "es_ES", "zn_CN", "ko_KR",
+                                                 "it_IT", "es_ES", "zh_CN", "ko_KR",
                                                  "nl_NL", "pt_PT", "ru_RU", "zh_TW" };
     u8 current_locale = GetLocaleIndex();
     if (current_locale != BAD_LOCALE) {
@@ -45,12 +45,11 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 static u8 GetLocaleIndex(void)
 {
     u8 current_locale;
+    Result result;
     if (R_FAILED(cfguInit())) {
         return BAD_LOCALE;
     }
-    if (R_FAILED(CFGU_GetSystemLanguage(&current_locale))) {
-        return BAD_LOCALE;
-    }
+    result = CFGU_GetSystemLanguage(&current_locale);
     cfguExit();
-    return current_locale;
+    return R_SUCCEEDED(result) ? current_locale : BAD_LOCALE;
 }

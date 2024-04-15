@@ -21,7 +21,7 @@ static SDL_AudioStream *stream_in = NULL;
 static SDL_AudioStream *stream_out = NULL;
 static SDLTest_CommonState *state = NULL;
 
-int SDL_AppInit(int argc, char **argv)
+int SDL_AppInit(void **appstate, int argc, char **argv)
 {
     SDL_AudioDeviceID *devices;
     SDL_AudioSpec outspec;
@@ -145,7 +145,7 @@ int SDL_AppInit(int argc, char **argv)
     return 0;
 }
 
-int SDL_AppEvent(const SDL_Event *event)
+int SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     if (event->type == SDL_EVENT_QUIT) {
         return 1;  /* terminate as success. */
@@ -169,7 +169,7 @@ int SDL_AppEvent(const SDL_Event *event)
     return 0;  /* keep going. */
 }
 
-int SDL_AppIterate(void)
+int SDL_AppIterate(void *appstate)
 {
     if (!SDL_AudioDevicePaused(SDL_GetAudioStreamDevice(stream_in))) {
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
@@ -195,7 +195,7 @@ int SDL_AppIterate(void)
     return 0;  /* keep app going. */
 }
 
-void SDL_AppQuit(void)
+void SDL_AppQuit(void *appstate)
 {
     SDL_Log("Shutting down.\n");
     const SDL_AudioDeviceID devid_in = SDL_GetAudioStreamDevice(stream_in);

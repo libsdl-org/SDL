@@ -28,6 +28,9 @@
 // Available audio drivers
 static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO
+#ifdef SDL_AUDIO_DRIVER_PIPEWIRE
+    &PIPEWIRE_PREFERRED_bootstrap,
+#endif
     &PULSEAUDIO_bootstrap,
 #endif
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE
@@ -98,15 +101,41 @@ static const AudioBootStrap *const bootstrap[] = {
 
 static SDL_AudioDriver current_audio;
 
+// Deduplicated list of audio bootstrap drivers.
+static const AudioBootStrap *deduped_bootstrap[SDL_arraysize(bootstrap) - 1];
+
 int SDL_GetNumAudioDrivers(void)
 {
-    return SDL_arraysize(bootstrap) - 1;
+    static int num_drivers = -1;
+
+    if (num_drivers >= 0) {
+        return num_drivers;
+    }
+
+    num_drivers = 0;
+
+    // Build a list of unique audio drivers.
+    for (int i = 0; bootstrap[i] != NULL; ++i) {
+        SDL_bool duplicate = SDL_FALSE;
+        for (int j = 0; j < i; ++j) {
+            if (SDL_strcmp(bootstrap[i]->name, bootstrap[j]->name) == 0) {
+                duplicate = SDL_TRUE;
+                break;
+            }
+        }
+
+        if (!duplicate) {
+            deduped_bootstrap[num_drivers++] = bootstrap[i];
+        }
+    }
+
+    return num_drivers;
 }
 
 const char *SDL_GetAudioDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
-        return bootstrap[index]->name;
+        return deduped_bootstrap[index]->name;
     }
     return NULL;
 }
@@ -594,6 +623,9 @@ static SDL_AudioDevice *CreateAudioOutputDevice(const char *name, const SDL_Audi
 // The audio backends call this when a new device is plugged in.
 SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool iscapture, const char *name, const SDL_AudioSpec *inspec, void *handle)
 {
+    // device handles MUST be unique! If the target reuses the same handle for hardware with both input and output interfaces, wrap it in a pointer you SDL_malloc'd!
+    SDL_assert(SDL_FindPhysicalAudioDeviceByHandle(handle) == NULL);
+
     const SDL_AudioFormat default_format = iscapture ? DEFAULT_AUDIO_CAPTURE_FORMAT : DEFAULT_AUDIO_OUTPUT_FORMAT;
     const int default_channels = iscapture ? DEFAULT_AUDIO_CAPTURE_CHANNELS : DEFAULT_AUDIO_OUTPUT_CHANNELS;
     const int default_freq = iscapture ? DEFAULT_AUDIO_CAPTURE_FREQUENCY : DEFAULT_AUDIO_OUTPUT_FREQUENCY;
@@ -884,8 +916,8 @@ int SDL_InitAudio(const char *driver_name)
                         current_audio.name = bootstrap[i]->name;
                         current_audio.desc = bootstrap[i]->desc;
                         initialized = SDL_TRUE;
+                        break;
                     }
-                    break;
                 }
             }
 
@@ -1903,7 +1935,7 @@ void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
     // Finalize and unlock everything.
     for (int i = 0; i < num_streams; i++) {
         SDL_AudioStream *stream = streams[i];
-        if (stream && stream->bound_device) {
+        if (stream) {
             SDL_LogicalAudioDevice *logdev = stream->bound_device;
             stream->bound_device = NULL;
             SDL_UnlockMutex(stream->lock);

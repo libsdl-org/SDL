@@ -2099,7 +2099,6 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         goto error;
     }
     renderer->info = GLES2_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     GLES2_InvalidateCachedState(renderer);
     renderer->window = window;
@@ -2264,7 +2263,7 @@ error:
 SDL_RenderDriver GLES2_RenderDriver = {
     GLES2_CreateRenderer,
     { "opengles2",
-      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
+      SDL_RENDERER_PRESENTVSYNC,
       4,
       { SDL_PIXELFORMAT_RGBA32,
         SDL_PIXELFORMAT_BGRA32,

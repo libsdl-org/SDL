@@ -594,7 +594,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 #endif
 }
 
-void SDL_LogGetOutputFunction(SDL_LogOutputFunction *callback, void **userdata)
+void SDL_GetLogOutputFunction(SDL_LogOutputFunction *callback, void **userdata)
 {
     if (callback) {
         *callback = SDL_log_function;
@@ -604,7 +604,7 @@ void SDL_LogGetOutputFunction(SDL_LogOutputFunction *callback, void **userdata)
     }
 }
 
-void SDL_LogSetOutputFunction(SDL_LogOutputFunction callback, void *userdata)
+void SDL_SetLogOutputFunction(SDL_LogOutputFunction callback, void *userdata)
 {
     SDL_log_function = callback;
     SDL_log_userdata = userdata;

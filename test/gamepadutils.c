@@ -18,11 +18,7 @@
 #include "gamepad_face_abxy.h"
 #include "gamepad_face_bayx.h"
 #include "gamepad_face_sony.h"
-#include "gamepad_battery_unknown.h"
-#include "gamepad_battery_empty.h"
-#include "gamepad_battery_low.h"
-#include "gamepad_battery_medium.h"
-#include "gamepad_battery_full.h"
+#include "gamepad_battery.h"
 #include "gamepad_battery_wired.h"
 #include "gamepad_touchpad.h"
 #include "gamepad_button.h"
@@ -99,7 +95,7 @@ struct GamepadImage
     SDL_Texture *face_abxy_texture;
     SDL_Texture *face_bayx_texture;
     SDL_Texture *face_sony_texture;
-    SDL_Texture *battery_texture[1 + SDL_JOYSTICK_POWER_MAX];
+    SDL_Texture *battery_texture[2];
     SDL_Texture *touchpad_texture;
     SDL_Texture *button_texture;
     SDL_Texture *axis_texture;
@@ -125,7 +121,8 @@ struct GamepadImage
 
     SDL_bool elements[SDL_GAMEPAD_ELEMENT_MAX];
 
-    SDL_JoystickPowerLevel battery_level;
+    SDL_PowerState battery_state;
+    int battery_percent;
 
     int num_fingers;
     GamepadTouchpadFinger *fingers;
@@ -135,9 +132,9 @@ static SDL_Texture *CreateTexture(SDL_Renderer *renderer, unsigned char *data, u
 {
     SDL_Texture *texture = NULL;
     SDL_Surface *surface;
-    SDL_RWops *src = SDL_RWFromConstMem(data, len);
+    SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_RW(src, SDL_TRUE);
+        surface = SDL_LoadBMP_IO(src, SDL_TRUE);
         if (surface) {
             texture = SDL_CreateTextureFromSurface(renderer, surface);
             SDL_DestroySurface(surface);
@@ -160,13 +157,9 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         ctx->face_sony_texture = CreateTexture(renderer, gamepad_face_sony_bmp, gamepad_face_sony_bmp_len);
         SDL_QueryTexture(ctx->face_abxy_texture, NULL, NULL, &ctx->face_width, &ctx->face_height);
 
-        ctx->battery_texture[1 + SDL_JOYSTICK_POWER_UNKNOWN] = CreateTexture(renderer, gamepad_battery_unknown_bmp, gamepad_battery_unknown_bmp_len);
-        ctx->battery_texture[1 + SDL_JOYSTICK_POWER_EMPTY] = CreateTexture(renderer, gamepad_battery_empty_bmp, gamepad_battery_empty_bmp_len);
-        ctx->battery_texture[1 + SDL_JOYSTICK_POWER_LOW] = CreateTexture(renderer, gamepad_battery_low_bmp, gamepad_battery_low_bmp_len);
-        ctx->battery_texture[1 + SDL_JOYSTICK_POWER_MEDIUM] = CreateTexture(renderer, gamepad_battery_medium_bmp, gamepad_battery_medium_bmp_len);
-        ctx->battery_texture[1 + SDL_JOYSTICK_POWER_FULL] = CreateTexture(renderer, gamepad_battery_full_bmp, gamepad_battery_full_bmp_len);
-        ctx->battery_texture[1 + SDL_JOYSTICK_POWER_WIRED] = CreateTexture(renderer, gamepad_battery_wired_bmp, gamepad_battery_wired_bmp_len);
-        SDL_QueryTexture(ctx->battery_texture[1 + SDL_JOYSTICK_POWER_UNKNOWN], NULL, NULL, &ctx->battery_width, &ctx->battery_height);
+        ctx->battery_texture[0] = CreateTexture(renderer, gamepad_battery_bmp, gamepad_battery_bmp_len);
+        ctx->battery_texture[1] = CreateTexture(renderer, gamepad_battery_wired_bmp, gamepad_battery_wired_bmp_len);
+        SDL_QueryTexture(ctx->battery_texture[0], NULL, NULL, &ctx->battery_width, &ctx->battery_height);
 
         ctx->touchpad_texture = CreateTexture(renderer, gamepad_touchpad_bmp, gamepad_touchpad_bmp_len);
         SDL_QueryTexture(ctx->touchpad_texture, NULL, NULL, &ctx->touchpad_width, &ctx->touchpad_height);
@@ -469,7 +462,7 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         }
     }
 
-    ctx->battery_level = SDL_GetGamepadPowerLevel(gamepad);
+    ctx->battery_state = SDL_GetGamepadPowerInfo(gamepad, &ctx->battery_percent);
 
     if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
         int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
@@ -571,12 +564,39 @@ void RenderGamepadImage(GamepadImage *ctx)
         }
     }
 
-    if (ctx->display_mode == CONTROLLER_MODE_TESTING && ctx->battery_level != SDL_JOYSTICK_POWER_UNKNOWN) {
+    if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
+        ctx->battery_state != SDL_POWERSTATE_NO_BATTERY &&
+        ctx->battery_state != SDL_POWERSTATE_UNKNOWN) {
+        Uint8 r, g, b, a;
+        SDL_FRect fill;
+
         dst.x = (float)ctx->x + ctx->gamepad_width - ctx->battery_width;
         dst.y = (float)ctx->y;
         dst.w = (float)ctx->battery_width;
         dst.h = (float)ctx->battery_height;
-        SDL_RenderTexture(ctx->renderer, ctx->battery_texture[1 + ctx->battery_level], NULL, &dst);
+
+        SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
+        if (ctx->battery_percent > 40) {
+            SDL_SetRenderDrawColor(ctx->renderer, 0x00, 0xD4, 0x50, 0xFF);
+        } else if (ctx->battery_percent > 10) {
+            SDL_SetRenderDrawColor(ctx->renderer, 0xFF, 0xC7, 0x00, 0xFF);
+        } else {
+            SDL_SetRenderDrawColor(ctx->renderer, 0xC8, 0x1D, 0x13, 0xFF);
+        }
+
+        fill = dst;
+        fill.x += 2;
+        fill.y += 2;
+        fill.h -= 4;
+        fill.w = 25.0f * (ctx->battery_percent / 100.0f);
+        SDL_RenderFillRect(ctx->renderer, &fill);
+        SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+
+        if (ctx->battery_state == SDL_POWERSTATE_ON_BATTERY) {
+            SDL_RenderTexture(ctx->renderer, ctx->battery_texture[0], NULL, &dst);
+        } else {
+            SDL_RenderTexture(ctx->renderer, ctx->battery_texture[1], NULL, &dst);
+        }
     }
 
     if (ctx->display_mode == CONTROLLER_MODE_TESTING && ctx->showing_touchpad) {

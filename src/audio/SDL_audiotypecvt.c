@@ -25,26 +25,9 @@
 // TODO: NEON is disabled until https://github.com/libsdl-org/SDL/issues/8352 can be fixed
 #undef SDL_NEON_INTRINSICS
 
-#ifndef SDL_PLATFORM_EMSCRIPTEN
-#if defined(__x86_64__) && defined(SDL_SSE2_INTRINSICS)
-#define NEED_SCALAR_CONVERTER_FALLBACKS 0 // x86_64 guarantees SSE2.
-#elif defined(SDL_PLATFORM_MACOS) && defined(SDL_SSE2_INTRINSICS)
-#define NEED_SCALAR_CONVERTER_FALLBACKS 0 // macOS/Intel guarantees SSE2.
-#elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && defined(SDL_NEON_INTRINSICS)
-#define NEED_SCALAR_CONVERTER_FALLBACKS 0 // ARMv8+ promise NEON.
-#elif defined(SDL_PLATFORM_APPLE) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7) && defined(SDL_NEON_INTRINSICS)
-#define NEED_SCALAR_CONVERTER_FALLBACKS 0 // All Apple ARMv7 chips promise NEON support.
-#endif
-#endif /* SDL_PLATFORM_EMSCRIPTEN */
-
-// Set to zero if platform is guaranteed to use a SIMD codepath here.
-#if !defined(NEED_SCALAR_CONVERTER_FALLBACKS)
-#define NEED_SCALAR_CONVERTER_FALLBACKS 1
-#endif
-
 #define DIVBY2147483648 0.0000000004656612873077392578125f // 0x1p-31f
 
-#if NEED_SCALAR_CONVERTER_FALLBACKS
+// start fallback scalar converters
 
 // This code requires that floats are in the IEEE-754 binary32 format
 SDL_COMPILE_TIME_ASSERT(float_bits, sizeof(float) == sizeof(Uint32));
@@ -201,7 +184,7 @@ static void SDL_Convert_F32_to_S32_Scalar(Sint32 *dst, const float *src, int num
 
 #undef SIGNMASK
 
-#endif // NEED_SCALAR_CONVERTER_FALLBACKS
+// end fallback scalar converters
 
 #ifdef SDL_SSE2_INTRINSICS
 static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const Sint8 *src, int num_samples)
@@ -999,9 +982,7 @@ void SDL_ChooseAudioConverters(void)
     }
 #endif
 
-#if NEED_SCALAR_CONVERTER_FALLBACKS
     SET_CONVERTER_FUNCS(Scalar);
-#endif
 
 #undef SET_CONVERTER_FUNCS
 

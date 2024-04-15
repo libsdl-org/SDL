@@ -45,7 +45,7 @@ static SDL_bool suspend_when_occluded;
 /* -1: infinite random moves (default); >=0: enables N deterministic moves */
 static int iterations = -1;
 
-void SDL_AppQuit(void)
+void SDL_AppQuit(void *appstate)
 {
     SDL_free(sprites);
     SDL_free(positions);
@@ -386,12 +386,12 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_RenderPresent(renderer);
 }
 
-int SDL_AppEvent(const SDL_Event *event)
+int SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     return SDLTest_CommonEventMainCallbacks(state, event);
 }
 
-int SDL_AppIterate(void)
+int SDL_AppIterate(void *appstate)
 {
     Uint64 now;
     int i;
@@ -425,7 +425,7 @@ int SDL_AppIterate(void)
     return 0;  /* keep going */
 }
 
-int SDL_AppInit(int argc, char *argv[])
+int SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     int i;
     Uint64 seed;

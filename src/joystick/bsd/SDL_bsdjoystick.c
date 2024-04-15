@@ -595,7 +595,6 @@ static int BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
         return -1;
     }
 
-    joy->instance_id = item->device_instance;
     joy->hwdata = hw;
     joy->naxes = hw->naxes;
     joy->nbuttons = hw->nbuttons;

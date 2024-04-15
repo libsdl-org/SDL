@@ -28,7 +28,6 @@ static int TestVirtualJoystick(void *arg)
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 
     SDL_zero(desc);
-    desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
     desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
     desc.naxes = SDL_GAMEPAD_AXIS_MAX;
     desc.nbuttons = SDL_GAMEPAD_BUTTON_MAX;
@@ -50,6 +49,7 @@ static int TestVirtualJoystick(void *arg)
             SDLTest_AssertCheck(SDL_GetJoystickSerial(joystick) == NULL, "SDL_GetJoystickSerial()");
             SDLTest_AssertCheck(SDL_GetJoystickType(joystick) == desc.type, "SDL_GetJoystickType()");
             SDLTest_AssertCheck(SDL_GetNumJoystickAxes(joystick) == desc.naxes, "SDL_GetNumJoystickAxes()");
+            SDLTest_AssertCheck(SDL_GetNumJoystickBalls(joystick) == 0, "SDL_GetNumJoystickBalls()");
             SDLTest_AssertCheck(SDL_GetNumJoystickHats(joystick) == desc.nhats, "SDL_GetNumJoystickHats()");
             SDLTest_AssertCheck(SDL_GetNumJoystickButtons(joystick) == desc.nbuttons, "SDL_GetNumJoystickButtons()");
 

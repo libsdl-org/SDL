@@ -20,9 +20,9 @@
 */
 
 #include "SDL_internal.h"
-#include "SDL_waylandvideo.h"
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND
+#ifndef SDL_waylandmouse_h_
+#define SDL_waylandmouse_h_
 
 extern void Wayland_InitMouse(void);
 extern void Wayland_FiniMouse(SDL_VideoData *data);

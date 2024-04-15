@@ -29,6 +29,7 @@
 #define SDL_system_h_
 
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
@@ -111,7 +112,7 @@ typedef union _XEvent XEvent;
 typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
 
 /**
- * Set a callback for every X11 event
+ * Set a callback for every X11 event.
  *
  * The callback may modify the event, and should return SDL_TRUE if the event
  * should continue to be processed, or SDL_FALSE to prevent further
@@ -124,9 +125,7 @@ typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
  */
 extern DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
 
-/*
- * Platform specific functions for Linux
- */
+/* Platform specific functions for Linux*/
 #ifdef SDL_PLATFORM_LINUX
 
 /**
@@ -165,8 +164,6 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  */
 #ifdef SDL_PLATFORM_IOS
 
-#define SDL_iOSSetAnimationCallback(window, interval, callback, callbackParam) SDL_iPhoneSetAnimationCallback(window, interval, callback, callbackParam)
-
 /**
  * Use this function to set the animation callback on Apple iOS.
  *
@@ -177,15 +174,20 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  * ```
  *
  * Where its parameter, `callbackParam`, is what was passed as `callbackParam`
- * to SDL_iPhoneSetAnimationCallback().
+ * to SDL_iOSSetAnimationCallback().
  *
  * This function is only available on Apple iOS.
  *
  * For more information see:
- * https://github.com/libsdl-org/SDL/blob/main/docs/README-ios.md
  *
- * This functions is also accessible using the macro
- * SDL_iOSSetAnimationCallback() since SDL 2.0.4.
+ * https://wiki.libsdl.org/SDL3/README/ios
+ *
+ * Note that if you use the "main callbacks" instead of a standard C `main`
+ * function, you don't have to use this API, as SDL will manage this for you.
+ *
+ * Details on main callbacks are here:
+ *
+ * https://wiki.libsdl.org/SDL3/README/main-functions
  *
  * \param window the window for which the animation callback should be set
  * \param interval the number of frames after which **callback** will be
@@ -197,27 +199,22 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_iPhoneSetEventPump
+ * \sa SDL_iOSSetEventPump
  */
-extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (SDLCALL *callback)(void*), void *callbackParam);
-
-#define SDL_iOSSetEventPump(enabled) SDL_iPhoneSetEventPump(enabled)
+extern DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window * window, int interval, void (SDLCALL *callback)(void*), void *callbackParam);
 
 /**
  * Use this function to enable or disable the SDL event pump on Apple iOS.
  *
  * This function is only available on Apple iOS.
  *
- * This functions is also accessible using the macro SDL_iOSSetEventPump()
- * since SDL 2.0.4.
- *
  * \param enabled SDL_TRUE to enable the event pump, SDL_FALSE to disable it
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_iPhoneSetAnimationCallback
+ * \sa SDL_iOSSetAnimationCallback
  */
-extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
+extern DECLSPEC void SDLCALL SDL_iOSSetEventPump(SDL_bool enabled);
 
 #endif /* SDL_PLATFORM_IOS */
 
@@ -338,9 +335,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
 extern DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
 
 /**
-   See the official Android developer guide for more information:
-   http://developer.android.com/guide/topics/data/data-storage.html
-*/
+ * See the official Android developer guide for more information:
+ * http://developer.android.com/guide/topics/data/data-storage.html
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_ANDROID_EXTERNAL_STORAGE_READ   0x01
 #define SDL_ANDROID_EXTERNAL_STORAGE_WRITE  0x02
 
@@ -480,9 +479,11 @@ extern DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
 #ifdef SDL_PLATFORM_WINRT
 
 /**
- *  WinRT / Windows Phone path types
+ * WinRT / Windows Phone path types
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_WinRT_Path
 {
     /** The installed app's root directory.
         Files here are likely to be read-only. */
@@ -504,9 +505,11 @@ typedef enum
 
 
 /**
- *  WinRT Device Family
+ * WinRT Device Family
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_WinRT_DeviceFamily
 {
     /** Unknown family  */
     SDL_WINRT_DEVICEFAMILY_UNKNOWN,
@@ -535,38 +538,13 @@ typedef enum
  * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
  *
  * \param pathType the type of path to retrieve, one of SDL_WinRT_Path
- * \returns a UCS-2 string (16-bit, wide-char) containing the path, or NULL if
- *          the path is not available for any reason; call SDL_GetError() for
- *          more information.
- *
- * \since This function is available since SDL 2.0.3.
- *
- * \sa SDL_WinRTGetFSPathUTF8
- */
-extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType);
-
-/**
- * Retrieve a WinRT defined path on the local file system.
- *
- * Not all paths are available on all versions of Windows. This is especially
- * true on Windows Phone. Check the documentation for the given SDL_WinRT_Path
- * for more information on which path types are supported where.
- *
- * Documentation on most app-specific path types on WinRT can be found on
- * MSDN, at the URL:
- *
- * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
- *
- * \param pathType the type of path to retrieve, one of SDL_WinRT_Path
  * \returns a UTF-8 string (8-bit, multi-byte) containing the path, or NULL if
  *          the path is not available for any reason; call SDL_GetError() for
  *          more information.
  *
- * \since This function is available since SDL 2.0.3.
- *
- * \sa SDL_WinRTGetFSPathUNICODE
+ * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType);
+extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPath(SDL_WinRT_Path pathType);
 
 /**
  * Detects the device family of WinRT platform at runtime.
@@ -671,7 +649,7 @@ extern DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue)
  *                      handle.
  * \returns 0 if success, -1 if any error occurs.
  *
- * \since This function is available since SDL 2.28.0.
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GDKGetDefaultUser(XUserHandle * outUserHandle);
 

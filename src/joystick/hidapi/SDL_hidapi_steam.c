@@ -112,14 +112,14 @@ typedef struct SteamControllerStateInternal_t
 #define STEAM_LEFT_TRIGGER_MASK            0x00000002
 #define STEAM_RIGHT_BUMPER_MASK            0x00000004
 #define STEAM_LEFT_BUMPER_MASK             0x00000008
-#define STEAM_BUTTON_0_MASK                0x00000010 /* Y */
-#define STEAM_BUTTON_1_MASK                0x00000020 /* B */
-#define STEAM_BUTTON_2_MASK                0x00000040 /* X */
-#define STEAM_BUTTON_3_MASK                0x00000080 /* A */
-#define STEAM_TOUCH_0_MASK                 0x00000100 /* DPAD UP */
-#define STEAM_TOUCH_1_MASK                 0x00000200 /* DPAD RIGHT */
-#define STEAM_TOUCH_2_MASK                 0x00000400 /* DPAD LEFT */
-#define STEAM_TOUCH_3_MASK                 0x00000800 /* DPAD DOWN */
+#define STEAM_BUTTON_NORTH_MASK            0x00000010 /* Y */
+#define STEAM_BUTTON_EAST_MASK             0x00000020 /* B */
+#define STEAM_BUTTON_WEST_MASK             0x00000040 /* X */
+#define STEAM_BUTTON_SOUTH_MASK            0x00000080 /* A */
+#define STEAM_DPAD_UP_MASK                 0x00000100 /* DPAD UP */
+#define STEAM_DPAD_RIGHT_MASK              0x00000200 /* DPAD RIGHT */
+#define STEAM_DPAD_LEFT_MASK               0x00000400 /* DPAD LEFT */
+#define STEAM_DPAD_DOWN_MASK               0x00000800 /* DPAD DOWN */
 #define STEAM_BUTTON_MENU_MASK             0x00001000 /* SELECT */
 #define STEAM_BUTTON_STEAM_MASK            0x00002000 /* GUIDE */
 #define STEAM_BUTTON_ESCAPE_MASK           0x00004000 /* START */
@@ -1125,16 +1125,16 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                 Uint8 hat = 0;
 
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_3_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                                          (ctx->m_state.ulButtons & STEAM_BUTTON_SOUTH_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_1_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                                          (ctx->m_state.ulButtons & STEAM_BUTTON_EAST_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_2_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                                          (ctx->m_state.ulButtons & STEAM_BUTTON_WEST_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH,
-                                          (ctx->m_state.ulButtons & STEAM_BUTTON_0_MASK) ? SDL_PRESSED : SDL_RELEASED);
+                                          (ctx->m_state.ulButtons & STEAM_BUTTON_NORTH_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
                                           (ctx->m_state.ulButtons & STEAM_LEFT_BUMPER_MASK) ? SDL_PRESSED : SDL_RELEASED);
@@ -1158,16 +1158,16 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_RIGHT_PADDLE,
                                           (ctx->m_state.ulButtons & STEAM_BUTTON_BACK_RIGHT_MASK) ? SDL_PRESSED : SDL_RELEASED);
 
-                if (ctx->m_state.ulButtons & STEAM_TOUCH_0_MASK) {
+                if (ctx->m_state.ulButtons & STEAM_DPAD_UP_MASK) {
                     hat |= SDL_HAT_UP;
                 }
-                if (ctx->m_state.ulButtons & STEAM_TOUCH_3_MASK) {
+                if (ctx->m_state.ulButtons & STEAM_DPAD_DOWN_MASK) {
                     hat |= SDL_HAT_DOWN;
                 }
-                if (ctx->m_state.ulButtons & STEAM_TOUCH_2_MASK) {
+                if (ctx->m_state.ulButtons & STEAM_DPAD_LEFT_MASK) {
                     hat |= SDL_HAT_LEFT;
                 }
-                if (ctx->m_state.ulButtons & STEAM_TOUCH_1_MASK) {
+                if (ctx->m_state.ulButtons & STEAM_DPAD_RIGHT_MASK) {
                     hat |= SDL_HAT_RIGHT;
                 }
                 SDL_SendJoystickHat(timestamp, joystick, 0, hat);

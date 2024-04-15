@@ -302,7 +302,7 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
         SDL_SetMouseFocus(win);
         if (win) {
             SDL_assert(win == mouse->focus);
-            SDL_SendMouseMotion(0, win, mouse->mouseID, 0, x - win->x, y - win->y);
+            SDL_SendMouseMotion(0, win, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x - win->x, y - win->y);
         }
     }
 
@@ -450,9 +450,9 @@ static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
 
 void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
+    SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_Mouse *mouse;
     SDL_MouseData *driverdata;
-    SDL_MouseID mouseID;
     NSPoint location;
     CGFloat lastMoveX, lastMoveY;
     float deltaX, deltaY;
@@ -490,7 +490,6 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
         return; /* can happen when returning from fullscreen Space on shutdown */
     }
 
-    mouseID = mouse ? mouse->mouseID : 0;
     seenWarp = driverdata->seenWarp;
     driverdata->seenWarp = NO;
 
@@ -524,20 +523,15 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, 1, deltaX, deltaY);
+    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, SDL_TRUE, deltaX, deltaY);
 }
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
-    SDL_MouseID mouseID;
+    SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_MouseWheelDirection direction;
     CGFloat x, y;
-    SDL_Mouse *mouse = SDL_GetMouse();
-    if (!mouse) {
-        return;
-    }
 
-    mouseID = mouse->mouseID;
     x = -[event deltaX];
     y = [event deltaY];
     direction = SDL_MOUSEWHEEL_NORMAL;

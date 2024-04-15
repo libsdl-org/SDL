@@ -103,7 +103,6 @@ static SDL_bool HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     joystick->nbuttons = SDL_GAMEPAD_NUM_LUNA_BUTTONS;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_FULL;
 
     return SDL_TRUE;
 }
@@ -259,17 +258,8 @@ static void HIDAPI_DriverLuna_HandleBluetoothStatePacket(SDL_Joystick *joystick,
 
     if (size >= 2 && data[0] == 0x04) {
         /* Battery level report */
-        int level = data[1] * 100 / 0xFF;
-        if (level == 0) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
-        } else if (level <= 20) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
-        } else if (level <= 70) {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
-        } else {
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
-        }
-
+        int percent = (int)SDL_roundf((data[1] / 255.0f) * 100.0f);
+        SDL_SendJoystickPowerInfo(joystick, SDL_POWERSTATE_ON_BATTERY, percent);
         return;
     }
 

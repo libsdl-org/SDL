@@ -221,10 +221,11 @@
     <ClCompile Include="..\..\..\test\testautomation_properties.c" />
     <ClCompile Include="..\..\..\test\testautomation_rect.c" />
     <ClCompile Include="..\..\..\test\testautomation_render.c" />
-    <ClCompile Include="..\..\..\test\testautomation_rwops.c" />
+    <ClCompile Include="..\..\..\test\testautomation_iostream.c" />
     <ClCompile Include="..\..\..\test\testautomation_sdltest.c" />
     <ClCompile Include="..\..\..\test\testautomation_stdlib.c" />
     <ClCompile Include="..\..\..\test\testautomation_surface.c" />
+    <ClCompile Include="..\..\..\test\testautomation_time.c" />
     <ClCompile Include="..\..\..\test\testautomation_timer.c" />
     <ClCompile Include="..\..\..\test\testautomation_video.c" />
     <ClCompile Include="..\..\..\test\testautomation_subsystems.c" />

@@ -19,6 +19,21 @@
     <Filter Include="camera\dummy">
       <UniqueIdentifier>{000031d805439b865ff4550d2f620000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="filesystem">
+      <UniqueIdentifier>{00004389761f0ae646deb5a3d65f0000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="filesystem\windows">
+      <UniqueIdentifier>{0000bc587ef6c558d75ce2e620cb0000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="time">
+      <UniqueIdentifier>{0000948771d0040a6a55997a7f1e0000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="time\windows">
+      <UniqueIdentifier>{0000012051ca8361c8e1013aee1d0000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialog">
+      <UniqueIdentifier>{0000c99bfadbbcb05a474a8472910000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h">
@@ -129,9 +144,6 @@
     <ClInclude Include="..\include\SDL3\SDL_power.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SDL3\SDL_quit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_rect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -141,7 +153,7 @@
     <ClInclude Include="..\include\SDL3\SDL_revision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SDL3\SDL_rwops.h">
+    <ClInclude Include="..\include\SDL3\SDL_iostream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_scancode.h">
@@ -179,6 +191,9 @@
     </ClInclude>
     <ClInclude Include="..\src\camera\SDL_syscamera.h">
       <Filter>camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\filesystem\SDL_sysfilesystem.h">
+      <Filter>filesystem</Filter>
     </ClInclude>
     <ClInclude Include="..\src\joystick\SDL_gamepad_c.h">
       <Filter>Header Files</Filter>
@@ -226,6 +241,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\core\winrt\SDL_winrtapp_xaml.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cpuinfo\SDL_cpuinfo_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dynapi\SDL_dynapi.h">
@@ -549,6 +567,9 @@
     <ClCompile Include="..\src\cpuinfo\SDL_cpuinfo.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\dialog\SDL_dialog_utils.c">
+      <Filter>dialog</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\dynapi\SDL_dynapi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -579,10 +600,16 @@
     <ClCompile Include="..\src\events\SDL_windowevents.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\filesystem\SDL_filesystem.c">
+      <Filter>filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\filesystem\windows\SDL_sysfsops.c">
+      <Filter>filesystem\windows</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\filesystem\winrt\SDL_sysfilesystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\file\SDL_rwops.c">
+    <ClCompile Include="..\src\file\SDL_iostream.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\haptic\dummy\SDL_syshaptic.c">
@@ -776,6 +803,12 @@
     </ClCompile>
     <ClCompile Include="..\src\timer\windows\SDL_systimer.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\time\SDL_time.c">
+      <Filter>time</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\time\windows\SDL_systime.c">
+      <Filter>time\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\src\video\dummy\SDL_nullevents.c">
       <Filter>Source Files</Filter>

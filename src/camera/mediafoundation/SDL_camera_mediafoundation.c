@@ -105,7 +105,8 @@ static SDL_PixelFormatEnum MFVidFmtGuidToSDLFmt(const GUID *guid)
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-static const GUID *SDLFmtToMFVidFmtGuid(Uint32 sdlfmt) {
+static const GUID *SDLFmtToMFVidFmtGuid(SDL_PixelFormatEnum sdlfmt)
+{
     for (size_t i = 0; i < SDL_arraysize(fmtmappings); i++) {
         if (fmtmappings[i].sdlfmt == sdlfmt) {
             return fmtmappings[i].guid;

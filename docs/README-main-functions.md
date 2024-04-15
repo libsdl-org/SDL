@@ -137,7 +137,7 @@ functions:
 First:
 
 ```c
-int SDL_AppInit(int argc, char **argv);
+int SDL_AppInit(void **appstate, int argc, char **argv);
 ```
 
 This will be called _once_ before anything else. argc/argv work like they
@@ -148,10 +148,17 @@ an exit code that reports success to the platform. This function should not
 go into an infinite mainloop; it should do any one-time startup it requires
 and then return.
 
+If you want to, you can assign a pointer to `*appstate`, and this pointer
+will be made available to you in later functions calls in their `appstate`
+parameter. This allows you to avoid global variables, but is totally
+optional. If you don't set this, the pointer will be NULL in later function
+calls.
+
+
 Then:
 
 ```c
-int SDL_AppIterate(void);
+int SDL_AppIterate(void *appstate);
 ```
 
 This is called over and over, possibly at the refresh rate of the display or
@@ -171,7 +178,7 @@ as fast as possible. You do not check the event queue in this function
 Next:
 
 ```c
-int SDL_AppEvent(const SDL_Event *event);
+int SDL_AppEvent(void *appstate, const SDL_Event *event);
 ```
 
 This will be called whenever an SDL event arrives, on the thread that runs
@@ -183,7 +190,7 @@ SDL_AppIterate(), so you can terminate in response to SDL_EVENT_QUIT, etc.
 Finally:
 
 ```c
-void SDL_AppQuit(void);
+void SDL_AppQuit(void *appstate);
 ```
 
 This is called once before terminating the app--assuming the app isn't being
@@ -192,3 +199,5 @@ SDL will call SDL_Quit so the app doesn't have to (but it's safe for the app
 to call it, too). Process termination proceeds as if the app returned normally
 from main(), so atexit handles will run, if your platform supports that.
 
+If you set `*appstate` during SDL_AppInit, this is where you should free that
+data, as this pointer will not be provided to your app again.

@@ -130,29 +130,21 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(Uint32 src_format, Uint32 dst_format, int
 
     /* Get the available CPU features */
     if (features == 0x7fffffff) {
-        const char *override = SDL_getenv("SDL_BLIT_CPU_FEATURES");
-
         features = SDL_CPU_ANY;
-
-        /* Allow an override for testing .. */
-        if (override) {
-            (void)SDL_sscanf(override, "%u", &features);
-        } else {
-            if (SDL_HasMMX()) {
-                features |= SDL_CPU_MMX;
-            }
-            if (SDL_HasSSE()) {
-                features |= SDL_CPU_SSE;
-            }
-            if (SDL_HasSSE2()) {
-                features |= SDL_CPU_SSE2;
-            }
-            if (SDL_HasAltiVec()) {
-                if (SDL_UseAltivecPrefetch()) {
-                    features |= SDL_CPU_ALTIVEC_PREFETCH;
-                } else {
-                    features |= SDL_CPU_ALTIVEC_NOPREFETCH;
-                }
+        if (SDL_HasMMX()) {
+            features |= SDL_CPU_MMX;
+        }
+        if (SDL_HasSSE()) {
+            features |= SDL_CPU_SSE;
+        }
+        if (SDL_HasSSE2()) {
+            features |= SDL_CPU_SSE2;
+        }
+        if (SDL_HasAltiVec()) {
+            if (SDL_UseAltivecPrefetch()) {
+                features |= SDL_CPU_ALTIVEC_PREFETCH;
+            } else {
+                features |= SDL_CPU_ALTIVEC_NOPREFETCH;
             }
         }
     }

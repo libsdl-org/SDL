@@ -1,4 +1,4 @@
-# This cmake build script is meant for verifying the various CMake configuration script.
+# This cmake build script is meant for verifying the various CMake configuration scripts.
 
 cmake_minimum_required(VERSION 3.12)
 project(sdl_test LANGUAGES C)
@@ -35,9 +35,14 @@ add_feature_info("TEST_STATIC" TEST_STATIC "Test linking with static library")
 option(TEST_TEST "Test linking to SDL3_test library" ON)
 add_feature_info("TEST_TEST" TEST_STATIC "Test linking to SDL test library")
 
+option(TEST_FULL "Run complete SDL test suite" OFF)
+add_feature_info("TEST_FULL" TEST_FULL "Build full SDL testsuite")
+
 find_package(SDL3 REQUIRED CONFIG COMPONENTS Headers)
-add_library(headers_test OBJECT inc_sdl_slash.c inc_sdl_noslash.c)
-target_link_libraries(headers_test PRIVATE SDL3::Headers)
+add_library(headers_test_slash OBJECT inc_sdl_slash.c)
+target_link_libraries(headers_test_slash PRIVATE SDL3::Headers)
+add_library(headers_test_noslash OBJECT inc_sdl_noslash.c)
+target_link_libraries(headers_test_noslash PRIVATE SDL3::Headers)
 
 if(TEST_SHARED)
     find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3-shared)
@@ -92,6 +97,15 @@ endif()
 find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3)
 add_executable(gui-whatever WIN32 main_gui.c)
 target_link_libraries(gui-whatever PRIVATE SDL3::SDL3)
+
+if(TEST_FULL)
+    enable_testing()
+    set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Test timeout multiplier")
+    set(SDL_TESTS_LINK_SHARED ${TEST_SHARED})
+
+    add_definitions(-DNO_BUILD_CONFIG)
+    add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../test" SDL_test)
+endif()
 
 if(ANDROID)
     find_package(SDL3 REQUIRED CONFIG COMPONENTS Jar)

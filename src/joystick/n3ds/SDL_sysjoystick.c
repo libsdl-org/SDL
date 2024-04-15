@@ -62,6 +62,7 @@ static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
 static int N3DS_JoystickInit(void)
 {
     hidInit();
+    SDL_PrivateJoystickAdded(1);
     return 0;
 }
 
@@ -91,7 +92,6 @@ static int N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = NB_BUTTONS;
     joystick->naxes = 4;
     joystick->nhats = 0;
-    joystick->instance_id = device_index;
 
     return 0;
 }

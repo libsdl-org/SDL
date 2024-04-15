@@ -432,10 +432,6 @@ static SDL_bool HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
 
-    if (!device->is_bluetooth) {
-        joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
-    }
-
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED,
                         SDL_HomeLEDHintChanged, ctx);
     return SDL_TRUE;
@@ -1068,23 +1064,31 @@ static void HIDAPI_DriverXboxOneBluetooth_HandleBatteryPacket(SDL_Joystick *joys
 {
     Uint8 flags = data[1];
     SDL_bool on_usb = (((flags & 0x0C) >> 2) == 0);
+    SDL_PowerState state;
+    int percent = 0;
 
-    if (on_usb) {
-        /* Does this ever happen? */
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
-    } else {
-        switch ((flags & 0x03)) {
-        case 0:
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
-            break;
-        case 1:
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
-            break;
-        default: /* 2, 3 */
-            SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
-            break;
-        }
+    // Mapped percentage value from:
+    // https://learn.microsoft.com/en-us/gaming/gdk/_content/gc/reference/input/gameinput/interfaces/igameinputdevice/methods/igameinputdevice_getbatterystate
+    switch (flags & 0x03) {
+    case 0:
+        percent = 10;
+        break;
+    case 1:
+        percent = 40;
+        break;
+    case 2:
+        percent = 70;
+        break;
+    case 3:
+        percent = 100;
+        break;
     }
+    if (on_usb) {
+        state = SDL_POWERSTATE_CHARGING;
+    } else {
+        state = SDL_POWERSTATE_ON_BATTERY;
+    }
+    SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
 
 static void HIDAPI_DriverXboxOne_HandleSerialIDPacket(SDL_DriverXboxOne_Context *ctx, const Uint8 *data, int size)

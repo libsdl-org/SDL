@@ -374,7 +374,7 @@ SDL_AssertState SDL_ReportAssertion(SDL_AssertData *data, const char *func, cons
     switch (state) {
     case SDL_ASSERTION_ALWAYS_IGNORE:
         state = SDL_ASSERTION_IGNORE;
-        data->always_ignore = 1;
+        data->always_ignore = SDL_TRUE;
         break;
 
     case SDL_ASSERTION_IGNORE:

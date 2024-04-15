@@ -55,14 +55,14 @@ def main():
     # Get list of SDL headers
     sdl_list_includes = get_header_list()
 
-    reg_externC = re.compile('.*extern[ "]*C[ "].*')
-    reg_comment_remove_content = re.compile('\/\*.*\*/')
-    reg_parsing_function = re.compile('(.*SDLCALL[^\(\)]*) ([a-zA-Z0-9_]+) *\((.*)\) *;.*')
+    reg_externC = re.compile(r'.*extern[ "]*C[ "].*')
+    reg_comment_remove_content = re.compile(r'\/\*.*\*/')
+    reg_parsing_function = re.compile(r'(.*SDLCALL[^\(\)]*) ([a-zA-Z0-9_]+) *\((.*)\) *;.*')
 
     #eg:
     # void (SDLCALL *callback)(void*, int)
     # \1(\2)\3
-    reg_parsing_callback = re.compile('([^\(\)]*)\(([^\(\)]+)\)(.*)')
+    reg_parsing_callback = re.compile(r'([^\(\)]*)\(([^\(\)]+)\)(.*)')
 
     for filename in sdl_list_includes:
         if args.debug:
@@ -160,13 +160,13 @@ def main():
             func = func.replace(" SDL_MALLOC", "");
             func = func.replace(" SDL_ALLOC_SIZE2(1, 2)", "");
             func = func.replace(" SDL_ALLOC_SIZE(2)", "");
-            func = re.sub(" SDL_ACQUIRE\(.*\)", "", func);
-            func = re.sub(" SDL_ACQUIRE_SHARED\(.*\)", "", func);
-            func = re.sub(" SDL_TRY_ACQUIRE\(.*\)", "", func);
-            func = re.sub(" SDL_TRY_ACQUIRE_SHARED\(.*\)", "", func);
-            func = re.sub(" SDL_RELEASE\(.*\)", "", func);
-            func = re.sub(" SDL_RELEASE_SHARED\(.*\)", "", func);
-            func = re.sub(" SDL_RELEASE_GENERIC\(.*\)", "", func);
+            func = re.sub(r" SDL_ACQUIRE\(.*\)", "", func);
+            func = re.sub(r" SDL_ACQUIRE_SHARED\(.*\)", "", func);
+            func = re.sub(r" SDL_TRY_ACQUIRE\(.*\)", "", func);
+            func = re.sub(r" SDL_TRY_ACQUIRE_SHARED\(.*\)", "", func);
+            func = re.sub(r" SDL_RELEASE\(.*\)", "", func);
+            func = re.sub(r" SDL_RELEASE_SHARED\(.*\)", "", func);
+            func = re.sub(r" SDL_RELEASE_GENERIC\(.*\)", "", func);
 
             # Should be a valid function here
             match = reg_parsing_function.match(func)
@@ -427,7 +427,7 @@ def check_comment():
 
 # Parse 'sdl_dynapi_procs_h' file to find existing functions
 def find_existing_procs():
-    reg = re.compile('SDL_DYNAPI_PROC\([^,]*,([^,]*),.*\)')
+    reg = re.compile(r'SDL_DYNAPI_PROC\([^,]*,([^,]*),.*\)')
     ret = []
     input = open(SDL_DYNAPI_PROCS_H)
 
@@ -444,7 +444,7 @@ def find_existing_procs():
 
 # Get list of SDL headers
 def get_header_list():
-    reg = re.compile('^.*\.h$')
+    reg = re.compile(r'^.*\.h$')
     ret = []
     tmp = os.listdir(SDL_INCLUDE_DIR)
 

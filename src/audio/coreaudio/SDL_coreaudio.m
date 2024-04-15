@@ -42,6 +42,28 @@
 #endif
 
 #ifdef MACOSX_COREAUDIO
+// Apparently AudioDeviceID values might not be unique, so we wrap it in an SDL_malloc()'d pointer
+//  to make it so. Use FindCoreAudioDeviceByHandle to deal with this redirection, if you need to
+//  map from an AudioDeviceID to a SDL handle.
+typedef struct SDLCoreAudioHandle
+{
+    AudioDeviceID devid;
+    SDL_bool iscapture;
+} SDLCoreAudioHandle;
+
+static SDL_bool TestCoreAudioDeviceHandleCallback(SDL_AudioDevice *device, void *handle)
+{
+    const SDLCoreAudioHandle *a = (const SDLCoreAudioHandle *) device->handle;
+    const SDLCoreAudioHandle *b = (const SDLCoreAudioHandle *) handle;
+    return (a->devid == b->devid) && (!!a->iscapture == !!b->iscapture);
+}
+
+static SDL_AudioDevice *FindCoreAudioDeviceByHandle(const AudioDeviceID devid, const SDL_bool iscapture)
+{
+    SDLCoreAudioHandle handle = { devid, iscapture };
+    return SDL_FindPhysicalAudioDeviceByCallback(TestCoreAudioDeviceHandleCallback, &handle);
+}
+
 static const AudioObjectPropertyAddress devlist_address = {
     kAudioHardwarePropertyDevices,
     kAudioObjectPropertyScopeGlobal,
@@ -70,7 +92,7 @@ static const AudioObjectPropertyAddress alive_address = {
 static OSStatus DeviceAliveNotification(AudioObjectID devid, UInt32 num_addr, const AudioObjectPropertyAddress *addrs, void *data)
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *)data;
-    SDL_assert(((AudioObjectID)(size_t)device->handle) == devid);
+    SDL_assert(((const SDLCoreAudioHandle *) device->handle)->devid == devid);
 
     UInt32 alive = 1;
     UInt32 size = sizeof(alive);
@@ -95,8 +117,9 @@ static OSStatus DeviceAliveNotification(AudioObjectID devid, UInt32 num_addr, co
 
 static void COREAUDIO_FreeDeviceHandle(SDL_AudioDevice *device)
 {
-    const AudioDeviceID devid = (AudioDeviceID)(size_t)device->handle;
-    AudioObjectRemovePropertyListener(devid, &alive_address, DeviceAliveNotification, device);
+    SDLCoreAudioHandle *handle = (SDLCoreAudioHandle *) device->handle;
+    AudioObjectRemovePropertyListener(handle->devid, &alive_address, DeviceAliveNotification, device);
+    SDL_free(handle);
 }
 
 // This only _adds_ new devices. Removal is handled by devices triggering kAudioDevicePropertyDeviceIsAlive property changes.
@@ -117,8 +140,7 @@ static void RefreshPhysicalDevices(void)
 
     const UInt32 total_devices = (UInt32) (size / sizeof(AudioDeviceID));
     for (UInt32 i = 0; i < total_devices; i++) {
-        SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)devs[i]));
-        if (device) {
+        if (FindCoreAudioDeviceByHandle(devs[i], SDL_TRUE) || FindCoreAudioDeviceByHandle(devs[i], SDL_FALSE)) {
             devs[i] = 0;  // The system and SDL both agree it's already here, don't check it again.
         }
     }
@@ -206,12 +228,16 @@ static void RefreshPhysicalDevices(void)
                        ((iscapture) ? "capture" : "output"),
                        (int)i, name, (int)dev);
                 #endif
-
-                devs[i] = 0;  // don't bother checking this one on the next iscapture iteration of the loop
-
-                SDL_AudioDevice *device = SDL_AddAudioDevice(iscapture ? SDL_TRUE : SDL_FALSE, name, &spec, (void *)((size_t)dev));
-                if (device) {
-                    AudioObjectAddPropertyListener(dev, &alive_address, DeviceAliveNotification, device);
+                SDLCoreAudioHandle *newhandle = (SDLCoreAudioHandle *) SDL_calloc(1, sizeof (*newhandle));
+                if (newhandle) {
+                    newhandle->devid = dev;
+                    newhandle->iscapture = iscapture ? SDL_TRUE : SDL_FALSE;
+                    SDL_AudioDevice *device = SDL_AddAudioDevice(newhandle->iscapture, name, &spec, newhandle);
+                    if (device) {
+                        AudioObjectAddPropertyListener(dev, &alive_address, DeviceAliveNotification, device);
+                    } else {
+                        SDL_free(newhandle);
+                    }
                 }
             }
             SDL_free(name); // SDL_AddAudioDevice() would have copied the string.
@@ -228,12 +254,12 @@ static OSStatus DeviceListChangedNotification(AudioObjectID systemObj, UInt32 nu
     return noErr;
 }
 
-static OSStatus DefaultAudioDeviceChangedNotification(AudioObjectID inObjectID, const AudioObjectPropertyAddress *addr)
+static OSStatus DefaultAudioDeviceChangedNotification(const SDL_bool iscapture, AudioObjectID inObjectID, const AudioObjectPropertyAddress *addr)
 {
     AudioDeviceID devid;
     UInt32 size = sizeof(devid);
     if (AudioObjectGetPropertyData(inObjectID, addr, 0, NULL, &size, &devid) == noErr) {
-        SDL_DefaultAudioDeviceChanged(SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)devid)));
+        SDL_DefaultAudioDeviceChanged(FindCoreAudioDeviceByHandle(devid, iscapture));
     }
     return noErr;
 }
@@ -244,7 +270,7 @@ static OSStatus DefaultOutputDeviceChangedNotification(AudioObjectID inObjectID,
     SDL_Log("COREAUDIO: default output device changed!");
     #endif
     SDL_assert(inNumberAddresses == 1);
-    return DefaultAudioDeviceChangedNotification(inObjectID, inAddresses);
+    return DefaultAudioDeviceChangedNotification(SDL_FALSE, inObjectID, inAddresses);
 }
 
 static OSStatus DefaultInputDeviceChangedNotification(AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses, void *inUserData)
@@ -253,7 +279,7 @@ static OSStatus DefaultInputDeviceChangedNotification(AudioObjectID inObjectID, 
     SDL_Log("COREAUDIO: default input device changed!");
     #endif
     SDL_assert(inNumberAddresses == 1);
-    return DefaultAudioDeviceChangedNotification(inObjectID, inAddresses);
+    return DefaultAudioDeviceChangedNotification(SDL_TRUE, inObjectID, inAddresses);
 }
 
 static void COREAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
@@ -268,7 +294,7 @@ static void COREAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioD
 
     size = sizeof(AudioDeviceID);
     if (AudioObjectGetPropertyData(kAudioObjectSystemObject, &default_output_device_address, 0, NULL, &size, &devid) == noErr) {
-        SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)devid));
+        SDL_AudioDevice *device = FindCoreAudioDeviceByHandle(devid, SDL_FALSE);
         if (device) {
             *default_output = device;
         }
@@ -277,7 +303,7 @@ static void COREAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioD
 
     size = sizeof(AudioDeviceID);
     if (AudioObjectGetPropertyData(kAudioObjectSystemObject, &default_input_device_address, 0, NULL, &size, &devid) == noErr) {
-        SDL_AudioDevice *device = SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)devid));
+        SDL_AudioDevice *device = FindCoreAudioDeviceByHandle(devid, SDL_TRUE);
         if (device) {
             *default_capture = device;
         }
@@ -595,7 +621,12 @@ static void InputBufferReadyCallback(void *inUserData, AudioQueueRef inAQ, Audio
     SDL_assert(device->hidden->current_buffer == NULL);  // shouldn't have anything pending
     device->hidden->current_buffer = inBuffer;
     SDL_CaptureAudioThreadIterate(device);
-    SDL_assert(device->hidden->current_buffer == NULL);  // CaptureFromDevice/FlushCapture should have enqueued and cleaned it out.
+
+    // buffer is unexpectedly here? We're probably dying, but try to requeue this buffer anyhow.
+    if (device->hidden->current_buffer != NULL) {
+        SDL_assert(SDL_AtomicGet(&device->shutdown) != 0);
+        COREAUDIO_FlushCapture(device);  // just flush it manually, which will requeue it.
+    }
 }
 
 static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
@@ -633,10 +664,10 @@ static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
 #ifdef MACOSX_COREAUDIO
 static int PrepareDevice(SDL_AudioDevice *device)
 {
-    void *handle = device->handle;
-    SDL_assert(handle != NULL);  // this meant "system default" in SDL2, but doesn't anymore
+    SDL_assert(device->handle != NULL);  // this meant "system default" in SDL2, but doesn't anymore
 
-    const AudioDeviceID devid = (AudioDeviceID)((size_t)handle);
+    const SDLCoreAudioHandle *handle = (const SDLCoreAudioHandle *) device->handle;
+    const AudioDeviceID devid = handle->devid;
     OSStatus result = noErr;
     UInt32 size = 0;
 

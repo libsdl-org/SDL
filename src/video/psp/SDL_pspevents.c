@@ -90,7 +90,7 @@ void PSP_PumpEvents(SDL_VideoDevice *_this)
     if (changed) {
         for (i = 0; i < sizeof(keymap_psp) / sizeof(keymap_psp[0]); i++) {
             if (changed & keymap_psp[i].id) {
-                SDL_SendKeyboardKey(0, (keys & keymap_psp[i].id) ? SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap_psp[i].sym));
+                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, (keys & keymap_psp[i].id) ? SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap_psp[i].sym));
             }
         }
     }
@@ -113,7 +113,7 @@ void PSP_PumpEvents(SDL_VideoDevice *_this)
                     sym.sym = keymap[raw];
                     /* not tested */
                     /* SDL_PrivateKeyboard(pressed?SDL_PRESSED:SDL_RELEASED, &sym); */
-                    SDL_SendKeyboardKey(0, (keys & keymap_psp[i].id) ? SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap[raw]));
+                    SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, (keys & keymap_psp[i].id) ? SDL_PRESSED : SDL_RELEASED, SDL_GetScancodeFromKey(keymap[raw]));
                 }
             }
         }

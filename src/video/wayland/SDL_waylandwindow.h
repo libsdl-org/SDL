@@ -95,6 +95,7 @@ struct SDL_WindowData
     struct xdg_activation_token_v1 *activation_token;
     struct wp_viewport *viewport;
     struct wp_fractional_scale_v1 *fractional_scale;
+    struct zxdg_exported_v2 *exported;
 
     SDL_AtomicInt swap_interval_ready;
 
@@ -166,6 +167,7 @@ struct SDL_WindowData
     SDL_bool suspended;
     SDL_bool active;
     SDL_bool is_fullscreen;
+    SDL_bool fullscreen_exclusive;
     SDL_bool drop_fullscreen_requests;
     SDL_bool fullscreen_was_positioned;
     SDL_bool show_hide_sync_required;

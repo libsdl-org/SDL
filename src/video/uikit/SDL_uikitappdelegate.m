@@ -404,9 +404,9 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     [self performSelector:@selector(hideLaunchScreen) withObject:nil afterDelay:0.0];
 
     /* run the user's application, passing argc and argv */
-    SDL_iPhoneSetEventPump(SDL_TRUE);
+    SDL_iOSSetEventPump(SDL_TRUE);
     exit_status = forward_main(forward_argc, forward_argv);
-    SDL_iPhoneSetEventPump(SDL_FALSE);
+    SDL_iOSSetEventPump(SDL_FALSE);
 
     if (launchWindow) {
         launchWindow.hidden = YES;

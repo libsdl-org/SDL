@@ -31,6 +31,7 @@
 
 /* Table to do pixel byte expansion */
 extern Uint8 *SDL_expand_byte[9];
+extern Uint16 SDL_expand_byte10[];
 
 /* SDL blit copy flags */
 #define SDL_COPY_MODULATE_COLOR 0x00000001

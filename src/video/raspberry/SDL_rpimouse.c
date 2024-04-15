@@ -276,7 +276,7 @@ static int RPI_WarpMouseGlobal(float x, float y)
     }
 
     /* Update internal mouse position. */
-    SDL_SendMouseMotion(0, mouse->focus, mouse->mouseID, 0, x, y);
+    SDL_SendMouseMotion(0, mouse->focus, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
 
     return RPI_WarpMouseGlobalGraphically(x, y);
 }

@@ -47,14 +47,31 @@ extern "C" {
 #endif
 #endif /* SDL_ASSERT_LEVEL */
 
-/*
-These are macros and not first class functions so that the debugger breaks
-on the assertion line and not in some random guts of SDL, and so each
-assert can have unique static variables associated with it.
-*/
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
-#ifdef _MSC_VER
-/* Don't include intrin.h here because it contains C++ code */
+/**
+ * Attempt to tell an attached debugger to pause.
+ *
+ * This allows an app to programmatically halt ("break") the debugger as if it
+ * had hit a breakpoint, allowing the developer to examine program state, etc.
+ *
+ * This is a macro and not first class functions so that the debugger breaks
+ * on the source code line that used SDL_TriggerBreakpoint and not in some
+ * random guts of SDL. SDL_assert uses this macro for the same reason.
+ *
+ * If the program is not running under a debugger, SDL_TriggerBreakpoint will
+ * likely terminate the app, possibly without warning. If the current platform
+ * isn't supported (SDL doesn't know how to trigger a breakpoint), this macro
+ * does nothing.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
+
+#elif defined(_MSC_VER)
+    /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
 #elif defined(ANDROID)
@@ -116,7 +133,20 @@ disable assertions.
 #define SDL_disabled_assert(condition) \
     do { (void) sizeof ((condition)); } while (SDL_NULL_WHILE_LOOP_CONDITION)
 
-typedef enum
+/**
+ * Possible outcomes from a triggered assertion.
+ *
+ * When an enabled assertion triggers, it may call the assertion handler
+ * (possibly one provided by the app via SDL_SetAssertionHandler), which will
+ * return one of these values, possibly after asking the user.
+ *
+ * Then SDL will respond based on this outcome (loop around to retry the
+ * condition, try to break in a debugger, kill the program, or ignore the
+ * problem).
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_AssertState
 {
     SDL_ASSERTION_RETRY,  /**< Retry the assert immediately. */
     SDL_ASSERTION_BREAK,  /**< Make the debugger trigger a breakpoint. */
@@ -125,9 +155,18 @@ typedef enum
     SDL_ASSERTION_ALWAYS_IGNORE  /**< Ignore the assert from now on. */
 } SDL_AssertState;
 
+/**
+ * Information about an assertion failure.
+ *
+ * This structure is filled in with information about a triggered assertion,
+ * used by the assertion handler, then added to the assertion report. This is
+ * returned as a linked list from SDL_GetAssertionReport().
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_AssertData
 {
-    int always_ignore;
+    SDL_bool always_ignore;
     unsigned int trigger_count;
     const char *condition;
     const char *filename;
@@ -195,6 +234,105 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
     } while (SDL_NULL_WHILE_LOOP_CONDITION)
 
 /* Enable various levels of assertions. */
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * An assertion test that is normally performed only in debug builds.
+ *
+ * This macro is enabled when the SDL_ASSERT_LEVEL is >= 2, otherwise it is
+ * disabled. This is meant to only do these tests in debug builds, so they can
+ * tend to be more expensive, and they are meant to bring everything to a halt
+ * when they fail, with the programmer there to assess the problem.
+ *
+ * In short: you can sprinkle these around liberally and assume they will
+ * evaporate out of the build when building for end-users.
+ *
+ * When assertions are disabled, this wraps `condition` in a `sizeof`
+ * operator, which means any function calls and side effects will not run, but
+ * the compiler will not complain about any otherwise-unused variables that
+ * are only referenced in the assertion.
+ *
+ * One can set the environment variable "SDL_ASSERT" to one of several strings
+ * ("abort", "break", "retry", "ignore", "always_ignore") to force a default
+ * behavior, which may be desirable for automation purposes. If your platform
+ * requires GUI interfaces to happen on the main thread but you're debugging
+ * an assertion in a background thread, it might be desirable to set this to
+ * "break" so that your debugger takes control as soon as assert is triggered,
+ * instead of risking a bad UI interaction (deadlock, etc) in the application.
+ *
+ * Note that SDL_ASSERT is an _environment variable_ and not an SDL hint!
+ * Please refer to your platform's documentation for how to set it!
+ *
+ * \param condition boolean value to test
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_assert(condition) if (assertion_enabled && (condition)) { trigger_assertion; }
+
+/**
+ * An assertion test that is performed even in release builds.
+ *
+ * This macro is enabled when the SDL_ASSERT_LEVEL is >= 1, otherwise it is
+ * disabled. This is meant to be for tests that are cheap to make and
+ * extremely unlikely to fail; generally it is frowned upon to have an
+ * assertion failure in a release build, so these assertions generally need to
+ * be of more than life-and-death importance if there's a chance they might
+ * trigger. You should almost always consider handling these cases more
+ * gracefully than an assert allows.
+ *
+ * When assertions are disabled, this wraps `condition` in a `sizeof`
+ * operator, which means any function calls and side effects will not run, but
+ * the compiler will not complain about any otherwise-unused variables that
+ * are only referenced in the assertion.
+ *
+ * One can set the environment variable "SDL_ASSERT" to one of several strings
+ * ("abort", "break", "retry", "ignore", "always_ignore") to force a default
+ * behavior, which may be desirable for automation purposes. If your platform
+ * requires GUI interfaces to happen on the main thread but you're debugging
+ * an assertion in a background thread, it might be desirable to set this to
+ * "break" so that your debugger takes control as soon as assert is triggered,
+ * instead of risking a bad UI interaction (deadlock, etc) in the application.
+ *
+ * Note that SDL_ASSERT is an _environment variable_ and not an SDL hint!
+ * Please refer to your platform's documentation for how to set it!
+ *
+ * \param condition boolean value to test
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_assert_release(condition) SDL_disabled_assert(condition)
+
+/**
+ * An assertion test that is performed only when built with paranoid settings.
+ *
+ * This macro is enabled when the SDL_ASSERT_LEVEL is >= 3, otherwise it is
+ * disabled. This is a higher level than both release and debug, so these
+ * tests are meant to be expensive and only run when specifically looking for
+ * extremely unexpected failure cases in a special build.
+ *
+ * When assertions are disabled, this wraps `condition` in a `sizeof`
+ * operator, which means any function calls and side effects will not run, but
+ * the compiler will not complain about any otherwise-unused variables that
+ * are only referenced in the assertion.
+ *
+ * One can set the environment variable "SDL_ASSERT" to one of several strings
+ * ("abort", "break", "retry", "ignore", "always_ignore") to force a default
+ * behavior, which may be desirable for automation purposes. If your platform
+ * requires GUI interfaces to happen on the main thread but you're debugging
+ * an assertion in a background thread, it might be desirable to set this to
+ * "break" so that your debugger takes control as soon as assert is triggered,
+ * instead of risking a bad UI interaction (deadlock, etc) in the application.
+ *
+ * Note that SDL_ASSERT is an _environment variable_ and not an SDL hint!
+ * Please refer to your platform's documentation for how to set it!
+ *
+ * \param condition boolean value to test
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_assert_paranoid(condition) SDL_disabled_assert(condition)
+#endif
+
 #if SDL_ASSERT_LEVEL == 0   /* assertions disabled */
 #   define SDL_assert(condition) SDL_disabled_assert(condition)
 #   define SDL_assert_release(condition) SDL_disabled_assert(condition)
@@ -203,7 +341,7 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
 #   define SDL_assert(condition) SDL_disabled_assert(condition)
 #   define SDL_assert_release(condition) SDL_enabled_assert(condition)
 #   define SDL_assert_paranoid(condition) SDL_disabled_assert(condition)
-#elif SDL_ASSERT_LEVEL == 2  /* normal settings. */
+#elif SDL_ASSERT_LEVEL == 2  /* debug settings. */
 #   define SDL_assert(condition) SDL_enabled_assert(condition)
 #   define SDL_assert_release(condition) SDL_enabled_assert(condition)
 #   define SDL_assert_paranoid(condition) SDL_disabled_assert(condition)
@@ -215,7 +353,28 @@ extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data
 #   error Unknown assertion level.
 #endif
 
-/* this assertion is never disabled at any level. */
+/**
+ * An assertion test that always performed.
+ *
+ * This macro is always enabled no matter what SDL_ASSERT_LEVEL is set to. You
+ * almost never want to use this, as it could trigger on an end-user's system,
+ * crashing your program.
+ *
+ * One can set the environment variable "SDL_ASSERT" to one of several strings
+ * ("abort", "break", "retry", "ignore", "always_ignore") to force a default
+ * behavior, which may be desirable for automation purposes. If your platform
+ * requires GUI interfaces to happen on the main thread but you're debugging
+ * an assertion in a background thread, it might be desirable to set this to
+ * "break" so that your debugger takes control as soon as assert is triggered,
+ * instead of risking a bad UI interaction (deadlock, etc) in the application.
+ *
+ * Note that SDL_ASSERT is an _environment variable_ and not an SDL hint!
+ * Please refer to your platform's documentation for how to set it!
+ *
+ * \param condition boolean value to test
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_assert_always(condition) SDL_enabled_assert(condition)
 
 

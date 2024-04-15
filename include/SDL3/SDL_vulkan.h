@@ -28,6 +28,7 @@
 #ifndef SDL_vulkan_h_
 #define SDL_vulkan_h_
 
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_video.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -127,7 +128,7 @@ extern DECLSPEC int SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
 extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_Vulkan_GetVkGetInstanceProcAddr(void);
 
 /**
- * Unload the Vulkan library previously loaded by SDL_Vulkan_LoadLibrary()
+ * Unload the Vulkan library previously loaded by SDL_Vulkan_LoadLibrary().
  *
  * \since This function is available since SDL 3.0.0.
  *

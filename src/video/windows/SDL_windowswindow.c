@@ -388,8 +388,6 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
 
-    window->driverdata = data;
-
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     /* Associate the data with the window */
     if (!SetProp(hwnd, TEXT("SDL_WindowData"), data)) {
@@ -398,6 +396,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
         return WIN_SetError("SetProp() failed");
     }
 #endif
+    
+    window->driverdata = data;
 
     /* Set up the window proc function */
 #ifdef GWLP_WNDPROC
@@ -587,9 +587,6 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
             }
         }
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-        SDL_free(data->rawinput);
-#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
         SDL_free(data);
     }
     window->driverdata = NULL;
@@ -1568,18 +1565,27 @@ void WIN_UpdateClipCursor(SDL_Window *window)
             }
         }
     } else {
-        POINT first, second;
+        SDL_bool unclip_cursor = SDL_FALSE;
 
-        first.x = clipped_rect.left;
-        first.y = clipped_rect.top;
-        second.x = clipped_rect.right - 1;
-        second.y = clipped_rect.bottom - 1;
-        if (PtInRect(&data->cursor_clipped_rect, first) &&
-            PtInRect(&data->cursor_clipped_rect, second)) {
-            ClipCursor(NULL);
+        /* If the cursor is clipped to the screen, clear the clip state */
+        if (clipped_rect.left == 0 && clipped_rect.top == 0) {
+            unclip_cursor = SDL_TRUE;
+        } else {
+            POINT first, second;
+
+            first.x = clipped_rect.left;
+            first.y = clipped_rect.top;
+            second.x = clipped_rect.right - 1;
+            second.y = clipped_rect.bottom - 1;
+            if (PtInRect(&data->cursor_clipped_rect, first) &&
+                PtInRect(&data->cursor_clipped_rect, second)) {
+                unclip_cursor = SDL_TRUE;
+            }
         }
-        /* Note that we don't have the cursor clipped anymore, even if it's not us that reset it */
-        SDL_zero(data->cursor_clipped_rect);
+        if (unclip_cursor) {
+            ClipCursor(NULL);
+            SDL_zero(data->cursor_clipped_rect);
+        }
     }
     data->last_updated_clipcursor = SDL_GetTicks();
 }

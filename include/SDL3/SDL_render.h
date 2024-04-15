@@ -49,6 +49,7 @@
 #define SDL_render_h_
 
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_rect.h>
@@ -61,19 +62,26 @@ extern "C" {
 #endif
 
 /**
- * Flags used when creating a rendering context
+ * The name of the software renderer.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
-typedef enum
+#define SDL_SOFTWARE_RENDERER   "software"
+
+/**
+ * Flags used when creating a rendering context.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_RendererFlags
 {
-    SDL_RENDERER_SOFTWARE = 0x00000001,         /**< The renderer is a software fallback */
-    SDL_RENDERER_ACCELERATED = 0x00000002,      /**< The renderer uses hardware
-                                                     acceleration */
-    SDL_RENDERER_PRESENTVSYNC = 0x00000004      /**< Present is synchronized
-                                                     with the refresh rate */
+    SDL_RENDERER_PRESENTVSYNC = 0x00000004  /**< Present is synchronized with the refresh rate */
 } SDL_RendererFlags;
 
 /**
  * Information on the capabilities of a render driver or context.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_RendererInfo
 {
@@ -86,7 +94,9 @@ typedef struct SDL_RendererInfo
 } SDL_RendererInfo;
 
 /**
- *  Vertex structure
+ * Vertex structure.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Vertex
 {
@@ -97,8 +107,10 @@ typedef struct SDL_Vertex
 
 /**
  * The access pattern allowed for a texture.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_TextureAccess
 {
     SDL_TEXTUREACCESS_STATIC,    /**< Changes rarely, not lockable */
     SDL_TEXTUREACCESS_STREAMING, /**< Changes frequently, lockable */
@@ -106,9 +118,11 @@ typedef enum
 } SDL_TextureAccess;
 
 /**
- * How the logical size is mapped to the output
+ * How the logical size is mapped to the output.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_RendererLogicalPresentation
 {
     SDL_LOGICAL_PRESENTATION_DISABLED,  /**< There is no logical size in effect */
     SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
@@ -119,12 +133,16 @@ typedef enum
 
 /**
  * A structure representing rendering state
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 struct SDL_Renderer;
 typedef struct SDL_Renderer SDL_Renderer;
 
 /**
  * An efficient driver-specific representation of pixel data
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 struct SDL_Texture;
 typedef struct SDL_Texture SDL_Texture;
@@ -203,10 +221,6 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, S
  * need a specific renderer, specify NULL and SDL will attempt to choose the
  * best option for you, based on what is available on the user's system.
  *
- * If you pass SDL_RENDERER_SOFTWARE in the flags, you will get a software
- * renderer, otherwise you will get a hardware accelerated renderer if
- * available.
- *
  * By default the rendering size matches the window size in pixels, but you
  * can call SDL_SetRenderLogicalPresentation() to change the content size and
  * scaling options.
@@ -271,6 +285,7 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_CreateProperties
  * \sa SDL_CreateRenderer
  * \sa SDL_CreateSoftwareRenderer
  * \sa SDL_DestroyRenderer
@@ -305,8 +320,6 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_Prop
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateRenderer
- * \sa SDL_CreateWindowRenderer
  * \sa SDL_DestroyRenderer
  */
 extern DECLSPEC SDL_Renderer *SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface *surface);
@@ -319,8 +332,6 @@ extern DECLSPEC SDL_Renderer *SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface *su
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateRenderer
  */
 extern DECLSPEC SDL_Renderer *SDLCALL SDL_GetRenderer(SDL_Window *window);
 
@@ -347,6 +358,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetRenderWindow(SDL_Renderer *renderer);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_CreateRenderer
+ * \sa SDL_CreateRendererWithProperties
  */
 extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_RendererInfo *info);
 
@@ -455,7 +467,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRendererProperties(SDL_Renderer 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetRenderer
+ * \sa SDL_GetCurrentRenderOutputSize
  */
 extern DECLSPEC int SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h);
 
@@ -476,7 +488,6 @@ extern DECLSPEC int SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer, int 
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderOutputSize
- * \sa SDL_GetRenderer
  */
 extern DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *renderer, int *w, int *h);
 
@@ -503,7 +514,7 @@ extern DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *rendere
  * \sa SDL_QueryTexture
  * \sa SDL_UpdateTexture
  */
-extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, Uint32 format, int access, int w, int h);
+extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormatEnum format, int access, int w, int h);
 
 /**
  * Create a texture from an existing surface.
@@ -634,8 +645,9 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateTextureFromSurface
+ * \sa SDL_CreateProperties
  * \sa SDL_CreateTexture
+ * \sa SDL_CreateTextureFromSurface
  * \sa SDL_DestroyTexture
  * \sa SDL_QueryTexture
  * \sa SDL_UpdateTexture
@@ -660,7 +672,6 @@ extern DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Rendere
 #define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_UV_NUMBER    "opengl.texture_uv"
 #define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER     "opengl.texture_u"
 #define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_V_NUMBER     "opengl.texture_v"
-#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_NUMBER    "opengles2.texture"
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_NUMBER    "opengles2.texture"
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_UV_NUMBER "opengles2.texture_uv"
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER  "opengles2.texture_u"
@@ -794,10 +805,6 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Texture *t
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateTexture
- * \sa SDL_CreateTextureFromSurface
- * \sa SDL_CreateTextureWithProperties
  */
 extern DECLSPEC SDL_Renderer *SDLCALL SDL_GetRendererFromTexture(SDL_Texture *texture);
 
@@ -820,10 +827,8 @@ extern DECLSPEC SDL_Renderer *SDLCALL SDL_GetRendererFromTexture(SDL_Texture *te
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_CreateTexture
  */
-extern DECLSPEC int SDLCALL SDL_QueryTexture(SDL_Texture *texture, Uint32 *format, int *access, int *w, int *h);
+extern DECLSPEC int SDLCALL SDL_QueryTexture(SDL_Texture *texture, SDL_PixelFormatEnum *format, int *access, int *w, int *h);
 
 /**
  * Set an additional color value multiplied into render copy operations.
@@ -1011,7 +1016,6 @@ extern DECLSPEC int SDLCALL SDL_GetTextureAlphaModFloat(SDL_Texture *texture, fl
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetTextureBlendMode
- * \sa SDL_RenderTexture
  */
 extern DECLSPEC int SDLCALL SDL_SetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode blendMode);
 
@@ -1086,9 +1090,10 @@ extern DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture *texture, SDL_Sc
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_CreateTexture
  * \sa SDL_LockTexture
  * \sa SDL_UnlockTexture
+ * \sa SDL_UpdateNVTexture
+ * \sa SDL_UpdateYUVTexture
  */
 extern DECLSPEC int SDLCALL SDL_UpdateTexture(SDL_Texture *texture, const SDL_Rect *rect, const void *pixels, int pitch);
 
@@ -1117,6 +1122,7 @@ extern DECLSPEC int SDLCALL SDL_UpdateTexture(SDL_Texture *texture, const SDL_Re
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_UpdateNVTexture
  * \sa SDL_UpdateTexture
  */
 extern DECLSPEC int SDLCALL SDL_UpdateYUVTexture(SDL_Texture *texture,
@@ -1145,6 +1151,9 @@ extern DECLSPEC int SDLCALL SDL_UpdateYUVTexture(SDL_Texture *texture,
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_UpdateTexture
+ * \sa SDL_UpdateYUVTexture
  */
 extern DECLSPEC int SDLCALL SDL_UpdateNVTexture(SDL_Texture *texture,
                                                  const SDL_Rect *rect,
@@ -1176,6 +1185,7 @@ extern DECLSPEC int SDLCALL SDL_UpdateNVTexture(SDL_Texture *texture,
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_LockTextureToSurface
  * \sa SDL_UnlockTexture
  */
 extern DECLSPEC int SDLCALL SDL_LockTexture(SDL_Texture *texture,
@@ -1530,15 +1540,6 @@ extern DECLSPEC int SDLCALL SDL_GetRenderScale(SDL_Renderer *renderer, float *sc
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderDrawColor
- * \sa SDL_RenderClear
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
- * \sa SDL_RenderLine
- * \sa SDL_RenderLines
- * \sa SDL_RenderPoint
- * \sa SDL_RenderPoints
- * \sa SDL_RenderRect
- * \sa SDL_RenderRects
  * \sa SDL_SetRenderDrawColorFloat
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
@@ -1562,15 +1563,6 @@ extern DECLSPEC int SDLCALL SDL_SetRenderDrawColor(SDL_Renderer *renderer, Uint8
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderDrawColorFloat
- * \sa SDL_RenderClear
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
- * \sa SDL_RenderLine
- * \sa SDL_RenderLines
- * \sa SDL_RenderPoint
- * \sa SDL_RenderPoints
- * \sa SDL_RenderRect
- * \sa SDL_RenderRects
  * \sa SDL_SetRenderDrawColor
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderDrawColorFloat(SDL_Renderer *renderer, float r, float g, float b, float a);
@@ -1668,14 +1660,6 @@ extern DECLSPEC int SDLCALL SDL_GetRenderColorScale(SDL_Renderer *renderer, floa
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetRenderDrawBlendMode
- * \sa SDL_RenderLine
- * \sa SDL_RenderLines
- * \sa SDL_RenderPoint
- * \sa SDL_RenderPoints
- * \sa SDL_RenderRect
- * \sa SDL_RenderRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode);
 
@@ -1718,6 +1702,8 @@ extern DECLSPEC int SDLCALL SDL_RenderClear(SDL_Renderer *renderer);
  * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderPoints
  */
 extern DECLSPEC int SDLCALL SDL_RenderPoint(SDL_Renderer *renderer, float x, float y);
 
@@ -1731,6 +1717,8 @@ extern DECLSPEC int SDLCALL SDL_RenderPoint(SDL_Renderer *renderer, float x, flo
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderPoint
  */
 extern DECLSPEC int SDLCALL SDL_RenderPoints(SDL_Renderer *renderer, const SDL_FPoint *points, int count);
 
@@ -1745,6 +1733,8 @@ extern DECLSPEC int SDLCALL SDL_RenderPoints(SDL_Renderer *renderer, const SDL_F
  * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderLines
  */
 extern DECLSPEC int SDLCALL SDL_RenderLine(SDL_Renderer *renderer, float x1, float y1, float x2, float y2);
 
@@ -1759,6 +1749,8 @@ extern DECLSPEC int SDLCALL SDL_RenderLine(SDL_Renderer *renderer, float x1, flo
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderLine
  */
 extern DECLSPEC int SDLCALL SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count);
 
@@ -1771,6 +1763,8 @@ extern DECLSPEC int SDLCALL SDL_RenderLines(SDL_Renderer *renderer, const SDL_FP
  * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderRects
  */
 extern DECLSPEC int SDLCALL SDL_RenderRect(SDL_Renderer *renderer, const SDL_FRect *rect);
 
@@ -1785,6 +1779,8 @@ extern DECLSPEC int SDLCALL SDL_RenderRect(SDL_Renderer *renderer, const SDL_FRe
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderRect
  */
 extern DECLSPEC int SDLCALL SDL_RenderRects(SDL_Renderer *renderer, const SDL_FRect *rects, int count);
 
@@ -1798,6 +1794,8 @@ extern DECLSPEC int SDLCALL SDL_RenderRects(SDL_Renderer *renderer, const SDL_FR
  * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderFillRects
  */
 extern DECLSPEC int SDLCALL SDL_RenderFillRect(SDL_Renderer *renderer, const SDL_FRect *rect);
 
@@ -1812,6 +1810,8 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRect(SDL_Renderer *renderer, const SDL
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderFillRect
  */
 extern DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, int count);
 
@@ -1828,6 +1828,8 @@ extern DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer *renderer, const SD
  * \returns 0 on success, or -1 on error
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderTextureRotated
  */
 extern DECLSPEC int SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect);
 
@@ -1852,6 +1854,8 @@ extern DECLSPEC int SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Textur
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderTexture
  */
 extern DECLSPEC int SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
                                                      const SDL_FRect *srcrect, const SDL_FRect *dstrect,
@@ -1876,7 +1880,6 @@ extern DECLSPEC int SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_RenderGeometryRaw
- * \sa SDL_Vertex
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -1907,7 +1910,6 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_RenderGeometry
- * \sa SDL_Vertex
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -1941,7 +1943,7 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_RenderGeometry
- * \sa SDL_Vertex
+ * \sa SDL_RenderGeometryRaw
  */
 extern DECLSPEC int SDLCALL SDL_RenderGeometryRawFloat(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -2032,6 +2034,10 @@ extern DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_Texture *texture);
  * If `renderer` is NULL, this function will return immediately after setting
  * the SDL error message to "Invalid renderer". See SDL_GetError().
  *
+ * Note that destroying a window implicitly destroys the associated renderer,
+ * so this should not be called if the window associated with the renderer has
+ * already been destroyed.
+ *
  * \param renderer the rendering context
  *
  * \since This function is available since SDL 3.0.0.
@@ -2088,15 +2094,15 @@ extern DECLSPEC int SDLCALL SDL_FlushRenderer(SDL_Renderer *renderer);
 extern DECLSPEC void *SDLCALL SDL_GetRenderMetalLayer(SDL_Renderer *renderer);
 
 /**
- * Get the Metal command encoder for the current frame
+ * Get the Metal command encoder for the current frame.
  *
  * This function returns `void *`, so SDL doesn't have to include Metal's
  * headers, but it can be safely cast to an `id<MTLRenderCommandEncoder>`.
  *
- * Note that as of SDL 2.0.18, this will return NULL if Metal refuses to give
- * SDL a drawable to render to, which might happen if the window is
- * hidden/minimized/offscreen. This doesn't apply to command encoders for
- * render targets, just the window's backbuffer. Check your return values!
+ * This will return NULL if Metal refuses to give SDL a drawable to render to,
+ * which might happen if the window is hidden/minimized/offscreen. This
+ * doesn't apply to command encoders for render targets, just the window's
+ * backbuffer. Check your return values!
  *
  * \param renderer The renderer to query
  * \returns an `id<MTLRenderCommandEncoder>` on success, or NULL if the
@@ -2145,6 +2151,8 @@ extern DECLSPEC int SDLCALL SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetRenderVSync
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync);
 
@@ -2158,6 +2166,8 @@ extern DECLSPEC int SDLCALL SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetRenderVSync
  */
 extern DECLSPEC int SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int *vsync);
 

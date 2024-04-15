@@ -200,8 +200,7 @@ static void mime_data_list_free(struct wl_list *list)
     SDL_MimeDataList *mime_data = NULL;
     SDL_MimeDataList *next = NULL;
 
-    wl_list_for_each_safe(mime_data, next, list, link)
-    {
+    wl_list_for_each_safe (mime_data, next, list, link) {
         if (mime_data->data) {
             SDL_free(mime_data->data);
         }

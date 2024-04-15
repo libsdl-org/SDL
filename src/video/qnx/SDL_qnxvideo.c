@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_keyboard_c.h"
+#include "../../events/SDL_mouse_c.h"
 #include "SDL_qnx.h"
 
 static screen_context_t context;
@@ -50,7 +52,10 @@ static int videoInit(SDL_VideoDevice *_this)
         return -1;
     }
 
-    _this->num_displays = 1;
+    /* Assume we have a mouse and keyboard */
+    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
+    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
+
     return 0;
 }
 

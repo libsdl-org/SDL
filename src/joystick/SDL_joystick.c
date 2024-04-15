@@ -290,6 +290,7 @@ static Uint32 initial_flightstick_devices[] = {
     MAKE_VIDPID(0x046d, 0xc215), /* Logitech Extreme 3D */
     MAKE_VIDPID(0x231d, 0x0126), /* Gunfighter Mk.III ‘Space Combat Edition’ (right) */
     MAKE_VIDPID(0x231d, 0x0127), /* Gunfighter Mk.III ‘Space Combat Edition’ (left) */
+    MAKE_VIDPID(0x362c, 0x0001), /* Yawman Arrow */
 };
 static SDL_vidpid_list flightstick_devices = {
     SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES, 0, 0, NULL,
@@ -682,6 +683,25 @@ SDL_bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, U
     return result;
 }
 
+SDL_bool SDL_HasJoystick(void)
+{
+    int i;
+    int total_joysticks = 0;
+
+    SDL_LockJoysticks();
+    {
+        for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+            total_joysticks += SDL_joystick_drivers[i]->GetCount();
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    if (total_joysticks > 0) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 SDL_JoystickID *SDL_GetJoysticks(int *count)
 {
     int i, num_joysticks, device_index;
@@ -1034,7 +1054,6 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     SDL_Joystick *joysticklist;
     const char *joystickname = NULL;
     const char *joystickpath = NULL;
-    SDL_JoystickPowerLevel initial_power_level;
     SDL_bool invert_sensors = SDL_FALSE;
     const SDL_SteamVirtualGamepadInfo *info;
 
@@ -1069,8 +1088,8 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->driver = driver;
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
     joystick->led_expiration = SDL_GetTicks();
+    joystick->battery_percent = -1;
 
     if (driver->Open(joystick, device_index) < 0) {
         SDL_free(joystick);
@@ -1091,15 +1110,21 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->guid = driver->GetDeviceGUID(device_index);
 
     if (joystick->naxes > 0) {
-        joystick->axes = (SDL_JoystickAxisInfo *)SDL_calloc(joystick->naxes, sizeof(SDL_JoystickAxisInfo));
+        joystick->axes = (SDL_JoystickAxisInfo *)SDL_calloc(joystick->naxes, sizeof(*joystick->axes));
+    }
+    if (joystick->nballs > 0) {
+        joystick->balls = (SDL_JoystickBallData *)SDL_calloc(joystick->nballs, sizeof(*joystick->balls));
     }
     if (joystick->nhats > 0) {
-        joystick->hats = (Uint8 *)SDL_calloc(joystick->nhats, sizeof(Uint8));
+        joystick->hats = (Uint8 *)SDL_calloc(joystick->nhats, sizeof(*joystick->hats));
     }
     if (joystick->nbuttons > 0) {
-        joystick->buttons = (Uint8 *)SDL_calloc(joystick->nbuttons, sizeof(Uint8));
+        joystick->buttons = (Uint8 *)SDL_calloc(joystick->nbuttons, sizeof(*joystick->buttons));
     }
-    if (((joystick->naxes > 0) && !joystick->axes) || ((joystick->nhats > 0) && !joystick->hats) || ((joystick->nbuttons > 0) && !joystick->buttons)) {
+    if (((joystick->naxes > 0) && !joystick->axes) ||
+        ((joystick->nballs > 0) && !joystick->balls) ||
+        ((joystick->nhats > 0) && !joystick->hats) ||
+        ((joystick->nbuttons > 0) && !joystick->buttons)) {
         SDL_CloseJoystick(joystick);
         SDL_UnlockJoysticks();
         return NULL;
@@ -1133,11 +1158,6 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->next = SDL_joysticks;
     SDL_joysticks = joystick;
 
-    /* send initial battery event */
-    initial_power_level = joystick->epowerlevel;
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
-    SDL_SendJoystickBatteryLevel(joystick, initial_power_level);
-
     driver->Update(joystick);
 
     SDL_UnlockJoysticks();
@@ -1150,7 +1170,6 @@ SDL_JoystickID SDL_AttachVirtualJoystick(SDL_JoystickType type, int naxes, int n
     SDL_VirtualJoystickDesc desc;
 
     SDL_zero(desc);
-    desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
     desc.type = (Uint16)type;
     desc.naxes = (Uint16)naxes;
     desc.nbuttons = (Uint16)nbuttons;
@@ -1325,6 +1344,16 @@ int SDL_GetNumJoystickHats(SDL_Joystick *joystick)
 }
 
 /*
+ * Get the number of trackballs on a joystick
+ */
+int SDL_GetNumJoystickBalls(SDL_Joystick *joystick)
+{
+    CHECK_JOYSTICK_MAGIC(joystick, -1);
+
+    return joystick->nballs;
+}
+
+/*
  * Get the number of buttons on a joystick
  */
 int SDL_GetNumJoystickButtons(SDL_Joystick *joystick)
@@ -1412,6 +1441,31 @@ Uint8 SDL_GetJoystickHat(SDL_Joystick *joystick, int hat)
     SDL_UnlockJoysticks();
 
     return state;
+}
+
+/*
+ * Get the ball axis change since the last poll
+ */
+int SDL_GetJoystickBall(SDL_Joystick *joystick, int ball, int *dx, int *dy)
+{
+    int retval;
+
+    CHECK_JOYSTICK_MAGIC(joystick, -1);
+
+    retval = 0;
+    if (ball < joystick->nballs) {
+        if (dx) {
+            *dx = joystick->balls[ball].dx;
+        }
+        if (dy) {
+            *dy = joystick->balls[ball].dy;
+        }
+        joystick->balls[ball].dx = 0;
+        joystick->balls[ball].dy = 0;
+    } else {
+        return SDL_SetError("Joystick only has %d balls", joystick->nballs);
+    }
+    return retval;
 }
 
 /*
@@ -1547,8 +1601,6 @@ const char *SDL_GetJoystickName(SDL_Joystick *joystick)
         if (info) {
             retval = info->name;
         } else {
-            CHECK_JOYSTICK_MAGIC(joystick, NULL);
-
             retval = joystick->name;
         }
     }
@@ -1783,6 +1835,7 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
         SDL_free(joystick->path);
         SDL_free(joystick->serial);
         SDL_free(joystick->axes);
+        SDL_free(joystick->balls);
         SDL_free(joystick->hats);
         SDL_free(joystick->buttons);
         for (i = 0; i < joystick->ntouchpads; i++) {
@@ -2103,6 +2156,41 @@ int SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, S
     return posted;
 }
 
+int SDL_SendJoystickBall(Uint64 timestamp, SDL_Joystick *joystick, Uint8 ball, Sint16 xrel, Sint16 yrel)
+{
+    int posted;
+
+    SDL_AssertJoysticksLocked();
+
+    /* Make sure we're not getting garbage events */
+    if (ball >= joystick->nballs) {
+        return 0;
+    }
+
+    /* We ignore events if we don't have keyboard focus. */
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        return 0;
+    }
+
+    /* Update internal mouse state */
+    joystick->balls[ball].dx += xrel;
+    joystick->balls[ball].dy += yrel;
+
+    /* Post the event, if desired */
+    posted = 0;
+    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_BALL_MOTION)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_JOYSTICK_BALL_MOTION;
+        event.common.timestamp = timestamp;
+        event.jball.which = joystick->instance_id;
+        event.jball.ball = ball;
+        event.jball.xrel = xrel;
+        event.jball.yrel = yrel;
+        posted = SDL_PushEvent(&event) == 1;
+    }
+    return posted;
+}
+
 int SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Uint8 value)
 {
     int posted;
@@ -2312,6 +2400,7 @@ void SDL_UpdateJoysticks(void)
 
 static const Uint32 SDL_joystick_event_list[] = {
     SDL_EVENT_JOYSTICK_AXIS_MOTION,
+    SDL_EVENT_JOYSTICK_BALL_MOTION,
     SDL_EVENT_JOYSTICK_HAT_MOTION,
     SDL_EVENT_JOYSTICK_BUTTON_DOWN,
     SDL_EVENT_JOYSTICK_BUTTON_UP,
@@ -3314,35 +3403,58 @@ SDL_JoystickGUID SDL_GetJoystickGUIDFromString(const char *pchGUID)
     return SDL_GUIDFromString(pchGUID);
 }
 
-/* update the power level for this joystick */
-void SDL_SendJoystickBatteryLevel(SDL_Joystick *joystick, SDL_JoystickPowerLevel ePowerLevel)
+void SDL_SendJoystickPowerInfo(SDL_Joystick *joystick, SDL_PowerState state, int percent)
 {
     SDL_AssertJoysticksLocked();
 
-    SDL_assert(joystick->ref_count); /* make sure we are calling this only for update, not for initialization */
-    if (ePowerLevel != joystick->epowerlevel) {
+    if (state != joystick->battery_state || percent != joystick->battery_percent) {
+        joystick->battery_state = state;
+        joystick->battery_percent = percent;
+
         if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_BATTERY_UPDATED)) {
             SDL_Event event;
             event.type = SDL_EVENT_JOYSTICK_BATTERY_UPDATED;
             event.common.timestamp = 0;
             event.jbattery.which = joystick->instance_id;
-            event.jbattery.level = ePowerLevel;
+            event.jbattery.state = state;
+            event.jbattery.percent = percent;
             SDL_PushEvent(&event);
         }
-        joystick->epowerlevel = ePowerLevel;
     }
 }
 
-/* return its power level */
-SDL_JoystickPowerLevel SDL_GetJoystickPowerLevel(SDL_Joystick *joystick)
+SDL_JoystickConnectionState SDL_GetJoystickConnectionState(SDL_Joystick *joystick)
 {
-    SDL_JoystickPowerLevel retval;
+    SDL_JoystickConnectionState retval;
 
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick, SDL_JOYSTICK_POWER_UNKNOWN);
+        CHECK_JOYSTICK_MAGIC(joystick, SDL_JOYSTICK_CONNECTION_INVALID);
 
-        retval = joystick->epowerlevel;
+        retval = joystick->connection_state;
+    }
+    SDL_UnlockJoysticks();
+
+    return retval;
+}
+
+SDL_PowerState SDL_GetJoystickPowerInfo(SDL_Joystick *joystick, int *percent)
+{
+    SDL_PowerState retval;
+
+    if (percent) {
+        *percent = -1;
+    }
+
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, SDL_POWERSTATE_ERROR);
+
+        retval = joystick->battery_state;
+
+        if (percent) {
+            *percent = joystick->battery_percent;
+        }
     }
     SDL_UnlockJoysticks();
 

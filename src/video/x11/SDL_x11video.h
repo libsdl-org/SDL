@@ -111,6 +111,7 @@ struct SDL_VideoData
     Uint32 global_mouse_buttons;
 
     SDL_XInput2DeviceInfo *mouse_device_info;
+    SDL_bool xinput_hierarchy_changed;
 
     int xrandr_event_base;
 
@@ -131,6 +132,8 @@ struct SDL_VideoData
     /* Used to interact with the on-screen keyboard */
     SDL_bool is_steam_deck;
     SDL_bool steam_keyboard_open;
+
+    SDL_bool is_xwayland;
 
 };
 

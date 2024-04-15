@@ -50,7 +50,6 @@
 
 /* Useful headers */
 #cmakedefine HAVE_ALLOCA_H 1
-#cmakedefine HAVE_CTYPE_H 1
 #cmakedefine HAVE_FLOAT_H 1
 #cmakedefine HAVE_ICONV_H 1
 #cmakedefine HAVE_INTTYPES_H 1
@@ -97,10 +96,6 @@
 #cmakedefine HAVE_WCSSTR 1
 #cmakedefine HAVE_WCSCMP 1
 #cmakedefine HAVE_WCSNCMP 1
-#cmakedefine HAVE_WCSCASECMP 1
-#cmakedefine HAVE__WCSICMP 1
-#cmakedefine HAVE_WCSNCASECMP 1
-#cmakedefine HAVE__WCSNICMP 1
 #cmakedefine HAVE_WCSTOL 1
 #cmakedefine HAVE_STRLEN 1
 #cmakedefine HAVE_STRNLEN 1
@@ -131,10 +126,6 @@
 #cmakedefine HAVE_ATOF 1
 #cmakedefine HAVE_STRCMP 1
 #cmakedefine HAVE_STRNCMP 1
-#cmakedefine HAVE__STRICMP 1
-#cmakedefine HAVE_STRCASECMP 1
-#cmakedefine HAVE__STRNICMP 1
-#cmakedefine HAVE_STRNCASECMP 1
 #cmakedefine HAVE_STRCASESTR 1
 #cmakedefine HAVE_SSCANF 1
 #cmakedefine HAVE_VSSCANF 1
@@ -186,10 +177,16 @@
 #cmakedefine HAVE_FOPEN64 1
 #cmakedefine HAVE_FSEEKO 1
 #cmakedefine HAVE_FSEEKO64 1
+#cmakedefine HAVE_MEMFD_CREATE 1
+#cmakedefine HAVE_POSIX_FALLOCATE 1
 #cmakedefine HAVE_SIGACTION 1
 #cmakedefine HAVE_SA_SIGACTION 1
+#cmakedefine HAVE_ST_MTIM 1
 #cmakedefine HAVE_SETJMP 1
 #cmakedefine HAVE_NANOSLEEP 1
+#cmakedefine HAVE_GMTIME_R 1
+#cmakedefine HAVE_LOCALTIME_R 1
+#cmakedefine HAVE_NL_LANGINFO 1
 #cmakedefine HAVE_SYSCONF 1
 #cmakedefine HAVE_SYSCTLBYNAME 1
 #cmakedefine HAVE_CLOCK_GETTIME 1
@@ -348,6 +345,14 @@
 #cmakedefine SDL_THREAD_PS2 @SDL_THREAD_PS2@
 #cmakedefine SDL_THREAD_N3DS @SDL_THREAD_N3DS@
 
+/* Enable various RTC systems */
+#cmakedefine SDL_TIME_UNIX @SDL_TIME_UNIX@
+#cmakedefine SDL_TIME_WINDOWS @SDL_TIME_WINDOWS@
+#cmakedefine SDL_TIME_VITA @SDL_TIME_VITA@
+#cmakedefine SDL_TIME_PSP @SDL_TIME_PSP@
+#cmakedefine SDL_TIME_PS2 @SDL_TIME_PS2@
+#cmakedefine SDL_TIME_N3DS @SDL_TIME_N3DS@
+
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU @SDL_TIMER_HAIKU@
 #cmakedefine SDL_TIMER_DUMMY @SDL_TIMER_DUMMY@
@@ -462,6 +467,15 @@
 #cmakedefine SDL_FILESYSTEM_PSP @SDL_FILESYSTEM_PSP@
 #cmakedefine SDL_FILESYSTEM_PS2 @SDL_FILESYSTEM_PS2@
 #cmakedefine SDL_FILESYSTEM_N3DS @SDL_FILESYSTEM_N3DS@
+
+/* Enable system storage support */
+#cmakedefine SDL_STORAGE_GENERIC @SDL_STORAGE_GENERIC@
+#cmakedefine SDL_STORAGE_STEAM @SDL_STORAGE_STEAM@
+
+/* Enable system FSops support */
+#cmakedefine SDL_FSOPS_POSIX @SDL_FSOPS_POSIX@
+#cmakedefine SDL_FSOPS_WINDOWS @SDL_FSOPS_WINDOWS@
+#cmakedefine SDL_FSOPS_DUMMY @SDL_FSOPS_DUMMY@
 
 /* Enable camera subsystem */
 #cmakedefine SDL_CAMERA_DRIVER_DUMMY @SDL_CAMERA_DRIVER_DUMMY@

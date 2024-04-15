@@ -20,9 +20,15 @@
 
 #include <stdlib.h> /* exit() */
 
-#ifdef SDL_PLATFORM_IOS
-#define SCREEN_WIDTH  320
-#define SCREEN_HEIGHT 480
+#ifdef SDL_PLATFORM_3DS
+/* For mouse-based tests, we want to have the window on the touch screen */
+#define SCREEN_X 40
+#define SCREEN_Y 240
+#define SCREEN_WIDTH    320
+#define SCREEN_HEIGHT   240
+#elif defined(SDL_PLATFORM_IOS)
+#define SCREEN_WIDTH    320
+#define SCREEN_HEIGHT   480
 #else
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 480
@@ -258,6 +264,9 @@ int main(int argc, char *argv[])
 {
     struct mouse_loop_data loop_data;
     SDLTest_CommonState *state;
+#ifdef SDL_PLATFORM_3DS
+    SDL_PropertiesID props;
+#endif
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -280,7 +289,18 @@ int main(int argc, char *argv[])
     }
 
     /* Create a window to display joystick axis position */
+#ifdef SDL_PLATFORM_3DS
+    props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Mouse Test");
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SCREEN_X);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SCREEN_Y);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, SCREEN_WIDTH);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, SCREEN_HEIGHT);
+    SDL_SetNumberProperty(props, "flags", 0);
+    window = SDL_CreateWindowWithProperties(props);
+#else
     window = SDL_CreateWindow("Mouse Test", SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+#endif
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return 0;

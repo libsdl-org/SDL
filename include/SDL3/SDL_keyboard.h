@@ -39,10 +39,15 @@
 extern "C" {
 #endif
 
+typedef Uint32 SDL_KeyboardID;
+
 /**
- *  The SDL keysym structure, used in key events.
+ * The SDL keysym structure, used in key events.
  *
- *  \note  If you are looking for translated character input, see the ::SDL_EVENT_TEXT_INPUT event.
+ * If you are looking for translated character input, see the
+ * ::SDL_EVENT_TEXT_INPUT event.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Keysym
 {
@@ -53,6 +58,52 @@ typedef struct SDL_Keysym
 } SDL_Keysym;
 
 /* Function prototypes */
+
+/**
+ * Return whether a keyboard is currently connected.
+ *
+ * \returns SDL_TRUE if a keyboard is connected, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetKeyboards
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
+
+/**
+ * Get a list of currently connected keyboards.
+ *
+ * Note that this will include any device or virtual driver that includes
+ * keyboard functionality, including some mice, KVM switches, motherboard
+ * power buttons, etc. You should wait for input from a device before you
+ * consider it actively in use.
+ *
+ * \param count a pointer filled in with the number of keyboards returned
+ * \returns a 0 terminated array of keyboards instance IDs which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetKeyboardInstanceName
+ * \sa SDL_HasKeyboard
+ */
+extern DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
+
+/**
+ * Get the name of a keyboard.
+ *
+ * This function returns "" if the keyboard doesn't have a name.
+ *
+ * \param instance_id the keyboard instance ID
+ * \returns the name of the selected keyboard, or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetKeyboards
+ */
+extern DECLSPEC const char *SDLCALL SDL_GetKeyboardInstanceName(SDL_KeyboardID instance_id);
 
 /**
  * Query the window which currently has keyboard focus.
@@ -95,7 +146,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
 extern DECLSPEC const Uint8 *SDLCALL SDL_GetKeyboardState(int *numkeys);
 
 /**
- * Clear the state of the keyboard
+ * Clear the state of the keyboard.
  *
  * This function will generate key up events for all pressed keys.
  *
@@ -293,15 +344,6 @@ extern DECLSPEC void SDLCALL SDL_StopTextInput(void);
  * \sa SDL_StopTextInput
  */
 extern DECLSPEC void SDLCALL SDL_ClearComposition(void);
-
-/**
- * Returns if an IME Composite or Candidate window is currently shown.
- *
- * \returns SDL_TRUE if shown, else SDL_FALSE
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_TextInputShown(void);
 
 /**
  * Set the rectangle used to type Unicode text inputs.

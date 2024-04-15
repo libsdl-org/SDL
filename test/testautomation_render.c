@@ -49,7 +49,7 @@ static int isSupported(int code);
 static void InitCreateRenderer(void *arg)
 {
     int width = 320, height = 240;
-    int renderer_flags = SDL_RENDERER_ACCELERATED;
+    const char *renderer_name = NULL;
     renderer = NULL;
     window = SDL_CreateWindow("render_testCreateRenderer", width, height, 0);
     SDLTest_AssertPass("SDL_CreateWindow()");
@@ -59,10 +59,10 @@ static void InitCreateRenderer(void *arg)
     }
 
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0) {
-        renderer_flags = 0;
+        renderer_name = SDL_SOFTWARE_RENDERER;
     }
 
-    renderer = SDL_CreateRenderer(window, NULL, renderer_flags);
+    renderer = SDL_CreateRenderer(window, renderer_name, 0);
     SDLTest_AssertPass("SDL_CreateRenderer()");
     SDLTest_AssertCheck(renderer != NULL, "Check SDL_CreateRenderer result: %s", renderer != NULL ? "success" : SDL_GetError());
     if (renderer == NULL) {
@@ -388,7 +388,7 @@ static int render_testBlit(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     int checkFailCount1;
@@ -456,7 +456,7 @@ static int render_testBlitColor(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     int checkFailCount1;
@@ -530,7 +530,7 @@ static int render_testBlitAlpha(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     int checkFailCount1;
@@ -604,7 +604,7 @@ static void
 testBlitBlendMode(SDL_Texture *tface, int mode)
 {
     int ret;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     SDL_FRect rect;
@@ -659,7 +659,7 @@ static int render_testBlitBlend(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    Uint32 tformat;
+    SDL_PixelFormatEnum tformat;
     int taccess, tw, th;
     int i, j, ni, nj;
     int mode;

@@ -27,11 +27,12 @@ extern SDLTest_TestSuiteReference platformTestSuite;
 extern SDLTest_TestSuiteReference propertiesTestSuite;
 extern SDLTest_TestSuiteReference rectTestSuite;
 extern SDLTest_TestSuiteReference renderTestSuite;
-extern SDLTest_TestSuiteReference rwopsTestSuite;
+extern SDLTest_TestSuiteReference iostrmTestSuite;
 extern SDLTest_TestSuiteReference sdltestTestSuite;
 extern SDLTest_TestSuiteReference stdlibTestSuite;
 extern SDLTest_TestSuiteReference subsystemsTestSuite;
 extern SDLTest_TestSuiteReference surfaceTestSuite;
+extern SDLTest_TestSuiteReference timeTestSuite;
 extern SDLTest_TestSuiteReference timerTestSuite;
 extern SDLTest_TestSuiteReference videoTestSuite;
 

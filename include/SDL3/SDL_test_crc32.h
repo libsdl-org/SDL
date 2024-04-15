@@ -60,16 +60,16 @@ extern "C" {
  #define CRC32_POLY 0xEDB88320   /* Perl String::CRC32 compatible */
 #endif
 
-/**
+/*
  * Data structure for CRC32 (checksum) computation
  */
-  typedef struct {
+  typedef struct SDLTest_Crc32Context {
     CrcUint32    crc32_table[256]; /* CRC table */
   } SDLTest_Crc32Context;
 
 /* ---------- Function Prototypes ------------- */
 
-/**
+/*
  * Initialize the CRC context
  *
  * Note: The function initializes the crc table required for all crc calculations.
@@ -82,7 +82,7 @@ extern "C" {
  int SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext);
 
 
-/**
+/*
  * calculate a crc32 from a data block
  *
  * \param crcContext         pointer to context variable
@@ -101,7 +101,7 @@ int SDLTest_Crc32CalcEnd(SDLTest_Crc32Context *crcContext, CrcUint32 *crc32);
 int SDLTest_Crc32CalcBuffer(SDLTest_Crc32Context *crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32);
 
 
-/**
+/*
  * clean up CRC context
  *
  * \param crcContext        pointer to context variable

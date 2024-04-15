@@ -20,6 +20,10 @@ Read docs/README-macos.md
 
 Run: `cmake -S . -B build && cmake --build build && cmake --install build`
 
+### macOS for universal architecture:
+
+Run: `cmake -S . -B build -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" && cmake --build build && cmake --install build`
+
 ## Linux and other UNIX systems:
 
 Run: `cmake -S . -B build && cmake --build build && cmake --install build`

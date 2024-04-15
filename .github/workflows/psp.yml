@@ -16,10 +16,21 @@ jobs:
       run: |
         apk update
         apk add cmake gmp mpc1 mpfr4 make pkgconf
-    - name: Patch the pspdev toolchain to use -isystem instead of -I
+    - name: Pollute PSP SDK with "bad" SDL headers
       run: |
-        # https://github.com/pspdev/pspsdk/issues/123
-        sed -E s/-I/-isystem/g -i $PSPDEV/psp/share/pspdev.cmake
+        # Create "bad" SDL headers in the PSP SDK.
+        # SDL sources should not use these. 
+        infixes=". psp psp/sdk"
+        for infix in $infixes; do
+          directory="$PSPDEV/$infix/include/SDL3"
+          echo "Creating directory $directory"
+          mkdir -p "$directory"
+          for include in include/SDL3/*.h; do
+            dest="$PSPDEV/$infix/include/SDL3/$(basename "$include")"
+            echo "Creating $dest"
+            echo '#error "System SDL headers must not be used by build system"' >"$dest"
+          done
+        done
     - name: Configure (CMake)
       run: |
         cmake -S . -B build \

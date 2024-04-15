@@ -81,6 +81,7 @@ typedef struct
 {
     int32_t repeat_rate;     /* Repeat rate in range of [1, 1000] character(s) per second */
     int32_t repeat_delay_ms; /* Time to first repeat event in milliseconds */
+    Uint32 keyboard_id;      /* ID of the source keyboard. */
     SDL_bool is_initialized;
 
     SDL_bool is_key_down;
@@ -102,12 +103,15 @@ struct SDL_WaylandInput
     SDL_WaylandDataDevice *data_device;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device;
     SDL_WaylandTextInput *text_input;
+    struct wp_cursor_shape_device_v1 *cursor_shape;
     struct zwp_relative_pointer_v1 *relative_pointer;
     struct zwp_input_timestamps_v1 *keyboard_timestamps;
     struct zwp_input_timestamps_v1 *pointer_timestamps;
     struct zwp_input_timestamps_v1 *touch_timestamps;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
+    Uint32 keyboard_id;
+    Uint32 pointer_id;
     uint32_t pointer_enter_serial;
 
     /* High-resolution event timestamps */
@@ -209,6 +213,7 @@ extern void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_
 extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
 
 extern void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input);
+extern void Wayland_CreateCursorShapeDevice(struct SDL_WaylandInput *input);
 
 /* The implicit grab serial needs to be updated on:
  * - Keyboard key down/up

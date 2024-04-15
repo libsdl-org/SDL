@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
             goto quit;
         }
     } else {
-        shape = SDL_LoadBMP_RW(SDL_RWFromConstMem(glass_bmp, sizeof(glass_bmp)), SDL_TRUE);
+        shape = SDL_LoadBMP_IO(SDL_IOFromConstMem(glass_bmp, sizeof(glass_bmp)), SDL_TRUE);
         if (!shape) {
             SDL_Log("Couldn't load glass.bmp: %s\n", SDL_GetError());
             goto quit;

@@ -183,7 +183,7 @@
 #if defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #define SDL_PLATFORM_GDK    1
 #endif
-#ifdef __PSP__
+#if defined(__PSP__) || defined(__psp__)
 #define SDL_PLATFORM_PSP    1
 #endif
 #if defined(__PS2__) || defined(PS2)

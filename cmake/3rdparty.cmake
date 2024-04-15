@@ -98,7 +98,6 @@ function(get_clang_tidy_ignored_files OUTVAR)
       "vulkan_static_assertions.hpp"
       "vulkan_structs.hpp"
       "vulkan_to_string.hpp"
-      "vulkan.hpp"
       # HIDAPI
       "hid.c"
       "hid.cpp"

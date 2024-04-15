@@ -406,6 +406,17 @@ struct SDL_VideoData
 
     SDL_bool cleared;
 
+    BYTE *rawinput;
+    UINT rawinput_offset;
+    UINT rawinput_size;
+    UINT rawinput_count;
+    Uint64 last_rawinput_poll;
+    SDL_Point last_raw_mouse_position;
+    SDL_bool raw_mouse_enabled;
+    SDL_bool raw_keyboard_enabled;
+    SDL_bool pending_E1_key_sequence;
+    SDL_bool raw_input_enabled;
+
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_bool ime_com_initialized;
     struct ITfThreadMgr *ime_threadmgr;

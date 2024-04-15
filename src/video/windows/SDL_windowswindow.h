@@ -69,14 +69,6 @@ struct SDL_WindowData
     RECT cursor_clipped_rect;
     UINT windowed_mode_corner_rounding;
     COLORREF dwma_border_color;
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    RAWINPUT *rawinput;
-    UINT rawinput_offset;
-    UINT rawinput_size;
-    UINT rawinput_count;
-    Uint64 last_rawinput_poll;
-#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
-    SDL_Point last_raw_mouse_position;
     SDL_bool mouse_tracked;
     SDL_bool destroy_parent_with_window;
     SDL_DisplayID last_displayID;

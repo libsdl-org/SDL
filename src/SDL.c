@@ -41,6 +41,7 @@
 #include "SDL_log_c.h"
 #include "SDL_properties_c.h"
 #include "audio/SDL_sysaudio.h"
+#include "cpuinfo/SDL_cpuinfo_c.h"
 #include "video/SDL_video_c.h"
 #include "events/SDL_events_c.h"
 #include "haptic/SDL_haptic_c.h"
@@ -52,6 +53,7 @@
 #define SDL_INIT_EVERYTHING ~0U
 
 /* Initialization/Cleanup routines */
+#include "time/SDL_time_c.h"
 #include "timer/SDL_timer_c.h"
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern int SDL_HelperWindowCreate(void);
@@ -130,7 +132,11 @@ static void SDL_DecrementSubsystemRefCount(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] > 0)) {
-        --SDL_SubsystemRefCount[subsystem_index];
+        if (SDL_bInMainQuit) {
+            SDL_SubsystemRefCount[subsystem_index] = 0;
+        } else {
+            --SDL_SubsystemRefCount[subsystem_index];
+        }
     }
 }
 
@@ -204,6 +210,7 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 #endif
 
+    SDL_InitTime();
     SDL_InitTicks();
 
     /* Initialize the event subsystem */
@@ -536,6 +543,7 @@ void SDL_Quit(void)
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
     SDL_QuitTicks();
+    SDL_QuitTime();
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
@@ -543,6 +551,8 @@ void SDL_Quit(void)
 
     SDL_ClearHints();
     SDL_AssertionsQuit();
+
+    SDL_QuitCPUInfo();
 
     SDL_QuitProperties();
     SDL_QuitLog();

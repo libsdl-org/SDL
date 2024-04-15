@@ -109,7 +109,7 @@ static int unifont_init(const char *fontname)
     Uint32 numGlyphs = 0;
     int lineNumber = 1;
     size_t bytesRead;
-    SDL_RWops *hexFile;
+    SDL_IOStream *hexFile;
     const size_t unifontGlyphSize = UNIFONT_NUM_GLYPHS * sizeof(struct UnifontGlyph);
     const size_t unifontTextureSize = UNIFONT_NUM_TEXTURES * state->num_windows * sizeof(void *);
     char *filename;
@@ -135,7 +135,7 @@ static int unifont_init(const char *fontname)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
         return -1;
     }
-    hexFile = SDL_RWFromFile(filename, "rb");
+    hexFile = SDL_IOFromFile(filename, "rb");
     SDL_free(filename);
     if (!hexFile) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to open font file: %s\n", fontname);
@@ -149,7 +149,7 @@ static int unifont_init(const char *fontname)
         Uint8 glyphWidth;
         Uint32 codepoint;
 
-        bytesRead = SDL_RWread(hexFile, hexBuffer, 9);
+        bytesRead = SDL_ReadIO(hexFile, hexBuffer, 9);
         if (numGlyphs > 0 && bytesRead == 0) {
             break; /* EOF */
         }
@@ -185,7 +185,7 @@ static int unifont_init(const char *fontname)
         if (codepointHexSize < 8) {
             SDL_memmove(hexBuffer, hexBuffer + codepointHexSize + 1, bytesOverread);
         }
-        bytesRead = SDL_RWread(hexFile, hexBuffer + bytesOverread, 33 - bytesOverread);
+        bytesRead = SDL_ReadIO(hexFile, hexBuffer + bytesOverread, 33 - bytesOverread);
 
         if (bytesRead < (33 - bytesOverread)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
@@ -195,7 +195,7 @@ static int unifont_init(const char *fontname)
             glyphWidth = 8;
         } else {
             glyphWidth = 16;
-            bytesRead = SDL_RWread(hexFile, hexBuffer + 33, 32);
+            bytesRead = SDL_ReadIO(hexFile, hexBuffer + 33, 32);
             if (bytesRead < 32) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
                 return -1;
@@ -223,7 +223,7 @@ static int unifont_init(const char *fontname)
         lineNumber++;
     } while (bytesRead > 0);
 
-    SDL_RWclose(hexFile);
+    SDL_CloseIO(hexFile);
     SDL_Log("unifont: Loaded %" SDL_PRIu32 " glyphs.\n", numGlyphs);
     return 0;
 }
@@ -774,6 +774,9 @@ int main(int argc, char *argv[])
                 SDL_strlcpy(markedText, event.edit.text, SDL_TEXTEDITINGEVENT_TEXT_SIZE);
                 cursor = event.edit.start;
                 Redraw();
+                break;
+
+            default:
                 break;
             }
         }

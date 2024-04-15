@@ -211,7 +211,7 @@ int SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
                 dst += 2 * ((swdata->w + 1) / 2);
             }
         }
-    }
+    } break;
     default:
         return SDL_SetError("Unsupported YUV format");
     }

@@ -74,6 +74,7 @@ static SDL_GUID pen_guid_zero = { { 0 } };
     penvar = SDL_GetPenPtr(instance_id);          \
     if (!(penvar)) {                              \
         SDL_SetError("Stale SDL_PenID");          \
+        SDL_UNLOCK_PENS();                        \
         return (err_return);                      \
     }
 
@@ -357,6 +358,7 @@ void SDL_PenModifyEnd(SDL_Pen *pen, SDL_bool attach)
             attach = SDL_FALSE;
         } else {
             pen_handler.pens_known -= 1;
+            SDL_free(pen->name);
             SDL_memset(pen, 0, sizeof(SDL_Pen));
             SDL_UNLOCK_PENS();
             return;
@@ -496,7 +498,6 @@ int SDL_SendPenMotion(Uint64 timestamp,
                       SDL_bool window_relative,
                       const SDL_PenStatusInfo *status)
 {
-    const SDL_Mouse *mouse = SDL_GetMouse();
     int i;
     SDL_Pen *pen = SDL_GetPenPtr(instance_id);
     SDL_Event event;
@@ -539,7 +540,7 @@ int SDL_SendPenMotion(Uint64 timestamp,
 
     send_mouse_update = (x != last_x) || (y != last_y);
 
-    if (!(SDL_MousePositionInWindow(window, mouse->mouseID, x, y))) {
+    if (!(SDL_MousePositionInWindow(window, x, y))) {
         return SDL_FALSE;
     }
 
@@ -557,7 +558,7 @@ int SDL_SendPenMotion(Uint64 timestamp,
     if (send_mouse_update) {
         switch (pen_mouse_emulation_mode) {
         case PEN_MOUSE_EMULATE:
-            return (SDL_SendMouseMotion(0, window, SDL_PEN_MOUSEID, 0, x, y)) || posted;
+            return (SDL_SendMouseMotion(0, window, SDL_PEN_MOUSEID, SDL_FALSE, x, y)) || posted;
 
         case PEN_MOUSE_STATELESS:
             /* Report mouse event but don't update mouse state */
@@ -573,6 +574,7 @@ int SDL_SendPenMotion(Uint64 timestamp,
                 event.motion.yrel = last_y - y;
                 return (SDL_PushEvent(&event) > 0) || posted;
             }
+            break;
 
         default:
             break;
@@ -583,7 +585,6 @@ int SDL_SendPenMotion(Uint64 timestamp,
 
 int SDL_SendPenTipEvent(Uint64 timestamp, SDL_PenID instance_id, Uint8 state)
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Pen *pen = SDL_GetPenPtr(instance_id);
     SDL_Event event;
     SDL_bool posted = SDL_FALSE;
@@ -596,7 +597,7 @@ int SDL_SendPenTipEvent(Uint64 timestamp, SDL_PenID instance_id, Uint8 state)
     }
     window = pen->header.window;
 
-    if ((state == SDL_PRESSED) && !(window && SDL_MousePositionInWindow(window, mouse->mouseID, last->x, last->y))) {
+    if ((state == SDL_PRESSED) && !(window && SDL_MousePositionInWindow(window, last->x, last->y))) {
         return SDL_FALSE;
     }
 
@@ -662,7 +663,6 @@ int SDL_SendPenButton(Uint64 timestamp,
                       SDL_PenID instance_id,
                       Uint8 state, Uint8 button)
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Pen *pen = SDL_GetPenPtr(instance_id);
     SDL_Event event;
     SDL_bool posted = SDL_FALSE;
@@ -675,7 +675,7 @@ int SDL_SendPenButton(Uint64 timestamp,
     }
     window = pen->header.window;
 
-    if ((state == SDL_PRESSED) && !(window && SDL_MousePositionInWindow(window, mouse->mouseID, last->x, last->y))) {
+    if ((state == SDL_PRESSED) && !(window && SDL_MousePositionInWindow(window, last->x, last->y))) {
         return SDL_FALSE;
     }
 
@@ -830,6 +830,8 @@ void SDL_PenInit(void)
 
 void SDL_PenQuit(void)
 {
+    unsigned int i;
+
     SDL_DelHintCallback(SDL_HINT_PEN_NOT_MOUSE,
                         SDL_PenUpdateHint, &pen_mouse_emulation_mode);
 
@@ -839,6 +841,15 @@ void SDL_PenQuit(void)
     SDL_DestroyMutex(SDL_pen_access_lock);
     SDL_pen_access_lock = NULL;
 #endif
+
+    if (pen_handler.pens) {
+        for (i = 0; i < pen_handler.pens_known; ++i) {
+            SDL_free(pen_handler.pens[i].name);
+        }
+        SDL_free(pen_handler.pens);
+        /* Reset static pen information */
+        SDL_memset(&pen_handler, 0, sizeof(pen_handler));
+    }
 }
 
 SDL_bool SDL_PenPerformHitTest(void)

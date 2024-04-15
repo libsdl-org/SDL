@@ -69,8 +69,10 @@ void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void 
         switch (left) {
         case 3:
             *dstp1++ = *srcp1++;
+            SDL_FALLTHROUGH;
         case 2:
             *dstp1++ = *srcp1++;
+            SDL_FALLTHROUGH;
         case 1:
             *dstp1++ = *srcp1++;
         }
@@ -84,11 +86,11 @@ void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void 
 #ifndef HAVE_LIBC
 /* NOLINTNEXTLINE(readability-redundant-declaration) */
 extern void *memcpy(void *dst, const void *src, size_t len);
-#ifndef __INTEL_LLVM_COMPILER
+#if defined(_MSC_VER) && !defined(__INTEL_LLVM_COMPILER)
 #pragma intrinsic(memcpy)
 #endif
 
-#ifndef __clang__
+#if defined(_MSC_VER) && !defined(__clang__)
 #pragma function(memcpy)
 #endif
 /* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */

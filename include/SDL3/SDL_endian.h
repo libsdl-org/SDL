@@ -138,31 +138,26 @@ extern "C" {
 #   define HAS_BROKEN_BSWAP 0
 #endif
 
-/**
- * Byte swap 16-bit integer.
- */
+/* Byte swap 16-bit integer. */
 #if HAS_BUILTIN_BSWAP16
 #define SDL_Swap16(x) __builtin_bswap16(x)
 #elif (defined(_MSC_VER) && (_MSC_VER >= 1400)) && !defined(__ICL)
 #pragma intrinsic(_byteswap_ushort)
 #define SDL_Swap16(x) _byteswap_ushort(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
-SDL_FORCE_INLINE Uint16
-SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
 {
   __asm__("xchgb %b0,%h0": "=q"(x):"0"(x));
     return x;
 }
 #elif defined(__x86_64__)
-SDL_FORCE_INLINE Uint16
-SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
 {
   __asm__("xchgb %b0,%h0": "=Q"(x):"0"(x));
     return x;
 }
 #elif (defined(__powerpc__) || defined(__ppc__))
-SDL_FORCE_INLINE Uint16
-SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
 {
     int result;
 
@@ -170,8 +165,7 @@ SDL_Swap16(Uint16 x)
     return (Uint16)result;
 }
 #elif (defined(__m68k__) && !defined(__mcoldfire__))
-SDL_FORCE_INLINE Uint16
-SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
 {
   __asm__("rorw #8,%0": "=d"(x): "0"(x):"cc");
     return x;
@@ -183,38 +177,32 @@ extern __inline Uint16 SDL_Swap16(Uint16);
   parm   [ax]   \
   modify [ax];
 #else
-SDL_FORCE_INLINE Uint16
-SDL_Swap16(Uint16 x)
+SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
 {
     return SDL_static_cast(Uint16, ((x << 8) | (x >> 8)));
 }
 #endif
 
-/**
- * Byte swap 32-bit integer.
- */
+/* Byte swap 32-bit integer. */
 #if HAS_BUILTIN_BSWAP32
 #define SDL_Swap32(x) __builtin_bswap32(x)
 #elif (defined(_MSC_VER) && (_MSC_VER >= 1400)) && !defined(__ICL)
 #pragma intrinsic(_byteswap_ulong)
 #define SDL_Swap32(x) _byteswap_ulong(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
-SDL_FORCE_INLINE Uint32
-SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
 {
   __asm__("bswap %0": "=r"(x):"0"(x));
     return x;
 }
 #elif defined(__x86_64__)
-SDL_FORCE_INLINE Uint32
-SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
 {
   __asm__("bswapl %0": "=r"(x):"0"(x));
     return x;
 }
 #elif (defined(__powerpc__) || defined(__ppc__))
-SDL_FORCE_INLINE Uint32
-SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
 {
     Uint32 result;
 
@@ -224,8 +212,7 @@ SDL_Swap32(Uint32 x)
     return result;
 }
 #elif (defined(__m68k__) && !defined(__mcoldfire__))
-SDL_FORCE_INLINE Uint32
-SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
 {
   __asm__("rorw #8,%0\n\tswap %0\n\trorw #8,%0": "=d"(x): "0"(x):"cc");
     return x;
@@ -237,25 +224,21 @@ extern __inline Uint32 SDL_Swap32(Uint32);
   parm   [eax] \
   modify [eax];
 #else
-SDL_FORCE_INLINE Uint32
-SDL_Swap32(Uint32 x)
+SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x)
 {
     return SDL_static_cast(Uint32, ((x << 24) | ((x << 8) & 0x00FF0000) |
                                     ((x >> 8) & 0x0000FF00) | (x >> 24)));
 }
 #endif
 
-/**
- * Byte swap 64-bit integer.
- */
+/* Byte swap 64-bit integer. */
 #if HAS_BUILTIN_BSWAP64
 #define SDL_Swap64(x) __builtin_bswap64(x)
 #elif (defined(_MSC_VER) && (_MSC_VER >= 1400)) && !defined(__ICL)
 #pragma intrinsic(_byteswap_uint64)
 #define SDL_Swap64(x) _byteswap_uint64(x)
 #elif defined(__i386__) && !HAS_BROKEN_BSWAP
-SDL_FORCE_INLINE Uint64
-SDL_Swap64(Uint64 x)
+SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
 {
     union {
         struct {
@@ -270,8 +253,7 @@ SDL_Swap64(Uint64 x)
     return v.u;
 }
 #elif defined(__x86_64__)
-SDL_FORCE_INLINE Uint64
-SDL_Swap64(Uint64 x)
+SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
 {
   __asm__("bswapq %0": "=r"(x):"0"(x));
     return x;
@@ -285,8 +267,7 @@ extern __inline Uint64 SDL_Swap64(Uint64);
   parm [eax edx]  \
   modify [eax edx];
 #else
-SDL_FORCE_INLINE Uint64
-SDL_Swap64(Uint64 x)
+SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
 {
     Uint32 hi, lo;
 
@@ -303,10 +284,25 @@ SDL_Swap64(Uint64 x)
 
 
 /**
- * Byte swap floating point number.
+ * Byte-swap a floating point number.
+ *
+ * This will always byte-swap the value, whether it's currently in the native
+ * byteorder of the system or not. You should use SDL_SwapFloatLE or
+ * SDL_SwapFloatBE instead, in most cases.
+ *
+ * Note that this is a forced-inline function in a header, and not a public
+ * API function available in the SDL library (which is to say, the code is
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
+ *
+ * \param x the value to byte-swap.
+ * \returns x, with its bytes in the opposite endian order.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
-SDL_FORCE_INLINE float
-SDL_SwapFloat(float x)
+SDL_FORCE_INLINE float SDL_SwapFloat(float x)
 {
     union {
         float f;
@@ -323,71 +319,203 @@ SDL_SwapFloat(float x)
 #undef HAS_BUILTIN_BSWAP32
 #undef HAS_BUILTIN_BSWAP64
 
-/**
- *  \name Swap to native
- *  Byteswap item from the specified endianness to the native endianness.
- */
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
- * \def SDL_SwapLE16
- * Swap 16-bit little endian integer to 16-bit native endian integer.
+ * Byte-swap an unsigned 16-bit number.
+ *
+ * This will always byte-swap the value, whether it's currently in the native
+ * byteorder of the system or not. You should use SDL_SwapLE16 or SDL_SwapBE16
+ * instead, in most cases.
+ *
+ * Note that this is a forced-inline function in a header, and not a public
+ * API function available in the SDL library (which is to say, the code is
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
+ *
+ * \param x the value to byte-swap.
+ * \returns `x`, with its bytes in the opposite endian order.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
+SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
 
 /**
- * \def SDL_SwapLE32
- * Swap 32-bit little endian integer to 32-bit native endian integer.
+ * Byte-swap an unsigned 32-bit number.
+ *
+ * This will always byte-swap the value, whether it's currently in the native
+ * byteorder of the system or not. You should use SDL_SwapLE32 or SDL_SwapBE32
+ * instead, in most cases.
+ *
+ * Note that this is a forced-inline function in a header, and not a public
+ * API function available in the SDL library (which is to say, the code is
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
+ *
+ * \param x the value to byte-swap.
+ * \returns `x`, with its bytes in the opposite endian order.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
+SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
 
 /**
- * \def SDL_SwapLE64
- * Swap 64-bit little endian integer to 64-bit native endian integer.
+ * Byte-swap an unsigned 64-bit number.
+ *
+ * This will always byte-swap the value, whether it's currently in the native
+ * byteorder of the system or not. You should use SDL_SwapLE64 or SDL_SwapBE64
+ * instead, in most cases.
+ *
+ * Note that this is a forced-inline function in a header, and not a public
+ * API function available in the SDL library (which is to say, the code is
+ * embedded in the calling program and the linker and dynamic loader will not
+ * be able to find this function inside SDL itself).
+ *
+ * \param x the value to byte-swap.
+ * \returns `x`, with its bytes in the opposite endian order.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
  */
+SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
 
 /**
- * \def SDL_SwapFloatLE
- * Swap little endian float to native endian float.
+ * Swap a 16-bit value from littleendian to native byte order.
+ *
+ * If this is running on a littleendian system, `x` is returned unchanged.
+ *
+ * This macro never references `x` more than once, avoiding side effects.
+ *
+ * \param x the value to swap, in littleendian byte order.
+ * \returns `x` in native byte order.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
-/**
- * \def SDL_SwapBE16
- * Swap 16-bit big endian integer to 16-bit native endian integer.
- */
+#define SDL_SwapLE16(x) SwapOnlyIfNecessary(x)
 
 /**
- * \def SDL_SwapBE32
- * Swap 32-bit big endian integer to 32-bit native endian integer.
+ * Swap a 32-bit value from littleendian to native byte order.
+ *
+ * If this is running on a littleendian system, `x` is returned unchanged.
+ *
+ * This macro never references `x` more than once, avoiding side effects.
+ *
+ * \param x the value to swap, in littleendian byte order.
+ * \returns `x` in native byte order.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapLE32(x) SwapOnlyIfNecessary(x)
 
 /**
- * \def SDL_SwapBE64
- * Swap 64-bit big endian integer to 64-bit native endian integer.
+ * Swap a 64-bit value from littleendian to native byte order.
+ *
+ * If this is running on a littleendian system, `x` is returned unchanged.
+ *
+ * This macro never references `x` more than once, avoiding side effects.
+ *
+ * \param x the value to swap, in littleendian byte order.
+ * \returns `x` in native byte order.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapLE64(x) SwapOnlyIfNecessary(x)
 
 /**
- * \def SDL_SwapFloatBE
- * Swap endian float to native endian float.
+ * Swap a floating point value from littleendian to native byte order.
+ *
+ * If this is running on a littleendian system, `x` is returned unchanged.
+ *
+ * This macro never references `x` more than once, avoiding side effects.
+ *
+ * \param x the value to swap, in littleendian byte order.
+ * \returns `x` in native byte order.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
+#define SDL_SwapFloatLE(x) SwapOnlyIfNecessary(x)
 
-/* @{ */
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-#define SDL_SwapLE16(X)     (X)
-#define SDL_SwapLE32(X)     (X)
-#define SDL_SwapLE64(X)     (X)
-#define SDL_SwapFloatLE(X)  (X)
-#define SDL_SwapBE16(X)     SDL_Swap16(X)
-#define SDL_SwapBE32(X)     SDL_Swap32(X)
-#define SDL_SwapBE64(X)     SDL_Swap64(X)
-#define SDL_SwapFloatBE(X)  SDL_SwapFloat(X)
+/**
+ * Swap a 16-bit value from bigendian to native byte order.
+ *
+ * If this is running on a bigendian system, `x` is returned unchanged.
+ *
+ * This macro never references `x` more than once, avoiding side effects.
+ *
+ * \param x the value to swap, in bigendian byte order.
+ * \returns `x` in native byte order.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_SwapBE16(x) SwapOnlyIfNecessary(x)
+
+/**
+ * Swap a 32-bit value from bigendian to native byte order.
+ *
+ * If this is running on a bigendian system, `x` is returned unchanged.
+ *
+ * This macro never references `x` more than once, avoiding side effects.
+ *
+ * \param x the value to swap, in bigendian byte order.
+ * \returns `x` in native byte order.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_SwapBE32(x) SwapOnlyIfNecessary(x)
+
+/**
+ * Swap a 64-bit value from bigendian to native byte order.
+ *
+ * If this is running on a bigendian system, `x` is returned unchanged.
+ *
+ * This macro never references `x` more than once, avoiding side effects.
+ *
+ * \param x the value to swap, in bigendian byte order.
+ * \returns `x` in native byte order.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_SwapBE64(x) SwapOnlyIfNecessary(x)
+
+/**
+ * Swap a floating point value from bigendian to native byte order.
+ *
+ * If this is running on a bigendian system, `x` is returned unchanged.
+ *
+ * This macro never references `x` more than once, avoiding side effects.
+ *
+ * \param x the value to swap, in bigendian byte order.
+ * \returns `x` in native byte order.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_SwapFloatBE(x) SwapOnlyIfNecessary(x)
+
+#elif SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define SDL_SwapLE16(x)     (x)
+#define SDL_SwapLE32(x)     (x)
+#define SDL_SwapLE64(x)     (x)
+#define SDL_SwapFloatLE(x)  (x)
+#define SDL_SwapBE16(x)     SDL_Swap16(x)
+#define SDL_SwapBE32(x)     SDL_Swap32(x)
+#define SDL_SwapBE64(x)     SDL_Swap64(x)
+#define SDL_SwapFloatBE(x)  SDL_SwapFloat(x)
 #else
-#define SDL_SwapLE16(X)     SDL_Swap16(X)
-#define SDL_SwapLE32(X)     SDL_Swap32(X)
-#define SDL_SwapLE64(X)     SDL_Swap64(X)
-#define SDL_SwapFloatLE(X)  SDL_SwapFloat(X)
-#define SDL_SwapBE16(X)     (X)
-#define SDL_SwapBE32(X)     (X)
-#define SDL_SwapBE64(X)     (X)
-#define SDL_SwapFloatBE(X)  (X)
+#define SDL_SwapLE16(x)     SDL_Swap16(x)
+#define SDL_SwapLE32(x)     SDL_Swap32(x)
+#define SDL_SwapLE64(x)     SDL_Swap64(x)
+#define SDL_SwapFloatLE(x)  SDL_SwapFloat(x)
+#define SDL_SwapBE16(x)     (x)
+#define SDL_SwapBE32(x)     (x)
+#define SDL_SwapBE64(x)     (x)
+#define SDL_SwapFloatBE(x)  (x)
 #endif
-/* @} *//* Swap to native */
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

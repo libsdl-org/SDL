@@ -30,6 +30,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_video.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -49,12 +50,23 @@ typedef enum
     SDL_TOUCH_DEVICE_INDIRECT_RELATIVE  /* trackpad with screen cursor-relative coordinates */
 } SDL_TouchDeviceType;
 
+/**
+ * Data about a single finger in a multitouch event.
+ *
+ * Each touch even is a collection of fingers that are simultaneously in
+ * contact with the touch device (so a "touch" can be a "multitouch," in
+ * reality), and this struct reports details of the specific fingers.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetTouchFinger
+ */
 typedef struct SDL_Finger
 {
-    SDL_FingerID id;
-    float x;
-    float y;
-    float pressure;
+    SDL_FingerID id;  /**< the finger ID */
+    float x;  /**< the x-axis location of the touch event, normalized (0...1) */
+    float y;  /**< the y-axis location of the touch event, normalized (0...1) */
+    float pressure; /**< the quantity of pressure applied, normalized (0...1) */
 } SDL_Finger;
 
 /* Used as the device ID for mouse events simulated with touch input */
@@ -70,8 +82,6 @@ typedef struct SDL_Finger
  * On some platforms SDL first sees the touch device if it was actually used.
  * Therefore the returned list might be empty, although devices are available.
  * After using all devices at least once the number will be correct.
- *
- * This was fixed for Android in SDL 2.0.1.
  *
  * \param count a pointer filled in with the number of devices returned, can
  *              be NULL.
@@ -107,32 +117,18 @@ extern DECLSPEC const char* SDLCALL SDL_GetTouchDeviceName(SDL_TouchID touchID);
 extern DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_TouchID touchID);
 
 /**
- * Get the number of active fingers for a given touch device.
+ * Get a list of active fingers for a given touch device.
  *
  * \param touchID the ID of a touch device
- * \returns the number of active fingers for a given touch device on success
- *          or a negative error code on failure; call SDL_GetError() for more
- *          information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetTouchFinger
- */
-extern DECLSPEC int SDLCALL SDL_GetNumTouchFingers(SDL_TouchID touchID);
-
-/**
- * Get the finger object for specified touch device ID and finger index.
- *
- * The returned resource is owned by SDL and should not be deallocated.
- *
- * \param touchID the ID of the requested touch device
- * \param index the index of the requested finger
- * \returns a pointer to the SDL_Finger object or NULL if no object at the
- *          given ID and index could be found.
+ * \param count a pointer filled in with the number of fingers returned, can
+ *              be NULL.
+ * \returns a NULL terminated array of SDL_Finger pointers which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_Finger * SDLCALL SDL_GetTouchFinger(SDL_TouchID touchID, int index);
+extern DECLSPEC SDL_Finger **SDLCALL SDL_GetTouchFingers(SDL_TouchID touchID, int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -220,7 +220,7 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
         Uint8 button, pressed;
         WINRT_GetSDLButtonForPointerPoint(pointerPoint, &button, &pressed);
         SDL_assert(pressed == 1);
-        SDL_SendMouseButton(0, window, 0, SDL_PRESSED, button);
+        SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, SDL_PRESSED, button);
     } else {
         Windows::Foundation::Point normalizedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, NormalizeZeroToOne);
         Windows::Foundation::Point windowPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, TransformToSDLWindowSize);
@@ -249,10 +249,10 @@ void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::Poin
         /* For some odd reason Moved events are used for multiple mouse buttons */
         Uint8 button, pressed;
         if (WINRT_GetSDLButtonForPointerPoint(pointerPoint, &button, &pressed)) {
-            SDL_SendMouseButton(0, window, 0, pressed, button);
+            SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, pressed, button);
         }
 
-        SDL_SendMouseMotion(0, window, 0, 0, windowPoint.X, windowPoint.Y);
+        SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, SDL_FALSE, windowPoint.X, windowPoint.Y);
     } else {
         SDL_SendTouchMotion(0,
             WINRT_TouchID,
@@ -274,7 +274,7 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
         Uint8 button, pressed;
         WINRT_GetSDLButtonForPointerPoint(pointerPoint, &button, &pressed);
         SDL_assert(pressed == 0);
-        SDL_SendMouseButton(0, window, 0, SDL_RELEASED, button);
+        SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, SDL_RELEASED, button);
     } else {
         Windows::Foundation::Point normalizedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position, NormalizeZeroToOne);
 
@@ -318,7 +318,7 @@ void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Inpu
     }
 
     float motion = (float)pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
-    SDL_SendMouseWheel(0, window, 0, 0, (float)motion, SDL_MOUSEWHEEL_NORMAL);
+    SDL_SendMouseWheel(0, window, SDL_DEFAULT_MOUSE_ID, 0.0f, motion, SDL_MOUSEWHEEL_NORMAL);
 }
 
 void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::MouseEventArgs ^ args)
@@ -383,12 +383,7 @@ void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::M
     //
     const Windows::Foundation::Point mouseDeltaInDIPs((float)args->MouseDelta.X, (float)args->MouseDelta.Y);
     const Windows::Foundation::Point mouseDeltaInSDLWindowCoords = WINRT_TransformCursorPosition(window, mouseDeltaInDIPs, TransformToSDLWindowSize);
-    SDL_SendMouseMotion(0,
-        window,
-        0,
-        1,
-        mouseDeltaInSDLWindowCoords.X,
-        mouseDeltaInSDLWindowCoords.Y);
+    SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, SDL_TRUE, mouseDeltaInSDLWindowCoords.X, mouseDeltaInSDLWindowCoords.Y);
 }
 
 #endif // SDL_VIDEO_DRIVER_WINRT

@@ -102,16 +102,8 @@ int SDL_WinRTGetDeviceFamily()
     return 0; /* SDL_WINRT_DEVICEFAMILY_UNKNOWN */
 }
 
-DECLSPEC const wchar_t *SDLCALL SDL_WinRTGetFSPathUNICODE(int pathType); /* SDL_WinRT_Path pathType */
-const wchar_t *SDL_WinRTGetFSPathUNICODE(int pathType)
-{
-    (void)pathType;
-    SDL_Unsupported();
-    return NULL;
-}
-
-DECLSPEC const char *SDLCALL SDL_WinRTGetFSPathUTF8(int pathType); /* SDL_WinRT_Path pathType */
-const char *SDL_WinRTGetFSPathUTF8(int pathType)
+DECLSPEC const char *SDLCALL SDL_WinRTGetFSPath(int pathType); /* SDL_WinRT_Path pathType */
+const char *SDL_WinRTGetFSPath(int pathType)
 {
     (void)pathType;
     SDL_Unsupported();

@@ -1051,7 +1051,7 @@ typedef SDL_GameController, SDL_Gamepad;
 @@
 @@
 - SDL_GameControllerAddMappingsFromRW
-+ SDL_AddGamepadMappingsFromRW
++ SDL_AddGamepadMappingsFromIO
   (...)
 @@
 typedef SDL_GameControllerAxis, SDL_GamepadAxis;
@@ -1804,25 +1804,15 @@ expression e2;
 @@
 @@
 - RW_SEEK_CUR
-+ SDL_RW_SEEK_CUR
++ SDL_IO_SEEK_CUR
 @@
 @@
 - RW_SEEK_END
-+ SDL_RW_SEEK_END
++ SDL_IO_SEEK_END
 @@
 @@
 - RW_SEEK_SET
-+ SDL_RW_SEEK_SET
-@@
-@@
-- SDL_AllocRW
-+ SDL_CreateRW
-  (...)
-@@
-@@
-- SDL_FreeRW
-+ SDL_DestroyRW
-  (...)
++ SDL_IO_SEEK_SET
 @@
 @@
 - SDL_SensorClose
@@ -2151,6 +2141,10 @@ expression e;
 @@
 - SDL_JOYAXISMOTION
 + SDL_EVENT_JOYSTICK_AXIS_MOTION
+@@
+@@
+- SDL_JOYBALLMOTION
++ SDL_EVENT_JOYSTICK_BALL_MOTION
 @@
 @@
 - SDL_JOYHATMOTION
@@ -3000,10 +2994,6 @@ SDL_GamepadBinding *e1;
 - e1->outputType
 + e1->output_type
 @@
-@@
-- SDL_version
-+ SDL_Version
-@@
 typedef SDL_version, SDL_Version;
 @@
 - SDL_version
@@ -3044,3 +3034,118 @@ typedef SDL_version, SDL_Version;
 @@
 - SDL_HINT_PS2_DYNAMIC_VSYNC
 + SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC
+@@
+@@
+- SDL_JoystickNumBalls
++ SDL_GetNumJoystickBalls
+  (...)
+@@
+@@
+- SDL_JoystickGetBall
++ SDL_GetJoystickBall
+  (...)
+@@
+@@
+- SDL_RWclose
++ SDL_CloseIO
+  (...)
+@@
+@@
+- SDL_RWread
++ SDL_ReadIO
+  (...)
+@@
+@@
+- SDL_RWwrite
++ SDL_WriteIO
+  (...)
+@@
+@@
+- SDL_RWtell
++ SDL_TellIO
+  (...)
+@@
+@@
+- SDL_RWsize
++ SDL_SizeIO
+  (...)
+@@
+@@
+- SDL_RWseek
++ SDL_SeekIO
+  (...)
+@@
+@@
+- SDL_LoadBMP_RW
++ SDL_LoadBMP_IO
+  (...)
+@@
+@@
+- SDL_LoadWAV_RW
++ SDL_LoadWAV_IO
+  (...)
+@@
+@@
+- SDL_SaveBMP_RW
++ SDL_SaveBMP_IO
+  (...)
+@@
+@@
+- SDL_RWFromFile
++ SDL_IOFromFile
+  (...)
+@@
+@@
+- SDL_RWFromMem
++ SDL_IOFromMem
+  (...)
+@@
+@@
+- SDL_RWFromConstMem
++ SDL_IOFromConstMem
+  (...)
+@@
+typedef SDL_RWops, SDL_IOStream;
+@@
+- SDL_RWops
++ SDL_IOStream
+@@
+@@
+- SDL_LogGetOutputFunction
++ SDL_GetLogOutputFunction
+  (...)
+@@
+@@
+- SDL_LogSetOutputFunction
++ SDL_SetLogOutputFunction
+  (...)
+@@
+typedef SDL_eventaction, SDL_EventAction;
+@@
+- SDL_eventaction
++ SDL_EventAction
+@@
+typedef SDL_RendererFlip, SDL_FlipMode;
+@@
+- SDL_RendererFlip
++ SDL_FlipMode
+@@
+typedef SDL_Colour, SDL_Color;
+@@
+- SDL_Colour
++ SDL_Color
+@@
+@@
+- SDL_WinRTGetFSPathUTF8
++ SDL_WinRTGetFSPath
+  (...)
+@@
+@@
+- SDL_iPhoneSetAnimationCallback
++ SDL_iOSSetAnimationCallback
+  (...)
+@@
+@@
+- SDL_iPhoneSetEventPump
++ SDL_iOSSetEventPump
+  (...)

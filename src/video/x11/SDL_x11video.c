@@ -25,6 +25,8 @@
 #include <unistd.h> /* For getpid() and readlink() */
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../events/SDL_keyboard_c.h"
+#include "../../events/SDL_mouse_c.h"
 #include "../SDL_pixels_c.h"
 #include "../SDL_sysvideo.h"
 
@@ -97,6 +99,12 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
     }
 
     return 0;
+}
+
+static SDL_bool X11_IsXWayland(Display *d)
+{
+    int opcode, event, error;
+    return X11_XQueryExtension(d, "XWAYLAND", &opcode, &event, &error) == True;
 }
 
 static SDL_VideoDevice *X11_CreateDevice(void)
@@ -281,6 +289,11 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
                           VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
 
+    data->is_xwayland = X11_IsXWayland(x11_display);
+    if (data->is_xwayland) {
+        device->device_caps |= VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED;
+    }
+
     return device;
 }
 
@@ -415,7 +428,11 @@ int X11_VideoInit(SDL_VideoDevice *_this)
         return -1;
     }
 
-    X11_InitXinput2(_this);
+    if (!X11_InitXinput2(_this)) {
+        /* Assume a mouse and keyboard are attached */
+        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
+        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
+    }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     X11_InitXfixes(_this);

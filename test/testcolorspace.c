@@ -508,6 +508,7 @@ static void loop(void)
             switch (event.key.keysym.sym) {
             case SDLK_ESCAPE:
                 done = 1;
+                break;
             case SDLK_SPACE:
             case SDLK_RIGHT:
                 NextStage();

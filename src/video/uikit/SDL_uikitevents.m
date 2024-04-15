@@ -126,7 +126,7 @@ Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp)
     return timestamp;
 }
 
-void SDL_iPhoneSetEventPump(SDL_bool enabled)
+void SDL_iOSSetEventPump(SDL_bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
 
@@ -171,15 +171,17 @@ void UIKit_PumpEvents(SDL_VideoDevice *_this)
 
 #ifdef ENABLE_GCKEYBOARD
 
-static SDL_bool keyboard_connected = SDL_FALSE;
 static id keyboard_connect_observer = nil;
 static id keyboard_disconnect_observer = nil;
 
 static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
 {
-    keyboard_connected = SDL_TRUE;
+    SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)keyboard;
+
+    SDL_AddKeyboard(keyboardID, NULL, SDL_TRUE);
+
     keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed) {
-      SDL_SendKeyboardKey(0, pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
+        SDL_SendKeyboardKey(0, keyboardID, pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
     };
 
     dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL);
@@ -189,8 +191,11 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
 
 static void OnGCKeyboardDisconnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
 {
+    SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)keyboard;
+
+    SDL_RemoveKeyboard(keyboardID);
+
     keyboard.keyboardInput.keyChangedHandler = nil;
-    keyboard_connected = SDL_FALSE;
 }
 
 void SDL_InitGCKeyboard(void)
@@ -222,11 +227,6 @@ void SDL_InitGCKeyboard(void)
     }
 }
 
-SDL_bool SDL_HasGCKeyboard(void)
-{
-    return keyboard_connected;
-}
-
 void SDL_QuitGCKeyboard(void)
 {
     @autoreleasepool {
@@ -256,11 +256,6 @@ void SDL_InitGCKeyboard(void)
 {
 }
 
-SDL_bool SDL_HasGCKeyboard(void)
-{
-    return SDL_FALSE;
-}
-
 void SDL_QuitGCKeyboard(void)
 {
 }
@@ -269,7 +264,6 @@ void SDL_QuitGCKeyboard(void)
 
 #ifdef ENABLE_GCMOUSE
 
-static int mice_connected = 0;
 static id mouse_connect_observer = nil;
 static id mouse_disconnect_observer = nil;
 static bool mouse_relative_mode = SDL_FALSE;
@@ -291,7 +285,7 @@ static void UpdateScrollDirection(void)
         /* Couldn't read the preference, assume natural scrolling direction */
         naturalScrollDirection = YES;
     }
-    if (naturalScrollDirection) {    
+    if (naturalScrollDirection) {
         mouse_scroll_direction = SDL_MOUSEWHEEL_FLIPPED;
     } else {
         mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
@@ -323,7 +317,9 @@ static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL press
 
 static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
 {
-    SDL_MouseID mouseID = mice_connected;
+    SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)mouse;
+
+    SDL_AddMouse(mouseID, NULL, SDL_TRUE);
 
     mouse.mouseInput.leftButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
       OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
@@ -370,14 +366,12 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
     dispatch_set_target_queue(queue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
     mouse.handlerQueue = queue;
 
-    ++mice_connected;
-
     UpdatePointerLock();
 }
 
 static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
 {
-    --mice_connected;
+    SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)mouse;
 
     mouse.mouseInput.mouseMovedHandler = nil;
 
@@ -390,6 +384,8 @@ static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios
     }
 
     UpdatePointerLock();
+
+    SDL_RemoveMouse(mouseID);
 }
 
 void SDL_InitGCMouse(void)
@@ -432,11 +428,6 @@ void SDL_InitGCMouse(void)
     }
 }
 
-SDL_bool SDL_HasGCMouse(void)
-{
-    return (mice_connected > 0);
-}
-
 SDL_bool SDL_GCMouseRelativeMode(void)
 {
     return mouse_relative_mode;
@@ -471,11 +462,6 @@ void SDL_QuitGCMouse(void)
 
 void SDL_InitGCMouse(void)
 {
-}
-
-SDL_bool SDL_HasGCMouse(void)
-{
-    return SDL_FALSE;
 }
 
 SDL_bool SDL_GCMouseRelativeMode(void)

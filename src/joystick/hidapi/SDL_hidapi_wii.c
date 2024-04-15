@@ -493,15 +493,17 @@ static void DeactivateMotionPlus(SDL_DriverWii_Context *ctx)
 
 static void UpdatePowerLevelWii(SDL_Joystick *joystick, Uint8 batteryLevelByte)
 {
+    int percent;
     if (batteryLevelByte > 178) {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
+        percent = 100;
     } else if (batteryLevelByte > 51) {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
+        percent = 70;
     } else if (batteryLevelByte > 13) {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
+        percent = 20;
     } else {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
+        percent = 5;
     }
+    SDL_SendJoystickPowerInfo(joystick, SDL_POWERSTATE_ON_BATTERY, percent);
 }
 
 static void UpdatePowerLevelWiiU(SDL_Joystick *joystick, Uint8 extensionBatteryByte)
@@ -510,23 +512,39 @@ static void UpdatePowerLevelWiiU(SDL_Joystick *joystick, Uint8 extensionBatteryB
     SDL_bool pluggedIn = !(extensionBatteryByte & 0x04);
     Uint8 batteryLevel = extensionBatteryByte >> 4;
 
+    if (pluggedIn) {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
+    } else {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
+    }
+
     /* Not sure if all Wii U Pro controllers act like this, but on mine
      * 4, 3, and 2 are held for about 20 hours each
      * 1 is held for about 6 hours
      * 0 is held for about 2 hours
      * No value above 4 has been observed.
      */
-    if (pluggedIn && !charging) {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_WIRED);
-    } else if (batteryLevel >= 4) {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_FULL);
-    } else if (batteryLevel > 1) {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_MEDIUM);
-    } else if (batteryLevel == 1) {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_LOW);
+    SDL_PowerState state;
+    int percent;
+    if (charging) {
+        state = SDL_POWERSTATE_CHARGING;
+    } else if (pluggedIn) {
+        state = SDL_POWERSTATE_CHARGED;
     } else {
-        SDL_SendJoystickBatteryLevel(joystick, SDL_JOYSTICK_POWER_EMPTY);
+        state = SDL_POWERSTATE_ON_BATTERY;
     }
+    if (batteryLevel >= 4) {
+        percent = 100;
+    } else if (batteryLevel == 3) {
+        percent = 70;
+    } else if (batteryLevel == 2) {
+        percent = 40;
+    } else if (batteryLevel == 1) {
+        percent = 10;
+    } else {
+        percent = 3;
+    }
+    SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
 
 static EWiiInputReportIDs GetButtonPacketType(SDL_DriverWii_Context *ctx)
