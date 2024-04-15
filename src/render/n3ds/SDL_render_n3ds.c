@@ -19,17 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
-#include "3ds/gfx.h"
-#include "3ds/services/gspgpu.h"
+
+#if SDL_VIDEO_RENDER_N3DS
 #include "SDL_error.h"
+#include "SDL_hints.h"
 #include "SDL_pixels.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
 #include "SDL_video.h"
-
-#if SDL_VIDEO_RENDER_N3DS
-
-#include "SDL_hints.h"
 #include "../SDL_sysrender.h"
 
 #include <stdbool.h>
