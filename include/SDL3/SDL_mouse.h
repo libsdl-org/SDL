@@ -516,6 +516,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_CursorVisible(void);
  * - Button 1: Left mouse button
  * - Button 2: Middle mouse button
  * - Button 3: Right mouse button
+ * - Button 4: Side mouse button 1
+ * - Button 5: Side mouse button 2
  *
  * \since This macro is available since SDL 3.0.0.
  */
