@@ -641,9 +641,6 @@ typedef struct SDL_CameraDeviceEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_CameraDeviceID which;       /**< SDL_CameraDeviceID for the device being added or removed or changing */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint8 padding3;
 } SDL_CameraDeviceEvent;
 
 /**
