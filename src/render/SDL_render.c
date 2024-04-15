@@ -2762,7 +2762,7 @@ int SDL_RenderDrawPoints(SDL_Renderer *renderer,
     }
 #endif
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f || renderer->point_method == SDL_RENDERPOINTMETHOD_GEOMETRY) {
         retval = RenderDrawPointsWithRects(renderer, points, count);
     } else {
         fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
@@ -2833,7 +2833,7 @@ int SDL_RenderDrawPointsF(SDL_Renderer *renderer,
     }
 #endif
 
-    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f || renderer->point_method == SDL_RENDERPOINTMETHOD_GEOMETRY) {
         retval = RenderDrawPointsWithRectsF(renderer, points, count);
     } else {
         retval = QueueCmdDrawPoints(renderer, points, count);
