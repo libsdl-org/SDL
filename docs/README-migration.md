@@ -1631,15 +1631,19 @@ If you were using this macro for other things besides SDL ticks values, you can 
 
 ## SDL_touch.h
 
-SDL_GetNumTouchFingers() returns a negative error code if there was an error.
-
 SDL_GetTouchName is replaced with SDL_GetTouchDeviceName(), which takes an SDL_TouchID instead of an index.
 
 SDL_TouchID and SDL_FingerID are now Uint64 with 0 being an invalid value.
 
+Rather than iterating over touch devices using an index, there is a new function SDL_GetTouchDevices() to get the available devices.
+
+Rather than iterating over touch fingers using an index, there is a new function SDL_GetTouchFingers() to get the current set of active fingers.
+
 The following functions have been removed:
 * SDL_GetNumTouchDevices() - replaced with SDL_GetTouchDevices()
+* SDL_GetNumTouchFingers() - replaced with SDL_GetTouchFingers()
 * SDL_GetTouchDevice() - replaced with SDL_GetTouchDevices()
+* SDL_GetTouchFinger() - replaced with SDL_GetTouchFingers()
 
 
 ## SDL_version.h

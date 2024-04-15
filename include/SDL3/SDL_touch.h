@@ -117,34 +117,15 @@ extern DECLSPEC const char* SDLCALL SDL_GetTouchDeviceName(SDL_TouchID touchID);
 extern DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_TouchID touchID);
 
 /**
- * Get the number of active fingers for a given touch device.
+ * Get a list of active fingers for a given touch device.
  *
  * \param touchID the ID of a touch device
- * \returns the number of active fingers for a given touch device on success
- *          or a negative error code on failure; call SDL_GetError() for more
- *          information.
+ * \param count a pointer filled in with the number of fingers returned, can be NULL.
+ * \returns a NULL terminated array of SDL_Finger pointers which should be freed with SDL_free(), or NULL on error; call SDL_GetError() for more details.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetTouchFinger
  */
-extern DECLSPEC int SDLCALL SDL_GetNumTouchFingers(SDL_TouchID touchID);
-
-/**
- * Get the finger object for specified touch device ID and finger index.
- *
- * The returned resource is owned by SDL and should not be deallocated.
- *
- * \param touchID the ID of the requested touch device
- * \param index the index of the requested finger
- * \returns a pointer to the SDL_Finger object or NULL if no object at the
- *          given ID and index could be found.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetNumTouchFingers
- */
-extern DECLSPEC SDL_Finger * SDLCALL SDL_GetTouchFinger(SDL_TouchID touchID, int index);
+extern DECLSPEC SDL_Finger **SDLCALL SDL_GetTouchFingers(SDL_TouchID touchID, int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
