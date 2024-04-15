@@ -318,6 +318,17 @@ static void X11_WarpMouseInternal(Window xwindow, float x, float y)
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice()->driverdata;
     Display *display = videodata->display;
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_bool warp_hack = SDL_FALSE;
+
+    /* XWayland will only warp the cursor if it is hidden, so this workaround is required. */
+    if (videodata->is_xwayland && mouse && mouse->cursor_shown) {
+        warp_hack = SDL_TRUE;
+    }
+
+    if (warp_hack) {
+        X11_ShowCursor(NULL);
+    }
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     int deviceid = 0;
     if (X11_Xinput2IsInitialized()) {
@@ -335,6 +346,10 @@ static void X11_WarpMouseInternal(Window xwindow, float x, float y)
 #endif
     {
         X11_XWarpPointer(display, None, xwindow, 0, 0, 0, 0, (int)x, (int)y);
+    }
+
+    if (warp_hack) {
+        X11_ShowCursor(SDL_GetCursor());
     }
     X11_XSync(display, False);
     videodata->global_mouse_changed = SDL_TRUE;
