@@ -148,8 +148,8 @@ typedef Uint32 SDL_WindowFlags;
 #define SDL_WINDOW_MOUSE_CAPTURE        0x00004000U /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
 #define SDL_WINDOW_ALWAYS_ON_TOP        0x00008000U /**< window should always be above others */
 #define SDL_WINDOW_UTILITY              0x00020000U /**< window should be treated as a utility window, not showing in the task bar and window list */
-#define SDL_WINDOW_TOOLTIP              0x00040000U /**< window should be treated as a tooltip */
-#define SDL_WINDOW_POPUP_MENU           0x00080000U /**< window should be treated as a popup menu */
+#define SDL_WINDOW_TOOLTIP              0x00040000U /**< window should be treated as a tooltip and does not get mouse or keyboard focus, requires a parent window */
+#define SDL_WINDOW_POPUP_MENU           0x00080000U /**< window should be treated as a popup menu, requires a parent window */
 #define SDL_WINDOW_KEYBOARD_GRABBED     0x00100000U /**< window has grabbed keyboard input */
 #define SDL_WINDOW_VULKAN               0x10000000U /**< window usable for Vulkan surface */
 #define SDL_WINDOW_METAL                0x20000000U /**< window usable for Metal view */
