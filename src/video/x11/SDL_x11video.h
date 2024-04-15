@@ -133,6 +133,8 @@ struct SDL_VideoData
     SDL_bool is_steam_deck;
     SDL_bool steam_keyboard_open;
 
+    SDL_bool is_xwayland;
+
 };
 
 extern SDL_bool X11_UseDirectColorVisuals(void);
