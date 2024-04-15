@@ -1387,11 +1387,12 @@ void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
+    int screen = (displaydata ? displaydata->screen : 0);
     Display *display = data->videodata->display;
     XEvent event;
 
     if (X11_IsWindowMapped(_this, window)) {
-        X11_XWithdrawWindow(display, data->xwindow, displaydata->screen);
+        X11_XWithdrawWindow(display, data->xwindow, screen);
         /* Blocking wait for "UnmapNotify" event */
         if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
             X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
@@ -1417,8 +1418,10 @@ void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     X11_PumpEvents(_this);
 }
 
-static void X11_SetWindowActive(SDL_VideoDevice *_this, SDL_Window *window)
+static int X11_SetWindowActive(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    CHECK_WINDOW_DATA(window);
+
     SDL_WindowData *data = window->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = data->videodata->display;
@@ -1443,6 +1446,7 @@ static void X11_SetWindowActive(SDL_VideoDevice *_this, SDL_Window *window)
 
         X11_XFlush(display);
     }
+    return 0;
 }
 
 void X11_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1458,8 +1462,10 @@ void X11_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
     X11_XFlush(display);
 }
 
-static void X11_SetWindowMaximized(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool maximized)
+static int X11_SetWindowMaximized(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool maximized)
 {
+    CHECK_WINDOW_DATA(window);
+
     SDL_WindowData *data = window->driverdata;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = data->videodata->display;
@@ -1472,7 +1478,7 @@ static void X11_SetWindowMaximized(SDL_VideoDevice *_this, SDL_Window *window, S
            and this is functional behavior, so don't remove that state
            now, we'll take care of it when we leave fullscreen mode.
          */
-        return;
+        return 0;
     }
 
     if (X11_IsWindowMapped(_this, window)) {
@@ -1513,6 +1519,8 @@ static void X11_SetWindowMaximized(SDL_VideoDevice *_this, SDL_Window *window, S
         X11_SetNetWMState(_this, data->xwindow, window->flags);
     }
     X11_XFlush(display);
+
+    return 0;
 }
 
 void X11_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
