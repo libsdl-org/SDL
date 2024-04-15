@@ -875,7 +875,7 @@ The following functions have been removed:
 
 ## SDL_keycode.h
 
-SDL_Keycode is now an enum instead of Sint32.
+The SDL_KeyCode enum values have been changed to defines to more clearly reflect that they are a subset of the possible values of an SDL_Keycode.
 
 The following symbols have been renamed:
 * KMOD_ALT => SDL_KMOD_ALT
