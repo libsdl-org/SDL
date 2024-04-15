@@ -865,7 +865,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, i
  *                 of the parent window
  * \param w the width of the window
  * \param h the height of the window
- * \param flags SDL_WINDOW_TOOLTIP or SDL_WINDOW_POPUP MENU, and zero or more
+ * \param flags SDL_WINDOW_TOOLTIP or SDL_WINDOW_POPUP_MENU, and zero or more
  *              additional SDL_WindowFlags OR'd together.
  * \returns the window that was created or NULL on failure; call
  *          SDL_GetError() for more information.
