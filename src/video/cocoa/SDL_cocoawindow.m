@@ -1716,17 +1716,21 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
         }
     }
     if (existingTouchCount == 0) {
-        int numFingers = SDL_GetNumTouchFingers(touchID);
-        DLog("Reset Lost Fingers: %d", numFingers);
-        for (--numFingers; numFingers >= 0; --numFingers) {
-            SDL_Finger *finger = SDL_GetTouchFinger(touchID, numFingers);
-            /* trackpad touches have no window. If we really wanted one we could
-             * use the window that has mouse or keyboard focus.
-             * Sending a null window currently also prevents synthetic mouse
-             * events from being generated from touch events.
-             */
-            SDL_Window *window = NULL;
-            SDL_SendTouch(Cocoa_GetEventTimestamp([theEvent timestamp]), touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
+        int numFingers;
+        SDL_Finger **fingers = SDL_GetTouchFingers(touchID, &numFingers);
+        if (fingers) {
+            DLog("Reset Lost Fingers: %d", numFingers);
+            for (--numFingers; numFingers >= 0; --numFingers) {
+                SDL_Finger *finger = fingers[numFingers];
+                /* trackpad touches have no window. If we really wanted one we could
+                 * use the window that has mouse or keyboard focus.
+                 * Sending a null window currently also prevents synthetic mouse
+                 * events from being generated from touch events.
+                 */
+                SDL_Window *window = NULL;
+                SDL_SendTouch(Cocoa_GetEventTimestamp([theEvent timestamp]), touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
+            }
+            SDL_free(fingers);
         }
     }
 
