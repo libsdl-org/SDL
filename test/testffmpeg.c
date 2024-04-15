@@ -46,17 +46,17 @@
 #endif
 #endif
 
-#define DRM_FORMAT_MOD_VENDOR_NONE    0
-#define DRM_FORMAT_RESERVED	      ((1ULL << 56) - 1)
+#define DRM_FORMAT_MOD_VENDOR_NONE  0
+#define DRM_FORMAT_RESERVED         ((1ULL << 56) - 1)
 
 #define fourcc_mod_get_vendor(modifier) \
-	(((modifier) >> 56) & 0xff)
+    (((modifier) >> 56) & 0xff)
 
 #define fourcc_mod_is_vendor(modifier, vendor) \
-	(fourcc_mod_get_vendor(modifier) == DRM_FORMAT_MOD_VENDOR_## vendor)
+    (fourcc_mod_get_vendor(modifier) == DRM_FORMAT_MOD_VENDOR_## vendor)
 
 #define fourcc_mod_code(vendor, val) \
-	((((Uint64)DRM_FORMAT_MOD_VENDOR_## vendor) << 56) | ((val) & 0x00ffffffffffffffULL))
+    ((((Uint64)DRM_FORMAT_MOD_VENDOR_## vendor) << 56) | ((val) & 0x00ffffffffffffffULL))
 
 #define DRM_FORMAT_MOD_INVALID  fourcc_mod_code(NONE, DRM_FORMAT_RESERVED)
 #define DRM_FORMAT_MOD_LINEAR   fourcc_mod_code(NONE, 0)
@@ -477,6 +477,14 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
 
     /* Allow supported hardware accelerated pixel formats */
     context->get_format = GetSupportedPixelFormat;
+
+    if (codecpar->codec_id == AV_CODEC_ID_VVC) {
+        context->strict_std_compliance = -2;
+
+        /* Enable threaded decoding, VVC decode is slow */
+        context->thread_count = SDL_GetCPUCount();
+        context->thread_type = (FF_THREAD_FRAME | FF_THREAD_SLICE);
+    }
 
     result = avcodec_open2(context, codec, NULL);
     if (result < 0) {
