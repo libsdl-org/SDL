@@ -120,8 +120,11 @@ extern DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_TouchID t
  * Get a list of active fingers for a given touch device.
  *
  * \param touchID the ID of a touch device
- * \param count a pointer filled in with the number of fingers returned, can be NULL.
- * \returns a NULL terminated array of SDL_Finger pointers which should be freed with SDL_free(), or NULL on error; call SDL_GetError() for more details.
+ * \param count a pointer filled in with the number of fingers returned, can
+ *              be NULL.
+ * \returns a NULL terminated array of SDL_Finger pointers which should be
+ *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          more details.
  *
  * \since This function is available since SDL 3.0.0.
  */
