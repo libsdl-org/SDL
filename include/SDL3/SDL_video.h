@@ -1171,7 +1171,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetProperty
- * \sa SDL_SetProperty
+ * \sa SDL_GetNumberProperty
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window *window);
 
