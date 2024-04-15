@@ -222,6 +222,7 @@ extern DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_HasClipboardData
  * \sa SDL_SetClipboardData
  */
 extern DECLSPEC void *SDLCALL SDL_GetClipboardData(const char *mime_type, size_t *size);
