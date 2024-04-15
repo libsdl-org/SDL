@@ -58,7 +58,7 @@ typedef enum SDL_InitFlags
     SDL_INIT_TIMER        = 0x00000001,
     SDL_INIT_AUDIO        = 0x00000010,  /**< `SDL_INIT_AUDIO` implies `SDL_INIT_EVENTS` */
     SDL_INIT_VIDEO        = 0x00000020,  /**< `SDL_INIT_VIDEO` implies `SDL_INIT_EVENTS` */
-    SDL_INIT_JOYSTICK     = 0x00000200,  /**< `SDL_INIT_JOYSTICK` implies `SDL_INIT_EVENTS` */
+    SDL_INIT_JOYSTICK     = 0x00000200,  /**< `SDL_INIT_JOYSTICK` implies `SDL_INIT_EVENTS`, should be initialized on the same thread as SDL_INIT_VIDEO on Windows if you don't set SDL_HINT_JOYSTICK_THREAD */
     SDL_INIT_HAPTIC       = 0x00001000,
     SDL_INIT_GAMEPAD      = 0x00002000,  /**< `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK` */
     SDL_INIT_EVENTS       = 0x00004000,
