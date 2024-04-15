@@ -31,15 +31,6 @@
 
 #include "../../core/linux/SDL_dbus.h"
 
-static SDL_bool CheckPipewirePulseService()
-{
-#ifdef SDL_USE_LIBDBUS
-    return SDL_DBus_QuerySystemdUnitRunning("pipewire-pulse.service", SDL_TRUE);
-#else
-    return SDL_FALSE;
-#endif
-}
-
 /*
  * The following keys are defined for compatibility when building against older versions of Pipewire
  * prior to their introduction and can be removed if the minimum required Pipewire build version is
@@ -221,7 +212,7 @@ static SDL_bool pipewire_version_at_least(int major, int minor, int patch)
            (pipewire_version_major > major || pipewire_version_minor > minor || pipewire_version_patch >= patch);
 }
 
-static int init_pipewire_library(void)
+static int init_pipewire_library(int major, int minor, int patch)
 {
     if (!load_pipewire_library()) {
         if (!load_pipewire_syms()) {
@@ -232,8 +223,7 @@ static int init_pipewire_library(void)
                 return -1;
             }
 
-            // SDL can build against 0.3.20, but requires 0.3.24
-            if (pipewire_version_at_least(0, 3, 24)) {
+            if (pipewire_version_at_least(major, minor, patch)) {
                 PIPEWIRE_pw_init(NULL, NULL);
                 return 0;
             }
@@ -1262,10 +1252,23 @@ static void PIPEWIRE_Deinitialize(void)
     }
 }
 
-static SDL_bool PipewireInitialize(SDL_AudioDriverImpl *impl)
+static SDL_bool PipewireInitialize(SDL_AudioDriverImpl *impl, SDL_bool check_preferred_version)
 {
     if (!pipewire_initialized) {
-        if (init_pipewire_library() < 0) {
+        int major, minor, patch;
+
+        // SDL can build against 0.3.20, but requires 0.3.24 at minimum, and 1.0.0 for preferred default status.
+        if (check_preferred_version) {
+            major = 1;
+            minor = 0;
+            patch = 0;
+        } else {
+            major = 0;
+            minor = 3;
+            patch = 24;
+        }
+
+        if (init_pipewire_library(major, minor, patch) < 0) {
             return SDL_FALSE;
         }
 
@@ -1295,16 +1298,12 @@ static SDL_bool PipewireInitialize(SDL_AudioDriverImpl *impl)
 
 static SDL_bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
 {
-    if (CheckPipewirePulseService()) {
-        return PipewireInitialize(impl);
-    }
-
-    return SDL_FALSE;
+    return PipewireInitialize(impl, SDL_TRUE);
 }
 
 static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
 {
-    return PipewireInitialize(impl);
+    return PipewireInitialize(impl, SDL_FALSE);
 }
 
 AudioBootStrap PIPEWIRE_PREFERRED_bootstrap = {
