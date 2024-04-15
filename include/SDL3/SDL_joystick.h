@@ -360,7 +360,7 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystick(SDL_JoystickTyp
 /**
  * The structure that defines an extended virtual joystick description
  *
- * All other elements of this structure are optional and can be left 0.
+ * All elements of this structure are optional and can be left 0.
  *
  * \since This struct is available since SDL 3.0.0.
  *
