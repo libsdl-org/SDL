@@ -105,16 +105,17 @@ typedef Uint32 SDL_SensorID;
  * Gyroscope sensor notes:
  *
  * The gyroscope returns the current rate of rotation in radians per second.
- * The rotation is positive in the counter-clockwise direction. That is,
- * an observer looking from a positive location on one of the axes would
- * see positive rotation on that axis when it appeared to be rotating
+ * The rotation is positive in the counter-clockwise direction. That is, an
+ * observer looking from a positive location on one of the axes would see
+ * positive rotation on that axis when it appeared to be rotating
  * counter-clockwise.
  *
  * - `values[0]`: Angular speed around the x axis (pitch)
  * - `values[1]`: Angular speed around the y axis (yaw)
  * - `values[2]`: Angular speed around the z axis (roll)
  *
- * For phones and tablets held in natural orientation and game controllers held in front of you, the axes are defined as follows:
+ * For phones and tablets held in natural orientation and game controllers
+ * held in front of you, the axes are defined as follows:
  *
  * - -X ... +X : left ... right
  * - -Y ... +Y : bottom ... top
