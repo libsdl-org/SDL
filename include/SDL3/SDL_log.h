@@ -45,16 +45,6 @@
 extern "C" {
 #endif
 
-
-/**
- * The maximum size of a log message prior to SDL 2.0.24.
- *
- * As of 2.0.24 there is no limit to the length of SDL log messages.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-#define SDL_MAX_LOG_MESSAGE 4096
-
 /**
  * The predefined log categories
  *

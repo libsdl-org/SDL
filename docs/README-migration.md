@@ -903,6 +903,9 @@ SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and sh
 
 ## SDL_log.h
 
+The following macros have been removed:
+* SDL_MAX_LOG_MESSAGE - there's no message length limit anymore. If you need an artificial limit, this used to be 4096 in SDL versions before 2.0.24.
+
 The following functions have been renamed:
 * SDL_LogGetOutputFunction() => SDL_GetLogOutputFunction()
 * SDL_LogSetOutputFunction() => SDL_SetLogOutputFunction()
