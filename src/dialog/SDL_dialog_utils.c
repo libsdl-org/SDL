@@ -54,7 +54,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
 
         terminator = f[1].name ? separator : suffix;
         new_length = SDL_strlen(combined) + SDL_strlen(converted)
-                   + SDL_strlen(terminator);
+                   + SDL_strlen(terminator) + 1;
 
         new_combined = SDL_realloc(combined, new_length);
 
