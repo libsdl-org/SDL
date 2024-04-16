@@ -1811,7 +1811,8 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         for (int i = 0; i < num_streams; i++) {
             SDL_AudioStream *stream = streams[i];
             if (!stream) {
-                retval = SDL_SetError("Stream #%d is NULL", i);
+                SDL_SetError("Stream #%d is NULL", i);
+                retval = -1;  // to pacify the static analyzer, that doesn't realize SDL_SetError() always returns -1.
             } else {
                 SDL_LockMutex(stream->lock);
                 SDL_assert((stream->bound_device == NULL) == ((stream->prev_binding == NULL) || (stream->next_binding == NULL)));
@@ -1839,31 +1840,25 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         // Now that everything is verified, chain everything together.
         const SDL_bool iscapture = device->iscapture;
         for (int i = 0; i < num_streams; i++) {
-#ifdef _MSC_VER /* Visual Studio analyzer can't tell that streams[i] isn't NULL if retval is 0 */
-#pragma warning(push)
-#pragma warning(disable : 28182)
-#endif
             SDL_AudioStream *stream = streams[i];
-
-            stream->bound_device = logdev;
-            stream->prev_binding = NULL;
-            stream->next_binding = logdev->bound_streams;
-            if (logdev->bound_streams) {
-                logdev->bound_streams->prev_binding = stream;
-            }
-            logdev->bound_streams = stream;
-
-            if (iscapture) {
-                SDL_copyp(&stream->src_spec, &device->spec);
-                if (logdev->postmix) {
-                    stream->src_spec.format = SDL_AUDIO_F32;
+            if (stream) {  // shouldn't be NULL, but just in case...
+                stream->bound_device = logdev;
+                stream->prev_binding = NULL;
+                stream->next_binding = logdev->bound_streams;
+                if (logdev->bound_streams) {
+                    logdev->bound_streams->prev_binding = stream;
                 }
-            }
+                logdev->bound_streams = stream;
 
-            SDL_UnlockMutex(stream->lock);
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+                if (iscapture) {
+                    SDL_copyp(&stream->src_spec, &device->spec);
+                    if (logdev->postmix) {
+                        stream->src_spec.format = SDL_AUDIO_F32;
+                    }
+                }
+
+                SDL_UnlockMutex(stream->lock);
+            }
         }
     }
 
