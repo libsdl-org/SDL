@@ -875,7 +875,7 @@ static int X11_CatchAnyError(Display *d, XErrorEvent *e)
 
 /* Wait a brief time, or not, to see if the window manager decided to move/resize the window.
  * Send MOVED and RESIZED window events */
-static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, int param_timeout)
+static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, Uint64 param_timeout)
 {
     SDL_WindowData *data = window->driverdata;
     Display *display = data->videodata->display;
@@ -888,7 +888,7 @@ static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, int
     prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
 
     if (param_timeout) {
-        timeout = SDL_GetTicks() + param_timeout;
+        timeout = SDL_GetTicksNS() + param_timeout;
     }
 
     while (SDL_TRUE) {
@@ -916,7 +916,7 @@ static int X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, int
             force_exit = SDL_TRUE;
         }
 
-        if (SDL_GetTicks() >= timeout) {
+        if (SDL_GetTicksNS() >= timeout) {
             /* Timed out without the expected values. Update the requested data so future sync calls won't block. */
             data->expected.x = window->x;
             data->expected.y = window->y;
@@ -2024,10 +2024,22 @@ void X11_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 
 int X11_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    const Uint64 current_time = SDL_GetTicksNS();
+    Uint64 timeout = 0;
+
+    /* Allow time for any pending mode switches to complete. */
+    for (int i = 0; i < _this->num_displays; ++i) {
+        if (_this->displays[i]->driverdata->mode_switch_deadline_ns &&
+            current_time < _this->displays[i]->driverdata->mode_switch_deadline_ns) {
+            timeout = SDL_max(_this->displays[i]->driverdata->mode_switch_deadline_ns - current_time, timeout);
+        }
+    }
+
     /* 100ms is fine for most cases, but, for some reason, maximizing
      * a window can take a very long time.
      */
-    const int timeout = window->driverdata->pending_operation & SDL_WINDOW_MAXIMIZED ? 1000 : 100;
+    timeout += window->driverdata->pending_operation & X11_PENDING_OP_MAXIMIZE ? SDL_MS_TO_NS(1000) : SDL_MS_TO_NS(100);
+
     return X11_SyncWindowTimeout(_this, window, timeout);
 }
 
