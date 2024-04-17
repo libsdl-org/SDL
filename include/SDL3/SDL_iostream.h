@@ -462,11 +462,9 @@ extern DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  *
  * This function reads up `size` bytes from the data source to the area
  * pointed at by `ptr`. This function may read less bytes than requested. It
- * will return zero when the data stream is completely read, or -1 on error.
- * For streams that support non-blocking operation, if nothing was read
- * because it would require blocking, this function returns -2 to distinguish
- * that this is not an error or end-of-file, and the caller can try again
- * later.
+ * will return zero when the data stream is completely read, or on error.
+ * To determine if there was an error or all data was read, call
+ * SDL_GetIOStatus().
  *
  * \param context a pointer to an SDL_IOStream structure
  * \param ptr a pointer to a buffer to read data into
@@ -475,8 +473,8 @@ extern DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SeekIO
  * \sa SDL_WriteIO
+ * \sa SDL_GetIOStatus
  */
 extern DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, size_t size);
 
@@ -488,15 +486,11 @@ extern DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, size
  * to demonstrate how far the write progressed. On success, it returns `num`.
  *
  * On error, this function still attempts to write as much as possible, so it
- * might return a positive value less than the requested write size. If the
- * function failed to write anything and there was an actual error, it will
- * return -1. For streams that support non-blocking operation, if nothing was
- * written because it would require blocking, this function returns -2 to
- * distinguish that this is not an error and the caller can try again later.
+ * might return a positive value less than the requested write size.
  *
- * It is an error to specify a negative `size`, but this parameter is signed
- * so you definitely cannot overflow the return value on a successful run with
- * enormous amounts of data.
+ * The caller can use SDL_GetIOStatus() to determine if the problem is
+ * recoverable, such as a non-blocking write that can simply be retried
+ * later, or a fatal error.
  *
  * \param context a pointer to an SDL_IOStream structure
  * \param ptr a pointer to a buffer containing data to write
@@ -509,6 +503,7 @@ extern DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, size
  * \sa SDL_IOprintf
  * \sa SDL_ReadIO
  * \sa SDL_SeekIO
+ * \sa SDL_GetIOStatus
  */
 extern DECLSPEC size_t SDLCALL SDL_WriteIO(SDL_IOStream *context, const void *ptr, size_t size);
 
