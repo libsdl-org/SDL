@@ -494,9 +494,6 @@ extern DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *rendere
 /**
  * Create a texture for a rendering context.
  *
- * You can set the texture scaling method by setting
- * `SDL_HINT_RENDER_SCALE_QUALITY` before creating the texture.
- *
  * \param renderer the rendering context
  * \param format one of the enumerated values in SDL_PixelFormatEnum
  * \param access one of the enumerated values in SDL_TextureAccess
