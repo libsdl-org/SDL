@@ -17,7 +17,6 @@
     This is the configuration file template for OpenHarmony OSS Audit Tool, please copy it to your project root dir and modify it refer to OpenHarmony/tools_oat/README.
 
 -->
-
 <configuration>
     <oatconfig>
         <licensefile></licensefile>
