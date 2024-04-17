@@ -2164,7 +2164,8 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                     char **paths = SDL_DBus_DocumentsPortalRetrieveFiles(buffer, &path_count);
                     /* If dropped files contain a directory the list is empty */
                     if (paths && path_count > 0) {
-                        for (int i = 0; i < path_count; i++) {
+                        int i;
+                        for (i = 0; i < path_count; i++) {
                             SDL_SendDropFile(data_device->dnd_window, NULL, paths[i]);
                         }
                         dbus->free_string_array(paths);
