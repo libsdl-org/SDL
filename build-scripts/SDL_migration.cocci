@@ -1549,10 +1549,6 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 + SDL_KMOD_RCTRL
 @@
 @@
-- KMOD_RESERVED
-+ SDL_KMOD_RESERVED
-@@
-@@
 - KMOD_RGUI
 + SDL_KMOD_RGUI
 @@

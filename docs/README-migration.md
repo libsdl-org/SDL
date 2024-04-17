@@ -877,6 +877,10 @@ The following functions have been removed:
 
 The SDL_KeyCode enum values have been changed to defines to more clearly reflect that they are a subset of the possible values of an SDL_Keycode.
 
+The following symbols have been removed:
+
+* KMOD_RESERVED - No replacement. A bit named "RESERVED" probably shouldn't be used in an app, but if you need it, this was equivalent to KMOD_SCROLL (0x8000) in SDL2.
+
 The following symbols have been renamed:
 * KMOD_ALT => SDL_KMOD_ALT
 * KMOD_CAPS => SDL_KMOD_CAPS
@@ -891,7 +895,6 @@ The following symbols have been renamed:
 * KMOD_NUM => SDL_KMOD_NUM
 * KMOD_RALT => SDL_KMOD_RALT
 * KMOD_RCTRL => SDL_KMOD_RCTRL
-* KMOD_RESERVED => SDL_KMOD_RESERVED
 * KMOD_RGUI => SDL_KMOD_RGUI
 * KMOD_RSHIFT => SDL_KMOD_RSHIFT
 * KMOD_SCROLL => SDL_KMOD_SCROLL
