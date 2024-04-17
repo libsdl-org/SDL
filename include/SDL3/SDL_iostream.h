@@ -462,8 +462,8 @@ extern DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  *
  * This function reads up `size` bytes from the data source to the area
  * pointed at by `ptr`. This function may read less bytes than requested. It
- * will return zero when the data stream is completely read, or on error.
- * To determine if there was an error or all data was read, call
+ * will return zero when the data stream is completely read, or on error. To
+ * determine if there was an error or all data was read, call
  * SDL_GetIOStatus().
  *
  * \param context a pointer to an SDL_IOStream structure
@@ -489,8 +489,8 @@ extern DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, size
  * might return a positive value less than the requested write size.
  *
  * The caller can use SDL_GetIOStatus() to determine if the problem is
- * recoverable, such as a non-blocking write that can simply be retried
- * later, or a fatal error.
+ * recoverable, such as a non-blocking write that can simply be retried later,
+ * or a fatal error.
  *
  * \param context a pointer to an SDL_IOStream structure
  * \param ptr a pointer to a buffer containing data to write
