@@ -54,9 +54,11 @@ include("${SDL3_SOURCE_DIR}/cmake/sdltargets.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/CheckCPUArchitecture.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/3rdparty.cmake")
+include("${SDL3_SOURCE_DIR}/cmake/PreseedMSVCCache.cmake")
 
 SDL_DetectCompiler()
 SDL_DetectCPUArchitecture()
+SDL_Preseed_CMakeCache()
 
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL3 to SDL4, at which point this would
