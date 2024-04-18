@@ -109,8 +109,6 @@ extern char *SDL_DBus_GetLocalMachineId(void);
 
 extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_count);
 
-extern SDL_bool SDL_DBus_QuerySystemdUnitRunning(const char *unit_name, SDL_bool user_unit);
-
 #endif /* HAVE_DBUS_DBUS_H */
 
 #endif /* SDL_dbus_h_ */

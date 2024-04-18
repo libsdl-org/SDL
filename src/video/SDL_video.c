@@ -1248,8 +1248,11 @@ const SDL_DisplayMode *SDL_GetCurrentDisplayMode(SDL_DisplayID displayID)
 
 int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    /* Mode switching is being emulated per-window; nothing to do and cannot fail. */
-    if (SDL_ModeSwitchingEmulated(_this)) {
+    /* Mode switching is being emulated per-window; nothing to do and cannot fail,
+     * except for XWayland, which still needs the actual mode setting call since
+     * it's emulated via the XRandR interface.
+     */
+    if (SDL_ModeSwitchingEmulated(_this) && SDL_strcmp(_this->name, "x11") != 0) {
         return 0;
     }
 

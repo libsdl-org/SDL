@@ -212,6 +212,7 @@ int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *button
         FILE *outputfp = NULL;
         char *output = NULL;
         char *tmp = NULL;
+        close(fd_pipe[1]);
 
         if (!buttonID) {
             /* if we don't need buttonID, we can return immediately */

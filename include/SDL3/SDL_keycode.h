@@ -324,8 +324,6 @@ typedef enum SDL_Keymod
     SDL_KMOD_SHIFT = SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT, /**< Any Shift key is down. */
     SDL_KMOD_ALT = SDL_KMOD_LALT | SDL_KMOD_RALT,       /**< Any Alt key is down. */
     SDL_KMOD_GUI = SDL_KMOD_LGUI | SDL_KMOD_RGUI,       /**< Any GUI key is down. */
-
-    SDL_KMOD_RESERVED = SDL_KMOD_SCROLL /* This is for source-level compatibility with SDL 2.0.0. */
 } SDL_Keymod;
 
 #endif /* SDL_keycode_h_ */
