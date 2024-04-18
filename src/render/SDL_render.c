@@ -46,9 +46,16 @@ this should probably be removed at some point in the future.  --ryan. */
 #define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
 #define SDL_PROP_TEXTURE_PARENT_POINTER "SDL.internal.texture.parent"
 
-#define CHECK_RENDERER_MAGIC(renderer, retval)                  \
+#define CHECK_RENDERER_MAGIC_BUT_NOT_DESTROYED_FLAG(renderer, retval)                  \
     if (!(renderer) || (renderer)->magic != &SDL_renderer_magic) { \
         SDL_InvalidParamError("renderer");                      \
+        return retval;                                          \
+    }
+
+#define CHECK_RENDERER_MAGIC(renderer, retval)                  \
+    CHECK_RENDERER_MAGIC_BUT_NOT_DESTROYED_FLAG(renderer, retval); \
+    if ((renderer)->destroyed) { \
+        SDL_SetError("Renderer's window has been destroyed, can't use further"); \
         return retval;                                          \
     }
 
@@ -4517,9 +4524,12 @@ static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
     }
 }
 
-void SDL_DestroyRenderer(SDL_Renderer *renderer)
+void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer,);
+    SDL_assert(renderer != NULL);
+    SDL_assert(!renderer->destroyed);
+
+    renderer->destroyed = SDL_TRUE;
 
     SDL_DestroyProperties(renderer->props);
 
@@ -4540,15 +4550,25 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
         SDL_ClearProperty(SDL_GetWindowProperties(renderer->window), SDL_PROP_WINDOW_RENDERER_POINTER);
     }
 
-    /* It's no longer magical... */
-    renderer->magic = NULL;
-
     /* Free the target mutex */
     SDL_DestroyMutex(renderer->target_mutex);
     renderer->target_mutex = NULL;
 
     /* Clean up renderer-specific resources */
     renderer->DestroyRenderer(renderer);
+}
+
+void SDL_DestroyRenderer(SDL_Renderer *renderer)
+{
+    CHECK_RENDERER_MAGIC_BUT_NOT_DESTROYED_FLAG(renderer,);
+
+    // if we've already destroyed the renderer through SDL_DestroyWindow, we just need
+    // to free the renderer pointer. This lets apps destroy the window and renderer
+    // in either order.
+    if (!renderer->destroyed) {
+        SDL_DestroyRendererWithoutFreeing(renderer);
+        renderer->magic = NULL;     // It's no longer magical...
+    }
 
     SDL_free(renderer);
 }
