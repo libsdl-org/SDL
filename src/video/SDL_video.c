@@ -34,6 +34,7 @@
 #include "../SDL_properties_c.h"
 #include "../timer/SDL_timer_c.h"
 #include "../camera/SDL_camera_c.h"
+#include "../render/SDL_sysrender.h"
 
 #ifdef SDL_VIDEO_OPENGL
 #include <SDL3/SDL_opengl.h>
@@ -3649,7 +3650,7 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     SDL_Renderer *renderer = SDL_GetRenderer(window);
     if (renderer) {
-        SDL_DestroyRenderer(renderer);
+        SDL_DestroyRendererWithoutFreeing(renderer);
     }
 
     SDL_DestroyProperties(window->props);
