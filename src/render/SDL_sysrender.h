@@ -282,6 +282,8 @@ struct SDL_Renderer
     size_t vertex_data_used;
     size_t vertex_data_allocation;
 
+    SDL_bool destroyed;   /* already destroyed by SDL_DestroyWindow; just free this struct in SDL_DestroyRenderer. */
+
     void *driverdata;
 };
 
@@ -323,6 +325,9 @@ extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t num
 
 extern int SDL_PrivateLowerBlitScaled(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 extern int SDL_PrivateUpperBlitScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
+
+/* Let the video subsystem destroy a renderer without making its pointer invalid. */
+extern void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -34,6 +34,8 @@
 
 #include "SDL_syswm.h"
 
+#include "../render/SDL_sysrender.h"
+
 #ifdef SDL_VIDEO_OPENGL
 #include "SDL_opengl.h"
 #endif /* SDL_VIDEO_OPENGL */
@@ -3303,6 +3305,7 @@ SDL_Window *SDL_GetFocusWindow(void)
 void SDL_DestroyWindow(SDL_Window *window)
 {
     SDL_VideoDisplay *display;
+    SDL_Renderer *renderer;
 
     CHECK_WINDOW_MAGIC(window, );
 
@@ -3319,6 +3322,11 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
     if (SDL_GetMouseFocus() == window) {
         SDL_SetMouseFocus(NULL);
+    }
+
+    renderer = SDL_GetRenderer(window);
+    if (renderer) {
+        SDL_DestroyRendererWithoutFreeing(renderer);
     }
 
     SDL_DestroyWindowSurface(window);
