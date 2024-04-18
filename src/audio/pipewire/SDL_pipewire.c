@@ -29,38 +29,6 @@
 #include <spa/param/audio/format-utils.h>
 #include <spa/utils/json.h>
 
-#include "../../core/linux/SDL_dbus.h"
-
-/*
- * The following keys are defined for compatibility when building against older versions of Pipewire
- * prior to their introduction and can be removed if the minimum required Pipewire build version is
- * increased to or beyond their point of introduction.
- */
-
-/*
- * Introduced in 0.3.22
- * Taken from /src/pipewire/keys.h
- */
-#ifndef PW_KEY_CONFIG_NAME
-#define PW_KEY_CONFIG_NAME "config.name"
-#endif
-
-/*
- * Introduced in 0.3.33
- * Taken from src/pipewire/keys.h
- */
-#ifndef PW_KEY_NODE_RATE
-#define PW_KEY_NODE_RATE "node.rate"
-#endif
-
-/*
- * Introduced in 0.3.44
- * Taken from src/pipewire/keys.h
- */
-#ifndef PW_KEY_TARGET_OBJECT
-#define PW_KEY_TARGET_OBJECT "target.object"
-#endif
-
 /*
  * This seems to be a sane lower limit as Pipewire
  * uses it in several of it's own modules.
@@ -120,10 +88,6 @@ static int (*PIPEWIRE_pw_stream_queue_buffer)(struct pw_stream *, struct pw_buff
 static struct pw_properties *(*PIPEWIRE_pw_properties_new)(const char *, ...)SPA_SENTINEL;
 static int (*PIPEWIRE_pw_properties_set)(struct pw_properties *, const char *, const char *);
 static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, const char *, ...) SPA_PRINTF_FUNC(3, 4);
-
-static int pipewire_library_version_major;
-static int pipewire_library_version_minor;
-static int pipewire_library_version_patch;
 
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 
@@ -215,13 +179,6 @@ static int load_pipewire_syms(void)
     return 0;
 }
 
-static SDL_bool pipewire_library_version_at_least(int major, int minor, int patch)
-{
-    return (pipewire_library_version_major >= major) &&
-           (pipewire_library_version_major > major || pipewire_library_version_minor >= minor) &&
-           (pipewire_library_version_major > major || pipewire_library_version_minor > minor || pipewire_library_version_patch >= patch);
-}
-
 /* When in a container, the library version can differ from the underlying core version,
  * so make sure the underlying Pipewire implementation meets the version requirement.
  */
@@ -310,20 +267,10 @@ static int init_pipewire_library(SDL_bool check_preferred_version)
 {
     if (!load_pipewire_library()) {
         if (!load_pipewire_syms()) {
-            int nargs;
-            const char *version = PIPEWIRE_pw_get_library_version();
-            nargs = SDL_sscanf(version, "%d.%d.%d", &pipewire_library_version_major, &pipewire_library_version_minor, &pipewire_library_version_patch);
-            if (nargs < 3) {
-                return -1;
-            }
+            PIPEWIRE_pw_init(NULL, NULL);
 
-            // SDL can build against 0.3.20, but requires 0.3.24 at minimum
-            if (pipewire_library_version_at_least(0, 3, 24)) {
-                PIPEWIRE_pw_init(NULL, NULL);
-
-                if (!check_preferred_version || pipewire_core_version_at_least(1, 0, 0)) {
-                    return 0;
-                }
+            if (!check_preferred_version || pipewire_core_version_at_least(1, 0, 0)) {
+                return 0;
             }
         }
     }
@@ -1253,25 +1200,13 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DONT_RECONNECT, "true");  // Requesting a specific device, don't migrate to new default hardware.
 
-    /*
-     * Pipewire 0.3.44 introduced PW_KEY_TARGET_OBJECT that takes either a path
-     * (PW_KEY_NODE_NAME) or node serial number (PE_KEY_OBJECT_SERIAL) to connect
-     * the stream to its target. The target_id parameter in pw_stream_connect() is
-     * now deprecated and should always be PW_ID_ANY.
-     */
-    if (pipewire_library_version_at_least(0, 3, 44)) {
-        if (node_id != PW_ID_ANY) {
-            const struct io_node *node;
-
-            PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
-            node = io_list_get_by_id(node_id);
-            if (node) {
-                PIPEWIRE_pw_properties_set(props, PW_KEY_TARGET_OBJECT, node->path);
-            }
-            PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
-
-            node_id = PW_ID_ANY;
+    if (node_id != PW_ID_ANY) {
+        PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
+        const struct io_node *node = io_list_get_by_id(node_id);
+        if (node) {
+            PIPEWIRE_pw_properties_set(props, PW_KEY_TARGET_OBJECT, node->path);
         }
+        PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
     }
 
     // Create the new stream
@@ -1281,7 +1216,8 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("Pipewire: Failed to create stream (%i)", errno);
     }
 
-    res = PIPEWIRE_pw_stream_connect(priv->stream, iscapture ? PW_DIRECTION_INPUT : PW_DIRECTION_OUTPUT, node_id, STREAM_FLAGS,
+    // The target node is passed via PW_KEY_TARGET_OBJECT; target_id is a legacy parameter and must be PW_ID_ANY.
+    res = PIPEWIRE_pw_stream_connect(priv->stream, iscapture ? PW_DIRECTION_INPUT : PW_DIRECTION_OUTPUT, PW_ID_ANY, STREAM_FLAGS,
                                      &params, 1);
     if (res != 0) {
         return SDL_SetError("Pipewire: Failed to connect stream");

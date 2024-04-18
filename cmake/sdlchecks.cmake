@@ -134,7 +134,7 @@ endmacro()
 # - HAVE_SDL_LOADSO opt
 macro(CheckPipewire)
   if(SDL_PIPEWIRE)
-    set(PipeWire_PKG_CONFIG_SPEC libpipewire-0.3>=0.3.20)
+    set(PipeWire_PKG_CONFIG_SPEC libpipewire-0.3>=0.3.44)
     pkg_check_modules(PC_PIPEWIRE IMPORTED_TARGET ${PipeWire_PKG_CONFIG_SPEC})
     if(PC_PIPEWIRE_FOUND)
       set(HAVE_PIPEWIRE TRUE)
