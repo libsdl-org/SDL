@@ -1277,7 +1277,6 @@ static void PSP_DestroyRenderer(SDL_Renderer *renderer)
         data->displayListAvail = SDL_FALSE;
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
@@ -1287,31 +1286,21 @@ static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     PSP_RenderData *data;
     int pixelformat;
     void *doublebuffer = NULL;
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
-
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
     data = (PSP_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        PSP_DestroyRenderer(renderer);
-        return NULL;
+        return -1;
     }
 
     renderer->WindowEvent = PSP_WindowEvent;
@@ -1406,7 +1395,7 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     if (data->vsync) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
-    return renderer;
+    return 0;
 }
 
 SDL_RenderDriver PSP_RenderDriver = {

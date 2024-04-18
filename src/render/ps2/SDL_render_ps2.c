@@ -602,8 +602,6 @@ static void PS2_DestroyRenderer(SDL_Renderer *renderer)
     if (vsync_sema_id >= 0) {
         DeleteSema(vsync_sema_id);
     }
-
-    SDL_free(renderer);
 }
 
 static int PS2_SetVSync(SDL_Renderer *renderer, const int vsync)
@@ -614,32 +612,23 @@ static int PS2_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     PS2_RenderData *data;
     GSGLOBAL *gsGlobal;
     ee_sema_t sema;
     SDL_bool dynamicVsync;
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
-
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
         SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
     data = (PS2_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        PS2_DestroyRenderer(renderer);
-        return NULL;
+        return -1;
     }
 
     /* Specific gsKit init */
@@ -711,7 +700,7 @@ static SDL_Renderer *PS2_CreateRenderer(SDL_Window *window, SDL_PropertiesID cre
     if (data->vsync) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
-    return renderer;
+    return 0;
 }
 
 SDL_RenderDriver PS2_RenderDriver = {
