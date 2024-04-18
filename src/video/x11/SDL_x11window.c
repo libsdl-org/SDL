@@ -1369,18 +1369,23 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     X11_XSync(display, False);
     X11_PumpEvents(_this);
 
-    int x = data->last_xconfigure.x;
-    int y = data->last_xconfigure.y;
-    SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
+    /* If a configure event was received (type is non-zero), send the final window size and coordinates. */
+    if (data->last_xconfigure.type) {
+        int x = data->last_xconfigure.x;
+        int y = data->last_xconfigure.y;
+        SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
 
-    /* If the borders appeared, this happened automatically in the event system, otherwise, set the position now. */
-    if (data->disable_size_position_events && (window->x != x || window->y != y)) {
-        data->pending_operation = X11_PENDING_OP_MOVE;
-        X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+        /* If the borders appeared, this happened automatically in the event system, otherwise, set the position now. */
+        if (data->disable_size_position_events && (window->x != x || window->y != y)) {
+            data->pending_operation = X11_PENDING_OP_MOVE;
+            X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+        }
+
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, data->last_xconfigure.width, data->last_xconfigure.height);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
     }
+
     data->disable_size_position_events = SDL_FALSE;
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, data->last_xconfigure.width, data->last_xconfigure.height);
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
 }
 
 void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
