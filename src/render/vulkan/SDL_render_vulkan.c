@@ -1061,14 +1061,13 @@ static VkResult VULKAN_IssueBatch(VULKAN_RenderData *rendererData)
 static void VULKAN_DestroyRenderer(SDL_Renderer *renderer)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
-    if (rendererData->device != VK_NULL_HANDLE) {
-        vkDeviceWaitIdle(rendererData->device);
-        VULKAN_DestroyAll(renderer);
-    }
     if (rendererData) {
+        if (rendererData->device != VK_NULL_HANDLE) {
+            vkDeviceWaitIdle(rendererData->device);
+            VULKAN_DestroyAll(renderer);
+        }
         SDL_free(rendererData);
     }
-    SDL_free(renderer);
 }
 
 static VkBlendFactor GetBlendFactor(SDL_BlendFactor factor)
@@ -4037,30 +4036,21 @@ static int VULKAN_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     VULKAN_RenderData *rendererData;
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
         renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
         renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
-        SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
     rendererData = (VULKAN_RenderData *)SDL_calloc(1, sizeof(*rendererData));
     if (!rendererData) {
-        SDL_free(renderer);
-        return NULL;
+        return -1;
     }
 
     rendererData->identity = MatrixIdentity();
@@ -4110,11 +4100,10 @@ SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_
     /* Initialize Vulkan resources */
     if (VULKAN_CreateDeviceResources(renderer, create_props) != VK_SUCCESS) {
         VULKAN_DestroyRenderer(renderer);
-        return NULL;
-    }
-    if (VULKAN_CreateWindowSizeDependentResources(renderer) != VK_SUCCESS) {
+        return -1;
+    } else if (VULKAN_CreateWindowSizeDependentResources(renderer) != VK_SUCCESS) {
         VULKAN_DestroyRenderer(renderer);
-        return NULL;
+        return -1;
     }
 
 #if SDL_HAVE_YUV
@@ -4127,7 +4116,7 @@ SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_
     }
 #endif
 
-    return renderer;
+    return 0;
 }
 
 SDL_RenderDriver VULKAN_RenderDriver = {

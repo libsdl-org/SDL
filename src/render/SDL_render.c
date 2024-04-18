@@ -900,11 +900,17 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     SDL_Window *window = (SDL_Window *)SDL_GetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, NULL);
     SDL_Surface *surface = (SDL_Surface *)SDL_GetProperty(props, SDL_PROP_RENDERER_CREATE_SURFACE_POINTER, NULL);
     const char *name = SDL_GetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, NULL);
-    SDL_Renderer *renderer = NULL;
     const int n = SDL_GetNumRenderDrivers();
     const char *hint;
     int i, attempted = 0;
     SDL_PropertiesID new_props;
+
+    SDL_Renderer *renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        return NULL;
+    }
+
+    renderer->magic = &SDL_renderer_magic;
 
 #ifdef SDL_PLATFORM_ANDROID
     Android_ActivityMutex_Lock_Running();
@@ -932,15 +938,15 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     if (surface) {
 #if SDL_VIDEO_RENDER_SW
-        renderer = SW_CreateRendererForSurface(surface, props);
+        const int rc = SW_CreateRendererForSurface(renderer, surface, props);
 #else
-        renderer = NULL;
-        SDL_SetError("SDL not built with software renderer");
+        const int rc = SDL_SetError("SDL not built with software renderer");
 #endif
-        if (!renderer) {
+        if (rc == -1) {
             goto error;
         }
     } else {
+        int rc = -1;
         if (!name) {
             name = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
         }
@@ -949,26 +955,27 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
             for (i = 0; i < n; i++) {
                 const SDL_RenderDriver *driver = render_drivers[i];
                 if (SDL_strcasecmp(name, driver->info.name) == 0) {
-                    /* Create a new renderer instance */
+                    // Create a new renderer instance
                     ++attempted;
-                    renderer = driver->CreateRenderer(window, props);
+                    rc = driver->CreateRenderer(renderer, window, props);
                     break;
                 }
             }
         } else {
             for (i = 0; i < n; i++) {
                 const SDL_RenderDriver *driver = render_drivers[i];
-                /* Create a new renderer instance */
+                // Create a new renderer instance
                 ++attempted;
-                renderer = driver->CreateRenderer(window, props);
-                if (renderer) {
-                    /* Yay, we got one! */
-                    break;
+                rc = driver->CreateRenderer(renderer, window, props);
+                if (rc == 0) {
+                    break;  // Yay, we got one!
                 }
+                SDL_zerop(renderer);  // make sure we don't leave function pointers from a previous CreateRenderer() in this struct.
+                renderer->magic = &SDL_renderer_magic;
             }
         }
 
-        if (!renderer) {
+        if (rc == -1) {
             if (!name || !attempted) {
                 SDL_SetError("Couldn't find matching render driver");
             }
@@ -1072,6 +1079,7 @@ error:
 #ifdef SDL_PLATFORM_ANDROID
     Android_ActivityMutex_Unlock();
 #endif
+    SDL_free(renderer);
     return NULL;
 
 #else
@@ -4522,7 +4530,6 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
     /* Free existing textures for this renderer */
     while (renderer->textures) {
         SDL_Texture *tex = renderer->textures;
-        (void)tex;
         SDL_DestroyTextureInternal(renderer->textures, SDL_TRUE /* is_destroying */);
         SDL_assert(tex != renderer->textures); /* satisfy static analysis. */
     }
@@ -4540,8 +4547,10 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
     SDL_DestroyMutex(renderer->target_mutex);
     renderer->target_mutex = NULL;
 
-    /* Free the renderer instance */
+    /* Clean up renderer-specific resources */
     renderer->DestroyRenderer(renderer);
+
+    SDL_free(renderer);
 }
 
 void *SDL_GetRenderMetalLayer(SDL_Renderer *renderer)

@@ -1800,8 +1800,6 @@ static void METAL_DestroyRenderer(SDL_Renderer *renderer)
             /* SDL_Metal_DestroyView(data.mtlview); */
             CFBridgingRelease(data.mtlview);
         }
-
-        SDL_free(renderer);
     }
 }
 
@@ -1874,10 +1872,9 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
     return nil;
 }
 
-static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
-        SDL_Renderer *renderer = NULL;
         METAL_RenderData *data = NULL;
         id<MTLDevice> mtldevice = nil;
         SDL_MetalView view = NULL;
@@ -1939,14 +1936,8 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         const size_t YCbCr_shader_matrix_size = 4 * 4 * sizeof(float);
 
         if (!IsMetalAvailable()) {
-            return NULL;
+            return -1;
         }
-
-        renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-        if (!renderer) {
-            return NULL;
-        }
-        renderer->magic = &SDL_renderer_magic;
 
         SDL_SetupRendererColorspace(renderer, create_props);
 
@@ -1959,9 +1950,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR && scRGB_supported) {
                 /* This colorspace is supported */
             } else {
-                SDL_SetError("Unsupported output colorspace");
-                SDL_free(renderer);
-                return NULL;
+                return SDL_SetError("Unsupported output colorspace");
             }
         }
 
@@ -1983,9 +1972,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         }
 
         if (mtldevice == nil) {
-            SDL_free(renderer);
-            SDL_SetError("Failed to obtain Metal device");
-            return NULL;
+            return SDL_SetError("Failed to obtain Metal device");
         }
 
         view = GetWindowView(window);
@@ -1994,8 +1981,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         }
 
         if (view == NULL) {
-            SDL_free(renderer);
-            return NULL;
+            return -1;
         }
 
         // !!! FIXME: error checking on all of this.
@@ -2007,8 +1993,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
              */
             /* SDL_Metal_DestroyView(view); */
             CFBridgingRelease(view);
-            SDL_free(renderer);
-            return NULL;
+            return SDL_SetError("METAL_RenderData alloc/init failed");
         }
 
         renderer->driverdata = (void *)CFBridgingRetain(data);
@@ -2205,7 +2190,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         renderer->info.max_texture_width = maxtexsize;
         renderer->info.max_texture_height = maxtexsize;
 
-        return renderer;
+        return 0;
     }
 }
 

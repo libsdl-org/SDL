@@ -42,7 +42,7 @@
 #include <psp2/sysmodule.h>
 #endif
 
-static SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props);
+static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props);
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
 
@@ -210,29 +210,19 @@ static int VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     VITA_GXM_RenderData *data;
-
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
 
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
     data = (VITA_GXM_RenderData *)SDL_calloc(1, sizeof(VITA_GXM_RenderData));
     if (!data) {
-        SDL_free(renderer);
-        return NULL;
+        return -1;
     }
 
     renderer->WindowEvent = VITA_GXM_WindowEvent;
@@ -281,11 +271,10 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID creat
 
     if (gxm_init(renderer) != 0) {
         SDL_free(data);
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("gxm_init failed");
     }
 
-    return renderer;
+    return 0;
 }
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
@@ -1230,7 +1219,6 @@ static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
         data->drawing = SDL_FALSE;
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */
