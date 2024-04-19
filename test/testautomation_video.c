@@ -75,6 +75,10 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
 static void destroyVideoSuiteTestWindow(SDL_Window *window)
 {
     if (window != NULL) {
+        SDL_Renderer *renderer = SDL_GetRenderer(window);
+        if (renderer) {
+            SDL_DestroyRenderer(renderer);
+        }
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("Call to SDL_DestroyWindow()");
