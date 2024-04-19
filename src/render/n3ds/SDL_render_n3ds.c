@@ -352,7 +352,6 @@ N3DS_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *
 {
     int i;
     int count = indices ? num_indices : num_vertices;
-    N3DS_TextureData *N3DS_texture = (N3DS_TextureData *) texture->driverdata;
     VertVCT *verts;
 
     cmd->data.draw.count = count;
@@ -389,6 +388,7 @@ N3DS_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *
             verts++;
         }
     } else {
+        N3DS_TextureData *N3DS_texture = (N3DS_TextureData *) texture->driverdata;
         for (i = 0; i < count; i++) {
             int j;
             float *xy_;

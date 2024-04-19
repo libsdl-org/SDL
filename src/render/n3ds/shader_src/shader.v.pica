@@ -17,34 +17,43 @@
 ;    misrepresented as being the original software.
 ; 3. This notice may not be removed or altered from any source distribution.
 
+; Uniforms
 .fvec projection[4]
 
-.out outpos position
-.out outtc0 texcoord0
-.out outclr color
+; Constants
+.constf const(0.0, 1.0, 0.00392156862745098, 0.5)
+.alias ZEROS const.xxxx ; Vector full of zeros
+.alias  ONES const.yyyy ; Vector full of ones
+.alias HALFS const.wwww ; Vector full of 0.5s
 
+; Outputs
+.out outpos position
+.out outclr color
+.out outtc0 texcoord0
+
+; Inputs (defined as aliases for convenience)
 .alias inpos v0
 .alias inclr v1
 .alias intc0 v2
 
-.constf const(0.0, 1.0, 0.00392156862745098, 1.0)
-.alias ZEROS const.xxxx
-.alias  ONES const.yyyy
-.alias  RGBS const.zzzz
-
 .proc main
+	; Force the z and w components of inpos to be 0.5 and 1.0 respectively
 	mov r0.xy, inpos
-	mov r0.zw, ONES
+	mov r0.z,  HALFS
+	mov r0.w,  ONES
 
+	; outpos = projectionMatrix * inpos
 	dp4 outpos.x, projection[0], r0
 	dp4 outpos.y, projection[1], r0
 	dp4 outpos.z, projection[2], r0
 	dp4 outpos.w, projection[3], r0
 
+	; outtc0 = intc0
 	mov outtc0, intc0
 
-        mov r1, RGBS
-	mul outclr, inclr.wzyx, r1.x
+	; Normalize color by multiplying by 1 / 255
+	mul outclr, const.z, inclr
 
+	; We're finished
 	end
 .end
