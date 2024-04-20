@@ -984,7 +984,7 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *sr
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, filled with the actual rectangle
  *                used after clipping
- * \param scaleMode scale algorithm to be used
+ * \param scaleMode the SDL_ScaleMode to be used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
