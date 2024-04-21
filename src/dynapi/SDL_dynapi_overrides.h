@@ -1038,3 +1038,4 @@
 #define SDL_wcsnstr SDL_wcsnstr_REAL
 #define SDL_wcsstr SDL_wcsstr_REAL
 #define SDL_wcstol SDL_wcstol_REAL
+#define SDL_WriteStorageFile SDL_WriteStorageFile_REAL

@@ -252,7 +252,7 @@ extern DECLSPEC int SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const char
  * \sa SDL_ReadStorageFile
  * \sa SDL_StorageReady
  */
-extern DECLSPEC int SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length);
+extern DECLSPEC int SDLCALL SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length);
 
 /**
  * Create a directory in a writable storage container.
