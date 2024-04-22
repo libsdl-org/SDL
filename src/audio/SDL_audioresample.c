@@ -146,9 +146,13 @@ static void SDL_TARGETING("sse") ResampleFrame_Generic_SSE(const float *src, flo
         const __m128 frac2 = _mm_mul_ps(frac1, frac1);
         const __m128 frac3 = _mm_mul_ps(frac1, frac2);
 
-/* Transposed in SetupAudioResampler */
-#define X(out)                                                                                                                        \
-    out = sdl_madd_ps(sdl_madd_ps(sdl_madd_ps(filter[0].v128, filter[1].v128, frac1), filter[2].v128, frac2), filter[3].v128, frac3); \
+// Transposed in SetupAudioResampler
+// Explicitly use _mm_load_ps to workaround ICE in GCC 4.9.4 accessing Cubic.v128
+#define X(out)                                               \
+    out = _mm_load_ps(filter[0].v);                          \
+    out = sdl_madd_ps(out, frac1, _mm_load_ps(filter[1].v)); \
+    out = sdl_madd_ps(out, frac2, _mm_load_ps(filter[2].v)); \
+    out = sdl_madd_ps(out, frac3, _mm_load_ps(filter[3].v)); \
     filter += 4
 
         X(f0);
@@ -274,7 +278,7 @@ static void ResampleFrame_Generic_NEON(const float *src, float *dst, const Cubic
         const float32x4_t frac2 = vmulq_f32(frac1, frac1);
         const float32x4_t frac3 = vmulq_f32(frac1, frac2);
 
-/* Transposed in SetupAudioResampler */
+// Transposed in SetupAudioResampler
 #define X(out)                                                                                                                  \
     out = vmlaq_f32(vmlaq_f32(vmlaq_f32(filter[0].v128, filter[1].v128, frac1), filter[2].v128, frac2), filter[3].v128, frac3); \
     filter += 4
