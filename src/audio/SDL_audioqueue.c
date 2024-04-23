@@ -525,7 +525,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
     }
 
     SDL_AudioFormat src_format = track->spec.format;
-    SDL_AudioFormat src_channels = track->spec.channels;
+    int src_channels = track->spec.channels;
 
     size_t src_frame_size = SDL_AUDIO_BYTESIZE(src_format) * src_channels;
     size_t dst_frame_size = SDL_AUDIO_BYTESIZE(dst_format) * dst_channels;
