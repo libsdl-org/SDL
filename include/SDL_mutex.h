@@ -112,13 +112,13 @@ extern "C" {
 #endif
 
 /**
- *  Synchronization functions which can time out return this value
- *  if they time out.
+ * Synchronization functions which can time out return this value if they time
+ * out.
  */
 #define SDL_MUTEX_TIMEDOUT  1
 
 /**
- *  This is the timeout value which corresponds to never time out.
+ * This is the timeout value which corresponds to never time out.
  */
 #define SDL_MUTEX_MAXWAIT   (~(Uint32)0)
 

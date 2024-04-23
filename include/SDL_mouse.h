@@ -41,7 +41,7 @@ extern "C" {
 typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
 
 /**
- * \brief Cursor types for SDL_CreateSystemCursor().
+ * Cursor types for SDL_CreateSystemCursor().
  */
 typedef enum SDL_SystemCursor
 {
@@ -61,7 +61,7 @@ typedef enum SDL_SystemCursor
 } SDL_SystemCursor;
 
 /**
- * \brief Scroll direction types for the Scroll event
+ * Scroll direction types for the Scroll event
  */
 typedef enum SDL_MouseWheelDirection
 {
@@ -437,9 +437,9 @@ extern DECLSPEC int SDLCALL SDL_ShowCursor(int toggle);
 /**
  * Used as a mask when testing buttons in buttonstate.
  *
- * - Button 1:  Left mouse button
- * - Button 2:  Middle mouse button
- * - Button 3:  Right mouse button
+ * - Button 1: Left mouse button
+ * - Button 2: Middle mouse button
+ * - Button 3: Right mouse button
  */
 #define SDL_BUTTON(X)       (1 << ((X)-1))
 #define SDL_BUTTON_LEFT     1

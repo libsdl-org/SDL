@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
+/*
  *  \file SDL_test_random.h
  *
  *  Include file for SDL test framework.
@@ -67,7 +67,7 @@ extern "C" {
 
 /* --- Function prototypes */
 
-/**
+/*
  *  \brief Initialize random number generator with two integers.
  *
  *  Note: The random sequence of numbers returned by ...Random() is the
@@ -81,7 +81,7 @@ extern "C" {
  void SDLTest_RandomInit(SDLTest_RandomContext * rndContext, unsigned int xi,
                   unsigned int ci);
 
-/**
+/*
  *  \brief Initialize random number generator based on current system time.
  *
  *  \param rndContext     pointer to context structure
@@ -90,7 +90,7 @@ extern "C" {
  void SDLTest_RandomInitTime(SDLTest_RandomContext *rndContext);
 
 
-/**
+/*
  *  \brief Initialize random number generator based on current system time.
  *
  *  Note: ...RandomInit() or ...RandomInitTime() must have been called

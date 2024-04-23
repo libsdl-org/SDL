@@ -129,14 +129,14 @@
  *
  *  The application's main() function must be called with C linkage,
  *  and should be declared like this:
- *  \code
+ *  ```c
  *  #ifdef __cplusplus
  *  extern "C"
  *  #endif
  *  int main(int argc, char *argv[])
  *  {
  *  }
- *  \endcode
+ *  ```
  */
 
 #if defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE)
@@ -149,7 +149,7 @@ extern "C" {
 #endif
 
 /**
- *  The prototype for the application's main() function
+ * The prototype for the application's main() function
  */
 typedef int (*SDL_main_func)(int argc, char *argv[]);
 extern SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);

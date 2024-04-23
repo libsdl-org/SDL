@@ -63,14 +63,16 @@ typedef unsigned long SDL_threadID;
 typedef unsigned int SDL_TLSID;
 
 /**
- *  The SDL thread priority.
+ * The SDL thread priority.
  *
- *  SDL will make system changes as necessary in order to apply the thread priority.
- *  Code which attempts to control thread state related to priority should be aware
- *  that calling SDL_SetThreadPriority may alter such state.
- *  SDL_HINT_THREAD_PRIORITY_POLICY can be used to control aspects of this behavior.
+ * SDL will make system changes as necessary in order to apply the thread
+ * priority. Code which attempts to control thread state related to priority
+ * should be aware that calling SDL_SetThreadPriority may alter such state.
+ * SDL_HINT_THREAD_PRIORITY_POLICY can be used to control aspects of this
+ * behavior.
  *
- *  \note On many systems you require special privileges to set high or time critical priority.
+ * On many systems you require special privileges to set high or time critical
+ * priority.
  */
 typedef enum SDL_ThreadPriority {
     SDL_THREAD_PRIORITY_LOW,

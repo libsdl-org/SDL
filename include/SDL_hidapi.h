@@ -71,14 +71,15 @@ extern "C" {
 #endif
 
 /**
- *  \brief  A handle representing an open HID device
+ * A handle representing an open HID device
  */
 struct SDL_hid_device_;
 typedef struct SDL_hid_device_ SDL_hid_device; /**< opaque hidapi structure */
 
 /** hidapi info structure */
+
 /**
- *  \brief  Information about a connected HID device
+ * Information about a connected HID device
  */
 typedef struct SDL_hid_device_info
 {

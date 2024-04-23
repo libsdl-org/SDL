@@ -166,16 +166,19 @@ typedef void (SDLCALL * SDL_AudioCallback) (void *userdata, Uint8 * stream,
                                             int len);
 
 /**
- *  The calculated values in this structure are calculated by SDL_OpenAudio().
+ * The calculated values in this structure are calculated by SDL_OpenAudio().
  *
- *  For multi-channel audio, the default SDL channel mapping is:
- *  2:  FL  FR                          (stereo)
- *  3:  FL  FR LFE                      (2.1 surround)
- *  4:  FL  FR  BL  BR                  (quad)
- *  5:  FL  FR LFE  BL  BR              (4.1 surround)
- *  6:  FL  FR  FC LFE  SL  SR          (5.1 surround - last two can also be BL BR)
- *  7:  FL  FR  FC LFE  BC  SL  SR      (6.1 surround)
- *  8:  FL  FR  FC LFE  BL  BR  SL  SR  (7.1 surround)
+ * For multi-channel audio, the default SDL channel mapping is:
+ *
+ * ```
+ * 2:  FL  FR                          (stereo)
+ * 3:  FL  FR LFE                      (2.1 surround)
+ * 4:  FL  FR  BL  BR                  (quad)
+ * 5:  FL  FR LFE  BL  BR              (4.1 surround)
+ * 6:  FL  FR  FC LFE  SL  SR          (5.1 surround - last two can also be BL BR)
+ * 7:  FL  FR  FC LFE  BC  SL  SR      (6.1 surround)
+ * 8:  FL  FR  FC LFE  BL  BR  SL  SR  (7.1 surround)
+ * ```
  */
 typedef struct SDL_AudioSpec
 {
@@ -196,11 +199,11 @@ typedef void (SDLCALL * SDL_AudioFilter) (struct SDL_AudioCVT * cvt,
                                           SDL_AudioFormat format);
 
 /**
- *  \brief Upper limit of filters in SDL_AudioCVT
+ * Upper limit of filters in SDL_AudioCVT
  *
- *  The maximum number of SDL_AudioFilter functions in SDL_AudioCVT is
- *  currently limited to 9. The SDL_AudioCVT.filters array has 10 pointers,
- *  one of which is the terminating NULL pointer.
+ * The maximum number of SDL_AudioFilter functions in SDL_AudioCVT is
+ * currently limited to 9. The SDL_AudioCVT.filters array has 10 pointers, one
+ * of which is the terminating NULL pointer.
  */
 #define SDL_AUDIOCVT_MAX_FILTERS 9
 
@@ -408,13 +411,13 @@ extern DECLSPEC int SDLCALL SDL_OpenAudio(SDL_AudioSpec * desired,
                                           SDL_AudioSpec * obtained);
 
 /**
- *  SDL Audio Device IDs.
+ * SDL Audio Device IDs.
  *
- *  A successful call to SDL_OpenAudio() is always device id 1, and legacy
- *  SDL audio APIs assume you want this device ID. SDL_OpenAudioDevice() calls
- *  always returns devices >= 2 on success. The legacy calls are good both
- *  for backwards compatibility and when you don't care about multiple,
- *  specific, or capture devices.
+ * A successful call to SDL_OpenAudio() is always device id 1, and legacy SDL
+ * audio APIs assume you want this device ID. SDL_OpenAudioDevice() calls
+ * always returns devices >= 2 on success. The legacy calls are good both for
+ * backwards compatibility and when you don't care about multiple, specific,
+ * or capture devices.
  */
 typedef Uint32 SDL_AudioDeviceID;
 
@@ -874,8 +877,9 @@ extern DECLSPEC SDL_AudioSpec *SDLCALL SDL_LoadWAV_RW(SDL_RWops * src,
                                                       Uint32 * audio_len);
 
 /**
- *  Loads a WAV from a file.
- *  Compatibility convenience function.
+ * Loads a WAV from a file.
+ *
+ * Compatibility convenience function.
  */
 #define SDL_LoadWAV(file, spec, audio_buf, audio_len) \
     SDL_LoadWAV_RW(SDL_RWFromFile(file, "rb"),1, spec,audio_buf,audio_len)

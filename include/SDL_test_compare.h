@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
+/*
  *  \file SDL_test_compare.h
  *
  *  Include file for SDL test framework.
@@ -46,7 +46,7 @@
 extern "C" {
 #endif
 
-/**
+/*
  * \brief Compares a surface and with reference image data for equality
  *
  * \param surface Surface used in comparison

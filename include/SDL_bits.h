@@ -56,6 +56,12 @@ extern __inline int _SDL_bsr_watcom(Uint32);
     modify exact [eax] nomemory;
 #endif
 
+/**
+ * Use this function to get the index of the most significant (set) bit in a
+ *
+ * \param x the number to find the MSB of
+ * \returns the index of the most significant bit of x, or -1 if x is 0.
+ */
 SDL_FORCE_INLINE int
 SDL_MostSignificantBitIndex32(Uint32 x)
 {

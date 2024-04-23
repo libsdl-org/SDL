@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
+/*
  *  \file SDL_test_memory.h
  *
  *  Include file for SDL test framework.
@@ -37,14 +37,14 @@ extern "C" {
 #endif
 
 
-/**
+/*
  * \brief Start tracking SDL memory allocations
  * 
  * \note This should be called before any other SDL functions for complete tracking coverage
  */
 int SDLTest_TrackAllocations(void);
 
-/**
+/*
  * \brief Print a log of any outstanding allocations
  *
  * \note This can be called after SDL_Quit()

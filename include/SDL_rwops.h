@@ -57,7 +57,7 @@ typedef struct SDL_RWops
     Sint64 (SDLCALL * size) (struct SDL_RWops * context);
 
     /**
-     *  Seek to \c offset relative to \c whence, one of stdio's whence values:
+     *  Seek to `offset` relative to `whence`, one of stdio's whence values:
      *  RW_SEEK_SET, RW_SEEK_CUR, RW_SEEK_END
      *
      *  \return the final offset in the data stream, or -1 on error.
@@ -66,8 +66,8 @@ typedef struct SDL_RWops
                              int whence);
 
     /**
-     *  Read up to \c maxnum objects each of size \c size from the data
-     *  stream to the area pointed at by \c ptr.
+     *  Read up to `maxnum` objects each of size `size` from the data
+     *  stream to the area pointed at by `ptr`.
      *
      *  \return the number of objects read, or 0 at error or end of file.
      */
@@ -75,8 +75,8 @@ typedef struct SDL_RWops
                              size_t size, size_t maxnum);
 
     /**
-     *  Write exactly \c num objects each of size \c size from the area
-     *  pointed at by \c ptr to data stream.
+     *  Write exactly `num` objects each of size `size` from the area
+     *  pointed at by `ptr` to data stream.
      *
      *  \return the number of objects written, or 0 at error or end of file.
      */

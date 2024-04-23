@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
+/*
  *  \file SDL_test.h
  *
  *  Include file for SDL test framework.

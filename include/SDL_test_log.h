@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
+/*
  *  \file SDL_test_log.h
  *
  *  Include file for SDL test framework.
@@ -42,14 +42,14 @@
 extern "C" {
 #endif
 
-/**
+/*
  * \brief Prints given message with a timestamp in the TEST category and INFO priority.
  *
  * \param fmt Message to be logged
  */
 void SDLTest_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
 
-/**
+/*
  * \brief Prints given message with a timestamp in the TEST category and the ERROR priority.
  *
  * \param fmt Message to be logged

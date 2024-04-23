@@ -40,15 +40,15 @@ extern "C" {
 #endif
 
 /**
- *  \brief  The structure that defines a display mode
+ * The structure that defines a display mode
  *
- *  \sa SDL_GetNumDisplayModes()
- *  \sa SDL_GetDisplayMode()
- *  \sa SDL_GetDesktopDisplayMode()
- *  \sa SDL_GetCurrentDisplayMode()
- *  \sa SDL_GetClosestDisplayMode()
- *  \sa SDL_SetWindowDisplayMode()
- *  \sa SDL_GetWindowDisplayMode()
+ * \sa SDL_GetNumDisplayModes
+ * \sa SDL_GetDisplayMode
+ * \sa SDL_GetDesktopDisplayMode
+ * \sa SDL_GetCurrentDisplayMode
+ * \sa SDL_GetClosestDisplayMode
+ * \sa SDL_SetWindowDisplayMode
+ * \sa SDL_GetWindowDisplayMode
  */
 typedef struct SDL_DisplayMode
 {
@@ -60,44 +60,44 @@ typedef struct SDL_DisplayMode
 } SDL_DisplayMode;
 
 /**
- *  \brief The type used to identify a window
+ * The type used to identify a window
  *
- *  \sa SDL_CreateWindow()
- *  \sa SDL_CreateWindowFrom()
- *  \sa SDL_DestroyWindow()
- *  \sa SDL_FlashWindow()
- *  \sa SDL_GetWindowData()
- *  \sa SDL_GetWindowFlags()
- *  \sa SDL_GetWindowGrab()
- *  \sa SDL_GetWindowKeyboardGrab()
- *  \sa SDL_GetWindowMouseGrab()
- *  \sa SDL_GetWindowPosition()
- *  \sa SDL_GetWindowSize()
- *  \sa SDL_GetWindowTitle()
- *  \sa SDL_HideWindow()
- *  \sa SDL_MaximizeWindow()
- *  \sa SDL_MinimizeWindow()
- *  \sa SDL_RaiseWindow()
- *  \sa SDL_RestoreWindow()
- *  \sa SDL_SetWindowData()
- *  \sa SDL_SetWindowFullscreen()
- *  \sa SDL_SetWindowGrab()
- *  \sa SDL_SetWindowKeyboardGrab()
- *  \sa SDL_SetWindowMouseGrab()
- *  \sa SDL_SetWindowIcon()
- *  \sa SDL_SetWindowPosition()
- *  \sa SDL_SetWindowSize()
- *  \sa SDL_SetWindowBordered()
- *  \sa SDL_SetWindowResizable()
- *  \sa SDL_SetWindowTitle()
- *  \sa SDL_ShowWindow()
+ * \sa SDL_CreateWindow
+ * \sa SDL_CreateWindowFrom
+ * \sa SDL_DestroyWindow
+ * \sa SDL_FlashWindow
+ * \sa SDL_GetWindowData
+ * \sa SDL_GetWindowFlags
+ * \sa SDL_GetWindowGrab
+ * \sa SDL_GetWindowKeyboardGrab
+ * \sa SDL_GetWindowMouseGrab
+ * \sa SDL_GetWindowPosition
+ * \sa SDL_GetWindowSize
+ * \sa SDL_GetWindowTitle
+ * \sa SDL_HideWindow
+ * \sa SDL_MaximizeWindow
+ * \sa SDL_MinimizeWindow
+ * \sa SDL_RaiseWindow
+ * \sa SDL_RestoreWindow
+ * \sa SDL_SetWindowData
+ * \sa SDL_SetWindowFullscreen
+ * \sa SDL_SetWindowGrab
+ * \sa SDL_SetWindowKeyboardGrab
+ * \sa SDL_SetWindowMouseGrab
+ * \sa SDL_SetWindowIcon
+ * \sa SDL_SetWindowPosition
+ * \sa SDL_SetWindowSize
+ * \sa SDL_SetWindowBordered
+ * \sa SDL_SetWindowResizable
+ * \sa SDL_SetWindowTitle
+ * \sa SDL_ShowWindow
  */
 typedef struct SDL_Window SDL_Window;
 
 /**
- *  \brief The flags on a window
+ * The flags on a window
  *
- *  \sa SDL_GetWindowFlags()
+ * \sa SDL_GetWindowFlags
  */
 typedef enum SDL_WindowFlags
 {
@@ -131,7 +131,7 @@ typedef enum SDL_WindowFlags
 } SDL_WindowFlags;
 
 /**
- *  \brief Used to indicate that you don't care what the window position is.
+ * Used to indicate that you don't care what the window position is.
  */
 #define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
 #define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
@@ -140,7 +140,7 @@ typedef enum SDL_WindowFlags
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)
 
 /**
- *  \brief Used to indicate that the window position should be centered.
+ * Used to indicate that the window position should be centered.
  */
 #define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000u
 #define SDL_WINDOWPOS_CENTERED_DISPLAY(X)  (SDL_WINDOWPOS_CENTERED_MASK|(X))
@@ -149,7 +149,7 @@ typedef enum SDL_WindowFlags
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
 
 /**
- *  \brief Event subtype for window events
+ * Event subtype for window events
  */
 typedef enum SDL_WindowEventID
 {
@@ -180,7 +180,7 @@ typedef enum SDL_WindowEventID
 } SDL_WindowEventID;
 
 /**
- *  \brief Event subtype for display events
+ * Event subtype for display events
  */
 typedef enum SDL_DisplayEventID
 {
@@ -192,7 +192,7 @@ typedef enum SDL_DisplayEventID
 } SDL_DisplayEventID;
 
 /**
- *  \brief Display orientation
+ * Display orientation
  */
 typedef enum SDL_DisplayOrientation
 {
@@ -204,7 +204,7 @@ typedef enum SDL_DisplayOrientation
 } SDL_DisplayOrientation;
 
 /**
- *  \brief Window flash operation
+ * Window flash operation
  */
 typedef enum SDL_FlashOperation
 {
@@ -214,12 +214,12 @@ typedef enum SDL_FlashOperation
 } SDL_FlashOperation;
 
 /**
- *  \brief An opaque handle to an OpenGL context.
+ * An opaque handle to an OpenGL context.
  */
 typedef void *SDL_GLContext;
 
 /**
- *  \brief OpenGL configuration attributes
+ * OpenGL configuration attributes
  */
 typedef enum SDL_GLattr
 {

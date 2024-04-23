@@ -78,7 +78,7 @@ typedef enum SDL_RendererFlags
 typedef struct SDL_RendererInfo
 {
     const char *name;           /**< The name of the renderer */
-    Uint32 flags;               /**< Supported ::SDL_RendererFlags */
+    Uint32 flags;               /**< Supported SDL_RendererFlags */
     Uint32 num_texture_formats; /**< The number of available texture formats */
     Uint32 texture_formats[16]; /**< The available texture formats */
     int max_texture_width;      /**< The maximum texture width */
@@ -86,7 +86,7 @@ typedef struct SDL_RendererInfo
 } SDL_RendererInfo;
 
 /**
- *  Vertex structure
+ * Vertex structure
  */
 typedef struct SDL_Vertex
 {

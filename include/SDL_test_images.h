@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
+/*
  *  \file SDL_test_images.h
  *
  *  Include file for SDL test framework.
@@ -44,7 +44,7 @@
 extern "C" {
 #endif
 
-/**
+/*
  *Type for test images.
  */
 typedef struct SDLTest_SurfaceImage_s {

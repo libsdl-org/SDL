@@ -320,9 +320,10 @@ typedef enum
 } SDL_PixelFormatEnum;
 
 /**
- * The bits of this structure can be directly reinterpreted as an integer-packed
- * color which uses the SDL_PIXELFORMAT_RGBA32 format (SDL_PIXELFORMAT_ABGR8888
- * on little-endian systems and SDL_PIXELFORMAT_RGBA8888 on big-endian systems).
+ * The bits of this structure can be directly reinterpreted as an
+ * integer-packed color which uses the SDL_PIXELFORMAT_RGBA32 format
+ * (SDL_PIXELFORMAT_ABGR8888 on little-endian systems and
+ * SDL_PIXELFORMAT_RGBA8888 on big-endian systems).
  */
 typedef struct SDL_Color
 {
@@ -342,7 +343,30 @@ typedef struct SDL_Palette
 } SDL_Palette;
 
 /**
- *  \note Everything in the pixel format structure is read-only.
+ * A structure that contains pixel format information.
+ *
+ * Everything in the pixel format structure is read-only.
+ *
+ * A pixel format has either a palette or masks. If a palette is used `Rmask`,
+ * `Gmask`, `Bmask`, and `Amask` will be 0.
+ *
+ * An SDL_PixelFormat describes the format of the pixel data stored at the
+ * `pixels` field of an SDL_Surface. Every surface stores an SDL_PixelFormat
+ * in the `format` field.
+ *
+ * If you wish to do pixel level modifications on a surface, then
+ * understanding how SDL stores its color information is essential.
+ *
+ * For information on modern pixel color spaces, see the following Wikipedia
+ * article: http://en.wikipedia.org/wiki/RGBA_color_space
+ *
+ * \sa SDL_ConvertSurface
+ * \sa SDL_GetRGB
+ * \sa SDL_GetRGBA
+ * \sa SDL_MapRGB
+ * \sa SDL_MapRGBA
+ * \sa SDL_AllocFormat
+ * \sa SDL_FreeFormat
  */
 typedef struct SDL_PixelFormat
 {

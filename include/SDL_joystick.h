@@ -56,7 +56,7 @@ extern "C" {
  *  \file SDL_joystick.h
  *
  *  In order to use these functions, SDL_Init() must have been called
- *  with the ::SDL_INIT_JOYSTICK flag.  This causes SDL to scan the system
+ *  with the SDL_INIT_JOYSTICK flag.  This causes SDL to scan the system
  *  for joysticks, and load appropriate drivers.
  *
  *  If you would like to receive joystick updates while the application
@@ -77,11 +77,13 @@ typedef struct _SDL_Joystick SDL_Joystick;
 typedef SDL_GUID SDL_JoystickGUID;
 
 /**
- * This is a unique ID for a joystick for the time it is connected to the system,
- * and is never reused for the lifetime of the application. If the joystick is
- * disconnected and reconnected, it will get a new ID.
+ * This is a unique ID for a joystick for the time it is connected to the
+ * system, and is never reused for the lifetime of the application.
  *
- * The ID value starts at 0 and increments from there. The value -1 is an invalid ID.
+ * If the joystick is disconnected and reconnected, it will get a new ID.
+ *
+ * The ID value starts at 0 and increments from there. The value -1 is an
+ * invalid ID.
  */
 typedef Sint32 SDL_JoystickID;
 
@@ -358,8 +360,10 @@ extern DECLSPEC int SDLCALL SDL_JoystickAttachVirtual(SDL_JoystickType type,
 /**
  * The structure that defines an extended virtual joystick description
  *
- * The caller must zero the structure and then initialize the version with `SDL_VIRTUAL_JOYSTICK_DESC_VERSION` before passing it to SDL_JoystickAttachVirtualEx()
- *  All other elements of this structure are optional and can be left 0.
+ * The caller must zero the structure and then initialize the version with
+ * `SDL_VIRTUAL_JOYSTICK_DESC_VERSION` before passing it to
+ * SDL_JoystickAttachVirtualEx() All other elements of this structure are
+ * optional and can be left 0.
  *
  * \sa SDL_JoystickAttachVirtualEx
  */
@@ -390,7 +394,7 @@ typedef struct SDL_VirtualJoystickDesc
 } SDL_VirtualJoystickDesc;
 
 /**
- * \brief The current version of the SDL_VirtualJoystickDesc structure
+ * The current version of the SDL_VirtualJoystickDesc structure
  */
 #define SDL_VIRTUAL_JOYSTICK_DESC_VERSION   1
 

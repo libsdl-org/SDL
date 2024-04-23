@@ -47,19 +47,18 @@ extern "C" {
 
 
 /**
- *  \brief The maximum size of a log message prior to SDL 2.0.24
+ * The maximum size of a log message prior to SDL 2.0.24
  *
- *  As of 2.0.24 there is no limit to the length of SDL log messages.
+ * As of 2.0.24 there is no limit to the length of SDL log messages.
  */
 #define SDL_MAX_LOG_MESSAGE 4096
 
 /**
- *  \brief The predefined log categories
+ * The predefined log categories
  *
- *  By default the application category is enabled at the INFO level,
- *  the assert category is enabled at the WARN level, test is enabled
- *  at the VERBOSE level and all other categories are enabled at the
- *  ERROR level.
+ * By default the application category is enabled at the INFO level, the
+ * assert category is enabled at the WARN level, test is enabled at the
+ * VERBOSE level and all other categories are enabled at the ERROR level.
  */
 typedef enum SDL_LogCategory
 {
@@ -97,7 +96,7 @@ typedef enum SDL_LogCategory
 } SDL_LogCategory;
 
 /**
- *  \brief The predefined log priorities
+ * The predefined log priorities
  */
 typedef enum SDL_LogPriority
 {

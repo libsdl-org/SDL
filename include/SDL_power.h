@@ -37,7 +37,7 @@ extern "C" {
 #endif
 
 /**
- *  The basic state for the system's power supply.
+ * The basic state for the system's power supply.
  */
 typedef enum SDL_PowerState
 {

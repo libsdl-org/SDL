@@ -89,8 +89,8 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetTicks64(void);
  * days, but should _not_ be used with SDL_GetTicks64(), which does not have
  * that problem.
  *
- * For example, with SDL_GetTicks(), if you want to wait 100 ms, you could
- * do this:
+ * For example, with SDL_GetTicks(), if you want to wait 100 ms, you could do
+ * this:
  *
  * ```c
  * const Uint32 timeout = SDL_GetTicks() + 100;
@@ -99,9 +99,9 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetTicks64(void);
  * }
  * ```
  *
- * Note that this does not handle tick differences greater
- * than 2^31 so take care when using the above kind of code
- * with large timeout delays (tens of days).
+ * Note that this does not handle tick differences greater than 2^31 so take
+ * care when using the above kind of code with large timeout delays (tens of
+ * days).
  */
 #define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
 
@@ -149,10 +149,10 @@ extern DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
 /**
  * Function prototype for the timer callback function.
  *
- * The callback function is passed the current timer interval and returns
- * the next timer interval. If the returned value is the same as the one
- * passed in, the periodic alarm continues, otherwise a new alarm is
- * scheduled. If the callback returns 0, the periodic alarm is cancelled.
+ * The callback function is passed the current timer interval and returns the
+ * next timer interval. If the returned value is the same as the one passed
+ * in, the periodic alarm continues, otherwise a new alarm is scheduled. If
+ * the callback returns 0, the periodic alarm is cancelled.
  */
 typedef Uint32 (SDLCALL * SDL_TimerCallback) (Uint32 interval, void *param);
 

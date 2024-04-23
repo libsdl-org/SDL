@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
+/*
  *  \file SDL_test_md5.h
  *
  *  Include file for SDL test framework.
@@ -77,7 +77,7 @@ extern "C" {
 
 /* ---------- Function Prototypes ------------- */
 
-/**
+/*
  * \brief initialize the context
  *
  * \param  mdContext        pointer to context variable
@@ -89,7 +89,7 @@ extern "C" {
  void SDLTest_Md5Init(SDLTest_Md5Context * mdContext);
 
 
-/**
+/*
  * \brief update digest from variable length data
  *
  * \param  mdContext       pointer to context variable
@@ -105,7 +105,7 @@ extern "C" {
                  unsigned int inLen);
 
 
-/**
+/*
  * \brief complete digest computation
  *
  * \param mdContext     pointer to context variable

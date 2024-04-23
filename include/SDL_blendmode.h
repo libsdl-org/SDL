@@ -35,7 +35,7 @@ extern "C" {
 #endif
 
 /**
- *  \brief The blend mode used in SDL_RenderCopy() and drawing operations.
+ * The blend mode used in SDL_RenderCopy() and drawing operations.
  */
 typedef enum SDL_BlendMode
 {
@@ -60,7 +60,8 @@ typedef enum SDL_BlendMode
 } SDL_BlendMode;
 
 /**
- *  \brief The blend operation used when combining source and destination pixel components
+ * The blend operation used when combining source and destination pixel
+ * components
  */
 typedef enum SDL_BlendOperation
 {
@@ -72,7 +73,7 @@ typedef enum SDL_BlendOperation
 } SDL_BlendOperation;
 
 /**
- *  \brief The normalized factor used to multiply pixel components
+ * The normalized factor used to multiply pixel components
  */
 typedef enum SDL_BlendFactor
 {
