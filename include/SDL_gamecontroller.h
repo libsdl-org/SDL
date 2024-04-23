@@ -527,8 +527,8 @@ extern DECLSPEC const char * SDLCALL SDL_GameControllerGetSerial(SDL_GameControl
 /**
  * Get the Steam Input handle of an opened controller, if available.
  *
- * Returns an InputHandle_t for the controller that can be used with Steam Input API:
- * https://partner.steamgames.com/doc/api/ISteamInput
+ * Returns an InputHandle_t for the controller that can be used with Steam
+ * Input API: https://partner.steamgames.com/doc/api/ISteamInput
  *
  * \param gamecontroller the game controller object to query.
  * \returns the gamepad handle, or 0 if unavailable.
@@ -704,13 +704,12 @@ SDL_GameControllerHasAxis(SDL_GameController *gamecontroller, SDL_GameController
  *
  * The axis indices start at index 0.
  *
- * For thumbsticks, the state is a value ranging from -32768 (up/left)
- * to 32767 (down/right).
+ * For thumbsticks, the state is a value ranging from -32768 (up/left) to
+ * 32767 (down/right).
  *
- * Triggers range from 0 when released to 32767 when fully pressed, and
- * never return a negative value. Note that this differs from the value
- * reported by the lower-level SDL_GetJoystickAxis(), which normally uses
- * the full range.
+ * Triggers range from 0 when released to 32767 when fully pressed, and never
+ * return a negative value. Note that this differs from the value reported by
+ * the lower-level SDL_GetJoystickAxis(), which normally uses the full range.
  *
  * \param gamecontroller a game controller
  * \param axis an axis index (one of the SDL_GameControllerAxis values)

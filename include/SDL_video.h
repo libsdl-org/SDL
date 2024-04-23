@@ -1347,8 +1347,8 @@ extern DECLSPEC int SDLCALL SDL_UpdateWindowSurface(SDL_Window * window);
  *
  * Note that this function will update _at least_ the rectangles specified,
  * but this is only intended as an optimization; in practice, this might
- * update more of the screen (or all of the screen!), depending on what
- * method SDL uses to send pixels to the system.
+ * update more of the screen (or all of the screen!), depending on what method
+ * SDL uses to send pixels to the system.
  *
  * \param window the window to update
  * \param rects an array of SDL_Rect structures representing areas of the
