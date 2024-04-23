@@ -44,24 +44,24 @@ extern "C" {
 #endif
 
 /**
- *  \brief Audio format flags.
+ * Audio format flags.
  *
- *  These are what the 16 bits in SDL_AudioFormat currently mean...
- *  (Unspecified bits are always zero).
+ * These are what the 16 bits in SDL_AudioFormat currently mean...
+ * (Unspecified bits are always zero).
  *
- *  \verbatim
-    ++-----------------------sample is signed if set
-    ||
-    ||       ++-----------sample is bigendian if set
-    ||       ||
-    ||       ||          ++---sample is float if set
-    ||       ||          ||
-    ||       ||          || +---sample bit size---+
-    ||       ||          || |                     |
-    15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
-    \endverbatim
+ * ```
+ * ++-----------------------sample is signed if set
+ * ||
+ * ||       ++-----------sample is bigendian if set
+ * ||       ||
+ * ||       ||          ++---sample is float if set
+ * ||       ||          ||
+ * ||       ||          || +---sample bit size---+
+ * ||       ||          || |                     |
+ * 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
+ * ```
  *
- *  There are macros in SDL 2.0 and later to query these bits.
+ * There are macros in SDL 2.0 and later to query these bits.
  */
 typedef Uint16 SDL_AudioFormat;
 
