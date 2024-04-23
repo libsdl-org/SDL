@@ -391,13 +391,19 @@ static int X11_CaptureMouse(SDL_Window *window)
 
     if (window) {
         SDL_WindowData *data = window->driverdata;
-        const unsigned int mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask;
-        Window confined = (data->mouse_grabbed ? data->xwindow : None);
-        const int rc = X11_XGrabPointer(display, data->xwindow, False,
-                                        mask, GrabModeAsync, GrabModeAsync,
-                                        confined, None, CurrentTime);
-        if (rc != GrabSuccess) {
-            return SDL_SetError("X server refused mouse capture");
+
+        /* If XInput2 is handling the pointer input, non-confinement grabs will always fail with 'AlreadyGrabbed',
+         * since the pointer is being grabbed by XInput2.
+         */
+        if (!data->xinput2_mouse_enabled || data->mouse_grabbed) {
+            const unsigned int mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask;
+            Window confined = (data->mouse_grabbed ? data->xwindow : None);
+            const int rc = X11_XGrabPointer(display, data->xwindow, False,
+                                            mask, GrabModeAsync, GrabModeAsync,
+                                            confined, None, CurrentTime);
+            if (rc != GrabSuccess) {
+                return SDL_SetError("X server refused mouse capture");
+            }
         }
     } else if (mouse_focus) {
         SDL_UpdateWindowGrab(mouse_focus);
