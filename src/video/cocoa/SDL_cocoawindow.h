@@ -132,7 +132,6 @@ typedef enum
 @property(nonatomic) NSWindow *nswindow;
 @property(nonatomic) NSView *sdlContentView;
 @property(nonatomic) NSMutableArray *nscontexts;
-@property(nonatomic) SDL_bool created;
 @property(nonatomic) BOOL in_blocking_transition;
 @property(nonatomic) BOOL was_zoomed;
 @property(nonatomic) NSInteger window_number;

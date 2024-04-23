@@ -2830,7 +2830,8 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             }
             [data.listener close];
             data.listener = nil;
-            if (data.created) {
+
+            if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
                 /* Release the content view to avoid further updateLayer callbacks */
                 [data.nswindow setContentView:nil];
                 [data.nswindow close];
