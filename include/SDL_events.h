@@ -84,6 +84,14 @@ typedef enum SDL_EventType
                                      Called on iOS in applicationDidBecomeActive()
                                      Called on Android in onResume()
                                 */
+    SDL_APP_CONSTRAINED, /**< The application is now interactive
+                                     Called on iOS in applicationDidBecomeActive()
+                                     Called on Android in onResume()
+                                */
+    SDL_APP_UNCONSTRAINED, /**< The application is now interactive
+                                     Called on iOS in applicationDidBecomeActive()
+                                     Called on Android in onResume()
+                                */
 
     SDL_LOCALECHANGED,  /**< The user's locale preferences have changed. */
 

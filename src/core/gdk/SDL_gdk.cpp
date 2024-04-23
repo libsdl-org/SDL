@@ -36,6 +36,7 @@ extern "C" {
 static XTaskQueueHandle GDK_GlobalTaskQueue;
 
 PAPPSTATE_REGISTRATION hPLM = {};
+PAPPCONSTRAIN_REGISTRATION hCPLM = {};
 HANDLE plmSuspendComplete = nullptr;
 
 extern "C" DECLSPEC int
@@ -177,12 +178,29 @@ SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
             return -1;
         }
 
+        /* Register constrain/unconstrain handling */
+        auto raccn = [](BOOLEAN constrained, PVOID context) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppConstrainedChangeNotification handler");
+            if (constrained) {
+                SDL_SendAppEvent(SDL_APP_CONSTRAINED);
+            } else {
+                SDL_SendAppEvent(SDL_APP_UNCONSTRAINED);
+            }
+        };
+        if (RegisterAppConstrainedChangeNotification(raccn, NULL, &hCPLM)) {
+            SDL_SetError("[GDK] Unable to call RegisterAppConstrainedChangeNotification");
+            return -1;
+        }
+
         /* Run the application main() code */
         result = mainFunction(argc, argv);
 
         /* Unregister suspend/resume handling */
         UnregisterAppStateChangeNotification(hPLM);
         CloseHandle(plmSuspendComplete);
+
+        /* Unregister constrain/unconstrain handling */
+        UnregisterAppConstrainedChangeNotification(hCPLM);
 
         /* !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit? */
         /* Terminate the task queue and dispatch any pending tasks */

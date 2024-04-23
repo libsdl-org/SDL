@@ -225,6 +225,10 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
         SDL_EVENT_CASE(SDL_APP_DIDENTERFOREGROUND)
         break;
+        SDL_EVENT_CASE(SDL_APP_CONSTRAINED)
+        break;
+        SDL_EVENT_CASE(SDL_APP_UNCONSTRAINED)
+        break;
         SDL_EVENT_CASE(SDL_LOCALECHANGED)
         break;
         SDL_EVENT_CASE(SDL_KEYMAPCHANGED)
