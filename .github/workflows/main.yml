@@ -64,6 +64,7 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install \
+          autoconf \
           ninja \
           pkg-config
 
