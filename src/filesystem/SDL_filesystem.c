@@ -154,7 +154,7 @@ static char *CaseFoldUtf8String(const char *fname)
         SDL_assert(num_folded <= SDL_arraysize(folded));
         for (int i = 0; i < num_folded; i++) {
             SDL_assert(written < allocation);
-            retval[written++] = folded[i];
+            retval[written++] = (char)folded[i];
         }
     }
 
