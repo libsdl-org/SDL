@@ -79,7 +79,8 @@ typedef Uint32 SDL_SensorID;
  *
  * Additional sensors may be available, using platform dependent semantics.
  *
- * Hare are the additional Android sensors:
+ * Here are the additional Android sensors:
+ *
  * https://developer.android.com/reference/android/hardware/SensorEvent.html#values
  *
  * Accelerometer sensor notes:

@@ -140,14 +140,15 @@
  *
  *  The application's main() function must be called with C linkage,
  *  and should be declared like this:
- *  \code
+ *
+ *  ```c
  *  #ifdef __cplusplus
  *  extern "C"
  *  #endif
  *  int main(int argc, char *argv[])
  *  {
  *  }
- *  \endcode
+ *  ```
  */
 
 #if defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE) || defined(SDL_MAIN_USE_CALLBACKS)

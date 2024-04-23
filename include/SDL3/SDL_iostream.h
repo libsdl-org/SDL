@@ -73,7 +73,7 @@ typedef struct SDL_IOStreamInterface
     Sint64 (SDLCALL *size)(void *userdata);
 
     /**
-     *  Seek to \c offset relative to \c whence, one of stdio's whence values:
+     *  Seek to `offset` relative to `whence`, one of stdio's whence values:
      *  SDL_IO_SEEK_SET, SDL_IO_SEEK_CUR, SDL_IO_SEEK_END
      *
      *  \return the final offset in the data stream, or -1 on error.
@@ -81,8 +81,8 @@ typedef struct SDL_IOStreamInterface
     Sint64 (SDLCALL *seek)(void *userdata, Sint64 offset, int whence);
 
     /**
-     *  Read up to \c size bytes from the data stream to the area pointed
-     *  at by \c ptr.
+     *  Read up to `size` bytes from the data stream to the area pointed
+     *  at by `ptr`.
      *
      *  On an incomplete read, you should set `*status` to a value from the
      *  SDL_IOStatus enum. You do not have to explicitly set this on
@@ -93,7 +93,7 @@ typedef struct SDL_IOStreamInterface
     size_t (SDLCALL *read)(void *userdata, void *ptr, size_t size, SDL_IOStatus *status);
 
     /**
-     *  Write exactly \c size bytes from the area pointed at by \c ptr
+     *  Write exactly `size` bytes from the area pointed at by `ptr`
      *  to data stream.
      *
      *  On an incomplete write, you should set `*status` to a value from the
