@@ -1492,6 +1492,7 @@ static BOOL GetClientScreenRect(HWND hwnd, RECT *rect)
 
 void WIN_UpdateClipCursor(SDL_Window *window)
 {
+    SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
     SDL_WindowData *data = window->driverdata;
     SDL_Mouse *mouse = SDL_GetMouse();
     RECT rect, clipped_rect;
@@ -1568,7 +1569,9 @@ void WIN_UpdateClipCursor(SDL_Window *window)
         SDL_bool unclip_cursor = SDL_FALSE;
 
         /* If the cursor is clipped to the screen, clear the clip state */
-        if (clipped_rect.left == 0 && clipped_rect.top == 0) {
+        if (!videodevice ||
+            (clipped_rect.left == videodevice->desktop_bounds.x &&
+             clipped_rect.top == videodevice->desktop_bounds.y)) {
             unclip_cursor = SDL_TRUE;
         } else {
             POINT first, second;

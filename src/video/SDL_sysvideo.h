@@ -352,6 +352,7 @@ struct SDL_VideoDevice
     SDL_Mutex *wakeup_lock; /* Initialized only if WaitEventTimeout/SendWakeupEvent are supported */
     int num_displays;
     SDL_VideoDisplay **displays;
+    SDL_Rect desktop_bounds;
     SDL_Window *windows;
     SDL_Window *grabbed_window;
     Uint8 window_magic;
@@ -515,6 +516,7 @@ extern void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel
 extern void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int *rel_x, int *rel_y);
 
 extern void SDL_OnDisplayAdded(SDL_VideoDisplay *display);
+extern void SDL_OnDisplayMoved(SDL_VideoDisplay *display);
 extern void SDL_OnWindowShown(SDL_Window *window);
 extern void SDL_OnWindowHidden(SDL_Window *window);
 extern void SDL_OnWindowMoved(SDL_Window *window);
