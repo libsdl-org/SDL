@@ -26,15 +26,8 @@
  *
  * IMPORTANT:
  * If you are not an expert in concurrent lockless programming, you should
- * only be using the atomic lock and reference counting functions in this
- * file.  In all other cases you should be protecting your data structures
- * with full mutexes.
- *
- * The list of "safe" functions to use are:
- *  SDL_LockSpinlock()
- *  SDL_UnlockSpinlock()
- *  SDL_AtomicIncRef()
- *  SDL_AtomicDecRef()
+ * not be using any functions in this file. You should be protecting your
+ * data structures with full mutexes instead.
  *
  * Seriously, here be dragons!
  * ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -70,7 +63,7 @@ extern "C" {
 #endif
 
 /**
- * \name SDL AtomicLock
+ * An atomic spinlock.
  *
  * The atomic locks are efficient spinlocks using CPU instructions,
  * but are vulnerable to starvation and can spin forever if a thread
@@ -89,8 +82,6 @@ extern "C" {
  * The spin lock functions and type are required and can not be
  * emulated because they are used in the atomic emulation code.
  */
-/* @{ */
-
 typedef int SDL_SpinLock;
 
 /**
@@ -141,8 +132,6 @@ extern DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
  * \sa SDL_TryLockSpinlock
  */
 extern DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
-
-/* @} *//* SDL AtomicLock */
 
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
@@ -274,8 +263,25 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 #endif
 
 /* "REP NOP" is PAUSE, coded for tools that don't know it by that name. */
-/* !!! FIXME: this should have documentation! */
-#if (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+/**
+ * A macro to insert a CPU-specific "pause" instruction into the program.
+ *
+ * This can be useful in busy-wait loops, as it serves as a hint to the CPU
+ * as to the program's intent; some CPUs can use this to do more efficient
+ * processing. On some platforms, this doesn't do anything, so using this
+ * macro might just be a harmless no-op.
+ *
+ * Note that if you are busy-waiting, there are often more-efficient
+ * approaches with other synchronization primitives: mutexes, semaphores,
+ * condition variables, etc.
+ *
+ * \threadsafety This macro is safe to use from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_CPUPauseInstruction() DoACPUPauseInACompilerAndArchitectureSpecificWay
+#elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("pause\n")  /* Some assemblers can't do REP NOP, so go with PAUSE. */
 #elif (defined(__arm__) && defined(__ARM_ARCH) && __ARM_ARCH >= 7) || defined(__aarch64__)
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("yield" ::: "memory")
@@ -298,9 +304,28 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 /**
  * A type representing an atomic integer value.
  *
- * It is a struct so people don't accidentally use numeric operations on it.
+ * This can be used to manage a value that is synchronized across multiple
+ * CPUs without a race condition; when an app sets a value with SDL_AtomicSet
+ * all other threads, regardless of the CPU it is running on, will see that
+ * value when retrieved with SDL_AtomicGet, regardless of CPU caches, etc.
+ *
+ * This is also useful for atomic compare-and-swap operations: a thread
+ * can change the value as long as its current value matches expectations.
+ * When done in a loop, one can guarantee data consistency across threads
+ * without a lock (but the usual warnings apply: if you don't know what
+ * you're doing, or you don't do it carefully, you can confidently cause
+ * any number of disasters with this, so in most cases, you _should_
+ * use a mutex instead of this!).
+ *
+ * This is a struct so people don't accidentally use numeric operations on
+ * it directly. You have to use SDL_Atomic* functions.
  *
  * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_AtomicCompareAndSwap
+ * \sa SDL_AtomicGet
+ * \sa SDL_AtomicSet
+ * \sa SDL_AtomicAdd
  */
 typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
 
