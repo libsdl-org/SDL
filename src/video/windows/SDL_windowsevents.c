@@ -318,7 +318,10 @@ static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
      * value set, however we cannot simply map these in VKeytoScancode() or we will be
      * incorrectly handling the arrow keys on the number pad when NumLock is disabled
      * (which also generate VK_LEFT, VK_RIGHT, etc in that scenario). Instead, we'll only
-     * map them if none of the above special number pad mappings applied. */
+     * map them if none of the above special number pad mappings applied.
+     *
+     * WIN+V (clipboard history feature) can also send Ctrl-V without a scancode value set.
+     */
     if (code == SDL_SCANCODE_UNKNOWN) {
         code = VKeytoScancodeFallback(wParam);
     }
