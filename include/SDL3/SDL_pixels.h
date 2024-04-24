@@ -672,7 +672,7 @@ typedef enum SDL_Colorspace
     SDL_COLORSPACE_RGB_DEFAULT = SDL_COLORSPACE_SRGB,
 
     /* The default colorspace for YUV surfaces if no colorspace is specified */
-    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_JPEG,
+    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_JPEG
 
 } SDL_Colorspace;
 
