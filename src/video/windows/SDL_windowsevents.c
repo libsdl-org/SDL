@@ -128,6 +128,10 @@ static SDL_Scancode VKeytoScancodeFallback(WPARAM vkey)
         return SDL_SCANCODE_RIGHT;
     case VK_DOWN:
         return SDL_SCANCODE_DOWN;
+    case VK_CONTROL:
+        return SDL_SCANCODE_LCTRL;
+    case VK_V:
+        return SDL_SCANCODE_V;
 
     default:
         return SDL_SCANCODE_UNKNOWN;
