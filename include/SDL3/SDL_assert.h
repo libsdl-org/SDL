@@ -68,7 +68,7 @@ extern "C" {
  *
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
+#define SDL_TriggerBreakpoint() TriggerABreakpointInAPlatformSpecificManner
 
 #elif defined(_MSC_VER)
     /* Don't include intrin.h here because it contains C++ code */
@@ -166,19 +166,19 @@ typedef enum SDL_AssertState
  */
 typedef struct SDL_AssertData
 {
-    SDL_bool always_ignore;
-    unsigned int trigger_count;
-    const char *condition;
-    const char *filename;
-    int linenum;
-    const char *function;
-    const struct SDL_AssertData *next;
+    SDL_bool always_ignore;  /**< SDL_TRUE if app should always continue when assertion is triggered. */
+    unsigned int trigger_count; /**< Number of times this assertion has been triggered. */
+    const char *condition;  /**< A string of this assert's test code. */
+    const char *filename;  /**< The source file where this assert lives. */
+    int linenum;  /**< The line in `filename` where this assert lives. */
+    const char *function;  /**< The name of the function where this assert lives. */
+    const struct SDL_AssertData *next;  /**< next item in the linked list. */
 } SDL_AssertData;
 
 /**
  * Never call this directly.
  *
- * Use the SDL_assert* macros.
+ * Use the SDL_assert* macros instead.
  *
  * \param data assert data structure
  * \param func function name
