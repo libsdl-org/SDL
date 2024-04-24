@@ -262,17 +262,28 @@ typedef struct SDL_TextEditingExtEvent
     Sint32 length;                              /**< The length of selected editing text */
 } SDL_TextEditingExtEvent;
 
+/**
+ * The maximum bytes of text that can be supplied in an SDL_TextInputEvent.
+ */
 #define SDL_TEXTINPUTEVENT_TEXT_SIZE (32)
 
 /**
  * Keyboard text input event structure (event.text.*)
+ *
+ * `text` is limited to SDL_TEXTINPUTEVENT_TEXT_SIZE bytes. If the incoming
+ * string is larger than this, SDL will split it and send it in pieces,
+ * across multiple events. The string is in UTF-8 format, and if split, SDL
+ * guarantees that it will not split in the middle of a UTF-8 sequence, so
+ * any event will only contain complete codepoints. However, if there are
+ * several codepoints that go together into a single glyph (like an emoji
+ * "thumbs up" followed by a skin color), they may be split between events.
  */
 typedef struct SDL_TextInputEvent
 {
     Uint32 type;                              /**< SDL_TEXTINPUT */
     Uint32 timestamp;                         /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;                          /**< The window with keyboard focus, if any */
-    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];  /**< The input text */
+    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];  /**< The input text; UTF-8 encoded. */
 } SDL_TextInputEvent;
 
 /**
