@@ -152,7 +152,7 @@ static Uint64 WIN_GetEventTimestamp()
     return timestamp;
 }
 
-static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
+static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam, SDL_bool *virtual_key)
 {
     SDL_Scancode code;
     Uint8 index;
@@ -162,6 +162,8 @@ static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
     /* On-Screen Keyboard can send wrong scan codes with high-order bit set (key break code).
      * Strip high-order bit. */
     scanCode &= ~0x80;
+
+    *virtual_key = (scanCode == 0);
 
     if (scanCode != 0) {
         if ((keyFlags & KF_EXTENDED) == KF_EXTENDED) {
@@ -1153,7 +1155,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
     {
-        SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
+        SDL_bool virtual_key = SDL_FALSE;
+        SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam, &virtual_key);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
         /* Detect relevant keyboard shortcuts */
@@ -1164,7 +1167,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
         }
 
-        if (!data->videodata->raw_keyboard_enabled && code != SDL_SCANCODE_UNKNOWN) {
+        if ((virtual_key || !data->videodata->raw_keyboard_enabled) && code != SDL_SCANCODE_UNKNOWN) {
             SDL_SendKeyboardKey(WIN_GetEventTimestamp(), SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, code);
         }
     }
@@ -1175,10 +1178,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_SYSKEYUP:
     case WM_KEYUP:
     {
-        SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
+        SDL_bool virtual_key = SDL_FALSE;
+        SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam, &virtual_key);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
-        if (!data->videodata->raw_keyboard_enabled && code != SDL_SCANCODE_UNKNOWN) {
+        if ((virtual_key || !data->videodata->raw_keyboard_enabled) && code != SDL_SCANCODE_UNKNOWN) {
             if (code == SDL_SCANCODE_PRINTSCREEN &&
                 keyboardState[code] == SDL_RELEASED) {
                 SDL_SendKeyboardKey(WIN_GetEventTimestamp(), SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, code);
