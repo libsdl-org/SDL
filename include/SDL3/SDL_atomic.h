@@ -65,21 +65,20 @@ extern "C" {
 /**
  * An atomic spinlock.
  *
- * The atomic locks are efficient spinlocks using CPU instructions,
- * but are vulnerable to starvation and can spin forever if a thread
- * holding a lock has been terminated.  For this reason you should
- * minimize the code executed inside an atomic lock and never do
- * expensive things like API or system calls while holding them.
+ * The atomic locks are efficient spinlocks using CPU instructions, but are
+ * vulnerable to starvation and can spin forever if a thread holding a lock
+ * has been terminated. For this reason you should minimize the code executed
+ * inside an atomic lock and never do expensive things like API or system
+ * calls while holding them.
  *
- * They are also vulnerable to starvation if the thread holding
- * the lock is lower priority than other threads and doesn't get
- * scheduled. In general you should use mutexes instead, since
- * they have better performance and contention behavior.
+ * They are also vulnerable to starvation if the thread holding the lock is
+ * lower priority than other threads and doesn't get scheduled. In general you
+ * should use mutexes instead, since they have better performance and
+ * contention behavior.
  *
  * The atomic locks are not safe to lock recursively.
  *
- * Porting Note:
- * The spin lock functions and type are required and can not be
+ * Porting Note: The spin lock functions and type are required and can not be
  * emulated because they are used in the atomic emulation code.
  */
 typedef int SDL_SpinLock;
@@ -264,11 +263,12 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 
 /* "REP NOP" is PAUSE, coded for tools that don't know it by that name. */
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A macro to insert a CPU-specific "pause" instruction into the program.
  *
- * This can be useful in busy-wait loops, as it serves as a hint to the CPU
- * as to the program's intent; some CPUs can use this to do more efficient
+ * This can be useful in busy-wait loops, as it serves as a hint to the CPU as
+ * to the program's intent; some CPUs can use this to do more efficient
  * processing. On some platforms, this doesn't do anything, so using this
  * macro might just be a harmless no-op.
  *
@@ -309,16 +309,16 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  * all other threads, regardless of the CPU it is running on, will see that
  * value when retrieved with SDL_AtomicGet, regardless of CPU caches, etc.
  *
- * This is also useful for atomic compare-and-swap operations: a thread
- * can change the value as long as its current value matches expectations.
- * When done in a loop, one can guarantee data consistency across threads
- * without a lock (but the usual warnings apply: if you don't know what
- * you're doing, or you don't do it carefully, you can confidently cause
- * any number of disasters with this, so in most cases, you _should_
- * use a mutex instead of this!).
+ * This is also useful for atomic compare-and-swap operations: a thread can
+ * change the value as long as its current value matches expectations. When
+ * done in a loop, one can guarantee data consistency across threads without a
+ * lock (but the usual warnings apply: if you don't know what you're doing, or
+ * you don't do it carefully, you can confidently cause any number of
+ * disasters with this, so in most cases, you _should_ use a mutex instead of
+ * this!).
  *
- * This is a struct so people don't accidentally use numeric operations on
- * it directly. You have to use SDL_Atomic* functions.
+ * This is a struct so people don't accidentally use numeric operations on it
+ * directly. You have to use SDL_Atomic* functions.
  *
  * \since This struct is available since SDL 3.0.0.
  *
