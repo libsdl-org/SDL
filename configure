@@ -873,7 +873,6 @@ enable_sse2
 enable_sse3
 enable_altivec
 enable_lsx
-enable_lasx
 enable_oss
 enable_alsa
 with_alsa_prefix
@@ -1675,7 +1674,6 @@ Optional Features:
   --enable-sse3           use SSE3 assembly routines [default=maybe]
   --enable-altivec        use Altivec assembly routines [default=yes]
   --enable-lsx            use LSX assembly routines [default=yes]
-  --enable-lasx           use LASX assembly routines [default=yes]
   --enable-oss            support the OSS audio API [default=maybe]
   --enable-alsa           support the ALSA audio API [default=yes]
   --disable-alsatest      Do not try to compile and run a test Alsa program
@@ -21109,80 +21107,6 @@ printf "%s\n" "$have_lsxintrin_h_hdr" >&6; }
     if test x$have_lsxintrin_h_hdr = xyes; then
 
 printf "%s\n" "#define HAVE_LSXINTRIN_H 1" >>confdefs.h
-
-    fi
-
-    # Check whether --enable-lasx was given.
-if test ${enable_lasx+y}
-then :
-  enableval=$enable_lasx;
-else $as_nop
-  enable_LASX=yes
-fi
-
-    if test x$enable_LASX = xyes; then
-        save_CFLAGS="$CFLAGS"
-        have_gcc_lasx=no
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GCC -mlasx option" >&5
-printf %s "checking for GCC -mlasx option... " >&6; }
-        lasx_CFLAGS="-mlasx"
-        CFLAGS="$save_CFLAGS $lasx_CFLAGS"
-
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #ifndef __loongarch_asx
-        #error Assembler CPP flag not enabled
-        #endif
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  have_gcc_lasx=yes
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_gcc_lasx" >&5
-printf "%s\n" "$have_gcc_lasx" >&6; }
-        CFLAGS="$save_CFLAGS"
-
-        if test x$have_gcc_lasx = xyes; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $lasx_CFLAGS"
-            SUMMARY_math="${SUMMARY_math} lasx"
-        fi
-    fi
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for lasxintrin.h" >&5
-printf %s "checking for lasxintrin.h... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <lasxintrin.h>
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  have_lasxintrin_h_hdr=yes
-else $as_nop
-  have_lasxintrin_h_hdr=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_lasxintrin_h_hdr" >&5
-printf "%s\n" "$have_lasxintrin_h_hdr" >&6; }
-    if test x$have_lasxintrin_h_hdr = xyes; then
-
-printf "%s\n" "#define HAVE_LASXINTRIN_H 1" >>confdefs.h
 
     fi
 
