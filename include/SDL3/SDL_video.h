@@ -955,18 +955,17 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  *   window may appear to be larger than the desktop space, and possible loss
  *   of cursor precision can occur. New applications should be designed with
  *   proper DPI awareness and handling instead of enabling this.
- * -  `SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` - true if
+ * - `SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` - true if
  *   the application wants to use the Wayland surface for a custom role and
  *   does not want it attached to an XDG toplevel window. See
- *   [docs/README-wayland.md](https://github.com/libsdl-org/SDL/blob/main/docs/README-wayland.md)
- *   for more information on using custom surfaces.
+ *   [README/wayland](README/wayland) for more information on using custom
+ *   surfaces.
  * - `SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN` - true if the
  *   application wants an associated `wl_egl_window` object to be created,
  *   even if the window does not have the OpenGL property or flag set.
- * -  `SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` - the wl_surface
+ * - `SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` - the wl_surface
  *   associated with the window, if you want to wrap an existing window. See
- *   [docs/README-wayland.md](https://github.com/libsdl-org/SDL/blob/main/docs/README-wayland.md)
- *   for more information.
+ *   [README/wayland](README/wayland) for more information.
  *
  * These are additional supported properties on Windows:
  *
