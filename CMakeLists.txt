@@ -927,22 +927,6 @@ if(SDL_ASSEMBLY)
       endif()
     endif()
 
-    if(SDL_LASX)
-      cmake_push_check_state()
-      set(CMAKE_REQUIRED_FLAGS "-mlasx")
-      check_c_source_compiles("
-          #ifndef __loongarch_asx
-          #error Assembler CPP flag not enabled
-          #endif
-          int main(int argc, char **argv) { return 0; }" CPU_SUPPORTS_LASX)
-      check_include_file("lasxintrin.h" HAVE_LASXINTRIN_H)
-      cmake_pop_check_state()
-      if(CPU_SUPPORTS_LASX AND HAVE_LASXINTRIN_H)
-        list(APPEND EXTRA_CFLAGS "-mlasx")
-        set(HAVE_LASX TRUE)
-      endif()
-    endif()
-
     if(SDL_ARMSIMD)
       set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
       set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -x assembler-with-cpp")
