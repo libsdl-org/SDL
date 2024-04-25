@@ -184,9 +184,9 @@ SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
             SDL_VideoDevice *_this = SDL_GetVideoDevice();
             if (_this) {
                 if (constrained) {
-                    SDL_SendWindowEvent(_this->windows, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
+                    SDL_SetKeyboardFocus(NULL);
                 } else {
-                    SDL_SendWindowEvent(_this->windows, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+                    SDL_SetKeyboardFocus(_this->windows);
                 }
             }
         };
