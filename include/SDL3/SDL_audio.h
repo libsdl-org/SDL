@@ -98,6 +98,16 @@ typedef Uint16 SDL_AudioFormat;
 #define SDL_AUDIO_F32LE     0x8120  /**< 32-bit floating point samples */
 #define SDL_AUDIO_F32BE     0x9120  /**< As above, but big-endian byte order */
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define SDL_AUDIO_S16    SDL_AUDIO_S16LE
+#define SDL_AUDIO_S32    SDL_AUDIO_S32LE
+#define SDL_AUDIO_F32    SDL_AUDIO_F32LE
+#else
+#define SDL_AUDIO_S16    SDL_AUDIO_S16BE
+#define SDL_AUDIO_S32    SDL_AUDIO_S32BE
+#define SDL_AUDIO_F32    SDL_AUDIO_F32BE
+#endif
+
 
 /* masks for different parts of SDL_AudioFormat. */
 #define SDL_AUDIO_MASK_BITSIZE       (0xFF)
@@ -218,15 +228,6 @@ typedef Uint16 SDL_AudioFormat;
  */
 #define SDL_AUDIO_ISUNSIGNED(x)      (!SDL_AUDIO_ISSIGNED(x))
 
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-#define SDL_AUDIO_S16    SDL_AUDIO_S16LE
-#define SDL_AUDIO_S32    SDL_AUDIO_S32LE
-#define SDL_AUDIO_F32    SDL_AUDIO_F32LE
-#else
-#define SDL_AUDIO_S16    SDL_AUDIO_S16BE
-#define SDL_AUDIO_S32    SDL_AUDIO_S32BE
-#define SDL_AUDIO_F32    SDL_AUDIO_F32BE
-#endif
 
 /**
  * SDL Audio Device instance IDs.

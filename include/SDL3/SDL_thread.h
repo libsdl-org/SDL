@@ -83,11 +83,7 @@ typedef enum SDL_ThreadPriority {
  */
 typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
 
-
-#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
-/**
- *  \file SDL_thread.h
- *
+/*
  *  We compile SDL into a DLL. This means, that it's the DLL which
  *  creates a new thread for the calling process with the SDL_CreateThread()
  *  API. There is a problem with this, that only the RTL of the SDL3.DLL will
@@ -105,6 +101,7 @@ typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
  *  Always use the _beginthread() and _endthread() of the calling runtime
  *  library!
  */
+#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
 #define SDL_PASSED_BEGINTHREAD_ENDTHREAD
 
 typedef uintptr_t (__cdecl * pfnSDL_CurrentBeginThread)
