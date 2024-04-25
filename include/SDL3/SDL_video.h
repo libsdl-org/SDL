@@ -959,7 +959,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  *   the application wants to use the Wayland surface for a custom role and
  *   does not want it attached to an XDG toplevel window. See
  *   docs/README-wayland.md for more information on using custom surfaces.
- * - `SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN - true if the
+ * - `SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN` - true if the
  *   application wants an associated `wl_egl_window` object to be created,
  *   even if the window does not have the OpenGL property or flag set.
  * - `SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` - the wl_surface
@@ -981,7 +981,7 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  * The window is implicitly shown if the "hidden" property is not set.
  *
  * Windows with the "tooltip" and "menu" properties are popup windows and have
- * the behaviors and guidelines outlined in `SDL_CreatePopupWindow()`.
+ * the behaviors and guidelines outlined in SDL_CreatePopupWindow().
  *
  * \param props the properties to use
  * \returns the window that was created or NULL on failure; call
