@@ -860,7 +860,7 @@ while (my $d = readdir(DH)) {
             }
 
             # We assume any `#define`s directly after the typedef are related to it: probably bitflags for an integer typedef.
-            # We'll also allow lines that start with `#if` or `#else` or `#elif`
+            # We'll also allow some other basic preprocessor lines.
             # Blank lines are allowed, anything else, even comments, are not.
             my $blank_lines = 0;
             my $lastpos = tell(FH);
@@ -870,7 +870,7 @@ while (my $d = readdir(DH)) {
 
                 if (/\A\s*\Z/) {
                     $blank_lines++;
-                } elsif (/\A\s*\#(define|if|else|elif)(\s+|\Z)/) {
+                } elsif (/\A\s*\#(define|if|else|elif|endif)(\s+|\Z)/) {
                     if ($blank_lines > 0) {
                         while ($blank_lines > 0) {
                             $additional_decl .= "\n";
