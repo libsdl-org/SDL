@@ -912,7 +912,9 @@ static void LINUX_ScanSteamVirtualGamepads(void)
     int num_virtual_gamepads = 0;
     int virtual_gamepad_slot;
     VirtualGamepadEntry *virtual_gamepads = NULL;
+#ifdef SDL_USE_LIBUDEV
     int class;
+#endif
 
     count = scandir("/dev/input", &entries, filter_entries, NULL);
     for (i = 0; i < count; ++i) {
