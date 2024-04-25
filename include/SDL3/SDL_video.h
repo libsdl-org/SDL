@@ -131,7 +131,6 @@ typedef struct SDL_Window SDL_Window;
  * \sa SDL_GetWindowFlags
  */
 typedef Uint32 SDL_WindowFlags;
-
 #define SDL_WINDOW_FULLSCREEN           0x00000001U /**< window is in fullscreen mode */
 #define SDL_WINDOW_OPENGL               0x00000002U /**< window usable with OpenGL context */
 #define SDL_WINDOW_OCCLUDED             0x00000004U /**< window is occluded */
