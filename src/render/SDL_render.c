@@ -849,6 +849,7 @@ int SDL_CreateWindowAndRenderer(int width, int height, SDL_WindowFlags window_fl
     *renderer = SDL_CreateRenderer(*window, NULL, 0);
     if (!*renderer) {
         SDL_DestroyWindow(*window);
+        *window = NULL;
         return -1;
     }
 
