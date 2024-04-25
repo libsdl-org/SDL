@@ -84,12 +84,6 @@ typedef enum SDL_EventType
                                      Called on iOS in applicationDidBecomeActive()
                                      Called on Android in onResume()
                                 */
-    SDL_APP_CONSTRAINED, /**< The application lost focus
-                                     Called in GDK RegisterAppConstrainedChangeNotification()
-                                */
-    SDL_APP_UNCONSTRAINED, /**< The application regained focus
-                                     Called in GDK RegisterAppConstrainedChangeNotification()
-                                */
 
     SDL_LOCALECHANGED,  /**< The user's locale preferences have changed. */
 

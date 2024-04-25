@@ -181,10 +181,13 @@ SDL_GDKRunApp(SDL_main_func mainFunction, void *reserved)
         /* Register constrain/unconstrain handling */
         auto raccn = [](BOOLEAN constrained, PVOID context) {
             SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppConstrainedChangeNotification handler");
-            if (constrained) {
-                SDL_SendAppEvent(SDL_APP_CONSTRAINED);
-            } else {
-                SDL_SendAppEvent(SDL_APP_UNCONSTRAINED);
+            SDL_VideoDevice *_this = SDL_GetVideoDevice();
+            if (_this) {
+                if (constrained) {
+                    SDL_SendWindowEvent(_this->windows, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
+                } else {
+                    SDL_SendWindowEvent(_this->windows, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+                }
             }
         };
         if (RegisterAppConstrainedChangeNotification(raccn, NULL, &hCPLM)) {
