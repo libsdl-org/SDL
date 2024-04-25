@@ -235,9 +235,9 @@ typedef Uint32 SDL_AudioDeviceID;
 /**
  * A value used to request a default output audio device.
  *
- * Several functions that require an SDL_AudioDeviceID will accept this
- * value to signify the app just wants the system to choose a default
- * device instead of the app providing a specific one.
+ * Several functions that require an SDL_AudioDeviceID will accept this value
+ * to signify the app just wants the system to choose a default device instead
+ * of the app providing a specific one.
  *
  * \since This macro is available since SDL 3.0.0.
  */
@@ -246,9 +246,9 @@ typedef Uint32 SDL_AudioDeviceID;
 /**
  * A value used to request a default capture audio device.
  *
- * Several functions that require an SDL_AudioDeviceID will accept this
- * value to signify the app just wants the system to choose a default
- * device instead of the app providing a specific one.
+ * Several functions that require an SDL_AudioDeviceID will accept this value
+ * to signify the app just wants the system to choose a default device instead
+ * of the app providing a specific one.
  *
  * \since This macro is available since SDL 3.0.0.
  */
@@ -271,8 +271,8 @@ typedef struct SDL_AudioSpec
 /**
  * Calculate the size of each audio frame (in bytes) from an SDL_AudioSpec.
  *
- * This reports on the size of an audio sample frame: stereo Sint16 data
- * (2 channels of 2 bytes each) would be 4 bytes per frame, for example.
+ * This reports on the size of an audio sample frame: stereo Sint16 data (2
+ * channels of 2 bytes each) would be 4 bytes per frame, for example.
  *
  * \param x an SDL_AudioSpec to query.
  * \returns the number of bytes used per sample frame.
@@ -731,8 +731,7 @@ extern DECLSPEC int SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_Aud
  *
  * The streams being unbound do not all have to be on the same device. All
  * streams on the same device will be unbound atomically (data will stop
- * flowing through all unbound streams on the same device at the same
- * time).
+ * flowing through all unbound streams on the same device at the same time).
  *
  * Unbinding a stream that isn't bound to a device is a legal no-op.
  *
@@ -842,12 +841,11 @@ extern DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream,
  * will reflect the new format, and future calls to SDL_PutAudioStreamData
  * must provide data in the new input formats.
  *
- * Data that was previously queued in the stream will still be
- * operated on in the format that was current when it was added, which is
- * to say you can put the end of a sound file in one format to a stream,
- * change formats for the next sound file, and start putting that new data
- * while the previous sound file is still queued, and everything will still
- * play back correctly.
+ * Data that was previously queued in the stream will still be operated on in
+ * the format that was current when it was added, which is to say you can put
+ * the end of a sound file in one format to a stream, change formats for the
+ * next sound file, and start putting that new data while the previous sound
+ * file is still queued, and everything will still play back correctly.
  *
  * \param stream The stream the format is being changed
  * \param src_spec The new format of the audio input; if NULL, it is not
@@ -1050,8 +1048,8 @@ extern DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
 /**
  * Clear any pending data in the stream.
  *
- * This drops any queued data, so there will be nothing to read from
- * the stream until more is added.
+ * This drops any queued data, so there will be nothing to read from the
+ * stream until more is added.
  *
  * \param stream The audio stream to clear
  * \returns 0 on success or a negative error code on failure; call
@@ -1258,9 +1256,9 @@ extern DECLSPEC int SDLCALL SDL_SetAudioStreamPutCallback(SDL_AudioStream *strea
  * queued. You do not need to manually clear the stream first.
  *
  * If this stream was bound to an audio device, it is unbound during this
- * call. If this stream was created with SDL_OpenAudioDeviceStream, the
- * audio device that was opened alongside this stream's creation will be
- * closed, too.
+ * call. If this stream was created with SDL_OpenAudioDeviceStream, the audio
+ * device that was opened alongside this stream's creation will be closed,
+ * too.
  *
  * \param stream The audio stream to destroy.
  *
@@ -1287,8 +1285,8 @@ extern DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream);
  * the only object needed to manage audio playback.
  *
  * Also unlike other functions, the audio device begins paused. This is to map
- * more closely to SDL2-style behavior, since there is no extra step here
- * to bind a stream to begin audio flowing. The audio device should be resumed
+ * more closely to SDL2-style behavior, since there is no extra step here to
+ * bind a stream to begin audio flowing. The audio device should be resumed
  * with `SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));`
  *
  * This function works with both playback and capture devices.
