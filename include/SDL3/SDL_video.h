@@ -131,6 +131,7 @@ typedef struct SDL_Window SDL_Window;
  * \sa SDL_GetWindowFlags
  */
 typedef Uint32 SDL_WindowFlags;
+
 #define SDL_WINDOW_FULLSCREEN           0x00000001U /**< window is in fullscreen mode */
 #define SDL_WINDOW_OPENGL               0x00000002U /**< window usable with OpenGL context */
 #define SDL_WINDOW_OCCLUDED             0x00000004U /**< window is occluded */
@@ -154,6 +155,7 @@ typedef Uint32 SDL_WindowFlags;
 #define SDL_WINDOW_METAL                0x20000000U /**< window usable for Metal view */
 #define SDL_WINDOW_TRANSPARENT          0x40000000U /**< window with transparent buffer */
 #define SDL_WINDOW_NOT_FOCUSABLE        0x80000000U /**< window should not be focusable */
+
 
 /**
  * Used to indicate that you don't care what the window position is.

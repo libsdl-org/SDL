@@ -859,20 +859,33 @@ while (my $d = readdir(DH)) {
                 next;
             }
 
-            # We assume any `#define`s directly after the typedef are related to it: probably bitflags for an integer typedef. Even a blank line will signify an end!
+            # We assume any `#define`s directly after the typedef are related to it: probably bitflags for an integer typedef.
+            # Blank lines are allowed, anything else, even comments, are not.
+            my $blank_lines = 0;
             my $lastpos = tell(FH);
             my $additional_decl = '';
             while (<FH>) {
                 chomp;
-                if (not /\A\s*\#define\s+/) {
-                    seek(FH, $lastpos, 0);  # re-read this line again next time.
+
+                if (/\A\s*\Z/) {
+                    $blank_lines++;
+                } elsif (/\A\s*\#define\s+/) {
+                    if ($blank_lines > 0) {
+                        while ($blank_lines > 0) {
+                            $additional_decl .= "\n";
+                            push @decllines, '';
+                            $blank_lines--;
+                        }
+                    }
+                    $additional_decl .= "\n$_";
+                    push @decllines, $_;
+                    $lastpos = tell(FH);
+                } else {
+                    seek(FH, $lastpos, 0);  # re-read eaten lines again next time.
                     last;
                 }
-                $additional_decl .= "$_\n";
-                push @decllines, $_;
-                $lastpos = tell(FH);
             }
-            $decl .= "\n$additional_decl" if ($additional_decl ne '');
+            $decl .= $additional_decl;
         } else {
             die("Unexpected symtype $symtype");
         }
