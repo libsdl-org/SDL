@@ -292,7 +292,6 @@ dep_option(SDL_ARMSIMD             "Use SIMD assembly blitters on ARM" OFF "SDL_
 dep_option(SDL_ARMNEON             "Use NEON assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
 dep_option(SDL_ARMNEON_BLITTERS    "Use NEON assembly blitters on ARM32" OFF "SDL_VIDEO;SDL_ASSEMBLY;SDL_ARMNEON;SDL_CPU_ARM32" OFF)
 dep_option(SDL_LSX                 "Use LSX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
-dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 
 set_option(SDL_LIBC                "Use the system C library" ${SDL_LIBC_DEFAULT})
 set_option(SDL_SYSTEM_ICONV        "Use iconv() from system-installed libraries" ${SDL_SYSTEM_ICONV_DEFAULT})
@@ -869,21 +868,6 @@ if(SDL_ASSEMBLY)
       endif()
     endif()
 
-    if(SDL_LASX)
-      cmake_push_check_state()
-      string(APPEND CMAKE_REQUIRED_FLAGS " -mlasx")
-      check_c_source_compiles("
-          #ifndef __loongarch_asx
-          #error Assembler CPP flag not enabled
-          #endif
-          int main(int argc, char **argv) { return 0; }" COMPILER_SUPPORTS_LASX)
-      check_include_file("lasxintrin.h" HAVE_LASXINTRIN_H)
-      cmake_pop_check_state()
-      if(COMPILER_SUPPORTS_LASX AND HAVE_LASXINTRIN_H)
-        set(HAVE_LASX TRUE)
-      endif()
-    endif()
-
     if(SDL_ARMSIMD)
       cmake_push_check_state()
       string(APPEND CMAKE_REQUIRED_FLAGS " -x assembler-with-cpp")
@@ -1003,10 +987,6 @@ endif()
 
 if(NOT HAVE_LSX)
   set(SDL_DISABLE_LSX 1)
-endif()
-
-if(NOT HAVE_LASX)
-  set(SDL_DISABLE_LASX 1)
 endif()
 
 if(NOT HAVE_ARMNEON)

@@ -104,10 +104,6 @@ _m_prefetch(void *__P)
 #  define SDL_LSX_INTRINSICS 1
 #  include <lsxintrin.h>
 # endif
-# ifndef SDL_DISABLE_LASX
-#  define SDL_LASX_INTRINSICS 1
-#  include <lasxintrin.h>
-# endif
 #endif
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
