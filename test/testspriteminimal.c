@@ -122,13 +122,9 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    if (SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer) < 0) {
+    if (SDL_CreateWindowAndRenderer("testspriteminimal", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer) < 0) {
         return_code = 2;
         goto quit;
-    }
-
-    if (SDL_SetWindowTitle(window, argv[0]) < 0) {
-        SDL_Log("SDL_SetWindowTitle: %s", SDL_GetError());
     }
 
     sprite = CreateTexture(renderer, icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);

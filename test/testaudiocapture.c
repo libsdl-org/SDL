@@ -69,7 +69,7 @@ int SDL_AppInit(void **appstate, int argc, char **argv)
         return 1;
     }
 
-    if (SDL_CreateWindowAndRenderer(320, 240, 0, &window, &renderer) < 0) {
+    if (SDL_CreateWindowAndRenderer("testaudiocapture", 320, 240, 0, &window, &renderer) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window and renderer: %s\n", SDL_GetError());
         return 1;
     }

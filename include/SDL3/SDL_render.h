@@ -196,6 +196,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetRenderDriver(int index);
 /**
  * Create a window and default renderer.
  *
+ * \param title the title of the window, in UTF-8 encoding
  * \param width the width of the window
  * \param height the height of the window
  * \param window_flags the flags used to create the window (see
@@ -210,7 +211,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetRenderDriver(int index);
  * \sa SDL_CreateRenderer
  * \sa SDL_CreateWindow
  */
-extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer);
+extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(const char *title, int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer);
 
 /**
  * Create a 2D rendering context for a window.

@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
         SDL_Log("SDL_Init failed (%s)", SDL_GetError());
         return 1;
     }
-    if (SDL_CreateWindowAndRenderer(640, 480, 0, &w, &r) < 0) {
+    if (SDL_CreateWindowAndRenderer("testdialog", 640, 480, 0, &w, &r) < 0) {
         SDL_Log("Failed to create window and/or renderer: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
