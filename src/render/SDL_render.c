@@ -826,7 +826,7 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
     return 0;
 }
 
-int SDL_CreateWindowAndRenderer(int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer)
+int SDL_CreateWindowAndRenderer(const char *title, int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer)
 {
     SDL_bool hidden = (window_flags & SDL_WINDOW_HIDDEN) != 0;
 
@@ -840,7 +840,7 @@ int SDL_CreateWindowAndRenderer(int width, int height, SDL_WindowFlags window_fl
 
     // Hide the window so if the renderer recreates it, we don't get a visual flash on screen
     window_flags |= SDL_WINDOW_HIDDEN;
-    *window = SDL_CreateWindow(NULL, width, height, window_flags);
+    *window = SDL_CreateWindow(title, width, height, window_flags);
     if (!*window) {
         *renderer = NULL;
         return -1;
