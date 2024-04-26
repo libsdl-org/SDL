@@ -353,12 +353,11 @@ int main(int argc, char *argv[]) {
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
 
-    if (SDL_CreateWindowAndRenderer(640, 480, 0, &window, &renderer) < 0) {
+    if (SDL_CreateWindowAndRenderer("SDL issue", 640, 480, 0, &window, &renderer) < 0) {
         SDL_Log("SDL_CreateWindowAndRenderer failed (%s)", SDL_GetError());
         SDL_Quit();
         return 1;
     }
-    SDL_SetWindowTitle(window, "SDL issue");
 
     while (1) {
         int finished = 0;
