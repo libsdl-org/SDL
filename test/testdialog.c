@@ -152,9 +152,9 @@ int main(int argc, char *argv[]) {
         SDL_RenderPresent(r);
     }
 
+    SDLTest_CleanupTextDrawing();
     SDL_DestroyRenderer(r);
     SDL_DestroyWindow(w);
-    SDLTest_CleanupTextDrawing();
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
     return 0;
