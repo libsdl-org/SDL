@@ -900,7 +900,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NUL
 extern DECLSPEC void SDLCALL SDL_PumpEvents(void);
 
 /* @{ */
-typedef enum SDL_eventaction
+typedef enum SDL_EventAction
 {
     SDL_ADDEVENT,
     SDL_PEEKEVENT,
