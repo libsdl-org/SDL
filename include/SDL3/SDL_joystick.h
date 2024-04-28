@@ -88,7 +88,7 @@ typedef SDL_GUID SDL_JoystickGUID;
  */
 typedef Uint32 SDL_JoystickID;
 
-typedef enum
+typedef enum SDL_JoystickType
 {
     SDL_JOYSTICK_TYPE_UNKNOWN,
     SDL_JOYSTICK_TYPE_GAMEPAD,
@@ -102,7 +102,7 @@ typedef enum
     SDL_JOYSTICK_TYPE_THROTTLE
 } SDL_JoystickType;
 
-typedef enum
+typedef enum SDL_JoystickConnectionState
 {
     SDL_JOYSTICK_CONNECTION_INVALID = -1,
     SDL_JOYSTICK_CONNECTION_UNKNOWN,
