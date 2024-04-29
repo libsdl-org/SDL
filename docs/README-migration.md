@@ -1425,6 +1425,9 @@ SDL3 attempts to apply consistency to case-insensitive string functions. In SDL2
 
 Please note that the case-folding technique used by SDL3 will not produce correct results for the "Turkish 'I'"; this one letter is a surprisingly hard problem in the Unicode world, and since these functions do not specify the human language in use, we have chosen to ignore this problem.
 
+The following macros have been removed:
+* SDL_TABLESIZE() - use SDL_arraysize() instead
+
 The following functions have been renamed:
 * SDL_strtokr() => SDL_strtok_r()
 

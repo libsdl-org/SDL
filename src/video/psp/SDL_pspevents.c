@@ -128,7 +128,7 @@ void PSP_InitOSKeymap(SDL_VideoDevice *_this)
 {
 #ifdef PSPIRKEYB
     int i;
-    for (i = 0; i < SDL_TABLESIZE(keymap); ++i) {
+    for (i = 0; i < SDL_arraysize(keymap); ++i) {
         keymap[i] = SDLK_UNKNOWN;
     }
 
