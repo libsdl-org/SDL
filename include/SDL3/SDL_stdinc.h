@@ -91,10 +91,11 @@ void *alloca(size_t);
 /**
  * The number of elements in an array.
  *
+ * NOTE: This macro double-evaluates the argument, so you should never have side effects in the parameter.
+ * 
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_arraysize(array)    (sizeof(array)/sizeof(array[0]))
-#define SDL_TABLESIZE(table)    SDL_arraysize(table)
+#define SDL_arraysize(array) (sizeof(array)/sizeof(array[0]))
 
 /**
  * Macro useful for building other macros with strings in them.

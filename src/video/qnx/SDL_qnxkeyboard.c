@@ -106,7 +106,7 @@ void handleKeyboardEvent(screen_event_t event)
     }
 
     // Skip unrecognized keys.
-    if ((val < 0) || (val >= SDL_TABLESIZE(key_to_sdl))) {
+    if ((val < 0) || (val >= SDL_arraysize(key_to_sdl))) {
         return;
     }
 

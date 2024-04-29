@@ -3142,6 +3142,10 @@ typedef SDL_Colour, SDL_Color;
   (...)
 @@
 @@
+- SDL_TABLESIZE
++ SDL_arraysize
+@@
+@@
 - SDL_iPhoneSetEventPump
 + SDL_iOSSetEventPump
   (...)
