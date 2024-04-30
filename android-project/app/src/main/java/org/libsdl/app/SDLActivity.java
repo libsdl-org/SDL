@@ -625,9 +625,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     @Override
-    public void onLowMemory() {
-        Log.v(TAG, "onLowMemory()");
-        super.onLowMemory();
+    public void onTrimMemory(int level) {
+        Log.v(TAG, "onTrimMemory()");
+        super.onTrimMemory(level);
 
         if (SDLActivity.mBrokenLibraries) {
            return;
