@@ -20,7 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef SDL_FILESYSTEM_XBOX
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
@@ -135,6 +134,5 @@ SDL_GetPrefPath(const char *org, const char *app)
     return folderPath;
 }
 
-#endif /* SDL_FILESYSTEM_XBOX */
 
 /* vi: set ts=4 sw=4 expandtab: */
