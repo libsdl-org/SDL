@@ -12,11 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "SDL.h"
 
-int
-main(int argc, char **argv)
-{
-    SDL_Log("entry..");    
-    return 0;
-}
+#ifndef GLOBLE_H
+#define SDL_OHOS_TSTYPE_H
+
+#include "napi/native_api.h"
+
+extern napi_ref g_gloabelView;
+
+#endif // GLOBLE_H

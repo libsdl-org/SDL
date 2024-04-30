@@ -17,35 +17,11 @@
 #define SDL_OHOSTHREADSAFE_H
 
 #include <memory>
-#include "napi/native_api.h"
 #include "SDL_stdinc.h"
 #include "SDL_atomic.h"
 #include "SDL_surface.h"
-
-#define OHOS_TS_CALLBACK_TYPE "ohoscalltype"
-
-enum NapiCallBackType {
-    NAPI_CALLBACK_CREATE_CUSTOMCURSOR,
-    NAPI_CALLBACK_SET_CUSTOMCURSOR,
-    NAPI_CALLBACK_SET_SYSTEMCURSOR,
-    NAPI_CALLBACK_SET_RELATIVEMOUSEENABLED,
-    NAPI_CALLBACK_SET_DISPLAYORIENTATION,
-    NAPI_CALLBACK_SHOW_TEXTINPUT,
-    NAPI_CALLBACK_REQUEST_PERMISSION,
-    NAPI_CALLBACK_HIDE_TEXTINPUT,
-    NAPI_CALLBACK_SHOULD_MINIMIZEON_FOCUSLOSS,
-    NAPI_CALLBACK_SET_TITLE,
-    NAPI_CALLBACK_SET_WINDOWSTYLE,
-    NAPI_CALLBACK_SET_ORIENTATION,
-    NAPI_CALLBACK_SHOW_TEXTINPUTKEYBOARD,
-    NAPI_CALLBACK_SET_WINDOWRESIZE
-};
-
-typedef struct {
-    napi_env env;
-    napi_ref callbackRef;
-    napi_threadsafe_function tsfn;
-} NapiCallbackContext;
+#include "cJSON.h"
+#include "SDL_ohos_tstype.h"
 
 typedef int (*SdlMainFunc)(int argc, char *argv[]);
 typedef struct {
@@ -54,8 +30,6 @@ typedef struct {
     char *functionName;
     char *libraryFile;
 } OhosSDLEntryInfo;
-
-extern std::unique_ptr<NapiCallbackContext> g_napiCallback;
 
 #ifdef __cplusplus
 /* *INDENT-OFF* */
@@ -69,7 +43,7 @@ SDL_bool OHOS_RunThread(OhosSDLEntryInfo *info);
 
 void OHOS_ThreadExit(void);
 
-SDL_bool OHOS_IsThreadRun(void);
+void OHOS_TS_GetWindowId(const cJSON *root);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

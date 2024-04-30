@@ -61,6 +61,7 @@ static int OHOS_ScreenRate      = 0;
 SDL_sem *OHOS_PauseSem          = NULL;
 SDL_sem *OHOS_ResumeSem         = NULL;
 SDL_mutex *OHOS_PageMutex       = NULL;
+double OHOS_ScreenDensity = 0;
 
 static int OHOS_Available(void)
 {
@@ -99,6 +100,8 @@ static void OHOS_SetDevice(SDL_VideoDevice *device)
     device->MinimizeWindow = OHOS_MinimizeWindow;
     device->DestroyWindow = OHOS_DestroyWindow;
     device->GetWindowWMInfo = OHOS_GetWindowWMInfo;
+    device->SetWindowPosition = OHOS_SetWindowPosition;
+    device->SetWindowSize = OHOS_SetWindowSize;
     device->free = OHOS_DeleteDevice;
 
     /* GL pointers */
@@ -197,10 +200,11 @@ int OHOS_GetDisplayDPI(SDL_VideoDevice *_this, SDL_VideoDisplay *display, float 
     return 0;
 }
 
-void OHOS_SetScreenResolution(int deviceWidth, int deviceHeight, Uint32 format, float rate)
+void OHOS_SetScreenResolution(int deviceWidth, int deviceHeight, Uint32 format, float rate, double screenDensity)
 {
     OHOS_ScreenFormat  = format;
     OHOS_ScreenRate    = (int)rate;
+    OHOS_ScreenDensity = screenDensity;
     g_ohosDeviceWidth   = deviceWidth;
     g_ohosDeviceHeight  = deviceHeight;
 }
@@ -219,7 +223,9 @@ void OHOS_SendResize(SDL_Window *window)
       can be properly resized. The screen resolution change can for
       which can happen after VideoInit().
     */
+    SDL_WindowData *data;
     SDL_VideoDevice *device = SDL_GetVideoDevice();
+    data = (SDL_WindowData*)window->driverdata;
     if (device && device->num_displays > 0) {
         SDL_VideoDisplay *display          = &device->displays[0];
         display->desktop_mode.format       = OHOS_ScreenFormat;
@@ -238,7 +244,8 @@ void OHOS_SendResize(SDL_Window *window)
         display->display_modes[0].refresh_rate = OHOS_ScreenRate;
         display->current_mode                  = display->display_modes[0];
 
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, g_ohosSurfaceWidth, g_ohosSurfaceHeight);
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, data->width, data->height);
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, data->x, data->y);
     }
 }
 

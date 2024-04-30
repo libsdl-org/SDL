@@ -18,6 +18,7 @@
 
 #include "../../core/ohos/SDL_ohos.h"
 #include "../SDL_egl_c.h"
+#include "../../core/ohos/SDL_ohoshead.h"
 #include "../../core/ohos/SDL_ohos_xcomponent.h"
 
 #ifdef __cplusplus
@@ -36,17 +37,10 @@ extern void OHOS_DestroyWindow(SDL_VideoDevice *thisDevice, SDL_Window *window);
 extern SDL_bool OHOS_GetWindowWMInfo(SDL_VideoDevice *thisDevice, SDL_Window *window, struct SDL_SysWMinfo *info);
 extern void OHOS_SetWindowResizable(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_bool resizable);
 extern void OHOS_SetWindowSize(SDL_VideoDevice *thisDevice, SDL_Window *window);
+extern void OHOS_SetWindowPosition(SDL_VideoDevice *thisDevice, SDL_Window *window);
 extern int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const void *data);
 extern char *OHOS_GetWindowTitle(SDL_VideoDevice *thisDevice, SDL_Window *window);
-extern int SetupWindowData(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_Window *w);
-extern SDL_Window *g_ohosWindow;
-extern SDL_atomic_t bWindowCreateFlag;
-typedef struct {
-    EGLSurface egl_xcomponent;
-    EGLContext egl_context; /* We use this to preserve the context when losing focus */
-    SDL_bool   backup_done;
-    OHNativeWindow *native_window;
-} SDL_WindowData;
+extern int SetupWindowData(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_Window *w, SDL_WindowData *data);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

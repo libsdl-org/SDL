@@ -22,13 +22,26 @@ import {
   notifySdlPageHide,
 } from '../service/SdlModule'
 
+import { addRootNode } from '../service/adapter_c/utils/AdapterTs'
+import { NodeParams, NodeType, ViewNodeController} from '../service/adapter_c/common/Node'
+import { XComponentModel } from '../service/adapter_c/common/ComponentModel'
+import entry from 'libentry.so'
 
-@Entry
+let storage = LocalStorage.getShared()
+@Entry(storage)
 @Component
 struct Index {
-
+  @LocalStorageProp("uiContext") uiContext: UIContext | null = null
+  @LocalStorageProp("windowId") windowId: number = 0;
+  @State rootNodeController: ViewNodeController | null = null
   aboutToAppear(): void {
-    notifySdlAboutToAppear(getContext(this) as common.UIAbilityContext, getContext(this))
+    let curModel = new XComponentModel(this.windowId.toString(), XComponentType.SURFACE, "SDL2d")
+    let nodeParams = new NodeParams(0, 0, '100%', '100%', NodeType.XComponent, curModel);
+    nodeParams.border_color = "#FF0000"
+    nodeParams.border_width = 3
+    this.rootNodeController = addRootNode(this.windowId, this.uiContext as UIContext, nodeParams)
+    entry.setRootViewControl(this.rootNodeController)
+    notifySdlAboutToAppear(getContext(this), this.windowId)
   }
 
   aboutToDisappear(): void {
@@ -45,17 +58,7 @@ struct Index {
 
   build() {
     Stack() {
-    Column() {
-      XComponent({
-        id: CommonConstants.XCOMPONENT_ID,
-        type: CommonConstants.XCOMPONENT_TYPE,
-        libraryname: CommonConstants.XCOMPONENT_LIBRARY_NAME
-      })
-      .focusable(true)
-      .defaultFocus(true)
-    }
-    .width(CommonConstants.FULL_PARENT)
-    .height(CommonConstants.FULL_PARENT)
+      NodeContainer(this.rootNodeController)
     }
   }
 }

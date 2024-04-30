@@ -18,6 +18,8 @@
 #include <dlfcn.h>
 #include <memory>
 #include <unordered_map>
+#include <set>
+#include "adapter_c/adapter_c.h"
 #include "cJSON.h"
 extern "C" {
 #include "../../thread/SDL_systhread.h"
@@ -28,17 +30,13 @@ extern "C" {
 #include "../../SDL_internal.h"
 #include "SDL_timer.h"
 #include "SDL_log.h"
-
-#define OHOS_THREADSAFE_ARG0 0
-#define OHOS_THREADSAFE_ARG1 1
-#define OHOS_THREADSAFE_ARG2 2
-#define OHOS_THREADSAFE_ARG3 3
-#define OHOS_THREADSAFE_ARG4 4
-#define OHOS_THREADSAFE_ARG5 5
+#include "adapter_c/adapter_c_ts.h"
 
 std::unique_ptr<NapiCallbackContext> g_napiCallback = nullptr;
 
-static SDL_Thread *g_sdlMainThread;
+#define      OHOS_THREAD_NAME     "threadname"
+static int g_threadName = 0;
+static std::set<SDL_Thread *> g_sdlMainThreadList;
 
 typedef void (*OHOS_TS_Fuction)(const cJSON *root);
 
@@ -67,8 +65,47 @@ static std::unordered_map<NapiCallBackType, OHOS_TS_Fuction> tsFuctions = {
     {NAPI_CALLBACK_SET_WINDOWRESIZE, OHOS_TS_SetWindowResize},
     {NAPI_CALLBACK_SET_WINDOWRESIZE, OHOS_TS_SetWindowResize},
     {NAPI_CALLBACK_CREATE_CUSTOMCURSOR, OHOS_TS_CreateCustomCursor},
-    {NAPI_CALLBACK_REQUEST_PERMISSION, OHOS_TS_RequestPermission}
+    {NAPI_CALLBACK_REQUEST_PERMISSION, OHOS_TS_RequestPermission},
+    {NAPI_CALLBACK_GET_ROOTNODE, OHOS_TS_GetRootNode},
+    {NAPI_CALLBACK_GET_XCOMPONENTID, OHOS_TS_GetXComponentId},
+    {NAPI_CALLBACK_ADDCHILDNODE, OHOS_TS_AddChildNode},
+    {NAPI_CALLBACK_REMOVENODE, OHOS_TS_RemoveChildNode},
+    {NAPI_CALLBACK_RAISENODE, OHOS_TS_RaiseNode},
+    {NAPI_CALLBACK_LOWERNODE, OHOS_TS_LowerNode},
+    {NAPI_CALLBACK_RESIZENODE, OHOS_TS_ResizeNode},
+    {NAPI_CALLBACK_REPARENT, OHOS_TS_ReParentNode},
+    {NAPI_CALLBACK_VISIBILITY, OHOS_TS_SetNodeVisibility},
+    {NAPI_CALLBACK_GETNODERECT, OHOS_TS_GetNodeRect},
+    {NAPI_CALLBACK_MOVENODE, OHOS_TS_MoveNode},
+    {NAPI_CALLBACK_GETWINDOWID, OHOS_TS_GetWindowId}
 };
+
+void OHOS_TS_GetWindowId(const cJSON *root)
+{
+    cJSON *data = cJSON_GetObjectItem(root, "windowId");
+    int x = data->valueint;
+
+    data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
+    long long temp = static_cast<long long>(data->valuedouble);
+    int *returnValue = reinterpret_cast<int *>(temp);
+
+    napi_value callback = nullptr;
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
+    napi_value jsMethod;
+    napi_get_named_property(g_napiCallback->env, callback, "getWindowId", &jsMethod);
+
+    ThreadLockInfo *lockInfo = nullptr;
+    OHOS_TS_GetLockInfo(root, &lockInfo);
+
+    napi_value tempReturn = nullptr;
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, 0, nullptr, &tempReturn);
+
+    if (tempReturn != nullptr) {
+        napi_get_value_int32(g_napiCallback->env, tempReturn, returnValue);
+    }
+
+    OHOS_TS_wakeup(root, lockInfo);
+}
 
 static void OHOS_TS_SetWindowResize(const cJSON *root)
 {
@@ -87,8 +124,6 @@ static void OHOS_TS_SetWindowResize(const cJSON *root)
 
     data = cJSON_GetObjectItem(root, "h");
     h = data->valueint;
-    size_t argc = OHOS_THREADSAFE_ARG4;
-    napi_value args[OHOS_THREADSAFE_ARG1] = {nullptr};
     napi_value argv[OHOS_THREADSAFE_ARG4] = {nullptr};
 
     napi_create_int32(g_napiCallback->env, x, &argv[OHOS_THREADSAFE_ARG0]);
@@ -401,19 +436,20 @@ static int OHOS_RunMain(void *mainFucInfo)
 SDL_bool OHOS_RunThread(OhosSDLEntryInfo *info)
 {
     const size_t stacksize = 64 * 1024;
-    char threadname[64] = "SDLMain";
-    g_sdlMainThread = SDL_CreateThreadInternal(OHOS_RunMain, threadname, stacksize, info);
-    return g_sdlMainThread == NULL ? SDL_FALSE : SDL_TRUE;
-}
-
-SDL_bool OHOS_IsThreadRun(void)
-{
+    g_threadName++;
+    std::string threadname = OHOS_THREAD_NAME + g_threadName;
+    SDL_Thread *g_sdlMainThread = SDL_CreateThreadInternal(OHOS_RunMain, threadname.c_str(), stacksize, info);
+    g_sdlMainThreadList.insert(g_sdlMainThread);
     return g_sdlMainThread == NULL ? SDL_FALSE : SDL_TRUE;
 }
 
 void OHOS_ThreadExit(void)
 {
-    SDL_free(g_sdlMainThread);
+    for (SDL_Thread *thread:g_sdlMainThreadList) {
+        if (thread != NULL) {
+            SDL_WaitThread(thread, NULL);
+        }
+    }
     napi_release_threadsafe_function(g_napiCallback->tsfn, napi_tsfn_release);
     g_napiCallback->tsfn = nullptr;
     g_napiCallback = NULL;

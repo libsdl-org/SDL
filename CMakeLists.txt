@@ -1524,7 +1524,7 @@ elseif(OHOS)
   list(APPEND EXTRA_LIBS ${OHOS_ACE_LIBRARY} ${OHOS_LOG_LIBRARY} ${OHOS_NDK_LIBRARY} ${OHOS_RAWFILE_LIBRARY} ${OHOS_PIXELMAP_LIBRARY} cjson)
   add_definitions(-DOHOS_PLATFORM)
   file(GLOB OHOS_CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/ohos/*.c)
-  file(GLOB OHOS_CORE_SOURCES_CPP ${SDL2_SOURCE_DIR}/src/core/ohos/*.cpp)
+  file(GLOB OHOS_CORE_SOURCES_CPP ${SDL2_SOURCE_DIR}/src/core/ohos/*.cpp ${SDL2_SOURCE_DIR}/src/core/ohos/adapter_c/*.cpp)
   set(SOURCE_FILES ${SOURCE_FILES} ${OHOS_CORE_SOURCES} ${OHOS_CORE_SOURCES_CPP})
   # SDL_spinlock.c Needs to be compiled in ARM mode.
   # There seems to be no better way currently to set the ARM mode.

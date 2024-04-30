@@ -144,6 +144,10 @@ struct SDL_Window
     SDL_Window *first_child;
     SDL_Window *prev_sibling;
     SDL_Window *next_sibling;
+#ifdef __OHOS__
+    void *ohosHandle; // ViewNodeController
+    char *xcompentId;
+#endif
 };
 #define SDL_WINDOW_FULLSCREEN_VISIBLE(W)        \
     ((((W)->flags & SDL_WINDOW_FULLSCREEN) != 0) &&   \

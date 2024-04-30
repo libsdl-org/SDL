@@ -15,12 +15,10 @@
 
 #ifndef SDL_OHOS_H
 #define SDL_OHOS_H
-
-#include "../../SDL_internal.h"
-
 /* Set up for C function definitions, even when using C++ */
 #include "SDL_ohosfile.h"
 #include <EGL/eglplatform.h>
+#include "../../SDL_internal.h"
 
 #ifdef __cplusplus
 /* *INDENT-OFF* */
@@ -33,10 +31,12 @@ extern "C" {
 #include "SDL_rect.h"
 #include "SDL_video.h"
 #include "../../SDL_internal.h"
+#include "napi/native_api.h"
 
 extern SDL_DisplayOrientation displayOrientation;
 extern SDL_atomic_t bPermissionRequestPending;
 extern SDL_bool bPermissionRequestResult;
+extern int g_windowId;
 
 /* Cursor support */
 extern int OHOS_CreateCustomCursor(SDL_Surface *xcomponent, int hotX, int hotY);
@@ -62,7 +62,15 @@ extern void OHOS_NAPI_SetWindowStyle(SDL_bool fullscreen);
 extern void OHOS_NAPI_SetOrientation(int w, int h, int resizable, const char *hint);
 extern void OHOS_NAPI_ShowTextInputKeyboard(SDL_bool fullscreen);
 extern void OHOS_NAPI_SetWindowResize(int x, int y, int w, int h);
+extern int OHOS_NAPI_GetWindowId();
 
+extern void OHOS_GetRootNode(int windowId, napi_ref *rootRef);
+extern char* OHOS_GetXComponentId(napi_ref nodeRef);
+extern void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, int x, int y, int w, int h);
+extern bool OHOS_RemoveChildNode(napi_ref nodeChildRef);
+extern bool OHOS_ResizeNode(napi_ref nodeRef, int w, int h);
+extern bool OHOS_ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef);
+extern bool OHOS_MoveNode(napi_ref nodeRef, int x, int y);
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 /* *INDENT-OFF* */

@@ -14,6 +14,7 @@
  */
 
 #include "../../SDL_internal.h"
+#include "SDL_mutex.h"
 
 #ifdef __OHOS__
 
@@ -51,82 +52,182 @@ extern "C" {
 #include <unistd.h>
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include "SDL_ohos_xcomponent.h"
+#include "adapter_c/adapter_c.h"
+#include "SDL_ohosplugin.h"
 
 #define OHOS_DELAY_TEN 10
 
-OHNativeWindow *gNative_window = NULL;
 static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
 
+static std::string GetXComponentIdByNative(OH_NativeXComponent *component) {
+    char idStr[OH_XCOMPONENT_ID_LEN_MAX + 1] = {'\0'};
+    uint64_t idSize = OH_XCOMPONENT_ID_LEN_MAX + 1;
+    if (OH_NATIVEXCOMPONENT_RESULT_SUCCESS != OH_NativeXComponent_GetXComponentId(component, idStr, &idSize)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Export: OH_NativeXComponent_GetXComponentId fail");
+        return "";
+    }
+    std::string curXComponentId(idStr);
+    return curXComponentId;
+}
+
+static SDL_Window *GetWindowFromXComponent(OH_NativeXComponent *component) {
+    std::string curXComponentId = GetXComponentIdByNative(component);
+    if (curXComponentId.empty()) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "get xComponent error");
+        return nullptr;
+    }
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *resultWindow = nullptr;
+    SDL_Window *curWindow = _this->windows;
+    while (curWindow) {
+        std::string xComponentId(curWindow->xcompentId);
+        if (xComponentId == curXComponentId) {
+            resultWindow = curWindow;
+            break;
+        }
+        curWindow = curWindow->next;
+    }
+    return resultWindow;
+}
+
+static void setWindowDataValue(SDL_WindowData *data, uint64_t width, uint64_t height,
+                               double offsetX, double offsetY, void *native_window)
+{
+    data->height = height;
+    data->width = width;
+    data->x = offsetX;
+    data->y = offsetY;
+    data->native_window = (OHNativeWindow *)(native_window);
+    if (data->native_window == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not fetch native window from UI thread");
+    }
+}
+
 /* Callbacks*/
-static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
-{
-    gNative_window = (OHNativeWindow *)window;
+static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window) {
     uint64_t width;
     uint64_t height;
+    double offsetX;
+    double offsetY;
     OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
-    OHOS_SetScreenSize((int)width, (int)height);
-    if (g_ohosWindow) {
-        SDL_WindowData *data = (SDL_WindowData *)g_ohosWindow->driverdata;
-        data->native_window = (OHNativeWindow *)(window);
-        if (data->native_window == NULL) {
-            SDL_SetError("Could not fetch native window from UI thread");
-        }
+    OH_NativeXComponent_GetXComponentOffset(component, window, &offsetX, &offsetY);
+
+    std::string curXComponentId = GetXComponentIdByNative(component);
+    if (curXComponentId.empty()) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "get xComponent error");
+        return;
     }
-    SDL_AtomicSet(&bWindowCreateFlag, SDL_TRUE);
+    
+    SDL_LockMutex(OHOS_PageMutex);
+    SDL_WindowData *data = OhosPluginManager::GetInstance()->GetWindowDataByXComponent(component);
+    if (data == nullptr) {
+        SDL_WindowData *data = new SDL_WindowData;
+        setWindowDataValue(data, width, height, offsetX, offsetY, window);
+        OhosPluginManager::GetInstance()->SetNativeXComponentList(component, data);
+    } else {
+        setWindowDataValue(data, width, height, offsetX, offsetY, window);
+    }
+    
+    long threadId = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(curXComponentId);
+    if (threadId == -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Get create window thread id error");
+        SDL_UnlockMutex(OHOS_PageMutex);
+        return;
+    }
+    OhosThreadLock *lock = OhosPluginManager::GetInstance()->GetOhosThreadLockFromThreadId(threadId);
+    if (lock == nullptr) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Get this threadId: %ld lock error", threadId);
+        SDL_UnlockMutex(OHOS_PageMutex);
+        return;
+    }
+    SDL_CondBroadcast(lock->mCond);
+    SDL_UnlockMutex(OHOS_PageMutex);
 }
 
-static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
-{
+static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window) {
     uint64_t width;
     uint64_t height;
+    double offsetX;
+    double offsetY;
     OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
-    OHOS_SetScreenSize((int)width, (int)height);
-    if (g_ohosWindow) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_WindowData *data = (SDL_WindowData *)g_ohosWindow->driverdata;
-        OHOS_SendResize(g_ohosWindow);
+    OH_NativeXComponent_GetXComponentOffset(component, window, &offsetX, &offsetY);
 
-        /* If the xcomponent has been previously destroyed by onNativeSurfaceDestroyed, recreate it here */
+    SDL_LockMutex(OHOS_PageMutex);
+    SDL_WindowData *data = OhosPluginManager::GetInstance()->GetWindowDataByXComponent(component);;
+    if (data != nullptr) {
+        setWindowDataValue(data, width, height, offsetX, offsetY, window);
+    }
+
+    SDL_Window *curWindow = GetWindowFromXComponent(component);
+    if (curWindow != nullptr) {
+        OHOS_SendResize(curWindow);
         if (data->egl_xcomponent == EGL_NO_SURFACE) {
-            data->egl_xcomponent = SDL_EGL_CreateSurface(_this, (NativeWindowType)data->native_window);
+            data->egl_xcomponent = SDL_EGL_CreateSurface(SDL_GetVideoDevice(), (NativeWindowType)data->native_window);
         }
+        return;
     }
+    SDL_UnlockMutex(OHOS_PageMutex);
 }
 
-static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
-{
+static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window) {
     int nb_attempt = 50;
-    gNative_window = nullptr;
-retry:
+    char idStr[OH_XCOMPONENT_ID_LEN_MAX + 1] = {'\0'};
+    uint64_t idSize = OH_XCOMPONENT_ID_LEN_MAX + 1;
 
-    if (g_ohosWindow) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_WindowData *data = (SDL_WindowData *)g_ohosWindow->driverdata;
-
-        /* Wait for Main thread being paused and context un-activated to release 'xcomponent' */
-        if (!data->backup_done) {
-            nb_attempt -= 1;
-            if (nb_attempt == 0) {
-                SDL_SetError("Try to release egl_xcomponent with context probably still active");
-            } else {
-                SDL_Delay(OHOS_DELAY_TEN);
-                goto retry;
-            }
-        }
-
-        if (data->egl_xcomponent != EGL_NO_SURFACE) {
-            SDL_EGL_DestroySurface(_this, data->egl_xcomponent);
-            data->egl_xcomponent = EGL_NO_SURFACE;
-        }
-
-        if (data->native_window) {
-            SDL_free(data->native_window);
-            data->native_window = NULL;
-        }
-
-        /* GL Context handling is done in the event loop because this function is run from the Java thread */
+    std::string curXComponentId = GetXComponentIdByNative(component);
+    if (curXComponentId.empty()) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "get xComponent error");
+        return;
     }
+
+retry:
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *curWindow = GetWindowFromXComponent(component);
+    if (curWindow == nullptr) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Get cur window error");
+        return;
+    }
+    
+    SDL_LockMutex(OHOS_PageMutex);
+    SDL_WindowData *data = (SDL_WindowData *)curWindow->driverdata;
+    if (data != nullptr && !data->backup_done) {
+        nb_attempt -= 1;
+        if (nb_attempt == 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Try to release egl_xcomponent\
+                with context probably still active");
+        } else {
+            SDL_Delay(OHOS_DELAY_TEN);
+            SDL_UnlockMutex(OHOS_PageMutex);
+            goto retry;
+        }
+    }
+    if (data->egl_xcomponent != EGL_NO_SURFACE) {
+        SDL_Log("SDL_EGL_DestroySurface in xcompent callback");
+        SDL_EGL_DestroySurface(_this, data->egl_xcomponent);
+        data->egl_xcomponent = EGL_NO_SURFACE;
+    }
+
+    if (data->native_window) {
+        SDL_free(data->native_window);
+        data->native_window = NULL;
+    }
+    data->height = data->width = 0;
+    data->x = data->y = 0;
+
+    long xComponentThreadId = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(curXComponentId);
+    if (xComponentThreadId == -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Export: get thread from xComponentId fail");
+        SDL_UnlockMutex(OHOS_PageMutex);
+        return;
+    }
+    if (OhosPluginManager::GetInstance()->ClearPluginManagerData(curXComponentId, component, xComponentThreadId) ==
+        -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Export: get thread from xComponentId fail");
+        SDL_UnlockMutex(OHOS_PageMutex);
+        return;
+    }
+    SDL_UnlockMutex(OHOS_PageMutex);
 }
 
 /* Key */
@@ -170,7 +271,14 @@ void onNativeTouch(OH_NativeXComponent *component, void *window)
     ohosTouch.x = tiltX;
     ohosTouch.y = tiltY;
     ohosTouch.p = touchEvent.force;
-    OHOS_OnTouch(g_ohosWindow, &ohosTouch);
+    
+    SDL_Window* curWindow = GetWindowFromXComponent(component);
+    if (window == nullptr) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Get cur window error");
+        SDL_UnlockMutex(OHOS_PageMutex);
+        return;
+    }
+    OHOS_OnTouch(curWindow, &ohosTouch);
 
     SDL_UnlockMutex(OHOS_PageMutex);
 }
@@ -187,8 +295,14 @@ void onNativeMouse(OH_NativeXComponent *component, void *window)
     windowsize.state = mouseEvent.button;
     windowsize.x = mouseEvent.x;
     windowsize.y = mouseEvent.y;
-    
-    OHOS_OnMouse(g_ohosWindow, &windowsize, SDL_TRUE);
+
+    SDL_Window *curWindow = GetWindowFromXComponent(component);
+    if (window == nullptr) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Get cur window error");
+        SDL_UnlockMutex(OHOS_PageMutex);
+        return;
+    }
+    OHOS_OnMouse(curWindow, &windowsize, SDL_TRUE);
 
     SDL_UnlockMutex(OHOS_PageMutex);
 }
@@ -205,7 +319,13 @@ static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
     ohosTouch.x = touchEvent.x;
     ohosTouch.y = touchEvent.y;
     ohosTouch.p = touchEvent.force;
-    OHOS_OnTouch(g_ohosWindow, &ohosTouch);
+    SDL_Window *curWindow = GetWindowFromXComponent(component);
+    if (window == nullptr) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Get cur window error");
+        SDL_UnlockMutex(OHOS_PageMutex);
+        return;
+    }
+    OHOS_OnTouch(curWindow, &ohosTouch);
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
@@ -236,7 +356,23 @@ void OHOS_XcomponentExport(napi_env env, napi_value exports)
     if (napi_ok != napi_unwrap(env, exportInstance, (void **)(&nativeXComponent))) {
         return;
     }
-    
+    std::string xComponentId = GetXComponentIdByNative(nativeXComponent);
+    if (xComponentId.empty()) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "get xComponent error");
+        return;
+    }
+
+    SDL_LockMutex(OHOS_PageMutex);
+    OhosPluginManager::GetInstance()->SetNativeXComponent(xComponentId, nativeXComponent);
+    long threadId = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(xComponentId);
+    if (threadId != -1) {
+        OhosThreadLock *lock = OhosPluginManager::GetInstance()->GetOhosThreadLockFromThreadId(threadId);
+        if (lock != nullptr) {
+            SDL_CondBroadcast(lock->mCond);
+        }
+    }
+    SDL_UnlockMutex(OHOS_PageMutex);
+
     callback.OnSurfaceCreated = OnSurfaceCreatedCB;
     callback.OnSurfaceChanged = OnSurfaceChangedCB;
     callback.OnSurfaceDestroyed = OnSurfaceDestroyedCB;

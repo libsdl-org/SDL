@@ -14,6 +14,7 @@
  */
 
 #include "../../SDL_internal.h"
+#include "adapter_c/adapter_c.h"
 
 #ifdef __OHOS__
 
@@ -43,6 +44,9 @@ extern "C" {
 #include "../../video/ohos/SDL_ohosvideo.h"
 #include "../../video/ohos/SDL_ohoskeyboard.h"
 #include "../../audio/ohos/SDL_ohosaudio.h"
+#include "adapter_c/adapter_c.h"
+#include "SDL_ohosthreadsafe.h"
+
 #define OHOS_DELAY_FIFTY 50
 #define OHOS_DELAY_TEN 10
 #define OHOS_START_ARGS_INDEX 2
@@ -52,6 +56,7 @@ extern "C" {
 #define OHOS_INDEX_ARG3 3
 #define OHOS_INDEX_ARG4 4
 #define OHOS_INDEX_ARG5 5
+#define OHOS_INDEX_ARG6 6
 
 using namespace std;
 using namespace OHOS::SDL;
@@ -61,6 +66,8 @@ SDL_DisplayOrientation displayOrientation;
 SDL_atomic_t bPermissionRequestPending;
 SDL_bool bPermissionRequestResult;
 static SDL_atomic_t bQuit;
+static int xComponentId = 1;
+int g_windowId = 0;
 
 /* Lock / Unlock Mutex */
 void OHOS_PAGEMUTEX_Lock()
@@ -96,6 +103,28 @@ void OHOS_SetDisplayOrientation(int orientation)
 SDL_DisplayOrientation OHOS_GetDisplayOrientation()
 {
     return displayOrientation;
+}
+
+int OHOS_NAPI_GetWindowId()
+{
+    cJSON *root = cJSON_CreateObject();
+    if (root == NULL) {
+        return -1;
+    }
+    int returnValue = -1;
+    long long returnValuePointer = (long long)(&returnValue);
+    cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
+
+    std::thread::id cur_thread_id = std::this_thread::get_id();
+    ThreadLockInfo *lockInfo;
+    if (cur_thread_id == g_napiCallback->mainThreadId) {
+        OHOS_TS_GetWindowId(root);
+    } else {
+        cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_GETWINDOWID);
+        ThreadSafeSyn(root);
+    }
+    cJSON_free(root);
+    return returnValue;
 }
 
 void OHOS_NAPI_SetWindowResize(int x, int y, int w, int h)
@@ -350,8 +379,8 @@ napi_value SDLNapi::OHOS_SetResourceManager(napi_env env, napi_callback_info inf
 
 napi_value SDLNapi::OHOS_NativeSetScreenResolution(napi_env env, napi_callback_info info)
 {
-    size_t argc = 6;
-    napi_value args[6];
+    size_t argc = 7;
+    napi_value args[7];
     napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
     int xcomponentWidth;
     int xcomponentHeight;
@@ -359,25 +388,22 @@ napi_value SDLNapi::OHOS_NativeSetScreenResolution(napi_env env, napi_callback_i
     int deviceHeight;
     int format;
     double rate;
+    double screenDensity;
     napi_get_value_int32(env, args[OHOS_INDEX_ARG0], &xcomponentWidth);
     napi_get_value_int32(env, args[OHOS_INDEX_ARG1], &xcomponentHeight);
     napi_get_value_int32(env, args[OHOS_INDEX_ARG2], &deviceWidth);
     napi_get_value_int32(env, args[OHOS_INDEX_ARG3], &deviceHeight);
     napi_get_value_int32(env, args[OHOS_INDEX_ARG4], &format);
     napi_get_value_double(env, args[OHOS_INDEX_ARG5], &rate);
+    napi_get_value_double(env, args[OHOS_INDEX_ARG6], &screenDensity);
     SDL_LockMutex(OHOS_PageMutex);
-    OHOS_SetScreenResolution(deviceWidth, deviceHeight, format, rate);
+    OHOS_SetScreenResolution(deviceWidth, deviceHeight, format, rate, screenDensity);
     SDL_UnlockMutex(OHOS_PageMutex);
     return nullptr;
 }
 
 napi_value SDLNapi::OHOS_OnNativeResize(napi_env env, napi_callback_info info)
 {
-    SDL_LockMutex(OHOS_PageMutex);
-    if (g_ohosWindow) {
-        OHOS_SendResize(g_ohosWindow);
-    }
-    SDL_UnlockMutex(OHOS_PageMutex);
     return nullptr;
 }
 
@@ -525,10 +551,8 @@ napi_value SDLNapi::OHOS_OnNativeOrientationChanged(napi_env env, napi_callback_
     napi_get_value_int32(env, args[0], &orientation);
     SDL_LockMutex(OHOS_PageMutex);
     OHOS_SetDisplayOrientation(orientation);
-    if (g_ohosWindow) {
-        SDL_VideoDisplay *display = SDL_GetDisplay(0);
-        SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
-    }
+    SDL_VideoDisplay *display = SDL_GetDisplay(0);
+    SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
     SDL_UnlockMutex(OHOS_PageMutex);
     return nullptr;
 }
@@ -540,10 +564,11 @@ napi_value SDLNapi::OHOS_OnNativeFocusChanged(napi_env env, napi_callback_info i
     napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
     bool focus;
     napi_get_value_bool(env, args[0], &focus);
-    if (g_ohosWindow) {
-        SDL_SendWindowEvent(g_ohosWindow,
-            (focus = SDL_TRUE ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST), 0, 0);
-    }
+    
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *curWindow = _this->windows;
+    SDL_SendWindowEvent(curWindow,
+        (focus = SDL_TRUE ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST), 0, 0);
     return nullptr;
 }
 
@@ -562,6 +587,7 @@ static napi_value OHOS_NAPI_Init(napi_env env, napi_callback_info info)
     if (g_napiCallback == nullptr) {
         g_napiCallback = std::make_unique<NapiCallbackContext>();
     }
+    g_napiCallback->mainThreadId = std::this_thread::get_id();
     OHOS_NAPI_NativeSetup();
     g_napiCallback->env = env;
     size_t argc = 1;
@@ -651,10 +677,6 @@ static napi_value OHOS_NAPI_SDLAppEntry(napi_env env, napi_callback_info info)
     bool isstack;
     int i;
 
-    if (OHOS_IsThreadRun() == SDL_TRUE) {
-        return nullptr;
-    }
-
     argc = OHOS_NAPI_GetInfo(env, info, argv, &library_file, &function_name);
     if (argc == -1)
         return nullptr;
@@ -696,6 +718,57 @@ static napi_value OHOS_NAPI_SDLAppEntry(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
+void OHOS_GetRootNode(int windowId, napi_ref *rootRef)
+{
+    *rootRef = GetRootNode(windowId);
+    return;
+}
+
+char *OHOS_GetXComponentId(napi_ref nodeRef)
+{
+    return GetXComponentId(nodeRef);
+}
+
+void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, int x, int y, int w, int h)
+{
+
+    XComponentModel xComponentModel(to_string(xComponentId), XComponentType::SURFACE, "SDL2d");
+    xComponentId++;
+    NodeParams nodeParams(to_string(w), to_string(h), to_string(x), to_string(y), NodeType::XComponent, &xComponentModel);
+    *childRef = AddChildNode(nodeRef, &nodeParams);
+    return;
+}
+
+bool OHOS_RemoveChildNode(napi_ref nodeChildRef) {
+    return RemoveChildNode(nodeChildRef);
+}
+
+bool OHOS_ResizeNode(napi_ref nodeRef, int w, int h) {
+    return ResizeNode(nodeRef, to_string(w), to_string(h));
+}
+
+bool OHOS_ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef) {
+    return ReParentNode(nodeParentNewRef, nodeChildRef);
+}
+
+bool OHOS_MoveNode(napi_ref nodeRef, int x, int y) {
+    return MoveNode(nodeRef, to_string(x), to_string(y));
+}
+
+napi_value SDLNapi::OHOS_SetWindowId(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = {nullptr};
+    napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
+    napi_valuetype valuetype;
+    napi_status status = napi_typeof(env, argv[0], &valuetype);
+    if (status != napi_ok || valuetype != napi_number) {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Window id is wrong.");
+        return nullptr;
+    }
+    napi_get_value_int32(env, argv[0], &g_windowId);
+    return nullptr;
+}
 
 napi_value SDLNapi::Init(napi_env env, napi_value exports)
 {
@@ -718,6 +791,7 @@ napi_value SDLNapi::Init(napi_env env, napi_value exports)
          napi_default, nullptr},
         {"setResourceManager", nullptr, OHOS_SetResourceManager, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"onNativeFocusChanged", nullptr, OHOS_OnNativeFocusChanged, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"setWindowId", nullptr, OHOS_SetWindowId, nullptr, nullptr, nullptr, napi_default, nullptr}, 
         {"init", nullptr, OHOS_NAPI_Init, nullptr, nullptr, nullptr, napi_default, nullptr}
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);

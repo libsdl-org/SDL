@@ -72,6 +72,10 @@ export function setResourceManager(manager: Context) {
   sdl.setResourceManager(manager.cacheDir, manager.resourceManager)
 }
 
+export function setWindowId(windowId: number) {
+  sdl.setWindowId(windowId)
+}
+
 export function onNativeFocusChanged(focus: Boolean) {
   sdl.onNativeFocusChanged(focus)
 }
