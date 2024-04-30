@@ -908,15 +908,15 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  *   with Metal rendering
  * - `SDL_PROP_WINDOW_CREATE_MINIMIZED_BOOLEAN`: true if the window should
  *   start minimized
- * - `SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN`: true if the window is modal to its
- *   parent
+ * - `SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN`: true if the window is modal to
+ *   its parent
  * - `SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN`: true if the window starts
  *   with grabbed mouse focus
  * - `SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN`: true if the window will be used
  *   with OpenGL rendering
  * - `SDL_PROP_WINDOW_CREATE_PARENT_POINTER`: an SDL_Window that will be the
- *   parent of this window, required for windows with the "toolip", "menu", and
- *   "modal" properties
+ *   parent of this window, required for windows with the "toolip", "menu",
+ *   and "modal" properties
  * - `SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN`: true if the window should be
  *   resizable
  * - `SDL_PROP_WINDOW_CREATE_TITLE_STRING`: the title of the window, in UTF-8
@@ -2006,10 +2006,12 @@ extern DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window *window, float *out_
 /**
  * Set the window as a modal to a parent window.
  *
- * If the window is already modal to an existing window, it will be reparented to the new owner.
- * Setting the parent window to null unparents the modal window and removes modal status.
+ * If the window is already modal to an existing window, it will be reparented
+ * to the new owner. Setting the parent window to null unparents the modal
+ * window and removes modal status.
  *
- * Setting a window as modal to a parent that is a descendent of the modal window results in undefined behavior.
+ * Setting a window as modal to a parent that is a descendent of the modal
+ * window results in undefined behavior.
  *
  * \param modal_window the window that should be set modal
  * \param parent_window the parent window for the modal window
@@ -2190,7 +2192,8 @@ extern DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOperati
 /**
  * Destroy a window.
  *
- * Any popups or modal windows owned by the window will be recursively destroyed as well.
+ * Any popups or modal windows owned by the window will be recursively
+ * destroyed as well.
  *
  * If `window` is NULL, this function will return immediately after setting
  * the SDL error message to "Invalid window". See SDL_GetError().
