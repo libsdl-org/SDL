@@ -2231,7 +2231,8 @@ extern DECLSPEC int SDLCALL SDL_EnableScreenSaver(void);
  * If you disable the screensaver, it is automatically re-enabled when SDL
  * quits.
  *
- * The screensaver is disabled by default.
+ * The screensaver is disabled by default, but this may by changed by
+ * SDL_HINT_VIDEO_ALLOW_SCREENSAVER.
  *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
