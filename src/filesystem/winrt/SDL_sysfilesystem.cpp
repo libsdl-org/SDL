@@ -250,6 +250,8 @@ char *SDL_GetUserFolder(SDL_Folder folder)
             return NULL;
     };
 
+    wpath += L"\\";
+
     return WIN_StringToUTF8(wpath.c_str());
 }
 

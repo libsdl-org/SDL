@@ -54,7 +54,6 @@ int main(int argc, char *argv[]) {
     const SDL_FRect open_folder_rect = { 370, 50, 220, 140 };
     int i;
     char *initial_path = NULL;
-    char path_with_trailing_slash[2048];
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -94,10 +93,6 @@ int main(int argc, char *argv[]) {
 
     if (!initial_path) {
         SDL_Log("Will not use an initial path, couldn't get the home directory path: %s\n", SDL_GetError());
-        path_with_trailing_slash[0] = '\0';
-    } else {
-        SDL_snprintf(path_with_trailing_slash, sizeof(path_with_trailing_slash), "%s/", initial_path);
-        SDL_free(initial_path);
     }
 
     while (1) {
@@ -119,11 +114,11 @@ int main(int argc, char *argv[]) {
                  * - Nonzero if the user is allowed to choose multiple entries (not for SDL_ShowSaveFileDialog)
                  */
                 if (SDL_PointInRectFloat(&p, &open_file_rect)) {
-                    SDL_ShowOpenFileDialog(callback, NULL, w, filters, path_with_trailing_slash, 1);
+                    SDL_ShowOpenFileDialog(callback, NULL, w, filters, initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &open_folder_rect)) {
-                    SDL_ShowOpenFolderDialog(callback, NULL, w, path_with_trailing_slash, 1);
+                    SDL_ShowOpenFolderDialog(callback, NULL, w, initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &save_file_rect)) {
-                    SDL_ShowSaveFileDialog(callback, NULL, w, filters, path_with_trailing_slash);
+                    SDL_ShowSaveFileDialog(callback, NULL, w, filters, initial_path);
                 }
             }
         }
@@ -150,6 +145,10 @@ int main(int argc, char *argv[]) {
         SDLTest_DrawString(r, open_folder_rect.x+5, open_folder_rect.y+open_folder_rect.h/2, "Open Folder...");
 
         SDL_RenderPresent(r);
+    }
+
+    if (initial_path) {
+        SDL_free(initial_path);
     }
 
     SDLTest_CleanupTextDrawing();

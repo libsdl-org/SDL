@@ -514,6 +514,7 @@ char *SDL_GetUserFolder(SDL_Folder folder)
 {
     const char *param = NULL;
     char *retval;
+    char *newretval;
 
     /* According to `man xdg-user-dir`, the possible values are:
         DESKTOP
@@ -593,6 +594,16 @@ char *SDL_GetUserFolder(SDL_Folder folder)
         SDL_SetError("XDG directory not available");
         return NULL;
     }
+
+    newretval = (char *) SDL_realloc(retval, SDL_strlen(retval) + 2);
+
+    if (!newretval) {
+        SDL_free(retval);
+        return NULL;
+    }
+
+    retval = newretval;
+    SDL_strlcat(retval, "/", SDL_strlen(retval) + 2);
 
     return retval;
 }

@@ -209,8 +209,14 @@ char *SDL_GetUserFolder(SDL_Folder folder)
             return NULL;
         }
 
-        retval = SDL_strdup(base);
+        retval = SDL_malloc(SDL_strlen(base) + 2);
         if (retval == NULL) {
+            return NULL;
+        }
+
+        if (SDL_snprintf(retval, SDL_strlen(base) + 2, "%s/", base) < 0) {
+            SDL_SetError("Couldn't snprintf folder path for Cocoa: %s", base);
+            SDL_free(retval);
             return NULL;
         }
 
@@ -221,7 +227,6 @@ char *SDL_GetUserFolder(SDL_Folder folder)
                 *ptr = '/';
             }
         }
-        mkdir(retval, 0700);
 
         return retval;
 #endif /* SDL_PLATFORM_TVOS */
