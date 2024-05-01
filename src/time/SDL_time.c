@@ -90,7 +90,7 @@ void SDL_QuitTime()
 int SDL_GetDaysInMonth(int year, int month)
 {
     static const int DAYS_IN_MONTH[] = {
-        30, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+        31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
     };
 
     if (month < 1 || month > 12) {
