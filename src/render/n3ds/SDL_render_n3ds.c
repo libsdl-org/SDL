@@ -666,8 +666,15 @@ N3DS_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
         switch (cmd->command) {
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &cmd->data.viewport.rect;
-                C3D_SetViewport(viewport->x, viewport->y, viewport->w, viewport->h);
-                C3D_SetScissor(GPU_SCISSOR_NORMAL, viewport->x, viewport->y, viewport->x + viewport->w, viewport->y + viewport->h);
+                if (data->boundTarget) {
+                    C3D_SetViewport(viewport->x, viewport->y, viewport->w, viewport->h);
+                } else {
+                    // Handle the tilted render target of the 3DS display.
+                    C3D_SetViewport(
+                               data->renderTarget->frameBuf.width - viewport->h - viewport->y,
+                               data->renderTarget->frameBuf.height - viewport->w - viewport->x,
+                               viewport->h, viewport->w);
+                }
                 break;
             }
 
@@ -687,7 +694,7 @@ N3DS_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
 
             case SDL_RENDERCMD_SETCLIPRECT: {
                 const SDL_Rect *rect = &cmd->data.cliprect.rect;
-                if(cmd->data.cliprect.enabled){
+                if (cmd->data.cliprect.enabled) {
                     C3D_SetScissor(GPU_SCISSOR_NORMAL, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h);
                 } else {
                     C3D_SetScissor(GPU_SCISSOR_DISABLE, 0, 0, 0, 0);
