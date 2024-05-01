@@ -41,6 +41,7 @@ foreach (@ARGV) {
     $copy_direction = 1, next if $_ eq '--copy-to-header';
     $copy_direction = -1, next if $_ eq '--copy-to-wiki';
     $copy_direction = -2, next if $_ eq '--copy-to-manpages';
+    $copy_direction = -3, next if $_ eq '--report-coverage-gaps';
     if (/\A--options=(.*)\Z/) {
         $optionsfname = $1;
         next;
@@ -543,6 +544,19 @@ my %wikisectionorder = ();   # contains references to array, each array item bei
 
 my %referenceonly = ();  # $referenceonly{"Y"} -> symbol name that this symbol is bound to. This makes wiki pages that say "See X" where "X" is a typedef and "Y" is a define attached to it. These pages are generated in the wiki only and do not bridge to the headers or manpages.
 
+my @coverage_gap = ();  # array of strings that weren't part of documentation, or blank, or basic preprocessor logic. Lets you see what this script is missing!
+
+sub add_coverage_gap {
+    if ($copy_direction == -3) {  # --report-coverage-gaps
+        my $text = shift;
+        my $dent = shift;
+        my $lineno = shift;
+        return if $text =~ /\A\s*\Z/;  # skip blank lines
+        return if $text =~ /\A\s*\#\s*(if|el|endif|include)/; # skip preprocessor floof.
+        push @coverage_gap, "$dent:$lineno: $text";
+    }
+}
+
 sub print_undocumented_section {
     my $fh = shift;
     my $typestr = shift;
@@ -597,9 +611,11 @@ while (my $d = readdir(DH)) {
 
     my @contents = ();
     my $ignoring_lines = 0;
-
+    my $header_comment = -1;
+    my $lineno = 0;
     while (<FH>) {
         chomp;
+        $lineno++;
         my $symtype = 0;  # nothing, yet.
         my $decl;
         my @templines;
@@ -608,6 +624,12 @@ while (my $d = readdir(DH)) {
 
         # Since a lot of macros are just preprocessor logic spam and not all macros are worth documenting anyhow, we only pay attention to them when they have a Doxygen comment attached.
         # Functions and other things are a different story, though!
+
+        if ($header_comment == -1) {
+            $header_comment = /\A\/\*\s*\Z/ ? 1 : 0;
+        } elsif (($header_comment == 1) && (/\A\*\/\s*\Z/)) {
+            $header_comment = 0;
+        }
 
         if ($ignoring_lines && /\A\s*\#\s*endif\s*\Z/) {
             $ignoring_lines = 0;
@@ -634,17 +656,20 @@ while (my $d = readdir(DH)) {
             $has_doxygen = 0;
         } elsif (not /\A\/\*\*\s*\Z/) {  # not doxygen comment start?
             push @contents, $_;
+            add_coverage_gap($_, $dent, $lineno) if ($header_comment == 0);
             next;
         } else {   # Start of a doxygen comment, parse it out.
             @templines = ( $_ );
             while (<FH>) {
                 chomp;
+                $lineno++;
                 push @templines, $_;
                 last if /\A\s*\*\/\Z/;
                 if (s/\A\s*\*\s*\`\`\`/```/) {  # this is a hack, but a lot of other code relies on the whitespace being trimmed, but we can't trim it in code blocks...
                     $str .= "$_\n";
                     while (<FH>) {
                         chomp;
+                        $lineno++;
                         push @templines, $_;
                         s/\A\s*\*\s?//;
                         if (s/\A\s*\`\`\`/```/) {
@@ -661,6 +686,7 @@ while (my $d = readdir(DH)) {
             }
 
             $decl = <FH>;
+            $lineno++ if defined $decl;
             $decl = '' if not defined $decl;
             chomp($decl);
             if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {
@@ -679,8 +705,10 @@ while (my $d = readdir(DH)) {
                 #print "Found doxygen but no function sig:\n$str\n\n";
                 foreach (@templines) {
                     push @contents, $_;
+                    add_coverage_gap($_, $dent, $lineno);
                 }
                 push @contents, $decl;
+                add_coverage_gap($decl, $dent, $lineno);
                 next;
             }
         }
@@ -695,6 +723,7 @@ while (my $d = readdir(DH)) {
                 if (not $decl =~ /\)\s*(\{.*|)\s*\Z/) {
                     while (<FH>) {
                         chomp;
+                        $lineno++;
                         push @decllines, $_;
                         s/\A\s+//;
                         s/\s+\Z//;
@@ -707,6 +736,7 @@ while (my $d = readdir(DH)) {
                 if (not $decl =~ /\)\s*;/) {
                     while (<FH>) {
                         chomp;
+                        $lineno++;
                         push @decllines, $_;
                         s/\A\s+//;
                         s/\s+\Z//;
@@ -768,6 +798,7 @@ while (my $d = readdir(DH)) {
             while ($decl =~ /\\\Z/) {
                 my $l = <FH>;
                 last if not $l;
+                $lineno++;
                 chomp($l);
                 push @decllines, $l;
                 #$l =~ s/\A\s+//;
@@ -825,6 +856,7 @@ while (my $d = readdir(DH)) {
                     if (!$started || ($brackets != 0)) {
                         $pending = <FH>;
                         die("EOF/error reading $incpath/$dent while parsing $sym\n") if not $pending;
+                        $lineno++;
                         chomp($pending);
                         push @decllines, $pending;
                         $decl .= "\n";
@@ -866,9 +898,12 @@ while (my $d = readdir(DH)) {
             # Blank lines are allowed, anything else, even comments, are not.
             my $blank_lines = 0;
             my $lastpos = tell(FH);
+            my $lastlineno = $lineno;
             my $additional_decl = '';
             while (<FH>) {
                 chomp;
+
+                $lineno++;
 
                 if (/\A\s*\Z/) {
                     $blank_lines++;
@@ -889,6 +924,7 @@ while (my $d = readdir(DH)) {
                     $lastpos = tell(FH);
                 } else {
                     seek(FH, $lastpos, 0);  # re-read eaten lines again next time.
+                    $lineno = $lastlineno;
                     last;
                 }
             }
@@ -2066,6 +2102,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
         print FH $str;
         close(FH);
         rename($tmppath, $path) or die("Can't rename '$tmppath' to '$path': $!\n");
+    }
+} elsif ($copy_direction == -3) { # --report-coverage_gaps
+    foreach (@coverage_gap) {
+        print("$_\n");
     }
 }
 
