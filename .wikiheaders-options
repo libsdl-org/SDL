@@ -1,5 +1,5 @@
-projectfullname = SDL2
-projectshortname = SDL2
+projectfullname = Simple Directmedia Layer
+projectshortname = SDL
 incsubdir = include
 wikisubdir = SDL2
 readmesubdir = docs
