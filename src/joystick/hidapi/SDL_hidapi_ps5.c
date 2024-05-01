@@ -197,7 +197,8 @@ typedef enum
     k_EDS5EffectLEDReset = (1 << 2),
     k_EDS5EffectLED = (1 << 3),
     k_EDS5EffectPadLights = (1 << 4),
-    k_EDS5EffectMicLight = (1 << 5)
+    k_EDS5EffectMicLight = (1 << 5),
+	k_EDS5EffectPadSpeaker = (1 << 6)
 } EDS5Effect;
 
 typedef enum
@@ -734,6 +735,11 @@ static int HIDAPI_DriverPS5_UpdateEffects(SDL_HIDAPI_Device *device, int effect_
 
         effects.ucMicLightMode = 0; /* Bitmask, 0x00 = off, 0x01 = solid, 0x02 = pulse */
     }
+	if ((effect_mask & k_EDS5EffectPadSpeaker) != 0) { // todo: support check?
+		effects.ucEnableBits1 |= 0xe0; /* Enable audio system */
+		effects.ucSpeakerVolume = 102; /* Maximum volume, let OS decide the volume */
+		effects.ucAudioEnableBits |= 0x20; /* Enable PadSpeaker */
+	}
 
     return HIDAPI_DriverPS5_SendJoystickEffect(device, ctx->joystick, &effects, sizeof(effects));
 }
@@ -820,6 +826,9 @@ static void HIDAPI_DriverPS5_SetEnhancedMode(SDL_HIDAPI_Device *device, SDL_Joys
 
         /* Update the light effects */
         HIDAPI_DriverPS5_UpdateEffects(device, (k_EDS5EffectLED | k_EDS5EffectPadLights));
+
+		/* Update the pad speaker */
+		HIDAPI_DriverPS5_UpdateEffects(device, k_EDS5EffectPadSpeaker);
     }
 }
 
