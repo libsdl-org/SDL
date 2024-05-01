@@ -12,7 +12,10 @@
    This file is created by : Nitin Jain (nitin.j4@samsung.com)
 */
 
-/* Sample program:  Draw a Chess Board  by using SDL_CreateSoftwareRenderer API */
+/* Sample program:  Draw a Chess Board  by using the SDL render API */
+
+/* This allows testing SDL_CreateSoftwareRenderer with the window surface API. Undefine it to use the accelerated renderer instead. */
+#define USE_SOFTWARE_RENDERER
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,8 +28,11 @@
 
 SDL_Window *window;
 SDL_Renderer *renderer;
-SDL_Surface *surface;
 int done;
+
+#ifdef USE_SOFTWARE_RENDERER
+SDL_Surface *surface;
+#endif
 
 void DrawChessBoard(void)
 {
@@ -50,7 +56,6 @@ void DrawChessBoard(void)
             SDL_RenderFillRect(renderer, &rect);
         }
     }
-    SDL_RenderPresent(renderer);
 }
 
 void loop(void)
@@ -58,6 +63,7 @@ void loop(void)
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
 
+#ifdef USE_SOFTWARE_RENDERER
         /* Re-create when window has been resized */
         if ((e.type == SDL_WINDOWEVENT) && (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)) {
 
@@ -69,6 +75,7 @@ void loop(void)
             SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
             SDL_RenderClear(renderer);
         }
+#endif
 
         if (e.type == SDL_QUIT) {
             done = 1;
@@ -87,11 +94,19 @@ void loop(void)
         }
     }
 
+    /* Clear the rendering surface with the specified color */
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    SDL_RenderClear(renderer);
+
     DrawChessBoard();
 
+    SDL_RenderPresent(renderer);
+
+#ifdef USE_SOFTWARE_RENDERER
     /* Got everything on rendering surface,
        now Update the drawing image on window screen */
     SDL_UpdateWindowSurface(window);
+#endif
 }
 
 int main(int argc, char *argv[])
@@ -111,16 +126,16 @@ int main(int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s\n", SDL_GetError());
         return 1;
     }
+#ifdef USE_SOFTWARE_RENDERER
     surface = SDL_GetWindowSurface(window);
     renderer = SDL_CreateSoftwareRenderer(surface);
+#else
+    renderer = SDL_CreateRenderer(window, -1, 0);
+#endif
     if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render creation for surface fail : %s\n", SDL_GetError());
         return 1;
     }
-
-    /* Clear the rendering surface with the specified color */
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    SDL_RenderClear(renderer);
 
     /* Draw the Image on rendering surface */
     done = 0;
