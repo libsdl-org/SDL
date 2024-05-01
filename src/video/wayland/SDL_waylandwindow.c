@@ -1858,6 +1858,11 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_SetStringProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING, NULL);
     }
 
+    if (wind->xdg_dialog_v1) {
+        xdg_dialog_v1_destroy(wind->xdg_dialog_v1);
+        wind->xdg_dialog_v1 = NULL;
+    }
+
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SURFACE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame) {
@@ -2616,10 +2621,6 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         if (wind->fractional_scale) {
             wp_fractional_scale_v1_destroy(wind->fractional_scale);
-        }
-
-        if (wind->xdg_dialog_v1) {
-            xdg_dialog_v1_destroy(wind->xdg_dialog_v1);
         }
 
         SDL_free(wind->outputs);
