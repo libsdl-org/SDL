@@ -428,17 +428,27 @@ static int
 N3DS_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
     SDL_Color color = *((SDL_Color*) &(cmd->data.draw.r));
-    VertVCT *verts = (VertVCT *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (VertVCT), 4, &cmd->data.draw.first);
+    VertVCT *verts = (VertVCT *) SDL_AllocateRenderVertices(renderer, count * 6 * sizeof (VertVCT), 0, &cmd->data.draw.first);
     int i;
 
     if (!verts) {
         return -1;
     }
 
-    cmd->data.draw.count = count * 4;
+    cmd->data.draw.count = count * 6;
 
     for (i = 0; i < count; i++, rects++) {
         verts->x = rects->x;
+        verts->y = rects->y;
+        verts->col = color;
+        verts++;
+
+        verts->x = rects->x;
+        verts->y = rects->y + rects->h;
+        verts->col = color;
+        verts++;
+
+        verts->x = rects->x + rects->w;
         verts->y = rects->y;
         verts->col = color;
         verts++;
@@ -478,16 +488,30 @@ N3DS_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     const float u1 = srcrect->x + srcrect->w;
     const float v1 = srcrect->y + srcrect->h;
 
-    verts = (VertVCT *) SDL_AllocateRenderVertices(renderer, 2 * sizeof (VertVCT), 4, &cmd->data.draw.first);
+    verts = (VertVCT *) SDL_AllocateRenderVertices(renderer, 6 * sizeof (VertVCT), 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
 
-    cmd->data.draw.count = 4;
+    cmd->data.draw.count = 6;
 
     verts->u = u0;
     verts->v = v0;
     verts->x = x;
+    verts->y = y;
+    verts->col = color;
+    verts++;
+
+    verts->u = u0;
+    verts->v = v1;
+    verts->x = x;
+    verts->y = y + height;
+    verts->col = color;
+    verts++;
+
+    verts->u = u1;
+    verts->v = v0;
+    verts->x = x + width;
     verts->y = y;
     verts->col = color;
     verts++;
@@ -502,7 +526,7 @@ N3DS_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     verts->u = u0;
     verts->v = v1;
     verts->x = x;
-    verts->y = y + 1;
+    verts->y = y + height;
     verts->col = color;
     verts++;
 
@@ -511,7 +535,6 @@ N3DS_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     verts->x = x + width;
     verts->y = y + height;
     verts->col = color;
-    verts++;
 
     return 0;
 }
@@ -522,7 +545,7 @@ N3DS_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
                const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
     SDL_Color color = *((SDL_Color*) &(cmd->data.draw.r));
-    VertVCT *verts = (VertVCT *) SDL_AllocateRenderVertices(renderer, 4 * sizeof (VertVCT), 4, &cmd->data.draw.first);
+    VertVCT *verts = (VertVCT *) SDL_AllocateRenderVertices(renderer, 6 * sizeof (VertVCT), 0, &cmd->data.draw.first);
     const float centerx = center->x;
     const float centery = center->y;
     const float x = dstrect->x + centerx;
@@ -541,7 +564,7 @@ N3DS_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
         return -1;
     }
 
-    cmd->data.draw.count = 4;
+    cmd->data.draw.count = 6;
 
     s = sinf(degToRad(360-angle));
     c = cosf(degToRad(360-angle));
@@ -570,6 +593,20 @@ N3DS_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
     verts->col = color;
     verts++;
 
+    verts->u = u1;
+    verts->v = v0;
+    verts->x = x + cw2 + sh1;
+    verts->y = y - sw2 + ch1;
+    verts->col = color;
+    verts++;
+
+    verts->u = u0;
+    verts->v = v1;
+    verts->x = x + cw1 + sh2;
+    verts->y = y - sw1 + ch2;
+    verts->col = color;
+    verts++;
+
     verts->u = u0;
     verts->v = v1;
     verts->x = x + cw1 + sh2;
@@ -591,6 +628,12 @@ N3DS_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
     verts->col = color;
 
     if (scale_x != 1.0f || scale_y != 1.0f) {
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+        verts--;
+        verts->x *= scale_x;
+        verts->y *= scale_y;
+        verts--;
         verts->x *= scale_x;
         verts->y *= scale_y;
         verts--;
@@ -724,7 +767,7 @@ N3DS_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                     .mode = cmd->data.draw.blend
                 };
                 N3DS_SetBlendState(data, &state);
-                C3D_DrawArrays(GPU_TRIANGLE_STRIP, first, count);
+                C3D_DrawArrays(GPU_TRIANGLES, first, count);
                 break;
             }
 
@@ -737,7 +780,7 @@ N3DS_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                     .mode = cmd->data.draw.blend
                 };
                 N3DS_SetBlendState(data, &state);
-                C3D_DrawArrays(GPU_TRIANGLE_STRIP, first, count);
+                C3D_DrawArrays(GPU_TRIANGLES, first, count);
                 break;
             }
 
@@ -914,6 +957,7 @@ N3DS_CreateRenderer(SDL_Renderer * renderer, SDL_Window * window, Uint32 flags)
     N3DS_SetRenderTarget(renderer, NULL);
 
     C3D_DepthTest(false, GPU_GEQUAL, GPU_WRITE_ALL);
+    C3D_CullFace(GPU_CULL_NONE);
 
     /* Scissoring */
     C3D_SetScissor(GPU_SCISSOR_NORMAL, 0, 0, width, height);
