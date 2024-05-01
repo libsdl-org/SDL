@@ -1,4 +1,4 @@
-projectfullname = SDL
+projectfullname = Simple Directmedia Layer
 projectshortname = SDL
 incsubdir = include/SDL3
 wikisubdir =
