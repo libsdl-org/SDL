@@ -35,7 +35,12 @@
 
 #include "SDL_render_n3ds_shaders.h"
 
-/* N3DS renderer implementation, derived from the PSP implementation  */
+/**
+ * N3DS renderer implementation, derived from the PSP implementation.
+ *
+ * TODO:
+ * - Native SDL_PIXELFORMAT_RGB888 support (breaks with SDL_TEXTUREACCESS_STREAMING)
+ */
 
 static int
 PixelFormatToN3DSGPU(Uint32 format)
@@ -179,7 +184,7 @@ N3DS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     N3DS_TextureData* N3DS_texture = (N3DS_TextureData*) SDL_calloc(1, sizeof(*N3DS_texture));
     bool initialized = SDL_FALSE;
 
-    if(!N3DS_texture)
+    if (!N3DS_texture)
         return SDL_OutOfMemory();
 
     N3DS_texture->width = texture->w;
@@ -251,7 +256,7 @@ N3DS_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         }
     }
 
-    N3DS_LockTexture(renderer, texture, rect,(void **)&dst, &dpitch);
+    N3DS_LockTexture(renderer, texture, rect, (void **)&dst, &dpitch);
     length = rect->w * SDL_BYTESPERPIXEL(texture->format);
     if (length == pitch && length == dpitch) {
         SDL_memcpy(dst, src, length*rect->h);
@@ -266,6 +271,7 @@ N3DS_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 
     if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
         linearFree(N3DS_texture->unswizzledBuffer);
+        N3DS_texture->unswizzledBuffer = NULL;
     }
 
     return 0;
@@ -476,6 +482,8 @@ static int
 N3DS_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
+    N3DS_TextureData *N3DS_texture = (N3DS_TextureData *) texture->driverdata;
+
     SDL_Color color = *((SDL_Color*) &(cmd->data.draw.r));
     VertVCT *verts;
     const float x = dstrect->x;
@@ -483,10 +491,10 @@ N3DS_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     const float width = dstrect->w;
     const float height = dstrect->h;
 
-    const float u0 = srcrect->x;
-    const float v0 = srcrect->y;
-    const float u1 = srcrect->x + srcrect->w;
-    const float v1 = srcrect->y + srcrect->h;
+    const float u0 = (float) srcrect->x / N3DS_texture->texture.width;
+    const float v0 = 1.0f - (float) srcrect->y / N3DS_texture->texture.height;
+    const float u1 = (float) (srcrect->x + srcrect->w) / N3DS_texture->texture.width;
+    const float v1 = 1.0f - (float) (srcrect->y + srcrect->h) / N3DS_texture->texture.height;
 
     verts = (VertVCT *) SDL_AllocateRenderVertices(renderer, 6 * sizeof (VertVCT), 0, &cmd->data.draw.first);
     if (!verts) {
@@ -544,6 +552,8 @@ N3DS_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
                const SDL_Rect * srcrect, const SDL_FRect * dstrect,
                const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip, float scale_x, float scale_y)
 {
+    N3DS_TextureData *N3DS_texture = (N3DS_TextureData *) texture->driverdata;
+
     SDL_Color color = *((SDL_Color*) &(cmd->data.draw.r));
     VertVCT *verts = (VertVCT *) SDL_AllocateRenderVertices(renderer, 6 * sizeof (VertVCT), 0, &cmd->data.draw.first);
     const float centerx = center->x;
@@ -555,10 +565,10 @@ N3DS_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
     float s, c;
     float cw1, sw1, ch1, sh1, cw2, sw2, ch2, sh2;
 
-    float u0 = srcrect->x;
-    float v0 = srcrect->y;
-    float u1 = srcrect->x + srcrect->w;
-    float v1 = srcrect->y + srcrect->h;
+    float u0 = (float) srcrect->x / N3DS_texture->texture.width;
+    float v0 = 1.0f - (float) srcrect->y / N3DS_texture->texture.height;
+    float u1 = (float) (srcrect->x + srcrect->w) / N3DS_texture->texture.width;
+    float v1 = 1.0f - (float) (srcrect->y + srcrect->h) / N3DS_texture->texture.height;
 
     if (!verts) {
         return -1;
@@ -684,12 +694,12 @@ N3DS_SetBlendState(N3DS_RenderData* data, N3DS_BlendState* state)
         }
     }
 
-    if(state->texture != current->texture) {
-        if(state->texture != NULL) {
+    if (state->texture != current->texture) {
+        if (state->texture != NULL) {
             TextureActivate(state->texture);
             C3D_SetTexEnv(0, &data->envTex);
         } else {
-            C3D_SetTexEnv(0,&data->envNoTex);
+            C3D_SetTexEnv(0, &data->envNoTex);
         }
     }
 
@@ -951,7 +961,7 @@ N3DS_CreateRenderer(SDL_Renderer * renderer, SDL_Window * window, Uint32 flags)
     C3D_RenderTargetSetOutput(data->renderTarget,
         windowIsBottom ? GFX_BOTTOM : GFX_TOP, GFX_LEFT,
         GX_TRANSFER_IN_FORMAT(pixelFormat) | GX_TRANSFER_OUT_FORMAT(GPU_RB_RGBA8));
-    Mtx_OrthoTilt(&data->renderProjMtx, 0.0, width, 0.0, height, -1.0, 1.0, true);
+    Mtx_OrthoTilt(&data->renderProjMtx, 0.0, width, height, 0.0, -1.0, 1.0, true);
 
     C3D_FrameBegin(data->vsync ? C3D_FRAME_SYNCDRAW : 0);
     N3DS_SetRenderTarget(renderer, NULL);
@@ -995,13 +1005,12 @@ SDL_RenderDriver N3DS_RenderDriver = {
     .info = {
         .name = "N3DS",
         .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
-        .num_texture_formats = 5,
+        .num_texture_formats = 4,
         .texture_formats = {
             [0] = SDL_PIXELFORMAT_RGBA8888, // GPU_RGBA8
-            [1] = SDL_PIXELFORMAT_RGB888, // GPU_RGB8
-            [2] = SDL_PIXELFORMAT_RGBA5551, // GPU_RGBA5551
-            [3] = SDL_PIXELFORMAT_RGB565, // GPU_RGB565
-            [4] = SDL_PIXELFORMAT_RGBA4444 // GPU_RGBA4
+            [1] = SDL_PIXELFORMAT_RGBA5551, // GPU_RGBA5551
+            [2] = SDL_PIXELFORMAT_RGB565, // GPU_RGB565
+            [3] = SDL_PIXELFORMAT_RGBA4444 // GPU_RGBA4
         },
         .max_texture_width = 1024,
         .max_texture_height = 1024,
