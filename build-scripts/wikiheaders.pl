@@ -541,6 +541,8 @@ my %wikitypes = ();  # contains string of wiki page extension, like $wikitypes{"
 my %wikisyms = ();  # contains references to hash of strings, each string being the full contents of a section of a wiki page, like $wikisyms{"SDL_OpenAudio"}{"Remarks"}.
 my %wikisectionorder = ();   # contains references to array, each array item being a key to a wikipage section in the correct order, like $wikisectionorder{"SDL_OpenAudio"}[2] == 'Remarks'
 
+my %referenceonly = ();  # $referenceonly{"Y"} -> symbol name that this symbol is bound to. This makes wiki pages that say "See X" where "X" is a typedef and "Y" is a define attached to it. These pages are generated in the wiki only and do not bridge to the headers or manpages.
+
 sub print_undocumented_section {
     my $fh = shift;
     my $typestr = shift;
@@ -870,7 +872,11 @@ while (my $d = readdir(DH)) {
 
                 if (/\A\s*\Z/) {
                     $blank_lines++;
-                } elsif (/\A\s*\#(define|if|else|elif|endif)(\s+|\Z)/) {
+                } elsif (/\A\s*\#\s*(define|if|else|elif|endif)(\s+|\Z)/) {
+                    if (/\A\s*\#\s*define\s+([a-zA-Z0-9_]*)/) {
+                        $referenceonly{$1} = $sym;
+                    }
+                    # update strings now that we know everything pending is to be applied to this declaration. Add pending blank lines and the new text.
                     if ($blank_lines > 0) {
                         while ($blank_lines > 0) {
                             $additional_decl .= "\n";
@@ -1724,6 +1730,26 @@ if ($copy_direction == 1) {  # --copy-to-headers
         }
 
         rename($path, "$wikipath/$_.${wikitype}") or die("Can't rename '$path' to '$wikipath/$_.${wikitype}': $!\n");
+    }
+
+    # Write out simple redirector pages if they don't already exist.
+    foreach (keys %referenceonly) {
+        my $sym = $_;
+        my $refersto = $referenceonly{$sym};
+        my $path = "$wikipath/$sym.md";  # we only do Markdown for these.
+        next if (-f $path);  # don't overwrite if it already exists. Delete the file if you need a rebuild!
+        open(FH, '>', $path) or die("Can't open '$path': $!\n");
+
+        if (defined $wikipreamble) {
+            my $wikified_preamble = wikify('md', $wikipreamble);
+            print FH "###### $wikified_preamble\n";
+        }
+
+        print FH "# $sym\n\nPlease refer to [$refersto]($refersto) for details.\n\n";
+        #print FH "----\n";
+        #print FH "[CategoryAPI](CategoryAPI)\n\n";
+
+        close(FH);
     }
 
     if (defined $readmepath) {
