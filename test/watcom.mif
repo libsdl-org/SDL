@@ -108,14 +108,14 @@ testutils.lib: testutils.obj
 check: .SYMBOLIC $(TESTS)
   @set SDL_AUDIODRIVER=dummy
   @set SDL_VIDEODRIVER=dummy
-  @copy "../SDL2.dll" .
+  @copy ..\SDL2.dll .
   @for %exe in ($(TESTS)) do %exe
 
 check-quick: .SYMBOLIC $(TESTS)
   @set SDL_TESTS_QUICK=1
   @set SDL_AUDIODRIVER=dummy
   @set SDL_VIDEODRIVER=dummy
-  @copy "../SDL2.dll" .
+  @copy ..\SDL2.dll .
   @for %exe in ($(TESTS)) do %exe
 
 clean: .SYMBOLIC
