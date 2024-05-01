@@ -1737,7 +1737,6 @@ if ($copy_direction == 1) {  # --copy-to-headers
     # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
 
     File::Path::make_path("$manpath/man3");
-    File::Path::make_path("$manpath/man3type");
 
     $dewikify_mode = 'manpage';
     $wordwrap_mode = 'manpage';
@@ -2001,7 +2000,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $str .= ".UE\n";
         }
 
-        my $path = "$manpath/man$mansection/$_.$mansection";
+        my $path = "$manpath/man3/$_.$mansection";
         my $tmppath = "$path.tmp";
         open(FH, '>', $tmppath) or die("Can't open '$tmppath': $!\n");
         print FH $str;
