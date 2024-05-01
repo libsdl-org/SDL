@@ -3197,32 +3197,47 @@ static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
     locked_pointer_unlocked,
 };
 
-static void lock_pointer_to_window(SDL_Window *window,
-                                   struct SDL_WaylandInput *input)
+int Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
 {
     SDL_WindowData *w = window->driverdata;
     SDL_VideoData *d = input->display;
-    struct zwp_locked_pointer_v1 *locked_pointer;
 
     if (!d->pointer_constraints || !input->pointer) {
-        return;
+        return -1;
     }
+
+    if (!w->locked_pointer) {
+        if (w->confined_pointer) {
+            /* If the pointer is already confined to the surface, the lock will fail with a protocol error. */
+            Wayland_input_unconfine_pointer(input, window);
+        }
+
+        w->locked_pointer = zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints,
+                                                                    w->surface,
+                                                                    input->pointer,
+                                                                    NULL,
+                                                                    ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+        zwp_locked_pointer_v1_add_listener(w->locked_pointer,
+                                           &locked_pointer_listener,
+                                           window);
+    }
+
+    return 0;
+}
+
+int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
+{
+    SDL_WindowData *w = window->driverdata;
 
     if (w->locked_pointer) {
-        return;
+        zwp_locked_pointer_v1_destroy(w->locked_pointer);
+        w->locked_pointer = NULL;
     }
 
-    locked_pointer =
-        zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints,
-                                                w->surface,
-                                                input->pointer,
-                                                NULL,
-                                                ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-    zwp_locked_pointer_v1_add_listener(locked_pointer,
-                                       &locked_pointer_listener,
-                                       window);
+    /* Restore existing pointer confinement. */
+    Wayland_input_confine_pointer(input, window);
 
-    w->locked_pointer = locked_pointer;
+    return 0;
 }
 
 static void pointer_confine_destroy(SDL_Window *window)
@@ -3234,7 +3249,7 @@ static void pointer_confine_destroy(SDL_Window *window)
     }
 }
 
-int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
+int Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = input->display;
@@ -3261,10 +3276,7 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
     }
 
     if (!input->relative_pointer) {
-        relative_pointer =
-            zwp_relative_pointer_manager_v1_get_relative_pointer(
-                d->relative_pointer_manager,
-                input->pointer);
+        relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(d->relative_pointer_manager, input->pointer);
         zwp_relative_pointer_v1_add_listener(relative_pointer,
                                              &relative_pointer_listener,
                                              input);
@@ -3272,7 +3284,7 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
     }
 
     for (window = vd->windows; window; window = window->next) {
-        lock_pointer_to_window(window, input);
+        Wayland_input_lock_pointer(input, window);
     }
 
     d->relative_mouse_mode = 1;
@@ -3280,19 +3292,14 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
     return 0;
 }
 
-int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
+int Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = input->display;
     SDL_Window *window;
-    SDL_WindowData *w;
 
     for (window = vd->windows; window; window = window->next) {
-        w = window->driverdata;
-        if (w->locked_pointer) {
-            zwp_locked_pointer_v1_destroy(w->locked_pointer);
-        }
-        w->locked_pointer = NULL;
+        Wayland_input_unlock_pointer(input, window);
     }
 
     if (input->relative_pointer) {

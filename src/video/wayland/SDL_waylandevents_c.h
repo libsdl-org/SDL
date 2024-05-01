@@ -200,8 +200,11 @@ extern void Wayland_create_text_input(SDL_VideoData *d);
 extern void Wayland_input_initialize_seat(SDL_VideoData *d);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
 
-extern int Wayland_input_lock_pointer(struct SDL_WaylandInput *input);
-extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input);
+extern int Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input);
+extern int Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input);
+
+extern int Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
+extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
 
 extern int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);
 extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *window);

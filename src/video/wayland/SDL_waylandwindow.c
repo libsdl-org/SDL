@@ -2350,7 +2350,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 #endif
 
     if (c->relative_mouse_mode) {
-        Wayland_input_lock_pointer(c->input);
+        Wayland_input_enable_relative_pointer(c->input);
     }
 
     /* We may need to create an idle inhibitor for this new window */
