@@ -2003,7 +2003,12 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 s/\A\s+//;
                 s/\s+\Z//;
                 next if $_ eq '';
-                $str .= "$nextstr.BR $_ (3)";
+                my $seealso_symtype = $headersymstype{$_};
+                my $seealso_mansection = '3';
+                if (defined($seealso_symtype) && ($seealso_symtype >= 3) && ($seealso_symtype <= 5)) {  # struct/union/enum/typedef
+                    $seealso_mansection = '3type';
+                }
+                $str .= "$nextstr.BR $_ ($seealso_mansection)";
                 $nextstr = ",\n";
             }
             $str .= "\n";
