@@ -2394,6 +2394,10 @@ static int D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     ID3D11SamplerState *textureSampler;
     PixelShaderConstants constants;
 
+    if (!textureData) {
+        return SDL_SetError("Texture is not currently available");
+    }
+
     D3D11_SetupShaderConstants(renderer, cmd, texture, &constants);
 
     switch (textureData->scaleMode) {
