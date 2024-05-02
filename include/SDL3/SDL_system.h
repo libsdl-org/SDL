@@ -107,6 +107,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, 
 /*
  * Platform specific functions for UNIX
  */
+#ifdef SDL_PLATFORM_UNIX
 
 typedef union _XEvent XEvent;
 typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
@@ -124,6 +125,8 @@ typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
+
+#endif /* SDL_PLATFORM_UNIX */
 
 /* Platform specific functions for Linux*/
 #ifdef SDL_PLATFORM_LINUX
