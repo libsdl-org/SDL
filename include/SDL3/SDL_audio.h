@@ -1540,8 +1540,11 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV_IO(SDL_IOStream * src, SDL_bool closeio,
 extern DECLSPEC int SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec * spec,
                                         Uint8 ** audio_buf, Uint32 * audio_len);
 
-
-
+/**
+ * Maximum volume allowed in calls to SDL_MixAudioFormat.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MIX_MAXVOLUME 128
 
 /**

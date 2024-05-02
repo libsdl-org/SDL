@@ -780,6 +780,53 @@ while (my $d = readdir(DH)) {
                     $decl .= "\n";
                 }
             }
+
+            # !!! FIXME: code duplication with typedef processing, below.
+            # We assume any `#define`s directly after the function are related to it: probably bitflags for an integer typedef.
+            # We'll also allow some other basic preprocessor lines.
+            # Blank lines are allowed, anything else, even comments, are not.
+            my $blank_lines = 0;
+            my $lastpos = tell(FH);
+            my $lastlineno = $lineno;
+            my $additional_decl = '';
+            my $saw_define = 0;
+            while (<FH>) {
+                chomp;
+
+                $lineno++;
+
+                if (/\A\s*\Z/) {
+                    $blank_lines++;
+                } elsif (/\A\s*\#\s*(define|if|else|elif|endif)(\s+|\Z)/) {
+                    if (/\A\s*\#\s*define\s+([a-zA-Z0-9_]*)/) {
+                        $referenceonly{$1} = $sym;
+                        $saw_define = 1;
+                    } elsif (!$saw_define) {
+                        # if the first non-blank thing isn't a #define, assume we're done.
+                        seek(FH, $lastpos, 0);  # re-read eaten lines again next time.
+                        $lineno = $lastlineno;
+                        last;
+                    }
+
+                    # update strings now that we know everything pending is to be applied to this declaration. Add pending blank lines and the new text.
+                    if ($blank_lines > 0) {
+                        while ($blank_lines > 0) {
+                            $additional_decl .= "\n";
+                            push @decllines, '';
+                            $blank_lines--;
+                        }
+                    }
+                    $additional_decl .= "\n$_";
+                    push @decllines, $_;
+                    $lastpos = tell(FH);
+                } else {
+                    seek(FH, $lastpos, 0);  # re-read eaten lines again next time.
+                    $lineno = $lastlineno;
+                    last;
+                }
+            }
+            $decl .= $additional_decl;
+
         } elsif ($symtype == 2) {  # a macro
             if ($decl =~ /\A\s*\#\s*define\s+(.*?)(\(.*?\)|)\s+/) {
                 $sym = $1;
@@ -900,6 +947,7 @@ while (my $d = readdir(DH)) {
             my $lastpos = tell(FH);
             my $lastlineno = $lineno;
             my $additional_decl = '';
+            my $saw_define = 0;
             while (<FH>) {
                 chomp;
 
@@ -910,6 +958,12 @@ while (my $d = readdir(DH)) {
                 } elsif (/\A\s*\#\s*(define|if|else|elif|endif)(\s+|\Z)/) {
                     if (/\A\s*\#\s*define\s+([a-zA-Z0-9_]*)/) {
                         $referenceonly{$1} = $sym;
+                        $saw_define = 1;
+                    } elsif (!$saw_define) {
+                        # if the first non-blank thing isn't a #define, assume we're done.
+                        seek(FH, $lastpos, 0);  # re-read eaten lines again next time.
+                        $lineno = $lastlineno;
+                        last;
                     }
                     # update strings now that we know everything pending is to be applied to this declaration. Add pending blank lines and the new text.
                     if ($blank_lines > 0) {

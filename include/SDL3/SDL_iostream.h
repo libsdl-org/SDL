@@ -375,6 +375,7 @@ extern DECLSPEC int SDLCALL SDL_CloseIO(SDL_IOStream *context);
  */
 extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetIOProperties(SDL_IOStream *context);
 
+/* Possible `whence` values for SDL_IOStream seeking... */
 #define SDL_IO_SEEK_SET 0       /**< Seek from the beginning of data */
 #define SDL_IO_SEEK_CUR 1       /**< Seek relative to current read point */
 #define SDL_IO_SEEK_END 2       /**< Seek relative to the end of data */
