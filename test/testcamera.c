@@ -189,9 +189,12 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
                 return -1;
             }
 
+            /* Resize the window to match */
+            SDL_SetWindowSize(window, spec.width, spec.height);
+
             /* Create texture with appropriate format */
             SDL_assert(texture == NULL);
-            texture = SDL_CreateTexture(renderer, spec.format, SDL_TEXTUREACCESS_STATIC, spec.width, spec.height);
+            texture = SDL_CreateTexture(renderer, spec.format, SDL_TEXTUREACCESS_STREAMING, spec.width, spec.height);
             if (!texture) {
                 SDL_Log("Couldn't create texture: %s", SDL_GetError());
                 return -1;
