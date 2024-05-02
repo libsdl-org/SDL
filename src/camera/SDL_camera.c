@@ -1001,7 +1001,7 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
         closest->format = bestfmt;
 
         // We have a resolution and a format, find the closest framerate...
-        const float wantfps = spec->interval_numerator ? (spec->interval_denominator / spec->interval_numerator) : 0.0f;
+        const float wantfps = spec->interval_denominator ? (spec->interval_numerator / spec->interval_denominator) : 0.0f;
         float closestfps = 9999999.0f;
         for (int i = 0; i < num_specs; i++) {
             const SDL_CameraSpec *thisspec = &device->all_specs[i];
@@ -1012,7 +1012,7 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
                     break;  // exact match, stop looking.
                 }
 
-                const float thisfps = thisspec->interval_numerator ? (thisspec->interval_denominator / thisspec->interval_numerator) : 0.0f;
+                const float thisfps = thisspec->interval_denominator ? (thisspec->interval_numerator / thisspec->interval_denominator) : 0.0f;
                 const float fpsdiff = SDL_fabs(wantfps - thisfps);
                 if (fpsdiff < closestfps) {  // this is a closest FPS? Take it until something closer arrives.
                     closestfps = fpsdiff;
