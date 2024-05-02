@@ -97,13 +97,9 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         return -1;
     }
 
-    SDL_CameraSpec *pspec = NULL;
-    #if 0  /* just for edge-case testing purposes, ignore. */
-    pspec = &spec;
-    spec.width = 100 /*1280 * 2*/;
-    spec.height = 100 /*720 * 2*/;
-    spec.format = SDL_PIXELFORMAT_YUY2 /*SDL_PIXELFORMAT_RGBA8888*/;
-    #endif
+    SDL_CameraSpec *pspec = &spec;
+    spec.interval_numerator = 1000;
+    spec.interval_denominator = 1;
 
     camera = SDL_OpenCameraDevice(devid, pspec);
     if (!camera) {
