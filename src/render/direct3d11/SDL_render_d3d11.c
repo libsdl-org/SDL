@@ -1584,6 +1584,19 @@ static int D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Tex
     return 0;
 }
 
+#if SDL_HAVE_YUV
+static int D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
+                                 const SDL_Rect *rect,
+                                 const Uint8 *Yplane, int Ypitch,
+                                 const Uint8 *UVplane, int UVpitch);
+
+static int D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
+                                  const SDL_Rect *rect,
+                                  const Uint8 *Yplane, int Ypitch,
+                                  const Uint8 *Uplane, int Upitch,
+                                  const Uint8 *Vplane, int Vpitch);
+#endif
+
 static int D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                const SDL_Rect *rect, const void *srcPixels,
                                int srcPitch)
@@ -1595,25 +1608,27 @@ static int D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
+#if SDL_HAVE_YUV
+    if (textureData->nv12) {
+        const Uint8 *Yplane = (const Uint8 *)srcPixels;
+        const Uint8 *UVplane = Yplane + rect->h * srcPitch;
+        
+        return D3D11_UpdateTextureNV(renderer, texture, rect, Yplane, srcPitch, UVplane, srcPitch);
+
+    } else if (textureData->yuv) {
+        int Ypitch = srcPitch;
+        int UVpitch = ((Ypitch + 1) / 2);
+        const Uint8 *Yplane = (const Uint8 *)srcPixels;
+        const Uint8 *Uplane = Yplane + rect->h * Ypitch;
+        const Uint8 *Vplane = Uplane + ((rect->h + 1) / 2) * UVpitch;
+
+        return D3D11_UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Uplane, UVpitch, Vplane, UVpitch);
+    }
+#endif
+
     if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch) < 0) {
         return -1;
     }
-#if SDL_HAVE_YUV
-    if (textureData->yuv) {
-        /* Skip to the correct offset into the next texture */
-        srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
-
-        if (D3D11_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureV : textureData->mainTextureU, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2) < 0) {
-            return -1;
-        }
-
-        /* Skip to the correct offset into the next texture */
-        srcPixels = (const void *)((const Uint8 *)srcPixels + ((rect->h + 1) / 2) * ((srcPitch + 1) / 2));
-        if (D3D11_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureU : textureData->mainTextureV, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2) < 0) {
-            return -1;
-        }
-    }
-#endif /* SDL_HAVE_YUV */
     return 0;
 }
 
