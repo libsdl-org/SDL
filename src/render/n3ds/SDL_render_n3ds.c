@@ -40,7 +40,20 @@
  *
  * TODO:
  * - Native SDL_PIXELFORMAT_RGB888 support (breaks with SDL_TEXTUREACCESS_STREAMING)
+ * - Fix GX Display Transfer usage for offloading texture swizzling to hardware
  */
+
+static u8 SwizzleLUT[64] =
+{
+  0x00, 0x01, 0x04, 0x05, 0x10, 0x11, 0x14, 0x15,
+  0x02, 0x03, 0x06, 0x07, 0x12, 0x13, 0x16, 0x17,
+  0x08, 0x09, 0x0c, 0x0d, 0x18, 0x19, 0x1c, 0x1d,
+  0x0a, 0x0b, 0x0e, 0x0f, 0x1a, 0x1b, 0x1e, 0x1f,
+  0x20, 0x21, 0x24, 0x25, 0x30, 0x31, 0x34, 0x35,
+  0x22, 0x23, 0x26, 0x27, 0x32, 0x33, 0x36, 0x37,
+  0x28, 0x29, 0x2c, 0x2d, 0x38, 0x39, 0x3c, 0x3d,
+  0x2a, 0x2b, 0x2e, 0x2f, 0x3a, 0x3b, 0x3e, 0x3f
+};
 
 static int
 PixelFormatToN3DSGPU(Uint32 format)
@@ -61,11 +74,7 @@ PixelFormatToN3DSGPU(Uint32 format)
     }
 }
 
-#define COL5650(r,g,b,a)    ((b>>3) | ((g>>2)<<5) | ((r>>3)<<11))
-#define COL5551(r,g,b,a)    (((b>>3)<<1) | ((g>>3)<<6) | ((r>>3)<<11) | (a>0?1:0))
-#define COL4444(r,g,b,a)    ((a>>4) | ((b>>4)<<4) | ((g>>4)<<8) | ((r>>4)<<12))
 #define COL8888(r,g,b,a)    ((a) | ((b)<<8) | ((g)<<16) | ((r)<<24))
-#define COL888(r,g,b)       ((b) | ((g)<<16) | ((r)<<24))
 
 typedef struct
 {
@@ -246,7 +255,7 @@ N3DS_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 
     const Uint8 *src;
     Uint8 *dst;
-    int row, length,dpitch;
+    int row, length, dpitch;
     src = pixels;
 
     if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
@@ -287,7 +296,7 @@ N3DS_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         (void *) ((Uint8 *) N3DS_texture->unswizzledBuffer + rect->y * N3DS_texture->unswizzledPitch +
                   rect->x * SDL_BYTESPERPIXEL(texture->format));
     *pitch = N3DS_texture->unswizzledPitch;
-    
+
     return 0;
 }
 
@@ -298,6 +307,8 @@ N3DS_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     /* We do whole texture updates, at least for now */
     GSPGPU_FlushDataCache(N3DS_texture->unswizzledBuffer, N3DS_texture->unswizzledSize);
+
+    /*
     C3D_SyncDisplayTransfer(
         N3DS_texture->unswizzledBuffer,
         GX_BUFFER_DIM(N3DS_texture->unswizzledWidth, N3DS_texture->unswizzledHeight),
@@ -307,6 +318,25 @@ N3DS_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         GX_TRANSFER_IN_FORMAT(N3DS_texture->texture.fmt) | GX_TRANSFER_OUT_FORMAT(N3DS_texture->texture.fmt) |
         GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO)
     );
+    */
+
+    if (SDL_BYTESPERPIXEL(texture->format) == 4) {
+        uint32_t *dst = N3DS_texture->texture.data;
+        for (int y = 0; y < N3DS_texture->unswizzledHeight; y++) {
+            uint32_t *src = (uint32_t*) (N3DS_texture->unswizzledBuffer + (y * N3DS_texture->unswizzledPitch));
+            for (int x = 0; x < N3DS_texture->unswizzledWidth; x++, src++) {
+                dst[SwizzleLUT[(x & 7) + ((y & 7) << 3)] + ((x & (~7)) << 3) + ((y & (~7)) * N3DS_texture->texture.width)] = *src;
+            }
+        }
+    } else if (SDL_BYTESPERPIXEL(texture->format) == 2) {
+        uint16_t *dst = N3DS_texture->texture.data;
+        for (int y = 0; y < N3DS_texture->unswizzledHeight; y++) {
+            uint16_t *src = (uint16_t*) (N3DS_texture->unswizzledBuffer + (y * N3DS_texture->unswizzledPitch));
+            for (int x = 0; x < N3DS_texture->unswizzledWidth; x++, src++) {
+                dst[SwizzleLUT[(x & 7) + ((y & 7) << 3)] + ((x & (~7)) << 3) + ((y & (~7)) * N3DS_texture->texture.width)] = *src;
+            }
+        }
+    }
 }
 
 static void
@@ -770,7 +800,7 @@ N3DS_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
             }
 
             case SDL_RENDERCMD_FILL_RECTS: {
-                const size_t first = cmd->data.draw.first;
+                const size_t first = cmd->data.draw.first / sizeof(VertVCT);
                 const size_t count = cmd->data.draw.count;
                 N3DS_BlendState state = {
                     .texture = NULL,
@@ -783,7 +813,7 @@ N3DS_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
 
             case SDL_RENDERCMD_COPY:
             case SDL_RENDERCMD_COPY_EX: {
-                const size_t first = cmd->data.draw.first;
+                const size_t first = cmd->data.draw.first / sizeof(VertVCT);
                 const size_t count = cmd->data.draw.count;
                 N3DS_BlendState state = {
                     .texture = cmd->data.draw.texture,
@@ -795,7 +825,7 @@ N3DS_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
             }
 
             case SDL_RENDERCMD_GEOMETRY: {
-                const size_t first = cmd->data.draw.first;
+                const size_t first = cmd->data.draw.first / sizeof(VertVCT);
                 const size_t count = cmd->data.draw.count;
                 N3DS_BlendState state = {
                     .texture = cmd->data.draw.texture,
