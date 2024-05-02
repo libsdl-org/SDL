@@ -200,10 +200,12 @@ N3DS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     N3DS_texture->width = texture->w;
     N3DS_texture->height = texture->h;
 
+#if 0
     initialized = C3D_TexInitVRAM(&N3DS_texture->texture,
         TextureNextPow2(texture->w),
         TextureNextPow2(texture->h),
         PixelFormatToN3DSGPU(texture->format));
+#endif
 
     if (!initialized) {
         initialized = C3D_TexInit(&N3DS_texture->texture,
