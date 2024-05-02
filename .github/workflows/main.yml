@@ -109,6 +109,7 @@ jobs:
           -DSDL_INSTALL_TESTS=ON \
           -DSDL_VENDOR_INFO="Github Workflow" \
           -DSDL_CLANG_TIDY=ON \
+          -DSDL_DISABLE_INSTALL_DOCS=OFF \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.cmake-platform }} \

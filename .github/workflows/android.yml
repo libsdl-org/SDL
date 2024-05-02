@@ -52,6 +52,7 @@ jobs:
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
             -DSDL_CLANG_TIDY=ON \
+            -DSDL_DISABLE_INSTALL_DOCS=OFF \
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
             -DSDL_SHARED=ON \
