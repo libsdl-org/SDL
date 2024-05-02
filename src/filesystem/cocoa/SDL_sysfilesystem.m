@@ -146,9 +146,10 @@ char *SDL_GetUserFolder(SDL_Folder folder)
 
             if (!base) {
                 SDL_SetError("No $HOME environment variable available");
+                return NULL;
             }
 
-            return SDL_strdup(base);
+            goto append_slash;
 
         case SDL_FOLDER_DESKTOP:
             dir = NSDesktopDirectory;
@@ -209,6 +210,7 @@ char *SDL_GetUserFolder(SDL_Folder folder)
             return NULL;
         }
 
+append_slash:
         retval = SDL_malloc(SDL_strlen(base) + 2);
         if (retval == NULL) {
             return NULL;

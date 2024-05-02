@@ -535,7 +535,8 @@ char *SDL_GetUserFolder(SDL_Folder folder)
             return NULL;
         }
 
-        return SDL_strdup(param);
+        retval = SDL_strdup(param);
+        goto append_slash;
 
     case SDL_FOLDER_DESKTOP:
         param = "DESKTOP";
@@ -595,6 +596,7 @@ char *SDL_GetUserFolder(SDL_Folder folder)
         return NULL;
     }
 
+append_slash:
     newretval = (char *) SDL_realloc(retval, SDL_strlen(retval) + 2);
 
     if (!newretval) {
