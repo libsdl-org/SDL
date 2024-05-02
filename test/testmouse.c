@@ -211,6 +211,20 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_KEY_DOWN:
+            if (event.key.keysym.sym == SDLK_c) {
+                int x, y, w, h;
+                SDL_GetWindowPosition(window, &x, &y);
+                SDL_GetWindowSize(window, &w, &h);
+                w /= 2;
+                h /= 2;
+
+                if (event.key.keysym.mod & SDL_KMOD_ALT) {
+                    SDL_WarpMouseGlobal((float)(x + w), (float)(y + h));
+                } else {
+                    SDL_WarpMouseInWindow(window, (float)w, (float)h);
+                }
+            }
+            SDL_FALLTHROUGH;
         case SDL_EVENT_KEY_UP:
             switch (event.key.keysym.sym) {
             case SDLK_LSHIFT:
