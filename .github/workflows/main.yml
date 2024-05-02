@@ -30,9 +30,10 @@ jobs:
         - { name: Intel Compiler (Ubuntu 20.04),  os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-icc', intel: true, cmake: '-DSDL_CLANG_TIDY=OFF',
             source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icc; export CXX=icpc; export CFLAGS=-diag-disable=10441; export CXXFLAGS=-diag-disable=10441; '}
         - { name: Ubuntu 22.04,                   os: ubuntu-22.04,   shell: sh, artifact: 'SDL-ubuntu22.04' }
-        - { name: MacOS (Framework) (x86_64),     os: macos-12,       shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework', no-static: true }
-        - { name: MacOS (Framework) (arm64),      os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, no-static: true }
-        - { name: MacOS (GNU prefix),             os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="arm64"', cmake: '-DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-arm64-gnu' }
+        - { name: MacOS (Framework) (x86_64),     os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework', no-static: true }
+        - { name: MacOS (Framework) (arm64),      os: macos-13,       shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, no-static: true }
+        - { name: MacOS (GNU prefix) (x86_64),    os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64"', cmake: '-DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-x86_64-gnu' }
+        - { name: MacOS (GNU prefix) (arm64),     os: macos-13,       shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="arm64"', cmake: '-DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-arm64-gnu' }
         - { name: iOS (GNU prefix),               os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"',  cross-build: true, skip_test_pkgconfig: true, artifact: 'SDL-ios-gnu' }
         - { name: tvOS (GNU prefix),              os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cross-build: true, skip_test_pkgconfig: true, artifact: 'SDL-tvos-gnu' }
 
