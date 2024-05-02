@@ -927,8 +927,6 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface * src,
                                             const SDL_Rect * dstrect);
 
 
-#define SDL_BlitScaled SDL_UpperBlitScaled
-
 /**
  * Perform a scaled surface copy to a destination surface.
  *
@@ -942,6 +940,9 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface * src,
 extern DECLSPEC int SDLCALL SDL_UpperBlitScaled
     (SDL_Surface * src, const SDL_Rect * srcrect,
     SDL_Surface * dst, SDL_Rect * dstrect);
+
+#define SDL_BlitScaled SDL_UpperBlitScaled
+
 
 /**
  * Perform low-level surface scaled blitting only.

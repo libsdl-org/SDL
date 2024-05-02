@@ -188,8 +188,6 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
 /* Platform specific functions for iOS */
 #ifdef __IPHONEOS__
 
-#define SDL_iOSSetAnimationCallback(window, interval, callback, callbackParam) SDL_iPhoneSetAnimationCallback(window, interval, callback, callbackParam)
-
 /**
  * Use this function to set the animation callback on Apple iOS.
  *
@@ -224,7 +222,8 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID,
  */
 extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (SDLCALL *callback)(void*), void *callbackParam);
 
-#define SDL_iOSSetEventPump(enabled) SDL_iPhoneSetEventPump(enabled)
+#define SDL_iOSSetAnimationCallback(window, interval, callback, callbackParam) SDL_iPhoneSetAnimationCallback(window, interval, callback, callbackParam)
+
 
 /**
  * Use this function to enable or disable the SDL event pump on Apple iOS.
@@ -242,6 +241,9 @@ extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, 
  */
 extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
 
+#define SDL_iOSSetEventPump(enabled) SDL_iPhoneSetEventPump(enabled)
+
+/* end of iOS-specific functions. */
 #endif /* __IPHONEOS__ */
 
 

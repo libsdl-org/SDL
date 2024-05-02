@@ -1122,6 +1122,9 @@ extern DECLSPEC void SDLCALL SDL_AudioStreamClear(SDL_AudioStream *stream);
  */
 extern DECLSPEC void SDLCALL SDL_FreeAudioStream(SDL_AudioStream *stream);
 
+/**
+ * Maximum volume allowed in calls to SDL_MixAudio and SDL_MixAudioFormat.
+ */
 #define SDL_MIX_MAXVOLUME 128
 
 /**

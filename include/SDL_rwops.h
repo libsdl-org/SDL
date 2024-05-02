@@ -366,6 +366,7 @@ extern DECLSPEC SDL_RWops *SDLCALL SDL_AllocRW(void);
  */
 extern DECLSPEC void SDLCALL SDL_FreeRW(SDL_RWops * area);
 
+/* Possible `whence` values for SDL_RWops seeking... */
 #define RW_SEEK_SET 0       /**< Seek from the beginning of data */
 #define RW_SEEK_CUR 1       /**< Seek relative to current read point */
 #define RW_SEEK_END 2       /**< Seek relative to the end of data */

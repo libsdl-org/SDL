@@ -528,6 +528,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_crc32(Uint32 crc, const void *data, size_t le
 
 extern DECLSPEC void *SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len);
 
+/* Some safe(r) macros for zero'ing structures... */
 #define SDL_zero(x) SDL_memset(&(x), 0, sizeof((x)))
 #define SDL_zerop(x) SDL_memset((x), 0, sizeof(*(x)))
 #define SDL_zeroa(x) SDL_memset((x), 0, sizeof((x)))
@@ -713,6 +714,8 @@ extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
                                                const char *fromcode,
                                                const char *inbuf,
                                                size_t inbytesleft);
+
+/* Some helper macros for common cases... */
 #define SDL_iconv_utf8_locale(S)    SDL_iconv_string("", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_utf8_ucs2(S)      (Uint16 *)SDL_iconv_string("UCS-2", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_utf8_ucs4(S)      (Uint32 *)SDL_iconv_string("UCS-4", "UTF-8", S, SDL_strlen(S)+1)
