@@ -226,10 +226,13 @@ N3DS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         N3DS_texture->renderTarget = C3D_RenderTargetCreateFromTex(&N3DS_texture->texture, GPU_TEXFACE_2D, 0, GPU_RB_DEPTH16);
+
         if (N3DS_texture->renderTarget == NULL) {
+            C3D_TexDelete(&N3DS_texture->texture);
             SDL_free(N3DS_texture);
             return SDL_OutOfMemory();
         }
+
         Mtx_Ortho(&N3DS_texture->renderProjMtx, 0.0, N3DS_texture->texture.width, 0.0, N3DS_texture->texture.height, -1.0, 1.0, true);
     } else if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
         N3DS_texture->unswizzledBuffer = linearAlloc(N3DS_texture->unswizzledSize);
@@ -306,9 +309,9 @@ N3DS_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     N3DS_TextureData *N3DS_texture = (N3DS_TextureData *) texture->driverdata;
 
     /* We do whole texture updates, at least for now */
-    GSPGPU_FlushDataCache(N3DS_texture->unswizzledBuffer, N3DS_texture->unswizzledSize);
 
     /*
+    GSPGPU_FlushDataCache(N3DS_texture->unswizzledBuffer, N3DS_texture->unswizzledSize);
     C3D_SyncDisplayTransfer(
         N3DS_texture->unswizzledBuffer,
         GX_BUFFER_DIM(N3DS_texture->unswizzledWidth, N3DS_texture->unswizzledHeight),
@@ -337,6 +340,8 @@ N3DS_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             }
         }
     }
+
+    C3D_TexFlush(&N3DS_texture->texture);
 }
 
 static void
