@@ -116,6 +116,7 @@ typedef struct
     C3D_Mtx             renderProjMtx;
     SDL_Texture*        boundTarget;                         /**< currently bound rendertarget */
     SDL_bool            initialized;                         /**< is driver initialized */
+    SDL_bool            displayListAvail;                    /**< is the display list already initialized for this frame */
     unsigned int        psm;                                 /**< format of the display buffers */
     unsigned int        bpp;                                 /**< bits per pixel of the main display */
 
@@ -702,6 +703,18 @@ ResetBlendState(N3DS_RenderData *data, N3DS_BlendState* state) {
     C3D_SetTexEnv(0, &data->envNoTex);
 }
 
+static void StartDrawing(SDL_Renderer *renderer)
+{
+    N3DS_RenderData *data = (N3DS_RenderData *)renderer->driverdata;
+
+    // Check if we need to start the displaylist
+    if (!data->displayListAvail) {
+        C3D_FrameBegin(data->vsync ? C3D_FRAME_SYNCDRAW : 0);
+        N3DS_SetRenderTarget(renderer, data->boundTarget);
+        data->displayListAvail = SDL_TRUE;
+    }
+}
+
 static void
 N3DS_SetBlendState(N3DS_RenderData* data, N3DS_BlendState* state)
 {
@@ -749,6 +762,8 @@ N3DS_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
     C3D_BufInfo *bufInfo = C3D_GetBufInfo();
     BufInfo_Init(bufInfo);
     BufInfo_Add(bufInfo, vertices, sizeof(VertVCT), 3, 0x210);
+
+    StartDrawing(renderer);
 
     while (cmd) {
         switch (cmd->command) {
@@ -862,10 +877,11 @@ static int
 N3DS_RenderPresent(SDL_Renderer * renderer)
 {
     N3DS_RenderData *data = (N3DS_RenderData *) renderer->driverdata;
-    C3D_FrameEnd(0);
 
-    C3D_FrameBegin(data->vsync ? C3D_FRAME_SYNCDRAW : 0);
-    N3DS_SetRenderTarget(renderer, data->boundTarget);
+    if (data->displayListAvail) {
+        C3D_FrameEnd(0);
+        data->displayListAvail = SDL_FALSE;
+    }
 
     return 0;
 }
@@ -997,9 +1013,6 @@ N3DS_CreateRenderer(SDL_Renderer * renderer, SDL_Window * window, Uint32 flags)
         windowIsBottom ? GFX_BOTTOM : GFX_TOP, GFX_LEFT,
         GX_TRANSFER_IN_FORMAT(pixelFormat) | GX_TRANSFER_OUT_FORMAT(GPU_RB_RGBA8));
     Mtx_OrthoTilt(&data->renderProjMtx, 0.0, width, height, 0.0, -1.0, 1.0, true);
-
-    C3D_FrameBegin(data->vsync ? C3D_FRAME_SYNCDRAW : 0);
-    N3DS_SetRenderTarget(renderer, NULL);
 
     C3D_DepthTest(false, GPU_GEQUAL, GPU_WRITE_ALL);
     C3D_CullFace(GPU_CULL_NONE);
