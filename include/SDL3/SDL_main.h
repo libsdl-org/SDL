@@ -402,8 +402,34 @@ extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void *appstate);
  * \since This datatype is available since SDL 3.0.0.
  */
 typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);
 
+/**
+ * An app-supplied function for program entry.
+ *
+ * Apps do not directly create this function; they should create
+ * a standard ANSI-C `main` function instead. If SDL needs to
+ * insert some startup code before `main` runs, or the platform
+ * doesn't actually _use_ a function called "main", SDL will do some
+ * macro magic to redefine `main` to `SDL_main` and provide its
+ * own `main`.
+ *
+ * Apps should include `SDL_main.h` in the same file as their
+ * `main` function, and they should not use that symbol for anything
+ * else in that file, as it might get redefined.
+ *
+ * This function is only provided by the app if it isn't using
+ * SDL_MAIN_USE_CALLBACKS.
+ *
+ * Program startup is a surprisingly complex topic. Please see
+ * [README/main-functions](README/main-functions), (or
+ * docs/README-main-functions.md in the source tree) for a more detailed
+ * explanation.
+ *
+ * \threadsafety This is the program entry point.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);
 
 /**
  * Circumvent failure of SDL_Init() when not using SDL_main() as an entry
