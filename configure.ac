@@ -322,7 +322,7 @@ AC_ARG_ENABLE(libc,
 dnl See whether we are allowed to use system iconv
 enable_system_iconv_default=yes
 case "$host" in
-  *-*-cygwin*|*-*-mingw*)
+  *-*-cygwin*|*-*-mingw*|*-*-darwin*|*-ios-*)
     enable_system_iconv_default=no
     ;;
 esac
