@@ -110,8 +110,8 @@ typedef Uint32 SDL_JoystickID;
  * type of device, and will report it through SDL_GetJoystickType (or
  * SDL_GetJoystickInstanceType).
  *
- * This is by no means a complete list of everything that can be plugged
- * into a computer.
+ * This is by no means a complete list of everything that can be plugged into
+ * a computer.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -132,8 +132,8 @@ typedef enum SDL_JoystickType
 /**
  * Possible connection states for a joystick device.
  *
- * This is used by SDL_GetJoystickConnectionState to report how a device
- * is connected to the system.
+ * This is used by SDL_GetJoystickConnectionState to report how a device is
+ * connected to the system.
  *
  * \since This enum is available since SDL 3.0.0.
  */

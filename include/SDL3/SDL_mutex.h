@@ -133,8 +133,8 @@ extern "C" {
 /**
  * A means to serialize access to a resource between threads.
  *
- * Mutexes (short for "mutual exclusion") are a synchronization primitive
- * that allows exactly one thread to proceed at a time.
+ * Mutexes (short for "mutual exclusion") are a synchronization primitive that
+ * allows exactly one thread to proceed at a time.
  *
  * Wikipedia has a thorough explanation of the concept:
  *
@@ -261,20 +261,18 @@ extern DECLSPEC void SDLCALL SDL_DestroyMutex(SDL_Mutex *mutex);
 /**
  * A mutex that allows read-only threads to run in parallel.
  *
- * A rwlock is roughly the same concept as SDL_Mutex, but allows
- * threads that request read-only access to all hold the lock at
- * the same time. If a thread requests write access, it will block
- * until all read-only threads have released the lock, and no one
- * else can hold the thread (for reading or writing) at the same
- * time as the writing thread.
+ * A rwlock is roughly the same concept as SDL_Mutex, but allows threads that
+ * request read-only access to all hold the lock at the same time. If a thread
+ * requests write access, it will block until all read-only threads have
+ * released the lock, and no one else can hold the thread (for reading or
+ * writing) at the same time as the writing thread.
  *
- * This can be more efficient in cases where several threads need
- * to access data frequently, but changes to that data are rare.
+ * This can be more efficient in cases where several threads need to access
+ * data frequently, but changes to that data are rare.
  *
- * There are other rules that apply to rwlocks that don't apply
- * to mutexes, about how threads are scheduled and when they can
- * be recursively locked. These are documented in the other rwlock
- * functions.
+ * There are other rules that apply to rwlocks that don't apply to mutexes,
+ * about how threads are scheduled and when they can be recursively locked.
+ * These are documented in the other rwlock functions.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -517,11 +515,10 @@ extern DECLSPEC void SDLCALL SDL_DestroyRWLock(SDL_RWLock *rwlock);
 /**
  * A means to manage access to a resource, by count, between threads.
  *
- * Semaphores (specifically, "counting semaphores"), let X number of
- * threads request access at the same time, each thread granted access
- * decrementing a counter. When the counter reaches zero, future requests
- * block until a prior thread releases their request, incrementing the
- * counter again.
+ * Semaphores (specifically, "counting semaphores"), let X number of threads
+ * request access at the same time, each thread granted access decrementing a
+ * counter. When the counter reaches zero, future requests block until a prior
+ * thread releases their request, incrementing the counter again.
  *
  * Wikipedia has a thorough explanation of the concept:
  *
@@ -671,9 +668,9 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetSemaphoreValue(SDL_Semaphore *sem);
 /**
  * A means to block multiple threads until a condition is satisfied.
  *
- * Condition variables, paired with an SDL_Mutex, let an app
- * halt multiple threads until a condition has occurred, at which
- * time the app can release one or all waiting threads.
+ * Condition variables, paired with an SDL_Mutex, let an app halt multiple
+ * threads until a condition has occurred, at which time the app can release
+ * one or all waiting threads.
  *
  * Wikipedia has a thorough explanation of the concept:
  *
