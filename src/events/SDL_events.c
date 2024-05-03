@@ -1248,7 +1248,8 @@ int SDL_PushEvent(SDL_Event *event)
         event->common.timestamp = SDL_GetTicksNS();
     }
 
-    if (SDL_EventOK.callback || SDL_event_watchers_count > 0) {
+    if ((SDL_EventOK.callback || SDL_event_watchers_count > 0) &&
+        (event->common.type != SDL_EVENT_POLL_SENTINEL)) {
         SDL_LockMutex(SDL_event_watchers_lock);
         {
             if (SDL_EventOK.callback && !SDL_EventOK.callback(SDL_EventOK.userdata, event)) {
