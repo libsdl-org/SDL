@@ -24,7 +24,7 @@ import zipfile
 logger = logging.getLogger(__name__)
 
 
-VcArchDevel = collections.namedtuple("VcArchDevel", ("dll", "imp", "test"))
+VcArchDevel = collections.namedtuple("VcArchDevel", ("dll", "pdb", "imp", "test"))
 GIT_HASH_FILENAME = ".git-hash"
 
 ANDROID_AVAILABLE_ABIS = [
@@ -456,10 +456,12 @@ class Releaser:
 
     def build_vs(self, arch: str, platform: str, vs: VisualStudio, configuration: str="Release"):
         dll_path = self.root / f"VisualC/SDL/{platform}/{configuration}/{self.project}.dll"
+        pdb_path = self.root / f"VisualC/SDL/{platform}/{configuration}/{self.project}.pdb"
         imp_path = self.root / f"VisualC/SDL/{platform}/{configuration}/{self.project}.lib"
         test_path = self.root / f"VisualC/SDL_test/{platform}/{configuration}/{self.project}_test.lib"
 
         dll_path.unlink(missing_ok=True)
+        pdb_path.unlink(missing_ok=True)
         imp_path.unlink(missing_ok=True)
         test_path.unlink(missing_ok=True)
 
@@ -473,11 +475,13 @@ class Releaser:
         if self.dry:
             dll_path.parent.mkdir(parents=True, exist_ok=True)
             dll_path.touch()
+            pdb_path.touch()
             imp_path.touch()
             test_path.parent.mkdir(parents=True, exist_ok=True)
             test_path.touch()
 
         assert dll_path.is_file(), "SDL3.dll has not been created"
+        assert pdb_path.is_file(), "SDL3.pdb has not been created"
         assert imp_path.is_file(), "SDL3.lib has not been created"
         assert test_path.is_file(), "SDL3_test.lib has not been created"
 
@@ -492,7 +496,7 @@ class Releaser:
             self._zip_add_git_hash(zip_file=zf)
         self.artifacts[f"VC-{arch}"] = zip_path
 
-        return VcArchDevel(dll=dll_path, imp=imp_path, test=test_path)
+        return VcArchDevel(dll=dll_path, pdb=pdb_path, imp=imp_path, test=test_path)
 
     def build_vs_devel(self, arch_vc: dict[str, VcArchDevel]):
         zip_path = self.dist_path / f"{self.project}-devel-{self.version}-VC.zip"
@@ -514,6 +518,7 @@ class Releaser:
             for arch, binaries in arch_vc.items():
                 zip_file(zf, path=binaries.dll, arcrelpath=f"lib/{arch}/{binaries.dll.name}")
                 zip_file(zf, path=binaries.imp, arcrelpath=f"lib/{arch}/{binaries.imp.name}")
+                zip_file(zf, path=binaries.pdb, arcrelpath=f"lib/{arch}/{binaries.pdb.name}")
                 zip_file(zf, path=binaries.test, arcrelpath=f"lib/{arch}/{binaries.test.name}")
 
             zip_directory(zf, directory=self.root / "include/SDL3", arcrelpath="include/SDL3")

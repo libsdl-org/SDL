@@ -247,14 +247,14 @@ jobs:
       - name: 'Unzip ${{ needs.src.outputs.src-zip }}'
         id: zip
         run: |
-          mkdir C:\zipdir
-          cd C:\zipdir
+          New-Item C:\temp -ItemType Directory -ErrorAction SilentlyContinue
+          cd C:\temp
           unzip "${{ github.workspace }}/${{ needs.src.outputs.src-zip }}"
-          echo "path=C:\zipdir\${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$Env:GITHUB_OUTPUT
+          echo "path=C:\temp\${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$Env:GITHUB_OUTPUT
       - name: 'Build MSVC binary archives'
         id: releaser
         run: |
-          python build-scripts/build-release.py          `
+          python build-scripts/build-release.py     `
             --create win32                          `
             --commit ${{ inputs.commit }}           `
             --project SDL3                          `
