@@ -699,7 +699,7 @@ while (my $d = readdir(DH)) {
                 $symtype = 3;   # struct or union
             } elsif ($decl =~ /\A\s*(typedef\s+|)enum/) {
                 $symtype = 4;   # enum
-            } elsif ($decl =~ /\A\s*typedef\s+.*;\Z/) {
+            } elsif ($decl =~ /\A\s*typedef\s+.*\Z/) {
                 $symtype = 5;   # other typedef
             } else {
                 #print "Found doxygen but no function sig:\n$str\n\n";
@@ -912,10 +912,26 @@ while (my $d = readdir(DH)) {
                 # this currently assumes the struct/union/enum ends on the line with the final bracket. I'm not writing a C parser here, fix the header!
             }
         } elsif ($symtype == 5) {  # other typedef
-            if ($decl =~ /\A\s*typedef\s+(.*);\Z/) {
+            if ($decl =~ /\A\s*typedef\s+(.*)\Z/) {
                 my $tdstr = $1;
+
+                if (not $decl =~ /;/) {
+                    while (<FH>) {
+                        chomp;
+                        $lineno++;
+                        push @decllines, $_;
+                        s/\A\s+//;
+                        s/\s+\Z//;
+                        $decl .= " $_";
+                        last if /;/;
+                    }
+                }
+                $decl =~ s/\s+(\))?;\Z/$1;/;
+
+                $tdstr =~ s/;\s*\Z//;
+
                 #my $datatype;
-                if ($tdstr =~ /\A(.*?)\s*\((.*?)\s*\*\s*(.*?)\)\s*\((.*?)\)\s*\Z/) {  # a function pointer type
+                if ($tdstr =~ /\A(.*?)\s*\((.*?)\s*\*\s*(.*?)\)\s*\((.*?)(\))?/) {  # a function pointer type
                     $sym = $3;
                     #$datatype = "$1 ($2 *$sym)($4)";
                 } elsif ($tdstr =~ /\A(.*[\s\*]+)(.*?)\s*\Z/) {
