@@ -66,10 +66,18 @@ extern "C" {
  */
 #define SDL_MUSTLOCK(S) (((S)->flags & SDL_RLEACCEL) != 0)
 
-typedef struct SDL_BlitMap SDL_BlitMap;  /* this is an opaque type. */
+/**
+ * An opaque type used in SDL_Surface.
+ *
+ * This is used by SDL to keep track of how blit operations should work
+ * internally; it is not for use directly by applications.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_BlitMap SDL_BlitMap;
 
 /**
- * The scaling mode
+ * The scaling mode.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -81,7 +89,7 @@ typedef enum SDL_ScaleMode
 } SDL_ScaleMode;
 
 /**
- * The flip mode
+ * The flip mode.
  *
  * \since This enum is available since SDL 3.0.0.
  */

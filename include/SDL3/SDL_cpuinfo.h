@@ -36,10 +36,14 @@
 extern "C" {
 #endif
 
-/* This is a guess for the cacheline size used for padding.
- * Most x86 processors have a 64 byte cache line.
- * The 64-bit PowerPC processors have a 128 byte cache line.
- * We'll use the larger value to be generally safe.
+/**
+ * A guess for the cacheline size used for padding.
+ *
+ * Most x86 processors have a 64 byte cache line. The 64-bit PowerPC
+ * processors have a 128 byte cache line. We use the larger value to be
+ * generally safe.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_CACHELINE_SIZE  128
 

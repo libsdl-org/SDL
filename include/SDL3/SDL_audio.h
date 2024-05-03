@@ -312,7 +312,6 @@ typedef struct SDL_AudioSpec
  *
  * \sa SDL_CreateAudioStream
  */
-struct SDL_AudioStream;  /**< this is opaque to the outside world. */
 typedef struct SDL_AudioStream SDL_AudioStream;
 
 
