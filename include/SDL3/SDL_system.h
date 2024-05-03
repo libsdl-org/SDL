@@ -51,18 +51,20 @@ typedef struct tagMSG MSG;
 /**
  * A callback to be used with SDL_SetWindowsMessageHook.
  *
- * This callback may modify the message, and should return SDL_TRUE
- * if the message should continue to be processed, or SDL_FALSE
- * to prevent further processing.
+ * This callback may modify the message, and should return SDL_TRUE if the
+ * message should continue to be processed, or SDL_FALSE to prevent further
+ * processing.
  *
- * As this is processing a message directly from the Windows event loop,
- * this callback should do the minimum required work and return quickly.
+ * As this is processing a message directly from the Windows event loop, this
+ * callback should do the minimum required work and return quickly.
  *
- * \param userdata the app-defined pointer provided to SDL_SetWindowsMessageHook.
+ * \param userdata the app-defined pointer provided to
+ *                 SDL_SetWindowsMessageHook.
  * \param msg a pointer to a Win32 event structure to process.
  * \returns SDL_TRUE to let event continue on, SDL_FALSE to drop it.
  *
- * \threadsafety This may only be called (by SDL) from the thread handling the Windows event loop.
+ * \threadsafety This may only be called (by SDL) from the thread handling the
+ *               Windows event loop.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
