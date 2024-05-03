@@ -2296,7 +2296,6 @@ static void text_input_preedit_string(void *data,
                                       int32_t cursor_end)
 {
     SDL_WaylandTextInput *text_input = data;
-    char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
     text_input->has_preedit = SDL_TRUE;
     if (text) {
         int cursor_begin_utf8 = cursor_begin >= 0 ? (int)SDL_utf8strnlen(text, cursor_begin) : -1;
@@ -2313,8 +2312,7 @@ static void text_input_preedit_string(void *data,
         }
         SDL_SendEditingText(text, cursor_begin_utf8, cursor_size_utf8);
     } else {
-        buf[0] = '\0';
-        SDL_SendEditingText(buf, 0, 0);
+        SDL_SendEditingText("", 0, 0);
     }
 }
 

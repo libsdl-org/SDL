@@ -313,8 +313,6 @@ typedef struct SDL_KeyboardEvent
     SDL_Keysym keysym;  /**< The key that was pressed or released */
 } SDL_KeyboardEvent;
 
-#define SDL_TEXTEDITINGEVENT_TEXT_SIZE 64
-
 /**
  * Keyboard text editing event structure (event.edit.*)
  *
@@ -663,8 +661,6 @@ typedef struct SDL_TouchFingerEvent
     SDL_WindowID windowID; /**< The window underneath the finger, if any */
 } SDL_TouchFingerEvent;
 
-
-#define SDL_DROPEVENT_DATA_SIZE 64
 
 /**
  * Pressure-sensitive pen touched or stopped touching surface (event.ptip.*)

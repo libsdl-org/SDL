@@ -398,7 +398,9 @@ The following symbols have been renamed:
 * SDL_USEREVENT => SDL_EVENT_USER
 
 The following symbols have been removed:
+* SDL_DROPEVENT_DATA_SIZE - drop event data is dynamically allocated
 * SDL_SYSWMEVENT - you can use SDL_SetWindowsMessageHook() and SDL_SetX11EventHook() to watch and modify system events before SDL sees them.
+* SDL_TEXTEDITINGEVENT_TEXT_SIZE - text editing event data is dynamically allocated
 
 The following structures have been renamed:
 * SDL_ControllerAxisEvent => SDL_GamepadAxisEvent
