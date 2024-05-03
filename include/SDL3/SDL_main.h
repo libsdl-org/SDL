@@ -152,19 +152,19 @@
  */
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * Inform SDL to use the main callbacks instead of main.
  *
- * SDL does not define this macro, but will check if it is defined to
- * any value in SDL_main.h. If defined, SDL will expect the app
- * to provide several functions: SDL_AppInit, SDL_AppEvent,
- * SDL_AppIterate, and SDL_AppQuit. The app should not provide
- * a `main` function in this case, and doing so will likely cause
- * the build to fail.
+ * SDL does not define this macro, but will check if it is defined to any
+ * value in SDL_main.h. If defined, SDL will expect the app to provide several
+ * functions: SDL_AppInit, SDL_AppEvent, SDL_AppIterate, and SDL_AppQuit. The
+ * app should not provide a `main` function in this case, and doing so will
+ * likely cause the build to fail.
  *
  * Please see [README/main-functions](README/main-functions), (or
- * docs/README-main-functions.md in the source tree) for a more
- * detailed explanation.
+ * docs/README-main-functions.md in the source tree) for a more detailed
+ * explanation.
  *
  * \since This macro is used by the headers since SDL 3.0.0.
  *
