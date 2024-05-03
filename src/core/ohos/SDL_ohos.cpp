@@ -503,6 +503,7 @@ static void OHOS_NativeQuit(void)
 
 napi_value SDLNapi::OHOS_NativeSendQuit(napi_env env, napi_callback_info info)
 {
+    SDL_Log("sdlthread OHOS_NativeSendQuit");
     SDL_AtomicSet(&bQuit, SDL_TRUE);
     SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
     napi_value sum = 0;

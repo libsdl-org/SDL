@@ -33,11 +33,17 @@
 
 int OHOS_GLES_MakeCurrent(SDL_VideoDevice *thisDevice, SDL_Window * window, SDL_GLContext context)
 {
+    SDL_Log("sdlthread OHOS_GLES_MakeCurrent component = %p， native_window=%p",
+            ((SDL_WindowData *)window->driverdata)->egl_xcomponent,
+            ((SDL_WindowData *)window->driverdata)->native_window);
     if (window && context) {
         return SDL_EGL_MakeCurrent(thisDevice, ((SDL_WindowData *) window->driverdata)->egl_xcomponent, context);
     } else {
         return SDL_EGL_MakeCurrent(thisDevice, NULL, NULL);
     }
+    SDL_Log("sdlthread OHOS_GLES_MakeCurrent after ----------------------- component = %p， native_window=%p",
+            ((SDL_WindowData *)window->driverdata)->egl_xcomponent,
+            ((SDL_WindowData *)window->driverdata)->native_window);
 }
 
 
@@ -45,7 +51,12 @@ SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *thisDevice, SDL_Window * 
 {
     SDL_GLContext ret;
     OHOS_PAGEMUTEX_LockRunning();
+    SDL_Log("sdlthread SDL_EGL_CreateContext component = %p， native_window=%p", ((SDL_WindowData *)window->driverdata)->egl_xcomponent,
+            ((SDL_WindowData *)window->driverdata)->native_window);
     ret = SDL_EGL_CreateContext(thisDevice, ((SDL_WindowData *) window->driverdata)->egl_xcomponent);
+    SDL_Log("sdlthread SDL_EGL_CreateContext after ----------------------------- component = %p， native_window=%p",
+            ((SDL_WindowData *)window->driverdata)->egl_xcomponent,
+            ((SDL_WindowData *)window->driverdata)->native_window);
     SDL_UnlockMutex(OHOS_PageMutex);
     return ret;
 }
@@ -55,7 +66,10 @@ int OHOS_GLES_SwapWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
 {
     int retval;
     SDL_LockMutex(OHOS_PageMutex);
-
+    OHOS_ResetWindowData(window);
+    SDL_Log("sdlthread OHOS_GLES_SwapWindow component = %p， native_window=%p window->driverdata = %p",
+            ((SDL_WindowData *)window->driverdata)->egl_xcomponent,
+            ((SDL_WindowData *)window->driverdata)->native_window, window->driverdata);
     /* The following two calls existed in the original Java code
      * If you happen to have a device that's affected by their removal,
      * please report to Bugzilla. -- Gabriel
