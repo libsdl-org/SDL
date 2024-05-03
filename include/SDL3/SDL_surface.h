@@ -135,12 +135,6 @@ typedef struct SDL_Surface
     int refcount;               /**< Read-mostly */
 } SDL_Surface;
 
-/**
- * The type of function used for surface blitting functions.
- */
-typedef int (SDLCALL *SDL_blit) (struct SDL_Surface *src, const SDL_Rect *srcrect,
-                                 struct SDL_Surface *dst, const SDL_Rect *dstrect);
-
 
 /**
  * Allocate a new RGB surface with a specific pixel format.
