@@ -86,7 +86,8 @@ typedef enum SDL_TimeFormat
 /* Global date/time properties. */
 
 /**
- * The SDL_DateFormat to use as the preferred date display format for the current system locale.
+ * The SDL_DateFormat to use as the preferred date display format for the
+ * current system locale.
  *
  * \since This macro is available since SDL 3.0.0.
  *
@@ -95,7 +96,8 @@ typedef enum SDL_TimeFormat
 #define SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER "SDL.time.date_format"
 
 /**
- * The SDL_TimeFormat to use as the preferred time display format for the current system locale.
+ * The SDL_TimeFormat to use as the preferred time display format for the
+ * current system locale.
  *
  * \since This macro is available since SDL 3.0.0.
  *

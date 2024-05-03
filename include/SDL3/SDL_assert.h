@@ -41,16 +41,17 @@ extern "C" {
 /**
  * The level of assertion aggressiveness.
  *
- * This value changes depending on compiler options and other
- * preprocessor defines.
+ * This value changes depending on compiler options and other preprocessor
+ * defines.
  *
- * It is currently one of the following values, but future SDL
- * releases might add more:
+ * It is currently one of the following values, but future SDL releases might
+ * add more:
  *
  * - 0: All SDL assertion macros are disabled.
  * - 1: Release settings: SDL_assert disabled, SDL_assert_release enabled.
  * - 2: Debug settings: SDL_assert and SDL_assert_release enabled.
- * - 3: Paranoid settings: All SDL assertion macros enabled, including SDL_assert_paranoid.
+ * - 3: Paranoid settings: All SDL assertion macros enabled, including
+ *   SDL_assert_paranoid.
  *
  * \since This macro is available since SDL 3.0.0.
  */
