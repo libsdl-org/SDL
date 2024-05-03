@@ -237,6 +237,8 @@ typedef enum SDL_Folder
  *          folder, or NULL if an error happened.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_Folder
  */
 extern DECLSPEC char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
