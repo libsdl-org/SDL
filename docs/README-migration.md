@@ -1835,3 +1835,5 @@ SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead 
 SDL_Vulkan_CreateSurface() now takes a VkAllocationCallbacks pointer as its third parameter. If you don't have an allocator to supply, pass a NULL here to use the system default allocator (SDL2 always used the system default allocator here).
 
 SDL_Vulkan_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
+
+SDL_vulkanInstance and SDL_vulkanSurface have been removed. They were for compatibility with Tizen, who had built their own Vulkan interface into SDL2, but these apps will need changes for the SDL3 API if they are upgraded anyhow.

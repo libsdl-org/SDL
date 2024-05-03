@@ -56,9 +56,6 @@ struct VkAllocationCallbacks;
 
 #endif /* !NO_SDL_VULKAN_TYPEDEFS */
 
-typedef VkInstance SDL_vulkanInstance;
-typedef VkSurfaceKHR SDL_vulkanSurface; /* for compatibility with Tizen */
-
 /**
  *  \name Vulkan support functions
  */
