@@ -809,16 +809,21 @@ while (my $d = readdir(DH)) {
                     }
 
                     # update strings now that we know everything pending is to be applied to this declaration. Add pending blank lines and the new text.
-                    if ($blank_lines > 0) {
-                        while ($blank_lines > 0) {
-                            $additional_decl .= "\n";
-                            push @decllines, '';
-                            $blank_lines--;
+
+                    # At Sam's request, don't list property defines with functions. (See #9440)
+                    my $is_property = /\A\s*\#\s*define\s+SDL_PROP_/;
+                    if (!$is_property) {
+                        if ($blank_lines > 0) {
+                            while ($blank_lines > 0) {
+                                $additional_decl .= "\n";
+                                push @decllines, '';
+                                $blank_lines--;
+                            }
                         }
+                        $additional_decl .= "\n$_";
+                        push @decllines, $_;
+                        $lastpos = tell(FH);
                     }
-                    $additional_decl .= "\n$_";
-                    push @decllines, $_;
-                    $lastpos = tell(FH);
                 } else {
                     seek(FH, $lastpos, 0);  # re-read eaten lines again next time.
                     $lineno = $lastlineno;
