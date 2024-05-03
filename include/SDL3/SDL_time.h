@@ -83,16 +83,26 @@ typedef enum SDL_TimeFormat
     SDL_TIME_FORMAT_12HR = 1  /**< 12 hour time */
 } SDL_TimeFormat;
 
-/*
- *  Global date/time properties.
+/* Global date/time properties. */
+
+/**
+ * The SDL_DateFormat to use as the preferred date display format for the current system locale.
  *
- *  - `SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER`: the SDL_DateFormat to use as the preferred date display format
- *    for the current system locale.
- *  - `SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER`: the SDL_TimeFormat to use as the preferred time display format
- *    for the current system locale.
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER
  */
 #define SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER "SDL.time.date_format"
+
+/**
+ * The SDL_TimeFormat to use as the preferred time display format for the current system locale.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER
+ */
 #define SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER "SDL.time.time_format"
+
 
 /**
  * Gets the current value of the system realtime clock in nanoseconds since

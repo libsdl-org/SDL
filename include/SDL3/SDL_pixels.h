@@ -496,8 +496,9 @@ typedef enum SDL_ColorPrimaries
 } SDL_ColorPrimaries;
 
 /**
- * The transfer characteristics, as described by
- * https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ * The color transfer characteristics.
+ *
+ * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -525,8 +526,9 @@ typedef enum SDL_TransferCharacteristics
 } SDL_TransferCharacteristics;
 
 /**
- * The matrix coefficients, as described by
- * https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ * The matrix coefficients.
+ *
+ * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -550,7 +552,7 @@ typedef enum SDL_MatrixCoefficients
 } SDL_MatrixCoefficients;
 
 /**
- * The chroma sample location
+ * The chroma sample location.
  *
  * \since This enum is available since SDL 3.0.0.
  */

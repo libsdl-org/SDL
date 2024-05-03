@@ -144,7 +144,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * Retrieve the current state of the mouse.
  *
  * The current button state is returned as a button bitmask, which can be
- * tested using the `SDL_BUTTON(X)` macros (where `X` is generally 1 for the
+ * tested using the SDL_BUTTON(X) macro (where `X` is generally 1 for the
  * left, 2 for middle, 3 for the right button), and `x` and `y` are set to the
  * mouse cursor position relative to the focus window. You can pass NULL for
  * either `x` or `y`.
@@ -522,6 +522,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_CursorVisible(void);
  * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_BUTTON(X)       (1 << ((X)-1))
+
 #define SDL_BUTTON_LEFT     1
 #define SDL_BUTTON_MIDDLE   2
 #define SDL_BUTTON_RIGHT    3
