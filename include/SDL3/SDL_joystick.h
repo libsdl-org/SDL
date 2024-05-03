@@ -63,16 +63,31 @@ extern "C" {
  *  SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
  */
 
-/**
- * The joystick structure used to identify an SDL joystick
- */
 #ifdef SDL_THREAD_SAFETY_ANALYSIS
+/*
+ * This is not an exported symbol from SDL, this is only in the headers to
+ * help Clang's thread safety analysis tools to function. Do not attempt
+ * to access this symbol from your app, it will not work!
+ */
 extern SDL_Mutex *SDL_joystick_lock;
 #endif
-struct SDL_Joystick;
+
+/**
+ * The joystick structure used to identify an SDL joystick.
+ *
+ * This is opaque data.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_Joystick SDL_Joystick;
 
-/* A structure that encodes the stable unique id for a joystick device */
+/**
+ * A structure that encodes the stable unique id for a joystick device.
+ *
+ * This is just a standard SDL_GUID by a different name.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ */
 typedef SDL_GUID SDL_JoystickGUID;
 
 /**
@@ -88,6 +103,18 @@ typedef SDL_GUID SDL_JoystickGUID;
  */
 typedef Uint32 SDL_JoystickID;
 
+/**
+ * An enum of some common joystick types.
+ *
+ * In some cases, SDL can identify a low-level joystick as being a certain
+ * type of device, and will report it through SDL_GetJoystickType (or
+ * SDL_GetJoystickInstanceType).
+ *
+ * This is by no means a complete list of everything that can be plugged
+ * into a computer.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_JoystickType
 {
     SDL_JOYSTICK_TYPE_UNKNOWN,
@@ -102,6 +129,14 @@ typedef enum SDL_JoystickType
     SDL_JOYSTICK_TYPE_THROTTLE
 } SDL_JoystickType;
 
+/**
+ * Possible connection states for a joystick device.
+ *
+ * This is used by SDL_GetJoystickConnectionState to report how a device
+ * is connected to the system.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_JoystickConnectionState
 {
     SDL_JOYSTICK_CONNECTION_INVALID = -1,
@@ -110,8 +145,26 @@ typedef enum SDL_JoystickConnectionState
     SDL_JOYSTICK_CONNECTION_WIRELESS
 } SDL_JoystickConnectionState;
 
+/**
+ * The largest value an SDL_Joystick's axis can report.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_JOYSTICK_AXIS_MIN
+ */
 #define SDL_JOYSTICK_AXIS_MAX   32767
+
+/**
+ * The smallest value an SDL_Joystick's axis can report.
+ *
+ * This is a negative number!
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_JOYSTICK_AXIS_MAX
+ */
 #define SDL_JOYSTICK_AXIS_MIN   -32768
+
 
 /* Set max recognized G-force from accelerometer
    See src/joystick/uikit/SDL_sysjoystick.m for notes on why this is needed
@@ -930,34 +983,9 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetJoystickAxisInitialState(SDL_Joystick *j
 extern DECLSPEC int SDLCALL SDL_GetJoystickBall(SDL_Joystick *joystick, int ball, int *dx, int *dy);
 
 /**
- *  \name Hat positions
- */
-/* @{ */
-#define SDL_HAT_CENTERED    0x00
-#define SDL_HAT_UP          0x01
-#define SDL_HAT_RIGHT       0x02
-#define SDL_HAT_DOWN        0x04
-#define SDL_HAT_LEFT        0x08
-#define SDL_HAT_RIGHTUP     (SDL_HAT_RIGHT|SDL_HAT_UP)
-#define SDL_HAT_RIGHTDOWN   (SDL_HAT_RIGHT|SDL_HAT_DOWN)
-#define SDL_HAT_LEFTUP      (SDL_HAT_LEFT|SDL_HAT_UP)
-#define SDL_HAT_LEFTDOWN    (SDL_HAT_LEFT|SDL_HAT_DOWN)
-/* @} */
-
-/**
  * Get the current state of a POV hat on a joystick.
  *
- * The returned value will be one of the following positions:
- *
- * - `SDL_HAT_CENTERED`
- * - `SDL_HAT_UP`
- * - `SDL_HAT_RIGHT`
- * - `SDL_HAT_DOWN`
- * - `SDL_HAT_LEFT`
- * - `SDL_HAT_RIGHTUP`
- * - `SDL_HAT_RIGHTDOWN`
- * - `SDL_HAT_LEFTUP`
- * - `SDL_HAT_LEFTDOWN`
+ * The returned value will be one of the `SDL_HAT_*` values.
  *
  * \param joystick an SDL_Joystick structure containing joystick information
  * \param hat the hat index to get the state from; indices start at index 0
@@ -968,6 +996,16 @@ extern DECLSPEC int SDLCALL SDL_GetJoystickBall(SDL_Joystick *joystick, int ball
  * \sa SDL_GetNumJoystickHats
  */
 extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickHat(SDL_Joystick *joystick, int hat);
+
+#define SDL_HAT_CENTERED    0x00
+#define SDL_HAT_UP          0x01
+#define SDL_HAT_RIGHT       0x02
+#define SDL_HAT_DOWN        0x04
+#define SDL_HAT_LEFT        0x08
+#define SDL_HAT_RIGHTUP     (SDL_HAT_RIGHT|SDL_HAT_UP)
+#define SDL_HAT_RIGHTDOWN   (SDL_HAT_RIGHT|SDL_HAT_DOWN)
+#define SDL_HAT_LEFTUP      (SDL_HAT_LEFT|SDL_HAT_UP)
+#define SDL_HAT_LEFTDOWN    (SDL_HAT_LEFT|SDL_HAT_DOWN)
 
 /**
  * Get the current state of a button on a joystick.

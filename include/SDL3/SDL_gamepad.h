@@ -58,9 +58,18 @@ extern "C" {
  *
  * \since This struct is available since SDL 3.0.0.
  */
-struct SDL_Gamepad;
 typedef struct SDL_Gamepad SDL_Gamepad;
 
+/**
+ * Standard gamepad types.
+ *
+ * This type does not necessarily map to first-party controllers
+ * from Microsoft/Sony/Nintendo; in many cases, third-party controllers
+ * can report as these, either because they were designed for a
+ * specific console, or they simply most closely match that console's
+ * controllers (does it have A/B/X/Y buttons or X/O/Square/Triangle?
+ * Does it have a touchpad? etc).
+ */
 typedef enum SDL_GamepadType
 {
     SDL_GAMEPAD_TYPE_UNKNOWN = 0,
@@ -182,6 +191,16 @@ typedef enum SDL_GamepadAxis
     SDL_GAMEPAD_AXIS_MAX
 } SDL_GamepadAxis;
 
+/**
+ * Types of gamepad control bindings.
+ *
+ * A gamepad is a collection of bindings that map arbitrary joystick
+ * buttons, axes and hat switches to specific positions on a generic
+ * console-style gamepad. This enum is used as part of SDL_GamepadBinding
+ * to specify those mappings.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_GamepadBindingType
 {
     SDL_GAMEPAD_BINDTYPE_NONE = 0,
@@ -190,6 +209,22 @@ typedef enum SDL_GamepadBindingType
     SDL_GAMEPAD_BINDTYPE_HAT
 } SDL_GamepadBindingType;
 
+/**
+ * A mapping between one joystick input to a gamepad control.
+ *
+ * A gamepad has a collection of several bindings, to say, for
+ * example, when joystick button number 5 is pressed, that should
+ * be treated like the gamepad's "start" button.
+ *
+ * SDL has these bindings built-in for many popular controllers,
+ * and can add more with a simple text string. Those strings are
+ * parsed into a collection of these structs to make it easier
+ * to operate on the data.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetGamepadBindings
+ */
 typedef struct SDL_GamepadBinding
 {
     SDL_GamepadBindingType input_type;
@@ -225,7 +260,6 @@ typedef struct SDL_GamepadBinding
         } axis;
 
     } output;
-
 } SDL_GamepadBinding;
 
 
