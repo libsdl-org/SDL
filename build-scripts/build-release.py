@@ -310,7 +310,7 @@ class Releaser:
     def create_xcframework(self, configuration: str="Release"):
         dmg_in = self.root / f"Xcode/SDL/build/SDL3.dmg"
         dmg_in.unlink(missing_ok=True)
-        self.executer.run(["xcodebuild", "-project", self.root / "Xcode/SDL/SDL.xcodeproj", "-target", "SDL3.dmg", "-configuration", configuration])
+        self.executer.run(["xcodebuild", "-project", str(self.root / "Xcode/SDL/SDL.xcodeproj"), "-target", "SDL3.dmg", "-configuration", configuration])
         if self.dry:
             dmg_in.parent.mkdir(parents=True, exist_ok=True)
             dmg_in.touch()
@@ -519,7 +519,7 @@ class Releaser:
 
 def main(argv=None):
     parser = argparse.ArgumentParser(allow_abbrev=False, description="Create SDL release artifacts")
-    parser.add_argument("--root", metavar="DIR", type=Path, default=Path(__file__).resolve().parents[1], help="Root of SDL")
+    parser.add_argument("--root", metavar="DIR", type=Path, default=Path(__file__).absolute().parents[1], help="Root of SDL")
     parser.add_argument("--out", "-o", metavar="DIR", dest="dist_path", type=Path, default="dist", help="Output directory")
     parser.add_argument("--github", action="store_true", help="Script is running on a GitHub runner")
     parser.add_argument("--commit", default="HEAD", help="Git commit/tag of which a release should be created")
@@ -535,9 +535,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
     logging.basicConfig(level=args.loglevel, format='[%(levelname)s] %(message)s')
     args.actions = set(args.actions)
-    args.dist_path = args.dist_path.resolve()
-    args.root = args.root.resolve()
-    args.dist_path = args.dist_path.resolve()
+    args.dist_path = args.dist_path.absolute()
+    args.root = args.root.absolute()
+    args.dist_path = args.dist_path.absolute()
     if args.dry:
         args.dist_path = args.dist_path / "dry"
 
