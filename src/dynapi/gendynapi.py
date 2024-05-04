@@ -342,7 +342,7 @@ def main():
 def full_API_json():
     if args.dump:
         filename = 'sdl.json'
-        with open(filename, 'w') as f:
+        with open(filename, 'w', newline='') as f:
             json.dump(full_API, f, indent=4, sort_keys=True)
             print("dump API to '%s'" % filename);
 
@@ -470,7 +470,7 @@ def add_dyn_api(proc):
     #
     # Add at last
     # SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentEGLConfig,(void),(),return)
-    f = open(SDL_DYNAPI_PROCS_H, "a")
+    f = open(SDL_DYNAPI_PROCS_H, "a", newline="")
     dyn_proc = "SDL_DYNAPI_PROC(" + func_ret + "," + func_name + ",("
 
     i = ord('a')
@@ -532,7 +532,7 @@ def add_dyn_api(proc):
     #
     # Add at last
     # "#define SDL_DelayNS SDL_DelayNS_REAL
-    f = open(SDL_DYNAPI_OVERRIDES_H, "a")
+    f = open(SDL_DYNAPI_OVERRIDES_H, "a", newline="")
     f.write("#define " + func_name + " " + func_name + "_REAL\n")
     f.close()
 
@@ -546,7 +546,7 @@ def add_dyn_api(proc):
             new_input.append("    " + func_name + ";\n")
         new_input.append(line)
     input.close()
-    f = open(SDL_DYNAPI_SYM, 'w')
+    f = open(SDL_DYNAPI_SYM, 'w', newline='')
     for line in new_input:
         f.write(line)
     f.close()
