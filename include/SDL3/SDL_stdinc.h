@@ -137,6 +137,12 @@ void *alloca(size_t);
      (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (D))) << 24))
 
 /**
+* Append the 64 bit integer suffix to an integer literal.
+*/
+#define SDL_SINT64_C(c)  INT64_C(c)
+#define SDL_UINT64_C(c)  UINT64_C(c)
+
+/**
  *  \name Basic data types
  */
 /* @{ */
@@ -228,8 +234,8 @@ typedef uint32_t Uint32;
  *
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_MAX_SINT64  ((Sint64)0x7FFFFFFFFFFFFFFFll)      /* 9223372036854775807 */
-#define SDL_MIN_SINT64  ((Sint64)(~0x7FFFFFFFFFFFFFFFll))   /* -9223372036854775808 */
+#define SDL_MAX_SINT64  SDL_SINT64_C(0x7FFFFFFFFFFFFFFF)   /* 9223372036854775807 */
+#define SDL_MIN_SINT64  ~SDL_SINT64_C(0x7FFFFFFFFFFFFFFF)  /* -9223372036854775808 */
 typedef int64_t Sint64;
 
 /**
@@ -237,8 +243,8 @@ typedef int64_t Sint64;
  *
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_MAX_UINT64  ((Uint64)0xFFFFFFFFFFFFFFFFull)     /* 18446744073709551615 */
-#define SDL_MIN_UINT64  ((Uint64)(0x0000000000000000ull))   /* 0 */
+#define SDL_MAX_UINT64  SDL_UINT64_C(0xFFFFFFFFFFFFFFFF)   /* 18446744073709551615 */
+#define SDL_MIN_UINT64  SDL_UINT64_C(0x0000000000000000)   /* 0 */
 typedef uint64_t Uint64;
 
 /**
