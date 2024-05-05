@@ -25,19 +25,19 @@ rename_macros.py source_code_path
 
 
 CMake users should use this snippet to include SDL support in their project:
-```
+```cmake
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
 target_link_libraries(mygame PRIVATE SDL3::SDL3)
 ```
 
 Autotools users should use this snippet to include SDL support in their project:
-```
+```m4
 PKG_CHECK_MODULES([SDL3], [sdl3])
 ```
-and then add $SDL3_CFLAGS to their project CFLAGS and $SDL3_LIBS to their project LDFLAGS
+and then add `$SDL3_CFLAGS` to their project `CFLAGS` and `$SDL3_LIBS` to their project `LDFLAGS`.
 
 Makefile users can use this snippet to include SDL support in their project:
-```
+```make
 CFLAGS += $(shell pkg-config sdl3 --cflags)
 LDFLAGS += $(shell pkg-config sdl3 --libs)
 ```
@@ -47,6 +47,8 @@ The SDL3test library has been renamed SDL3_test.
 The SDLmain library has been removed, it's been entirely replaced by SDL_main.h.
 
 The vi format comments have been removed from source code. Vim users can use the [editorconfig plugin](https://github.com/editorconfig/editorconfig-vim) to automatically set tab spacing for the SDL coding style.
+
+Installed SDL CMake configuration files no longer define `SDL3_PREFIX`, `SDL3_EXEC_PREFIX`, `SDL3_INCLUDE_DIR`, `SDL3_INCLUDE_DIRS`, `SDL3_BINDIR` or `SDL3_LIBDIR`. Users are expected to use [CMake generator expressions](https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#target-dependent-expressions) with `SDL3::SDL3`, `SDL3::SDL3-shared`, `SDL3::SDL3-static` or `SDL3::Headers`.  By no longer defining these CMake variables, using a system SDL3 or using a vendoring SDL3 behave in the same way.
 
 ## SDL_atomic.h
 

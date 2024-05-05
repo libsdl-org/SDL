@@ -114,8 +114,12 @@ cmake --build . --config Release
 
 ### Shared or static
 
-By default, only a shared SDL library is built and installed.
+By default, only a dynamic (=shared) SDL library is built and installed.
 The options `-DSDL_SHARED=` and `-DSDL_STATIC=` accept boolean values to change this.
+
+Exceptions exist:
+- some platforms don't support dynamic libraries, so only `-DSDL_STATIC=ON` makes sense.
+- a static Apple framework is not supported
 
 ### Pass custom compile options to the compiler
 
@@ -282,6 +286,25 @@ At the end of SDL CMake configuration, a table shows all CMake options along wit
 | `-DSDL_DISABLE_INSTALL=`      | `ON`/`OFF`   | Don't create a SDL install target                                                                   |
 | `-DSDL_DISABLE_INSTALL_DOCS=` | `ON`/`OFF`   | Don't install the SDL documentation                                                                 |
 | `-DSDL_INSTALL_TESTS=`        | `ON`/`OFF`   | Install the SDL test programs                                                                       |
+
+## CMake FAQ
+
+### How do I copy a SDL3 dynamic library to another location?
+
+Use [CMake generator expressions](https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#target-dependent-expressions).
+Generator expressions support multiple configurations, and are evaluated during build system generation time.
+
+On Windows, the following example this copies `SDL3.dll` to the directory where `mygame.exe` is built.
+On Unix systems, `$<TARGET_FILE:...>` will refer to the dynamic library (or framework).
+```cmake
+if(WIN32)
+    add_custom_command(
+        TARGET mygame POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:mygame>
+        VERBATIM
+    )
+endif()
+```
 
 ## Help, it doesn't work!
 
