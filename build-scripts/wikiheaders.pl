@@ -2354,14 +2354,20 @@ __EOF__
 
     # Sort symbols by symbol type, then alphabetically.
     my @headersymskeys = sort {
-        my $rc = $headersymstype{$a} <=> $headersymstype{$b};
+        my $symtypea = $headersymstype{$a};
+        my $symtypeb = $headersymstype{$b};
+        $symtypea = 3 if ($symtypea > 3);
+        $symtypeb = 3 if ($symtypeb > 3);
+        my $rc = $symtypea <=> $symtypeb;
         if ($rc == 0) {
-            $rc = $a cmp $b;
+            $rc = lc($a) cmp lc($b);
         }
         return $rc;
     } keys %headersyms;
 
     my $current_symtype = 0;
+    my $current_chapter = '';
+
     foreach (@headersymskeys) {
         my $sym = $_;
         next if not defined $wikisyms{$sym};  # don't have a page for that function, skip it.
@@ -2393,7 +2399,11 @@ __EOF__
             } else {
                 $newchapter = 'Datatypes';
             }
-            $str .= "\n\n\\chapter{$projectshortname $newchapter}\n\n\\clearpage\n\n";
+
+            if ($current_chapter ne $newchapter) {
+                $str .= "\n\n\\chapter{$projectshortname $newchapter}\n\n\\clearpage\n\n";
+                $current_chapter = $newchapter;
+            }
             $current_symtype = $symtype;
         }
 
