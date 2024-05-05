@@ -1384,7 +1384,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
             my $v = dewikify($wikitype, $related);
             my @desclines = split /\n/, $v;
             foreach (@desclines) {
-                s/\A(\:|\* )//;
+                s/\A[\:\*\-] //;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
                 s/\[(.*?)\]\(.*?\)/$1/;  # in case some wikilinks remain.
