@@ -1628,7 +1628,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 if ($wikitype eq 'mediawiki') {
                     $sections{'See Also'} .= ":[[$sa]]\n";
                 } elsif ($wikitype eq 'md') {
-                    $sections{'See Also'} .= "* [$sa]($sa)\n";
+                    $sections{'See Also'} .= "- [$sa]($sa)\n";
                 } else { die("Expected wikitype '$wikitype'"); }
             }
         }
