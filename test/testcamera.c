@@ -97,13 +97,9 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         return -1;
     }
 
-    SDL_CameraSpec *pspec = NULL;
-    #if 0  /* just for edge-case testing purposes, ignore. */
-    pspec = &spec;
-    spec.width = 100 /*1280 * 2*/;
-    spec.height = 100 /*720 * 2*/;
-    spec.format = SDL_PIXELFORMAT_YUY2 /*SDL_PIXELFORMAT_RGBA8888*/;
-    #endif
+    SDL_CameraSpec *pspec = &spec;
+    spec.interval_numerator = 1000;
+    spec.interval_denominator = 1;
 
     camera = SDL_OpenCameraDevice(devid, pspec);
     if (!camera) {
@@ -189,9 +185,12 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
                 return -1;
             }
 
+            /* Resize the window to match */
+            SDL_SetWindowSize(window, spec.width, spec.height);
+
             /* Create texture with appropriate format */
             SDL_assert(texture == NULL);
-            texture = SDL_CreateTexture(renderer, spec.format, SDL_TEXTUREACCESS_STATIC, spec.width, spec.height);
+            texture = SDL_CreateTexture(renderer, spec.format, SDL_TEXTUREACCESS_STREAMING, spec.width, spec.height);
             if (!texture) {
                 SDL_Log("Couldn't create texture: %s", SDL_GetError());
                 return -1;

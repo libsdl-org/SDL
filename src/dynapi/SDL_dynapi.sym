@@ -346,7 +346,6 @@ SDL3_0.0.0 {
     SDL_GetNumJoystickButtons;
     SDL_GetNumJoystickHats;
     SDL_GetNumRenderDrivers;
-    SDL_GetNumTouchFingers;
     SDL_GetNumVideoDrivers;
     SDL_GetNumberProperty;
     SDL_GetOriginalMemoryFunctions;
@@ -455,7 +454,7 @@ SDL3_0.0.0 {
     SDL_GetTouchDeviceName;
     SDL_GetTouchDeviceType;
     SDL_GetTouchDevices;
-    SDL_GetTouchFinger;
+    SDL_GetTouchFingers;
     SDL_GetUserFolder;
     SDL_GetVersion;
     SDL_GetVideoDriver;
@@ -838,8 +837,7 @@ SDL3_0.0.0 {
     SDL_WarpMouseInWindow;
     SDL_WasInit;
     SDL_WinRTGetDeviceFamily;
-    SDL_WinRTGetFSPathUNICODE;
-    SDL_WinRTGetFSPathUTF8;
+    SDL_WinRTGetFSPath;
     SDL_WindowHasSurface;
     SDL_WriteIO;
     SDL_WriteS16BE;
@@ -912,8 +910,8 @@ SDL3_0.0.0 {
     SDL_hid_send_feature_report;
     SDL_hid_set_nonblocking;
     SDL_hid_write;
-    SDL_iPhoneSetAnimationCallback;
-    SDL_iPhoneSetEventPump;
+    SDL_iOSSetAnimationCallback;
+    SDL_iOSSetEventPump;
     SDL_iconv;
     SDL_iconv_close;
     SDL_iconv_open;
@@ -1016,6 +1014,7 @@ SDL3_0.0.0 {
     SDL_wcsnstr;
     SDL_wcsstr;
     SDL_wcstol;
+    SDL_WriteStorageFile;
     # extra symbols go here (don't modify this line)
   local: *;
 };

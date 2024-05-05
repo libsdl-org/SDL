@@ -151,7 +151,7 @@
                setting through the dialog that comes up.
             */
             #ifndef SDL_WINRT_METADATA_FILE_AVAILABLE
-                #if !defined(__cplusplus) || !defined(__cplusplus_winrt)
+                #if !defined(__cplusplus) || (!defined(__cplusplus_winrt) && _MSVC_LANG < 202002L)
                     #error The C++ file that includes SDL_main.h must be compiled as C++ code with /ZW, otherwise build errors due to missing .winmd files can occur.
                 #endif
             #endif
@@ -177,6 +177,11 @@
             {
                 return SDL_RunApp(0, NULL, SDL_main, NULL);
             }
+            #if _MSVC_LANG >= 202002L
+            int main(int argc, char** argv) {
+                return SDL_RunApp(argc, argv, SDL_main, NULL);
+            }
+            #endif
             #ifdef __cplusplus
             } /* extern "C" */
             #endif

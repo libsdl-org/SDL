@@ -72,15 +72,19 @@ extern "C" {
 #endif
 
 /**
- *  A handle representing an open HID device
+ * A handle representing an open HID device
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
-struct SDL_hid_device_;
-typedef struct SDL_hid_device_ SDL_hid_device; /**< opaque hidapi structure */
+struct SDL_hid_device;
+typedef struct SDL_hid_device SDL_hid_device; /**< opaque hidapi structure */
 
 /**
- *  HID underlying bus types.
+ * HID underlying bus types.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum {
+typedef enum SDL_hid_bus_type {
     /** Unknown bus type */
     SDL_HID_API_BUS_UNKNOWN = 0x00,
 
@@ -109,8 +113,11 @@ typedef enum {
 } SDL_hid_bus_type;
 
 /** hidapi info structure */
+
 /**
- *  Information about a connected HID device
+ * Information about a connected HID device
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_hid_device_info
 {
@@ -243,7 +250,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
 extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id);
 
 /**
- * Free an enumeration Linked List
+ * Free an enumeration linked list.
  *
  * This function frees a linked list created by SDL_hid_enumerate().
  *
@@ -534,7 +541,7 @@ extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_get_device_info(SDL_hid_de
 extern DECLSPEC int SDLCALL SDL_hid_get_report_descriptor(SDL_hid_device *dev, unsigned char *buf, size_t buf_size);
 
 /**
- * Start or stop a BLE scan on iOS and tvOS to pair Steam Controllers
+ * Start or stop a BLE scan on iOS and tvOS to pair Steam Controllers.
  *
  * \param active SDL_TRUE to start the scan, SDL_FALSE to stop the scan
  *

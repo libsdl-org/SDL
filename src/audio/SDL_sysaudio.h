@@ -35,16 +35,6 @@
 #define LOG_DEBUG_AUDIO_CONVERT(from, to)
 #endif
 
-// These pointers get set during SDL_ChooseAudioConverters() to various SIMD implementations.
-extern void (*SDL_Convert_S8_to_F32)(float *dst, const Sint8 *src, int num_samples);
-extern void (*SDL_Convert_U8_to_F32)(float *dst, const Uint8 *src, int num_samples);
-extern void (*SDL_Convert_S16_to_F32)(float *dst, const Sint16 *src, int num_samples);
-extern void (*SDL_Convert_S32_to_F32)(float *dst, const Sint32 *src, int num_samples);
-extern void (*SDL_Convert_F32_to_S8)(Sint8 *dst, const float *src, int num_samples);
-extern void (*SDL_Convert_F32_to_U8)(Uint8 *dst, const float *src, int num_samples);
-extern void (*SDL_Convert_F32_to_S16)(Sint16 *dst, const float *src, int num_samples);
-extern void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_samples);
-
 // !!! FIXME: These are wordy and unlocalized...
 #define DEFAULT_OUTPUT_DEVNAME "System audio output device"
 #define DEFAULT_INPUT_DEVNAME  "System audio capture device"
@@ -118,6 +108,10 @@ extern void SDL_CaptureAudioThreadSetup(SDL_AudioDevice *device);
 extern SDL_bool SDL_CaptureAudioThreadIterate(SDL_AudioDevice *device);
 extern void SDL_CaptureAudioThreadShutdown(SDL_AudioDevice *device);
 extern void SDL_AudioThreadFinalize(SDL_AudioDevice *device);
+
+extern void ConvertAudioToFloat(float *dst, const void *src, int num_samples, SDL_AudioFormat src_fmt);
+extern void ConvertAudioFromFloat(void *dst, const float *src, int num_samples, SDL_AudioFormat dst_fmt);
+extern void ConvertAudioSwapEndian(void* dst, const void* src, int num_samples, int bitsize);
 
 // this gets used from the audio device threads. It has rules, don't use this if you don't know how to use it!
 extern void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
@@ -196,16 +190,12 @@ struct SDL_AudioStream
     float freq_ratio;
 
     struct SDL_AudioQueue* queue;
-    Uint64 total_bytes_queued;
 
     SDL_AudioSpec input_spec; // The spec of input data currently being processed
     Sint64 resample_offset;
 
     Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
     size_t work_buffer_allocation;
-
-    Uint8 *history_buffer;  // history for left padding and future sample rate changes.
-    size_t history_buffer_allocation;
 
     SDL_bool simplified;  // SDL_TRUE if created via SDL_OpenAudioDeviceStream
 
@@ -335,6 +325,7 @@ typedef struct AudioBootStrap
 } AudioBootStrap;
 
 // Not all of these are available in a given build. Use #ifdefs, etc.
+extern AudioBootStrap PIPEWIRE_PREFERRED_bootstrap;
 extern AudioBootStrap PIPEWIRE_bootstrap;
 extern AudioBootStrap PULSEAUDIO_bootstrap;
 extern AudioBootStrap ALSA_bootstrap;

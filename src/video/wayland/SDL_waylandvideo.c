@@ -52,11 +52,12 @@
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
-#include "tablet-unstable-v2-client-protocol.h"
+#include "tablet-v2-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
 #include "viewporter-client-protocol.h"
 #include "xdg-activation-v1-client-protocol.h"
 #include "xdg-decoration-unstable-v1-client-protocol.h"
+#include "xdg-dialog-v1-client-protocol.h"
 #include "xdg-foreign-unstable-v2-client-protocol.h"
 #include "xdg-output-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
@@ -256,7 +257,7 @@ static void Wayland_SortOutputs(SDL_VideoData *vid)
         WAYLAND_wl_list_init(&sorted_list);
         wl_list_for_each (c, &vid->output_order, link) {
             wl_list_for_each (d, &vid->output_list, link) {
-                if (SDL_strcmp(c->wl_output_name, d->wl_output_name) == 0) {
+                if (d->wl_output_name && SDL_strcmp(c->wl_output_name, d->wl_output_name) == 0) {
                     /* Remove from the current list and Append the next node to the end of the new list. */
                     WAYLAND_wl_list_remove(&d->link);
                     WAYLAND_wl_list_insert(sorted_list.prev, &d->link);
@@ -565,7 +566,14 @@ static void xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output
 static void xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output,
                                    const char *name)
 {
+    SDL_DisplayData *driverdata = (SDL_DisplayData *)data;
+
     /* Deprecated as of wl_output v4. */
+    if (wl_output_get_version(driverdata->output) < WL_OUTPUT_NAME_SINCE_VERSION &&
+        driverdata->display == 0) {
+        SDL_free(driverdata->wl_output_name);
+        driverdata->wl_output_name = SDL_strdup(name);
+    }
 }
 
 static void xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg_output,
@@ -1081,6 +1089,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         }
     } else if (SDL_strcmp(interface, "zxdg_exporter_v2") == 0) {
         d->zxdg_exporter_v2 = wl_registry_bind(d->registry, id, &zxdg_exporter_v2_interface, 1);
+    } else if (SDL_strcmp(interface, "xdg_wm_dialog_v1") == 0) {
+        d->xdg_wm_dialog_v1 = wl_registry_bind(d->registry, id, &xdg_wm_dialog_v1_interface, 1);
     } else if (SDL_strcmp(interface, "kde_output_order_v1") == 0) {
         d->kde_output_order = wl_registry_bind(d->registry, id, &kde_output_order_v1_interface, 1);
         kde_output_order_v1_add_listener(d->kde_output_order, &kde_output_order_listener, d);
@@ -1337,6 +1347,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->zxdg_exporter_v2) {
         zxdg_exporter_v2_destroy(data->zxdg_exporter_v2);
         data->zxdg_exporter_v2 = NULL;
+    }
+
+    if (data->xdg_wm_dialog_v1) {
+        xdg_wm_dialog_v1_destroy(data->xdg_wm_dialog_v1);
+        data->xdg_wm_dialog_v1 = NULL;
     }
 
     if (data->kde_output_order) {

@@ -371,7 +371,6 @@
 #define SDL_GetNumJoystickButtons SDL_GetNumJoystickButtons_REAL
 #define SDL_GetNumJoystickHats SDL_GetNumJoystickHats_REAL
 #define SDL_GetNumRenderDrivers SDL_GetNumRenderDrivers_REAL
-#define SDL_GetNumTouchFingers SDL_GetNumTouchFingers_REAL
 #define SDL_GetNumVideoDrivers SDL_GetNumVideoDrivers_REAL
 #define SDL_GetNumberProperty SDL_GetNumberProperty_REAL
 #define SDL_GetOriginalMemoryFunctions SDL_GetOriginalMemoryFunctions_REAL
@@ -480,7 +479,7 @@
 #define SDL_GetTouchDeviceName SDL_GetTouchDeviceName_REAL
 #define SDL_GetTouchDeviceType SDL_GetTouchDeviceType_REAL
 #define SDL_GetTouchDevices SDL_GetTouchDevices_REAL
-#define SDL_GetTouchFinger SDL_GetTouchFinger_REAL
+#define SDL_GetTouchFingers SDL_GetTouchFingers_REAL
 #define SDL_GetUserFolder SDL_GetUserFolder_REAL
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
@@ -862,8 +861,7 @@
 #define SDL_WarpMouseInWindow SDL_WarpMouseInWindow_REAL
 #define SDL_WasInit SDL_WasInit_REAL
 #define SDL_WinRTGetDeviceFamily    SDL_WinRTGetDeviceFamily_REAL
-#define SDL_WinRTGetFSPathUNICODE   SDL_WinRTGetFSPathUNICODE_REAL
-#define SDL_WinRTGetFSPathUTF8  SDL_WinRTGetFSPathUTF8_REAL
+#define SDL_WinRTGetFSPath  SDL_WinRTGetFSPath_REAL
 #define SDL_WindowHasSurface SDL_WindowHasSurface_REAL
 #define SDL_WriteIO SDL_WriteIO_REAL
 #define SDL_WriteS16BE SDL_WriteS16BE_REAL
@@ -936,8 +934,8 @@
 #define SDL_hid_send_feature_report SDL_hid_send_feature_report_REAL
 #define SDL_hid_set_nonblocking SDL_hid_set_nonblocking_REAL
 #define SDL_hid_write SDL_hid_write_REAL
-#define SDL_iPhoneSetAnimationCallback  SDL_iPhoneSetAnimationCallback_REAL
-#define SDL_iPhoneSetEventPump  SDL_iPhoneSetEventPump_REAL
+#define SDL_iOSSetAnimationCallback  SDL_iOSSetAnimationCallback_REAL
+#define SDL_iOSSetEventPump  SDL_iOSSetEventPump_REAL
 #define SDL_iconv SDL_iconv_REAL
 #define SDL_iconv_close SDL_iconv_close_REAL
 #define SDL_iconv_open SDL_iconv_open_REAL
@@ -1040,3 +1038,4 @@
 #define SDL_wcsnstr SDL_wcsnstr_REAL
 #define SDL_wcsstr SDL_wcsstr_REAL
 #define SDL_wcstol SDL_wcstol_REAL
+#define SDL_WriteStorageFile SDL_WriteStorageFile_REAL

@@ -116,8 +116,11 @@ extern "C" {
 #endif
 
 /**
- *  Synchronization functions which can time out return this value
- *  if they time out.
+ * Synchronization functions return this value if they time out.
+ *
+ * Not all functions _can_ time out; some will block indefinitely.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MUTEX_TIMEDOUT  1
 
@@ -127,8 +130,18 @@ extern "C" {
  */
 /* @{ */
 
-/* The SDL mutex structure, defined in SDL_sysmutex.c */
-struct SDL_Mutex;
+/**
+ * A means to serialize access to a resource between threads.
+ *
+ * Mutexes (short for "mutual exclusion") are a synchronization primitive that
+ * allows exactly one thread to proceed at a time.
+ *
+ * Wikipedia has a thorough explanation of the concept:
+ *
+ * https://en.wikipedia.org/wiki/Mutex
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_Mutex SDL_Mutex;
 
 /**
@@ -245,13 +258,35 @@ extern DECLSPEC void SDLCALL SDL_DestroyMutex(SDL_Mutex *mutex);
  */
 /* @{ */
 
-/* The SDL read/write lock structure, defined in SDL_sysrwlock.c */
-struct SDL_RWLock;
+/**
+ * A mutex that allows read-only threads to run in parallel.
+ *
+ * A rwlock is roughly the same concept as SDL_Mutex, but allows threads that
+ * request read-only access to all hold the lock at the same time. If a thread
+ * requests write access, it will block until all read-only threads have
+ * released the lock, and no one else can hold the thread (for reading or
+ * writing) at the same time as the writing thread.
+ *
+ * This can be more efficient in cases where several threads need to access
+ * data frequently, but changes to that data are rare.
+ *
+ * There are other rules that apply to rwlocks that don't apply to mutexes,
+ * about how threads are scheduled and when they can be recursively locked.
+ * These are documented in the other rwlock functions.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_RWLock SDL_RWLock;
 
 /*
- *  Synchronization functions which can time out return this value
- *  if they time out.
+ * Synchronization functions return this value if they time out.
+ *
+ * Not all functions _can_ time out; some will block indefinitely.
+ *
+ * This symbol is just for clarity when dealing with SDL_RWLock
+ * functions; its value is equivalent to SDL_MUTEX_TIMEOUT.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_RWLOCK_TIMEDOUT SDL_MUTEX_TIMEDOUT
 
@@ -477,8 +512,20 @@ extern DECLSPEC void SDLCALL SDL_DestroyRWLock(SDL_RWLock *rwlock);
  */
 /* @{ */
 
-/* The SDL semaphore structure, defined in SDL_syssem.c */
-struct SDL_Semaphore;
+/**
+ * A means to manage access to a resource, by count, between threads.
+ *
+ * Semaphores (specifically, "counting semaphores"), let X number of threads
+ * request access at the same time, each thread granted access decrementing a
+ * counter. When the counter reaches zero, future requests block until a prior
+ * thread releases their request, incrementing the counter again.
+ *
+ * Wikipedia has a thorough explanation of the concept:
+ *
+ * https://en.wikipedia.org/wiki/Semaphore_(programming)
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_Semaphore SDL_Semaphore;
 
 /**
@@ -618,8 +665,19 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetSemaphoreValue(SDL_Semaphore *sem);
  */
 /* @{ */
 
-/* The SDL condition variable structure, defined in SDL_syscond.c */
-struct SDL_Condition;
+/**
+ * A means to block multiple threads until a condition is satisfied.
+ *
+ * Condition variables, paired with an SDL_Mutex, let an app halt multiple
+ * threads until a condition has occurred, at which time the app can release
+ * one or all waiting threads.
+ *
+ * Wikipedia has a thorough explanation of the concept:
+ *
+ * https://en.wikipedia.org/wiki/Condition_variable
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_Condition SDL_Condition;
 
 /**

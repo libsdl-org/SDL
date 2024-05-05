@@ -156,7 +156,8 @@ typedef enum
 {
     VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED = 0x01,
     VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT = 0x02,
-    VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS = 0x04
+    VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS = 0x04,
+    VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY = 0x08
 } DeviceCaps;
 
 struct SDL_VideoDevice
@@ -351,6 +352,7 @@ struct SDL_VideoDevice
     SDL_Mutex *wakeup_lock; /* Initialized only if WaitEventTimeout/SendWakeupEvent are supported */
     int num_displays;
     SDL_VideoDisplay **displays;
+    SDL_Rect desktop_bounds;
     SDL_Window *windows;
     SDL_Window *grabbed_window;
     Uint8 window_magic;
@@ -498,6 +500,7 @@ extern void SDL_SetDisplayContentScale(SDL_VideoDisplay *display, float scale);
 extern void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDRDisplayProperties *HDR);
 extern int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern SDL_VideoDisplay *SDL_GetVideoDisplay(SDL_DisplayID display);
+extern SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window);
 extern SDL_VideoDisplay *SDL_GetVideoDisplayForWindow(SDL_Window *window);
 extern SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window);
 extern int SDL_GetDisplayIndex(SDL_DisplayID displayID);
@@ -513,6 +516,7 @@ extern void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel
 extern void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int *rel_x, int *rel_y);
 
 extern void SDL_OnDisplayAdded(SDL_VideoDisplay *display);
+extern void SDL_OnDisplayMoved(SDL_VideoDisplay *display);
 extern void SDL_OnWindowShown(SDL_Window *window);
 extern void SDL_OnWindowHidden(SDL_Window *window);
 extern void SDL_OnWindowMoved(SDL_Window *window);

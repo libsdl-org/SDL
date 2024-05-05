@@ -1018,7 +1018,6 @@ static void SW_DestroyRenderer(SDL_Renderer *renderer)
         SDL_DestroyWindowSurface(window);
     }
     SDL_free(data);
-    SDL_free(renderer);
 }
 
 static void SW_SelectBestFormats(SDL_Renderer *renderer, SDL_PixelFormatEnum format)
@@ -1116,27 +1115,20 @@ static void SW_SelectBestFormats(SDL_Renderer *renderer, SDL_PixelFormatEnum for
     }
 }
 
-SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface, SDL_PropertiesID create_props)
+int SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     SW_RenderData *data;
 
     if (!surface) {
-        SDL_InvalidParamError("surface");
-        return NULL;
+        return SDL_InvalidParamError("surface");
     }
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
     renderer->software = SDL_TRUE;
 
     data = (SW_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SW_DestroyRenderer(renderer);
-        return NULL;
+        return -1;
     }
     data->surface = surface;
     data->window = surface;
@@ -1172,27 +1164,18 @@ SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface, SDL_PropertiesID
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
         SW_DestroyRenderer(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
-    return renderer;
+    return 0;
 }
 
-static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int SW_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    const char *hint;
-    SDL_Surface *surface;
-    SDL_bool no_hint_set;
-
     /* Set the vsync hint based on our flags, if it's not already set */
-    hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
-    if (!hint || !*hint) {
-        no_hint_set = SDL_TRUE;
-    } else {
-        no_hint_set = SDL_FALSE;
-    }
+    const char *hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
+    const SDL_bool no_hint_set = (!hint || !*hint);
 
     if (no_hint_set) {
         if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
@@ -1202,7 +1185,7 @@ static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
         }
     }
 
-    surface = SDL_GetWindowSurface(window);
+    SDL_Surface *surface = SDL_GetWindowSurface(window);
 
     /* Reset the vsync hint if we set it above */
     if (no_hint_set) {
@@ -1210,10 +1193,10 @@ static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     }
 
     if (!surface) {
-        return NULL;
+        return -1;
     }
 
-    return SW_CreateRendererForSurface(surface, create_props);
+    return SW_CreateRendererForSurface(renderer, surface, create_props);
 }
 
 SDL_RenderDriver SW_RenderDriver = {

@@ -8,7 +8,7 @@ endif()
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 
 # See docs/release_checklist.md
-project(SDL3 LANGUAGES C VERSION "3.1.1")
+project(SDL3 LANGUAGES C VERSION "3.1.2")
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL3_SUBPROJECT OFF)
@@ -152,7 +152,7 @@ endif()
 # Default option knobs
 set(SDL_LIBC_DEFAULT ON)
 set(SDL_SYSTEM_ICONV_DEFAULT ON)
-if(WINDOWS OR IOS OR TVOS OR VISIONOS OR WATCHOS)
+if(WINDOWS OR MACOS OR IOS OR TVOS OR VISIONOS OR WATCHOS)
   set(SDL_SYSTEM_ICONV_DEFAULT OFF)
 endif()
 
@@ -271,7 +271,7 @@ endif()
 # Allow some projects to be built conditionally.
 set_option(SDL_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
 cmake_dependent_option(SDL_DISABLE_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" ON)
-cmake_dependent_option(SDL_DISABLE_INSTALL_DOCS "Install docs for SDL3" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" ON)
+cmake_dependent_option(SDL_DISABLE_INSTALL_DOCS "Install docs for SDL3" ON "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" ON)
 set_option(SDL_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
 
 cmake_dependent_option(SDL_DISABLE_ANDROID_JAR  "Disable creation of SDL3.jar" ${SDL3_SUBPROJECT} "ANDROID" ON)
@@ -3267,9 +3267,13 @@ if(SDL_SHARED)
     endif()
   endif()
   if(APPLE)
+    cmake_minimum_required(VERSION 3.17)
     set_target_properties(SDL3-shared PROPERTIES
       MACOSX_RPATH TRUE
       FRAMEWORK "${SDL_FRAMEWORK}"
+      SOVERSION "${SDL_SO_VERSION_MAJOR}"
+      MACHO_COMPATIBILITY_VERSION "${SDL_DYLIB_COMPAT_VERSION}"
+      MACHO_CURRENT_VERSION "${SDL_DYLIB_CURRENT_VERSION}"
     )
     if(SDL_FRAMEWORK)
       set_target_properties(SDL3-shared PROPERTIES
@@ -3279,10 +3283,6 @@ if(SDL_SHARED)
         RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
       )
     endif()
-    set_target_properties(SDL3-shared PROPERTIES
-      SOVERSION "${SDL_DYLIB_COMPAT_VERSION}" # SOVERSION corresponds to compatibility version
-      VERSION "${SDL_DYLIB_CURRENT_VERSION}"  # VERSION corresponds to the current version
-    )
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL3-shared PROPERTIES
       VERSION "${SDL_SO_VERSION}"

@@ -998,7 +998,7 @@ static const struct hidapi_backend LIBUSB_Backend = {
 };
 #endif /* HAVE_LIBUSB */
 
-struct SDL_hid_device_
+struct SDL_hid_device
 {
     const void *magic;
     void *device;

@@ -28,6 +28,9 @@
 // Available audio drivers
 static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO
+#ifdef SDL_AUDIO_DRIVER_PIPEWIRE
+    &PIPEWIRE_PREFERRED_bootstrap,
+#endif
     &PULSEAUDIO_bootstrap,
 #endif
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE
@@ -98,15 +101,41 @@ static const AudioBootStrap *const bootstrap[] = {
 
 static SDL_AudioDriver current_audio;
 
+// Deduplicated list of audio bootstrap drivers.
+static const AudioBootStrap *deduped_bootstrap[SDL_arraysize(bootstrap) - 1];
+
 int SDL_GetNumAudioDrivers(void)
 {
-    return SDL_arraysize(bootstrap) - 1;
+    static int num_drivers = -1;
+
+    if (num_drivers >= 0) {
+        return num_drivers;
+    }
+
+    num_drivers = 0;
+
+    // Build a list of unique audio drivers.
+    for (int i = 0; bootstrap[i] != NULL; ++i) {
+        SDL_bool duplicate = SDL_FALSE;
+        for (int j = 0; j < i; ++j) {
+            if (SDL_strcmp(bootstrap[i]->name, bootstrap[j]->name) == 0) {
+                duplicate = SDL_TRUE;
+                break;
+            }
+        }
+
+        if (!duplicate) {
+            deduped_bootstrap[num_drivers++] = bootstrap[i];
+        }
+    }
+
+    return num_drivers;
 }
 
 const char *SDL_GetAudioDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
-        return bootstrap[index]->name;
+        return deduped_bootstrap[index]->name;
     }
     return NULL;
 }
@@ -887,8 +916,8 @@ int SDL_InitAudio(const char *driver_name)
                         current_audio.name = bootstrap[i]->name;
                         current_audio.desc = bootstrap[i]->desc;
                         initialized = SDL_TRUE;
+                        break;
                     }
-                    break;
                 }
             }
 
@@ -1782,7 +1811,8 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         for (int i = 0; i < num_streams; i++) {
             SDL_AudioStream *stream = streams[i];
             if (!stream) {
-                retval = SDL_SetError("Stream #%d is NULL", i);
+                SDL_SetError("Stream #%d is NULL", i);
+                retval = -1;  // to pacify the static analyzer, that doesn't realize SDL_SetError() always returns -1.
             } else {
                 SDL_LockMutex(stream->lock);
                 SDL_assert((stream->bound_device == NULL) == ((stream->prev_binding == NULL) || (stream->next_binding == NULL)));
@@ -1810,31 +1840,25 @@ int SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int
         // Now that everything is verified, chain everything together.
         const SDL_bool iscapture = device->iscapture;
         for (int i = 0; i < num_streams; i++) {
-#ifdef _MSC_VER /* Visual Studio analyzer can't tell that streams[i] isn't NULL if retval is 0 */
-#pragma warning(push)
-#pragma warning(disable : 28182)
-#endif
             SDL_AudioStream *stream = streams[i];
-
-            stream->bound_device = logdev;
-            stream->prev_binding = NULL;
-            stream->next_binding = logdev->bound_streams;
-            if (logdev->bound_streams) {
-                logdev->bound_streams->prev_binding = stream;
-            }
-            logdev->bound_streams = stream;
-
-            if (iscapture) {
-                SDL_copyp(&stream->src_spec, &device->spec);
-                if (logdev->postmix) {
-                    stream->src_spec.format = SDL_AUDIO_F32;
+            if (stream) {  // shouldn't be NULL, but just in case...
+                stream->bound_device = logdev;
+                stream->prev_binding = NULL;
+                stream->next_binding = logdev->bound_streams;
+                if (logdev->bound_streams) {
+                    logdev->bound_streams->prev_binding = stream;
                 }
-            }
+                logdev->bound_streams = stream;
 
-            SDL_UnlockMutex(stream->lock);
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+                if (iscapture) {
+                    SDL_copyp(&stream->src_spec, &device->spec);
+                    if (logdev->postmix) {
+                        stream->src_spec.format = SDL_AUDIO_F32;
+                    }
+                }
+
+                SDL_UnlockMutex(stream->lock);
+            }
         }
     }
 

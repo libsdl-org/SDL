@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="tablet_unstable_v2">
+<protocol name="tablet_v2">
 
   <copyright>
     Copyright 2014 © Stephen "Lyude" Chandler Paul
@@ -104,15 +104,6 @@
     compositor-specific policy when a tool can be removed. Common approaches
     will likely include some form of removing a tool when all tablets the
     tool was used on are removed.
-
-    Warning! The protocol described in this file is experimental and
-    backward incompatible changes may be made. Backward compatible changes
-    may be added together with the corresponding interface version bump.
-    Backward incompatible changes are done by bumping the version number in
-    the protocol and interface names and resetting the interface version.
-    Once the protocol is to be declared stable, the 'z' prefix and the
-    version number in the protocol and interface names are removed and the
-    interface version number is reset.
   </description>
 
   <interface name="zwp_tablet_manager_v2" version="1">
@@ -247,7 +238,7 @@
 	previously been used as cursor surface for a different tool, a
 	protocol error is raised.
       </description>
-      <arg name="serial" type="uint" summary="serial of the enter event"/>
+      <arg name="serial" type="uint" summary="serial of the proximity_in event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
       <arg name="hotspot_x" type="int" summary="surface-local x coordinate"/>
       <arg name="hotspot_y" type="int" summary="surface-local y coordinate"/>
@@ -596,14 +587,23 @@
 
     <event name="name">
       <description summary="tablet device name">
+        A descriptive name for the tablet device.
+
+	If the device has no descriptive name, this event is not sent.
+
 	This event is sent in the initial burst of events before the
-	wp_tablet.done event.
+        wp_tablet.done event.
       </description>
       <arg name="name" type="string" summary="the device name"/>
     </event>
 
     <event name="id">
       <description summary="tablet device USB vendor/product id">
+	The USB vendor and product IDs for the tablet device.
+
+	If the device has no USB vendor/product ID, this event is not sent.
+	This can happen for virtual devices or non-USB devices, for instance.
+
 	This event is sent in the initial burst of events before the
 	wp_tablet.done event.
       </description>
@@ -1156,7 +1156,7 @@
     </event>
 
     <event name="leave">
-      <description summary="enter event">
+      <description summary="leave event">
 	Notification that this pad is no longer focused on the specified
 	surface.
       </description>

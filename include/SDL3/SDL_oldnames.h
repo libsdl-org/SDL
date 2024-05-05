@@ -354,7 +354,6 @@
 #define KMOD_NUM SDL_KMOD_NUM
 #define KMOD_RALT SDL_KMOD_RALT
 #define KMOD_RCTRL SDL_KMOD_RCTRL
-#define KMOD_RESERVED SDL_KMOD_RESERVED
 #define KMOD_RGUI SDL_KMOD_RGUI
 #define KMOD_RSHIFT SDL_KMOD_RSHIFT
 #define KMOD_SCROLL SDL_KMOD_SCROLL
@@ -388,6 +387,7 @@
 /* ##SDL_pixels.h */
 #define SDL_AllocFormat SDL_CreatePixelFormat
 #define SDL_AllocPalette SDL_CreatePalette
+#define SDL_Colour SDL_Color
 #define SDL_FreeFormat SDL_DestroyPixelFormat
 #define SDL_FreePalette SDL_DestroyPalette
 #define SDL_MasksToPixelFormatEnum SDL_GetPixelFormatEnumForMasks
@@ -432,6 +432,7 @@
 #define SDL_RenderDrawRectsF SDL_RenderRects
 #define SDL_RenderFillRectF SDL_RenderFillRect
 #define SDL_RenderFillRectsF SDL_RenderFillRects
+#define SDL_RendererFlip SDL_FlipMode
 #define SDL_RenderFlush SDL_FlushRenderer
 #define SDL_RenderGetClipRect SDL_GetRenderClipRect
 #define SDL_RenderGetLogicalSize SDL_GetRenderLogicalPresentation
@@ -491,6 +492,7 @@
 #define SDL_SensorUpdate SDL_UpdateSensors
 
 /* ##SDL_stdinc.h */
+#define SDL_TABLESIZE SDL_arraysize
 #define SDL_strtokr SDL_strtok_r
 
 /* ##SDL_surface.h */
@@ -509,6 +511,11 @@
 #define SDL_SetColorKey SDL_SetSurfaceColorKey
 #define SDL_UpperBlit SDL_BlitSurface
 #define SDL_UpperBlitScaled SDL_BlitSurfaceScaled
+
+/* ##SDL_system.h */
+#define SDL_WinRTGetFSPathUTF8 SDL_WinRTGetFSPath
+#define SDL_iPhoneSetAnimationCallback SDL_iOSSetAnimationCallback
+#define SDL_iPhoneSetEventPump SDL_iOSSetEventPump
 
 /* ##SDL_thread.h */
 #define SDL_TLSCleanup SDL_CleanupTLS
@@ -545,6 +552,7 @@
 #define SDL_AtomicLock SDL_AtomicLock_renamed_SDL_LockSpinlock
 #define SDL_AtomicTryLock SDL_AtomicTryLock_renamed_SDL_TryLockSpinlock
 #define SDL_AtomicUnlock SDL_AtomicUnlock_renamed_SDL_UnlockSpinlock
+#define SDL_atomic_t SDL_atomic_t_renamed_SDL_AtomicInt
 
 /* ##SDL_audio.h */
 #define AUDIO_F32 AUDIO_F32_renamed_SDL_AUDIO_F32LE
@@ -854,7 +862,6 @@
 #define KMOD_NUM KMOD_NUM_renamed_SDL_KMOD_NUM
 #define KMOD_RALT KMOD_RALT_renamed_SDL_KMOD_RALT
 #define KMOD_RCTRL KMOD_RCTRL_renamed_SDL_KMOD_RCTRL
-#define KMOD_RESERVED KMOD_RESERVED_renamed_SDL_KMOD_RESERVED
 #define KMOD_RGUI KMOD_RGUI_renamed_SDL_KMOD_RGUI
 #define KMOD_RSHIFT KMOD_RSHIFT_renamed_SDL_KMOD_RSHIFT
 #define KMOD_SCROLL KMOD_SCROLL_renamed_SDL_KMOD_SCROLL
@@ -888,6 +895,7 @@
 /* ##SDL_pixels.h */
 #define SDL_AllocFormat SDL_AllocFormat_renamed_SDL_CreatePixelFormat
 #define SDL_AllocPalette SDL_AllocPalette_renamed_SDL_CreatePalette
+#define SDL_Colour SDL_Colour_renamed_SDL_Color
 #define SDL_FreeFormat SDL_FreeFormat_renamed_SDL_DestroyPixelFormat
 #define SDL_FreePalette SDL_FreePalette_renamed_SDL_DestroyPalette
 #define SDL_MasksToPixelFormatEnum SDL_MasksToPixelFormatEnum_renamed_SDL_GetPixelFormatEnumForMasks
@@ -932,6 +940,7 @@
 #define SDL_RenderDrawRectsF SDL_RenderDrawRectsF_renamed_SDL_RenderRects
 #define SDL_RenderFillRectF SDL_RenderFillRectF_renamed_SDL_RenderFillRect
 #define SDL_RenderFillRectsF SDL_RenderFillRectsF_renamed_SDL_RenderFillRects
+#define SDL_RendererFlip SDL_RendererFlip_renamed_SDL_FlipMode
 #define SDL_RenderFlush SDL_RenderFlush_renamed_SDL_FlushRenderer
 #define SDL_RenderGetClipRect SDL_RenderGetClipRect_renamed_SDL_GetRenderClipRect
 #define SDL_RenderGetLogicalSize SDL_RenderGetLogicalSize_renamed_SDL_GetRenderLogicalPresentation
@@ -991,6 +1000,7 @@
 #define SDL_SensorUpdate SDL_SensorUpdate_renamed_SDL_UpdateSensors
 
 /* ##SDL_stdinc.h */
+#define SDL_TABLESIZE SDL_TABLESIZE_renamed_SDL_arraysize
 #define SDL_strtokr SDL_strtokr_renamed_SDL_strtok_r
 
 /* ##SDL_surface.h */
@@ -1009,6 +1019,11 @@
 #define SDL_SetColorKey SDL_SetColorKey_renamed_SDL_SetSurfaceColorKey
 #define SDL_UpperBlit SDL_UpperBlit_renamed_SDL_BlitSurface
 #define SDL_UpperBlitScaled SDL_UpperBlitScaled_renamed_SDL_BlitSurfaceScaled
+
+/* ##SDL_system.h */
+#define SDL_WinRTGetFSPathUTF8 SDL_WinRTGetFSPathUTF8_renamed_SDL_WinRTGetFSPath
+#define SDL_iPhoneSetAnimationCallback SDL_iPhoneSetAnimationCallback_renamed_SDL_iOSSetAnimationCallback
+#define SDL_iPhoneSetEventPump SDL_iPhoneSetEventPump_renamed_SDL_iOSSetEventPump
 
 /* ##SDL_thread.h */
 #define SDL_TLSCleanup SDL_TLSCleanup_renamed_SDL_CleanupTLS

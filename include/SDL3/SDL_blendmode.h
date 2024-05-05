@@ -35,9 +35,16 @@ extern "C" {
 #endif
 
 /**
- *  The blend mode used in SDL_RenderTexture() and drawing operations.
+ * An enumeration of blend modes used in drawing operations.
+ *
+ * Note that additional values may be obtained from
+ * SDL_ComposeCustomBlendMode.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ *
+ * \sa SDL_ComposeCustomBlendMode
  */
-typedef enum
+typedef enum SDL_BlendMode
 {
     SDL_BLENDMODE_NONE = 0x00000000,     /**< no blending
                                               dstRGBA = srcRGBA */
@@ -60,9 +67,12 @@ typedef enum
 } SDL_BlendMode;
 
 /**
- *  The blend operation used when combining source and destination pixel components
+ * The blend operation used when combining source and destination pixel
+ * components.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_BlendOperation
 {
     SDL_BLENDOPERATION_ADD              = 0x1,  /**< dst + src: supported by all renderers */
     SDL_BLENDOPERATION_SUBTRACT         = 0x2,  /**< src - dst : supported by D3D9, D3D11, OpenGL, OpenGLES */
@@ -72,9 +82,16 @@ typedef enum
 } SDL_BlendOperation;
 
 /**
- *  The normalized factor used to multiply pixel components
+ * The normalized factor used to multiply pixel components.
+ *
+ * The blend factors are multiplied with the pixels from a drawing operation
+ * (src) and the pixels from the render target (dst) before the blend
+ * operation. The comma-separated factors listed above are always applied in
+ * the component order red, green, blue, and alpha.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_BlendFactor
 {
     SDL_BLENDFACTOR_ZERO                = 0x1,  /**< 0, 0, 0, 0 */
     SDL_BLENDFACTOR_ONE                 = 0x2,  /**< 1, 1, 1, 1 */
@@ -129,23 +146,16 @@ typedef enum
  * either SDL_SetRenderDrawBlendMode or SDL_SetTextureBlendMode. They will
  * return with an error if the blend mode is not supported.
  *
- * This list describes the support of custom blend modes for each renderer in
- * SDL 2.0.6. All renderers support the four blend modes listed in the
- * SDL_BlendMode enumeration.
+ * This list describes the support of custom blend modes for each renderer.
+ * All renderers support the four blend modes listed in the SDL_BlendMode
+ * enumeration.
  *
  * - **direct3d**: Supports all operations with all factors. However, some
  *   factors produce unexpected results with `SDL_BLENDOPERATION_MINIMUM` and
  *   `SDL_BLENDOPERATION_MAXIMUM`.
  * - **direct3d11**: Same as Direct3D 9.
  * - **opengl**: Supports the `SDL_BLENDOPERATION_ADD` operation with all
- *   factors. OpenGL versions 1.1, 1.2, and 1.3 do not work correctly with SDL
- *   2.0.6.
- * - **opengles**: Supports the `SDL_BLENDOPERATION_ADD` operation with all
- *   factors. Color and alpha factors need to be the same. OpenGL ES 1
- *   implementation specific: May also support `SDL_BLENDOPERATION_SUBTRACT`
- *   and `SDL_BLENDOPERATION_REV_SUBTRACT`. May support color and alpha
- *   operations being different from each other. May support color and alpha
- *   factors being different from each other.
+ *   factors. OpenGL versions 1.1, 1.2, and 1.3 do not work correctly here.
  * - **opengles2**: Supports the `SDL_BLENDOPERATION_ADD`,
  *   `SDL_BLENDOPERATION_SUBTRACT`, `SDL_BLENDOPERATION_REV_SUBTRACT`
  *   operations with all factors.

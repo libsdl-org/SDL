@@ -60,16 +60,28 @@ extern "C" {
 /* @} *//* Surface flags */
 
 /**
- *  Evaluates to true if the surface needs to be locked before access.
+ * Evaluates to true if the surface needs to be locked before access.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MUSTLOCK(S) (((S)->flags & SDL_RLEACCEL) != 0)
 
-typedef struct SDL_BlitMap SDL_BlitMap;  /* this is an opaque type. */
+/**
+ * An opaque type used in SDL_Surface.
+ *
+ * This is used by SDL to keep track of how blit operations should work
+ * internally; it is not for use directly by applications.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_BlitMap SDL_BlitMap;
 
 /**
- * The scaling mode
+ * The scaling mode.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_ScaleMode
 {
     SDL_SCALEMODE_NEAREST, /**< nearest pixel sampling */
     SDL_SCALEMODE_LINEAR,  /**< linear filtering */
@@ -77,9 +89,11 @@ typedef enum
 } SDL_ScaleMode;
 
 /**
- * The flip mode
+ * The flip mode.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_FlipMode
 {
     SDL_FLIP_NONE,          /**< Do not flip */
     SDL_FLIP_HORIZONTAL,    /**< flip horizontally */
@@ -89,21 +103,19 @@ typedef enum
 /**
  * A collection of pixels used in software blitting.
  *
- * Pixels are arranged in memory in rows, with the top row first.
- * Each row occupies an amount of memory given by the pitch (sometimes
- * known as the row stride in non-SDL APIs).
+ * Pixels are arranged in memory in rows, with the top row first. Each row
+ * occupies an amount of memory given by the pitch (sometimes known as the row
+ * stride in non-SDL APIs).
  *
- * Within each row, pixels are arranged from left to right until the
- * width is reached.
- * Each pixel occupies a number of bits appropriate for its format, with
- * most formats representing each pixel as one or more whole bytes
- * (in some indexed formats, instead multiple pixels are packed into
- * each byte), and a byte order given by the format.
- * After encoding all pixels, any remaining bytes to reach the pitch are
- * used as padding to reach a desired alignment, and have undefined contents.
+ * Within each row, pixels are arranged from left to right until the width is
+ * reached. Each pixel occupies a number of bits appropriate for its format,
+ * with most formats representing each pixel as one or more whole bytes (in
+ * some indexed formats, instead multiple pixels are packed into each byte),
+ * and a byte order given by the format. After encoding all pixels, any
+ * remaining bytes to reach the pitch are used as padding to reach a desired
+ * alignment, and have undefined contents.
  *
- * \note  This structure should be treated as read-only, except for \c pixels,
- *        which, if not NULL, contains the raw pixel data for the surface.
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Surface
 {
@@ -130,12 +142,6 @@ typedef struct SDL_Surface
     /** Reference count -- used when freeing surface */
     int refcount;               /**< Read-mostly */
 } SDL_Surface;
-
-/**
- * The type of function used for surface blitting functions.
- */
-typedef int (SDLCALL *SDL_blit) (struct SDL_Surface *src, const SDL_Rect *srcrect,
-                                 struct SDL_Surface *dst, const SDL_Rect *dstrect);
 
 
 /**
@@ -419,7 +425,7 @@ extern DECLSPEC int SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *file);
 extern DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface *surface, int flag);
 
 /**
- * Returns whether the surface is RLE enabled
+ * Returns whether the surface is RLE enabled.
  *
  * It is safe to pass a NULL `surface` here; it will return SDL_FALSE.
  *
@@ -459,7 +465,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);
 extern DECLSPEC int SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface, int flag, Uint32 key);
 
 /**
- * Returns whether the surface has a color key
+ * Returns whether the surface has a color key.
  *
  * It is safe to pass a NULL `surface` here; it will return SDL_FALSE.
  *
@@ -641,7 +647,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface, co
  */
 extern DECLSPEC int SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect);
 
-/*
+/**
  * Flip a surface vertically or horizontally.
  *
  * \param surface the surface to flip
@@ -653,7 +659,7 @@ extern DECLSPEC int SDLCALL SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rec
  */
 extern DECLSPEC int SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip);
 
-/*
+/**
  * Creates a new surface identical to the existing surface.
  *
  * The returned surface should be freed with SDL_DestroySurface().
@@ -869,7 +875,7 @@ extern DECLSPEC int SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rec
  * The blit semantics for surfaces with and without blending and colorkey are
  * defined as follows:
  *
- * ```c
+ * ```
  *    RGBA->RGB:
  *      Source surface blend mode set to SDL_BLENDMODE_BLEND:
  *       alpha-blend (using the source alpha-channel and per-surface alpha)
@@ -980,7 +986,7 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *sr
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, filled with the actual rectangle
  *                used after clipping
- * \param scaleMode scale algorithm to be used
+ * \param scaleMode the SDL_ScaleMode to be used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

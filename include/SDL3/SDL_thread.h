@@ -56,16 +56,17 @@ typedef Uint64 SDL_ThreadID;
 typedef Uint32 SDL_TLSID;
 
 /**
- *  The SDL thread priority.
+ * The SDL thread priority.
  *
- *  SDL will make system changes as necessary in order to apply the thread priority.
- *  Code which attempts to control thread state related to priority should be aware
- *  that calling SDL_SetThreadPriority may alter such state.
- *  SDL_HINT_THREAD_PRIORITY_POLICY can be used to control aspects of this behavior.
+ * SDL will make system changes as necessary in order to apply the thread
+ * priority. Code which attempts to control thread state related to priority
+ * should be aware that calling SDL_SetThreadPriority may alter such state.
+ * SDL_HINT_THREAD_PRIORITY_POLICY can be used to control aspects of this
+ * behavior.
  *
- *  \note On many systems you require special privileges to set high or time critical priority.
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum {
+typedef enum SDL_ThreadPriority {
     SDL_THREAD_PRIORITY_LOW,
     SDL_THREAD_PRIORITY_NORMAL,
     SDL_THREAD_PRIORITY_HIGH,
@@ -77,14 +78,12 @@ typedef enum {
  *
  * \param data what was passed as `data` to SDL_CreateThread()
  * \returns a value that can be reported through SDL_WaitThread().
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
 
-
-#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
-/**
- *  \file SDL_thread.h
- *
+/*
  *  We compile SDL into a DLL. This means, that it's the DLL which
  *  creates a new thread for the calling process with the SDL_CreateThread()
  *  API. There is a problem with this, that only the RTL of the SDL3.DLL will
@@ -102,6 +101,7 @@ typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
  *  Always use the _beginthread() and _endthread() of the calling runtime
  *  library!
  */
+#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
 #define SDL_PASSED_BEGINTHREAD_ENDTHREAD
 
 typedef uintptr_t (__cdecl * pfnSDL_CurrentBeginThread)

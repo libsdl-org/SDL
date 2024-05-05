@@ -33,7 +33,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
     char *new_combined;
     char *converted;
     const char *terminator;
-    int new_length;
+    size_t new_length;
 
     combined = SDL_strdup(prefix);
 
@@ -48,12 +48,13 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
                                    ext_suffix);
 
         if (!converted) {
+            SDL_free(combined);
             return NULL;
         }
 
         terminator = f[1].name ? separator : suffix;
         new_length = SDL_strlen(combined) + SDL_strlen(converted)
-                   + SDL_strlen(terminator);
+                   + SDL_strlen(terminator) + 1;
 
         new_combined = SDL_realloc(combined, new_length);
 
@@ -68,6 +69,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
 
         SDL_strlcat(combined, converted, new_length);
         SDL_strlcat(combined, terminator, new_length);
+        SDL_free(converted);
     }
 
     return combined;
@@ -80,7 +82,7 @@ char *convert_filter(const SDL_DialogFileFilter filter, NameTransform ntf,
 {
     char *converted;
     char *name_filtered;
-    int total_length;
+    size_t total_length;
     char *list;
 
     list = convert_ext_list(filter.pattern, ext_prefix, ext_separator,
@@ -129,7 +131,7 @@ char *convert_ext_list(const char *list, const char *prefix,
 {
     char *converted;
     int semicolons;
-    int total_length;
+    size_t total_length;
 
     semicolons = 0;
 

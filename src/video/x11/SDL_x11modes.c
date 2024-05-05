@@ -921,10 +921,13 @@ int X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SD
 
     viddata->last_mode_change_deadline = SDL_GetTicks() + (PENDING_FOCUS_TIME * 2);
 
-    if (mode != &sdl_display->desktop_mode) {
-        data->mode_switch_deadline_ns = SDL_GetTicksNS() + MODE_SWITCH_TIMEOUT_NS;
-    } else {
-        data->mode_switch_deadline_ns = 0;
+    /* XWayland mode switches are emulated with viewports and thus instantaneous. */
+    if (!viddata->is_xwayland) {
+        if (sdl_display->current_mode != mode) {
+            data->mode_switch_deadline_ns = SDL_GetTicksNS() + MODE_SWITCH_TIMEOUT_NS;
+        } else {
+            data->mode_switch_deadline_ns = 0;
+        }
     }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR

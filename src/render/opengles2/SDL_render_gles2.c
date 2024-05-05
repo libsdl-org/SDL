@@ -1445,7 +1445,6 @@ static void GLES2_DestroyRenderer(SDL_Renderer *renderer)
 
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
@@ -2041,10 +2040,9 @@ static int GLES2_SetVSync(SDL_Renderer *renderer, const int vsync)
  * Renderer instantiation                                                                        *
  *************************************************************************************************/
 
-static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
-    GLES2_RenderData *data;
+    GLES2_RenderData *data = NULL;
     SDL_WindowFlags window_flags = 0; /* -Wconditional-uninitialized */
     GLint window_framebuffer;
     GLint value;
@@ -2078,24 +2076,15 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         }
     }
 
-    /* Create the renderer struct */
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(SDL_Renderer));
-    if (!renderer) {
-        goto error;
-    }
-    renderer->magic = &SDL_renderer_magic;
-
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
         SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
         goto error;
     }
 
     data = (GLES2_RenderData *)SDL_calloc(1, sizeof(GLES2_RenderData));
     if (!data) {
-        SDL_free(renderer);
         goto error;
     }
     renderer->info = GLES2_RenderDriver.info;
@@ -2106,28 +2095,20 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
     /* Create an OpenGL ES 2.0 context */
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
-        SDL_free(renderer);
-        SDL_free(data);
         goto error;
     }
     if (SDL_GL_MakeCurrent(window, data->context) < 0) {
         SDL_GL_DeleteContext(data->context);
-        SDL_free(renderer);
-        SDL_free(data);
         goto error;
     }
 
     if (GLES2_LoadFunctions(data) < 0) {
         SDL_GL_DeleteContext(data->context);
-        SDL_free(renderer);
-        SDL_free(data);
         goto error;
     }
 
     if (GLES2_CacheShaders(data) < 0) {
         SDL_GL_DeleteContext(data->context);
-        SDL_free(renderer);
-        SDL_free(data);
         goto error;
     }
 
@@ -2244,9 +2225,10 @@ static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
 
     GL_CheckError("", renderer);
 
-    return renderer;
+    return 0;
 
 error:
+    SDL_free(data);
     if (changed_window) {
         /* Uh oh, better try to put it back... */
         char *error = SDL_strdup(SDL_GetError());
@@ -2257,7 +2239,7 @@ error:
         SDL_SetError("%s", error);
         SDL_free(error);
     }
-    return NULL;
+    return -1;
 }
 
 SDL_RenderDriver GLES2_RenderDriver = {

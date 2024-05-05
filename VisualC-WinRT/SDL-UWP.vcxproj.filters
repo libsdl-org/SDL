@@ -144,9 +144,6 @@
     <ClInclude Include="..\include\SDL3\SDL_power.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SDL3\SDL_quit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\SDL3\SDL_rect.h">
       <Filter>Header Files</Filter>
     </ClInclude>

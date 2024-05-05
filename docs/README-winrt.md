@@ -129,8 +129,7 @@ SDL_GetPrefPath(), starting with SDL 2.0.4, addresses these by:
    (and which require less work to use safely, in terms of data integrity).
 
 Apps that wish to get their Roaming folder's path can do so either by using
-SDL_WinRTGetFSPathUTF8(), SDL_WinRTGetFSPathUNICODE() (which returns a
-UCS-2/wide-char string), or directly through the WinRT class,
+SDL_WinRTGetFSPath(), or directly through the WinRT class,
 Windows.Storage.ApplicationData.
 
 
@@ -340,7 +339,7 @@ int main(int argc, char **argv)
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         return 1;
-    } else if (SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_FULLSCREEN, &window, &renderer) != 0) {
+    } else if (SDL_CreateWindowAndRenderer("Hello SDL", 0, 0, SDL_WINDOW_FULLSCREEN, &window, &renderer) != 0) {
         return 1;
     }
 

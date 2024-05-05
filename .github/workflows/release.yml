@@ -106,9 +106,9 @@ jobs:
       - name: 'Untar ${{ needs.src.outputs.src-tar-gz }}'
         id: tar
         run: |
-          mkdir -p /tmp/tardir
-          tar -C /tmp/tardir -v -x -f "${{ github.workspace }}/${{ needs.src.outputs.src-tar-gz }}"
-          echo "path=/tmp/tardir/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$GITHUB_OUTPUT
+          mkdir -p "${{ github.workspace }}/tardir"
+          tar -C "${{ github.workspace }}/tardir" -v -x -f "${{ github.workspace }}/${{ needs.src.outputs.src-tar-gz }}"
+          echo "path=${{ github.workspace }}/tardir/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$GITHUB_OUTPUT
       - name: 'Build SDL3.dmg'
         id: releaser
         shell: bash

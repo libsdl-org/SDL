@@ -1549,10 +1549,6 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 + SDL_KMOD_RCTRL
 @@
 @@
-- KMOD_RESERVED
-+ SDL_KMOD_RESERVED
-@@
-@@
 - KMOD_RGUI
 + SDL_KMOD_RGUI
 @@
@@ -3124,3 +3120,32 @@ typedef SDL_eventaction, SDL_EventAction;
 @@
 - SDL_eventaction
 + SDL_EventAction
+@@
+typedef SDL_RendererFlip, SDL_FlipMode;
+@@
+- SDL_RendererFlip
++ SDL_FlipMode
+@@
+typedef SDL_Colour, SDL_Color;
+@@
+- SDL_Colour
++ SDL_Color
+@@
+@@
+- SDL_WinRTGetFSPathUTF8
++ SDL_WinRTGetFSPath
+  (...)
+@@
+@@
+- SDL_iPhoneSetAnimationCallback
++ SDL_iOSSetAnimationCallback
+  (...)
+@@
+@@
+- SDL_TABLESIZE
++ SDL_arraysize
+@@
+@@
+- SDL_iPhoneSetEventPump
++ SDL_iOSSetEventPump
+  (...)

@@ -134,18 +134,19 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
  * Callback function that will be called when data for the specified mime-type
  * is requested by the OS.
  *
- * The callback function is called with NULL as the mime_type when the clipboard
- * is cleared or new data is set. The clipboard is automatically cleared in SDL_Quit().
+ * The callback function is called with NULL as the mime_type when the
+ * clipboard is cleared or new data is set. The clipboard is automatically
+ * cleared in SDL_Quit().
  *
- * \param userdata  A pointer to provided user data
+ * \param userdata A pointer to provided user data
  * \param mime_type The requested mime-type
- * \param size      A pointer filled in with the length of the returned data
- * \returns a pointer to the data for the provided mime-type. Returning NULL or
- *          setting length to 0 will cause no data to be sent to the "receiver". It is
- *          up to the receiver to handle this. Essentially returning no data is more or
- *          less undefined behavior and may cause breakage in receiving applications.
- *          The returned data will not be freed so it needs to be retained and dealt
- *          with internally.
+ * \param size A pointer filled in with the length of the returned data
+ * \returns a pointer to the data for the provided mime-type. Returning NULL
+ *          or setting length to 0 will cause no data to be sent to the
+ *          "receiver". It is up to the receiver to handle this. Essentially
+ *          returning no data is more or less undefined behavior and may cause
+ *          breakage in receiving applications. The returned data will not be
+ *          freed so it needs to be retained and dealt with internally.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -154,7 +155,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
 typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const char *mime_type, size_t *size);
 
 /**
- * Callback function that will be called when the clipboard is cleared, or new data is set.
+ * Callback function that will be called when the clipboard is cleared, or new
+ * data is set.
  *
  * \param userdata A pointer to provided user data
  *
@@ -165,7 +167,7 @@ typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const c
 typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
 
 /**
- * Offer clipboard data to the OS
+ * Offer clipboard data to the OS.
  *
  * Tell the operating system that the application is offering clipboard data
  * for each of the proivded mime-types. Once another application requests the
@@ -195,7 +197,7 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
 extern DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types);
 
 /**
- * Clear the clipboard data
+ * Clear the clipboard data.
  *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -207,7 +209,7 @@ extern DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callb
 extern DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
 
 /**
- * Get the data from clipboard for a given mime type
+ * Get the data from clipboard for a given mime type.
  *
  * The size of text data does not include the terminator, but the text is
  * guaranteed to be null terminated.
@@ -220,12 +222,13 @@ extern DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_HasClipboardData
  * \sa SDL_SetClipboardData
  */
 extern DECLSPEC void *SDLCALL SDL_GetClipboardData(const char *mime_type, size_t *size);
 
 /**
- * Query whether there is data in the clipboard for the provided mime type
+ * Query whether there is data in the clipboard for the provided mime type.
  *
  * \param mime_type The mime type to check for data for
  * \returns SDL_TRUE if there exists data in clipboard for the provided mime

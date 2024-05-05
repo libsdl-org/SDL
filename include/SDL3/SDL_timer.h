@@ -37,9 +37,7 @@
 extern "C" {
 #endif
 
-/**
- * SDL time constants
- */
+/* SDL time constants */
 #define SDL_MS_PER_SECOND   1000
 #define SDL_US_PER_SECOND   1000000
 #define SDL_NS_PER_SECOND   1000000000LL
@@ -129,15 +127,31 @@ extern DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
 /**
  * Function prototype for the timer callback function.
  *
- * The callback function is passed the current timer interval and returns
- * the next timer interval, in milliseconds. If the returned value is the same as the one
- * passed in, the periodic alarm continues, otherwise a new alarm is
+ * The callback function is passed the current timer interval and returns the
+ * next timer interval, in milliseconds. If the returned value is the same as
+ * the one passed in, the periodic alarm continues, otherwise a new alarm is
  * scheduled. If the callback returns 0, the periodic alarm is cancelled.
+ *
+ * \param interval the current callback time interval.
+ * \param param an arbitrary pointer provided by the app through SDL_AddTimer,
+ *              for its own use.
+ * \returns the new callback time interval, or 0 to disable further runs of
+ *          the callback.
+ *
+ * \threadsafety SDL may call this callback at any time from a background
+ *               thread; the application is responsible for locking resources
+ *               the callback touches that need to be protected.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_AddTimer
  */
 typedef Uint32 (SDLCALL *SDL_TimerCallback)(Uint32 interval, void *param);
 
 /**
  * Definition of the timer ID type.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint32 SDL_TimerID;
 

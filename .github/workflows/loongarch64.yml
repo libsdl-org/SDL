@@ -59,6 +59,7 @@ jobs:
             -DSDL_WERROR=ON \
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
+            -DSDL_DISABLE_INSTALL_DOCS=OFF \
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=prefix

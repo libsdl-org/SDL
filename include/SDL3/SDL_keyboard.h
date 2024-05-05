@@ -39,12 +39,26 @@
 extern "C" {
 #endif
 
+/**
+ * This is a unique ID for a keyboard for the time it is connected to the
+ * system, and is never reused for the lifetime of the application.
+ *
+ * If the keyboard is disconnected and reconnected, it will get a new ID.
+ *
+ * The ID value starts at 1 and increments from there. The value 0 is an
+ * invalid ID.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ */
 typedef Uint32 SDL_KeyboardID;
 
 /**
- *  The SDL keysym structure, used in key events.
+ * The SDL keysym structure, used in key events.
  *
- *  \note  If you are looking for translated character input, see the ::SDL_EVENT_TEXT_INPUT event.
+ * If you are looking for translated character input, see the
+ * ::SDL_EVENT_TEXT_INPUT event.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Keysym
 {
@@ -143,7 +157,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
 extern DECLSPEC const Uint8 *SDLCALL SDL_GetKeyboardState(int *numkeys);
 
 /**
- * Clear the state of the keyboard
+ * Clear the state of the keyboard.
  *
  * This function will generate key up events for all pressed keys.
  *
@@ -299,7 +313,7 @@ extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  * and SDL_TextEditingEvent (SDL_EVENT_TEXT_EDITING) events. Please use this
  * function in pair with SDL_StopTextInput().
  *
- * Text input events are received by default.
+ * Text input events are not received by default.
  *
  * On some platforms using this function activates the screen keyboard.
  *
@@ -324,7 +338,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_TextInputActive(void);
 /**
  * Stop receiving any text input events.
  *
- * Text input events are received by default.
+ * Text input events are not received by default.
  *
  * \since This function is available since SDL 3.0.0.
  *

@@ -36,6 +36,8 @@ cmake_uninstall.cmake
 SDL3ConfigVersion.cmake
 .ninja_*
 *.ninja
+compile_commands.json
+.cache/
 
 # for CLion
 .idea

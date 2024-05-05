@@ -38,7 +38,10 @@ extern "C" {
 #endif
 
 /**
- * A structure holding a calendar date and time broken down into its components.
+ * A structure holding a calendar date and time broken down into its
+ * components.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_DateTime
 {
@@ -56,36 +59,52 @@ typedef struct SDL_DateTime
 /**
  * The preferred date format of the current system locale.
  *
+ * \since This enum is available since SDL 3.0.0.
+ *
  * \sa SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER
  */
 typedef enum SDL_DateFormat
 {
     SDL_DATE_FORMAT_YYYYMMDD = 0, /**< Year/Month/Day */
     SDL_DATE_FORMAT_DDMMYYYY = 1, /**< Day/Month/Year */
-    SDL_DATE_FORMAT_MMDDYYYY = 2, /**< Month/Day/Year */
+    SDL_DATE_FORMAT_MMDDYYYY = 2  /**< Month/Day/Year */
 } SDL_DateFormat;
 
 /**
  * The preferred time format of the current system locale.
+ *
+ * \since This enum is available since SDL 3.0.0.
  *
  * \sa SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER
  */
 typedef enum SDL_TimeFormat
 {
     SDL_TIME_FORMAT_24HR = 0, /**< 24 hour time */
-    SDL_TIME_FORMAT_12HR = 1, /**< 12 hour time */
+    SDL_TIME_FORMAT_12HR = 1  /**< 12 hour time */
 } SDL_TimeFormat;
 
+/* Global date/time properties. */
+
 /**
- *  Global date/time properties
+ * The SDL_DateFormat to use as the preferred date display format for the
+ * current system locale.
  *
- *  - `SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER`: the SDL_DateFormat to use as the preferred date display format
- *    for the current system locale.
- *  - `SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER`: the SDL_TimeFormat to use as the preferred time display format
- *    for the current system locale.
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER
  */
 #define SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER "SDL.time.date_format"
+
+/**
+ * The SDL_TimeFormat to use as the preferred time display format for the
+ * current system locale.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER
+ */
 #define SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER "SDL.time.time_format"
+
 
 /**
  * Gets the current value of the system realtime clock in nanoseconds since
@@ -95,7 +114,7 @@ typedef enum SDL_TimeFormat
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
 
@@ -111,7 +130,7 @@ extern DECLSPEC int SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime);
 
@@ -126,7 +145,7 @@ extern DECLSPEC int SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt,
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks);
 
@@ -148,7 +167,7 @@ extern DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDate
 
 /**
  * Converts a Windows FILETIME (100-nanosecond intervals since January 1,
- * 1601) to an SDL time
+ * 1601) to an SDL time.
  *
  * This function takes the two 32-bit values of the FILETIME structure as
  * parameters.
@@ -169,7 +188,7 @@ extern DECLSPEC SDL_Time SDLCALL SDL_TimeFromWindows(Uint32 dwLowDateTime, Uint3
  * \returns the number of days in the requested month, otherwise -1; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetDaysInMonth(int year, int month);
 
@@ -182,7 +201,7 @@ extern DECLSPEC int SDLCALL SDL_GetDaysInMonth(int year, int month);
  * \returns the day of year [0-365] if the date is valid, otherwise -1; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetDayOfYear(int year, int month, int day);
 
@@ -195,7 +214,7 @@ extern DECLSPEC int SDLCALL SDL_GetDayOfYear(int year, int month, int day);
  * \returns a value between 0 and 6 (0 being Sunday) if the date is valid,
  *          otherwise -1; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.0.0
+ * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_GetDayOfWeek(int year, int month, int day);
 

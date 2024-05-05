@@ -44,8 +44,10 @@ typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
 
 /**
  * Cursor types for SDL_CreateSystemCursor().
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_SystemCursor
 {
     SDL_SYSTEM_CURSOR_ARROW,     /**< Arrow */
     SDL_SYSTEM_CURSOR_IBEAM,     /**< I-beam */
@@ -72,8 +74,10 @@ typedef enum
 
 /**
  * Scroll direction types for the Scroll event
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_MouseWheelDirection
 {
     SDL_MOUSEWHEEL_NORMAL,    /**< The scroll direction is normal */
     SDL_MOUSEWHEEL_FLIPPED    /**< The scroll direction is flipped / natural */
@@ -140,7 +144,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * Retrieve the current state of the mouse.
  *
  * The current button state is returned as a button bitmask, which can be
- * tested using the `SDL_BUTTON(X)` macros (where `X` is generally 1 for the
+ * tested using the SDL_BUTTON(X) macro (where `X` is generally 1 for the
  * left, 2 for middle, 3 for the right button), and `x` and `y` are set to the
  * mouse cursor position relative to the focus window. You can pass NULL for
  * either `x` or `y`.
@@ -297,13 +301,13 @@ extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
  * While capturing is enabled, the current window will have the
  * `SDL_WINDOW_MOUSE_CAPTURE` flag set.
  *
- * Please note that as of SDL 2.0.22, SDL will attempt to "auto capture" the
- * mouse while the user is pressing a button; this is to try and make mouse
- * behavior more consistent between platforms, and deal with the common case
- * of a user dragging the mouse outside of the window. This means that if you
- * are calling SDL_CaptureMouse() only to deal with this situation, you no
- * longer have to (although it is safe to do so). If this causes problems for
- * your app, you can disable auto capture by setting the
+ * Please note that SDL will attempt to "auto capture" the mouse while the
+ * user is pressing a button; this is to try and make mouse behavior more
+ * consistent between platforms, and deal with the common case of a user
+ * dragging the mouse outside of the window. This means that if you are
+ * calling SDL_CaptureMouse() only to deal with this situation, you do not
+ * have to (although it is safe to do so). If this causes problems for your
+ * app, you can disable auto capture by setting the
  * `SDL_HINT_MOUSE_AUTO_CAPTURE` hint to zero.
  *
  * \param enabled SDL_TRUE to enable capturing, SDL_FALSE to disable.
@@ -348,8 +352,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  * hide the cursor and draw your own as part of your game's rendering, but it
  * will be bound to the framerate.
  *
- * Also, since SDL 2.0.0, SDL_CreateSystemCursor() is available, which
- * provides twelve readily available system cursors to pick from.
+ * Also, SDL_CreateSystemCursor() is available, which provides several
+ * readily-available system cursors to pick from.
  *
  * \param data the color value for each pixel of the cursor
  * \param mask the mask value for each pixel of the cursor
@@ -509,11 +513,16 @@ extern DECLSPEC SDL_bool SDLCALL SDL_CursorVisible(void);
 /**
  * Used as a mask when testing buttons in buttonstate.
  *
- * - Button 1:  Left mouse button
- * - Button 2:  Middle mouse button
- * - Button 3:  Right mouse button
+ * - Button 1: Left mouse button
+ * - Button 2: Middle mouse button
+ * - Button 3: Right mouse button
+ * - Button 4: Side mouse button 1
+ * - Button 5: Side mouse button 2
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_BUTTON(X)       (1 << ((X)-1))
+
 #define SDL_BUTTON_LEFT     1
 #define SDL_BUTTON_MIDDLE   2
 #define SDL_BUTTON_RIGHT    3

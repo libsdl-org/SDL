@@ -54,7 +54,7 @@ if [ "x$PATCH" != "x0" ]; then
     fi
 fi
 
-perl -w -pi -e 's/\A(project\(SDL[0-9]+ LANGUAGES C CXX VERSION ")[0-9.]+/${1}'$NEWVERSION'/;' CMakeLists.txt
+perl -w -pi -e 's/\A(project\(SDL[0-9]+ LANGUAGES C VERSION ")[0-9.]+/${1}'$NEWVERSION'/;' CMakeLists.txt
 
 perl -w -pi -e 's/\A(.* SDL_MAJOR_VERSION = )\d+/${1}'$MAJOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
 perl -w -pi -e 's/\A(.* SDL_MINOR_VERSION = )\d+/${1}'$MINOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java

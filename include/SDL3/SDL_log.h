@@ -45,23 +45,16 @@
 extern "C" {
 #endif
 
-
 /**
- *  The maximum size of a log message prior to SDL 2.0.24
+ * The predefined log categories
  *
- *  As of 2.0.24 there is no limit to the length of SDL log messages.
- */
-#define SDL_MAX_LOG_MESSAGE 4096
-
-/**
- *  The predefined log categories
+ * By default the application category is enabled at the INFO level, the
+ * assert category is enabled at the WARN level, test is enabled at the
+ * VERBOSE level and all other categories are enabled at the ERROR level.
  *
- *  By default the application category is enabled at the INFO level,
- *  the assert category is enabled at the WARN level, test is enabled
- *  at the VERBOSE level and all other categories are enabled at the
- *  ERROR level.
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_LogCategory
 {
     SDL_LOG_CATEGORY_APPLICATION,
     SDL_LOG_CATEGORY_ERROR,
@@ -97,9 +90,11 @@ typedef enum
 } SDL_LogCategory;
 
 /**
- *  The predefined log priorities
+ * The predefined log priorities
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_LogPriority
 {
     SDL_LOG_PRIORITY_VERBOSE = 1,
     SDL_LOG_PRIORITY_DEBUG,
@@ -364,6 +359,8 @@ extern DECLSPEC void SDLCALL SDL_LogMessageV(int category,
  * \param category the category of the message
  * \param priority the priority of the message
  * \param message the message being output
+ *
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_LogPriority priority, const char *message);
 

@@ -26,15 +26,8 @@
  *
  * IMPORTANT:
  * If you are not an expert in concurrent lockless programming, you should
- * only be using the atomic lock and reference counting functions in this
- * file.  In all other cases you should be protecting your data structures
- * with full mutexes.
- *
- * The list of "safe" functions to use are:
- *  SDL_LockSpinlock()
- *  SDL_UnlockSpinlock()
- *  SDL_AtomicIncRef()
- *  SDL_AtomicDecRef()
+ * not be using any functions in this file. You should be protecting your
+ * data structures with full mutexes instead.
  *
  * Seriously, here be dragons!
  * ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -70,27 +63,24 @@ extern "C" {
 #endif
 
 /**
- * \name SDL AtomicLock
+ * An atomic spinlock.
  *
- * The atomic locks are efficient spinlocks using CPU instructions,
- * but are vulnerable to starvation and can spin forever if a thread
- * holding a lock has been terminated.  For this reason you should
- * minimize the code executed inside an atomic lock and never do
- * expensive things like API or system calls while holding them.
+ * The atomic locks are efficient spinlocks using CPU instructions, but are
+ * vulnerable to starvation and can spin forever if a thread holding a lock
+ * has been terminated. For this reason you should minimize the code executed
+ * inside an atomic lock and never do expensive things like API or system
+ * calls while holding them.
  *
- * They are also vulnerable to starvation if the thread holding
- * the lock is lower priority than other threads and doesn't get
- * scheduled. In general you should use mutexes instead, since
- * they have better performance and contention behavior.
+ * They are also vulnerable to starvation if the thread holding the lock is
+ * lower priority than other threads and doesn't get scheduled. In general you
+ * should use mutexes instead, since they have better performance and
+ * contention behavior.
  *
  * The atomic locks are not safe to lock recursively.
  *
- * Porting Note:
- * The spin lock functions and type are required and can not be
+ * Porting Note: The spin lock functions and type are required and can not be
  * emulated because they are used in the atomic emulation code.
  */
-/* @{ */
-
 typedef int SDL_SpinLock;
 
 /**
@@ -142,14 +132,27 @@ extern DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
  */
 extern DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
 
-/* @} *//* SDL AtomicLock */
 
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
- * The compiler barrier prevents the compiler from reordering
- * reads and writes to globally visible variables across the call.
+ * Mark a compiler barrier.
+ *
+ * A compiler barrier prevents the compiler from reordering reads and writes
+ * to globally visible variables across the call.
+ *
+ * This macro only prevents the compiler from reordering reads and writes, it
+ * does not prevent the CPU from reordering reads and writes. However, all of
+ * the atomic operations that modify memory are full memory barriers.
+ *
+ * \threadsafety Obviously this macro is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
-#if defined(_MSC_VER) && (_MSC_VER > 1200) && !defined(__clang__)
+#define SDL_CompilerBarrier() DoCompilerSpecificReadWriteBarrier()
+#elif defined(_MSC_VER) && (_MSC_VER > 1200) && !defined(__clang__)
 void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
 #define SDL_CompilerBarrier()   _ReadWriteBarrier()
@@ -165,6 +168,8 @@ extern __inline void SDL_CompilerBarrier(void);
 #endif
 
 /**
+ * Insert a memory release barrier.
+ *
  * Memory barriers are designed to prevent reads and writes from being
  * reordered by the compiler and being seen out of order on multi-core CPUs.
  *
@@ -183,15 +188,30 @@ extern __inline void SDL_CompilerBarrier(void);
  * For more information on these semantics, take a look at the blog post:
  * http://preshing.com/20120913/acquire-and-release-semantics
  *
+ * \threadsafety Obviously this macro is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
 
-/*
+/**
+ * Insert a memory acquire barrier.
+ *
+ * Please refer to SDL_MemoryBarrierReleaseFunction for the details!
+ *
+ * \threadsafety Obviously this function is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
+ *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_MemoryBarrierReleaseFunction
  */
 extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 
+/* !!! FIXME: this should have documentation! */
 #if defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("lwsync" : : : "memory")
@@ -242,7 +262,26 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 #endif
 
 /* "REP NOP" is PAUSE, coded for tools that don't know it by that name. */
-#if (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * A macro to insert a CPU-specific "pause" instruction into the program.
+ *
+ * This can be useful in busy-wait loops, as it serves as a hint to the CPU as
+ * to the program's intent; some CPUs can use this to do more efficient
+ * processing. On some platforms, this doesn't do anything, so using this
+ * macro might just be a harmless no-op.
+ *
+ * Note that if you are busy-waiting, there are often more-efficient
+ * approaches with other synchronization primitives: mutexes, semaphores,
+ * condition variables, etc.
+ *
+ * \threadsafety This macro is safe to use from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_CPUPauseInstruction() DoACPUPauseInACompilerAndArchitectureSpecificWay
+#elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("pause\n")  /* Some assemblers can't do REP NOP, so go with PAUSE. */
 #elif (defined(__arm__) && defined(__ARM_ARCH) && __ARM_ARCH >= 7) || defined(__aarch64__)
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("yield" ::: "memory")
@@ -265,7 +304,28 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 /**
  * A type representing an atomic integer value.
  *
- * It is a struct so people don't accidentally use numeric operations on it.
+ * This can be used to manage a value that is synchronized across multiple
+ * CPUs without a race condition; when an app sets a value with SDL_AtomicSet
+ * all other threads, regardless of the CPU it is running on, will see that
+ * value when retrieved with SDL_AtomicGet, regardless of CPU caches, etc.
+ *
+ * This is also useful for atomic compare-and-swap operations: a thread can
+ * change the value as long as its current value matches expectations. When
+ * done in a loop, one can guarantee data consistency across threads without a
+ * lock (but the usual warnings apply: if you don't know what you're doing, or
+ * you don't do it carefully, you can confidently cause any number of
+ * disasters with this, so in most cases, you _should_ use a mutex instead of
+ * this!).
+ *
+ * This is a struct so people don't accidentally use numeric operations on it
+ * directly. You have to use SDL_Atomic* functions.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_AtomicCompareAndSwap
+ * \sa SDL_AtomicGet
+ * \sa SDL_AtomicSet
+ * \sa SDL_AtomicAdd
  */
 typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
 
@@ -338,20 +398,38 @@ extern DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
  */
 extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
 
+#ifndef SDL_AtomicIncRef
+
 /**
  * Increment an atomic variable used as a reference count.
+ *
+ * ***Note: If you don't know what this macro is for, you shouldn't use it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt to increment.
+ * \returns the previous value of the atomic variable.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_AtomicDecRef
  */
-#ifndef SDL_AtomicIncRef
 #define SDL_AtomicIncRef(a)    SDL_AtomicAdd(a, 1)
 #endif
+
+#ifndef SDL_AtomicDecRef
 
 /**
  * Decrement an atomic variable used as a reference count.
  *
- * \return SDL_TRUE if the variable reached zero after decrementing,
- *         SDL_FALSE otherwise
+ * ***Note: If you don't know what this macro is for, you shouldn't use it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt to increment.
+ * \returns SDL_TRUE if the variable reached zero after decrementing,
+ *          SDL_FALSE otherwise
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_AtomicIncRef
  */
-#ifndef SDL_AtomicDecRef
 #define SDL_AtomicDecRef(a)    (SDL_AtomicAdd(a, -1) == 1)
 #endif
 

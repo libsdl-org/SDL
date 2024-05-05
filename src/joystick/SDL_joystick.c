@@ -367,6 +367,8 @@ static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x044f, 0xb65e), /* Thrustmaster T500RS */
     MAKE_VIDPID(0x044f, 0xb664), /* Thrustmaster TX (initial mode) */
     MAKE_VIDPID(0x044f, 0xb669), /* Thrustmaster TX (active mode) */
+    MAKE_VIDPID(0x044f, 0xb691), /* Thrustmaster TS-XW (initial mode) */
+    MAKE_VIDPID(0x044f, 0xb692), /* Thrustmaster TS-XW (active mode) */
     MAKE_VIDPID(0x0483, 0x0522), /* Simagic Wheelbase (including M10, Alpha Mini, Alpha, Alpha U) */
     MAKE_VIDPID(0x0eb7, 0x0001), /* Fanatec ClubSport Wheel Base V2 */
     MAKE_VIDPID(0x0eb7, 0x0004), /* Fanatec ClubSport Wheel Base V2.5 */
@@ -1170,7 +1172,6 @@ SDL_JoystickID SDL_AttachVirtualJoystick(SDL_JoystickType type, int naxes, int n
     SDL_VirtualJoystickDesc desc;
 
     SDL_zero(desc);
-    desc.version = SDL_VIRTUAL_JOYSTICK_DESC_VERSION;
     desc.type = (Uint16)type;
     desc.naxes = (Uint16)naxes;
     desc.nbuttons = (Uint16)nbuttons;

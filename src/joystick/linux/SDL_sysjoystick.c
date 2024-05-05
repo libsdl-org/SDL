@@ -277,7 +277,7 @@ static int GuessIsSensor(int fd)
     return 0;
 }
 
-static int IsJoystick(const char *path, int fd, char **name_return, Uint16 *vendor_return, Uint16 *product_return, SDL_JoystickGUID *guid)
+static int IsJoystick(const char *path, int *fd, char **name_return, Uint16 *vendor_return, Uint16 *product_return, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
     char *name;
@@ -286,21 +286,32 @@ static int IsJoystick(const char *path, int fd, char **name_return, Uint16 *vend
 
     SDL_zero(inpid);
 #ifdef SDL_USE_LIBUDEV
-    SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version, &class);
+    /* Opening input devices can generate synchronous device I/O, so avoid it if we can */
+    if (SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version, &class) &&
+        !(class & SDL_UDEV_DEVICE_JOYSTICK)) {
+        return 0;
+    }
 #endif
-    if (ioctl(fd, JSIOCGNAME(sizeof(product_string)), product_string) <= 0) {
-        /* When udev is enabled we only get joystick devices here, so there's no need to test them */
-        if (enumeration_method != ENUMERATION_LIBUDEV &&
-            !(class & SDL_UDEV_DEVICE_JOYSTICK) && ( class || !GuessIsJoystick(fd))) {
+
+    if (fd && *fd < 0) {
+        *fd = open(path, O_RDONLY | O_CLOEXEC, 0);
+    }
+    if (!fd || *fd < 0) {
+        return 0;
+    }
+
+    if (ioctl(*fd, JSIOCGNAME(sizeof(product_string)), product_string) <= 0) {
+        /* When udev enumeration or classification, we only got joysticks here, so no need to test */
+        if (enumeration_method != ENUMERATION_LIBUDEV && !class && !GuessIsJoystick(*fd)) {
             return 0;
         }
 
         /* Could have vendor and product already from udev, but should agree with evdev */
-        if (ioctl(fd, EVIOCGID, &inpid) < 0) {
+        if (ioctl(*fd, EVIOCGID, &inpid) < 0) {
             return 0;
         }
 
-        if (ioctl(fd, EVIOCGNAME(sizeof(product_string)), product_string) < 0) {
+        if (ioctl(*fd, EVIOCGNAME(sizeof(product_string)), product_string) < 0) {
             return 0;
         }
     }
@@ -316,7 +327,7 @@ static int IsJoystick(const char *path, int fd, char **name_return, Uint16 *vend
         return 0;
     }
 
-    FixupDeviceInfoForMapping(fd, &inpid);
+    FixupDeviceInfoForMapping(*fd, &inpid);
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d\n", name, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
@@ -334,11 +345,32 @@ static int IsJoystick(const char *path, int fd, char **name_return, Uint16 *vend
     return 1;
 }
 
-static int IsSensor(const char *path, int fd)
+static int IsSensor(const char *path, int *fd)
 {
     struct input_id inpid;
+    int class = 0;
 
-    if (ioctl(fd, EVIOCGID, &inpid) < 0) {
+    SDL_zero(inpid);
+#ifdef SDL_USE_LIBUDEV
+    /* Opening input devices can generate synchronous device I/O, so avoid it if we can */
+    if (SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version, &class) &&
+        !(class & SDL_UDEV_DEVICE_ACCELEROMETER)) {
+        return 0;
+    }
+#endif
+
+    if (fd && *fd < 0) {
+        *fd = open(path, O_RDONLY | O_CLOEXEC, 0);
+    }
+    if (!fd || *fd < 0) {
+        return 0;
+    }
+
+    if (!class && !GuessIsSensor(*fd)) {
+        return 0;
+    }
+
+    if (ioctl(*fd, EVIOCGID, &inpid) < 0) {
         return 0;
     }
 
@@ -348,7 +380,7 @@ static int IsSensor(const char *path, int fd)
         return 0;
     }
 
-    return GuessIsSensor(fd);
+    return 1;
 }
 
 #ifdef SDL_USE_LIBUDEV
@@ -445,7 +477,7 @@ static void MaybeAddDevice(const char *path)
     SDL_Log("Checking %s\n", path);
 #endif
 
-    if (IsJoystick(path, fd, &name, &vendor, &product, &guid)) {
+    if (IsJoystick(path, &fd, &name, &vendor, &product, &guid)) {
 #ifdef DEBUG_INPUT_EVENTS
         SDL_Log("found joystick: %s\n", path);
 #endif
@@ -486,7 +518,7 @@ static void MaybeAddDevice(const char *path)
         goto done;
     }
 
-    if (IsSensor(path, fd)) {
+    if (IsSensor(path, &fd)) {
 #ifdef DEBUG_INPUT_EVENTS
         SDL_Log("found sensor: %s\n", path);
 #endif
@@ -880,11 +912,24 @@ static void LINUX_ScanSteamVirtualGamepads(void)
     int num_virtual_gamepads = 0;
     int virtual_gamepad_slot;
     VirtualGamepadEntry *virtual_gamepads = NULL;
+#ifdef SDL_USE_LIBUDEV
+    int class;
+#endif
 
     count = scandir("/dev/input", &entries, filter_entries, NULL);
     for (i = 0; i < count; ++i) {
         (void)SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", entries[i]->d_name);
 
+#ifdef SDL_USE_LIBUDEV
+        /* Opening input devices can generate synchronous device I/O, so avoid it if we can */
+        class = 0;
+        SDL_zero(inpid);
+        if (SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version, &class) &&
+            (inpid.vendor != USB_VENDOR_VALVE || inpid.product != USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
+            free(entries[i]); /* This should NOT be SDL_free() */
+            continue;
+        }
+#endif
         fd = open(path, O_RDONLY | O_CLOEXEC, 0);
         if (fd >= 0) {
             if (ioctl(fd, EVIOCGID, &inpid) == 0 &&
@@ -992,6 +1037,9 @@ static SDL_bool LINUX_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_i
 static int LINUX_JoystickInit(void)
 {
     const char *devices = SDL_GetHint(SDL_HINT_JOYSTICK_DEVICE);
+#ifdef SDL_USE_LIBUDEV
+    int udev_status = SDL_UDEV_Init();
+#endif
 
     SDL_classic_joysticks = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_LINUX_CLASSIC, SDL_FALSE);
 
@@ -1042,7 +1090,7 @@ static int LINUX_JoystickInit(void)
     }
 
     if (enumeration_method == ENUMERATION_LIBUDEV) {
-        if (SDL_UDEV_Init() == 0) {
+        if (udev_status == 0) {
             /* Set up the udev callback */
             if (SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
                 SDL_UDEV_Quit();

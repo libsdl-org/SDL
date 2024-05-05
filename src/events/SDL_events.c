@@ -1248,7 +1248,8 @@ int SDL_PushEvent(SDL_Event *event)
         event->common.timestamp = SDL_GetTicksNS();
     }
 
-    if (SDL_EventOK.callback || SDL_event_watchers_count > 0) {
+    if ((SDL_EventOK.callback || SDL_event_watchers_count > 0) &&
+        (event->common.type != SDL_EVENT_POLL_SENTINEL)) {
         SDL_LockMutex(SDL_event_watchers_lock);
         {
             if (SDL_EventOK.callback && !SDL_EventOK.callback(SDL_EventOK.userdata, event)) {
@@ -1394,6 +1395,8 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
     Uint8 hi = ((type >> 8) & 0xff);
     Uint8 lo = (type & 0xff);
 
+    enabled = !!enabled;  // make sure this is definitely either SDL_TRUE or SDL_FALSE.
+
     if (SDL_disabled_events[hi] &&
         (SDL_disabled_events[hi]->bits[lo / 32] & (1 << (lo & 31)))) {
         current_state = SDL_FALSE;
@@ -1403,14 +1406,8 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
 
     if (enabled != current_state) {
         if (enabled) {
-#ifdef _MSC_VER /* Visual Studio analyzer can't tell that SDL_disabled_events[hi] isn't NULL if enabled is true */
-#pragma warning(push)
-#pragma warning(disable : 6011)
-#endif
+            SDL_assert(SDL_disabled_events[hi] != NULL);
             SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
             /* Gamepad events depend on joystick events */
             switch (type) {

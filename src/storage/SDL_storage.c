@@ -27,6 +27,7 @@
 /* Available title storage drivers */
 static TitleStorageBootStrap *titlebootstrap[] = {
     &GENERIC_titlebootstrap,
+    NULL
 };
 
 /* Available user storage drivers */
@@ -35,6 +36,7 @@ static UserStorageBootStrap *userbootstrap[] = {
     &STEAM_userbootstrap,
 #endif
     &GENERIC_userbootstrap,
+    NULL
 };
 
 struct SDL_Storage

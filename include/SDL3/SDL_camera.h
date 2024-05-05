@@ -38,29 +38,38 @@ extern "C" {
 #endif
 
 /**
- * This is a unique ID for a camera device for the time it is connected to the system,
- * and is never reused for the lifetime of the application. If the device is
- * disconnected and reconnected, it will get a new ID.
+ * This is a unique ID for a camera device for the time it is connected to the
+ * system, and is never reused for the lifetime of the application.
  *
- * The ID value starts at 1 and increments from there. The value 0 is an invalid ID.
+ * If the device is disconnected and reconnected, it will get a new ID.
+ *
+ * The ID value starts at 1 and increments from there. The value 0 is an
+ * invalid ID.
+ *
+ * \since This datatype is available since SDL 3.0.0.
  *
  * \sa SDL_GetCameraDevices
  */
 typedef Uint32 SDL_CameraDeviceID;
 
-
 /**
- * The structure used to identify an opened SDL camera
+ * The opaque structure used to identify an opened SDL camera.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 struct SDL_Camera;
 typedef struct SDL_Camera SDL_Camera;
 
 /**
- *  SDL_CameraSpec structure
+ * The details of an output format for a camera device.
+ *
+ * Cameras often support multiple formats; each one will be encapsulated in
+ * this struct.
+ *
+ * \since This struct is available since SDL 3.0.0.
  *
  * \sa SDL_GetCameraDeviceSupportedFormats
  * \sa SDL_GetCameraFormat
- *
  */
 typedef struct SDL_CameraSpec
 {
@@ -73,6 +82,8 @@ typedef struct SDL_CameraSpec
 
 /**
  * The position of camera in relation to system device.
+ *
+ * \since This enum is available since SDL 3.0.0.
  *
  * \sa SDL_GetCameraDevicePosition
  */

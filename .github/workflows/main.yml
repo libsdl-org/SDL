@@ -30,8 +30,9 @@ jobs:
         - { name: Intel Compiler (Ubuntu 20.04),  os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-icc', intel: true, cmake: '-DSDL_CLANG_TIDY=OFF',
             source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icc; export CXX=icpc; export CFLAGS=-diag-disable=10441; export CXXFLAGS=-diag-disable=10441; '}
         - { name: Ubuntu 22.04,                   os: ubuntu-22.04,   shell: sh, artifact: 'SDL-ubuntu22.04' }
-        - { name: MacOS (Framework),              os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework', no-static: true }
-        - { name: MacOS (GNU prefix),             os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64"', cmake: '-DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-gnu' }
+        - { name: MacOS (Framework) (x86_64),     os: macos-12,       shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework', no-static: true }
+        - { name: MacOS (Framework) (arm64),      os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, no-static: true }
+        - { name: MacOS (GNU prefix),             os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="arm64"', cmake: '-DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-arm64-gnu' }
         - { name: iOS (GNU prefix),               os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"',  cross-build: true, skip_test_pkgconfig: true, artifact: 'SDL-ios-gnu' }
         - { name: tvOS (GNU prefix),              os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cross-build: true, skip_test_pkgconfig: true, artifact: 'SDL-tvos-gnu' }
 
@@ -108,6 +109,7 @@ jobs:
           -DSDL_INSTALL_TESTS=ON \
           -DSDL_VENDOR_INFO="Github Workflow" \
           -DSDL_CLANG_TIDY=ON \
+          -DSDL_DISABLE_INSTALL_DOCS=OFF \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.cmake-platform }} \
@@ -155,7 +157,7 @@ jobs:
         export PKG_CONFIG_PATH=$(echo "${{ github.workspace }}/cmake_prefix/lib/pkgconfig" | sed  -e 's#\\#/#g')
         cmake/test/test_pkgconfig.sh
     - uses: actions/upload-artifact@v4
-      if: ${{ always() && steps.build.outcome == 'success' }}
+      if: ${{ always() && matrix.platform.artifact != '' && steps.build.outcome == 'success' }}
       with:
         if-no-files-found: error
         name: ${{ matrix.platform.artifact }}

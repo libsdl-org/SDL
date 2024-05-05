@@ -49,7 +49,7 @@ char *convert_filter(const SDL_DialogFileFilter filter, NameTransform ntf,
 /* Converts the extenstion list of a filter into a single string. */
 /* <prefix>[extension]{<separator>[extension]...}<suffix> */
 char *convert_ext_list(const char *list, const char *prefix,
-                       const char *suffix, const char *separator);
+                       const char *separator, const char *suffix);
 
 /* Must be used if convert_* functions aren't used */
 /* Returns an error message if there's a problem, NULL otherwise */

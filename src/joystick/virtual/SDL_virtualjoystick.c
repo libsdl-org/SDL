@@ -117,10 +117,6 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
     if (!desc) {
         return SDL_InvalidParamError("desc");
     }
-    if (desc->version != SDL_VIRTUAL_JOYSTICK_DESC_VERSION) {
-        /* Is this an old version that we can support? */
-        return SDL_SetError("Unsupported virtual joystick description version %u", desc->version);
-    }
 
     hwdata = (joystick_hwdata *)SDL_calloc(1, sizeof(joystick_hwdata));
     if (!hwdata) {

@@ -85,7 +85,7 @@ extern "C" {
 /* @} */
 
 /** Pixel type. */
-typedef enum
+typedef enum SDL_PixelType
 {
     SDL_PIXELTYPE_UNKNOWN,
     SDL_PIXELTYPE_INDEX1,
@@ -104,7 +104,7 @@ typedef enum
 } SDL_PixelType;
 
 /** Bitmap pixel order, high bit -> low bit. */
-typedef enum
+typedef enum SDL_BitmapOrder
 {
     SDL_BITMAPORDER_NONE,
     SDL_BITMAPORDER_4321,
@@ -112,7 +112,7 @@ typedef enum
 } SDL_BitmapOrder;
 
 /** Packed component order, high bit -> low bit. */
-typedef enum
+typedef enum SDL_PackedOrder
 {
     SDL_PACKEDORDER_NONE,
     SDL_PACKEDORDER_XRGB,
@@ -126,7 +126,7 @@ typedef enum
 } SDL_PackedOrder;
 
 /** Array component order, low byte -> high byte. */
-typedef enum
+typedef enum SDL_ArrayOrder
 {
     SDL_ARRAYORDER_NONE,
     SDL_ARRAYORDER_RGB,
@@ -138,7 +138,7 @@ typedef enum
 } SDL_ArrayOrder;
 
 /** Packed component layout. */
-typedef enum
+typedef enum SDL_PackedLayout
 {
     SDL_PACKEDLAYOUT_NONE,
     SDL_PACKEDLAYOUT_332,
@@ -212,7 +212,7 @@ typedef enum
     ((format) && (SDL_PIXELFLAG(format) != 1))
 
 /* Note: If you modify this list, update SDL_GetPixelFormatName() */
-typedef enum
+typedef enum SDL_PixelFormatEnum
 {
     SDL_PIXELFORMAT_UNKNOWN,
     SDL_PIXELFORMAT_INDEX1LSB =
@@ -448,8 +448,10 @@ typedef enum
 
 /**
  * The color type
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_ColorType
 {
     SDL_COLOR_TYPE_UNKNOWN = 0,
     SDL_COLOR_TYPE_RGB = 1,
@@ -457,9 +459,12 @@ typedef enum
 } SDL_ColorType;
 
 /**
- * The color range, as described by https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en
+ * The color range, as described by
+ * https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_ColorRange
 {
     SDL_COLOR_RANGE_UNKNOWN = 0,
     SDL_COLOR_RANGE_LIMITED = 1, /**< Narrow range, e.g. 16-235 for 8-bit RGB and luma, and 16-240 for 8-bit chroma */
@@ -467,9 +472,12 @@ typedef enum
 } SDL_ColorRange;
 
 /**
- * The color primaries, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ * The color primaries, as described by
+ * https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_ColorPrimaries
 {
     SDL_COLOR_PRIMARIES_UNKNOWN = 0,
     SDL_COLOR_PRIMARIES_BT709 = 1,                  /**< ITU-R BT.709-6 */
@@ -488,9 +496,13 @@ typedef enum
 } SDL_ColorPrimaries;
 
 /**
- * The transfer characteristics, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ * The color transfer characteristics.
+ *
+ * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_TransferCharacteristics
 {
     SDL_TRANSFER_CHARACTERISTICS_UNKNOWN = 0,
     SDL_TRANSFER_CHARACTERISTICS_BT709 = 1,         /**< Rec. ITU-R BT.709-6 / ITU-R BT1361 */
@@ -514,9 +526,13 @@ typedef enum
 } SDL_TransferCharacteristics;
 
 /**
- * The matrix coefficients, as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ * The matrix coefficients.
+ *
+ * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_MatrixCoefficients
 {
     SDL_MATRIX_COEFFICIENTS_IDENTITY = 0,
     SDL_MATRIX_COEFFICIENTS_BT709 = 1,              /**< ITU-R BT.709-6 */
@@ -536,9 +552,11 @@ typedef enum
 } SDL_MatrixCoefficients;
 
 /**
- * The chroma sample location
+ * The chroma sample location.
+ *
+ * \since This enum is available since SDL 3.0.0.
  */
-typedef enum
+typedef enum SDL_ChromaLocation
 {
     SDL_CHROMA_LOCATION_NONE = 0,   /**< RGB, no chroma sampling */
     SDL_CHROMA_LOCATION_LEFT = 1,   /**< In MPEG-2, MPEG-4, and AVC, Cb and Cr are taken on midpoint of the left-edge of the 2x2 square. In other words, they have the same horizontal location as the top-left pixel, but is shifted one-half pixel down vertically. */
@@ -565,7 +583,7 @@ typedef enum
 #define SDL_ISCOLORSPACE_LIMITED_RANGE(X)       (SDL_COLORSPACERANGE(X) != SDL_COLOR_RANGE_FULL)
 #define SDL_ISCOLORSPACE_FULL_RANGE(X)          (SDL_COLORSPACERANGE(X) == SDL_COLOR_RANGE_FULL)
 
-typedef enum
+typedef enum SDL_Colorspace
 {
     SDL_COLORSPACE_UNKNOWN,
 
@@ -656,14 +674,19 @@ typedef enum
     SDL_COLORSPACE_RGB_DEFAULT = SDL_COLORSPACE_SRGB,
 
     /* The default colorspace for YUV surfaces if no colorspace is specified */
-    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_JPEG,
+    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_JPEG
 
 } SDL_Colorspace;
 
 /**
- * The bits of this structure can be directly reinterpreted as an integer-packed
- * color which uses the SDL_PIXELFORMAT_RGBA32 format (SDL_PIXELFORMAT_ABGR8888
- * on little-endian systems and SDL_PIXELFORMAT_RGBA8888 on big-endian systems).
+ * A structure that represents a color as RGBA components.
+ *
+ * The bits of this structure can be directly reinterpreted as an
+ * integer-packed color which uses the SDL_PIXELFORMAT_RGBA32 format
+ * (SDL_PIXELFORMAT_ABGR8888 on little-endian systems and
+ * SDL_PIXELFORMAT_RGBA8888 on big-endian systems).
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Color
 {
@@ -672,11 +695,12 @@ typedef struct SDL_Color
     Uint8 b;
     Uint8 a;
 } SDL_Color;
-#define SDL_Colour SDL_Color
 
 /**
  * The bits of this structure can be directly reinterpreted as a float-packed
  * color which uses the SDL_PIXELFORMAT_RGBA128_FLOAT format
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_FColor
 {
@@ -685,18 +709,30 @@ typedef struct SDL_FColor
     float b;
     float a;
 } SDL_FColor;
-#define SDL_FColour SDL_FColor
 
+/**
+ * A set of indexed colors representing a palette.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_PixelFormat
+ * \sa SDL_SetPaletteColors
+ */
 typedef struct SDL_Palette
 {
-    int ncolors;
-    SDL_Color *colors;
-    Uint32 version;
-    int refcount;
+    int ncolors;        /**< number of elements in `colors`. */
+    SDL_Color *colors;  /**< an array of colors, `ncolors` long. */
+    Uint32 version;     /**< internal use only, do not touch. */
+    int refcount;       /**< internal use only, do not touch. */
 } SDL_Palette;
 
 /**
- *  \note Everything in the pixel format structure is read-only.
+ * Details about the format of a pixel.
+ *
+ * Generally this is used with SDL_Surface, and covers many possible
+ * configurations, including paletted data and various bit patterns.
+ *
+ * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_PixelFormat
 {

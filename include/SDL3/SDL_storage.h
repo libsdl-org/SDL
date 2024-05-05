@@ -42,6 +42,18 @@ extern "C" {
 
 /* !!! FIXME: Don't let this ship without async R/W support!!! */
 
+/**
+ * Function interface for SDL_Storage.
+ *
+ * Apps that want to supply a custom implementation of SDL_Storage will fill
+ * in all the functions in this struct, and then pass it to SDL_OpenStorage to
+ * create a custom SDL_Storage object.
+ *
+ * It is not usually necessary to do this; SDL provides standard
+ * implementations for many things you might expect to do with an SDL_Storage.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_StorageInterface
 {
     /* Called when the storage is closed */
@@ -73,9 +85,17 @@ typedef struct SDL_StorageInterface
 
     /* Get the space remaining, optional for read-only storage */
     Uint64 (SDLCALL *space_remaining)(void *userdata);
-
 } SDL_StorageInterface;
 
+/**
+ * An abstract interface for filesystem access.
+ *
+ * This is an opaque datatype. One can create this object using standard SDL
+ * functions like SDL_OpenTitleStorage or SDL_OpenUserStorage, etc, or create
+ * an object with a custom implementation using SDL_OpenStorage.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
 typedef struct SDL_Storage SDL_Storage;
 
 /**
@@ -252,7 +272,7 @@ extern DECLSPEC int SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const char
  * \sa SDL_ReadStorageFile
  * \sa SDL_StorageReady
  */
-extern DECLSPEC int SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length);
+extern DECLSPEC int SDLCALL SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *source, Uint64 length);
 
 /**
  * Create a directory in a writable storage container.

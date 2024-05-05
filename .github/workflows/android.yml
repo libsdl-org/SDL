@@ -52,6 +52,7 @@ jobs:
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
             -DSDL_CLANG_TIDY=ON \
+            -DSDL_DISABLE_INSTALL_DOCS=OFF \
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
             -DSDL_SHARED=ON \
@@ -68,7 +69,7 @@ jobs:
       - name: Build test apk's (CMake)
         if: ${{ contains(matrix.platform.name, 'CMake') }}
         run: |
-          cmake --build build --config Release --parallel --verbose --target testaudiocapture-apk testcontroller-apk testmultiaudio-apk testsprite-apk
+          cmake --build build --config Release --parallel --verbose --target testautomation-apk testaudiocapture-apk testcontroller-apk testmultiaudio-apk testsprite-apk
       - name: Install (CMake)
         if: ${{ contains(matrix.platform.name, 'CMake') }}
         run: |

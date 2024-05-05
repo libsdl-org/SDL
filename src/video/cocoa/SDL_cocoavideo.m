@@ -122,6 +122,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->UpdateWindowShape = Cocoa_UpdateWindowShape;
         device->FlashWindow = Cocoa_FlashWindow;
         device->SetWindowFocusable = Cocoa_SetWindowFocusable;
+        device->SetWindowModalFor = Cocoa_SetWindowModalFor;
         device->SyncWindow = Cocoa_SyncWindow;
 
 #ifdef SDL_VIDEO_OPENGL_CGL
