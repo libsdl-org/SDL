@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
@@ -1937,6 +1938,18 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return -1;
         }
         return 0;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static int openFileDescriptor(String uri, String mode) throws Exception {
+        if (mSingleton == null) {
+            return -1;
+        }
+
+        ParcelFileDescriptor pfd = mSingleton.getContentResolver().openFileDescriptor(Uri.parse(uri), mode);
+        return pfd.detachFd();
     }
 }
 

@@ -345,6 +345,7 @@ static jmethodID midSetWindowStyle;
 static jmethodID midShouldMinimizeOnFocusLoss;
 static jmethodID midShowTextInput;
 static jmethodID midSupportsRelativeMouse;
+static jmethodID midOpenFileDescriptor;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -638,6 +639,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass, "shouldMinimizeOnFocusLoss", "()Z");
     midShowTextInput = (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIII)Z");
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
+    midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
 
     if (!midClipboardGetText ||
         !midClipboardHasText ||
@@ -667,7 +669,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midSetWindowStyle ||
         !midShouldMinimizeOnFocusLoss ||
         !midShowTextInput ||
-        !midSupportsRelativeMouse) {
+        !midSupportsRelativeMouse ||
+        !midOpenFileDescriptor) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -2764,6 +2767,87 @@ int Android_JNI_OpenURL(const char *url)
     const int ret = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);
     (*env)->DeleteLocalRef(env, jurl);
     return ret;
+}
+
+static jstring Android_GetExceptionString(JNIEnv *env)
+{
+    jthrowable throwable = (*env)->ExceptionOccurred(env);
+
+    if (throwable)
+    {
+        (*env)->ExceptionClear(env);
+
+        jclass javaObject = (*env)->FindClass(env, "java/lang/Object");
+        jmethodID toString = (*env)->GetMethodID(env, javaObject, "toString", "()Ljava/lang/String;");
+        jstring message = (*env)->CallObjectMethod(env, throwable, toString);
+
+        (*env)->DeleteLocalRef(env, javaObject);
+        (*env)->DeleteLocalRef(env, throwable);
+        return message;
+    }
+
+    return NULL;
+}
+
+int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
+{
+    /* Get fopen-style modes */
+    int moderead = 0, modewrite = 0, modeappend = 0, modeupdate = 0;
+
+    for (const char *cmode = mode; *cmode; cmode++) {
+        switch (*cmode) {
+            case 'a':
+                modeappend = 1;
+                break;
+            case 'r':
+                moderead = 1;
+                break;
+            case 'w':
+                modewrite = 1;
+                break;
+            case '+':
+                modeupdate = 1;
+                break;
+            default:
+                break;
+        }
+    }
+
+    /* Translate fopen-style modes to ContentResolver modes. */
+    /* Android only allows "r", "w", "wt", "wa", "rw" or "rwt". */
+    const char *contentResolverMode = "r";
+
+    if (moderead) {
+        if (modewrite) {
+            contentResolverMode = modeupdate ? "rw" : "rwt";
+        } else {
+            contentResolverMode = modeupdate ? "rw" : "r";
+        }
+    } else if (modewrite) {
+        contentResolverMode = modeupdate ? "rw" : "wt";
+    } else if (modeappend) {
+        contentResolverMode = modeupdate ? "rw" : "wa";
+    }
+
+    JNIEnv *env = Android_JNI_GetEnv();
+    jstring jstringUri = (*env)->NewStringUTF(env, uri);
+    jstring jstringMode = (*env)->NewStringUTF(env, contentResolverMode);
+    jint fd = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenFileDescriptor, jstringUri, jstringMode);
+    (*env)->DeleteLocalRef(env, jstringUri);
+    (*env)->DeleteLocalRef(env, jstringMode);
+
+    jstring exceptionMessage = Android_GetExceptionString(env);
+    if (exceptionMessage) {
+        const char *msg = (*env)->GetStringUTFChars(env, exceptionMessage, NULL);
+        SDL_SetError("JNI Exception: %s", msg);
+        (*env)->ReleaseStringUTFChars(env, exceptionMessage, msg);
+        (*env)->DeleteLocalRef(env, exceptionMessage);
+        fd = -1;
+    } else if (fd == -1) {
+        SDL_SetError("Unknown error");
+    }
+
+    return fd;
 }
 
 #endif /* SDL_PLATFORM_ANDROID */
