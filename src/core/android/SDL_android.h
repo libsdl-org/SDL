@@ -75,6 +75,7 @@ int Android_JNI_FileClose(void *userdata);
 
 /* Environment support */
 void Android_JNI_GetManifestEnvironmentVariables(void);
+int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode);
 
 /* Clipboard support */
 int Android_JNI_SetClipboardText(const char *text);
