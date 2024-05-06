@@ -343,13 +343,17 @@ int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *v
     SDL_Property *property;
 
     if (!value) {
-        cleanup(userdata, value);
+        if (cleanup) {
+            cleanup(userdata, value);
+        }
         return SDL_ClearProperty(props, name);
     }
 
     property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
-        cleanup(userdata, value);
+        if (cleanup) {
+            cleanup(userdata, value);
+        }
         SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
         return -1;
     }
