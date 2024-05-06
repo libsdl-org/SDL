@@ -559,7 +559,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
             }
             return SDL_IOFromFP(fp, 1);
         }
-    } else if (SDL_strstr(file, "content://") == file) {
+    } else if (SDL_strncmp(file, "content://", 10) == 0) {
         /* Try opening content:// URI */
         int fd = Android_JNI_OpenFileDescriptor(file, mode);
         if (fd == -1) {
