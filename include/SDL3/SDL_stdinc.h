@@ -137,8 +137,8 @@ void *alloca(size_t);
      (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (D))) << 24))
 
 /**
-* Append the 64 bit integer suffix to an integer literal.
-*/
+ * Append the 64 bit integer suffix to an integer literal.
+ */
 #define SDL_SINT64_C(c)  INT64_C(c)
 #define SDL_UINT64_C(c)  UINT64_C(c)
 
