@@ -463,20 +463,22 @@ static int WASAPI_WaitDevice(SDL_AudioDevice *device)
 {
     // WaitDevice does not hold the device lock, so check for recovery/disconnect details here.
     while (RecoverWasapiIfLost(device) && device->hidden->client && device->hidden->event) {
-        DWORD waitResult = WaitForSingleObjectEx(device->hidden->event, 200, FALSE);
-        if (waitResult == WAIT_OBJECT_0) {
+        UINT32 padding = 0;
+        if (!WasapiFailed(device, IAudioClient_GetCurrentPadding(device->hidden->client, &padding))) {
             const UINT32 maxpadding = device->sample_frames;
-            UINT32 padding = 0;
-            if (!WasapiFailed(device, IAudioClient_GetCurrentPadding(device->hidden->client, &padding))) {
-                //SDL_Log("WASAPI EVENT! padding=%u maxpadding=%u", (unsigned int)padding, (unsigned int)maxpadding);*/
-                if (device->iscapture && (padding > 0)) {
-                    break;
-                } else if (!device->iscapture && (padding <= maxpadding)) {
-                    break;
-                }
+            //SDL_Log("WASAPI %s EVENT! padding=%u maxpadding=%u", device->iscapture ? "CAPTURE" : "PLAYBACK", (unsigned int)padding, (unsigned int)maxpadding);
+            if (device->iscapture ? (padding > 0) : (padding < maxpadding)) {
+                break;
             }
-        } else if (waitResult != WAIT_TIMEOUT) {
-            //SDL_Log("WASAPI FAILED EVENT!");*/
+        }
+
+        switch (WaitForSingleObjectEx(device->hidden->event, 200, FALSE)) {
+        case WAIT_OBJECT_0:
+        case WAIT_TIMEOUT:
+            break;
+
+        default:
+            //SDL_Log("WASAPI FAILED EVENT!");
             IAudioClient_Stop(device->hidden->client);
             return -1;
         }
