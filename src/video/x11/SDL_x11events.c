@@ -839,6 +839,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     Display *display = videodata->display;
     KeyCode keycode = xevent->xkey.keycode;
     KeySym keysym = NoSymbol;
+    int text_length = 0;
     char text[64];
     Status status = 0;
     SDL_bool handled_by_ime = SDL_FALSE;
@@ -891,13 +892,13 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
 
 #ifdef X_HAVE_UTF8_STRING
         if (windowdata->ic && xevent->type == KeyPress) {
-            X11_Xutf8LookupString(windowdata->ic, &xevent->xkey, text, sizeof(text),
+            text_length = X11_Xutf8LookupString(windowdata->ic, &xevent->xkey, text, sizeof(text) - 1,
                                   &keysym, &status);
         } else {
-            XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+            text_length = XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text) - 1, &keysym, NULL);
         }
 #else
-        XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+        text_length = XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text) - 1, &keysym, NULL);
 #endif
 
 #ifdef SDL_USE_IME
@@ -912,6 +913,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
                 SDL_SendKeyboardKey(0, keyboardID, SDL_PRESSED, videodata->key_layout[keycode]);
             }
             if (*text) {
+                text[text_length] = '\0';
                 SDL_SendKeyboardText(text);
             }
         } else {
