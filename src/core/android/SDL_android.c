@@ -2769,26 +2769,6 @@ int Android_JNI_OpenURL(const char *url)
     return ret;
 }
 
-static jstring Android_GetExceptionString(JNIEnv *env)
-{
-    jthrowable throwable = (*env)->ExceptionOccurred(env);
-
-    if (throwable)
-    {
-        (*env)->ExceptionClear(env);
-
-        jclass javaObject = (*env)->FindClass(env, "java/lang/Object");
-        jmethodID toString = (*env)->GetMethodID(env, javaObject, "toString", "()Ljava/lang/String;");
-        jstring message = (*env)->CallObjectMethod(env, throwable, toString);
-
-        (*env)->DeleteLocalRef(env, javaObject);
-        (*env)->DeleteLocalRef(env, throwable);
-        return message;
-    }
-
-    return NULL;
-}
-
 int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
 {
     /* Get fopen-style modes */
@@ -2819,12 +2799,12 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
 
     if (moderead) {
         if (modewrite) {
-            contentResolverMode = modeupdate ? "rw" : "rwt";
+            contentResolverMode = "rwt";
         } else {
             contentResolverMode = modeupdate ? "rw" : "r";
         }
     } else if (modewrite) {
-        contentResolverMode = modeupdate ? "rw" : "wt";
+        contentResolverMode = modeupdate ? "rwt" : "wt";
     } else if (modeappend) {
         contentResolverMode = modeupdate ? "rw" : "wa";
     }
@@ -2836,15 +2816,8 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
     (*env)->DeleteLocalRef(env, jstringUri);
     (*env)->DeleteLocalRef(env, jstringMode);
 
-    jstring exceptionMessage = Android_GetExceptionString(env);
-    if (exceptionMessage) {
-        const char *msg = (*env)->GetStringUTFChars(env, exceptionMessage, NULL);
-        SDL_SetError("JNI Exception: %s", msg);
-        (*env)->ReleaseStringUTFChars(env, exceptionMessage, msg);
-        (*env)->DeleteLocalRef(env, exceptionMessage);
-        fd = -1;
-    } else if (fd == -1) {
-        SDL_SetError("Unknown error");
+    if (fd == -1) {
+        SDL_SetError("Unspecified error in JNI");
     }
 
     return fd;

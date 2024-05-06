@@ -45,6 +45,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
 import java.util.Hashtable;
 import java.util.Locale;
 
@@ -1948,8 +1949,13 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return -1;
         }
 
-        ParcelFileDescriptor pfd = mSingleton.getContentResolver().openFileDescriptor(Uri.parse(uri), mode);
-        return pfd.detachFd();
+        try {
+            ParcelFileDescriptor pfd = mSingleton.getContentResolver().openFileDescriptor(Uri.parse(uri), mode);
+            return pfd != null ? pfd.detachFd() : -1;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 }
 
