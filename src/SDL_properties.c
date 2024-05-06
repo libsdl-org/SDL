@@ -305,11 +305,11 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     int result = 0;
 
     if (!props) {
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_TRUE);
         return SDL_InvalidParamError("props");
     }
     if (!name || !*name) {
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_TRUE);
         return SDL_InvalidParamError("name");
     }
 
@@ -318,7 +318,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_TRUE);
         return SDL_InvalidParamError("props");
     }
 
@@ -328,7 +328,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
         if (property) {
             char *key = SDL_strdup(name);
             if (!SDL_InsertIntoHashTable(properties->props, key, property)) {
-                SDL_FreePropertyWithCleanup(key, property, NULL, SDL_FALSE);
+                SDL_FreePropertyWithCleanup(key, property, NULL, SDL_TRUE);
                 result = -1;
             }
         }
@@ -343,11 +343,17 @@ int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *v
     SDL_Property *property;
 
     if (!value) {
+        if (cleanup) {
+            cleanup(userdata, value);
+        }
         return SDL_ClearProperty(props, name);
     }
 
     property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
+        if (cleanup) {
+            cleanup(userdata, value);
+        }
         SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
         return -1;
     }
