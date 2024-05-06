@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.UiModeManager;
+import android.content.ActivityNotFoundException;
 import android.content.ClipboardManager;
 import android.content.ClipData;
 import android.content.Context;
@@ -39,6 +40,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -46,6 +48,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
 
@@ -227,6 +230,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected static Thread mSDLThread;
     protected static boolean mSDLMainFinished = false;
     protected static boolean mActivityCreated = false;
+    private static SDLFileDialogState mFileDialogState = null;
 
     protected static SDLGenericMotionListener_API12 getMotionListener() {
         if (mMotionListener == null) {
@@ -719,6 +723,43 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (mFileDialogState != null && mFileDialogState.requestCode == requestCode) {
+            /* This is our file dialog */
+            String[] filelist = null;
+
+            if (data != null) {
+                Uri singleFileUri = data.getData();
+
+                if (singleFileUri == null) {
+                    /* Use Intent.getClipData to get multiple choices */
+                    ClipData clipData = data.getClipData();
+                    assert clipData != null;
+
+                    filelist = new String[clipData.getItemCount()];
+
+                    for (int i = 0; i < filelist.length; i++) {
+                        String uri = clipData.getItemAt(i).getUri().toString();
+                        filelist[i] = uri;
+                    }
+                } else {
+                    /* Only one file is selected. */
+                    filelist = new String[]{singleFileUri.toString()};
+                }
+            } else {
+                /* User cancelled the request. */
+                filelist = new String[0];
+            }
+
+            // TODO: Detect the file MIME type and pass the filter value accordingly.
+            SDLActivity.onNativeFileDialog(requestCode, filelist, -1);
+            mFileDialogState = null;
+        }
+    }
+
     // Called by JNI from SDL.
     public static void manualBackButton() {
         mSingleton.pressBackButton();
@@ -1021,6 +1062,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeDarkModeChanged(boolean enabled);
     public static native boolean nativeAllowRecreateActivity();
     public static native int nativeCheckSDLThreadCounter();
+    public static native void onNativeFileDialog(int requestCode, String[] filelist, int filter);
 
     /**
      * This method is called by SDL using JNI.
@@ -1956,6 +1998,75 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             e.printStackTrace();
             return -1;
         }
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean showFileDialog(String[] filters, boolean allowMultiple, boolean forWrite, int requestCode) {
+        if (mSingleton == null) {
+            return false;
+        }
+
+        if (forWrite) {
+            allowMultiple = false;
+        }
+
+        /* Convert string list of extensions to their respective MIME types */
+        ArrayList<String> mimes = new ArrayList<>();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        if (filters != null) {
+            for (String pattern : filters) {
+                String[] extensions = pattern.split(";");
+
+                if (extensions.length == 1 && extensions[0].equals("*")) {
+                    /* Handle "*" special case */
+                    mimes.add("*/*");
+                } else {
+                    for (String ext : extensions) {
+                        String mime = mimeTypeMap.getMimeTypeFromExtension(ext);
+                        if (mime != null) {
+                            mimes.add(mime);
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Display the file dialog */
+        Intent intent = new Intent(forWrite ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple);
+        switch (mimes.size()) {
+            case 0:
+                intent.setType("*/*");
+                break;
+            case 1:
+                intent.setType(mimes.get(0));
+                break;
+            default:
+                intent.setType("*/*");
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, mimes.toArray(new String[]{}));
+        }
+
+        try {
+            mSingleton.startActivityForResult(intent, requestCode);
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "Unable to open file dialog.", e);
+            return false;
+        }
+
+        /* Save current dialog state */
+        mFileDialogState = new SDLFileDialogState();
+        mFileDialogState.requestCode = requestCode;
+        mFileDialogState.multipleChoice = allowMultiple;
+        return true;
+    }
+
+    /* Internal class used to track active open file dialog */
+    static class SDLFileDialogState {
+        int requestCode;
+        boolean multipleChoice;
     }
 }
 
