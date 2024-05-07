@@ -311,7 +311,7 @@ sub wikify_chunk {
         $str = $codedstr . $str;
 
         if (defined $code) {
-            $str .= "```$codelang$code```";
+            $str .= "```$codelang\n$code\n```\n";
         }
     }
 
@@ -327,9 +327,7 @@ sub wikify {
 
     #print("WIKIFY WHOLE:\n\n$str\n\n\n");
 
-    # !!! FIXME: this shouldn't check language but rather if there are
-    # !!! FIXME: chars immediately after "```" to a newline.
-    while ($str =~ s/\A(.*?)\`\`\`(c\+\+|c|)(.*?)\`\`\`//ms) {
+    while ($str =~ s/\A(.*?)\`\`\`(.*?)\n(.*?)\n\`\`\`(\n|\Z)//ms) {
         $retval .= wikify_chunk($wikitype, $1, $2, $3);
     }
     $retval .= wikify_chunk($wikitype, $str, undef, undef);
@@ -386,7 +384,7 @@ sub dewikify_chunk {
         }
 
         if (defined $code) {
-            $str .= "\n```$codelang$code```\n";
+            $str .= "\n```$codelang\n$code\n```\n";
         }
     } elsif ($dewikify_mode eq 'manpage') {
         $str =~ s/\./\\[char46]/gms;  # make sure these can't become control codes.
@@ -545,8 +543,8 @@ sub dewikify {
             $retval .= dewikify_chunk($wikitype, $1, $2, $3);
         }
     } elsif ($wikitype eq 'md') {
-        while ($str =~ s/\A(.*?)(\n?)```(.*?)\n(.*?\n)```\n//ms) {
-            $retval .= dewikify_chunk($wikitype, $1, $3, "$2$4");
+        while ($str =~ s/\A(.*?)\n```(.*?)\n(.*?)\n```\n//ms) {
+            $retval .= dewikify_chunk($wikitype, $1, $2, $3);
         }
     }
     $retval .= dewikify_chunk($wikitype, $str, undef, undef);
@@ -1466,11 +1464,13 @@ if ($copy_direction == 1) {  # --copy-to-headers
             my $v = dewikify($wikitype, $related);
             my @desclines = split /\n/, $v;
             foreach (@desclines) {
-                s/\A[\:\*\-] //;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
                 s/\[(.*?)\]\(.*?\)/$1/;  # in case some wikilinks remain.
                 s/\A\/*//;
+                s/\A\s*[\:\*\-]\s*//;
+                s/\A\s+//;
+                s/\s+\Z//;
                 $str .= "\\sa $_\n";
             }
         }
@@ -2211,7 +2211,6 @@ if ($copy_direction == 1) {  # --copy-to-headers
             my @desclines = split /\n/, $v;
             my $nextstr = '';
             foreach (@desclines) {
-                s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
                 s/\[(.*?)\]\(.*?\)/$1/;  # in case some wikilinks remain.
@@ -2219,6 +2218,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 s/\A\/*//;
                 s/\A\.BR\s+//;  # dewikify added this, but we want to handle it.
                 s/\A\.I\s+//;  # dewikify added this, but we want to handle it.
+                s/\A\s*[\:\*\-]\s*//;
                 s/\A\s+//;
                 s/\s+\Z//;
                 next if $_ eq '';
@@ -2534,13 +2534,13 @@ __EOF__
             my @desclines = split /\n/, $v;
             my $nextstr = '';
             foreach (@desclines) {
-                s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
                 s/\[(.*?)\]\(.*?\)/$1/;  # in case some wikilinks remain.
                 s/\A\*\s*\Z//;
                 s/\A\s*\\item\s*//;
                 s/\A\/*//;
+                s/\A\s*[\:\*\-]\s*//;
                 s/\A\s+//;
                 s/\s+\Z//;
                 next if $_ eq '';
