@@ -1732,7 +1732,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         input->pointer = NULL;
         input->display->pointer = NULL;
 
-        SDL_RemoveMouse(input->pointer_id);
+        SDL_RemoveMouse(input->pointer_id, SDL_TRUE);
         input->pointer_id = 0;
     }
 
@@ -1760,7 +1760,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         wl_keyboard_destroy(input->keyboard);
         input->keyboard = NULL;
 
-        SDL_RemoveKeyboard(input->keyboard_id);
+        SDL_RemoveKeyboard(input->keyboard_id, SDL_TRUE);
         input->keyboard_id = 0;
     }
 
