@@ -1113,7 +1113,7 @@ error:
 #endif
 }
 
-SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags)
+SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, SDL_RendererFlags flags)
 {
     SDL_Renderer *renderer;
     SDL_PropertiesID props = SDL_CreateProperties();

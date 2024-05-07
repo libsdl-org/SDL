@@ -85,7 +85,7 @@ typedef Uint32 SDL_RendererFlags;
 typedef struct SDL_RendererInfo
 {
     const char *name;           /**< The name of the renderer */
-    Uint32 flags;               /**< Supported ::SDL_RendererFlags */
+    SDL_RendererFlags flags;    /**< Supported ::SDL_RendererFlags */
     int num_texture_formats;    /**< The number of available texture formats */
     SDL_PixelFormatEnum texture_formats[16]; /**< The available texture formats */
     int max_texture_width;      /**< The maximum texture width */
@@ -241,7 +241,7 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(const char *title, int w
  * \sa SDL_GetRenderDriver
  * \sa SDL_GetRendererInfo
  */
-extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, const char *name, Uint32 flags);
+extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, const char *name, SDL_RendererFlags flags);
 
 /**
  * Create a 2D rendering context for a window, with the specified properties.
