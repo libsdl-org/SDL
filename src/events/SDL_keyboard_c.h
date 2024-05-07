@@ -39,7 +39,7 @@ extern SDL_bool SDL_IsKeyboard(Uint16 vendor, Uint16 product, int num_keys);
 extern void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, SDL_bool send_event);
 
 /* A keyboard has been removed from the system */
-extern void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID);
+extern void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, SDL_bool send_event);
 
 /* Get the default keymap */
 extern void SDL_GetDefaultKeymap(SDL_Keycode *keymap);

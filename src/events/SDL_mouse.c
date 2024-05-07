@@ -280,7 +280,7 @@ void SDL_AddMouse(SDL_MouseID mouseID, const char *name, SDL_bool send_event)
     }
 }
 
-void SDL_RemoveMouse(SDL_MouseID mouseID)
+void SDL_RemoveMouse(SDL_MouseID mouseID, SDL_bool send_event)
 {
     int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index < 0) {
@@ -308,11 +308,13 @@ void SDL_RemoveMouse(SDL_MouseID mouseID)
         }
     }
 
-    SDL_Event event;
-    SDL_zero(event);
-    event.type = SDL_EVENT_MOUSE_REMOVED;
-    event.mdevice.which = mouseID;
-    SDL_PushEvent(&event);
+    if (send_event) {
+        SDL_Event event;
+        SDL_zero(event);
+        event.type = SDL_EVENT_MOUSE_REMOVED;
+        event.mdevice.which = mouseID;
+        SDL_PushEvent(&event);
+    }
 }
 
 SDL_bool SDL_HasMouse(void)
@@ -1118,7 +1120,9 @@ void SDL_QuitMouse(void)
     SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
                         SDL_MouseRelativeWarpMotionChanged, mouse);
 
-    SDL_mouse_count = 0;
+    for (int i = SDL_mouse_count; i--; ) {
+        SDL_RemoveMouse(SDL_mice[i].instance_id, SDL_FALSE);
+    }
     SDL_free(SDL_mice);
     SDL_mice = NULL;
 }

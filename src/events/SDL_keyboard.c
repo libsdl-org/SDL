@@ -734,7 +734,7 @@ void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, SDL_bool send_
     }
 }
 
-void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID)
+void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, SDL_bool send_event)
 {
     int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index < 0) {
@@ -749,11 +749,13 @@ void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID)
     }
     --SDL_keyboard_count;
 
-    SDL_Event event;
-    SDL_zero(event);
-    event.type = SDL_EVENT_KEYBOARD_REMOVED;
-    event.kdevice.which = keyboardID;
-    SDL_PushEvent(&event);
+    if (send_event) {
+        SDL_Event event;
+        SDL_zero(event);
+        event.type = SDL_EVENT_KEYBOARD_REMOVED;
+        event.kdevice.which = keyboardID;
+        SDL_PushEvent(&event);
+    }
 }
 
 SDL_bool SDL_HasKeyboard(void)
@@ -1254,7 +1256,9 @@ int SDL_SendEditingText(const char *text, int start, int length)
 
 void SDL_QuitKeyboard(void)
 {
-    SDL_keyboard_count = 0;
+    for (int i = SDL_keyboard_count; i--;) {
+        SDL_RemoveKeyboard(SDL_keyboards[i].instance_id, SDL_FALSE);
+    }
     SDL_free(SDL_keyboards);
     SDL_keyboards = NULL;
 }
