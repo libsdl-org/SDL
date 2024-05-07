@@ -42,6 +42,7 @@ foreach (@ARGV) {
     $copy_direction = -1, next if $_ eq '--copy-to-wiki';
     $copy_direction = -2, next if $_ eq '--copy-to-manpages';
     $copy_direction = -3, next if $_ eq '--report-coverage-gaps';
+    $copy_direction = -4, next if $_ eq '--copy-to-latex';
     if (/\A--options=(.*)\Z/) {
         $optionsfname = $1;
         next;
@@ -101,6 +102,12 @@ if (defined $optionsfname) {
         }
     }
     close(OPTIONS);
+}
+
+sub escLaTeX {
+    my $str = shift;
+    $str =~ s/([_\#\&\^])/\\$1/g;
+    return $str;
 }
 
 my $wordwrap_mode = 'mediawiki';
@@ -304,7 +311,7 @@ sub wikify_chunk {
         $str = $codedstr . $str;
 
         if (defined $code) {
-            $str .= "```$codelang$code```";
+            $str .= "```$codelang\n$code\n```\n";
         }
     }
 
@@ -320,9 +327,7 @@ sub wikify {
 
     #print("WIKIFY WHOLE:\n\n$str\n\n\n");
 
-    # !!! FIXME: this shouldn't check language but rather if there are
-    # !!! FIXME: chars immediately after "```" to a newline.
-    while ($str =~ s/\A(.*?)\`\`\`(c\+\+|c|)(.*?)\`\`\`//ms) {
+    while ($str =~ s/\A(.*?)\`\`\`(.*?)\n(.*?)\n\`\`\`(\n|\Z)//ms) {
         $retval .= wikify_chunk($wikitype, $1, $2, $3);
     }
     $retval .= wikify_chunk($wikitype, $str, undef, undef);
@@ -379,7 +384,7 @@ sub dewikify_chunk {
         }
 
         if (defined $code) {
-            $str .= "```$codelang$code```";
+            $str .= "\n```$codelang\n$code\n```\n";
         }
     } elsif ($dewikify_mode eq 'manpage') {
         $str =~ s/\./\\[char46]/gms;  # make sure these can't become control codes.
@@ -429,9 +434,6 @@ sub dewikify_chunk {
 
             # bullets
             $str =~ s/^\- /\n\\\(bu /gm;
-
-        } else {
-            die("Unexpected wikitype when converting to manpages");   # !!! FIXME: need to handle Markdown wiki pages.
         }
 
         if (defined $code) {
@@ -443,6 +445,78 @@ sub dewikify_chunk {
                 $str .= "\n.PP\n"
             }
             $str .= ".EX\n$code\n.EE\n.PP\n";
+        }
+    } elsif ($dewikify_mode eq 'LaTeX') {
+        if ($wikitype eq 'mediawiki') {
+            # Dump obvious wikilinks.
+            if (defined $apiprefixregex) {
+                $str =~ s/\s*\[\[($apiprefixregex[a-zA-Z0-9_]+)\]\]/$1/gms;
+            }
+
+            # links
+            $str =~ s/\[(https?\:\/\/.*?)\s+(.*?)\]/\\href{$1}{$2}/g;
+
+            # <code></code> is also popular.  :/
+            $str =~ s/\s*\<code>(.*?)<\/code>/ \\texttt{$1}/gms;
+
+            # bold+italic
+            $str =~ s/\s*'''''(.*?)'''''/ \\textbf{\\textit{$1}}/gms;
+
+            # bold
+            $str =~ s/\s*'''(.*?)'''/ \\textbf{$1}/gms;
+
+            # italic
+            $str =~ s/\s*''(.*?)''/ \\textit{$1}/gms;
+
+            # bullets
+            $str =~ s/^\*\s+/  \\item /gm;
+        } elsif ($wikitype eq 'md') {
+            # Dump obvious wikilinks.
+            if (defined $apiprefixregex) {
+                $str =~ s/\[(\`?$apiprefixregex[a-zA-Z0-9_]+\`?)\]\($apiprefixregex[a-zA-Z0-9_]+\)/$1/gms;
+            }
+
+            # links
+            $str =~ s/\[(.*?)]\((https?\:\/\/.*?)\)/\\href{$2}{$1}/g;
+
+            # <code></code> is also popular.  :/
+            $str =~ s/\s*\`(.*?)\`/ \\texttt{$1}/gms;
+
+            # bold+italic
+            $str =~ s/\s*\*\*\*(.*?)\*\*\*/ \\textbf{\\textit{$1}}/gms;
+
+            # bold
+            $str =~ s/\s*\*\*(.*?)\*\*/ \\textbf{$1}/gms;
+
+            # italic
+            $str =~ s/\s*\*(.*?)\*/ \\textit{$1}/gms;
+
+            # bullets
+            $str =~ s/^\-\s+/  \\item /gm;
+        }
+
+        # Wrap bullet lists in itemize blocks...
+        $str =~ s/^(\s*\\item .*?)(\n\n|\Z)/\n\\begin{itemize}\n$1$2\n\\end{itemize}\n\n/gms;
+
+        $str = escLaTeX($str);
+
+        if (defined $code) {
+            $code =~ s/\A\n+//gms;
+            $code =~ s/\n+\Z//gms;
+
+            if (($codelang eq '') || ($codelang eq 'output')) {
+                $str .= "\\begin{verbatim}\n$code\n\\end{verbatim}\n";
+            } else {
+                if ($codelang eq 'c') {
+                    $codelang = 'C';
+                } elsif ($codelang eq 'c++') {
+                    $codelang = 'C++';
+                } else {
+                    die("Unexpected codelang '$codelang'");
+                }
+                $str .= "\n\\lstset{language=$codelang}\n";
+                $str .= "\\begin{lstlisting}\n$code\n\\end{lstlisting}\n";
+            }
         }
     } else {
         die("Unexpected dewikify_mode");
@@ -464,8 +538,14 @@ sub dewikify {
     $str =~ s/\A[\s\n]*\=\= .*? \=\=\s*?\n+//ms;
 
     my $retval = '';
-    while ($str =~ s/\A(.*?)<syntaxhighlight lang='?(.*?)'?>(.*?)<\/syntaxhighlight\>//ms) {
-        $retval .= dewikify_chunk($wikitype, $1, $2, $3);
+    if ($wikitype eq 'mediawiki') {
+        while ($str =~ s/\A(.*?)<syntaxhighlight lang='?(.*?)'?>(.*?)<\/syntaxhighlight\>//ms) {
+            $retval .= dewikify_chunk($wikitype, $1, $2, $3);
+        }
+    } elsif ($wikitype eq 'md') {
+        while ($str =~ s/\A(.*?)\n```(.*?)\n(.*?)\n```\n//ms) {
+            $retval .= dewikify_chunk($wikitype, $1, $2, $3);
+        }
     }
     $retval .= dewikify_chunk($wikitype, $str, undef, undef);
 
@@ -642,7 +722,7 @@ while (my $d = readdir(DH)) {
             $ignoring_lines = 1;
             push @contents, $_;
             next;
-        } elsif (/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {  # a function declaration without a doxygen comment?
+        } elsif (/\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC/) {  # a function declaration without a doxygen comment?
             $symtype = 1;   # function declaration
             @templines = ();
             $decl = $_;
@@ -689,7 +769,7 @@ while (my $d = readdir(DH)) {
             $lineno++ if defined $decl;
             $decl = '' if not defined $decl;
             chomp($decl);
-            if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC/) {
+            if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC/) {
                 $symtype = 1;   # function declaration
             } elsif ($decl =~ /\A\s*SDL_FORCE_INLINE/) {
                 $symtype = 1;   # (forced-inline) function declaration
@@ -699,7 +779,7 @@ while (my $d = readdir(DH)) {
                 $symtype = 3;   # struct or union
             } elsif ($decl =~ /\A\s*(typedef\s+|)enum/) {
                 $symtype = 4;   # enum
-            } elsif ($decl =~ /\A\s*typedef\s+.*;\Z/) {
+            } elsif ($decl =~ /\A\s*typedef\s+.*\Z/) {
                 $symtype = 5;   # other typedef
             } else {
                 #print "Found doxygen but no function sig:\n$str\n\n";
@@ -749,8 +829,8 @@ while (my $d = readdir(DH)) {
 
             $decl =~ s/\s+\Z//;
 
-            if (!$is_forced_inline && $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
-                $sym = $6;
+            if (!$is_forced_inline && $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
+                $sym = $7;
                 #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
             } elsif ($is_forced_inline && $decl =~ /\A\s*SDL_FORCE_INLINE\s+(SDL_DEPRECATED\s+|)(const\s+|)(unsigned\s+|)(.*?)([\*\s]+)(.*?)\s*\((.*?)\);/) {
                 $sym = $6;
@@ -770,7 +850,7 @@ while (my $d = readdir(DH)) {
                 foreach (@decllines) {
                     if ($decl eq '') {
                         $decl = $_;
-                        $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$2$3 /;
+                        $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$3$4 /;
                     } else {
                         my $trimmed = $_;
                         # !!! FIXME: trim space for SDL_DEPRECATED if it was used, too.
@@ -809,16 +889,21 @@ while (my $d = readdir(DH)) {
                     }
 
                     # update strings now that we know everything pending is to be applied to this declaration. Add pending blank lines and the new text.
-                    if ($blank_lines > 0) {
-                        while ($blank_lines > 0) {
-                            $additional_decl .= "\n";
-                            push @decllines, '';
-                            $blank_lines--;
+
+                    # At Sam's request, don't list property defines with functions. (See #9440)
+                    my $is_property = /\A\s*\#\s*define\s+SDL_PROP_/;
+                    if (!$is_property) {
+                        if ($blank_lines > 0) {
+                            while ($blank_lines > 0) {
+                                $additional_decl .= "\n";
+                                push @decllines, '';
+                                $blank_lines--;
+                            }
                         }
+                        $additional_decl .= "\n$_";
+                        push @decllines, $_;
+                        $lastpos = tell(FH);
                     }
-                    $additional_decl .= "\n$_";
-                    push @decllines, $_;
-                    $lastpos = tell(FH);
                 } else {
                     seek(FH, $lastpos, 0);  # re-read eaten lines again next time.
                     $lineno = $lastlineno;
@@ -912,10 +997,26 @@ while (my $d = readdir(DH)) {
                 # this currently assumes the struct/union/enum ends on the line with the final bracket. I'm not writing a C parser here, fix the header!
             }
         } elsif ($symtype == 5) {  # other typedef
-            if ($decl =~ /\A\s*typedef\s+(.*);\Z/) {
+            if ($decl =~ /\A\s*typedef\s+(.*)\Z/) {
                 my $tdstr = $1;
+
+                if (not $decl =~ /;/) {
+                    while (<FH>) {
+                        chomp;
+                        $lineno++;
+                        push @decllines, $_;
+                        s/\A\s+//;
+                        s/\s+\Z//;
+                        $decl .= " $_";
+                        last if /;/;
+                    }
+                }
+                $decl =~ s/\s+(\))?;\Z/$1;/;
+
+                $tdstr =~ s/;\s*\Z//;
+
                 #my $datatype;
-                if ($tdstr =~ /\A(.*?)\s*\((.*?)\s*\*\s*(.*?)\)\s*\((.*?)\)\s*\Z/) {  # a function pointer type
+                if ($tdstr =~ /\A(.*?)\s*\((.*?)\s*\*\s*(.*?)\)\s*\((.*?)(\))?/) {  # a function pointer type
                     $sym = $3;
                     #$datatype = "$1 ($2 *$sym)($4)";
                 } elsif ($tdstr =~ /\A(.*[\s\*]+)(.*?)\s*\Z/) {
@@ -1363,11 +1464,13 @@ if ($copy_direction == 1) {  # --copy-to-headers
             my $v = dewikify($wikitype, $related);
             my @desclines = split /\n/, $v;
             foreach (@desclines) {
-                s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
                 s/\[(.*?)\]\(.*?\)/$1/;  # in case some wikilinks remain.
                 s/\A\/*//;
+                s/\A\s*[\:\*\-]\s*//;
+                s/\A\s+//;
+                s/\s+\Z//;
                 $str .= "\\sa $_\n";
             }
         }
@@ -1607,7 +1710,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 if ($wikitype eq 'mediawiki') {
                     $sections{'See Also'} .= ":[[$sa]]\n";
                 } elsif ($wikitype eq 'md') {
-                    $sections{'See Also'} .= "* [$sa]($sa)\n";
+                    $sections{'See Also'} .= "- [$sa]($sa)\n";
                 } else { die("Expected wikitype '$wikitype'"); }
             }
         }
@@ -2108,7 +2211,6 @@ if ($copy_direction == 1) {  # --copy-to-headers
             my @desclines = split /\n/, $v;
             my $nextstr = '';
             foreach (@desclines) {
-                s/\A(\:|\* )//;
                 s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
                 s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
                 s/\[(.*?)\]\(.*?\)/$1/;  # in case some wikilinks remain.
@@ -2116,6 +2218,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 s/\A\/*//;
                 s/\A\.BR\s+//;  # dewikify added this, but we want to handle it.
                 s/\A\.I\s+//;  # dewikify added this, but we want to handle it.
+                s/\A\s*[\:\*\-]\s*//;
                 s/\A\s+//;
                 s/\s+\Z//;
                 next if $_ eq '';
@@ -2157,7 +2260,329 @@ if ($copy_direction == 1) {  # --copy-to-headers
         close(FH);
         rename($tmppath, $path) or die("Can't rename '$tmppath' to '$path': $!\n");
     }
-} elsif ($copy_direction == -3) { # --report-coverage_gaps
+
+} elsif ($copy_direction == -4) { # --copy-to-latex
+    # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
+
+    print STDERR "\n(The --copy-to-latex code is known to not be ready for serious use; send patches, not bug reports, please.)\n\n";
+
+    $dewikify_mode = 'LaTeX';
+    $wordwrap_mode = 'LaTeX';
+
+    # !!! FIXME: code duplication with --copy-to-manpages section.
+
+    my $introtxt = '';
+    if (0) {
+    open(FH, '<', "$srcpath/LICENSE.txt") or die("Can't open '$srcpath/LICENSE.txt': $!\n");
+    while (<FH>) {
+        chomp;
+        $introtxt .= ".\\\" $_\n";
+    }
+    close(FH);
+    }
+
+    if (!$gitrev) {
+        $gitrev = `cd "$srcpath" ; git rev-list HEAD~..`;
+        chomp($gitrev);
+    }
+
+    # !!! FIXME
+    open(FH, '<', "$srcpath/$versionfname") or die("Can't open '$srcpath/$versionfname': $!\n");
+    my $majorver = 0;
+    my $minorver = 0;
+    my $patchver = 0;
+    while (<FH>) {
+        chomp;
+        if (/$versionmajorregex/) {
+            $majorver = int($1);
+        } elsif (/$versionminorregex/) {
+            $minorver = int($1);
+        } elsif (/$versionpatchregex/) {
+            $patchver = int($1);
+        }
+    }
+    close(FH);
+    my $fullversion = "$majorver.$minorver.$patchver";
+
+    my $latex_fname = "$srcpath/$projectshortname.tex";
+    my $latex_tmpfname = "$latex_fname.tmp";
+    open(TEXFH, '>', "$latex_tmpfname") or die("Can't open '$latex_tmpfname' for writing: $!\n");
+
+    print TEXFH <<__EOF__
+\\documentclass{book}
+
+\\usepackage{listings}
+\\usepackage{color}
+\\usepackage{hyperref}
+
+\\definecolor{dkgreen}{rgb}{0,0.6,0}
+\\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\\setcounter{secnumdepth}{0}
+
+\\lstset{frame=tb,
+  language=C,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\\small\\ttfamily},
+  numbers=none,
+  numberstyle=\\tiny\\color{gray},
+  keywordstyle=\\color{blue},
+  commentstyle=\\color{dkgreen},
+  stringstyle=\\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\\begin{document}
+\\frontmatter
+
+\\title{$projectfullname $majorver.$minorver.$patchver Reference Manual}
+\\author{The $projectshortname Developers}
+\\maketitle
+
+\\mainmatter
+
+__EOF__
+;
+
+    # !!! FIXME: Maybe put this in the book intro?  print TEXFH $introtxt;
+
+    # Sort symbols by symbol type, then alphabetically.
+    my @headersymskeys = sort {
+        my $symtypea = $headersymstype{$a};
+        my $symtypeb = $headersymstype{$b};
+        $symtypea = 3 if ($symtypea > 3);
+        $symtypeb = 3 if ($symtypeb > 3);
+        my $rc = $symtypea <=> $symtypeb;
+        if ($rc == 0) {
+            $rc = lc($a) cmp lc($b);
+        }
+        return $rc;
+    } keys %headersyms;
+
+    my $current_symtype = 0;
+    my $current_chapter = '';
+
+    foreach (@headersymskeys) {
+        my $sym = $_;
+        next if not defined $wikisyms{$sym};  # don't have a page for that function, skip it.
+        my $symtype = $headersymstype{$sym};
+        my $wikitype = $wikitypes{$sym};
+        my $sectionsref = $wikisyms{$sym};
+        my $remarks = $sectionsref->{'Remarks'};
+        my $params = $sectionsref->{'Function Parameters'};
+        my $returns = $sectionsref->{'Return Value'};
+        my $version = $sectionsref->{'Version'};
+        my $threadsafety = $sectionsref->{'Thread Safety'};
+        my $related = $sectionsref->{'See Also'};
+        my $examples = $sectionsref->{'Code Examples'};
+        my $deprecated = $sectionsref->{'Deprecated'};
+        my $headerfile = $manpageheaderfiletext;
+        $headerfile =~ s/\%fname\%/$headersymslocation{$sym}/g;
+        $headerfile .= "\n";
+
+        my $brief = $sectionsref->{'[Brief]'};
+        my $decl = $headerdecls{$sym};
+        my $str = '';
+
+        if ($current_symtype != $symtype) {
+            my $newchapter = '';
+            if ($symtype == 1) {
+                $newchapter = 'Functions';
+            } elsif ($symtype == 2) {
+                $newchapter = 'Macros';
+            } else {
+                $newchapter = 'Datatypes';
+            }
+
+            if ($current_chapter ne $newchapter) {
+                $str .= "\n\n\\chapter{$projectshortname $newchapter}\n\n\\clearpage\n\n";
+                $current_chapter = $newchapter;
+            }
+            $current_symtype = $symtype;
+        }
+
+        $brief = "$brief";
+        $brief =~ s/\A[\s\n]*\= .*? \=\s*?\n+//ms;
+        $brief =~ s/\A[\s\n]*\=\= .*? \=\=\s*?\n+//ms;
+        $brief =~ s/\A(.*?\.) /$1\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.
+        my @briefsplit = split /\n/, $brief;
+        $brief = shift @briefsplit;
+        $brief = dewikify($wikitype, $brief);
+
+        if (defined $remarks) {
+            $remarks = dewikify($wikitype, join("\n", @briefsplit) . $remarks);
+        }
+
+        my $escapedsym = escLaTeX($sym);
+        $str .= "\\hypertarget{$sym}{%\n\\section{$escapedsym}\\label{$sym}}\n\n";
+        $str .= $brief if (defined $brief);
+        $str .= "\n\n";
+
+        if (defined $deprecated) {
+            $str .= "\\subsection{Deprecated}\n\n";
+            $str .= dewikify($wikitype, $deprecated) . "\n";
+        }
+
+        if (defined $headerfile) {
+            $str .= "\\subsection{Header File}\n\n";
+            $str .= dewikify($wikitype, $headerfile) . "\n";
+        }
+
+        $str .= "\\subsection{Syntax}\n\n";
+        $str .= "\\begin{lstlisting}\n$decl\n\\end{lstlisting}\n";
+
+        if (defined $params) {
+            if (($symtype == 1) || ($symtype == 5)) {
+                $str .= "\\subsection{Function Parameters}\n\n";
+            } elsif ($symtype == 2) {  # macro
+                $str .= "\\subsection{Macro Parameters}\n\n";
+            } elsif ($symtype == 3) {  # struct/union
+                $str .= "\\subsection{Fields}\n\n";
+            } elsif ($symtype == 4) {  # enum
+                $str .= "\\subsection{Values}\n\n";
+            } else {
+                die("Unexpected symtype $symtype");
+            }
+
+            $str .= "\\begin{center}\n";
+            $str .= "    \\begin{tabular}{ | l | p{0.75\\textwidth} |}\n";
+            $str .= "    \\hline\n";
+
+            my @lines = split /\n/, $params;
+            if ($wikitype eq 'mediawiki') {
+                die("Unexpected data parsing MediaWiki table") if (shift @lines ne '{|');  # Dump the '{|' start
+                while (scalar(@lines) >= 3) {
+                    my $name = shift @lines;
+                    my $desc = shift @lines;
+                    my $terminator = shift @lines;  # the '|-' or '|}' line.
+                    last if ($terminator ne '|-') and ($terminator ne '|}');  # we seem to have run out of table.
+                    $name =~ s/\A\|\s*//;
+                    $name =~ s/\A\*\*(.*?)\*\*/$1/;
+                    $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
+                    $name = escLaTeX($name);
+                    $desc =~ s/\A\|\s*//;
+                    $desc = dewikify($wikitype, $desc);
+                    #print STDERR "FN: $sym   NAME: $name   DESC: $desc TERM: $terminator\n";
+                    $str .= "    \\textbf{$name} & $desc \\\\ \\hline\n";
+                }
+            } elsif ($wikitype eq 'md') {
+                my $l;
+                $l = shift @lines;
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\|\s*\|\s*\Z/);
+                $l = shift @lines;
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\-*\s*\|\s*\-*\s*\|\s*\Z/);
+                while (scalar(@lines) >= 1) {
+                    $l = shift @lines;
+                    if ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
+                        my $name = $1;
+                        my $desc = $2;
+                        $name =~ s/\A\*\*(.*?)\*\*/$1/;
+                        $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
+                        $name = escLaTeX($name);
+                        $desc = dewikify($wikitype, $desc);
+                        $str .= "    \\textbf{$name} & $desc \\\\ \\hline\n";
+                    } else {
+                        last;  # we seem to have run out of table.
+                    }
+                }
+            } else {
+                die("write me");
+            }
+
+            $str .= "    \\end{tabular}\n";
+            $str .= "\\end{center}\n";
+        }
+
+        if (defined $returns) {
+            $str .= "\\subsection{Return Value}\n\n";
+            $str .= dewikify($wikitype, $returns) . "\n";
+        }
+
+        if (defined $remarks) {
+            $str .= "\\subsection{Remarks}\n\n";
+            $str .= $remarks . "\n";
+        }
+
+        if (defined $examples) {
+            $str .= "\\subsection{Code Examples}\n\n";
+            $dewikify_manpage_code_indent = 0;
+            $str .= dewikify($wikitype, $examples) . "\n";
+            $dewikify_manpage_code_indent = 1;
+        }
+
+        if (defined $threadsafety) {
+            $str .= "\\subsection{Thread Safety}\n\n";
+            $str .= dewikify($wikitype, $threadsafety) . "\n";
+        }
+
+        if (defined $version) {
+            $str .= "\\subsection{Version}\n\n";
+            $str .= dewikify($wikitype, $version) . "\n";
+        }
+
+        if (defined $related) {
+            $str .= "\\subsection{See Also}\n\n";
+            $str .= "\\begin{itemize}\n";
+            # !!! FIXME: lots of code duplication in all of these.
+            my $v = dewikify($wikitype, $related);
+            my @desclines = split /\n/, $v;
+            my $nextstr = '';
+            foreach (@desclines) {
+                s/\(\)\Z//;  # Convert "SDL_Func()" to "SDL_Func"
+                s/\[\[(.*?)\]\]/$1/;  # in case some wikilinks remain.
+                s/\[(.*?)\]\(.*?\)/$1/;  # in case some wikilinks remain.
+                s/\A\*\s*\Z//;
+                s/\A\s*\\item\s*//;
+                s/\A\/*//;
+                s/\A\s*[\:\*\-]\s*//;
+                s/\A\s+//;
+                s/\s+\Z//;
+                next if $_ eq '';
+                next if $_ eq '\begin{itemize}';
+                next if $_ eq '\end{itemize}';
+                $str .= "    \\item $_\n";
+            }
+            $str .= "\\end{itemize}\n";
+            $str .= "\n";
+        }
+
+        # !!! FIXME: Maybe put copyright in the book intro?
+        if (0) {
+        $str .= ".SH COPYRIGHT\n";
+        $str .= "This manpage is licensed under\n";
+        $str .= ".UR https://creativecommons.org/licenses/by/4.0/\n";
+        $str .= "Creative Commons Attribution 4.0 International (CC BY 4.0)\n";
+        $str .= ".UE\n";
+        $str .= ".PP\n";
+        $str .= "This manpage was generated from\n";
+        $str .= ".UR $wikiurl/$sym\n";
+        $str .= "${projectshortname}'s wiki\n";
+        $str .= ".UE\n";
+        $str .= "using SDL/build-scripts/wikiheaders.pl";
+        $str .= " revision $gitrev" if $gitrev ne '';
+        $str .= ".\n";
+        $str .= "Please report issues in this manpage at\n";
+        $str .= ".UR $bugreporturl\n";
+        $str .= "our bugtracker!\n";
+        $str .= ".UE\n";
+        }
+
+        $str .= "\\clearpage\n\n";
+
+        print TEXFH $str;
+    }
+
+    print TEXFH "\\end{document}\n\n";
+    close(TEXFH);
+    rename($latex_tmpfname, $latex_fname) or die("Can't rename '$latex_tmpfname' to '$latex_fname': $!\n");
+
+} elsif ($copy_direction == -3) { # --report-coverage-gaps
     foreach (@coverage_gap) {
         print("$_\n");
     }
