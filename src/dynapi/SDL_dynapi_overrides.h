@@ -152,7 +152,6 @@
 #define SDL_EnumerateDirectory SDL_EnumerateDirectory_REAL
 #define SDL_EnumerateProperties SDL_EnumerateProperties_REAL
 #define SDL_EnumerateStorageDirectory SDL_EnumerateStorageDirectory_REAL
-#define SDL_Error SDL_Error_REAL
 #define SDL_EventEnabled SDL_EventEnabled_REAL
 #define SDL_FillSurfaceRect SDL_FillSurfaceRect_REAL
 #define SDL_FillSurfaceRects SDL_FillSurfaceRects_REAL
@@ -622,6 +621,7 @@
 #define SDL_OpenTitleStorage SDL_OpenTitleStorage_REAL
 #define SDL_OpenURL SDL_OpenURL_REAL
 #define SDL_OpenUserStorage SDL_OpenUserStorage_REAL
+#define SDL_OutOfMemory SDL_OutOfMemory_REAL
 #define SDL_PauseAudioDevice SDL_PauseAudioDevice_REAL
 #define SDL_PauseHaptic SDL_PauseHaptic_REAL
 #define SDL_PeepEvents SDL_PeepEvents_REAL
@@ -870,6 +870,7 @@
 #define SDL_WriteS32LE SDL_WriteS32LE_REAL
 #define SDL_WriteS64BE SDL_WriteS64BE_REAL
 #define SDL_WriteS64LE SDL_WriteS64LE_REAL
+#define SDL_WriteStorageFile SDL_WriteStorageFile_REAL
 #define SDL_WriteU16BE SDL_WriteU16BE_REAL
 #define SDL_WriteU16LE SDL_WriteU16LE_REAL
 #define SDL_WriteU32BE SDL_WriteU32BE_REAL
@@ -1038,4 +1039,3 @@
 #define SDL_wcsnstr SDL_wcsnstr_REAL
 #define SDL_wcsstr SDL_wcsstr_REAL
 #define SDL_wcstol SDL_wcstol_REAL
-#define SDL_WriteStorageFile SDL_WriteStorageFile_REAL

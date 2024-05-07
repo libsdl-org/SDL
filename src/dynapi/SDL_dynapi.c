@@ -60,7 +60,7 @@ extern "C" {
 static void SDL_InitDynamicAPI(void);
 
 /* BE CAREFUL CALLING ANY SDL CODE IN HERE, IT WILL BLOW UP.
-   Even self-contained stuff might call SDL_Error and break everything. */
+   Even self-contained stuff might call SDL_SetError() and break everything. */
 
 /* behold, the macro salsa! */
 
