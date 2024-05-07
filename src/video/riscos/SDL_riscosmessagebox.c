@@ -40,9 +40,9 @@ int RISCOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttoni
     regs.r[0] = (unsigned int)&error;
 
     regs.r[1] = (1 << 8) | (1 << 4);
-    if (messageboxdata->flags == SDL_MESSAGEBOX_INFORMATION) {
+    if (messageboxdata->flags & SDL_MESSAGEBOX_INFORMATION) {
         regs.r[1] |= (1 << 9);
-    } else if (messageboxdata->flags == SDL_MESSAGEBOX_WARNING) {
+    } else if (messageboxdata->flags & SDL_MESSAGEBOX_WARNING) {
         regs.r[1] |= (2 << 9);
     }
 
