@@ -78,13 +78,14 @@ const char *SDL_GetError(void)
     }
 }
 
-void SDL_ClearError(void)
+int SDL_ClearError(void)
 {
     SDL_error *error = SDL_GetErrBuf(SDL_FALSE);
 
     if (error) {
         error->error = SDL_ErrorCodeNone;
     }
+    return 0;
 }
 
 /* Very common errors go here */

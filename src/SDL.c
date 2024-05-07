@@ -400,7 +400,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     (void)flags_initialized; /* make static analysis happy, since this only gets used in error cases. */
 
-    return 0;
+    return SDL_ClearError();
 
 quit_and_error:
     SDL_QuitSubSystem(flags_initialized);

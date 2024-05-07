@@ -105,12 +105,14 @@ extern DECLSPEC const char *SDLCALL SDL_GetError(void);
 /**
  * Clear any previous error message for this thread.
  *
+ * \returns 0
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetError
  * \sa SDL_SetError
  */
-extern DECLSPEC void SDLCALL SDL_ClearError(void);
+extern DECLSPEC int SDLCALL SDL_ClearError(void);
 
 /**
  *  \name Internal error functions
