@@ -19,9 +19,9 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows (mingw32),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, artifact: 'SDL-mingw32' }
+        - { name: Windows (mingw32),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, artifact: 'SDL-mingw32', no-perl: true }
         - { name: Windows (mingw64),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64, artifact: 'SDL-mingw64' }
-        - { name: Windows (clang32),              os: windows-latest, shell: 'msys2 {0}', msystem: clang32, msys-env: mingw-w64-clang-i686, artifact: 'SDL-msys2-clang32' }
+        - { name: Windows (clang32),              os: windows-latest, shell: 'msys2 {0}', msystem: clang32, msys-env: mingw-w64-clang-i686, artifact: 'SDL-msys2-clang32', no-perl: true }
         - { name: Windows (clang64),              os: windows-latest, shell: 'msys2 {0}', msystem: clang64, msys-env: mingw-w64-clang-x86_64, artifact: 'SDL-msys2-clang64' }
         - { name: Windows (ucrt64),               os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64, artifact: 'SDL-msys2-ucrt64' }
         - { name: Ubuntu 20.04,                   os: ubuntu-20.04,   shell: sh, artifact: 'SDL-ubuntu20.04' }
@@ -46,7 +46,7 @@ jobs:
           ${{ matrix.platform.msys-env }}-cc
           ${{ matrix.platform.msys-env }}-cmake
           ${{ matrix.platform.msys-env }}-ninja
-          ${{ matrix.platform.msys-env }}-perl
+          ${{ (!matrix.platform.no-perl && format('{0}-perl', matrix.platform.msys-env)) || '' }}
           ${{ matrix.platform.msys-env }}-pkg-config
           ${{ matrix.platform.msys-env }}-clang-tools-extra
 
@@ -109,7 +109,7 @@ jobs:
           -DSDL_INSTALL_TESTS=ON \
           -DSDL_VENDOR_INFO="Github Workflow" \
           -DSDL_CLANG_TIDY=ON \
-          -DSDL_DISABLE_INSTALL_DOCS=OFF \
+          -DSDL_DISABLE_INSTALL_DOCS=${{ !matrix.platform.no-perl }} \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.cmake-platform }} \
