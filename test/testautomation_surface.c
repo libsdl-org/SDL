@@ -56,7 +56,7 @@ static void surfaceSetUp(void *arg)
         SDLTest_AssertCheck(result == 0, "Validate result from SDL_SetSurfaceBlendMode, expected: 0, got: %i", result);
         result = SDL_GetSurfaceBlendMode(testSurface, &currentBlendMode);
         SDLTest_AssertCheck(result == 0, "Validate result from SDL_GetSurfaceBlendMode, expected: 0, got: %i", result);
-        SDLTest_AssertCheck(currentBlendMode == blendMode, "Validate blendMode, expected: %i, got: %i", blendMode, currentBlendMode);
+        SDLTest_AssertCheck(currentBlendMode == blendMode, "Validate blendMode, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32, blendMode, currentBlendMode);
     }
 }
 

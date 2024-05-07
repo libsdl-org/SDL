@@ -71,12 +71,11 @@ extern "C" {
 /**
  * Flags used when creating a rendering context.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.0.0.
  */
-typedef enum SDL_RendererFlags
-{
-    SDL_RENDERER_PRESENTVSYNC = 0x00000004  /**< Present is synchronized with the refresh rate */
-} SDL_RendererFlags;
+typedef Uint32 SDL_RendererFlags;
+
+#define SDL_RENDERER_PRESENTVSYNC   0x00000004u /**< Present is synchronized with the refresh rate */
 
 /**
  * Information on the capabilities of a render driver or context.

@@ -37,27 +37,25 @@ extern "C" {
  *
  * If supported will display warning icon, etc.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.0.0.
  */
-typedef enum SDL_MessageBoxFlags
-{
-    SDL_MESSAGEBOX_ERROR                 = 0x00000010,   /**< error dialog */
-    SDL_MESSAGEBOX_WARNING               = 0x00000020,   /**< warning dialog */
-    SDL_MESSAGEBOX_INFORMATION           = 0x00000040,   /**< informational dialog */
-    SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT = 0x00000080,   /**< buttons placed left to right */
-    SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT = 0x00000100    /**< buttons placed right to left */
-} SDL_MessageBoxFlags;
+typedef Uint32 SDL_MessageBoxFlags;
+
+#define SDL_MESSAGEBOX_ERROR                    0x00000010u /**< error dialog */
+#define SDL_MESSAGEBOX_WARNING                  0x00000020u /**< warning dialog */
+#define SDL_MESSAGEBOX_INFORMATION              0x00000040u /**< informational dialog */
+#define SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT    0x00000080u /**< buttons placed left to right */
+#define SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT    0x00000100u /**< buttons placed right to left */
 
 /**
- * Flags for SDL_MessageBoxButtonData.
+ * SDL_MessageBoxButtonData flags.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.0.0.
  */
-typedef enum SDL_MessageBoxButtonFlags
-{
-    SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT = 0x00000001,  /**< Marks the default button when return is hit */
-    SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT = 0x00000002   /**< Marks the default button when escape is hit */
-} SDL_MessageBoxButtonFlags;
+typedef Uint32 SDL_MessageBoxButtonFlags;
+
+#define SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT 0x00000001u /**< Marks the default button when return is hit */
+#define SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT 0x00000002u /**< Marks the default button when escape is hit */
 
 /**
  * Individual button data.
@@ -66,7 +64,7 @@ typedef enum SDL_MessageBoxButtonFlags
  */
 typedef struct SDL_MessageBoxButtonData
 {
-    Uint32 flags;       /**< ::SDL_MessageBoxButtonFlags */
+    SDL_MessageBoxButtonFlags flags;
     int buttonID;       /**< User defined button id (value returned via SDL_ShowMessageBox) */
     const char *text;   /**< The UTF-8 button text */
 } SDL_MessageBoxButtonData;
@@ -112,7 +110,7 @@ typedef struct SDL_MessageBoxColorScheme
  */
 typedef struct SDL_MessageBoxData
 {
-    Uint32 flags;                       /**< ::SDL_MessageBoxFlags */
+    SDL_MessageBoxFlags flags;
     SDL_Window *window;                 /**< Parent window, can be NULL */
     const char *title;                  /**< UTF-8 title */
     const char *message;                /**< UTF-8 message text */
@@ -198,7 +196,7 @@ extern DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *message
  *
  * \sa SDL_ShowMessageBox
  */
-extern DECLSPEC int SDLCALL SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message, SDL_Window *window);
+extern DECLSPEC int SDLCALL SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags flags, const char *title, const char *message, SDL_Window *window);
 
 
 /* Ends C function definitions when using C++ */
