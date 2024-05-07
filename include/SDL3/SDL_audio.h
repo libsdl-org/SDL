@@ -86,17 +86,14 @@ extern "C" {
  */
 typedef Uint16 SDL_AudioFormat;
 
-#define SDL_AUDIO_U8        0x0008  /**< Unsigned 8-bit samples */
-#define SDL_AUDIO_S8        0x8008  /**< Signed 8-bit samples */
-
-#define SDL_AUDIO_S16LE     0x8010  /**< Signed 16-bit samples */
-#define SDL_AUDIO_S16BE     0x9010  /**< As above, but big-endian byte order */
-
-#define SDL_AUDIO_S32LE     0x8020  /**< 32-bit integer samples */
-#define SDL_AUDIO_S32BE     0x9020  /**< As above, but big-endian byte order */
-
-#define SDL_AUDIO_F32LE     0x8120  /**< 32-bit floating point samples */
-#define SDL_AUDIO_F32BE     0x9120  /**< As above, but big-endian byte order */
+#define SDL_AUDIO_U8        0x0008u /**< Unsigned 8-bit samples */
+#define SDL_AUDIO_S8        0x8008u /**< Signed 8-bit samples */
+#define SDL_AUDIO_S16LE     0x8010u /**< Signed 16-bit samples */
+#define SDL_AUDIO_S16BE     0x9010u /**< As above, but big-endian byte order */
+#define SDL_AUDIO_S32LE     0x8020u /**< 32-bit integer samples */
+#define SDL_AUDIO_S32BE     0x9020u /**< As above, but big-endian byte order */
+#define SDL_AUDIO_F32LE     0x8120u /**< 32-bit floating point samples */
+#define SDL_AUDIO_F32BE     0x9120u /**< As above, but big-endian byte order */
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define SDL_AUDIO_S16    SDL_AUDIO_S16LE

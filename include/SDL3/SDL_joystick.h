@@ -997,11 +997,11 @@ extern DECLSPEC int SDLCALL SDL_GetJoystickBall(SDL_Joystick *joystick, int ball
  */
 extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickHat(SDL_Joystick *joystick, int hat);
 
-#define SDL_HAT_CENTERED    0x00
-#define SDL_HAT_UP          0x01
-#define SDL_HAT_RIGHT       0x02
-#define SDL_HAT_DOWN        0x04
-#define SDL_HAT_LEFT        0x08
+#define SDL_HAT_CENTERED    0x00u
+#define SDL_HAT_UP          0x01u
+#define SDL_HAT_RIGHT       0x02u
+#define SDL_HAT_DOWN        0x04u
+#define SDL_HAT_LEFT        0x08u
 #define SDL_HAT_RIGHTUP     (SDL_HAT_RIGHT|SDL_HAT_UP)
 #define SDL_HAT_RIGHTDOWN   (SDL_HAT_RIGHT|SDL_HAT_DOWN)
 #define SDL_HAT_LEFTUP      (SDL_HAT_LEFT|SDL_HAT_UP)

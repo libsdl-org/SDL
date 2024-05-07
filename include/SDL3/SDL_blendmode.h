@@ -35,36 +35,31 @@ extern "C" {
 #endif
 
 /**
- * An enumeration of blend modes used in drawing operations.
+ * A set of blend modes used in drawing operations.
  *
- * Note that additional values may be obtained from
- * SDL_ComposeCustomBlendMode.
+ * Note that additional values may be obtained from SDL_ComposeCustomBlendMode.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.0.0.
  *
  * \sa SDL_ComposeCustomBlendMode
  */
-typedef enum SDL_BlendMode
-{
-    SDL_BLENDMODE_NONE = 0x00000000,     /**< no blending
-                                              dstRGBA = srcRGBA */
-    SDL_BLENDMODE_BLEND = 0x00000001,    /**< alpha blending
-                                              dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
-                                              dstA = srcA + (dstA * (1-srcA)) */
-    SDL_BLENDMODE_ADD = 0x00000002,      /**< additive blending
-                                              dstRGB = (srcRGB * srcA) + dstRGB
-                                              dstA = dstA */
-    SDL_BLENDMODE_MOD = 0x00000004,      /**< color modulate
-                                              dstRGB = srcRGB * dstRGB
-                                              dstA = dstA */
-    SDL_BLENDMODE_MUL = 0x00000008,      /**< color multiply
-                                              dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA))
-                                              dstA = dstA */
-    SDL_BLENDMODE_INVALID = 0x7FFFFFFF
+typedef Uint32 SDL_BlendMode;
 
-    /* Additional custom blend modes can be returned by SDL_ComposeCustomBlendMode() */
-
-} SDL_BlendMode;
+#define SDL_BLENDMODE_NONE      0x00000000u /**< no blending
+                                                 dstRGBA = srcRGBA */
+#define SDL_BLENDMODE_BLEND     0x00000001u /**< alpha blending
+                                                 dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
+                                                 dstA = srcA + (dstA * (1-srcA)) */
+#define SDL_BLENDMODE_ADD       0x00000002u /**< additive blending
+                                                 dstRGB = (srcRGB * srcA) + dstRGB
+                                                 dstA = dstA */
+#define SDL_BLENDMODE_MOD       0x00000004u /**< color modulate
+                                                 dstRGB = srcRGB * dstRGB
+                                                 dstA = dstA */
+#define SDL_BLENDMODE_MUL       0x00000008u /**< color multiply
+                                                 dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA))
+                                                 dstA = dstA */
+#define SDL_BLENDMODE_INVALID   0x7FFFFFFFu
 
 /**
  * The blend operation used when combining source and destination pixel

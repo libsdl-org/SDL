@@ -48,7 +48,7 @@
  */
 typedef Sint32 SDL_Keycode;
 
-#define SDLK_SCANCODE_MASK (1<<30)
+#define SDLK_SCANCODE_MASK (1u<<30)
 #define SDL_SCANCODE_TO_KEYCODE(X)  (X | SDLK_SCANCODE_MASK)
 #define SDLK_UNKNOWN    0
 #define SDLK_RETURN '\r'
@@ -296,30 +296,28 @@ typedef Sint32 SDL_Keycode;
 #define SDLK_ENDCALL    SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_ENDCALL)
 
 /**
- * Enumeration of valid key mods (possibly OR'd together).
+ * Valid key modifiers (possibly OR'd together).
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.0.0.
  */
-typedef enum SDL_Keymod
-{
-    SDL_KMOD_NONE = 0x0000,    /**< no modifier is applicable. */
-    SDL_KMOD_LSHIFT = 0x0001,  /**< the left Shift key is down. */
-    SDL_KMOD_RSHIFT = 0x0002,  /**< the right Shift key is down. */
-    SDL_KMOD_LCTRL = 0x0040,   /**< the left Ctrl (Control) key is down. */
-    SDL_KMOD_RCTRL = 0x0080,   /**< the right Ctrl (Control) key is down. */
-    SDL_KMOD_LALT = 0x0100,    /**< the left Alt key is down. */
-    SDL_KMOD_RALT = 0x0200,    /**< the right Alt key is down. */
-    SDL_KMOD_LGUI = 0x0400,    /**< the left GUI key (often the Windows key) is down. */
-    SDL_KMOD_RGUI = 0x0800,    /**< the right GUI key (often the Windows key) is down. */
-    SDL_KMOD_NUM = 0x1000,     /**< the Num Lock key (may be located on an extended keypad) is down. */
-    SDL_KMOD_CAPS = 0x2000,    /**< the Caps Lock key is down. */
-    SDL_KMOD_MODE = 0x4000,    /**< the !AltGr key is down. */
-    SDL_KMOD_SCROLL = 0x8000,  /**< the Scoll Lock key is down. */
+typedef Uint32 SDL_Keymod;
 
-    SDL_KMOD_CTRL = SDL_KMOD_LCTRL | SDL_KMOD_RCTRL,    /**< Any Ctrl key is down. */
-    SDL_KMOD_SHIFT = SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT, /**< Any Shift key is down. */
-    SDL_KMOD_ALT = SDL_KMOD_LALT | SDL_KMOD_RALT,       /**< Any Alt key is down. */
-    SDL_KMOD_GUI = SDL_KMOD_LGUI | SDL_KMOD_RGUI        /**< Any GUI key is down. */
-} SDL_Keymod;
+#define SDL_KMOD_NONE   0x0000u /**< no modifier is applicable. */
+#define SDL_KMOD_LSHIFT 0x0001u /**< the left Shift key is down. */
+#define SDL_KMOD_RSHIFT 0x0002u /**< the right Shift key is down. */
+#define SDL_KMOD_LCTRL  0x0040u /**< the left Ctrl (Control) key is down. */
+#define SDL_KMOD_RCTRL  0x0080u /**< the right Ctrl (Control) key is down. */
+#define SDL_KMOD_LALT   0x0100u /**< the left Alt key is down. */
+#define SDL_KMOD_RALT   0x0200u /**< the right Alt key is down. */
+#define SDL_KMOD_LGUI   0x0400u /**< the left GUI key (often the Windows key) is down. */
+#define SDL_KMOD_RGUI   0x0800u /**< the right GUI key (often the Windows key) is down. */
+#define SDL_KMOD_NUM    0x1000u /**< the Num Lock key (may be located on an extended keypad) is down. */
+#define SDL_KMOD_CAPS   0x2000u /**< the Caps Lock key is down. */
+#define SDL_KMOD_MODE   0x4000u /**< the !AltGr key is down. */
+#define SDL_KMOD_SCROLL 0x8000u /**< the Scoll Lock key is down. */
+#define SDL_KMOD_CTRL   (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL)   /**< Any Ctrl key is down. */
+#define SDL_KMOD_SHIFT  (SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT) /**< Any Shift key is down. */
+#define SDL_KMOD_ALT    (SDL_KMOD_LALT | SDL_KMOD_RALT)     /**< Any Alt key is down. */
+#define SDL_KMOD_GUI    (SDL_KMOD_LGUI | SDL_KMOD_RGUI)     /**< Any GUI key is down. */
 
 #endif /* SDL_keycode_h_ */
