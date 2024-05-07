@@ -37,7 +37,8 @@ extern "C" {
 /**
  * A set of blend modes used in drawing operations.
  *
- * Note that additional values may be obtained from SDL_ComposeCustomBlendMode.
+ * Note that additional values may be obtained from
+ * SDL_ComposeCustomBlendMode.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
