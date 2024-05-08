@@ -87,12 +87,14 @@ typedef enum SDL_TimeFormat
  * Gets the current preferred date and time format for the system locale.
  *
  * This might be a "slow" call that has to query the operating system. It's
- * best to ask for this once and save the results. However, the preferred formats
- * can change, usually because the user has changed a system preference outside of
- * your program.
+ * best to ask for this once and save the results. However, the preferred
+ * formats can change, usually because the user has changed a system
+ * preference outside of your program.
  *
- * \param dateFormat a pointer to the SDL_DateFormat to hold the returned date format, may be NULL
- * \param timeFormat a pointer to the SDL_TimeFormat to hold the returned time format, may be NULL
+ * \param dateFormat a pointer to the SDL_DateFormat to hold the returned date
+ *                   format, may be NULL
+ * \param timeFormat a pointer to the SDL_TimeFormat to hold the returned time
+ *                   format, may be NULL
  *
  * \since This function is available since SDL 3.0.0.
  */
