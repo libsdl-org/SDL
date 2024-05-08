@@ -99,7 +99,7 @@ struct VkAllocationCallbacks;
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_Vulkan_GetVkInstanceProcAddr
+ * \sa SDL_Vulkan_GetVkGetInstanceProcAddr
  * \sa SDL_Vulkan_UnloadLibrary
  */
 extern DECLSPEC int SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
