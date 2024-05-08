@@ -70,6 +70,7 @@
 #define SDL_FreeAudioStream SDL_DestroyAudioStream
 #define SDL_FreeWAV SDL_free
 #define SDL_LoadWAV_RW SDL_LoadWAV_IO
+#define SDL_MixAudioFormat SDL_MixAudio
 #define SDL_NewAudioStream SDL_CreateAudioStream
 
 /* ##SDL_events.h */
@@ -577,6 +578,7 @@
 #define SDL_FreeAudioStream SDL_FreeAudioStream_renamed_SDL_DestroyAudioStream
 #define SDL_FreeWAV SDL_FreeWAV_renamed_SDL_free
 #define SDL_LoadWAV_RW SDL_LoadWAV_RW_renamed_SDL_LoadWAV_IO
+#define SDL_MixAudioFormat SDL_MixAudioFormat_renamed_SDL_MixAudio
 #define SDL_NewAudioStream SDL_NewAudioStream_renamed_SDL_CreateAudioStream
 
 /* ##SDL_events.h */

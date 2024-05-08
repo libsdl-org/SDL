@@ -3149,3 +3149,12 @@ typedef SDL_Colour, SDL_Color;
 - SDL_iPhoneSetEventPump
 + SDL_iOSSetEventPump
   (...)
+@@
+@@
+- SDL_MixAudioFormat
++ SDL_MixAudio
+  (...)
+@@
+@@
+- SDL_MIX_MAXVOLUME
++ 1.0f

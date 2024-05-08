@@ -1537,13 +1537,6 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec * spec,
                                         Uint8 ** audio_buf, Uint32 * audio_len);
 
 /**
- * Maximum volume allowed in calls to SDL_MixAudioFormat.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-#define SDL_MIX_MAXVOLUME 128
-
-/**
  * Mix audio data in a specified format.
  *
  * This takes an audio buffer `src` of `len` bytes of `format` data and mixes
@@ -1560,7 +1553,7 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec * spec,
  *
  * It is a common misconception that this function is required to write audio
  * data to an output stream in an audio callback. While you can do that,
- * SDL_MixAudioFormat() is really only needed when you're mixing a single
+ * SDL_MixAudio() is really only needed when you're mixing a single
  * audio stream with a volume adjustment.
  *
  * \param dst the destination for the mixed audio
@@ -1568,8 +1561,7 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec * spec,
  * \param format the SDL_AudioFormat structure representing the desired audio
  *               format
  * \param len the length of the audio buffer in bytes
- * \param volume ranges from 0 - 128, and should be set to SDL_MIX_MAXVOLUME
- *               for full audio volume
+ * \param volume ranges from 0.0 - 1.0, and should be set to 1.0 for full audio volume
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1577,10 +1569,10 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec * spec,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_MixAudioFormat(Uint8 * dst,
-                                               const Uint8 * src,
-                                               SDL_AudioFormat format,
-                                               Uint32 len, int volume);
+extern DECLSPEC int SDLCALL SDL_MixAudio(Uint8 * dst,
+                                         const Uint8 * src,
+                                         SDL_AudioFormat format,
+                                         Uint32 len, float volume);
 
 /**
  * Convert some audio data of one format to another format.

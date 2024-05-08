@@ -1046,7 +1046,7 @@ void SDL_AudioThreadFinalize(SDL_AudioDevice *device)
 
 static void MixFloat32Audio(float *dst, const float *src, const int buffer_size)
 {
-    if (SDL_MixAudioFormat((Uint8 *) dst, (const Uint8 *) src, SDL_AUDIO_F32, buffer_size, SDL_MIX_MAXVOLUME) < 0) {
+    if (SDL_MixAudio((Uint8 *) dst, (const Uint8 *) src, SDL_AUDIO_F32, buffer_size, 1.0f) < 0) {
         SDL_assert(!"This shouldn't happen.");
     }
 }

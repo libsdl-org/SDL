@@ -574,7 +574,7 @@ SDL3_0.0.0 {
     SDL_Metal_DestroyView;
     SDL_Metal_GetLayer;
     SDL_MinimizeWindow;
-    SDL_MixAudioFormat;
+    SDL_MixAudio;
     SDL_OnApplicationDidBecomeActive;
     SDL_OnApplicationDidChangeStatusBarOrientation;
     SDL_OnApplicationDidEnterBackground;
