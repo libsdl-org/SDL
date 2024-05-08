@@ -3184,3 +3184,12 @@ typedef SDL_Colour, SDL_Color;
 - SDL_SIMDGetAlignment
 + SDL_GetSIMDAlignment
   (...)
+@@
+@@
+- SDL_MixAudioFormat
++ SDL_MixAudio
+  (...)
+@@
+@@
+- SDL_MIX_MAXVOLUME
++ 1.0f
