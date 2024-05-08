@@ -1129,7 +1129,7 @@ static SDL_bool PIPEWIRECAMERA_Init(SDL_CameraDriverImpl *impl)
 }
 
 CameraBootStrap PIPEWIRECAMERA_bootstrap = {
-    "pipewire", "SDL PipeWire camera driver", PIPEWIRECAMERA_Init, SDL_TRUE
+    "pipewire", "SDL PipeWire camera driver", PIPEWIRECAMERA_Init, SDL_FALSE
 };
 
 #endif  // SDL_CAMERA_DRIVER_PIPEWIRE
