@@ -61,7 +61,7 @@ typedef struct SDL_DateTime
  *
  * \since This enum is available since SDL 3.0.0.
  *
- * \sa SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER
+ * \sa SDL_GetDateTimeLocalePreferences
  */
 typedef enum SDL_DateFormat
 {
@@ -75,7 +75,7 @@ typedef enum SDL_DateFormat
  *
  * \since This enum is available since SDL 3.0.0.
  *
- * \sa SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER
+ * \sa SDL_GetDateTimeLocalePreferences
  */
 typedef enum SDL_TimeFormat
 {
@@ -83,28 +83,20 @@ typedef enum SDL_TimeFormat
     SDL_TIME_FORMAT_12HR = 1  /**< 12 hour time */
 } SDL_TimeFormat;
 
-/* Global date/time properties. */
-
 /**
- * The SDL_DateFormat to use as the preferred date display format for the
- * current system locale.
+ * Gets the current preferred date and time format for the system locale.
  *
- * \since This macro is available since SDL 3.0.0.
+ * This might be a "slow" call that has to query the operating system. It's
+ * best to ask for this once and save the results. However, the preferred formats
+ * can change, usually because the user has changed a system preference outside of
+ * your program.
  *
- * \sa SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER
+ * \param dateFormat a pointer to the SDL_DateFormat to hold the returned date format, may be NULL
+ * \param timeFormat a pointer to the SDL_TimeFormat to hold the returned time format, may be NULL
+ *
+ * \since This function is available since SDL 3.0.0.
  */
-#define SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER "SDL.time.date_format"
-
-/**
- * The SDL_TimeFormat to use as the preferred time display format for the
- * current system locale.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER
- */
-#define SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER "SDL.time.time_format"
-
+extern DECLSPEC int SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat);
 
 /**
  * Gets the current value of the system realtime clock in nanoseconds since

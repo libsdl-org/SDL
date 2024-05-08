@@ -34,7 +34,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
     int val;
 
-    if (sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_DATE_FORMAT, &val) == 0) {
+    if (df && sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_DATE_FORMAT, &val) == 0) {
         switch (val) {
         case PSP_SYSTEMPARAM_DATE_FORMAT_YYYYMMDD:
             *df = SDL_DATE_FORMAT_YYYYMMDD;
@@ -50,7 +50,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
         }
     }
 
-    if (sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_TIME_FORMAT, &val) == 0) {
+    if (tf && sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_TIME_FORMAT, &val) == 0) {
         switch (val) {
         case PSP_SYSTEMPARAM_TIME_FORMAT_24HR:
             *tf = SDL_TIME_FORMAT_24HR;

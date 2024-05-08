@@ -86,15 +86,23 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
         return;
     }
 
-    *df = LANG_TO_DATE_FORMAT[system_language];
-    *tf = SDL_TIME_FORMAT_24HR;
+    if (df) {
+        *df = LANG_TO_DATE_FORMAT[system_language];
+    }
+    if (tf) {
+        *tf = SDL_TIME_FORMAT_24HR;
+    }
 
     /* Only American English (en_US) uses MM/DD/YYYY and 12hr system, this gets
        the formats wrong for canadians though (en_CA) */
     if (system_language == CFG_LANGUAGE_EN &&
         R_SUCCEEDED(has_region) && is_north_america) {
-        *df = SDL_DATE_FORMAT_MMDDYYYY;
-        *tf = SDL_TIME_FORMAT_12HR;
+        if (df) {
+            *df = SDL_DATE_FORMAT_MMDDYYYY;
+        }
+        if (tf) {
+            *tf = SDL_TIME_FORMAT_12HR;
+        }
     }
 }
 

@@ -39,7 +39,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
     SDL_zero(bootParam);
     sceAppUtilInit(&initParam, &bootParam);
 
-    if (sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_DATE_FORMAT, &val) == 0) {
+    if (df && sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_DATE_FORMAT, &val) == 0) {
         switch (val) {
         case SCE_SYSTEM_PARAM_DATE_FORMAT_YYYYMMDD:
             *df = SDL_DATE_FORMAT_YYYYMMDD;
@@ -55,7 +55,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
         }
     }
 
-    if (sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_DATE_FORMAT, &val) == 0) {
+    if (tf && sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_DATE_FORMAT, &val) == 0) {
         switch (val) {
         case SCE_SYSTEM_PARAM_TIME_FORMAT_24HR:
             *tf = SDL_TIME_FORMAT_24HR;
