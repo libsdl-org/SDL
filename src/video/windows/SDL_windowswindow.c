@@ -984,9 +984,11 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WIN_SetWindowPosition(_this, window);
     }
 
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (window->flags & SDL_WINDOW_MODAL) {
         EnableWindow(window->parent->driverdata->hwnd, FALSE);
     }
+#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
     hwnd = window->driverdata->hwnd;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
@@ -1011,9 +1013,11 @@ void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     HWND hwnd = window->driverdata->hwnd;
 
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (window->flags & SDL_WINDOW_MODAL) {
         EnableWindow(window->parent->driverdata->hwnd, TRUE);
     }
+#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
     ShowWindow(hwnd, SW_HIDE);
 
@@ -1731,6 +1735,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
 
 int WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
 {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_WindowData *modal_data = modal_window->driverdata;
     const LONG_PTR parent_hwnd = (LONG_PTR)(parent_window ? parent_window->driverdata->hwnd : NULL);
     const LONG_PTR old_ptr = GetWindowLongPtr(modal_data->hwnd, GWLP_HWNDPARENT);
@@ -1760,6 +1765,7 @@ int WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_
     if (!(modal_window->flags & SDL_WINDOW_HIDDEN) && parent_hwnd) {
         EnableWindow((HWND)parent_hwnd, FALSE);
     }
+#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
     return 0;
 }
