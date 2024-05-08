@@ -103,7 +103,7 @@ typedef VkSurfaceKHR SDL_vulkanSurface; /* for compatibility with Tizen */
  *
  * \since This function is available since SDL 2.0.6.
  *
- * \sa SDL_Vulkan_GetVkInstanceProcAddr
+ * \sa SDL_Vulkan_GetVkGetInstanceProcAddr
  * \sa SDL_Vulkan_UnloadLibrary
  */
 extern DECLSPEC int SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
