@@ -2855,7 +2855,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
         char **charFileList = SDL_calloc(sizeof(char*), count + 1);
 
         if (charFileList == NULL) {
-            SDL_OutOfMemory();
             mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, NULL, -1);
             mAndroidFileDialogData.callback = NULL;
             return;
@@ -2879,7 +2878,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
             if (!newFile) {
                 (*env)->ReleaseStringUTFChars(env, string, utf8string);
                 (*env)->DeleteLocalRef(env, string);
-                SDL_OutOfMemory();
                 mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, NULL, -1);
                 mAndroidFileDialogData.callback = NULL;
 

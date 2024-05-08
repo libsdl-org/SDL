@@ -86,7 +86,6 @@ static void DBus_AppendFilter(SDL_DBusContext *dbus, DBusMessageIter *parent, co
 
     patterns = SDL_strdup(filter->pattern);
     if (!patterns) {
-        SDL_OutOfMemory();
         goto cleanup;
     }
 
@@ -99,7 +98,6 @@ static void DBus_AppendFilter(SDL_DBusContext *dbus, DBusMessageIter *parent, co
 
         glob_pattern = SDL_calloc(sizeof(char), max_len);
         if (!glob_pattern) {
-            SDL_OutOfMemory();
             goto cleanup;
         }
         glob_pattern[0] = '*';
@@ -222,7 +220,6 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
         path = SDL_malloc(sizeof(const char *) * length);
         if (!path) {
-            SDL_OutOfMemory();
             signal_data->callback(signal_data->userdata, NULL, -1);
             goto cleanup;
         }
@@ -233,7 +230,6 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
                 ++length;
                 path = SDL_realloc(path, sizeof(const char *) * length);
                 if (!path) {
-                    SDL_OutOfMemory();
                     signal_data->callback(signal_data->userdata, NULL, -1);
                     goto cleanup;
                 }

@@ -369,29 +369,22 @@ int windows_file_dialog_thread(void* ptr)
     return 0;
 }
 
-int CALLBACK browse_callback_proc(
-				HWND hwnd, 
-				UINT uMsg, 
-				LPARAM lParam, 
-				LPARAM lpData)
+int CALLBACK browse_callback_proc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 {
-  
-	switch (uMsg)
-	{
-	case BFFM_INITIALIZED :
-		if(lpData)
-        {
-		  SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
+    switch (uMsg) {
+    case BFFM_INITIALIZED:
+        if (lpData) {
+            SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
         }
-		break;
-	case BFFM_SELCHANGED :
-		break;
-	case BFFM_VALIDATEFAILED :
-		break;
-	default:
-		break;
-	}
-	return 0; 
+        break;
+    case BFFM_SELCHANGED:
+        break;
+    case BFFM_VALIDATEFAILED:
+        break;
+    default:
+        break;
+    }
+    return 0;
 }
 
 void windows_ShowFolderDialog(void* ptr)
@@ -400,7 +393,6 @@ void windows_ShowFolderDialog(void* ptr)
     SDL_Window *window = args->parent;
     SDL_DialogFileCallback callback = args->callback;
     void *userdata = args->userdata;
-
     HWND parent = NULL;
 
     if (window) {

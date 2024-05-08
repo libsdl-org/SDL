@@ -60,7 +60,6 @@ int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
         newlimit = (id + TLS_ALLOC_CHUNKSIZE);
         new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
         if (!new_storage) {
-            SDL_OutOfMemory();
             return -1;
         }
         storage = new_storage;

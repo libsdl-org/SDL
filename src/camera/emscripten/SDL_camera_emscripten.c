@@ -44,7 +44,7 @@ static int EMSCRIPTENCAMERA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *
 {
     void *rgba = SDL_malloc(device->actual_spec.width * device->actual_spec.height * 4);
     if (!rgba) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     *timestampNS = SDL_GetTicksNS();  // best we can do here.

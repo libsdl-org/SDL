@@ -54,7 +54,6 @@ typedef struct
 #define CHECK_OOM()                                                           \
     {                                                                         \
         if (!argv[nextarg - 1]) {                                             \
-            SDL_OutOfMemory();                                                \
             CLEAR_AND_RETURN()                                                \
         }                                                                     \
                                                                               \
@@ -120,9 +119,7 @@ static char** generate_args(const zenityArgs* info)
     }
 
     argv = SDL_malloc(sizeof(char *) * argc + 1);
-
     if (!argv) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -259,7 +256,6 @@ static void run_zenity(zenityArgs* arg_struct)
         while ((bytes_last_read = read(out[0], readbuffer, sizeof(readbuffer)))) {
             char *new_container = SDL_realloc(container, bytes_read + bytes_last_read);
             if (!new_container) {
-                SDL_OutOfMemory();
                 SDL_free(container);
                 close(out[0]);
                 callback(userdata, NULL, -1);
@@ -286,7 +282,6 @@ static void run_zenity(zenityArgs* arg_struct)
         char **array = (char **) SDL_malloc((narray + 1) * sizeof(char *));
 
         if (!array) {
-            SDL_OutOfMemory();
             SDL_free(container);
             callback(userdata, NULL, -1);
             return;
@@ -304,7 +299,6 @@ static void run_zenity(zenityArgs* arg_struct)
                     narray++;
                     char **new_array = (char **) SDL_realloc(array, (narray + 1) * sizeof(char *));
                     if (!new_array) {
-                        SDL_OutOfMemory();
                         SDL_free(container);
                         SDL_free(array);
                         callback(userdata, NULL, -1);
@@ -343,7 +337,6 @@ void SDL_Zenity_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userda
 
     args = SDL_malloc(sizeof(*args));
     if (!args) {
-        SDL_OutOfMemory();
         callback(userdata, NULL, -1);
         return;
     }
@@ -371,7 +364,6 @@ void SDL_Zenity_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userda
 
     args = SDL_malloc(sizeof(zenityArgs));
     if (args == NULL) {
-        SDL_OutOfMemory();
         callback(userdata, NULL, -1);
         return;
     }
@@ -399,7 +391,6 @@ void SDL_Zenity_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* user
 
     args = SDL_malloc(sizeof(zenityArgs));
     if (args == NULL) {
-        SDL_OutOfMemory();
         callback(userdata, NULL, -1);
         return;
     }
