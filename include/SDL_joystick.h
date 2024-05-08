@@ -790,12 +790,17 @@ extern DECLSPEC void SDLCALL SDL_JoystickUpdate(void);
  * **WARNING**: Calling this function may delete all events currently in SDL's
  * event queue.
  *
- * \param state can be one of `SDL_QUERY`, `SDL_IGNORE`, or `SDL_ENABLE`
- * \returns 1 if enabled, 0 if disabled, or a negative error code on failure;
- *          call SDL_GetError() for more information.
+ * While `param` is meant to be one of `SDL_QUERY`, `SDL_IGNORE`, or
+ * `SDL_ENABLE`, this function accepts any value, with any non-zero value that
+ * isn't `SDL_QUERY` being treated as `SDL_ENABLE`.
  *
- *          If `state` is `SDL_QUERY` then the current state is returned,
- *          otherwise the new processing state is returned.
+ * If SDL was built with events disabled (extremely uncommon!), this will
+ * do nothing and always return `SDL_IGNORE`.
+ *
+ * \param state can be one of `SDL_QUERY`, `SDL_IGNORE`, or `SDL_ENABLE`
+ * \returns If `state` is `SDL_QUERY` then the current state is returned,
+ *          otherwise `state` is returned (even if it was not one of the
+ *          allowed values).
  *
  * \since This function is available since SDL 2.0.0.
  *

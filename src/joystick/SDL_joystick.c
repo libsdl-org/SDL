@@ -2220,7 +2220,7 @@ void SDL_JoystickUpdate(void)
 int SDL_JoystickEventState(int state)
 {
 #ifdef SDL_EVENTS_DISABLED
-    return SDL_DISABLE;
+    return SDL_IGNORE;
 #else
     const Uint32 event_list[] = {
         SDL_JOYAXISMOTION, SDL_JOYBALLMOTION, SDL_JOYHATMOTION,
