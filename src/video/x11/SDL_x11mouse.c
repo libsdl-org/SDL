@@ -75,7 +75,6 @@ static SDL_Cursor *X11_CreateDefaultCursor(void)
         /* None is used to indicate the default cursor */
         cursor->driverdata = (void *)(uintptr_t)None;
     }
-
     return cursor;
 }
 
@@ -263,9 +262,7 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
 
     if (x11_cursor != None) {
         cursor = SDL_calloc(1, sizeof(*cursor));
-        if (!cursor) {
-            SDL_OutOfMemory();
-        } else {
+        if (cursor) {
             cursor->driverdata = (void *)(uintptr_t)x11_cursor;
         }
     }

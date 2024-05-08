@@ -126,7 +126,7 @@ static int ReserveMemoryPoolBlocks(SDL_MemoryPool *pool, size_t num_blocks)
         void *block = AllocNewMemoryPoolBlock(pool);
 
         if (block == NULL) {
-            return SDL_OutOfMemory();
+            return -1;
         }
 
         *(void **)block = pool->free_blocks;

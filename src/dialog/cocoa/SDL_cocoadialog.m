@@ -87,7 +87,6 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
             char *pattern_ptr = pattern;
 
             if (!pattern_ptr) {
-                SDL_OutOfMemory();
                 callback(userdata, NULL, -1);
                 return;
             }
