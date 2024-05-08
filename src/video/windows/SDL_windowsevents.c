@@ -2114,6 +2114,7 @@ static void WIN_CleanRegisterApp(WNDCLASSEX wcex)
     SDL_Appname = NULL;
 }
 
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 static BOOL CALLBACK WIN_ResourceNameCallback(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG_PTR lParam)
 {
     WNDCLASSEX *wcex = (WNDCLASSEX *)lParam;
@@ -2127,6 +2128,7 @@ static BOOL CALLBACK WIN_ResourceNameCallback(HMODULE hModule, LPCTSTR lpType, L
     /* Do not bother enumerating any more. */
     return FALSE;
 }
+#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
 /* Register the class for this application */
 int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
