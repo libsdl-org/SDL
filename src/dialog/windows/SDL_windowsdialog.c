@@ -154,38 +154,42 @@ void windows_ShowFileDialog(void *ptr)
         }
     }
 
-    /* '\x01' is used in place of a null byte */
-    char *filterlist = convert_filters(filters, NULL, "", "", "\x01", "",
-                                       "\x01", "\x01", "*.", ";*.", "");
+    wchar_t *filter_wchar = NULL;
 
-    if (!filterlist) {
-        callback(userdata, NULL, -1);
-        SDL_free(filebuffer);
-        return;
-    }
+    if (filters) {
+        /* '\x01' is used in place of a null byte */
+        /* suffix needs two null bytes in case the filter list is empty */
+        char *filterlist = convert_filters(filters, NULL, "", "", "\x01\x01", "",
+                                           "\x01", "\x01", "*.", ";*.", "");
 
-    int filter_len = (int)SDL_strlen(filterlist);
-
-    for (char *c = filterlist; *c; c++) {
-        if (*c == '\x01') {
-            *c = '\0';
+        if (!filterlist) {
+            callback(userdata, NULL, -1);
+            SDL_free(filebuffer);
+            return;
         }
-    }
 
-    int filter_wlen = MultiByteToWideChar(CP_UTF8, 0, filterlist, filter_len, NULL, 0);
-    wchar_t *filter_wchar = SDL_malloc(filter_wlen * sizeof(wchar_t));
+        int filter_len = (int)SDL_strlen(filterlist);
 
-    if (!filter_wchar) {
-        SDL_OutOfMemory();
+        for (char *c = filterlist; *c; c++) {
+            if (*c == '\x01') {
+                *c = '\0';
+            }
+        }
+
+        int filter_wlen = MultiByteToWideChar(CP_UTF8, 0, filterlist, filter_len, NULL, 0);
+        filter_wchar = SDL_malloc(filter_wlen * sizeof(wchar_t));
+
+        if (!filter_wchar) {
+            SDL_free(filterlist);
+            callback(userdata, NULL, -1);
+            SDL_free(filebuffer);
+            return;
+        }
+
+        MultiByteToWideChar(CP_UTF8, 0, filterlist, filter_len, filter_wchar, filter_wlen);
+
         SDL_free(filterlist);
-        callback(userdata, NULL, -1);
-        SDL_free(filebuffer);
-        return;
     }
-
-    MultiByteToWideChar(CP_UTF8, 0, filterlist, filter_len, filter_wchar, filter_wlen);
-
-    SDL_free(filterlist);
 
     OPENFILENAMEW dialog;
     dialog.lStructSize = sizeof(OPENFILENAME);
@@ -237,7 +241,6 @@ void windows_ShowFileDialog(void *ptr)
             char **chosen_files_list = (char **) SDL_malloc(sizeof(char *) * (nfiles + 1));
 
             if (!chosen_files_list) {
-                SDL_OutOfMemory();
                 callback(userdata, NULL, -1);
                 SDL_free(filebuffer);
                 return;
@@ -264,8 +267,6 @@ void windows_ShowFileDialog(void *ptr)
                 char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char*) * (nfiles + 1));
 
                 if (!new_cfl) {
-                    SDL_OutOfMemory();
-
                     for (size_t i = 0; i < nfiles - 1; i++) {
                         SDL_free(chosen_files_list[i]);
                     }
@@ -299,8 +300,6 @@ void windows_ShowFileDialog(void *ptr)
                 chosen_files_list[nfiles - 1] = SDL_strdup(chosen_file);
 
                 if (!chosen_files_list[nfiles - 1]) {
-                    SDL_OutOfMemory();
-
                     for (size_t i = 0; i < nfiles - 1; i++) {
                         SDL_free(chosen_files_list[i]);
                     }
@@ -318,7 +317,6 @@ void windows_ShowFileDialog(void *ptr)
                 char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char*) * (nfiles + 1));
 
                 if (!new_cfl) {
-                    SDL_OutOfMemory();
                     SDL_free(chosen_files_list);
                     callback(userdata, NULL, -1);
                     SDL_free(filebuffer);
@@ -330,7 +328,6 @@ void windows_ShowFileDialog(void *ptr)
                 chosen_files_list[nfiles - 1] = SDL_strdup(chosen_folder);
 
                 if (!chosen_files_list[nfiles - 1]) {
-                    SDL_OutOfMemory();
                     SDL_free(chosen_files_list);
                     callback(userdata, NULL, -1);
                     SDL_free(filebuffer);
@@ -457,7 +454,6 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
 
     args = SDL_malloc(sizeof(winArgs));
     if (args == NULL) {
-        SDL_OutOfMemory();
         callback(userdata, NULL, -1);
         return;
     }
@@ -494,7 +490,6 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
 
     args = SDL_malloc(sizeof(winArgs));
     if (args == NULL) {
-        SDL_OutOfMemory();
         callback(userdata, NULL, -1);
         return;
     }
@@ -531,7 +526,6 @@ void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, S
 
     args = SDL_malloc(sizeof(winFArgs));
     if (args == NULL) {
-        SDL_OutOfMemory();
         callback(userdata, NULL, -1);
         return;
     }
