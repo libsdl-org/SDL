@@ -280,12 +280,14 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
     if (dbus == NULL) {
         SDL_SetError("Failed to connect to DBus");
+        callback(userdata, NULL, -1);
         return;
     }
 
     msg = dbus->message_new_method_call(PORTAL_DESTINATION, PORTAL_PATH, PORTAL_INTERFACE, method);
     if (msg == NULL) {
         SDL_SetError("Failed to send message to portal");
+        callback(userdata, NULL, -1);
         return;
     }
 
@@ -299,6 +301,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
             len += sizeof(WAYLAND_HANDLE_PREFIX) + 1;
             handle_str = SDL_malloc(len * sizeof(char));
             if (!handle_str) {
+                callback(userdata, NULL, -1);
                 return;
             }
 
@@ -309,6 +312,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
                 const size_t len = sizeof(X11_HANDLE_PREFIX) + 24; /* A 64-bit number can be 20 characters max. */
                 handle_str = SDL_malloc(len * sizeof(char));
                 if (!handle_str) {
+                    callback(userdata, NULL, -1);
                     return;
                 }
 
@@ -328,6 +332,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
     handle_str = SDL_malloc(sizeof(char) * (HANDLE_LEN + 1));
     if (!handle_str) {
+        callback(userdata, NULL, -1);
         return;
     }
     SDL_snprintf(handle_str, HANDLE_LEN, "%u", ++handle_id);
@@ -361,6 +366,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
     if (!signal_id) {
         SDL_SetError("Invalid response received by DBus");
+        callback(userdata, NULL, -1);
         goto incorrect_type;
     }
 
@@ -369,6 +375,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     filter_len = SDL_strlen(SIGNAL_FILTER) + SDL_strlen(signal_id) + 2;
     filter = SDL_malloc(sizeof(char) * filter_len);
     if (!filter) {
+        callback(userdata, NULL, -1);
         goto incorrect_type;
     }
 
@@ -378,6 +385,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
 
     SignalCallback *data = SDL_malloc(sizeof(SignalCallback));
     if (!data) {
+        callback(userdata, NULL, -1);
         goto incorrect_type;
     }
     data->callback = callback;
@@ -385,6 +393,7 @@ static void DBus_OpenDialog(const char *method, const char *method_title, SDL_Di
     data->path = SDL_strdup(signal_id);
     if (!data->path) {
         SDL_free(data);
+        callback(userdata, NULL, -1);
         goto incorrect_type;
     }
 

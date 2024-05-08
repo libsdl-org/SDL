@@ -38,11 +38,10 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
     combined = SDL_strdup(prefix);
 
     if (!combined) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
-    for (const SDL_DialogFileFilter *f = filters; f->name; f++) {
+    for (const SDL_DialogFileFilter *f = filters; f->name && f->pattern; f++) {
         converted = convert_filter(*f, ntf, filt_prefix, filt_separator,
                                    filt_suffix, ext_prefix, ext_separator,
                                    ext_suffix);
@@ -61,7 +60,6 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
         if (!new_combined) {
             SDL_free(converted);
             SDL_free(combined);
-            SDL_OutOfMemory();
             return NULL;
         }
 
@@ -70,6 +68,22 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
         SDL_strlcat(combined, converted, new_length);
         SDL_strlcat(combined, terminator, new_length);
         SDL_free(converted);
+    }
+
+    /* If the filter list is empty, put the suffix */
+    if (!filters->name || !filters->pattern) {
+        new_length = SDL_strlen(combined) + SDL_strlen(suffix) + 1;
+
+        new_combined = SDL_realloc(combined, new_length);
+
+        if (!new_combined) {
+            SDL_free(combined);
+            return NULL;
+        }
+
+        combined = new_combined;
+
+        SDL_strlcat(combined, suffix, new_length);
     }
 
     return combined;
@@ -113,7 +127,6 @@ char *convert_filter(const SDL_DialogFileFilter filter, NameTransform ntf,
     if (!converted) {
         SDL_free(list);
         SDL_free(name_filtered);
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -148,7 +161,6 @@ char *convert_ext_list(const char *list, const char *prefix,
     converted = (char *) SDL_malloc(total_length);
 
     if (!converted) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -199,7 +211,7 @@ char *convert_ext_list(const char *list, const char *prefix,
 const char *validate_filters(const SDL_DialogFileFilter *filters)
 {
     if (filters) {
-        for (const SDL_DialogFileFilter *f = filters; f->name; f++) {
+        for (const SDL_DialogFileFilter *f = filters; f->name && f->pattern; f++) {
              const char *msg = validate_list(f->pattern);
 
              if (msg) {
