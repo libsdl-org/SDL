@@ -1264,6 +1264,10 @@ extern DECLSPEC void SDLCALL SDL_RestoreWindow(SDL_Window * window);
  * videomode change; `SDL_WINDOW_FULLSCREEN_DESKTOP` for "fake" fullscreen
  * that takes the size of the desktop; and 0 for windowed mode.
  *
+ * Note that for some renderers, this function may trigger an
+ * SDL_RENDER_TARGETS_RESET event. Your application should be prepared to
+ * handle this event by reuploading textures!
+ *
  * \param window the window to change
  * \param flags `SDL_WINDOW_FULLSCREEN`, `SDL_WINDOW_FULLSCREEN_DESKTOP` or 0
  * \returns 0 on success or a negative error code on failure; call
