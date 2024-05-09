@@ -181,10 +181,10 @@ Next:
 int SDL_AppEvent(void *appstate, const SDL_Event *event);
 ```
 
-This will be called whenever an SDL event arrives, on the thread that runs
-SDL_AppIterate.  Your app should also not call SDL_PollEvent, SDL_PumpEvent,
-etc, as  SDL will manage all this for you. Return values are the same as from
-SDL_AppIterate(), so you can terminate in response to SDL_EVENT_QUIT, etc.
+This will be called whenever an SDL event arrives. Your app should not call
+SDL_PollEvent, SDL_PumpEvent, etc, as  SDL will manage all this for you. Return
+values are the same as from SDL_AppIterate(), so you can terminate in response
+to SDL_EVENT_QUIT, etc.
 
 
 Finally:
