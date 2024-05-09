@@ -77,6 +77,10 @@ typedef struct SDL_DialogFileFilter
  * entry) if no filter was selected, or -1 if the platform or method doesn't
  * support fetching the selected filter.
  *
+ * \param userdata An app-provided pointer, for the callback's use.
+ * \param filelist The file(s) chosen by the user.
+ * \param filter Index of the selected filter.
+ *
  * \since This datatype is available since SDL 3.0.0.
  *
  * \sa SDL_DialogFileFilter
