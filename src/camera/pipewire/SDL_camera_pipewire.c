@@ -25,7 +25,6 @@
 
 #include "../SDL_syscamera.h"
 
-#include <spa/utils/cleanup.h>
 #include <spa/utils/type.h>
 #include <spa/pod/builder.h>
 #include <spa/pod/iter.h>
@@ -489,7 +488,7 @@ static int PIPEWIRECAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraS
     }
 
     device->hidden->stream = PIPEWIRE_pw_stream_new(hotplug.core,
-		    "SDL PipeWire Camera", spa_steal_ptr(props));
+		    "SDL PipeWire Camera", props);
     if (device->hidden->stream == NULL) {
         return -1;
     }
