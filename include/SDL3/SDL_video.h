@@ -197,6 +197,8 @@ typedef enum SDL_FlashOperation
  * An opaque handle to an OpenGL context.
  *
  * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_GL_CreateContext
  */
 typedef void *SDL_GLContext;
 
