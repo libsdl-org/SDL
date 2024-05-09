@@ -1167,19 +1167,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     return joystick;
 }
 
-SDL_JoystickID SDL_AttachVirtualJoystick(SDL_JoystickType type, int naxes, int nbuttons, int nhats)
-{
-    SDL_VirtualJoystickDesc desc;
-
-    SDL_zero(desc);
-    desc.type = (Uint16)type;
-    desc.naxes = (Uint16)naxes;
-    desc.nbuttons = (Uint16)nbuttons;
-    desc.nhats = (Uint16)nhats;
-    return SDL_AttachVirtualJoystickEx(&desc);
-}
-
-SDL_JoystickID SDL_AttachVirtualJoystickEx(const SDL_VirtualJoystickDesc *desc)
+SDL_JoystickID SDL_AttachVirtualJoystick(const SDL_VirtualJoystickDesc *desc)
 {
 #ifdef SDL_JOYSTICK_VIRTUAL
     SDL_JoystickID retval;

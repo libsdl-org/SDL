@@ -391,33 +391,13 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromInstanceID(SDL_Joystick
 extern DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromPlayerIndex(int player_index);
 
 /**
- * Attach a new virtual joystick.
- *
- * \param type type of joystick
- * \param naxes number of axes
- * \param nbuttons number of buttons
- * \param nhats number of hats
- * \returns the joystick instance ID, or 0 if an error occurred; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_AttachVirtualJoystickEx
- * \sa SDL_DetachVirtualJoystick
- */
-extern DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystick(SDL_JoystickType type,
-                                                      int naxes,
-                                                      int nbuttons,
-                                                      int nhats);
-
-/**
  * The structure that defines an extended virtual joystick description
  *
  * All elements of this structure are optional and can be left 0.
  *
  * \since This struct is available since SDL 3.0.0.
  *
- * \sa SDL_AttachVirtualJoystickEx
+ * \sa SDL_AttachVirtualJoystick
  */
 typedef struct SDL_VirtualJoystickDesc
 {
@@ -444,7 +424,7 @@ typedef struct SDL_VirtualJoystickDesc
 } SDL_VirtualJoystickDesc;
 
 /**
- * Attach a new virtual joystick with extended properties.
+ * Attach a new virtual joystick.
  *
  * \param desc Joystick description
  * \returns the joystick instance ID, or 0 if an error occurred; call
@@ -452,10 +432,9 @@ typedef struct SDL_VirtualJoystickDesc
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AttachVirtualJoystick
  * \sa SDL_DetachVirtualJoystick
  */
-extern DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystickEx(const SDL_VirtualJoystickDesc *desc);
+extern DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystick(const SDL_VirtualJoystickDesc *desc);
 
 /**
  * Detach a virtual joystick.
@@ -468,7 +447,6 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystickEx(const SDL_Vir
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AttachVirtualJoystick
- * \sa SDL_AttachVirtualJoystickEx
  */
 extern DECLSPEC int SDLCALL SDL_DetachVirtualJoystick(SDL_JoystickID instance_id);
 

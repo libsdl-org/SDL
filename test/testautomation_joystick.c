@@ -14,7 +14,7 @@
 /**
  * Check virtual joystick creation
  *
- * \sa SDL_AttachVirtualJoystickEx
+ * \sa SDL_AttachVirtualJoystick
  */
 static int TestVirtualJoystick(void *arg)
 {
@@ -34,8 +34,8 @@ static int TestVirtualJoystick(void *arg)
     desc.vendor_id = USB_VENDOR_NVIDIA;
     desc.product_id = USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104;
     desc.name = "Virtual NVIDIA SHIELD Controller";
-    device_id = SDL_AttachVirtualJoystickEx(&desc);
-    SDLTest_AssertCheck(device_id > 0, "SDL_AttachVirtualJoystickEx()");
+    device_id = SDL_AttachVirtualJoystick(&desc);
+    SDLTest_AssertCheck(device_id > 0, "SDL_AttachVirtualJoystick()");
     SDLTest_AssertCheck(SDL_IsJoystickVirtual(device_id), "SDL_IsJoystickVirtual()");
     if (device_id > 0) {
         joystick = SDL_OpenJoystick(device_id);

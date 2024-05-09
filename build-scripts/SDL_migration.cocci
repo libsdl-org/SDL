@@ -1292,13 +1292,8 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 + SDL_JOYSTICK_TYPE_GAMEPAD
 @@
 @@
-- SDL_JoystickAttachVirtual
-+ SDL_AttachVirtualJoystick
-  (...)
-@@
-@@
 - SDL_JoystickAttachVirtualEx
-+ SDL_AttachVirtualJoystickEx
++ SDL_AttachVirtualJoystick
   (...)
 @@
 @@

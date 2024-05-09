@@ -1125,7 +1125,7 @@ static void OpenVirtualGamepad(void)
     desc.RumbleTriggers = VirtualGamepadRumbleTriggers;
     desc.SetLED = VirtualGamepadSetLED;
 
-    virtual_id = SDL_AttachVirtualJoystickEx(&desc);
+    virtual_id = SDL_AttachVirtualJoystick(&desc);
     if (virtual_id == 0) {
         SDL_Log("Couldn't attach virtual device: %s\n", SDL_GetError());
     } else {
