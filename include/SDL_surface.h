@@ -787,7 +787,7 @@ extern DECLSPEC int SDLCALL SDL_FillRect
  * of the clip rectangle and `rect`.
  *
  * \param dst the SDL_Surface structure that is the drawing target
- * \param rects an array of SDL_Rects representing the rectangles to fill.
+ * \param rects an array of SDL_Rect representing the rectangles to fill.
  * \param count the number of rectangles in the array
  * \param color the color to fill with
  * \returns 0 on success or a negative error code on failure; call
