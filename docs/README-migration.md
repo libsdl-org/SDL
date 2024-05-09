@@ -794,13 +794,12 @@ The SDL_EVENT_JOYSTICK_ADDED event now provides the joystick instance ID in the 
 
 The functions SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystickInstancePath(), SDL_GetJoystickInstancePlayerIndex(), SDL_GetJoystickInstanceGUID(), SDL_GetJoystickInstanceVendor(), SDL_GetJoystickInstanceProduct(), SDL_GetJoystickInstanceProductVersion(), and SDL_GetJoystickInstanceType() have been added to directly query the list of available joysticks.
 
-SDL_AttachVirtualJoystick() and SDL_AttachVirtualJoystickEx() now return the joystick instance ID instead of a device index, and return 0 if there was an error.
+SDL_AttachVirtualJoystick() now returns the joystick instance ID instead of a device index, and returns 0 if there was an error.
 
 SDL_VirtualJoystickDesc no longer takes a struct version; if we need to extend this in the future, we'll make a second struct and a second SDL_AttachVirtualJoystickEx-style function that uses it. Just zero the struct and don't set a version.
 
 The following functions have been renamed:
-* SDL_JoystickAttachVirtual() => SDL_AttachVirtualJoystick()
-* SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystickEx()
+* SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystick()
 * SDL_JoystickClose() => SDL_CloseJoystick()
 * SDL_JoystickDetachVirtual() => SDL_DetachVirtualJoystick()
 * SDL_JoystickFromInstanceID() => SDL_GetJoystickFromInstanceID()
@@ -844,6 +843,7 @@ The following symbols have been renamed:
 * SDL_JOYSTICK_TYPE_GAMECONTROLLER => SDL_JOYSTICK_TYPE_GAMEPAD
 
 The following functions have been removed:
+* SDL_JoystickAttachVirtual() - replaced with SDL_AttachVirtualJoystick()
 * SDL_JoystickCurrentPowerLevel() - replaced with SDL_GetJoystickConnectionState() and SDL_GetJoystickPowerInfo()
 * SDL_JoystickEventState() - replaced with SDL_SetJoystickEventsEnabled() and SDL_JoystickEventsEnabled()
 * SDL_JoystickGetDeviceGUID() - replaced with SDL_GetJoystickInstanceGUID()

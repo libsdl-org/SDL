@@ -295,8 +295,7 @@
 
 /* ##SDL_joystick.h */
 #define SDL_JOYSTICK_TYPE_GAMECONTROLLER SDL_JOYSTICK_TYPE_GAMEPAD
-#define SDL_JoystickAttachVirtual SDL_AttachVirtualJoystick
-#define SDL_JoystickAttachVirtualEx SDL_AttachVirtualJoystickEx
+#define SDL_JoystickAttachVirtualEx SDL_AttachVirtualJoystick
 #define SDL_JoystickClose SDL_CloseJoystick
 #define SDL_JoystickDetachVirtual SDL_DetachVirtualJoystick
 #define SDL_JoystickFromInstanceID SDL_GetJoystickFromInstanceID
@@ -803,8 +802,7 @@
 
 /* ##SDL_joystick.h */
 #define SDL_JOYSTICK_TYPE_GAMECONTROLLER SDL_JOYSTICK_TYPE_GAMECONTROLLER_renamed_SDL_JOYSTICK_TYPE_GAMEPAD
-#define SDL_JoystickAttachVirtual SDL_JoystickAttachVirtual_renamed_SDL_AttachVirtualJoystick
-#define SDL_JoystickAttachVirtualEx SDL_JoystickAttachVirtualEx_renamed_SDL_AttachVirtualJoystickEx
+#define SDL_JoystickAttachVirtualEx SDL_JoystickAttachVirtualEx_renamed_SDL_AttachVirtualJoystick
 #define SDL_JoystickClose SDL_JoystickClose_renamed_SDL_CloseJoystick
 #define SDL_JoystickDetachVirtual SDL_JoystickDetachVirtual_renamed_SDL_DetachVirtualJoystick
 #define SDL_JoystickFromInstanceID SDL_JoystickFromInstanceID_renamed_SDL_GetJoystickFromInstanceID

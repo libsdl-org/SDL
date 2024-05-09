@@ -53,7 +53,6 @@
 #define SDL_AtomicSet SDL_AtomicSet_REAL
 #define SDL_AtomicSetPtr SDL_AtomicSetPtr_REAL
 #define SDL_AttachVirtualJoystick SDL_AttachVirtualJoystick_REAL
-#define SDL_AttachVirtualJoystickEx SDL_AttachVirtualJoystickEx_REAL
 #define SDL_AudioDevicePaused SDL_AudioDevicePaused_REAL
 #define SDL_BindAudioStream SDL_BindAudioStream_REAL
 #define SDL_BindAudioStreams SDL_BindAudioStreams_REAL
@@ -228,6 +227,7 @@
 #define SDL_GetCurrentTime SDL_GetCurrentTime_REAL
 #define SDL_GetCurrentVideoDriver SDL_GetCurrentVideoDriver_REAL
 #define SDL_GetCursor SDL_GetCursor_REAL
+#define SDL_GetDateTimeLocalePreferences SDL_GetDateTimeLocalePreferences_REAL
 #define SDL_GetDayOfWeek SDL_GetDayOfWeek_REAL
 #define SDL_GetDayOfYear SDL_GetDayOfYear_REAL
 #define SDL_GetDaysInMonth SDL_GetDaysInMonth_REAL
@@ -1039,4 +1039,3 @@
 #define SDL_wcsnstr SDL_wcsnstr_REAL
 #define SDL_wcsstr SDL_wcsstr_REAL
 #define SDL_wcstol SDL_wcstol_REAL
-#define SDL_GetDateTimeLocalePreferences SDL_GetDateTimeLocalePreferences_REAL
