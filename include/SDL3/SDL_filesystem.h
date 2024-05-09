@@ -333,7 +333,7 @@ extern DECLSPEC int SDLCALL SDL_RenamePath(const char *oldpath, const char *newp
 extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info);
 
 
-#define SDL_GLOB_CASEINSENSITIVE (1 << 0)
+#define SDL_GLOB_CASEINSENSITIVE (1u << 0)
 
 /**
  * Enumerate a directory tree, filtered by pattern, and return a list.
