@@ -60,7 +60,7 @@ typedef struct SDL_DisplayMode
 } SDL_DisplayMode;
 
 /**
- * The type used to identify a window
+ * The opaque type used to identify a window.
  *
  * \sa SDL_CreateWindow
  * \sa SDL_CreateWindowFrom
