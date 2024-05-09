@@ -292,6 +292,12 @@ static uint32_t param_clear(struct spa_list *param_list, uint32_t id)
     return count;
 }
 
+#if PW_CHECK_VERSION(0,3,60)
+#define SPA_PARAMS_INFO_SEQ(p)	((p).seq)
+#else
+#define SPA_PARAMS_INFO_SEQ(p)	((p).padding[0])
+#endif
+
 static struct param *param_add(struct spa_list *params,
                 int seq, uint32_t id, const struct spa_pod *param)
 {
@@ -332,7 +338,7 @@ static void param_update(struct spa_list *param_list, struct spa_list *pending_l
     for (i = 0; i < n_params; i++) {
         spa_list_for_each_safe(p, t, pending_list, link) {
             if (p->id == params[i].id &&
-                p->seq != params[i].seq &&
+                p->seq != SPA_PARAMS_INFO_SEQ(params[i]) &&
                 p->param != NULL) {
                     spa_list_remove(&p->link);
                     free(p);
@@ -765,14 +771,14 @@ static void node_event_info(void *object, const struct pw_node_info *info)
 	    if (id != SPA_PARAM_EnumFormat)
 		    continue;
 
-            param_add(&g->pending_list, info->params[i].seq, id, NULL);
+            param_add(&g->pending_list, SPA_PARAMS_INFO_SEQ(info->params[i]), id, NULL);
             if (!(info->params[i].flags & SPA_PARAM_INFO_READ))
                 continue;
 
             res = pw_node_enum_params((struct pw_node*)g->proxy,
-                        ++info->params[i].seq, id, 0, -1, NULL);
+                        ++SPA_PARAMS_INFO_SEQ(info->params[i]), id, 0, -1, NULL);
             if (SPA_RESULT_IS_ASYNC(res))
-                info->params[i].seq = res;
+                SPA_PARAMS_INFO_SEQ(info->params[i]) = res;
 
 	    g->changed++;
         }
