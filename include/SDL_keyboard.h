@@ -254,6 +254,10 @@ extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  *
  * On some platforms using this function activates the screen keyboard.
  *
+ * On desktop platforms, SDL_StartTextInput() is implicitly called on SDL
+ * window creation which will cause events SDL_TextInputEvent and
+ * SDL_TextEditingEvent to begin emitting.
+ *
  * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_SetTextInputRect
