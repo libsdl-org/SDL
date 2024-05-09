@@ -327,11 +327,6 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void *appstate);
  * Events sent to this function are not owned by the app; if you need to save
  * the data, you should copy it.
  *
- * You do not need to free event data (such as the `file` string in
- * SDL_EVENT_DROP_FILE), as SDL will free it once this function returns. Note
- * that this is different than one might expect when using a standard "main"
- * function!
- *
  * This function should not go into an infinite mainloop; it should handle the
  * provided event appropriately and return.
  *
