@@ -41,6 +41,10 @@
 #define PW_THREAD_NAME_BUFFER_LENGTH 128
 #define PW_MAX_IDENTIFIER_LENGTH     256
 
+#define PW_REQUIRED_MAJOR       1
+#define PW_REQUIRED_MINOR       0
+#define PW_REQUIRED_PATCH       0
+
 enum PW_READY_FLAGS
 {
     PW_READY_FLAG_BUFFER_ADDED = 0x1,
@@ -55,6 +59,7 @@ static SDL_bool pipewire_initialized = SDL_FALSE;
 
 // Pipewire entry points
 static const char *(*PIPEWIRE_pw_get_library_version)(void);
+static bool (*PIPEWIRE_pw_check_library_version)(int major, int minor, int micro);
 static void (*PIPEWIRE_pw_init)(int *, char ***);
 static void (*PIPEWIRE_pw_deinit)(void);
 static struct pw_main_loop *(*PIPEWIRE_pw_main_loop_new)(struct pw_main_loop *loop);
@@ -149,6 +154,7 @@ static void unload_pipewire_library(void)
 static int load_pipewire_syms(void)
 {
     SDL_PIPEWIRE_SYM(pw_get_library_version);
+    SDL_PIPEWIRE_SYM(pw_check_library_version);
     SDL_PIPEWIRE_SYM(pw_init);
     SDL_PIPEWIRE_SYM(pw_deinit);
     SDL_PIPEWIRE_SYM(pw_main_loop_new);
@@ -190,107 +196,14 @@ static int load_pipewire_syms(void)
     return 0;
 }
 
-/* When in a container, the library version can differ from the underlying core version,
- * so make sure the underlying Pipewire implementation meets the version requirement.
- */
-struct version_data
-{
-    struct pw_main_loop *loop;
-    int major, minor, patch;
-    int seq;
-};
-
-static void version_check_core_info_callback(void *data, const struct pw_core_info *info)
-{
-    struct version_data *v = data;
-
-    if (SDL_sscanf(info->version, "%d.%d.%d", &v->major, &v->minor, &v->patch) < 3) {
-        v->major = 0;
-        v->minor = 0;
-        v->patch = 0;
-    }
-}
-
-static void version_check_core_done_callback(void *data, uint32_t id, int seq)
-{
-    struct version_data *v = data;
-
-    if (id == PW_ID_CORE && v->seq == seq) {
-        PIPEWIRE_pw_main_loop_quit(v->loop);
-    }
-}
-
-static const struct pw_core_events version_check_core_events =
-{
-    .version = PW_VERSION_CORE_EVENTS,
-    .info = version_check_core_info_callback,
-    .done = version_check_core_done_callback
-};
-
-static SDL_bool pipewire_core_version_at_least(int major, int minor, int patch)
-{
-    struct pw_main_loop *loop = NULL;
-    struct pw_context *context = NULL;
-    struct pw_core *core = NULL;
-    struct version_data version_data;
-    struct spa_hook core_listener;
-    SDL_bool ret = SDL_FALSE;
-
-    loop = PIPEWIRE_pw_main_loop_new(NULL);
-    if (!loop) {
-        goto done;
-    }
-
-    context = PIPEWIRE_pw_context_new(PIPEWIRE_pw_main_loop_get_loop(loop), NULL, 0);
-    if (!context) {
-        goto done;
-    }
-
-    core = PIPEWIRE_pw_context_connect(context, NULL, 0);
-    if (!core) {
-        goto done;
-    }
-
-    /* Attach a core listener and get the version. */
-    spa_zero(version_data);
-    version_data.loop = loop;
-    pw_core_add_listener(core, &core_listener, &version_check_core_events, &version_data);
-    version_data.seq = pw_core_sync(core, PW_ID_CORE, 0);
-
-    PIPEWIRE_pw_main_loop_run(loop);
-
-    spa_hook_remove(&core_listener);
-
-    ret = (version_data.major >= major) &&
-           (version_data.major > major || version_data.minor >= minor) &&
-           (version_data.major > major || version_data.minor > minor || version_data.patch >= patch);
-
-done:
-    if (core) {
-        PIPEWIRE_pw_core_disconnect(core);
-    }
-    if (context) {
-        PIPEWIRE_pw_context_destroy(context);
-    }
-    if (loop) {
-        PIPEWIRE_pw_main_loop_destroy(loop);
-    }
-
-    return ret;
-}
-
-static int init_pipewire_library(SDL_bool check_preferred_version)
+static int init_pipewire_library(void)
 {
     if (!load_pipewire_library()) {
         if (!load_pipewire_syms()) {
             PIPEWIRE_pw_init(NULL, NULL);
-
-            if (!check_preferred_version || pipewire_core_version_at_least(1, 0, 0)) {
-                return 0;
-            }
+            return 0;
         }
     }
-
     return -1;
 }
 
@@ -309,6 +222,9 @@ static struct
 
     struct pw_core *core;
     struct spa_hook core_listener;
+    int server_major;
+    int server_minor;
+    int server_patch;
     int last_seq;
     int pending_seq;
 
@@ -317,6 +233,7 @@ static struct
 
     struct spa_list global_list;
 
+    SDL_bool have_1_0_5;
     SDL_bool init_complete;
     SDL_bool events_enabled;
 } hotplug;
@@ -648,7 +565,11 @@ static int PIPEWIRECAMERA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *fr
         return 0;
     }
 
-    *timestampNS = b->time;
+#if PW_CHECK_VERSION(1,0,5)
+    *timestampNS = hotplug.have_1_0_5 ? b->time : SDL_GetTicksNS();
+#else
+    *timestampNS = SDL_GetTicksNS();
+#endif
     frame->pixels = b->buffer->datas[0].data;
     frame->pitch = b->buffer->datas[0].chunk->stride;
 
@@ -776,8 +697,6 @@ static void add_device(struct global *g)
     CameraFormatAddData data;
 
     SDL_zero(data);
-
-    SDL_Log("CAMERA: found %d", g->id);
 
     spa_list_for_each(p, &g->param_list, link) {
         if (p->id != SPA_PARAM_EnumFormat)
@@ -989,6 +908,21 @@ static const struct pw_registry_events hotplug_registry_events =
     .global_remove = hotplug_registry_global_remove_callback
 };
 
+static void parse_version(const char *str, int *major, int *minor, int *patch)
+{
+    if (SDL_sscanf(str, "%d.%d.%d", major, minor, patch) < 3) {
+        *major = 0;
+        *minor = 0;
+        *patch = 0;
+    }
+}
+
+// Core info, called with thread_loop lock
+static void hotplug_core_info_callback(void *data, const struct pw_core_info *info)
+{
+    parse_version(info->version, &hotplug.server_major, &hotplug.server_minor, &hotplug.server_patch);
+}
+
 // Core sync points, called with thread_loop lock
 static void hotplug_core_done_callback(void *object, uint32_t id, int seq)
 {
@@ -1015,8 +949,19 @@ static void hotplug_core_done_callback(void *object, uint32_t id, int seq)
 static const struct pw_core_events hotplug_core_events =
 {
     .version = PW_VERSION_CORE_EVENTS,
+    .info = hotplug_core_info_callback,
     .done = hotplug_core_done_callback
 };
+
+/* When in a container, the library version can differ from the underlying core version,
+ * so make sure the underlying Pipewire implementation meets the version requirement.
+ */
+static SDL_bool pipewire_server_version_at_least(int major, int minor, int patch)
+{
+    return (hotplug.server_major >= major) &&
+           (hotplug.server_major > major || hotplug.server_minor >= minor) &&
+           (hotplug.server_major > major || hotplug.server_minor > minor || hotplug.server_patch >= patch);
+}
 
 // The hotplug thread
 static int hotplug_loop_init(void)
@@ -1024,6 +969,8 @@ static int hotplug_loop_init(void)
     int res;
 
     spa_list_init(&hotplug.global_list);
+
+    hotplug.have_1_0_5 = PIPEWIRE_pw_check_library_version(1,0,5);
 
     hotplug.loop = PIPEWIRE_pw_thread_loop_new("SDLAudioHotplug", NULL);
     if (!hotplug.loop) {
@@ -1050,11 +997,29 @@ static int hotplug_loop_init(void)
     spa_zero(hotplug.registry_listener);
     pw_registry_add_listener(hotplug.registry, &hotplug.registry_listener, &hotplug_registry_events, NULL);
 
-    hotplug.pending_seq = pw_core_sync(hotplug.core, PW_ID_CORE, 0);
+    do_resync();
 
     res = PIPEWIRE_pw_thread_loop_start(hotplug.loop);
     if (res != 0) {
         return SDL_SetError("Pipewire: Failed to start hotplug detection loop");
+    }
+
+    PIPEWIRE_pw_thread_loop_lock(hotplug.loop);
+    while (!hotplug.init_complete) {
+        PIPEWIRE_pw_thread_loop_wait(hotplug.loop);
+    }
+    PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
+
+    SDL_Log("CAMERA: PipeWire compiled:%s library:%s server:%d.%d.%d required:%d.%d.%d",
+		    pw_get_headers_version(),
+		    PIPEWIRE_pw_get_library_version(),
+		    hotplug.server_major, hotplug.server_minor, hotplug.server_patch,
+                    PW_REQUIRED_MAJOR, PW_REQUIRED_MINOR, PW_REQUIRED_PATCH);
+
+    if (!pipewire_server_version_at_least(PW_REQUIRED_MAJOR, PW_REQUIRED_MINOR, PW_REQUIRED_PATCH)) {
+        return SDL_SetError("Pipewire: server version is too old %d.%d.%d < %d.%d.%d",
+			hotplug.server_major, hotplug.server_minor, hotplug.server_patch,
+                    PW_REQUIRED_MAJOR, PW_REQUIRED_MINOR, PW_REQUIRED_PATCH);
     }
 
     return 0;
@@ -1092,7 +1057,7 @@ static SDL_bool PIPEWIRECAMERA_Init(SDL_CameraDriverImpl *impl)
 {
     if (!pipewire_initialized) {
 
-        if (init_pipewire_library(true) < 0) {
+        if (init_pipewire_library() < 0) {
             return SDL_FALSE;
         }
 
