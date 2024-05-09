@@ -877,7 +877,7 @@ The following functions have been removed:
 
 ## SDL_keycode.h
 
-The SDL_KeyCode enum values have been changed to defines to more clearly reflect that they are a subset of the possible values of an SDL_Keycode.
+SDL_Keycode is now Uint32 and the SDLK_* constants are now defines instead of an enum, to more clearly reflect that they are a subset of the possible values of an SDL_Keycode.
 
 The following symbols have been removed:
 
