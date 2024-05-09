@@ -271,12 +271,12 @@ typedef struct SDL_TextEditingExtEvent
  * Keyboard text input event structure (event.text.*)
  *
  * `text` is limited to SDL_TEXTINPUTEVENT_TEXT_SIZE bytes. If the incoming
- * string is larger than this, SDL will split it and send it in pieces,
- * across multiple events. The string is in UTF-8 format, and if split, SDL
- * guarantees that it will not split in the middle of a UTF-8 sequence, so
- * any event will only contain complete codepoints. However, if there are
- * several codepoints that go together into a single glyph (like an emoji
- * "thumbs up" followed by a skin color), they may be split between events.
+ * string is larger than this, SDL will split it and send it in pieces, across
+ * multiple events. The string is in UTF-8 format, and if split, SDL
+ * guarantees that it will not split in the middle of a UTF-8 sequence, so any
+ * event will only contain complete codepoints. However, if there are several
+ * codepoints that go together into a single glyph (like an emoji "thumbs up"
+ * followed by a skin color), they may be split between events.
  */
 typedef struct SDL_TextInputEvent
 {

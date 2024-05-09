@@ -798,8 +798,8 @@ extern DECLSPEC void SDLCALL SDL_JoystickUpdate(void);
  * `SDL_ENABLE`, this function accepts any value, with any non-zero value that
  * isn't `SDL_QUERY` being treated as `SDL_ENABLE`.
  *
- * If SDL was built with events disabled (extremely uncommon!), this will
- * do nothing and always return `SDL_IGNORE`.
+ * If SDL was built with events disabled (extremely uncommon!), this will do
+ * nothing and always return `SDL_IGNORE`.
  *
  * \param state can be one of `SDL_QUERY`, `SDL_IGNORE`, or `SDL_ENABLE`
  * \returns If `state` is `SDL_QUERY` then the current state is returned,

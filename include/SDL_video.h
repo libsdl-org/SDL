@@ -770,7 +770,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  * \param w the width of the window, in screen coordinates
  * \param h the height of the window, in screen coordinates
  * \param flags 0, or one or more SDL_WindowFlags OR'd together
- * \returns the window that was created or NULL on failure; call
+ * \returns the `SDL_Window` that was created or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 2.0.0.

@@ -149,18 +149,11 @@ typedef Uint16 SDL_AudioFormat;
 /* @} *//* Audio flags */
 
 /**
- *  This function is called when the audio device needs more data.
+ * This function is called when the audio device needs more data.
  *
- *  \param userdata An application-specific parameter saved in
- *                  the SDL_AudioSpec structure
- *  \param stream A pointer to the audio data buffer.
- *  \param len    The length of that buffer in bytes.
- *
- *  Once the callback returns, the buffer will no longer be valid.
- *  Stereo samples are stored in a LRLRLR ordering.
- *
- *  You can choose to avoid callbacks and use SDL_QueueAudio() instead, if
- *  you like. Just open your audio device with a NULL callback.
+ * \param userdata An application-specific parameter saved in the
+ *                 SDL_AudioSpec structure
+ * \param stream A pointer to the audio data buffer.
  */
 typedef void (SDLCALL * SDL_AudioCallback) (void *userdata, Uint8 * stream,
                                             int len);
