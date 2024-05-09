@@ -214,6 +214,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
  *
  * \sa SDL_CreateRGBSurface
  * \sa SDL_CreateRGBSurfaceWithFormat
+ * \sa SDL_CreateRGBSurfaceWithFormatFrom
  * \sa SDL_FreeSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
