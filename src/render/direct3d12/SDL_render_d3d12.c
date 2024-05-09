@@ -3219,9 +3219,21 @@ int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propert
     renderer->RenderPresent = D3D12_RenderPresent;
     renderer->DestroyTexture = D3D12_DestroyTexture;
     renderer->DestroyRenderer = D3D12_DestroyRenderer;
-    renderer->info = D3D12_RenderDriver.info;
     renderer->driverdata = data;
     D3D12_InvalidateCachedState(renderer);
+
+    renderer->info.name = D3D12_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
+    renderer->info.max_texture_width = 16384;
+    renderer->info.max_texture_height = 16384;
 
     if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
@@ -3247,24 +3259,7 @@ int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propert
 }
 
 SDL_RenderDriver D3D12_RenderDriver = {
-    D3D12_CreateRenderer,
-    {
-        "direct3d12",
-        SDL_RENDERER_PRESENTVSYNC,   /* flags.  see SDL_RendererFlags */
-        9,                           /* num_texture_formats */
-        {                            /* texture_formats */
-          SDL_PIXELFORMAT_ARGB8888,
-          SDL_PIXELFORMAT_XRGB8888,
-          SDL_PIXELFORMAT_XBGR2101010,
-          SDL_PIXELFORMAT_RGBA64_FLOAT,
-          SDL_PIXELFORMAT_YV12,
-          SDL_PIXELFORMAT_IYUV,
-          SDL_PIXELFORMAT_NV12,
-          SDL_PIXELFORMAT_NV21,
-          SDL_PIXELFORMAT_P010 },
-        16384, /* max_texture_width */
-        16384  /* max_texture_height */
-    }
+    D3D12_CreateRenderer, "direct3d12"
 };
 
 /* Ends C function definitions when using C++ */

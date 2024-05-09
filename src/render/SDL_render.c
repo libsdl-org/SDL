@@ -137,6 +137,17 @@ char SDL_renderer_magic;
 char SDL_texture_magic;
 
 
+int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormatEnum format)
+{
+    SDL_PixelFormatEnum *texture_formats = (SDL_PixelFormatEnum *)SDL_realloc((void *)renderer->info.texture_formats, (renderer->info.num_texture_formats + 1) * sizeof(SDL_PixelFormatEnum));
+    if (!texture_formats) {
+        return -1;
+    }
+    texture_formats[renderer->info.num_texture_formats++] = format;
+    renderer->info.texture_formats = texture_formats;
+    return 0;
+}
+
 void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props)
 {
     renderer->output_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
@@ -780,7 +791,7 @@ const char *SDL_GetRenderDriver(int index)
                             SDL_GetNumRenderDrivers() - 1);
         return NULL;
     }
-    return render_drivers[index]->info.name;
+    return render_drivers[index]->name;
 #else
     SDL_SetError("SDL not built with rendering support");
     return NULL;
@@ -979,7 +990,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         if (name) {
             for (i = 0; i < n; i++) {
                 const SDL_RenderDriver *driver = render_drivers[i];
-                if (SDL_strcasecmp(name, driver->info.name) == 0) {
+                if (SDL_strcasecmp(name, driver->name) == 0) {
                     // Create a new renderer instance
                     ++attempted;
                     rc = driver->CreateRenderer(renderer, window, props);
@@ -1104,6 +1115,7 @@ error:
 #ifdef SDL_PLATFORM_ANDROID
     Android_ActivityMutex_Unlock();
 #endif
+    SDL_free((void *)renderer->info.texture_formats);
     SDL_free(renderer);
     return NULL;
 
@@ -4588,6 +4600,7 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
         renderer->magic = NULL;     // It's no longer magical...
     }
 
+    SDL_free((void *)renderer->info.texture_formats);
     SDL_free(renderer);
 }
 

@@ -4083,9 +4083,16 @@ static int VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->RenderPresent = VULKAN_RenderPresent;
     renderer->DestroyTexture = VULKAN_DestroyTexture;
     renderer->DestroyRenderer = VULKAN_DestroyRenderer;
-    renderer->info = VULKAN_RenderDriver.info;
     renderer->driverdata = rendererData;
     VULKAN_InvalidateCachedState(renderer);
+
+    renderer->info.name = VULKAN_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
+    renderer->info.max_texture_width = 16384;
+    renderer->info.max_texture_height = 16384;
 
     if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
@@ -4108,11 +4115,11 @@ static int VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
 
 #if SDL_HAVE_YUV
     if (rendererData->supportsKHRSamplerYCbCrConversion) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_P010;
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
     }
 #endif
 
@@ -4120,19 +4127,7 @@ static int VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
 }
 
 SDL_RenderDriver VULKAN_RenderDriver = {
-    VULKAN_CreateRenderer,
-    {
-        "vulkan",
-        SDL_RENDERER_PRESENTVSYNC,   /* flags.  see SDL_RendererFlags */
-        4,                           /* num_texture_formats */
-        {                            /* texture_formats */
-          SDL_PIXELFORMAT_ARGB8888,
-          SDL_PIXELFORMAT_XRGB8888,
-          SDL_PIXELFORMAT_XBGR2101010,
-          SDL_PIXELFORMAT_RGBA64_FLOAT },
-        16384, /* max_texture_width */
-        16384  /* max_texture_height */
-    }
+    VULKAN_CreateRenderer, "vulkan"
 };
 
 #endif /* SDL_VIDEO_RENDER_VULKAN */

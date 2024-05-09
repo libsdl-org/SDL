@@ -2087,10 +2087,15 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     if (!data) {
         goto error;
     }
-    renderer->info = GLES2_RenderDriver.info;
     renderer->driverdata = data;
     GLES2_InvalidateCachedState(renderer);
     renderer->window = window;
+
+    renderer->info.name = GLES2_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
 
     /* Create an OpenGL ES 2.0 context */
     data->context = SDL_GL_CreateContext(window);
@@ -2183,14 +2188,14 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     renderer->DestroyRenderer = GLES2_DestroyRenderer;
     renderer->SetVSync = GLES2_SetVSync;
 #if SDL_HAVE_YUV
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
 #endif
 #ifdef GL_TEXTURE_EXTERNAL_OES
     if (GLES2_CacheShader(data, GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES, GL_FRAGMENT_SHADER)) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_EXTERNAL_OES);
     }
 #endif
 
@@ -2243,16 +2248,7 @@ error:
 }
 
 SDL_RenderDriver GLES2_RenderDriver = {
-    GLES2_CreateRenderer,
-    { "opengles2",
-      SDL_RENDERER_PRESENTVSYNC,
-      4,
-      { SDL_PIXELFORMAT_RGBA32,
-        SDL_PIXELFORMAT_BGRA32,
-        SDL_PIXELFORMAT_BGRX32,
-        SDL_PIXELFORMAT_RGBX32 },
-      0,
-      0 }
+    GLES2_CreateRenderer, "opengles2"
 };
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES2 */

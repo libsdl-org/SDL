@@ -100,24 +100,7 @@ static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture
 static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer);
 
 SDL_RenderDriver VITA_GXM_RenderDriver = {
-    .CreateRenderer = VITA_GXM_CreateRenderer,
-    .info = {
-        .name = "VITA gxm",
-        .flags = SDL_RENDERER_PRESENTVSYNC,
-        .num_texture_formats = 8,
-        .texture_formats = {
-            [0] = SDL_PIXELFORMAT_ABGR8888,
-            [1] = SDL_PIXELFORMAT_ARGB8888,
-            [2] = SDL_PIXELFORMAT_RGB565,
-            [3] = SDL_PIXELFORMAT_BGR565,
-            [4] = SDL_PIXELFORMAT_YV12,
-            [5] = SDL_PIXELFORMAT_IYUV,
-            [6] = SDL_PIXELFORMAT_NV12,
-            [7] = SDL_PIXELFORMAT_NV21,
-        },
-        .max_texture_width = 4096,
-        .max_texture_height = 4096,
-    }
+    VITA_GXM_CreateRenderer, "VITA gxm"
 };
 
 static int PixelFormatToVITAFMT(Uint32 format)
@@ -250,10 +233,21 @@ static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, S
     renderer->DestroyRenderer = VITA_GXM_DestroyRenderer;
     renderer->SetVSync = VITA_GXM_SetVSync;
 
-    renderer->info = VITA_GXM_RenderDriver.info;
     renderer->driverdata = data;
     VITA_GXM_InvalidateCachedState(renderer);
     renderer->window = window;
+
+    renderer->info.name = VITA_GXM_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGR565);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+    renderer->info.max_texture_width = 4096;
+    renderer->info.max_texture_height = 4096;
 
     data->initialized = SDL_TRUE;
 

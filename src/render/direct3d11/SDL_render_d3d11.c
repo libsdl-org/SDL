@@ -2801,9 +2801,19 @@ static int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     renderer->RenderPresent = D3D11_RenderPresent;
     renderer->DestroyTexture = D3D11_DestroyTexture;
     renderer->DestroyRenderer = D3D11_DestroyRenderer;
-    renderer->info = D3D11_RenderDriver.info;
     renderer->driverdata = data;
     D3D11_InvalidateCachedState(renderer);
+
+    renderer->info.name = D3D11_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
 #if SDL_WINAPI_FAMILY_PHONE
     /* VSync is required in Windows Phone, at least for Win Phone 8.0 and 8.1.
@@ -2844,24 +2854,7 @@ static int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
 }
 
 SDL_RenderDriver D3D11_RenderDriver = {
-    D3D11_CreateRenderer,
-    {
-        "direct3d11",
-        SDL_RENDERER_PRESENTVSYNC,   /* flags.  see SDL_RendererFlags */
-        9,                           /* num_texture_formats */
-        {                            /* texture_formats */
-          SDL_PIXELFORMAT_ARGB8888,
-          SDL_PIXELFORMAT_XRGB8888,
-          SDL_PIXELFORMAT_XBGR2101010,
-          SDL_PIXELFORMAT_RGBA64_FLOAT,
-          SDL_PIXELFORMAT_YV12,
-          SDL_PIXELFORMAT_IYUV,
-          SDL_PIXELFORMAT_NV12,
-          SDL_PIXELFORMAT_NV21,
-          SDL_PIXELFORMAT_P010 },
-        0, /* max_texture_width: will be filled in later */
-        0  /* max_texture_height: will be filled in later */
-    }
+    D3D11_CreateRenderer, "direct3d11"
 };
 
 #endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */

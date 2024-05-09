@@ -1678,11 +1678,17 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
     renderer->DestroyTexture = GL_DestroyTexture;
     renderer->DestroyRenderer = GL_DestroyRenderer;
     renderer->SetVSync = GL_SetVSync;
-    renderer->info = GL_RenderDriver.info;
     renderer->info.flags = 0; /* will set some flags below. */
     renderer->driverdata = data;
     GL_InvalidateCachedState(renderer);
     renderer->window = window;
+
+    renderer->info.name = GL_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR8888);
 
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
@@ -1793,18 +1799,18 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
 #if SDL_HAVE_YUV
     /* We support YV12 textures using 3 textures and a shader */
     if (data->shaders && data->num_texture_units >= 3) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
     }
 
     /* We support NV12 textures using 2 textures and a shader */
     if (data->shaders && data->num_texture_units >= 2) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
     }
 #endif
 #ifdef SDL_PLATFORM_MACOS
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_UYVY);
 #endif
 
     renderer->rect_index_order[0] = 0;
@@ -1871,16 +1877,7 @@ error:
 }
 
 SDL_RenderDriver GL_RenderDriver = {
-    GL_CreateRenderer,
-    { "opengl",
-      SDL_RENDERER_PRESENTVSYNC,
-      4,
-      { SDL_PIXELFORMAT_ARGB8888,
-        SDL_PIXELFORMAT_ABGR8888,
-        SDL_PIXELFORMAT_XRGB8888,
-        SDL_PIXELFORMAT_XBGR8888 },
-      0,
-      0 }
+    GL_CreateRenderer, "opengl"
 };
 
 #endif /* SDL_VIDEO_RENDER_OGL */
