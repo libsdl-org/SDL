@@ -356,7 +356,7 @@ static void param_update(struct spa_list *param_list, struct spa_list *pending_l
     }
 }
 
-static struct {
+static struct sdl_video_format {
 	Uint32 format;
 	uint32_t id;
 } sdl_video_formats[] = {
@@ -390,7 +390,8 @@ static struct {
 
 static inline uint32_t sdl_format_to_id(Uint32 format)
 {
-	SPA_FOR_EACH_ELEMENT_VAR(sdl_video_formats, f) {
+	struct sdl_video_format *f;
+	SPA_FOR_EACH_ELEMENT(sdl_video_formats, f) {
 		if (f->format == format)
 			return f->id;
 	}
@@ -399,7 +400,8 @@ static inline uint32_t sdl_format_to_id(Uint32 format)
 
 static inline Uint32 id_to_sdl_format(uint32_t id)
 {
-	SPA_FOR_EACH_ELEMENT_VAR(sdl_video_formats, f) {
+	struct sdl_video_format *f;
+	SPA_FOR_EACH_ELEMENT(sdl_video_formats, f) {
 		if (f->id == id)
 			return f->format;
 	}
