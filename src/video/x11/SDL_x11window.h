@@ -104,7 +104,7 @@ struct SDL_WindowData
     SDL_HitTestResult hit_test_result;
 };
 
-extern void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, Uint32 flags);
+extern void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags flags);
 extern Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow);
 
 extern int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);

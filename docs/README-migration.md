@@ -1759,7 +1759,7 @@ SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be us
 The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported on Windows, Mac (Cocoa), X11, and Wayland. Creating windows with these flags must happen via the `SDL_CreatePopupWindow()` function. This function requires passing in the handle to a valid parent window for the popup, and the popup window is positioned relative to the parent.
 
 
-SDL_WindowFlags is used instead of Uint32 for API functions that refer to window flags.
+SDL_WindowFlags is used instead of Uint32 for API functions that refer to window flags, and has been extended to 64 bits.
 
 The following functions have been renamed:
 * SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode()

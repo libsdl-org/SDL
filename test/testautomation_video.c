@@ -25,7 +25,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
 
     window = SDL_CreateWindow(title, w, h, flags);
-    SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu32 ")", w, h, flags);
+    SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu64 ")", w, h, flags);
     SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
     /* Wayland and XWayland windows require that a frame be presented before they are fully mapped and visible onscreen.
@@ -256,7 +256,7 @@ static int video_createWindowVariousFlags(void *arg)
         }
 
         window = SDL_CreateWindow(title, w, h, flags);
-        SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu32 ")", w, h, flags);
+        SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu64 ")", w, h, flags);
         SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
         /* Clean up */
@@ -274,7 +274,7 @@ static int video_getWindowFlags(void *arg)
     SDL_Window *window;
     const char *title = "video_getWindowFlags Test Window";
     SDL_WindowFlags flags;
-    Uint32 actualFlags;
+    SDL_WindowFlags actualFlags;
 
     /* Reliable flag set always set in test window */
     flags = 0;
@@ -284,7 +284,7 @@ static int video_getWindowFlags(void *arg)
     if (window != NULL) {
         actualFlags = SDL_GetWindowFlags(window);
         SDLTest_AssertPass("Call to SDL_GetWindowFlags()");
-        SDLTest_AssertCheck((flags & actualFlags) == flags, "Verify returned value has flags %" SDL_PRIu32 " set, got: %" SDL_PRIu32, flags, actualFlags);
+        SDLTest_AssertCheck((flags & actualFlags) == flags, "Verify returned value has flags %" SDL_PRIu64 " set, got: %" SDL_PRIu64, flags, actualFlags);
     }
 
     /* Clean up */
