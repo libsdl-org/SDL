@@ -107,10 +107,10 @@ typedef Uint16 SDL_AudioFormat;
 
 
 /* masks for different parts of SDL_AudioFormat. */
-#define SDL_AUDIO_MASK_BITSIZE       (0xFF)
-#define SDL_AUDIO_MASK_FLOAT         (1<<8)
-#define SDL_AUDIO_MASK_BIG_ENDIAN    (1<<12)
-#define SDL_AUDIO_MASK_SIGNED        (1<<15)
+#define SDL_AUDIO_MASK_BITSIZE       (0xFFu)
+#define SDL_AUDIO_MASK_FLOAT         (1u<<8)
+#define SDL_AUDIO_MASK_BIG_ENDIAN    (1u<<12)
+#define SDL_AUDIO_MASK_SIGNED        (1u<<15)
 
 
 /**
