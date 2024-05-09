@@ -42,6 +42,18 @@ extern "C" {
  * hyphens, underscores and periods. Alternatively, the whole string can be a
  * single asterisk ("*"), which serves as an "All files" filter.
  *
+ * This structure is used as a NULL-terminated array:
+ *
+ * ```c
+ * const SDL_DialogFileFilter filters[] = {
+ *     { "PNG images",  "png" },
+ *     { "JPEG images", "jgp;jpeg" },
+ *     { "All images",  "png;jpg;jpeg" },
+ *     { "All files",   "*" },
+ *     { NULL, NULL }
+ * };
+ * ```
+ *
  * \since This struct is available since SDL 3.0.0.
  *
  * \sa SDL_DialogFileCallback
@@ -73,6 +85,40 @@ typedef struct SDL_DialogFileFilter
  * more than the size of the list (therefore the index of the terminating NULL
  * entry) if no filter was selected, or -1 if the platform or method doesn't
  * support fetching the selected filter.
+ *
+ * A callback would be defined like this:
+ *
+ * ```c
+ * static void SDLCALL callback(void* userdata, const char* const* files, int filter) {
+ *     if (!files) {
+ *         SDL_Log("An error occured: %s\n", SDL_GetError());
+ *         return;
+ *     }
+ *
+ *     if (!*files) {
+ *         SDL_Log("The user did not select any file.\n");
+ *         SDL_Log("Most likely, the dialog was canceled.\n");
+ *         return;
+ *     }
+ *
+ *     while (*files) {
+ *         SDL_Log("Full path to selected file: '%s'\n", *files);
+ *         files++;
+ *     }
+ *
+ *     if (filter == -1) {
+ *         SDL_Log("The current platform does not support fetching"
+ *                 "the selected filter.\n");
+ *     } else {
+ *         if (filter < sizeof(filters) / sizeof(*filters)) {
+ *             SDL_Log("The filter selected by the user is '%s'.\n",
+ *                      filters[filter]);
+ *         } else {
+ *             SDL_Log("The user did not select any filter.\n");
+ *         }
+ *     }
+ * }
+ * ```
  *
  * \since This datatype is available since SDL 3.0.0.
  *
