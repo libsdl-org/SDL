@@ -1324,10 +1324,17 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     renderer->DestroyTexture = PSP_DestroyTexture;
     renderer->DestroyRenderer = PSP_DestroyRenderer;
     renderer->SetVSync = PSP_SetVSync;
-    renderer->info = PSP_RenderDriver.info;
     renderer->driverdata = data;
     PSP_InvalidateCachedState(renderer);
     renderer->window = window;
+
+    renderer->info.name = PSP_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGR565);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR4444);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+    renderer->info.max_texture_width = 512;
+    renderer->info.max_texture_height = 512;
 
     data->initialized = SDL_TRUE;
     data->most_recent_target = NULL;
@@ -1399,20 +1406,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
 }
 
 SDL_RenderDriver PSP_RenderDriver = {
-    .CreateRenderer = PSP_CreateRenderer,
-    .info = {
-        .name = "PSP",
-        .flags = SDL_RENDERER_PRESENTVSYNC,
-        .num_texture_formats = 4,
-        .texture_formats = {
-            [0] = SDL_PIXELFORMAT_BGR565,
-            [1] = SDL_PIXELFORMAT_ABGR1555,
-            [2] = SDL_PIXELFORMAT_ABGR4444,
-            [3] = SDL_PIXELFORMAT_ABGR8888,
-        },
-        .max_texture_width = 512,
-        .max_texture_height = 512,
-    }
+    PSP_CreateRenderer, "PSP"
 };
 
 #endif /* SDL_VIDEO_RENDER_PSP */

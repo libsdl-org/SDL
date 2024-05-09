@@ -1617,9 +1617,11 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
     renderer->DestroyTexture = D3D_DestroyTexture;
     renderer->DestroyRenderer = D3D_DestroyRenderer;
     renderer->SetVSync = D3D_SetVSync;
-    renderer->info = D3D_RenderDriver.info;
     renderer->driverdata = data;
     D3D_InvalidateCachedState(renderer);
+
+    renderer->info.name = D3D_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
@@ -1717,8 +1719,8 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
             }
         }
         if (data->shaders[SHADER_YUV]) {
-            renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-            renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
+            SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+            SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
         }
     }
 #endif
@@ -1729,12 +1731,6 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
 }
 
 SDL_RenderDriver D3D_RenderDriver = {
-    D3D_CreateRenderer,
-    { "direct3d",
-      SDL_RENDERER_PRESENTVSYNC,
-      1,
-      { SDL_PIXELFORMAT_ARGB8888 },
-      0,
-      0 }
+    D3D_CreateRenderer, "direct3d"
 };
 #endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */

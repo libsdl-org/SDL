@@ -2139,7 +2139,17 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         renderer->GetMetalLayer = METAL_GetMetalLayer;
         renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
 
-        renderer->info = METAL_RenderDriver.info;
+        renderer->info.name = METAL_RenderDriver.name;
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA128_FLOAT);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
 #if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
         if (@available(macOS 10.13, *)) {
@@ -2195,24 +2205,7 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
 }
 
 SDL_RenderDriver METAL_RenderDriver = {
-    METAL_CreateRenderer,
-    {
-        "metal",
-        SDL_RENDERER_PRESENTVSYNC,
-        10,
-        { SDL_PIXELFORMAT_ARGB8888,
-          SDL_PIXELFORMAT_ABGR8888,
-          SDL_PIXELFORMAT_XBGR2101010,
-          SDL_PIXELFORMAT_RGBA64_FLOAT,
-          SDL_PIXELFORMAT_RGBA128_FLOAT,
-          SDL_PIXELFORMAT_YV12,
-          SDL_PIXELFORMAT_IYUV,
-          SDL_PIXELFORMAT_NV12,
-          SDL_PIXELFORMAT_NV21,
-          SDL_PIXELFORMAT_P010 },
-        0,
-        0,
-    }
+    METAL_CreateRenderer, "metal"
 };
 
 #endif /* SDL_VIDEO_RENDER_METAL */

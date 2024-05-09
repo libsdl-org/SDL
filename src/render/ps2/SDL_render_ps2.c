@@ -692,10 +692,15 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     renderer->DestroyTexture = PS2_DestroyTexture;
     renderer->DestroyRenderer = PS2_DestroyRenderer;
     renderer->SetVSync = PS2_SetVSync;
-    renderer->info = PS2_RenderDriver.info;
     renderer->driverdata = data;
     PS2_InvalidateCachedState(renderer);
     renderer->window = window;
+
+    renderer->info.name = PS2_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+    renderer->info.max_texture_width = 1024;
+    renderer->info.max_texture_height = 1024;
 
     if (data->vsync) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
@@ -704,18 +709,7 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
 }
 
 SDL_RenderDriver PS2_RenderDriver = {
-    .CreateRenderer = PS2_CreateRenderer,
-    .info = {
-        .name = "PS2 gsKit",
-        .flags = SDL_RENDERER_PRESENTVSYNC,
-        .num_texture_formats = 2,
-        .texture_formats = {
-            [0] = SDL_PIXELFORMAT_ABGR1555,
-            [1] = SDL_PIXELFORMAT_ABGR8888,
-        },
-        .max_texture_width = 1024,
-        .max_texture_height = 1024,
-    }
+    PS2_CreateRenderer, "PS2 gsKit"
 };
 
 #endif /* SDL_VIDEO_RENDER_PS2 */

@@ -299,8 +299,7 @@ struct SDL_RenderDriver
 {
     int (*CreateRenderer)(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID props);
 
-    /* Info about the renderer capabilities */
-    SDL_RendererInfo info;
+    const char *name;
 };
 
 /* Not all of these are available in a given build. Use #ifdefs, etc. */
@@ -315,6 +314,9 @@ extern SDL_RenderDriver PS2_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;
 extern SDL_RenderDriver SW_RenderDriver;
 extern SDL_RenderDriver VITA_GXM_RenderDriver;
+
+/* Add a supported texture format to a renderer */
+extern int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormatEnum format);
 
 /* Setup colorspace conversion */
 extern void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props);
