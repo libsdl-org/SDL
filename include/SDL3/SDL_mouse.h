@@ -359,10 +359,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  * \param mask the mask value for each pixel of the cursor
  * \param w the width of the cursor
  * \param h the height of the cursor
- * \param hot_x the X-axis location of the upper left corner of the cursor
- *              relative to the actual mouse position
- * \param hot_y the Y-axis location of the upper left corner of the cursor
- *              relative to the actual mouse position
+ * \param hot_x the x-axis offset from the left of the cursor image to the mouse x position, in the range of 0 to `w` - 1
+ * \param hot_y the y-axis offset from the top of the cursor image to the mouse y position, in the range of 0 to `h` - 1
  * \returns a new cursor with the specified parameters on success or NULL on
  *          failure; call SDL_GetError() for more information.
  *
