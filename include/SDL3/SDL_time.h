@@ -95,6 +95,8 @@ typedef enum SDL_TimeFormat
  *                   format, may be NULL
  * \param timeFormat a pointer to the SDL_TimeFormat to hold the returned time
  *                   format, may be NULL
+ * \returns 0 on success or -1 on error; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
