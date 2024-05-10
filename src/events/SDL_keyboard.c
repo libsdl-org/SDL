@@ -50,7 +50,7 @@ typedef struct SDL_Keyboard
 {
     /* Data common to all keyboards */
     SDL_Window *focus;
-    Uint16 modstate;
+    SDL_Keymod modstate;
     Uint8 keysource[SDL_NUM_SCANCODES];
     Uint8 keystate[SDL_NUM_SCANCODES];
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
