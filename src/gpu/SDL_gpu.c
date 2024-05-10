@@ -850,7 +850,39 @@ void SDL_GpuEndComputePass(
     ((CommandBufferCommonHeader*) COMPUTEPASS_COMMAND_BUFFER)->computePass.inProgress = SDL_FALSE;
 }
 
-/* TransferBuffer Set/Get */
+/* TransferBuffer Data */
+
+void SDL_GpuMapTransferBuffer(
+    SDL_GpuDevice *device,
+    SDL_GpuTransferBuffer *transferBuffer,
+    Uint32 offsetInBytes,
+    Uint32 sizeInBytes,
+    SDL_bool cycle,
+    void **ppData
+) {
+    NULL_ASSERT(device)
+    NULL_ASSERT(transferBuffer)
+    device->MapTransferBuffer(
+        device->driverData,
+        transferBuffer,
+        offsetInBytes,
+        sizeInBytes,
+        cycle,
+        ppData
+    );
+}
+
+void SDL_GpuUnmapTransferBuffer(
+    SDL_GpuDevice *device,
+    SDL_GpuTransferBuffer *transferBuffer
+) {
+    NULL_ASSERT(device)
+    NULL_ASSERT(transferBuffer)
+    device->UnmapTransferBuffer(
+        device->driverData,
+        transferBuffer
+    );
+}
 
 void SDL_GpuSetTransferData(
 	SDL_GpuDevice *device,

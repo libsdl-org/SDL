@@ -3017,6 +3017,84 @@ static void D3D11_INTERNAL_CycleActiveTransferBuffer(
 	container->activeBuffer = container->buffers[container->bufferCount - 1];
 }
 
+static void D3D11_MapTransferBuffer(
+    SDL_GpuRenderer *driverData,
+    SDL_GpuTransferBuffer *transferBuffer,
+    Uint32 offsetInBytes,
+    Uint32 sizeInBytes,
+    SDL_bool cycle,
+    void **ppData
+) {
+    D3D11Renderer *renderer = (D3D11Renderer*) driverData;
+	D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer*) transferBuffer;
+	D3D11TransferBuffer *buffer = container->activeBuffer;
+    D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+    HRESULT res;
+
+    if (offsetInBytes + sizeInBytes > buffer->size)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Map range out of bounds!");
+        *ppData = NULL;
+        return;
+    }
+
+	/* Rotate the transfer buffer if necessary */
+	if (
+		cycle &&
+		SDL_AtomicGet(&container->activeBuffer->referenceCount) > 0
+	) {
+		D3D11_INTERNAL_CycleActiveTransferBuffer(
+			renderer,
+			container
+		);
+		buffer = container->activeBuffer;
+	}
+
+    if (container->usage == SDL_GPU_TRANSFERUSAGE_BUFFER)
+    {
+        SDL_LockMutex(renderer->contextLock);
+		res = ID3D11DeviceContext_Map(
+			renderer->immediateContext,
+			(ID3D11Resource*) buffer->bufferTransfer.stagingBuffer,
+			0,
+			D3D11_MAP_WRITE,
+			0,
+			&mappedSubresource
+		);
+        SDL_UnlockMutex(renderer->contextLock);
+
+		ERROR_CHECK_RETURN("Failed to map staging buffer", );
+
+        *ppData = (Uint8*) mappedSubresource.pData + offsetInBytes;
+    }
+    else /* TEXTURE */
+    {
+        *ppData = buffer->textureTransfer.data + offsetInBytes;
+    }
+}
+
+static void D3D11_UnmapTransferBuffer(
+    SDL_GpuRenderer *driverData,
+    SDL_GpuTransferBuffer *transferBuffer
+) {
+    D3D11Renderer *renderer = (D3D11Renderer*) driverData;
+	D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer*) transferBuffer;
+	D3D11TransferBuffer *buffer = container->activeBuffer;
+
+    if (container->usage == SDL_GPU_TRANSFERUSAGE_BUFFER)
+    {
+        SDL_LockMutex(renderer->contextLock);
+		ID3D11DeviceContext_Unmap(
+			renderer->immediateContext,
+			(ID3D11Resource*) buffer->bufferTransfer.stagingBuffer,
+			0
+		);
+        SDL_UnlockMutex(renderer->contextLock);
+    }
+
+    /* TEXTURE unmap is a no-op */
+}
+
 static void D3D11_SetTransferData(
 	SDL_GpuRenderer *driverData,
 	void* data,

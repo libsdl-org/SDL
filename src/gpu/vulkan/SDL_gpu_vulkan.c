@@ -8047,6 +8047,51 @@ static void VULKAN_EndComputePass(
     vulkanCommandBuffer->currentComputePipeline = NULL;
 }
 
+static void VULKAN_MapTransferBuffer(
+    SDL_GpuRenderer *driverData,
+    SDL_GpuTransferBuffer *transferBuffer,
+    Uint32 offsetInBytes,
+    Uint32 sizeInBytes,
+    SDL_bool cycle,
+    void **ppData
+) {
+    VulkanRenderer *renderer = (VulkanRenderer*) driverData;
+    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer*) transferBuffer;
+
+    if (offsetInBytes + sizeInBytes > transferBufferContainer->activeBufferHandle->vulkanBuffer->size)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Map range out of bounds!");
+        *ppData = NULL;
+        return;
+    }
+
+    if (
+        cycle &&
+        SDL_AtomicGet(&transferBufferContainer->activeBufferHandle->vulkanBuffer->referenceCount) > 0
+    ) {
+        VULKAN_INTERNAL_CycleActiveBuffer(
+            renderer,
+            transferBufferContainer
+        );
+    }
+
+    Uint8 *bufferPointer =
+        transferBufferContainer->activeBufferHandle->vulkanBuffer->usedRegion->allocation->mapPointer +
+        transferBufferContainer->activeBufferHandle->vulkanBuffer->usedRegion->resourceOffset +
+        offsetInBytes;
+
+    *ppData = bufferPointer;
+}
+
+static void VULKAN_UnmapTransferBuffer(
+    SDL_GpuRenderer *driverData,
+    SDL_GpuTransferBuffer *transferBuffer
+) {
+    /* no-op because transfer buffers are persistently mapped */
+    (void)driverData;
+    (void)transferBuffer;
+}
+
 static void VULKAN_SetTransferData(
     SDL_GpuRenderer *driverData,
     void* data,

@@ -1495,6 +1495,24 @@ static void METAL_INTERNAL_CycleActiveTransferBuffer(
 
 /* TransferBuffer Data */
 
+static void METAL_MapTransferBuffer(
+    SDL_GpuRenderer *driverData,
+    SDL_GpuTransferBuffer *transferBuffer,
+    Uint32 offsetInBytes,
+    Uint32 sizeInBytes,
+    SDL_bool cycle,
+    void **ppData
+) {
+    NOT_IMPLEMENTED
+}
+
+static void METAL_UnmapTransferBuffer(
+    SDL_GpuRenderer *driverData,
+    SDL_GpuTransferBuffer *transferBuffer
+) {
+    NOT_IMPLEMENTED
+}
+
 static void METAL_SetTransferData(
     SDL_GpuRenderer *driverData,
     void* data,

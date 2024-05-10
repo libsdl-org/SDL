@@ -1514,7 +1514,42 @@ extern DECLSPEC void SDLCALL SDL_GpuEndComputePass(
 	SDL_GpuComputePass *computePass
 );
 
-/* TransferBuffer Set/Get */
+/* TransferBuffer Data */
+
+/**
+ * Maps a transfer buffer into application address space.
+ * You must unmap the transfer buffer before encoding upload commands.
+ *
+ * \param device a GPU context
+ * \param transferBuffer a transfer buffer
+ * \param offsetInBytes offset from the beginning of the transfer buffer
+ * \param sizeInBytes number of bytes to map
+ * \param cycle if SDL_TRUE, cycles the transfer buffer if it is bound
+ * \param ppData a pointer to an application-accessible pointer
+ *
+ * \since This function is available since SDL 3.x.x
+ */
+extern DECLSPEC void SDLCALL SDL_GpuMapTransferBuffer(
+    SDL_GpuDevice *device,
+    SDL_GpuTransferBuffer *transferBuffer,
+    Uint32 offsetInBytes,
+    Uint32 sizeInBytes,
+    SDL_bool cycle,
+    void **ppData
+);
+
+/**
+ * Unmaps a previously mapped transfer buffer.
+ *
+ * \param device a GPU context
+ * \param transferBuffer a previously mapped transfer buffer
+ *
+ * \since This function is available since SDL 3.x.x
+ */
+extern DECLSPEC void SDLCALL SDL_GpuUnmapTransferBuffer(
+    SDL_GpuDevice *device,
+    SDL_GpuTransferBuffer *transferBuffer
+);
 
 /**
  * Immediately copies data from a pointer to a transfer buffer.

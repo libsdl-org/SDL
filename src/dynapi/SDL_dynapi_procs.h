@@ -1097,6 +1097,8 @@ SDL_DYNAPI_PROC(void,SDL_GpuBindComputeResourceSet,(SDL_GpuComputePass *a, Uint3
 SDL_DYNAPI_PROC(void,SDL_GpuPushComputeUniformData,(SDL_GpuComputePass *a, SDL_GpuUniformBuffer *b, void *c, Uint32 d),(a,b,c,d),)
 SDL_DYNAPI_PROC(void,SDL_GpuDispatchCompute,(SDL_GpuComputePass *a, Uint32 b, Uint32 c, Uint32 d),(a,b,c,d),)
 SDL_DYNAPI_PROC(void,SDL_GpuEndComputePass,(SDL_GpuComputePass *a),(a),)
+SDL_DYNAPI_PROC(void,SDL_GpuMapTransferBuffer,(SDL_GpuDevice *a, SDL_GpuTransferBuffer *b, Uint32 c, Uint32 d, SDL_bool e, void **f),(a,b,c,d,e,f),)
+SDL_DYNAPI_PROC(void,SDL_GpuUnmapTransferBuffer,(SDL_GpuDevice *a, SDL_GpuTransferBuffer *b),(a,b),)
 SDL_DYNAPI_PROC(void,SDL_GpuSetTransferData,(SDL_GpuDevice *a, void *b, SDL_GpuTransferBuffer *c, SDL_GpuBufferCopy *d, SDL_bool e),(a,b,c,d,e),)
 SDL_DYNAPI_PROC(void,SDL_GpuGetTransferData,(SDL_GpuDevice *a, SDL_GpuTransferBuffer *b, void *c, SDL_GpuBufferCopy *d),(a,b,c,d),)
 SDL_DYNAPI_PROC(SDL_GpuCopyPass*,SDL_GpuBeginCopyPass,(SDL_GpuCommandBuffer *a),(a),return)
