@@ -298,31 +298,31 @@ static int keyboard_getSetModState(void *arg)
     /* Get state, cache for later reset */
     result = SDL_GetModState();
     SDLTest_AssertPass("Call to SDL_GetModState()");
-    SDLTest_AssertCheck(/*result >= 0 &&*/ result <= allStates, "Verify result from call is valid, expected: 0 <= result <= %" SDL_PRIu32 ", got: %" SDL_PRIu32, allStates, result);
+    SDLTest_AssertCheck(/*result >= 0 &&*/ result <= allStates, "Verify result from call is valid, expected: 0 <= result <= 0x%.4x, got: 0x%.4x", allStates, result);
     currentState = result;
 
     /* Set random state */
     newState = SDLTest_RandomIntegerInRange(0, allStates);
     SDL_SetModState(newState);
-    SDLTest_AssertPass("Call to SDL_SetModState(%" SDL_PRIu32 ")", newState);
+    SDLTest_AssertPass("Call to SDL_SetModState(0x%.4x)", newState);
     result = SDL_GetModState();
     SDLTest_AssertPass("Call to SDL_GetModState()");
-    SDLTest_AssertCheck(result == newState, "Verify result from call is valid, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32, newState, result);
+    SDLTest_AssertCheck(result == newState, "Verify result from call is valid, expected: 0x%.4x, got: 0x%.4x", newState, result);
 
     /* Set zero state */
     SDL_SetModState(0);
     SDLTest_AssertPass("Call to SDL_SetModState(0)");
     result = SDL_GetModState();
     SDLTest_AssertPass("Call to SDL_GetModState()");
-    SDLTest_AssertCheck(result == 0, "Verify result from call is valid, expected: 0, got: %" SDL_PRIu32, result);
+    SDLTest_AssertCheck(result == 0, "Verify result from call is valid, expected: 0, got: 0x%.4x", result);
 
     /* Revert back to cached current state if needed */
     if (currentState != 0) {
         SDL_SetModState(currentState);
-        SDLTest_AssertPass("Call to SDL_SetModState(%" SDL_PRIu32 ")", currentState);
+        SDLTest_AssertPass("Call to SDL_SetModState(0x%.4x)", currentState);
         result = SDL_GetModState();
         SDLTest_AssertPass("Call to SDL_GetModState()");
-        SDLTest_AssertCheck(result == currentState, "Verify result from call is valid, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32, currentState, result);
+        SDLTest_AssertCheck(result == currentState, "Verify result from call is valid, expected: 0x%.4x, got: 0x%.4x", currentState, result);
     }
 
     return TEST_COMPLETED;

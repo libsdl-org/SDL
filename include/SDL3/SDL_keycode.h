@@ -300,7 +300,7 @@ typedef Uint32 SDL_Keycode;
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint32 SDL_Keymod;
+typedef Uint16 SDL_Keymod;
 
 #define SDL_KMOD_NONE   0x0000u /**< no modifier is applicable. */
 #define SDL_KMOD_LSHIFT 0x0001u /**< the left Shift key is down. */
