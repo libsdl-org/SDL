@@ -587,11 +587,15 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, in
  * SDL_WaitEvent.
  *
  * \param joystick the virtual joystick on which to set state.
- * \param touchpad the index of the touchpad on the virtual joystick to update.
+ * \param touchpad the index of the touchpad on the virtual joystick to
+ *                 update.
  * \param finger the index of the finger on the touchpad to set.
- * \param state `SDL_PRESSED` if the finger is pressed, `SDL_RELEASED` if the finger is released
- * \param x the x coordinate of the finger on the touchpad, normalized 0 to 1, with the origin in the upper left
- * \param y the y coordinate of the finger on the touchpad, normalized 0 to 1, with the origin in the upper left
+ * \param state `SDL_PRESSED` if the finger is pressed, `SDL_RELEASED` if the
+ *              finger is released
+ * \param x the x coordinate of the finger on the touchpad, normalized 0 to 1,
+ *          with the origin in the upper left
+ * \param y the y coordinate of the finger on the touchpad, normalized 0 to 1,
+ *          with the origin in the upper left
  * \param pressure the pressure of the finger
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -611,7 +615,8 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystic
  *
  * \param joystick the virtual joystick on which to set state.
  * \param type the type of the sensor on the virtual joystick to update.
- * \param sensor_timestamp a 64-bit timestamp in nanoseconds associated with the sensor reading
+ * \param sensor_timestamp a 64-bit timestamp in nanoseconds associated with
+ *                         the sensor reading
  * \param data the data associated with the sensor reading
  * \param num_values the number of values pointed to by `data`
  * \returns 0 on success or a negative error code on failure; call
