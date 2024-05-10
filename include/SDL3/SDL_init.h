@@ -84,7 +84,8 @@ typedef Uint32 SDL_InitFlags;
  * `flags` may be any of the following OR'd together:
  *
  * - `SDL_INIT_TIMER`: timer subsystem
- * - `SDL_INIT_AUDIO`: audio subsystem
+ * - `SDL_INIT_AUDIO`: audio subsystem; automatically initializes the events
+ *   subsystem
  * - `SDL_INIT_VIDEO`: video subsystem; automatically initializes the events
  *   subsystem
  * - `SDL_INIT_JOYSTICK`: joystick subsystem; automatically initializes the
@@ -93,7 +94,10 @@ typedef Uint32 SDL_InitFlags;
  * - `SDL_INIT_GAMEPAD`: gamepad subsystem; automatically initializes the
  *   joystick subsystem
  * - `SDL_INIT_EVENTS`: events subsystem
- * - `SDL_INIT_SENSOR`: sensor subsystem
+ * - `SDL_INIT_SENSOR`: sensor subsystem; automatically initializes the events
+ *   subsystem
+ * - `SDL_INIT_CAMERA`: camera subsystem; automatically initializes the events
+ *   subsystem
  *
  * Subsystem initialization is ref-counted, you must call SDL_QuitSubSystem()
  * for each SDL_InitSubSystem() to correctly shutdown a subsystem manually (or
