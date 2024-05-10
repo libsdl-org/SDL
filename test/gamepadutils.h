@@ -54,6 +54,7 @@ enum
 extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
 extern void SetGamepadImagePosition(GamepadImage *ctx, int x, int y);
 extern void GetGamepadImageArea(GamepadImage *ctx, SDL_Rect *area);
+extern void GetGamepadTouchpadArea(GamepadImage *ctx, SDL_Rect *area);
 extern void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front);
 extern void SetGamepadImageType(GamepadImage *ctx, SDL_GamepadType type);
 extern SDL_GamepadType GetGamepadImageType(GamepadImage *ctx);

@@ -1240,8 +1240,8 @@ extern DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *gamepa
  * \param touchpad a touchpad
  * \param finger a finger
  * \param state filled with state
- * \param x filled with x position
- * \param y filled with y position
+ * \param x filled with x position, normalized 0 to 1, with the origin in the upper left
+ * \param y filled with y position, normalized 0 to 1, with the origin in the upper left
  * \param pressure filled with pressure value
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.

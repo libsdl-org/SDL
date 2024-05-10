@@ -191,6 +191,7 @@ void GetGamepadImageArea(GamepadImage *ctx, SDL_Rect *area)
 {
     if (!ctx) {
         SDL_zerop(area);
+        return;
     }
 
     area->x = ctx->x;
@@ -200,6 +201,19 @@ void GetGamepadImageArea(GamepadImage *ctx, SDL_Rect *area)
     if (ctx->showing_touchpad) {
         area->h += ctx->touchpad_height;
     }
+}
+
+void GetGamepadTouchpadArea(GamepadImage *ctx, SDL_Rect *area)
+{
+    if (!ctx) {
+        SDL_zerop(area);
+        return;
+    }
+
+    area->x = (float)ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2 + touchpad_area.x;
+    area->y = (float)ctx->y + ctx->gamepad_height + touchpad_area.y;
+    area->w = (float)touchpad_area.w;
+    area->h = (float)touchpad_area.h;
 }
 
 void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front)

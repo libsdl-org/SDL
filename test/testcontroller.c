@@ -100,6 +100,9 @@ static SDL_GamepadAxis virtual_axis_active = SDL_GAMEPAD_AXIS_INVALID;
 static float virtual_axis_start_x;
 static float virtual_axis_start_y;
 static SDL_GamepadButton virtual_button_active = SDL_GAMEPAD_BUTTON_INVALID;
+static SDL_bool virtual_touchpad_active = SDL_FALSE;
+static float virtual_touchpad_x;
+static float virtual_touchpad_y;
 
 static int s_arrBindingOrder[] = {
     /* Standard sequence */
@@ -1109,6 +1112,8 @@ static int SDLCALL VirtualGamepadSetLED(void *userdata, Uint8 red, Uint8 green, 
 
 static void OpenVirtualGamepad(void)
 {
+    SDL_VirtualJoystickTouchpadDesc virtual_touchpad = { 1, { 0, 0, 0 } };
+    SDL_VirtualJoystickSensorDesc virtual_sensor = { SDL_SENSOR_ACCEL, 0.0f };
     SDL_VirtualJoystickDesc desc;
     SDL_JoystickID virtual_id;
 
@@ -1120,6 +1125,10 @@ static void OpenVirtualGamepad(void)
     desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
     desc.naxes = SDL_GAMEPAD_AXIS_MAX;
     desc.nbuttons = SDL_GAMEPAD_BUTTON_MAX;
+    desc.ntouchpads = 1;
+    desc.touchpads = &virtual_touchpad;
+    desc.nsensors = 1;
+    desc.sensors = &virtual_sensor;
     desc.SetPlayerIndex = VirtualGamepadSetPlayerIndex;
     desc.Rumble = VirtualGamepadRumble;
     desc.RumbleTriggers = VirtualGamepadRumbleTriggers;
@@ -1195,6 +1204,14 @@ static void VirtualGamepadMouseMotion(float x, float y)
             SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active + 1, valueY);
         }
     }
+
+    if (virtual_touchpad_active) {
+        SDL_Rect touchpad;
+        GetGamepadTouchpadArea(image, &touchpad);
+        virtual_touchpad_x = (x - touchpad.x) / touchpad.w;
+        virtual_touchpad_y = (y - touchpad.y) / touchpad.h;
+        SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, SDL_PRESSED, virtual_touchpad_x, virtual_touchpad_y, 1.0f);
+    }
 }
 
 static void VirtualGamepadMouseDown(float x, float y)
@@ -1202,6 +1219,15 @@ static void VirtualGamepadMouseDown(float x, float y)
     int element = GetGamepadImageElementAt(image, x, y);
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
+        SDL_Point point = { (int)x, (int)y };
+        SDL_Rect touchpad;
+        GetGamepadTouchpadArea(image, &touchpad);
+        if (SDL_PointInRect(&point, &touchpad)) {
+            virtual_touchpad_active = SDL_TRUE;
+            virtual_touchpad_x = (x - touchpad.x) / touchpad.w;
+            virtual_touchpad_y = (y - touchpad.y) / touchpad.h;
+            SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, SDL_PRESSED, virtual_touchpad_x, virtual_touchpad_y, 1.0f);
+        }
         return;
     }
 
@@ -1250,6 +1276,11 @@ static void VirtualGamepadMouseUp(float x, float y)
             SDL_SetJoystickVirtualAxis(virtual_joystick, virtual_axis_active + 1, 0);
         }
         virtual_axis_active = SDL_GAMEPAD_AXIS_INVALID;
+    }
+
+    if (virtual_touchpad_active) {
+        SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, SDL_RELEASED, virtual_touchpad_x, virtual_touchpad_y, 0.0f);
+        virtual_touchpad_active = SDL_FALSE;
     }
 }
 
@@ -1499,6 +1530,12 @@ static void UpdateGamepadEffects(void)
 static void loop(void *arg)
 {
     SDL_Event event;
+
+    /* If we have a virtual controller, send a virtual accelerometer sensor reading */
+    if (virtual_joystick) {
+        float data[3] = { 0.0f, SDL_STANDARD_GRAVITY, 0.0f };
+        SDL_SendJoystickVirtualSensorData(virtual_joystick, SDL_SENSOR_ACCEL, SDL_GetTicksNS(), data, SDL_arraysize(data));
+    }
 
     /* Update to get the current event state */
     SDL_PumpEvents();
