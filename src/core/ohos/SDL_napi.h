@@ -41,6 +41,7 @@ private:
     static napi_value OHOS_OnNativeFocusChanged(napi_env env, napi_callback_info info);
     static napi_value OHOS_TextInput(napi_env env, napi_callback_info info);
     static napi_value OHOS_SetWindowId(napi_env env, napi_callback_info info);
+    static napi_value OHOS_SetRootViewControl(napi_env env, napi_callback_info info);
 };
 } // namespace SDL
 } // namespace OHOS

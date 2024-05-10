@@ -37,6 +37,7 @@ extern SDL_DisplayOrientation displayOrientation;
 extern SDL_atomic_t bPermissionRequestPending;
 extern SDL_bool bPermissionRequestResult;
 extern int g_windowId;
+extern napi_ref g_rootNodeRef;
 
 /* Cursor support */
 extern int OHOS_CreateCustomCursor(SDL_Surface *xcomponent, int hotX, int hotY);

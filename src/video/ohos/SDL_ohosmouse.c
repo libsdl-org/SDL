@@ -209,30 +209,38 @@ void OHOS_OnMouse(SDL_Window *window, OHOSWindowSize *windowsize, SDL_bool relat
     if (!window) {
         return;
     }
+    SDL_Log("sdlthread OHOS_OnMouse in");
     switch (windowsize->action) {
         case ACTION_DOWN:
+            SDL_Log("sdlthread OHOS_OnMouse ACTION_DOWN");
             changes = windowsize->state & ~last_state;
             button = TranslateButton(changes);
             last_state = windowsize->state;
             SDL_SendMouseMotion(window, 0, relative, (int)windowsize->x, (int)windowsize->y);
             SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
+            SDL_Log("sdlthread OHOS_OnMouse ACTION_DOWN out");
             break;
 
         case ACTION_UP:
+            SDL_Log("sdlthread OHOS_OnMouse ACTION_UP");
             changes = last_state & ~windowsize->state;
             button = TranslateButton(changes);
             last_state = windowsize->state;
             SDL_SendMouseMotion(window, 0, relative, (int)windowsize->x, (int)windowsize->y);
             SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
+            SDL_Log("sdlthread OHOS_OnMouse ACTION_UP over");
             break;
 
         case ACTION_MOVE:
+            SDL_Log("sdlthread OHOS_OnMouse ACTION_move");
             SDL_SendMouseMotion(window, 0, relative, (int)windowsize->x, (int)windowsize->y);
+            SDL_Log("sdlthread OHOS_OnMouse ACTION_move over");
             break;
 
         default:
             break;
     }
+    SDL_Log("sdlthread OHOS_OnMouse out");
 }
 
 #endif /* SDL_VIDEO_DRIVER_OHOS */

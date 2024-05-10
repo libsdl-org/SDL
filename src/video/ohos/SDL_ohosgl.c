@@ -67,9 +67,9 @@ int OHOS_GLES_SwapWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
     int retval;
     SDL_LockMutex(OHOS_PageMutex);
     OHOS_ResetWindowData(window);
-    SDL_Log("sdlthread OHOS_GLES_SwapWindow component = %p， native_window=%p window->driverdata = %p",
-            ((SDL_WindowData *)window->driverdata)->egl_xcomponent,
-            ((SDL_WindowData *)window->driverdata)->native_window, window->driverdata);
+//     SDL_Log("sdlthread OHOS_GLES_SwapWindow component = %p， native_window=%p window->driverdata = %p",
+//             ((SDL_WindowData *)window->driverdata)->egl_xcomponent,
+//             ((SDL_WindowData *)window->driverdata)->native_window, window->driverdata);
     /* The following two calls existed in the original Java code
      * If you happen to have a device that's affected by their removal,
      * please report to Bugzilla. -- Gabriel

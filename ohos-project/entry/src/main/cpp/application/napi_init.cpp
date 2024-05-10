@@ -17,14 +17,23 @@
 #include "gloable.h"
 
 const unsigned int LOG_PRINT_DOMAIN = 0xFF00;
-napi_ref g_gloabelView = nullptr;
+napi_ref g_rootView = nullptr;
+napi_ref g_childView = nullptr;
 
 napi_value setRootViewControl(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
     napi_value argv[1];
     napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
-    napi_create_reference(env, argv[0], 1, &g_gloabelView);
+    napi_create_reference(env, argv[0], 1, &g_rootView);
+    return nullptr;
+}
+
+napi_value setChildViewControl(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value argv[1];
+    napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
+    napi_create_reference(env, argv[0], 1, &g_childView);
     return nullptr;
 }
 
@@ -38,7 +47,8 @@ static napi_value Init(napi_env env, napi_value exports)
     }
 
     napi_property_descriptor desc[] = {
-        { "setRootViewControl", nullptr, setRootViewControl, nullptr, nullptr, nullptr, napi_default, nullptr }
+        { "setRootViewControl", nullptr, setRootViewControl, nullptr, nullptr, nullptr, napi_default, nullptr },
+        { "setChildViewControl", nullptr, setChildViewControl, nullptr, nullptr, nullptr, napi_default, nullptr }
     };
     if (napi_ok != napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc)) {
         OH_LOG_Print(LOG_APP, LOG_ERROR, LOG_PRINT_DOMAIN, "Init", "napi_define_properties failed");

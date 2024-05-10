@@ -379,9 +379,6 @@ if (nextNativeState == NativeState.PAUSED) {
 
 // Try a transition to resumed state
 if (nextNativeState == NativeState.RESUMED) {
-  sdl.init(callbackRef)
-  // sdl.sdlAppEntry("libentry.so", "mainGles")
-  sdl.sdlAppEntry("libentry.so", "mainYuv", "testyuv.bmp")
   currentNativeState = nextNativeState
 }
 }
@@ -413,6 +410,10 @@ export function notifySdlAboutToAppear(resourceMannagerContext: Context, windowI
   setResourceManager(resourceMannagerContext)
   setWindowId(windowId)
   setScreenResolution()
+  sdl.init(callbackRef)
+  // sdl.sdlAppEntry("libentry.so", "mainCapture")
+  // sdl.sdlAppEntry("libentry.so", "mainMultiwindow")
+  sdl.sdlAppEntry("libentry.so", "mainYuv", "testyuv.bmp")
 }
 
 export function notifySdlAboutToDisappear() {

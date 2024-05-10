@@ -2607,6 +2607,9 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         return SDL_SetError("Conflicting window flags specified");
     }
 
+#ifdef __OHOS__
+    window->flags |= SDL_WINDOW_RECREATE;
+#endif
     if ((flags & SDL_WINDOW_OPENGL) && !_this->GL_CreateContext) {
         return SDL_ContextNotSupported("OpenGL");
     }
@@ -2741,6 +2744,9 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
     }
 
     SDL_FinishWindowCreation(window, flags);
+#ifdef __OHOS__
+    window->flags &= ~SDL_WINDOW_RECREATE;
+#endif
 
     return true;
 }

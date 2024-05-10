@@ -68,6 +68,7 @@ SDL_bool bPermissionRequestResult;
 static SDL_atomic_t bQuit;
 static int xComponentId = 1;
 int g_windowId = 0;
+napi_ref g_rootNodeRef = NULL;
 
 /* Lock / Unlock Mutex */
 void OHOS_PAGEMUTEX_Lock()
@@ -573,6 +574,15 @@ napi_value SDLNapi::OHOS_OnNativeFocusChanged(napi_env env, napi_callback_info i
     return nullptr;
 }
 
+napi_value SDLNapi::OHOS_SetRootViewControl(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1];
+    napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
+    napi_create_reference(env, argv[0], 1, &g_rootNodeRef);
+    return nullptr;
+}
+
 static void OHOS_NAPI_NativeSetup(void)
 {
     SDL_setenv("SDL_VIDEO_GL_DRIVER", "libGLESv3.so", 1);
@@ -792,7 +802,8 @@ napi_value SDLNapi::Init(napi_env env, napi_value exports)
          napi_default, nullptr},
         {"setResourceManager", nullptr, OHOS_SetResourceManager, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"onNativeFocusChanged", nullptr, OHOS_OnNativeFocusChanged, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"setWindowId", nullptr, OHOS_SetWindowId, nullptr, nullptr, nullptr, napi_default, nullptr}, 
+        {"setWindowId", nullptr, OHOS_SetWindowId, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"setRootViewControl", nullptr, OHOS_SetRootViewControl, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"init", nullptr, OHOS_NAPI_Init, nullptr, nullptr, nullptr, napi_default, nullptr}
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);

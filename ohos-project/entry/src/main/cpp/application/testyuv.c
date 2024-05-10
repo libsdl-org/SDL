@@ -364,9 +364,9 @@ mainYuv(int argc, char **argv)
     now = SDL_GetTicks();
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%d iterations in %d ms, %.2fms each\n", iterations, (now - then), (float)(now - then)/iterations);
 
-//     window = SDL_CreateWindow("YUV test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, original->w, original->h, 0);
+    window = SDL_CreateWindow("YUV test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, original->w, original->h, 0);
 
-    window = SDL_CreateWindowFrom((void *)g_gloabelView);
+//     window = SDL_CreateWindowFrom((void *)g_childView);
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return 4;
@@ -407,7 +407,7 @@ mainYuv(int argc, char **argv)
         break;
     }
 
-    { int done = 0;
+    {  int done = 0;
         while ( !done )
         {
             SDL_Event event;
@@ -425,7 +425,7 @@ mainYuv(int argc, char **argv)
                     }
                 }
                 if (event.type == SDL_MOUSEBUTTONDOWN) {
-                    if (event.button.x < (original->w/2)) {
+                    if (event.button.x < (original->w / 2)) {
                         --current;
                     } else {
                         ++current;
@@ -443,7 +443,6 @@ mainYuv(int argc, char **argv)
                 }
 #endif
             }
-
             /* Handle wrapping */
             if (current < 0) {
                 current += SDL_arraysize(output);

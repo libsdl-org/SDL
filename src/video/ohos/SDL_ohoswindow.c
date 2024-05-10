@@ -46,23 +46,24 @@
 
 int OHOS_CreateWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
 {
-    napi_ref parentWindowNode = NULL;
-    napi_ref childWindowNode = NULL;
+//     napi_ref parentWindowNode = NULL;
+//     napi_ref childWindowNode = NULL;
     SDL_Log("sdlthread OHOS_CreateWindow");
     if (window->ohosHandle == NULL) {
-        OHOS_GetRootNode(g_windowId, &parentWindowNode);
-        if (parentWindowNode == NULL) {
-            return -1;
-        }
-        OHOS_AddChildNode(parentWindowNode, &childWindowNode, window->x, window->y, window->w, window->h);
-        napi_release_threadsafe_function(parentWindowNode, napi_tsfn_release);
-        if (childWindowNode == NULL) {
-            return -1;
-        }
+//         OHOS_GetRootNode(g_windowId, &parentWindowNode);
+//         if (parentWindowNode == NULL) {
+//             return -1;
+//         }
+// SDL_Log("sdlthread OHOS_GetRootNode over");
+//         OHOS_AddChildNode(parentWindowNode, &childWindowNode, window->x, window->y, window->w, window->h);
+//         napi_release_threadsafe_function(parentWindowNode, napi_tsfn_release);
+//         if (childWindowNode == NULL) {
+//             return -1;
+//         }
     } else {
-        childWindowNode = window->ohosHandle;
+//         parentWindowNode = window->ohosHandle;
     }
-    OHOS_CreateWindowFrom(thisDevice, window, childWindowNode);
+    OHOS_CreateWindowFrom(thisDevice, window, g_rootNodeRef);
     return 0;
 }
 
@@ -104,10 +105,13 @@ void OHOS_MinimizeWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
 
 void OHOS_DestroyWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
 {
-    SDL_Log("sdlthread OHOS_DestroyWindow");
+    SDL_Log("sdlthread OHOS_DestroyWindow flagrecreate = %d", (window->flags & SDL_WINDOW_RECREATE));
     SDL_LockMutex(OHOS_PageMutex);
 
-    OHOS_RemoveChildNode(window->ohosHandle);
+    if ((window->flags & SDL_WINDOW_RECREATE) == 0) {
+        SDL_Log("sdlthread OHOS_DestroyWindow removechild node");
+        OHOS_RemoveChildNode(window->ohosHandle);
+    }
 
     if (window->driverdata) {
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
@@ -187,6 +191,9 @@ int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const
         window->ohosHandle = data;
      }
      window->flags = (window->flags & SDL_WINDOW_OPENGL);
+ SDL_Log("sdlthread threadid = %d, OHOS_CreateWindowFrom window->ohosHandle over", pthread_self());
+     SDL_Log("sdlthread createwindow from  flagForeign = %d", window->flags & SDL_WINDOW_FOREIGN);
+     SDL_Log("sdlthread createwindow from  SDL_WINDOW_OPENGL = %d", window->flags & SDL_WINDOW_OPENGL);
      strID = OHOS_GetXComponentId(window->ohosHandle);
      window->xcompentId = strID;
      // get thread id
@@ -229,6 +236,7 @@ int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const
      }
      SDL_Log("sdlthread OHOS_GetXComponent window_data over x = %d y = %d w = %d h = %d", window->x, window->y, window->w, window->h);
      if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
+        SDL_Log("sdlthread OHOS_GetXComponent opengl");
         sdlWindowData->egl_xcomponent =
             (EGLSurface)SDL_EGL_CreateSurface(thisDevice, (NativeWindowType)windowData->native_window);
         windowData->egl_xcomponent = sdlWindowData->egl_xcomponent;

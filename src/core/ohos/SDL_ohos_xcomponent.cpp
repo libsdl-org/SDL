@@ -78,6 +78,9 @@ static SDL_Window *GetWindowFromXComponent(OH_NativeXComponent *component) {
         return nullptr;
     }
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this == nullptr) {
+        return nullptr;
+    }
     SDL_Window *resultWindow = nullptr;
     SDL_Window *curWindow = _this->windows;
     while (curWindow) {
@@ -295,7 +298,7 @@ void onNativeMouse(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_MouseEvent mouseEvent;
     OHOSWindowSize windowsize;
-    SDL_Log("onNativeMouse");
+    SDL_Log("sdlthread onNativeMouse");
     int32_t ret = OH_NativeXComponent_GetMouseEvent(component, window, &mouseEvent);
     SDL_LockMutex(OHOS_PageMutex);
     
@@ -311,7 +314,7 @@ void onNativeMouse(OH_NativeXComponent *component, void *window)
         return;
     }
     OHOS_OnMouse(curWindow, &windowsize, SDL_TRUE);
-
+    SDL_Log("sdlthread onNativeMouse over");
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 

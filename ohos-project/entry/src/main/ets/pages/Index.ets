@@ -22,10 +22,11 @@ import {
   notifySdlPageHide,
 } from '../service/SdlModule'
 
-import { addRootNode } from '../service/adapter_c/utils/AdapterTs'
+import { addChildNode, addRootNode } from '../service/adapter_c/utils/AdapterTs'
 import { NodeParams, NodeType, ViewNodeController} from '../service/adapter_c/common/Node'
 import { XComponentModel } from '../service/adapter_c/common/ComponentModel'
 import entry from 'libentry.so'
+import sdl from 'libSDL2d.so'
 
 let storage = LocalStorage.getShared()
 @Entry(storage)
@@ -34,6 +35,7 @@ struct Index {
   @LocalStorageProp("uiContext") uiContext: UIContext | null = null
   @LocalStorageProp("windowId") windowId: number = 0;
   @State rootNodeController: ViewNodeController | null = null
+  @State childNodeController: ViewNodeController | null = null
   aboutToAppear(): void {
     let curModel = new XComponentModel(this.windowId.toString(), XComponentType.SURFACE, "SDL2d")
     let nodeParams = new NodeParams(0, 0, '100%', '100%', NodeType.XComponent, curModel);
@@ -41,6 +43,14 @@ struct Index {
     nodeParams.border_width = 3
     this.rootNodeController = addRootNode(this.windowId, this.uiContext as UIContext, nodeParams)
     entry.setRootViewControl(this.rootNodeController)
+    sdl.setRootViewControl(this.rootNodeController);
+
+    // let childModel = new XComponentModel('1', XComponentType.SURFACE, "SDL2d")
+    // let childNodeParams = new NodeParams(0, 0, '333', '555', NodeType.XComponent, childModel);
+    // nodeParams.border_color = "#FF0000"
+    // nodeParams.border_width = 3
+    // this.childNodeController = addChildNode(this.rootNodeController, childNodeParams)
+    // entry.setChildViewControl(this.childNodeController)
     notifySdlAboutToAppear(getContext(this), this.windowId)
   }
 
