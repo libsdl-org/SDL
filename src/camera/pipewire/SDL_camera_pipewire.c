@@ -1017,12 +1017,6 @@ static int hotplug_loop_init(void)
     }
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 
-    SDL_Log("CAMERA: PipeWire compiled:%s library:%s server:%d.%d.%d required:%d.%d.%d",
-		    pw_get_headers_version(),
-		    PIPEWIRE_pw_get_library_version(),
-		    hotplug.server_major, hotplug.server_minor, hotplug.server_patch,
-                    PW_REQUIRED_MAJOR, PW_REQUIRED_MINOR, PW_REQUIRED_PATCH);
-
     if (!pipewire_server_version_at_least(PW_REQUIRED_MAJOR, PW_REQUIRED_MINOR, PW_REQUIRED_PATCH)) {
         return SDL_SetError("Pipewire: server version is too old %d.%d.%d < %d.%d.%d",
 			hotplug.server_major, hotplug.server_minor, hotplug.server_patch,
