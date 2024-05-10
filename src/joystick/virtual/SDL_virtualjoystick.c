@@ -715,27 +715,27 @@ static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
     }
 
     if (hwdata->changes & AXES_CHANGED) {
-        for (Uint16 i = 0; i < hwdata->desc.naxes; ++i) {
+        for (Uint8 i = 0; i < hwdata->desc.naxes; ++i) {
             SDL_SendJoystickAxis(timestamp, joystick, i, hwdata->axes[i]);
         }
     }
     if (hwdata->changes & BALLS_CHANGED) {
-        for (Uint16 i = 0; i < hwdata->desc.nballs; ++i) {
+        for (Uint8 i = 0; i < hwdata->desc.nballs; ++i) {
             SDL_JoystickBallData *ball = &hwdata->balls[i];
             if (ball->dx || ball->dy) {
-                SDL_SendJoystickBall(timestamp, joystick, i, ball->dx, ball->dy);
+                SDL_SendJoystickBall(timestamp, joystick, i, (Sint16)ball->dx, (Sint16)ball->dy);
                 ball->dx = 0;
                 ball->dy = 0;
             }
         }
     }
     if (hwdata->changes & BUTTONS_CHANGED) {
-        for (Uint16 i = 0; i < hwdata->desc.nbuttons; ++i) {
+        for (Uint8 i = 0; i < hwdata->desc.nbuttons; ++i) {
             SDL_SendJoystickButton(timestamp, joystick, i, hwdata->buttons[i]);
         }
     }
     if (hwdata->changes & HATS_CHANGED) {
-        for (Uint16 i = 0; i < hwdata->desc.nhats; ++i) {
+        for (Uint8 i = 0; i < hwdata->desc.nhats; ++i) {
             SDL_SendJoystickHat(timestamp, joystick, i, hwdata->hats[i]);
         }
     }
