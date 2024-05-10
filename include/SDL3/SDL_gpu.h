@@ -1518,7 +1518,8 @@ extern DECLSPEC void SDLCALL SDL_GpuEndComputePass(
 
 /**
  * Maps a transfer buffer into application address space.
- * You must unmap the transfer buffer before encoding upload commands.
+ * You must unmap the transfer buffer before encoding upload commands
+ * or calling SetTransferData or GetTransferData.
  *
  * \param device a GPU context
  * \param transferBuffer a transfer buffer
