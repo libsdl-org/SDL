@@ -680,6 +680,7 @@ SDL3_0.0.0 {
     SDL_SeekIO;
     SDL_SendGamepadEffect;
     SDL_SendJoystickEffect;
+    SDL_SendJoystickVirtualSensorData;
     SDL_SetAssertionHandler;
     SDL_SetAudioPostmixCallback;
     SDL_SetAudioStreamFormat;
@@ -708,8 +709,10 @@ SDL3_0.0.0 {
     SDL_SetJoystickLED;
     SDL_SetJoystickPlayerIndex;
     SDL_SetJoystickVirtualAxis;
+    SDL_SetJoystickVirtualBall;
     SDL_SetJoystickVirtualButton;
     SDL_SetJoystickVirtualHat;
+    SDL_SetJoystickVirtualTouchpad;
     SDL_SetLogOutputFunction;
     SDL_SetMainReady;
     SDL_SetMemoryFunctions;

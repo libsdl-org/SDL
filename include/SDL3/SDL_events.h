@@ -48,7 +48,7 @@ extern "C" {
 
 /* General keyboard/mouse state definitions */
 #define SDL_RELEASED    0
-#define SDL_PRESSED 1
+#define SDL_PRESSED     1
 
 /**
  * The types of events that can be delivered.
