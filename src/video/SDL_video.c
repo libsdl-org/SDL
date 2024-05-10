@@ -2042,10 +2042,10 @@ static struct {
     { SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN,             SDL_WINDOW_VULKAN,              SDL_FALSE }
 };
 
-static Uint32 SDL_GetWindowFlagProperties(SDL_PropertiesID props)
+static SDL_WindowFlags SDL_GetWindowFlagProperties(SDL_PropertiesID props)
 {
     unsigned i;
-    SDL_WindowFlags flags = (Uint32)SDL_GetNumberProperty(props, "flags", 0);
+    SDL_WindowFlags flags = (SDL_WindowFlags)SDL_GetNumberProperty(props, "flags", 0);
 
     for (i = 0; i < SDL_arraysize(SDL_WindowFlagProperties); ++i) {
         if (SDL_WindowFlagProperties[i].invert_value) {
