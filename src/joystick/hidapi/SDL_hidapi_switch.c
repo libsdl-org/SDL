@@ -762,7 +762,10 @@ static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
      * battery level over Bluetooth anyway.
      */
     if (ctx->device->vendor_id == USB_VENDOR_NINTENDO) {
+        /* However, switching to full controller state breaks DirectInput, so let's not do that */
+        #if 0
         input_mode = k_eSwitchInputReportIDs_FullControllerState;
+        #endif
     }
     return input_mode;
 }
