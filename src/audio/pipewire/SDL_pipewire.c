@@ -1108,7 +1108,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     const struct spa_pod *params = NULL;
     struct SDL_PrivateAudioData *priv;
     struct pw_properties *props;
-    const char *app_name, *app_id, *stream_name, *stream_role, *error;
+    const char *app_name, *icon_name, *app_id, *stream_name, *stream_role, *error;
     Uint32 node_id = !device->handle ? PW_ID_ANY : PW_HANDLE_TO_ID(device->handle);
     const SDL_bool iscapture = device->iscapture;
     int res;
@@ -1116,13 +1116,18 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     // Clamp the period size to sane values
     const int min_period = PW_MIN_SAMPLES * SPA_MAX(device->spec.freq / PW_BASE_CLOCK_RATE, 1);
 
-    // Get the hints for the application name, stream name and role
+    // Get the hints for the application name, icon name, stream name and role
     app_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME);
     if (!app_name || *app_name == '\0') {
         app_name = SDL_GetHint(SDL_HINT_APP_NAME);
         if (!app_name || *app_name == '\0') {
             app_name = "SDL Application";
         }
+    }
+
+    icon_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_ICON_NAME);
+    if (!icon_name || *icon_name == '\0') {
+        icon_name = "applications-games";
     }
 
     // App ID. Default to NULL if not available.
@@ -1190,6 +1195,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_CATEGORY, iscapture ? "Capture" : "Playback");
     PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_ROLE, stream_role);
     PIPEWIRE_pw_properties_set(props, PW_KEY_APP_NAME, app_name);
+    PIPEWIRE_pw_properties_set(props, PW_KEY_APP_ICON_NAME, icon_name);
     if (app_id) {
         PIPEWIRE_pw_properties_set(props, PW_KEY_APP_ID, app_id);
     }
