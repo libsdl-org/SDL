@@ -107,6 +107,12 @@ static int V4L2_WaitDevice(SDL_CameraDevice *device)
         if ((retval == -1) && (errno == EINTR)) {
             retval = 0;  // pretend it was a timeout, keep looping.
         }
+
+        // Thread is requested to shut down
+        if (SDL_AtomicGet(&device->shutdown)) {
+            return 0;
+        }
+
     } while (retval == 0);
 
     return retval;
