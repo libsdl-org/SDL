@@ -66,6 +66,9 @@ static const char *(*PULSEAUDIO_pa_get_library_version)(void);
 static pa_channel_map *(*PULSEAUDIO_pa_channel_map_init_auto)(
     pa_channel_map *, unsigned, pa_channel_map_def_t);
 static const char *(*PULSEAUDIO_pa_strerror)(int);
+static pa_proplist *(*PULSEAUDIO_pa_proplist_new)(void);
+static void (*PULSEAUDIO_pa_proplist_free)(pa_proplist *);
+static int (*PULSEAUDIO_pa_proplist_sets)(pa_proplist *, const char *, const char *);
 
 static pa_threaded_mainloop *(*PULSEAUDIO_pa_threaded_mainloop_new)(void);
 static void (*PULSEAUDIO_pa_threaded_mainloop_set_name)(pa_threaded_mainloop *, const char *);
@@ -84,8 +87,9 @@ static void (*PULSEAUDIO_pa_operation_set_state_callback)(pa_operation *, pa_ope
 static void (*PULSEAUDIO_pa_operation_cancel)(pa_operation *);
 static void (*PULSEAUDIO_pa_operation_unref)(pa_operation *);
 
-static pa_context *(*PULSEAUDIO_pa_context_new)(pa_mainloop_api *,
-                                                const char *);
+static pa_context *(*PULSEAUDIO_pa_context_new_with_proplist)(pa_mainloop_api *,
+                                                const char *,
+                                                const pa_proplist *);
 static void (*PULSEAUDIO_pa_context_set_state_callback)(pa_context *, pa_context_notify_cb_t, void *);
 static int (*PULSEAUDIO_pa_context_connect)(pa_context *, const char *,
                                             pa_context_flags_t, const pa_spawn_api *);
@@ -205,7 +209,7 @@ static int load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_operation_get_state);
     SDL_PULSEAUDIO_SYM(pa_operation_cancel);
     SDL_PULSEAUDIO_SYM(pa_operation_unref);
-    SDL_PULSEAUDIO_SYM(pa_context_new);
+    SDL_PULSEAUDIO_SYM(pa_context_new_with_proplist);
     SDL_PULSEAUDIO_SYM(pa_context_set_state_callback);
     SDL_PULSEAUDIO_SYM(pa_context_connect);
     SDL_PULSEAUDIO_SYM(pa_context_get_sink_info_list);
@@ -238,6 +242,9 @@ static int load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_stream_set_write_callback);
     SDL_PULSEAUDIO_SYM(pa_stream_set_read_callback);
     SDL_PULSEAUDIO_SYM(pa_context_get_server_info);
+    SDL_PULSEAUDIO_SYM(pa_proplist_new);
+    SDL_PULSEAUDIO_SYM(pa_proplist_free);
+    SDL_PULSEAUDIO_SYM(pa_proplist_sets);
 
     // optional
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
@@ -337,6 +344,8 @@ static void PulseContextStateChangeCallback(pa_context *context, void *userdata)
 static int ConnectToPulseServer(void)
 {
     pa_mainloop_api *mainloop_api = NULL;
+    pa_proplist *proplist = NULL;
+    const char *icon_name;
     int state = 0;
 
     SDL_assert(pulseaudio_threaded_mainloop == NULL);
@@ -362,11 +371,22 @@ static int ConnectToPulseServer(void)
     mainloop_api = PULSEAUDIO_pa_threaded_mainloop_get_api(pulseaudio_threaded_mainloop);
     SDL_assert(mainloop_api != NULL); // this never fails, right?
 
-    pulseaudio_context = PULSEAUDIO_pa_context_new(mainloop_api, getAppName());
+    if (!(proplist = PULSEAUDIO_pa_proplist_new())) {
+        return SDL_SetError("pa_proplist_new() failed");
+    }
+
+    icon_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_ICON_NAME);
+    if (!icon_name || *icon_name == '\0') {
+        icon_name = "applications-games";
+    }
+    PULSEAUDIO_pa_proplist_sets(proplist, PA_PROP_APPLICATION_ICON_NAME, icon_name);
+
+    pulseaudio_context = PULSEAUDIO_pa_context_new_with_proplist(mainloop_api, getAppName(), proplist);
     if (!pulseaudio_context) {
-        SDL_SetError("pa_context_new() failed");
+        SDL_SetError("pa_context_new_with_proplist() failed");
         goto failed;
     }
+    PULSEAUDIO_pa_proplist_free(proplist);
 
     PULSEAUDIO_pa_context_set_state_callback(pulseaudio_context, PulseContextStateChangeCallback, NULL);
 
