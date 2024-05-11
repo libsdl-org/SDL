@@ -420,12 +420,6 @@ static void V4L2_CloseDevice(SDL_CameraDevice *device)
 
     if (device->hidden) {
         const io_method io = device->hidden->io;
-        const int fd = device->hidden->fd;
-
-        if ((io == IO_METHOD_MMAP) || (io == IO_METHOD_USERPTR)) {
-            enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            xioctl(fd, VIDIOC_STREAMOFF, &type);
-        }
 
         if (device->hidden->buffers) {
             switch (io) {
@@ -452,14 +446,34 @@ static void V4L2_CloseDevice(SDL_CameraDevice *device)
             }
 
             SDL_free(device->hidden->buffers);
+            device->hidden->buffers = NULL;
+        }
+
+        SDL_free(device->hidden);
+
+        device->hidden = NULL;
+    }
+}
+
+static void V4L2_StopDevice(SDL_CameraDevice *device)
+{
+    if (!device) {
+        return;
+    }
+
+    if (device->hidden) {
+        const io_method io = device->hidden->io;
+        const int fd = device->hidden->fd;
+
+        if ((io == IO_METHOD_MMAP) || (io == IO_METHOD_USERPTR)) {
+            enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            xioctl(fd, VIDIOC_STREAMOFF, &type);
         }
 
         if (fd != -1) {
             close(fd);
+            device->hidden->fd = -1;
         }
-        SDL_free(device->hidden);
-
-        device->hidden = NULL;
     }
 }
 
@@ -873,6 +887,7 @@ static SDL_bool V4L2_Init(SDL_CameraDriverImpl *impl)
     impl->DetectDevices = V4L2_DetectDevices;
     impl->OpenDevice = V4L2_OpenDevice;
     impl->CloseDevice = V4L2_CloseDevice;
+    impl->StopDevice = V4L2_StopDevice;
     impl->WaitDevice = V4L2_WaitDevice;
     impl->AcquireFrame = V4L2_AcquireFrame;
     impl->ReleaseFrame = V4L2_ReleaseFrame;

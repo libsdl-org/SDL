@@ -231,7 +231,10 @@ static void ClosePhysicalCameraDevice(SDL_CameraDevice *device)
 
     SDL_AtomicSet(&device->shutdown, 1);
 
-// !!! FIXME: the close_cond stuff from audio might help the race condition here.
+    // stop the device, so that the thread can end
+    if (camera_driver.impl.StopDevice) { // FIXME: this probably should be implemented for all backends
+        camera_driver.impl.StopDevice(device);
+    }
 
     if (device->thread != NULL) {
         SDL_WaitThread(device->thread, NULL);

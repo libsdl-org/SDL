@@ -163,6 +163,7 @@ typedef struct SDL_CameraDriverImpl
     void (*DetectDevices)(void);
     int (*OpenDevice)(SDL_CameraDevice *device, const SDL_CameraSpec *spec);
     void (*CloseDevice)(SDL_CameraDevice *device);
+    void (*StopDevice)(SDL_CameraDevice *device);
     int (*WaitDevice)(SDL_CameraDevice *device);
     int (*AcquireFrame)(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS); // set frame->pixels, frame->pitch, and *timestampNS!
     void (*ReleaseFrame)(SDL_CameraDevice *device, SDL_Surface *frame); // Reclaim frame->pixels and frame->pitch!
