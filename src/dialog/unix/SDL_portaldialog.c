@@ -170,7 +170,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
             goto not_our_signal;
         dbus->message_iter_get_basic(&signal_iter, &result);
 
-        if (result == 1) {
+        if (result == 1 || result == 2) {
             /* cancelled */
             const char *result_data[] = { NULL };
             signal_data->callback(signal_data->userdata, result_data, -1); /* TODO: Set this to the last selected filter */
