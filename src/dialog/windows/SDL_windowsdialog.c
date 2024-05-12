@@ -22,6 +22,7 @@
 #include "../SDL_dialog_utils.h"
 
 #include <windows.h>
+#include <commdlg.h>
 #include <shlobj.h>
 #include "../../core/windows/SDL_windows.h"
 #include "../../thread/SDL_systhread.h"
