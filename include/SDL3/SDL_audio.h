@@ -1358,7 +1358,7 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDevi
  *
  * \since This datatype is available since SDL 3.0.0.
  *
- * \sa SDL_SetAudioDevicePostmixCallback
+ * \sa SDL_SetAudioPostmixCallback
  */
 typedef void (SDLCALL *SDL_AudioPostmixCallback)(void *userdata, const SDL_AudioSpec *spec, float *buffer, int buflen);
 
