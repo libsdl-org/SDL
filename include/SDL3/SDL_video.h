@@ -958,18 +958,6 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, in
  *
  * These are additional supported properties on Wayland:
  *
- * - `SDL_PROP_WINDOW_CREATE_WAYLAND_SCALE_TO_DISPLAY_BOOLEAN` - true if the
- *   window should use forced scaling designed to produce 1:1 pixel mapping if
- *   not flagged as being DPI-aware. This is intended to allow legacy
- *   applications to be displayed without desktop scaling being applied, and
- *   has issues with certain display configurations, as this forces the window
- *   to behave in a way that Wayland desktops were not designed to
- *   accommodate. Potential issues include, but are not limited to: rounding
- *   errors can result when odd window sizes/scales are used, the window may
- *   be unusably small, the window may jump in visible size at times, the
- *   window may appear to be larger than the desktop space, and possible loss
- *   of cursor precision can occur. New applications should be designed with
- *   proper DPI awareness and handling instead of enabling this.
  * - `SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` - true if
  *   the application wants to use the Wayland surface for a custom role and
  *   does not want it attached to an XDG toplevel window. See
@@ -1038,7 +1026,6 @@ extern DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_Propertie
 #define SDL_PROP_WINDOW_CREATE_Y_NUMBER                            "y"
 #define SDL_PROP_WINDOW_CREATE_COCOA_WINDOW_POINTER                "cocoa.window"
 #define SDL_PROP_WINDOW_CREATE_COCOA_VIEW_POINTER                  "cocoa.view"
-#define SDL_PROP_WINDOW_CREATE_WAYLAND_SCALE_TO_DISPLAY_BOOLEAN    "wayland.scale_to_display"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN "wayland.surface_role_custom"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN   "wayland.create_egl_window"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER          "wayland.wl_surface"

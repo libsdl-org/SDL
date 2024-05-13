@@ -538,6 +538,7 @@ static void Wayland_move_window(SDL_Window *window)
                          */
                         FlushFullscreenEvents(window);
                         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, display->x, display->y);
+                        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DISPLAY_CHANGED, wind->last_displayID, 0);
                     }
                 }
                 break;
@@ -2212,20 +2213,6 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     const SDL_bool custom_surface_role = (external_surface != NULL) || SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN, SDL_FALSE);
     const SDL_bool create_egl_window = !!(window->flags & SDL_WINDOW_OPENGL) ||
                                        SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN, SDL_FALSE);
-    SDL_bool scale_to_display = !(window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) && !custom_surface_role &&
-                                SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_SCALE_TO_DISPLAY_BOOLEAN,
-                                                       SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY, SDL_FALSE));
-
-    /* Require viewports for display scaling. */
-    if (scale_to_display && !c->viewporter) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Display scaling requires the missing 'wp_viewporter' protocol: disabling");
-        scale_to_display = SDL_FALSE;
-    }
-
-    /* Require popups to have the same scaling mode as the parent. */
-    if (SDL_WINDOW_IS_POPUP(window) && scale_to_display != window->parent->driverdata->scale_to_display) {
-        return SDL_SetError("wayland: Popup windows must use the same scaling as their parent");
-    }
 
     data = SDL_calloc(1, sizeof(*data));
     if (!data) {
@@ -2250,7 +2237,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         data->scale_to_display = window->parent->driverdata->scale_to_display;
         data->windowed_scale_factor = window->parent->driverdata->windowed_scale_factor;
         EnsurePopupPositionIsValid(window, &window->x, &window->y);
-    } else if ((window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) || scale_to_display) {
+    } else if ((window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) || c->scale_to_display_enabled) {
         for (int i = 0; i < _this->num_displays; i++) {
             float scale = _this->displays[i]->driverdata->scale_factor;
             data->windowed_scale_factor = SDL_max(data->windowed_scale_factor, scale);
@@ -2259,7 +2246,7 @@ int Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
     data->outputs = NULL;
     data->num_outputs = 0;
-    data->scale_to_display = scale_to_display;
+    data->scale_to_display = c->scale_to_display_enabled;
 
     /* Cache the app_id at creation time, as it may change before the window is mapped. */
     data->app_id = SDL_strdup(SDL_GetAppID());
@@ -2507,6 +2494,17 @@ void Wayland_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, i
 
     *w = data->current.drawable_width;
     *h = data->current.drawable_height;
+}
+
+SDL_DisplayID Wayland_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_WindowData *wind = window->driverdata;
+
+    if (wind) {
+        return wind->last_displayID;
+    }
+
+    return 0;
 }
 
 void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
