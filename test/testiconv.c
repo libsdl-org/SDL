@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
     (void)fclose(file);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Total errors: %d\n", errors);
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
     return errors ? errors + 1 : 0;
 }
