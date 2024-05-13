@@ -2092,7 +2092,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 
     /* Choose a present mode. If vsync is requested, then use VK_PRESENT_MODE_FIFO_KHR which is guaranteed to be supported */
     VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
-    if (!rendererData->vsync) {
+    if (rendererData->vsync <= 0) {
         uint32_t presentModeCount = 0;
         result = vkGetPhysicalDeviceSurfacePresentModesKHR(rendererData->physicalDevice, rendererData->surface, &presentModeCount, NULL);
         if (result != VK_SUCCESS) {
@@ -2108,21 +2108,30 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                 return result;
             }
 
-            /* If vsync is not requested, in favor these options in order:
-               VK_PRESENT_MODE_IMMEDIATE_KHR    - no v-sync with tearing
-               VK_PRESENT_MODE_MAILBOX_KHR      - no v-sync without tearing
-               VK_PRESENT_MODE_FIFO_RELAXED_KHR - no v-sync, may tear */
-            for (uint32_t i = 0; i < presentModeCount; i++) {
-                if (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-                    presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-                    break;
+            if (rendererData->vsync == 0) {
+                /* If vsync is not requested, in favor these options in order:
+                   VK_PRESENT_MODE_IMMEDIATE_KHR    - no v-sync with tearing
+                   VK_PRESENT_MODE_MAILBOX_KHR      - no v-sync without tearing
+                   VK_PRESENT_MODE_FIFO_RELAXED_KHR - no v-sync, may tear */
+                for (uint32_t i = 0; i < presentModeCount; i++) {
+                    if (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+                        presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+                        break;
+                    }
+                    else if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+                        presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+                    }
+                    else if ((presentMode != VK_PRESENT_MODE_MAILBOX_KHR) &&
+                             (presentModes[i] == VK_PRESENT_MODE_FIFO_RELAXED_KHR)) {
+                        presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+                    }
                 }
-                else if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-                    presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-                }
-                else if ((presentMode != VK_PRESENT_MODE_MAILBOX_KHR) &&
-                         (presentModes[i] == VK_PRESENT_MODE_FIFO_RELAXED_KHR)) {
-                    presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+            } else if (rendererData->vsync == -1) {
+                for (uint32_t i = 0; i < presentModeCount; i++) {
+                    if (presentModes[i] == VK_PRESENT_MODE_FIFO_RELAXED_KHR) {
+                        presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+                        break;
+                    }
                 }
             }
             SDL_free(presentModes);
@@ -4026,6 +4035,7 @@ static int VULKAN_SetVSync(SDL_Renderer *renderer, const int vsync)
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
 
     switch (vsync) {
+    case -1:
     case 0:
     case 1:
         /* Supported */
