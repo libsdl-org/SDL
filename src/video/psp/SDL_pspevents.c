@@ -149,7 +149,7 @@ void PSP_InitOSKeymap(SDL_VideoDevice *_this)
     keymap[KEY_F13] = SDLK_PRINT;
     keymap[KEY_F14] = SDLK_PAUSE;
 
-    keymap[KEY_GRAVE] = SDLK_BACKQUOTE;
+    keymap[KEY_GRAVE] = SDLK_GRAVE;
     keymap[KEY_1] = SDLK_1;
     keymap[KEY_2] = SDLK_2;
     keymap[KEY_3] = SDLK_3;
@@ -190,7 +190,7 @@ void PSP_InitOSKeymap(SDL_VideoDevice *_this)
     keymap[KEY_K] = SDLK_k;
     keymap[KEY_L] = SDLK_l;
     keymap[KEY_SEMICOLON] = SDLK_SEMICOLON;
-    keymap[KEY_APOSTROPHE] = SDLK_QUOTE;
+    keymap[KEY_APOSTROPHE] = SDLK_APOSTROPHE;
     keymap[KEY_BACKSLASH] = SDLK_BACKSLASH;
 
     keymap[KEY_Z] = SDLK_z;
