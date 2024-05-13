@@ -93,6 +93,8 @@ struct SDL_VideoData
 
     int relative_mouse_mode;
     SDL_bool display_externally_owned;
+
+    SDL_bool scale_to_display_enabled;
 };
 
 struct SDL_DisplayData

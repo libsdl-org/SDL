@@ -185,6 +185,11 @@ static SDL_bool IsFullscreenOnly(SDL_VideoDevice *_this)
     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY);
 }
 
+static SDL_bool SDL_SendsDisplayChanges(SDL_VideoDevice *_this)
+{
+    return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES);
+}
+
 /* Hint to treat all window ops as synchronous */
 static SDL_bool syncHint;
 
@@ -1545,6 +1550,10 @@ SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
 
 static void SDL_CheckWindowDisplayChanged(SDL_Window *window)
 {
+    if (SDL_SendsDisplayChanges(_this)) {
+        return;
+    }
+
     SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
 
     if (displayID != window->last_displayID) {
