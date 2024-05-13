@@ -175,7 +175,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             return FlipCamera();
 
         case SDL_EVENT_QUIT:
-            SDL_Log("Ctlr+C : Quit!");
+            SDL_Log("Quit!");
             return 1;
 
         case SDL_EVENT_CAMERA_DEVICE_APPROVED:
@@ -266,8 +266,5 @@ void SDL_AppQuit(void *appstate)
     SDL_ReleaseCameraFrame(camera, frame_current);
     SDL_CloseCamera(camera);
     SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
     SDLTest_CommonQuit(state);
 }
-
