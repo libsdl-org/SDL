@@ -43,14 +43,14 @@ struct Index {
     nodeParams.border_width = 3
     this.rootNodeController = addRootNode(this.windowId, this.uiContext as UIContext, nodeParams)
     entry.setRootViewControl(this.rootNodeController)
-    sdl.setRootViewControl(this.rootNodeController);
+    // sdl.setRootViewControl(this.rootNodeController);
 
-    // let childModel = new XComponentModel('1', XComponentType.SURFACE, "SDL2d")
-    // let childNodeParams = new NodeParams(0, 0, '333', '555', NodeType.XComponent, childModel);
-    // nodeParams.border_color = "#FF0000"
-    // nodeParams.border_width = 3
-    // this.childNodeController = addChildNode(this.rootNodeController, childNodeParams)
-    // entry.setChildViewControl(this.childNodeController)
+    let childModel = new XComponentModel('1', XComponentType.SURFACE, "SDL2d")
+    let childNodeParams = new NodeParams(0, 0, '333', '555', NodeType.XComponent, childModel);
+    nodeParams.border_color = "#FF0000"
+    nodeParams.border_width = 3
+    this.childNodeController = addChildNode(this.rootNodeController, childNodeParams)
+    entry.setChildViewControl(this.childNodeController)
     notifySdlAboutToAppear(getContext(this), this.windowId)
   }
 

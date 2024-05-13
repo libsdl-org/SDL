@@ -411,9 +411,12 @@ export function notifySdlAboutToAppear(resourceMannagerContext: Context, windowI
   setWindowId(windowId)
   setScreenResolution()
   sdl.init(callbackRef)
+  sdl.setRootViewControl();
+  sdl.sdlAppEntry("libentry.so", "mainGles", "--trackmem")
   // sdl.sdlAppEntry("libentry.so", "mainCapture")
   // sdl.sdlAppEntry("libentry.so", "mainMultiwindow")
-  sdl.sdlAppEntry("libentry.so", "mainYuv", "testyuv.bmp")
+  // sdl.sdlAppEntry("libentry.so", "mainYuv", "testyuv.bmp")
+  sdl.sdlAppEntry("libentry.so", "mainMove", "testyuv.bmp")
 }
 
 export function notifySdlAboutToDisappear() {

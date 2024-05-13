@@ -1405,7 +1405,6 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
             } else {
                 SDL_strlcpy(title, state->window_title, SDL_arraysize(title));
             }
-<<<<<<< HEAD
             props = SDL_CreateProperties();
             SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title);
             SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, r.x);
@@ -1415,10 +1414,6 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
             SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, state->window_flags);
             state->windows[i] = SDL_CreateWindowWithProperties(props);
             SDL_DestroyProperties(props);
-=======
-            state->windows[i] =
-                SDL_CreateWindowFrom((void *)g_rootView);
->>>>>>> 35e46cc79 (multiwidow)
             if (!state->windows[i]) {
                 SDL_Log("Couldn't create window: %s",
                         SDL_GetError());

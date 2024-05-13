@@ -576,10 +576,11 @@ napi_value SDLNapi::OHOS_OnNativeFocusChanged(napi_env env, napi_callback_info i
 
 napi_value SDLNapi::OHOS_SetRootViewControl(napi_env env, napi_callback_info info)
 {
-    size_t argc = 1;
-    napi_value argv[1];
-    napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
-    napi_create_reference(env, argv[0], 1, &g_rootNodeRef);
+//     size_t argc = 1;
+//     napi_value argv[1];
+//     napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
+//     napi_create_reference(env, argv[0], 1, &g_rootNodeRef);
+    OHOS_GetRootNode(g_windowId, &g_rootNodeRef);
     return nullptr;
 }
 
