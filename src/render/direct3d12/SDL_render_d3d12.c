@@ -1318,6 +1318,8 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         result = DXGI_ERROR_UNSUPPORTED;
     }
 
+    SDL_SetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, data->swapChain);
+
 done:
     SAFE_RELEASE(swapChain);
     return result;

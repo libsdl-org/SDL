@@ -1024,6 +1024,8 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         }
     }
 
+    SDL_SetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D11_SWAPCHAIN_POINTER, data->swapChain);
+
 done:
     SAFE_RELEASE(swapChain3);
     SAFE_RELEASE(coreWindow);
@@ -1612,7 +1614,7 @@ static int D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (textureData->nv12) {
         const Uint8 *Yplane = (const Uint8 *)srcPixels;
         const Uint8 *UVplane = Yplane + rect->h * srcPitch;
-        
+
         return D3D11_UpdateTextureNV(renderer, texture, rect, Yplane, srcPitch, UVplane, srcPitch);
 
     } else if (textureData->yuv) {
