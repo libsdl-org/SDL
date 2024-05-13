@@ -249,7 +249,8 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  *   still uses the sRGB colorspace, but values can go beyond 1.0 and float
  *   (linear) format textures can be used for HDR content.
  * - `SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER`: non-zero if you want
- *   present synchronized with the refresh rate. This property can take any value that is supported by SDL_SetRenderVSync() for the renderer.
+ *   present synchronized with the refresh rate. This property can take any
+ *   value that is supported by SDL_SetRenderVSync() for the renderer.
  *
  * With the vulkan renderer:
  *
@@ -360,7 +361,8 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  * - `SDL_PROP_RENDERER_SURFACE_POINTER`: the surface where rendering is
  *   displayed, if this is a software renderer without a window
  * - `SDL_PROP_RENDERER_VSYNC_NUMBER`: the current vsync setting
- * - `SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER`: the maximum texture width and height
+ * - `SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER`: the maximum texture width
+ *   and height
  * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value
  *   describing the colorspace for output to the display, defaults to
  *   SDL_COLORSPACE_SRGB.
@@ -2136,7 +2138,12 @@ extern DECLSPEC int SDLCALL SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer
  * Toggle VSync of the given renderer.
  *
  * \param renderer The renderer to toggle
- * \param vsync the vertical refresh sync interval, 1 to synchronize present with every vertical refresh, 2 to synchronize present with every second vertical refresh, etc., or -1 for late swap tearing (adaptive vsync). Not every value is supported by every renderer, so you should check the return value to see whether the requested setting is supported.
+ * \param vsync the vertical refresh sync interval, 1 to synchronize present
+ *              with every vertical refresh, 2 to synchronize present with
+ *              every second vertical refresh, etc., or -1 for late swap
+ *              tearing (adaptive vsync). Not every value is supported by
+ *              every renderer, so you should check the return value to see
+ *              whether the requested setting is supported.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
