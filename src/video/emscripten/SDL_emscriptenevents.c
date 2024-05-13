@@ -199,7 +199,7 @@ static const SDL_Keycode emscripten_keycode_table[] = {
     /* 157 */ SDLK_UNKNOWN,
     /* 158 */ SDLK_UNKNOWN,
     /* 159 */ SDLK_UNKNOWN,
-    /* 160 */ SDLK_BACKQUOTE,
+    /* 160 */ SDLK_GRAVE,
     /* 161 */ SDLK_UNKNOWN,
     /* 162 */ SDLK_UNKNOWN,
     /* 163 */ SDLK_KP_HASH, /*KaiOS phone keypad*/
@@ -231,7 +231,7 @@ static const SDL_Keycode emscripten_keycode_table[] = {
     /* 189 */ SDLK_MINUS, /*IE, Chrome, D3E legacy*/
     /* 190 */ SDLK_PERIOD,
     /* 191 */ SDLK_SLASH,
-    /* 192 */ SDLK_BACKQUOTE, /*FX, D3E legacy (SDLK_APOSTROPHE in IE/Chrome)*/
+    /* 192 */ SDLK_GRAVE, /*FX, D3E legacy (SDLK_APOSTROPHE in IE/Chrome)*/
     /* 193 */ SDLK_UNKNOWN,
     /* 194 */ SDLK_UNKNOWN,
     /* 195 */ SDLK_UNKNOWN,
@@ -261,7 +261,7 @@ static const SDL_Keycode emscripten_keycode_table[] = {
     /* 219 */ SDLK_LEFTBRACKET,
     /* 220 */ SDLK_BACKSLASH,
     /* 221 */ SDLK_RIGHTBRACKET,
-    /* 222 */ SDLK_QUOTE, /*FX, D3E legacy*/
+    /* 222 */ SDLK_APOSTROPHE, /*FX, D3E legacy*/
 };
 
 /*

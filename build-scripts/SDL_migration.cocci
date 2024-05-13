@@ -3144,3 +3144,11 @@ typedef SDL_Colour, SDL_Color;
 - SDL_iPhoneSetEventPump
 + SDL_iOSSetEventPump
   (...)
+@@
+@@
+- SDLK_QUOTE
++ SDLK_APOSTROPHE
+@@
+@@
+- SDLK_BACKQUOTE
++ SDLK_GRAVE
