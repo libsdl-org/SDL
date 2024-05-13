@@ -2039,29 +2039,6 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
     }
 
     switch (event->type) {
-    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-    {
-        SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
-        if (window) {
-            /* Clear cache to avoid stale textures */
-            SDLTest_CleanupTextDrawing();
-            for (i = 0; i < state->num_windows; ++i) {
-                if (window == state->windows[i]) {
-                    if (state->targets[i]) {
-                        SDL_DestroyTexture(state->targets[i]);
-                        state->targets[i] = NULL;
-                    }
-                    if (state->renderers[i]) {
-                        SDL_DestroyRenderer(state->renderers[i]);
-                        state->renderers[i] = NULL;
-                    }
-                    SDL_DestroyWindow(state->windows[i]);
-                    state->windows[i] = NULL;
-                    break;
-                }
-            }
-        }
-    } break;
     case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
         if (state->auto_scale_content) {
             SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
