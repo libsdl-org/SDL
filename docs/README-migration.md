@@ -905,6 +905,7 @@ The following symbols have been renamed:
 * KMOD_SHIFT => SDL_KMOD_SHIFT
 * SDLK_BACKQUOTE => SDLK_GRAVE
 * SDLK_QUOTE => SDLK_APOSTROPHE
+* SDLK_QUOTEDBL => SDLK_DBLAPOSTROPHE
 
 ## SDL_loadso.h
 
