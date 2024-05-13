@@ -3093,6 +3093,7 @@ extern "C" {
 
 /**
  * A variable forcing non-DPI-aware Wayland windows to output at 1:1 scaling.
+ *
  * This must be set before initializing the video subsystem.
  *
  * When this hint is set, Wayland windows that are not flagged as being
@@ -3106,9 +3107,12 @@ extern "C" {
  * - Rounding errors can result with odd window sizes and/or desktop scales,
  *   which can cause the window contents to appear slightly blurry.
  * - The window may be unusably small on scaled desktops.
- * - The window may jump in size when moving between displays of different scale factors.
- * - Displays may appear to overlap when using a multi-monitor setup with scaling enabled.
- * - Possible loss of cursor precision due to the logical size of the window being reduced.
+ * - The window may jump in size when moving between displays of different
+ *   scale factors.
+ * - Displays may appear to overlap when using a multi-monitor setup with
+ *   scaling enabled.
+ * - Possible loss of cursor precision due to the logical size of the window
+ *   being reduced.
  *
  * New applications should be designed with proper DPI awareness handling
  * instead of enabling this.
