@@ -212,6 +212,8 @@ typedef struct
     ID3D12GraphicsCommandList2 *commandList;
     DXGI_SWAP_EFFECT swapEffect;
     UINT swapFlags;
+    UINT syncInterval;
+    UINT presentFlags;
     DXGI_FORMAT renderTargetFormat;
     SDL_bool pixelSizeChanged;
 
@@ -3085,10 +3087,6 @@ done:
 static int D3D12_RenderPresent(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    UINT syncInterval;
-    UINT presentFlags;
-#endif
     HRESULT result;
 
     /* Transition the render target to present state */
@@ -3104,18 +3102,10 @@ static int D3D12_RenderPresent(SDL_Renderer *renderer)
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     result = D3D12_XBOX_PresentFrame(data->commandQueue, data->frameToken, data->renderTargets[data->currentBackBufferIndex]);
 #else
-    if (renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) {
-        syncInterval = 1;
-        presentFlags = 0;
-    } else {
-        syncInterval = 0;
-        presentFlags = DXGI_PRESENT_ALLOW_TEARING;
-    }
-
     /* The application may optionally specify "dirty" or "scroll"
      * rects to improve efficiency in certain scenarios.
      */
-    result = D3D_CALL(data->swapChain, Present, syncInterval, presentFlags);
+    result = D3D_CALL(data->swapChain, Present, data->syncInterval, data->presentFlags);
 #endif
 
     if (FAILED(result) && result != DXGI_ERROR_WAS_STILL_DRAWING) {
@@ -3166,10 +3156,18 @@ static int D3D12_RenderPresent(SDL_Renderer *renderer)
 
 static int D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
-    if (vsync) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
+
+    if (vsync < 0) {
+        return SDL_Unsupported();
+    }
+
+    if (vsync > 0) {
+        data->syncInterval = vsync;
+        data->presentFlags = 0;
     } else {
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+        data->syncInterval = 0;
+        data->presentFlags = DXGI_PRESENT_ALLOW_TEARING;
     }
     return 0;
 }
@@ -3221,6 +3219,7 @@ int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propert
     renderer->RenderPresent = D3D12_RenderPresent;
     renderer->DestroyTexture = D3D12_DestroyTexture;
     renderer->DestroyRenderer = D3D12_DestroyRenderer;
+    renderer->SetVSync = D3D12_SetVSync;
     renderer->driverdata = data;
     D3D12_InvalidateCachedState(renderer);
 
@@ -3234,13 +3233,10 @@ int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propert
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
-    renderer->info.max_texture_width = 16384;
-    renderer->info.max_texture_height = 16384;
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
 
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-    renderer->SetVSync = D3D12_SetVSync;
+    data->syncInterval = 0;
+    data->presentFlags = DXGI_PRESENT_ALLOW_TEARING;
 
     /* HACK: make sure the SDL_Renderer references the SDL_Window data now, in
      * order to give init functions access to the underlying window handle:

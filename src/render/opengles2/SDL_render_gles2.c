@@ -2014,12 +2014,19 @@ static int GLES2_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     int retval;
     int interval = 0;
-    if (vsync) {
-        retval = SDL_GL_SetSwapInterval(1);
-    } else {
-        retval = SDL_GL_SetSwapInterval(0);
+
+#ifdef SDL_PLATFORM_WINRT
+    /* DLudwig, 2013-11-29: ANGLE for WinRT doesn't seem to work unless VSync
+     * is turned on.  Not doing so will freeze the screen's contents to that
+     * of the first drawn frame.
+     */
+    if (vsync == 0) {
+        return SDL_Unsupported();
     }
-    if (retval != 0) {
+#endif
+
+    retval = SDL_GL_SetSwapInterval(vsync);
+    if (retval < 0) {
         return retval;
     }
 
@@ -2027,13 +2034,10 @@ static int GLES2_SetVSync(SDL_Renderer *renderer, const int vsync)
     if (retval < 0) {
         return retval;
     }
-
-    if (interval != 0) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    } else {
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    if (interval != vsync) {
+        return SDL_Unsupported();
     }
-    return retval;
+    return 0;
 }
 
 /*************************************************************************************************
@@ -2117,29 +2121,6 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         goto error;
     }
 
-#ifdef SDL_PLATFORM_WINRT
-    /* DLudwig, 2013-11-29: ANGLE for WinRT doesn't seem to work unless VSync
-     * is turned on.  Not doing so will freeze the screen's contents to that
-     * of the first drawn frame.
-     */
-    SDL_SetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_TRUE);
-#endif
-
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        SDL_GL_SetSwapInterval(1);
-    } else {
-        SDL_GL_SetSwapInterval(0);
-    }
-
-    {
-        int interval = 0;
-        if (SDL_GL_GetSwapInterval(&interval) < 0) {
-            /* Error */
-        } else if (interval != 0) {
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-        }
-    }
-
     /* Check for debug output support */
     if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &value) == 0 &&
         (value & SDL_GL_CONTEXT_DEBUG_FLAG)) {
@@ -2148,10 +2129,7 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
 
     value = 0;
     data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
-    renderer->info.max_texture_width = value;
-    value = 0;
-    data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
-    renderer->info.max_texture_height = value;
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, value);
 
 #if USE_VERTEX_BUFFER_OBJECTS
     /* we keep a few of these and cycle through them, so data can live for a few frames. */

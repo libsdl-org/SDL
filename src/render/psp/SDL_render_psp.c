@@ -1333,18 +1333,11 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR4444);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-    renderer->info.max_texture_width = 512;
-    renderer->info.max_texture_height = 512;
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 512);
 
     data->initialized = SDL_TRUE;
     data->most_recent_target = NULL;
     data->least_recent_target = NULL;
-
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        data->vsync = SDL_TRUE;
-    } else {
-        data->vsync = SDL_FALSE;
-    }
 
     pixelformat = PixelFormatToPSPFMT(SDL_GetWindowPixelFormat(window));
     switch (pixelformat) {
@@ -1399,9 +1392,6 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     sceKernelRegisterSubIntrHandler(PSP_VBLANK_INT, 0, psp_on_vblank, data);
     sceKernelEnableSubIntr(PSP_VBLANK_INT, 0);
 
-    if (data->vsync) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
     return 0;
 }
 

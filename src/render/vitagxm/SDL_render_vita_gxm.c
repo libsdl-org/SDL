@@ -185,10 +185,8 @@ static int VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
     VITA_GXM_RenderData *data = renderer->driverdata;
     if (vsync) {
         data->displayData.wait_vblank = SDL_TRUE;
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     } else {
         data->displayData.wait_vblank = SDL_FALSE;
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
     }
     return 0;
 }
@@ -246,17 +244,9 @@ static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, S
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
-    renderer->info.max_texture_width = 4096;
-    renderer->info.max_texture_height = 4096;
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 4096);
 
     data->initialized = SDL_TRUE;
-
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        data->displayData.wait_vblank = SDL_TRUE;
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    } else {
-        data->displayData.wait_vblank = SDL_FALSE;
-    }
 
 #ifdef DEBUG_RAZOR
     sceSysmoduleLoadModule(SCE_SYSMODULE_RAZOR_HUD);

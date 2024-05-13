@@ -1829,17 +1829,25 @@ static int METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
 #if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
     if (@available(macOS 10.13, *)) {
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
-        if (vsync) {
-            data.mtllayer.displaySyncEnabled = YES;
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-        } else {
+        switch (vsync) {
+        case 0:
             data.mtllayer.displaySyncEnabled = NO;
-            renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+            break;
+        case 1:
+            data.mtllayer.displaySyncEnabled = YES;
+            break;
+        default:
+            return SDL_Unsupported();
         }
         return 0;
     }
 #endif
-    return SDL_SetError("This Apple OS does not support displaySyncEnabled!");
+    switch (vsync) {
+    case 1:
+        return 0;
+    default:
+        return SDL_Unsupported();
+    }
 }
 
 static SDL_MetalView GetWindowView(SDL_Window *window)
@@ -2153,15 +2161,9 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
 
 #if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
         if (@available(macOS 10.13, *)) {
-            data.mtllayer.displaySyncEnabled = SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE);
-            if (data.mtllayer.displaySyncEnabled) {
-                renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-            }
-        } else
-#endif
-        {
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+            data.mtllayer.displaySyncEnabled = NO;
         }
+#endif
 
         /* https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf */
         maxtexsize = 4096;
@@ -2197,8 +2199,7 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         }
 #endif
 
-        renderer->info.max_texture_width = maxtexsize;
-        renderer->info.max_texture_height = maxtexsize;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, maxtexsize);
 
         return 0;
     }

@@ -1179,7 +1179,7 @@ static int SW_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
     const SDL_bool no_hint_set = (!hint || !*hint);
 
     if (no_hint_set) {
-        if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
+        if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0)) {
             SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
         } else {
             SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0");

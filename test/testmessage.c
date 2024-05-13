@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
         /* On wayland, no window will actually show until something has
            actually been displayed.
         */
-        SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL, 0);
+        SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
         SDL_RenderPresent(renderer);
 
         success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,

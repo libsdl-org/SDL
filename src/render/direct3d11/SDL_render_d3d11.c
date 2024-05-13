@@ -170,6 +170,8 @@ typedef struct
     ID3D11DeviceContext1 *d3dContext;
     IDXGISwapChain1 *swapChain;
     DXGI_SWAP_EFFECT swapEffect;
+    UINT syncInterval;
+    UINT presentFlags;
     ID3D11RenderTargetView *mainRenderTargetView;
     ID3D11RenderTargetView *currentOffscreenRenderTargetView;
     ID3D11InputLayout *inputLayout;
@@ -690,21 +692,21 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     switch (data->featureLevel) {
     case D3D_FEATURE_LEVEL_11_1:
     case D3D_FEATURE_LEVEL_11_0:
-        renderer->info.max_texture_width = renderer->info.max_texture_height = 16384;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
         break;
 
     case D3D_FEATURE_LEVEL_10_1:
     case D3D_FEATURE_LEVEL_10_0:
-        renderer->info.max_texture_width = renderer->info.max_texture_height = 8192;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 8192);
         break;
 
     case D3D_FEATURE_LEVEL_9_3:
-        renderer->info.max_texture_width = renderer->info.max_texture_height = 4096;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 4096);
         break;
 
     case D3D_FEATURE_LEVEL_9_2:
     case D3D_FEATURE_LEVEL_9_1:
-        renderer->info.max_texture_width = renderer->info.max_texture_height = 2048;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 2048);
         break;
 
     default:
@@ -2692,31 +2694,19 @@ done:
 static int D3D11_RenderPresent(SDL_Renderer *renderer)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
-    UINT syncInterval;
-    UINT presentFlags;
     HRESULT result;
     DXGI_PRESENT_PARAMETERS parameters;
 
     SDL_zero(parameters);
 
 #if SDL_WINAPI_FAMILY_PHONE
-    syncInterval = 1;
-    presentFlags = 0;
-    result = IDXGISwapChain_Present(data->swapChain, syncInterval, presentFlags);
+    result = IDXGISwapChain_Present(data->swapChain, data->syncInterval, data->presentFlags);
 #else
-    if (renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) {
-        syncInterval = 1;
-        presentFlags = 0;
-    } else {
-        syncInterval = 0;
-        presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
-    }
-
     /* The application may optionally specify "dirty" or "scroll"
      * rects to improve efficiency in certain scenarios.
      * This option is not available on Windows Phone 8, to note.
      */
-    result = IDXGISwapChain1_Present1(data->swapChain, syncInterval, presentFlags, &parameters);
+    result = IDXGISwapChain1_Present1(data->swapChain, data->syncInterval, data->presentFlags, &parameters);
 #endif
 
     /* Discard the contents of the render target.
@@ -2747,19 +2737,39 @@ static int D3D11_RenderPresent(SDL_Renderer *renderer)
     return 0;
 }
 
-#if SDL_WINAPI_FAMILY_PHONE
-/* no-op. */
-#else
 static int D3D11_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
-    if (vsync) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
+
+#if SDL_WINAPI_FAMILY_PHONE
+    /* VSync is required in Windows Phone, at least for Win Phone 8.0 and 8.1.
+     * Failure to use it seems to either result in:
+     *
+     *  - with the D3D11 debug runtime turned OFF, vsync seemingly gets turned
+     *    off (framerate doesn't get capped), but nothing appears on-screen
+     *
+     *  - with the D3D11 debug runtime turned ON, vsync gets automatically
+     *    turned back on, and the following gets output to the debug console:
+     *
+     *    DXGI ERROR: IDXGISwapChain::Present: Interval 0 is not supported, changed to Interval 1. [ UNKNOWN ERROR #1024: ]
+     */
+    if (vsync == 0) {
+        return SDL_Unsupported();
+    }
+#endif
+    if (vsync < 0) {
+        return SDL_Unsupported();
+    }
+
+    if (vsync > 0) {
+        data->syncInterval = vsync;
+        data->presentFlags = 0;
     } else {
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+        data->syncInterval = 0;
+        data->presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
     }
     return 0;
 }
-#endif
 
 static int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
@@ -2803,6 +2813,7 @@ static int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     renderer->RenderPresent = D3D11_RenderPresent;
     renderer->DestroyTexture = D3D11_DestroyTexture;
     renderer->DestroyRenderer = D3D11_DestroyRenderer;
+    renderer->SetVSync = D3D11_SetVSync;
     renderer->driverdata = data;
     D3D11_InvalidateCachedState(renderer);
 
@@ -2817,25 +2828,8 @@ static int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
-#if SDL_WINAPI_FAMILY_PHONE
-    /* VSync is required in Windows Phone, at least for Win Phone 8.0 and 8.1.
-     * Failure to use it seems to either result in:
-     *
-     *  - with the D3D11 debug runtime turned OFF, vsync seemingly gets turned
-     *    off (framerate doesn't get capped), but nothing appears on-screen
-     *
-     *  - with the D3D11 debug runtime turned ON, vsync gets automatically
-     *    turned back on, and the following gets output to the debug console:
-     *
-     *    DXGI ERROR: IDXGISwapChain::Present: Interval 0 is not supported, changed to Interval 1. [ UNKNOWN ERROR #1024: ]
-     */
-    renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-#else
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-    renderer->SetVSync = D3D11_SetVSync;
-#endif
+    data->syncInterval = 0;
+    data->presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
 
     /* HACK: make sure the SDL_Renderer references the SDL_Window data now, in
      * order to give init functions access to the underlying window handle:

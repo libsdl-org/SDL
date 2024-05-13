@@ -2571,22 +2571,6 @@ extern "C" {
 #define SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE "SDL_RENDER_METAL_PREFER_LOW_POWER_DEVICE"
 
 /**
- * A variable controlling whether vsync is automatically disabled if doesn't
- * reach enough FPS.
- *
- * The variable can be set to the following values:
- *
- * - "0": It will be using VSYNC as defined in the main flag. (default)
- * - "1": If VSYNC was previously enabled, then it will disable VSYNC if
- *   doesn't reach enough speed
- *
- * This hint should be set before creating a renderer.
- *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC    "SDL_RENDER_PS2_DYNAMIC_VSYNC"
-
-/**
  * A variable controlling whether updates to the SDL screen surface should be
  * synchronized with the vertical refresh, to avoid tearing.
  *

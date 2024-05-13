@@ -295,18 +295,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (state->render_flags & SDL_RENDERER_PRESENTVSYNC) {
-        /* try late-swap-tearing first. If not supported, try normal vsync. */
-        if (SDL_GL_SetSwapInterval(-1) == 0) {
-            swap_interval = -1;
-        } else {
-            SDL_GL_SetSwapInterval(1);
-            swap_interval = 1;
-        }
-    } else {
-        SDL_GL_SetSwapInterval(0); /* disable vsync. */
-        swap_interval = 0;
-    }
+    SDL_GL_SetSwapInterval(state->render_vsync);
+    swap_interval = state->render_vsync;
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
     if (mode) {

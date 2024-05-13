@@ -105,7 +105,7 @@ static SDL_bool create_popup(struct PopupWindow *new_popup, SDL_bool is_menu)
                                     (int)x, (int)y + v_off, w, h, flags);
 
     if (new_win) {
-        new_renderer = SDL_CreateRenderer(new_win, state->renderdriver, state->render_flags);
+        new_renderer = SDL_CreateRenderer(new_win, state->renderdriver);
 
         new_popup->win = new_win;
         new_popup->renderer = new_renderer;

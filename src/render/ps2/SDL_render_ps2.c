@@ -54,7 +54,7 @@ typedef struct
     uint64_t drawColor;
     SDL_Rect *viewport;
     int32_t vsync_callback_id;
-    uint8_t vsync; /* 0 (Disabled), 1 (Enabled), 2 (Dynamic) */
+    int vsync; /* 0 (Disabled), 1 (Enabled), -1 (Dynamic) */
 } PS2_RenderData;
 
 static int vsync_sema_id = 0;
@@ -544,7 +544,7 @@ static int PS2_RenderPresent(SDL_Renderer *renderer)
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
 
     if (data->gsGlobal->DoubleBuffering == GS_SETTING_OFF) {
-        if (data->vsync == 2) { // Dynamic
+        if (data->vsync == -1) { // Dynamic
             gsKit_sync(data->gsGlobal);
         } else if (data->vsync == 1) {
             gsKit_vsync_wait();
@@ -553,7 +553,7 @@ static int PS2_RenderPresent(SDL_Renderer *renderer)
     } else {
         gsKit_queue_exec(data->gsGlobal);
         gsKit_finish();
-        if (data->vsync == 2) { // Dynamic
+        if (data->vsync == -1) { // Dynamic
             gsKit_sync(data->gsGlobal);
         } else if (data->vsync == 1) {
             gsKit_vsync_wait();
@@ -607,8 +607,16 @@ static void PS2_DestroyRenderer(SDL_Renderer *renderer)
 static int PS2_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
-    SDL_bool dynamicVsync = SDL_GetHintBoolean(SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC, SDL_FALSE);
-    data->vsync = vsync ? (dynamicVsync ? 2 : 1) : 0;
+    switch (vsync) {
+    case -1:
+    case 0:
+    case 1:
+        // Supported
+        break;
+    default:
+        return SDL_Unsupported();
+    }
+    data->vsync = vsync;
     return 0;
 }
 
@@ -617,7 +625,6 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     PS2_RenderData *data;
     GSGLOBAL *gsGlobal;
     ee_sema_t sema;
-    SDL_bool dynamicVsync;
 
     SDL_SetupRendererColorspace(renderer, create_props);
 
@@ -669,10 +676,6 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     gsKit_clear(gsGlobal, GS_BLACK);
 
     data->gsGlobal = gsGlobal;
-    dynamicVsync = SDL_GetHintBoolean(SDL_HINT_RENDER_PS2_DYNAMIC_VSYNC, SDL_FALSE);
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        data->vsync = (dynamicVsync ? 2 : 1);
-    }
 
     renderer->WindowEvent = PS2_WindowEvent;
     renderer->CreateTexture = PS2_CreateTexture;
@@ -699,12 +702,8 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     renderer->info.name = PS2_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-    renderer->info.max_texture_width = 1024;
-    renderer->info.max_texture_height = 1024;
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);
 
-    if (data->vsync) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
     return 0;
 }
 

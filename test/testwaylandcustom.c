@@ -224,7 +224,7 @@ int main(int argc, char **argv)
     }
 
     /* Create the renderer */
-    renderer = SDL_CreateRenderer(window, NULL, 0);
+    renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Renderer creation failed");
         goto exit;

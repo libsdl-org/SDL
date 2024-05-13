@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     }
 
     /* Create a renderer */
-    sdlRenderer = SDL_CreateRenderer(sdlWindow, NULL, 0);
+    sdlRenderer = SDL_CreateRenderer(sdlWindow, NULL);
     if (!sdlRenderer) {
         goto exit;
     }

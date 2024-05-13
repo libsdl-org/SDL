@@ -69,15 +69,6 @@ extern "C" {
 #define SDL_SOFTWARE_RENDERER   "software"
 
 /**
- * Flags used when creating a rendering context.
- *
- * \since This datatype is available since SDL 3.0.0.
- */
-typedef Uint32 SDL_RendererFlags;
-
-#define SDL_RENDERER_PRESENTVSYNC   0x00000004u /**< Present is synchronized with the refresh rate */
-
-/**
  * Information on the capabilities of a render driver or context.
  *
  * \since This struct is available since SDL 3.0.0.
@@ -85,11 +76,8 @@ typedef Uint32 SDL_RendererFlags;
 typedef struct SDL_RendererInfo
 {
     const char *name;           /**< The name of the renderer */
-    SDL_RendererFlags flags;    /**< Supported ::SDL_RendererFlags */
     int num_texture_formats;    /**< The number of available texture formats */
     const SDL_PixelFormatEnum *texture_formats; /**< The available texture formats */
-    int max_texture_width;      /**< The maximum texture width */
-    int max_texture_height;     /**< The maximum texture height */
 } SDL_RendererInfo;
 
 /**
@@ -228,7 +216,6 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(const char *title, int w
  * \param window the window where rendering is displayed
  * \param name the name of the rendering driver to initialize, or NULL to
  *             initialize the first one supporting the requested flags
- * \param flags 0, or one or more SDL_RendererFlags OR'd together
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
@@ -241,7 +228,7 @@ extern DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(const char *title, int w
  * \sa SDL_GetRenderDriver
  * \sa SDL_GetRendererInfo
  */
-extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, const char *name, SDL_RendererFlags flags);
+extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, const char *name);
 
 /**
  * Create a 2D rendering context for a window, with the specified properties.
@@ -261,8 +248,8 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, co
  *   supports HDR output. If you select SDL_COLORSPACE_SRGB_LINEAR, drawing
  *   still uses the sRGB colorspace, but values can go beyond 1.0 and float
  *   (linear) format textures can be used for HDR content.
- * - `SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN`: true if you want
- *   present synchronized with the refresh rate
+ * - `SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER`: non-zero if you want
+ *   present synchronized with the refresh rate. This property can take any value that is supported by SDL_SetRenderVSync() for the renderer.
  *
  * With the vulkan renderer:
  *
@@ -297,7 +284,7 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_Prop
 #define SDL_PROP_RENDERER_CREATE_WINDOW_POINTER                             "window"
 #define SDL_PROP_RENDERER_CREATE_SURFACE_POINTER                            "surface"
 #define SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER                   "output_colorspace"
-#define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN                      "present_vsync"
+#define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER                       "present_vsync"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER                    "vulkan.instance"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_SURFACE_NUMBER                      "vulkan.surface"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_PHYSICAL_DEVICE_POINTER             "vulkan.physical_device"
@@ -372,6 +359,8 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(SDL_Renderer *renderer, SDL_Rend
  *   displayed, if any
  * - `SDL_PROP_RENDERER_SURFACE_POINTER`: the surface where rendering is
  *   displayed, if this is a software renderer without a window
+ * - `SDL_PROP_RENDERER_VSYNC_NUMBER`: the current vsync setting
+ * - `SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER`: the maximum texture width and height
  * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value
  *   describing the colorspace for output to the display, defaults to
  *   SDL_COLORSPACE_SRGB.
@@ -441,6 +430,8 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRendererProperties(SDL_Renderer 
 #define SDL_PROP_RENDERER_NAME_STRING                               "SDL.renderer.name"
 #define SDL_PROP_RENDERER_WINDOW_POINTER                            "SDL.renderer.window"
 #define SDL_PROP_RENDERER_SURFACE_POINTER                           "SDL.renderer.surface"
+#define SDL_PROP_RENDERER_VSYNC_NUMBER                              "SDL.renderer.vsync"
+#define SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER                   "SDL.renderer.max_texture_size"
 #define SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER                  "SDL.renderer.output_colorspace"
 #define SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN                       "SDL.renderer.HDR_enabled"
 #define SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT                     "SDL.renderer.SDR_white_point"
@@ -2145,7 +2136,7 @@ extern DECLSPEC int SDLCALL SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer
  * Toggle VSync of the given renderer.
  *
  * \param renderer The renderer to toggle
- * \param vsync 1 for on, 0 for off. All other values are reserved
+ * \param vsync the vertical refresh sync interval, 1 to synchronize present with every vertical refresh, 2 to synchronize present with every second vertical refresh, etc., or -1 for late swap tearing (adaptive vsync). Not every value is supported by every renderer, so you should check the return value to see whether the requested setting is supported.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -2159,8 +2150,7 @@ extern DECLSPEC int SDLCALL SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync
  * Get VSync of the given renderer.
  *
  * \param renderer The renderer to toggle
- * \param vsync an int filled with 1 for on, 0 for off. All other values are
- *              reserved
+ * \param vsync an int filled with the current vertical refresh sync interval
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
