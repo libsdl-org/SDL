@@ -748,7 +748,7 @@ static void SDLTest_PrintDisplayOrientation(char *text, size_t maxlen, SDL_Displ
     }
 }
 
-static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
+static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, SDL_WindowFlags flag)
 {
     switch (flag) {
     case SDL_WINDOW_FULLSCREEN:
@@ -820,7 +820,7 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, Uint32 flag)
     }
 }
 
-static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
+static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, SDL_WindowFlags flags)
 {
     const SDL_WindowFlags window_flags[] = {
         SDL_WINDOW_FULLSCREEN,
@@ -849,7 +849,7 @@ static void SDLTest_PrintWindowFlags(char *text, size_t maxlen, Uint32 flags)
     int i;
     int count = 0;
     for (i = 0; i < (sizeof(window_flags) / sizeof(window_flags[0])); ++i) {
-        const Uint32 flag = window_flags[i];
+        const SDL_WindowFlags flag = window_flags[i];
         if ((flags & flag) == flag) {
             if (count > 0) {
                 SDL_snprintfcat(text, maxlen, " | ");
