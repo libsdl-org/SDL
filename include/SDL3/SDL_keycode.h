@@ -57,7 +57,7 @@ typedef Uint32 SDL_Keycode;
 #define SDLK_TAB    '\t'
 #define SDLK_SPACE  ' '
 #define SDLK_EXCLAIM    '!'
-#define SDLK_QUOTEDBL   '"'
+#define SDLK_DBLAPOSTROPHE   '"'
 #define SDLK_HASH   '#'
 #define SDLK_PERCENT    '%'
 #define SDLK_DOLLAR '$'

@@ -358,6 +358,7 @@
 #define KMOD_SHIFT SDL_KMOD_SHIFT
 #define SDLK_BACKQUOTE SDLK_GRAVE
 #define SDLK_QUOTE SDLK_APOSTROPHE
+#define SDLK_QUOTEDBL SDLK_DBLAPOSTROPHE
 
 /* ##SDL_log.h */
 #define SDL_LogGetOutputFunction SDL_GetLogOutputFunction
@@ -866,6 +867,7 @@
 #define KMOD_SHIFT KMOD_SHIFT_renamed_SDL_KMOD_SHIFT
 #define SDLK_BACKQUOTE SDLK_BACKQUOTE_renamed_SDLK_GRAVE
 #define SDLK_QUOTE SDLK_QUOTE_renamed_SDLK_APOSTROPHE
+#define SDLK_QUOTEDBL SDLK_QUOTEDBL_renamed_SDLK_DBLAPOSTROPHE
 
 /* ##SDL_log.h */
 #define SDL_LogGetOutputFunction SDL_LogGetOutputFunction_renamed_SDL_GetLogOutputFunction
