@@ -1345,7 +1345,7 @@ extern DECLSPEC SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDevi
  * always provided here in SDL_AUDIO_F32 format.
  *
  * \param userdata a pointer provided by the app through
- *                 SDL_SetAudioPostmixCallback, for its own use.
+ *                 SDL_SetAudioDevicePostmixCallback, for its own use.
  * \param spec the current format of audio that is to be submitted to the
  *             audio device.
  * \param buffer the buffer of audio samples to be submitted. The callback can
