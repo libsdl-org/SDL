@@ -296,16 +296,17 @@ extern "C" {
  * Specify an application icon name for an audio device.
  *
  * Some audio backends (such as Pulseaudio and Pipewire) allow you to set an
- * XDG icon name for your application. Among other things, this icon might show
- * up in a system control panel that lets the user adjust the volume on specific
- * audio streams instead of using one giant master volume slider. Note that this
- * is unrelated to the icon used by the windowing system, which may be set with
- * SDL_SetWindowIcon (or via desktop file on Wayland).
+ * XDG icon name for your application. Among other things, this icon might
+ * show up in a system control panel that lets the user adjust the volume on
+ * specific audio streams instead of using one giant master volume slider.
+ * Note that this is unrelated to the icon used by the windowing system, which
+ * may be set with SDL_SetWindowIcon (or via desktop file on Wayland).
  *
  * Setting this to "" or leaving it unset will have SDL use a reasonable
- * default, "applications-games", which is likely to be installed.
- * See https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
- * and https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+ * default, "applications-games", which is likely to be installed. See
+ * https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+ * and
+ * https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
  * for the relevant XDG icon specs.
  *
  * This hint should be set before an audio device is opened.
