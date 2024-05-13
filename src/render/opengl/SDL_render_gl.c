@@ -1589,12 +1589,9 @@ static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     int retval;
     int interval = 0;
-    if (vsync) {
-        retval = SDL_GL_SetSwapInterval(1);
-    } else {
-        retval = SDL_GL_SetSwapInterval(0);
-    }
-    if (retval != 0) {
+
+    retval = SDL_GL_SetSwapInterval(vsync);
+    if (retval < 0) {
         return retval;
     }
 
@@ -1602,13 +1599,10 @@ static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
     if (retval < 0) {
         return retval;
     }
-
-    if (interval != 0) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    } else {
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    if (interval != vsync) {
+        return SDL_Unsupported();
     }
-    return retval;
+    return 0;
 }
 
 static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
@@ -1678,7 +1672,6 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
     renderer->DestroyTexture = GL_DestroyTexture;
     renderer->DestroyRenderer = GL_DestroyRenderer;
     renderer->SetVSync = GL_SetVSync;
-    renderer->info.flags = 0; /* will set some flags below. */
     renderer->driverdata = data;
     GL_InvalidateCachedState(renderer);
     renderer->window = window;
@@ -1710,21 +1703,6 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
        CGLEnable(CGLGetCurrentContext(), kCGLCEMPEngine);
      */
 #endif
-
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        SDL_GL_SetSwapInterval(1);
-    } else {
-        SDL_GL_SetSwapInterval(0);
-    }
-
-    {
-        int interval = 0;
-        if (SDL_GL_GetSwapInterval(&interval) < 0) {
-            /* Error */
-        } else if (interval != 0) {
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-        }
-    }
 
     /* Check for debug output support */
     if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &value) == 0 &&
@@ -1768,19 +1746,16 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
     if (non_power_of_two_supported) {
         data->GL_ARB_texture_non_power_of_two_supported = SDL_TRUE;
         data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
-        renderer->info.max_texture_width = value;
-        renderer->info.max_texture_height = value;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, value);
     } else if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle") ||
                SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle")) {
         data->GL_ARB_texture_rectangle_supported = SDL_TRUE;
         data->textype = GL_TEXTURE_RECTANGLE_ARB;
         data->glGetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB, &value);
-        renderer->info.max_texture_width = value;
-        renderer->info.max_texture_height = value;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, value);
     } else {
         data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
-        renderer->info.max_texture_width = value;
-        renderer->info.max_texture_height = value;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, value);
     }
 
     /* Check for multitexture support */

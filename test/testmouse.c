@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
 
     loop_data.done = SDL_FALSE;
 
-    loop_data.renderer = SDL_CreateRenderer(window, NULL, 0);
+    loop_data.renderer = SDL_CreateRenderer(window, NULL);
     if (!loop_data.renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);

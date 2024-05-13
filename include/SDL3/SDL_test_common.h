@@ -90,7 +90,7 @@ typedef struct
 
     /* Renderer info */
     const char *renderdriver;
-    Uint32 render_flags;
+    int render_vsync;
     SDL_bool skip_renderer;
     SDL_Renderer **renderers;
     SDL_Texture **targets;

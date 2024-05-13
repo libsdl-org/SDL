@@ -88,9 +88,9 @@ Here is a rough list of what works, and what doesn't:
     UWP itself).
   * turning off VSync when rendering on Windows Phone.  Attempts to turn VSync
     off on Windows Phone result either in Direct3D not drawing anything, or it
-    forcing VSync back on.  As such, SDL_RENDERER_PRESENTVSYNC will always get
-    turned-on on Windows Phone.  This limitation is not present in non-Phone
-    WinRT (such as Windows 8.x), where turning off VSync appears to work.
+    forcing VSync back on.  As such, vsync will always get turned-on on Windows
+    Phone.  This limitation is not present in non-Phone WinRT (such as Windows 8.x),
+    where turning off VSync appears to work.
   * probably anything else that's not listed as supported
 
 

@@ -857,7 +857,7 @@ int SDL_CreateWindowAndRenderer(const char *title, int width, int height, SDL_Wi
         return -1;
     }
 
-    *renderer = SDL_CreateRenderer(*window, NULL, 0);
+    *renderer = SDL_CreateRenderer(*window, NULL);
     if (!*renderer) {
         SDL_DestroyWindow(*window);
         *window = NULL;
@@ -969,7 +969,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
     if (hint && *hint) {
-        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE));
+        SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE));
     }
 
     if (surface) {
@@ -1018,16 +1018,6 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
             goto error;
         }
     }
-
-    if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        renderer->wanted_vsync = SDL_TRUE;
-
-        if (!(renderer->info.flags & SDL_RENDERER_PRESENTVSYNC)) {
-            renderer->simulate_vsync = SDL_TRUE;
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-        }
-    }
-    SDL_CalculateSimulatedVSyncInterval(renderer, window);
 
     VerifyDrawQueueFunctions(renderer);
 
@@ -1102,12 +1092,24 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
     }
 
+    int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
+    if (SDL_SetRenderVSync(renderer, vsync) < 0) {
+        if (vsync == 0) {
+            // Some renderers require vsync enabled
+            SDL_SetRenderVSync(renderer, 1);
+        }
+    }
+    SDL_CalculateSimulatedVSyncInterval(renderer, window);
+
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->info.name);
 
 #ifdef SDL_PLATFORM_ANDROID
     Android_ActivityMutex_Unlock();
 #endif
+
+    SDL_ClearError();
+
     return renderer;
 
 error:
@@ -1125,15 +1127,12 @@ error:
 #endif
 }
 
-SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name, SDL_RendererFlags flags)
+SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name)
 {
     SDL_Renderer *renderer;
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
     SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, name);
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
-        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_TRUE);
-    }
     renderer = SDL_CreateRendererWithProperties(props);
     SDL_DestroyProperties(props);
     return renderer;
@@ -1305,9 +1304,9 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         SDL_SetError("Texture dimensions can't be 0");
         return NULL;
     }
-    if ((renderer->info.max_texture_width && w > renderer->info.max_texture_width) ||
-        (renderer->info.max_texture_height && h > renderer->info.max_texture_height)) {
-        SDL_SetError("Texture dimensions are limited to %dx%d", renderer->info.max_texture_width, renderer->info.max_texture_height);
+    int max_texture_size = (int)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0);
+    if (max_texture_size && (w > max_texture_size || h > max_texture_size)) {
+        SDL_SetError("Texture dimensions are limited to %dx%d", max_texture_size, max_texture_size);
         return NULL;
     }
 
@@ -4726,10 +4725,6 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    if (vsync != 0 && vsync != 1) {
-        return SDL_Unsupported();
-    }
-
     renderer->wanted_vsync = vsync ? SDL_TRUE : SDL_FALSE;
 
     /* for the software renderer, forward eventually the call to the WindowTexture renderer */
@@ -4742,17 +4737,25 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
     }
 #endif
 
-    if (!renderer->SetVSync ||
-        renderer->SetVSync(renderer, vsync) != 0) {
-        renderer->simulate_vsync = vsync ? SDL_TRUE : SDL_FALSE;
-        if (renderer->simulate_vsync) {
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-        } else {
-            renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    if (!renderer->SetVSync) {
+        switch (vsync) {
+        case 0:
+            renderer->simulate_vsync = SDL_FALSE;
+            break;
+        case 1:
+            renderer->simulate_vsync = SDL_TRUE;
+            break;
+        default:
+            return SDL_Unsupported();
         }
-    } else {
-        renderer->simulate_vsync = SDL_FALSE;
+    } else if (renderer->SetVSync(renderer, vsync) < 0) {
+        if (vsync == 1) {
+            renderer->simulate_vsync = SDL_TRUE;
+        } else {
+            return -1;
+        }
     }
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VSYNC_NUMBER, vsync);
     return 0;
 }
 
@@ -4762,6 +4765,6 @@ int SDL_GetRenderVSync(SDL_Renderer *renderer, int *vsync)
     if (!vsync) {
         return SDL_InvalidParamError("vsync");
     }
-    *vsync = renderer->wanted_vsync;
+    *vsync = (int)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VSYNC_NUMBER, 0);
     return 0;
 }

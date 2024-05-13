@@ -535,7 +535,7 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "--vsync") == 0) {
-            state->render_flags |= SDL_RENDERER_PRESENTVSYNC;
+            state->render_vsync = 1;
             return 1;
         }
         if (SDL_strcasecmp(argv[index], "--noframe") == 0) {
@@ -952,18 +952,6 @@ static void SDLTest_PrintButtonMask(char *text, size_t maxlen, Uint32 flags)
     }
 }
 
-static void SDLTest_PrintRendererFlag(char *text, size_t maxlen, Uint32 flag)
-{
-    switch (flag) {
-    case SDL_RENDERER_PRESENTVSYNC:
-        SDL_snprintfcat(text, maxlen, "PresentVSync");
-        break;
-    default:
-        SDL_snprintfcat(text, maxlen, "0x%8.8x", flag);
-        break;
-    }
-}
-
 static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
 {
     const char *name = SDL_GetPixelFormatName(format);
@@ -1019,41 +1007,30 @@ static void SDLTest_PrintScaleMode(char *text, size_t maxlen, SDL_ScaleMode scal
     }
 }
 
-static void SDLTest_PrintRenderer(SDL_RendererInfo *info)
+static void SDLTest_PrintRenderer(SDL_Renderer *renderer)
 {
-    int i, count;
+    SDL_RendererInfo info;
+    int i;
     char text[1024];
+    int max_texture_size;
 
-    SDL_Log("  Renderer %s:\n", info->name);
+    SDL_GetRendererInfo(renderer, &info);
 
-    (void)SDL_snprintf(text, sizeof(text), "    Flags: 0x%8.8" SDL_PRIX32, info->flags);
-    SDL_snprintfcat(text, sizeof(text), " (");
-    count = 0;
-    for (i = 0; i < 8 * sizeof(info->flags); ++i) {
-        Uint32 flag = (1 << i);
-        if (info->flags & flag) {
-            if (count > 0) {
-                SDL_snprintfcat(text, sizeof(text), " | ");
-            }
-            SDLTest_PrintRendererFlag(text, sizeof(text), flag);
-            ++count;
-        }
-    }
-    SDL_snprintfcat(text, sizeof(text), ")");
-    SDL_Log("%s\n", text);
+    SDL_Log("  Renderer %s:\n", info.name);
+    SDL_Log("    VSync: %d\n", (int)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VSYNC_NUMBER, 0));
 
-    (void)SDL_snprintf(text, sizeof(text), "    Texture formats (%d): ", info->num_texture_formats);
-    for (i = 0; i < info->num_texture_formats; ++i) {
+    (void)SDL_snprintf(text, sizeof(text), "    Texture formats (%d): ", info.num_texture_formats);
+    for (i = 0; i < info.num_texture_formats; ++i) {
         if (i > 0) {
             SDL_snprintfcat(text, sizeof(text), ", ");
         }
-        SDLTest_PrintPixelFormat(text, sizeof(text), info->texture_formats[i]);
+        SDLTest_PrintPixelFormat(text, sizeof(text), info.texture_formats[i]);
     }
     SDL_Log("%s\n", text);
 
-    if (info->max_texture_width || info->max_texture_height) {
-        SDL_Log("    Max Texture Size: %dx%d\n",
-                info->max_texture_width, info->max_texture_height);
+    max_texture_size = (int)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0);
+    if (max_texture_size) {
+        SDL_Log("    Max Texture Size: %dx%d\n", max_texture_size, max_texture_size);
     }
 }
 
@@ -1395,8 +1372,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
             }
 
             if (!state->skip_renderer && (state->renderdriver || !(state->window_flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)))) {
-                state->renderers[i] = SDL_CreateRenderer(state->windows[i],
-                                                         state->renderdriver, state->render_flags);
+                state->renderers[i] = SDL_CreateRenderer(state->windows[i], state->renderdriver);
                 if (!state->renderers[i]) {
                     SDL_Log("Couldn't create renderer: %s\n",
                             SDL_GetError());
@@ -1406,6 +1382,9 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                     state->logical_w = state->window_w;
                     state->logical_h = state->window_h;
                 }
+                if (state->render_vsync) {
+                    SDL_SetRenderVSync(state->renderers[i], state->render_vsync);
+                }
                 if (SDL_SetRenderLogicalPresentation(state->renderers[i], state->logical_w, state->logical_h, state->logical_presentation, state->logical_scale_mode) < 0) {
                     SDL_Log("Couldn't set logical presentation: %s\n", SDL_GetError());
                     return SDL_FALSE;
@@ -1414,11 +1393,8 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                     SDL_SetRenderScale(state->renderers[i], state->scale, state->scale);
                 }
                 if (state->verbose & VERBOSE_RENDER) {
-                    SDL_RendererInfo info;
-
                     SDL_Log("Current renderer:\n");
-                    SDL_GetRendererInfo(state->renderers[i], &info);
-                    SDLTest_PrintRenderer(&info);
+                    SDLTest_PrintRenderer(state->renderers[i]);
                 }
             }
 

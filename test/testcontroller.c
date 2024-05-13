@@ -2028,7 +2028,7 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    screen = SDL_CreateRenderer(window, NULL, 0);
+    screen = SDL_CreateRenderer(window, NULL);
     if (!screen) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);

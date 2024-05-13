@@ -45,7 +45,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     }
 
     if (needs_renderer) {
-        SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL, 0);
+        SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
         if (renderer) {
             SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
             SDL_RenderClear(renderer);
@@ -1728,7 +1728,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
 
                 /* Wayland windows require that a frame be presented before they are fully mapped and visible onscreen. */
                 if (video_driver_is_wayland) {
-                    SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL, 0);
+                    SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
 
                     if (renderer) {
                         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);

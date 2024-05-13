@@ -137,7 +137,7 @@ SDL_DYNAPI_PROC(SDL_PixelFormat*,SDL_CreatePixelFormat,(SDL_PixelFormatEnum a),(
 SDL_DYNAPI_PROC(SDL_Window*,SDL_CreatePopupWindow,(SDL_Window *a, int b, int c, int d, int e, SDL_WindowFlags f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_CreateProperties,(void),(),return)
 SDL_DYNAPI_PROC(SDL_RWLock*,SDL_CreateRWLock,(void),(),return)
-SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateRenderer,(SDL_Window *a, const char *b, SDL_RendererFlags c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateRenderer,(SDL_Window *a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateRendererWithProperties,(SDL_PropertiesID a),(a),return)
 SDL_DYNAPI_PROC(SDL_Semaphore*,SDL_CreateSemaphore,(Uint32 a),(a),return)
 SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateSoftwareRenderer,(SDL_Surface *a),(a),return)
