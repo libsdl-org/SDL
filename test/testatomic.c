@@ -132,6 +132,7 @@ static void runAdder(void)
 {
     Uint32 start, end;
     int T = NThreads;
+    SDL_Thread *threads[NThreads];
 
     start = SDL_GetTicks();
 
@@ -139,12 +140,16 @@ static void runAdder(void)
 
     SDL_AtomicSet(&threadsRunning, NThreads);
 
-    while (T--) {
-        SDL_CreateThread(adder, "Adder", NULL);
+    for (i = 0; i < NThreads; i++) {
+        threads[i] = SDL_CreateThread(adder, "Adder", NULL);
     }
 
     while (SDL_AtomicGet(&threadsRunning) > 0) {
         SDL_SemWait(threadDone);
+    }
+
+    for (i = 0; i < NThreads; i++) {
+        SDL_WaitThread(threads[i], NULL);
     }
 
     SDL_DestroySemaphore(threadDone);
@@ -733,6 +738,7 @@ int main(int argc, char *argv[])
     RunFIFOTest(SDL_FALSE);
 #endif
     RunFIFOTest(SDL_TRUE);
+    SDL_Quit();
     SDLTest_CommonQuit(state);
     return 0;
 }
