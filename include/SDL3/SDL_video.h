@@ -1756,6 +1756,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool
  * \sa SDL_MinimizeWindow
  * \sa SDL_MaximizeWindow
  * \sa SDL_RestoreWindow
+ * \sa SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS
  */
 extern DECLSPEC int SDLCALL SDL_SyncWindow(SDL_Window *window);
 
