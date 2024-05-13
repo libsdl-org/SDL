@@ -3757,6 +3757,12 @@ void SDL_DestroyWindow(SDL_Window *window)
         SDL_DestroyRendererWithoutFreeing(renderer);
     }
 
+    /* Restore video mode, etc. */
+    SDL_UpdateFullscreenMode(window, SDL_FALSE, SDL_TRUE);
+    if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
+        SDL_HideWindow(window);
+    }
+
     SDL_DestroyProperties(window->props);
 
     /* Clear the modal status, but don't unset the parent, as it may be
@@ -3765,12 +3771,6 @@ void SDL_DestroyWindow(SDL_Window *window)
      */
     if (_this->SetWindowModalFor && (window->flags & SDL_WINDOW_MODAL)) {
         _this->SetWindowModalFor(_this, window, NULL);
-    }
-
-    /* Restore video mode, etc. */
-    SDL_UpdateFullscreenMode(window, SDL_FALSE, SDL_TRUE);
-    if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
-        SDL_HideWindow(window);
     }
 
     /* Make sure the destroyed window isn't referenced by any display as a fullscreen window. */
