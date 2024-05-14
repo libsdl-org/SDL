@@ -270,10 +270,6 @@ mainYuv(int argc, char **argv)
     Uint32 then, now, i, iterations = 100;
     SDL_bool should_run_automated_tests = SDL_FALSE;
     
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        return -1;
-    }
-
     while (argv[arg] && *argv[arg] == '-') {
         if (SDL_strcmp(argv[arg], "--jpeg") == 0) {
             SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_JPEG);
@@ -363,10 +359,8 @@ mainYuv(int argc, char **argv)
     }
     now = SDL_GetTicks();
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%d iterations in %d ms, %.2fms each\n", iterations, (now - then), (float)(now - then)/iterations);
-
-    window = SDL_CreateWindow("YUV test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, original->w, original->h, 0);
-
-//     window = SDL_CreateWindowFrom((void *)g_childView);
+    
+    window = SDL_CreateWindowFrom((void *)g_rootView);
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
         return 4;

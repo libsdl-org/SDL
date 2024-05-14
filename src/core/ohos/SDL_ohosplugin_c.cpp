@@ -16,6 +16,9 @@
 #include "SDL_ohosplugin.h"
 
 bool OHOS_FindNativeXcomPoment(char *id, OH_NativeXComponent **nativeXComponent) {
+    if (id == NULL) {
+        return false;
+    }
     std::string strId(id);
     SDL_LockMutex(OHOS_PageMutex);
     OH_NativeXComponent *temp = nullptr;

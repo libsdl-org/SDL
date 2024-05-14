@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 {
-  "hvigorVersion": "file:../dependencies/hvigor-3.2.1-s.tgz",
+  "hvigorVersion": "file:../dependencies/hvigor-4.1.1.tgz",
   "dependencies": {
-    "@ohos/hvigor-ohos-plugin": "file:../dependencies/hvigor-ohos-plugin-3.2.1-s.tgz",
+    "@ohos/hvigor-ohos-plugin": "file:../dependencies/hvigor-ohos-plugin-4.1.1.tgz",
   },
   "execution": {
     // "analyze": "default",                    /* Define the build analyze mode. Value: [ "default" | "verbose" | false ]. Default: "default" */

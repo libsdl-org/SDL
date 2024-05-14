@@ -56,11 +56,11 @@ napi_ref GetRootNode(int windowId) {
     std::thread::id cur_thread_id = std::this_thread::get_id();
     if (cur_thread_id == g_napiCallback->mainThreadId) {
         OHOS_TS_GetRootNode(root);
+        cJSON_free(root);
     } else {
         cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_GET_ROOTNODE);
         ThreadSafeSyn(root);
     }
-    cJSON_free(root);
     return returnValue;
 }
 
@@ -79,11 +79,11 @@ char* GetXComponentId(napi_ref nodeRef)
     ThreadLockInfo *lockInfo;
     if (cur_thread_id == g_napiCallback->mainThreadId) {
         OHOS_TS_GetXComponentId(root);
+        cJSON_free(root);
     } else {
         cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_GET_XCOMPONENTID);
         ThreadSafeSyn(root);
     }
-    cJSON_free(root);
     return returnValue;
 }
 
@@ -102,11 +102,11 @@ napi_ref AddChildNode(napi_ref nodeRef, NodeParams *nodeParams)
     std::thread::id cur_thread_id = std::this_thread::get_id();
     if (cur_thread_id == g_napiCallback->mainThreadId) {
         OHOS_TS_AddChildNode(root);
+        cJSON_free(root);
     } else {
         cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_ADDCHILDNODE);
         ThreadSafeSyn(root);
     }
-    cJSON_free(root);
     return returnValue;
 }
 
@@ -254,11 +254,11 @@ NodeRect *GetNodeRect(napi_ref nodeRef) {
     ThreadLockInfo *lockInfo;
     if (cur_thread_id == g_napiCallback->mainThreadId) {
         OHOS_TS_GetRootNode(root);
+        cJSON_free(root);
     } else {
         cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_GETNODERECT);
         ThreadSafeSyn(root);
     }
-    cJSON_free(root);
     return returnValue;
 }
 

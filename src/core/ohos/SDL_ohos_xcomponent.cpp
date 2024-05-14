@@ -85,6 +85,7 @@ static SDL_Window *GetWindowFromXComponent(OH_NativeXComponent *component) {
     SDL_Window *curWindow = _this->windows;
     while (curWindow) {
         if (curWindow->xcompentId == nullptr) {
+            curWindow = curWindow->next;
             continue;
         }
         std::string xComponentId(curWindow->xcompentId);

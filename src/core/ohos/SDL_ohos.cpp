@@ -635,7 +635,8 @@ static int OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value
         return -1;
     }
     napi_get_value_string_utf8(env, argv[0], nullptr, 0, &buffer_size);
-    *library_file = new char[buffer_size];
+    *library_file = (char *)SDL_malloc(buffer_size + 1);
+    SDL_memset(*library_file, 0, buffer_size + 1);
     napi_get_value_string_utf8(env, argv[0], *library_file, buffer_size + 1, &buffer_size);
 
     status = napi_typeof(env, argv[1], &valuetype);
@@ -645,7 +646,8 @@ static int OHOS_NAPI_GetInfo(napi_env &env, napi_callback_info &info, napi_value
         return -1;
     }
     napi_get_value_string_utf8(env, argv[1], nullptr, 0, &buffer_size);
-    *function_name = new char[buffer_size];
+    *function_name = (char *)SDL_malloc(buffer_size + 1);
+    SDL_memset(*function_name, 0, buffer_size + 1);
     napi_get_value_string_utf8(env, argv[1], *function_name, buffer_size + 1, &buffer_size);
     return argc;
 }
@@ -666,11 +668,11 @@ static int OHOS_NAPI_SetArgs(napi_env& env, char **argvs, int &argcs, size_t &ar
             break;
         }
         napi_get_value_string_utf8(env, argv[i], nullptr, 0, &buffer_size);
-        arg = new char[buffer_size + 1];
+
+        arg = (char *)SDL_malloc(buffer_size + 1);
         SDL_memset(arg, 0, buffer_size + 1);
         napi_get_value_string_utf8(env, argv[i], arg, buffer_size + 1, &buffer_size);
         if (!arg) {
-            delete[] arg;
             arg = SDL_strdup("");
         }
         argvs[argcs++] = arg;

@@ -46,24 +46,23 @@
 
 int OHOS_CreateWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
 {
-//     napi_ref parentWindowNode = NULL;
-//     napi_ref childWindowNode = NULL;
+    napi_ref parentWindowNode = NULL;
+    napi_ref childWindowNode = NULL;
     SDL_Log("sdlthread OHOS_CreateWindow");
     if (window->ohosHandle == NULL) {
-//         OHOS_GetRootNode(g_windowId, &parentWindowNode);
-//         if (parentWindowNode == NULL) {
-//             return -1;
-//         }
-// SDL_Log("sdlthread OHOS_GetRootNode over");
-//         OHOS_AddChildNode(parentWindowNode, &childWindowNode, window->x, window->y, window->w, window->h);
-//         napi_release_threadsafe_function(parentWindowNode, napi_tsfn_release);
-//         if (childWindowNode == NULL) {
-//             return -1;
-//         }
+        OHOS_GetRootNode(g_windowId, &parentWindowNode);
+        if (parentWindowNode == NULL) {
+            return -1;
+        }
+        OHOS_AddChildNode(parentWindowNode, &childWindowNode, window->x, window->y, window->w, window->h);
+        napi_release_threadsafe_function(parentWindowNode, napi_tsfn_release);
+        if (childWindowNode == NULL) {
+            return -1;
+        }
     } else {
-//         parentWindowNode = window->ohosHandle;
+        parentWindowNode = window->ohosHandle;
     }
-    OHOS_CreateWindowFrom(thisDevice, window, g_rootNodeRef);
+    OHOS_CreateWindowFrom(thisDevice, window, childWindowNode);
     return 0;
 }
 
@@ -161,18 +160,6 @@ void OHOS_SetWindowPosition(SDL_VideoDevice *thisDevice, SDL_Window *window)
 {
     SDL_Log("sdlthread OHOS_SetWindowPosition");
     OHOS_MoveNode(window->ohosHandle, window->x, window->y);
-}
-
-void OHOS_ResetWindowData(SDL_Window *window)
-{
-    OH_NativeXComponent *nativeXComponent = NULL;
-    SDL_WindowData *windowData = NULL;
-    SDL_WindowData *nativeWindowData = NULL;
-    windowData = window->driverdata;
-    OHOS_FindNativeXcomPoment(window->xcompentId, &nativeXComponent);
-    OHOS_FindNativeWindow(nativeXComponent, &nativeWindowData);
-    windowData->egl_xcomponent = nativeWindowData->egl_xcomponent;
-    windowData->native_window = nativeWindowData->native_window;
 }
 
 int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const void *data)

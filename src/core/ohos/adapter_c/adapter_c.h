@@ -87,7 +87,6 @@ public:
 
     ~NodeParams() {
         if (componentModel != nullptr) {
-            delete componentModel;
             componentModel = nullptr;
         }
     }

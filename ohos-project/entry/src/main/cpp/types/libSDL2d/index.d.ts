@@ -14,3 +14,4 @@
  */
 export const sdlAppEntry: (x, y, ...z) => void;
 export const init: (x) => void;
+export const setRootViewControl: () => void;

@@ -616,8 +616,11 @@ bool SDL_VideoInit(const char *driver_name)
     bool init_pen = false;
     int i = 0;
 
-    // Check to make sure we don't overwrite '_this'
+    /* Check to make sure we don't overwrite '_this' */
     if (_this) {
+#ifdef __OHOS__
+        return 0;
+#endif
         SDL_VideoQuit();
     }
 

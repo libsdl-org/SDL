@@ -48,9 +48,6 @@ void OhosPluginManager::SetNativeXComponent(std::string &id, OH_NativeXComponent
     }
 
     if (nativeXComponentMap[id] != nativeXComponent) {
-        OH_NativeXComponent *tmp = nativeXComponentMap[id];
-        delete tmp;
-        tmp = nullptr;
         nativeXComponentMap[id] = nativeXComponent;
     }
 }
