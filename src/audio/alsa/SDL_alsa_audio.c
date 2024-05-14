@@ -1446,6 +1446,7 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
             }
 
             adev->id = SDL_strdup(ALSA_snd_ctl_card_info_get_id(ctl_card_info));
+            SDL_free(adev->name);
             adev->name = SDL_strdup(ALSA_snd_pcm_info_get_name(pcm_info));
             if (direction == SND_PCM_STREAM_CAPTURE)
                 adev->iscapture = SDL_TRUE;
