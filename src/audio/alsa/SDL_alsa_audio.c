@@ -1269,12 +1269,12 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
     cfg_ctx.device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1,
                                                                 sizeof(*cfg_ctx.device->hidden));
     if (cfg_ctx.device->hidden == NULL) {
-        return SDL_OutOfMemory();
+        return -1;
     }
     // Open the audio device
     pcm_str = get_pcm_str(cfg_ctx.device->handle);
     if (pcm_str == NULL) {
-        status = SDL_OutOfMemory();
+        status = -1;
         goto err_free_device_hidden;
     }
     status = ALSA_snd_pcm_open(&cfg_ctx.device->hidden->pcm,
@@ -1325,7 +1325,7 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
     if (!iscapture) {
         cfg_ctx.device->hidden->mixbuf = (Uint8 *)SDL_malloc(cfg_ctx.device->buffer_size);
         if (cfg_ctx.device->hidden->mixbuf == NULL) {
-            status = SDL_OutOfMemory();
+            status = -1;
             goto err_cleanup_ctx;
         }
         SDL_memset(cfg_ctx.device->hidden->mixbuf, cfg_ctx.device->silence_value,
@@ -1413,12 +1413,12 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
 
             adev = SDL_malloc(sizeof(*adev));
             if (adev == NULL)
-                return SDL_OutOfMemory();
+                return -1;
 
             adev->id = SDL_strdup(ALSA_snd_ctl_card_info_get_id(ctl_card_info));
             if (adev->id == NULL) {
                 SDL_free(adev);
-                return SDL_OutOfMemory();
+                return -1;
             }
 #define NAME_FMT "%s:%s"
             name_len = SDL_snprintf(0,0,NAME_FMT, ALSA_snd_ctl_card_info_get_name(ctl_card_info),
@@ -1427,7 +1427,7 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
             if (adev->name == NULL) {
                 SDL_free(adev->id);
                 SDL_free(adev);
-                return SDL_OutOfMemory();
+                return -1;
             }
             SDL_snprintf(adev->name,(size_t)(name_len + 1),NAME_FMT,
                                                 ALSA_snd_ctl_card_info_get_name(ctl_card_info),
@@ -1442,7 +1442,7 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
                 SDL_free(adev->id);
                 SDL_free(adev->name);
                 SDL_free(adev);
-                return SDL_OutOfMemory();
+                return -1;
             }
 
             adev->id = SDL_strdup(ALSA_snd_ctl_card_info_get_id(ctl_card_info));
