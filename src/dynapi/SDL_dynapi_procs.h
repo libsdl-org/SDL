@@ -511,7 +511,7 @@ SDL_DYNAPI_PROC(SDL_TouchDeviceType,SDL_GetTouchDeviceType,(SDL_TouchID a),(a),r
 SDL_DYNAPI_PROC(SDL_TouchID*,SDL_GetTouchDevices,(int *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Finger**,SDL_GetTouchFingers,(SDL_TouchID a, int *b),(a,b),return)
 SDL_DYNAPI_PROC(char*,SDL_GetUserFolder,(SDL_Folder a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_GetVersion,(SDL_Version *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_GetVersion,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetVideoDriver,(int a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetWindowBordersSize,(SDL_Window *a, int *b, int *c, int *d, int *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(float,SDL_GetWindowDisplayScale,(SDL_Window *a),(a),return)

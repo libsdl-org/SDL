@@ -2985,11 +2985,6 @@ SDL_GamepadBinding *e1;
 - e1->outputType
 + e1->output_type
 @@
-typedef SDL_version, SDL_Version;
-@@
-- SDL_version
-+ SDL_Version
-@@
 @@
 - SDL_HINT_ALLOW_TOPMOST
 + SDL_HINT_WINDOW_ALLOW_TOPMOST
@@ -3137,13 +3132,21 @@ typedef SDL_Colour, SDL_Color;
   (...)
 @@
 @@
-- SDL_TABLESIZE
-+ SDL_arraysize
-@@
-@@
 - SDL_iPhoneSetEventPump
 + SDL_iOSSetEventPump
   (...)
+@@
+@@
+- SDL_COMPILEDVERSION
++ SDL_VERSION
+@@
+@@
+- SDL_PATCHLEVEL
++ SDL_MICRO_VERSION
+@@
+@@
+- SDL_TABLESIZE
++ SDL_arraysize
 @@
 @@
 - SDLK_QUOTE

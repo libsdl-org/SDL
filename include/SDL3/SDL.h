@@ -28,6 +28,14 @@
 #ifndef SDL_h_
 #define SDL_h_
 
+/**
+ * The current version of SDL
+ */
+#define SDL_MAJOR_VERSION   3
+#define SDL_MINOR_VERSION   1
+#define SDL_MICRO_VERSION   2
+
+
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_assert.h>
 #include <SDL3/SDL_atomic.h>
