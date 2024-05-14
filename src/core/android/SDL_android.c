@@ -2658,7 +2658,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
-    SDL_assert(!"Shouldn't have hit this code");  // we had a permission response for a request we never made...?
 }
 
 int SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata)
