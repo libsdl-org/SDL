@@ -627,11 +627,11 @@ static void SDL_LogEvent(const SDL_Event *event)
 
     default:
         if (!name[0]) {
-			if (event->type >= SDL_EVENT_USER) {
-				SDL_strlcpy(name, "USER", sizeof(name));
-			} else {
-				SDL_strlcpy(name, "UNKNOWN", sizeof(name));
-			}
+            if (event->type >= SDL_EVENT_USER) {
+                SDL_strlcpy(name, "USER", sizeof(name));
+            } else {
+                SDL_strlcpy(name, "UNKNOWN", sizeof(name));
+            }
             (void)SDL_snprintf(details, sizeof(details), " 0x%x", (uint)event->type);
         }
         break;
