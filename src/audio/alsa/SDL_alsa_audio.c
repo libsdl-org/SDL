@@ -1072,8 +1072,13 @@ static int alsa_chmap_cfg(struct ALSA_pcm_cfg_ctx *ctx)
     int status;
 
     ctx->chmap_queries = ALSA_snd_pcm_query_chmaps(ctx->device->hidden->pcm);
-    if (ctx->chmap_queries == NULL) // let's try to reduce the number of channels anyway...
-        return REDUCE_CHANS_N;
+    if (ctx->chmap_queries == NULL) {
+        // We couldn't query the channel map, assume no swizzle necessary
+        LOGDEBUG("couldn't query channel map, swizzling off");
+        ctx->device->hidden->swizzle_func = no_swizzle;
+        return 0;
+    }
+
     //----------------------------------------------------------------------------------------------
     status = alsa_chmap_cfg_ordered(ctx); // we prefer first channel maps we don't need to swizzle
     if (status == CHMAP_INSTALLED) {
