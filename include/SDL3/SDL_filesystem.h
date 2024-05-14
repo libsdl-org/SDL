@@ -332,9 +332,6 @@ extern DECLSPEC int SDLCALL SDL_RenamePath(const char *oldpath, const char *newp
  */
 extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info);
 
-
-#define SDL_GLOB_CASEINSENSITIVE (1u << 0)
-
 /**
  * Enumerate a directory tree, filtered by pattern, and return a list.
  *
@@ -369,6 +366,8 @@ extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info
  * \since This function is available since SDL 3.0.0.
  */
 extern DECLSPEC char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, Uint32 flags, int *count);
+
+#define SDL_GLOB_CASEINSENSITIVE (1u << 0)
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
