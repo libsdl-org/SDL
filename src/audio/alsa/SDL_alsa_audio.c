@@ -308,8 +308,8 @@ static char *get_pcm_str(void *handle)
     }
     return pcm_str;
 }
-// sdl channel map with alsa names "FL FR"
-// The literal names are sdl names.
+// SDL channel map with alsa names "FL FR"
+// The literal names are SDL names.
 // Faith: loading the whole frame in one shot may help naive compilers.
 #define SWIZ2(T)                                                                  \
     static void swizzle_alsa_channels_2_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
@@ -323,8 +323,8 @@ static char *get_pcm_str(void *handle)
             ptr[swizzle_map[1]] = front_right;                                    \
         }                                                                         \
     }
-// sdl channel map with alsa names "FL FR LFE"
-// The literal names are sdl names.
+// SDL channel map with alsa names "FL FR LFE"
+// The literal names are SDL names.
 // Faith: loading the whole frame in one shot may help naive compilers.
 #define SWIZ3(T)                                                                  \
     static void swizzle_alsa_channels_3_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
@@ -340,8 +340,8 @@ static char *get_pcm_str(void *handle)
             ptr[swizzle_map[2]] = subwoofer;                                      \
         }                                                                         \
     }
-// sdl channel map with alsa names "FL FR RL RR";
-// The literal names are sdl names.
+// SDL channel map with alsa names "FL FR RL RR";
+// The literal names are SDL names.
 // Faith: loading the whole frame in one shot may help naive compilers.
 #define SWIZ4(T)                                                                  \
     static void swizzle_alsa_channels_4_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
@@ -359,8 +359,8 @@ static char *get_pcm_str(void *handle)
             ptr[swizzle_map[3]] = back_right;                                     \
         }                                                                         \
     }
-// sdl channel map with alsa names "FL FR LFE RL RR"
-// The literal names are sdl names.
+// SDL channel map with alsa names "FL FR LFE RL RR"
+// The literal names are SDL names.
 // Faith: loading the whole frame in one shot may help naive compilers.
 #define SWIZ5(T)                                                                  \
     static void swizzle_alsa_channels_5_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
@@ -380,8 +380,8 @@ static char *get_pcm_str(void *handle)
             ptr[swizzle_map[4]] = back_right;                                     \
         }                                                                         \
     }
-// sdl channel map with alsa names "FL FR FC LFE SL SR"
-// The literal names are sdl names.
+// SDL channel map with alsa names "FL FR FC LFE SL SR"
+// The literal names are SDL names.
 // Faith: loading the whole frame in one shot may help naive compilers.
 #define SWIZ6(T)                                                                  \
     static void swizzle_alsa_channels_6_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
@@ -403,8 +403,8 @@ static char *get_pcm_str(void *handle)
             ptr[swizzle_map[5]] = side_right;                                     \
         }                                                                         \
     }
-// sdl channel map with alsa names "FL FR FC LFE RC SL SR".
-// The literal names are sdl names.
+// SDL channel map with alsa names "FL FR FC LFE RC SL SR".
+// The literal names are SDL names.
 // Faith: loading the whole frame in one shot may help naive compilers.
 #define SWIZ7(T)                                                                  \
     static void swizzle_alsa_channels_7_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
@@ -429,8 +429,8 @@ static char *get_pcm_str(void *handle)
         }                                                                         \
     }
 
-// sdl channel map with alsa names "FL FR FC LFE RL RR SL SR"
-// The literal names are sdl names.
+// SDL channel map with alsa names "FL FR FC LFE RL RR SL SR"
+// The literal names are SDL names.
 // Faith: loading the whole frame in one shot may help naive compilers.
 #define SWIZ8(T)                                                                  \
     static void swizzle_alsa_channels_8_##T(int *swizzle_map, void *buffer, const Uint32 bufferlen) \
@@ -664,14 +664,14 @@ struct ALSA_pcm_cfg_ctx {
     unsigned int                chans_n;
     unsigned int                target_chans_n;
     unsigned int                rate;
-    snd_pcm_uframes_t           persize; // alsa period size, sdl audio device sample_frames
+    snd_pcm_uframes_t           persize; // alsa period size, SDL audio device sample_frames
     snd_pcm_chmap_query_t       **chmap_queries;
     unsigned int                sdl_chmap[SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX];
     unsigned int                alsa_chmap_installed[SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX];
 
     unsigned int            periods;
 };
-// The following are sdl channel maps with alsa position values, from 0 channels to 8 channels.
+// The following are SDL channel maps with alsa position values, from 0 channels to 8 channels.
 // See SDL3/SDL_audio.h
 // Strictly speaking those are "parameters" of channel maps, like alsa hwparams and swparams, they
 // have to be "reduced/refined" until an exact channel map. Only the 6 channels map requires such
@@ -827,7 +827,7 @@ static void swizzle_map_compute_alsa_subscan(struct ALSA_pcm_cfg_ctx *ctx,
         SDL_assert(alsa_pos_idx != ctx->chans_n);  // no 0 channels or not found matching position should happen here (actually enforce playback/capture symmetry).
 
         if (ctx->alsa_chmap_installed[alsa_pos_idx] == ctx->sdl_chmap[sdl_pos_idx]) {
-            LOGDEBUG("swizzle sdl %u <-> alsa %u", sdl_pos_idx,alsa_pos_idx);
+            LOGDEBUG("swizzle SDL %u <-> alsa %u", sdl_pos_idx,alsa_pos_idx);
             ctx->device->hidden->swizzle_map[sdl_pos_idx] = alsa_pos_idx;
             return;
         }
@@ -849,7 +849,7 @@ static void swizzle_map_compute(struct ALSA_pcm_cfg_ctx *ctx)
 #define REDUCE_CHANS_N  1
 #define CHMAP_NOT_FOUND 2
 // Should always be a queried alsa channel map unless the queried alsa channel map was of type VAR,
-// namely we can program the channel positions directly from the sdl channel map.
+// namely we can program the channel positions directly from the SDL channel map.
 static int alsa_chmap_install(struct ALSA_pcm_cfg_ctx *ctx, unsigned int *chmap)
 {
     int status;
@@ -994,7 +994,7 @@ static int alsa_chmap_cfg_ordered_var(struct ALSA_pcm_cfg_ctx *ctx)
             ++chan_idx;
         }
         if (pos_matches_n == ctx->chans_n)
-            return alsa_chmap_install(ctx, ctx->sdl_chmap); // XXX: we program the sdl chmap here
+            return alsa_chmap_install(ctx, ctx->sdl_chmap); // XXX: we program the SDL chmap here
         ++chmap_query;
     }
     return CHMAP_NOT_FOUND;
@@ -1010,7 +1010,7 @@ static int alsa_chmap_cfg_ordered(struct ALSA_pcm_cfg_ctx *ctx)
     return alsa_chmap_cfg_ordered_var(ctx);
 }
 // In the unordered case, we are just interested to get the same unordered set of alsa channel
-// positions than in the sdl channel map since we will swizzle (no duplicate channel position).
+// positions than in the SDL channel map since we will swizzle (no duplicate channel position).
 static int alsa_chmap_cfg_unordered(struct ALSA_pcm_cfg_ctx *ctx)
 {
     char logdebug_chmap_str[128];
