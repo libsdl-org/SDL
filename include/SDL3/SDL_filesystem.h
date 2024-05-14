@@ -379,8 +379,6 @@ extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info
  */
 extern DECLSPEC char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 
-#define SDL_GLOB_CASEINSENSITIVE (1u << 0)
-
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
