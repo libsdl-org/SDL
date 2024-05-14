@@ -25,6 +25,8 @@
  *  This is a general header that includes C language support.
  */
 
+/* WIKI CATEGORY: StdInc */
+
 #ifndef SDL_stdinc_h_
 #define SDL_stdinc_h_
 

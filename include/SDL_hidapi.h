@@ -59,6 +59,8 @@
  * on iOS or tvOS to avoid a dependency on the CoreBluetooth framework.
  */
 
+/* WIKI CATEGORY: HIDAPI */
+
 #ifndef SDL_hidapi_h_
 #define SDL_hidapi_h_
 

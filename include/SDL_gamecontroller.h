@@ -25,6 +25,8 @@
  *  Include file for SDL game controller event handling
  */
 
+/* WIKI CATEGORY: GameController */
+
 #ifndef SDL_gamecontroller_h_
 #define SDL_gamecontroller_h_
 

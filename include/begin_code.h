@@ -27,6 +27,8 @@
  *  If you don't like ugly C preprocessor code, don't look at this file. :)
  */
 
+/* WIKI CATEGORY: BeginCode */
+
 /* This shouldn't be nested -- included it around code only. */
 #ifdef SDL_begin_code_h
 #error Nested inclusion of begin_code.h

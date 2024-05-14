@@ -25,6 +25,8 @@
  *  Include file for handling SDL_GUID values.
  */
 
+/* WIKI CATEGORY: GUID */
+
 #ifndef SDL_guid_h_
 #define SDL_guid_h_
 

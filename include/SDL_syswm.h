@@ -42,6 +42,8 @@
  *  you can enable it with SDL_EventState().
  */
 
+/* WIKI CATEGORY: SYSWM */
+
 struct SDL_SysWMinfo;
 
 #if !defined(SDL_PROTOTYPES_ONLY)

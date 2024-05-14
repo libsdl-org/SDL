@@ -26,6 +26,8 @@
  *  data streams.  It can easily be extended to files, memory, etc.
  */
 
+/* WIKI CATEGORY: RWOPS */
+
 #ifndef SDL_rwops_h_
 #define SDL_rwops_h_
 

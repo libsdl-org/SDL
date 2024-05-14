@@ -38,6 +38,8 @@
  *      the results you expect. :)
  */
 
+/* WIKI CATEGORY: LoadSO */
+
 #ifndef SDL_loadso_h_
 #define SDL_loadso_h_
 
