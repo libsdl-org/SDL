@@ -428,11 +428,20 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_JBUTTON_EVENT
 
+        SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BATTERY_UPDATED)
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d state=%u percent=%d)",
+                           (uint)event->jbattery.timestamp, (int)event->jbattery.which,
+                           event->jbattery.state, event->jbattery.percent);
+        break;
+
 #define PRINT_JOYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d)", (uint)event->jdevice.timestamp, (int)event->jdevice.which)
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_ADDED)
         PRINT_JOYDEV_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_REMOVED)
+        PRINT_JOYDEV_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE)
         PRINT_JOYDEV_EVENT(event);
         break;
 #undef PRINT_JOYDEV_EVENT
@@ -463,6 +472,9 @@ static void SDL_LogEvent(const SDL_Event *event)
         PRINT_GAMEPADDEV_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_REMAPPED)
+        PRINT_GAMEPADDEV_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_UPDATE_COMPLETE)
         PRINT_GAMEPADDEV_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED)
@@ -615,8 +627,12 @@ static void SDL_LogEvent(const SDL_Event *event)
 
     default:
         if (!name[0]) {
-            SDL_strlcpy(name, "UNKNOWN", sizeof(name));
-            (void)SDL_snprintf(details, sizeof(details), " #%u! (Bug? FIXME?)", (uint)event->type);
+			if (event->type >= SDL_EVENT_USER) {
+				SDL_strlcpy(name, "USER", sizeof(name));
+			} else {
+				SDL_strlcpy(name, "UNKNOWN", sizeof(name));
+			}
+            (void)SDL_snprintf(details, sizeof(details), " 0x%x", (uint)event->type);
         }
         break;
     }
