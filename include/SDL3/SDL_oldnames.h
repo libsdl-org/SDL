@@ -529,7 +529,8 @@
 #define SDL_GetTicks64 SDL_GetTicks
 
 /* ##SDL_version.h */
-#define SDL_version SDL_Version
+#define SDL_COMPILEDVERSION SDL_VERSION
+#define SDL_PATCHLEVEL SDL_MICRO_VERSION
 
 /* ##SDL_video.h */
 #define SDL_GetClosestDisplayMode SDL_GetClosestFullscreenDisplayMode
@@ -1038,7 +1039,8 @@
 #define SDL_GetTicks64 SDL_GetTicks64_renamed_SDL_GetTicks
 
 /* ##SDL_version.h */
-#define SDL_version SDL_version_renamed_SDL_Version
+#define SDL_COMPILEDVERSION SDL_COMPILEDVERSION_renamed_SDL_VERSION
+#define SDL_PATCHLEVEL SDL_PATCHLEVEL_renamed_SDL_MICRO_VERSION
 
 /* ##SDL_video.h */
 #define SDL_GetClosestDisplayMode SDL_GetClosestDisplayMode_renamed_SDL_GetClosestFullscreenDisplayMode

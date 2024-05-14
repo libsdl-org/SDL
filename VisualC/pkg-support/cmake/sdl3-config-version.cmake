@@ -3,22 +3,22 @@
 # SDL CMake version configuration file:
 # This file is meant to be placed in a cmake subfolder of SDL3-devel-3.x.y-VC
 
-if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/../include/SDL3/SDL_version.h")
-    message(AUTHOR_WARNING "Could not find SDL3/SDL_version.h. This script is meant to be placed in the root of SDL3-devel-3.x.y-VC")
+if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/../include/SDL3/SDL.h")
+    message(AUTHOR_WARNING "Could not find SDL3/SDL.h. This script is meant to be placed in the root of SDL3-devel-3.x.y-VC")
     return()
 endif()
 
-file(READ "${CMAKE_CURRENT_LIST_DIR}/../include/SDL3/SDL_version.h" _sdl_version_h)
+file(READ "${CMAKE_CURRENT_LIST_DIR}/../include/SDL3/SDL.h" _sdl_version_h)
 string(REGEX MATCH "#define[ \t]+SDL_MAJOR_VERSION[ \t]+([0-9]+)" _sdl_major_re "${_sdl_version_h}")
 set(_sdl_major "${CMAKE_MATCH_1}")
 string(REGEX MATCH "#define[ \t]+SDL_MINOR_VERSION[ \t]+([0-9]+)" _sdl_minor_re "${_sdl_version_h}")
 set(_sdl_minor "${CMAKE_MATCH_1}")
-string(REGEX MATCH "#define[ \t]+SDL_PATCHLEVEL[ \t]+([0-9]+)" _sdl_patch_re "${_sdl_version_h}")
-set(_sdl_patch "${CMAKE_MATCH_1}")
-if(_sdl_major_re AND _sdl_minor_re AND _sdl_patch_re)
-    set(PACKAGE_VERSION "${_sdl_major}.${_sdl_minor}.${_sdl_patch}")
+string(REGEX MATCH "#define[ \t]+SDL_MICRO_VERSION[ \t]+([0-9]+)" _sdl_micro_re "${_sdl_version_h}")
+set(_sdl_micro "${CMAKE_MATCH_1}")
+if(_sdl_major_re AND _sdl_minor_re AND _sdl_micro_re)
+    set(PACKAGE_VERSION "${_sdl_major}.${_sdl_minor}.${_sdl_micro}")
 else()
-    message(AUTHOR_WARNING "Could not extract version from SDL3/SDL_version.h.")
+    message(AUTHOR_WARNING "Could not extract version from SDL3/SDL.h.")
     return()
 endif()
 

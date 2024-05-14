@@ -1671,9 +1671,14 @@ The following functions have been removed:
 
 SDL_GetRevisionNumber() has been removed from the API, it always returned 0 in SDL 2.0.
 
+SDL_GetVersion() returns the version number, which can be directly compared with another version wrapped with SDL_VERSIONNUM().
 
-The following structures have been renamed:
-* SDL_version => SDL_Version
+The following structures have been removed:
+* SDL_version
+
+The following symbols have been renamed:
+* SDL_COMPILEDVERSION => SDL_VERSION
+* SDL_PATCHLEVEL => SDL_MICRO_VERSION
 
 ## SDL_video.h
 

@@ -65,20 +65,16 @@ SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MAJOR_VERSION,
 SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MINOR_VERSION,
                         SDL_MINOR_VERSION == SDL_BUILD_MINOR_VERSION);
 SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MICRO_VERSION,
-                        SDL_PATCHLEVEL == SDL_BUILD_MICRO_VERSION);
+                        SDL_MICRO_VERSION == SDL_BUILD_MICRO_VERSION);
 #endif
 
+/* Limited by its encoding in SDL_VERSIONNUM */
 SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_min, SDL_MAJOR_VERSION >= 0);
-/* Limited only by the need to fit in SDL_Version */
-SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_max, SDL_MAJOR_VERSION <= 255);
-
+SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_max, SDL_MAJOR_VERSION <= 10);
 SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_min, SDL_MINOR_VERSION >= 0);
-/* Limited only by the need to fit in SDL_Version */
-SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_max, SDL_MINOR_VERSION <= 255);
-
-SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_min, SDL_PATCHLEVEL >= 0);
-/* Limited by its encoding in SDL_VERSIONNUM and in the ABI versions */
-SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_max, SDL_PATCHLEVEL <= 99);
+SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_max, SDL_MINOR_VERSION <= 999);
+SDL_COMPILE_TIME_ASSERT(SDL_MICRO_VERSION_min, SDL_MICRO_VERSION >= 0);
+SDL_COMPILE_TIME_ASSERT(SDL_MICRO_VERSION_max, SDL_MICRO_VERSION <= 999);
 
 /* This is not declared in any header, although it is shared between some
     parts of SDL, because we don't want anything calling it without an
@@ -579,28 +575,9 @@ Uint32 SDL_GetNextObjectID(void)
 }
 
 /* Get the library version number */
-int SDL_GetVersion(SDL_Version *ver)
+int SDL_GetVersion(void)
 {
-    static SDL_bool check_hint = SDL_TRUE;
-    static SDL_bool legacy_version = SDL_FALSE;
-
-    if (!ver) {
-        return SDL_InvalidParamError("ver");
-    }
-
-    SDL_VERSION(ver);
-
-    if (check_hint) {
-        check_hint = SDL_FALSE;
-        legacy_version = SDL_GetHintBoolean("SDL_LEGACY_VERSION", SDL_FALSE);
-    }
-
-    if (legacy_version) {
-        /* Prior to SDL 2.24.0, the patch version was incremented with every release */
-        ver->patch = ver->minor;
-        ver->minor = 0;
-    }
-    return 0;
+    return SDL_VERSION;
 }
 
 /* Get the library source revision */

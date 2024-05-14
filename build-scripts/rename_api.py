@@ -23,7 +23,7 @@ def main():
         exit(1)
 
     # Check whether we can still modify the ABI
-    version_header = pathlib.Path( SDL_INCLUDE_DIR / "SDL_version.h" ).read_text()
+    version_header = pathlib.Path( SDL_INCLUDE_DIR / "SDL.h" ).read_text()
     if not re.search("SDL_MINOR_VERSION\s+[01]\s", version_header):
         raise Exception("ABI is frozen, symbols cannot be renamed")
 
