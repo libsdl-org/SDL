@@ -97,6 +97,7 @@ struct SDL_WindowData
     struct wp_fractional_scale_v1 *fractional_scale;
     struct zxdg_exported_v2 *exported;
     struct xdg_dialog_v1 *xdg_dialog_v1;
+    struct wp_alpha_modifier_surface_v1 *wp_alpha_modifier_surface_v1;
 
     SDL_AtomicInt swap_interval_ready;
 
@@ -193,6 +194,7 @@ extern void Wayland_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *win
 extern void Wayland_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
 extern SDL_DisplayID Wayland_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Wayland_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
+extern int Wayland_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
 extern void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
