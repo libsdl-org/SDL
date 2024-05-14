@@ -25,6 +25,8 @@
  *  Header file containing the SDL revision
  */
 
+/* WIKI CATEGORY: Version */
+
 #ifndef SDL_revision_h_
 #define SDL_revision_h_
 
