@@ -19,6 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* WIKI CATEGORY: GUID */
+
 /**
  *  \file SDL_guid.h
  *

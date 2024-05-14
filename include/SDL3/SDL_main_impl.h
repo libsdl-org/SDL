@@ -19,6 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* WIKI CATEGORY: Main */
+
 #ifndef SDL_main_impl_h_
 #define SDL_main_impl_h_
 

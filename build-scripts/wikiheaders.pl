@@ -31,6 +31,7 @@ my $optionsfname = undef;
 my $wikipreamble = undef;
 my $wikiheaderfiletext = 'Defined in %fname%';
 my $manpageheaderfiletext = 'Defined in %fname%';
+my $headercategoryeval = undef;
 my $changeformat = undef;
 my $manpath = undef;
 my $gitrev = undef;
@@ -70,6 +71,8 @@ if ((not defined $optionsfname) && (-f $default_optionsfname)) {
 if (defined $optionsfname) {
     open OPTIONS, '<', $optionsfname or die("Failed to open options file '$optionsfname': $!\n");
     while (<OPTIONS>) {
+        next if /\A\s*\#/;  # Skip lines that start with (optional whitespace, then) '#' as comments.
+
         chomp;
         if (/\A(.*?)\=(.*)\Z/) {
             my $key = $1;
@@ -99,6 +102,7 @@ if (defined $optionsfname) {
             $wikipreamble = $val, next if $key eq 'wikipreamble';
             $wikiheaderfiletext = $val, next if $key eq 'wikiheaderfiletext';
             $manpageheaderfiletext = $val, next if $key eq 'manpageheaderfiletext';
+            $headercategoryeval = $val, next if $key eq 'headercategoryeval';
         }
     }
     close(OPTIONS);
@@ -617,6 +621,7 @@ my %headersymslocation = ();   # $headersymslocation{"SDL_OpenAudio"} -> name of
 my %headersymschunk = ();   # $headersymschunk{"SDL_OpenAudio"} -> offset in array in %headers that should be replaced for this symbol.
 my %headersymshasdoxygen = ();   # $headersymshasdoxygen{"SDL_OpenAudio"} -> 1 if there was no existing doxygen for this function.
 my %headersymstype = ();   # $headersymstype{"SDL_OpenAudio"} -> 1 (function), 2 (macro), 3 (struct), 4 (enum), 5 (other typedef)
+my %headersymscategory = ();   # $headersymscategory{"SDL_OpenAudio"} -> 'Audio' ... this is set with a `/* WIKI CATEGEORY: Audio */` comment in the headers that sets it on all symbols until a new comment changes it. So usually, once at the top of the header file.
 
 my %wikitypes = ();  # contains string of wiki page extension, like $wikitypes{"SDL_OpenAudio"} == 'mediawiki'
 my %wikisyms = ();  # contains references to hash of strings, each string being the full contents of a section of a wiki page, like $wikisyms{"SDL_OpenAudio"}{"Remarks"}.
@@ -689,6 +694,19 @@ while (my $d = readdir(DH)) {
     next if not $dent =~ /$selectheaderregex/;  # just selected headers.
     open(FH, '<', "$incpath/$dent") or die("Can't open '$incpath/$dent': $!\n");
 
+    # You can optionally set a wiki category with Perl code in .wikiheaders-options that gets eval()'d per-header,
+    # and also if you put `/* WIKI CATEGORY: blah */` on a line by itself, it'll change the category for any symbols
+    # below it in the same file. If no category is set, one won't be added for the symbol (beyond the standard CategoryFunction, etc)
+    my $current_wiki_category = undef;
+    if (defined $headercategoryeval) {
+        $_ = $dent;
+        $current_wiki_category = eval($headercategoryeval);
+        if (($current_wiki_category eq '') || ($current_wiki_category eq '-')) {
+            $current_wiki_category = undef;
+        }
+        #print("CATEGORY FOR '$dent' IS " . (defined($current_wiki_category) ? "'$current_wiki_category'" : '(undef)') . "\n");
+    }
+
     my @contents = ();
     my $ignoring_lines = 0;
     my $header_comment = -1;
@@ -720,6 +738,11 @@ while (my $d = readdir(DH)) {
             next;
         } elsif (/\A\s*\#\s*ifndef\s+SDL_WIKI_DOCUMENTATION_SECTION\s*\Z/) {
             $ignoring_lines = 1;
+            push @contents, $_;
+            next;
+        } elsif (/\A\s*\/\*\s*WIKI CATEGORY:\s*(.*?)\s*\*\/\s*\Z/) {
+            $current_wiki_category = (($1 eq '') || ($1 eq '-')) ? undef : $1;
+            #print("CATEGORY FOR '$dent' CHANGED TO " . (defined($current_wiki_category) ? "'$current_wiki_category'" : '(undef)') . "\n");
             push @contents, $_;
             next;
         } elsif (/\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC/) {  # a function declaration without a doxygen comment?
@@ -1110,6 +1133,7 @@ while (my $d = readdir(DH)) {
         }
 
         if (!$skipsym) {
+            $headersymscategory{$sym} = $current_wiki_category if defined $current_wiki_category;
             $headersyms{$sym} = $str;
             $headerdecls{$sym} = $decl;
             $headersymslocation{$sym} = $dent;
@@ -1140,6 +1164,7 @@ while (my $d = readdir(DH)) {
     my $sym = $dent;
     $sym =~ s/\..*\Z//;
 
+    # (There are other pages to ignore, but these are known ones to not bother parsing.)
     # Ignore FrontPage.
     next if $sym eq 'FrontPage';
 
@@ -1840,14 +1865,17 @@ if ($copy_direction == 1) {  # --copy-to-headers
             die("Unexpected symbol type $symtype!");
         }
 
+        my $symcategory = $headersymscategory{$sym};
         if ($wikitype eq 'mediawiki') {
             $footer =~ s/\[\[CategoryAPI\]\],?\s*//g;
             $footer =~ s/\[\[CategoryAPI${symtypename}\]\],?\s*//g;
-            $footer = "[[CategoryAPI]], [[CategoryAPI$symtypename]]" . (($footer eq '') ? "\n" : ", $footer");
+            $footer =~ s/\[\[Category${symcategory}\]\],?\s*//g if defined $symcategory;
+            $footer = "[[CategoryAPI]], [[CategoryAPI$symtypename]]" . (defined $symcategory ? ", [[Category$symcategory]]" : '') . (($footer eq '') ? "\n" : ", $footer");
         } elsif ($wikitype eq 'md') {
             $footer =~ s/\[CategoryAPI\]\(CategoryAPI\),?\s*//g;
             $footer =~ s/\[CategoryAPI${symtypename}\]\(CategoryAPI${symtypename}\),?\s*//g;
-            $footer = "[CategoryAPI](CategoryAPI), [CategoryAPI$symtypename](CategoryAPI$symtypename)" . (($footer eq '') ? '' : ', ') . $footer;
+            $footer =~ s/\[Category${symcategory}\]\(Category${symcategory}\),?\s*//g if defined $symcategory;
+            $footer = "[CategoryAPI](CategoryAPI), [CategoryAPI$symtypename](CategoryAPI$symtypename)" . (defined $symcategory ? ", [Category$symcategory](Category$symcategory)" : '') . (($footer eq '') ? '' : ', ') . $footer;
         } else { die("Unexpected wikitype '$wikitype'"); }
         $$sectionsref{'[footer]'} = $footer;
 
@@ -1939,8 +1967,8 @@ if ($copy_direction == 1) {  # --copy-to-headers
         }
 
         print FH "# $sym\n\nPlease refer to [$refersto]($refersto) for details.\n\n";
-        #print FH "----\n";
-        #print FH "[CategoryAPI](CategoryAPI)\n\n";
+        print FH "----\n";
+        print FH "[CategoryAPI](CategoryAPI), [CategoryAPIMacro](CategoryAPIMacro)\n\n";
 
         close(FH);
     }
