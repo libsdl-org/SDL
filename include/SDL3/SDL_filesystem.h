@@ -263,6 +263,18 @@ typedef struct SDL_PathInfo
 } SDL_PathInfo;
 
 /**
+ * Flags for path matching
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_GlobDirectory
+ * \sa SDL_GlobStorageDirectory
+ */
+typedef Uint32 SDL_GlobFlags;
+
+#define SDL_GLOB_CASEINSENSITIVE (1u << 0)
+
+/**
  * Create a directory.
  *
  * \param path the path of the directory to create
@@ -365,7 +377,7 @@ extern DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, Uint32 flags, int *count);
+extern DECLSPEC char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 
 #define SDL_GLOB_CASEINSENSITIVE (1u << 0)
 
