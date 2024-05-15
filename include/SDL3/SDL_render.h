@@ -2140,8 +2140,8 @@ extern DECLSPEC int SDLCALL SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer
  * \param renderer The renderer to toggle
  * \param vsync the vertical refresh sync interval, 1 to synchronize present
  *              with every vertical refresh, 2 to synchronize present with
- *              every second vertical refresh, etc., or -1 for late swap
- *              tearing (adaptive vsync). Not every value is supported by
+ *              every second vertical refresh, etc., SDL_VSYNC_ADAPTIVE for late swap
+ *              tearing (adaptive vsync), or SDL_VSYNC_DISABLED to disable. Not every value is supported by
  *              every renderer, so you should check the return value to see
  *              whether the requested setting is supported.
  * \returns 0 on success or a negative error code on failure; call
@@ -2153,11 +2153,14 @@ extern DECLSPEC int SDLCALL SDL_AddVulkanRenderSemaphores(SDL_Renderer *renderer
  */
 extern DECLSPEC int SDLCALL SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync);
 
+#define SDL_VSYNC_DISABLED 0
+#define SDL_VSYNC_ADAPTIVE (-1)
+
 /**
  * Get VSync of the given renderer.
  *
  * \param renderer The renderer to toggle
- * \param vsync an int filled with the current vertical refresh sync interval
+ * \param vsync an int filled with the current vertical refresh sync interval. See SDL_SetRenderVSync for meaning of the value.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
