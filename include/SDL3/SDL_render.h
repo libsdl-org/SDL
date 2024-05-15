@@ -2160,7 +2160,7 @@ extern DECLSPEC int SDLCALL SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync
  * Get VSync of the given renderer.
  *
  * \param renderer The renderer to toggle
- * \param vsync an int filled with the current vertical refresh sync interval. See SDL_SetRenderVSync for meaning of the value.
+ * \param vsync an int filled with the current vertical refresh sync interval. See SDL_SetRenderVSync for the meaning of the value.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
