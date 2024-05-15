@@ -509,7 +509,7 @@ class Releaser:
 
     @classmethod
     def extract_sdl_version(cls, root: Path, project: str):
-        with open(root / f"include/{project}/SDL.h", "r") as f:
+        with open(root / f"include/{project}/SDL_version.h", "r") as f:
             text = f.read()
         major = next(re.finditer(r"^#define SDL_MAJOR_VERSION\s+([0-9]+)$", text, flags=re.M)).group(1)
         minor = next(re.finditer(r"^#define SDL_MINOR_VERSION\s+([0-9]+)$", text, flags=re.M)).group(1)

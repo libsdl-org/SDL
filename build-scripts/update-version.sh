@@ -27,6 +27,8 @@ NEWVERSION="$MAJOR.$MINOR.$MICRO"
 
 echo "Updating version to '$NEWVERSION' ..."
 
+perl -w -pi -e 's/\A(.* version )[0-9.]+/${1}'$NEWVERSION'/;' include/SDL3/SDL.h
+
 # !!! FIXME: This first one is a kinda scary search/replace that might fail later if another X.Y.Z version is added to the file.
 perl -w -pi -e 's/(\<string\>)\d+\.\d+\.\d+/${1}'$NEWVERSION'/;' Xcode/SDL/Info-Framework.plist
 
@@ -60,9 +62,9 @@ perl -w -pi -e 's/\A(.* SDL_MAJOR_VERSION = )\d+/${1}'$MAJOR'/;' android-project
 perl -w -pi -e 's/\A(.* SDL_MINOR_VERSION = )\d+/${1}'$MINOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
 perl -w -pi -e 's/\A(.* SDL_MICRO_VERSION = )\d+/${1}'$MICRO'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
 
-perl -w -pi -e 's/(\#define SDL_MAJOR_VERSION\s+)\d+/${1}'$MAJOR'/;' include/SDL3/SDL.h
-perl -w -pi -e 's/(\#define SDL_MINOR_VERSION\s+)\d+/${1}'$MINOR'/;' include/SDL3/SDL.h
-perl -w -pi -e 's/(\#define SDL_MICRO_VERSION\s+)\d+/${1}'$MICRO'/;' include/SDL3/SDL.h
+perl -w -pi -e 's/(\#define SDL_MAJOR_VERSION\s+)\d+/${1}'$MAJOR'/;' include/SDL3/SDL_version.h
+perl -w -pi -e 's/(\#define SDL_MINOR_VERSION\s+)\d+/${1}'$MINOR'/;' include/SDL3/SDL_version.h
+perl -w -pi -e 's/(\#define SDL_MICRO_VERSION\s+)\d+/${1}'$MICRO'/;' include/SDL3/SDL_version.h
 
 perl -w -pi -e 's/(FILEVERSION\s+)\d+,\d+,\d+/${1}'$MAJOR','$MINOR','$MICRO'/;' src/core/windows/version.rc
 perl -w -pi -e 's/(PRODUCTVERSION\s+)\d+,\d+,\d+/${1}'$MAJOR','$MINOR','$MICRO'/;' src/core/windows/version.rc

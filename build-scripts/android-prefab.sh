@@ -40,9 +40,9 @@ android_api=19
 android_ndk=21
 android_stl="c++_shared"
 
-sdl_major=$(sed -ne 's/^#define SDL_MAJOR_VERSION  *//p' "${sdl_root}/include/SDL3/SDL.h")
-sdl_minor=$(sed -ne 's/^#define SDL_MINOR_VERSION  *//p' "${sdl_root}/include/SDL3/SDL.h")
-sdl_micro=$(sed -ne 's/^#define SDL_MICRO_VERSION  *//p' "${sdl_root}/include/SDL3/SDL.h")
+sdl_major=$(sed -ne 's/^#define SDL_MAJOR_VERSION  *//p' "${sdl_root}/include/SDL3/SDL_version.h")
+sdl_minor=$(sed -ne 's/^#define SDL_MINOR_VERSION  *//p' "${sdl_root}/include/SDL3/SDL_version.h")
+sdl_micro=$(sed -ne 's/^#define SDL_MICRO_VERSION  *//p' "${sdl_root}/include/SDL3/SDL_version.h")
 sdl_version="${sdl_major}.${sdl_minor}.${sdl_micro}"
 echo "Building Android prefab package for SDL version $sdl_version"
 

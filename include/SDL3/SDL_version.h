@@ -38,6 +38,13 @@ extern "C" {
 #endif
 
 /**
+ * The current version of SDL
+ */
+#define SDL_MAJOR_VERSION   3
+#define SDL_MINOR_VERSION   1
+#define SDL_MICRO_VERSION   2
+
+/**
  * This macro turns the version numbers into a numeric value.
  *
  * (1,2,3) becomes 1002003.
