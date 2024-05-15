@@ -50,7 +50,7 @@ to that symbol.
 wikiheaders will include those defines in the syntax section of the wiki
 page, and generate stub pages for each define that simply says "please refer
 to (The Actual Symbol You Care About)" with a link. It will also pull in
-any blank lines or most preprocessor directives for the syntax text, too.
+any blank lines and most preprocessor directives for the syntax text, too.
 
 Sometimes an unrelated define, by itself, just happens to be right below one
 of these symbols in the header. The easiest way to deal with this is either
@@ -261,6 +261,34 @@ might, though!
 On each change to the wiki, there is a script that pulls out all the code
 examples into discrete C files and attempts to compile them, and complains
 if they don't work.
+
+
+## Unrecognized sections are left alone in the wiki.
+
+A wiki section that starts with `## Section Name` (or `== Section Name ==` in
+MediaWiki format) that isn't one of the recognized names will be left alone
+by wikiheaders. Recognized sections might get overwritten with new content
+from the headers, but the wiki file will not have other sections cleaned out
+(this is how Code Examples remain wiki only, for example). You can use this
+to add Wiki-specific text, or stuff that doesn't make sense in a header, or
+would merely clutter it up.
+
+A possibly-incomplete list of sections that will be overwritten by changes
+to the headers:
+
+- The page title line, and the "brief" one-sentence description section.
+- "Deprecated"
+- "Header File"
+- "Syntax"
+- "Function Parameters"
+- "Macro Parameters"
+- "Fields"
+- "Values"
+- "Return Value"
+- "Remarks"
+- "Thread Safety"
+- "Version"
+- "See Also"
 
 
 ## It's okay to repeat yourself.
