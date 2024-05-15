@@ -2616,6 +2616,8 @@ extern "C" {
  * This hint should be set before SDL is initialized.
  *
  * \since This hint is available since SDL 3.0.0.
+ *
+ * \sa SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED
  */
 #define SDL_HINT_ROG_GAMEPAD_MICE "SDL_ROG_GAMEPAD_MICE"
 
