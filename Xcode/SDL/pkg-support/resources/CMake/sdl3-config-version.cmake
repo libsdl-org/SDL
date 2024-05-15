@@ -12,7 +12,7 @@ get_filename_component(_sdl3_xcframework_parent_path "${_sdl3_xcframework_parent
 get_filename_component(_sdl3_xcframework_parent_path "${_sdl3_xcframework_parent_path}" PATH)           # /
 set(_sdl3_xcframework "${_sdl3_xcframework_parent_path}/SDL3.xcframework")                              # /SDL3.xcframework
 set(_sdl3_framework "${_sdl3_xcframework}/macos-arm64_x86_64/SDL3.framework")                           # /SDL3.xcframework/macos-arm64_x86_64/SDL3.framework
-set(_sdl3_version_h "${_sdl3_framework}/Headers/SDL.h")                                         # /SDL3.xcframework/macos-arm64_x86_64/SDL3.framework/Headers/SDL.h
+set(_sdl3_version_h "${_sdl3_framework}/Headers/SDL_version.h")                                         # /SDL3.xcframework/macos-arm64_x86_64/SDL3.framework/Headers/SDL_version.h
 
 if(NOT EXISTS "${_sdl3_version_h}")
     message(AUTHOR_WARNING "Cannot not find ${_sdl3_framework}. This script is meant to be placed in share/cmake/SDL3, next to SDL3.xcframework")
@@ -35,7 +35,7 @@ set(_sdl_micro "${CMAKE_MATCH_1}")
 if(_sdl_major_re AND _sdl_minor_re AND _sdl_micro_re)
     set(PACKAGE_VERSION "${_sdl_major}.${_sdl_minor}.${_sdl_micro}")
 else()
-    message(AUTHOR_WARNING "Could not extract version from SDL.h.")
+    message(AUTHOR_WARNING "Could not extract version from SDL_version.h.")
     return()
 endif()
 
