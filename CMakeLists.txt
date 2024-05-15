@@ -1395,7 +1395,7 @@ if(ANDROID)
     find_package(Java)
     find_package(SdlAndroidPlatform MODULE)
 
-    if(Java_FOUND AND SdlAndroidPlatform_FOUND)
+    if(Java_FOUND AND SdlAndroidPlatform_FOUND AND NOT CMAKE_VERSION VERSION_LESS "3.19")
       include(UseJava)
       set(path_android_jar "${SDL_ANDROID_PLATFORM_ROOT}/android.jar")
       set(android_java_sources_root "${SDL3_SOURCE_DIR}/android-project/app/src/main/java")
