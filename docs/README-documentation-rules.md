@@ -93,10 +93,10 @@ standard comment format:
  * \param color What color bobble to frozzle. 0 is red, 1 is green.
  * \returns the number of bobbles that were actually frozzled, -1 on error.
  *
- * \since This function is available since SDL 7.3.1.
- *
  * \threadsafety Do not call this from two threads at once, or the bobbles
  *               won't all frozzle correctly!
+ *
+ * \since This function is available since SDL 7.3.1.
  *
  * \sa SDL_DoSomethingElse
  */
