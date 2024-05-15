@@ -621,8 +621,9 @@ static void collect_rates(CameraFormatAddData *data, struct param *p, const Uint
 	SPA_FALLTHROUGH;
     case SPA_CHOICE_Enum:
 	for (i = 0; i < n_vals; i++) {
+            // denom and num are switched, because sdl expects an interval, while pw provides a rate
             if (SDL_AddCameraFormat(data, sdlfmt, size->width, size->height,
-				    rates[i].num, rates[i].denom) == -1) {
+				    rates[i].denom, rates[i].num) == -1) {
                 return;  // Probably out of memory; we'll go with what we have, if anything.
             }
 	}
