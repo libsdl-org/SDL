@@ -52,7 +52,8 @@
  * - It allows the default assertion handler to be controlled with environment
  *   variables, in case an automated script needs to control it.
  *
- * To use it: do a debug build and just sprinkle around tests check your code!
+ * To use it: do a debug build and just sprinkle around tests to check your
+ * code!
  */
 
 #ifndef SDL_assert_h_
