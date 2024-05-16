@@ -171,6 +171,19 @@
 #endif /* C++17 or C2x */
 #endif /* SDL_FALLTHROUGH not defined */
 
+#ifndef SDL_NODISCARD
+#if (defined(__cplusplus) && __cplusplus >= 201703L) || \
+    (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L)
+#define SDL_NODISCARD [[nodiscard]]
+#elif ( (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__) )
+#define SDL_NODISCARD __attribute__((warn_unused_result))
+#elif defined(_MSC_VER) && (_MSC_VER >= 1700)
+#define SDL_NODISCARD _Check_return_
+#else
+#define SDL_NODISCARD
+#endif /* C++17 or C23 */
+#endif /* SDL_NODISCARD not defined */
+
 #ifndef SDL_MALLOC
 #if defined(__GNUC__) && (__GNUC__ >= 3)
 #define SDL_MALLOC __attribute__((malloc))
