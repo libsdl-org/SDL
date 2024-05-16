@@ -655,7 +655,7 @@ static Uint8 *EnsureAudioStreamWorkBufferSize(SDL_AudioStream *stream, size_t ne
         return stream->work_buffer;
     }
 
-    Uint8 *ptr = (Uint8 *) SDL_aligned_alloc(SDL_SIMDGetAlignment(), newlen);
+    Uint8 *ptr = (Uint8 *) SDL_aligned_alloc(SDL_GetSIMDAlignment(), newlen);
     if (!ptr) {
         return NULL;  // previous work buffer is still valid!
     }
@@ -838,7 +838,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
         work_buffer_capacity = SDL_max(work_buffer_capacity, resample_convert_bytes);
 
         // SIMD-align the buffer
-        int simd_alignment = (int) SDL_SIMDGetAlignment();
+        int simd_alignment = (int) SDL_GetSIMDAlignment();
         work_buffer_capacity += simd_alignment - 1;
         work_buffer_capacity -= work_buffer_capacity % simd_alignment;
 

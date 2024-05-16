@@ -335,7 +335,7 @@ static int ANDROIDCAMERA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *fra
         buflen += (int) datalen;
     }
 
-    frame->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+    frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
     if (frame->pixels == NULL) {
         retval = -1;
     } else {

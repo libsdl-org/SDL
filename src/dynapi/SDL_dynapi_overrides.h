@@ -697,7 +697,7 @@
 #define SDL_RumbleJoystickTriggers SDL_RumbleJoystickTriggers_REAL
 #define SDL_RunApp SDL_RunApp_REAL
 #define SDL_RunHapticEffect SDL_RunHapticEffect_REAL
-#define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_REAL
+#define SDL_GetSIMDAlignment SDL_GetSIMDAlignment_REAL
 #define SDL_SaveBMP SDL_SaveBMP_REAL
 #define SDL_SaveBMP_IO SDL_SaveBMP_IO_REAL
 #define SDL_ScreenKeyboardShown SDL_ScreenKeyboardShown_REAL

@@ -171,7 +171,7 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format
 
     /* Get the pixels */
     if (surface->w && surface->h) {
-        surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
+        surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
         if (!surface->pixels) {
             SDL_DestroySurface(surface);
             return NULL;

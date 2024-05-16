@@ -3179,3 +3179,8 @@ typedef SDL_Colour, SDL_Color;
 - SDL_LogResetPriorities
 + SDL_ResetLogPriorities
   (...)
+@@
+@@
+- SDL_SIMDGetAlignment
++ SDL_GetSIMDAlignment
+  (...)

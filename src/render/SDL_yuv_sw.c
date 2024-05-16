@@ -60,7 +60,7 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormatEnum format, int w, in
             SDL_SW_DestroyYUVTexture(swdata);
             return NULL;
         }
-        swdata->pixels = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), dst_size);
+        swdata->pixels = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), dst_size);
         if (!swdata->pixels) {
             SDL_SW_DestroyYUVTexture(swdata);
             return NULL;
