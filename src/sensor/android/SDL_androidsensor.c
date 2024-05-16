@@ -69,20 +69,30 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
 
     while (SDL_AtomicGet(&ctx->running)) {
         Uint64 timestamp = SDL_GetTicksNS();
+        SDL_bool done = SDL_FALSE;
 
-        if (ALooper_pollAll(-1, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
-            SDL_LockSensors();
-            for (i = 0; i < SDL_sensors_count; ++i) {
-                if (!SDL_sensors[i].event_queue) {
-                    continue;
-                }
+        while (!done) {
+            int result;
 
-                SDL_zero(event);
-                while (ASensorEventQueue_getEvents(SDL_sensors[i].event_queue, &event, 1) > 0) {
-                    SDL_SendSensorUpdate(timestamp, SDL_sensors[i].sensor, timestamp, event.data, SDL_arraysize(event.data));
+            result = ALooper_pollOnce(-1, NULL, &events, (void **)&source);
+            if (result == LOOPER_ID_USER) {
+                SDL_LockSensors();
+                for (i = 0; i < SDL_sensors_count; ++i) {
+                    if (!SDL_sensors[i].event_queue) {
+                        continue;
+                    }
+
+                    SDL_zero(event);
+                    while (ASensorEventQueue_getEvents(SDL_sensors[i].event_queue, &event, 1) > 0) {
+                        SDL_SendSensorUpdate(timestamp, SDL_sensors[i].sensor, timestamp, event.data, SDL_arraysize(event.data));
+                    }
                 }
+                SDL_UnlockSensors();
             }
-            SDL_UnlockSensors();
+
+            if (result < 0) {
+                done = SDL_TRUE;
+            }
         }
     }
 
