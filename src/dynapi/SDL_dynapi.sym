@@ -324,6 +324,7 @@ SDL3_0.0.0 {
     SDL_GetKeyboardState;
     SDL_GetKeyboards;
     SDL_GetLogOutputFunction;
+    SDL_GetLogPriority;
     SDL_GetMasksForPixelFormatEnum;
     SDL_GetMaxHapticEffects;
     SDL_GetMaxHapticEffectsPlaying;
@@ -409,6 +410,7 @@ SDL3_0.0.0 {
     SDL_GetRendererInfo;
     SDL_GetRendererProperties;
     SDL_GetRevision;
+    SDL_GetSIMDAlignment;
     SDL_GetScancodeFromKey;
     SDL_GetScancodeFromName;
     SDL_GetScancodeName;
@@ -555,13 +557,9 @@ SDL3_0.0.0 {
     SDL_LogCritical;
     SDL_LogDebug;
     SDL_LogError;
-    SDL_GetLogPriority;
     SDL_LogInfo;
     SDL_LogMessage;
     SDL_LogMessageV;
-    SDL_ResetLogPriorities;
-    SDL_SetLogPriorities;
-    SDL_SetLogPriority;
     SDL_LogVerbose;
     SDL_LogWarn;
     SDL_MapRGB;
@@ -663,6 +661,7 @@ SDL3_0.0.0 {
     SDL_ResetHint;
     SDL_ResetHints;
     SDL_ResetKeyboard;
+    SDL_ResetLogPriorities;
     SDL_RestoreWindow;
     SDL_ResumeAudioDevice;
     SDL_ResumeHaptic;
@@ -672,7 +671,6 @@ SDL3_0.0.0 {
     SDL_RumbleJoystickTriggers;
     SDL_RunApp;
     SDL_RunHapticEffect;
-    SDL_GetSIMDAlignment;
     SDL_SaveBMP;
     SDL_SaveBMP_IO;
     SDL_ScreenKeyboardShown;
@@ -714,6 +712,8 @@ SDL3_0.0.0 {
     SDL_SetJoystickVirtualHat;
     SDL_SetJoystickVirtualTouchpad;
     SDL_SetLogOutputFunction;
+    SDL_SetLogPriorities;
+    SDL_SetLogPriority;
     SDL_SetMainReady;
     SDL_SetMemoryFunctions;
     SDL_SetModState;

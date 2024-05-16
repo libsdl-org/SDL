@@ -349,6 +349,7 @@
 #define SDL_GetKeyboardState SDL_GetKeyboardState_REAL
 #define SDL_GetKeyboards SDL_GetKeyboards_REAL
 #define SDL_GetLogOutputFunction SDL_GetLogOutputFunction_REAL
+#define SDL_GetLogPriority SDL_GetLogPriority_REAL
 #define SDL_GetMasksForPixelFormatEnum SDL_GetMasksForPixelFormatEnum_REAL
 #define SDL_GetMaxHapticEffects SDL_GetMaxHapticEffects_REAL
 #define SDL_GetMaxHapticEffectsPlaying SDL_GetMaxHapticEffectsPlaying_REAL
@@ -434,6 +435,7 @@
 #define SDL_GetRendererInfo SDL_GetRendererInfo_REAL
 #define SDL_GetRendererProperties SDL_GetRendererProperties_REAL
 #define SDL_GetRevision SDL_GetRevision_REAL
+#define SDL_GetSIMDAlignment SDL_GetSIMDAlignment_REAL
 #define SDL_GetScancodeFromKey SDL_GetScancodeFromKey_REAL
 #define SDL_GetScancodeFromName SDL_GetScancodeFromName_REAL
 #define SDL_GetScancodeName SDL_GetScancodeName_REAL
@@ -580,13 +582,9 @@
 #define SDL_LogCritical SDL_LogCritical_REAL
 #define SDL_LogDebug    SDL_LogDebug_REAL
 #define SDL_LogError    SDL_LogError_REAL
-#define SDL_GetLogPriority SDL_GetLogPriority_REAL
 #define SDL_LogInfo SDL_LogInfo_REAL
 #define SDL_LogMessage  SDL_LogMessage_REAL
 #define SDL_LogMessageV SDL_LogMessageV_REAL
-#define SDL_ResetLogPriorities SDL_ResetLogPriorities_REAL
-#define SDL_SetLogPriorities SDL_SetLogPriorities_REAL
-#define SDL_SetLogPriority SDL_SetLogPriority_REAL
 #define SDL_LogVerbose  SDL_LogVerbose_REAL
 #define SDL_LogWarn SDL_LogWarn_REAL
 #define SDL_MapRGB SDL_MapRGB_REAL
@@ -688,6 +686,7 @@
 #define SDL_ResetHint SDL_ResetHint_REAL
 #define SDL_ResetHints SDL_ResetHints_REAL
 #define SDL_ResetKeyboard SDL_ResetKeyboard_REAL
+#define SDL_ResetLogPriorities SDL_ResetLogPriorities_REAL
 #define SDL_RestoreWindow SDL_RestoreWindow_REAL
 #define SDL_ResumeAudioDevice SDL_ResumeAudioDevice_REAL
 #define SDL_ResumeHaptic SDL_ResumeHaptic_REAL
@@ -697,7 +696,6 @@
 #define SDL_RumbleJoystickTriggers SDL_RumbleJoystickTriggers_REAL
 #define SDL_RunApp SDL_RunApp_REAL
 #define SDL_RunHapticEffect SDL_RunHapticEffect_REAL
-#define SDL_GetSIMDAlignment SDL_GetSIMDAlignment_REAL
 #define SDL_SaveBMP SDL_SaveBMP_REAL
 #define SDL_SaveBMP_IO SDL_SaveBMP_IO_REAL
 #define SDL_ScreenKeyboardShown SDL_ScreenKeyboardShown_REAL
@@ -738,6 +736,8 @@
 #define SDL_SetJoystickVirtualHat SDL_SetJoystickVirtualHat_REAL
 #define SDL_SetJoystickVirtualTouchpad SDL_SetJoystickVirtualTouchpad_REAL
 #define SDL_SetLogOutputFunction SDL_SetLogOutputFunction_REAL
+#define SDL_SetLogPriorities SDL_SetLogPriorities_REAL
+#define SDL_SetLogPriority SDL_SetLogPriority_REAL
 #define SDL_SetMainReady SDL_SetMainReady_REAL
 #define SDL_SetMemoryFunctions SDL_SetMemoryFunctions_REAL
 #define SDL_SetModState SDL_SetModState_REAL
