@@ -605,6 +605,7 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
         if (!data->shm_data) {
             if (input->cursor_shape) {
                 Wayland_SetSystemCursorShape(input, data->system_cursor);
+                input->cursor_visible = SDL_TRUE;
                 return 0;
             } else if (!wayland_get_system_cursor(d, data, &scale)) {
                 return -1;
