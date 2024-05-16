@@ -672,7 +672,7 @@ SDL3_0.0.0 {
     SDL_RumbleJoystickTriggers;
     SDL_RunApp;
     SDL_RunHapticEffect;
-    SDL_SIMDGetAlignment;
+    SDL_GetSIMDAlignment;
     SDL_SaveBMP;
     SDL_SaveBMP_IO;
     SDL_ScreenKeyboardShown;

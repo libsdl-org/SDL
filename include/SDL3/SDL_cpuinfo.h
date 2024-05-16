@@ -302,7 +302,7 @@ extern DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
  * \sa SDL_aligned_alloc
  * \sa SDL_aligned_free
  */
-extern DECLSPEC size_t SDLCALL SDL_SIMDGetAlignment(void);
+extern DECLSPEC size_t SDLCALL SDL_GetSIMDAlignment(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

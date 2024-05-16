@@ -1617,14 +1617,14 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
     SDL_UpdatedAudioDeviceFormat(device);  // in case the backend changed things and forgot to call this.
 
     // Allocate a scratch audio buffer
-    device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
+    device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
     if (!device->work_buffer) {
         ClosePhysicalAudioDevice(device);
         return -1;
     }
 
     if (device->spec.format != SDL_AUDIO_F32) {
-        device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
+        device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
         if (!device->mix_buffer) {
             ClosePhysicalAudioDevice(device);
             return -1;
@@ -1748,7 +1748,7 @@ int SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallbac
     int retval = 0;
     if (logdev) {
         if (callback && !device->postmix_buffer) {
-            device->postmix_buffer = (float *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
+            device->postmix_buffer = (float *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
             if (!device->postmix_buffer) {
                 retval = -1;
             }
@@ -2214,14 +2214,14 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
     SDL_UpdatedAudioDeviceFormat(device);
     if (device->work_buffer && (device->work_buffer_size > orig_work_buffer_size)) {
         SDL_aligned_free(device->work_buffer);
-        device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
+        device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
         if (!device->work_buffer) {
             kill_device = SDL_TRUE;
         }
 
         if (device->postmix_buffer) {
             SDL_aligned_free(device->postmix_buffer);
-            device->postmix_buffer = (float *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
+            device->postmix_buffer = (float *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
             if (!device->postmix_buffer) {
                 kill_device = SDL_TRUE;
             }
@@ -2230,7 +2230,7 @@ int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SDL
         SDL_aligned_free(device->mix_buffer);
         device->mix_buffer = NULL;
         if (device->spec.format != SDL_AUDIO_F32) {
-            device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), device->work_buffer_size);
+            device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
             if (!device->mix_buffer) {
                 kill_device = SDL_TRUE;
             }

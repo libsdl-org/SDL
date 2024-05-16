@@ -151,7 +151,7 @@ static int ZombieAcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint
     if (!device->zombie_pixels) {
         // attempt to allocate and initialize a fake frame of pixels.
         const size_t buflen = GetFrameBufLen(&device->actual_spec);
-        device->zombie_pixels = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+        device->zombie_pixels = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
         if (!device->zombie_pixels) {
             *timestampNS = 0;
             return 0;  // oh well, say there isn't a frame yet, so we'll go back to waiting. Maybe allocation will succeed later...?

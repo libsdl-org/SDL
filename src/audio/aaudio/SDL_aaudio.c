@@ -353,7 +353,7 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
     // Allocate a double buffered mixing buffer
     hidden->num_buffers = 2;
     hidden->mixbuf_bytes = (hidden->num_buffers * device->buffer_size);
-    hidden->mixbuf = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), hidden->mixbuf_bytes);
+    hidden->mixbuf = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), hidden->mixbuf_bytes);
     if (!hidden->mixbuf) {
         return -1;
     }

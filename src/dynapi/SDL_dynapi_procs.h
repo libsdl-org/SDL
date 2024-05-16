@@ -718,7 +718,7 @@ SDL_DYNAPI_PROC(int,SDL_RumbleJoystick,(SDL_Joystick *a, Uint16 b, Uint16 c, Uin
 SDL_DYNAPI_PROC(int,SDL_RumbleJoystickTriggers,(SDL_Joystick *a, Uint16 b, Uint16 c, Uint32 d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_RunApp,(int a, char *b[], SDL_main_func c, void *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_RunHapticEffect,(SDL_Haptic *a, int b, Uint32 c),(a,b,c),return)
-SDL_DYNAPI_PROC(size_t,SDL_SIMDGetAlignment,(void),(),return)
+SDL_DYNAPI_PROC(size_t,SDL_GetSIMDAlignment,(void),(),return)
 SDL_DYNAPI_PROC(int,SDL_SaveBMP,(SDL_Surface *a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SaveBMP_IO,(SDL_Surface *a, SDL_IOStream *b, SDL_bool c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_ScreenKeyboardShown,(SDL_Window *a),(a),return)

@@ -368,7 +368,7 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *f
             if (FAILED(ret)) {
                 retval = -1;
             } else {
-                frame->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+                frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
                 if (frame->pixels == NULL) {
                     retval = -1;
                 } else {
@@ -388,7 +388,7 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *f
                 if (pitch < 0) { // image rows are reversed.
                     bufstart += -pitch * (frame->h - 1);
                 }
-                frame->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+                frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
                 if (frame->pixels == NULL) {
                     retval = -1;
                 } else {
@@ -410,7 +410,7 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *f
                 if (pitch < 0) { // image rows are reversed.
                     bufstart += -pitch * (frame->h - 1);
                 }
-                frame->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+                frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
                 if (frame->pixels == NULL) {
                     retval = -1;
                 } else {

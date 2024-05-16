@@ -70,6 +70,9 @@
 #define SDL_LoadWAV_RW SDL_LoadWAV_IO
 #define SDL_NewAudioStream SDL_CreateAudioStream
 
+/* ##SDL_cpuinfo.h */
+#define SDL_SIMDGetAlignment SDL_GetSIMDAlignment
+
 /* ##SDL_events.h */
 #define SDL_APP_DIDENTERBACKGROUND SDL_EVENT_DID_ENTER_BACKGROUND
 #define SDL_APP_DIDENTERFOREGROUND SDL_EVENT_DID_ENTER_FOREGROUND
@@ -582,6 +585,9 @@
 #define SDL_FreeWAV SDL_FreeWAV_renamed_SDL_free
 #define SDL_LoadWAV_RW SDL_LoadWAV_RW_renamed_SDL_LoadWAV_IO
 #define SDL_NewAudioStream SDL_NewAudioStream_renamed_SDL_CreateAudioStream
+
+/* ##SDL_cpuinfo.h */
+#define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_renamed_SDL_GetSIMDAlignment
 
 /* ##SDL_events.h */
 #define SDL_APP_DIDENTERBACKGROUND SDL_APP_DIDENTERBACKGROUND_renamed_SDL_EVENT_DID_ENTER_BACKGROUND

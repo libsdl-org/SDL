@@ -175,7 +175,7 @@ static int COREMEDIA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, 
     if ((planar == 0) && (numPlanes == 0)) {
         const int pitch = (int) CVPixelBufferGetBytesPerRow(image);
         const size_t buflen = pitch * frame->h;
-        frame->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+        frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
         if (frame->pixels == NULL) {
             retval = -1;
         } else {
@@ -190,7 +190,7 @@ static int COREMEDIA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, 
         }
         buflen *= frame->h;
 
-        frame->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+        frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
         if (frame->pixels == NULL) {
             retval = -1;
         } else {
