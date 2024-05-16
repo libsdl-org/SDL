@@ -1374,11 +1374,15 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_PS4 "SDL_JOYSTICK_HIDAPI_PS4"
 
 /**
- * A variable controlling the update rate of the PS4 controller over Bluetooth when using the HIDAPI driver.
+ * A variable controlling the update rate of the PS4 controller over Bluetooth
+ * when using the HIDAPI driver.
  *
- * This defaults to 4 ms, to match the behavior over USB, and to be more friendly to other Bluetooth devices and older Bluetooth hardware on the computer. It can be set to "1" (1000Hz), "2" (500Hz) and "4" (250Hz)
+ * This defaults to 4 ms, to match the behavior over USB, and to be more
+ * friendly to other Bluetooth devices and older Bluetooth hardware on the
+ * computer. It can be set to "1" (1000Hz), "2" (500Hz) and "4" (250Hz)
  *
- * This hint can be set anytime, but only takes effect when extended input reports are enabled.
+ * This hint can be set anytime, but only takes effect when extended input
+ * reports are enabled.
  *
  * \since This hint is available since SDL 3.0.0.
  */
