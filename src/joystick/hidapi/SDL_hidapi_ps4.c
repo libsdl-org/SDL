@@ -158,6 +158,7 @@ typedef struct
     SDL_bool enhanced_reports;
     SDL_bool enhanced_mode;
     SDL_bool enhanced_mode_available;
+    int report_interval;
     SDL_bool report_sensors;
     SDL_bool report_touchpad;
     SDL_bool report_battery;
@@ -793,6 +794,33 @@ static void SDLCALL SDL_PS4RumbleHintChanged(void *userdata, const char *name, c
     }
 }
 
+static void SDLCALL SDL_PS4ReportIntervalHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    const int DEFAULT_REPORT_INTERVAL = 4;
+    SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)userdata;
+    int new_report_interval = DEFAULT_REPORT_INTERVAL;
+
+    if (hint) {
+        int report_interval = SDL_atoi(hint);
+        switch (report_interval) {
+        case 1:
+        case 2:
+        case 4:
+            // Valid values
+            new_report_interval = report_interval;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (new_report_interval != ctx->report_interval) {
+        ctx->report_interval = new_report_interval;
+
+        HIDAPI_DriverPS4_UpdateEffects(ctx, SDL_FALSE);
+    }
+}
+
 static void HIDAPI_DriverPS4_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
@@ -836,6 +864,8 @@ static SDL_bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
                         SDL_PS4RumbleHintChanged, ctx);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
+                        SDL_PS4ReportIntervalHintChanged, ctx);
     return SDL_TRUE;
 }
 
@@ -916,7 +946,7 @@ static int HIDAPI_DriverPS4_InternalSendJoystickEffect(SDL_DriverPS4_Context *ct
 
     if (ctx->device->is_bluetooth && ctx->official_controller) {
         data[0] = k_EPS4ReportIdBluetoothEffects;
-        data[1] = 0xC0 | 0x04; /* Magic value HID + CRC, also sets interval to 4ms for samples */
+        data[1] = 0xC0 | ctx->report_interval; /* Magic value HID + CRC, also sets update interval */
         data[3] = 0x03;        /* 0x1 is rumble, 0x2 is lightbar, 0x4 is the blink interval */
 
         report_size = 78;
@@ -1318,6 +1348,8 @@ static void HIDAPI_DriverPS4_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
 
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
                         SDL_PS4RumbleHintChanged, ctx);
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
+                        SDL_PS4ReportIntervalHintChanged, ctx);
 
     ctx->joystick = NULL;
 }
