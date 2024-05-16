@@ -123,6 +123,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->Vulkan_UnloadLibrary = UIKit_Vulkan_UnloadLibrary;
         device->Vulkan_GetInstanceExtensions = UIKit_Vulkan_GetInstanceExtensions;
         device->Vulkan_CreateSurface = UIKit_Vulkan_CreateSurface;
+        device->Vulkan_DestroySurface = UIKit_Vulkan_DestroySurface;
 #endif
 
 #ifdef SDL_VIDEO_METAL

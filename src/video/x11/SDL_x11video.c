@@ -279,6 +279,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->Vulkan_UnloadLibrary = X11_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = X11_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = X11_Vulkan_CreateSurface;
+    device->Vulkan_DestroySurface = X11_Vulkan_DestroySurface;
 #endif
 
 #ifdef SDL_USE_LIBDBUS
