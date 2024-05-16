@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_error.h
+ * # CategoryError
  *
- *  Simple error message routines for SDL.
+ * Simple error message routines for SDL.
  */
 
 #ifndef SDL_error_h_

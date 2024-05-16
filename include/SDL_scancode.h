@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_scancode.h
+ * # CategoryScancode
  *
- *  Defines keyboard scancodes.
+ * Defines keyboard scancodes.
  */
 
 #ifndef SDL_scancode_h_

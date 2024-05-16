@@ -22,9 +22,9 @@
 /* !!! FIXME: several functions in here need Doxygen comments. */
 
 /**
- *  \file SDL_audio.h
+ * # CategoryAudio
  *
- *  Access to the raw audio mixing buffer for the SDL library.
+ * Access to the raw audio mixing buffer for the SDL library.
  */
 
 #ifndef SDL_audio_h_

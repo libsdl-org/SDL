@@ -19,13 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_stdinc.h
- *
- *  This is a general header that includes C language support.
- */
-
 /* WIKI CATEGORY: StdInc */
+
+/**
+ * # CategoryStdInc
+ *
+ * This is a general header that includes C language support.
+ */
 
 #ifndef SDL_stdinc_h_
 #define SDL_stdinc_h_

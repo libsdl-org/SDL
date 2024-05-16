@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_keycode.h
+ * # CategoryKeycode
  *
- *  Defines constants which identify keyboard keys and modifiers.
+ * Defines constants which identify keyboard keys and modifiers.
  */
 
 #ifndef SDL_keycode_h_

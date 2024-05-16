@@ -20,18 +20,19 @@
 */
 
 /**
- *  \file SDL_log.h
+ * # CategoryLog
  *
- *  Simple log messages with categories and priorities.
+ * Simple log messages with categories and priorities.
  *
- *  By default logs are quiet, but if you're debugging SDL you might want:
+ * By default logs are quiet, but if you're debugging SDL you might want:
  *
- *      SDL_LogSetAllPriority(SDL_LOG_PRIORITY_WARN);
+ * SDL_LogSetAllPriority(SDL_LOG_PRIORITY_WARN);
  *
- *  Here's where the messages go on different platforms:
- *      Windows: debug output stream
- *      Android: log output
- *      Others: standard error output (stderr)
+ * Here's where the messages go on different platforms:
+ *
+ * - Windows: debug output stream
+ * - Android: log output
+ * - Others: standard error output (stderr)
  */
 
 #ifndef SDL_log_h_

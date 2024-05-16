@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_locale.h
+ * # CategoryLocale
  *
- *  Include file for SDL locale services
+ * Include file for SDL locale services
  */
 
 #ifndef _SDL_locale_h

@@ -19,11 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_types.h
- *
- *  \deprecated
- */
-
 /* DEPRECATED */
+
 #include "SDL_stdinc.h"

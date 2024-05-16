@@ -19,6 +19,6 @@ wikiheaderfiletext = Defined in [%fname%](https://github.com/libsdl-org/SDL/blob
 manpageheaderfiletext = Defined in %fname%
 
 # All SDL_config_*.h headers are uncategorized, in case something slips in from them.
-# All SDL_test_* headers become "Test" categories, everything else just converts like SDL_audio.h -> Audio
+# All SDL_test_* headers become uncategorized, everything else just converts like SDL_audio.h -> Audio
 # A handful of others we fix up in the header itself with /* WIKI CATEGORY: x */ comments.
-headercategoryeval = s/\ASDL_config_.*?\.h\Z//; s/\ASDL_test_.*?\.h\Z/Test/; s/\ASDL_?(.*?)\.h\Z/$1/; ucfirst();
+headercategoryeval = s/\ASDL_config_.*?\.h\Z//; s/\ASDL_test_.*?\.h\Z//; s/\ASDL_?(.*?)\.h\Z/$1/; ucfirst();

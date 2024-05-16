@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_platform.h
+ * # CategoryPlatform
  *
- *  Try to get a standard set of platform defines.
+ * Try to get a standard set of platform defines.
  */
 
 #ifndef SDL_platform_h_

@@ -24,9 +24,7 @@
 
 #include "SDL_platform.h"
 
-/**
- *  \file SDL_config.h
- */
+/* WIKI CATEGORY: - */
 
 /* Add any platform that doesn't build using the configure system. */
 #if defined(__WIN32__)

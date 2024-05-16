@@ -20,7 +20,7 @@
 */
 
 /**
- * \file SDL_clipboard.h
+ * # CategoryClipboard
  *
  * Include file for SDL clipboard handling
  */

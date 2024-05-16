@@ -20,10 +20,9 @@
 */
 
 /**
- *  \file SDL_sensor.h
+ * # CategorySensor
  *
- *  Include file for SDL sensor event handling
- *
+ * Include file for SDL sensor event handling
  */
 
 #ifndef SDL_sensor_h_

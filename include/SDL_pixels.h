@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_pixels.h
+ * # CategoryPixels
  *
- *  Header for the enumerated pixel format definitions.
+ * Header for the enumerated pixel format definitions.
  */
 
 #ifndef SDL_pixels_h_

@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_blendmode.h
+ * # CategoryBlendmode
  *
- *  Header file declaring the SDL_BlendMode enumeration
+ * Header file declaring the SDL_BlendMode enumeration
  */
 
 #ifndef SDL_blendmode_h_

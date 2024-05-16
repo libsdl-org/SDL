@@ -20,22 +20,26 @@
 */
 
 /**
- *  \file SDL_joystick.h
+ * # CategoryJoystick
  *
- *  Include file for SDL joystick event handling
+ * Include file for SDL joystick event handling
  *
- * The term "device_index" identifies currently plugged in joystick devices between 0 and SDL_NumJoysticks(), with the exact joystick
- *   behind a device_index changing as joysticks are plugged and unplugged.
+ * The term "device_index" identifies currently plugged in joystick devices
+ * between 0 and SDL_NumJoysticks(), with the exact joystick behind a
+ * device_index changing as joysticks are plugged and unplugged.
  *
- * The term "instance_id" is the current instantiation of a joystick device in the system, if the joystick is removed and then re-inserted
- *   then it will get a new instance_id, instance_id's are monotonically increasing identifiers of a joystick plugged in.
+ * The term "instance_id" is the current instantiation of a joystick device in
+ * the system, if the joystick is removed and then re-inserted then it will
+ * get a new instance_id, instance_id's are monotonically increasing
+ * identifiers of a joystick plugged in.
  *
  * The term "player_index" is the number assigned to a player on a specific
- *   controller. For XInput controllers this returns the XInput user index.
- *   Many joysticks will not be able to supply this information.
+ * controller. For XInput controllers this returns the XInput user index. Many
+ * joysticks will not be able to supply this information.
  *
- * The term JoystickGUID is a stable 128-bit identifier for a joystick device that does not change over time, it identifies class of
- *   the device (a X360 wired controller for example). This identifier is platform dependent.
+ * The term JoystickGUID is a stable 128-bit identifier for a joystick device
+ * that does not change over time, it identifies class of the device (a X360
+ * wired controller for example). This identifier is platform dependent.
  */
 
 #ifndef SDL_joystick_h_

@@ -19,13 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_gamecontroller.h
- *
- *  Include file for SDL game controller event handling
- */
-
 /* WIKI CATEGORY: GameController */
+
+/**
+ * # CategoryGameController
+ *
+ * Include file for SDL game controller event handling
+ */
 
 #ifndef SDL_gamecontroller_h_
 #define SDL_gamecontroller_h_

@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_mouse.h
+ * # CategoryMouse
  *
- *  Include file for SDL mouse event handling.
+ * Include file for SDL mouse event handling.
  */
 
 #ifndef SDL_mouse_h_

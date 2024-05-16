@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_events.h
+ * # CategoryEvents
  *
- *  Include file for SDL event handling.
+ * Include file for SDL event handling.
  */
 
 #ifndef SDL_events_h_

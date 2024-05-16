@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_surface.h
+ * # CategorySurface
  *
- *  Header file for SDL_Surface definition and management functions.
+ * Header file for SDL_Surface definition and management functions.
  */
 
 #ifndef SDL_surface_h_

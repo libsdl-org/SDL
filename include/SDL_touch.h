@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_touch.h
+ * # CategoryTouch
  *
- *  Include file for SDL touch event handling.
+ * Include file for SDL touch event handling.
  */
 
 #ifndef SDL_touch_h_

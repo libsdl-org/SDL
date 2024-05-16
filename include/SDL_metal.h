@@ -20,9 +20,10 @@
 */
 
 /**
- *  \file SDL_metal.h
+ * # CategoryMetal
  *
- *  Header file for functions to creating Metal layers and views on SDL windows.
+ * Header file for functions to creating Metal layers and views on SDL
+ * windows.
  */
 
 #ifndef SDL_metal_h_

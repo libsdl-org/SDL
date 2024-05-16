@@ -19,18 +19,22 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* WIKI CATEGORY: CPUInfo */
+
 /**
- *  \file SDL_cpuinfo.h
+ * # CategoryCPUInfo
  *
- *  CPU feature detection for SDL.
+ * CPU feature detection for SDL.
+ *
+ * These functions are largely concerned with reporting if the system has
+ * access to various SIMD instruction sets, but also has other important info
+ * to share, such as number of logical CPU cores.
  */
 
 #ifndef SDL_cpuinfo_h_
 #define SDL_cpuinfo_h_
 
 #include "SDL_stdinc.h"
-
-/* WIKI CATEGORY: CPUInfo */
 
 /* Need to do this here because intrin.h has C++ code in it */
 /* Visual Studio 2005 has a bug where intrin.h conflicts with winnt.h */

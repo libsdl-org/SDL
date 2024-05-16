@@ -19,26 +19,26 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_loadso.h
- *
- *  System dependent library loading routines
- *
- *  Some things to keep in mind:
- *  \li These functions only work on C function names.  Other languages may
- *      have name mangling and intrinsic language support that varies from
- *      compiler to compiler.
- *  \li Make sure you declare your function pointers with the same calling
- *      convention as the actual library function.  Your code will crash
- *      mysteriously if you do not do this.
- *  \li Avoid namespace collisions.  If you load a symbol from the library,
- *      it is not defined whether or not it goes into the global symbol
- *      namespace for the application.  If it does and it conflicts with
- *      symbols in your code or other shared libraries, you will not get
- *      the results you expect. :)
- */
-
 /* WIKI CATEGORY: LoadSO */
+
+/**
+ * # CategoryLoadSO
+ *
+ * System-dependent library loading routines.
+ *
+ * Some things to keep in mind:
+ *
+ * - These functions only work on C function names. Other languages may have
+ *   name mangling and intrinsic language support that varies from compiler to
+ *   compiler.
+ * - Make sure you declare your function pointers with the same calling
+ *   convention as the actual library function. Your code will crash
+ *   mysteriously if you do not do this.
+ * - Avoid namespace collisions. If you load a symbol from the library, it is
+ *   not defined whether or not it goes into the global symbol namespace for
+ *   the application. If it does and it conflicts with symbols in your code or
+ *   other shared libraries, you will not get the results you expect. :)
+ */
 
 #ifndef SDL_loadso_h_
 #define SDL_loadso_h_

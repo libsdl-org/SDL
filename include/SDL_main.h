@@ -25,9 +25,9 @@
 #include "SDL_stdinc.h"
 
 /**
- *  \file SDL_main.h
+ * # CategoryMain
  *
- *  Redefine main() on some platforms so that it is called by SDL.
+ * Redefine main() on some platforms so that it is called by SDL.
  */
 
 #ifndef SDL_MAIN_HANDLED

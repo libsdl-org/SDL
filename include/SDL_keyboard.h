@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_keyboard.h
+ * # CategoryKeyboard
  *
- *  Include file for SDL keyboard event handling
+ * Include file for SDL keyboard event handling
  */
 
 #ifndef SDL_keyboard_h_

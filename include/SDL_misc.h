@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_misc.h
+ * # CategoryMisc
  *
- *  \brief Include file for SDL API functions that don't fit elsewhere.
+ * Include file for SDL API functions that don't fit elsewhere.
  */
 
 #ifndef SDL_misc_h_

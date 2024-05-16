@@ -19,11 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_opengles2.h
- *
- *  This is a simple file to encapsulate the OpenGL ES 2.0 API headers.
+/*
+ * This is a simple file to encapsulate the OpenGL ES 2.0 API headers.
  */
+
 #include "SDL_config.h"
 
 #if !defined(_MSC_VER) && !defined(SDL_USE_BUILTIN_OPENGL_DEFINITIONS)

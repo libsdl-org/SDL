@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_gesture.h
+ * # CategoryGesture
  *
- *  Include file for SDL gesture event handling.
+ * Include file for SDL gesture event handling.
  */
 
 #ifndef SDL_gesture_h_

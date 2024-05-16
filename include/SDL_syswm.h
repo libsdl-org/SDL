@@ -19,10 +19,17 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_syswm.h
+/* WIKI CATEGORY: SYSWM */
+
+/*
+ * # CategorySYSWM
  *
- *  Include file for SDL custom system window manager hooks.
+ * Include file for SDL custom system window manager hooks.
+ *
+ * Your application has access to a special type of event SDL_SYSWMEVENT,
+ * which contains window-manager specific information and arrives whenever
+ * an unhandled window event occurs.  This event is ignored by default, but
+ * you can enable it with SDL_EventState().
  */
 
 #ifndef SDL_syswm_h_
@@ -32,17 +39,6 @@
 #include "SDL_error.h"
 #include "SDL_video.h"
 #include "SDL_version.h"
-
-/*
- *  \file SDL_syswm.h
- *
- *  Your application has access to a special type of event SDL_SYSWMEVENT,
- *  which contains window-manager specific information and arrives whenever
- *  an unhandled window event occurs.  This event is ignored by default, but
- *  you can enable it with SDL_EventState().
- */
-
-/* WIKI CATEGORY: SYSWM */
 
 struct SDL_SysWMinfo;
 

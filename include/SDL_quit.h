@@ -20,19 +20,7 @@
 */
 
 /**
- *  \file SDL_quit.h
- *
- *  Include file for SDL quit event handling.
- */
-
-#ifndef SDL_quit_h_
-#define SDL_quit_h_
-
-#include "SDL_stdinc.h"
-#include "SDL_error.h"
-
-/**
- *  \file SDL_quit.h
+ * # CategoryQuit
  *
  *  An SDL_QUIT event is generated when the user tries to close the application
  *  window.  If it is ignored or filtered out, the window will remain open.
@@ -46,9 +34,13 @@
  *  to determine the cause of an SDL_QUIT event, but setting a signal
  *  handler in your application will override the default generation of
  *  quit events for that signal.
- *
- *  \sa SDL_Quit()
  */
+
+#ifndef SDL_quit_h_
+#define SDL_quit_h_
+
+#include "SDL_stdinc.h"
+#include "SDL_error.h"
 
 /* There are no functions directly affecting the quit event */
 

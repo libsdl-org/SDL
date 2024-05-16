@@ -19,13 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_guid.h
- *
- *  Include file for handling SDL_GUID values.
- */
-
 /* WIKI CATEGORY: GUID */
+
+/**
+ * # CategoryGUID
+ *
+ * A GUID is a 128-bit value that represents something that is uniquely
+ * identifiable by this value: "globally unique."
+ */
 
 #ifndef SDL_guid_h_
 #define SDL_guid_h_
