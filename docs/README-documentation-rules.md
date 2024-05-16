@@ -34,49 +34,6 @@ things, you might confuse it. This is to the benefit of documentation, though,
 where we would rather you not do surprising things.
 
 
-## Most things in the headers can be documented.
-
-wikiheaders understands functions, typedefs, structs/unions/enums, `#defines`
-... basically most of what makes up a C header.
-
-
-## Defines right below typedefs and functions bind.
-
-Any `#define` directly below a function or non-struct/union/enum typedef is
-considered part of that declaration. This happens to work well with how our
-headers work, as these defines tend to be bitflags and such that are related
-to that symbol.
-
-wikiheaders will include those defines in the syntax section of the wiki
-page, and generate stub pages for each define that simply says "please refer
-to (The Actual Symbol You Care About)" with a link. It will also pull in
-any blank lines and most preprocessor directives for the syntax text, too.
-
-Sometimes an unrelated define, by itself, just happens to be right below one
-of these symbols in the header. The easiest way to deal with this is either
-to document that define with a Doxygen-style comment, if it makes sense to do
-so, or just add a normal C comment right above it if not, so wikiheaders
-doesn't bind it to the previous symbol.
-
-
-## Don't document the `SDL_test*.h` headers.
-
-These are in the public headers but they aren't really considered public APIs.
-They live in a separate library that doesn't, or at least probably shouldn't,
-ship to end users. As such, we don't want it documented on the wiki.
-
-For now, we do this by not having any Doxygen-style comments in these files.
-Please keep it that way! If you want to document these headers, just don't
-use the magic two-`*` comment.
-
-
-## Use Markdown.
-
-The wiki also supports MediaWiki format, but we are transitioning away from it.
-The headers always use Markdown. If you're editing the wiki from a git clone,
-just make .md files and the wiki will know what to do with them.
-
-
 ## We _sort of_ write in Doxygen format.
 
 To document a symbol, we use something that looks like Doxygen (and Javadoc)
@@ -120,6 +77,70 @@ Text markup in the headers is _always_ done in Markdown format! But less is
 more: try not to markup text more than necessary.
 
 
+## Doxygen tags we support:
+
+- `\brief one-line description` (Not required, and wikiheaders will remove them).
+- `\param varname description` (One for each function/macro parameter)
+- `\returns description` (One for each function, don't use on `void` returns).
+- `\sa` (each of these get tucked into a "See Also" section on the wiki)
+- `\since This function is available since SDL 3.0.0.` (one per Doxygen comment)
+- `\threadsafety description` (one per function/macro).
+
+Other Doxygen things might exist in the headers, but they aren't understood
+by wikiheaders.
+
+
+## Use Markdown.
+
+The wiki also supports MediaWiki format, but we are transitioning away from it.
+The headers always use Markdown. If you're editing the wiki from a git clone,
+just make .md files and the wiki will know what to do with them.
+
+
+## Most things in the headers can be documented.
+
+wikiheaders understands functions, typedefs, structs/unions/enums, `#defines`
+... basically most of what makes up a C header. Just slap a Doxygen-style
+comment in front of most things and it'll work.
+
+
+## Defines right below typedefs and functions bind.
+
+Any `#define` directly below a function or non-struct/union/enum typedef is
+considered part of that declaration. This happens to work well with how our
+headers work, as these defines tend to be bitflags and such that are related
+to that symbol.
+
+wikiheaders will include those defines in the syntax section of the wiki
+page, and generate stub pages for each define that simply says "please refer
+to (The Actual Symbol You Care About)" with a link. It will also pull in
+any blank lines and most preprocessor directives for the syntax text, too.
+
+Sometimes an unrelated define, by itself, just happens to be right below one
+of these symbols in the header. The easiest way to deal with this is either
+to document that define with a Doxygen-style comment, if it makes sense to do
+so, or just add a normal C comment right above it if not, so wikiheaders
+doesn't bind it to the previous symbol.
+
+
+## Don't document the `SDL_test*.h` headers.
+
+These are in the public headers but they aren't really considered public APIs.
+They live in a separate library that doesn't, or at least probably shouldn't,
+ship to end users. As such, we don't want it documented on the wiki.
+
+For now, we do this by not having any Doxygen-style comments in these files.
+Please keep it that way! If you want to document these headers, just don't
+use the magic two-`*` comment.
+
+
+## The first line is the summary.
+
+The first line of a piece of documentation is meant to be a succinct
+description. This is what Doxygen would call the `\brief` tag. wikiheaders
+will split this text out until the first period (end of sentence!), and when
+word wrapping, shuffle the overflow into a new paragraph below it.
+
 
 ## Split paragraphs with a blank line.
 
@@ -140,14 +161,6 @@ happens right after you push your changes, you might as well just write
 however you like and assume the system will clean it up for you.
 
 
-## The first line is the summary.
-
-The first line of a piece of documentation is meant to be a succinct
-description. This is what Doxygen would call the `\brief` tag. wikiheaders
-will split this text out until the first period (end of sentence!), and when
-word wrapping, shuffle the overflow into a new paragraph below it.
-
-
 ## Things that start with `SDL_` will automatically become wiki links.
 
 wikiheaders knows to turn these into links to other pages, so if you reference
@@ -163,19 +176,6 @@ You can use Markdown's `[link markup format](https://example.com/)`, but
 sometimes it's clearer to list bare URLs; the URL will be visible on the
 wiki page, but also clickable to follow the link. This is up to your judgement
 on a case-by-case basis.
-
-
-## Doxygen tags we support:
-
-- `\brief one-line description` (Not required, and wikiheaders will remove them).
-- `\param varname description` (One for each function/macro parameter)
-- `\returns description` (One for each function, don't use on `void` returns).
-- `\sa` (each of these get tucked into a "See Also" section on the wiki)
-- `\since This function is available since SDL 3.0.0.` (one per Doxygen comment)
-- `\threadsafety description` (one per function/macro).
-
-Other Doxygen things might exist in the headers, but they aren't understood
-by wikiheaders.
 
 
 ## Hide stuff from wikiheaders.
