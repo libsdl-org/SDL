@@ -538,7 +538,14 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
         if (!data->shmBuffer.shm_data) {
             if (input->cursor_shape) {
                 Wayland_SetSystemCursorShape(input, data->system_cursor);
+
                 input->cursor_visible = SDL_TRUE;
+
+                if (input->relative_mode_override) {
+                    Wayland_input_disable_relative_pointer(input);
+                    input->relative_mode_override = SDL_FALSE;
+                }
+
                 return 0;
             } else if (!wayland_get_system_cursor(d, data, &scale)) {
                 return -1;
@@ -607,7 +614,7 @@ static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
     } else if (input->warp_emulation_prohibited) {
         return SDL_Unsupported();
     } else if (!d->relative_mouse_mode) {
-        Wayland_input_lock_pointer(input, window);
+        Wayland_input_enable_relative_pointer(input);
         input->relative_mode_override = SDL_TRUE;
     }
 
