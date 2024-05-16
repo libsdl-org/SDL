@@ -1519,6 +1519,9 @@ The following functions have been renamed:
 * SDL_UpperBlit() => SDL_BlitSurface()
 * SDL_UpperBlitScaled() => SDL_BlitSurfaceScaled()
 
+The following symbols have been removed:
+* SDL_SWSURFACE
+
 The following functions have been removed:
 * SDL_GetYUVConversionMode()
 * SDL_GetYUVConversionModeForResolution()

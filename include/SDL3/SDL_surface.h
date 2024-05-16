@@ -51,12 +51,11 @@ extern "C" {
  */
 typedef Uint32 SDL_SurfaceFlags;
 
-#define SDL_SWSURFACE               0           /**< Just here for compatibility */
-#define SDL_PREALLOC                0x00000001  /**< Surface uses preallocated memory */
-#define SDL_RLEACCEL                0x00000002  /**< Surface is RLE encoded */
-#define SDL_DONTFREE                0x00000004  /**< Surface is referenced internally */
-#define SDL_SIMD_ALIGNED            0x00000008  /**< Surface uses aligned memory */
-#define SDL_SURFACE_USES_PROPERTIES 0x00000010  /**< Surface uses properties */
+#define SDL_PREALLOC                0x00000001u /**< Surface uses preallocated memory */
+#define SDL_RLEACCEL                0x00000002u /**< Surface is RLE encoded */
+#define SDL_DONTFREE                0x00000004u /**< Surface is referenced internally */
+#define SDL_SIMD_ALIGNED            0x00000008u /**< Surface uses aligned memory */
+#define SDL_SURFACE_USES_PROPERTIES 0x00000010u /**< Surface uses properties */
 
 /**
  * Evaluates to true if the surface needs to be locked before access.
