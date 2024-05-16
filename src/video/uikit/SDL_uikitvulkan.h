@@ -43,10 +43,10 @@ SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                     VkInstance instance,
                                     const struct VkAllocationCallbacks *allocator,
                                     VkSurfaceKHR *surface);
-SDL_bool UIKit_Vulkan_DestroySurface(SDL_VideoDevice *_this,
-                                     VkInstance instance,
-                                     VkSurfaceKHR surface,
-                                     const struct VkAllocationCallbacks *allocator);
+void UIKit_Vulkan_DestroySurface(SDL_VideoDevice *_this,
+                                 VkInstance instance,
+                                 VkSurfaceKHR surface,
+                                 const struct VkAllocationCallbacks *allocator);
 
 #endif
 
