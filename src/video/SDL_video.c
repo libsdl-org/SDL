@@ -5344,6 +5344,16 @@ SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
     return _this->Vulkan_CreateSurface(_this, window, instance, allocator, surface);
 }
 
+void SDL_Vulkan_DestroySurface(SDL_Window *window,
+                                  VkInstance instance,
+                                  VkSurfaceKHR surface,
+                                  const struct VkAllocationCallbacks *allocator)
+{
+    if (_this && instance && surface && _this->Vulkan_DestroySurface) {
+        _this->Vulkan_DestroySurface(_this, window, instance, surface, allocator);
+    }
+}
+
 SDL_MetalView SDL_Metal_CreateView(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);
