@@ -158,7 +158,7 @@ typedef struct
     SDL_bool enhanced_reports;
     SDL_bool enhanced_mode;
     SDL_bool enhanced_mode_available;
-    int report_interval;
+    Uint8 report_interval;
     SDL_bool report_sensors;
     SDL_bool report_touchpad;
     SDL_bool report_battery;
@@ -815,7 +815,7 @@ static void SDLCALL SDL_PS4ReportIntervalHintChanged(void *userdata, const char 
     }
 
     if (new_report_interval != ctx->report_interval) {
-        ctx->report_interval = new_report_interval;
+        ctx->report_interval = (Uint8)new_report_interval;
 
         HIDAPI_DriverPS4_UpdateEffects(ctx, SDL_FALSE);
     }
