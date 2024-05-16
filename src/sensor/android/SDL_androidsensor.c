@@ -70,7 +70,7 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
     while (SDL_AtomicGet(&ctx->running)) {
         Uint64 timestamp = SDL_GetTicksNS();
 
-        if (ALooper_pollAll(-1, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
+        if (ALooper_pollOnce(-1, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
             SDL_LockSensors();
             for (i = 0; i < SDL_sensors_count; ++i) {
                 if (!SDL_sensors[i].event_queue) {
