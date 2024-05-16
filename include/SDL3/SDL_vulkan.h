@@ -190,15 +190,13 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
  * This should be called before SDL_DestroyWindow, if SDL_Vulkan_CreateSurface
  * was called after SDL_CreateWindow.
  *
- * The `window` must have been created with the `SDL_WINDOW_VULKAN` flag,
- * `instance` must have been created with extensions returned by
+ * The `instance` must have been created with extensions returned by
  * SDL_Vulkan_GetInstanceExtensions() enabled and `surface` must have been
  * created successfully by an SDL_Vulkan_CreateSurface() call.
  *
  * If `allocator` is NULL, Vulkan will use the system default allocator. This
  * argument is passed directly to Vulkan and isn't used by SDL itself.
  *
- * \param window The window to which to attach the Vulkan surface
  * \param instance The Vulkan instance handle
  * \param surface VkSurfaceKHR handle to destroy
  * \param allocator A VkAllocationCallbacks struct, which lets the app set the
@@ -209,8 +207,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
  * \sa SDL_Vulkan_GetInstanceExtensions
  * \sa SDL_Vulkan_CreateSurface
  */
-extern DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(SDL_Window *window,
-                                                       VkInstance instance,
+extern DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(VkInstance instance,
                                                        VkSurfaceKHR surface,
                                                        const struct VkAllocationCallbacks *allocator);
 
