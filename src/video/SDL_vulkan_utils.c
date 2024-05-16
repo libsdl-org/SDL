@@ -467,4 +467,21 @@ error:
     return SDL_FALSE;
 }
 
+void SDL_Vulkan_DestroySurface_Internal(void *vkGetInstanceProcAddr_,
+                                        VkInstance instance,
+                                        VkSurfaceKHR surface,
+                                        const struct VkAllocationCallbacks *allocator)
+{
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+        (PFN_vkGetInstanceProcAddr)vkGetInstanceProcAddr_;
+    PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR =
+        (PFN_vkDestroySurfaceKHR)vkGetInstanceProcAddr(
+            instance,
+            "vkDestroySurfaceKHR");
+
+    if (vkDestroySurfaceKHR) {
+        vkDestroySurfaceKHR(instance, surface, allocator);
+    }
+}
+
 #endif
