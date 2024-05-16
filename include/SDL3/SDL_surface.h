@@ -45,7 +45,7 @@ extern "C" {
 /**
  *  \name Surface flags
  *
- *  These are the currently supported flags for the ::SDL_Surface.
+ *  These are the currently supported flags for an SDL_Surface.
  *
  *  \internal
  *  Used internally (read-only).
