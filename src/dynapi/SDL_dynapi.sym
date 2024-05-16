@@ -555,13 +555,13 @@ SDL3_0.0.0 {
     SDL_LogCritical;
     SDL_LogDebug;
     SDL_LogError;
-    SDL_LogGetPriority;
+    SDL_GetLogPriority;
     SDL_LogInfo;
     SDL_LogMessage;
     SDL_LogMessageV;
-    SDL_LogResetPriorities;
-    SDL_LogSetAllPriority;
-    SDL_LogSetPriority;
+    SDL_ResetLogPriorities;
+    SDL_SetLogPriorities;
+    SDL_SetLogPriority;
     SDL_LogVerbose;
     SDL_LogWarn;
     SDL_MapRGB;

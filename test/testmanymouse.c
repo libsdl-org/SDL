@@ -502,7 +502,7 @@ int main(int argc, char *argv[])
     int i;
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Log all events, including mouse motion */
     SDL_SetHint(SDL_HINT_EVENT_LOGGING, "2");
