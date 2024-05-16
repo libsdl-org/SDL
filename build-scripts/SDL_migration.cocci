@@ -3159,3 +3159,23 @@ typedef SDL_Colour, SDL_Color;
 @@
 - SDLK_QUOTEDBL
 + SDLK_DBLAPOSTROPHE
+@@
+@@
+- SDL_LogSetAllPriority
++ SDL_SetLogPriorities
+  (...)
+@@
+@@
+- SDL_LogSetPriority
++ SDL_SetLogPriority
+  (...)
+@@
+@@
+- SDL_LogGetPriority
++ SDL_GetLogPriority
+  (...)
+@@
+@@
+- SDL_LogResetPriorities
++ SDL_ResetLogPriorities
+  (...)

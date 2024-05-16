@@ -1323,7 +1323,7 @@ int main(int argc, char *argv[])
     state = SDLTest_CommonCreateState(argv, 0);
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Log ffmpeg messages */
     av_log_set_callback( av_log_callback );

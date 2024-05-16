@@ -26,7 +26,7 @@
  *
  * By default logs are quiet, but if you're debugging SDL you might want:
  *
- * SDL_LogSetAllPriority(SDL_LOG_PRIORITY_WARN);
+ * SDL_SetLogPriorities(SDL_LOG_PRIORITY_WARN);
  *
  * Here's where the messages go on different platforms:
  *
@@ -114,10 +114,10 @@ typedef enum SDL_LogPriority
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LogResetPriorities
- * \sa SDL_LogSetPriority
+ * \sa SDL_ResetLogPriorities
+ * \sa SDL_SetLogPriority
  */
-extern DECLSPEC void SDLCALL SDL_LogSetAllPriority(SDL_LogPriority priority);
+extern DECLSPEC void SDLCALL SDL_SetLogPriorities(SDL_LogPriority priority);
 
 /**
  * Set the priority of a particular log category.
@@ -127,11 +127,11 @@ extern DECLSPEC void SDLCALL SDL_LogSetAllPriority(SDL_LogPriority priority);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LogGetPriority
- * \sa SDL_LogResetPriorities
- * \sa SDL_LogSetAllPriority
+ * \sa SDL_GetLogPriority
+ * \sa SDL_ResetLogPriorities
+ * \sa SDL_SetLogPriorities
  */
-extern DECLSPEC void SDLCALL SDL_LogSetPriority(int category,
+extern DECLSPEC void SDLCALL SDL_SetLogPriority(int category,
                                                 SDL_LogPriority priority);
 
 /**
@@ -142,9 +142,9 @@ extern DECLSPEC void SDLCALL SDL_LogSetPriority(int category,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LogSetPriority
+ * \sa SDL_SetLogPriority
  */
-extern DECLSPEC SDL_LogPriority SDLCALL SDL_LogGetPriority(int category);
+extern DECLSPEC SDL_LogPriority SDLCALL SDL_GetLogPriority(int category);
 
 /**
  * Reset all priorities to default.
@@ -153,10 +153,10 @@ extern DECLSPEC SDL_LogPriority SDLCALL SDL_LogGetPriority(int category);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_LogSetAllPriority
- * \sa SDL_LogSetPriority
+ * \sa SDL_SetLogPriorities
+ * \sa SDL_SetLogPriority
  */
-extern DECLSPEC void SDLCALL SDL_LogResetPriorities(void);
+extern DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
 
 /**
  * Log a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO.

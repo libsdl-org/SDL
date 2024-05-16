@@ -38,7 +38,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
         return -1;
@@ -58,7 +58,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         return -1;
     }
 
-    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+    SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
 
     renderer = state->renderers[0];
     if (!renderer) {

@@ -918,7 +918,11 @@ The following macros have been removed:
 
 The following functions have been renamed:
 * SDL_LogGetOutputFunction() => SDL_GetLogOutputFunction()
+* SDL_LogGetPriority() => SDL_GetLogPriority()
+* SDL_LogResetPriorities() => SDL_ResetLogPriorities()
+* SDL_LogSetAllPriority() => SDL_SetLogPriorities()
 * SDL_LogSetOutputFunction() => SDL_SetLogOutputFunction()
+* SDL_LogSetPriority() => SDL_SetLogPriority()
 
 ## SDL_main.h
 

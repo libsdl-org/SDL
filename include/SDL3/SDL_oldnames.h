@@ -360,7 +360,11 @@
 
 /* ##SDL_log.h */
 #define SDL_LogGetOutputFunction SDL_GetLogOutputFunction
+#define SDL_LogGetPriority SDL_GetLogPriority
+#define SDL_LogResetPriorities SDL_ResetLogPriorities
+#define SDL_LogSetAllPriority SDL_SetLogPriorities
 #define SDL_LogSetOutputFunction SDL_SetLogOutputFunction
+#define SDL_LogSetPriority SDL_SetLogPriority
 
 /* ##SDL_mouse.h */
 #define SDL_FreeCursor SDL_DestroyCursor
@@ -870,7 +874,11 @@
 
 /* ##SDL_log.h */
 #define SDL_LogGetOutputFunction SDL_LogGetOutputFunction_renamed_SDL_GetLogOutputFunction
+#define SDL_LogGetPriority SDL_LogGetPriority_renamed_SDL_GetLogPriority
+#define SDL_LogResetPriorities SDL_LogResetPriorities_renamed_SDL_ResetLogPriorities
+#define SDL_LogSetAllPriority SDL_LogSetAllPriority_renamed_SDL_SetLogPriorities
 #define SDL_LogSetOutputFunction SDL_LogSetOutputFunction_renamed_SDL_SetLogOutputFunction
+#define SDL_LogSetPriority SDL_LogSetPriority_renamed_SDL_SetLogPriority
 
 /* ##SDL_mouse.h */
 #define SDL_FreeCursor SDL_FreeCursor_renamed_SDL_DestroyCursor

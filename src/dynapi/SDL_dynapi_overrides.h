@@ -580,13 +580,13 @@
 #define SDL_LogCritical SDL_LogCritical_REAL
 #define SDL_LogDebug    SDL_LogDebug_REAL
 #define SDL_LogError    SDL_LogError_REAL
-#define SDL_LogGetPriority SDL_LogGetPriority_REAL
+#define SDL_GetLogPriority SDL_GetLogPriority_REAL
 #define SDL_LogInfo SDL_LogInfo_REAL
 #define SDL_LogMessage  SDL_LogMessage_REAL
 #define SDL_LogMessageV SDL_LogMessageV_REAL
-#define SDL_LogResetPriorities SDL_LogResetPriorities_REAL
-#define SDL_LogSetAllPriority SDL_LogSetAllPriority_REAL
-#define SDL_LogSetPriority SDL_LogSetPriority_REAL
+#define SDL_ResetLogPriorities SDL_ResetLogPriorities_REAL
+#define SDL_SetLogPriorities SDL_SetLogPriorities_REAL
+#define SDL_SetLogPriority SDL_SetLogPriority_REAL
 #define SDL_LogVerbose  SDL_LogVerbose_REAL
 #define SDL_LogWarn SDL_LogWarn_REAL
 #define SDL_MapRGB SDL_MapRGB_REAL
