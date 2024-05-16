@@ -18,6 +18,6 @@ wikipreamble = (This is the documentation for SDL3, which is under heavy develop
 wikiheaderfiletext = Defined in [<SDL3/%fname%>](https://github.com/libsdl-org/SDL/blob/main/include/SDL3/%fname%)
 manpageheaderfiletext = Defined in SDL3/%fname%
 
-# All SDL_test_* headers become "Test" categories, everything else just converts like SDL_audio.h -> Audio
+# All SDL_test_* headers become undefined categories, everything else just converts like SDL_audio.h -> Audio
 # A handful of others we fix up in the header itself with /* WIKI CATEGORY: x */ comments.
-headercategoryeval = s/\ASDL_test_.*?\.h\Z/Test/; s/\ASDL_?(.*?)\.h\Z/$1/; ucfirst();
+headercategoryeval = s/\ASDL_test_?.*?\.h\Z//; s/\ASDL_?(.*?)\.h\Z/$1/; ucfirst();

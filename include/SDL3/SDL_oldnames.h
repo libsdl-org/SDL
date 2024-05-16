@@ -19,10 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_oldnames.h
- *
- *  Definitions to ease transition from SDL2 code
+/*
+ * Definitions to ease transition from SDL2 code
  */
 
 #ifndef SDL_oldnames_h_

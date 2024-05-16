@@ -19,12 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* WIKI CATEGORY: PlatformDefines */
+/* WIKI CATEGORY: Platform */
 
-/**
- *  \file SDL_platform_defines.h
- *
- *  Try to get a standard set of platform defines.
+/*
+ * SDL_platform_defines.h tries to get a standard set of platform defines.
  */
 
 #ifndef SDL_platform_defines_h_

@@ -23,9 +23,9 @@
 #define SDL_mutex_h_
 
 /**
- *  \file SDL_mutex.h
+ * # CategoryMutex
  *
- *  Functions to provide thread synchronization primitives.
+ * Functions to provide thread synchronization primitives.
  */
 
 #include <SDL3/SDL_stdinc.h>

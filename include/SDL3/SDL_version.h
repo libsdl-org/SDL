@@ -20,9 +20,10 @@
 */
 
 /**
- *  \file SDL_version.h
+ * # CategoryVersion
  *
- *  This header defines the current SDL version.
+ * Functionality to query the current SDL version, both as headers the app was
+ * compiled against, and a library the app is linked to.
  */
 
 #ifndef SDL_version_h_

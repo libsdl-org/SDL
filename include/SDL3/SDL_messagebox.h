@@ -19,6 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/**
+ * # CategoryMessagebox
+ *
+ * Message box support routines.
+ */
+
 #ifndef SDL_messagebox_h_
 #define SDL_messagebox_h_
 

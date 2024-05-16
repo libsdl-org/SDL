@@ -19,15 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_main_h_
-#define SDL_main_h_
-
-#include <SDL3/SDL_platform_defines.h>
-#include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_error.h>
-#include <SDL3/SDL_events.h>
-
-/*
+/**
+ * # CategoryMain
+ *
+ * Redefine main() on some platforms so that it is called by SDL.
+ *
  * For details on how SDL_main works, and how to use it, please refer to:
  *
  * https://wiki.libsdl.org/SDL3/README/main-functions
@@ -35,11 +31,13 @@
  * (or docs/README-main-functions.md in the SDL source tree)
  */
 
-/**
- *  \file SDL_main.h
- *
- *  Redefine main() on some platforms so that it is called by SDL.
- */
+#ifndef SDL_main_h_
+#define SDL_main_h_
+
+#include <SDL3/SDL_platform_defines.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_events.h>
 
 #ifndef SDL_MAIN_HANDLED
     #ifdef SDL_PLATFORM_WIN32

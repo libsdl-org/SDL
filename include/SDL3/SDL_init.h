@@ -20,10 +20,11 @@
 */
 
 /**
- *  \file SDL_init.h
+ * # CategoryInit
  *
- *  Init and quit header for the SDL library
+ * SDL subsystem init and quit functions.
  */
+
 
 #ifndef SDL_init_h_
 #define SDL_init_h_

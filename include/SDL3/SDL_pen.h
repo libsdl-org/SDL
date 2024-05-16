@@ -20,26 +20,26 @@
 */
 
 /**
- *  \file SDL_pen.h
+ * # CategoryPen
  *
- *  Include file for SDL pen event handling.
+ * Include file for SDL pen event handling.
  *
- *  This file describes operations for pressure-sensitive pen (stylus and/or eraser) handling, e.g., for input
- *    and drawing tablets or suitably equipped mobile / tablet devices.
+ * This file describes operations for pressure-sensitive pen (stylus and/or
+ * eraser) handling, e.g., for input and drawing tablets or suitably equipped
+ * mobile / tablet devices.
  *
- *  To get started with pens:
- *  - Listen to SDL_PenMotionEvent and SDL_PenButtonEvent
- *  - To avoid treating pen events as mouse events, ignore  SDL_MouseMotionEvent and SDL_MouseButtonEvent
- *    whenever "which" == SDL_PEN_MOUSEID.
+ * To get started with pens:
  *
- *  This header file describes advanced functionality that can be useful for managing user configuration
- *    and understanding the capabilities of the attached pens.
+ * - Listen to SDL_PenMotionEvent and SDL_PenButtonEvent
+ * - To avoid treating pen events as mouse events, ignore SDL_MouseMotionEvent
+ *   and SDL_MouseButtonEvent whenever `which` == SDL_PEN_MOUSEID.
  *
- *  We primarily identify pens by SDL_PenID.  The implementation makes a best effort to relate each :SDL_PenID
- *    to the same physical device during a session.  Formerly valid SDL_PenID values remain valid
- *    even if a device disappears.
+ * We primarily identify pens by SDL_PenID. The implementation makes a best
+ * effort to relate each SDL_PenID to the same physical device during a
+ * session. Formerly valid SDL_PenID values remain valid even if a device
+ * disappears.
  *
- *  For identifying pens across sessions, the API provides the type SDL_GUID .
+ * For identifying pens across sessions, the API provides the type SDL_GUID .
  */
 
 #ifndef SDL_pen_h_

@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_endian.h
+ * # CategoryEndian
  *
- *  Functions for reading and writing endian-specific values
+ * Functions for reading and writing endian-specific values.
  */
 
 #ifndef SDL_endian_h_

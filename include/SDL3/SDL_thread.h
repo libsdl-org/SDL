@@ -23,9 +23,9 @@
 #define SDL_thread_h_
 
 /**
- *  \file SDL_thread.h
+ * # CategoryThread
  *
- *  Header for the SDL thread management routines.
+ * SDL thread management routines.
  */
 
 #include <SDL3/SDL_stdinc.h>

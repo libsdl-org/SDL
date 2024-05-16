@@ -23,9 +23,9 @@
 #define SDL_power_h_
 
 /**
- *  \file SDL_power.h
+ * # CategoryPower
  *
- *  Header for the SDL power management routines.
+ * SDL power management routines.
  */
 
 #include <SDL3/SDL_stdinc.h>

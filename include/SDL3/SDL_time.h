@@ -23,9 +23,9 @@ freely, subject to the following restrictions:
 #define SDL_time_h_
 
 /**
- *  \file SDL_time.h
+ * # CategoryTime
  *
- *  Header for the SDL realtime clock and date/time routines.
+ * SDL realtime clock and date/time routines.
  */
 
 #include <SDL3/SDL_error.h>

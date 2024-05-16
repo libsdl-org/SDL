@@ -22,9 +22,10 @@
 /* WIKI CATEGORY: GUID */
 
 /**
- *  \file SDL_guid.h
+ * # CategoryGUID
  *
- *  Include file for handling ::SDL_GUID values.
+ * A GUID is a 128-bit value that represents something that is uniquely
+ * identifiable by this value: "globally unique."
  */
 
 #ifndef SDL_guid_h_

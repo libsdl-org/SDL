@@ -23,9 +23,9 @@
 #define SDL_timer_h_
 
 /**
- *  \file SDL_timer.h
+ * # CategoryTimer
  *
- *  Header for the SDL time management routines.
+ * SDL time management routines.
  */
 
 #include <SDL3/SDL_stdinc.h>

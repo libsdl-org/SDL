@@ -20,9 +20,10 @@
 */
 
 /**
- *  \file SDL_rect.h
+ * # CategoryRect
  *
- *  Header file for SDL_rect definition and management functions.
+ * Some helper functions for managing rectangles and 2D points, in both
+ * interger and floating point versions.
  */
 
 #ifndef SDL_rect_h_

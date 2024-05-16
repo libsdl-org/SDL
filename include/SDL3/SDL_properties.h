@@ -20,10 +20,11 @@
 */
 
 /**
- *  \file SDL_properties.h
+ * # CategoryProperties
  *
- *  Header file for SDL properties.
+ * SDL properties.
  */
+
 
 #ifndef SDL_properties_h_
 #define SDL_properties_h_

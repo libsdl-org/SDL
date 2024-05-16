@@ -19,6 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/**
+ * # CategoryPixels
+ *
+ * Pixel management.
+ */
+
 #ifndef SDL_pixels_h_
 #define SDL_pixels_h_
 

@@ -19,6 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/**
+ * # CategoryDialog
+ *
+ * File dialog support.
+ */
+
 #ifndef SDL_dialog_h_
 #define SDL_dialog_h_
 

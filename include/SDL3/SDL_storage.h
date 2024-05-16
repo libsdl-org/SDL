@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_storage.h
+ * # CategoryStorage
  *
- *  Include file for storage container SDL API functions
+ * SDL storage container management.
  */
 
 #ifndef SDL_storage_h_

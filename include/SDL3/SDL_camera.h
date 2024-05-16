@@ -20,9 +20,14 @@
 */
 
 /**
- *  \file SDL_camera.h
+ * # CategoryCamera
  *
- *  Video Capture for the SDL library.
+ * Video capture for the SDL library.
+ *
+ * This API lets apps read input from video sources, like webcams. Camera
+ * devices can be enumerated, queried, and opened. Once opened, it will
+ * provide SDL_Surface objects as new frames of video come in. These surfaces
+ * can be uploaded to an SDL_Texture or processed as pixels in memory.
  */
 
 #ifndef SDL_camera_h_

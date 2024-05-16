@@ -22,13 +22,14 @@
 /* WIKI CATEGORY: IOStream */
 
 /**
- *  \file SDL_iostream.h
+ * # CategoryIOStream
  *
- *  This file provides a general interface for SDL to read and write
- *  data streams.  It can easily be extended to files, memory, etc.
+ * SDL provides an abstract interface for reading and writing data streams. It
+ * offers implementations for files, memory, etc, and the app can provideo
+ * their own implementations, too.
  *
- *  SDL_IOStream is not related to the standard C++ iostream class, other
- *  than both are abstract interfaces to read/write data.
+ * SDL_IOStream is not related to the standard C++ iostream class, other than
+ * both are abstract interfaces to read/write data.
  */
 
 #ifndef SDL_iostream_h_
