@@ -125,7 +125,6 @@ typedef enum SDL_RendererLogicalPresentation
  *
  * \since This struct is available since SDL 3.0.0.
  */
-struct SDL_Renderer;
 typedef struct SDL_Renderer SDL_Renderer;
 
 /**
@@ -133,7 +132,6 @@ typedef struct SDL_Renderer SDL_Renderer;
  *
  * \since This struct is available since SDL 3.0.0.
  */
-struct SDL_Texture;
 typedef struct SDL_Texture SDL_Texture;
 
 /* Function prototypes */
