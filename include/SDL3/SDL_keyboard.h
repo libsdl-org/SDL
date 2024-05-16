@@ -59,6 +59,9 @@ typedef Uint32 SDL_KeyboardID;
  * SDL_EVENT_TEXT_INPUT event.
  *
  * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_Scancode
+ * \sa SDL_Keycode
  */
 typedef struct SDL_Keysym
 {
