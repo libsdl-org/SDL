@@ -162,4 +162,14 @@ SDL_bool Android_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     return SDL_TRUE;
 }
 
+void Android_Vulkan_DestroySurface(SDL_VideoDevice *_this,
+                                   VkInstance instance,
+                                   VkSurfaceKHR surface,
+                                   const struct VkAllocationCallbacks *allocator)
+{
+    if (_this->vulkan_config.loader_handle) {
+        SDL_Vulkan_DestroySurface_Internal(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
+    }
+}
+
 #endif

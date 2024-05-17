@@ -248,10 +248,24 @@ SDL_bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
      * Metal_DestroyView from. Right now the metal view's ref count is +2 (one
      * from returning a new view object in CreateView, and one because it's
      * a subview of the window.) If we release the view here to make it +1, it
-     * will be destroyed when the window is destroyed. */
+     * will be destroyed when the window is destroyed.
+     *
+     * TODO: Now that we have SDL_Vulkan_DestroySurface someone with enough
+     * knowledge of Metal can proceed. */
     CFBridgingRelease(metalview);
 
     return SDL_TRUE;
+}
+
+void UIKit_Vulkan_DestroySurface(SDL_VideoDevice *_this,
+                                 VkInstance instance,
+                                 VkSurfaceKHR surface,
+                                 const struct VkAllocationCallbacks *allocator)
+{
+    if (_this->vulkan_config.loader_handle) {
+        SDL_Vulkan_DestroySurface_Internal(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
+        /* TODO: Add CFBridgingRelease(metalview) here perhaps? */
+    }
 }
 
 #endif

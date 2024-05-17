@@ -161,6 +161,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
         device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;
         device->Vulkan_CreateSurface = Cocoa_Vulkan_CreateSurface;
+        device->Vulkan_DestroySurface = Cocoa_Vulkan_DestroySurface;
 #endif
 
 #ifdef SDL_VIDEO_METAL

@@ -137,6 +137,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->Vulkan_UnloadLibrary = Android_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = Android_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = Android_Vulkan_CreateSurface;
+    device->Vulkan_DestroySurface = Android_Vulkan_DestroySurface;
 #endif
 
     /* Screensaver */
