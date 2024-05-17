@@ -15,23 +15,20 @@
 
 #ifndef SDL_OHOS_H
 #define SDL_OHOS_H
-/* Set up for C function definitions, even when using C++ */
 #include "SDL_ohosfile.h"
 #include <EGL/eglplatform.h>
-#include "../../SDL_internal.h"
-
-#ifdef __cplusplus
-/* *INDENT-OFF* */
-extern "C" {
-/* *INDENT-ON* */
-#endif
-
 #include "SDL_system.h"
 #include "SDL_audio.h"
 #include "SDL_rect.h"
 #include "SDL_video.h"
 #include "../../SDL_internal.h"
 #include "napi/native_api.h"
+
+#ifdef __cplusplus
+/* *INDENT-OFF* */
+extern "C" {
+/* *INDENT-ON* */
+#endif
 
 extern SDL_DisplayOrientation displayOrientation;
 extern SDL_atomic_t bPermissionRequestPending;

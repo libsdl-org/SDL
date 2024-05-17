@@ -16,7 +16,9 @@
 #include "adapter_c.h"
 #include "../SDL_ohos_tstype.h"
 #include "adapter_c_ts.h"
-#include "stdint.h"
+
+#define OHOS_NAPI_ARG_TWO   2
+#define OHOS_NAPI_ARG_THREE   3
 using namespace  std;
 
 
@@ -269,7 +271,7 @@ void OHOS_TS_ResizeNode(const cJSON *root)
 void OHOS_TS_ReParentNode(const cJSON *root)
 {
     cJSON *data = cJSON_GetObjectItem(root, OHOS_JSON_NODEREF2);
-    long long temp;
+    long long temp = 0;
     temp = static_cast<long long>(data->valuedouble);
     napi_ref viewRef = reinterpret_cast<napi_ref>(temp);
 
@@ -323,8 +325,7 @@ void OHOS_TS_GetNodeRect(const cJSON *root)
     OHOS_TS_GetLockInfo(root, &lockInfo);
 
     napi_value result = nullptr;
-    napi_status status= napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, &result);
-
+    napi_status status = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, &result);
     if (status == napi_ok) {
         bool isArray = false;
         napi_is_array(g_napiCallback->env, result, &isArray);
@@ -343,18 +344,18 @@ void OHOS_TS_GetNodeRect(const cJSON *root)
             napi_get_element(g_napiCallback->env, result, 1, &value);
             napi_get_value_int64(g_napiCallback->env, value, &(returnValue->offsetY));
         }
-        napi_has_element(g_napiCallback->env, result, 2, &hasEle);
+        napi_has_element(g_napiCallback->env, result, OHOS_NAPI_ARG_TWO, &hasEle);
         if (hasEle) {
             hasEle = false;
             napi_value value;
-            napi_get_element(g_napiCallback->env, result, 2, &value);
+            napi_get_element(g_napiCallback->env, result, OHOS_NAPI_ARG_TWO, &value);
             napi_get_value_int64(g_napiCallback->env, value, &(returnValue->width));
         }
-        napi_has_element(g_napiCallback->env, result, 3, &hasEle);
+        napi_has_element(g_napiCallback->env, result, OHOS_NAPI_ARG_THREE, &hasEle);
         if (hasEle) {
             hasEle = false;
             napi_value value;
-            napi_get_element(g_napiCallback->env, result, 3, &value);
+            napi_get_element(g_napiCallback->env, result, OHOS_NAPI_ARG_THREE, &value);
             napi_get_value_int64(g_napiCallback->env, value, &(returnValue->height));
         }
     }

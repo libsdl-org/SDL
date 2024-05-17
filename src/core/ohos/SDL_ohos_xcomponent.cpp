@@ -60,7 +60,8 @@ extern "C" {
 static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
 
-static std::string GetXComponentIdByNative(OH_NativeXComponent *component) {
+static std::string GetXComponentIdByNative(OH_NativeXComponent *component)
+{
     char idStr[OH_XCOMPONENT_ID_LEN_MAX + 1] = {'\0'};
     uint64_t idSize = OH_XCOMPONENT_ID_LEN_MAX + 1;
     if (OH_NATIVEXCOMPONENT_RESULT_SUCCESS != OH_NativeXComponent_GetXComponentId(component, idStr, &idSize)) {
@@ -71,7 +72,8 @@ static std::string GetXComponentIdByNative(OH_NativeXComponent *component) {
     return curXComponentId;
 }
 
-static SDL_Window *GetWindowFromXComponent(OH_NativeXComponent *component) {
+static SDL_Window *GetWindowFromXComponent(OH_NativeXComponent *component)
+{
     std::string curXComponentId = GetXComponentIdByNative(component);
     if (curXComponentId.empty()) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "get xComponent error");
@@ -112,7 +114,8 @@ static void setWindowDataValue(SDL_WindowData *data, uint64_t width, uint64_t he
 }
 
 /* Callbacks*/
-static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window) {
+static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
+{
     uint64_t width;
     uint64_t height;
     double offsetX;
@@ -152,7 +155,8 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window) {
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
-static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window) {
+static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
+{
     uint64_t width;
     uint64_t height;
     double offsetX;
@@ -162,7 +166,7 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window) {
     SDL_Log("Xcompent is changeing, xcomponent is %p", component);
 
     SDL_LockMutex(OHOS_PageMutex);
-    SDL_WindowData *data = OhosPluginManager::GetInstance()->GetWindowDataByXComponent(component);;
+    SDL_WindowData *data = OhosPluginManager::GetInstance()->GetWindowDataByXComponent(component);
     if (data != nullptr) {
         setWindowDataValue(data, width, height, offsetX, offsetY, window);
     }

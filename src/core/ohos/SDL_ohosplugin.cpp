@@ -13,9 +13,7 @@
  * limitations under the License.
  */
 
-#include <stdint.h>
 #include <string>
-#include <stdio.h>
 #include <vector>
 #include <thread>
 #include <sstream>
@@ -26,7 +24,8 @@
 
 OhosPluginManager OhosPluginManager::pluginManager;
 static SDL_bool windowCondition = SDL_FALSE;
-OhosPluginManager::~OhosPluginManager() {
+OhosPluginManager::~OhosPluginManager()
+{
     for (auto iter = nativeXComponentMap.begin(); iter != nativeXComponentMap.end(); ++iter) {
         if (nullptr != iter->second) {
             delete iter->second;
@@ -82,9 +81,9 @@ bool OhosPluginManager::FindNativeWindow(OH_NativeXComponent *nativeXComponent, 
     return true;
 }
 
-OhosThreadLock *OhosPluginManager::CreateOhosThreadLock(const pthread_t threadId) {
-
-    OhosThreadLock *threadLock = NULL;
+OhosThreadLock *OhosPluginManager::CreateOhosThreadLock(const pthread_t threadId)
+{
+    OhosThreadLock *threadLock = nullptr;
     if (ohosThreadLocks.find(threadId) != ohosThreadLocks.end()) {
          threadLock = ohosThreadLocks[threadId];
     } else  {
@@ -93,27 +92,29 @@ OhosThreadLock *OhosPluginManager::CreateOhosThreadLock(const pthread_t threadId
          threadLock->mCond = SDL_CreateCond();
          ohosThreadLocks.insert(std::make_pair(threadId, threadLock));
     }
-     return threadLock;
+    return threadLock;
 }
 
-void OhosPluginManager::destroyOhosThreadLock(OhosThreadLock *threadLock) {
+void OhosPluginManager::destroyOhosThreadLock(OhosThreadLock *threadLock)
+{
      SDL_DestroyMutex(threadLock->mLock);
      SDL_DestroyCond(threadLock->mCond);
      delete threadLock;
 }
 
-void OhosPluginManager::SetNativeXComponentList(OH_NativeXComponent *component, SDL_WindowData *data) {
-     if (nullptr == data || nullptr == component) {
+void OhosPluginManager::SetNativeXComponentList(OH_NativeXComponent *component, SDL_WindowData *data)
+{
+    if (nullptr == data || nullptr == component) {
          return;
      }
      if (nativeXComponentList.find(component) == nativeXComponentList.end()) {
          nativeXComponentList[component] = data;
          return;
      }
-
+    
      if (nativeXComponentList[component] != data) {
          SDL_WindowData *tmp = nativeXComponentList[component];
-         if (nullptr != tmp) {
+         if (tmp != nullptr) {
              delete tmp;
              tmp = nullptr;
          }
@@ -144,52 +145,55 @@ pthread_t OhosPluginManager::GetThreadIdFromXComponentId(std::string &id) {
      return -1;
 }
 
-OhosThreadLock *OhosPluginManager::GetOhosThreadLockFromThreadId(pthread_t threadId) {
-     if (ohosThreadLocks.find(threadId) == ohosThreadLocks.end()) {
-         return nullptr;
-     }
-     return ohosThreadLocks[threadId];
+OhosThreadLock *OhosPluginManager::GetOhosThreadLockFromThreadId(pthread_t threadId)
+{
+    if (ohosThreadLocks.find(threadId) == ohosThreadLocks.end()) {
+        return nullptr;
+    }
+    return ohosThreadLocks[threadId];
 }
 
-int OhosPluginManager::ClearPluginManagerData(std::string &id, OH_NativeXComponent *component, pthread_t threadId) {
-     if (nullptr == component)
-         return -1;
-
-     if (nativeXComponentMap.find(id) != nativeXComponentMap.end()) {
-         nativeXComponentMap.erase(id);
-     } else {
-         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "This xComponentId: %s not in nativeXComponentMap", id.c_str());
-     }
-     if (nativeXComponentList.find(component) != nativeXComponentList.end()) {
-         delete nativeXComponentList[component];
-         nativeXComponentList.erase(component);
-     } else {
-         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "this xComponent not in nativeXComponentList");
-     }
-
-     if (threadXcompentList.find(threadId) != threadXcompentList.end()) {
-         for (auto iter = threadXcompentList[threadId].begin(); iter != threadXcompentList[threadId].end(); iter++) {
-             if (*iter == id) {
-                 threadXcompentList[threadId].erase(iter);
-             }
-         }
-         if (threadXcompentList[threadId].empty()) {
-             threadXcompentList.erase(threadId);
+int OhosPluginManager::ClearPluginManagerData(std::string &id, OH_NativeXComponent *component, pthread_t threadId)
+{
+    if (nullptr == component) {
+        return -1;
+    }
+    
+    if (nativeXComponentMap.find(id) != nativeXComponentMap.end()) {
+        nativeXComponentMap.erase(id);
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "This xComponentId: %s not in nativeXComponentMap", id.c_str());
+    }
+    if (nativeXComponentList.find(component) != nativeXComponentList.end()) {
+        delete nativeXComponentList[component];
+        nativeXComponentList.erase(component);
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "this xComponent not in nativeXComponentList");
+    }
+    
+    if (threadXcompentList.find(threadId) != threadXcompentList.end()) {
+     for (auto iter = threadXcompentList[threadId].begin(); iter != threadXcompentList[threadId].end(); iter++) {
+         if (*iter == id) {
+             threadXcompentList[threadId].erase(iter);
          }
      }
-
-     if (ohosThreadLocks.find(threadId) != ohosThreadLocks.end()) {
-         if (!((threadXcompentList.find(threadId) != threadXcompentList.end()) &&
-               (threadXcompentList[threadId].empty()))) {
-             auto lock = ohosThreadLocks[threadId];
-             if (nullptr != lock) {
-                 SDL_DestroyMutex(lock->mLock);
-                 SDL_DestroyCond(lock->mCond);
-                 delete lock;
-                 lock = nullptr;
-             }
-             ohosThreadLocks.erase(threadId);
-         }
+     if (threadXcompentList[threadId].empty()) {
+         threadXcompentList.erase(threadId);
      }
-     return 0;
+    }
+    
+    if (ohosThreadLocks.find(threadId) != ohosThreadLocks.end()) {
+     if (!((threadXcompentList.find(threadId) != threadXcompentList.end()) &&
+           (threadXcompentList[threadId].empty()))) {
+         auto lock = ohosThreadLocks[threadId];
+         if (nullptr != lock) {
+             SDL_DestroyMutex(lock->mLock);
+             SDL_DestroyCond(lock->mCond);
+             delete lock;
+             lock = nullptr;
+         }
+         ohosThreadLocks.erase(threadId);
+     }
+    }
+    return 0;
 }

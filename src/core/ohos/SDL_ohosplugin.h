@@ -27,8 +27,6 @@ extern "C" {
 #include "../../video/ohos/SDL_ohosvideo.h"
 #include "SDL_ohoshead.h"
 
-using namespace std;
-
 class OhosPluginManager {
 public:
     ~OhosPluginManager();
@@ -46,7 +44,7 @@ public:
     void destroyOhosThreadLock(OhosThreadLock *threadLock);
 
     void SetNativeXComponentList(OH_NativeXComponent*, SDL_WindowData *);
-    pthread_t  GetThreadIdFromXComponentId(string &id);
+    pthread_t  GetThreadIdFromXComponentId(std::string &id);
     OhosThreadLock *GetOhosThreadLockFromThreadId(pthread_t threadId);
     int ClearPluginManagerData(std::string &id, OH_NativeXComponent *component, pthread_t threadId);
     
@@ -56,7 +54,7 @@ private:
     static OhosPluginManager pluginManager;
 
     std::unordered_map<std::string, OH_NativeXComponent *> nativeXComponentMap;
-    std::unordered_map<pthread_t, vector<string>> threadXcompentList;
+    std::unordered_map<pthread_t, std::vector<std::string>> threadXcompentList;
     std::unordered_map<pthread_t, OhosThreadLock *> ohosThreadLocks;
     std::unordered_map<OH_NativeXComponent *, SDL_WindowData *> nativeXComponentList;
 };
