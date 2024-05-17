@@ -396,8 +396,7 @@ export function notifySdlAboutToAppear(resourceMannagerContext: Context, windowI
   setScreenResolution()
   sdl.init(callbackRef)
   sdl.setRootViewControl();
-  sdl.sdlAppEntry("libentry.so", "mainGles", "--trackmem")
-  sdl.sdlAppEntry("libentry.so", "mainYuv", "testyuv.bmp")
+  sdl.sdlAppEntry("libentry.so", "main")
 }
 
 export function notifySdlAboutToDisappear() {

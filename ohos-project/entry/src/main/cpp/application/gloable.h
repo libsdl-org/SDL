@@ -18,6 +18,5 @@
 
 #include "napi/native_api.h"
 extern napi_ref g_rootView;
-extern napi_ref g_childView;
 
 #endif // GLOBLE_H
