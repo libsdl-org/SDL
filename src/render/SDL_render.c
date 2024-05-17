@@ -1433,15 +1433,115 @@ SDL_Texture *SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormatEnum forma
     return texture;
 }
 
+static int SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, SDL_Surface *surface)
+{
+    int access, w, h;
+    SDL_bool direct_update;
+    SDL_PixelFormatEnum tex_format = SDL_PIXELFORMAT_UNKNOWN;
+    SDL_PropertiesID surface_props;
+    SDL_Colorspace surface_colorspace = SDL_COLORSPACE_UNKNOWN;
+    SDL_Colorspace texture_colorspace = SDL_COLORSPACE_UNKNOWN;
+
+    if (texture == NULL || surface == NULL) {
+        return -1;
+    }
+
+    if (SDL_QueryTexture(texture, &tex_format, &access, &w, &h)) {
+        return -1;
+    }
+
+    if (access != SDL_TEXTUREACCESS_STATIC && access != SDL_TEXTUREACCESS_STREAMING) {
+        return -1;
+    }
+
+    if (SDL_GetSurfaceColorspace(surface, &surface_colorspace) < 0) {
+        return -1;
+    }
+    texture_colorspace = surface_colorspace;
+
+
+    if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
+        surface_props = SDL_GetSurfaceProperties(surface);
+    } else {
+        surface_props = 0;
+    }
+
+    if (surface_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
+        SDL_COLORSPACETRANSFER(surface_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+        if (SDL_ISPIXELFORMAT_FLOAT(tex_format)) {
+            texture_colorspace = SDL_COLORSPACE_SRGB_LINEAR;
+        } else if (SDL_ISPIXELFORMAT_10BIT(tex_format)) {
+            texture_colorspace = SDL_COLORSPACE_HDR10;
+        } else {
+            texture_colorspace = SDL_COLORSPACE_SRGB;
+        }
+    }
+
+    if (tex_format == surface->format->format && texture_colorspace == surface_colorspace) {
+        if (surface->format->Amask && SDL_SurfaceHasColorKey(surface)) {
+            /* Surface and Renderer formats are identical.
+             * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
+            direct_update = SDL_FALSE;
+        } else {
+            /* Update Texture directly */
+            direct_update = SDL_TRUE;
+        }
+    } else {
+        /* Surface and Renderer formats are different, it needs an intermediate conversion. */
+        direct_update = SDL_FALSE;
+    }
+
+    if (direct_update) {
+        if (SDL_MUSTLOCK(surface)) {
+            SDL_LockSurface(surface);
+            SDL_UpdateTexture(texture, rect, surface->pixels, surface->pitch);
+            SDL_UnlockSurface(surface);
+        } else {
+            SDL_UpdateTexture(texture, rect, surface->pixels, surface->pitch);
+        }
+    } else {
+        SDL_Surface *temp = NULL;
+
+        /* Set up a destination surface for the texture update */
+        temp = SDL_ConvertSurfaceFormatAndColorspace(surface, tex_format, texture_colorspace, surface_props);
+        if (temp) {
+            SDL_UpdateTexture(texture, NULL, temp->pixels, temp->pitch);
+            SDL_DestroySurface(temp);
+        } else {
+            return -1;
+        }
+    }
+
+    {
+        Uint8 r, g, b, a;
+        SDL_BlendMode blendMode;
+
+        SDL_GetSurfaceColorMod(surface, &r, &g, &b);
+        SDL_SetTextureColorMod(texture, r, g, b);
+
+        SDL_GetSurfaceAlphaMod(surface, &a);
+        SDL_SetTextureAlphaMod(texture, a);
+
+        if (SDL_SurfaceHasColorKey(surface)) {
+            /* We converted to a texture with alpha format */
+            SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+        } else {
+            SDL_GetSurfaceBlendMode(surface, &blendMode);
+            SDL_SetTextureBlendMode(texture, blendMode);
+        }
+    }
+
+    return 0;
+}
+
 SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
 {
     const SDL_PixelFormat *fmt;
     SDL_bool needAlpha;
-    SDL_bool direct_update;
     int i;
     SDL_PixelFormatEnum format = SDL_PIXELFORMAT_UNKNOWN;
     SDL_Texture *texture;
-    SDL_PropertiesID surface_props, props;
+    SDL_PropertiesID props;
     SDL_Colorspace surface_colorspace = SDL_COLORSPACE_UNKNOWN;
     SDL_Colorspace texture_colorspace = SDL_COLORSPACE_UNKNOWN;
 
@@ -1546,26 +1646,6 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     }
 
-    if (format == surface->format->format && texture_colorspace == surface_colorspace) {
-        if (surface->format->Amask && SDL_SurfaceHasColorKey(surface)) {
-            /* Surface and Renderer formats are identical.
-             * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
-            direct_update = SDL_FALSE;
-        } else {
-            /* Update Texture directly */
-            direct_update = SDL_TRUE;
-        }
-    } else {
-        /* Surface and Renderer formats are different, it needs an intermediate conversion. */
-        direct_update = SDL_FALSE;
-    }
-
-    if (surface->flags & SDL_SURFACE_USES_PROPERTIES) {
-        surface_props = SDL_GetSurfaceProperties(surface);
-    } else {
-        surface_props = 0;
-    }
-
     props = SDL_CreateProperties();
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, texture_colorspace);
     if (surface_colorspace == texture_colorspace) {
@@ -1584,46 +1664,11 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         return NULL;
     }
 
-    if (direct_update) {
-        if (SDL_MUSTLOCK(surface)) {
-            SDL_LockSurface(surface);
-            SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
-            SDL_UnlockSurface(surface);
-        } else {
-            SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
-        }
-    } else {
-        SDL_Surface *temp = NULL;
-
-        /* Set up a destination surface for the texture update */
-        temp = SDL_ConvertSurfaceFormatAndColorspace(surface, format, texture_colorspace, surface_props);
-        if (temp) {
-            SDL_UpdateTexture(texture, NULL, temp->pixels, temp->pitch);
-            SDL_DestroySurface(temp);
-        } else {
-            SDL_DestroyTexture(texture);
-            return NULL;
-        }
+    if (SDL_UpdateTextureFromSurface(texture, NULL, surface) < 0) {
+        SDL_DestroyTexture(texture);
+        return NULL;
     }
 
-    {
-        Uint8 r, g, b, a;
-        SDL_BlendMode blendMode;
-
-        SDL_GetSurfaceColorMod(surface, &r, &g, &b);
-        SDL_SetTextureColorMod(texture, r, g, b);
-
-        SDL_GetSurfaceAlphaMod(surface, &a);
-        SDL_SetTextureAlphaMod(texture, a);
-
-        if (SDL_SurfaceHasColorKey(surface)) {
-            /* We converted to a texture with alpha format */
-            SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-        } else {
-            SDL_GetSurfaceBlendMode(surface, &blendMode);
-            SDL_SetTextureBlendMode(texture, blendMode);
-        }
-    }
     return texture;
 }
 
