@@ -474,7 +474,6 @@ static void fullscreen_deadline_handler(void *data, struct wl_callback *callback
 
     if (window && window->driverdata) {
         window->driverdata->fullscreen_deadline_count--;
-        SetMinMaxDimensions(window);
     }
 
     wl_callback_destroy(callback);
@@ -1983,24 +1982,6 @@ int Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOpe
     return 0;
 }
 
-static void fullscreen_configure_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
-{
-    /* Get the window from the ID as it may have been destroyed */
-    SDL_WindowID windowID = (SDL_WindowID)((uintptr_t)data);
-    SDL_Window *window = SDL_GetWindowFromID(windowID);
-
-    if (window && window->driverdata && window->driverdata->is_fullscreen) {
-        ConfigureWindowGeometry(window);
-        CommitLibdecorFrame(window);
-    }
-
-    wl_callback_destroy(callback);
-}
-
-static struct wl_callback_listener fullscreen_configure_listener = {
-    fullscreen_configure_handler
-};
-
 int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
                                  SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
@@ -2041,9 +2022,8 @@ int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
             wind->fullscreen_was_positioned = SDL_TRUE;
             SetFullscreen(window, output);
         } else {
-            /* Queue a configure event */
-            struct wl_callback *cb = wl_display_sync(_this->driverdata->display);
-            wl_callback_add_listener(cb, &fullscreen_configure_listener, (void *)((uintptr_t)window->id));
+            ConfigureWindowGeometry(window);
+            CommitLibdecorFrame(window);
         }
     }
 
@@ -2447,6 +2427,8 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
      * Calling this on a custom surface is informative, so the size must
      * always be passed through.
      */
+    FlushFullscreenEvents(window);
+
     if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) ||
         wind->shell_surface_type == WAYLAND_SURFACE_CUSTOM) {
         wind->requested.width = window->floating.w;
