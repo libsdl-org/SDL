@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
         int i;
         /* Creating the context creates the view, which we need to show keyboard */
         for (i = 0; i < state->num_windows; i++) {
-            SDL_GL_CreateContext(state->windows[i]);
+            (void)SDL_GL_CreateContext(state->windows[i]);
         }
     }
 #endif

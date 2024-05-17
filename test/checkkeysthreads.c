@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 
 #ifdef SDL_PLATFORM_IOS
     /* Creating the context creates the view, which we need to show keyboard */
-    SDL_GL_CreateContext(window);
+    (void)SDL_GL_CreateContext(window);
 #endif
 
     SDL_StartTextInput();
