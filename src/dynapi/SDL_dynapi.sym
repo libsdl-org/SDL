@@ -351,18 +351,11 @@ SDL3_0.0.0 {
     SDL_GetOriginalMemoryFunctions;
     SDL_GetPathInfo;
     SDL_GetPenCapabilities;
-    SDL_GetPenCapabilities;
-    SDL_GetPenFromGUID;
     SDL_GetPenFromGUID;
     SDL_GetPenGUID;
-    SDL_GetPenGUID;
-    SDL_GetPenName;
     SDL_GetPenName;
     SDL_GetPenStatus;
-    SDL_GetPenStatus;
     SDL_GetPenType;
-    SDL_GetPenType;
-    SDL_GetPens;
     SDL_GetPens;
     SDL_GetPerformanceCounter;
     SDL_GetPerformanceFrequency;
@@ -599,7 +592,6 @@ SDL3_0.0.0 {
     SDL_PauseHaptic;
     SDL_PeepEvents;
     SDL_PenConnected;
-    SDL_PenConnected;
     SDL_PlayHapticRumble;
     SDL_PollEvent;
     SDL_PostSemaphore;
@@ -681,7 +673,6 @@ SDL3_0.0.0 {
     SDL_SendJoystickVirtualSensorData;
     SDL_SetAssertionHandler;
     SDL_SetAudioPostmixCallback;
-    SDL_SetAudioStreamFormat;
     SDL_SetAudioStreamFormat;
     SDL_SetAudioStreamFrequencyRatio;
     SDL_SetAudioStreamGetCallback;
