@@ -1744,7 +1744,7 @@ int SDL_SetTextureAlphaModFloat(SDL_Texture *texture, float alpha)
 
 int SDL_GetTextureAlphaMod(SDL_Texture *texture, Uint8 *alpha)
 {
-    float fA;
+    float fA = 1.0f;
 
     if (SDL_GetTextureAlphaModFloat(texture, &fA) < 0) {
         return -1;
