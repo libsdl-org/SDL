@@ -54,7 +54,7 @@ extern "C" {
  * \sa SDL_GetClipboardText
  * \sa SDL_HasClipboardText
  */
-extern DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
+extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
 
 /**
  * Get UTF-8 text from the clipboard, which must be freed with SDL_free().
@@ -72,7 +72,7 @@ extern DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
  * \sa SDL_HasClipboardText
  * \sa SDL_SetClipboardText
  */
-extern DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
+extern SDL_DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
 
 /**
  * Query whether the clipboard exists and contains a non-empty text string.
@@ -84,7 +84,7 @@ extern DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
  * \sa SDL_GetClipboardText
  * \sa SDL_SetClipboardText
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
 
 /**
  * Put UTF-8 text into the primary selection.
@@ -98,7 +98,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_HasPrimarySelectionText
  */
-extern DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
+extern SDL_DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
 
 /**
  * Get UTF-8 text from the primary selection, which must be freed with
@@ -117,7 +117,7 @@ extern DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
  * \sa SDL_HasPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
  */
-extern DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
+extern SDL_DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
 
 /**
  * Query whether the primary selection exists and contains a non-empty text
@@ -131,7 +131,7 @@ extern DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
 
 /**
  * Callback function that will be called when data for the specified mime-type
@@ -197,7 +197,7 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * \sa SDL_GetClipboardData
  * \sa SDL_HasClipboardData
  */
-extern DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types);
+extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types);
 
 /**
  * Clear the clipboard data.
@@ -209,7 +209,7 @@ extern DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callb
  *
  * \sa SDL_SetClipboardData
  */
-extern DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
+extern SDL_DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
 
 /**
  * Get the data from clipboard for a given mime type.
@@ -228,7 +228,7 @@ extern DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
  * \sa SDL_HasClipboardData
  * \sa SDL_SetClipboardData
  */
-extern DECLSPEC void *SDLCALL SDL_GetClipboardData(const char *mime_type, size_t *size);
+extern SDL_DECLSPEC void *SDLCALL SDL_GetClipboardData(const char *mime_type, size_t *size);
 
 /**
  * Query whether there is data in the clipboard for the provided mime type.
@@ -242,7 +242,7 @@ extern DECLSPEC void *SDLCALL SDL_GetClipboardData(const char *mime_type, size_t
  * \sa SDL_SetClipboardData
  * \sa SDL_GetClipboardData
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasClipboardData(const char *mime_type);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasClipboardData(const char *mime_type);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

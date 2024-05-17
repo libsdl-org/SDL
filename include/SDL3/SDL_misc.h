@@ -67,7 +67,7 @@ extern "C" {
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_OpenURL(const char *url);
+extern SDL_DECLSPEC int SDLCALL SDL_OpenURL(const char *url);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

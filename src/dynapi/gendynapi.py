@@ -87,7 +87,7 @@ def main():
                 continue
 
             # Remove one line comment /* ... */
-            # eg: extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
+            # eg: extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
             line = reg_comment_remove_content.sub('', line)
 
             # Get the comment block /* ... */ across several lines
@@ -183,7 +183,7 @@ def main():
             #
             func_ret = func_ret.replace('extern', ' ')
             func_ret = func_ret.replace('SDLCALL', ' ')
-            func_ret = func_ret.replace('DECLSPEC', ' ')
+            func_ret = func_ret.replace('SDL_DECLSPEC', ' ')
             # Remove trailing spaces in front of '*'
             tmp = ""
             while func_ret != tmp:

@@ -64,7 +64,7 @@ extern "C" {
  * \sa SDL_LoadFunction
  * \sa SDL_UnloadObject
  */
-extern DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
+extern SDL_DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
 
 /**
  * Look up the address of the named function in a shared object.
@@ -90,7 +90,7 @@ extern DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
  *
  * \sa SDL_LoadObject
  */
-extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(void *handle, const char *name);
+extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(void *handle, const char *name);
 
 /**
  * Unload a shared object from memory.
@@ -101,7 +101,7 @@ extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(void *handle, const
  *
  * \sa SDL_LoadObject
  */
-extern DECLSPEC void SDLCALL SDL_UnloadObject(void *handle);
+extern SDL_DECLSPEC void SDLCALL SDL_UnloadObject(void *handle);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

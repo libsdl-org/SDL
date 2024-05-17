@@ -96,7 +96,7 @@ typedef int SDL_SpinLock;
  * \sa SDL_LockSpinlock
  * \sa SDL_UnlockSpinlock
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
 
 /**
  * Lock a spin lock by setting it to a non-zero value.
@@ -111,7 +111,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
  * \sa SDL_TryLockSpinlock
  * \sa SDL_UnlockSpinlock
  */
-extern DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
+extern SDL_DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
 
 /**
  * Unlock a spin lock by setting it to 0.
@@ -128,7 +128,7 @@ extern DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
  * \sa SDL_LockSpinlock
  * \sa SDL_TryLockSpinlock
  */
-extern DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
+extern SDL_DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
 
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
@@ -192,7 +192,7 @@ extern __inline void SDL_CompilerBarrier(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
+extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
 
 /**
  * Insert a memory acquire barrier.
@@ -207,7 +207,7 @@ extern DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
  *
  * \sa SDL_MemoryBarrierReleaseFunction
  */
-extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
+extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 
 /* !!! FIXME: this should have documentation! */
 #if defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
@@ -342,7 +342,7 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  *
  * \sa SDL_AtomicCompareAndSwapPointer
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval);
 
 /**
  * Set an atomic variable to a value.
@@ -360,7 +360,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int 
  *
  * \sa SDL_AtomicGet
  */
-extern DECLSPEC int SDLCALL SDL_AtomicSet(SDL_AtomicInt *a, int v);
+extern SDL_DECLSPEC int SDLCALL SDL_AtomicSet(SDL_AtomicInt *a, int v);
 
 /**
  * Get the value of an atomic variable.
@@ -375,7 +375,7 @@ extern DECLSPEC int SDLCALL SDL_AtomicSet(SDL_AtomicInt *a, int v);
  *
  * \sa SDL_AtomicSet
  */
-extern DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
+extern SDL_DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
 
 /**
  * Add to an atomic variable.
@@ -394,7 +394,7 @@ extern DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
  * \sa SDL_AtomicDecRef
  * \sa SDL_AtomicIncRef
  */
-extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
+extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
 
 #ifndef SDL_AtomicIncRef
 
@@ -448,7 +448,7 @@ extern DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  * \sa SDL_AtomicGetPtr
  * \sa SDL_AtomicSetPtr
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval);
 
 /**
  * Set a pointer to a value atomically.
@@ -465,7 +465,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, void 
  * \sa SDL_AtomicCompareAndSwapPointer
  * \sa SDL_AtomicGetPtr
  */
-extern DECLSPEC void* SDLCALL SDL_AtomicSetPtr(void **a, void* v);
+extern SDL_DECLSPEC void* SDLCALL SDL_AtomicSetPtr(void **a, void* v);
 
 /**
  * Get the value of a pointer atomically.
@@ -481,7 +481,7 @@ extern DECLSPEC void* SDLCALL SDL_AtomicSetPtr(void **a, void* v);
  * \sa SDL_AtomicCompareAndSwapPointer
  * \sa SDL_AtomicSetPtr
  */
-extern DECLSPEC void* SDLCALL SDL_AtomicGetPtr(void **a);
+extern SDL_DECLSPEC void* SDLCALL SDL_AtomicGetPtr(void **a);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

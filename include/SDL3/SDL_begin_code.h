@@ -52,18 +52,18 @@
 #endif
 
 /* Some compilers use a special export keyword */
-#ifndef DECLSPEC
+#ifndef SDL_DECLSPEC
 # if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_CYGWIN) || defined(SDL_PLATFORM_GDK)
 #  ifdef DLL_EXPORT
-#   define DECLSPEC __declspec(dllexport)
+#   define SDL_DECLSPEC __declspec(dllexport)
 #  else
-#   define DECLSPEC
+#   define SDL_DECLSPEC
 #  endif
 # else
 #  if defined(__GNUC__) && __GNUC__ >= 4
-#   define DECLSPEC __attribute__ ((visibility("default")))
+#   define SDL_DECLSPEC __attribute__ ((visibility("default")))
 #  else
-#   define DECLSPEC
+#   define SDL_DECLSPEC
 #  endif
 # endif
 #endif

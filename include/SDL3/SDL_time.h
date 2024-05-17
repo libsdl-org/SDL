@@ -100,7 +100,7 @@ typedef enum SDL_TimeFormat
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat);
+extern SDL_DECLSPEC int SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat);
 
 /**
  * Gets the current value of the system realtime clock in nanoseconds since
@@ -112,7 +112,7 @@ extern DECLSPEC int SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dat
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
+extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
 
 /**
  * Converts an SDL_Time in nanoseconds since the epoch to a calendar time in
@@ -128,7 +128,7 @@ extern DECLSPEC int SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime);
+extern SDL_DECLSPEC int SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime);
 
 /**
  * Converts a calendar time to an SDL_Time in nanoseconds since the epoch.
@@ -143,7 +143,7 @@ extern DECLSPEC int SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks);
+extern SDL_DECLSPEC int SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks);
 
 /**
  * Converts an SDL time into a Windows FILETIME (100-nanosecond intervals
@@ -159,7 +159,7 @@ extern DECLSPEC int SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime);
+extern SDL_DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime);
 
 /**
  * Converts a Windows FILETIME (100-nanosecond intervals since January 1,
@@ -174,7 +174,7 @@ extern DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDate
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_Time SDLCALL SDL_TimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime);
+extern SDL_DECLSPEC SDL_Time SDLCALL SDL_TimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime);
 
 /**
  * Get the number of days in a month for a given year.
@@ -186,7 +186,7 @@ extern DECLSPEC SDL_Time SDLCALL SDL_TimeFromWindows(Uint32 dwLowDateTime, Uint3
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetDaysInMonth(int year, int month);
+extern SDL_DECLSPEC int SDLCALL SDL_GetDaysInMonth(int year, int month);
 
 /**
  * Get the day of year for a calendar date.
@@ -199,7 +199,7 @@ extern DECLSPEC int SDLCALL SDL_GetDaysInMonth(int year, int month);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetDayOfYear(int year, int month, int day);
+extern SDL_DECLSPEC int SDLCALL SDL_GetDayOfYear(int year, int month, int day);
 
 /**
  * Get the day of week for a calendar date.
@@ -212,7 +212,7 @@ extern DECLSPEC int SDLCALL SDL_GetDayOfYear(int year, int month, int day);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetDayOfWeek(int year, int month, int day);
+extern SDL_DECLSPEC int SDLCALL SDL_GetDayOfWeek(int year, int month, int day);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

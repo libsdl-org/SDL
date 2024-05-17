@@ -482,10 +482,10 @@ extern "C" {
 #define SDL_stack_free(data)            SDL_free(data)
 #endif
 
-extern DECLSPEC SDL_MALLOC void *SDLCALL SDL_malloc(size_t size);
-extern DECLSPEC SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) void *SDLCALL SDL_calloc(size_t nmemb, size_t size);
-extern DECLSPEC SDL_ALLOC_SIZE(2) void *SDLCALL SDL_realloc(void *mem, size_t size);
-extern DECLSPEC void SDLCALL SDL_free(void *mem);
+extern SDL_DECLSPEC SDL_MALLOC void *SDLCALL SDL_malloc(size_t size);
+extern SDL_DECLSPEC SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) void *SDLCALL SDL_calloc(size_t nmemb, size_t size);
+extern SDL_DECLSPEC SDL_ALLOC_SIZE(2) void *SDLCALL SDL_realloc(void *mem, size_t size);
+extern SDL_DECLSPEC void SDLCALL SDL_free(void *mem);
 
 typedef void *(SDLCALL *SDL_malloc_func)(size_t size);
 typedef void *(SDLCALL *SDL_calloc_func)(size_t nmemb, size_t size);
@@ -502,7 +502,7 @@ typedef void (SDLCALL *SDL_free_func)(void *mem);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func,
+extern SDL_DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func,
                                                             SDL_calloc_func *calloc_func,
                                                             SDL_realloc_func *realloc_func,
                                                             SDL_free_func *free_func);
@@ -517,7 +517,7 @@ extern DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func *mal
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
+extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
                                                     SDL_calloc_func *calloc_func,
                                                     SDL_realloc_func *realloc_func,
                                                     SDL_free_func *free_func);
@@ -534,7 +534,7 @@ extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
+extern SDL_DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_calloc_func calloc_func,
                                                    SDL_realloc_func realloc_func,
                                                    SDL_free_func free_func);
@@ -558,7 +558,7 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
  *
  * \sa SDL_aligned_free
  */
-extern DECLSPEC SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
+extern SDL_DECLSPEC SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
 
 /**
  * Free memory allocated by SDL_aligned_alloc().
@@ -567,7 +567,7 @@ extern DECLSPEC SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment, siz
  *
  * \sa SDL_aligned_alloc
  */
-extern DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
+extern SDL_DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
 
 /**
  * Get the number of outstanding (unfreed) allocations.
@@ -576,18 +576,18 @@ extern DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 
-extern DECLSPEC char *SDLCALL SDL_getenv(const char *name);
-extern DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int overwrite);
+extern SDL_DECLSPEC char *SDLCALL SDL_getenv(const char *name);
+extern SDL_DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int overwrite);
 
-extern DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
-extern DECLSPEC void * SDLCALL SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
+extern SDL_DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
+extern SDL_DECLSPEC void * SDLCALL SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
 
-extern DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (void *, const void *, const void *), void *userdata);
-extern DECLSPEC void * SDLCALL SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (void *, const void *, const void *), void *userdata);
+extern SDL_DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (void *, const void *, const void *), void *userdata);
+extern SDL_DECLSPEC void * SDLCALL SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (void *, const void *, const void *), void *userdata);
 
-extern DECLSPEC int SDLCALL SDL_abs(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_abs(int x);
 
 /* NOTE: these double-evaluate their arguments, so you should never have side effects in the parameters */
 #define SDL_min(x, y) (((x) < (y)) ? (x) : (y))
@@ -607,7 +607,7 @@ extern DECLSPEC int SDLCALL SDL_abs(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_isalpha(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_isalpha(int x);
 
 /**
  * Query if a character is alphabetic (a letter) or a number.
@@ -622,7 +622,7 @@ extern DECLSPEC int SDLCALL SDL_isalpha(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_isalnum(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_isalnum(int x);
 
 /**
  * Report if a character is blank (a space or tab).
@@ -637,7 +637,7 @@ extern DECLSPEC int SDLCALL SDL_isalnum(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_isblank(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_isblank(int x);
 
 /**
  * Report if a character is a control character.
@@ -652,7 +652,7 @@ extern DECLSPEC int SDLCALL SDL_isblank(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_iscntrl(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_iscntrl(int x);
 
 /**
  * Report if a character is a numeric digit.
@@ -667,7 +667,7 @@ extern DECLSPEC int SDLCALL SDL_iscntrl(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_isdigit(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_isdigit(int x);
 
 /**
  * Report if a character is a hexadecimal digit.
@@ -682,7 +682,7 @@ extern DECLSPEC int SDLCALL SDL_isdigit(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_isxdigit(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_isxdigit(int x);
 
 /**
  * Report if a character is a punctuation mark.
@@ -700,7 +700,7 @@ extern DECLSPEC int SDLCALL SDL_isxdigit(int x);
  * \sa SDL_isgraph
  * \sa SDL_isalnum
  */
-extern DECLSPEC int SDLCALL SDL_ispunct(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_ispunct(int x);
 
 /**
  * Report if a character is whitespace.
@@ -722,7 +722,7 @@ extern DECLSPEC int SDLCALL SDL_ispunct(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_isspace(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_isspace(int x);
 
 /**
  * Report if a character is upper case.
@@ -737,7 +737,7 @@ extern DECLSPEC int SDLCALL SDL_isspace(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_isupper(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_isupper(int x);
 
 /**
  * Report if a character is lower case.
@@ -752,7 +752,7 @@ extern DECLSPEC int SDLCALL SDL_isupper(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_islower(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_islower(int x);
 
 /**
  * Report if a character is "printable".
@@ -771,7 +771,7 @@ extern DECLSPEC int SDLCALL SDL_islower(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_isprint(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_isprint(int x);
 
 /**
  * Report if a character is any "printable" except space.
@@ -792,7 +792,7 @@ extern DECLSPEC int SDLCALL SDL_isprint(int x);
  *
  * \sa SDL_isprint
  */
-extern DECLSPEC int SDLCALL SDL_isgraph(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_isgraph(int x);
 
 /**
  * Convert low-ASCII English letters to uppercase.
@@ -810,7 +810,7 @@ extern DECLSPEC int SDLCALL SDL_isgraph(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_toupper(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_toupper(int x);
 
 /**
  * Convert low-ASCII English letters to lowercase.
@@ -828,12 +828,12 @@ extern DECLSPEC int SDLCALL SDL_toupper(int x);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_tolower(int x);
+extern SDL_DECLSPEC int SDLCALL SDL_tolower(int x);
 
-extern DECLSPEC Uint16 SDLCALL SDL_crc16(Uint16 crc, const void *data, size_t len);
-extern DECLSPEC Uint32 SDLCALL SDL_crc32(Uint32 crc, const void *data, size_t len);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_crc16(Uint16 crc, const void *data, size_t len);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_crc32(Uint32 crc, const void *data, size_t len);
 
-extern DECLSPEC void *SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
+extern SDL_DECLSPEC void *SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 
 /* Take advantage of compiler optimizations for memcpy */
 #ifndef SDL_SLOW_MEMCPY
@@ -847,7 +847,7 @@ extern DECLSPEC void *SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_
     { SDL_COMPILE_TIME_ASSERT(SDL_copyp, sizeof (*(dst)) == sizeof (*(src))); }             \
     SDL_memcpy((dst), (src), sizeof(*(src)))
 
-extern DECLSPEC void *SDLCALL SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
+extern SDL_DECLSPEC void *SDLCALL SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 
 /* Take advantage of compiler optimizations for memmove */
 #ifndef SDL_SLOW_MEMMOVE
@@ -857,8 +857,8 @@ extern DECLSPEC void *SDLCALL SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN
 #define SDL_memmove memmove
 #endif
 
-extern DECLSPEC void *SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len);
-extern DECLSPEC void *SDLCALL SDL_memset4(void *dst, Uint32 val, size_t dwords);
+extern SDL_DECLSPEC void *SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len);
+extern SDL_DECLSPEC void *SDLCALL SDL_memset4(void *dst, Uint32 val, size_t dwords);
 
 /* Take advantage of compiler optimizations for memset */
 #ifndef SDL_SLOW_MEMSET
@@ -872,15 +872,15 @@ extern DECLSPEC void *SDLCALL SDL_memset4(void *dst, Uint32 val, size_t dwords);
 #define SDL_zerop(x) SDL_memset((x), 0, sizeof(*(x)))
 #define SDL_zeroa(x) SDL_memset((x), 0, sizeof((x)))
 
-extern DECLSPEC int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t len);
+extern SDL_DECLSPEC int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t len);
 
-extern DECLSPEC size_t SDLCALL SDL_wcslen(const wchar_t *wstr);
-extern DECLSPEC size_t SDLCALL SDL_wcsnlen(const wchar_t *wstr, size_t maxlen);
-extern DECLSPEC size_t SDLCALL SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen);
-extern DECLSPEC size_t SDLCALL SDL_wcslcat(SDL_INOUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen);
-extern DECLSPEC wchar_t *SDLCALL SDL_wcsdup(const wchar_t *wstr);
-extern DECLSPEC wchar_t *SDLCALL SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle);
-extern DECLSPEC wchar_t *SDLCALL SDL_wcsnstr(const wchar_t *haystack, const wchar_t *needle, size_t maxlen);
+extern SDL_DECLSPEC size_t SDLCALL SDL_wcslen(const wchar_t *wstr);
+extern SDL_DECLSPEC size_t SDLCALL SDL_wcsnlen(const wchar_t *wstr, size_t maxlen);
+extern SDL_DECLSPEC size_t SDLCALL SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen);
+extern SDL_DECLSPEC size_t SDLCALL SDL_wcslcat(SDL_INOUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen);
+extern SDL_DECLSPEC wchar_t *SDLCALL SDL_wcsdup(const wchar_t *wstr);
+extern SDL_DECLSPEC wchar_t *SDLCALL SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle);
+extern SDL_DECLSPEC wchar_t *SDLCALL SDL_wcsnstr(const wchar_t *haystack, const wchar_t *needle, size_t maxlen);
 
 /**
  * Compare two null-terminated wide strings.
@@ -899,7 +899,7 @@ extern DECLSPEC wchar_t *SDLCALL SDL_wcsnstr(const wchar_t *haystack, const wcha
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_wcscmp(const wchar_t *str1, const wchar_t *str2);
+extern SDL_DECLSPEC int SDLCALL SDL_wcscmp(const wchar_t *str1, const wchar_t *str2);
 
 /**
  * Compare two wide strings up to a number of wchar_t values.
@@ -930,7 +930,7 @@ extern DECLSPEC int SDLCALL SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen);
+extern SDL_DECLSPEC int SDLCALL SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen);
 
 /**
  * Compare two null-terminated wide strings, case-insensitively.
@@ -960,7 +960,7 @@ extern DECLSPEC int SDLCALL SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_wcscasecmp(const wchar_t *str1, const wchar_t *str2);
+extern SDL_DECLSPEC int SDLCALL SDL_wcscasecmp(const wchar_t *str1, const wchar_t *str2);
 
 /**
  * Compare two wide strings, case-insensitively, up to a number of wchar_t.
@@ -1002,18 +1002,18 @@ extern DECLSPEC int SDLCALL SDL_wcscasecmp(const wchar_t *str1, const wchar_t *s
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen);
+extern SDL_DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen);
 
-extern DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, int base);
+extern SDL_DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, int base);
 
-extern DECLSPEC size_t SDLCALL SDL_strlen(const char *str);
-extern DECLSPEC size_t SDLCALL SDL_strnlen(const char *str, size_t maxlen);
-extern DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
-extern DECLSPEC size_t SDLCALL SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_bytes);
-extern DECLSPEC size_t SDLCALL SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
-extern DECLSPEC SDL_MALLOC char *SDLCALL SDL_strdup(const char *str);
-extern DECLSPEC SDL_MALLOC char *SDLCALL SDL_strndup(const char *str, size_t maxlen);
-extern DECLSPEC char *SDLCALL SDL_strrev(char *str);
+extern SDL_DECLSPEC size_t SDLCALL SDL_strlen(const char *str);
+extern SDL_DECLSPEC size_t SDLCALL SDL_strnlen(const char *str, size_t maxlen);
+extern SDL_DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
+extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_bytes);
+extern SDL_DECLSPEC size_t SDLCALL SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
+extern SDL_DECLSPEC SDL_MALLOC char *SDLCALL SDL_strdup(const char *str);
+extern SDL_DECLSPEC SDL_MALLOC char *SDLCALL SDL_strndup(const char *str, size_t maxlen);
+extern SDL_DECLSPEC char *SDLCALL SDL_strrev(char *str);
 
 /**
  * Convert a string to uppercase.
@@ -1031,7 +1031,7 @@ extern DECLSPEC char *SDLCALL SDL_strrev(char *str);
  *
  * \sa SDL_strlwr
  */
-extern DECLSPEC char *SDLCALL SDL_strupr(char *str);
+extern SDL_DECLSPEC char *SDLCALL SDL_strupr(char *str);
 
 /**
  * Convert a string to lowercase.
@@ -1052,31 +1052,31 @@ extern DECLSPEC char *SDLCALL SDL_strupr(char *str);
  *
  * \sa SDL_strupr
  */
-extern DECLSPEC char *SDLCALL SDL_strlwr(char *str);
+extern SDL_DECLSPEC char *SDLCALL SDL_strlwr(char *str);
 
-extern DECLSPEC char *SDLCALL SDL_strchr(const char *str, int c);
-extern DECLSPEC char *SDLCALL SDL_strrchr(const char *str, int c);
-extern DECLSPEC char *SDLCALL SDL_strstr(const char *haystack, const char *needle);
-extern DECLSPEC char *SDLCALL SDL_strnstr(const char *haystack, const char *needle, size_t maxlen);
-extern DECLSPEC char *SDLCALL SDL_strcasestr(const char *haystack, const char *needle);
-extern DECLSPEC char *SDLCALL SDL_strtok_r(char *s1, const char *s2, char **saveptr);
-extern DECLSPEC size_t SDLCALL SDL_utf8strlen(const char *str);
-extern DECLSPEC size_t SDLCALL SDL_utf8strnlen(const char *str, size_t bytes);
+extern SDL_DECLSPEC char *SDLCALL SDL_strchr(const char *str, int c);
+extern SDL_DECLSPEC char *SDLCALL SDL_strrchr(const char *str, int c);
+extern SDL_DECLSPEC char *SDLCALL SDL_strstr(const char *haystack, const char *needle);
+extern SDL_DECLSPEC char *SDLCALL SDL_strnstr(const char *haystack, const char *needle, size_t maxlen);
+extern SDL_DECLSPEC char *SDLCALL SDL_strcasestr(const char *haystack, const char *needle);
+extern SDL_DECLSPEC char *SDLCALL SDL_strtok_r(char *s1, const char *s2, char **saveptr);
+extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strlen(const char *str);
+extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strnlen(const char *str, size_t bytes);
 
-extern DECLSPEC char *SDLCALL SDL_itoa(int value, char *str, int radix);
-extern DECLSPEC char *SDLCALL SDL_uitoa(unsigned int value, char *str, int radix);
-extern DECLSPEC char *SDLCALL SDL_ltoa(long value, char *str, int radix);
-extern DECLSPEC char *SDLCALL SDL_ultoa(unsigned long value, char *str, int radix);
-extern DECLSPEC char *SDLCALL SDL_lltoa(Sint64 value, char *str, int radix);
-extern DECLSPEC char *SDLCALL SDL_ulltoa(Uint64 value, char *str, int radix);
+extern SDL_DECLSPEC char *SDLCALL SDL_itoa(int value, char *str, int radix);
+extern SDL_DECLSPEC char *SDLCALL SDL_uitoa(unsigned int value, char *str, int radix);
+extern SDL_DECLSPEC char *SDLCALL SDL_ltoa(long value, char *str, int radix);
+extern SDL_DECLSPEC char *SDLCALL SDL_ultoa(unsigned long value, char *str, int radix);
+extern SDL_DECLSPEC char *SDLCALL SDL_lltoa(Sint64 value, char *str, int radix);
+extern SDL_DECLSPEC char *SDLCALL SDL_ulltoa(Uint64 value, char *str, int radix);
 
-extern DECLSPEC int SDLCALL SDL_atoi(const char *str);
-extern DECLSPEC double SDLCALL SDL_atof(const char *str);
-extern DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int base);
-extern DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **endp, int base);
-extern DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *str, char **endp, int base);
-extern DECLSPEC Uint64 SDLCALL SDL_strtoull(const char *str, char **endp, int base);
-extern DECLSPEC double SDLCALL SDL_strtod(const char *str, char **endp);
+extern SDL_DECLSPEC int SDLCALL SDL_atoi(const char *str);
+extern SDL_DECLSPEC double SDLCALL SDL_atof(const char *str);
+extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int base);
+extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **endp, int base);
+extern SDL_DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *str, char **endp, int base);
+extern SDL_DECLSPEC Uint64 SDLCALL SDL_strtoull(const char *str, char **endp, int base);
+extern SDL_DECLSPEC double SDLCALL SDL_strtod(const char *str, char **endp);
 
 /**
  * Compare two null-terminated UTF-8 strings.
@@ -1096,7 +1096,7 @@ extern DECLSPEC double SDLCALL SDL_strtod(const char *str, char **endp);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_strcmp(const char *str1, const char *str2);
+extern SDL_DECLSPEC int SDLCALL SDL_strcmp(const char *str1, const char *str2);
 
 /**
  * Compare two UTF-8 strings up to a number of bytes.
@@ -1126,7 +1126,7 @@ extern DECLSPEC int SDLCALL SDL_strcmp(const char *str1, const char *str2);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_strncmp(const char *str1, const char *str2, size_t maxlen);
+extern SDL_DECLSPEC int SDLCALL SDL_strncmp(const char *str1, const char *str2, size_t maxlen);
 
 /**
  * Compare two null-terminated UTF-8 strings, case-insensitively.
@@ -1154,7 +1154,7 @@ extern DECLSPEC int SDLCALL SDL_strncmp(const char *str1, const char *str2, size
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
+extern SDL_DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
 
 
 /**
@@ -1194,16 +1194,16 @@ extern DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen);
+extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen);
 
-extern DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, ...) SDL_SCANF_VARARG_FUNC(2);
-extern DECLSPEC int SDLCALL SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_list ap) SDL_SCANF_VARARG_FUNCV(2);
-extern DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ... ) SDL_PRINTF_VARARG_FUNC(3);
-extern DECLSPEC int SDLCALL SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ... ) SDL_WPRINTF_VARARG_FUNC(3);
-extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(3);
-extern DECLSPEC int SDLCALL SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wchar_t *fmt, va_list ap);
-extern DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
-extern DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
+extern SDL_DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, ...) SDL_SCANF_VARARG_FUNC(2);
+extern SDL_DECLSPEC int SDLCALL SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_list ap) SDL_SCANF_VARARG_FUNCV(2);
+extern SDL_DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ... ) SDL_PRINTF_VARARG_FUNC(3);
+extern SDL_DECLSPEC int SDLCALL SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ... ) SDL_WPRINTF_VARARG_FUNC(3);
+extern SDL_DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(3);
+extern SDL_DECLSPEC int SDLCALL SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wchar_t *fmt, va_list ap);
+extern SDL_DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
+extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
 #ifndef SDL_PI_D
 #define SDL_PI_D   3.141592653589793238462643383279502884       /**< pi (double) */
@@ -1240,7 +1240,7 @@ extern DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING 
  * \sa SDL_asin
  * \sa SDL_cos
  */
-extern DECLSPEC double SDLCALL SDL_acos(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_acos(double x);
 
 /**
  * Compute the arc cosine of `x`.
@@ -1268,7 +1268,7 @@ extern DECLSPEC double SDLCALL SDL_acos(double x);
  * \sa SDL_asinf
  * \sa SDL_cosf
  */
-extern DECLSPEC float SDLCALL SDL_acosf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_acosf(float x);
 
 /**
  * Compute the arc sine of `x`.
@@ -1296,7 +1296,7 @@ extern DECLSPEC float SDLCALL SDL_acosf(float x);
  * \sa SDL_acos
  * \sa SDL_sin
  */
-extern DECLSPEC double SDLCALL SDL_asin(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_asin(double x);
 
 /**
  * Compute the arc sine of `x`.
@@ -1324,7 +1324,7 @@ extern DECLSPEC double SDLCALL SDL_asin(double x);
  * \sa SDL_acosf
  * \sa SDL_sinf
  */
-extern DECLSPEC float SDLCALL SDL_asinf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_asinf(float x);
 
 /**
  * Compute the arc tangent of `x`.
@@ -1354,7 +1354,7 @@ extern DECLSPEC float SDLCALL SDL_asinf(float x);
  * \sa SDL_atan2
  * \sa SDL_tan
  */
-extern DECLSPEC double SDLCALL SDL_atan(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_atan(double x);
 
 /**
  * Compute the arc tangent of `x`.
@@ -1384,7 +1384,7 @@ extern DECLSPEC double SDLCALL SDL_atan(double x);
  * \sa SDL_atan2f
  * \sa SDL_tanf
  */
-extern DECLSPEC float SDLCALL SDL_atanf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_atanf(float x);
 
 /**
  * Compute the arc tangent of `y / x`, using the signs of x and y to adjust
@@ -1418,7 +1418,7 @@ extern DECLSPEC float SDLCALL SDL_atanf(float x);
  * \sa SDL_atan
  * \sa SDL_tan
  */
-extern DECLSPEC double SDLCALL SDL_atan2(double y, double x);
+extern SDL_DECLSPEC double SDLCALL SDL_atan2(double y, double x);
 
 /**
  * Compute the arc tangent of `y / x`, using the signs of x and y to adjust
@@ -1452,7 +1452,7 @@ extern DECLSPEC double SDLCALL SDL_atan2(double y, double x);
  * \sa SDL_atan
  * \sa SDL_tan
  */
-extern DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
+extern SDL_DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
 
 /**
  * Compute the ceiling of `x`.
@@ -1478,7 +1478,7 @@ extern DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
  * \sa SDL_round
  * \sa SDL_lround
  */
-extern DECLSPEC double SDLCALL SDL_ceil(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_ceil(double x);
 
 /**
  * Compute the ceiling of `x`.
@@ -1504,7 +1504,7 @@ extern DECLSPEC double SDLCALL SDL_ceil(double x);
  * \sa SDL_roundf
  * \sa SDL_lroundf
  */
-extern DECLSPEC float SDLCALL SDL_ceilf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_ceilf(float x);
 
 /**
  * Copy the sign of one floating-point value to another.
@@ -1527,7 +1527,7 @@ extern DECLSPEC float SDLCALL SDL_ceilf(float x);
  * \sa SDL_copysignf
  * \sa SDL_fabs
  */
-extern DECLSPEC double SDLCALL SDL_copysign(double x, double y);
+extern SDL_DECLSPEC double SDLCALL SDL_copysign(double x, double y);
 
 /**
  * Copy the sign of one floating-point value to another.
@@ -1550,7 +1550,7 @@ extern DECLSPEC double SDLCALL SDL_copysign(double x, double y);
  * \sa SDL_copysignf
  * \sa SDL_fabsf
  */
-extern DECLSPEC float SDLCALL SDL_copysignf(float x, float y);
+extern SDL_DECLSPEC float SDLCALL SDL_copysignf(float x, float y);
 
 /**
  * Compute the cosine of `x`.
@@ -1576,7 +1576,7 @@ extern DECLSPEC float SDLCALL SDL_copysignf(float x, float y);
  * \sa SDL_acos
  * \sa SDL_sin
  */
-extern DECLSPEC double SDLCALL SDL_cos(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_cos(double x);
 
 /**
  * Compute the cosine of `x`.
@@ -1602,7 +1602,7 @@ extern DECLSPEC double SDLCALL SDL_cos(double x);
  * \sa SDL_acosf
  * \sa SDL_sinf
  */
-extern DECLSPEC float SDLCALL SDL_cosf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_cosf(float x);
 
 /**
  * Compute the exponential of `x`.
@@ -1632,7 +1632,7 @@ extern DECLSPEC float SDLCALL SDL_cosf(float x);
  * \sa SDL_expf
  * \sa SDL_log
  */
-extern DECLSPEC double SDLCALL SDL_exp(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_exp(double x);
 
 /**
  * Compute the exponential of `x`.
@@ -1662,7 +1662,7 @@ extern DECLSPEC double SDLCALL SDL_exp(double x);
  * \sa SDL_exp
  * \sa SDL_logf
  */
-extern DECLSPEC float SDLCALL SDL_expf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_expf(float x);
 
 /**
  * Compute the absolute value of `x`
@@ -1681,7 +1681,7 @@ extern DECLSPEC float SDLCALL SDL_expf(float x);
  *
  * \sa SDL_fabsf
  */
-extern DECLSPEC double SDLCALL SDL_fabs(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_fabs(double x);
 
 /**
  * Compute the absolute value of `x`
@@ -1700,7 +1700,7 @@ extern DECLSPEC double SDLCALL SDL_fabs(double x);
  *
  * \sa SDL_fabs
  */
-extern DECLSPEC float SDLCALL SDL_fabsf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_fabsf(float x);
 
 /**
  * Compute the floor of `x`.
@@ -1726,7 +1726,7 @@ extern DECLSPEC float SDLCALL SDL_fabsf(float x);
  * \sa SDL_round
  * \sa SDL_lround
  */
-extern DECLSPEC double SDLCALL SDL_floor(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_floor(double x);
 
 /**
  * Compute the floor of `x`.
@@ -1752,7 +1752,7 @@ extern DECLSPEC double SDLCALL SDL_floor(double x);
  * \sa SDL_roundf
  * \sa SDL_lroundf
  */
-extern DECLSPEC float SDLCALL SDL_floorf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_floorf(float x);
 
 /**
  * Truncate `x` to an integer.
@@ -1779,7 +1779,7 @@ extern DECLSPEC float SDLCALL SDL_floorf(float x);
  * \sa SDL_round
  * \sa SDL_lround
  */
-extern DECLSPEC double SDLCALL SDL_trunc(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_trunc(double x);
 
 /**
  * Truncate `x` to an integer.
@@ -1806,7 +1806,7 @@ extern DECLSPEC double SDLCALL SDL_trunc(double x);
  * \sa SDL_roundf
  * \sa SDL_lroundf
  */
-extern DECLSPEC float SDLCALL SDL_truncf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_truncf(float x);
 
 /**
  * Return the floating-point remainder of `x / y`
@@ -1834,7 +1834,7 @@ extern DECLSPEC float SDLCALL SDL_truncf(float x);
  * \sa SDL_round
  * \sa SDL_lround
  */
-extern DECLSPEC double SDLCALL SDL_fmod(double x, double y);
+extern SDL_DECLSPEC double SDLCALL SDL_fmod(double x, double y);
 
 /**
  * Return the floating-point remainder of `x / y`
@@ -1862,7 +1862,7 @@ extern DECLSPEC double SDLCALL SDL_fmod(double x, double y);
  * \sa SDL_roundf
  * \sa SDL_lroundf
  */
-extern DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
+extern SDL_DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
 
 /**
  * Compute the natural logarithm of `x`.
@@ -1890,7 +1890,7 @@ extern DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
  * \sa SDL_log10
  * \sa SDL_exp
  */
-extern DECLSPEC double SDLCALL SDL_log(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_log(double x);
 
 /**
  * Compute the natural logarithm of `x`.
@@ -1917,7 +1917,7 @@ extern DECLSPEC double SDLCALL SDL_log(double x);
  * \sa SDL_log
  * \sa SDL_expf
  */
-extern DECLSPEC float SDLCALL SDL_logf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_logf(float x);
 
 /**
  * Compute the base-10 logarithm of `x`.
@@ -1945,7 +1945,7 @@ extern DECLSPEC float SDLCALL SDL_logf(float x);
  * \sa SDL_log
  * \sa SDL_pow
  */
-extern DECLSPEC double SDLCALL SDL_log10(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_log10(double x);
 
 /**
  * Compute the base-10 logarithm of `x`.
@@ -1973,7 +1973,7 @@ extern DECLSPEC double SDLCALL SDL_log10(double x);
  * \sa SDL_logf
  * \sa SDL_powf
  */
-extern DECLSPEC float SDLCALL SDL_log10f(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_log10f(float x);
 
 /**
  * Split `x` into integer and fractional parts
@@ -1991,7 +1991,7 @@ extern DECLSPEC float SDLCALL SDL_log10f(float x);
  * \sa SDL_trunc
  * \sa SDL_fmod
  */
-extern DECLSPEC double SDLCALL SDL_modf(double x, double *y);
+extern SDL_DECLSPEC double SDLCALL SDL_modf(double x, double *y);
 
 /**
  * Split `x` into integer and fractional parts
@@ -2009,7 +2009,7 @@ extern DECLSPEC double SDLCALL SDL_modf(double x, double *y);
  * \sa SDL_truncf
  * \sa SDL_fmodf
  */
-extern DECLSPEC float SDLCALL SDL_modff(float x, float *y);
+extern SDL_DECLSPEC float SDLCALL SDL_modff(float x, float *y);
 
 /**
  * Raise `x` to the power `y`
@@ -2039,7 +2039,7 @@ extern DECLSPEC float SDLCALL SDL_modff(float x, float *y);
  * \sa SDL_exp
  * \sa SDL_log
  */
-extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
+extern SDL_DECLSPEC double SDLCALL SDL_pow(double x, double y);
 
 /**
  * Raise `x` to the power `y`
@@ -2069,7 +2069,7 @@ extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
  * \sa SDL_expf
  * \sa SDL_logf
  */
-extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
+extern SDL_DECLSPEC float SDLCALL SDL_powf(float x, float y);
 
 /**
  * Round `x` to the nearest integer.
@@ -2096,7 +2096,7 @@ extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
  * \sa SDL_ceil
  * \sa SDL_trunc
  */
-extern DECLSPEC double SDLCALL SDL_round(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_round(double x);
 
 /**
  * Round `x` to the nearest integer.
@@ -2123,7 +2123,7 @@ extern DECLSPEC double SDLCALL SDL_round(double x);
  * \sa SDL_ceilf
  * \sa SDL_truncf
  */
-extern DECLSPEC float SDLCALL SDL_roundf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_roundf(float x);
 
 /**
  * Round `x` to the nearest integer representable as a long
@@ -2150,7 +2150,7 @@ extern DECLSPEC float SDLCALL SDL_roundf(float x);
  * \sa SDL_ceil
  * \sa SDL_trunc
  */
-extern DECLSPEC long SDLCALL SDL_lround(double x);
+extern SDL_DECLSPEC long SDLCALL SDL_lround(double x);
 
 /**
  * Round `x` to the nearest integer representable as a long
@@ -2177,7 +2177,7 @@ extern DECLSPEC long SDLCALL SDL_lround(double x);
  * \sa SDL_ceilf
  * \sa SDL_truncf
  */
-extern DECLSPEC long SDLCALL SDL_lroundf(float x);
+extern SDL_DECLSPEC long SDLCALL SDL_lroundf(float x);
 
 /**
  * Scale `x` by an integer power of two.
@@ -2200,7 +2200,7 @@ extern DECLSPEC long SDLCALL SDL_lroundf(float x);
  * \sa SDL_scalbnf
  * \sa SDL_pow
  */
-extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
+extern SDL_DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
 
 /**
  * Scale `x` by an integer power of two.
@@ -2223,7 +2223,7 @@ extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
  * \sa SDL_scalbn
  * \sa SDL_powf
  */
-extern DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
+extern SDL_DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
 
 /**
  * Compute the sine of `x`.
@@ -2249,7 +2249,7 @@ extern DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
  * \sa SDL_asin
  * \sa SDL_cos
  */
-extern DECLSPEC double SDLCALL SDL_sin(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_sin(double x);
 
 /**
  * Compute the sine of `x`.
@@ -2275,7 +2275,7 @@ extern DECLSPEC double SDLCALL SDL_sin(double x);
  * \sa SDL_asinf
  * \sa SDL_cosf
  */
-extern DECLSPEC float SDLCALL SDL_sinf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_sinf(float x);
 
 /**
  * Compute the square root of `x`.
@@ -2299,7 +2299,7 @@ extern DECLSPEC float SDLCALL SDL_sinf(float x);
  *
  * \sa SDL_sqrtf
  */
-extern DECLSPEC double SDLCALL SDL_sqrt(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_sqrt(double x);
 
 /**
  * Compute the square root of `x`.
@@ -2323,7 +2323,7 @@ extern DECLSPEC double SDLCALL SDL_sqrt(double x);
  *
  * \sa SDL_sqrt
  */
-extern DECLSPEC float SDLCALL SDL_sqrtf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_sqrtf(float x);
 
 /**
  * Compute the tangent of `x`.
@@ -2351,7 +2351,7 @@ extern DECLSPEC float SDLCALL SDL_sqrtf(float x);
  * \sa SDL_atan
  * \sa SDL_atan2
  */
-extern DECLSPEC double SDLCALL SDL_tan(double x);
+extern SDL_DECLSPEC double SDLCALL SDL_tan(double x);
 
 /**
  * Compute the tangent of `x`.
@@ -2379,7 +2379,7 @@ extern DECLSPEC double SDLCALL SDL_tan(double x);
  * \sa SDL_atanf
  * \sa SDL_atan2f
  */
-extern DECLSPEC float SDLCALL SDL_tanf(float x);
+extern SDL_DECLSPEC float SDLCALL SDL_tanf(float x);
 
 /* The SDL implementation of iconv() returns these error codes */
 #define SDL_ICONV_ERROR     (size_t)-1
@@ -2389,10 +2389,10 @@ extern DECLSPEC float SDLCALL SDL_tanf(float x);
 
 /* SDL_iconv_* are now always real symbols/types, not macros or inlined. */
 typedef struct SDL_iconv_data_t *SDL_iconv_t;
-extern DECLSPEC SDL_iconv_t SDLCALL SDL_iconv_open(const char *tocode,
+extern SDL_DECLSPEC SDL_iconv_t SDLCALL SDL_iconv_open(const char *tocode,
                                                    const char *fromcode);
-extern DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
-extern DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
+extern SDL_DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
+extern SDL_DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
                                          size_t * inbytesleft, char **outbuf,
                                          size_t * outbytesleft);
 
@@ -2402,7 +2402,7 @@ extern DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
+extern SDL_DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
                                                const char *fromcode,
                                                const char *inbuf,
                                                size_t inbytesleft);

@@ -188,7 +188,7 @@ typedef struct SDL_hid_device_info
  *
  * \sa SDL_hid_exit
  */
-extern DECLSPEC int SDLCALL SDL_hid_init(void);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_init(void);
 
 /**
  * Finalize the HIDAPI library.
@@ -203,7 +203,7 @@ extern DECLSPEC int SDLCALL SDL_hid_init(void);
  *
  * \sa SDL_hid_init
  */
-extern DECLSPEC int SDLCALL SDL_hid_exit(void);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_exit(void);
 
 /**
  * Check to see if devices may have been added or removed.
@@ -224,7 +224,7 @@ extern DECLSPEC int SDLCALL SDL_hid_exit(void);
  *
  * \sa SDL_hid_enumerate
  */
-extern DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
 
 /**
  * Enumerate the HID Devices.
@@ -252,7 +252,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
  *
  * \sa SDL_hid_device_change_count
  */
-extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id);
+extern SDL_DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id);
 
 /**
  * Free an enumeration linked list.
@@ -264,7 +264,7 @@ extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_enumerate(unsigned short v
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_hid_free_enumeration(SDL_hid_device_info *devs);
+extern SDL_DECLSPEC void SDLCALL SDL_hid_free_enumeration(SDL_hid_device_info *devs);
 
 /**
  * Open a HID device using a Vendor ID (VID), Product ID (PID) and optionally
@@ -282,7 +282,7 @@ extern DECLSPEC void SDLCALL SDL_hid_free_enumeration(SDL_hid_device_info *devs)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number);
+extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number);
 
 /**
  * Open a HID device by its path name.
@@ -296,7 +296,7 @@ extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path);
+extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path);
 
 /**
  * Write an Output report to a HID device.
@@ -322,7 +322,7 @@ extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_write(SDL_hid_device *dev, const unsigned char *data, size_t length);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_write(SDL_hid_device *dev, const unsigned char *data, size_t length);
 
 /**
  * Read an Input report from a HID device with timeout.
@@ -343,7 +343,7 @@ extern DECLSPEC int SDLCALL SDL_hid_write(SDL_hid_device *dev, const unsigned ch
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_read_timeout(SDL_hid_device *dev, unsigned char *data, size_t length, int milliseconds);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_read_timeout(SDL_hid_device *dev, unsigned char *data, size_t length, int milliseconds);
 
 /**
  * Read an Input report from a HID device.
@@ -363,7 +363,7 @@ extern DECLSPEC int SDLCALL SDL_hid_read_timeout(SDL_hid_device *dev, unsigned c
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_read(SDL_hid_device *dev, unsigned char *data, size_t length);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_read(SDL_hid_device *dev, unsigned char *data, size_t length);
 
 /**
  * Set the device handle to be non-blocking.
@@ -382,7 +382,7 @@ extern DECLSPEC int SDLCALL SDL_hid_read(SDL_hid_device *dev, unsigned char *dat
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_set_nonblocking(SDL_hid_device *dev, int nonblock);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_set_nonblocking(SDL_hid_device *dev, int nonblock);
 
 /**
  * Send a Feature report to the device.
@@ -406,7 +406,7 @@ extern DECLSPEC int SDLCALL SDL_hid_set_nonblocking(SDL_hid_device *dev, int non
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_send_feature_report(SDL_hid_device *dev, const unsigned char *data, size_t length);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_send_feature_report(SDL_hid_device *dev, const unsigned char *data, size_t length);
 
 /**
  * Get a feature report from a HID device.
@@ -428,7 +428,7 @@ extern DECLSPEC int SDLCALL SDL_hid_send_feature_report(SDL_hid_device *dev, con
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, unsigned char *data, size_t length);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, unsigned char *data, size_t length);
 
 /**
  * Get an input report from a HID device.
@@ -450,7 +450,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, unsi
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_get_input_report(SDL_hid_device *dev, unsigned char *data, size_t length);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_get_input_report(SDL_hid_device *dev, unsigned char *data, size_t length);
 
 /**
  * Close a HID device.
@@ -461,7 +461,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_input_report(SDL_hid_device *dev, unsign
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_close(SDL_hid_device *dev);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_close(SDL_hid_device *dev);
 
 /**
  * Get The Manufacturer String from a HID device.
@@ -474,7 +474,7 @@ extern DECLSPEC int SDLCALL SDL_hid_close(SDL_hid_device *dev);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_get_manufacturer_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_get_manufacturer_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
 
 /**
  * Get The Product String from a HID device.
@@ -487,7 +487,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_manufacturer_string(SDL_hid_device *dev,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_get_product_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_get_product_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
 
 /**
  * Get The Serial Number String from a HID device.
@@ -500,7 +500,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_product_string(SDL_hid_device *dev, wcha
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
 
 /**
  * Get a string from a HID device, based on its string index.
@@ -514,7 +514,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device *dev
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int string_index, wchar_t *string, size_t maxlen);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int string_index, wchar_t *string, size_t maxlen);
 
 /**
  * Get the device info from a HID device.
@@ -527,7 +527,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_get_device_info(SDL_hid_device *dev);
+extern SDL_DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_get_device_info(SDL_hid_device *dev);
 
 /**
  * Get a report descriptor from a HID device.
@@ -543,7 +543,7 @@ extern DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_get_device_info(SDL_hid_de
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_hid_get_report_descriptor(SDL_hid_device *dev, unsigned char *buf, size_t buf_size);
+extern SDL_DECLSPEC int SDLCALL SDL_hid_get_report_descriptor(SDL_hid_device *dev, unsigned char *buf, size_t buf_size);
 
 /**
  * Start or stop a BLE scan on iOS and tvOS to pair Steam Controllers.
@@ -552,7 +552,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_report_descriptor(SDL_hid_device *dev, u
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_hid_ble_scan(SDL_bool active);
+extern SDL_DECLSPEC void SDLCALL SDL_hid_ble_scan(SDL_bool active);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

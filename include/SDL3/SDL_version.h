@@ -124,7 +124,7 @@ extern "C" {
  *
  * \sa SDL_GetRevision
  */
-extern DECLSPEC int SDLCALL SDL_GetVersion(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetVersion(void);
 
 /**
  * Get the code revision of SDL that is linked against your program.
@@ -150,7 +150,7 @@ extern DECLSPEC int SDLCALL SDL_GetVersion(void);
  *
  * \sa SDL_GetVersion
  */
-extern DECLSPEC const char *SDLCALL SDL_GetRevision(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetRevision(void);
 
 
 /* Ends C function definitions when using C++ */

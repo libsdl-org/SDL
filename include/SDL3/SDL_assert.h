@@ -240,7 +240,7 @@ typedef struct SDL_AssertData
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data,
+extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data,
                                                             const char *func,
                                                             const char *file, int line)
 #ifdef __clang__
@@ -464,7 +464,7 @@ typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
  *
  * \sa SDL_GetAssertionHandler
  */
-extern DECLSPEC void SDLCALL SDL_SetAssertionHandler(
+extern SDL_DECLSPEC void SDLCALL SDL_SetAssertionHandler(
                                             SDL_AssertionHandler handler,
                                             void *userdata);
 
@@ -483,7 +483,7 @@ extern DECLSPEC void SDLCALL SDL_SetAssertionHandler(
  *
  * \sa SDL_GetAssertionHandler
  */
-extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(void);
+extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(void);
 
 /**
  * Get the current assertion handler.
@@ -506,7 +506,7 @@ extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(void
  *
  * \sa SDL_SetAssertionHandler
  */
-extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puserdata);
+extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puserdata);
 
 /**
  * Get a list of all assertion failures.
@@ -534,7 +534,7 @@ extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puse
  *
  * \sa SDL_ResetAssertionReport
  */
-extern DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);
+extern SDL_DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);
 
 /**
  * Clear the list of all assertion failures.
@@ -548,7 +548,7 @@ extern DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);
  *
  * \sa SDL_GetAssertionReport
  */
-extern DECLSPEC void SDLCALL SDL_ResetAssertionReport(void);
+extern SDL_DECLSPEC void SDLCALL SDL_ResetAssertionReport(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

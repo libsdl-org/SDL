@@ -382,7 +382,7 @@ static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
 /* Here's the exported entry point that fills in the jump table. */
 /*  Use specific types when an "int" might suffice to keep this sane. */
 typedef Sint32 (SDLCALL *SDL_DYNAPI_ENTRYFN)(Uint32 apiver, void *table, Uint32 tablesize);
-extern DECLSPEC Sint32 SDLCALL SDL_DYNAPI_entry(Uint32, void *, Uint32);
+extern SDL_DECLSPEC Sint32 SDLCALL SDL_DYNAPI_entry(Uint32, void *, Uint32);
 
 Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 {

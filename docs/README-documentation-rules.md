@@ -57,7 +57,7 @@ standard comment format:
  *
  * \sa SDL_DoSomethingElse
  */
-extern DECLSPEC int SDLCALL SDL_DoSomething(int frozzlevel, int color);
+extern SDL_DECLSPEC int SDLCALL SDL_DoSomething(int frozzlevel, int color);
 ```
 
 Note the `/**` at the start of the comment. That's a "Doxygen-style" comment,

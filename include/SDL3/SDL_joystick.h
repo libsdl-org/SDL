@@ -191,14 +191,14 @@ typedef enum SDL_JoystickConnectionState
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lock);
+extern SDL_DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lock);
 
 /**
  * Unlocking for atomic access to the joystick API.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_lock);
+extern SDL_DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_lock);
 
 /**
  * Return whether a joystick is currently connected.
@@ -209,7 +209,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_
  *
  * \sa SDL_GetJoysticks
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
 
 /**
  * Get a list of currently connected joysticks.
@@ -224,7 +224,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
  * \sa SDL_HasJoystick
  * \sa SDL_OpenJoystick
  */
-extern DECLSPEC SDL_JoystickID *SDLCALL SDL_GetJoysticks(int *count);
+extern SDL_DECLSPEC SDL_JoystickID *SDLCALL SDL_GetJoysticks(int *count);
 
 /**
  * Get the implementation dependent name of a joystick.
@@ -240,7 +240,7 @@ extern DECLSPEC SDL_JoystickID *SDLCALL SDL_GetJoysticks(int *count);
  * \sa SDL_GetJoystickName
  * \sa SDL_GetJoysticks
  */
-extern DECLSPEC const char *SDLCALL SDL_GetJoystickInstanceName(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetJoystickInstanceName(SDL_JoystickID instance_id);
 
 /**
  * Get the implementation dependent path of a joystick.
@@ -256,7 +256,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetJoystickInstanceName(SDL_JoystickID i
  * \sa SDL_GetJoystickPath
  * \sa SDL_GetJoysticks
  */
-extern DECLSPEC const char *SDLCALL SDL_GetJoystickInstancePath(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetJoystickInstancePath(SDL_JoystickID instance_id);
 
 /**
  * Get the player index of a joystick.
@@ -271,7 +271,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetJoystickInstancePath(SDL_JoystickID i
  * \sa SDL_GetJoystickPlayerIndex
  * \sa SDL_GetJoysticks
  */
-extern DECLSPEC int SDLCALL SDL_GetJoystickInstancePlayerIndex(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC int SDLCALL SDL_GetJoystickInstancePlayerIndex(SDL_JoystickID instance_id);
 
 /**
  * Get the implementation-dependent GUID of a joystick.
@@ -287,7 +287,7 @@ extern DECLSPEC int SDLCALL SDL_GetJoystickInstancePlayerIndex(SDL_JoystickID in
  * \sa SDL_GetJoystickGUID
  * \sa SDL_GetJoystickGUIDString
  */
-extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickInstanceGUID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickInstanceGUID(SDL_JoystickID instance_id);
 
 /**
  * Get the USB vendor ID of a joystick, if available.
@@ -304,7 +304,7 @@ extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickInstanceGUID(SDL_Joystic
  * \sa SDL_GetJoystickVendor
  * \sa SDL_GetJoysticks
  */
-extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceVendor(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceVendor(SDL_JoystickID instance_id);
 
 /**
  * Get the USB product ID of a joystick, if available.
@@ -321,7 +321,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceVendor(SDL_JoystickID inst
  * \sa SDL_GetJoystickProduct
  * \sa SDL_GetJoysticks
  */
-extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceProduct(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceProduct(SDL_JoystickID instance_id);
 
 /**
  * Get the product version of a joystick, if available.
@@ -338,7 +338,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceProduct(SDL_JoystickID ins
  * \sa SDL_GetJoystickProductVersion
  * \sa SDL_GetJoysticks
  */
-extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceProductVersion(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceProductVersion(SDL_JoystickID instance_id);
 
 /**
  * Get the type of a joystick, if available.
@@ -355,7 +355,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickInstanceProductVersion(SDL_Joystic
  * \sa SDL_GetJoystickType
  * \sa SDL_GetJoysticks
  */
-extern DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickInstanceType(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickInstanceType(SDL_JoystickID instance_id);
 
 /**
  * Open a joystick for use.
@@ -371,7 +371,7 @@ extern DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickInstanceType(SDL_Joystic
  *
  * \sa SDL_CloseJoystick
  */
-extern DECLSPEC SDL_Joystick *SDLCALL SDL_OpenJoystick(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_Joystick *SDLCALL SDL_OpenJoystick(SDL_JoystickID instance_id);
 
 /**
  * Get the SDL_Joystick associated with an instance ID, if it has been opened.
@@ -382,7 +382,7 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_OpenJoystick(SDL_JoystickID instance_i
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromInstanceID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromInstanceID(SDL_JoystickID instance_id);
 
 /**
  * Get the SDL_Joystick associated with a player index.
@@ -396,7 +396,7 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromInstanceID(SDL_Joystick
  * \sa SDL_GetJoystickPlayerIndex
  * \sa SDL_SetJoystickPlayerIndex
  */
-extern DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromPlayerIndex(int player_index);
+extern SDL_DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromPlayerIndex(int player_index);
 
 /**
  * The structure that describes a virtual joystick touchpad.
@@ -477,7 +477,7 @@ typedef struct SDL_VirtualJoystickDesc
  *
  * \sa SDL_DetachVirtualJoystick
  */
-extern DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystick(const SDL_VirtualJoystickDesc *desc);
+extern SDL_DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystick(const SDL_VirtualJoystickDesc *desc);
 
 /**
  * Detach a virtual joystick.
@@ -491,7 +491,7 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystick(const SDL_Virtu
  *
  * \sa SDL_AttachVirtualJoystick
  */
-extern DECLSPEC int SDLCALL SDL_DetachVirtualJoystick(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC int SDLCALL SDL_DetachVirtualJoystick(SDL_JoystickID instance_id);
 
 /**
  * Query whether or not a joystick is virtual.
@@ -501,7 +501,7 @@ extern DECLSPEC int SDLCALL SDL_DetachVirtualJoystick(SDL_JoystickID instance_id
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsJoystickVirtual(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsJoystickVirtual(SDL_JoystickID instance_id);
 
 /**
  * Set the state of an axis on an opened virtual joystick.
@@ -524,7 +524,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsJoystickVirtual(SDL_JoystickID instance_i
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value);
+extern SDL_DECLSPEC int SDLCALL SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value);
 
 /**
  * Generate ball motion on an opened virtual joystick.
@@ -544,7 +544,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, i
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualBall(SDL_Joystick *joystick, int ball, Sint16 xrel, Sint16 yrel);
+extern SDL_DECLSPEC int SDLCALL SDL_SetJoystickVirtualBall(SDL_Joystick *joystick, int ball, Sint16 xrel, Sint16 yrel);
 
 /**
  * Set the state of a button on an opened virtual joystick.
@@ -563,7 +563,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualBall(SDL_Joystick *joystick, i
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, Uint8 value);
+extern SDL_DECLSPEC int SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, Uint8 value);
 
 /**
  * Set the state of a hat on an opened virtual joystick.
@@ -582,7 +582,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *joystick,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value);
+extern SDL_DECLSPEC int SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value);
 
 /**
  * Set touchpad finger state on an opened virtual joystick.
@@ -609,7 +609,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, in
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure);
+extern SDL_DECLSPEC int SDLCALL SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure);
 
 /**
  * Send a sensor update for an opened virtual joystick.
@@ -631,7 +631,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystic
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SendJoystickVirtualSensorData(SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
+extern SDL_DECLSPEC int SDLCALL SDL_SendJoystickVirtualSensorData(SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
 
 /**
  * Get the properties associated with a joystick.
@@ -658,7 +658,7 @@ extern DECLSPEC int SDLCALL SDL_SendJoystickVirtualSensorData(SDL_Joystick *joys
  * \sa SDL_GetProperty
  * \sa SDL_SetProperty
  */
-extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joystick *joystick);
+extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joystick *joystick);
 
 #define SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN          "SDL.joystick.cap.mono_led"
 #define SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN           "SDL.joystick.cap.rgb_led"
@@ -677,7 +677,7 @@ extern DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joystick 
  *
  * \sa SDL_GetJoystickInstanceName
  */
-extern DECLSPEC const char *SDLCALL SDL_GetJoystickName(SDL_Joystick *joystick);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetJoystickName(SDL_Joystick *joystick);
 
 /**
  * Get the implementation dependent path of a joystick.
@@ -690,7 +690,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetJoystickName(SDL_Joystick *joystick);
  *
  * \sa SDL_GetJoystickInstancePath
  */
-extern DECLSPEC const char *SDLCALL SDL_GetJoystickPath(SDL_Joystick *joystick);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetJoystickPath(SDL_Joystick *joystick);
 
 /**
  * Get the player index of an opened joystick.
@@ -705,7 +705,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetJoystickPath(SDL_Joystick *joystick);
  *
  * \sa SDL_SetJoystickPlayerIndex
  */
-extern DECLSPEC int SDLCALL SDL_GetJoystickPlayerIndex(SDL_Joystick *joystick);
+extern SDL_DECLSPEC int SDLCALL SDL_GetJoystickPlayerIndex(SDL_Joystick *joystick);
 
 /**
  * Set the player index of an opened joystick.
@@ -720,7 +720,7 @@ extern DECLSPEC int SDLCALL SDL_GetJoystickPlayerIndex(SDL_Joystick *joystick);
  *
  * \sa SDL_GetJoystickPlayerIndex
  */
-extern DECLSPEC int SDLCALL SDL_SetJoystickPlayerIndex(SDL_Joystick *joystick, int player_index);
+extern SDL_DECLSPEC int SDLCALL SDL_SetJoystickPlayerIndex(SDL_Joystick *joystick, int player_index);
 
 /**
  * Get the implementation-dependent GUID for the joystick.
@@ -737,7 +737,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickPlayerIndex(SDL_Joystick *joystick, i
  * \sa SDL_GetJoystickInstanceGUID
  * \sa SDL_GetJoystickGUIDString
  */
-extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUID(SDL_Joystick *joystick);
+extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUID(SDL_Joystick *joystick);
 
 /**
  * Get the USB vendor ID of an opened joystick, if available.
@@ -751,7 +751,7 @@ extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUID(SDL_Joystick *joyst
  *
  * \sa SDL_GetJoystickInstanceVendor
  */
-extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickVendor(SDL_Joystick *joystick);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickVendor(SDL_Joystick *joystick);
 
 /**
  * Get the USB product ID of an opened joystick, if available.
@@ -765,7 +765,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickVendor(SDL_Joystick *joystick);
  *
  * \sa SDL_GetJoystickInstanceProduct
  */
-extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickProduct(SDL_Joystick *joystick);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickProduct(SDL_Joystick *joystick);
 
 /**
  * Get the product version of an opened joystick, if available.
@@ -779,7 +779,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickProduct(SDL_Joystick *joystick);
  *
  * \sa SDL_GetJoystickInstanceProductVersion
  */
-extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickProductVersion(SDL_Joystick *joystick);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickProductVersion(SDL_Joystick *joystick);
 
 /**
  * Get the firmware version of an opened joystick, if available.
@@ -792,7 +792,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickProductVersion(SDL_Joystick *joyst
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickFirmwareVersion(SDL_Joystick *joystick);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickFirmwareVersion(SDL_Joystick *joystick);
 
 /**
  * Get the serial number of an opened joystick, if available.
@@ -805,7 +805,7 @@ extern DECLSPEC Uint16 SDLCALL SDL_GetJoystickFirmwareVersion(SDL_Joystick *joys
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char * SDLCALL SDL_GetJoystickSerial(SDL_Joystick *joystick);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickSerial(SDL_Joystick *joystick);
 
 /**
  * Get the type of an opened joystick.
@@ -817,7 +817,7 @@ extern DECLSPEC const char * SDLCALL SDL_GetJoystickSerial(SDL_Joystick *joystic
  *
  * \sa SDL_GetJoystickInstanceType
  */
-extern DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickType(SDL_Joystick *joystick);
+extern SDL_DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickType(SDL_Joystick *joystick);
 
 /**
  * Get an ASCII string representation for a given SDL_JoystickGUID.
@@ -836,7 +836,7 @@ extern DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickType(SDL_Joystick *joyst
  * \sa SDL_GetJoystickGUID
  * \sa SDL_GetJoystickGUIDFromString
  */
-extern DECLSPEC int SDLCALL SDL_GetJoystickGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID);
+extern SDL_DECLSPEC int SDLCALL SDL_GetJoystickGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID);
 
 /**
  * Convert a GUID string into a SDL_JoystickGUID structure.
@@ -852,7 +852,7 @@ extern DECLSPEC int SDLCALL SDL_GetJoystickGUIDString(SDL_JoystickGUID guid, cha
  *
  * \sa SDL_GetJoystickGUIDString
  */
-extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUIDFromString(const char *pchGUID);
+extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUIDFromString(const char *pchGUID);
 
 /**
  * Get the device information encoded in a SDL_JoystickGUID structure.
@@ -871,7 +871,7 @@ extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUIDFromString(const cha
  *
  * \sa SDL_GetJoystickInstanceGUID
  */
-extern DECLSPEC void SDLCALL SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16);
+extern SDL_DECLSPEC void SDLCALL SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16);
 
 /**
  * Get the status of a specified joystick.
@@ -882,7 +882,7 @@ extern DECLSPEC void SDLCALL SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickConnected(SDL_Joystick *joystick);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_JoystickConnected(SDL_Joystick *joystick);
 
 /**
  * Get the instance ID of an opened joystick.
@@ -893,7 +893,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickConnected(SDL_Joystick *joystick);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_JoystickID SDLCALL SDL_GetJoystickInstanceID(SDL_Joystick *joystick);
+extern SDL_DECLSPEC SDL_JoystickID SDLCALL SDL_GetJoystickInstanceID(SDL_Joystick *joystick);
 
 /**
  * Get the number of general axis controls on a joystick.
@@ -914,7 +914,7 @@ extern DECLSPEC SDL_JoystickID SDLCALL SDL_GetJoystickInstanceID(SDL_Joystick *j
  * \sa SDL_GetNumJoystickButtons
  * \sa SDL_GetNumJoystickHats
  */
-extern DECLSPEC int SDLCALL SDL_GetNumJoystickAxes(SDL_Joystick *joystick);
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumJoystickAxes(SDL_Joystick *joystick);
 
 /**
  * Get the number of trackballs on a joystick.
@@ -935,7 +935,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumJoystickAxes(SDL_Joystick *joystick);
  * \sa SDL_GetNumJoystickButtons
  * \sa SDL_GetNumJoystickHats
  */
-extern DECLSPEC int SDLCALL SDL_GetNumJoystickBalls(SDL_Joystick *joystick);
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumJoystickBalls(SDL_Joystick *joystick);
 
 /**
  * Get the number of POV hats on a joystick.
@@ -951,7 +951,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumJoystickBalls(SDL_Joystick *joystick);
  * \sa SDL_GetNumJoystickBalls
  * \sa SDL_GetNumJoystickButtons
  */
-extern DECLSPEC int SDLCALL SDL_GetNumJoystickHats(SDL_Joystick *joystick);
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumJoystickHats(SDL_Joystick *joystick);
 
 /**
  * Get the number of buttons on a joystick.
@@ -967,7 +967,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumJoystickHats(SDL_Joystick *joystick);
  * \sa SDL_GetNumJoystickBalls
  * \sa SDL_GetNumJoystickHats
  */
-extern DECLSPEC int SDLCALL SDL_GetNumJoystickButtons(SDL_Joystick *joystick);
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumJoystickButtons(SDL_Joystick *joystick);
 
 /**
  * Set the state of joystick event processing.
@@ -983,7 +983,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumJoystickButtons(SDL_Joystick *joystick);
  * \sa SDL_JoystickEventsEnabled
  * \sa SDL_UpdateJoysticks
  */
-extern DECLSPEC void SDLCALL SDL_SetJoystickEventsEnabled(SDL_bool enabled);
+extern SDL_DECLSPEC void SDLCALL SDL_SetJoystickEventsEnabled(SDL_bool enabled);
 
 /**
  * Query the state of joystick event processing.
@@ -999,7 +999,7 @@ extern DECLSPEC void SDLCALL SDL_SetJoystickEventsEnabled(SDL_bool enabled);
  *
  * \sa SDL_SetJoystickEventsEnabled
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_JoystickEventsEnabled(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_JoystickEventsEnabled(void);
 
 /**
  * Update the current state of the open joysticks.
@@ -1009,7 +1009,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_JoystickEventsEnabled(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_UpdateJoysticks(void);
+extern SDL_DECLSPEC void SDLCALL SDL_UpdateJoysticks(void);
 
 /**
  * Get the current state of an axis control on a joystick.
@@ -1033,7 +1033,7 @@ extern DECLSPEC void SDLCALL SDL_UpdateJoysticks(void);
  *
  * \sa SDL_GetNumJoystickAxes
  */
-extern DECLSPEC Sint16 SDLCALL SDL_GetJoystickAxis(SDL_Joystick *joystick, int axis);
+extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetJoystickAxis(SDL_Joystick *joystick, int axis);
 
 /**
  * Get the initial state of an axis control on a joystick.
@@ -1049,7 +1049,7 @@ extern DECLSPEC Sint16 SDLCALL SDL_GetJoystickAxis(SDL_Joystick *joystick, int a
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetJoystickAxisInitialState(SDL_Joystick *joystick, int axis, Sint16 *state);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetJoystickAxisInitialState(SDL_Joystick *joystick, int axis, Sint16 *state);
 
 /**
  * Get the ball axis change since the last poll.
@@ -1070,7 +1070,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetJoystickAxisInitialState(SDL_Joystick *j
  *
  * \sa SDL_GetNumJoystickBalls
  */
-extern DECLSPEC int SDLCALL SDL_GetJoystickBall(SDL_Joystick *joystick, int ball, int *dx, int *dy);
+extern SDL_DECLSPEC int SDLCALL SDL_GetJoystickBall(SDL_Joystick *joystick, int ball, int *dx, int *dy);
 
 /**
  * Get the current state of a POV hat on a joystick.
@@ -1085,7 +1085,7 @@ extern DECLSPEC int SDLCALL SDL_GetJoystickBall(SDL_Joystick *joystick, int ball
  *
  * \sa SDL_GetNumJoystickHats
  */
-extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickHat(SDL_Joystick *joystick, int hat);
+extern SDL_DECLSPEC Uint8 SDLCALL SDL_GetJoystickHat(SDL_Joystick *joystick, int hat);
 
 #define SDL_HAT_CENTERED    0x00u
 #define SDL_HAT_UP          0x01u
@@ -1109,7 +1109,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickHat(SDL_Joystick *joystick, int hat
  *
  * \sa SDL_GetNumJoystickButtons
  */
-extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick, int button);
+extern SDL_DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick, int button);
 
 /**
  * Start a rumble effect.
@@ -1130,7 +1130,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick, int 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+extern SDL_DECLSPEC int SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
  * Start a rumble effect in the joystick's triggers.
@@ -1159,7 +1159,7 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 lo
  *
  * \sa SDL_RumbleJoystick
  */
-extern DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
+extern SDL_DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble, Uint32 duration_ms);
 
 /**
  * Update a joystick's LED color.
@@ -1179,7 +1179,7 @@ extern DECLSPEC int SDLCALL SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, U
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
+extern SDL_DECLSPEC int SDLCALL SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 
 /**
  * Send a joystick specific effect packet.
@@ -1192,7 +1192,7 @@ extern DECLSPEC int SDLCALL SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size);
+extern SDL_DECLSPEC int SDLCALL SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size);
 
 /**
  * Close a joystick previously opened with SDL_OpenJoystick().
@@ -1203,7 +1203,7 @@ extern DECLSPEC int SDLCALL SDL_SendJoystickEffect(SDL_Joystick *joystick, const
  *
  * \sa SDL_OpenJoystick
  */
-extern DECLSPEC void SDLCALL SDL_CloseJoystick(SDL_Joystick *joystick);
+extern SDL_DECLSPEC void SDLCALL SDL_CloseJoystick(SDL_Joystick *joystick);
 
 /**
  * Get the connection state of a joystick.
@@ -1215,7 +1215,7 @@ extern DECLSPEC void SDLCALL SDL_CloseJoystick(SDL_Joystick *joystick);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_JoystickConnectionState SDLCALL SDL_GetJoystickConnectionState(SDL_Joystick *joystick);
+extern SDL_DECLSPEC SDL_JoystickConnectionState SDLCALL SDL_GetJoystickConnectionState(SDL_Joystick *joystick);
 
 /**
  * Get the battery state of a joystick.
@@ -1236,7 +1236,7 @@ extern DECLSPEC SDL_JoystickConnectionState SDLCALL SDL_GetJoystickConnectionSta
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_PowerState SDLCALL SDL_GetJoystickPowerInfo(SDL_Joystick *joystick, int *percent);
+extern SDL_DECLSPEC SDL_PowerState SDLCALL SDL_GetJoystickPowerInfo(SDL_Joystick *joystick, int *percent);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
