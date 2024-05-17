@@ -1574,15 +1574,16 @@ extern DECLSPEC int SDLCALL SDL_LoadWAV(const char *path, SDL_AudioSpec * spec,
  *
  * It is a common misconception that this function is required to write audio
  * data to an output stream in an audio callback. While you can do that,
- * SDL_MixAudio() is really only needed when you're mixing a single
- * audio stream with a volume adjustment.
+ * SDL_MixAudio() is really only needed when you're mixing a single audio
+ * stream with a volume adjustment.
  *
  * \param dst the destination for the mixed audio
  * \param src the source audio buffer to be mixed
  * \param format the SDL_AudioFormat structure representing the desired audio
  *               format
  * \param len the length of the audio buffer in bytes
- * \param volume ranges from 0.0 - 1.0, and should be set to 1.0 for full audio volume
+ * \param volume ranges from 0.0 - 1.0, and should be set to 1.0 for full
+ *               audio volume
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
