@@ -833,7 +833,7 @@ extern SDL_DECLSPEC_RETURN SDL_PixelFormatEnum SDLCALL SDL_GetPixelFormatEnumFor
  * \sa SDL_DestroyPixelFormat
  * \sa SDL_SetPixelFormatPalette
  */
-extern SDL_DECLSPEC_RETURN SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
+extern SDL_DECLSPEC_NODISCARD SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
 
 /**
  * Free an SDL_PixelFormat structure allocated by SDL_CreatePixelFormat().
@@ -862,7 +862,7 @@ extern SDL_DECLSPEC_VOID void SDLCALL SDL_DestroyPixelFormat(SDL_PixelFormat *fo
  * \sa SDL_SetPaletteColors
  * \sa SDL_SetPixelFormatPalette
  */
-extern SDL_DECLSPEC_RETURN SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
+extern SDL_DECLSPEC_NODISCARD SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
 
 /**
  * Set the palette for a pixel format structure.

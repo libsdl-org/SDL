@@ -157,7 +157,7 @@ typedef enum SDL_PenSubtype
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN SDL_PenID *SDLCALL SDL_GetPens(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_PenID *SDLCALL SDL_GetPens(int *count);
 
 /**
  * Retrieves the pen's current status.

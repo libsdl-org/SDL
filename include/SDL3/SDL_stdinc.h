@@ -482,9 +482,9 @@ extern "C" {
 #define SDL_stack_free(data)            SDL_free(data)
 #endif
 
-extern SDL_DECLSPEC_RETURN SDL_MALLOC void *SDLCALL SDL_malloc(size_t size);
-extern SDL_DECLSPEC_RETURN SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) void *SDLCALL SDL_calloc(size_t nmemb, size_t size);
-extern SDL_DECLSPEC_RETURN SDL_ALLOC_SIZE(2) void *SDLCALL SDL_realloc(void *mem, size_t size);
+extern SDL_DECLSPEC_NODISCARD SDL_MALLOC void *SDLCALL SDL_malloc(size_t size);
+extern SDL_DECLSPEC_NODISCARD SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) void *SDLCALL SDL_calloc(size_t nmemb, size_t size);
+extern SDL_DECLSPEC_NODISCARD SDL_ALLOC_SIZE(2) void *SDLCALL SDL_realloc(void *mem, size_t size);
 extern SDL_DECLSPEC_VOID void SDLCALL SDL_free(void *mem);
 
 typedef void *(SDLCALL *SDL_malloc_func)(size_t size);
@@ -558,7 +558,7 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func ma
  *
  * \sa SDL_aligned_free
  */
-extern SDL_DECLSPEC_RETURN SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
+extern SDL_DECLSPEC_NODISCARD SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
 
 /**
  * Free memory allocated by SDL_aligned_alloc().
@@ -2402,7 +2402,7 @@ extern SDL_DECLSPEC_RETURN size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char *
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN char *SDLCALL SDL_iconv_string(const char *tocode,
+extern SDL_DECLSPEC_NODISCARD char *SDLCALL SDL_iconv_string(const char *tocode,
                                                const char *fromcode,
                                                const char *inbuf,
                                                size_t inbytesleft);

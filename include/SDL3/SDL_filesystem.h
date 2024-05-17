@@ -240,7 +240,7 @@ typedef enum SDL_Folder
  *
  * \sa SDL_Folder
  */
-extern SDL_DECLSPEC_RETURN char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
+extern SDL_DECLSPEC_NODISCARD char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
 
 /* Abstract filesystem interface */
@@ -371,13 +371,13 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_GetPathInfo(const char *path, SDL_Pat
  *              array. Can be NULL.
  * \returns an array of strings on success or NULL on failure; call
  *          SDL_GetError() for more information. The caller should pass the
- *          returned pointer to SDL_free when done with it.
+ *          returned pointer to SDL_free() when done with it.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
+extern SDL_DECLSPEC_NODISCARD char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

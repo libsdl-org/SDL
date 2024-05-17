@@ -91,7 +91,7 @@ typedef struct SDL_Finger
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN SDL_TouchID *SDLCALL SDL_GetTouchDevices(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_TouchID *SDLCALL SDL_GetTouchDevices(int *count);
 
 /**
  * Get the touch device name as reported from the driver.
@@ -128,7 +128,7 @@ extern SDL_DECLSPEC_RETURN SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SD
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN SDL_Finger **SDLCALL SDL_GetTouchFingers(SDL_TouchID touchID, int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_Finger **SDLCALL SDL_GetTouchFingers(SDL_TouchID touchID, int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

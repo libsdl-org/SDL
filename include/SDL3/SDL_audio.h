@@ -432,7 +432,7 @@ extern SDL_DECLSPEC_RETURN const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  * \sa SDL_OpenAudioDevice
  * \sa SDL_GetAudioCaptureDevices
  */
-extern SDL_DECLSPEC_RETURN SDL_AudioDeviceID *SDLCALL SDL_GetAudioOutputDevices(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_AudioDeviceID *SDLCALL SDL_GetAudioOutputDevices(int *count);
 
 /**
  * Get a list of currently-connected audio capture devices.
@@ -457,7 +457,7 @@ extern SDL_DECLSPEC_RETURN SDL_AudioDeviceID *SDLCALL SDL_GetAudioOutputDevices(
  * \sa SDL_OpenAudioDevice
  * \sa SDL_GetAudioOutputDevices
  */
-extern SDL_DECLSPEC_RETURN SDL_AudioDeviceID *SDLCALL SDL_GetAudioCaptureDevices(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_AudioDeviceID *SDLCALL SDL_GetAudioCaptureDevices(int *count);
 
 /**
  * Get the human-readable name of a specific audio device.
@@ -476,7 +476,7 @@ extern SDL_DECLSPEC_RETURN SDL_AudioDeviceID *SDLCALL SDL_GetAudioCaptureDevices
  * \sa SDL_GetAudioCaptureDevices
  * \sa SDL_GetDefaultAudioInfo
  */
-extern SDL_DECLSPEC_RETURN char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
+extern SDL_DECLSPEC_NODISCARD char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
 
 /**
  * Get the current audio format of a specific audio device.
@@ -587,7 +587,7 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceI
  * \sa SDL_CloseAudioDevice
  * \sa SDL_GetAudioDeviceFormat
  */
-extern SDL_DECLSPEC_RETURN SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec);
+extern SDL_DECLSPEC_NODISCARD SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec);
 
 /**
  * Use this function to pause audio playback on a specified device.
@@ -824,7 +824,7 @@ extern SDL_DECLSPEC_RETURN SDL_AudioDeviceID SDLCALL SDL_GetAudioStreamDevice(SD
  * \sa SDL_ChangeAudioStreamOutput
  * \sa SDL_DestroyAudioStream
  */
-extern SDL_DECLSPEC_RETURN SDL_AudioStream *SDLCALL SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec);
+extern SDL_DECLSPEC_NODISCARD SDL_AudioStream *SDLCALL SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec);
 
 /**
  * Get the properties associated with an audio stream.
@@ -1348,7 +1348,7 @@ extern SDL_DECLSPEC_VOID void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *st
  * \sa SDL_GetAudioStreamDevice
  * \sa SDL_ResumeAudioDevice
  */
-extern SDL_DECLSPEC_RETURN SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamCallback callback, void *userdata);
+extern SDL_DECLSPEC_NODISCARD SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec, SDL_AudioStreamCallback callback, void *userdata);
 
 /**
  * A callback that fires when data is about to be fed to an audio device.

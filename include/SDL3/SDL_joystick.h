@@ -224,7 +224,7 @@ extern SDL_DECLSPEC_RETURN SDL_bool SDLCALL SDL_HasJoystick(void);
  * \sa SDL_HasJoystick
  * \sa SDL_OpenJoystick
  */
-extern SDL_DECLSPEC_RETURN SDL_JoystickID *SDLCALL SDL_GetJoysticks(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_JoystickID *SDLCALL SDL_GetJoysticks(int *count);
 
 /**
  * Get the implementation dependent name of a joystick.
@@ -371,7 +371,7 @@ extern SDL_DECLSPEC_RETURN SDL_JoystickType SDLCALL SDL_GetJoystickInstanceType(
  *
  * \sa SDL_CloseJoystick
  */
-extern SDL_DECLSPEC_RETURN SDL_Joystick *SDLCALL SDL_OpenJoystick(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC_NODISCARD SDL_Joystick *SDLCALL SDL_OpenJoystick(SDL_JoystickID instance_id);
 
 /**
  * Get the SDL_Joystick associated with an instance ID, if it has been opened.

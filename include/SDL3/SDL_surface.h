@@ -156,7 +156,7 @@ typedef struct SDL_Surface
  * \sa SDL_CreateSurfaceFrom
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC_RETURN SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format);
+extern SDL_DECLSPEC_NODISCARD SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format);
 
 /**
  * Allocate a new RGB surface with a specific pixel format and existing pixel
@@ -184,7 +184,7 @@ extern SDL_DECLSPEC_RETURN SDL_Surface *SDLCALL SDL_CreateSurface(int width, int
  * \sa SDL_CreateSurface
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC_RETURN SDL_Surface *SDLCALL SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, SDL_PixelFormatEnum format);
+extern SDL_DECLSPEC_NODISCARD SDL_Surface *SDLCALL SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, SDL_PixelFormatEnum format);
 
 /**
  * Free an RGB surface.
@@ -339,7 +339,7 @@ extern SDL_DECLSPEC_VOID void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * \sa SDL_LoadBMP
  * \sa SDL_SaveBMP_IO
  */
-extern SDL_DECLSPEC_RETURN SDL_Surface *SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio);
+extern SDL_DECLSPEC_NODISCARD SDL_Surface *SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio);
 
 /**
  * Load a BMP image from a file.
@@ -357,7 +357,7 @@ extern SDL_DECLSPEC_RETURN SDL_Surface *SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src
  * \sa SDL_LoadBMP_IO
  * \sa SDL_SaveBMP
  */
-extern SDL_DECLSPEC_RETURN SDL_Surface *SDLCALL SDL_LoadBMP(const char *file);
+extern SDL_DECLSPEC_NODISCARD SDL_Surface *SDLCALL SDL_LoadBMP(const char *file);
 
 /**
  * Save a surface to a seekable SDL data stream in BMP format.
@@ -670,7 +670,7 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL
  *
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC_RETURN SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface *surface);
+extern SDL_DECLSPEC_NODISCARD SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface *surface);
 
 /**
  * Copy an existing surface to a new surface of the specified format.
@@ -693,7 +693,7 @@ extern SDL_DECLSPEC_RETURN SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface
  * \sa SDL_CreatePixelFormat
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC_RETURN SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format);
+extern SDL_DECLSPEC_NODISCARD SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format);
 
 /**
  * Copy an existing surface to a new surface of the specified format.

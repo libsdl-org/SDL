@@ -941,7 +941,7 @@ typedef Uint32 SDL_HapticID;
  *
  * \sa SDL_OpenHaptic
  */
-extern SDL_DECLSPEC_RETURN SDL_HapticID *SDLCALL SDL_GetHaptics(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_HapticID *SDLCALL SDL_GetHaptics(int *count);
 
 /**
  * Get the implementation dependent name of a haptic device.
@@ -983,7 +983,7 @@ extern SDL_DECLSPEC_RETURN const char *SDLCALL SDL_GetHapticInstanceName(SDL_Hap
  * \sa SDL_SetHapticAutocenter
  * \sa SDL_SetHapticGain
  */
-extern SDL_DECLSPEC_RETURN SDL_Haptic *SDLCALL SDL_OpenHaptic(SDL_HapticID instance_id);
+extern SDL_DECLSPEC_NODISCARD SDL_Haptic *SDLCALL SDL_OpenHaptic(SDL_HapticID instance_id);
 
 
 /**
@@ -1044,7 +1044,7 @@ extern SDL_DECLSPEC_RETURN SDL_bool SDLCALL SDL_IsMouseHaptic(void);
  * \sa SDL_CloseHaptic
  * \sa SDL_IsMouseHaptic
  */
-extern SDL_DECLSPEC_RETURN SDL_Haptic *SDLCALL SDL_OpenHapticFromMouse(void);
+extern SDL_DECLSPEC_NODISCARD SDL_Haptic *SDLCALL SDL_OpenHapticFromMouse(void);
 
 /**
  * Query if a joystick has haptic features.
@@ -1078,7 +1078,7 @@ extern SDL_DECLSPEC_RETURN SDL_bool SDLCALL SDL_IsJoystickHaptic(SDL_Joystick *j
  * \sa SDL_CloseHaptic
  * \sa SDL_IsJoystickHaptic
  */
-extern SDL_DECLSPEC_RETURN SDL_Haptic *SDLCALL SDL_OpenHapticFromJoystick(SDL_Joystick *joystick);
+extern SDL_DECLSPEC_NODISCARD SDL_Haptic *SDLCALL SDL_OpenHapticFromJoystick(SDL_Joystick *joystick);
 
 /**
  * Close a haptic device previously opened with SDL_OpenHaptic().
@@ -1183,7 +1183,7 @@ extern SDL_DECLSPEC_RETURN SDL_bool SDLCALL SDL_HapticEffectSupported(SDL_Haptic
  * \sa SDL_RunHapticEffect
  * \sa SDL_UpdateHapticEffect
  */
-extern SDL_DECLSPEC_RETURN int SDLCALL SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect);
+extern SDL_DECLSPEC_NODISCARD int SDLCALL SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect);
 
 /**
  * Update the properties of an effect.

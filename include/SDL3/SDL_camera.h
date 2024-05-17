@@ -180,7 +180,7 @@ extern SDL_DECLSPEC_RETURN const char *SDLCALL SDL_GetCurrentCameraDriver(void);
  *
  * \sa SDL_OpenCamera
  */
-extern SDL_DECLSPEC_RETURN SDL_CameraDeviceID *SDLCALL SDL_GetCameraDevices(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_CameraDeviceID *SDLCALL SDL_GetCameraDevices(int *count);
 
 /**
  * Get the list of native formats/sizes a camera supports.
@@ -223,7 +223,7 @@ extern SDL_DECLSPEC_RETURN SDL_CameraDeviceID *SDLCALL SDL_GetCameraDevices(int 
  * \sa SDL_GetCameraDevices
  * \sa SDL_OpenCameraDevice
  */
-extern SDL_DECLSPEC_RETURN SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedFormats(SDL_CameraDeviceID devid, int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedFormats(SDL_CameraDeviceID devid, int *count);
 
 /**
  * Get human-readable device name for a camera.
@@ -241,7 +241,7 @@ extern SDL_DECLSPEC_RETURN SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedF
  *
  * \sa SDL_GetCameraDevices
  */
-extern SDL_DECLSPEC_RETURN char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id);
+extern SDL_DECLSPEC_NODISCARD char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id);
 
 /**
  * Get the position of the camera in relation to the system.
@@ -306,7 +306,7 @@ extern SDL_DECLSPEC_RETURN SDL_CameraPosition SDLCALL SDL_GetCameraDevicePositio
  * \sa SDL_GetCameraDevices
  * \sa SDL_GetCameraFormat
  */
-extern SDL_DECLSPEC_RETURN SDL_Camera *SDLCALL SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_CameraSpec *spec);
+extern SDL_DECLSPEC_NODISCARD SDL_Camera *SDLCALL SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_CameraSpec *spec);
 
 /**
  * Query if camera access has been approved by the user.

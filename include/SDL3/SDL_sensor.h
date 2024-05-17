@@ -153,7 +153,7 @@ typedef enum SDL_SensorType
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN SDL_SensorID *SDLCALL SDL_GetSensors(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_SensorID *SDLCALL SDL_GetSensors(int *count);
 
 /**
  * Get the implementation dependent name of a sensor.
@@ -195,7 +195,7 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_GetSensorInstanceNonPortableType(SDL_
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN SDL_Sensor *SDLCALL SDL_OpenSensor(SDL_SensorID instance_id);
+extern SDL_DECLSPEC_NODISCARD SDL_Sensor *SDLCALL SDL_OpenSensor(SDL_SensorID instance_id);
 
 /**
  * Return the SDL_Sensor associated with an instance ID.

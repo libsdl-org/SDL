@@ -100,7 +100,7 @@ typedef struct SDL_Locale
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN SDL_Locale * SDLCALL SDL_GetPreferredLocales(void);
+extern SDL_DECLSPEC_NODISCARD SDL_Locale * SDLCALL SDL_GetPreferredLocales(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

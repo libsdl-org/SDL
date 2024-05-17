@@ -114,7 +114,7 @@ extern SDL_DECLSPEC_RETURN SDL_bool SDLCALL SDL_HasMouse(void);
  * \sa SDL_GetMouseInstanceName
  * \sa SDL_HasMouse
  */
-extern SDL_DECLSPEC_RETURN SDL_MouseID *SDLCALL SDL_GetMice(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_MouseID *SDLCALL SDL_GetMice(int *count);
 
 /**
  * Get the name of a mouse.
@@ -373,7 +373,7 @@ extern SDL_DECLSPEC_RETURN SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC_RETURN SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
+extern SDL_DECLSPEC_NODISCARD SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
                                                      const Uint8 * mask,
                                                      int w, int h, int hot_x,
                                                      int hot_y);
@@ -394,7 +394,7 @@ extern SDL_DECLSPEC_RETURN SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * da
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC_RETURN SDL_Cursor *SDLCALL SDL_CreateColorCursor(SDL_Surface *surface,
+extern SDL_DECLSPEC_NODISCARD SDL_Cursor *SDLCALL SDL_CreateColorCursor(SDL_Surface *surface,
                                                           int hot_x,
                                                           int hot_y);
 
@@ -409,7 +409,7 @@ extern SDL_DECLSPEC_RETURN SDL_Cursor *SDLCALL SDL_CreateColorCursor(SDL_Surface
  *
  * \sa SDL_DestroyCursor
  */
-extern SDL_DECLSPEC_RETURN SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
+extern SDL_DECLSPEC_NODISCARD SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
 
 /**
  * Set the active cursor.

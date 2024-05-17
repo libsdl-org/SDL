@@ -87,7 +87,7 @@ extern SDL_DECLSPEC_RETURN SDL_PropertiesID SDLCALL SDL_GetGlobalProperties(void
  *
  * \sa SDL_DestroyProperties
  */
-extern SDL_DECLSPEC_RETURN SDL_PropertiesID SDLCALL SDL_CreateProperties(void);
+extern SDL_DECLSPEC_NODISCARD SDL_PropertiesID SDLCALL SDL_CreateProperties(void);
 
 /**
  * Copy a set of properties.

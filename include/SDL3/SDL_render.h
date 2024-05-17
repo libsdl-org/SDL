@@ -228,7 +228,7 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_CreateWindowAndRenderer(const char *t
  * \sa SDL_GetRenderDriver
  * \sa SDL_GetRendererInfo
  */
-extern SDL_DECLSPEC_RETURN SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, const char *name);
+extern SDL_DECLSPEC_NODISCARD SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, const char *name);
 
 /**
  * Create a 2D rendering context for a window, with the specified properties.
@@ -279,7 +279,7 @@ extern SDL_DECLSPEC_RETURN SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window 
  * \sa SDL_DestroyRenderer
  * \sa SDL_GetRendererInfo
  */
-extern SDL_DECLSPEC_RETURN SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_PropertiesID props);
+extern SDL_DECLSPEC_NODISCARD SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_PropertiesID props);
 
 #define SDL_PROP_RENDERER_CREATE_NAME_STRING                                "name"
 #define SDL_PROP_RENDERER_CREATE_WINDOW_POINTER                             "window"
@@ -310,7 +310,7 @@ extern SDL_DECLSPEC_RETURN SDL_Renderer * SDLCALL SDL_CreateRendererWithProperti
  *
  * \sa SDL_DestroyRenderer
  */
-extern SDL_DECLSPEC_RETURN SDL_Renderer *SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface *surface);
+extern SDL_DECLSPEC_NODISCARD SDL_Renderer *SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface *surface);
 
 /**
  * Get the renderer associated with a window.
@@ -510,7 +510,7 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Render
  * \sa SDL_QueryTexture
  * \sa SDL_UpdateTexture
  */
-extern SDL_DECLSPEC_RETURN SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormatEnum format, int access, int w, int h);
+extern SDL_DECLSPEC_NODISCARD SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormatEnum format, int access, int w, int h);
 
 /**
  * Create a texture from an existing surface.
@@ -537,7 +537,7 @@ extern SDL_DECLSPEC_RETURN SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *
  * \sa SDL_DestroyTexture
  * \sa SDL_QueryTexture
  */
-extern SDL_DECLSPEC_RETURN SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface);
+extern SDL_DECLSPEC_NODISCARD SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
 /**
  * Create a texture for a rendering context with the specified properties.
@@ -648,7 +648,7 @@ extern SDL_DECLSPEC_RETURN SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL
  * \sa SDL_QueryTexture
  * \sa SDL_UpdateTexture
  */
-extern SDL_DECLSPEC_RETURN SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props);
+extern SDL_DECLSPEC_NODISCARD SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props);
 
 #define SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER           "colorspace"
 #define SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER               "format"
@@ -1966,7 +1966,7 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_RenderGeometryRawFloat(SDL_Renderer *
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN SDL_Surface * SDLCALL SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect);
+extern SDL_DECLSPEC_NODISCARD SDL_Surface * SDLCALL SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect);
 
 /**
  * Update the screen with any rendering performed since the previous call.

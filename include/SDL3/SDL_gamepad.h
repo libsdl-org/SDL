@@ -393,7 +393,7 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_ReloadGamepadMappings(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN char ** SDLCALL SDL_GetGamepadMappings(int *count);
+extern SDL_DECLSPEC_NODISCARD char ** SDLCALL SDL_GetGamepadMappings(int *count);
 
 /**
  * Get the gamepad mapping string for a given GUID.
@@ -409,7 +409,7 @@ extern SDL_DECLSPEC_RETURN char ** SDLCALL SDL_GetGamepadMappings(int *count);
  * \sa SDL_GetJoystickInstanceGUID
  * \sa SDL_GetJoystickGUID
  */
-extern SDL_DECLSPEC_RETURN char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID guid);
+extern SDL_DECLSPEC_NODISCARD char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID guid);
 
 /**
  * Get the current mapping of a gamepad.
@@ -429,7 +429,7 @@ extern SDL_DECLSPEC_RETURN char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_Joyst
  * \sa SDL_GetGamepadMappingForGUID
  * \sa SDL_SetGamepadMapping
  */
-extern SDL_DECLSPEC_RETURN char * SDLCALL SDL_GetGamepadMapping(SDL_Gamepad *gamepad);
+extern SDL_DECLSPEC_NODISCARD char * SDLCALL SDL_GetGamepadMapping(SDL_Gamepad *gamepad);
 
 /**
  * Set the current mapping of a joystick or gamepad.
@@ -473,7 +473,7 @@ extern SDL_DECLSPEC_RETURN SDL_bool SDLCALL SDL_HasGamepad(void);
  * \sa SDL_HasGamepad
  * \sa SDL_OpenGamepad
  */
-extern SDL_DECLSPEC_RETURN SDL_JoystickID *SDLCALL SDL_GetGamepads(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_JoystickID *SDLCALL SDL_GetGamepads(int *count);
 
 /**
  * Check if the given joystick is supported by the gamepad interface.
@@ -650,7 +650,7 @@ extern SDL_DECLSPEC_RETURN SDL_GamepadType SDLCALL SDL_GetRealGamepadInstanceTyp
  * \sa SDL_GetGamepads
  * \sa SDL_GetGamepadMapping
  */
-extern SDL_DECLSPEC_RETURN char *SDLCALL SDL_GetGamepadInstanceMapping(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC_NODISCARD char *SDLCALL SDL_GetGamepadInstanceMapping(SDL_JoystickID instance_id);
 
 /**
  * Open a gamepad for use.
@@ -664,7 +664,7 @@ extern SDL_DECLSPEC_RETURN char *SDLCALL SDL_GetGamepadInstanceMapping(SDL_Joyst
  * \sa SDL_CloseGamepad
  * \sa SDL_IsGamepad
  */
-extern SDL_DECLSPEC_RETURN SDL_Gamepad *SDLCALL SDL_OpenGamepad(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC_NODISCARD SDL_Gamepad *SDLCALL SDL_OpenGamepad(SDL_JoystickID instance_id);
 
 /**
  * Get the SDL_Gamepad associated with a joystick instance ID, if it has been
@@ -1005,7 +1005,7 @@ extern SDL_DECLSPEC_RETURN SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN SDL_GamepadBinding **SDLCALL SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_GamepadBinding **SDLCALL SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count);
 
 /**
  * Manually pump gamepad updates if not using the loop.

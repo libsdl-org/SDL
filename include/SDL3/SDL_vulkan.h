@@ -179,7 +179,7 @@ extern SDL_DECLSPEC_RETURN char const* const* SDLCALL SDL_Vulkan_GetInstanceExte
  * \sa SDL_Vulkan_GetInstanceExtensions
  * \sa SDL_Vulkan_DestroySurface
  */
-extern SDL_DECLSPEC_RETURN SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
+extern SDL_DECLSPEC_NODISCARD SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
                                                           VkInstance instance,
                                                           const struct VkAllocationCallbacks *allocator,
                                                           VkSurfaceKHR* surface);

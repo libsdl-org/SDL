@@ -379,7 +379,7 @@ extern SDL_DECLSPEC_RETURN SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN SDL_DisplayID *SDLCALL SDL_GetDisplays(int *count);
+extern SDL_DECLSPEC_NODISCARD SDL_DisplayID *SDLCALL SDL_GetDisplays(int *count);
 
 /**
  * Return the primary display.
@@ -555,7 +555,7 @@ extern SDL_DECLSPEC_RETURN float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayI
  *
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC_RETURN const SDL_DisplayMode **SDLCALL SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *count);
+extern SDL_DECLSPEC_NODISCARD const SDL_DisplayMode **SDLCALL SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *count);
 
 /**
  * Get the closest match to the requested display mode.
@@ -765,7 +765,7 @@ extern SDL_DECLSPEC_RETURN const SDL_DisplayMode *SDLCALL SDL_GetWindowFullscree
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_RETURN void *SDLCALL SDL_GetWindowICCProfile(SDL_Window *window, size_t *size);
+extern SDL_DECLSPEC_NODISCARD void *SDLCALL SDL_GetWindowICCProfile(SDL_Window *window, size_t *size);
 
 /**
  * Get the pixel format associated with the window.
@@ -836,7 +836,7 @@ extern SDL_DECLSPEC_RETURN Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *w
  * \sa SDL_CreateWindowWithProperties
  * \sa SDL_DestroyWindow
  */
-extern SDL_DECLSPEC_RETURN SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags flags);
+extern SDL_DECLSPEC_NODISCARD SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags flags);
 
 /**
  * Create a child popup window of the specified parent window.
@@ -891,7 +891,7 @@ extern SDL_DECLSPEC_RETURN SDL_Window *SDLCALL SDL_CreateWindow(const char *titl
  * \sa SDL_DestroyWindow
  * \sa SDL_GetWindowParent
  */
-extern SDL_DECLSPEC_RETURN SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, SDL_WindowFlags flags);
+extern SDL_DECLSPEC_NODISCARD SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, SDL_WindowFlags flags);
 
 /**
  * Create a window with the specified properties.
@@ -997,7 +997,7 @@ extern SDL_DECLSPEC_RETURN SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window 
  * \sa SDL_CreateWindow
  * \sa SDL_DestroyWindow
  */
-extern SDL_DECLSPEC_RETURN SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_PropertiesID props);
+extern SDL_DECLSPEC_NODISCARD SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_PropertiesID props);
 
 #define SDL_PROP_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN               "always_on_top"
 #define SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN                  "borderless"
@@ -2451,7 +2451,7 @@ extern SDL_DECLSPEC_RETURN int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int 
  * \sa SDL_GL_DeleteContext
  * \sa SDL_GL_MakeCurrent
  */
-extern SDL_DECLSPEC_RETURN SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *window);
+extern SDL_DECLSPEC_NODISCARD SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *window);
 
 /**
  * Set up an OpenGL context for rendering into an OpenGL window.
