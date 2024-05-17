@@ -42,7 +42,6 @@ struct Index {
     nodeParams.border_color = "#FF0000"
     nodeParams.border_width = 3
     this.rootNodeController = addRootNode(this.windowId, this.uiContext as UIContext, nodeParams)
-    entry.setRootViewControl(this.rootNodeController)
 
     notifySdlAboutToAppear(getContext(this), this.windowId)
   }

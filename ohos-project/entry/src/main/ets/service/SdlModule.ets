@@ -71,15 +71,7 @@ import {
 
 let sdlPageContext: common.UIAbilityContext
 
-let currentWindowId: number;
-async function getWindowId(mContext: common.UIAbilityContext) {
-  const windowClass: window.Window = await window.getLastWindow(mContext);
-  currentWindowId = windowClass.getWindowProperties().id;
-}
-
 export interface NapiCallback {
-  getWindowId(): number
-
   getNodeByWindowId(windowId: number): ViewNodeController | undefined
 
   addChildNode(nodeControllerParent: ViewNodeController, nodeParams?: NodeParams): ViewNodeController
@@ -324,12 +316,6 @@ export class ArkNapiCallback implements NapiCallback {
   nAPISetWindowResize(x: number, y: number, w: number, h: number): void {
 
   }
-
-  getWindowId(): number {
-    getWindowId(sdlPageContext);
-    return currentWindowId;
-  }
-
 }
 
 let callbackRef: NapiCallback = new ArkNapiCallback()

@@ -87,7 +87,7 @@ char* GetXComponentId(napi_ref nodeRef)
     return returnValue;
 }
 
-napi_ref AddChildNode(napi_ref nodeRef, NodeParams *nodeParams)
+napi_ref AddSdlChildNode(napi_ref nodeRef, NodeParams *nodeParams)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -110,7 +110,7 @@ napi_ref AddChildNode(napi_ref nodeRef, NodeParams *nodeParams)
     return returnValue;
 }
 
-bool RemoveChildNode(napi_ref nodeChildRef) {
+bool RemoveSdlChildNode(napi_ref nodeChildRef) {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
         return false;

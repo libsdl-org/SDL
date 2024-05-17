@@ -16,7 +16,6 @@
 #ifndef SDL_OHOSTHREADSAFE_H
 #define SDL_OHOSTHREADSAFE_H
 
-#include <memory>
 #include "SDL_stdinc.h"
 #include "SDL_atomic.h"
 #include "SDL_surface.h"

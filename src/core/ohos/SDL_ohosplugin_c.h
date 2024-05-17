@@ -17,17 +17,19 @@
 #define SDL_OHOSPLUGIN_C_H
 
 #include <ace/xcomponent/native_interface_xcomponent.h>
- //#include "../../video/ohos/SDL_ohoswindow.h"
-
 #include "SDL_ohoshead.h"
 
 #ifdef __cplusplus
 /* *INDENT-OFF* */
 extern "C" {
 bool OHOS_FindNativeXcomPoment(char *id, OH_NativeXComponent **nativeXComponent);
+
 bool OHOS_FindNativeWindow(OH_NativeXComponent *nativeXComponent, SDL_WindowData **window);
+
 OhosThreadLock *OHOS_CreateThreadLock(long *id); 
+
 void OHOS_AddXcomPomentIdForThread(char *xCompentId, pthread_t threadId);
+
 void OHOS_FindOrCreateThreadLock(pthread_t id, OhosThreadLock **lock);
 /* *INDENT-ON* */
 #endif

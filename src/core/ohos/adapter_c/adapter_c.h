@@ -120,14 +120,14 @@ napi_ref GetRootNode(int windowId);
  * @param node: Parent node.
  * @return Child node.
  */
-napi_ref AddChildNode(napi_ref nodeRef, NodeParams *nodeParams);
+napi_ref AddSdlChildNode(napi_ref nodeRef, NodeParams *nodeParams);
 
 /**
  * Remove a child node from a parent node.
  * @param nodeChild: Child node to be removed.
  * @return An array containing the elements that were deleted.
  */
-bool RemoveChildNode(napi_ref nodeChildRef);
+bool RemoveSdlChildNode(napi_ref nodeChildRef);
 
 /**
  * Place the node at the top layer.

@@ -42,14 +42,7 @@ void OhosPluginManager::SetNativeXComponent(std::string &id, OH_NativeXComponent
         return;
     }
 
-    if (nativeXComponentMap.find(id) == nativeXComponentMap.end()) {
-        nativeXComponentMap[id] = nativeXComponent;
-        return;
-    }
-
-    if (nativeXComponentMap[id] != nativeXComponent) {
-        nativeXComponentMap[id] = nativeXComponent;
-    }
+    nativeXComponentMap[id] = nativeXComponent;
 }
 
 void OhosPluginManager::AddXcomPomentIdForThread(std::string &xCompentId, pthread_t threadId)
@@ -76,17 +69,16 @@ bool OhosPluginManager::FindNativeXcomPoment(std::string &id, OH_NativeXComponen
         return true;
     } else {
         return false;
-     }
+    }
 }
 
 bool OhosPluginManager::FindNativeWindow(OH_NativeXComponent *nativeXComponent, SDL_WindowData **window)
 {
     if (nativeXComponentList.find(nativeXComponent) != nativeXComponentList.end()) {
         *window = nativeXComponentList[nativeXComponent];
-    } 
-    else {
+    } else {
         return false;
-     }
+    }
     return true;
 }
 
@@ -162,10 +154,11 @@ OhosThreadLock *OhosPluginManager::GetOhosThreadLockFromThreadId(pthread_t threa
 int OhosPluginManager::ClearPluginManagerData(std::string &id, OH_NativeXComponent *component, pthread_t threadId) {
      if (nullptr == component)
          return -1;
+
      if (nativeXComponentMap.find(id) != nativeXComponentMap.end()) {
          nativeXComponentMap.erase(id);
      } else {
-         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "this xComponentId: %s not in nativeXComponentMap", id.c_str());
+         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "This xComponentId: %s not in nativeXComponentMap", id.c_str());
      }
      if (nativeXComponentList.find(component) != nativeXComponentList.end()) {
          delete nativeXComponentList[component];
@@ -173,6 +166,7 @@ int OhosPluginManager::ClearPluginManagerData(std::string &id, OH_NativeXCompone
      } else {
          SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "this xComponent not in nativeXComponentList");
      }
+
      if (threadXcompentList.find(threadId) != threadXcompentList.end()) {
          for (auto iter = threadXcompentList[threadId].begin(); iter != threadXcompentList[threadId].end(); iter++) {
              if (*iter == id) {
@@ -182,9 +176,8 @@ int OhosPluginManager::ClearPluginManagerData(std::string &id, OH_NativeXCompone
          if (threadXcompentList[threadId].empty()) {
              threadXcompentList.erase(threadId);
          }
-     } else {
-         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "this threadId: %ld not in threadXcompentList", threadId);
      }
+
      if (ohosThreadLocks.find(threadId) != ohosThreadLocks.end()) {
          if (!((threadXcompentList.find(threadId) != threadXcompentList.end()) &&
                (threadXcompentList[threadId].empty()))) {
@@ -197,8 +190,6 @@ int OhosPluginManager::ClearPluginManagerData(std::string &id, OH_NativeXCompone
              }
              ohosThreadLocks.erase(threadId);
          }
-     } else {
-         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "this threadId: %ld not in ohosThreadLocks", threadId);
      }
      return 0;
 }

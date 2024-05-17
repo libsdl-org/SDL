@@ -125,7 +125,7 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "get xComponent error");
         return;
     }
-    SDL_Log("sdlthread gOnSurfaceCreatedCB component = %s nativewidow = %p", curXComponentId.c_str(), window);
+    SDL_Log("Xcompent is created, component is %s, nativewidow is %p", curXComponentId.c_str(), window);
 
     SDL_LockMutex(OHOS_PageMutex);
     SDL_WindowData *data = OhosPluginManager::GetInstance()->GetWindowDataByXComponent(component);
@@ -139,7 +139,6 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window) {
     
     long threadId = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(curXComponentId);
     if (threadId == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Get create window thread id error");
         SDL_UnlockMutex(OHOS_PageMutex);
         return;
     }
@@ -160,7 +159,7 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window) {
     double offsetY;
     OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
     OH_NativeXComponent_GetXComponentOffset(component, window, &offsetX, &offsetY);
-    SDL_Log("sdlthread OnSurfaceChangedCB component = %p", component);
+    SDL_Log("Xcompent is changeing, xcomponent is %p", component);
 
     SDL_LockMutex(OHOS_PageMutex);
     SDL_WindowData *data = OhosPluginManager::GetInstance()->GetWindowDataByXComponent(component);;
@@ -184,7 +183,7 @@ static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window) {
     char idStr[OH_XCOMPONENT_ID_LEN_MAX + 1] = {'\0'};
     uint64_t idSize = OH_XCOMPONENT_ID_LEN_MAX + 1;
 
-    SDL_Log("sdlthread OnSurfaceDestroyedCB component = %p", component);
+    SDL_Log("Xcompent is destroying, component is %p.", component);
     std::string curXComponentId = GetXComponentIdByNative(component);
     if (curXComponentId.empty()) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "get xComponent error");
@@ -195,7 +194,6 @@ retry:
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *curWindow = GetWindowFromXComponent(component);
     if (curWindow == nullptr) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Get cur window error");
         return;
     }
     
@@ -213,7 +211,6 @@ retry:
         }
     }
     if (data->egl_xcomponent != EGL_NO_SURFACE) {
-        SDL_Log("SDL_EGL_DestroySurface in xcompent callback");
         SDL_EGL_DestroySurface(_this, data->egl_xcomponent);
         data->egl_xcomponent = EGL_NO_SURFACE;
     }
@@ -227,13 +224,11 @@ retry:
 
     long xComponentThreadId = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(curXComponentId);
     if (xComponentThreadId == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Export: get thread from xComponentId fail");
         SDL_UnlockMutex(OHOS_PageMutex);
         return;
     }
     if (OhosPluginManager::GetInstance()->ClearPluginManagerData(curXComponentId, component, xComponentThreadId) ==
         -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Export: get thread from xComponentId fail");
         SDL_UnlockMutex(OHOS_PageMutex);
         return;
     }
@@ -263,7 +258,6 @@ void onKeyEvent(OH_NativeXComponent *component, void *window)
 /* Touch */
 void onNativeTouch(OH_NativeXComponent *component, void *window)
 {
-    SDL_Log("onNativeTouch");
     OH_NativeXComponent_TouchEvent touchEvent;
     float tiltX = 0.0f;
     float tiltY = 0.0f;
@@ -299,7 +293,6 @@ void onNativeMouse(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_MouseEvent mouseEvent;
     OHOSWindowSize windowsize;
-    SDL_Log("sdlthread onNativeMouse");
     int32_t ret = OH_NativeXComponent_GetMouseEvent(component, window, &mouseEvent);
     SDL_LockMutex(OHOS_PageMutex);
     
@@ -315,7 +308,6 @@ void onNativeMouse(OH_NativeXComponent *component, void *window)
         return;
     }
     OHOS_OnMouse(curWindow, &windowsize, SDL_TRUE);
-    SDL_Log("sdlthread onNativeMouse over");
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
@@ -323,7 +315,6 @@ static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_TouchEvent touchEvent;
     OhosTouchId ohosTouch;
-    SDL_Log("OnDispatchTouchEventCB");
     int32_t ret = OH_NativeXComponent_GetTouchEvent(component, window, &touchEvent);
     SDL_LockMutex(OHOS_PageMutex);
     ohosTouch.touchDeviceIdIn = touchEvent.deviceId;
@@ -356,7 +347,6 @@ void OnBlurEvent(OH_NativeXComponent *component, void *window)
 
 void OHOS_XcomponentExport(napi_env env, napi_value exports)
 {
-    SDL_Log("OHOS_XcomponentExport");
     napi_value exportInstance = NULL;
     OH_NativeXComponent *nativeXComponent = NULL;
     if ((NULL == env) || (NULL == exports)) {
@@ -376,7 +366,7 @@ void OHOS_XcomponentExport(napi_env env, napi_value exports)
         return;
     }
 
-    SDL_Log("sdlthread gOnSurfaceCreatedCB component = %s", xComponentId.c_str());
+    SDL_Log("Xcompent js callback is coming, xcompent id is %d.", xComponentId.c_str());
 
     SDL_LockMutex(OHOS_PageMutex);
     OhosPluginManager::GetInstance()->SetNativeXComponent(xComponentId, nativeXComponent);

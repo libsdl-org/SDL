@@ -68,7 +68,6 @@ SDL_bool bPermissionRequestResult;
 static SDL_atomic_t bQuit;
 static int xComponentId = 1;
 int g_windowId = 0;
-napi_ref g_rootNodeRef = NULL;
 
 /* Lock / Unlock Mutex */
 void OHOS_PAGEMUTEX_Lock()
@@ -574,16 +573,6 @@ napi_value SDLNapi::OHOS_OnNativeFocusChanged(napi_env env, napi_callback_info i
     return nullptr;
 }
 
-napi_value SDLNapi::OHOS_SetRootViewControl(napi_env env, napi_callback_info info)
-{
-//     size_t argc = 1;
-//     napi_value argv[1];
-//     napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
-//     napi_create_reference(env, argv[0], 1, &g_rootNodeRef);
-    OHOS_GetRootNode(g_windowId, &g_rootNodeRef);
-    return nullptr;
-}
-
 static void OHOS_NAPI_NativeSetup(void)
 {
     SDL_setenv("SDL_VIDEO_GL_DRIVER", "libGLESv3.so", 1);
@@ -591,6 +580,8 @@ static void OHOS_NAPI_NativeSetup(void)
     SDL_setenv("SDL_ASSERT", "ignore", 1);
     SDL_AtomicSet(&bPermissionRequestPending, SDL_FALSE);
     SDL_AtomicSet(&bQuit, SDL_FALSE);
+
+    OHOS_PageMutex = SDL_CreateMutex();
     return;
 }
 
@@ -749,12 +740,12 @@ void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, int x, int y, int w
     XComponentModel xComponentModel(to_string(xComponentId), XComponentType::SURFACE, "SDL2d");
     xComponentId++;
     NodeParams nodeParams(to_string(w), to_string(h), to_string(x), to_string(y), NodeType::XComponent, &xComponentModel);
-    *childRef = AddChildNode(nodeRef, &nodeParams);
+    *childRef = AddSdlChildNode(nodeRef, &nodeParams);
     return;
 }
 
 bool OHOS_RemoveChildNode(napi_ref nodeChildRef) {
-    return RemoveChildNode(nodeChildRef);
+    return RemoveSdlChildNode(nodeChildRef);
 }
 
 bool OHOS_ResizeNode(napi_ref nodeRef, int w, int h) {
@@ -806,7 +797,6 @@ napi_value SDLNapi::Init(napi_env env, napi_value exports)
         {"setResourceManager", nullptr, OHOS_SetResourceManager, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"onNativeFocusChanged", nullptr, OHOS_OnNativeFocusChanged, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"setWindowId", nullptr, OHOS_SetWindowId, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"setRootViewControl", nullptr, OHOS_SetRootViewControl, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"init", nullptr, OHOS_NAPI_Init, nullptr, nullptr, nullptr, napi_default, nullptr}
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
