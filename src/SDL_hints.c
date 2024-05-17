@@ -161,6 +161,10 @@ const char *SDL_GetHint(const char *name)
     const char *env;
     SDL_Hint *hint;
 
+    if (!name) {
+        return NULL;
+    }
+
     env = SDL_getenv(name);
     for (hint = SDL_hints; hint; hint = hint->next) {
         if (SDL_strcmp(name, hint->name) == 0) {
