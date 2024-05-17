@@ -29,8 +29,7 @@
 #ifndef SDL_windowsvulkan_h_
 #define SDL_windowsvulkan_h_
 
-#include "../SDL_vulkan_internal.h"
-#include "../SDL_sysvideo.h"
+#include <SDL3/SDL_vulkan.h>
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WINDOWS)
 
