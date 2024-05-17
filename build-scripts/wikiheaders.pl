@@ -746,7 +746,7 @@ while (my $d = readdir(DH)) {
             #print("CATEGORY FOR '$dent' CHANGED TO " . (defined($current_wiki_category) ? "'$current_wiki_category'" : '(undef)') . "\n");
             push @contents, $_;
             next;
-        } elsif (/\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC/) {  # a function declaration without a doxygen comment?
+        } elsif (/\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC_[A-Z]*/) {  # a function declaration without a doxygen comment?
             $symtype = 1;   # function declaration
             @templines = ();
             $decl = $_;
@@ -819,7 +819,7 @@ while (my $d = readdir(DH)) {
                 $lineno++ if defined $decl;
                 $decl = '' if not defined $decl;
                 chomp($decl);
-                if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC/) {
+                if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC_[A-Z]*/) {
                     $symtype = 1;   # function declaration
                 } elsif ($decl =~ /\A\s*SDL_FORCE_INLINE/) {
                     $symtype = 1;   # (forced-inline) function declaration
@@ -974,7 +974,7 @@ while (my $d = readdir(DH)) {
         } elsif ($symtype == 2) {  # a macro
             if ($decl =~ /\A\s*\#\s*define\s+(.*?)(\(.*?\)|)\s+/) {
                 $sym = $1;
-                #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
+                #$decl =~ s/\A\s*extern\s+(SDLMAIN_|SDL_)?DECLSPEC_[A-Z]*\s+(.*?)\s+SDLCALL/$1/;
             } else {
                 #print "Found doxygen but no macro:\n$str\n\n";
                 foreach (@templines) {
@@ -1698,7 +1698,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
         my $decl = $headerdecls{$sym};
         #$decl =~ s/\*\s+SDLCALL/ *SDLCALL/;  # Try to make "void * Function" become "void *Function"
-        #$decl =~ s/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL/$2$3/;
+        #$decl =~ s/\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC_[A-Z]*\s+(.*?)\s+(\*?)SDLCALL/$2$3/;
 
         my $syntax = '';
         if ($wikitype eq 'mediawiki') {

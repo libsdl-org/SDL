@@ -92,7 +92,7 @@
         #define SDL_MAIN_NEEDED
 
         /* We need to export SDL_main so it can be launched from Java */
-        #define SDLMAIN_DECLSPEC    DECLSPEC
+        #define SDLMAIN_DECLSPEC_RETURN    SDL_DECLSPEC_RETURN
 
     #elif defined(SDL_PLATFORM_PSP)
         /* On PSP SDL provides a main function that sets the module info,
@@ -129,8 +129,8 @@
     #endif
 #endif /* SDL_MAIN_HANDLED */
 
-#ifndef SDLMAIN_DECLSPEC
-#define SDLMAIN_DECLSPEC
+#ifndef SDLMAIN_DECLSPEC_RETURN
+#define SDLMAIN_DECLSPEC_RETURN
 #endif
 
 /**
@@ -257,7 +257,7 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
  * \sa SDL_AppEvent
  * \sa SDL_AppQuit
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[]);
+extern SDLMAIN_DECLSPEC_RETURN int SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[]);
 
 /**
  * App-implemented iteration entry point for SDL_MAIN_USE_CALLBACKS apps.
@@ -304,7 +304,7 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(void **appstate, int argc, char 
  * \sa SDL_AppInit
  * \sa SDL_AppEvent
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void *appstate);
+extern SDLMAIN_DECLSPEC_RETURN int SDLCALL SDL_AppIterate(void *appstate);
 
 /**
  * App-implemented event entry point for SDL_MAIN_USE_CALLBACKS apps.
@@ -350,7 +350,7 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void *appstate);
  * \sa SDL_AppInit
  * \sa SDL_AppIterate
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(void *appstate, const SDL_Event *event);
+extern SDLMAIN_DECLSPEC_RETURN int SDLCALL SDL_AppEvent(void *appstate, const SDL_Event *event);
 
 /**
  * App-implemented deinit entry point for SDL_MAIN_USE_CALLBACKS apps.
@@ -384,7 +384,7 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(void *appstate, const SDL_Event
  *
  * \sa SDL_AppInit
  */
-extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void *appstate);
+extern SDLMAIN_DECLSPEC_RETURN void SDLCALL SDL_AppQuit(void *appstate);
 
 #endif  /* SDL_MAIN_USE_CALLBACKS */
 
@@ -421,7 +421,7 @@ typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);
+extern SDLMAIN_DECLSPEC_RETURN int SDLCALL SDL_main(int argc, char *argv[]);
 
 /**
  * Circumvent failure of SDL_Init() when not using SDL_main() as an entry
@@ -436,7 +436,7 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);
  *
  * \sa SDL_Init
  */
-extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
+extern SDL_DECLSPEC_VOID void SDLCALL SDL_SetMainReady(void);
 
 /**
  * Initializes and launches an SDL application, by doing platform-specific
@@ -463,7 +463,7 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved);
+extern SDL_DECLSPEC_RETURN int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved);
 
 /**
  * An entry point for SDL's use in SDL_MAIN_USE_CALLBACKS.
@@ -490,7 +490,7 @@ extern DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func mai
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
+extern SDL_DECLSPEC_RETURN int SDLCALL SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit);
 
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
@@ -519,7 +519,7 @@ extern DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char* argv[], SD
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
+extern SDL_DECLSPEC_RETURN int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
 
 /**
  * Deregister the win32 window class from an SDL_RegisterApp call.
@@ -536,7 +536,7 @@ extern DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
+extern SDL_DECLSPEC_VOID void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) */
 
@@ -547,7 +547,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
+extern SDL_DECLSPEC_VOID void SDLCALL SDL_GDKSuspendComplete(void);
 
 #endif /* SDL_PLATFORM_GDK */
 

@@ -368,12 +368,12 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
 }
 
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
+SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
                  const char *name, void *data,
                  pfnSDL_CurrentBeginThread pfnBeginThread,
                  pfnSDL_CurrentEndThread pfnEndThread)
 #else
-DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
+SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
                  const char *name, void *data)
 #endif
 {

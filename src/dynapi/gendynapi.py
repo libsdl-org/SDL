@@ -87,7 +87,7 @@ def main():
                 continue
 
             # Remove one line comment /* ... */
-            # eg: extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
+            # eg: extern SDL_DECLSPEC_RETURN SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
             line = reg_comment_remove_content.sub('', line)
 
             # Get the comment block /* ... */ across several lines
@@ -137,10 +137,10 @@ def main():
                     print("  Discard, doesn't have SDLCALL: " + func)
                 continue
 
-            # Discard if it contains 'SDLMAIN_DECLSPEC' (these are not SDL symbols).
-            if "SDLMAIN_DECLSPEC" in func:
+            # Discard if it contains 'SDLMAIN_DECLSPEC_RETURN' (these are not SDL symbols).
+            if "SDLMAIN_DECLSPEC_RETURN" in func:
                 if args.debug:
-                    print("  Discard, has SDLMAIN_DECLSPEC: " + func)
+                    print("  Discard, has SDLMAIN_DECLSPEC_RETURN: " + func)
                 continue
 
             if args.debug:
@@ -183,7 +183,7 @@ def main():
             #
             func_ret = func_ret.replace('extern', ' ')
             func_ret = func_ret.replace('SDLCALL', ' ')
-            func_ret = func_ret.replace('DECLSPEC', ' ')
+            func_ret = re.sub(r"SDL_DECLSPEC_[A-Z]*", " ", func_ret)
             # Remove trailing spaces in front of '*'
             tmp = ""
             while func_ret != tmp:

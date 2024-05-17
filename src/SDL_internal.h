@@ -66,12 +66,12 @@
 
 #if SDL_DYNAMIC_API
 #include "dynapi/SDL_dynapi_overrides.h"
-/* force DECLSPEC off...it's all internal symbols now.
+/* force SDL_DECLSPEC off...it's all internal symbols now.
    These will have actual #defines during SDL_dynapi.c only */
-#ifdef DECLSPEC
-#undef DECLSPEC
+#ifdef SDL_DECLSPEC
+#undef SDL_DECLSPEC
 #endif
-#define DECLSPEC
+#define SDL_DECLSPEC
 #endif
 
 #ifdef SDL_PLATFORM_APPLE
@@ -279,10 +279,10 @@
 extern "C" {
 #endif
 
-extern DECLSPEC Uint32 SDLCALL SDL_GetNextObjectID(void);
-extern DECLSPEC int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
-extern DECLSPEC int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
-extern DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
+extern Uint32 SDLCALL SDL_GetNextObjectID(void);
+extern int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
+extern int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
+extern SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

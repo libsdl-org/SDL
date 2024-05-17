@@ -51,21 +51,41 @@
 #  endif
 #endif
 
+#ifndef SDL_NODISCARD
+#if (defined(__cplusplus) && __cplusplus >= 201703L) || \
+    (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L)
+#define SDL_NODISCARD [[nodiscard]]
+#elif ( (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__) )
+#define SDL_NODISCARD __attribute__((warn_unused_result))
+#elif defined(_MSC_VER) && (_MSC_VER >= 1700)
+#define SDL_NODISCARD _Check_return_
+#else
+#define SDL_NODISCARD
+#endif /* C++17 or C23 */
+#endif /* SDL_NODISCARD not defined */
+
 /* Some compilers use a special export keyword */
-#ifndef DECLSPEC
+#ifndef SDL_DECLSPEC
 # if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_CYGWIN) || defined(SDL_PLATFORM_GDK)
 #  ifdef DLL_EXPORT
-#   define DECLSPEC __declspec(dllexport)
+#   define SDL_DECLSPEC __declspec(dllexport)
 #  else
-#   define DECLSPEC
+#   define SDL_DECLSPEC
 #  endif
 # else
 #  if defined(__GNUC__) && __GNUC__ >= 4
-#   define DECLSPEC __attribute__ ((visibility("default")))
+#   define SDL_DECLSPEC __attribute__ ((visibility("default")))
 #  else
-#   define DECLSPEC
+#   define SDL_DECLSPEC
 #  endif
 # endif
+#endif
+#define SDL_DECLSPEC_VOID       SDL_DECLSPEC
+#define SDL_DECLSPEC_NODISCARD  SDL_NODISCARD SDL_DECLSPEC
+#ifdef SDL_NODISCARD_PEDANTIC
+#define SDL_DECLSPEC_RETURN     SDL_DECLSPEC_NODISCARD
+#else
+#define SDL_DECLSPEC_RETURN     SDL_DECLSPEC
 #endif
 
 /* By default SDL uses the C calling convention */
@@ -170,19 +190,6 @@
 #undef SDL_HAS_FALLTHROUGH
 #endif /* C++17 or C2x */
 #endif /* SDL_FALLTHROUGH not defined */
-
-#ifndef SDL_NODISCARD
-#if (defined(__cplusplus) && __cplusplus >= 201703L) || \
-    (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L)
-#define SDL_NODISCARD [[nodiscard]]
-#elif ( (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__) )
-#define SDL_NODISCARD __attribute__((warn_unused_result))
-#elif defined(_MSC_VER) && (_MSC_VER >= 1700)
-#define SDL_NODISCARD _Check_return_
-#else
-#define SDL_NODISCARD
-#endif /* C++17 or C23 */
-#endif /* SDL_NODISCARD not defined */
 
 #ifndef SDL_MALLOC
 #if defined(__GNUC__) && (__GNUC__ >= 3)
