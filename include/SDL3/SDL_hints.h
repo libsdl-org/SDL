@@ -3749,7 +3749,7 @@ typedef enum SDL_HintPriority
  * \sa SDL_ResetHint
  * \sa SDL_SetHint
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
                                                          const char *value,
                                                          SDL_HintPriority priority);
 
@@ -3770,7 +3770,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \sa SDL_ResetHint
  * \sa SDL_SetHintWithPriority
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
                                              const char *value);
 
 /**
@@ -3788,7 +3788,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * \sa SDL_SetHint
  * \sa SDL_ResetHints
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
 
 /**
  * Reset all hints to the default values.
@@ -3801,7 +3801,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
  *
  * \sa SDL_ResetHint
  */
-extern DECLSPEC void SDLCALL SDL_ResetHints(void);
+extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
 
 /**
  * Get the value of a hint.
@@ -3814,7 +3814,7 @@ extern DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 
 /**
  * Get the boolean value of a hint variable.
@@ -3829,7 +3829,7 @@ extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
 
 /**
  * Type definition of the hint callback function.
@@ -3857,7 +3857,7 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  *
  * \sa SDL_DelHintCallback
  */
-extern DECLSPEC int SDLCALL SDL_AddHintCallback(const char *name,
+extern SDL_DECLSPEC int SDLCALL SDL_AddHintCallback(const char *name,
                                                 SDL_HintCallback callback,
                                                 void *userdata);
 
@@ -3873,7 +3873,7 @@ extern DECLSPEC int SDLCALL SDL_AddHintCallback(const char *name,
  *
  * \sa SDL_AddHintCallback
  */
-extern DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
+extern SDL_DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
                                                  SDL_HintCallback callback,
                                                  void *userdata);
 

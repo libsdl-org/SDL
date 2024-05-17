@@ -63,7 +63,7 @@ extern "C" {
  * \sa SDL_ClearError
  * \sa SDL_GetError
  */
-extern DECLSPEC int SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
+extern SDL_DECLSPEC int SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
 
 /**
  * Set an error indicating that memory allocation failed.
@@ -74,7 +74,7 @@ extern DECLSPEC int SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fm
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_OutOfMemory(void);
+extern SDL_DECLSPEC int SDLCALL SDL_OutOfMemory(void);
 
 /**
  * Retrieve a message about the last error that occurred on the current
@@ -111,7 +111,7 @@ extern DECLSPEC int SDLCALL SDL_OutOfMemory(void);
  * \sa SDL_ClearError
  * \sa SDL_SetError
  */
-extern DECLSPEC const char *SDLCALL SDL_GetError(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetError(void);
 
 /**
  * Clear any previous error message for this thread.
@@ -123,7 +123,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetError(void);
  * \sa SDL_GetError
  * \sa SDL_SetError
  */
-extern DECLSPEC int SDLCALL SDL_ClearError(void);
+extern SDL_DECLSPEC int SDLCALL SDL_ClearError(void);
 
 /**
  *  \name Internal error functions

@@ -82,7 +82,7 @@ typedef struct SDL_Keysym
  *
  * \sa SDL_GetKeyboards
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
 
 /**
  * Get a list of currently connected keyboards.
@@ -102,7 +102,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * \sa SDL_GetKeyboardInstanceName
  * \sa SDL_HasKeyboard
  */
-extern DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
+extern SDL_DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
 
 /**
  * Get the name of a keyboard.
@@ -117,7 +117,7 @@ extern DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
  *
  * \sa SDL_GetKeyboards
  */
-extern DECLSPEC const char *SDLCALL SDL_GetKeyboardInstanceName(SDL_KeyboardID instance_id);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetKeyboardInstanceName(SDL_KeyboardID instance_id);
 
 /**
  * Query the window which currently has keyboard focus.
@@ -126,7 +126,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetKeyboardInstanceName(SDL_KeyboardID i
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
+extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
 
 /**
  * Get a snapshot of the current state of the keyboard.
@@ -157,7 +157,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * \sa SDL_PumpEvents
  * \sa SDL_ResetKeyboard
  */
-extern DECLSPEC const Uint8 *SDLCALL SDL_GetKeyboardState(int *numkeys);
+extern SDL_DECLSPEC const Uint8 *SDLCALL SDL_GetKeyboardState(int *numkeys);
 
 /**
  * Clear the state of the keyboard.
@@ -168,7 +168,7 @@ extern DECLSPEC const Uint8 *SDLCALL SDL_GetKeyboardState(int *numkeys);
  *
  * \sa SDL_GetKeyboardState
  */
-extern DECLSPEC void SDLCALL SDL_ResetKeyboard(void);
+extern SDL_DECLSPEC void SDLCALL SDL_ResetKeyboard(void);
 
 /**
  * Get the current key modifier state for the keyboard.
@@ -181,7 +181,7 @@ extern DECLSPEC void SDLCALL SDL_ResetKeyboard(void);
  * \sa SDL_GetKeyboardState
  * \sa SDL_SetModState
  */
-extern DECLSPEC SDL_Keymod SDLCALL SDL_GetModState(void);
+extern SDL_DECLSPEC SDL_Keymod SDLCALL SDL_GetModState(void);
 
 /**
  * Set the current key modifier state for the keyboard.
@@ -200,7 +200,7 @@ extern DECLSPEC SDL_Keymod SDLCALL SDL_GetModState(void);
  *
  * \sa SDL_GetModState
  */
-extern DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
+extern SDL_DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
 
 /**
  * Get the key code corresponding to the given scancode according to the
@@ -216,7 +216,7 @@ extern DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
  * \sa SDL_GetKeyName
  * \sa SDL_GetScancodeFromKey
  */
-extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode);
+extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode);
 
 /**
  * Get the scancode corresponding to the given key code according to the
@@ -232,7 +232,7 @@ extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode
  * \sa SDL_GetKeyFromScancode
  * \sa SDL_GetScancodeName
  */
-extern DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key);
+extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key);
 
 /**
  * Get a human-readable name for a scancode.
@@ -257,7 +257,7 @@ extern DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key);
  * \sa SDL_GetScancodeFromKey
  * \sa SDL_GetScancodeFromName
  */
-extern DECLSPEC const char *SDLCALL SDL_GetScancodeName(SDL_Scancode scancode);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetScancodeName(SDL_Scancode scancode);
 
 /**
  * Get a scancode from a human-readable name.
@@ -272,7 +272,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetScancodeName(SDL_Scancode scancode);
  * \sa SDL_GetScancodeFromKey
  * \sa SDL_GetScancodeName
  */
-extern DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *name);
+extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *name);
 
 /**
  * Get a human-readable name for a key.
@@ -291,7 +291,7 @@ extern DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *name);
  * \sa SDL_GetKeyFromScancode
  * \sa SDL_GetScancodeFromKey
  */
-extern DECLSPEC const char *SDLCALL SDL_GetKeyName(SDL_Keycode key);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetKeyName(SDL_Keycode key);
 
 /**
  * Get a key code from a human-readable name.
@@ -306,7 +306,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetKeyName(SDL_Keycode key);
  * \sa SDL_GetKeyName
  * \sa SDL_GetScancodeFromName
  */
-extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
+extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
 
 /**
  * Start accepting Unicode text input events.
@@ -325,7 +325,7 @@ extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  * \sa SDL_SetTextInputRect
  * \sa SDL_StopTextInput
  */
-extern DECLSPEC void SDLCALL SDL_StartTextInput(void);
+extern SDL_DECLSPEC void SDLCALL SDL_StartTextInput(void);
 
 /**
  * Check whether or not Unicode text input events are enabled.
@@ -336,7 +336,7 @@ extern DECLSPEC void SDLCALL SDL_StartTextInput(void);
  *
  * \sa SDL_StartTextInput
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_TextInputActive(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TextInputActive(void);
 
 /**
  * Stop receiving any text input events.
@@ -347,7 +347,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_TextInputActive(void);
  *
  * \sa SDL_StartTextInput
  */
-extern DECLSPEC void SDLCALL SDL_StopTextInput(void);
+extern SDL_DECLSPEC void SDLCALL SDL_StopTextInput(void);
 
 /**
  * Dismiss the composition window/IME without disabling the subsystem.
@@ -357,7 +357,7 @@ extern DECLSPEC void SDLCALL SDL_StopTextInput(void);
  * \sa SDL_StartTextInput
  * \sa SDL_StopTextInput
  */
-extern DECLSPEC void SDLCALL SDL_ClearComposition(void);
+extern SDL_DECLSPEC void SDLCALL SDL_ClearComposition(void);
 
 /**
  * Set the rectangle used to type Unicode text inputs.
@@ -382,7 +382,7 @@ extern DECLSPEC void SDLCALL SDL_ClearComposition(void);
  *
  * \sa SDL_StartTextInput
  */
-extern DECLSPEC int SDLCALL SDL_SetTextInputRect(const SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_SetTextInputRect(const SDL_Rect *rect);
 
 /**
  * Check whether the platform has screen keyboard support.
@@ -395,7 +395,7 @@ extern DECLSPEC int SDLCALL SDL_SetTextInputRect(const SDL_Rect *rect);
  * \sa SDL_StartTextInput
  * \sa SDL_ScreenKeyboardShown
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasScreenKeyboardSupport(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasScreenKeyboardSupport(void);
 
 /**
  * Check whether the screen keyboard is shown for given window.
@@ -407,7 +407,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasScreenKeyboardSupport(void);
  *
  * \sa SDL_HasScreenKeyboardSupport
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_ScreenKeyboardShown(SDL_Window *window);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ScreenKeyboardShown(SDL_Window *window);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

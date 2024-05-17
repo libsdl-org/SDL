@@ -768,7 +768,7 @@ typedef struct SDL_PixelFormat
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char* SDLCALL SDL_GetPixelFormatName(SDL_PixelFormatEnum format);
+extern SDL_DECLSPEC const char* SDLCALL SDL_GetPixelFormatName(SDL_PixelFormatEnum format);
 
 /**
  * Convert one of the enumerated pixel formats to a bpp value and RGBA masks.
@@ -786,7 +786,7 @@ extern DECLSPEC const char* SDLCALL SDL_GetPixelFormatName(SDL_PixelFormatEnum f
  *
  * \sa SDL_GetPixelFormatEnumForMasks
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormatEnum(SDL_PixelFormatEnum format,
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormatEnum(SDL_PixelFormatEnum format,
                                                             int *bpp,
                                                             Uint32 * Rmask,
                                                             Uint32 * Gmask,
@@ -811,7 +811,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetMasksForPixelFormatEnum(SDL_PixelFormatE
  *
  * \sa SDL_GetMasksForPixelFormatEnum
  */
-extern DECLSPEC SDL_PixelFormatEnum SDLCALL SDL_GetPixelFormatEnumForMasks(int bpp,
+extern SDL_DECLSPEC SDL_PixelFormatEnum SDLCALL SDL_GetPixelFormatEnumForMasks(int bpp,
                                                           Uint32 Rmask,
                                                           Uint32 Gmask,
                                                           Uint32 Bmask,
@@ -833,7 +833,7 @@ extern DECLSPEC SDL_PixelFormatEnum SDLCALL SDL_GetPixelFormatEnumForMasks(int b
  * \sa SDL_DestroyPixelFormat
  * \sa SDL_SetPixelFormatPalette
  */
-extern DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
+extern SDL_DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
 
 /**
  * Free an SDL_PixelFormat structure allocated by SDL_CreatePixelFormat().
@@ -844,7 +844,7 @@ extern DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatE
  *
  * \sa SDL_CreatePixelFormat
  */
-extern DECLSPEC void SDLCALL SDL_DestroyPixelFormat(SDL_PixelFormat *format);
+extern SDL_DECLSPEC void SDLCALL SDL_DestroyPixelFormat(SDL_PixelFormat *format);
 
 /**
  * Create a palette structure with the specified number of color entries.
@@ -862,7 +862,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyPixelFormat(SDL_PixelFormat *format);
  * \sa SDL_SetPaletteColors
  * \sa SDL_SetPixelFormatPalette
  */
-extern DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
+extern SDL_DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
 
 /**
  * Set the palette for a pixel format structure.
@@ -874,7 +874,7 @@ extern DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetPixelFormatPalette(SDL_PixelFormat * format,
+extern SDL_DECLSPEC int SDLCALL SDL_SetPixelFormatPalette(SDL_PixelFormat * format,
                                                       SDL_Palette *palette);
 
 /**
@@ -889,7 +889,7 @@ extern DECLSPEC int SDLCALL SDL_SetPixelFormatPalette(SDL_PixelFormat * format,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette * palette,
+extern SDL_DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette * palette,
                                                  const SDL_Color * colors,
                                                  int firstcolor, int ncolors);
 
@@ -902,7 +902,7 @@ extern DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette * palette,
  *
  * \sa SDL_CreatePalette
  */
-extern DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette * palette);
+extern SDL_DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette * palette);
 
 /**
  * Map an RGB triple to an opaque pixel value for a given pixel format.
@@ -934,7 +934,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette * palette);
  * \sa SDL_GetRGBA
  * \sa SDL_MapRGBA
  */
-extern DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormat * format,
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormat * format,
                                           Uint8 r, Uint8 g, Uint8 b);
 
 /**
@@ -969,7 +969,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormat * format,
  * \sa SDL_GetRGBA
  * \sa SDL_MapRGB
  */
-extern DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormat * format,
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormat * format,
                                            Uint8 r, Uint8 g, Uint8 b,
                                            Uint8 a);
 
@@ -994,7 +994,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormat * format,
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel,
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel,
                                         const SDL_PixelFormat * format,
                                         Uint8 * r, Uint8 * g, Uint8 * b);
 
@@ -1023,7 +1023,7 @@ extern DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel,
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel,
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel,
                                          const SDL_PixelFormat * format,
                                          Uint8 * r, Uint8 * g, Uint8 * b,
                                          Uint8 * a);

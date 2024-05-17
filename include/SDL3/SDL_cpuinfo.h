@@ -62,7 +62,7 @@ extern "C" {
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetCPUCount(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetCPUCount(void);
 
 /**
  * Determine the L1 cache line size of the CPU.
@@ -74,7 +74,7 @@ extern DECLSPEC int SDLCALL SDL_GetCPUCount(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetCPUCacheLineSize(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetCPUCacheLineSize(void);
 
 /**
  * Determine whether the CPU has AltiVec features.
@@ -86,7 +86,7 @@ extern DECLSPEC int SDLCALL SDL_GetCPUCacheLineSize(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec(void);
 
 /**
  * Determine whether the CPU has MMX features.
@@ -97,7 +97,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasMMX(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMMX(void);
 
 /**
  * Determine whether the CPU has SSE features.
@@ -113,7 +113,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasMMX(void);
  * \sa SDL_HasSSE41
  * \sa SDL_HasSSE42
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasSSE(void);
 
 /**
  * Determine whether the CPU has SSE2 features.
@@ -129,7 +129,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE(void);
  * \sa SDL_HasSSE41
  * \sa SDL_HasSSE42
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE2(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasSSE2(void);
 
 /**
  * Determine whether the CPU has SSE3 features.
@@ -145,7 +145,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE2(void);
  * \sa SDL_HasSSE41
  * \sa SDL_HasSSE42
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE3(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasSSE3(void);
 
 /**
  * Determine whether the CPU has SSE4.1 features.
@@ -161,7 +161,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE3(void);
  * \sa SDL_HasSSE3
  * \sa SDL_HasSSE42
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE41(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasSSE41(void);
 
 /**
  * Determine whether the CPU has SSE4.2 features.
@@ -177,7 +177,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE41(void);
  * \sa SDL_HasSSE3
  * \sa SDL_HasSSE41
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE42(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasSSE42(void);
 
 /**
  * Determine whether the CPU has AVX features.
@@ -191,7 +191,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE42(void);
  * \sa SDL_HasAVX2
  * \sa SDL_HasAVX512F
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasAVX(void);
 
 /**
  * Determine whether the CPU has AVX2 features.
@@ -205,7 +205,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX(void);
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX512F
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX2(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasAVX2(void);
 
 /**
  * Determine whether the CPU has AVX-512F (foundation) features.
@@ -219,7 +219,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX2(void);
  * \sa SDL_HasAVX
  * \sa SDL_HasAVX2
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX512F(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasAVX512F(void);
 
 /**
  * Determine whether the CPU has ARM SIMD (ARMv6) features.
@@ -234,7 +234,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX512F(void);
  *
  * \sa SDL_HasNEON
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasARMSIMD(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasARMSIMD(void);
 
 /**
  * Determine whether the CPU has NEON (ARM SIMD) features.
@@ -245,7 +245,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasARMSIMD(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
 
 /**
  * Determine whether the CPU has LSX (LOONGARCH SIMD) features.
@@ -258,7 +258,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasLSX(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasLSX(void);
 
 /**
  * Determine whether the CPU has LASX (LOONGARCH SIMD) features.
@@ -271,7 +271,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasLSX(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasLASX(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasLASX(void);
 
 /**
  * Get the amount of RAM configured in the system.
@@ -280,7 +280,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasLASX(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
 
 /**
  * Report the alignment this system needs for SIMD allocations.
@@ -302,7 +302,7 @@ extern DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
  * \sa SDL_aligned_alloc
  * \sa SDL_aligned_free
  */
-extern DECLSPEC size_t SDLCALL SDL_GetSIMDAlignment(void);
+extern SDL_DECLSPEC size_t SDLCALL SDL_GetSIMDAlignment(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

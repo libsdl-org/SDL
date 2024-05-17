@@ -78,7 +78,7 @@ typedef struct SDL_GUID {
  *
  * \sa SDL_GUIDFromString
  */
-extern DECLSPEC int SDLCALL SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID);
+extern SDL_DECLSPEC int SDLCALL SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID);
 
 /**
  * Convert a GUID string into a SDL_GUID structure.
@@ -94,7 +94,7 @@ extern DECLSPEC int SDLCALL SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int c
  *
  * \sa SDL_GUIDToString
  */
-extern DECLSPEC SDL_GUID SDLCALL SDL_GUIDFromString(const char *pchGUID);
+extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GUIDFromString(const char *pchGUID);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

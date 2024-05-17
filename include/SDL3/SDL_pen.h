@@ -157,7 +157,7 @@ typedef enum SDL_PenSubtype
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
+extern SDL_DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
 
 /**
  * Retrieves the pen's current status.
@@ -178,7 +178,7 @@ extern DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetPenStatus(SDL_PenID instance_id, float *x, float *y, float *axes, size_t num_axes);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetPenStatus(SDL_PenID instance_id, float *x, float *y, float *axes, size_t num_axes);
 
 /**
  * Retrieves an SDL_PenID for the given SDL_GUID.
@@ -189,7 +189,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetPenStatus(SDL_PenID instance_id, float *x,
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_PenID SDLCALL SDL_GetPenFromGUID(SDL_GUID guid);
+extern SDL_DECLSPEC SDL_PenID SDLCALL SDL_GetPenFromGUID(SDL_GUID guid);
 
 /**
  * Retrieves the SDL_GUID for a given SDL_PenID.
@@ -200,7 +200,7 @@ extern DECLSPEC SDL_PenID SDLCALL SDL_GetPenFromGUID(SDL_GUID guid);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_GUID SDLCALL SDL_GetPenGUID(SDL_PenID instance_id);
+extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GetPenGUID(SDL_PenID instance_id);
 
 /**
  * Checks whether a pen is still attached.
@@ -214,7 +214,7 @@ extern DECLSPEC SDL_GUID SDLCALL SDL_GetPenGUID(SDL_PenID instance_id);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
 
 /**
  * Retrieves a human-readable description for a SDL_PenID.
@@ -230,7 +230,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC const char *SDLCALL SDL_GetPenName(SDL_PenID instance_id);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetPenName(SDL_PenID instance_id);
 
 /**
  * Pen capabilities, as reported by SDL_GetPenCapabilities()
@@ -254,7 +254,7 @@ typedef struct SDL_PenCapabilityInfo
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetPenCapabilities(SDL_PenID instance_id, SDL_PenCapabilityInfo *capabilities);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetPenCapabilities(SDL_PenID instance_id, SDL_PenCapabilityInfo *capabilities);
 
 /**
  * Retrieves the pen type for a given SDL_PenID.
@@ -269,7 +269,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetPenCapabilities(SDL_PenID instance_id, SDL
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_PenSubtype SDLCALL SDL_GetPenType(SDL_PenID instance_id);
+extern SDL_DECLSPEC SDL_PenSubtype SDLCALL SDL_GetPenType(SDL_PenID instance_id);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

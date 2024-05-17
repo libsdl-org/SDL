@@ -27,8 +27,8 @@
 
 int (*WINRT_SDLAppEntryPoint)(int, char **) = NULL;
 
-extern "C" DECLSPEC int
-SDL_RunApp(int, char**, SDL_main_func mainFunction, void * xamlBackgroundPanel)
+extern "C"
+int SDL_RunApp(int, char**, SDL_main_func mainFunction, void * xamlBackgroundPanel)
 {
     if (xamlBackgroundPanel) {
         return SDL_WinRTInitXAMLApp(mainFunction, xamlBackgroundPanel);
@@ -40,8 +40,8 @@ SDL_RunApp(int, char**, SDL_main_func mainFunction, void * xamlBackgroundPanel)
     }
 }
 
-extern "C" DECLSPEC SDL_WinRT_DeviceFamily
-SDL_WinRTGetDeviceFamily()
+extern "C"
+SDL_WinRT_DeviceFamily SDL_WinRTGetDeviceFamily()
 {
 #if NTDDI_VERSION >= NTDDI_WIN10 /* !!! FIXME: I have no idea if this is the right test. This is a UWP API, I think. Older windows should...just return "mobile"? I don't know. --ryan. */
     Platform::String ^ deviceFamily = Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamily;

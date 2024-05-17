@@ -102,7 +102,7 @@ struct VkAllocationCallbacks;
  * \sa SDL_Vulkan_GetVkGetInstanceProcAddr
  * \sa SDL_Vulkan_UnloadLibrary
  */
-extern DECLSPEC int SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
+extern SDL_DECLSPEC int SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
 
 /**
  * Get the address of the `vkGetInstanceProcAddr` function.
@@ -122,7 +122,7 @@ extern DECLSPEC int SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_Vulkan_GetVkGetInstanceProcAddr(void);
+extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_Vulkan_GetVkGetInstanceProcAddr(void);
 
 /**
  * Unload the Vulkan library previously loaded by SDL_Vulkan_LoadLibrary().
@@ -131,7 +131,7 @@ extern DECLSPEC SDL_FunctionPointer SDLCALL SDL_Vulkan_GetVkGetInstanceProcAddr(
  *
  * \sa SDL_Vulkan_LoadLibrary
  */
-extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
+extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
 
 /**
  * Get the Vulkan instance extensions needed for vkCreateInstance.
@@ -154,7 +154,7 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *
  * \sa SDL_Vulkan_CreateSurface
  */
-extern DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(Uint32 *count);
+extern SDL_DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(Uint32 *count);
 
 /**
  * Create a Vulkan rendering surface for a window.
@@ -179,7 +179,7 @@ extern DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(Uint
  * \sa SDL_Vulkan_GetInstanceExtensions
  * \sa SDL_Vulkan_DestroySurface
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
                                                           VkInstance instance,
                                                           const struct VkAllocationCallbacks *allocator,
                                                           VkSurfaceKHR* surface);
@@ -207,7 +207,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
  * \sa SDL_Vulkan_GetInstanceExtensions
  * \sa SDL_Vulkan_CreateSurface
  */
-extern DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(VkInstance instance,
+extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(VkInstance instance,
                                                        VkSurfaceKHR surface,
                                                        const struct VkAllocationCallbacks *allocator);
 
