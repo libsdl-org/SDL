@@ -190,6 +190,11 @@ static SDL_bool SDL_SendsDisplayChanges(SDL_VideoDevice *_this)
     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES);
 }
 
+static SDL_bool SDL_DisableMouseWarpOnFullscreenTransitions(SDL_VideoDevice *_this)
+{
+    return !!(_this->device_caps & VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS);
+}
+
 /* Hint to treat all window ops as synchronous */
 static SDL_bool syncHint;
 
@@ -1822,7 +1827,9 @@ int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen, SDL_bool c
             }
 
             /* Restore the cursor position */
-            SDL_RestoreMousePosition(window);
+            if (!SDL_DisableMouseWarpOnFullscreenTransitions(_this)) {
+                SDL_RestoreMousePosition(window);
+            }
         }
     } else {
         SDL_bool resized = SDL_FALSE;
@@ -1866,7 +1873,7 @@ int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen, SDL_bool c
             }
 
             /* Restore the cursor position if we've exited fullscreen on a display */
-            if (display) {
+            if (display && !SDL_DisableMouseWarpOnFullscreenTransitions(_this)) {
                 SDL_RestoreMousePosition(window);
             }
         }

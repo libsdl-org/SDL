@@ -292,7 +292,8 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     data->is_xwayland = X11_IsXWayland(x11_display);
     if (data->is_xwayland) {
-        device->device_caps |= VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED;
+        device->device_caps |= VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED |
+                               VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS;
     }
 
     return device;

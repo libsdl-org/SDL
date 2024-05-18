@@ -523,7 +523,8 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->device_caps = VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED |
                           VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
                           VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS |
-                          VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES;
+                          VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES |
+                          VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS;
 
     return device;
 }
