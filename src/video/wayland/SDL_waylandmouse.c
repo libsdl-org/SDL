@@ -597,7 +597,9 @@ static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
                 Wayland_input_lock_pointer(input, window);
             }
             if (wind->locked_pointer) {
-                zwp_locked_pointer_v1_set_cursor_position_hint(wind->locked_pointer, wl_fixed_from_double(x), wl_fixed_from_double(y));
+                const wl_fixed_t f_x = wl_fixed_from_double(x / wind->pointer_scale.x);
+                const wl_fixed_t f_y = wl_fixed_from_double(y / wind->pointer_scale.y);
+                zwp_locked_pointer_v1_set_cursor_position_hint(wind->locked_pointer, f_x, f_y);
                 wl_surface_commit(wind->surface);
             }
             if (toggle_lock) {
