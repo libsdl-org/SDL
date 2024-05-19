@@ -420,10 +420,6 @@ static void ConfigureWindowGeometry(SDL_Window *window)
         for (SDL_Window *child = window->first_child; child; child = child->next_sibling) {
             RepositionPopup(child, SDL_TRUE);
         }
-
-        if (data->confined_pointer) {
-            Wayland_input_confine_pointer(viddata->input, window);
-        }
     }
 
     /* Update the min/max dimensions, primarily if the state was changed, and for non-resizable
