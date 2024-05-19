@@ -53,7 +53,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
     SDL_Event event;
 
     /* Create a Window to get fully initialized event processing for testing pause on Android. */
-    SDL_CreateWindow("testmultiaudio", 320, 240, 0);
+    SDL_Window* window = SDL_CreateWindow("testmultiaudio", 320, 240, 0);
 #endif
 
     for (i = 0; i < devcount; i++) {
@@ -131,6 +131,10 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
         SDL_free(streams);
     }
 
+#ifdef SDL_PLATFORM_ANDROID
+    SDL_DestroyWindow(window);
+#endif
+
     SDL_Log("All done!\n");
 }
 
@@ -203,4 +207,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
