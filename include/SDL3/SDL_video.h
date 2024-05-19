@@ -823,6 +823,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * loader or link to a dynamic library version. This limitation may be removed
  * in a future version of SDL.
  *
+ * Windows created with this function must be freed with SDL_DestroyWindow().
+ *
  * \param title the title of the window, in UTF-8 encoding
  * \param w the width of the window
  * \param h the height of the window
@@ -836,7 +838,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * \sa SDL_CreateWindowWithProperties
  * \sa SDL_DestroyWindow
  */
-extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags flags);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags flags);
 
 /**
  * Create a child popup window of the specified parent window.
@@ -891,7 +893,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int 
  * \sa SDL_DestroyWindow
  * \sa SDL_GetWindowParent
  */
-extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, SDL_WindowFlags flags);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, SDL_WindowFlags flags);
 
 /**
  * Create a window with the specified properties.
@@ -987,6 +989,8 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent
  * Windows with the "tooltip" and "menu" properties are popup windows and have
  * the behaviors and guidelines outlined in SDL_CreatePopupWindow().
  *
+ * Windows created with this function must be freed with SDL_DestroyWindow().
+ *
  * \param props the properties to use
  * \returns the window that was created or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -997,7 +1001,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent
  * \sa SDL_CreateWindow
  * \sa SDL_DestroyWindow
  */
-extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_PropertiesID props);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_PropertiesID props);
 
 #define SDL_PROP_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN               "always_on_top"
 #define SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN                  "borderless"

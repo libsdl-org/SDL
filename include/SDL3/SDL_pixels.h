@@ -824,6 +824,8 @@ extern SDL_DECLSPEC SDL_PixelFormatEnum SDLCALL SDL_GetPixelFormatEnumForMasks(i
  * allocated), and hence should not be modified, especially the palette. Weird
  * errors such as `Blit combination not supported` may occur.
  *
+ * Pixel formats created with this function must be freed with SDL_DestroyPixelFormat().
+ *
  * \param pixel_format one of the SDL_PixelFormatEnum values
  * \returns the new SDL_PixelFormat structure or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -833,7 +835,7 @@ extern SDL_DECLSPEC SDL_PixelFormatEnum SDLCALL SDL_GetPixelFormatEnumForMasks(i
  * \sa SDL_DestroyPixelFormat
  * \sa SDL_SetPixelFormatPalette
  */
-extern SDL_DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_PixelFormat * SDLCALL SDL_CreatePixelFormat(SDL_PixelFormatEnum pixel_format);
 
 /**
  * Free an SDL_PixelFormat structure allocated by SDL_CreatePixelFormat().
@@ -851,6 +853,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyPixelFormat(SDL_PixelFormat *format)
  *
  * The palette entries are initialized to white.
  *
+ * Palettes created with this function must be freed with SDL_DestroyPalette().
+ *
  * \param ncolors represents the number of color entries in the color palette
  * \returns a new SDL_Palette structure on success or NULL on failure (e.g. if
  *          there wasn't enough memory); call SDL_GetError() for more
@@ -862,7 +866,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyPixelFormat(SDL_PixelFormat *format)
  * \sa SDL_SetPaletteColors
  * \sa SDL_SetPixelFormatPalette
  */
-extern SDL_DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
 
 /**
  * Set the palette for a pixel format structure.

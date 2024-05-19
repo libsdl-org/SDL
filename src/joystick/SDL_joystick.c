@@ -970,14 +970,16 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, SDL_bool invert_sensors)
 
             if (!joystick->accel_sensor && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_ACCEL) {
                 /* Increment the sensor subsystem reference count */
-                SDL_InitSubSystem(SDL_INIT_SENSOR);
+                const int rc = SDL_InitSubSystem(SDL_INIT_SENSOR);
+                SDL_assert(rc == 0);
 
                 joystick->accel_sensor = sensor;
                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
             }
             if (!joystick->gyro_sensor && SDL_GetSensorInstanceType(sensor) == SDL_SENSOR_GYRO) {
                 /* Increment the sensor subsystem reference count */
-                SDL_InitSubSystem(SDL_INIT_SENSOR);
+                const int rc = SDL_InitSubSystem(SDL_INIT_SENSOR);
+                SDL_assert(rc == 0);
 
                 joystick->gyro_sensor = sensor;
                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);

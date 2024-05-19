@@ -178,6 +178,8 @@ SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
  * SDL_CreateThreadWithStackSize(fn, name, 0, data);
  * ```
  *
+ * Threads created with this function must be cleaned up with SDL_WaitThread() or detached with SDL_DetachThread().
+ *
  * \param fn the SDL_ThreadFunction function to call in the new thread
  * \param name the name of the thread
  * \param data a pointer that is passed to `fn`
@@ -189,8 +191,9 @@ SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
  *
  * \sa SDL_CreateThreadWithStackSize
  * \sa SDL_WaitThread
+ * \sa SDL_DetachThread
  */
-extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data);
 
 /**
  * Create a new thread with a specific stack size.
@@ -219,6 +222,8 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  * multiple of the system's page size (in many cases, this is 4 kilobytes, but
  * check your system documentation).
  *
+ * Threads created with this function must be cleaned up with SDL_WaitThread() or detached with SDL_DetachThread().
+ *
  * \param fn the SDL_ThreadFunction function to call in the new thread
  * \param name the name of the thread
  * \param stacksize the size, in bytes, to allocate for the new thread stack.
@@ -231,8 +236,9 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  *
  * \sa SDL_CreateThread
  * \sa SDL_WaitThread
+ * \sa SDL_DetachThread
  */
-extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, const size_t stacksize, void *data);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, const size_t stacksize, void *data);
 
 #endif
 
@@ -377,14 +383,17 @@ extern SDL_DECLSPEC void SDLCALL SDL_DetachThread(SDL_Thread * thread);
  * This creates an identifier that is globally visible to all threads but
  * refers to data that is thread-specific.
  *
+ * Thread-local storage is automatically cleaned up on SDL_Quit() or via SDL_CleanupTLS().
+ *
  * \returns the newly created thread local storage identifier or 0 on error.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetTLS
  * \sa SDL_SetTLS
+ * \sa SDL_CleanupTLS
  */
-extern SDL_DECLSPEC SDL_TLSID SDLCALL SDL_CreateTLS(void);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_TLSID SDLCALL SDL_CreateTLS(void);
 
 /**
  * Get the current thread's value associated with a thread local storage ID.

@@ -81,8 +81,13 @@ int main(int argc, char **argv)
     }
 
     /* Initialize the force feedbackness */
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK |
-             SDL_INIT_HAPTIC);
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK |
+                 SDL_INIT_HAPTIC) != 0)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init failure: %s\n", SDL_GetError());
+        return 1;
+    }
+
     haptics = SDL_GetHaptics(&num_haptics);
     SDL_Log("%d Haptic devices detected.\n", num_haptics);
     for (i = 0; i < num_haptics; ++i) {

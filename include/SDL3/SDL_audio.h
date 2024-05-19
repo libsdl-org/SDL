@@ -808,6 +808,8 @@ extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetAudioStreamDevice(SDL_Audio
 /**
  * Create a new audio stream.
  *
+ * Audio streams created with this function must be freed with SDL_DestroyAudioStream().
+ *
  * \param src_spec The format details of the input audio
  * \param dst_spec The format details of the output audio
  * \returns a new audio stream on success, or NULL on failure.
@@ -824,7 +826,7 @@ extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetAudioStreamDevice(SDL_Audio
  * \sa SDL_ChangeAudioStreamOutput
  * \sa SDL_DestroyAudioStream
  */
-extern SDL_DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_AudioStream *SDLCALL SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec);
 
 /**
  * Get the properties associated with an audio stream.

@@ -286,7 +286,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_WriteStorageFile(SDL_Storage *storage, const
  *
  * \sa SDL_StorageReady
  */
-extern SDL_DECLSPEC int SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path);
+extern SDL_NODISCARD SDL_DECLSPEC int SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path);
 
 /**
  * Enumerate a directory in a storage container through a callback function.

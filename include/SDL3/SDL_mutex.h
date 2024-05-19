@@ -154,6 +154,8 @@ typedef struct SDL_Mutex SDL_Mutex;
  *
  * SDL mutexes are reentrant.
  *
+ * Mutexes created with this function must be freed with SDL_DestroyMutex().
+ *
  * \returns the initialized and unlocked mutex or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -164,7 +166,7 @@ typedef struct SDL_Mutex SDL_Mutex;
  * \sa SDL_TryLockMutex
  * \sa SDL_UnlockMutex
  */
-extern SDL_DECLSPEC SDL_Mutex *SDLCALL SDL_CreateMutex(void);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Mutex *SDLCALL SDL_CreateMutex(void);
 
 /**
  * Lock the mutex.
@@ -319,6 +321,8 @@ typedef struct SDL_RWLock SDL_RWLock;
  * and write access at the same time from the same thread (so you can't
  * promote your read-only lock to a write lock without unlocking first).
  *
+ * Locks created with this function must be freed with SDL_DestroyRWLock().
+ *
  * \returns the initialized and unlocked read/write lock or NULL on failure;
  *          call SDL_GetError() for more information.
  *
@@ -331,7 +335,7 @@ typedef struct SDL_RWLock SDL_RWLock;
  * \sa SDL_TryLockRWLockForWriting
  * \sa SDL_UnlockRWLock
  */
-extern SDL_DECLSPEC SDL_RWLock *SDLCALL SDL_CreateRWLock(void);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_RWLock *SDLCALL SDL_CreateRWLock(void);
 
 /**
  * Lock the read/write lock for _read only_ operations.
@@ -537,6 +541,8 @@ typedef struct SDL_Semaphore SDL_Semaphore;
  * is 0. Each post operation will atomically increment the semaphore value and
  * wake waiting threads and allow them to retry the wait operation.
  *
+ * Semaphores created with this function must be freed with SDL_DestroySemaphore().
+ *
  * \param initial_value the starting value of the semaphore
  * \returns a new semaphore or NULL on failure; call SDL_GetError() for more
  *          information.
@@ -550,7 +556,7 @@ typedef struct SDL_Semaphore SDL_Semaphore;
  * \sa SDL_WaitSemaphore
  * \sa SDL_WaitSemaphoreTimeout
  */
-extern SDL_DECLSPEC SDL_Semaphore *SDLCALL SDL_CreateSemaphore(Uint32 initial_value);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Semaphore *SDLCALL SDL_CreateSemaphore(Uint32 initial_value);
 
 /**
  * Destroy a semaphore.
@@ -683,6 +689,8 @@ typedef struct SDL_Condition SDL_Condition;
 /**
  * Create a condition variable.
  *
+ * Condition variables created with this function must be freed with SDL_DestroyCondition().
+ *
  * \returns a new condition variable or NULL on failure; call SDL_GetError()
  *          for more information.
  *
@@ -694,7 +702,7 @@ typedef struct SDL_Condition SDL_Condition;
  * \sa SDL_WaitConditionTimeout
  * \sa SDL_DestroyCondition
  */
-extern SDL_DECLSPEC SDL_Condition *SDLCALL SDL_CreateCondition(void);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Condition *SDLCALL SDL_CreateCondition(void);
 
 /**
  * Destroy a condition variable.

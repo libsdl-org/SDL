@@ -116,7 +116,7 @@ typedef Uint32 SDL_InitFlags;
  * \sa SDL_SetMainReady
  * \sa SDL_WasInit
  */
-extern SDL_DECLSPEC int SDLCALL SDL_Init(SDL_InitFlags flags);
+extern SDL_NODISCARD SDL_DECLSPEC int SDLCALL SDL_Init(SDL_InitFlags flags);
 
 /**
  * Compatibility function to initialize the SDL library.
@@ -133,7 +133,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_Init(SDL_InitFlags flags);
  * \sa SDL_Quit
  * \sa SDL_QuitSubSystem
  */
-extern SDL_DECLSPEC int SDLCALL SDL_InitSubSystem(SDL_InitFlags flags);
+extern SDL_NODISCARD SDL_DECLSPEC int SDLCALL SDL_InitSubSystem(SDL_InitFlags flags);
 
 /**
  * Shut down specific SDL subsystems.

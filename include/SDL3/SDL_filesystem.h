@@ -283,7 +283,7 @@ typedef Uint32 SDL_GlobFlags;
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_CreateDirectory(const char *path);
+extern SDL_NODISCARD SDL_DECLSPEC int SDLCALL SDL_CreateDirectory(const char *path);
 
 /* Callback for directory enumeration. Return 1 to keep enumerating,
    0 to stop enumerating (no error), -1 to stop enumerating and

@@ -145,6 +145,8 @@ typedef struct SDL_Surface
 /**
  * Allocate a new RGB surface with a specific pixel format.
  *
+ * Surfaces created with this function must be freed with SDL_DestroySurface().
+ *
  * \param width the width of the surface
  * \param height the height of the surface
  * \param format the SDL_PixelFormatEnum for the new surface's pixel format.
@@ -156,7 +158,7 @@ typedef struct SDL_Surface
  * \sa SDL_CreateSurfaceFrom
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format);
 
 /**
  * Allocate a new RGB surface with a specific pixel format and existing pixel
@@ -171,6 +173,8 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height
  * You may pass NULL for pixels and 0 for pitch to create a surface that you
  * will fill in with valid values later.
  *
+ * Surfaces created with this function must be freed with SDL_DestroySurface().
+ *
  * \param pixels a pointer to existing pixel data
  * \param width the width of the surface
  * \param height the height of the surface
@@ -184,7 +188,7 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height
  * \sa SDL_CreateSurface
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, SDL_PixelFormatEnum format);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, SDL_PixelFormatEnum format);
 
 /**
  * Free an RGB surface.

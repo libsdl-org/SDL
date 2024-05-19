@@ -1357,7 +1357,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
+extern SDL_NODISCARD SDL_DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

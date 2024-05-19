@@ -373,13 +373,15 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
-                                                     const Uint8 * mask,
-                                                     int w, int h, int hot_x,
-                                                     int hot_y);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
+                                                                       const Uint8 * mask,
+                                                                       int w, int h, int hot_x,
+                                                                       int hot_y);
 
 /**
  * Create a color cursor.
+ *
+ * Cursors created with this function must be freed with SDL_DestroyCursor().
  *
  * \param surface an SDL_Surface structure representing the cursor image
  * \param hot_x the x position of the cursor hot spot
@@ -394,12 +396,14 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateColorCursor(SDL_Surface *surface,
-                                                          int hot_x,
-                                                          int hot_y);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateColorCursor(SDL_Surface *surface,
+                                                                            int hot_x,
+                                                                            int hot_y);
 
 /**
  * Create a system cursor.
+ *
+ * Cursors created with this function must be freed with SDL_DestroyCursor().
  *
  * \param id an SDL_SystemCursor enum value
  * \returns a cursor on success or NULL on failure; call SDL_GetError() for
@@ -409,7 +413,7 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateColorCursor(SDL_Surface *surfa
  *
  * \sa SDL_DestroyCursor
  */
-extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
 
 /**
  * Set the active cursor.

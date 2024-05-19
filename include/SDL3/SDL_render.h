@@ -183,6 +183,9 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetRenderDriver(int index);
 /**
  * Create a window and default renderer.
  *
+ * Windows created with this function must be freed with SDL_DestroyWindow().
+ * Rendering contexts created with this function must be freed with SDL_DestroyRenderer().
+ *
  * \param title the title of the window, in UTF-8 encoding
  * \param width the width of the window
  * \param height the height of the window
@@ -197,6 +200,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetRenderDriver(int index);
  *
  * \sa SDL_CreateRenderer
  * \sa SDL_CreateWindow
+ * \sa SDL_DestroyRenderer
+ * \sa SDL_DestroyWindow
  */
 extern SDL_DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(const char *title, int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer);
 
@@ -213,6 +218,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(const char *title, i
  * can call SDL_SetRenderLogicalPresentation() to change the content size and
  * scaling options.
  *
+ * Rendering contexts created with this function must be freed with SDL_DestroyRenderer().
+ *
  * \param window the window where rendering is displayed
  * \param name the name of the rendering driver to initialize, or NULL to
  *             initialize the first one supporting the requested flags
@@ -228,7 +235,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_CreateWindowAndRenderer(const char *title, i
  * \sa SDL_GetRenderDriver
  * \sa SDL_GetRendererInfo
  */
-extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, const char *name);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window, const char *name);
 
 /**
  * Create a 2D rendering context for a window, with the specified properties.
@@ -267,6 +274,8 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  * - `SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER`: the
  *   queue family index used for presentation.
  *
+ * Rendering contexts created with this function must be freed with SDL_DestroyRenderer().
+ *
  * \param props the properties to use
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
@@ -279,7 +288,7 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  * \sa SDL_DestroyRenderer
  * \sa SDL_GetRendererInfo
  */
-extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_PropertiesID props);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_PropertiesID props);
 
 #define SDL_PROP_RENDERER_CREATE_NAME_STRING                                "name"
 #define SDL_PROP_RENDERER_CREATE_WINDOW_POINTER                             "window"
@@ -301,6 +310,8 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
  * create a software renderer, but they are intended to be used with an
  * SDL_Window as the final destination and not an SDL_Surface.
  *
+ * Rendering contexts created with this function must be freed with SDL_DestroyRenderer().
+ *
  * \param surface the SDL_Surface structure representing the surface where
  *                rendering is done
  * \returns a valid rendering context or NULL if there was an error; call
@@ -310,7 +321,7 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
  *
  * \sa SDL_DestroyRenderer
  */
-extern SDL_DECLSPEC SDL_Renderer *SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface *surface);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Renderer *SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface *surface);
 
 /**
  * Get the renderer associated with a window.
@@ -493,6 +504,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *ren
 /**
  * Create a texture for a rendering context.
  *
+ * Textures created with this function must be freed with SDL_DestroyTexture().
+ *
  * \param renderer the rendering context
  * \param format one of the enumerated values in SDL_PixelFormatEnum
  * \param access one of the enumerated values in SDL_TextureAccess
@@ -510,7 +523,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *ren
  * \sa SDL_QueryTexture
  * \sa SDL_UpdateTexture
  */
-extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormatEnum format, int access, int w, int h);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormatEnum format, int access, int w, int h);
 
 /**
  * Create a texture from an existing surface.
@@ -523,6 +536,8 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *rendere
  * The pixel format of the created texture may be different from the pixel
  * format of the surface. Use SDL_QueryTexture() to query the pixel format of
  * the texture.
+ *
+ * Textures created with this function must be freed with SDL_DestroyTexture().
  *
  * \param renderer the rendering context
  * \param surface the SDL_Surface structure containing pixel data used to fill
@@ -537,7 +552,7 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *rendere
  * \sa SDL_DestroyTexture
  * \sa SDL_QueryTexture
  */
-extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
 /**
  * Create a texture for a rendering context with the specified properties.
@@ -633,6 +648,8 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Render
  *   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL associated with the texture, if
  *   you want to wrap an existing texture.
  *
+ * Textures created with this function must be freed with SDL_DestroyTexture().
+ *
  * \param renderer the rendering context
  * \param props the properties to use
  * \returns a pointer to the created texture or NULL if no rendering context
@@ -648,7 +665,7 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Render
  * \sa SDL_QueryTexture
  * \sa SDL_UpdateTexture
  */
-extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props);
 
 #define SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER           "colorspace"
 #define SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER               "format"
