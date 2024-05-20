@@ -125,10 +125,10 @@ static void configNode(const NodeParams &nodeParams, napi_value *nodeParamsNapi)
     napi_value borderWidth;
     napi_value nodeType;
 
-    napi_create_string_utf8(g_napiCallback->env, nodeParams.width.c_str(), NAPI_AUTO_LENGTH, &width);
-    napi_create_string_utf8(g_napiCallback->env, nodeParams.height.c_str(), NAPI_AUTO_LENGTH, &height);
-    napi_create_string_utf8(g_napiCallback->env, nodeParams.x.c_str(), NAPI_AUTO_LENGTH, &x);
-    napi_create_string_utf8(g_napiCallback->env, nodeParams.y.c_str(), NAPI_AUTO_LENGTH, &y);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.nodePosition->width.c_str(), NAPI_AUTO_LENGTH, &width);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.nodePosition->height.c_str(), NAPI_AUTO_LENGTH, &height);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.nodePosition->x.c_str(), NAPI_AUTO_LENGTH, &x);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.nodePosition->y.c_str(), NAPI_AUTO_LENGTH, &y);
     napi_create_string_utf8(g_napiCallback->env, nodeParams.border_color.c_str(), NAPI_AUTO_LENGTH, &borderColor);
     napi_create_string_utf8(g_napiCallback->env, nodeParams.border_width.c_str(), NAPI_AUTO_LENGTH, &borderWidth);
     napi_create_int32(g_napiCallback->env, nodeParams.nodeType, &nodeType);
@@ -286,8 +286,8 @@ void OHOS_TS_ReParentNode(const cJSON *root)
     napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG2, argv, nullptr);
     data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
     if (data != nullptr) {
-        long long temp = static_cast<long long>(data->valuedouble);
-        bool *returnValue = reinterpret_cast<bool *>(temp);
+        long long returnTemp = static_cast<long long>(data->valuedouble);
+        bool *returnValue = reinterpret_cast<bool *>(returnTemp);
         *returnValue = ((ret == napi_ok) ? true : false);
     }
 }
@@ -325,7 +325,8 @@ void OHOS_TS_GetNodeRect(const cJSON *root)
     OHOS_TS_GetLockInfo(root, &lockInfo);
 
     napi_value result = nullptr;
-    napi_status status = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, &result);
+    napi_status status = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv,
+                                            &result);
     if (status == napi_ok) {
         bool isArray = false;
         napi_is_array(g_napiCallback->env, result, &isArray);

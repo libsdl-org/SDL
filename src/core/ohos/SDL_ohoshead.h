@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef SDL_OHOSHEAD_H
 #define SDL_OHOSHEAD_H
 

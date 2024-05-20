@@ -14,7 +14,7 @@
  */
 
 #ifndef GLOBLE_H
-#define SDL_OHOS_TSTYPE_H
+#define GLOBLE_H
 
 #include "napi/native_api.h"
 extern napi_ref g_rootView;

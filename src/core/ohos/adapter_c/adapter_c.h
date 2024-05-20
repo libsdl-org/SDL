@@ -56,7 +56,8 @@ enum XComponentType {
  */
 class XComponentModel {
 public:
-    XComponentModel(std::string id, XComponentType type, std::string libraryName) {
+    XComponentModel(std::string id, XComponentType type, std::string libraryName)
+    {
         this->id = id;
         this->type = type;
         this->libraryName = libraryName;
@@ -71,18 +72,33 @@ public:
 };
 
 /**
- * Node attribute configuration
+ * Node position attribute configuration
  */
-class NodeParams {
+class NodePosition {
 public:
-    NodeParams(std::string width, std::string height, std::string x, std::string y, NodeType nodeType,
-               XComponentModel *componentModel) {
+    NodePosition(std::string width, std::string height, std::string x, std::string y)
+    {
         this->width = width;
         this->height = height;
         this->x = x;
         this->y = y;
+    }
+
+    std::string width = "50%";
+    std::string height = "50%";
+    std::string x = "0";
+    std::string y = "0";
+};
+
+/**
+ * Node attribute configuration
+ */
+class NodeParams {
+public:
+    NodeParams(NodeType nodeType, XComponentModel *componentModel, NodePosition *nodePosition) {
         this->nodeType = nodeType;
         this->componentModel = componentModel;
+        this->nodePosition = nodePosition;
     }
 
     ~NodeParams() {
@@ -90,13 +106,10 @@ public:
             componentModel = nullptr;
         }
     }
-
-    std::string width = "50%";
-    std::string height = "50%";
-    std::string x = "0";
-    std::string y = "0";
+    
     std::string border_color = "#000000";
     std::string border_width = "0";
+    NodePosition *nodePosition = nullptr;
     XComponentModel *componentModel = nullptr;
     NodeType nodeType = NodeType::XComponent;
 };

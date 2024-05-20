@@ -85,12 +85,12 @@ OhosThreadLock *OhosPluginManager::CreateOhosThreadLock(const pthread_t threadId
 {
     OhosThreadLock *threadLock = nullptr;
     if (ohosThreadLocks.find(threadId) != ohosThreadLocks.end()) {
-         threadLock = ohosThreadLocks[threadId];
-    } else  {
-         threadLock = new OhosThreadLock();
-         threadLock->mLock = SDL_CreateMutex();
-         threadLock->mCond = SDL_CreateCond();
-         ohosThreadLocks.insert(std::make_pair(threadId, threadLock));
+        threadLock = ohosThreadLocks[threadId];
+    } else {
+        threadLock = new OhosThreadLock();
+        threadLock->mLock = SDL_CreateMutex();
+        threadLock->mCond = SDL_CreateCond();
+        ohosThreadLocks.insert(std::make_pair(threadId, threadLock));
     }
     return threadLock;
 }
@@ -106,43 +106,44 @@ void OhosPluginManager::SetNativeXComponentList(OH_NativeXComponent *component, 
 {
     if (nullptr == data || nullptr == component) {
          return;
-     }
-     if (nativeXComponentList.find(component) == nativeXComponentList.end()) {
-         nativeXComponentList[component] = data;
-         return;
-     }
-    
-     if (nativeXComponentList[component] != data) {
-         SDL_WindowData *tmp = nativeXComponentList[component];
-         if (tmp != nullptr) {
-             delete tmp;
-             tmp = nullptr;
-         }
-         nativeXComponentList[component] = data;
-     }
+    }
+    if (nativeXComponentList.find(component) == nativeXComponentList.end()) {
+        nativeXComponentList[component] = data;
+        return;
+    }
+
+    if (nativeXComponentList[component] != data) {
+        SDL_WindowData *tmp = nativeXComponentList[component];
+        if (tmp != nullptr) {
+            delete tmp;
+            tmp = nullptr;
+        }
+        nativeXComponentList[component] = data;
+    }
 }
 
 SDL_WindowData* OhosPluginManager::GetWindowDataByXComponent(OH_NativeXComponent *component)
 {
-     if (nullptr == component) {
-         return nullptr;
-     }
-     if (nativeXComponentList.find(component) == nativeXComponentList.end()) {
-         return nullptr;
-     }
+    if (nullptr == component) {
+        return nullptr;
+    }
+    if (nativeXComponentList.find(component) == nativeXComponentList.end()) {
+        return nullptr;
+    }
 
-     return nativeXComponentList[component];
+    return nativeXComponentList[component];
 }
 
-pthread_t OhosPluginManager::GetThreadIdFromXComponentId(std::string &id) {
-     for (auto &threadIdAndXComponentId : threadXcompentList) {
-         for (auto &idStr : threadIdAndXComponentId.second) {
-             if (id == idStr) {
-                 return threadIdAndXComponentId.first;
-             }
-         }
-     }
-     return -1;
+pthread_t OhosPluginManager::GetThreadIdFromXComponentId(std::string &id)
+{
+    for (auto &threadIdAndXComponentId : threadXcompentList) {
+        for (auto &idStr : threadIdAndXComponentId.second) {
+            if (id == idStr) {
+                return threadIdAndXComponentId.first;
+            }
+        }
+    }
+    return -1;
 }
 
 OhosThreadLock *OhosPluginManager::GetOhosThreadLockFromThreadId(pthread_t threadId)
@@ -172,28 +173,28 @@ int OhosPluginManager::ClearPluginManagerData(std::string &id, OH_NativeXCompone
     }
     
     if (threadXcompentList.find(threadId) != threadXcompentList.end()) {
-     for (auto iter = threadXcompentList[threadId].begin(); iter != threadXcompentList[threadId].end(); iter++) {
-         if (*iter == id) {
-             threadXcompentList[threadId].erase(iter);
-         }
-     }
-     if (threadXcompentList[threadId].empty()) {
-         threadXcompentList.erase(threadId);
-     }
+        for (auto iter = threadXcompentList[threadId].begin(); iter != threadXcompentList[threadId].end(); iter++) {
+            if (*iter == id) {
+                    threadXcompentList[threadId].erase(iter);
+            }
+        }
+        if (threadXcompentList[threadId].empty()) {
+            threadXcompentList.erase(threadId);
+        }
     }
     
     if (ohosThreadLocks.find(threadId) != ohosThreadLocks.end()) {
-     if (!((threadXcompentList.find(threadId) != threadXcompentList.end()) &&
-           (threadXcompentList[threadId].empty()))) {
-         auto lock = ohosThreadLocks[threadId];
-         if (nullptr != lock) {
-             SDL_DestroyMutex(lock->mLock);
-             SDL_DestroyCond(lock->mCond);
-             delete lock;
-             lock = nullptr;
-         }
-         ohosThreadLocks.erase(threadId);
-     }
+        if (!((threadXcompentList.find(threadId) != threadXcompentList.end()) &&
+            (threadXcompentList[threadId].empty()))) {
+            auto lock = ohosThreadLocks[threadId];
+            if (nullptr != lock) {
+                SDL_DestroyMutex(lock->mLock);
+                SDL_DestroyCond(lock->mCond);
+                delete lock;
+                lock = nullptr;
+            }
+            ohosThreadLocks.erase(threadId);
+        }
     }
     return 0;
 }

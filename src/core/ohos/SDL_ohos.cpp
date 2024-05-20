@@ -738,7 +738,8 @@ void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, int x, int y, int w
 {
     XComponentModel xComponentModel(to_string(xComponentId), XComponentType::SURFACE, "SDL2d");
     xComponentId++;
-    NodeParams nodeParams(to_string(w), to_string(h), to_string(x), to_string(y), NodeType::XComponent, &xComponentModel);
+    NodePosition nodePositon(to_string(w), to_string(h), to_string(x), to_string(y));
+    NodeParams nodeParams(NodeType::XComponent, &xComponentModel, &nodePositon);
     *childRef = AddSdlChildNode(nodeRef, &nodeParams);
     return;
 }
