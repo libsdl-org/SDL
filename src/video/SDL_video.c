@@ -2160,7 +2160,11 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         }
 
         SDL_zero(bounds);
-        SDL_GetDisplayBounds(displayID, &bounds);
+        SDL_GetDisplayUsableBounds(displayID, &bounds);
+        if (w > bounds.w || h > bounds.h) {
+            /* This window is larger than the usable bounds, just center on the display */
+            SDL_GetDisplayUsableBounds(displayID, &bounds);
+        }
         if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISUNDEFINED(x)) {
             if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
                 undefined_x = SDL_TRUE;
@@ -2622,8 +2626,12 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         }
 
         SDL_zero(bounds);
-        if (SDL_GetDisplayBounds(displayID, &bounds) < 0) {
-            return -1;
+        if (SDL_GetDisplayUsableBounds(displayID, &bounds) < 0 ||
+            window->windowed.w > bounds.w ||
+            window->windowed.h > bounds.h) {
+            if (SDL_GetDisplayBounds(displayID, &bounds) < 0) {
+                return -1;
+            }
         }
         if (SDL_WINDOWPOS_ISCENTERED(x)) {
             x = bounds.x + (bounds.w - window->windowed.w) / 2;
