@@ -277,6 +277,13 @@ typedef struct SDL_TextEditingExtEvent
  * event will only contain complete codepoints. However, if there are several
  * codepoints that go together into a single glyph (like an emoji "thumbs up"
  * followed by a skin color), they may be split between events.
+ *
+ * This event will never be delivered unless text input is enabled by calling
+ * SDL_StartTextInput(). Text input is enabled by default on desktop
+ * platforms, and disabled by default on mobile platforms!
+ *
+ * \sa SDL_StartTextInput
+ * \sa SDL_StopTextInput
  */
 typedef struct SDL_TextInputEvent
 {
