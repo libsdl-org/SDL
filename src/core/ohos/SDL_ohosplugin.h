@@ -41,7 +41,7 @@ public:
     bool FindNativeXcomPoment(std::string &id, OH_NativeXComponent **nativeXComponent);
     bool FindNativeWindow(OH_NativeXComponent *nativeXComponent, SDL_WindowData **window);
     OhosThreadLock* CreateOhosThreadLock(const pthread_t threadId);
-    void destroyOhosThreadLock(OhosThreadLock *threadLock);
+    void DestroyOhosThreadLock(OhosThreadLock *threadLock);
 
     void SetNativeXComponentList(OH_NativeXComponent*, SDL_WindowData *);
     pthread_t  GetThreadIdFromXComponentId(std::string &id);

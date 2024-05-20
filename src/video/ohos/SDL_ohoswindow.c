@@ -49,12 +49,19 @@ int OHOS_CreateWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
 {
     napi_ref parentWindowNode = NULL;
     napi_ref childWindowNode = NULL;
+    WindowPosition *windowPosition = NULL;
     if (window->ohosHandle == NULL) {
         OHOS_GetRootNode(g_windowId, &parentWindowNode);
         if (parentWindowNode == NULL) {
             return -1;
         }
-        OHOS_AddChildNode(parentWindowNode, &childWindowNode, window->x, window->y, window->w, window->h);
+        windowPosition = (WindowPosition*)SDL_malloc(sizeof(WindowPosition));
+        windowPosition->height = window->h;
+        windowPosition->width = window->w;
+        windowPosition->x = window->x;
+        windowPosition->y = window->y;
+        OHOS_AddChildNode(parentWindowNode, &childWindowNode, window->x, windowPosition);
+        SDL_free(windowPosition);
         napi_release_threadsafe_function(parentWindowNode, napi_tsfn_release);
         if (childWindowNode == NULL) {
             return -1;
@@ -174,7 +181,7 @@ static void OHOS_WaitGetNativeXcompent(const char *strID, pthread_t tid, OH_Nati
 }
 
 static void OHOS_WaitGetNativeWindow(const char *strID, pthread_t tid, SDL_WindowData **windowData,
-                                    OH_NativeXComponent *nativeXComponent)
+    OH_NativeXComponent *nativeXComponent)
 {
     OhosThreadLock *lock = NULL;
     if (!OHOS_FindNativeWindow(nativeXComponent, windowData)) {

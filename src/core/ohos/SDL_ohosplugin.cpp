@@ -95,7 +95,7 @@ OhosThreadLock *OhosPluginManager::CreateOhosThreadLock(const pthread_t threadId
     return threadLock;
 }
 
-void OhosPluginManager::destroyOhosThreadLock(OhosThreadLock *threadLock)
+void OhosPluginManager::DestroyOhosThreadLock(OhosThreadLock *threadLock)
 {
     SDL_DestroyMutex(threadLock->mLock);
     SDL_DestroyCond(threadLock->mCond);

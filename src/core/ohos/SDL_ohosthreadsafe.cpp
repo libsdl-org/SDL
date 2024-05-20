@@ -36,7 +36,7 @@ std::unique_ptr<NapiCallbackContext> g_napiCallback = nullptr;
 
 #define      OHOS_THREAD_NAME     "threadname"
 static int g_threadName = 0;
-static std::set<SDL_Thread *> g_sdlMainThreadList;
+static std::set<SDL_Thread *> gSdlMainThreadList;
 
 typedef void (*OHOS_TS_Fuction)(const cJSON *root);
 
@@ -439,13 +439,13 @@ SDL_bool OHOS_RunThread(OhosSDLEntryInfo *info)
     g_threadName++;
     std::string threadname = OHOS_THREAD_NAME + g_threadName;
     SDL_Thread *g_sdlMainThread = SDL_CreateThreadInternal(OHOS_RunMain, threadname.c_str(), stacksize, info);
-    g_sdlMainThreadList.insert(g_sdlMainThread);
+    gSdlMainThreadList.insert(g_sdlMainThread);
     return g_sdlMainThread == NULL ? SDL_FALSE : SDL_TRUE;
 }
 
 void OHOS_ThreadExit(void)
 {
-    for (SDL_Thread *thread:g_sdlMainThreadList) {
+    for (SDL_Thread *thread:gSdlMainThreadList) {
         if (thread != NULL) {
             SDL_WaitThread(thread, NULL);
         }

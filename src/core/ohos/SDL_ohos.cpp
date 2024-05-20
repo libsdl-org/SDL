@@ -734,11 +734,12 @@ char *OHOS_GetXComponentId(napi_ref nodeRef)
     return GetXComponentId(nodeRef);
 }
 
-void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, int x, int y, int w, int h)
+void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, WindowPosition *windowPosition)
 {
     XComponentModel xComponentModel(to_string(xComponentId), XComponentType::SURFACE, "SDL2d");
     xComponentId++;
-    NodePosition nodePositon(to_string(w), to_string(h), to_string(x), to_string(y));
+    NodePosition nodePositon(to_string(windowPosition->width), to_string(windowPosition->height),
+        to_string(windowPosition->x), to_string(windowPosition->y));
     NodeParams nodeParams(NodeType::XComponent, &xComponentModel, &nodePositon);
     *childRef = AddSdlChildNode(nodeRef, &nodeParams);
     return;

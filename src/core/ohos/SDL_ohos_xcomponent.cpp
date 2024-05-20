@@ -182,6 +182,31 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
+static void DestroyXcompentData(SDL_WindowData *data, std::string &curXComponentId, OH_NativeXComponent *component)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (data->egl_xcomponent != EGL_NO_SURFACE) {
+        SDL_EGL_DestroySurface(_this, data->egl_xcomponent);
+        data->egl_xcomponent = EGL_NO_SURFACE;
+    }
+
+    if (data->native_window) {
+        SDL_free(data->native_window);
+        data->native_window = NULL;
+    }
+    data->height = data->width = 0;
+    data->x = data->y = 0;
+
+    long xComponentThreadId = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(curXComponentId);
+    if (xComponentThreadId == -1) {
+        return;
+    }
+    if (OhosPluginManager::GetInstance()->ClearPluginManagerData(curXComponentId, component, xComponentThreadId) ==
+        -1) {
+        return;
+    }
+}
+
 static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
 {
     int nb_attempt = 50;
@@ -215,28 +240,8 @@ retry:
             goto retry;
         }
     }
-    if (data->egl_xcomponent != EGL_NO_SURFACE) {
-        SDL_EGL_DestroySurface(_this, data->egl_xcomponent);
-        data->egl_xcomponent = EGL_NO_SURFACE;
-    }
-
-    if (data->native_window) {
-        SDL_free(data->native_window);
-        data->native_window = NULL;
-    }
-    data->height = data->width = 0;
-    data->x = data->y = 0;
-
-    long xComponentThreadId = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(curXComponentId);
-    if (xComponentThreadId == -1) {
-        SDL_UnlockMutex(OHOS_PageMutex);
-        return;
-    }
-    if (OhosPluginManager::GetInstance()->ClearPluginManagerData(curXComponentId, component, xComponentThreadId) ==
-        -1) {
-        SDL_UnlockMutex(OHOS_PageMutex);
-        return;
-    }
+    SDL_EGL_DestroySurface(_this, data->egl_xcomponent);
+    DestroyXcompentData(data, curXComponentId, component);
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 

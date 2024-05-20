@@ -30,6 +30,13 @@ extern "C" {
 /* *INDENT-ON* */
 #endif
 
+typedef struct {
+    int x;
+    int y;
+    int width;
+    int height;
+} WindowPosition;
+
 extern SDL_DisplayOrientation displayOrientation;
 extern SDL_atomic_t bPermissionRequestPending;
 extern SDL_bool bPermissionRequestResult;
@@ -63,7 +70,7 @@ extern int OHOS_NAPI_GetWindowId();
 
 extern void OHOS_GetRootNode(int windowId, napi_ref *rootRef);
 extern char* OHOS_GetXComponentId(napi_ref nodeRef);
-extern void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, int x, int y, int w, int h);
+extern void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, WindowPosition *windowPosition);
 extern bool OHOS_RemoveChildNode(napi_ref nodeChildRef);
 extern bool OHOS_ResizeNode(napi_ref nodeRef, int w, int h);
 extern bool OHOS_ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef);
