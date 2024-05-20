@@ -338,7 +338,13 @@ typedef struct SDL_TextEditingEvent
  * The `text` is owned by SDL and should be copied if the application wants to
  * hold onto it beyond the scope of handling this event.
  *
+ * This event will never be delivered unless text input is enabled by calling
+ * SDL_StartTextInput(). Text input is disabled by default!
+ *
  * \since This struct is available since SDL 3.0.0.
+ *
+ * \sa SDL_StartTextInput
+ * \sa SDL_StopTextInput
  */
 typedef struct SDL_TextInputEvent
 {
