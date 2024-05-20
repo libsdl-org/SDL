@@ -97,15 +97,15 @@ OhosThreadLock *OhosPluginManager::CreateOhosThreadLock(const pthread_t threadId
 
 void OhosPluginManager::destroyOhosThreadLock(OhosThreadLock *threadLock)
 {
-     SDL_DestroyMutex(threadLock->mLock);
-     SDL_DestroyCond(threadLock->mCond);
-     delete threadLock;
+    SDL_DestroyMutex(threadLock->mLock);
+    SDL_DestroyCond(threadLock->mCond);
+    delete threadLock;
 }
 
 void OhosPluginManager::SetNativeXComponentList(OH_NativeXComponent *component, SDL_WindowData *data)
 {
     if (nullptr == data || nullptr == component) {
-         return;
+        return;
     }
     if (nativeXComponentList.find(component) == nativeXComponentList.end()) {
         nativeXComponentList[component] = data;

@@ -182,7 +182,8 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
     SDL_UnlockMutex(OHOS_PageMutex);
 }
 
-static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window) {
+static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
+{
     int nb_attempt = 50;
     char idStr[OH_XCOMPONENT_ID_LEN_MAX + 1] = {'\0'};
     uint64_t idSize = OH_XCOMPONENT_ID_LEN_MAX + 1;

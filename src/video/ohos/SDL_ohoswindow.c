@@ -157,64 +157,78 @@ void OHOS_SetWindowPosition(SDL_VideoDevice *thisDevice, SDL_Window *window)
     OHOS_MoveNode(window->ohosHandle, window->x, window->y);
 }
 
-int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const void *data)
+static void OHOS_WaitGetNativeXcompent(const char *strID, pthread_t tid, OH_NativeXComponent **nativeXComponent)
 {
-    char *strID = NULL;
-    OH_NativeXComponent *nativeXComponent = NULL;
     OhosThreadLock *lock = NULL;
-    SDL_WindowData *windowData = NULL;
-    SDL_WindowData *sdlWindowData = NULL;
-    pthread_t tid;
-    if (data == NULL && window->ohosHandle == NULL) {
-        return -1;
-     }
-     if (data != NULL && window->ohosHandle == NULL) {
-        window->ohosHandle = data;
-     }
-     strID = OHOS_GetXComponentId(window->ohosHandle);
-     window->xcompentId = strID;
-     // get thread id
-     tid = pthread_self();
-     OHOS_AddXcomPomentIdForThread(strID, tid);
-     if (!OHOS_FindNativeXcomPoment(strID, &nativeXComponent)) {
+    if (!OHOS_FindNativeXcomPoment(strID, nativeXComponent)) {
         OHOS_FindOrCreateThreadLock(tid, &lock);
         if (lock == NULL) {
-            return -1;
+            return;
         }
-        while (!OHOS_FindNativeXcomPoment(strID, &nativeXComponent)) {
+        while (!OHOS_FindNativeXcomPoment(strID, nativeXComponent)) {
             SDL_LockMutex(lock->mLock);
             SDL_CondWait(lock->mCond, lock->mLock);
             SDL_UnlockMutex(lock->mLock);
         }
-     }
+    }
+}
 
-     if (!OHOS_FindNativeWindow(nativeXComponent, &windowData)) {
+static void OHOS_WaitGetNativeWindow(const char *strID, pthread_t tid, SDL_WindowData **windowData,
+                                    OH_NativeXComponent *nativeXComponent)
+{
+    OhosThreadLock *lock = NULL;
+    if (!OHOS_FindNativeWindow(nativeXComponent, windowData)) {
+        OHOS_FindOrCreateThreadLock(tid, &lock);
         if (lock == NULL) {
-            OHOS_FindOrCreateThreadLock(tid, &lock);
-            if (lock == NULL) {
-                return -1;
-            }
+            return;
         }
-        while (!OHOS_FindNativeWindow(nativeXComponent, &windowData)) {
+        while (!OHOS_FindNativeWindow(nativeXComponent, windowData)) {
             SDL_LockMutex(lock->mLock);
             SDL_CondWait(lock->mCond, lock->mLock);
             SDL_LockMutex(lock->mLock);
         }
-     }
-     sdlWindowData = (SDL_WindowData *)SDL_malloc(sizeof(SDL_WindowData));
-     SDL_LockMutex(OHOS_PageMutex);
-     window->x = windowData->x;
-     window->y = windowData->y;
-     window->w = windowData->width;
-     window->h = windowData->height;
+    }
+}
+
+static void OHOS_SetRealWindowPosition(SDL_Window *window, SDL_WindowData *windowData)
+{
+    window->x = windowData->x;
+    window->y = windowData->y;
+    window->w = windowData->width;
+    window->h = windowData->height;
+}
+
+int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const void *data)
+{
+    char *strID = NULL;
+    pthread_t tid;
+    OH_NativeXComponent *nativeXComponent = NULL;
+    SDL_WindowData *windowData = NULL;
+    SDL_WindowData *sdlWindowData = NULL;
+    if (data == NULL && window->ohosHandle == NULL) {
+        return -1;
+    }
+    if (data != NULL && window->ohosHandle == NULL) {
+        window->ohosHandle = data;
+    }
+    strID = OHOS_GetXComponentId(window->ohosHandle);
+    window->xcompentId = strID;
+
+    tid = pthread_self();
+    OHOS_AddXcomPomentIdForThread(strID, tid);
+    OHOS_WaitGetNativeXcompent(strID, tid, &nativeXComponent);
+    OHOS_WaitGetNativeWindow(strID, tid, &windowData, nativeXComponent);
     
-     sdlWindowData->native_window = windowData->native_window;
-     if (!sdlWindowData->native_window) {
+    sdlWindowData = (SDL_WindowData *)SDL_malloc(sizeof(SDL_WindowData));
+    SDL_LockMutex(OHOS_PageMutex);
+    OHOS_SetRealWindowPosition(window, windowData);
+    sdlWindowData->native_window = windowData->native_window;
+    if (!sdlWindowData->native_window) {
         SDL_free(data);
         goto endfunction;
-     }
-     SDL_Log("Successful get windowdata, native_window = %p.", sdlWindowData->native_window);
-     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
+    }
+    SDL_Log("Successful get windowdata, native_window = %p.", sdlWindowData->native_window);
+    if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
         sdlWindowData->egl_xcomponent =
             (EGLSurface)SDL_EGL_CreateSurface(thisDevice, (NativeWindowType)windowData->native_window);
         windowData->egl_xcomponent = sdlWindowData->egl_xcomponent;
@@ -223,9 +237,9 @@ int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const
             SDL_free(windowData);
             goto endfunction;
         }
-     }
-     window->driverdata = sdlWindowData;
-     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+    }
+    window->driverdata = sdlWindowData;
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
 endfunction:
      SDL_UnlockMutex(OHOS_PageMutex);
      return 0;

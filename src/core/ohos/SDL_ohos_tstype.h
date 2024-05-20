@@ -30,8 +30,6 @@
 #define OHOS_JSON_Y            "y"
 #define OHOS_JSON_VISIBILITY   "visibility"
 
-
-
 enum NapiCallBackType {
     NAPI_CALLBACK_CREATE_CUSTOMCURSOR,
     NAPI_CALLBACK_SET_CUSTOMCURSOR,

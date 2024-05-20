@@ -116,7 +116,8 @@ void OHOS_TS_GetXComponentId(const cJSON *root)
     OHOS_TS_wakeup(root, lockInfo);
 }
 
-static void configNode(const NodeParams &nodeParams, napi_value *nodeParamsNapi) {
+static void configNode(const NodeParams &nodeParams, napi_value *nodeParamsNapi)
+{
     napi_value width;
     napi_value height;
     napi_value x;

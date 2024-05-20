@@ -95,13 +95,15 @@ public:
  */
 class NodeParams {
 public:
-    NodeParams(NodeType nodeType, XComponentModel *componentModel, NodePosition *nodePosition) {
+    NodeParams(NodeType nodeType, XComponentModel *componentModel, NodePosition *nodePosition)
+    {
         this->nodeType = nodeType;
         this->componentModel = componentModel;
         this->nodePosition = nodePosition;
     }
 
-    ~NodeParams() {
+    ~NodeParams()
+    {
         if (componentModel != nullptr) {
             componentModel = nullptr;
         }

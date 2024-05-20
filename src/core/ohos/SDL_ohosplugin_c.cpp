@@ -15,7 +15,8 @@
 #include "SDL_ohosplugin_c.h"
 #include "SDL_ohosplugin.h"
 
-bool OHOS_FindNativeXcomPoment(char *id, OH_NativeXComponent **nativeXComponent) {
+bool OHOS_FindNativeXcomPoment(char *id, OH_NativeXComponent **nativeXComponent)
+{
     if (id == NULL) {
         return false;
     }

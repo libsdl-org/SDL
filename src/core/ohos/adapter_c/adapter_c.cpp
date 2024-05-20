@@ -157,7 +157,7 @@ bool RaiseNode(napi_ref nodeRef)
     return returnValue;
 }
 
-bool LowerNode(napi_ref nodeRef) 
+bool LowerNode(napi_ref nodeRef)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
