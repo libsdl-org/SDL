@@ -241,7 +241,12 @@ static int SDL_DelFinger(SDL_Touch *touch, SDL_FingerID fingerid)
     }
 
     if (index < (touch->num_fingers - 1)) {
+        // Move the deleted finger to the end of the active fingers array and shift the active fingers by one.
+        // This ensures that the descriptor for the now-deleted finger is located at `touch->fingers[touch->num_fingers]` (after the decrement below)
+        // and is ready for use in SDL_AddFinger.
+        SDL_Finger *deleted_finger = touch->fingers[index]; 
         SDL_memmove(&touch->fingers[index], &touch->fingers[index + 1], (touch->num_fingers - index - 1) * sizeof(touch->fingers[index]));
+        touch->fingers[touch->num_fingers - 1] = deleted_finger;
     }
     --touch->num_fingers;
     return 0;
