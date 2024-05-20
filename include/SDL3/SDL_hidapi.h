@@ -41,8 +41,8 @@
  * remains intact.
  * ```
  *
- * (Note that this license is the same as item three of SDL's zlib license,
- * so it adds no new requirements on the user.)
+ * (Note that this license is the same as item three of SDL's zlib license, so
+ * it adds no new requirements on the user.)
  *
  * If you would like a version of SDL without this code, you can build SDL
  * with SDL_HIDAPI_DISABLED defined to 1. You might want to do this for
