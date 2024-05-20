@@ -27,36 +27,22 @@
  * Header file for SDL HIDAPI functions.
  *
  * This is an adaptation of the original HIDAPI interface by Alan Ott, and
- * includes source code licensed under the following BSD license:
+ * includes source code licensed under the following license:
  *
  * ```
- *  Copyright (c) 2010, Alan Ott, Signal 11 Software
- *  All rights reserved.
+ * HIDAPI - Multi-Platform library for
+ * communication with HID devices.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Copyright 2009, Alan Ott, Signal 11 Software.
+ * All Rights Reserved.
  *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *  * Neither the name of Signal 11 Software nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
+ * This software may be used by anyone for any reason so
+ * long as the copyright notice in the source files
+ * remains intact.
  * ```
+ *
+ * (Note that this license is the same as item three of SDL's zlib license,
+ * so it adds no new requirements on the user.)
  *
  * If you would like a version of SDL without this code, you can build SDL
  * with SDL_HIDAPI_DISABLED defined to 1. You might want to do this for
