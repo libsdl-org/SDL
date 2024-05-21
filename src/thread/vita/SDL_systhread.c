@@ -48,7 +48,10 @@ static int ThreadEntry(SceSize args, void *argp)
     return 0;
 }
 
-int SDL_SYS_CreateThread(SDL_Thread *thread)
+int SDL_SYS_CreateThread(SDL_Thread *thread,
+                         SDL_FunctionPointer pfnBeginThread,
+                         SDL_FunctionPointer pfnEndThread)
+
 {
     char thread_name[VITA_THREAD_NAME_MAX];
     size_t stack_size = VITA_THREAD_STACK_SIZE_DEFAULT;

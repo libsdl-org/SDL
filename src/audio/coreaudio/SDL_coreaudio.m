@@ -952,7 +952,7 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     char threadname[64];
     SDL_GetAudioThreadName(device, threadname, sizeof(threadname));
-    device->hidden->thread = SDL_CreateThreadInternal(AudioQueueThreadEntry, threadname, 0, device);
+    device->hidden->thread = SDL_CreateThread(AudioQueueThreadEntry, threadname, device);
     if (!device->hidden->thread) {
         return -1;
     }

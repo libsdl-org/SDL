@@ -109,8 +109,8 @@
 #define SDL_CreateTexture SDL_CreateTexture_REAL
 #define SDL_CreateTextureFromSurface SDL_CreateTextureFromSurface_REAL
 #define SDL_CreateTextureWithProperties SDL_CreateTextureWithProperties_REAL
-#define SDL_CreateThread    SDL_CreateThread_REAL
-#define SDL_CreateThreadWithStackSize   SDL_CreateThreadWithStackSize_REAL
+#define SDL_CreateThreadRuntime    SDL_CreateThreadRuntime_REAL
+#define SDL_CreateThreadWithStackSizeRuntime   SDL_CreateThreadWithStackSizeRuntime_REAL
 #define SDL_CreateWindow SDL_CreateWindow_REAL
 #define SDL_CreateWindowAndRenderer SDL_CreateWindowAndRenderer_REAL
 #define SDL_CreateWindowWithProperties SDL_CreateWindowWithProperties_REAL

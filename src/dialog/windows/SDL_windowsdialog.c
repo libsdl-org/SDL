@@ -459,7 +459,7 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
     args->callback = callback;
     args->userdata = userdata;
 
-    thread = SDL_CreateThreadInternal(windows_file_dialog_thread, "SDL_ShowOpenFileDialog", 0, (void *) args);
+    thread = SDL_CreateThread(windows_file_dialog_thread, "SDL_ShowOpenFileDialog", (void *) args);
 
     if (thread == NULL) {
         callback(userdata, NULL, -1);
@@ -495,7 +495,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
     args->callback = callback;
     args->userdata = userdata;
 
-    thread = SDL_CreateThreadInternal(windows_file_dialog_thread, "SDL_ShowSaveFileDialog", 0, (void *) args);
+    thread = SDL_CreateThread(windows_file_dialog_thread, "SDL_ShowSaveFileDialog", (void *) args);
 
     if (thread == NULL) {
         callback(userdata, NULL, -1);
@@ -528,7 +528,7 @@ void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, S
     args->default_folder = default_location;
     args->userdata = userdata;
 
-    thread = SDL_CreateThreadInternal(windows_folder_dialog_thread, "SDL_ShowOpenFolderDialog", 0, (void *) args);
+    thread = SDL_CreateThread(windows_folder_dialog_thread, "SDL_ShowOpenFolderDialog", (void *) args);
 
     if (thread == NULL) {
         callback(userdata, NULL, -1);

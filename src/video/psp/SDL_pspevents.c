@@ -252,7 +252,7 @@ int PSP_EventInit(SDL_VideoDevice *_this)
         return SDL_SetError("Can't create input semaphore");
     }
     running = 1;
-    if ((thread = SDL_CreateThreadInternal(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
+    if ((thread = SDL_CreateThreadWithStackSize(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
         return SDL_SetError("Can't create input thread");
     }
     return 0;

@@ -84,8 +84,8 @@ SDL3_0.0.0 {
     SDL_CreateTexture;
     SDL_CreateTextureFromSurface;
     SDL_CreateTextureWithProperties;
-    SDL_CreateThread;
-    SDL_CreateThreadWithStackSize;
+    SDL_CreateThreadRuntime;
+    SDL_CreateThreadWithStackSizeRuntime;
     SDL_CreateWindow;
     SDL_CreateWindowAndRenderer;
     SDL_CreateWindowWithProperties;

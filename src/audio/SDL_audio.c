@@ -1633,10 +1633,9 @@ static int OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec 
 
     // Start the audio thread if necessary
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
-        const size_t stacksize = 0;  // just take the system default, since audio streams might have callbacks.
         char threadname[64];
         SDL_GetAudioThreadName(device, threadname, sizeof (threadname));
-        device->thread = SDL_CreateThreadInternal(device->iscapture ? CaptureAudioThread : OutputAudioThread, threadname, stacksize, device);
+        device->thread = SDL_CreateThread(device->iscapture ? CaptureAudioThread : OutputAudioThread, threadname, device);
 
         if (!device->thread) {
             ClosePhysicalAudioDevice(device);

@@ -1150,7 +1150,7 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
     if (!camera_driver.impl.ProvidesOwnCallbackThread) {
         char threadname[64];
         SDL_GetCameraThreadName(device, threadname, sizeof (threadname));
-        device->thread = SDL_CreateThreadInternal(CameraThread, threadname, 0, device);
+        device->thread = SDL_CreateThread(CameraThread, threadname, device);
         if (!device->thread) {
             ClosePhysicalCameraDevice(device);
             ReleaseCameraDevice(device);

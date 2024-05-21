@@ -307,27 +307,21 @@ void SDL_RunThread(SDL_Thread *thread)
     }
 }
 
-#ifdef SDL_CreateThread
-#undef SDL_CreateThread
-#undef SDL_CreateThreadWithStackSize
-#endif
-#if SDL_DYNAMIC_API
-#define SDL_CreateThread              SDL_CreateThread_REAL
-#define SDL_CreateThreadWithStackSize SDL_CreateThreadWithStackSize_REAL
-#endif
-
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
+SDL_Thread *SDL_CreateThreadWithStackSizeRuntime(SDL_ThreadFunction fn,
                               const char *name, const size_t stacksize, void *data,
-                              pfnSDL_CurrentBeginThread pfnBeginThread,
-                              pfnSDL_CurrentEndThread pfnEndThread)
-#else
-SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
-                              const char *name, const size_t stacksize, void *data)
-#endif
+                              SDL_FunctionPointer pfnBeginThread,
+                              SDL_FunctionPointer pfnEndThread)
 {
     SDL_Thread *thread;
     int ret;
+
+    // rather than check this in every backend, just make sure it's correct upfront. Only allow non-NULL if non-WinRT Windows, or Microsoft GDK.
+    #if (!defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)) || defined(SDL_PLATFORM_WINRT)
+    if (pfnBeginThread || pfnEndThread) {
+        SDL_SetError("_beginthreadex/_endthreadex not supported on this platform");
+        return NULL;
+    }
+    #endif
 
     /* Allocate memory for the thread info structure */
     thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
@@ -351,11 +345,7 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
     thread->stacksize = stacksize;
 
     /* Create the thread and go! */
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
     ret = SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread);
-#else
-    ret = SDL_SYS_CreateThread(thread);
-#endif
     if (ret < 0) {
         /* Oops, failed.  Gotta free everything */
         SDL_free(thread->name);
@@ -367,31 +357,12 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
     return thread;
 }
 
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
+SDL_Thread *SDL_CreateThreadRuntime(SDL_ThreadFunction fn,
                  const char *name, void *data,
-                 pfnSDL_CurrentBeginThread pfnBeginThread,
-                 pfnSDL_CurrentEndThread pfnEndThread)
-#else
-SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
-                 const char *name, void *data)
-#endif
+                 SDL_FunctionPointer pfnBeginThread,
+                 SDL_FunctionPointer pfnEndThread)
 {
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-    return SDL_CreateThreadWithStackSize(fn, name, 0, data, pfnBeginThread, pfnEndThread);
-#else
-    return SDL_CreateThreadWithStackSize(fn, name, 0, data);
-#endif
-}
-
-SDL_Thread *SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
-                         const size_t stacksize, void *data)
-{
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-    return SDL_CreateThreadWithStackSize(fn, name, stacksize, data, NULL, NULL);
-#else
-    return SDL_CreateThreadWithStackSize(fn, name, stacksize, data);
-#endif
+    return SDL_CreateThreadWithStackSizeRuntime(fn, name, 0, data, pfnBeginThread, pfnEndThread);
 }
 
 SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)

@@ -120,7 +120,7 @@ static int SDL_ANDROID_StartSensorThread(SDL_AndroidSensorThreadContext *ctx)
     }
 
     SDL_AtomicSet(&ctx->running, SDL_TRUE);
-    ctx->thread = SDL_CreateThreadInternal(SDL_ANDROID_SensorThread, "Sensors", 0, ctx);
+    ctx->thread = SDL_CreateThread(SDL_ANDROID_SensorThread, "Sensors", ctx);
     if (!ctx->thread) {
         SDL_ANDROID_StopSensorThread(ctx);
         return -1;

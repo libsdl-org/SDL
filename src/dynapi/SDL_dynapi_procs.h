@@ -46,26 +46,6 @@ SDL_DYNAPI_PROC(int,SDL_sscanf,(const char *a, SDL_SCANF_FORMAT_STRING const cha
 SDL_DYNAPI_PROC(int,SDL_swprintf,(SDL_OUT_Z_CAP(b) wchar_t *a, size_t b, SDL_PRINTF_FORMAT_STRING const wchar_t *c, ...),(a,b,c),return)
 #endif
 
-#ifdef SDL_CreateThread
-#undef SDL_CreateThread
-#endif
-
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
-SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c, pfnSDL_CurrentBeginThread d, pfnSDL_CurrentEndThread e),(a,b,c,d,e),return)
-#else
-SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThread,(SDL_ThreadFunction a, const char *b, void *c),(a,b,c),return)
-#endif
-
-#ifdef SDL_CreateThreadWithStackSize
-#undef SDL_CreateThreadWithStackSize
-#endif
-
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
-SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
-#else
-SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d),(a,b,c,d),return)
-#endif
-
 /* New API symbols are added at the end */
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_AcquireCameraFrame,(SDL_Camera *a, Uint64 *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_AddEventWatch,(SDL_EventFilter a, void *b),(a,b),return)
@@ -149,6 +129,8 @@ SDL_DYNAPI_PROC(SDL_TLSID,SDL_CreateTLS,(void),(),return)
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_CreateTexture,(SDL_Renderer *a, SDL_PixelFormatEnum b, int c, int d, int e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_CreateTextureFromSurface,(SDL_Renderer *a, SDL_Surface *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_CreateTextureWithProperties,(SDL_Renderer *a, SDL_PropertiesID b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadRuntime,(SDL_ThreadFunction a, const char *b, void *c, SDL_FunctionPointer d, SDL_FunctionPointer e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSizeRuntime,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, SDL_FunctionPointer e, SDL_FunctionPointer f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_CreateWindow,(const char *a, int b, int c, SDL_WindowFlags d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_CreateWindowAndRenderer,(const char *a, int b, int c, SDL_WindowFlags d, SDL_Window **e, SDL_Renderer **f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_CreateWindowWithProperties,(SDL_PropertiesID a),(a),return)
