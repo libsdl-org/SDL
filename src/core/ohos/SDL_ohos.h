@@ -51,7 +51,7 @@ extern SDL_bool OHOS_SetSystemCursor(int cursorID);
 extern SDL_bool OHOS_SupportsRelativeMouse(void);
 extern SDL_bool OHOS_SetRelativeMouseEnabled(SDL_bool enabled);
 
-extern void OHOS_PAGEMUTEX_Lock(void);
+extern void OHOS_PAGEMUTEX_Lock()(void);
 extern void OHOS_PAGEMUTEX_Unlock(void);
 extern void OHOS_PAGEMUTEX_LockRunning(void);
 

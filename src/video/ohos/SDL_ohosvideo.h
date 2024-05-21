@@ -50,9 +50,9 @@ extern int g_ohosSurfaceWidth;
 extern int g_ohosSurfaceHeight;
 extern int g_ohosDeviceWidth;
 extern int g_ohosDeviceHeight;
-extern SDL_sem *OHOS_PauseSem, *OHOS_ResumeSem;
-extern SDL_mutex *OHOS_PageMutex;
-extern double OHOS_ScreenDensity;
+extern SDL_sem *g_ohosPauseSem, *g_ohosResumeSem;
+extern SDL_mutex *g_ohosPageMutex;
+extern double g_ohosScreenDensity;
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

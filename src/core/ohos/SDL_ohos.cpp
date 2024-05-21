@@ -70,14 +70,14 @@ static int xComponentId = 1;
 int g_windowId = 0;
 
 /* Lock / Unlock Mutex */
-void OHOS_PAGEMUTEX_Lock()
+void OHOS_PAGEMUTEX_Lock()()
 {
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
 }
 
 void OHOS_PAGEMUTEX_Unlock()
 {
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
 }
 
 void OHOS_PAGEMUTEX_LockRunning()
@@ -85,11 +85,11 @@ void OHOS_PAGEMUTEX_LockRunning()
     int pauseSignaled = 0;
     int resumeSignaled = 0;
 retry:
-    SDL_LockMutex(OHOS_PageMutex);
-    pauseSignaled = SDL_SemValue(OHOS_PauseSem);
-    resumeSignaled = SDL_SemValue(OHOS_ResumeSem);
+    SDL_LockMutex(g_ohosPageMutex);
+    pauseSignaled = SDL_SemValue(g_ohosPauseSem);
+    resumeSignaled = SDL_SemValue(g_ohosResumeSem);
     if (pauseSignaled > resumeSignaled) {
-        SDL_UnlockMutex(OHOS_PageMutex);
+        SDL_UnlockMutex(g_ohosPageMutex);
         SDL_Delay(OHOS_DELAY_FIFTY);
         goto retry;
     }
@@ -396,9 +396,9 @@ napi_value SDLNapi::OHOS_NativeSetScreenResolution(napi_env env, napi_callback_i
     napi_get_value_int32(env, args[OHOS_INDEX_ARG4], &format);
     napi_get_value_double(env, args[OHOS_INDEX_ARG5], &rate);
     napi_get_value_double(env, args[OHOS_INDEX_ARG6], &screenDensity);
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
     OHOS_SetScreenResolution(deviceWidth, deviceHeight, format, rate, screenDensity);
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
     return nullptr;
 }
 
@@ -479,19 +479,19 @@ napi_value SDLNapi::OHOS_OnNativeKeyboardFocusLost(napi_env env, napi_callback_i
 static void OHOS_NativeQuit(void)
 {
     const char *str;
-    if (OHOS_PageMutex) {
-        SDL_DestroyMutex(OHOS_PageMutex);
-        OHOS_PageMutex = nullptr;
+    if (g_ohosPageMutex) {
+        SDL_DestroyMutex(g_ohosPageMutex);
+        g_ohosPageMutex = nullptr;
     }
 
-    if (OHOS_PauseSem) {
-        SDL_DestroySemaphore(OHOS_PauseSem);
-        OHOS_PauseSem = nullptr;
+    if (g_ohosPauseSem) {
+        SDL_DestroySemaphore(g_ohosPauseSem);
+        g_ohosPauseSem = nullptr;
     }
 
-    if (OHOS_ResumeSem) {
-        SDL_DestroySemaphore(OHOS_ResumeSem);
-        OHOS_ResumeSem = nullptr;
+    if (g_ohosResumeSem) {
+        SDL_DestroySemaphore(g_ohosResumeSem);
+        g_ohosResumeSem = nullptr;
     }
 
     str = SDL_GetError();
@@ -511,22 +511,22 @@ napi_value SDLNapi::OHOS_NativeSendQuit(napi_env env, napi_callback_info info)
     SDL_SendAppEvent(SDL_APP_TERMINATING);
     OHOS_ThreadExit();
     OHOS_NativeQuit();
-    while (SDL_SemTryWait(OHOS_PauseSem) == 0) {
+    while (SDL_SemTryWait(g_ohosPauseSem) == 0) {
     }
-    SDL_SemPost(OHOS_ResumeSem);
+    SDL_SemPost(g_ohosResumeSem);
     return nullptr;
 }
 
 napi_value SDLNapi::OHOS_NativeResume(napi_env env, napi_callback_info info)
 {
-    SDL_SemPost(OHOS_ResumeSem);
+    SDL_SemPost(g_ohosResumeSem);
     OHOSAUDIO_PageResume();
     return nullptr;
 }
 
 napi_value SDLNapi::OHOS_NativePause(napi_env env, napi_callback_info info)
 {
-    SDL_SemPost(OHOS_PauseSem);
+    SDL_SemPost(g_ohosPauseSem);
     OHOSAUDIO_PagePause();
     return nullptr;
 }
@@ -550,11 +550,11 @@ napi_value SDLNapi::OHOS_OnNativeOrientationChanged(napi_env env, napi_callback_
     napi_value args[1];
     napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
     napi_get_value_int32(env, args[0], &orientation);
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
     OHOS_SetDisplayOrientation(orientation);
     SDL_VideoDisplay *display = SDL_GetDisplay(0);
     SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
     return nullptr;
 }
 
@@ -581,7 +581,7 @@ static void OHOS_NAPI_NativeSetup(void)
     SDL_AtomicSet(&bPermissionRequestPending, SDL_FALSE);
     SDL_AtomicSet(&bQuit, SDL_FALSE);
 
-    OHOS_PageMutex = SDL_CreateMutex();
+    g_ohosPageMutex = SDL_CreateMutex();
     return;
 }
 
@@ -736,11 +736,11 @@ char *OHOS_GetXComponentId(napi_ref nodeRef)
 
 void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, WindowPosition *windowPosition)
 {
-    XComponentModel xComponentModel(to_string(xComponentId), XComponentType::SURFACE, "SDL2d");
+    XComponentModel xComponentModel(to_string(xComponentId), XComponentType::XCOMPONENTTYPE, "SDL2d");
     xComponentId++;
     NodePosition nodePositon(to_string(windowPosition->width), to_string(windowPosition->height),
         to_string(windowPosition->x), to_string(windowPosition->y));
-    NodeParams nodeParams(NodeType::XComponent, &xComponentModel, &nodePositon);
+    NodeParams nodeParams(NodeType::XCOMPONENT, &xComponentModel, &nodePositon);
     *childRef = AddSdlChildNode(nodeRef, &nodeParams);
     return;
 }

@@ -82,7 +82,7 @@ void OHOS_SetWindowFullscreen(SDL_VideoDevice *thisDevice, SDL_Window *window, S
                               SDL_bool fullscreen)
 {
     SDL_WindowData *data;
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
 
     /* If the window is being destroyed don't change visible state */
     if (!window->is_destroying) {
@@ -100,7 +100,7 @@ void OHOS_SetWindowFullscreen(SDL_VideoDevice *thisDevice, SDL_Window *window, S
 
 endfunction:
 
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
 }
 
 void OHOS_MinimizeWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
@@ -110,7 +110,7 @@ void OHOS_MinimizeWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
 void OHOS_DestroyWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
 {
     SDL_Log("Destroy window is Calling.");
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
 
     if (!(((window->flags & SDL_WINDOW_RECREATE) != 0) ||
         ((window->flags & SDL_WINDOW_FOREIGN_OHOS) == 0))) {
@@ -127,7 +127,7 @@ void OHOS_DestroyWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
         window->driverdata = NULL;
     }
 
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
 }
 
 SDL_bool OHOS_GetWindowWMInfo(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_SysWMinfo *info)
@@ -227,7 +227,7 @@ int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const
     OHOS_WaitGetNativeWindow(strID, tid, &windowData, nativeXComponent);
     
     sdlWindowData = (SDL_WindowData *)SDL_malloc(sizeof(SDL_WindowData));
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
     OHOS_SetRealWindowPosition(window, windowData);
     sdlWindowData->native_window = windowData->native_window;
     if (!sdlWindowData->native_window) {
@@ -248,7 +248,7 @@ int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const
     window->driverdata = sdlWindowData;
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
 endfunction:
-     SDL_UnlockMutex(OHOS_PageMutex);
+     SDL_UnlockMutex(g_ohosPageMutex);
      return 0;
 }
 

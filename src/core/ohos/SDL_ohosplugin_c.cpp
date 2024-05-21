@@ -21,38 +21,38 @@ bool OHOS_FindNativeXcomPoment(char *id, OH_NativeXComponent **nativeXComponent)
         return false;
     }
     std::string strId(id);
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
     OH_NativeXComponent *temp = nullptr;
     bool isFind =  OhosPluginManager::GetInstance()->FindNativeXcomPoment(strId, &temp);
     *nativeXComponent = temp;
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
     return isFind;
 }
 
 void OHOS_AddXcomPomentIdForThread(char *xCompentId, pthread_t threadId)
 {
     std::string strId(xCompentId);
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
     OhosPluginManager::GetInstance()->AddXcomPomentIdForThread(strId, threadId);
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
     return;
 }
 
 bool OHOS_FindNativeWindow(OH_NativeXComponent *nativeXComponent, SDL_WindowData **window)
 {
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
     SDL_WindowData *temp = nullptr;
     bool isFind = OhosPluginManager::GetInstance()->FindNativeWindow(nativeXComponent, &temp);
     *window = temp;
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
     return isFind;
 }
 
 void OHOS_FindOrCreateThreadLock(pthread_t id, OhosThreadLock **lock)
 {
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
     OhosThreadLock *temp = OhosPluginManager::GetInstance()->CreateOhosThreadLock(id);
     *lock = temp;
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
     return;
 }

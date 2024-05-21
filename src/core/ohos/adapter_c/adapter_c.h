@@ -26,9 +26,9 @@
  * NodeType: Node Component Type
  */
 enum NodeType {
-    XComponent,  // xcomponent
-    UIExtension, // uiextension not support now
-    Container    // notused
+    XCOMPONENT,  // xcomponent
+    UIEXTENSION, // uiextension not support now
+    CONTAINER   // notused
 };
 
 /**
@@ -46,7 +46,7 @@ struct NodeRect {
  * XComponentType: The type of XComponent
  */
 enum XComponentType {
-    SURFACE,
+    XCOMPONENTTYPE,
     COMPONENT,
     TEXTURE,
 };
@@ -64,7 +64,7 @@ public:
     }
 
     std::string id = "";
-    XComponentType type = XComponentType::SURFACE;
+    XComponentType type = XComponentType::XCOMPONENTTYPE;
     std::string libraryName = "";
     void *onLoad = nullptr;    // Not supported
     void *onDestroy = nullptr; // Not supported
@@ -113,7 +113,7 @@ public:
     std::string border_width = "0";
     NodePosition *nodePosition = nullptr;
     XComponentModel *componentModel = nullptr;
-    NodeType nodeType = NodeType::XComponent;
+    NodeType nodeType = NodeType::XCOMPONENT;
 };
 
 // Defines locks and semaphores.
@@ -149,7 +149,7 @@ bool RemoveSdlChildNode(napi_ref nodeChildRef);
  * @param node: Indicates the node to be operated
  * @return null
  */
-bool RaiseNode(napi_ref nodeRef);
+bool SdlRaiseNode(napi_ref nodeRef);
 
 /**
  * Place the node at the bottom layer.

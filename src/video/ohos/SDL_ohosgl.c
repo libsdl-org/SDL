@@ -46,7 +46,7 @@ SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *thisDevice, SDL_Window * 
     SDL_GLContext ret;
     OHOS_PAGEMUTEX_LockRunning();
     ret = SDL_EGL_CreateContext(thisDevice, ((SDL_WindowData *) window->driverdata)->egl_xcomponent);
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
     return ret;
 }
 
@@ -54,13 +54,13 @@ SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *thisDevice, SDL_Window * 
 int OHOS_GLES_SwapWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
 {
     int retval;
-    SDL_LockMutex(OHOS_PageMutex);
+    SDL_LockMutex(g_ohosPageMutex);
     /* The following two calls existed in the original Java code
      * If you happen to have a device that's affected by their removal,
      * please report to Bugzilla. -- Gabriel
      */
     retval = SDL_EGL_SwapBuffers(thisDevice, ((SDL_WindowData *) window->driverdata)->egl_xcomponent);
-    SDL_UnlockMutex(OHOS_PageMutex);
+    SDL_UnlockMutex(g_ohosPageMutex);
 
     return retval;
 }

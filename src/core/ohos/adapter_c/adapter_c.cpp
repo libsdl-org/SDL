@@ -135,7 +135,7 @@ bool RemoveSdlChildNode(napi_ref nodeChildRef)
     return returnValue;
 }
 
-bool RaiseNode(napi_ref nodeRef)
+bool SdlRaiseNode(napi_ref nodeRef)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {

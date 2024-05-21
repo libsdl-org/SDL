@@ -82,18 +82,18 @@ void OHOS_PUMPEVENTS_Blocking(SDL_VideoDevice *thisDevice)
         SDL_bool isContextExternal = SDL_IsVideoContextExternal();
         /* Make sure this is the last thing we do before pausing */
         if (!isContextExternal) {
-            SDL_LockMutex(OHOS_PageMutex);
+            SDL_LockMutex(g_ohosPageMutex);
             OHOS_EGL_context_backup(ohosWindow);
-            SDL_UnlockMutex(OHOS_PageMutex);
+            SDL_UnlockMutex(g_ohosPageMutex);
         }
 
         OHOSAUDIO_PauseDevices();
         openslES_PauseDevices();
 
-        if (SDL_SemWait(OHOS_ResumeSem) == 0) {
+        if (SDL_SemWait(g_ohosResumeSem) == 0) {
             videodata->isPaused = 0;
 
-            /* OHOS_ResumeSem was signaled */
+            /* g_ohosResumeSem was signaled */
             SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
             SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
             SDL_SendWindowEvent(ohosWindow, SDL_WINDOWEVENT_RESTORED, 0, 0);
@@ -103,9 +103,9 @@ void OHOS_PUMPEVENTS_Blocking(SDL_VideoDevice *thisDevice)
 
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!isContextExternal && !SDL_HasEvent(SDL_QUIT)) {
-                SDL_LockMutex(OHOS_PageMutex);
+                SDL_LockMutex(g_ohosPageMutex);
                 OHOS_EGL_context_restore(ohosWindow);
-                SDL_UnlockMutex(OHOS_PageMutex);
+                SDL_UnlockMutex(g_ohosPageMutex);
             }
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
@@ -114,8 +114,8 @@ void OHOS_PUMPEVENTS_Blocking(SDL_VideoDevice *thisDevice)
             }
         }
     } else {
-        if (videodata->isPausing || SDL_SemTryWait(OHOS_PauseSem) == 0) {
-            /* OHOS_PauseSem was signaled */
+        if (videodata->isPausing || SDL_SemTryWait(g_ohosPauseSem) == 0) {
+            /* g_ohosPauseSem was signaled */
             if (videodata->isPausing == 0) {
                 SDL_SendWindowEvent(ohosWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
@@ -124,7 +124,7 @@ void OHOS_PUMPEVENTS_Blocking(SDL_VideoDevice *thisDevice)
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */
-            if (SDL_NumberOfEvents(SDL_APP_DIDENTERBACKGROUND) > SDL_SemValue(OHOS_PauseSem)) {
+            if (SDL_NumberOfEvents(SDL_APP_DIDENTERBACKGROUND) > SDL_SemValue(g_ohosPauseSem)) {
                 videodata->isPausing = 1;
             } else {
                 videodata->isPausing = 0;
@@ -144,9 +144,9 @@ void OHOS_PUMPEVENTS_NonBlocking(SDL_VideoDevice *thisDevice)
         SDL_bool isContextExternal = SDL_IsVideoContextExternal();
         if (backup_context) {
             if (!isContextExternal) {
-                SDL_LockMutex(OHOS_PageMutex);
+                SDL_LockMutex(g_ohosPageMutex);
                 OHOS_EGL_context_backup(ohosWindow);
-                SDL_UnlockMutex(OHOS_PageMutex);
+                SDL_UnlockMutex(g_ohosPageMutex);
             }
 
             OHOSAUDIO_PauseDevices();
@@ -154,10 +154,10 @@ void OHOS_PUMPEVENTS_NonBlocking(SDL_VideoDevice *thisDevice)
 
             backup_context = 0;
         }
-        if (SDL_SemTryWait(OHOS_ResumeSem) == 0) {
+        if (SDL_SemTryWait(g_ohosResumeSem) == 0) {
             videodata->isPaused = 0;
 
-            /* OHOS_ResumeSem was signaled */
+            /* g_ohosResumeSem was signaled */
             SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
             SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
             SDL_SendWindowEvent(ohosWindow, SDL_WINDOWEVENT_RESTORED, 0, 0);
@@ -167,9 +167,9 @@ void OHOS_PUMPEVENTS_NonBlocking(SDL_VideoDevice *thisDevice)
 
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!isContextExternal && !SDL_HasEvent(SDL_QUIT)) {
-                SDL_LockMutex(OHOS_PageMutex);
+                SDL_LockMutex(g_ohosPageMutex);
                 OHOS_EGL_context_restore(ohosWindow);
-                SDL_UnlockMutex(OHOS_PageMutex);
+                SDL_UnlockMutex(g_ohosPageMutex);
             }
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
@@ -178,8 +178,8 @@ void OHOS_PUMPEVENTS_NonBlocking(SDL_VideoDevice *thisDevice)
             }
         }
     } else {
-        if (videodata->isPausing || SDL_SemTryWait(OHOS_PauseSem) == 0) {
-            /* OHOS_PauseSem was signaled */
+        if (videodata->isPausing || SDL_SemTryWait(g_ohosPauseSem) == 0) {
+            /* g_ohosPauseSem was signaled */
             if (videodata->isPausing == 0) {
                 SDL_SendWindowEvent(ohosWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
@@ -188,7 +188,7 @@ void OHOS_PUMPEVENTS_NonBlocking(SDL_VideoDevice *thisDevice)
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */
-            if (SDL_NumberOfEvents(SDL_APP_DIDENTERBACKGROUND) > SDL_SemValue(OHOS_PauseSem)) {
+            if (SDL_NumberOfEvents(SDL_APP_DIDENTERBACKGROUND) > SDL_SemValue(g_ohosPauseSem)) {
                 videodata->isPausing = 1;
             } else {
                 videodata->isPausing = 0;

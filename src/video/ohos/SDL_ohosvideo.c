@@ -58,10 +58,10 @@ int g_ohosDeviceWidth            = 0;
 int g_ohosDeviceHeight           = 0;
 static Uint32 OHOS_ScreenFormat = SDL_PIXELFORMAT_UNKNOWN;
 static int OHOS_ScreenRate      = 0;
-SDL_sem *OHOS_PauseSem          = NULL;
-SDL_sem *OHOS_ResumeSem         = NULL;
-SDL_mutex *OHOS_PageMutex       = NULL;
-double OHOS_ScreenDensity = 0;
+SDL_sem *g_ohosPauseSem          = NULL;
+SDL_sem *g_ohosResumeSem         = NULL;
+SDL_mutex *g_ohosPageMutex       = NULL;
+double g_ohosScreenDensity = 0;
 
 static int OHOS_Available(void)
 {
@@ -204,7 +204,7 @@ void OHOS_SetScreenResolution(int deviceWidth, int deviceHeight, Uint32 format, 
 {
     OHOS_ScreenFormat  = format;
     OHOS_ScreenRate    = (int)rate;
-    OHOS_ScreenDensity = screenDensity;
+    g_ohosScreenDensity = screenDensity;
     g_ohosDeviceWidth   = deviceWidth;
     g_ohosDeviceHeight  = deviceHeight;
 }
