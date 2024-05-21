@@ -105,7 +105,7 @@ void WINRT_CycleXAMLThread(void)
 
         _mutex = SDL_CreateMutex();
         _threadState = ThreadState_Running;
-        _XAMLThread = SDL_CreateThreadInternal(WINRT_XAMLThreadMain, "SDL/XAML App Thread", 0, nullptr);
+        _XAMLThread = SDL_CreateThread(WINRT_XAMLThreadMain, "SDL/XAML App Thread", nullptr);
 
         SDL_LockMutex(_mutex);
         while (_threadState != ThreadState_Yielding) {

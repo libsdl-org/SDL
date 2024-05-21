@@ -286,7 +286,7 @@ static int SDL_StartJoystickThread(void)
     }
 
     s_bJoystickThreadQuit = SDL_FALSE;
-    s_joystickThread = SDL_CreateThreadInternal(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
+    s_joystickThread = SDL_CreateThreadWithStackSize(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
     if (!s_joystickThread) {
         return -1;
     }

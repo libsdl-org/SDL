@@ -210,7 +210,7 @@ static int InitManagementThread(void)
 
     SDL_AtomicSetPtr((void **) &ManagementThreadPendingTasks, NULL);
     SDL_AtomicSet(&ManagementThreadShutdown, 0);
-    ManagementThread = SDL_CreateThreadInternal(ManagementThreadEntry, "SDLWASAPIMgmt", 256 * 1024, &mgmtdata); // !!! FIXME: maybe even smaller stack size?
+    ManagementThread = SDL_CreateThreadWithStackSize(ManagementThreadEntry, "SDLWASAPIMgmt", 256 * 1024, &mgmtdata); // !!! FIXME: maybe even smaller stack size?
     if (!ManagementThread) {
         return -1;
     }

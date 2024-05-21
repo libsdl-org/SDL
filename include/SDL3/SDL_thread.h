@@ -45,14 +45,44 @@
 extern "C" {
 #endif
 
-/* The SDL thread structure, defined in SDL_thread.c */
-struct SDL_Thread;
+/**
+ * The SDL thread object.
+ *
+ * These are opaque data.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateThread
+ * \sa SDL_WaitThread
+ */
 typedef struct SDL_Thread SDL_Thread;
 
-/* The SDL thread ID */
+/**
+ * A unique numeric ID that identifies a thread.
+ *
+ * These are different that SDL_Thread objects, which are generally what an
+ * application will operate on, but having a way to uniquely identify a
+ * thread can be useful at times.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetThreadID
+ * \sa SDL_GetCurrentThreadID
+ */
 typedef Uint64 SDL_ThreadID;
 
-/* Thread local storage ID, 0 is the invalid ID */
+/**
+ * Thread local storage ID values.
+ *
+ * 0 is the invalid ID. An app can create these and then set data for
+ * these IDs that is unique to each thread.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateTLS
+ * \sa SDL_GetTLS
+ * \sa SDL_SetTLS
+ */
 typedef Uint32 SDL_TLSID;
 
 /**
@@ -74,7 +104,7 @@ typedef enum SDL_ThreadPriority {
 } SDL_ThreadPriority;
 
 /**
- * The function passed to SDL_CreateThread().
+ * The function passed to SDL_CreateThread() as the new thread's entry point.
  *
  * \param data what was passed as `data` to SDL_CreateThread()
  * \returns a value that can be reported through SDL_WaitThread().
@@ -83,91 +113,86 @@ typedef enum SDL_ThreadPriority {
  */
 typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
 
-/*
- *  We compile SDL into a DLL. This means, that it's the DLL which
- *  creates a new thread for the calling process with the SDL_CreateThread()
- *  API. There is a problem with this, that only the RTL of the SDL3.DLL will
- *  be initialized for those threads, and not the RTL of the calling
- *  application!
- *
- *  To solve this, we make a little hack here.
- *
- *  We'll always use the caller's _beginthread() and _endthread() APIs to
- *  start a new thread. This way, if it's the SDL3.DLL which uses this API,
- *  then the RTL of SDL3.DLL will be used to create the new thread, and if it's
- *  the application, then the RTL of the application will be used.
- *
- *  So, in short:
- *  Always use the _beginthread() and _endthread() of the calling runtime
- *  library!
- */
+
 #if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
-#define SDL_PASSED_BEGINTHREAD_ENDTHREAD
 
-typedef uintptr_t (__cdecl * pfnSDL_CurrentBeginThread)
-                   (void *, unsigned, unsigned (__stdcall *func)(void *),
-                    void * /*arg*/, unsigned, unsigned * /* threadID */);
-typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
-
-#ifndef SDL_beginthread
-#define SDL_beginthread _beginthreadex
-#endif
-#ifndef SDL_endthread
-#define SDL_endthread _endthreadex
-#endif
-
-
-/*
- * Create a SDL Thread
+#ifndef SDL_BeginThreadFunction
+/**
+ * Macro that manages the compiler's `_beginthreadex` implementation.
  *
- * \param fn Thread function
- * \param name name
- * \param data some data
- * \param pfnBeginThread begin function
- * \param pfnEndThread end function
+ * On Windows (and maybe other platforms), a program might use a different
+ * C runtime than its libraries. Or, in SDL's case, it might use a C runtime
+ * while SDL uses none at all.
  *
- * \returns SDL_Thread pointer
+ * C runtimes expect to initialize thread-specific details when a new thread
+ * is created, but to do this in SDL_CreateThread would require SDL to know
+ * intimate details about the caller's C runtime, which is not possible.
  *
- * \since This function is available since SDL 3.0.0.
+ * So SDL_CreateThread has two extra parameters, which are
+ * hidden at compile time by macros: the C runtime's `_beginthreadex` and
+ * `_endthreadex` entry points. If these are not NULL, they are used to spin
+ * and terminate the new thread; otherwise the standard Win32 `CreateThread`
+ * function is used. When `SDL_CreateThread` is called from a compiler that
+ * needs this C runtime thread init function, macros insert the appropriate
+ * function pointers for SDL_CreateThread's caller (which might be a different
+ * compiler with a different runtime in different calls to SDL_CreateThread!).
+ *
+ * This defaults to `_beginthreadex` on Windows (and NULL everywhere else),
+ * but apps that have extremely specific special needs can define this to
+ * something else and the SDL headers will use it, passing the app-defined
+ * value to SDL_CreateThread calls. Redefine this with caution!
+ *
+ * Unless you are doing something extremely complicated, like perhaps a
+ * language binding, **you should never reference this directly**. Let SDL's
+ * macros handle this platform-specific detail transparently!
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateThread
  */
-extern SDL_DECLSPEC SDL_Thread *SDLCALL
-SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data,
-                 pfnSDL_CurrentBeginThread pfnBeginThread,
-                 pfnSDL_CurrentEndThread pfnEndThread);
-
-/*
- * Create a SDL Thread, with explicit stack size
- *
- * \param fn Thread function
- * \param name name
- * \param stacksize stack size
- * \param data some data
- * \param pfnBeginThread begin function
- * \param pfnEndThread end function
- *
- * \returns SDL_Thread pointer
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern SDL_DECLSPEC SDL_Thread *SDLCALL
-SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
-                 const char *name, const size_t stacksize, void *data,
-                 pfnSDL_CurrentBeginThread pfnBeginThread,
-                 pfnSDL_CurrentEndThread pfnEndThread);
-
-#if !defined(__BUILDING_SDL2_COMPAT__) /* do not conflict with sdl2-compat::sdl3_include_wrapper.h */
-#if defined(SDL_CreateThread) && SDL_DYNAMIC_API
-#undef SDL_CreateThread
-#define SDL_CreateThread(fn, name, data) SDL_CreateThread_REAL(fn, name, data, (pfnSDL_CurrentBeginThread)SDL_beginthread, (pfnSDL_CurrentEndThread)SDL_endthread)
-#undef SDL_CreateThreadWithStackSize
-#define SDL_CreateThreadWithStackSize(fn, name, stacksize, data) SDL_CreateThreadWithStackSize_REAL(fn, name, stacksize, data, (pfnSDL_CurrentBeginThread)SDL_beginthread, (pfnSDL_CurrentEndThread)SDL_endthread)
-#else
-#define SDL_CreateThread(fn, name, data) SDL_CreateThread(fn, name, data, (pfnSDL_CurrentBeginThread)SDL_beginthread, (pfnSDL_CurrentEndThread)SDL_endthread)
-#define SDL_CreateThreadWithStackSize(fn, name, stacksize, data) SDL_CreateThreadWithStackSize(fn, name, stacksize, data, (pfnSDL_CurrentBeginThread)SDL_beginthread, (pfnSDL_CurrentEndThread)SDL_endthread)
+#define SDL_BeginThreadFunction _beginthreadex
 #endif
-#endif /* !__BUILDING_SDL2_COMPAT__ */
 
-#else
+#ifndef SDL_EndThreadFunction
+/**
+ * Macro that manages the compiler's `_endthreadex` implementation.
+ *
+ * Please see the detailed explanation in SDL_BeginThreadFunction.
+ *
+ * This defaults to `_endthreadex` on Windows (and NULL everywhere else),
+ * but apps that have extremely specific special needs can define this to
+ * something else and the SDL headers will use it, passing the app-defined
+ * value to SDL_CreateThread calls. Redefine this with caution!
+ *
+ * Unless you are doing something extremely complicated, like perhaps a
+ * language binding, **you should never reference this directly**. Let SDL's
+ * macros handle this platform-specific detail transparently!
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateThread
+ */
+#define SDL_EndThreadFunction _endthreadex
+#endif
+#endif
+
+/* currently no other platforms than Windows use _beginthreadex/_endthreadex things. */
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
+#ifndef SDL_BeginThreadFunction
+#define SDL_BeginThreadFunction NULL
+#endif
+#ifndef SDL_EndThreadFunction
+#define SDL_EndThreadFunction NULL
+#endif
+#endif
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/* Note that this isn't the correct function signature, but this is what the API reference manual should look like for all intents and purposes. */
 
 /**
  * Create a new thread with a default stack size.
@@ -177,6 +202,16 @@ SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn,
  * ```c
  * SDL_CreateThreadWithStackSize(fn, name, 0, data);
  * ```
+ *
+ * Note that this "function" is actually a macro that calls an internal
+ * function with two extra parameters not listed here; they are
+ * hidden through preprocessor macros and are needed to support various C
+ * runtimes at the point of the function call. Language bindings that aren't
+ * using the C headers will need to deal with this.
+ *
+ * Usually, apps should just call this function the same way on every platform and
+ * let the macros hide the details. See SDL_BeginThreadFunction for the
+ * technical details.
  *
  * \param fn the SDL_ThreadFunction function to call in the new thread
  * \param name the name of the thread
@@ -219,6 +254,21 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  * multiple of the system's page size (in many cases, this is 4 kilobytes, but
  * check your system documentation).
  *
+ * Note that this "function" is actually a macro that calls an internal
+ * function with two extra parameters not listed here; they are
+ * hidden through preprocessor macros and are needed to support various C
+ * runtimes at the point of the function call. Language bindings that aren't
+ * using the C headers will need to deal with this.
+ *
+ * The actual symbol in SDL's library is `SDL_CreateThreadRuntime` (or
+ * `SDL_CreateThreadWithStackSpaceRuntime`), so there is no symbol clash, but
+ * trying to load an SDL shared library and look for "SDL_CreateThread"
+ * will fail.
+ *
+ * Usually, apps should just call this function the same way on every platform and
+ * let the macros hide the details. See SDL_BeginThreadFunction for the
+ * technical details.
+ *
  * \param fn the SDL_ThreadFunction function to call in the new thread
  * \param name the name of the thread
  * \param stacksize the size, in bytes, to allocate for the new thread stack.
@@ -233,7 +283,14 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  * \sa SDL_WaitThread
  */
 extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, const size_t stacksize, void *data);
+#endif
 
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
+/* These are the actual functions exported from SDL! Don't use them directly! Use the SDL_CreateThread and SDL_CreateThreadWithStackSize macros! */
+extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadRuntime(SDL_ThreadFunction fn, const char *name, void *data, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
+extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadWithStackSizeRuntime(SDL_ThreadFunction fn, const char *name, const size_t stacksize, void *data,SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
+#define SDL_CreateThread(fn, name, data) SDL_CreateThreadRuntime(fn, name, data, (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
+#define SDL_CreateThreadWithStackSize(fn, name, stacksize, data) SDL_CreateThreadWithStackSizeRuntime(fn, name, stacksize, data, (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
 #endif
 
 /**

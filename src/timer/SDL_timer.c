@@ -221,7 +221,7 @@ int SDL_InitTimers(void)
         SDL_AtomicSet(&data->active, 1);
 
         /* Timer threads use a callback into the app, so we can't set a limited stack size here. */
-        data->thread = SDL_CreateThreadInternal(SDL_TimerThread, name, 0, data);
+        data->thread = SDL_CreateThread(SDL_TimerThread, name, data);
         if (!data->thread) {
             SDL_QuitTimers();
             return -1;

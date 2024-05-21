@@ -1630,6 +1630,8 @@ becomes:
 
 ## SDL_thread.h
 
+SDL_CreateThread and SDL_CreateThreadWithStackSpace now take beginthread/endthread function pointers on all platforms (ignoring them on most), and have been replaced with macros that hide this detail on all platforms. This works the same as before at the source code level, but the actual function signature that is called in SDL has changed. The library's exported symbol is SDL_CreateThreadRuntime, and looking for "SDL_CreateThread" in the DLL/Shared Library/Dylib will fail. You should not call this directly, but instead always use the macro!
+
 The following functions have been renamed:
 * SDL_TLSCleanup() => SDL_CleanupTLS()
 * SDL_TLSCreate() => SDL_CreateTLS()
