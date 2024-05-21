@@ -46,19 +46,6 @@ ANDROID_LIBRARIES = [
 ]
 
 
-def itertools_batched(iterator: typing.Iterable, count: int):
-    iterator = iter(iterator)
-    while True:
-        items = []
-        for _ in range(count):
-            obj = next(iterator, None)
-            if obj is None:
-                yield tuple(items)
-                return
-            items.append(obj)
-        yield tuple(items)
-
-
 class Executer:
     def __init__(self, root: Path, dry: bool=False):
         self.root = root
@@ -181,67 +168,16 @@ class Releaser:
         logger.debug("Creating dist folder")
         self.dist_path.mkdir(parents=True, exist_ok=True)
 
-    GitLsTreeResult = collections.namedtuple("GitLsTreeResult", ("path", "mode", "object_type", "object_name"))
-    def _git_ls_tree(self, commit) -> dict[str, GitLsTreeResult]:
-        logger.debug("Getting source listing from git")
-        dry_out = textwrap.dedent("""\
-            "CMakeLists.txt": {"object_name": "9e5e4bcf094bfbde94f19c3f314808031ec8f141", "mode": "100644", "type": "blob"},
-        """)
-
-        last_key = "zzzzzz"
-        dict_tree_items = "{" + self.executer.run(["git", "ls-tree", "-r", """--format="%(path)": {"object_name": "%(objectname)", "mode": "%(objectmode)", "type": "%(objecttype)"},""", commit], stdout=True, dry_out=dry_out).stdout + f'"{last_key}": null' + "}"
-        with open("/tmp/a.txt", "w") as f:
-            f.write(dict_tree_items)
-            f.write("\n")
-        dict_tree_items = json.loads(dict_tree_items)
-        del dict_tree_items[last_key]
-
-        tree_items = {path: self.GitLsTreeResult(path=path, mode=int(v["mode"], 8), object_type=v["type"], object_name=v["object_name"]) for path, v in dict_tree_items.items()}
-        assert all(item.object_type == "blob" for item in tree_items.values())
-        return tree_items
-
-    def _git_cat_file(self, tree_items: dict[str, GitLsTreeResult]) -> dict[str, bytes]:
-        logger.debug("Getting source binary data from git")
-        if self.dry:
-            return {
-                "CMakeLists.txt": b"cmake_minimum_required(VERSION 3.20)\nproject(SDL)\n",
-            }
-        git_cat = subprocess.Popen(["git", "cat-file", "--batch"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=False, bufsize=50 * 1024 * 1024)
-        data_tree = {}
-        batch_size = 60
-        for batch in itertools_batched(tree_items.items(), batch_size):
-            for object_path, tree_item in batch:
-                logger.debug("Requesting data of file '%s' (object=%s)...", object_path, tree_item.object_name)
-                git_cat.stdin.write(f"{tree_item.object_name}\n".encode())
-            git_cat.stdin.flush()
-            for object_path, tree_item in batch:
-                header = git_cat.stdout.readline().decode()
-                object_name, object_type, obj_size = header.strip().split(maxsplit=3)
-                assert tree_item.object_name == object_name
-                assert tree_item.object_type == object_type
-                obj_size = int(obj_size)
-                data_tree[object_path] = git_cat.stdout.read(obj_size)
-                logger.debug("File data received '%s'", object_path)
-                assert git_cat.stdout.readline() == b"\n"
-
-        assert len(data_tree) == len(tree_items)
-
-        logger.debug("No more file!")
-        git_cat.stdin.close()
-        git_cat.wait()
-        assert git_cat.returncode == 0
-        logger.debug("All data received!")
-        return data_tree
-
-    def _get_file_times(self, tree_items: dict[str, GitLsTreeResult]) -> dict[str, datetime.datetime]:
+    TreeItem = collections.namedtuple("TreeItem", ("path", "mode", "data", "time"))
+    def _get_file_times(self, paths: tuple[str]) -> dict[str, datetime.datetime]:
         dry_out = textwrap.dedent("""\
             time=2024-03-14T15:40:25-07:00
 
             M\tCMakeLists.txt
         """)
-        git_log_out = self.executer.run(["git", "log", "--name-status", '--pretty=time=%cI'], stdout=True, dry_out=dry_out).stdout.splitlines(keepends=False)
+        git_log_out = self.executer.run(["git", "log", "--name-status", '--pretty=time=%cI', self.commit], stdout=True, dry_out=dry_out).stdout.splitlines(keepends=False)
         current_time = None
-        tree_paths = {item.path for item in tree_items.values()}
+        set_paths = set(paths)
         path_times = {}
         for line in git_log_out:
             if not line:
@@ -252,9 +188,9 @@ class Releaser:
             mod_type, paths = line.split(maxsplit=1)
             assert current_time is not None
             for path in paths.split():
-                if path in tree_paths and path not in path_times:
+                if path in set_paths and path not in path_times:
                     path_times[path] = current_time
-        assert set(path_times.keys()) == tree_paths
+        assert set(path_times.keys()) == set_paths
         return path_times
 
     @staticmethod
@@ -263,13 +199,16 @@ class Releaser:
             return False
         return True
 
-    TreeItem = collections.namedtuple("TreeItem", ("path", "mode", "data", "time"))
-
     def _get_git_contents(self) -> dict[str, (TreeItem, bytes, datetime.datetime)]:
-        commit_file_tree = self._git_ls_tree(self.commit)
-        git_datas = self._git_cat_file(commit_file_tree)
-        git_times = self._get_file_times(commit_file_tree)
-        git_contents = {path: self.TreeItem(path=path, data=git_datas[path], mode=item.mode, time=git_times[path]) for path, item in commit_file_tree.items() if self._path_filter(path)}
+        contents_tgz = subprocess.check_output(["git", "archive", "--format=tar.gz", self.commit, "-o", "/dev/stdout"], text=False)
+        contents = tarfile.open(fileobj=io.BytesIO(contents_tgz), mode="r:gz")
+        filenames = tuple(m.name for m in contents if m.isfile())
+        assert "src/SDL.c" in filenames
+        assert "include/SDL3/SDL.h" in filenames
+        file_times = self._get_file_times(filenames)
+        git_contents = {
+            ti.name: self.TreeItem(path=ti.name, mode=ti.mode, data=contents.extractfile(ti.name).read(), time=file_times[ti.name]) for ti in contents if ti.isfile() and self._path_filter(ti.name)
+        }
         return git_contents
 
     def create_source_archives(self):
