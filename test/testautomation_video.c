@@ -1680,15 +1680,15 @@ static int video_setWindowCenteredOnDisplay(void *arg)
     if (displays) {
 
         /* Get display bounds */
-        result = SDL_GetDisplayBounds(displays[0 % displayNum], &display0);
-        SDLTest_AssertPass("SDL_GetDisplayBounds()");
+        result = SDL_GetDisplayUsableBounds(displays[0 % displayNum], &display0);
+        SDLTest_AssertPass("SDL_GetDisplayUsableBounds()");
         SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
         if (result != 0) {
             return TEST_ABORTED;
         }
 
-        result = SDL_GetDisplayBounds(displays[1 % displayNum], &display1);
-        SDLTest_AssertPass("SDL_GetDisplayBounds()");
+        result = SDL_GetDisplayUsableBounds(displays[1 % displayNum], &display1);
+        SDLTest_AssertPass("SDL_GetDisplayUsableBounds()");
         SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
         if (result != 0) {
             return TEST_ABORTED;
