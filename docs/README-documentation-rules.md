@@ -309,6 +309,15 @@ without any further processing by wikiheaders, and changes go in both
 directions.
 
 
+## The wiki can have its own pages, too.
+
+If a page name isn't a symbol that wikiheaders sees in the headers, or a
+README in the source's `docs` directory, or a few other exceptions, it'll
+assume it's an unrelated wiki page and leave it alone. So feel free to
+write any wiki-only pages that make sense and not worry about it junking
+up the headers!
+
+
 ## Wiki categories are (mostly) managed automatically.
 
 The wiki will see this pattern as the last thing on a page and treat it as a
