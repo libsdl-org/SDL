@@ -127,6 +127,7 @@ typedef struct
 
     /* Mouse info */
     SDL_Rect confine;
+    SDL_bool hide_cursor;
 
 } SDLTest_CommonState;
 

@@ -590,6 +590,10 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             state->window_flags |= SDL_WINDOW_UTILITY;
             return 1;
         }
+        if (SDL_strcasecmp(argv[index], "--hide-cursor") == 0) {
+            state->hide_cursor = SDL_TRUE;
+            return 1;
+        }
     }
 
     if (state->flags & SDL_INIT_AUDIO) {
@@ -1400,6 +1404,9 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
 
             SDL_ShowWindow(state->windows[i]);
         }
+        if (state->hide_cursor) {
+            SDL_HideCursor();
+        }
     }
 
     if (state->flags & SDL_INIT_AUDIO) {
@@ -2181,6 +2188,16 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_h:
+            if (withControl) {
+                /* Ctrl-H changes cursor visibility. */
+                if (SDL_CursorVisible()) {
+                    SDL_HideCursor();
+                } else {
+                    SDL_ShowCursor();
+                }
+            }
+            break;
         case SDLK_c:
             if (withAlt) {
                 /* Alt-C copy awesome text to the primary selection! */
@@ -2318,7 +2335,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 if (window) {
                     SDL_WindowFlags flags = SDL_GetWindowFlags(window);
                     if (!(flags & SDL_WINDOW_FULLSCREEN) ||
-						!SDL_GetWindowFullscreenMode(window)) {
+                        !SDL_GetWindowFullscreenMode(window)) {
                         SDL_SetWindowFullscreenMode(window, &state->fullscreen_mode);
                         SDL_SetWindowFullscreen(window, SDL_TRUE);
                     } else {
@@ -2331,7 +2348,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 if (window) {
                     SDL_WindowFlags flags = SDL_GetWindowFlags(window);
                     if (!(flags & SDL_WINDOW_FULLSCREEN) ||
-						SDL_GetWindowFullscreenMode(window)) {
+                        SDL_GetWindowFullscreenMode(window)) {
                         SDL_SetWindowFullscreenMode(window, NULL);
                         SDL_SetWindowFullscreen(window, SDL_TRUE);
                     } else {
