@@ -15,33 +15,46 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - { name: "Android.mk"  }
+          - { name: "Android.mk", ndk-build: 1 }
+          - { name: "Gradle", gradle: 1 }
           - { name: "CMake", cmake: 1, android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64", artifact: "SDL-android-arm64", apk-artifact: "SDL-android-apks-arm64" }
           - { name: "CMake (lean and mean)", cmake: 1, cppflags: "-DSDL_LEAN_AND_MEAN=1", android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64", artifact: "SDL-lean-android-arm64", apk-artifact: "SDL-lean-android-apks-arm64" }
 
     steps:
       - uses: actions/checkout@v4
       - uses: nttld/setup-ndk@v1
+        if: ${{ matrix.platform.cmake || matrix.platform.ndk-build }}
         id: setup_ndk
         with:
           local-cache: true
           ndk-version: r21e
       - name: Build (Android.mk)
-        if: ${{ contains(matrix.platform.name, 'Android.mk') }}
+        if: ${{ matrix.platform.ndk-build }}
         run: |
           ./build-scripts/androidbuildlibs.sh
       - uses: actions/setup-java@v4
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake || matrix.platform.gradle }}
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
+      - name: Build app (Gradle)
+        if: ${{ matrix.platform.gradle }}
+        run: |
+          ln -s ${{ github.workspace }} ${{ github.workspace }}/android-project/app/jni/SDL
+          cd android-project
+          ./gradlew -i assembleRelease
+#      - name: Build library (Gradle)
+#        if: ${{ matrix.platform.gradle }}
+#        run: |
+#          cd android-project
+#          ./gradlew -i assembleRelease -PBUILD_AS_LIBRARY=1
       - name: Setup (CMake)
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         run: |
           sudo apt-get update
           sudo apt-get install ninja-build pkg-config
       - name: Configure (CMake)
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         run: |
           cmake -S . -B build \
             -DCMAKE_C_FLAGS="${{ matrix.platform.cppflags }}" \
@@ -63,25 +76,25 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -GNinja
       - name: Build (CMake)
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         run: |
           cmake --build build --config Release --parallel --verbose
       - name: Build test apk's (CMake)
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         run: |
           cmake --build build --config Release --parallel --verbose --target testautomation-apk testaudiocapture-apk testcontroller-apk testmultiaudio-apk testsprite-apk
       - name: Install (CMake)
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         run: |
           cmake --install build --config Release
           echo "SDL3_DIR=$(pwd)/prefix" >> $GITHUB_ENV
           ( cd prefix; find ) | LC_ALL=C sort -u
       - name: Package (CPack)
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         run: |
           cmake --build build/ --config Release --target package
       - name: Verify CMake configuration files
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         run: |
           cmake -S cmake/test -B cmake_config_build -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
@@ -91,19 +104,19 @@ jobs:
             -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }}
           cmake --build cmake_config_build --verbose
       - name: Verify sdl3.pc
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         run: |
           export CC="${{ steps.setup_ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=${{ matrix.platform.arch }}-none-linux-androideabi${{ matrix.platform.android_platform }}"
           export PKG_CONFIG_PATH=${{ env.SDL3_DIR }}/lib/pkgconfig
           cmake/test/test_pkgconfig.sh
       - uses: actions/upload-artifact@v4
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         with:
           if-no-files-found: error
           name: ${{ matrix.platform.artifact }}
           path: build/dist/SDL3*
       - uses: actions/upload-artifact@v4
-        if: ${{ contains(matrix.platform.name, 'CMake') }}
+        if: ${{ matrix.platform.cmake }}
         with:
           if-no-files-found: error
           name: ${{ matrix.platform.apk-artifact }}
