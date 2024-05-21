@@ -70,7 +70,7 @@ static int xComponentId = 1;
 int g_windowId = 0;
 
 /* Lock / Unlock Mutex */
-void OHOS_PAGEMUTEX_Lock()()
+void OHOS_PAGEMUTEX_Lock()
 {
     SDL_LockMutex(g_ohosPageMutex);
 }
