@@ -60,7 +60,7 @@ int OHOS_CreateWindow(SDL_VideoDevice *thisDevice, SDL_Window * window)
         windowPosition->width = window->w;
         windowPosition->x = window->x;
         windowPosition->y = window->y;
-        OHOS_AddChildNode(parentWindowNode, &childWindowNode, window->x, windowPosition);
+        OHOS_AddChildNode(parentWindowNode, &childWindowNode, windowPosition);
         SDL_free(windowPosition);
         napi_release_threadsafe_function(parentWindowNode, napi_tsfn_release);
         if (childWindowNode == NULL) {

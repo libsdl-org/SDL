@@ -25,7 +25,7 @@ void ThreadSafeSyn(cJSON * const root)
     ThreadLockInfo *lockInfo = new ThreadLockInfo();
     std::uintptr_t lockInfoPointer = reinterpret_cast<std::uintptr_t>(lockInfo);
     cJSON_AddNumberToObject(root, OHOS_JSON_ASYN, (double)lockInfoPointer);
-    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(gNapiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         delete lockInfo;
         return;
@@ -38,7 +38,7 @@ void ThreadSafeSyn(cJSON * const root)
 
 static bool ThreadSafeAsyn(cJSON * const root)
 {
-    napi_status status = napi_call_threadsafe_function(g_napiCallback->tsfn, root, napi_tsfn_nonblocking);
+    napi_status status = napi_call_threadsafe_function(gNapiCallback->tsfn, root, napi_tsfn_nonblocking);
     if (status != napi_ok) {
         return false;
     }
@@ -57,7 +57,7 @@ napi_ref GetRootNode(int windowId)
     cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
 
     std::thread::id cur_thread_id = std::this_thread::get_id();
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         OHOS_TS_GetRootNode(root);
         cJSON_free(root);
     } else {
@@ -80,7 +80,7 @@ char* GetXComponentId(napi_ref nodeRef)
 
     std::thread::id cur_thread_id = std::this_thread::get_id();
     ThreadLockInfo *lockInfo;
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         OHOS_TS_GetXComponentId(root);
         cJSON_free(root);
     } else {
@@ -103,7 +103,7 @@ napi_ref AddSdlChildNode(napi_ref nodeRef, NodeParams *nodeParams)
     cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
 
     std::thread::id cur_thread_id = std::this_thread::get_id();
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         OHOS_TS_AddChildNode(root);
         cJSON_free(root);
     } else {
@@ -123,7 +123,7 @@ bool RemoveSdlChildNode(napi_ref nodeChildRef)
     
     bool  returnValue = false;
     std::thread::id cur_thread_id = std::this_thread::get_id();
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         std::uintptr_t returnValuePointer = reinterpret_cast<std::uintptr_t>(&returnValue);
         cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
         OHOS_TS_RemoveChildNode(root);
@@ -145,7 +145,7 @@ bool RaiseNode(napi_ref nodeRef)
 
     bool returnValue = false;
     std::thread::id cur_thread_id = std::this_thread::get_id();
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         std::uintptr_t returnValuePointer = reinterpret_cast<std::uintptr_t>(&returnValue);
         cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
         OHOS_TS_RaiseNode(root);
@@ -167,7 +167,7 @@ bool LowerNode(napi_ref nodeRef)
 
     bool returnValue = false;
     std::thread::id cur_thread_id = std::this_thread::get_id();
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         std::uintptr_t returnValuePointer = reinterpret_cast<std::uintptr_t>(&returnValue);
         cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
         OHOS_TS_RemoveChildNode(root);
@@ -191,7 +191,7 @@ bool ResizeNode(napi_ref nodeRef, std::string width, std::string height)
 
     bool returnValue = false;
     std::thread::id cur_thread_id = std::this_thread::get_id();
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         std::uintptr_t returnValuePointer = reinterpret_cast<std::uintptr_t>(&returnValue);
         cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
         OHOS_TS_RemoveChildNode(root);
@@ -214,7 +214,7 @@ bool ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef)
 
     bool returnValue = false;
     std::thread::id cur_thread_id = std::this_thread::get_id();
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         std::uintptr_t returnValuePointer = reinterpret_cast<std::uintptr_t>(&returnValue);
         cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
         OHOS_TS_RemoveChildNode(root);
@@ -237,7 +237,7 @@ bool SetNodeVisibility(napi_ref nodeRef, int visibility)
 
     bool returnValue = false;
     std::thread::id cur_thread_id = std::this_thread::get_id();
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         std::uintptr_t returnValuePointer = reinterpret_cast<std::uintptr_t>(&returnValue);
         cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
         OHOS_TS_RemoveChildNode(root);
@@ -262,7 +262,7 @@ NodeRect *GetNodeRect(napi_ref nodeRef)
 
     std::thread::id cur_thread_id = std::this_thread::get_id();
     ThreadLockInfo *lockInfo;
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         OHOS_TS_GetRootNode(root);
         cJSON_free(root);
     } else {
@@ -284,7 +284,7 @@ bool MoveNode(napi_ref nodeRef, std::string x, std::string y)
 
     bool returnValue = false;
     std::thread::id cur_thread_id = std::this_thread::get_id();
-    if (cur_thread_id == g_napiCallback->mainThreadId) {
+    if (cur_thread_id == gNapiCallback->mainThreadId) {
         std::uintptr_t returnValuePointer = reinterpret_cast<std::uintptr_t>(&returnValue);
         cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
         OHOS_TS_RemoveChildNode(root);

@@ -73,5 +73,5 @@ typedef struct {
 #define OHOS_THREADSAFE_ARG4 4
 #define OHOS_THREADSAFE_ARG5 5
 
-extern std::unique_ptr<NapiCallbackContext> g_napiCallback;
+extern std::unique_ptr<NapiCallbackContext> gNapiCallback;
 #endif // SDL_OHOS_TSTYPE_H
