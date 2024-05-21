@@ -42,6 +42,7 @@ static const char *video_usage[] = {
     "[--gldebug]",
     "[--grab]",
     "[--hidden]",
+    "[--hide-cursor]",
     "[--high-pixel-density]",
     "[--icon icon.bmp]",
     "[--info all|video|modes|render|event|event_motion]",
