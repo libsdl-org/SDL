@@ -85,7 +85,7 @@ more: try not to markup text more than necessary.
 - `\sa` (each of these get tucked into a "See Also" section on the wiki)
 - `\since This function is available since SDL 3.0.0.` (one per Doxygen comment)
 - `\threadsafety description` (one per function/macro).
-- '\deprecated description` (one per symbol, if symbol is deprecated!)
+- `\deprecated description` (one per symbol, if symbol is deprecated!)
 
 Other Doxygen things might exist in the headers, but they aren't understood
 by wikiheaders.
