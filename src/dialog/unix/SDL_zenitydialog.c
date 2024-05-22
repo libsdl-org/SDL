@@ -39,6 +39,7 @@ typedef struct
     void* userdata;
     const char* filename;
     const SDL_DialogFileFilter *filters;
+    int nfilters;
     Uint32 flags;
 } zenityArgs;
 
@@ -110,12 +111,7 @@ static char** generate_args(const zenityArgs* info)
     }
 
     if (info->filters) {
-        const SDL_DialogFileFilter *filter_ptr = info->filters;
-
-        while (filter_ptr->name && filter_ptr->pattern) {
-            argc++;
-            filter_ptr++;
-        }
+        argc += info->nfilters;
     }
 
     argv = SDL_malloc(sizeof(char *) * argc + 1);
@@ -157,10 +153,9 @@ static char** generate_args(const zenityArgs* info)
     }
 
     if (info->filters) {
-        const SDL_DialogFileFilter *filter_ptr = info->filters;
-
-        while (filter_ptr->name && filter_ptr->pattern) {
-            char *filter_str = convert_filter(*filter_ptr, zenity_clean_name,
+        for (int i = 0; i < info->nfilters; i++) {
+            char *filter_str = convert_filter(info->filters[i],
+                                              zenity_clean_name,
                                               "--file-filter=", " | ", "",
                                               "*.", " *.", "");
 
@@ -170,8 +165,6 @@ static char** generate_args(const zenityArgs* info)
 
             argv[nextarg++] = filter_str;
             CHECK_OOM()
-
-            filter_ptr++;
         }
     }
 
@@ -330,7 +323,7 @@ static int run_zenity_thread(void* ptr)
     return 0;
 }
 
-void SDL_Zenity_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
+void SDL_Zenity_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
 {
     zenityArgs *args;
     SDL_Thread *thread;
@@ -345,6 +338,7 @@ void SDL_Zenity_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userda
     args->userdata = userdata;
     args->filename = default_location;
     args->filters = filters;
+    args->nfilters = nfilters;
     args->flags = (allow_many == SDL_TRUE) ? ZENITY_MULTIPLE : 0;
 
     thread = SDL_CreateThread(run_zenity_thread, "SDL_ShowOpenFileDialog", (void *) args);
@@ -357,7 +351,7 @@ void SDL_Zenity_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userda
     SDL_DetachThread(thread);
 }
 
-void SDL_Zenity_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location)
+void SDL_Zenity_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
 {
     zenityArgs *args;
     SDL_Thread *thread;
@@ -372,6 +366,7 @@ void SDL_Zenity_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userda
     args->userdata = userdata;
     args->filename = default_location;
     args->filters = filters;
+    args->nfilters = nfilters;
     args->flags = ZENITY_SAVE;
 
     thread = SDL_CreateThread(run_zenity_thread, "SDL_ShowSaveFileDialog", (void *) args);
@@ -399,6 +394,7 @@ void SDL_Zenity_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* user
     args->userdata = userdata;
     args->filename = default_location;
     args->filters = NULL;
+    args->nfilters = 0;
     args->flags = ((allow_many == SDL_TRUE) ? ZENITY_MULTIPLE : 0) | ZENITY_DIRECTORY;
 
     thread = SDL_CreateThread(run_zenity_thread, "SDL_ShowOpenFolderDialog", (void *) args);

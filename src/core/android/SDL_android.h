@@ -144,7 +144,8 @@ void Android_ActivityMutex_Lock_Running(void);
 
 /* File Dialogs */
 SDL_bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void* userdata,
-    const SDL_DialogFileFilter *filters, SDL_bool forwrite, SDL_bool multiple);
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_bool forwrite,
+    SDL_bool multiple);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

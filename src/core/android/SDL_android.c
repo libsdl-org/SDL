@@ -2908,7 +2908,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 
 SDL_bool Android_JNI_OpenFileDialog(
     SDL_DialogFileCallback callback, void* userdata,
-    const SDL_DialogFileFilter *filters, SDL_bool forwrite, SDL_bool multiple)
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_bool forwrite,
+    SDL_bool multiple)
 {
     if (mAndroidFileDialogData.callback != NULL) {
         SDL_SetError("Only one file dialog can be run at a time.");
@@ -2924,17 +2925,11 @@ SDL_bool Android_JNI_OpenFileDialog(
     /* Setup filters */
     jobjectArray filtersArray = NULL;
     if (filters) {
-        /* Count how many filters */
-        int count = 0;
-        for (const SDL_DialogFileFilter *f = filters; f->name != NULL && f->pattern != NULL; f++) {
-            count++;
-        }
-
         jclass stringClass = (*env)->FindClass(env, "java/lang/String");
-        filtersArray = (*env)->NewObjectArray(env, count, stringClass, NULL);
+        filtersArray = (*env)->NewObjectArray(env, nfilters, stringClass, NULL);
 
         /* Convert to string */
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < nfilters; i++) {
             jstring str = (*env)->NewStringUTF(env, filters[i].pattern);
             (*env)->SetObjectArrayElement(env, filtersArray, i, str);
             (*env)->DeleteLocalRef(env, str);
