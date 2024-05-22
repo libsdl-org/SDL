@@ -60,7 +60,7 @@ typedef struct SDL_Thread SDL_Thread;
 /**
  * A unique numeric ID that identifies a thread.
  *
- * These are different that SDL_Thread objects, which are generally what an
+ * These are different from SDL_Thread objects, which are generally what an
  * application will operate on, but having a way to uniquely identify a
  * thread can be useful at times.
  *
@@ -114,11 +114,14 @@ typedef enum SDL_ThreadPriority {
 typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
 
 
-#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
-#ifndef SDL_BeginThreadFunction
-/**
- * Macro that manages the compiler's `_beginthreadex` implementation.
+/*
+ * Note that these aren't the correct function signatures in this block, but
+ * this is what the API reference manual should look like for all intents and
+ * purposes.
+ *
+ * Technical details, not for the wiki (hello, header readers!)...
  *
  * On Windows (and maybe other platforms), a program might use a different
  * C runtime than its libraries. Or, in SDL's case, it might use a C runtime
@@ -137,62 +140,18 @@ typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
  * function pointers for SDL_CreateThread's caller (which might be a different
  * compiler with a different runtime in different calls to SDL_CreateThread!).
  *
- * This defaults to `_beginthreadex` on Windows (and NULL everywhere else),
- * but apps that have extremely specific special needs can define this to
- * something else and the SDL headers will use it, passing the app-defined
- * value to SDL_CreateThread calls. Redefine this with caution!
+ * SDL_BeginThreadFunction defaults to `_beginthreadex` on Windows (and NULL
+ * everywhere else), but apps that have extremely specific special needs can
+ * define this to something else and the SDL headers will use it, passing the
+ * app-defined value to SDL_CreateThread calls. Redefine this with caution!
+ *
+ * Platforms that don't need _beginthread stuff (most everything) will fail
+ * SDL_CreateThread with an error if these pointers _aren't_ NULL.
  *
  * Unless you are doing something extremely complicated, like perhaps a
- * language binding, **you should never reference this directly**. Let SDL's
+ * language binding, **you should never deal with this directly**. Let SDL's
  * macros handle this platform-specific detail transparently!
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_CreateThread
  */
-#define SDL_BeginThreadFunction _beginthreadex
-#endif
-
-#ifndef SDL_EndThreadFunction
-/**
- * Macro that manages the compiler's `_endthreadex` implementation.
- *
- * Please see the detailed explanation in SDL_BeginThreadFunction.
- *
- * This defaults to `_endthreadex` on Windows (and NULL everywhere else),
- * but apps that have extremely specific special needs can define this to
- * something else and the SDL headers will use it, passing the app-defined
- * value to SDL_CreateThread calls. Redefine this with caution!
- *
- * Unless you are doing something extremely complicated, like perhaps a
- * language binding, **you should never reference this directly**. Let SDL's
- * macros handle this platform-specific detail transparently!
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.0.0.
- *
- * \sa SDL_CreateThread
- */
-#define SDL_EndThreadFunction _endthreadex
-#endif
-#endif
-
-/* currently no other platforms than Windows use _beginthreadex/_endthreadex things. */
-#ifndef SDL_WIKI_DOCUMENTATION_SECTION
-#ifndef SDL_BeginThreadFunction
-#define SDL_BeginThreadFunction NULL
-#endif
-#ifndef SDL_EndThreadFunction
-#define SDL_EndThreadFunction NULL
-#endif
-#endif
-
-#ifdef SDL_WIKI_DOCUMENTATION_SECTION
-
-/* Note that this isn't the correct function signature, but this is what the API reference manual should look like for all intents and purposes. */
 
 /**
  * Create a new thread with a default stack size.
@@ -211,8 +170,7 @@ typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
  * using the C headers will need to deal with this.
  *
  * Usually, apps should just call this function the same way on every platform and
- * let the macros hide the details. See SDL_BeginThreadFunction for the
- * technical details.
+ * let the macros hide the details.
  *
  * \param fn the SDL_ThreadFunction function to call in the new thread
  * \param name the name of the thread
@@ -279,8 +237,7 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  * and look for "SDL_CreateThreadWithProperties" will fail.
  *
  * Usually, apps should just call this function the same way on every platform and
- * let the macros hide the details. See SDL_BeginThreadFunction for the
- * technical details.
+ * let the macros hide the details.
  *
  * \param props the properties to use
  * \returns an opaque pointer to the new thread object on success, NULL if the
@@ -303,24 +260,30 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_Prop
 #endif
 
 
+/* The real implementation, hidden from the wiki, so it can show this as real functions that don't have macro magic. */
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
+#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
+#  ifndef SDL_BeginThreadFunction
+#   define SDL_BeginThreadFunction _beginthreadex
+#  endif
+#  ifndef SDL_EndThreadFunction
+#   define SDL_EndThreadFunction _endthreadex
+#  endif
+#endif
+
+/* currently no other platforms than Windows use _beginthreadex/_endthreadex things. */
+#ifndef SDL_BeginThreadFunction
+#  define SDL_BeginThreadFunction NULL
+#endif
+
+#ifndef SDL_EndThreadFunction
+#  define SDL_EndThreadFunction NULL
+#endif
+
 /* These are the actual functions exported from SDL! Don't use them directly! Use the SDL_CreateThread and SDL_CreateThreadWithProperties macros! */
-
-/**
- * The actual symbol in SDL's library for SDL_CreateThread.
- *
- * **Do not call this function directly!** Use SDL_CreateThread, which is a macro that handles C runtime support.
- */
 extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadRuntime(SDL_ThreadFunction fn, const char *name, void *data, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
-
-/**
- * The actual symbol in SDL's library for SDL_CreateThreadWithProperties.
- *
- * **Do not call this function directly!** Use SDL_CreateThreadWithProperties, which is a macro that handles C runtime support.
- */
 extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
 
-
-#ifndef SDL_WIKI_DOCUMENTATION_SECTION
 #define SDL_CreateThread(fn, name, data) SDL_CreateThreadRuntime((fn), (name), (data), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
 #define SDL_CreateThreadWithProperties(props) SDL_CreateThreadWithPropertiesRuntime((props), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
 #define SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER                  "entry_function"
