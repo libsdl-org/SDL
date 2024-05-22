@@ -3218,7 +3218,6 @@ target_include_directories(SDL3_Headers
   INTERFACE
     "$<BUILD_INTERFACE:${SDL3_BINARY_DIR}/include>"
     "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include>"
-    "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/include/SDL3>"
 )
 if(SDL_FRAMEWORK)
   target_include_directories(SDL3_Headers
@@ -3234,7 +3233,6 @@ else()
   target_include_directories(SDL3_Headers
     INTERFACE
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-      "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL3>"
   )
 endif()
 
