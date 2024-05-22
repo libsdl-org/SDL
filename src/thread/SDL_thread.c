@@ -307,14 +307,10 @@ void SDL_RunThread(SDL_Thread *thread)
     }
 }
 
-SDL_Thread *SDL_CreateThreadWithStackSizeRuntime(SDL_ThreadFunction fn,
-                              const char *name, const size_t stacksize, void *data,
+SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
                               SDL_FunctionPointer pfnBeginThread,
                               SDL_FunctionPointer pfnEndThread)
 {
-    SDL_Thread *thread;
-    int ret;
-
     // rather than check this in every backend, just make sure it's correct upfront. Only allow non-NULL if non-WinRT Windows, or Microsoft GDK.
     #if (!defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)) || defined(SDL_PLATFORM_WINRT)
     if (pfnBeginThread || pfnEndThread) {
@@ -323,15 +319,24 @@ SDL_Thread *SDL_CreateThreadWithStackSizeRuntime(SDL_ThreadFunction fn,
     }
     #endif
 
-    /* Allocate memory for the thread info structure */
-    thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
+    SDL_ThreadFunction fn = (SDL_ThreadFunction) SDL_GetProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, NULL);
+    const char *name = SDL_GetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, NULL);
+    const size_t stacksize = (size_t) SDL_GetNumberProperty(props, SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER, 0);
+    void *userdata = SDL_GetProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, NULL);
+
+    if (!fn) {
+        SDL_SetError("Thread entry function is NULL");
+        return NULL;
+    }
+
+    SDL_Thread *thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
     if (!thread) {
         return NULL;
     }
     thread->status = -1;
     SDL_AtomicSet(&thread->state, SDL_THREAD_STATE_ALIVE);
 
-    /* Set up the arguments for the thread */
+    // Set up the arguments for the thread
     if (name) {
         thread->name = SDL_strdup(name);
         if (!thread->name) {
@@ -341,28 +346,46 @@ SDL_Thread *SDL_CreateThreadWithStackSizeRuntime(SDL_ThreadFunction fn,
     }
 
     thread->userfunc = fn;
-    thread->userdata = data;
+    thread->userdata = userdata;
     thread->stacksize = stacksize;
 
-    /* Create the thread and go! */
-    ret = SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread);
-    if (ret < 0) {
-        /* Oops, failed.  Gotta free everything */
+    // Create the thread and go!
+    if (SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread) < 0) {
+        // Oops, failed.  Gotta free everything
         SDL_free(thread->name);
         SDL_free(thread);
         thread = NULL;
     }
 
-    /* Everything is running now */
+    // Everything is running now
     return thread;
 }
 
 SDL_Thread *SDL_CreateThreadRuntime(SDL_ThreadFunction fn,
-                 const char *name, void *data,
+                 const char *name, void *userdata,
                  SDL_FunctionPointer pfnBeginThread,
                  SDL_FunctionPointer pfnEndThread)
 {
-    return SDL_CreateThreadWithStackSizeRuntime(fn, name, 0, data, pfnBeginThread, pfnEndThread);
+    const SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, (void *) fn);
+    SDL_SetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, name);
+    SDL_SetProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, userdata);
+    SDL_Thread *thread = SDL_CreateThreadWithPropertiesRuntime(props, pfnBeginThread, pfnEndThread);
+    SDL_DestroyProperties(props);
+    return thread;
+}
+
+// internal helper function, not in the public API.
+SDL_Thread *SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, size_t stacksize, void *userdata)
+{
+    const SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, (void *) fn);
+    SDL_SetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, name);
+    SDL_SetProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, userdata);
+    SDL_SetNumberProperty(props, SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER, (Sint64) stacksize);
+    SDL_Thread *thread = SDL_CreateThreadWithProperties(props);
+    SDL_DestroyProperties(props);
+    return thread;
 }
 
 SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)

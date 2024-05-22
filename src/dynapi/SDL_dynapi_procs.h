@@ -130,7 +130,7 @@ SDL_DYNAPI_PROC(SDL_Texture*,SDL_CreateTexture,(SDL_Renderer *a, SDL_PixelFormat
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_CreateTextureFromSurface,(SDL_Renderer *a, SDL_Surface *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_CreateTextureWithProperties,(SDL_Renderer *a, SDL_PropertiesID b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadRuntime,(SDL_ThreadFunction a, const char *b, void *c, SDL_FunctionPointer d, SDL_FunctionPointer e),(a,b,c,d,e),return)
-SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSizeRuntime,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, SDL_FunctionPointer e, SDL_FunctionPointer f),(a,b,c,d,e,f),return)
+SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithPropertiesRuntime,(SDL_PropertiesID a, SDL_FunctionPointer b, SDL_FunctionPointer c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_CreateWindow,(const char *a, int b, int c, SDL_WindowFlags d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_CreateWindowAndRenderer,(const char *a, int b, int c, SDL_WindowFlags d, SDL_Window **e, SDL_Renderer **f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_CreateWindowWithProperties,(SDL_PropertiesID a),(a),return)

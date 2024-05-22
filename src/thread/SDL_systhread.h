@@ -60,6 +60,9 @@ extern SDL_TLSData *SDL_SYS_GetTLSData(void);
 /* Set the thread local storage for this thread */
 extern int SDL_SYS_SetTLSData(SDL_TLSData *data);
 
+/* A helper function for setting up a thread with a stack size. */
+extern SDL_Thread *SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, size_t stacksize, void *data);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
