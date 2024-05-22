@@ -31,14 +31,14 @@ typedef enum
     FDT_OPENFOLDER
 } cocoa_FileDialogType;
 
-void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
+void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
 {
 #if defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_IOS)
     SDL_SetError("tvOS and iOS don't support path-based file dialogs");
     callback(userdata, NULL, -1);
 #else
     if (filters) {
-        const char *msg = validate_filters(filters);
+        const char *msg = validate_filters(filters, nfilters);
 
         if (msg) {
             SDL_SetError("%s", msg);
@@ -76,13 +76,11 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
     };
 
     if (filters) {
-        int n = -1;
-        while (filters[++n].name && filters[n].pattern);
         // On macOS 11.0 and up, this is an array of UTType. Prior to that, it's an array of NSString
-        NSMutableArray *types = [[NSMutableArray alloc] initWithCapacity:n ];
+        NSMutableArray *types = [[NSMutableArray alloc] initWithCapacity:nfilters ];
 
         int has_all_files = 0;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < nfilters; i++) {
             char *pattern = SDL_strdup(filters[i].pattern);
             char *pattern_ptr = pattern;
 
@@ -180,17 +178,17 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
 #endif // defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_IOS)
 }
 
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
 {
-    show_file_dialog(FDT_OPEN, callback, userdata, window, filters, default_location, allow_many);
+    show_file_dialog(FDT_OPEN, callback, userdata, window, filters, nfilters, default_location, allow_many);
 }
 
-void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location)
+void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
 {
-    show_file_dialog(FDT_SAVE, callback, userdata, window, filters, default_location, 0);
+    show_file_dialog(FDT_SAVE, callback, userdata, window, filters, nfilters, default_location, 0);
 }
 
 void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)
 {
-    show_file_dialog(FDT_OPENFOLDER, callback, userdata, window, NULL, default_location, allow_many);
+    show_file_dialog(FDT_OPENFOLDER, callback, userdata, window, NULL, 0, default_location, allow_many);
 }
