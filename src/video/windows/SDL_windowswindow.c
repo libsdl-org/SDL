@@ -1088,24 +1088,29 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void WIN_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
-    HWND hwnd = data->hwnd;
-    data->expected_resize = SDL_TRUE;
-    ShowWindow(hwnd, SW_MAXIMIZE);
-    data->expected_resize = SDL_FALSE;
 
-    /* Clamp the maximized window size to the max window size.
-     * This is automatic if maximizing from the window controls.
-     */
-    if (window->max_w || window->max_h) {
-        int fx, fy, fw, fh;
-
-        window->windowed.w = window->max_w ? SDL_min(window->w, window->max_w) : window->windowed.w;
-        window->windowed.h = window->max_h ? SDL_min(window->h, window->max_h) : window->windowed.h;
-        WIN_AdjustWindowRect(window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_WINDOWED);
-
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        HWND hwnd = data->hwnd;
         data->expected_resize = SDL_TRUE;
-        SetWindowPos(hwnd, HWND_TOP, fx, fy, fw, fh, data->copybits_flag | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+        ShowWindow(hwnd, SW_MAXIMIZE);
         data->expected_resize = SDL_FALSE;
+
+        /* Clamp the maximized window size to the max window size.
+         * This is automatic if maximizing from the window controls.
+         */
+        if (window->max_w || window->max_h) {
+            int fx, fy, fw, fh;
+
+            window->windowed.w = window->max_w ? SDL_min(window->w, window->max_w) : window->windowed.w;
+            window->windowed.h = window->max_h ? SDL_min(window->h, window->max_h) : window->windowed.h;
+            WIN_AdjustWindowRect(window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_WINDOWED);
+
+            data->expected_resize = SDL_TRUE;
+            SetWindowPos(hwnd, HWND_TOP, fx, fy, fw, fh, data->copybits_flag | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+            data->expected_resize = SDL_FALSE;
+        }
+    }else {
+        data->windowed_mode_was_maximized = SDL_TRUE;
     }
 }
 
@@ -1152,10 +1157,14 @@ void WIN_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bo
 void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->driverdata;
-    HWND hwnd = data->hwnd;
-    data->expected_resize = SDL_TRUE;
-    ShowWindow(hwnd, SW_RESTORE);
-    data->expected_resize = SDL_FALSE;
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        HWND hwnd = data->hwnd;
+        data->expected_resize = SDL_TRUE;
+        ShowWindow(hwnd, SW_RESTORE);
+        data->expected_resize = SDL_FALSE;
+    } else {
+        data->windowed_mode_was_maximized = SDL_FALSE;
+    }
 }
 
 static DWM_WINDOW_CORNER_PREFERENCE WIN_UpdateCornerRoundingForHWND(HWND hwnd, DWM_WINDOW_CORNER_PREFERENCE cornerPref)
@@ -1210,6 +1219,7 @@ int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vide
     HWND top;
     int x, y;
     int w, h;
+    SDL_bool enterMaximized = SDL_FALSE;
 
 #ifdef HIGHDPI_DEBUG
     SDL_Log("WIN_SetWindowFullscreen: %d", (int)fullscreen);
@@ -1274,6 +1284,7 @@ int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vide
         */
         if (data->windowed_mode_was_maximized && !data->in_window_deactivation) {
             style |= WS_MAXIMIZE;
+            enterMaximized = SDL_TRUE;
         }
 
         menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
@@ -1285,7 +1296,13 @@ int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vide
     }
     SetWindowLong(hwnd, GWL_STYLE, style);
     data->expected_resize = SDL_TRUE;
-    SetWindowPos(hwnd, top, x, y, w, h, data->copybits_flag | SWP_NOACTIVATE);
+
+    if (!enterMaximized) {
+        SetWindowPos(hwnd, top, x, y, w, h, data->copybits_flag | SWP_NOACTIVATE);
+    } else {
+        WIN_MaximizeWindow(_this, window);
+    }
+
     data->expected_resize = SDL_FALSE;
 
 #ifdef HIGHDPI_DEBUG
