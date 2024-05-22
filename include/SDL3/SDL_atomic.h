@@ -338,6 +338,8 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  * \param newval the new value
  * \returns SDL_TRUE if the atomic variable was set, SDL_FALSE otherwise.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AtomicCompareAndSwapPointer
@@ -356,6 +358,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, 
  * \param v the desired value
  * \returns the previous value of the atomic variable.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AtomicGet
@@ -370,6 +374,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicSet(SDL_AtomicInt *a, int v);
  *
  * \param a a pointer to an SDL_AtomicInt variable
  * \returns the current value of an atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -388,6 +394,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
  * \param a a pointer to an SDL_AtomicInt variable to be modified
  * \param v the desired value to add
  * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -442,6 +450,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  * \param newval the new pointer value
  * \returns SDL_TRUE if the pointer was set, SDL_FALSE otherwise.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AtomicCompareAndSwap
@@ -460,6 +470,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, v
  * \param v the desired pointer value
  * \returns the previous value of the pointer.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AtomicCompareAndSwapPointer
@@ -475,6 +487,8 @@ extern SDL_DECLSPEC void* SDLCALL SDL_AtomicSetPtr(void **a, void* v);
  *
  * \param a a pointer to a pointer
  * \returns the current value of a pointer.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *

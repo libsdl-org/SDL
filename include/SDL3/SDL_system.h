@@ -264,6 +264,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_iOSSetEventPump(SDL_bool enabled);
  * \returns a pointer to Java native interface object (JNIEnv) to which the
  *          current thread is attached, or 0 on error.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AndroidGetActivity
@@ -285,6 +287,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
  *
  * \returns the jobject representing the instance of the Activity class of the
  *          Android application, or NULL on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -356,6 +360,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
 
 /**
  * Trigger the Android system back button behavior.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -454,6 +460,8 @@ typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, con
  *          submitting. The result of the request is only ever reported
  *          through the callback, not this return value.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata);
@@ -480,6 +488,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permiss
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
@@ -493,6 +503,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int du
  * \param param user parameter
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */

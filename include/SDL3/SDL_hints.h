@@ -3853,6 +3853,9 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety It is **NOT** safe to call this function from two threads at
+ *               once.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DelHintCallback
