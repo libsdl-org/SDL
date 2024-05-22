@@ -263,31 +263,42 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_Prop
 
 /* The real implementation, hidden from the wiki, so it can show this as real functions that don't have macro magic. */
 #ifndef SDL_WIKI_DOCUMENTATION_SECTION
-#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
-#  ifndef SDL_BeginThreadFunction
-#   define SDL_BeginThreadFunction _beginthreadex
-#  endif
-#  ifndef SDL_EndThreadFunction
-#   define SDL_EndThreadFunction _endthreadex
+#  if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_WINRT)
+#    ifndef SDL_BeginThreadFunction
+#      define SDL_BeginThreadFunction _beginthreadex
+#    endif
+#    ifndef SDL_EndThreadFunction
+#      define SDL_EndThreadFunction _endthreadex
+#    endif
 #  endif
 #endif
 
 /* currently no other platforms than Windows use _beginthreadex/_endthreadex things. */
-#ifndef SDL_BeginThreadFunction
-#  define SDL_BeginThreadFunction NULL
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
+#  ifndef SDL_BeginThreadFunction
+#    define SDL_BeginThreadFunction NULL
+#  endif
 #endif
 
-#ifndef SDL_EndThreadFunction
-#  define SDL_EndThreadFunction NULL
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
+#  ifndef SDL_EndThreadFunction
+#    define SDL_EndThreadFunction NULL
+#  endif
 #endif
 
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
 /* These are the actual functions exported from SDL! Don't use them directly! Use the SDL_CreateThread and SDL_CreateThreadWithProperties macros! */
 extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadRuntime(SDL_ThreadFunction fn, const char *name, void *data, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
 extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
 
 #define SDL_CreateThread(fn, name, data) SDL_CreateThreadRuntime((fn), (name), (data), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
 #define SDL_CreateThreadWithProperties(props) SDL_CreateThreadWithPropertiesRuntime((props), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
+#define SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER                  "entry_function"
+#define SDL_PROP_THREAD_CREATE_NAME_STRING                             "name"
+#define SDL_PROP_THREAD_CREATE_USERDATA_POINTER                        "userdata"
+#define SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER                        "stacksize"
 #endif
+
 
 /**
  * Get the thread name as it was specified in SDL_CreateThread().
