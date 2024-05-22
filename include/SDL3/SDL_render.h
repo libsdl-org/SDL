@@ -1677,7 +1677,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetRenderDrawBlendMode(SDL_Renderer *rendere
  * Clear the current rendering target with the drawing color.
  *
  * This function clears the entire rendering target, ignoring the viewport and
- * the clip rectangle.
+ * the clip rectangle. Note, that clearing will also set/fill all pixels of
+ * the rendering target to current renderer draw color, so make sure to invoke
+ * SDL_SetRenderDrawColor() when needed.
  *
  * \param renderer the rendering context
  * \returns 0 on success or a negative error code on failure; call
