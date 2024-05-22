@@ -61,8 +61,8 @@ typedef struct SDL_Thread SDL_Thread;
  * A unique numeric ID that identifies a thread.
  *
  * These are different from SDL_Thread objects, which are generally what an
- * application will operate on, but having a way to uniquely identify a
- * thread can be useful at times.
+ * application will operate on, but having a way to uniquely identify a thread
+ * can be useful at times.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
@@ -74,8 +74,8 @@ typedef Uint64 SDL_ThreadID;
 /**
  * Thread local storage ID values.
  *
- * 0 is the invalid ID. An app can create these and then set data for
- * these IDs that is unique to each thread.
+ * 0 is the invalid ID. An app can create these and then set data for these
+ * IDs that is unique to each thread.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
@@ -164,13 +164,13 @@ typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
  * - `SDL_PROP_THREAD_CREATE_USERDATA_POINTER: `data`
  *
  * Note that this "function" is actually a macro that calls an internal
- * function with two extra parameters not listed here; they are
- * hidden through preprocessor macros and are needed to support various C
- * runtimes at the point of the function call. Language bindings that aren't
- * using the C headers will need to deal with this.
+ * function with two extra parameters not listed here; they are hidden through
+ * preprocessor macros and are needed to support various C runtimes at the
+ * point of the function call. Language bindings that aren't using the C
+ * headers will need to deal with this.
  *
- * Usually, apps should just call this function the same way on every platform and
- * let the macros hide the details.
+ * Usually, apps should just call this function the same way on every platform
+ * and let the macros hide the details.
  *
  * \param fn the SDL_ThreadFunction function to call in the new thread
  * \param name the name of the thread
@@ -192,14 +192,15 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  * These are the supported properties:
  *
  * - `SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER`: an SDL_ThreadFunction
- *   value that will be called at the start of the new thread's life. Required.
- * - `SDL_PROP_THREAD_CREATE_NAME_STRING`: the name of the new thread,
- *   which might be available to debuggers. Optional, defaults to NULL.
+ *   value that will be called at the start of the new thread's life.
+ *   Required.
+ * - `SDL_PROP_THREAD_CREATE_NAME_STRING`: the name of the new thread, which
+ *   might be available to debuggers. Optional, defaults to NULL.
  * - `SDL_PROP_THREAD_CREATE_USERDATA_POINTER`: an arbitrary app-defined
- *   pointer, which is passed to the entry function on the new thread, as
- *   its only parameter. Optional, defaults to NULL.
- * - `SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER`: the size, in bytes, of the
- *   new thread's stack. Optional, defaults to 0 (system-defined default).
+ *   pointer, which is passed to the entry function on the new thread, as its
+ *   only parameter. Optional, defaults to NULL.
+ * - `SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER`: the size, in bytes, of the new
+ *   thread's stack. Optional, defaults to 0 (system-defined default).
  *
  * SDL makes an attempt to report `SDL_PROP_THREAD_CREATE_NAME_STRING` to the
  * system, so that debuggers can display it. Not all platforms support this.
@@ -219,25 +220,25 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  * SDL_GetThreadName().
  *
  * The size (in bytes) of the new stack can be specified with
- * `SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER`. Zero means "use the
- * system default" which might be wildly different between platforms. x86
- * Linux generally defaults to eight megabytes, an embedded device might be a
- * few kilobytes instead. You generally need to specify a stack that is a
- * multiple of the system's page size (in many cases, this is 4 kilobytes, but
- * check your system documentation).
+ * `SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER`. Zero means "use the system
+ * default" which might be wildly different between platforms. x86 Linux
+ * generally defaults to eight megabytes, an embedded device might be a few
+ * kilobytes instead. You generally need to specify a stack that is a multiple
+ * of the system's page size (in many cases, this is 4 kilobytes, but check
+ * your system documentation).
  *
  * Note that this "function" is actually a macro that calls an internal
- * function with two extra parameters not listed here; they are
- * hidden through preprocessor macros and are needed to support various C
- * runtimes at the point of the function call. Language bindings that aren't
- * using the C headers will need to deal with this.
+ * function with two extra parameters not listed here; they are hidden through
+ * preprocessor macros and are needed to support various C runtimes at the
+ * point of the function call. Language bindings that aren't using the C
+ * headers will need to deal with this.
  *
- * The actual symbol in SDL is `SDL_CreateThreadWithPropertiesRuntime`,
- * so there is no symbol clash, but trying to load an SDL shared library
- * and look for "SDL_CreateThreadWithProperties" will fail.
+ * The actual symbol in SDL is `SDL_CreateThreadWithPropertiesRuntime`, so
+ * there is no symbol clash, but trying to load an SDL shared library and look
+ * for "SDL_CreateThreadWithProperties" will fail.
  *
- * Usually, apps should just call this function the same way on every platform and
- * let the macros hide the details.
+ * Usually, apps should just call this function the same way on every platform
+ * and let the macros hide the details.
  *
  * \param props the properties to use
  * \returns an opaque pointer to the new thread object on success, NULL if the
@@ -286,10 +287,6 @@ extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadWithPropertiesRuntime(SD
 
 #define SDL_CreateThread(fn, name, data) SDL_CreateThreadRuntime((fn), (name), (data), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
 #define SDL_CreateThreadWithProperties(props) SDL_CreateThreadWithPropertiesRuntime((props), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
-#define SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER                  "entry_function"
-#define SDL_PROP_THREAD_CREATE_NAME_STRING                             "name"
-#define SDL_PROP_THREAD_CREATE_USERDATA_POINTER                        "userdata"
-#define SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER                        "stacksize"
 #endif
 
 /**
