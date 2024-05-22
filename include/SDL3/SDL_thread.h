@@ -161,7 +161,7 @@ typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
  *
  * - `SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER`: `fn`
  * - `SDL_PROP_THREAD_CREATE_NAME_STRING`: `name`
- * - `SDL_PROP_THREAD_CREATE_USERDATA_POINTER: `data`
+ * - `SDL_PROP_THREAD_CREATE_USERDATA_POINTER`: `data`
  *
  * Note that this "function" is actually a macro that calls an internal
  * function with two extra parameters not listed here; they are hidden through
