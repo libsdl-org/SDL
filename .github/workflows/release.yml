@@ -330,7 +330,17 @@ jobs:
               -B build_x64 -A x64
           cmake --build build_x64 --config Release --verbose
           ctest --test-dir build_x64 --no-tests=error -C Release --output-on-failure
-
+      - name: 'CMake (configure + build + tests) arm64'
+        run: |
+          $env:PATH += ";${{ steps.bin.outputs.path }}/x86"
+          cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -DTEST_FULL=TRUE                                    `
+              -DTEST_STATIC=FALSE                                 `
+              -DTEST_TEST=TRUE                                    `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}" `
+              -Werror=dev                                         `
+              -B build_arm64 -A ARM64
+          cmake --build build_x64 --config Release --verbose
 
   mingw:
     needs: [src]

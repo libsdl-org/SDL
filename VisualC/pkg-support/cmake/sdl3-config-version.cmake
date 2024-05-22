@@ -47,8 +47,8 @@ if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "")
     set(PACKAGE_VERSION_UNSUITABLE TRUE)
 endif()
 
-# check that the installed version has the same 32/64bit-ness as the one which is currently searching:
-if(NOT (CMAKE_SIZEOF_VOID_P STREQUAL "8" OR CMAKE_SIZEOF_VOID_P STREQUAL "4"))
-    set(PACKAGE_VERSION "${PACKAGE_VERSION} (32+64bit)")
+# check that the installed version has a compatible architecture as the one which is currently searching:
+if(NOT (CMAKE_SYSTEM_PROCESSOR MATCHES "([aA][mM][dD]64|[xX]86((_|-)64)?|[iI][34567]86|[aA][aA][rR][cC][hH]64|[aA][rR][mM]64)"))
+    set(PACKAGE_VERSION "${PACKAGE_VERSION} (x86,x64,arm64)")
     set(PACKAGE_VERSION_UNSUITABLE TRUE)
 endif()

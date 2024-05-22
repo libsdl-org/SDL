@@ -409,7 +409,8 @@ class Releaser:
             self.root / "VisualC/SDL_test/SDL_test.vcxproj",
         ]
 
-        vs.build(arch=arch, platform=platform, configuration=configuration, projects=projects)
+        with self.section_printer.group(f"Build {arch} VS binary"):
+            vs.build(arch=arch, platform=platform, configuration=configuration, projects=projects)
 
         if self.dry:
             dll_path.parent.mkdir(parents=True, exist_ok=True)
@@ -418,6 +419,72 @@ class Releaser:
             imp_path.touch()
             test_path.parent.mkdir(parents=True, exist_ok=True)
             test_path.touch()
+
+        assert dll_path.is_file(), "SDL3.dll has not been created"
+        assert pdb_path.is_file(), "SDL3.pdb has not been created"
+        assert imp_path.is_file(), "SDL3.lib has not been created"
+        assert test_path.is_file(), "SDL3_test.lib has not been created"
+
+        zip_path = self.dist_path / f"{self.project}-{self.version}-win32-{arch}.zip"
+        zip_path.unlink(missing_ok=True)
+        logger.info("Creating %s", zip_path)
+        with zipfile.ZipFile(zip_path, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+            logger.debug("Adding %s", dll_path.name)
+            zf.write(dll_path, arcname=dll_path.name)
+            logger.debug("Adding %s", "README-SDL.txt")
+            zf.write(self.root / "README-SDL.txt", arcname="README-SDL.txt")
+            self._zip_add_git_hash(zip_file=zf)
+        self.artifacts[f"VC-{arch}"] = zip_path
+
+        return VcArchDevel(dll=dll_path, pdb=pdb_path, imp=imp_path, test=test_path)
+
+    def build_vs_cmake(self, arch: str, arch_cmake: str):
+        build_path = self.root / f"build-vs-{arch}"
+        install_path = build_path / "prefix"
+        dll_path = install_path / f"bin/{self.project}.dll"
+        pdb_path = install_path / f"bin/{self.project}.pdb"
+        imp_path = install_path / f"lib/{self.project}.lib"
+        test_path = install_path / f"lib/{self.project}_test.lib"
+
+        dll_path.unlink(missing_ok=True)
+        pdb_path.unlink(missing_ok=True)
+        imp_path.unlink(missing_ok=True)
+        test_path.unlink(missing_ok=True)
+
+        build_type = "Release"
+
+        shutil.rmtree(install_path, ignore_errors=True)
+        build_path.mkdir(parents=True, exist_ok=True)
+        with self.section_printer.group(f"Configure VC CMake project for {arch}"):
+            self.executer.run([
+                "cmake", "-S", str(self.root), "-B", str(build_path),
+                "--fresh",
+                "-A", arch_cmake,
+                "-DSDL_SHARED=ON",
+                "-DSDL_STATIC=OFF",
+                "-DSDL_DISABLE_INSTALL_DOCS=ON",
+                "-DSDL_TEST_LIBRARY=ON",
+                "-DSDL_TESTS=OFF",
+                "-DCMAKE_INSTALL_BINDIR=bin",
+                "-DCMAKE_INSTALL_DATAROOTDIR=share",
+                "-DCMAKE_INSTALL_INCLUDEDIR=include",
+                "-DCMAKE_INSTALL_LIBDIR=lib",
+                f"-DCMAKE_BUILD_TYPE={build_type}",
+                f"-DCMAKE_INSTALL_PREFIX={install_path}",
+                # MSVC debug information format flags are selected by an abstraction
+                "-DCMAKE_POLICY_DEFAULT_CMP0141=NEW",
+                # MSVC debug information format
+                "-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=ProgramDatabase",
+                # Linker flags for executables
+                "-DCMAKE_EXE_LINKER_FLAGS=-DEBUG",
+                # Linker flag for shared libraries
+                "-DCMAKE_SHARED_LINKER_FLAGS=-INCREMENTAL:NO -DEBUG -OPT:REF -OPT:ICF",
+            ])
+
+        with self.section_printer.group(f"Build VC CMake project for {arch}"):
+            self.executer.run(["cmake", "--build", str(build_path), "--verbose", "--config", build_type])
+        with self.section_printer.group(f"Install VC CMake project for {arch}"):
+            self.executer.run(["cmake", "--install", str(build_path), "--config", build_type])
 
         assert dll_path.is_file(), "SDL3.dll has not been created"
         assert pdb_path.is_file(), "SDL3.pdb has not been created"
@@ -695,7 +762,7 @@ def main(argv=None):
         logger.warning("%s detected: Building from archive", GIT_HASH_FILENAME)
         archive_commit = root_git_hash_path.read_text().strip()
         if args.commit != archive_commit:
-            logger.warn("Commit argument is %s, but archive commit is %s. Using %s.", args.commit, archive_commit, archive_commit)
+            logger.warning("Commit argument is %s, but archive commit is %s. Using %s.", args.commit, archive_commit, archive_commit)
         args.commit = archive_commit
     else:
         args.commit = executer.run(["git", "rev-parse", args.commit], stdout=True, dry_out="e5812a9fd2cda317b503325a702ba3c1c37861d9").stdout.strip()
@@ -712,7 +779,7 @@ def main(argv=None):
     )
 
     if root_is_maybe_archive:
-        logger.warn("Building from archive. Skipping clean git tree check.")
+        logger.warning("Building from archive. Skipping clean git tree check.")
     else:
         porcelain_status = executer.run(["git", "status", "--ignored", "--porcelain"], stdout=True, dry_out="\n").stdout.strip()
         if porcelain_status:
@@ -750,14 +817,14 @@ def main(argv=None):
             parser.error("win32 artifact(s) can only be built on Windows")
         with section_printer.group("Find Visual Studio"):
             vs = VisualStudio(executer=executer)
-        with section_printer.group("Build x86 VS binary"):
-            x86 = releaser.build_vs(arch="x86", platform="Win32", vs=vs)
-        with section_printer.group("Build x64 VS binary"):
-            x64 = releaser.build_vs(arch="x64", platform="x64", vs=vs)
+        arm64 = releaser.build_vs_cmake(arch="arm64", arch_cmake="ARM64")
+        x86 = releaser.build_vs(arch="x86", platform="Win32", vs=vs)
+        x64 = releaser.build_vs(arch="x64", platform="x64", vs=vs)
         with section_printer.group("Create SDL VC development zip"):
             arch_vc = {
                 "x86": x86,
                 "x64": x64,
+                "arm64": arm64,
             }
             releaser.build_vs_devel(arch_vc)
 
