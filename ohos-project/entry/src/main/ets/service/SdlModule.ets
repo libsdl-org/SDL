@@ -395,7 +395,6 @@ export function notifySdlAboutToAppear(resourceMannagerContext: Context, windowI
   setWindowId(windowId)
   setScreenResolution()
   sdl.init(callbackRef)
-  sdl.setRootViewControl();
   sdl.sdlAppEntry("libentry.so", "main")
 }
 

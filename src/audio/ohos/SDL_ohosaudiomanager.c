@@ -418,7 +418,9 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
             return -1;
         }
     } else {
-        renderBufferLength = spec->samples * spec->channels * audioFormatBitDepth;
+        int framesize = 0;
+        OH_AudioRenderer_GetFrameSizeInCallback(audioRenderer, &framesize);
+        renderBufferLength = framesize * 4;
         if (NULL == rendererBuffer) {
             rendererBuffer = (unsigned char *)SDL_malloc((unsigned long long)renderBufferLength *
                 sizeof(unsigned char));
