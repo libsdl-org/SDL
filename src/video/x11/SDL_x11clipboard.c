@@ -53,6 +53,8 @@ static Window GetWindow(SDL_VideoDevice *_this)
         data->clipboard_window = X11_XCreateWindow(dpy, parent, -10, -10, 1, 1, 0,
                                                    CopyFromParent, InputOnly,
                                                    CopyFromParent, 0, &xattr);
+
+        X11_XSelectInput(dpy, data->clipboard_window, PropertyChangeMask);
         X11_XFlush(data->display);
     }
 
@@ -96,17 +98,62 @@ static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_Clipboar
     return 0;
 }
 
-static void *CloneDataBuffer(const void *buffer, size_t *len)
+static void *CloneDataBuffer(const void *buffer, const size_t len)
 {
     void *clone = NULL;
-    if (*len > 0 && buffer) {
-        clone = SDL_malloc((*len)+sizeof(Uint32));
+    if (len > 0 && buffer) {
+        clone = SDL_malloc(len + sizeof(Uint32));
         if (clone) {
-            SDL_memcpy(clone, buffer, *len);
-            SDL_memset((Uint8 *)clone + *len, 0, sizeof(Uint32));
+            SDL_memcpy(clone, buffer, len);
+            SDL_memset((Uint8 *)clone + len, 0, sizeof(Uint32));
         }
     }
     return clone;
+}
+
+/*
+ * original_buffer is considered unusable after the function is called.
+ */
+static void *AppendDataBuffer(void *original_buffer, const size_t old_len, const void *buffer, const size_t buffer_len)
+{
+    void *resized_buffer;
+
+    if (buffer_len > 0 && buffer) {
+        resized_buffer = SDL_realloc(original_buffer, old_len + buffer_len + sizeof(Uint32));
+        if (resized_buffer) {
+            SDL_memcpy((Uint8 *)resized_buffer + old_len, buffer, buffer_len);
+            SDL_memset((Uint8 *)resized_buffer + old_len + buffer_len, 0, sizeof(Uint32));
+        }
+
+        return resized_buffer;
+    } else {
+        return original_buffer;
+    }
+}
+
+static SDL_bool WaitForSelection(SDL_VideoDevice *_this, Atom selection_type, SDL_bool *flag)
+{
+    Uint64 waitStart;
+    Uint64 waitElapsed;
+
+    waitStart = SDL_GetTicks();
+    *flag = SDL_TRUE;
+    while (*flag) {
+        SDL_PumpEvents();
+        waitElapsed = SDL_GetTicks() - waitStart;
+        /* Wait one second for a selection response. */
+        if (waitElapsed > 1000) {
+            *flag = SDL_FALSE;
+            SDL_SetError("Selection timeout");
+            /* We need to set the selection text so that next time we won't
+               timeout, otherwise we will hang on every call to this function. */
+            SetSelectionData(_this, selection_type, SDL_ClipboardTextCallback, NULL,
+                             text_mime_types, SDL_arraysize(text_mime_types), 0);
+            return SDL_FALSE;
+        }
+    }
+
+    return SDL_TRUE;
 }
 
 static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
@@ -121,12 +168,11 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
     int seln_format;
     unsigned long count;
     unsigned long overflow;
-    Uint64 waitStart;
-    Uint64 waitElapsed;
 
     SDLX11_ClipboardData *clipboard;
     void *data = NULL;
     unsigned char *src = NULL;
+    SDL_bool incr_success = SDL_FALSE;
     Atom XA_MIME = X11_XInternAtom(display, mime_type, False);
     Atom XA_INCR = X11_XInternAtom(display, "INCR", False);
 
@@ -148,7 +194,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
 
         if (clipboard->callback) {
             const void *clipboard_data = clipboard->callback(clipboard->userdata, mime_type, length);
-            data = CloneDataBuffer(clipboard_data, length);
+            data = CloneDataBuffer(clipboard_data, *length);
         }
     } else {
         /* Request that the selection owner copy the data to our window */
@@ -157,35 +203,55 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
         X11_XConvertSelection(display, selection_type, XA_MIME, selection, owner,
                               CurrentTime);
 
-        /* When using synergy on Linux and when data has been put in the clipboard
-           on the remote (Windows anyway) machine then selection_waiting may never
-           be set to False. Time out after a while. */
-        waitStart = SDL_GetTicks();
-        videodata->selection_waiting = SDL_TRUE;
-        while (videodata->selection_waiting) {
-            SDL_PumpEvents();
-            waitElapsed = SDL_GetTicks() - waitStart;
-            /* Wait one second for a selection response. */
-            if (waitElapsed > 1000) {
-                videodata->selection_waiting = SDL_FALSE;
-                SDL_SetError("Selection timeout");
-                /* We need to set the selection text so that next time we won't
-                   timeout, otherwise we will hang on every call to this function. */
-                SetSelectionData(_this, selection_type, SDL_ClipboardTextCallback, NULL,
-                                 text_mime_types, SDL_arraysize(text_mime_types), 0);
-                data = NULL;
-                *length = 0;
-            }
+        if (WaitForSelection(_this, selection_type, &videodata->selection_waiting) == SDL_FALSE) {
+            data = NULL;
+            *length = 0;
         }
 
         if (X11_XGetWindowProperty(display, owner, selection, 0, INT_MAX / 4, False,
                                    XA_MIME, &seln_type, &seln_format, &count, &overflow, &src) == Success) {
             if (seln_type == XA_MIME) {
                 *length = (size_t)count;
-                data = CloneDataBuffer(src, length);
+                data = CloneDataBuffer(src, count);
             } else if (seln_type == XA_INCR) {
-                /* FIXME: Need to implement the X11 INCR protocol */
-                /*SDL_Log("Need to implement the X11 INCR protocol");*/
+                while (1) {
+                    // Only delete the property after being done with the previous "chunk".
+                    X11_XDeleteProperty(display, owner, selection);
+                    X11_XFlush(display);
+
+                    if (WaitForSelection(_this, selection_type, &videodata->selection_incr_waiting) == SDL_FALSE) {
+                        break;
+                    }
+
+                    X11_XFree(src);
+                    if (X11_XGetWindowProperty(display, owner, selection, 0, INT_MAX / 4, False,
+                                           XA_MIME, &seln_type, &seln_format, &count, &overflow, &src) != Success) {
+                        break;
+                    }
+
+                    if (count == 0) {
+                        incr_success = SDL_TRUE;
+                        break;
+                    }
+
+                    if (*length == 0) {
+                        *length = (size_t)count;
+                        data = CloneDataBuffer(src, count);
+                    } else {
+                        data = AppendDataBuffer(data, *length, src, count);
+                        *length += (size_t)count;
+                    }
+
+                    if (data == NULL) {
+                        break;
+                    }
+                }
+
+                if (incr_success == SDL_FALSE) {
+                    SDL_free(data);
+                    data = 0;
+                    *length = 0;
+                }
             }
             X11_XFree(src);
         }
