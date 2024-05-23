@@ -777,11 +777,18 @@ static void handle_configure_xdg_toplevel(void *data,
         if (window->flags & SDL_WINDOW_RESIZABLE) {
             if ((floating && !wind->floating) ||
                 width == 0 || height == 0) {
-                /* This happens when we're being restored from a
-                 * non-floating state, so use the cached floating size here.
+                /* This happens when we're being restored from a non-floating state,
+                 * or the compositor indicates that the size is up to the client, so
+                 * used the cached window size here.
                  */
-                width = window->floating.w;
-                height = window->floating.h;
+                if (floating) {
+                    width = window->floating.w;
+                    height = window->floating.h;
+                } else {
+                    width = window->windowed.w;
+                    height = window->windowed.h;
+                }
+
                 if (wind->scale_to_display) {
                     wind->requested.logical_width = PixelToPoint(window, width);
                     wind->requested.logical_height = PixelToPoint(window, height);
