@@ -762,7 +762,7 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
             continue;
         }
 
-        id = touchEvent->touches[i].identifier;
+        id = touchEvent->touches[i].identifier + 1;
         if (client_w <= 1) {
             x = 0.5f;
         } else {
