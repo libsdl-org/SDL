@@ -226,6 +226,8 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
         while (dbus->message_iter_get_arg_type(&uri_entry) == DBUS_TYPE_STRING)
         {
+            const char *uri = NULL;
+
             if (current >= length - 1) {
                 ++length;
                 path = SDL_realloc(path, sizeof(const char *) * length);
@@ -234,7 +236,18 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
                     goto cleanup;
                 }
             }
-            dbus->message_iter_get_basic(&uri_entry, path + current);
+
+            dbus->message_iter_get_basic(&uri_entry, &uri);
+
+            /* https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileChooser.html */
+            /* Returned paths will always start with 'file://'; truncate it */
+            if (SDL_strncmp(uri, "file://", SDL_strlen("file://"))) {
+                path[current] = uri + SDL_strlen("file://");
+            } else if (SDL_strstr(uri, "://")) {
+                SDL_SetError("Portal dialogs: Unsupported protocol: %s", uri);
+                signal_data->callback(signal_data->userdata, NULL, -1);
+                goto cleanup;
+            }
 
             dbus->message_iter_next(&uri_entry);
             ++current;
