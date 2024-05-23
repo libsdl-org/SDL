@@ -1271,6 +1271,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (Build.MANUFACTURER.equals("Oculus") && Build.MODEL.startsWith("Quest")) {
             return true;
         }
+        if (Build.MANUFACTURER.equals("Pico")) {
+            return true;
+        }
         return false;
     }
 
