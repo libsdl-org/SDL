@@ -764,6 +764,19 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             SDL_zerop(clipboard);
         }
     } break;
+
+    case PropertyNotify:
+    {
+        char *name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
+
+        if (SDL_strncmp(name_of_atom, "SDL_SELECTION", sizeof("SDL_SELECTION") - 1) == 0 && xevent->xproperty.state == PropertyNewValue) {
+            videodata->selection_incr_waiting = SDL_FALSE;
+        }
+
+        if (name_of_atom) {
+            X11_XFree(name_of_atom);
+        }
+    } break;
     }
 }
 

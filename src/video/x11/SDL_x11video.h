@@ -103,6 +103,7 @@ struct SDL_VideoData
 
     SDL_Scancode key_layout[256];
     SDL_bool selection_waiting;
+    SDL_bool selection_incr_waiting;
 
     SDL_bool broken_pointer_grab; /* true if XGrabPointer seems unreliable. */
 
