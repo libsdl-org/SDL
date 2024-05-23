@@ -265,6 +265,14 @@
 #error SDL_RENDER enabled without any backend drivers.
 #endif
 
+#if !defined(HAVE_LIBC)
+// If not using _any_ C runtime, these have to be defined before SDL_thread.h
+// gets included, so SDL_CreateThread calls won't try to reference the
+// (unavailable and unneeded) _beginthreadex/_endthreadex functions.
+#define SDL_BeginThreadFunction NULL
+#define SDL_EndThreadFunction NULL
+#endif
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
 
