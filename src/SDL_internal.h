@@ -267,8 +267,8 @@
 
 #if !defined(HAVE_LIBC)
 // If not using _any_ C runtime, these have to be defined before SDL_thread.h
-// gets included, so SDL_CreateThread calls won't try to reference the
-// (unavailable and unneeded) _beginthreadex/_endthreadex functions.
+// gets included, so internal SDL_CreateThread calls will not try to reference
+// the (unavailable and unneeded) _beginthreadex/_endthreadex functions.
 #define SDL_BeginThreadFunction NULL
 #define SDL_EndThreadFunction NULL
 #endif
