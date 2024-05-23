@@ -340,7 +340,7 @@ jobs:
               -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}" `
               -Werror=dev                                         `
               -B build_arm64 -A ARM64
-          cmake --build build_x64 --config Release --verbose
+          cmake --build build_arm64 --config Release --verbose
 
   mingw:
     needs: [src]
