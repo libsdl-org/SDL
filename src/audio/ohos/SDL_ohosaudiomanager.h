@@ -17,13 +17,14 @@
 
 #include "../../SDL_internal.h"
 #include "SDL_audio.h"
+#include "../SDL_sysaudio.h"
 
 void OHOSAUDIO_PageResume(void);
 void OHOSAUDIO_PagePause(void);
 
 /* Audio support */
 extern int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec);
-extern void* OHOSAUDIO_NATIVE_GetAudioBuf(void);
+extern void* OHOSAUDIO_NATIVE_GetAudioBuf(SDL_AudioDevice *device);
 extern void OHOSAUDIO_NATIVE_WriteAudioBuf(void);
 extern int OHOSAUDIO_NATIVE_CaptureAudioBuffer(void *buffer, int buflen);
 extern void OHOSAUDIO_NATIVE_FlushCapturedAudio(void);
