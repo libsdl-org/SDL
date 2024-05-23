@@ -351,6 +351,13 @@ typedef enum SDL_GpuTransferUsage
 	SDL_GPU_TRANSFERUSAGE_TEXTURE
 } SDL_GpuTransferUsage;
 
+typedef enum SDL_GpuPresentMode
+{
+	SDL_GPU_PRESENTMODE_MAILBOX,
+	SDL_GPU_PRESENTMODE_VSYNC,
+	SDL_GPU_PRESENTMODE_IMMEDIATE
+} SDL_GpuPresentMode;
+
 typedef enum SDL_GpuBackendBits
 {
 	SDL_GPU_BACKEND_INVALID = 0,
@@ -1876,13 +1883,28 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuBlit(
 /* Submission/Presentation */
 
 /**
+ * Obtains whether or not a presentation mode is supported by the GPU backend.
+ *
+ * \param device a GPU context
+ * \param presentMode the presentation mode to check
+ *
+ * \returns SDL_TRUE if supported, SDL_FALSE if unsupported (or on error)
+ *
+ * \since This function is available since SDL 3.x.x
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GpuSupportsPresentMode(
+	SDL_GpuDevice *device,
+	SDL_GpuPresentMode presentMode
+);
+
+/**
  * Claims a window, creating a swapchain structure for it.
  * This must be called before SDL_GpuAcquireSwapchainTexture is called using the window.
  *
  * \param device a GPU context
  * \param windowHandle an SDL_Window
  * \param colorSpace the desired color space for the swapchain
- * \param preferVerticalSync if SDL_TRUE presentation waits for vblank, otherwise tries to not. Some drivers may force v-sync.
+ * \param presentMode the desired present mode for the swapchain
  *
  * \returns SDL_TRUE on success, otherwise SDL_FALSE.
  *
@@ -1895,7 +1917,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GpuClaimWindow(
 	SDL_GpuDevice *device,
 	SDL_Window *windowHandle,
     SDL_GpuColorSpace colorSpace,
-    SDL_bool preferVerticalSync
+	SDL_GpuPresentMode presentMode
 );
 
 /**
@@ -1919,15 +1941,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuUnclaimWindow(
  * \param device a GPU context
  * \param windowHandle an SDL_Window that has been claimed
  * \param colorSpace the desired color space for the swapchain
- * \param preferVerticalSync if SDL_TRUE presentation waits for vblank, otherwise tries to not. Some drivers may force v-sync.
-
+ * \param presentMode the desired present mode for the swapchain
+ *
  * \since This function is available since SDL 3.x.x
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GpuSetSwapchainParameters(
 	SDL_GpuDevice *device,
 	SDL_Window *windowHandle,
     SDL_GpuColorSpace colorSpace,
-    SDL_bool preferVerticalSync
+    SDL_GpuPresentMode presentMode
 );
 
 /**

@@ -137,6 +137,13 @@ static const Uint8 DEVICE_PRIORITY[] =
     1	/* VK_PHYSICAL_DEVICE_TYPE_CPU */
 };
 
+static VkPresentModeKHR SDLToVK_PresentMode[] =
+{
+    VK_PRESENT_MODE_MAILBOX_KHR,
+    VK_PRESENT_MODE_FIFO_KHR,
+    VK_PRESENT_MODE_IMMEDIATE_KHR
+};
+
 static VkFormat SDLToVK_SurfaceFormat[] =
 {
     VK_FORMAT_R8G8B8A8_UNORM,			/* R8G8B8A8_UNORM */
@@ -641,18 +648,18 @@ typedef struct WindowData
     SDL_Window *windowHandle;
     SDL_GpuTextureFormat swapchainFormat;
     SDL_GpuColorSpace colorSpace;
-    SDL_bool preferVerticalSync;
+    SDL_GpuPresentMode presentMode;
     VulkanSwapchainData *swapchainData;
 } WindowData;
 
-typedef struct SwapChainSupportDetails
+typedef struct SwapchainSupportDetails
 {
     VkSurfaceCapabilitiesKHR capabilities;
     VkSurfaceFormatKHR *formats;
     Uint32 formatsLength;
     VkPresentModeKHR *presentModes;
     Uint32 presentModesLength;
-} SwapChainSupportDetails;
+} SwapchainSupportDetails;
 
 typedef struct VulkanPresentData
 {
@@ -1256,6 +1263,9 @@ struct VulkanRenderer
     Uint8 supportsDebugUtils;
     Uint8 debugMode;
     VulkanExtensions supports;
+
+    VkPresentModeKHR *supportedPresentModes;
+    Uint32 supportedPresentModesLength;
 
     VulkanMemoryAllocator *memoryAllocator;
     VkPhysicalDeviceMemoryProperties memoryProperties;
@@ -4428,11 +4438,11 @@ static void VULKAN_INTERNAL_CreateSliceView(
 
 /* Swapchain */
 
-static Uint8 VULKAN_INTERNAL_QuerySwapChainSupport(
+static Uint8 VULKAN_INTERNAL_QuerySwapchainSupport(
     VulkanRenderer *renderer,
     VkPhysicalDevice physicalDevice,
     VkSurfaceKHR surface,
-    SwapChainSupportDetails *outputDetails
+    SwapchainSupportDetails *outputDetails
 ) {
     VkResult result;
     VkBool32 supportsPresent;
@@ -4545,7 +4555,7 @@ static Uint8 VULKAN_INTERNAL_QuerySwapChainSupport(
         }
     }
 
-    /* If we made it here, all the queries were successfull. This does NOT
+    /* If we made it here, all the queries were successful. This does NOT
      * necessarily mean there are any supported formats or present modes!
      */
     return 1;
@@ -4572,36 +4582,22 @@ static Uint8 VULKAN_INTERNAL_ChooseSwapSurfaceFormat(
     return 0;
 }
 
-static void VULKAN_INTERNAL_ChooseSwapPresentMode(
-    SDL_bool preferVerticalSync,
+static SDL_bool VULKAN_INTERNAL_VerifySwapPresentMode(
+    VkPresentModeKHR presentMode,
     VkPresentModeKHR *availablePresentModes,
-    Uint32 availablePresentModesLength,
-    VkPresentModeKHR *outputPresentMode
+    Uint32 availablePresentModesLength
 ) {
-    #define CHECK_MODE(m) \
-        for (i = 0; i < availablePresentModesLength; i += 1) \
-        { \
-            if (availablePresentModes[i] == m) \
-            { \
-                *outputPresentMode = m; \
-                return; \
-            } \
-        } \
-
     Uint32 i;
-    if (preferVerticalSync)
+
+    for (i = 0; i < availablePresentModesLength; i += 1)
     {
-        CHECK_MODE(VK_PRESENT_MODE_MAILBOX_KHR)
-    }
-    else
-    {
-        CHECK_MODE(VK_PRESENT_MODE_IMMEDIATE_KHR)
+        if (availablePresentModes[i] == presentMode)
+        {
+            return SDL_TRUE;
+        }
     }
 
-    #undef CHECK_MODE
-
-    /* FIFO_KHR is the only mode that is required to be supported */
-    *outputPresentMode = VK_PRESENT_MODE_FIFO_KHR;
+    return SDL_FALSE;
 }
 
 static Uint8 VULKAN_INTERNAL_CreateSwapchain(
@@ -4614,7 +4610,7 @@ static Uint8 VULKAN_INTERNAL_CreateSwapchain(
     VkImage *swapchainImages;
     VkImageViewCreateInfo imageViewCreateInfo;
     VkSemaphoreCreateInfo semaphoreCreateInfo;
-    SwapChainSupportDetails swapchainSupportDetails;
+    SwapchainSupportDetails swapchainSupportDetails;
     Sint32 drawableWidth, drawableHeight;
     Uint32 i;
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -4642,7 +4638,7 @@ static Uint8 VULKAN_INTERNAL_CreateSwapchain(
         return 0;
     }
 
-    if (!VULKAN_INTERNAL_QuerySwapChainSupport(
+    if (!VULKAN_INTERNAL_QuerySwapchainSupport(
         renderer,
         renderer->physicalDevice,
         swapchainData->surface,
@@ -4755,12 +4751,31 @@ static Uint8 VULKAN_INTERNAL_CreateSwapchain(
         }
     }
 
-    VULKAN_INTERNAL_ChooseSwapPresentMode(
-        windowData->preferVerticalSync,
+    if (!VULKAN_INTERNAL_VerifySwapPresentMode(
+        SDLToVK_PresentMode[windowData->presentMode],
         swapchainSupportDetails.presentModes,
-        swapchainSupportDetails.presentModesLength,
-        &swapchainData->presentMode
-    );
+        swapchainSupportDetails.presentModesLength
+    )) {
+        renderer->vkDestroySurfaceKHR(
+            renderer->instance,
+            swapchainData->surface,
+            NULL
+        );
+
+        if (swapchainSupportDetails.formatsLength > 0)
+        {
+            SDL_free(swapchainSupportDetails.formats);
+        }
+
+        if (swapchainSupportDetails.presentModesLength > 0)
+        {
+            SDL_free(swapchainSupportDetails.presentModes);
+        }
+
+        SDL_free(swapchainData);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Device does not support requested colorspace!");
+        return 0;
+    }
 
     /* Sync now to be sure that our swapchain size is correct */
     SDL_SyncWindow(windowData->windowHandle);
@@ -5187,6 +5202,8 @@ static void VULKAN_DestroyDevice(
 
         SDL_free(renderer->memoryAllocator->subAllocators[i].sortedFreeRegions);
     }
+
+    SDL_free(renderer->supportedPresentModes);
 
     SDL_free(renderer->memoryAllocator);
 
@@ -10347,11 +10364,29 @@ static SDL_bool VULKAN_INTERNAL_ChooseSwapchainFormat(
     }
 }
 
+static SDL_bool VULKAN_SupportsPresentMode(
+    SDL_GpuRenderer *driverData,
+    SDL_GpuPresentMode presentMode
+) {
+    VulkanRenderer *renderer = (VulkanRenderer*) driverData;
+    Uint32 i;
+
+    for (i = 0; i < renderer->supportedPresentModesLength; i += 1)
+    {
+        if (renderer->supportedPresentModes[i] == SDLToVK_PresentMode[presentMode])
+        {
+            return SDL_TRUE;
+        }
+    }
+
+    return SDL_FALSE;
+}
+
 static SDL_bool VULKAN_ClaimWindow(
     SDL_GpuRenderer *driverData,
     SDL_Window *windowHandle,
     SDL_GpuColorSpace colorSpace,
-    SDL_bool preferVerticalSync
+    SDL_GpuPresentMode presentMode
 ) {
     VulkanRenderer *renderer = (VulkanRenderer*) driverData;
     WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(windowHandle);
@@ -10360,7 +10395,7 @@ static SDL_bool VULKAN_ClaimWindow(
     {
         windowData = SDL_malloc(sizeof(WindowData));
         windowData->windowHandle = windowHandle;
-        windowData->preferVerticalSync = preferVerticalSync;
+        windowData->presentMode = presentMode;
         windowData->colorSpace = colorSpace;
 
         if (!VULKAN_INTERNAL_ChooseSwapchainFormat(windowData))
@@ -10669,7 +10704,7 @@ static void VULKAN_SetSwapchainParameters(
     SDL_GpuRenderer *driverData,
     SDL_Window *windowHandle,
     SDL_GpuColorSpace colorSpace,
-    SDL_bool preferVerticalSync
+    SDL_GpuPresentMode presentMode
 ) {
     WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(windowHandle);
 
@@ -10680,7 +10715,7 @@ static void VULKAN_SetSwapchainParameters(
     }
 
     /* The window size may have changed, always update even if these params are the same */
-    windowData->preferVerticalSync = preferVerticalSync;
+    windowData->presentMode = presentMode;
     windowData->colorSpace = colorSpace;
 
     if (!VULKAN_INTERNAL_ChooseSwapchainFormat(windowData))
@@ -12035,7 +12070,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     Uint8 *deviceRank
 ) {
     Uint32 queueFamilyCount, queueFamilyRank, queueFamilyBest;
-    SwapChainSupportDetails swapchainSupportDetails;
+    SwapchainSupportDetails swapchainSupportDetails;
     VkQueueFamilyProperties *queueProps;
     VkBool32 supportsPresent;
     Uint8 querySuccess;
@@ -12166,7 +12201,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     }
 
     /* FIXME: Need better structure for checking vs storing support details */
-    querySuccess = VULKAN_INTERNAL_QuerySwapChainSupport(
+    querySuccess = VULKAN_INTERNAL_QuerySwapchainSupport(
         renderer,
         physicalDevice,
         surface,
@@ -12470,6 +12505,7 @@ static Uint8 VULKAN_INTERNAL_PrepareVulkan(
 ) {
     SDL_Window *dummyWindowHandle;
     VkSurfaceKHR surface;
+    SwapchainSupportDetails swapchainSupportDetails;
 
     VULKAN_INTERNAL_LoadEntryPoints();
 
@@ -12515,16 +12551,46 @@ static Uint8 VULKAN_INTERNAL_PrepareVulkan(
     if (!VULKAN_INTERNAL_DeterminePhysicalDevice(renderer, surface))
     {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Vulkan: Failed to determine a suitable physical device");
+
+        SDL_Vulkan_DestroySurface(
+            renderer->instance,
+            surface,
+            NULL
+        );
+
+        SDL_DestroyWindow(dummyWindowHandle);
         return 0;
     }
 
-    renderer->vkDestroySurfaceKHR(
+    if (!VULKAN_INTERNAL_QuerySwapchainSupport(
+        renderer,
+        renderer->physicalDevice,
+        surface,
+        &swapchainSupportDetails
+    ))
+    {
+        SDL_Vulkan_DestroySurface(
+            renderer->instance,
+            surface,
+            NULL
+        );
+
+        SDL_DestroyWindow(dummyWindowHandle);
+        return 0;
+    }
+
+    renderer->supportedPresentModesLength = swapchainSupportDetails.presentModesLength;
+    renderer->supportedPresentModes = swapchainSupportDetails.presentModes; /* malloc'd pointer, safe to assign */
+
+    SDL_free(swapchainSupportDetails.formats);
+
+    SDL_Vulkan_DestroySurface(
         renderer->instance,
         surface,
         NULL
     );
-    SDL_DestroyWindow(dummyWindowHandle);
 
+    SDL_DestroyWindow(dummyWindowHandle);
     return 1;
 }
 

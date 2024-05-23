@@ -590,11 +590,16 @@ struct SDL_GpuDevice
 
 	/* Submission/Presentation */
 
+	SDL_bool (*SupportsPresentMode)(
+		SDL_GpuRenderer *driverData,
+		SDL_GpuPresentMode presentMode
+	);
+
 	SDL_bool (*ClaimWindow)(
 		SDL_GpuRenderer *driverData,
 		SDL_Window *windowHandle,
         SDL_GpuColorSpace colorSpace,
-        SDL_bool preferVerticalSync
+        SDL_GpuPresentMode presentMode
 	);
 
 	void (*UnclaimWindow)(
@@ -606,7 +611,7 @@ struct SDL_GpuDevice
 		SDL_GpuRenderer *driverData,
 		SDL_Window *windowHandle,
         SDL_GpuColorSpace colorSpace,
-        SDL_bool preferVerticalSync
+        SDL_GpuPresentMode presentMode
 	);
 
 	SDL_GpuTextureFormat (*GetSwapchainFormat)(
@@ -767,6 +772,7 @@ struct SDL_GpuDevice
 	ASSIGN_DRIVER_FUNC(GenerateMipmaps, name) \
 	ASSIGN_DRIVER_FUNC(EndCopyPass, name) \
     ASSIGN_DRIVER_FUNC(Blit, name) \
+	ASSIGN_DRIVER_FUNC(SupportsPresentMode, name) \
 	ASSIGN_DRIVER_FUNC(ClaimWindow, name) \
 	ASSIGN_DRIVER_FUNC(UnclaimWindow, name) \
 	ASSIGN_DRIVER_FUNC(SetSwapchainParameters, name) \

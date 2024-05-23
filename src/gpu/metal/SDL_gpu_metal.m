@@ -11,11 +11,11 @@
   freely, subject to the following restrictions:
 
   1. The origin of this software must not be misrepresented; you must not
-	 claim that you wrote the original software. If you use this software
-	 in a product, an acknowledgment in the product documentation would be
-	 appreciated but is not required.
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
-	 misrepresented as being the original software.
+     misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
 
@@ -142,120 +142,120 @@ static MTLPixelFormat SDLToMetal_SurfaceFormat[] =
 
 static MTLVertexFormat SDLToMetal_VertexFormat[] =
 {
-	MTLVertexFormatUInt,    /* UINT */
-	MTLVertexFormatFloat,	/* FLOAT */
-	MTLVertexFormatFloat2,	/* VECTOR2 */
-	MTLVertexFormatFloat3,	/* VECTOR3 */
-	MTLVertexFormatFloat4,	/* VECTOR4 */
-	MTLVertexFormatUChar4Normalized,	/* COLOR */
-	MTLVertexFormatUChar4,	/* BYTE4 */
-	MTLVertexFormatShort2,	/* SHORT2 */
-	MTLVertexFormatShort4,	/* SHORT4 */
-	MTLVertexFormatShort2Normalized,	/* NORMALIZEDSHORT2 */
-	MTLVertexFormatShort4Normalized,	/* NORMALIZEDSHORT4 */
-	MTLVertexFormatHalf2,	/* HALFVECTOR2 */
-	MTLVertexFormatHalf4,	/* HALFVECTOR4 */
+    MTLVertexFormatUInt,    /* UINT */
+    MTLVertexFormatFloat,	/* FLOAT */
+    MTLVertexFormatFloat2,	/* VECTOR2 */
+    MTLVertexFormatFloat3,	/* VECTOR3 */
+    MTLVertexFormatFloat4,	/* VECTOR4 */
+    MTLVertexFormatUChar4Normalized,	/* COLOR */
+    MTLVertexFormatUChar4,	/* BYTE4 */
+    MTLVertexFormatShort2,	/* SHORT2 */
+    MTLVertexFormatShort4,	/* SHORT4 */
+    MTLVertexFormatShort2Normalized,	/* NORMALIZEDSHORT2 */
+    MTLVertexFormatShort4Normalized,	/* NORMALIZEDSHORT4 */
+    MTLVertexFormatHalf2,	/* HALFVECTOR2 */
+    MTLVertexFormatHalf4,	/* HALFVECTOR4 */
 };
 
 static MTLIndexType SDLToMetal_IndexType[] =
 {
-	MTLIndexTypeUInt16,	/* 16BIT */
-	MTLIndexTypeUInt32,	/* 32BIT */
+    MTLIndexTypeUInt16,	/* 16BIT */
+    MTLIndexTypeUInt32,	/* 32BIT */
 };
 
 static MTLPrimitiveType SDLToMetal_PrimitiveType[] =
 {
-	MTLPrimitiveTypePoint,	        /* POINTLIST */
-	MTLPrimitiveTypeLine,	        /* LINELIST */
-	MTLPrimitiveTypeLineStrip,	    /* LINESTRIP */
-	MTLPrimitiveTypeTriangle,	    /* TRIANGLELIST */
-	MTLPrimitiveTypeTriangleStrip	/* TRIANGLESTRIP */
+    MTLPrimitiveTypePoint,	        /* POINTLIST */
+    MTLPrimitiveTypeLine,	        /* LINELIST */
+    MTLPrimitiveTypeLineStrip,	    /* LINESTRIP */
+    MTLPrimitiveTypeTriangle,	    /* TRIANGLELIST */
+    MTLPrimitiveTypeTriangleStrip	/* TRIANGLESTRIP */
 };
 
 static MTLTriangleFillMode SDLToMetal_PolygonMode[] =
 {
-	MTLTriangleFillModeFill,	/* FILL */
-	MTLTriangleFillModeLines,	/* LINE */
+    MTLTriangleFillModeFill,	/* FILL */
+    MTLTriangleFillModeLines,	/* LINE */
 };
 
 static MTLCullMode SDLToMetal_CullMode[] =
 {
-	MTLCullModeNone,	/* NONE */
-	MTLCullModeFront,	/* FRONT */
-	MTLCullModeBack,	/* BACK */
+    MTLCullModeNone,	/* NONE */
+    MTLCullModeFront,	/* FRONT */
+    MTLCullModeBack,	/* BACK */
 };
 
 static MTLWinding SDLToMetal_FrontFace[] =
 {
-	MTLWindingCounterClockwise,	/* COUNTER_CLOCKWISE */
-	MTLWindingClockwise,	/* CLOCKWISE */
+    MTLWindingCounterClockwise,	/* COUNTER_CLOCKWISE */
+    MTLWindingClockwise,	/* CLOCKWISE */
 };
 
 static MTLBlendFactor SDLToMetal_BlendFactor[] =
 {
-	MTLBlendFactorZero,	                /* ZERO */
-	MTLBlendFactorOne,	                /* ONE */
-	MTLBlendFactorSourceColor,	        /* SRC_COLOR */
-	MTLBlendFactorOneMinusSourceColor,	/* ONE_MINUS_SRC_COLOR */
-	MTLBlendFactorDestinationColor,	    /* DST_COLOR */
-	MTLBlendFactorOneMinusDestinationColor,	/* ONE_MINUS_DST_COLOR */
-	MTLBlendFactorSourceAlpha,	        /* SRC_ALPHA */
-	MTLBlendFactorOneMinusSourceAlpha,	/* ONE_MINUS_SRC_ALPHA */
-	MTLBlendFactorDestinationAlpha,	    /* DST_ALPHA */
-	MTLBlendFactorOneMinusDestinationAlpha,	/* ONE_MINUS_DST_ALPHA */
-	MTLBlendFactorBlendColor,	        /* CONSTANT_COLOR */
-	MTLBlendFactorOneMinusBlendColor,	/* ONE_MINUS_CONSTANT_COLOR */
-	MTLBlendFactorSourceAlphaSaturated,	/* SRC_ALPHA_SATURATE */
+    MTLBlendFactorZero,	                /* ZERO */
+    MTLBlendFactorOne,	                /* ONE */
+    MTLBlendFactorSourceColor,	        /* SRC_COLOR */
+    MTLBlendFactorOneMinusSourceColor,	/* ONE_MINUS_SRC_COLOR */
+    MTLBlendFactorDestinationColor,	    /* DST_COLOR */
+    MTLBlendFactorOneMinusDestinationColor,	/* ONE_MINUS_DST_COLOR */
+    MTLBlendFactorSourceAlpha,	        /* SRC_ALPHA */
+    MTLBlendFactorOneMinusSourceAlpha,	/* ONE_MINUS_SRC_ALPHA */
+    MTLBlendFactorDestinationAlpha,	    /* DST_ALPHA */
+    MTLBlendFactorOneMinusDestinationAlpha,	/* ONE_MINUS_DST_ALPHA */
+    MTLBlendFactorBlendColor,	        /* CONSTANT_COLOR */
+    MTLBlendFactorOneMinusBlendColor,	/* ONE_MINUS_CONSTANT_COLOR */
+    MTLBlendFactorSourceAlphaSaturated,	/* SRC_ALPHA_SATURATE */
 };
 
 static MTLBlendOperation SDLToMetal_BlendOp[] =
 {
-	MTLBlendOperationAdd,	/* ADD */
-	MTLBlendOperationSubtract,	/* SUBTRACT */
-	MTLBlendOperationReverseSubtract,	/* REVERSE_SUBTRACT */
-	MTLBlendOperationMin,	/* MIN */
-	MTLBlendOperationMax,	/* MAX */
+    MTLBlendOperationAdd,	/* ADD */
+    MTLBlendOperationSubtract,	/* SUBTRACT */
+    MTLBlendOperationReverseSubtract,	/* REVERSE_SUBTRACT */
+    MTLBlendOperationMin,	/* MIN */
+    MTLBlendOperationMax,	/* MAX */
 };
 
 static MTLCompareFunction SDLToMetal_CompareOp[] =
 {
-	MTLCompareFunctionNever,	    /* NEVER */
-	MTLCompareFunctionLess,	        /* LESS */
-	MTLCompareFunctionEqual,	    /* EQUAL */
-	MTLCompareFunctionLessEqual,	/* LESS_OR_EQUAL */
-	MTLCompareFunctionGreater,	    /* GREATER */
-	MTLCompareFunctionNotEqual,	    /* NOT_EQUAL */
-	MTLCompareFunctionGreaterEqual,	/* GREATER_OR_EQUAL */
-	MTLCompareFunctionAlways,	    /* ALWAYS */
+    MTLCompareFunctionNever,	    /* NEVER */
+    MTLCompareFunctionLess,	        /* LESS */
+    MTLCompareFunctionEqual,	    /* EQUAL */
+    MTLCompareFunctionLessEqual,	/* LESS_OR_EQUAL */
+    MTLCompareFunctionGreater,	    /* GREATER */
+    MTLCompareFunctionNotEqual,	    /* NOT_EQUAL */
+    MTLCompareFunctionGreaterEqual,	/* GREATER_OR_EQUAL */
+    MTLCompareFunctionAlways,	    /* ALWAYS */
 };
 
 static MTLStencilOperation SDLToMetal_StencilOp[] =
 {
-	MTLStencilOperationKeep,	        /* KEEP */
-	MTLStencilOperationZero,	        /* ZERO */
-	MTLStencilOperationReplace,	        /* REPLACE */
-	MTLStencilOperationIncrementClamp,	/* INCREMENT_AND_CLAMP */
-	MTLStencilOperationDecrementClamp,	/* DECREMENT_AND_CLAMP */
-	MTLStencilOperationInvert,	        /* INVERT */
-	MTLStencilOperationIncrementWrap,	/* INCREMENT_AND_WRAP */
-	MTLStencilOperationDecrementWrap,	/* DECREMENT_AND_WRAP */
+    MTLStencilOperationKeep,	        /* KEEP */
+    MTLStencilOperationZero,	        /* ZERO */
+    MTLStencilOperationReplace,	        /* REPLACE */
+    MTLStencilOperationIncrementClamp,	/* INCREMENT_AND_CLAMP */
+    MTLStencilOperationDecrementClamp,	/* DECREMENT_AND_CLAMP */
+    MTLStencilOperationInvert,	        /* INVERT */
+    MTLStencilOperationIncrementWrap,	/* INCREMENT_AND_WRAP */
+    MTLStencilOperationDecrementWrap,	/* DECREMENT_AND_WRAP */
 };
 
 static MTLSamplerAddressMode SDLToMetal_SamplerAddressMode[] =
 {
-	MTLSamplerAddressModeRepeat,	        /* REPEAT */
-	MTLSamplerAddressModeMirrorRepeat,	    /* MIRRORED_REPEAT */
-	MTLSamplerAddressModeClampToEdge,	    /* CLAMP_TO_EDGE */
-	MTLSamplerAddressModeClampToBorderColor,/* CLAMP_TO_BORDER */
+    MTLSamplerAddressModeRepeat,	        /* REPEAT */
+    MTLSamplerAddressModeMirrorRepeat,	    /* MIRRORED_REPEAT */
+    MTLSamplerAddressModeClampToEdge,	    /* CLAMP_TO_EDGE */
+    MTLSamplerAddressModeClampToBorderColor,/* CLAMP_TO_BORDER */
 };
 
 static MTLSamplerBorderColor SDLToMetal_BorderColor[] =
 {
-	MTLSamplerBorderColorTransparentBlack,	/* FLOAT_TRANSPARENT_BLACK */
-	MTLSamplerBorderColorTransparentBlack,	/* INT_TRANSPARENT_BLACK */
-	MTLSamplerBorderColorOpaqueBlack,	/* FLOAT_OPAQUE_BLACK */
-	MTLSamplerBorderColorOpaqueBlack,	/* INT_OPAQUE_BLACK */
-	MTLSamplerBorderColorOpaqueWhite,	/* FLOAT_OPAQUE_WHITE */
+    MTLSamplerBorderColorTransparentBlack,	/* FLOAT_TRANSPARENT_BLACK */
+    MTLSamplerBorderColorTransparentBlack,	/* INT_TRANSPARENT_BLACK */
+    MTLSamplerBorderColorOpaqueBlack,	/* FLOAT_OPAQUE_BLACK */
+    MTLSamplerBorderColorOpaqueBlack,	/* INT_OPAQUE_BLACK */
+    MTLSamplerBorderColorOpaqueWhite,	/* FLOAT_OPAQUE_WHITE */
     MTLSamplerBorderColorOpaqueWhite,	/* INT_OPAQUE_WHITE */
 };
 
@@ -781,16 +781,16 @@ static void METAL_QueueDestroyOcclusionQuery(
 /* Pipeline Creation */
 
 static SDL_GpuComputePipeline* METAL_CreateComputePipeline(
-	SDL_GpuRenderer *driverData,
-	SDL_GpuComputePipelineCreateInfo *pipelineCreateInfo
+    SDL_GpuRenderer *driverData,
+    SDL_GpuComputePipelineCreateInfo *pipelineCreateInfo
 ) {
     NOT_IMPLEMENTED
     return NULL;
 }
 
 static SDL_GpuGraphicsPipeline* METAL_CreateGraphicsPipeline(
-	SDL_GpuRenderer *driverData,
-	SDL_GpuGraphicsPipelineCreateInfo *pipelineCreateInfo
+    SDL_GpuRenderer *driverData,
+    SDL_GpuGraphicsPipelineCreateInfo *pipelineCreateInfo
 ) {
     MetalRenderer *renderer = (MetalRenderer*) driverData;
     MetalShader *vertexShader = (MetalShader*) pipelineCreateInfo->vertexShader;
@@ -923,7 +923,7 @@ static SDL_GpuGraphicsPipeline* METAL_CreateGraphicsPipeline(
     result->stencilReference = pipelineCreateInfo->depthStencilState.reference;
     result->rasterizerState = pipelineCreateInfo->rasterizerState;
     result->primitiveType = pipelineCreateInfo->primitiveType;
-	return (SDL_GpuGraphicsPipeline*) result;
+    return (SDL_GpuGraphicsPipeline*) result;
 }
 
 /* Debug Naming */
@@ -976,8 +976,8 @@ static void METAL_SetStringMarker(
 /* Resource Creation */
 
 static SDL_GpuSampler* METAL_CreateSampler(
-	SDL_GpuRenderer *driverData,
-	SDL_GpuSamplerStateCreateInfo *samplerStateCreateInfo
+    SDL_GpuRenderer *driverData,
+    SDL_GpuSamplerStateCreateInfo *samplerStateCreateInfo
 ) {
     MetalRenderer *renderer = (MetalRenderer*) driverData;
     MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
@@ -1019,13 +1019,13 @@ static SDL_GpuShader* METAL_CreateShader(
     id<MTLFunction> function;
     MetalShader *result;
 
-	if (shaderCreateInfo->format == SDL_GPU_SHADERFORMAT_MSL)
-	{
-		library = [renderer->device
+    if (shaderCreateInfo->format == SDL_GPU_SHADERFORMAT_MSL)
+    {
+        library = [renderer->device
             newLibraryWithSource:@((const char*) shaderCreateInfo->code)
             options:nil /* FIXME: Do we need any compile options? */
             error:&error];
-	}
+    }
     else if (shaderCreateInfo->format == SDL_GPU_SHADERFORMAT_METALLIB)
     {
         data = dispatch_data_create(
@@ -1038,8 +1038,8 @@ static SDL_GpuShader* METAL_CreateShader(
     }
     else
     {
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Incompatible shader format for Metal");
-		return NULL;
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Incompatible shader format for Metal");
+        return NULL;
     }
 
     if (error != NULL)
@@ -1128,10 +1128,10 @@ static MetalTexture* METAL_INTERNAL_CreateTexture(
 }
 
 static SDL_GpuTexture* METAL_CreateTexture(
-	SDL_GpuRenderer *driverData,
-	SDL_GpuTextureCreateInfo *textureCreateInfo
+    SDL_GpuRenderer *driverData,
+    SDL_GpuTextureCreateInfo *textureCreateInfo
 ) {
-	MetalRenderer *renderer = (MetalRenderer*) driverData;
+    MetalRenderer *renderer = (MetalRenderer*) driverData;
     MetalTextureContainer *container;
     MetalTexture *texture;
 
@@ -1235,9 +1235,9 @@ static MetalBuffer* METAL_INTERNAL_CreateBuffer(
 }
 
 static SDL_GpuBuffer* METAL_CreateGpuBuffer(
-	SDL_GpuRenderer *driverData,
-	SDL_GpuBufferUsageFlags usageFlags,
-	Uint32 sizeInBytes
+    SDL_GpuRenderer *driverData,
+    SDL_GpuBufferUsageFlags usageFlags,
+    Uint32 sizeInBytes
 ) {
     MetalRenderer *renderer = (MetalRenderer*) driverData;
     MetalBuffer *buffer;
@@ -1764,10 +1764,10 @@ static SDL_GpuCommandBuffer* METAL_AcquireCommandBuffer(
 }
 
 static void METAL_BeginRenderPass(
-	SDL_GpuCommandBuffer *commandBuffer,
-	SDL_GpuColorAttachmentInfo *colorAttachmentInfos,
-	Uint32 colorAttachmentCount,
-	SDL_GpuDepthStencilAttachmentInfo *depthStencilAttachmentInfo
+    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GpuColorAttachmentInfo *colorAttachmentInfos,
+    Uint32 colorAttachmentCount,
+    SDL_GpuDepthStencilAttachmentInfo *depthStencilAttachmentInfo
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
@@ -1866,8 +1866,8 @@ static void METAL_BeginRenderPass(
 }
 
 static void METAL_BindGraphicsPipeline(
-	SDL_GpuCommandBuffer *commandBuffer,
-	SDL_GpuGraphicsPipeline *graphicsPipeline
+    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GpuGraphicsPipeline *graphicsPipeline
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     MetalGraphicsPipeline *metalGraphicsPipeline = (MetalGraphicsPipeline*) graphicsPipeline;
@@ -1904,8 +1904,8 @@ static void METAL_BindGraphicsPipeline(
 }
 
 static void METAL_SetViewport(
-	SDL_GpuCommandBuffer *commandBuffer,
-	SDL_GpuViewport *viewport
+    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GpuViewport *viewport
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     MTLViewport metalViewport;
@@ -1921,8 +1921,8 @@ static void METAL_SetViewport(
 }
 
 static void METAL_SetScissor(
-	SDL_GpuCommandBuffer *commandBuffer,
-	SDL_GpuRect *scissor
+    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GpuRect *scissor
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     MTLScissorRect metalScissor;
@@ -1936,10 +1936,10 @@ static void METAL_SetScissor(
 }
 
 static void METAL_BindVertexBuffers(
-	SDL_GpuCommandBuffer *commandBuffer,
-	Uint32 firstBinding,
-	Uint32 bindingCount,
-	SDL_GpuBufferBinding *pBindings
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 firstBinding,
+    Uint32 bindingCount,
+    SDL_GpuBufferBinding *pBindings
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     id<MTLBuffer> metalBuffers[MAX_BUFFER_BINDINGS];
@@ -1964,9 +1964,9 @@ static void METAL_BindVertexBuffers(
 }
 
 static void METAL_BindIndexBuffer(
-	SDL_GpuCommandBuffer *commandBuffer,
-	SDL_GpuBufferBinding *pBinding,
-	SDL_GpuIndexElementSize indexElementSize
+    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GpuBufferBinding *pBinding,
+    SDL_GpuIndexElementSize indexElementSize
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     metalCommandBuffer->indexBuffer = ((MetalBufferContainer*) pBinding->gpuBuffer)->activeBuffer;
@@ -2031,11 +2031,11 @@ static void METAL_BindFragmentStorageBuffers(
 }
 
 static void METAL_DrawInstancedPrimitives(
-	SDL_GpuCommandBuffer *commandBuffer,
-	Uint32 baseVertex,
-	Uint32 startIndex,
-	Uint32 primitiveCount,
-	Uint32 instanceCount
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 baseVertex,
+    Uint32 startIndex,
+    Uint32 primitiveCount,
+    Uint32 instanceCount
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     SDL_GpuPrimitiveType primitiveType = metalCommandBuffer->graphicsPipeline->primitiveType;
@@ -2053,9 +2053,9 @@ static void METAL_DrawInstancedPrimitives(
 }
 
 static void METAL_DrawPrimitives(
-	SDL_GpuCommandBuffer *commandBuffer,
-	Uint32 vertexStart,
-	Uint32 primitiveCount
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 vertexStart,
+    Uint32 primitiveCount
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     SDL_GpuPrimitiveType primitiveType = metalCommandBuffer->graphicsPipeline->primitiveType;
@@ -2067,17 +2067,17 @@ static void METAL_DrawPrimitives(
 }
 
 static void METAL_DrawPrimitivesIndirect(
-	SDL_GpuCommandBuffer *commandBuffer,
-	SDL_GpuBuffer *gpuBuffer,
-	Uint32 offsetInBytes,
-	Uint32 drawCount,
-	Uint32 stride
+    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GpuBuffer *gpuBuffer,
+    Uint32 offsetInBytes,
+    Uint32 drawCount,
+    Uint32 stride
 ) {
     NOT_IMPLEMENTED
 }
 
 static void METAL_EndRenderPass(
-	SDL_GpuCommandBuffer *commandBuffer
+    SDL_GpuCommandBuffer *commandBuffer
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     [metalCommandBuffer->renderEncoder endEncoding];
@@ -2118,16 +2118,16 @@ static void METAL_Blit(
 /* Compute State */
 
 static void METAL_BeginComputePass(
-	SDL_GpuCommandBuffer *commandBuffer
+    SDL_GpuCommandBuffer *commandBuffer
 ) {
     NOT_IMPLEMENTED
 }
 
 static void METAL_BindComputePipeline(
-	SDL_GpuCommandBuffer *commandBuffer,
-	SDL_GpuComputePipeline *computePipeline
+    SDL_GpuCommandBuffer *commandBuffer,
+    SDL_GpuComputePipeline *computePipeline
 ) {
-	NOT_IMPLEMENTED
+    NOT_IMPLEMENTED
 }
 
 static void METAL_BindComputeStorageTextures(
@@ -2176,16 +2176,16 @@ static void METAL_PushComputeUniformData(
 }
 
 static void METAL_DispatchCompute(
-	SDL_GpuCommandBuffer *commandBuffer,
-	Uint32 groupCountX,
-	Uint32 groupCountY,
-	Uint32 groupCountZ
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 groupCountX,
+    Uint32 groupCountY,
+    Uint32 groupCountZ
 ) {
-	NOT_IMPLEMENTED
+    NOT_IMPLEMENTED
 }
 
 static void METAL_EndComputePass(
-	SDL_GpuCommandBuffer *commandBuffer
+    SDL_GpuCommandBuffer *commandBuffer
 ) {
     NOT_IMPLEMENTED
 }
@@ -2408,7 +2408,7 @@ static MetalWindowData* METAL_INTERNAL_FetchWindowData(SDL_Window *windowHandle)
 static Uint8 METAL_INTERNAL_CreateSwapchain(
     MetalRenderer *renderer,
     MetalWindowData *windowData,
-    SDL_bool preferVerticalSync
+    SDL_GpuPresentMode presentMode
 ) {
     CGSize drawableSize;
 
@@ -2418,7 +2418,7 @@ static Uint8 METAL_INTERNAL_CreateSwapchain(
     windowData->layer = (__bridge CAMetalLayer *)(SDL_Metal_GetLayer(windowData->view));
     windowData->layer.device = renderer->device;
 #ifdef SDL_PLATFORM_MACOS
-    windowData->layer.displaySyncEnabled = preferVerticalSync;
+    windowData->layer.displaySyncEnabled = (presentMode != SDL_GPU_PRESENTMODE_IMMEDIATE);
 #endif
     windowData->layer.framebufferOnly = FALSE; /* Allow sampling swapchain textures, at the expense of performance */
     windowData->layer.pixelFormat = MTLPixelFormatRGBA8Unorm;
@@ -2446,11 +2446,27 @@ static Uint8 METAL_INTERNAL_CreateSwapchain(
 
 /* FIXME: ResizeSwapchain? */
 
+static SDL_bool METAL_SupportsPresentMode(
+    SDL_GpuRenderer *driverData,
+    SDL_GpuPresentMode presentMode
+) {
+    switch (presentMode)
+    {
+#ifdef SDL_PLATFORM_MACOS
+    case SDL_GPU_PRESENTMODE_IMMEDIATE:
+#endif
+    case SDL_GPU_PRESENTMODE_VSYNC:
+        return SDL_TRUE;
+    default:
+        return SDL_FALSE;
+    }
+}
+
 static SDL_bool METAL_ClaimWindow(
-	SDL_GpuRenderer *driverData,
-	SDL_Window *windowHandle,
-	SDL_GpuColorSpace colorSpace,
-	SDL_bool preferVerticalSync
+    SDL_GpuRenderer *driverData,
+    SDL_Window *windowHandle,
+    SDL_GpuColorSpace colorSpace,
+    SDL_GpuPresentMode presentMode
 ) {
     MetalRenderer *renderer = (MetalRenderer*) driverData;
     MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(windowHandle);
@@ -2460,7 +2476,7 @@ static SDL_bool METAL_ClaimWindow(
         windowData = (MetalWindowData*) SDL_malloc(sizeof(MetalWindowData));
         windowData->windowHandle = windowHandle; /* FIXME: needed? */
 
-        if (METAL_INTERNAL_CreateSwapchain(renderer, windowData, preferVerticalSync))
+        if (METAL_INTERNAL_CreateSwapchain(renderer, windowData, presentMode))
         {
             SDL_SetProperty(SDL_GetWindowProperties(windowHandle), WINDOW_PROPERTY_DATA, windowData);
 
@@ -2498,8 +2514,8 @@ static SDL_bool METAL_ClaimWindow(
 /* FIXME: DestroySwapchain? */
 
 static void METAL_UnclaimWindow(
-	SDL_GpuRenderer *driverData,
-	SDL_Window *windowHandle
+    SDL_GpuRenderer *driverData,
+    SDL_Window *windowHandle
 ) {
     MetalRenderer *renderer = (MetalRenderer*) driverData;
     MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(windowHandle);
@@ -2571,8 +2587,8 @@ static SDL_GpuTexture* METAL_AcquireSwapchainTexture(
 }
 
 static SDL_GpuTextureFormat METAL_GetSwapchainFormat(
-	SDL_GpuRenderer *driverData,
-	SDL_Window *windowHandle
+    SDL_GpuRenderer *driverData,
+    SDL_Window *windowHandle
 ) {
     NOT_IMPLEMENTED
     return SDL_GPU_TEXTUREFORMAT_R8;
@@ -2582,7 +2598,7 @@ static void METAL_SetSwapchainParameters(
     SDL_GpuRenderer *driverData,
     SDL_Window *windowHandle,
     SDL_GpuColorSpace colorSpace,
-    SDL_bool preferVerticalSync
+    SDL_GpuPresentMode presentMode
 ) {
     NOT_IMPLEMENTED
 }
@@ -2590,7 +2606,7 @@ static void METAL_SetSwapchainParameters(
 /* Submission */
 
 static void METAL_Submit(
-	SDL_GpuCommandBuffer *commandBuffer
+    SDL_GpuCommandBuffer *commandBuffer
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     MetalRenderer *renderer = metalCommandBuffer->renderer;
@@ -2645,7 +2661,7 @@ static void METAL_Submit(
 }
 
 static SDL_GpuFence* METAL_SubmitAndAcquireFence(
-	SDL_GpuCommandBuffer *commandBuffer
+    SDL_GpuCommandBuffer *commandBuffer
 ) {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer*) commandBuffer;
     MetalFence *fence = metalCommandBuffer->fence;
@@ -2657,7 +2673,7 @@ static SDL_GpuFence* METAL_SubmitAndAcquireFence(
 }
 
 static void METAL_Wait(
-	SDL_GpuRenderer *driverData
+    SDL_GpuRenderer *driverData
 ) {
     MetalRenderer *renderer = (MetalRenderer*) driverData;
     MetalCommandBuffer *commandBuffer;
@@ -2822,8 +2838,8 @@ static SDL_GpuShader* METAL_CompileFromSPIRVCross(
 
 static Uint8 METAL_PrepareDriver(SDL_VideoDevice *_this)
 {
-	/* FIXME: Add a macOS / iOS version check! Maybe support >= 10.14? */
-	return (_this->Metal_CreateView != NULL);
+    /* FIXME: Add a macOS / iOS version check! Maybe support >= 10.14? */
+    return (_this->Metal_CreateView != NULL);
 }
 
 static SDL_GpuDevice* METAL_CreateDevice(SDL_bool debugMode)
@@ -2885,17 +2901,17 @@ static SDL_GpuDevice* METAL_CreateDevice(SDL_bool debugMode)
         sizeof(MetalWindowData*) * renderer->claimedWindowCapacity
     );
 
-	SDL_GpuDevice *result = SDL_malloc(sizeof(SDL_GpuDevice));
-	ASSIGN_DRIVER(METAL)
-	result->driverData = (SDL_GpuRenderer*) renderer;
-	return result;
+    SDL_GpuDevice *result = SDL_malloc(sizeof(SDL_GpuDevice));
+    ASSIGN_DRIVER(METAL)
+    result->driverData = (SDL_GpuRenderer*) renderer;
+    return result;
 }
 
 SDL_GpuDriver MetalDriver = {
-	"Metal",
-	SDL_GPU_BACKEND_METAL,
-	METAL_PrepareDriver,
-	METAL_CreateDevice
+    "Metal",
+    SDL_GPU_BACKEND_METAL,
+    METAL_PrepareDriver,
+    METAL_CreateDevice
 };
 
 #endif /*SDL_GPU_METAL*/

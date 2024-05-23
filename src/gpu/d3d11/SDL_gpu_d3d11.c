@@ -492,7 +492,7 @@ typedef struct D3D11WindowData
 	IDXGISwapChain *swapchain;
     D3D11Texture texture;
     D3D11TextureContainer textureContainer;
-    SDL_bool preferVerticalSync;
+    SDL_GpuPresentMode presentMode;
     DXGI_FORMAT swapchainFormat;
     SDL_GpuColorSpace colorSpace;
     D3D11Fence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
@@ -5465,7 +5465,7 @@ static Uint8 D3D11_INTERNAL_CreateSwapchain(
 	D3D11Renderer *renderer,
 	D3D11WindowData *windowData,
     SDL_GpuColorSpace colorSpace,
-    SDL_bool preferVerticalSync
+    SDL_GpuPresentMode presentMode
 ) {
 	HWND dxgiHandle;
 	int width, height;
@@ -5589,7 +5589,7 @@ static Uint8 D3D11_INTERNAL_CreateSwapchain(
 	}
     /* Initialize the swapchain data */
 	windowData->swapchain = swapchain;
-    windowData->preferVerticalSync = preferVerticalSync;
+    windowData->presentMode = presentMode;
     windowData->swapchainFormat = swapchainFormat;
     windowData->colorSpace = colorSpace;
     windowData->frameCounter = 0;
@@ -5658,11 +5658,28 @@ static Uint8 D3D11_INTERNAL_ResizeSwapchain(
 	);
 }
 
+static SDL_bool D3D11_SupportsPresentMode(
+	SDL_GpuRenderer *driverData,
+	SDL_GpuPresentMode presentMode
+) {
+	D3D11Renderer *renderer = (D3D11Renderer*) driverData;
+	switch (presentMode)
+	{
+	case SDL_GPU_PRESENTMODE_IMMEDIATE:
+	case SDL_GPU_PRESENTMODE_VSYNC:
+		return SDL_TRUE;
+	case SDL_GPU_PRESENTMODE_MAILBOX:
+		return renderer->supportsFlipDiscard;
+	}
+	SDL_assert(!"Unrecognized present mode");
+	return SDL_FALSE;
+}
+
 static SDL_bool D3D11_ClaimWindow(
 	SDL_GpuRenderer *driverData,
 	SDL_Window *windowHandle,
     SDL_GpuColorSpace colorSpace,
-    SDL_bool preferVerticalSync
+    SDL_GpuPresentMode presentMode
 ) {
 	D3D11Renderer *renderer = (D3D11Renderer*) driverData;
 	D3D11WindowData *windowData = D3D11_INTERNAL_FetchWindowData(windowHandle);
@@ -5672,7 +5689,7 @@ static SDL_bool D3D11_ClaimWindow(
 		windowData = (D3D11WindowData*) SDL_malloc(sizeof(D3D11WindowData));
 		windowData->windowHandle = windowHandle;
 
-		if (D3D11_INTERNAL_CreateSwapchain(renderer, windowData, colorSpace, preferVerticalSync))
+		if (D3D11_INTERNAL_CreateSwapchain(renderer, windowData, colorSpace, presentMode))
 		{
             SDL_SetProperty(SDL_GetWindowProperties(windowHandle), WINDOW_PROPERTY_DATA, windowData);
 
@@ -5868,14 +5885,14 @@ static void D3D11_SetSwapchainParameters(
 	SDL_GpuRenderer *driverData,
 	SDL_Window *windowHandle,
     SDL_GpuColorSpace colorSpace,
-    SDL_bool preferVerticalSync
+    SDL_GpuPresentMode presentMode
 ) {
     D3D11Renderer *renderer = (D3D11Renderer*) driverData;
 	D3D11WindowData *windowData = D3D11_INTERNAL_FetchWindowData(windowHandle);
 
     if (
         colorSpace != windowData->colorSpace ||
-        preferVerticalSync != windowData->preferVerticalSync
+        presentMode != windowData->presentMode
     ) {
         D3D11_Wait(driverData);
 
@@ -5889,7 +5906,7 @@ static void D3D11_SetSwapchainParameters(
             renderer,
             windowData,
             colorSpace,
-            preferVerticalSync
+            presentMode
         );
     }
 }
@@ -5946,13 +5963,15 @@ static void D3D11_Submit(
 	if (d3d11CommandBuffer->windowData)
 	{
 		Uint32 syncInterval = 1;
-		if (!d3d11CommandBuffer->windowData->preferVerticalSync || renderer->supportsFlipDiscard)
-        {
+		if (	d3d11CommandBuffer->windowData->presentMode == SDL_GPU_PRESENTMODE_IMMEDIATE ||
+			(renderer->supportsFlipDiscard && d3d11CommandBuffer->windowData->presentMode == SDL_GPU_PRESENTMODE_MAILBOX)
+		) {
 			syncInterval = 0;
 		}
 
 		Uint32 presentFlags = 0;
-		if (renderer->supportsTearing && !d3d11CommandBuffer->windowData->preferVerticalSync)
+		if (	renderer->supportsTearing &&
+			d3d11CommandBuffer->windowData->presentMode == SDL_GPU_PRESENTMODE_IMMEDIATE	)
 		{
 			presentFlags = DXGI_PRESENT_ALLOW_TEARING;
 		}
