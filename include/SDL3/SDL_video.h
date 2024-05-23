@@ -819,6 +819,10 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * If SDL_WINDOW_METAL is specified on an OS that does not support Metal,
  * SDL_CreateWindow() will fail.
  *
+ * If you intend to use this window with an SDL_Renderer, you should use
+ * SDL_CreateWindowAndRenderer() instead of this function, to avoid window
+ * flicker.
+ *
  * On non-Apple devices, SDL requires you to either not link to the Vulkan
  * loader or link to a dynamic library version. This limitation may be removed
  * in a future version of SDL.
