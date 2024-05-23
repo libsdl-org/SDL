@@ -30,7 +30,7 @@
 
 #if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)) && (!defined(HAVE_SETENV) || !defined(HAVE_GETENV))
 /* Note this isn't thread-safe! */
-static char *SDL_envmem = NULL; /* Ugh, memory leak */
+static char *SDL_envmem = NULL;
 static size_t SDL_envmemlen = 0;
 
 void SDL_FreeEnvironmentMemory(void)
