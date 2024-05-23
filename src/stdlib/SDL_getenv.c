@@ -32,6 +32,19 @@
 /* Note this isn't thread-safe! */
 static char *SDL_envmem = NULL; /* Ugh, memory leak */
 static size_t SDL_envmemlen = 0;
+
+void SDL_FreeEnvironmentMemory(void)
+{
+    if (SDL_envmem) {
+        SDL_free(SDL_envmem);
+        SDL_envmem = NULL;
+        SDL_envmemlen = 0;
+    }
+}
+#else
+void SDL_FreeEnvironmentMemory(void)
+{
+}
 #endif
 
 /* Put a variable into the environment */

@@ -58,6 +58,7 @@
 extern int SDL_HelperWindowCreate(void);
 extern int SDL_HelperWindowDestroy(void);
 #endif
+extern void SDL_FreeEnvironmentMemory(void);
 
 #ifdef SDL_BUILD_MAJOR_VERSION
 SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MAJOR_VERSION,
@@ -556,6 +557,8 @@ void SDL_Quit(void)
     SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
 
     SDL_CleanupTLS();
+
+    SDL_FreeEnvironmentMemory();
 
     SDL_bInMainQuit = SDL_FALSE;
 }
