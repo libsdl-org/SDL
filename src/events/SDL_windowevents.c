@@ -72,7 +72,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
             window->windowed.x = data1;
             window->windowed.y = data2;
 
-            if (!(window->flags & SDL_WINDOW_MAXIMIZED) && !window->state_not_floating) {
+            if (!(window->flags & SDL_WINDOW_MAXIMIZED) && !window->tiled) {
                 window->floating.x = data1;
                 window->floating.y = data2;
             }
@@ -88,7 +88,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
             window->windowed.w = data1;
             window->windowed.h = data2;
 
-            if (!(window->flags & SDL_WINDOW_MAXIMIZED) && !window->state_not_floating) {
+            if (!(window->flags & SDL_WINDOW_MAXIMIZED) && !window->tiled) {
                 window->floating.w = data1;
                 window->floating.h = data2;
             }

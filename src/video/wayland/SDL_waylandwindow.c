@@ -859,7 +859,7 @@ static void handle_configure_xdg_toplevel(void *data,
     wind->floating = floating;
     wind->suspended = suspended;
     wind->active = active;
-    window->state_not_floating = tiled;
+    window->tiled = tiled;
 
     if (wind->surface_status == WAYLAND_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
         wind->surface_status = WAYLAND_SURFACE_STATUS_WAITING_FOR_FRAME;
@@ -1191,7 +1191,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     wind->floating = floating;
     wind->suspended = suspended;
     wind->active = active;
-    window->state_not_floating = tiled;
+    window->tiled = tiled;
 
     /* Calculate the new window geometry */
     ConfigureWindowGeometry(window);

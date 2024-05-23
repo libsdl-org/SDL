@@ -70,10 +70,10 @@ struct SDL_Window
      */
     SDL_Rect floating;
 
-    /* Toggle for drivers to indicate that the current window state is
-     * not floating, but may not have any fixed-size flags (e.g. tiled)
+    /* Toggle for drivers to indicate that the current window state is tiled,
+     * and sizes set non-programmatically shouldn't be cached.
      */
-    SDL_bool state_not_floating;
+    SDL_bool tiled;
 
     /* Whether or not the initial position was defined */
     SDL_bool undefined_x;
