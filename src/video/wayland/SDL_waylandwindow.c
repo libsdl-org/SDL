@@ -2430,58 +2430,30 @@ int Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
     return SDL_SetError("wayland cannot position non-popup windows");
 }
 
-static void size_event_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
-{
-    /* Get the window from the ID as it may have been destroyed */
-    SDL_WindowID windowID = (SDL_WindowID)((uintptr_t)data);
-    SDL_Window *window = SDL_GetWindowFromID(windowID);
-
-    if (window && window->driverdata) {
-        SDL_WindowData *wind = window->driverdata;
-
-        /* Fullscreen windows do not get explicitly resized, and not strictly
-         * obeying the size of maximized windows is a protocol violation.
-         */
-        if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED))) {
-            wind->requested.width = wind->pending_size_event.width;
-            wind->requested.height = wind->pending_size_event.height;
-            if (wind->scale_to_display) {
-                wind->requested.logical_width = PixelToPoint(window, wind->pending_size_event.width);
-                wind->requested.logical_height = PixelToPoint(window, wind->pending_size_event.height);
-            }
-
-            ConfigureWindowGeometry(window);
-        }
-
-        /* Always commit, as this may be in response to a min/max limit change. */
-        CommitLibdecorFrame(window);
-    }
-
-    wl_callback_destroy(callback);
-}
-
-static struct wl_callback_listener size_event_listener = {
-    size_event_handler
-};
-
 void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
 
-    if (wind->shell_surface_type != WAYLAND_SURFACE_CUSTOM) {
-        /* Queue an event to send the window size. */
-        struct wl_callback *cb = wl_display_sync(_this->driverdata->display);
-
-        wind->pending_size_event.width = window->floating.w;
-        wind->pending_size_event.height = window->floating.h;
-        wl_callback_add_listener(cb, &size_event_listener, (void *)((uintptr_t)window->id));
-    } else {
-        /* We are being informed of a size change on a custom surface, just configure. */
+    /* Fullscreen windows do not get explicitly resized, and not strictly
+     * obeying the size of maximized windows is a protocol violation.
+     *
+     * Calling this on a custom surface is informative, so the size must
+     * always be passed through.
+     */
+    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) ||
+        wind->shell_surface_type == WAYLAND_SURFACE_CUSTOM) {
         wind->requested.width = window->floating.w;
         wind->requested.height = window->floating.h;
+        if (wind->scale_to_display) {
+            wind->requested.logical_width = PixelToPoint(window, window->floating.w);
+            wind->requested.logical_height = PixelToPoint(window, window->floating.h);
+        }
 
         ConfigureWindowGeometry(window);
     }
+
+    /* Always commit, as this may be in response to a min/max limit change. */
+    CommitLibdecorFrame(window);
 }
 
 void Wayland_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)

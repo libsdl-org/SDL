@@ -114,14 +114,6 @@ struct SDL_WindowData
         float y;
     } pointer_scale;
 
-    /* The current pending user requested resize event. */
-    struct
-    {
-        /* These units can represent points or pixels, depending on the scaling mode. */
-        int width;
-        int height;
-    } pending_size_event;
-
     /* The in-flight window size request. */
     struct
     {
