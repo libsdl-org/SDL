@@ -45,6 +45,7 @@
 #define DEFAULT_WINDOW_HEIGHT 480
 #endif
 
+typedef Uint32 SDLTest_VerboseFlags;
 #define VERBOSE_VIDEO   0x00000001
 #define VERBOSE_MODES   0x00000002
 #define VERBOSE_RENDER  0x00000004
@@ -56,8 +57,8 @@ typedef struct
 {
     /* SDL init flags */
     char **argv;
-    Uint32 flags;
-    Uint32 verbose;
+    SDL_InitFlags flags;
+    SDLTest_VerboseFlags verbose;
 
     /* Video info */
     const char *videodriver;
@@ -147,7 +148,7 @@ extern "C" {
  *
  * \returns a newly allocated common state object.
  */
-SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
+SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags);
 
 /**
  * Free the common state object.

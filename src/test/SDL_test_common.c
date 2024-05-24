@@ -88,7 +88,7 @@ static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL
     va_end(ap);
 }
 
-SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags)
+SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags)
 {
     int i;
     SDLTest_CommonState *state;
