@@ -27513,36 +27513,12 @@ then :
   have_d3d11=yes
 fi
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for d3d12 Windows SDK version" >&5
-printf %s "checking for d3d12 Windows SDK version... " >&6; }
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <winsdkver.h>
-#include <sdkddkver.h>
-#include <d3d12.h>
-ID3D12Device1 *device;
-#if WDK_NTDDI_VERSION <= 0x0A000008
-asdf
-#endif
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
+        ac_fn_c_check_header_compile "$LINENO" "d3d12.h" "ac_cv_header_d3d12_h" "$ac_includes_default"
+if test "x$ac_cv_header_d3d12_h" = xyes
 then :
   have_d3d12=yes
-else $as_nop
-  have_d3d12=no
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_d3d12" >&5
-printf "%s\n" "$have_d3d12" >&6; }
+
         ac_fn_c_check_header_compile "$LINENO" "ddraw.h" "ac_cv_header_ddraw_h" "$ac_includes_default"
 if test "x$ac_cv_header_ddraw_h" = xyes
 then :
