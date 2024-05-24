@@ -503,13 +503,13 @@ static void OHOS_NativeQuit(void)
 
 napi_value SDLNapi::OHOS_NativeSendQuit(napi_env env, napi_callback_info info)
 {
-    SDL_Log("sdlthread OHOS_NativeSendQuit");
+    SDL_Log("Ohos page is destroyed.");
     SDL_AtomicSet(&bQuit, SDL_TRUE);
     SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
     napi_value sum = 0;
     SDL_SendQuit();
-    SDL_SendAppEvent(SDL_APP_TERMINATING);
     OHOS_ThreadExit();
+    SDL_SendAppEvent(SDL_APP_TERMINATING);
     OHOS_NativeQuit();
     while (SDL_SemTryWait(g_ohosPauseSem) == 0) {
     }

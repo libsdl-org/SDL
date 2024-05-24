@@ -86,19 +86,29 @@ static int32_t OHOSAUDIO_AudioCapturer_OnError(OH_AudioCapturer *capturer, void 
 static int32_t OHOSAUDIO_AudioRenderer_OnWriteData(OH_AudioRenderer *renderer, void *userData, void *buffer,
                                                    int32_t length)
 {
+    SDL_AudioDevice *device = NULL;
     if (frameSize == -1) {
         frameSize = length;
         rendererBuffer = SDL_malloc(length);
         SDL_CondBroadcast(empty);
     }
     SDL_LockMutex(audioPlayLock);
-    while (SDL_AtomicGet(&stateFlag) == SDL_FALSE && 
+    while (SDL_AtomicGet(&stateFlag) == SDL_FALSE &&
            SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
         SDL_CondWait(full, audioPlayLock);
     }
-    SDL_memcpy(buffer, rendererBuffer, length);
-    SDL_AtomicSet(&stateFlag, SDL_FALSE);
-    SDL_CondBroadcast(empty);
+    if (SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
+        SDL_memcpy(buffer, rendererBuffer, length);
+        SDL_AtomicSet(&stateFlag, SDL_FALSE);
+        SDL_CondBroadcast(empty);
+    } else {
+        int value = 0;
+        device = (SDL_AudioDevice *)userData;
+        if (device != NULL) {
+            value = device->spec.silence;
+        }
+        SDL_memset(buffer, value, length);
+    }
     SDL_UnlockMutex(audioPlayLock);
     return 0;
 }
@@ -255,7 +265,7 @@ static int OHOSAUDIO_SetCapturerInfo(int iscapture)
     return 0;
 }
 
-static int OHOSAUDIO_SetCapturerCallback(int iscapture)
+static int OHOSAUDIO_SetCapturerCallback(SDL_AudioDevice *device, int iscapture)
 {
     OH_AudioStream_Result iRet;
     if (iscapture != 0) {
@@ -276,7 +286,7 @@ static int OHOSAUDIO_SetCapturerCallback(int iscapture)
         rendererCallbacks.OH_AudioRenderer_OnStreamEvent = OHOSAUDIO_AudioRenderer_OnStreamEvent;
         rendererCallbacks.OH_AudioRenderer_OnInterruptEvent = OHOSAUDIO_AudioRenderer_OnInterruptEvent;
         rendererCallbacks.OH_AudioRenderer_OnError = OHOSAUDIO_AudioRenderer_OnError;
-        iRet = OH_AudioStreamBuilder_SetRendererCallback(builder, rendererCallbacks, NULL);
+        iRet = OH_AudioStreamBuilder_SetRendererCallback(builder, rendererCallbacks, device);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
                 "SetRendererCallback Failed, iscapture=%{public}d, Error=%{public}d.", iscapture, iRet);
@@ -443,7 +453,7 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
 /*
  * Audio Functions
  */
-int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec)
+int OHOSAUDIO_NATIVE_OpenAudioDevice(SDL_AudioDevice *device, int iscapture, SDL_AudioSpec *spec)
 {
     int audioFormat;
     int audioFormatBitDepth = 0;
@@ -465,7 +475,7 @@ int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec)
     }
     
     // Set the callback for the audio stream
-    if (OHOSAUDIO_SetCapturerCallback(iscapture) < 0) {
+    if (OHOSAUDIO_SetCapturerCallback(device, iscapture) < 0) {
         OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
         return -1;
     }

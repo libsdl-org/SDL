@@ -60,7 +60,7 @@ static int OHOSAUDIO_OpenDevice(SDL_AudioDevice *this, void *handle, const char 
         return SDL_SetError("No compatible audio format!");
     }
 
-    if (OHOSAUDIO_NATIVE_OpenAudioDevice(iscapture, &this->spec) < 0) {
+    if (OHOSAUDIO_NATIVE_OpenAudioDevice(this, iscapture, &this->spec) < 0) {
         return -1;
     }
 

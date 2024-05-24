@@ -23,7 +23,7 @@ void OHOSAUDIO_PageResume(void);
 void OHOSAUDIO_PagePause(void);
 
 /* Audio support */
-extern int OHOSAUDIO_NATIVE_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec);
+extern int OHOSAUDIO_NATIVE_OpenAudioDevice(SDL_AudioDevice *device, int iscapture, SDL_AudioSpec *spec);
 extern void* OHOSAUDIO_NATIVE_GetAudioBuf(SDL_AudioDevice *device);
 extern void OHOSAUDIO_NATIVE_WriteAudioBuf(void);
 extern int OHOSAUDIO_NATIVE_CaptureAudioBuffer(void *buffer, int buflen);
