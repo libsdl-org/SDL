@@ -1414,9 +1414,6 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
             SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, state->window_flags);
             state->windows[i] = SDL_CreateWindowWithProperties(props);
             SDL_DestroyProperties(props);
-=======
-            state->windows[i] = SDL_CreateWindow(title, r.x, r.y, r.w, r.h, state->window_flags);
->>>>>>> 93a9db1c0 (fix crash problem)
             if (!state->windows[i]) {
                 SDL_Log("Couldn't create window: %s",
                         SDL_GetError());
