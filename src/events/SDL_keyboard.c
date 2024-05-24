@@ -1006,7 +1006,7 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
     }
 
     /* Update modifiers state if applicable */
-    if (!(flags & KEYBOARD_IGNOREMODIFIERS)) {
+    if (!(flags & KEYBOARD_IGNOREMODIFIERS) && !repeat) {
         switch (keycode) {
         case SDLK_LCTRL:
             modifier = SDL_KMOD_LCTRL;
