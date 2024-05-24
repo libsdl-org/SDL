@@ -228,7 +228,7 @@ static void dump_state(void)
         int k;
         SDL_PenCapabilityInfo info;
         Uint32 status = SDL_GetPenStatus(penid, &x, &y, axes, SDL_PEN_NUM_AXES);
-        Uint32 capabilities = SDL_GetPenCapabilities(penid, &info);
+        const SDL_PenCapabilityFlags capabilities = SDL_GetPenCapabilities(penid, &info);
         char *type;
         char *buttons_str;
 
@@ -277,7 +277,7 @@ static void dump_state(void)
         SDL_free(buttons_str);
         SDL_Log("   pos=(%.2f, %.2f)", x, y);
         for (k = 0; k < SDL_PEN_NUM_AXES; ++k) {
-            SDL_bool supported = capabilities & SDL_PEN_AXIS_CAPABILITY(k);
+            SDL_bool supported = ((capabilities & SDL_PEN_AXIS_CAPABILITY(k)) != 0);
             if (supported) {
                 if (k == SDL_PEN_AXIS_XTILT || k == SDL_PEN_AXIS_YTILT) {
                     if (info.max_tilt == SDL_PEN_INFO_UNKNOWN) {
