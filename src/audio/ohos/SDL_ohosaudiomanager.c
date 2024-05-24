@@ -87,12 +87,18 @@ static int32_t OHOSAUDIO_AudioRenderer_OnWriteData(OH_AudioRenderer *renderer, v
                                                    int32_t length)
 {
     SDL_AudioDevice *device = NULL;
+    SDL_LockMutex(audioPlayLock);
     if (frameSize == -1) {
-        frameSize = length;
         rendererBuffer = SDL_malloc(length);
+        if (rendererBuffer == NULL) {
+            SDL_memset(buffer, 0, length);
+            SDL_UnlockMutex(audioPlayLock);
+            return -1;
+        }
+        frameSize = length;
+        SDL_memset(rendererBuffer, 0, length);
         SDL_CondBroadcast(empty);
     }
-    SDL_LockMutex(audioPlayLock);
     while (SDL_AtomicGet(&stateFlag) == SDL_FALSE &&
            SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
         SDL_CondWait(full, audioPlayLock);
