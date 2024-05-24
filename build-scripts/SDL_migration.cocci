@@ -3189,3 +3189,8 @@ typedef SDL_Colour, SDL_Color;
 - SDL_MixAudioFormat
 + SDL_MixAudio
   (...)
+@@
+@@
+- SDL_BlitScaled
++ SDL_BlitSurfaceScaled
+  (...)

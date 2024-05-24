@@ -1507,6 +1507,7 @@ SDL_SoftStretch() now takes a scale paramater.
 SDL_PixelFormatEnum is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
 
 The following functions have been renamed:
+* SDL_BlitScaled() => SDL_BlitSurfaceScaled()
 * SDL_FillRect() => SDL_FillSurfaceRect()
 * SDL_FillRects() => SDL_FillSurfaceRects()
 * SDL_FreeSurface() => SDL_DestroySurface()

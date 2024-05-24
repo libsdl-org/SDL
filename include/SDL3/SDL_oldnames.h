@@ -503,6 +503,7 @@
 #define SDL_strtokr SDL_strtok_r
 
 /* ##SDL_surface.h */
+#define SDL_BlitScaled SDL_BlitSurfaceScaled
 #define SDL_FillRect SDL_FillSurfaceRect
 #define SDL_FillRects SDL_FillSurfaceRects
 #define SDL_FreeSurface SDL_DestroySurface
@@ -1021,6 +1022,7 @@
 #define SDL_strtokr SDL_strtokr_renamed_SDL_strtok_r
 
 /* ##SDL_surface.h */
+#define SDL_BlitScaled SDL_BlitScaled_renamed_SDL_BlitSurfaceScaled
 #define SDL_FillRect SDL_FillRect_renamed_SDL_FillSurfaceRect
 #define SDL_FillRects SDL_FillRects_renamed_SDL_FillSurfaceRects
 #define SDL_FreeSurface SDL_FreeSurface_renamed_SDL_DestroySurface
