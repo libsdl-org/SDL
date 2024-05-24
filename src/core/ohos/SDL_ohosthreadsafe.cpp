@@ -32,7 +32,7 @@ extern "C" {
 #include "SDL_log.h"
 #include "adapter_c/adapter_c_ts.h"
 
-std::unique_ptr<NapiCallbackContext> gNapiCallback = nullptr;
+std::unique_ptr<NapiCallbackContext> g_napiCallback = nullptr;
 
 #define      OHOS_THREAD_NAME     "threadname"
 static int g_threadName = 0;
@@ -90,18 +90,18 @@ void OHOS_TS_GetWindowId(const cJSON *root)
     int *returnValue = reinterpret_cast<int *>(temp);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "getWindowId", &jsMethod);
+    napi_get_named_property(g_napiCallback->env, callback, "getWindowId", &jsMethod);
 
     ThreadLockInfo *lockInfo = nullptr;
     OHOS_TS_GetLockInfo(root, &lockInfo);
 
     napi_value tempReturn = nullptr;
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, 0, nullptr, &tempReturn);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, 0, nullptr, &tempReturn);
 
     if (tempReturn != nullptr) {
-        napi_get_value_int32(gNapiCallback->env, tempReturn, returnValue);
+        napi_get_value_int32(g_napiCallback->env, tempReturn, returnValue);
     }
 
     OHOS_TS_wakeup(root, lockInfo);
@@ -126,16 +126,16 @@ static void OHOS_TS_SetWindowResize(const cJSON *root)
     h = data->valueint;
     napi_value argv[OHOS_THREADSAFE_ARG4] = {nullptr};
 
-    napi_create_int32(gNapiCallback->env, x, &argv[OHOS_THREADSAFE_ARG0]);
-    napi_create_int32(gNapiCallback->env, y, &argv[OHOS_THREADSAFE_ARG1]);
-    napi_create_int32(gNapiCallback->env, w, &argv[OHOS_THREADSAFE_ARG2]);
-    napi_create_int32(gNapiCallback->env, h, &argv[OHOS_THREADSAFE_ARG3]);
+    napi_create_int32(g_napiCallback->env, x, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_create_int32(g_napiCallback->env, y, &argv[OHOS_THREADSAFE_ARG1]);
+    napi_create_int32(g_napiCallback->env, w, &argv[OHOS_THREADSAFE_ARG2]);
+    napi_create_int32(g_napiCallback->env, h, &argv[OHOS_THREADSAFE_ARG3]);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "nAPISetWindowResize", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG4, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "nAPISetWindowResize", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG4, argv, nullptr);
 }
 
 static void OHOS_TS_ShowTextInput(const cJSON *root)
@@ -160,16 +160,16 @@ static void OHOS_TS_ShowTextInput(const cJSON *root)
     napi_value args[OHOS_THREADSAFE_ARG1] = {nullptr};
     napi_value argv[OHOS_THREADSAFE_ARG4] = {nullptr};
 
-    napi_create_int32(gNapiCallback->env, x, &argv[OHOS_THREADSAFE_ARG0]);
-    napi_create_int32(gNapiCallback->env, y, &argv[OHOS_THREADSAFE_ARG1]);
-    napi_create_int32(gNapiCallback->env, w, &argv[OHOS_THREADSAFE_ARG2]);
-    napi_create_int32(gNapiCallback->env, h, &argv[OHOS_THREADSAFE_ARG3]);
+    napi_create_int32(g_napiCallback->env, x, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_create_int32(g_napiCallback->env, y, &argv[OHOS_THREADSAFE_ARG1]);
+    napi_create_int32(g_napiCallback->env, w, &argv[OHOS_THREADSAFE_ARG2]);
+    napi_create_int32(g_napiCallback->env, h, &argv[OHOS_THREADSAFE_ARG3]);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "showTextInput", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG4, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "showTextInput", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG4, argv, nullptr);
     return;
 }
 
@@ -179,13 +179,13 @@ static void OHOS_TS_RequestPermission(const cJSON *root)
     const char *permission = data->valuestring;
     
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
-    napi_create_string_utf8(gNapiCallback->env, permission, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_create_string_utf8(g_napiCallback->env, permission, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG0]);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "requestPermission", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "requestPermission", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
     
     return;
 }
@@ -196,13 +196,13 @@ static void OHOS_TS_HideTextInput(const cJSON *root)
     int flag = data->valueint;
     size_t argc = OHOS_THREADSAFE_ARG1;
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
-    napi_create_int32(gNapiCallback->env, flag, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_create_int32(g_napiCallback->env, flag, &argv[OHOS_THREADSAFE_ARG0]);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "hideTextInput", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "hideTextInput", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
 static void OHOS_TS_ShouldMinimizeOnFocusLoss(const cJSON *root)
@@ -211,13 +211,13 @@ static void OHOS_TS_ShouldMinimizeOnFocusLoss(const cJSON *root)
     int flag = data->valueint;
     size_t argc = OHOS_THREADSAFE_ARG1;
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
-    napi_create_int32(gNapiCallback->env, flag, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_create_int32(g_napiCallback->env, flag, &argv[OHOS_THREADSAFE_ARG0]);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "shouldMinimizeOnFocusLoss", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "shouldMinimizeOnFocusLoss", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
 static void OHOS_TS_SetTitle(const cJSON *root)
@@ -227,13 +227,13 @@ static void OHOS_TS_SetTitle(const cJSON *root)
     size_t argc = OHOS_THREADSAFE_ARG1;
     napi_value args[OHOS_THREADSAFE_ARG1] = {nullptr};
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
-    napi_create_string_utf8(gNapiCallback->env, title, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_create_string_utf8(g_napiCallback->env, title, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG0]);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "setTitle", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "setTitle", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
 static void OHOS_TS_SetWindowStyle(const cJSON *root)
@@ -244,13 +244,13 @@ static void OHOS_TS_SetWindowStyle(const cJSON *root)
     napi_value args[OHOS_THREADSAFE_ARG1] = {nullptr};
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
 
-    napi_get_boolean(gNapiCallback->env, fullscreen, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_get_boolean(g_napiCallback->env, fullscreen, &argv[OHOS_THREADSAFE_ARG0]);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "setWindowStyle", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "setWindowStyle", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
 static void OHOS_TS_ShowTextInputKeyboard(const cJSON *root)
@@ -262,13 +262,13 @@ static void OHOS_TS_ShowTextInputKeyboard(const cJSON *root)
     napi_value args[OHOS_THREADSAFE_ARG1] = {nullptr};
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
 
-    napi_get_boolean(gNapiCallback->env, isshow, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_get_boolean(g_napiCallback->env, isshow, &argv[OHOS_THREADSAFE_ARG0]);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "showTextInput2", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "showTextInput2", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
 }
 
 static void OHOS_TS_SetOrientation(const cJSON *root)
@@ -291,16 +291,16 @@ static void OHOS_TS_SetOrientation(const cJSON *root)
     size_t argc = OHOS_THREADSAFE_ARG4;
     napi_value args[OHOS_THREADSAFE_ARG4] = {nullptr};
     napi_value argv[OHOS_THREADSAFE_ARG4] = {nullptr};
-    napi_create_int32(gNapiCallback->env, w, &argv[OHOS_THREADSAFE_ARG0]);
-    napi_create_int32(gNapiCallback->env, h, &argv[OHOS_THREADSAFE_ARG1]);
-    napi_create_int32(gNapiCallback->env, resizable, &argv[OHOS_THREADSAFE_ARG2]);
-    napi_create_string_utf8(gNapiCallback->env, hint, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG3]);
+    napi_create_int32(g_napiCallback->env, w, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_create_int32(g_napiCallback->env, h, &argv[OHOS_THREADSAFE_ARG1]);
+    napi_create_int32(g_napiCallback->env, resizable, &argv[OHOS_THREADSAFE_ARG2]);
+    napi_create_string_utf8(g_napiCallback->env, hint, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG3]);
 
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "setOrientation", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG4, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "setOrientation", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG4, argv, nullptr);
 }
 
 static void OHOS_TS_CreateCustomCursor(const cJSON *root)
@@ -337,19 +337,19 @@ static void OHOS_TS_CreateCustomCursor(const cJSON *root)
     createOps.pixelFormat = bytesPerPixel;
     createOps.alphaType = 0;
     size_t bufferSize = createOps.width * createOps.height * bytesPerPixel;
-    int32_t res = OH_PixelMap_CreatePixelMap(gNapiCallback->env, createOps, (uint8_t *)xcomponentpixelbuffer,
+    int32_t res = OH_PixelMap_CreatePixelMap(g_napiCallback->env, createOps, (uint8_t *)xcomponentpixelbuffer,
                                              bufferSize, &argv[OHOS_THREADSAFE_ARG0]);
     if (res != IMAGE_RESULT_SUCCESS || argv[OHOS_THREADSAFE_ARG0] == nullptr) {
         SDL_Log("OH_PixelMap_CreatePixelMap is failed");
     }
-    napi_create_int32(gNapiCallback->env, hotX, &argv[OHOS_THREADSAFE_ARG1]); // coordinate x
-    napi_create_int32(gNapiCallback->env, hotY, &argv[OHOS_THREADSAFE_ARG2]); // coordinate y
+    napi_create_int32(g_napiCallback->env, hotX, &argv[OHOS_THREADSAFE_ARG1]); // coordinate x
+    napi_create_int32(g_napiCallback->env, hotY, &argv[OHOS_THREADSAFE_ARG2]); // coordinate y
     
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "setCustomCursorandCreate", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG3, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "setCustomCursorandCreate", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG3, argv, nullptr);
     SDL_free(xcomponentpixelbuffer);
     return;
 }
@@ -366,12 +366,12 @@ static void OHOS_SetSystemCursor(const cJSON *root)
     cJSON *data = cJSON_GetObjectItem(root, "cursorID");
     int cursorID = data->valueint;
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
-    napi_create_int32(gNapiCallback->env, cursorID, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_create_int32(g_napiCallback->env, cursorID, &argv[OHOS_THREADSAFE_ARG0]);
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, "setPointer", &jsMethod);
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_get_named_property(g_napiCallback->env, callback, "setPointer", &jsMethod);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
     return;
 }
 
@@ -450,7 +450,7 @@ void OHOS_ThreadExit(void)
             SDL_WaitThread(thread, NULL);
         }
     }
-    napi_release_threadsafe_function(gNapiCallback->tsfn, napi_tsfn_release);
-    gNapiCallback->tsfn = nullptr;
-    gNapiCallback = NULL;
+    napi_release_threadsafe_function(g_napiCallback->tsfn, napi_tsfn_release);
+    g_napiCallback->tsfn = nullptr;
+    g_napiCallback = NULL;
 }

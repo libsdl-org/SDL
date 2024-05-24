@@ -49,16 +49,16 @@ static napi_value OHOS_TS_GetNode(const cJSON *root)
     napi_ref viewRef = reinterpret_cast<napi_ref>(temp);
 
     napi_value node;
-    napi_get_reference_value(gNapiCallback->env, viewRef, &node);
+    napi_get_reference_value(g_napiCallback->env, viewRef, &node);
     return node;
 }
 
 static napi_value OHOS_TS_GetJsMethod(string name)
 {
     napi_value callback = nullptr;
-    napi_get_reference_value(gNapiCallback->env, gNapiCallback->callbackRef, &callback);
+    napi_get_reference_value(g_napiCallback->env, g_napiCallback->callbackRef, &callback);
     napi_value jsMethod;
-    napi_get_named_property(gNapiCallback->env, callback, name.c_str(), &jsMethod);
+    napi_get_named_property(g_napiCallback->env, callback, name.c_str(), &jsMethod);
     return jsMethod;
 }
 
@@ -73,17 +73,17 @@ void OHOS_TS_GetRootNode(const cJSON *root)
 
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
 
-    napi_create_int32(gNapiCallback->env, x, &argv[OHOS_THREADSAFE_ARG0]);
+    napi_create_int32(g_napiCallback->env, x, &argv[OHOS_THREADSAFE_ARG0]);
     
     ThreadLockInfo *lockInfo = nullptr;
     OHOS_TS_GetLockInfo(root, &lockInfo);
 
     napi_value jsMethod = OHOS_TS_GetJsMethod("getNodeByWindowId");
     napi_value tempReturn = nullptr;
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, &tempReturn);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, &tempReturn);
 
     if (tempReturn != nullptr) {
-        napi_create_reference(gNapiCallback->env, tempReturn, 1, returnValue);
+        napi_create_reference(g_napiCallback->env, tempReturn, 1, returnValue);
     }
 
     OHOS_TS_wakeup(root, lockInfo);
@@ -105,13 +105,13 @@ void OHOS_TS_GetXComponentId(const cJSON *root)
     OHOS_TS_GetLockInfo(root, &lockInfo);
 
     napi_value tempReturn = nullptr;
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, &tempReturn);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, &tempReturn);
 
     if (tempReturn != nullptr) {
         size_t len = 0;
-        napi_get_value_string_utf8(gNapiCallback->env, tempReturn, *returnValue, 0, &len);
+        napi_get_value_string_utf8(g_napiCallback->env, tempReturn, *returnValue, 0, &len);
         *returnValue = (char *)SDL_malloc(len + 1);
-        napi_get_value_string_utf8(gNapiCallback->env, tempReturn, *returnValue, len + 1, &len);
+        napi_get_value_string_utf8(g_napiCallback->env, tempReturn, *returnValue, len + 1, &len);
     }
     OHOS_TS_wakeup(root, lockInfo);
 }
@@ -126,49 +126,49 @@ static void configNode(const NodeParams &nodeParams, napi_value *nodeParamsNapi)
     napi_value borderWidth;
     napi_value nodeType;
 
-    napi_create_string_utf8(gNapiCallback->env, nodeParams.nodePosition->width.c_str(), NAPI_AUTO_LENGTH, &width);
-    napi_create_string_utf8(gNapiCallback->env, nodeParams.nodePosition->height.c_str(), NAPI_AUTO_LENGTH, &height);
-    napi_create_string_utf8(gNapiCallback->env, nodeParams.nodePosition->x.c_str(), NAPI_AUTO_LENGTH, &x);
-    napi_create_string_utf8(gNapiCallback->env, nodeParams.nodePosition->y.c_str(), NAPI_AUTO_LENGTH, &y);
-    napi_create_string_utf8(gNapiCallback->env, nodeParams.border_color.c_str(), NAPI_AUTO_LENGTH, &borderColor);
-    napi_create_string_utf8(gNapiCallback->env, nodeParams.border_width.c_str(), NAPI_AUTO_LENGTH, &borderWidth);
-    napi_create_int32(gNapiCallback->env, nodeParams.nodeType, &nodeType);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.nodePosition->width.c_str(), NAPI_AUTO_LENGTH, &width);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.nodePosition->height.c_str(), NAPI_AUTO_LENGTH, &height);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.nodePosition->x.c_str(), NAPI_AUTO_LENGTH, &x);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.nodePosition->y.c_str(), NAPI_AUTO_LENGTH, &y);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.border_color.c_str(), NAPI_AUTO_LENGTH, &borderColor);
+    napi_create_string_utf8(g_napiCallback->env, nodeParams.border_width.c_str(), NAPI_AUTO_LENGTH, &borderWidth);
+    napi_create_int32(g_napiCallback->env, nodeParams.nodeType, &nodeType);
 
-    napi_create_object(gNapiCallback->env, nodeParamsNapi);
-    napi_set_named_property(gNapiCallback->env, *nodeParamsNapi, "width", width);
-    napi_set_named_property(gNapiCallback->env, *nodeParamsNapi, "height", height);
-    napi_set_named_property(gNapiCallback->env, *nodeParamsNapi, "position_x", x);
-    napi_set_named_property(gNapiCallback->env, *nodeParamsNapi, "position_y", y);
-    napi_set_named_property(gNapiCallback->env, *nodeParamsNapi, "node_type", nodeType);
-    napi_set_named_property(gNapiCallback->env, *nodeParamsNapi, "border_color", borderColor);
-    napi_set_named_property(gNapiCallback->env, *nodeParamsNapi, "border_width", borderWidth);
+    napi_create_object(g_napiCallback->env, nodeParamsNapi);
+    napi_set_named_property(g_napiCallback->env, *nodeParamsNapi, "width", width);
+    napi_set_named_property(g_napiCallback->env, *nodeParamsNapi, "height", height);
+    napi_set_named_property(g_napiCallback->env, *nodeParamsNapi, "position_x", x);
+    napi_set_named_property(g_napiCallback->env, *nodeParamsNapi, "position_y", y);
+    napi_set_named_property(g_napiCallback->env, *nodeParamsNapi, "node_type", nodeType);
+    napi_set_named_property(g_napiCallback->env, *nodeParamsNapi, "border_color", borderColor);
+    napi_set_named_property(g_napiCallback->env, *nodeParamsNapi, "border_width", borderWidth);
 
     if (nodeParams.componentModel) {
         napi_value id;
         napi_value type;
         napi_value libraryName;
-        napi_create_string_utf8(gNapiCallback->env, nodeParams.componentModel->id.c_str(), NAPI_AUTO_LENGTH, &id);
-        napi_create_int32(gNapiCallback->env, nodeParams.componentModel->type, &type);
-        napi_create_string_utf8(gNapiCallback->env, nodeParams.componentModel->libraryName.c_str(), NAPI_AUTO_LENGTH,
+        napi_create_string_utf8(g_napiCallback->env, nodeParams.componentModel->id.c_str(), NAPI_AUTO_LENGTH, &id);
+        napi_create_int32(g_napiCallback->env, nodeParams.componentModel->type, &type);
+        napi_create_string_utf8(g_napiCallback->env, nodeParams.componentModel->libraryName.c_str(), NAPI_AUTO_LENGTH,
                                 &libraryName);
 
         napi_value model;
-        napi_create_object(gNapiCallback->env, &model);
-        napi_set_named_property(gNapiCallback->env, model, "id", id);
-        napi_set_named_property(gNapiCallback->env, model, "type", type);
-        napi_set_named_property(gNapiCallback->env, model, "libraryname", libraryName);
+        napi_create_object(g_napiCallback->env, &model);
+        napi_set_named_property(g_napiCallback->env, model, "id", id);
+        napi_set_named_property(g_napiCallback->env, model, "type", type);
+        napi_set_named_property(g_napiCallback->env, model, "libraryname", libraryName);
         if (nodeParams.componentModel->onLoad) {
             napi_value onload = (napi_value)nodeParams.componentModel->onLoad;
-            napi_set_named_property(gNapiCallback->env, model, "onLoad", onload);
+            napi_set_named_property(g_napiCallback->env, model, "onLoad", onload);
         }
         if (nodeParams.componentModel->onDestroy) {
             napi_value onDestroy = (napi_value)nodeParams.componentModel->onDestroy;
-            napi_set_named_property(gNapiCallback->env, model, "onDestroy", onDestroy);
+            napi_set_named_property(g_napiCallback->env, model, "onDestroy", onDestroy);
         }
 
-        napi_set_named_property(gNapiCallback->env, *nodeParamsNapi, "node_xcomponent", model);
+        napi_set_named_property(g_napiCallback->env, *nodeParamsNapi, "node_xcomponent", model);
     } else {
-        napi_set_named_property(gNapiCallback->env, *nodeParamsNapi, "node_xcomponent", nullptr);
+        napi_set_named_property(g_napiCallback->env, *nodeParamsNapi, "node_xcomponent", nullptr);
     }
 }
 
@@ -196,10 +196,10 @@ void OHOS_TS_AddChildNode(const cJSON *root)
     OHOS_TS_GetLockInfo(root, &lockInfo);
 
     napi_value tempReturn = nullptr;
-    napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG2, argv, &tempReturn);
+    napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG2, argv, &tempReturn);
 
     if (tempReturn != nullptr) {
-        napi_create_reference(gNapiCallback->env, tempReturn, 1, returnValue);
+        napi_create_reference(g_napiCallback->env, tempReturn, 1, returnValue);
     }
 
     OHOS_TS_wakeup(root, lockInfo);
@@ -210,7 +210,7 @@ void OHOS_TS_RemoveChildNode(const cJSON *root)
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
     argv[OHOS_THREADSAFE_ARG0] = OHOS_TS_GetNode(root);
     napi_value jsMethod = OHOS_TS_GetJsMethod("removeChildNode");
-    napi_status ret = napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
     cJSON *data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
     if (data != nullptr) {
         long long temp = static_cast<long long>(data->valuedouble);
@@ -224,7 +224,7 @@ void OHOS_TS_RaiseNode(const cJSON *root)
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
     argv[OHOS_THREADSAFE_ARG0] = OHOS_TS_GetNode(root);
     napi_value jsMethod = OHOS_TS_GetJsMethod("raiseNode");
-    napi_status ret = napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
     cJSON *data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
     if (data != nullptr) {
         long long temp = static_cast<long long>(data->valuedouble);
@@ -238,7 +238,7 @@ void OHOS_TS_LowerNode(const cJSON *root)
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
     argv[OHOS_THREADSAFE_ARG0] = OHOS_TS_GetNode(root);
     napi_value jsMethod = OHOS_TS_GetJsMethod("lowerNode");
-    napi_status ret = napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
     cJSON *data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
     if (data != nullptr) {
         long long temp = static_cast<long long>(data->valuedouble);
@@ -256,11 +256,11 @@ void OHOS_TS_ResizeNode(const cJSON *root)
     
     napi_value argv[OHOS_THREADSAFE_ARG3] = {nullptr};
     argv[OHOS_THREADSAFE_ARG0] = OHOS_TS_GetNode(root);
-    napi_create_string_utf8(gNapiCallback->env, width, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG1]);
-    napi_create_string_utf8(gNapiCallback->env, height, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG2]);
+    napi_create_string_utf8(g_napiCallback->env, width, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG1]);
+    napi_create_string_utf8(g_napiCallback->env, height, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG2]);
 
     napi_value jsMethod = OHOS_TS_GetJsMethod("resizeNode");
-    napi_status ret = napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG3, argv, nullptr);
+    napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG3, argv, nullptr);
     data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
     if (data != nullptr) {
         long long temp = static_cast<long long>(data->valuedouble);
@@ -277,14 +277,14 @@ void OHOS_TS_ReParentNode(const cJSON *root)
     napi_ref viewRef = reinterpret_cast<napi_ref>(temp);
 
     napi_value node;
-    napi_get_reference_value(gNapiCallback->env, viewRef, &node);
+    napi_get_reference_value(g_napiCallback->env, viewRef, &node);
 
     napi_value argv[OHOS_THREADSAFE_ARG2] = {nullptr};
     argv[OHOS_THREADSAFE_ARG0] = OHOS_TS_GetNode(root);
     argv[OHOS_THREADSAFE_ARG0] = node;
 
     napi_value jsMethod = OHOS_TS_GetJsMethod("reParentNode");
-    napi_status ret = napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG2, argv, nullptr);
+    napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG2, argv, nullptr);
     data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
     if (data != nullptr) {
         long long returnTemp = static_cast<long long>(data->valuedouble);
@@ -300,9 +300,9 @@ void OHOS_TS_SetNodeVisibility(const cJSON *root)
     
     napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
     argv[OHOS_THREADSAFE_ARG0] = OHOS_TS_GetNode(root);
-    napi_create_int32(gNapiCallback->env, visibility, &argv[OHOS_THREADSAFE_ARG1]);
+    napi_create_int32(g_napiCallback->env, visibility, &argv[OHOS_THREADSAFE_ARG1]);
     napi_value jsMethod = OHOS_TS_GetJsMethod("setNodeVisibility");
-    napi_status ret = napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
     data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
     if (data != nullptr) {
         long long temp = static_cast<long long>(data->valuedouble);
@@ -326,39 +326,39 @@ void OHOS_TS_GetNodeRect(const cJSON *root)
     OHOS_TS_GetLockInfo(root, &lockInfo);
 
     napi_value result = nullptr;
-    napi_status status = napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv,
+    napi_status status = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv,
                                             &result);
     if (status == napi_ok) {
         bool isArray = false;
-        napi_is_array(gNapiCallback->env, result, &isArray);
+        napi_is_array(g_napiCallback->env, result, &isArray);
         bool hasEle = false;
-        napi_has_element(gNapiCallback->env, result, 0, &hasEle);
+        napi_has_element(g_napiCallback->env, result, 0, &hasEle);
         if (hasEle) {
             hasEle = false;
             napi_value value;
-            napi_get_element(gNapiCallback->env, result, 0, &value);
-            napi_get_value_int64(gNapiCallback->env, value, &(returnValue->offsetX));
+            napi_get_element(g_napiCallback->env, result, 0, &value);
+            napi_get_value_int64(g_napiCallback->env, value, &(returnValue->offsetX));
         }
-        napi_has_element(gNapiCallback->env, result, 1, &hasEle);
+        napi_has_element(g_napiCallback->env, result, 1, &hasEle);
         if (hasEle) {
             hasEle = false;
             napi_value value;
-            napi_get_element(gNapiCallback->env, result, 1, &value);
-            napi_get_value_int64(gNapiCallback->env, value, &(returnValue->offsetY));
+            napi_get_element(g_napiCallback->env, result, 1, &value);
+            napi_get_value_int64(g_napiCallback->env, value, &(returnValue->offsetY));
         }
-        napi_has_element(gNapiCallback->env, result, OHOS_NAPI_ARG_TWO, &hasEle);
+        napi_has_element(g_napiCallback->env, result, OHOS_NAPI_ARG_TWO, &hasEle);
         if (hasEle) {
             hasEle = false;
             napi_value value;
-            napi_get_element(gNapiCallback->env, result, OHOS_NAPI_ARG_TWO, &value);
-            napi_get_value_int64(gNapiCallback->env, value, &(returnValue->width));
+            napi_get_element(g_napiCallback->env, result, OHOS_NAPI_ARG_TWO, &value);
+            napi_get_value_int64(g_napiCallback->env, value, &(returnValue->width));
         }
-        napi_has_element(gNapiCallback->env, result, OHOS_NAPI_ARG_THREE, &hasEle);
+        napi_has_element(g_napiCallback->env, result, OHOS_NAPI_ARG_THREE, &hasEle);
         if (hasEle) {
             hasEle = false;
             napi_value value;
-            napi_get_element(gNapiCallback->env, result, OHOS_NAPI_ARG_THREE, &value);
-            napi_get_value_int64(gNapiCallback->env, value, &(returnValue->height));
+            napi_get_element(g_napiCallback->env, result, OHOS_NAPI_ARG_THREE, &value);
+            napi_get_value_int64(g_napiCallback->env, value, &(returnValue->height));
         }
     }
     OHOS_TS_wakeup(root, lockInfo);
@@ -373,11 +373,11 @@ void OHOS_TS_MoveNode(const cJSON *root)
 
     napi_value argv[OHOS_THREADSAFE_ARG3] = {nullptr};
     argv[OHOS_THREADSAFE_ARG0] = OHOS_TS_GetNode(root);
-    napi_create_string_utf8(gNapiCallback->env, width, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG1]);
-    napi_create_string_utf8(gNapiCallback->env, height, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG2]);
+    napi_create_string_utf8(g_napiCallback->env, width, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG1]);
+    napi_create_string_utf8(g_napiCallback->env, height, NAPI_AUTO_LENGTH, &argv[OHOS_THREADSAFE_ARG2]);
 
     napi_value jsMethod = OHOS_TS_GetJsMethod("moveNode");
-    napi_status ret = napi_call_function(gNapiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG3, argv, nullptr);
+    napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG3, argv, nullptr);
     data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
     if (data != nullptr) {
         long long temp = static_cast<long long>(data->valuedouble);
