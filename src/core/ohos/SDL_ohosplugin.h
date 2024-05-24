@@ -21,9 +21,6 @@
 #include <js_native_api.h>
 #include <js_native_api_types.h>
 #include <ace/xcomponent/native_interface_xcomponent.h>
-extern "C" {
-#include "../../thread/SDL_systhread.h"
-}
 #include "../../video/ohos/SDL_ohosvideo.h"
 #include "SDL_ohoshead.h"
 
