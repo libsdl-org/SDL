@@ -58,6 +58,11 @@
 #define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
 #endif
 
+/* DXGI_PRESENT flags are removed on Xbox */
+#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#define DXGI_PRESENT_ALLOW_TEARING 0
+#endif
+
 #ifdef __cplusplus
 #define SAFE_RELEASE(X) \
     if (X) {            \
