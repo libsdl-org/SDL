@@ -42,6 +42,7 @@
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <d3d12sdklayers.h>
+#include <sdkddkver.h>
 #endif
 
 #include "SDL_shaders_d3d12.h"
@@ -75,15 +76,16 @@
 #endif
 
 /*
- * Older Windows SDK headers declare some d3d12 functions with the wrong function prototype.
+ * Older MS Windows SDK headers declare some d3d12 functions with the wrong function prototype.
  * - ID3D12Heap::GetDesc
  * - ID3D12Resource::GetDesc
  * - ID3D12DescriptorHeap::GetDesc
  * (and 9 more)
- * */
+ * This is fixed in SDKs since WDK_NTDDI_VERSION >= NTDDI_WIN10_FE (0x0A00000A)
+ */
 
 #if !(defined(__MINGW32__) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) \
-    && (!defined(D3D12_SDK_VERSION) || D3D12_SDK_VERSION < 3)
+    && (WDK_NTDDI_VERSION < 0x0A00000A)
 
 #define D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(THIS, ...) do { \
         void (STDMETHODCALLTYPE * func)(ID3D12DescriptorHeap * This, D3D12_CPU_DESCRIPTOR_HANDLE * Handle) = \
