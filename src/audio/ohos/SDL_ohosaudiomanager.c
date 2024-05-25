@@ -95,12 +95,12 @@ static int32_t OHOSAUDIO_AudioRenderer_OnWriteData(OH_AudioRenderer *renderer, v
             SDL_UnlockMutex(audioPlayLock);
             return -1;
         }
+        frameSize = length;
         device = (SDL_AudioDevice *)userData;
         if (device != NULL) {
             device->callbackspec.size = frameSize;
             device->spec.size = frameSize;
         }
-        frameSize = length;
         SDL_memset(rendererBuffer, 0, length);
         SDL_CondBroadcast(empty);
     }
