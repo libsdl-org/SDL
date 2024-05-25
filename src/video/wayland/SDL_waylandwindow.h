@@ -177,7 +177,7 @@ extern void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
                                         SDL_VideoDisplay *_display,
-                                        SDL_bool fullscreen);
+                                        SDL_FullscreenOp fullscreen);
 extern void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);

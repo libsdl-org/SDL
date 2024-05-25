@@ -527,11 +527,6 @@ static void Wayland_move_window(SDL_Window *window)
                 if (wind->last_displayID != displays[i]) {
                     wind->last_displayID = displays[i];
                     if (wind->shell_surface_type != WAYLAND_SURFACE_XDG_POPUP) {
-                        /* Need to catch up on fullscreen state here, as the video core may try to update
-                         * the fullscreen window, which on Wayland involves a set fullscreen call, which
-                         * can overwrite older pending state.
-                         */
-                        FlushFullscreenEvents(window);
                         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, display->x, display->y);
                         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DISPLAY_CHANGED, wind->last_displayID, 0);
                     }
@@ -598,7 +593,7 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             SDL_copyp(&window->current_fullscreen_mode, &window->requested_fullscreen_mode);
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
-            SDL_UpdateFullscreenMode(window, SDL_TRUE, SDL_FALSE);
+            SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_ENTER, SDL_FALSE);
 
             /* Set the output for exclusive fullscreen windows when entering fullscreen from a
              * compositor event, or if the fullscreen paramaters were changed between the initial
@@ -617,7 +612,7 @@ static void UpdateWindowFullscreen(SDL_Window *window, SDL_bool fullscreen)
         /* Don't change the fullscreen flags if the window is hidden or being hidden. */
         if ((window->flags & SDL_WINDOW_FULLSCREEN) && !window->is_hiding && !(window->flags & SDL_WINDOW_HIDDEN)) {
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
-            SDL_UpdateFullscreenMode(window, SDL_FALSE, SDL_FALSE);
+            SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_LEAVE, SDL_FALSE);
             wind->fullscreen_was_positioned = SDL_FALSE;
 
             /* Send a move event, in case it was deferred while the fullscreen window was moving and
@@ -1983,7 +1978,7 @@ int Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOpe
 }
 
 int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
-                                 SDL_VideoDisplay *display, SDL_bool fullscreen)
+                                 SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     SDL_WindowData *wind = window->driverdata;
     struct wl_output *output = display->driverdata->output;
@@ -2006,6 +2001,17 @@ int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
     FlushFullscreenEvents(window);
     wind->drop_fullscreen_requests = SDL_FALSE;
 
+    /* Nothing to do if the window is not fullscreen, and this isn't an explicit enter request. */
+    if (!wind->is_fullscreen) {
+        if (fullscreen == SDL_FULLSCREEN_OP_UPDATE) {
+            /* Request was out of date; return 1 to signal the video core not to update any state. */
+            return 1;
+        } else if (fullscreen == SDL_FULLSCREEN_OP_LEAVE) {
+            /* Already not fullscreen; nothing to do. */
+            return 0;
+        }
+    }
+
     /* Don't send redundant fullscreen set/unset events. */
     if (fullscreen != wind->is_fullscreen) {
         wind->fullscreen_was_positioned = fullscreen;
@@ -2024,6 +2030,8 @@ int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
         } else {
             ConfigureWindowGeometry(window);
             CommitLibdecorFrame(window);
+
+            return 0;
         }
     }
 
