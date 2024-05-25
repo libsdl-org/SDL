@@ -150,10 +150,10 @@ void HAIKU_RestoreWindow(SDL_VideoDevice *_this, SDL_Window * window) {
 }
 
 int HAIKU_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window * window,
-        SDL_VideoDisplay * display, SDL_bool fullscreen) {
+        SDL_VideoDisplay * display, SDL_FullscreenOp fullscreen) {
     /* Haiku tracks all video display information */
     BMessage msg(BWIN_FULLSCREEN);
-    msg.AddBool("fullscreen", fullscreen);
+    msg.AddBool("fullscreen", !!fullscreen);
     _ToBeWin(window)->PostMessage(&msg);
     return 0;
 }

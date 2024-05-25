@@ -44,7 +44,7 @@ static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, S
 static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
 static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 
@@ -291,7 +291,7 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     SDL_WindowData *data;
     int res = -1;

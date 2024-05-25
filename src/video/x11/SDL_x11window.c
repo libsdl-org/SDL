@@ -1040,7 +1040,7 @@ int X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         }
         X11_UpdateWindowPosition(window, SDL_FALSE);
     } else {
-        SDL_UpdateFullscreenMode(window, SDL_TRUE, SDL_TRUE);
+        SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_UPDATE, SDL_TRUE);
     }
     return 0;
 }
@@ -1609,7 +1609,7 @@ void X11_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 /* This asks the Window Manager to handle fullscreen for us. This is the modern way. */
-static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_bool fullscreen)
+static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_FullscreenOp fullscreen)
 {
     CHECK_WINDOW_DATA(window);
     CHECK_DISPLAY_DATA(_display);
@@ -1628,9 +1628,14 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
             X11_SyncWindow(_this, window);
         }
 
-        /* Nothing to do */
-        if (!fullscreen && !(window->flags & SDL_WINDOW_FULLSCREEN)) {
-            return 0;
+        if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+            if (fullscreen == SDL_FULLSCREEN_OP_UPDATE) {
+                /* Request was out of date; set -1 to signal the video core to undo a mode switch. */
+                return -1;
+            } else if (fullscreen == SDL_FULLSCREEN_OP_LEAVE) {
+                /* Nothing to do. */
+                return 0;
+            }
         }
 
         if (fullscreen && !(window->flags & SDL_WINDOW_RESIZABLE)) {
@@ -1724,7 +1729,7 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
     return 1;
 }
 
-int X11_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_bool fullscreen)
+int X11_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_FullscreenOp fullscreen)
 {
     return X11_SetWindowFullscreenViaWM(_this, window, _display, fullscreen);
 }

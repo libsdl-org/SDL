@@ -105,7 +105,7 @@ void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
     Android_JNI_SetActivityTitle(window->title);
 }
 
-int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     SDL_LockMutex(Android_ActivityMutex);
 

@@ -100,7 +100,7 @@ extern void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered);
 extern void WIN_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
 extern void WIN_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool on_top);
-extern int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 extern void WIN_UpdateWindowICCProfile(SDL_Window *window, SDL_bool send_event);
 extern void *WIN_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
 extern int WIN_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);

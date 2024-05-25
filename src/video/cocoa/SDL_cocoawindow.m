@@ -2601,7 +2601,7 @@ void Cocoa_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     }
 }
 
-int Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+int Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;

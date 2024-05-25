@@ -162,6 +162,14 @@ typedef enum
     VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS = 0x20
 } DeviceCaps;
 
+/* Fullscreen operations */
+typedef enum
+{
+    SDL_FULLSCREEN_OP_LEAVE = 0,
+    SDL_FULLSCREEN_OP_ENTER,
+    SDL_FULLSCREEN_OP_UPDATE
+} SDL_FullscreenOp;
+
 struct SDL_VideoDevice
 {
     /* * * */
@@ -246,7 +254,7 @@ struct SDL_VideoDevice
     void (*SetWindowBordered)(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered);
     void (*SetWindowResizable)(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
     void (*SetWindowAlwaysOnTop)(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool on_top);
-    int (*SetWindowFullscreen)(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+    int (*SetWindowFullscreen)(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
     void *(*GetWindowICCProfile)(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
     SDL_DisplayID (*GetDisplayForWindow)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*SetWindowMouseRect)(SDL_VideoDevice *_this, SDL_Window *window);
@@ -535,7 +543,7 @@ extern void SDL_OnWindowFocusGained(SDL_Window *window);
 extern void SDL_OnWindowFocusLost(SDL_Window *window);
 extern void SDL_OnWindowDisplayChanged(SDL_Window *window);
 extern void SDL_UpdateWindowGrab(SDL_Window *window);
-extern int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_bool fullscreen, SDL_bool commit);
+extern int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, SDL_bool commit);
 extern SDL_Window *SDL_GetToplevelForKeyboardFocus(void);
 
 extern SDL_bool SDL_ShouldAllowTopmost(void);

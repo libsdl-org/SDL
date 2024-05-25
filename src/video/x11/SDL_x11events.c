@@ -1697,9 +1697,9 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                                  * becoming fullscreen. Switch to the application requested mode if necessary.
                                  */
                                 SDL_copyp(&data->window->current_fullscreen_mode, &data->window->requested_fullscreen_mode);
-                                SDL_UpdateFullscreenMode(data->window, SDL_TRUE, SDL_TRUE);
+                                SDL_UpdateFullscreenMode(data->window, SDL_FULLSCREEN_OP_UPDATE, SDL_TRUE);
                             } else {
-                                SDL_UpdateFullscreenMode(data->window, SDL_TRUE, SDL_FALSE);
+                                SDL_UpdateFullscreenMode(data->window, SDL_FULLSCREEN_OP_ENTER, SDL_FALSE);
                             }
                         }
                     } else {
