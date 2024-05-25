@@ -88,9 +88,16 @@ static int32_t OHOSAUDIO_AudioRenderer_OnWriteData(OH_AudioRenderer *renderer, v
 {
     SDL_AudioDevice *device = NULL;
     SDL_LockMutex(audioPlayLock);
-    if (ohosFrameSize == -1 && length > 0) {
-        ohosFrameSize = length;
-        SDL_CondBroadcast(bufferCond);
+    if (frameSize == -1) {
+        rendererBuffer = SDL_malloc(length);
+        if (rendererBuffer == NULL) {
+            SDL_memset(buffer, 0, length);
+            SDL_UnlockMutex(audioPlayLock);
+            return -1;
+        }
+        frameSize = length;
+        SDL_memset(rendererBuffer, 0, length);
+        SDL_CondBroadcast(empty);
     }
     while (SDL_AtomicGet(&stateFlag) == SDL_FALSE &&
            SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
@@ -119,16 +126,8 @@ void *OHOSAUDIO_NATIVE_GetAudioBuf(SDL_AudioDevice *device)
            SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
         SDL_CondWait(empty, audioPlayLock);
     }
-    // go here, may is shut down state and ohos render start failed, just init buffer
-    // make sure shutdown normal
-    if (rendererBuffer == NULL) {
-        rendererBuffer = SDL_malloc(OHOS_RENDER_BUFFER_SHUTDOEN_LEN);
-        device->callbackspec.size = OHOS_RENDER_BUFFER_SHUTDOEN_LEN;
-        device->spec.size = OHOS_RENDER_BUFFER_SHUTDOEN_LEN;
-    } else {
-        device->callbackspec.size = ohosFrameSize;
-        device->spec.size = ohosFrameSize;
-    }
+    device->callbackspec.size = frameSize;
+    device->spec.size = frameSize;
     SDL_UnlockMutex(audioPlayLock);
     return rendererBuffer;
 }
@@ -473,10 +472,6 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
                 "Renderer_Start Failed, Error=%{public}d.", iRet);
-            OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
-            return -1;
-        }
-        if (OHOSAUDIO_WaitInitRenderBuffer(void) < 0) {
             OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
             return -1;
         }

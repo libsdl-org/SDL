@@ -1626,11 +1626,23 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
     SerializePhysicalDeviceClose(device);
 
     SDL_SetAtomicInt(&device->shutdown, 1);
+#ifdef __OHOS__
+    if (device->hidden != NULL) {
+        current_audio.impl.CloseDevice(device);
+    }
+#endif
+
+    if (device->thread != NULL) {
+        SDL_WaitThread(device->thread, NULL);
+    }
+    if (device->mixer_lock != NULL) {
+        SDL_DestroyMutex(device->mixer_lock);
+    }
 
     // YOU MUST PROTECT KEY POINTS WITH SerializePhysicalDeviceClose() WHILE THE THREAD JOINS
     SDL_UnlockMutex(device->lock);
 
-#ifdef __OHOS__
+#ifndef __OHOS__
     if (device->hidden != NULL) {
         current_audio.impl.PrepareToClose(device);
     }
