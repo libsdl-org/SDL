@@ -5496,7 +5496,6 @@ const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name
         return "w-resize";
 
     default:
-        SDL_assert(0);
         return "default";
     }
 }
