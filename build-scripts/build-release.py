@@ -530,6 +530,7 @@ class Releaser:
             zip_directory(zf, directory=self.root / "include/SDL3", arcrelpath="include/SDL3")
             zip_directory(zf, directory=self.root / "docs", arcrelpath="docs")
             zip_directory(zf, directory=self.root / "VisualC/pkg-support/cmake", arcrelpath="cmake")
+            zip_file(zf, path=self.root / "cmake/sdlcpu.cmake", arcrelpath="cmake/sdlcpu.cmake")
 
             for txt in ("BUGS.txt", "README-SDL.txt", "WhatsNew.txt"):
                 zip_file(zf, path=self.root / txt, arcrelpath=txt)

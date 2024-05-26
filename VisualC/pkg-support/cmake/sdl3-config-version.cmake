@@ -47,8 +47,11 @@ if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "")
     set(PACKAGE_VERSION_UNSUITABLE TRUE)
 endif()
 
+include("${CMAKE_CURRENT_LIST_DIR}/sdlcpu.cmake")
+SDL_DetectTargetCPUArchitectures(_detected_archs)
+
 # check that the installed version has a compatible architecture as the one which is currently searching:
-if(NOT (CMAKE_SYSTEM_PROCESSOR MATCHES "([aA][mM][dD]64|[xX]86((_|-)64)?|[iI][34567]86|[aA][aA][rR][cC][hH]64|[aA][rR][mM]64)"))
-    set(PACKAGE_VERSION "${PACKAGE_VERSION} (x86,x64,arm64)")
+if(NOT(SDL_CPU_X86 OR SDL_CPU_X64 OR SDL_CPU_ARM64))
+    set(PACKAGE_VERSION "${PACKAGE_VERSION} (X86,X64,ARM64)")
     set(PACKAGE_VERSION_UNSUITABLE TRUE)
 endif()

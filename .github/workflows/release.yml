@@ -330,7 +330,7 @@ jobs:
               -B build_x64 -A x64
           cmake --build build_x64 --config Release --verbose
           ctest --test-dir build_x64 --no-tests=error -C Release --output-on-failure
-      - name: 'CMake (configure + build + tests) arm64'
+      - name: 'CMake (configure + build) arm64'
         run: |
           $env:PATH += ";${{ steps.bin.outputs.path }}/x86"
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
