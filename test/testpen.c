@@ -201,6 +201,18 @@ static void DrawScreen(SDL_Renderer *renderer)
     SDL_RenderPresent(renderer);
 }
 
+static SDL_PenCapabilityFlags PenCapabilityFromAxis(SDL_PenAxis a)
+{
+    if ((a >= SDL_PEN_AXIS_PRESSURE) && (a <= SDL_PEN_AXIS_SLIDER)) {
+        /* the initial capability bits happen to match up, but as
+           more features show up later, the bits will be no longer be contiguous! */
+        return ((SDL_PenCapabilityFlags) 1) << ((SDL_PenCapabilityFlags) a);
+    }
+
+    SDL_assert("Unhandled axis!");
+    return 0;  /* oh well. */
+}
+
 static void dump_state(void)
 {
     int i;
@@ -221,20 +233,24 @@ static void dump_state(void)
 
     for (i = 0; i < pens_nr; ++i) {
         SDL_PenID penid = pens[i];
-        SDL_GUID guid = SDL_GetPenGUID(penid);
+        SDL_PenInfo info;
+        if (SDL_GetPenInfo(penid, &info) == -1) {
+            SDL_Log("SDL_GetPenInfo() failed: %s", SDL_GetError());
+            continue;
+        }
+
         char guid_str[33];
         float axes[SDL_PEN_NUM_AXES];
         float x, y;
-        int k;
-        SDL_PenCapabilityInfo info;
+        SDL_PenAxis k;
         Uint32 status = SDL_GetPenStatus(penid, &x, &y, axes, SDL_PEN_NUM_AXES);
-        const SDL_PenCapabilityFlags capabilities = SDL_GetPenCapabilities(penid, &info);
+        const SDL_PenCapabilityFlags capabilities = info.capabilities;
         char *type;
         char *buttons_str;
 
-        SDL_GUIDToString(guid, guid_str, 33);
+        SDL_GUIDToString(info.guid, guid_str, 33);
 
-        switch (SDL_GetPenType(penid)) {
+        switch (info.subtype) {
         case SDL_PEN_TYPE_ERASER:
             type = "Eraser";
             break;
@@ -255,7 +271,7 @@ static void dump_state(void)
         }
 
         switch (info.num_buttons) {
-        case SDL_PEN_INFO_UNKNOWN:
+        case -1:
             SDL_asprintf(&buttons_str, "? buttons");
             break;
         case 1:
@@ -276,11 +292,11 @@ static void dump_state(void)
                 SDL_GetPenName(penid));
         SDL_free(buttons_str);
         SDL_Log("   pos=(%.2f, %.2f)", x, y);
-        for (k = 0; k < SDL_PEN_NUM_AXES; ++k) {
-            SDL_bool supported = ((capabilities & SDL_PEN_AXIS_CAPABILITY(k)) != 0);
+        for (k = (SDL_PenAxis) 0; k < SDL_PEN_NUM_AXES; ++k) {
+            SDL_bool supported = ((capabilities & PenCapabilityFromAxis(k)) != 0);
             if (supported) {
                 if (k == SDL_PEN_AXIS_XTILT || k == SDL_PEN_AXIS_YTILT) {
-                    if (info.max_tilt == SDL_PEN_INFO_UNKNOWN) {
+                    if (info.max_tilt == -1.0f) {
                         SDL_Log("   axis %d:  %.3f (max tilt unknown)", k, axes[k]);
                     } else {
                         SDL_Log("   axis %d:  %.3f (tilt -%.1f..%.1f)", k, axes[k],
@@ -359,8 +375,8 @@ static void process_event(SDL_Event event)
         SDL_HideCursor();
         last_x = ev->x;
         last_y = ev->y;
-	update_axes(ev->axes);
-        last_was_eraser = ev->pen_state & SDL_PEN_ERASER_MASK;
+        update_axes(ev->axes);
+        last_was_eraser = (ev->pen_state & SDL_PEN_INPUT_ERASER_TIP_MASK) != 0;
 #if VERBOSE
         SDL_Log("[%lu] pen motion: %s %u at (%.4f, %.4f); pressure=%.3f, tilt=%.3f/%.3f, dist=%.3f [buttons=%02x]\n",
                 (unsigned long) ev->timestamp,
@@ -375,8 +391,8 @@ static void process_event(SDL_Event event)
         SDL_PenTipEvent *ev = &event.ptip;
         last_x = ev->x;
         last_y = ev->y;
-	update_axes(ev->axes);
-        last_was_eraser = ev->tip == SDL_PEN_TIP_ERASER;
+        update_axes(ev->axes);
+        last_was_eraser = (ev->pen_state & SDL_PEN_INPUT_ERASER_TIP_MASK) != 0;
         last_button = ev->pen_state & 0xf; /* button mask */
         last_touching = (event.type == SDL_EVENT_PEN_DOWN);
     } break;
@@ -389,22 +405,22 @@ static void process_event(SDL_Event event)
         SDL_HideCursor();
         last_x = ev->x;
         last_y = ev->y;
-	update_axes(ev->axes);
+        update_axes(ev->axes);
         if (last_pressure > 0.0f && !last_touching) {
             SDL_LogWarn(SDL_LOG_CATEGORY_TEST,
                         "[%lu] : reported pressure %.5f even though pen is not touching surface",
                         (unsigned long) ev->timestamp, last_pressure);
 
         }
-        last_was_eraser = ev->pen_state & SDL_PEN_ERASER_MASK;
+        last_was_eraser = (ev->pen_state & SDL_PEN_INPUT_ERASER_TIP_MASK) != 0;
         last_button = ev->pen_state & 0xf; /* button mask */
-        if ((ev->pen_state & SDL_PEN_DOWN_MASK) &&  !last_touching) {
+        if ((ev->pen_state & SDL_PEN_INPUT_DOWN_MASK) &&  !last_touching) {
             SDL_LogWarn(SDL_LOG_CATEGORY_TEST,
                         "[%lu] : reported flags %x (SDL_PEN_FLAG_DOWN_MASK) despite not receiving SDL_EVENT_PEN_DOWN",
                         (unsigned long) ev->timestamp, ev->pen_state);
 
         }
-        if (!(ev->pen_state & SDL_PEN_DOWN_MASK) &&  last_touching) {
+        if (!(ev->pen_state & SDL_PEN_INPUT_DOWN_MASK) && last_touching) {
             SDL_LogWarn(SDL_LOG_CATEGORY_TEST,
                         "[%lu] : reported flags %x (no SDL_PEN_FLAG_DOWN_MASK) despite receiving SDL_EVENT_PEN_DOWN without SDL_EVENT_PEN_UP afterwards",
                         (unsigned long) ev->timestamp, ev->pen_state);

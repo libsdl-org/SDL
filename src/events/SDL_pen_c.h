@@ -44,10 +44,18 @@
 
 #define SDL_PEN_MAX_NAME 64
 
-#define SDL_PEN_FLAG_ERROR    (1ul << 28) /* Printed an internal API usage error about this pen (used to prevent spamming) */
-#define SDL_PEN_FLAG_NEW      (1ul << 29) /* Pen was registered in most recent call to SDL_PenRegisterBegin() */
-#define SDL_PEN_FLAG_DETACHED (1ul << 30) /* Detached (not re-registered before last SDL_PenGCSweep()) */
-#define SDL_PEN_FLAG_STALE    (1ul << 31) /* Not re-registered since last SDL_PenGCMark() */
+#define SDL_PEN_FLAG_ERROR    (1ul << 25) /* Printed an internal API usage error about this pen (used to prevent spamming) */
+#define SDL_PEN_FLAG_NEW      (1ul << 26) /* Pen was registered in most recent call to SDL_PenRegisterBegin() */
+#define SDL_PEN_FLAG_DETACHED (1ul << 27) /* Detached (not re-registered before last SDL_PenGCSweep()) */
+#define SDL_PEN_FLAG_STALE    (1ul << 28) /* Not re-registered since last SDL_PenGCMark() */
+
+// !!! FIXME: this was moved in from a public header's previous version of the API just to make the existing implementation compile, but this should all migrate to SDL_PenInfo and struct SDL_Pen should remove its fields that are duplicated.
+typedef struct SDL_PenCapabilityInfo
+{
+    float max_tilt;    /**< Physical maximum tilt angle, for XTILT and YTILT, or SDL_PEN_INFO_UNKNOWN .  Pens cannot typically tilt all the way to 90 degrees, so this value is usually less than 90.0. */
+    Uint32 wacom_id;   /**< For Wacom devices: wacom tool type ID, otherwise 0 (useful e.g. with libwacom) */
+    Sint8 num_buttons; /**< Number of pen buttons (not counting the pen tip), or SDL_PEN_INFO_UNKNOWN */
+} SDL_PenCapabilityInfo;
 
 typedef struct SDL_PenStatusInfo
 {
@@ -99,7 +107,7 @@ typedef struct SDL_Pen
 /**
  * (Only for backend driver) Look up a pen by pen ID
  *
- * \param instance_id A Uint32 pen identifier (driver-dependent meaning).  Must not be 0 = SDL_PEN_INVALID.
+ * \param instance_id A Uint32 pen identifier (driver-dependent meaning).  Must not be 0 (invalid).
  * The same ID is exposed to clients as SDL_PenID.
  *
  * The pen pointer is only valid until the next call to SDL_PenModifyEnd() or SDL_PenGCSweep()
@@ -129,8 +137,8 @@ extern SDL_Pen *SDL_GetPenPtr(Uint32 instance_id);
  * - SDL_PenModifyEnd()
  *
  * For new pens, sets defaults for:
- *   - num_buttons (SDL_PEN_INFO_UNKNOWN)
- *   - max_tilt (SDL_PEN_INFO_UNKNOWN)
+ *   - num_buttons (-1)
+ *   - max_tilt (-1.0f)
  *   - pen_type (SDL_PEN_TYPE_PEN)
  *   - Zeroes all other (non-header) fields
  *
@@ -169,7 +177,13 @@ extern void SDL_PenModifyAddCapabilities(SDL_Pen *pen, Uint32 capabilities);
  *
  * \returns SDL_TRUE if the device ID could be identified, otherwise SDL_FALSE
  */
-extern int SDL_PenModifyForWacomID(SDL_Pen *pen, Uint32 wacom_devicetype_id, Uint32 *axis_flags);
+extern int SDL_PenModifyForWacomID(SDL_Pen *pen, Uint32 wacom_devicetype_id, SDL_PenCapabilityFlags *axis_flags);
+
+/**
+ * Get the pen capability flag that matches `axis`. Zero if axis is unknown.
+ */
+extern SDL_PenCapabilityFlags SDL_PenCapabilityFromAxis(SDL_PenAxis axis);
+
 
 /**
  * Updates a GUID for a generic pen device.
