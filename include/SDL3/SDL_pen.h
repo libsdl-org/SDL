@@ -112,7 +112,7 @@ typedef enum SDL_PenAxis
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef Uint64 SDL_PenCapabilityFlags;
+typedef Uint32 SDL_PenCapabilityFlags;
 
 #define SDL_PEN_DOWN_MASK          SDL_PEN_CAPABILITY(SDL_PEN_FLAG_DOWN_BIT_INDEX)   /**< Pen tip is currently touching the drawing surface. */
 #define SDL_PEN_INK_MASK           SDL_PEN_CAPABILITY(SDL_PEN_FLAG_INK_BIT_INDEX)    /**< Pen has a regular drawing tip (SDL_GetPenCapabilities).  For events (SDL_PenButtonEvent, SDL_PenMotionEvent, SDL_GetPenStatus) this flag is mutually exclusive with SDL_PEN_ERASER_MASK .  */
