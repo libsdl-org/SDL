@@ -148,11 +148,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
 /**
  * A callback used to free resources when a property is deleted.
  *
- * This should release any resources associated with `value` that are
- * no longer needed.
+ * This should release any resources associated with `value` that are no
+ * longer needed.
  *
- * This callback is set per-property. Different properties in the same
- * set can have different cleanup callbacks.
+ * This callback is set per-property. Different properties in the same set can
+ * have different cleanup callbacks.
  *
  * This callback will be called _during_ SDL_SetPropertyWithCleanup if the
  * function fails for any reason.
@@ -160,8 +160,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
  * \param userdata an app-defined pointer passed to the callback.
  * \param value the pointer assigned to the property to clean up.
  *
- * \threadsafety This callback may fire without any locks held; if this is
- *               a concern, the app should provide its own locking.
+ * \threadsafety This callback may fire without any locks held; if this is a
+ *               concern, the app should provide its own locking.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
@@ -176,8 +176,8 @@ typedef void (SDLCALL *SDL_CleanupPropertyCallback)(void *userdata, void *value)
  * The cleanup function is also called if setting the property fails for any
  * reason.
  *
- * For simply setting basic data types, like numbers, bools, or strings,
- * use SDL_SetNumberProperty, SDL_SetBooleanProperty, or SDL_SetStringProperty
+ * For simply setting basic data types, like numbers, bools, or strings, use
+ * SDL_SetNumberProperty, SDL_SetBooleanProperty, or SDL_SetStringProperty
  * instead, as those functions will handle cleanup on your behalf. This
  * function is only for more complex, custom data.
  *
@@ -466,7 +466,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const 
  * \param props the SDL_PropertiesID that is being enumerated.
  * \param name the next property name in the enumeration.
  *
- * \threadsafety SDL_EnumerateProperties holds a lock on `props` during this callback.
+ * \threadsafety SDL_EnumerateProperties holds a lock on `props` during this
+ *               callback.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
