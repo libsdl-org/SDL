@@ -273,7 +273,7 @@ typedef struct SDL_DisplayEvent
  */
 typedef struct SDL_WindowEvent
 {
-    SDL_EventType type; /**< SDL_WINDOWEVENT_* */
+    SDL_EventType type; /**< SDL_EVENT_WINDOW_* */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The associated window */
