@@ -1976,6 +1976,13 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
         SDL_assert(device != NULL);
         const SDL_bool iscapture = device->iscapture;
 
+        // if the app didn't request a format _at all_, just make a stream that does no conversion; they can query for it later.
+        SDL_AudioSpec tmpspec;
+        if (!spec) {
+            SDL_copyp(&tmpspec, &device->spec);
+            spec = &tmpspec;
+        }
+
         if (iscapture) {
             stream = SDL_CreateAudioStream(&device->spec, spec);
         } else {

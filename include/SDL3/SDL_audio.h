@@ -1324,7 +1324,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream)
  *
  * The `spec` parameter represents the app's side of the audio stream. That
  * is, for recording audio, this will be the output format, and for playing
- * audio, this will be the input format.
+ * audio, this will be the input format. If spec is NULL, the system will
+ * choose the format, and the app can use SDL_GetAudioStreamFormat() to
+ * obtain this information later.
  *
  * If you don't care about opening a specific audio device, you can (and
  * probably _should_), use SDL_AUDIO_DEVICE_DEFAULT_OUTPUT for playback and
@@ -1335,9 +1337,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream)
  * capturing). Otherwise, the callback will begin to fire once the device is
  * unpaused.
  *
+ * Destroying the returned stream with SDL_DestroyAudioStream will also close
+ * the audio device associated with this stream.
+ *
  * \param devid an audio device to open, or SDL_AUDIO_DEVICE_DEFAULT_OUTPUT or
  *              SDL_AUDIO_DEVICE_DEFAULT_CAPTURE.
- * \param spec the audio stream's data format. Required.
+ * \param spec the audio stream's data format. Can be NULL.
  * \param callback A callback where the app will provide new data for
  *                 playback, or receive new data for capture. Can be NULL, in
  *                 which case the app will need to call SDL_PutAudioStreamData
