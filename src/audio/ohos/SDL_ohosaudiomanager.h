@@ -29,6 +29,7 @@ extern void OHOSAUDIO_NATIVE_WriteAudioBuf(void);
 extern int OHOSAUDIO_NATIVE_CaptureAudioBuffer(void *buffer, int buflen);
 extern void OHOSAUDIO_NATIVE_FlushCapturedAudio(void);
 extern void OHOSAUDIO_NATIVE_CloseAudioDevice(const int iscapture);
+extern void OHOSAUDIO_NATIVE_PrepareClose(void);
 
 #endif /* SDL_OHOSAUDIOMANAGER_H */
 

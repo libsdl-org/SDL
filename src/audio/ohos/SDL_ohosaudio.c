@@ -102,6 +102,11 @@ static void OHOSAUDIO_CloseDevice(SDL_AudioDevice *this)
     SDL_free(this->hidden);
 }
 
+static void OHOSAUDIO_PrepareClose(SDL_AudioDevice *this)
+{
+    OHOSAUDIO_NATIVE_PrepareClose();
+}
+
 static int OHOSAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
@@ -111,6 +116,7 @@ static int OHOSAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->CloseDevice = OHOSAUDIO_CloseDevice;
     impl->CaptureFromDevice = OHOSAUDIO_CaptureFromDevice;
     impl->FlushCapture = OHOSAUDIO_FlushCapture;
+    impl->PrepareToClose = OHOSAUDIO_PrepareClose;
 
     /* and the capabilities */
     impl->HasCaptureSupport = SDL_TRUE;

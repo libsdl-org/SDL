@@ -35,11 +35,9 @@
  * Audio support
  */
 static int captureBufferLength = 0;
-static int renderBufferLength = 0;
 
 static unsigned char *rendererBuffer = NULL;
-static int rendererBufferLen = 0;
-static int frameSize = -1;
+static int ohosFrameSize = -1;
 
 static OH_AudioStreamBuilder *builder = NULL;
 static OH_AudioStreamBuilder *builder2 = NULL;
@@ -49,9 +47,11 @@ static OH_AudioRenderer *audioRenderer = NULL;
 static SDL_atomic_t stateFlag;
 static SDL_atomic_t isShutDown;
 static SDL_mutex *audioPlayLock;
-static SDL_cond *full, *empty;
+static SDL_cond *full, *empty, *bufferCond;
 
 static OH_AudioStream_State gAudioRendorStatus;
+
+#define OHOS_RENDER_BUFFER_SHUTDOEN_LEN 1024
 
 /*
  * Audio Capturer Callbacks
@@ -88,28 +88,16 @@ static int32_t OHOSAUDIO_AudioRenderer_OnWriteData(OH_AudioRenderer *renderer, v
 {
     SDL_AudioDevice *device = NULL;
     SDL_LockMutex(audioPlayLock);
-    if (frameSize == -1) {
-        rendererBuffer = SDL_malloc(length);
-        if (rendererBuffer == NULL) {
-            SDL_memset(buffer, 0, length);
-            SDL_UnlockMutex(audioPlayLock);
-            return -1;
-        }
-        frameSize = length;
-        device = (SDL_AudioDevice *)userData;
-        if (device != NULL) {
-            device->callbackspec.size = frameSize;
-            device->spec.size = frameSize;
-        }
-        SDL_memset(rendererBuffer, 0, length);
-        SDL_CondBroadcast(empty);
+    if (ohosFrameSize == -1 && length > 0) {
+        ohosFrameSize = length;
+        SDL_CondBroadcast(bufferCond);
     }
     while (SDL_AtomicGet(&stateFlag) == SDL_FALSE &&
            SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
         SDL_CondWait(full, audioPlayLock);
     }
-    if (SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
-        SDL_memcpy(buffer, rendererBuffer, length);
+    if (SDL_AtomicGet(&isShutDown) == SDL_FALSE && rendererBuffer != NULL) {
+        SDL_memcpy(buffer, rendererBuffer, ohosFrameSize);
         SDL_AtomicSet(&stateFlag, SDL_FALSE);
         SDL_CondBroadcast(empty);
     } else {
@@ -118,7 +106,7 @@ static int32_t OHOSAUDIO_AudioRenderer_OnWriteData(OH_AudioRenderer *renderer, v
         if (device != NULL) {
             value = device->spec.silence;
         }
-        SDL_memset(buffer, value, length);
+        SDL_memset(buffer, value, ohosFrameSize);
     }
     SDL_UnlockMutex(audioPlayLock);
     return 0;
@@ -127,10 +115,19 @@ static int32_t OHOSAUDIO_AudioRenderer_OnWriteData(OH_AudioRenderer *renderer, v
 void *OHOSAUDIO_NATIVE_GetAudioBuf(SDL_AudioDevice *device)
 {
     SDL_LockMutex(audioPlayLock);
-    while ((frameSize == -1 ||
-           SDL_AtomicGet(&stateFlag) == SDL_TRUE) &&
+    while ((rendererBuffer == NULL || SDL_AtomicGet(&stateFlag) == SDL_TRUE) &&
            SDL_AtomicGet(&isShutDown) == SDL_FALSE) {
         SDL_CondWait(empty, audioPlayLock);
+    }
+    // go here, may is shut down state and ohos render start failed, just init buffer
+    // make sure shutdown normal
+    if (rendererBuffer == NULL) {
+        rendererBuffer = SDL_malloc(OHOS_RENDER_BUFFER_SHUTDOEN_LEN);
+        device->callbackspec.size = OHOS_RENDER_BUFFER_SHUTDOEN_LEN;
+        device->spec.size = OHOS_RENDER_BUFFER_SHUTDOEN_LEN;
+    } else {
+        device->callbackspec.size = ohosFrameSize;
+        device->spec.size = ohosFrameSize;
     }
     SDL_UnlockMutex(audioPlayLock);
     return rendererBuffer;
@@ -424,6 +421,28 @@ static int OHOSAUDIO_Format2Depth(SDL_AudioSpec *spec, int audioFormat)
     return audioFormatBitDepth;
 }
 
+static int OHOSAUDIO_WaitInitRenderBuffer(void)
+{
+    SDL_LockMutex(audioPlayLock);
+    while (ohosFrameSize == -1) {
+        SDL_CondWait(bufferCond, audioPlayLock);
+    }
+    SDL_free(rendererBuffer);
+    if (ohosFrameSize < 0) {
+        SDL_UnlockMutex(audioPlayLock);
+        return -1;
+    }
+    rendererBuffer = SDL_malloc(ohosFrameSize + 1);
+    if (rendererBuffer == NULL) {
+        SDL_UnlockMutex(audioPlayLock);
+        return -1;
+    }
+    SDL_memset(rendererBuffer, 0, ohosFrameSize);
+    SDL_CondBroadcast(empty);
+    SDL_UnlockMutex(audioPlayLock);
+    return 0;
+}
+
 static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBitDepth)
 {
     OH_AudioStream_Result iRet;
@@ -443,6 +462,13 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
             return -1;
         }
     } else {
+        SDL_AtomicSet(&stateFlag, SDL_FALSE);
+        audioPlayLock = SDL_CreateMutex();
+        empty = SDL_CreateCond();
+        full = SDL_CreateCond();
+        bufferCond = SDL_CreateCond();
+        SDL_AtomicSet(&isShutDown, SDL_FALSE);
+        SDL_AtomicSet(&stateFlag, SDL_FALSE);
         iRet = OH_AudioRenderer_Start(audioRenderer);
         if (AUDIOSTREAM_SUCCESS != iRet) {
             OH_LOG_Print(LOG_APP, LOG_DEBUG, LOG_DOMAIN, "OpenAudioDevice",
@@ -450,12 +476,10 @@ static int OHOSAUDIO_Start(int iscapture, SDL_AudioSpec *spec, int audioFormatBi
             OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
             return -1;
         }
-        SDL_AtomicSet(&stateFlag, SDL_FALSE);
-        audioPlayLock = SDL_CreateMutex();
-        empty = SDL_CreateCond();
-        full = SDL_CreateCond();
-        SDL_AtomicSet(&isShutDown, SDL_FALSE);
-        SDL_AtomicSet(&stateFlag, SDL_FALSE);
+        if (OHOSAUDIO_WaitInitRenderBuffer(void) < 0) {
+            OHOSAUDIO_NATIVE_CloseAudioDevice(iscapture);
+            return -1;
+        }
     }
     return 0;
 }
@@ -574,8 +598,6 @@ static OHOSAUDIO_NATIVE_CloseRender(void)
             OH_LOG_Print(LOG_APP, LOG_INFO, LOG_DOMAIN, "CloseAudioDevice",
                          "SDL audio: OH_AudioRenderer_Stop error,error code = %{public}d", iRet);
         }
-        SDL_AtomicSet(&isShutDown, SDL_TRUE);
-        SDL_CondBroadcast(empty);
         SDL_CondBroadcast(full);
         iRet = OH_AudioRenderer_Release(audioRenderer);
         SDL_AtomicSet(&stateFlag, SDL_FALSE);
@@ -585,9 +607,15 @@ static OHOSAUDIO_NATIVE_CloseRender(void)
         }
         audioRenderer = NULL;
     }
-    if (NULL != rendererBuffer) {
+    ohosFrameSize = -1;
+    if (rendererBuffer != NULL) {
         SDL_free(rendererBuffer);
         rendererBuffer = NULL;
+    }
+
+    if (bufferCond != NULL) {
+        SDL_DestroyCond(bufferCond);
+        bufferCond = NULL;
     }
 
     if (audioPlayLock != NULL) {
@@ -603,6 +631,14 @@ static OHOSAUDIO_NATIVE_CloseRender(void)
         full = NULL;
     }
     frameSize = -1;
+}
+
+void OHOSAUDIO_NATIVE_PrepareClose(void)
+{
+    SDL_LockMutex(audioPlayLock);
+    SDL_AtomicSet(&isShutDown, SDL_TRUE);
+    SDL_CondBroadcast(empty);
+    SDL_UnlockMutex(audioPlayLock);
 }
 
 void OHOSAUDIO_NATIVE_CloseAudioDevice(const int iscapture)
