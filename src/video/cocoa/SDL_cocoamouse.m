@@ -369,11 +369,11 @@ static int Cocoa_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 Cocoa_GetGlobalMouseState(float *x, float *y)
+static SDL_MouseButtonFlags Cocoa_GetGlobalMouseState(float *x, float *y)
 {
     const NSUInteger cocoaButtons = [NSEvent pressedMouseButtons];
     const NSPoint cocoaLocation = [NSEvent mouseLocation];
-    Uint32 retval = 0;
+    SDL_MouseButtonFlags retval = 0;
 
     *x = cocoaLocation.x;
     *y = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);

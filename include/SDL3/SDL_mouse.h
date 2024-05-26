@@ -83,6 +83,37 @@ typedef enum SDL_MouseWheelDirection
     SDL_MOUSEWHEEL_FLIPPED    /**< The scroll direction is flipped / natural */
 } SDL_MouseWheelDirection;
 
+/**
+ * A bitmask used when testing if a mouse's buttons are pressed.
+ *
+ * - Button 1: Left mouse button
+ * - Button 2: Middle mouse button
+ * - Button 3: Right mouse button
+ * - Button 4: Side mouse button 1
+ * - Button 5: Side mouse button 2
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetMouseState
+ * \sa SDL_GetGlobalMouseState
+ * \sa SDL_GetRelativeMouseState
+ */
+typedef Uint32 SDL_MouseButtonFlags;
+
+#define SDL_BUTTON_LEFT     1
+#define SDL_BUTTON_MIDDLE   2
+#define SDL_BUTTON_RIGHT    3
+#define SDL_BUTTON_X1       4
+#define SDL_BUTTON_X2       5
+
+#define SDL_BUTTON(X)       (1u << ((X)-1))
+#define SDL_BUTTON_LMASK    SDL_BUTTON(SDL_BUTTON_LEFT)
+#define SDL_BUTTON_MMASK    SDL_BUTTON(SDL_BUTTON_MIDDLE)
+#define SDL_BUTTON_RMASK    SDL_BUTTON(SDL_BUTTON_RIGHT)
+#define SDL_BUTTON_X1MASK   SDL_BUTTON(SDL_BUTTON_X1)
+#define SDL_BUTTON_X2MASK   SDL_BUTTON(SDL_BUTTON_X2)
+
+
 /* Function prototypes */
 
 /**
@@ -160,7 +191,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * \sa SDL_GetGlobalMouseState
  * \sa SDL_GetRelativeMouseState
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetMouseState(float *x, float *y);
+extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
 
 /**
  * Get the current state of the mouse in relation to the desktop.
@@ -190,7 +221,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetMouseState(float *x, float *y);
  * \sa SDL_CaptureMouse
  * \sa SDL_GetMouseState
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetGlobalMouseState(float *x, float *y);
+extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *x, float *y);
 
 /**
  * Retrieve the relative state of the mouse.
@@ -209,7 +240,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetGlobalMouseState(float *x, float *y);
  *
  * \sa SDL_GetMouseState
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetRelativeMouseState(float *x, float *y);
+extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float *x, float *y);
 
 /**
  * Move the mouse cursor to the given position within the window.
@@ -509,30 +540,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_HideCursor(void);
  * \sa SDL_ShowCursor
  */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_CursorVisible(void);
-
-/**
- * Used as a mask when testing buttons in buttonstate.
- *
- * - Button 1: Left mouse button
- * - Button 2: Middle mouse button
- * - Button 3: Right mouse button
- * - Button 4: Side mouse button 1
- * - Button 5: Side mouse button 2
- *
- * \since This macro is available since SDL 3.0.0.
- */
-#define SDL_BUTTON(X)       (1u << ((X)-1))
-
-#define SDL_BUTTON_LEFT     1
-#define SDL_BUTTON_MIDDLE   2
-#define SDL_BUTTON_RIGHT    3
-#define SDL_BUTTON_X1       4
-#define SDL_BUTTON_X2       5
-#define SDL_BUTTON_LMASK    SDL_BUTTON(SDL_BUTTON_LEFT)
-#define SDL_BUTTON_MMASK    SDL_BUTTON(SDL_BUTTON_MIDDLE)
-#define SDL_BUTTON_RMASK    SDL_BUTTON(SDL_BUTTON_RIGHT)
-#define SDL_BUTTON_X1MASK   SDL_BUTTON(SDL_BUTTON_X1)
-#define SDL_BUTTON_X2MASK   SDL_BUTTON(SDL_BUTTON_X2)
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

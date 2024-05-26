@@ -237,7 +237,7 @@ static void WIN_CheckWParamMouseButton(Uint64 timestamp, SDL_bool bwParamMousePr
 static void WIN_CheckWParamMouseButtons(Uint64 timestamp, WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     if (wParam != data->mouse_button_flags) {
-        Uint32 mouseFlags = SDL_GetMouseState(NULL, NULL);
+        SDL_MouseButtonFlags mouseFlags = SDL_GetMouseState(NULL, NULL);
 
         /* WM_LBUTTONDOWN and friends handle button swapping for us. No need to check SM_SWAPBUTTON here.  */
         WIN_CheckWParamMouseButton(timestamp, (wParam & MK_LBUTTON), mouseFlags, SDL_FALSE, data, SDL_BUTTON_LEFT, mouseID);

@@ -586,7 +586,7 @@ static void ClearBinding(void)
 static void SetDisplayMode(ControllerDisplayMode mode)
 {
     float x, y;
-    Uint32 button_state;
+    SDL_MouseButtonFlags button_state;
 
     if (mode == CONTROLLER_MODE_BINDING) {
         /* Make a backup of the current mapping */
