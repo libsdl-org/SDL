@@ -413,7 +413,7 @@ static int X11_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 X11_GetGlobalMouseState(float *x, float *y)
+static SDL_MouseButtonFlags X11_GetGlobalMouseState(float *x, float *y)
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice()->driverdata;
     SDL_DisplayID *displays;
@@ -439,7 +439,7 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
                     unsigned int mask;
                     if (X11_XQueryPointer(display, RootWindow(display, data->screen), &root, &child, &rootx, &rooty, &winx, &winy, &mask)) {
                         XWindowAttributes root_attrs;
-                        Uint32 buttons = 0;
+                        SDL_MouseButtonFlags buttons = 0;
                         buttons |= (mask & Button1Mask) ? SDL_BUTTON_LMASK : 0;
                         buttons |= (mask & Button2Mask) ? SDL_BUTTON_MMASK : 0;
                         buttons |= (mask & Button3Mask) ? SDL_BUTTON_RMASK : 0;

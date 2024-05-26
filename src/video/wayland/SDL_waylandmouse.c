@@ -680,10 +680,10 @@ static void SDLCALL Wayland_EmulateMouseWarpChanged(void *userdata, const char *
  * coordinates when the window has focus, which is good enough for most
  * applications.
  */
-static Uint32 SDLCALL Wayland_GetGlobalMouseState(float *x, float *y)
+static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float *y)
 {
     SDL_Window *focus = SDL_GetMouseFocus();
-    Uint32 ret = 0;
+    SDL_MouseButtonFlags ret = 0;
 
     if (focus) {
         int off_x, off_y;

@@ -404,10 +404,10 @@ SDL_Mouse *SDL_GetMouse(void)
     return &SDL_mouse;
 }
 
-Uint32 SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch)
+SDL_MouseButtonFlags SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch)
 {
     int i;
-    Uint32 buttonstate = 0;
+    SDL_MouseButtonFlags buttonstate = 0;
 
     for (i = 0; i < mouse->num_sources; ++i) {
         if (mouseID == SDL_GLOBAL_MOUSE_ID || mouseID == SDL_TOUCH_MOUSEID) {
@@ -1127,7 +1127,7 @@ void SDL_QuitMouse(void)
     SDL_mice = NULL;
 }
 
-Uint32 SDL_GetMouseState(float *x, float *y)
+SDL_MouseButtonFlags SDL_GetMouseState(float *x, float *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1140,7 +1140,7 @@ Uint32 SDL_GetMouseState(float *x, float *y)
     return SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, SDL_TRUE);
 }
 
-Uint32 SDL_GetRelativeMouseState(float *x, float *y)
+SDL_MouseButtonFlags SDL_GetRelativeMouseState(float *x, float *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1155,7 +1155,7 @@ Uint32 SDL_GetRelativeMouseState(float *x, float *y)
     return SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, SDL_TRUE);
 }
 
-Uint32 SDL_GetGlobalMouseState(float *x, float *y)
+SDL_MouseButtonFlags SDL_GetGlobalMouseState(float *x, float *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 

@@ -78,7 +78,7 @@ typedef struct
     int (*CaptureMouse)(SDL_Window *window);
 
     /* Get absolute mouse coordinates. (x) and (y) are never NULL and set to zero before call. */
-    Uint32 (*GetGlobalMouseState)(float *x, float *y);
+    SDL_MouseButtonFlags (*GetGlobalMouseState)(float *x, float *y);
 
     /* Data common to all mice */
     SDL_Window *focus;
@@ -153,9 +153,6 @@ extern void SDL_SetMouseFocus(SDL_Window *window);
 
 /* Update the mouse capture window */
 extern int SDL_UpdateMouseCapture(SDL_bool force_release);
-
-/* Get the current mouse button state for a mouse */
-Uint32 SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch);
 
 /* You can set either a single scale, or a set of {speed, scale} values in sorted order */
 extern int SDL_SetMouseSystemScale(int num_values, const float *values);

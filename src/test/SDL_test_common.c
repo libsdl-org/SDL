@@ -941,7 +941,7 @@ static void SDLTest_PrintModState(char *text, size_t maxlen, SDL_Keymod keymod)
     }
 }
 
-static void SDLTest_PrintButtonMask(char *text, size_t maxlen, Uint32 flags)
+static void SDLTest_PrintButtonMask(char *text, size_t maxlen, SDL_MouseButtonFlags flags)
 {
     int i;
     int count = 0;
@@ -2374,7 +2374,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
             if (withControl) {
                 /* Ctrl-A reports absolute mouse position. */
                 float x, y;
-                const Uint32 mask = SDL_GetGlobalMouseState(&x, &y);
+                const SDL_MouseButtonFlags mask = SDL_GetGlobalMouseState(&x, &y);
                 SDL_Log("ABSOLUTE MOUSE: (%g, %g)%s%s%s%s%s\n", x, y,
                         (mask & SDL_BUTTON_LMASK) ? " [LBUTTON]" : "",
                         (mask & SDL_BUTTON_MMASK) ? " [MBUTTON]" : "",
@@ -2478,7 +2478,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     SDL_Rect rect;
     const SDL_DisplayMode *mode;
     float scaleX, scaleY;
-    Uint32 flags;
+    SDL_MouseButtonFlags flags;
     SDL_DisplayID windowDisplayID = SDL_GetDisplayForWindow(window);
     SDL_RendererInfo info;
     SDL_RendererLogicalPresentation logical_presentation;

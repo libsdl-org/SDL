@@ -390,9 +390,9 @@ static int WIN_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 WIN_GetGlobalMouseState(float *x, float *y)
+static SDL_MouseButtonFlags WIN_GetGlobalMouseState(float *x, float *y)
 {
-    Uint32 retval = 0;
+    SDL_MouseButtonFlags retval = 0;
     POINT pt = { 0, 0 };
     SDL_bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
 
