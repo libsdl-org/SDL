@@ -1098,7 +1098,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_FlushAudioStream(SDL_AudioStream *stream);
 extern SDL_DECLSPEC int SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
 
 /**
- * Use this function to pause audio playback on the audio device associated with an audio stream.
+ * Use this function to pause audio playback on the audio device associated
+ * with an audio stream.
  *
  * This function pauses audio processing for a given device. Any bound audio
  * streams will not progress, and no audio will be generated. Pausing one
@@ -1121,10 +1122,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_ClearAudioStream(SDL_AudioStream *stream);
 extern SDL_DECLSPEC int SDLCALL SDL_PauseAudioStreamDevice(SDL_AudioStream *stream);
 
 /**
- * Use this function to unpause audio playback on the audio device associated with an audio stream.
+ * Use this function to unpause audio playback on the audio device associated
+ * with an audio stream.
  *
  * This function unpauses audio processing for a given device that has
- * previously been paused. Once unpaused, any bound audio streams will begin to progress again, and audio can be generated.
+ * previously been paused. Once unpaused, any bound audio streams will begin
+ * to progress again, and audio can be generated.
  *
  * \param stream The audio stream associated with the audio device to resume
  * \returns 0 on success or a negative error code on failure; call
@@ -1138,26 +1141,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_PauseAudioStreamDevice(SDL_AudioStream *stre
  */
 extern SDL_DECLSPEC int SDLCALL SDL_ResumeAudioStreamDevice(SDL_AudioStream *stream);
 
-/**
- * Use this function to query if an audio device is paused.
- *
- * Unlike in SDL2, audio devices start in an _unpaused_ state, since an app
- * has to bind a stream before any audio will flow.
- *
- * Physical devices can not be paused or unpaused, only logical devices
- * created through SDL_OpenAudioDevice() can be. Physical and invalid device
- * IDs will report themselves as unpaused here.
- *
- * \param dev a device opened by SDL_OpenAudioDevice()
- * \returns SDL_TRUE if device is valid and paused, SDL_FALSE otherwise.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_PauseAudioDevice
- * \sa SDL_ResumeAudioDevice
- */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID dev);
 
 /**
