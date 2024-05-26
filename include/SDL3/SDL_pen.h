@@ -110,7 +110,7 @@ typedef enum SDL_PenAxis
 /**
  * Pen capabilities reported by SDL_GetPenCapabilities.
  *
- * \since This typedef is available since SDL 3.0.0
+ * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint64 SDL_PenCapabilityFlags;
 
