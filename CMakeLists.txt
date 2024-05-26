@@ -1869,7 +1869,12 @@ elseif(WINDOWS)
 
     check_include_file(d3d9.h HAVE_D3D_H)
     check_include_file(d3d11_1.h HAVE_D3D11_H)
-    check_include_file(d3d12.h HAVE_D3D12_H)
+    check_c_source_compiles("
+      #include <d3d12.h>
+      #include <d3d12sdklayers.h>
+      ID3D12Device1 *device;
+      int main(int argc, char **argv) { return 0; }
+      " HAVE_D3D12_H)
     check_include_file(ddraw.h HAVE_DDRAW_H)
     check_include_file(dsound.h HAVE_DSOUND_H)
     check_include_file(dinput.h HAVE_DINPUT_H)
