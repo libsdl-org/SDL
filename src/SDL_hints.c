@@ -22,9 +22,6 @@
 
 #include "SDL_hints_c.h"
 
-/* Assuming there aren't many hints set and they aren't being queried in
-   critical performance paths, we'll just use linked lists here.
- */
 typedef struct SDL_HintWatch
 {
     SDL_HintCallback callback;
@@ -34,123 +31,153 @@ typedef struct SDL_HintWatch
 
 typedef struct SDL_Hint
 {
-    char *name;
     char *value;
     SDL_HintPriority priority;
     SDL_HintWatch *callbacks;
-    struct SDL_Hint *next;
 } SDL_Hint;
 
-static SDL_Hint *SDL_hints;
+static SDL_PropertiesID SDL_hint_props = 0;
+
+static SDL_PropertiesID GetHintProperties(void)
+{
+    // this isn't thread-safe, but I'm gambling we don't touch hints from two threads at once at startup.
+    if (!SDL_hint_props) {
+        SDL_hint_props = SDL_CreateProperties();
+    }
+    return SDL_hint_props;
+}
+
+static void SDLCALL CleanupHintProperty(void *userdata, void *value)
+{
+    SDL_Hint *hint = (SDL_Hint *) value;
+    SDL_free(hint->value);
+
+    SDL_HintWatch *entry = hint->callbacks;
+    while (entry) {
+        SDL_HintWatch *freeable = entry;
+        entry = entry->next;
+        SDL_free(freeable);
+    }
+    SDL_free(hint);
+}
 
 SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
 {
-    const char *env;
-    SDL_Hint *hint;
-    SDL_HintWatch *entry;
-
     if (!name) {
         return SDL_FALSE;
     }
 
-    env = SDL_getenv(name);
+    const char *env = SDL_getenv(name);
     if (env && priority < SDL_HINT_OVERRIDE) {
         return SDL_FALSE;
     }
 
-    for (hint = SDL_hints; hint; hint = hint->next) {
-        if (SDL_strcmp(name, hint->name) == 0) {
-            if (priority < hint->priority) {
-                return SDL_FALSE;
-            }
-            if (hint->value != value &&
-                (!value || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
+    const SDL_PropertiesID hints = GetHintProperties();
+    if (!hints) {
+        return SDL_FALSE;
+    }
+
+    SDL_bool retval = SDL_FALSE;
+
+    SDL_LockProperties(hints);
+
+    SDL_Hint *hint = SDL_GetProperty(hints, name, NULL);
+    if (hint) {
+        if (priority >= hint->priority) {
+            if (hint->value != value && (!value || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
                 char *old_value = hint->value;
 
                 hint->value = value ? SDL_strdup(value) : NULL;
-                for (entry = hint->callbacks; entry;) {
-                    /* Save the next entry in case this one is deleted */
+                SDL_HintWatch *entry = hint->callbacks;
+                while (entry) {
+                    // Save the next entry in case this one is deleted
                     SDL_HintWatch *next = entry->next;
                     entry->callback(entry->userdata, name, old_value, value);
                     entry = next;
                 }
-                if (old_value) {
-                    SDL_free(old_value);
-                }
+                SDL_free(old_value);
             }
             hint->priority = priority;
-            return SDL_TRUE;
+            retval = SDL_TRUE;
+        }
+    } else {  // Couldn't find the hint? Add a new one.
+        hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
+        if (hint) {
+            hint->value = value ? SDL_strdup(value) : NULL;
+            hint->priority = priority;
+            hint->callbacks = NULL;
+            retval = (SDL_SetPropertyWithCleanup(hints, name, hint, CleanupHintProperty, NULL) != -1);
         }
     }
 
-    /* Couldn't find the hint, add a new one */
-    hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
-    if (!hint) {
-        return SDL_FALSE;
-    }
-    hint->name = SDL_strdup(name);
-    hint->value = value ? SDL_strdup(value) : NULL;
-    hint->priority = priority;
-    hint->callbacks = NULL;
-    hint->next = SDL_hints;
-    SDL_hints = hint;
-    return SDL_TRUE;
+    SDL_UnlockProperties(hints);
+
+    return retval;
 }
 
 SDL_bool SDL_ResetHint(const char *name)
 {
-    const char *env;
-    SDL_Hint *hint;
-    SDL_HintWatch *entry;
-
     if (!name) {
         return SDL_FALSE;
     }
 
-    env = SDL_getenv(name);
-    for (hint = SDL_hints; hint; hint = hint->next) {
-        if (SDL_strcmp(name, hint->name) == 0) {
-            if ((!env && hint->value) ||
-                (env && !hint->value) ||
-                (env && SDL_strcmp(env, hint->value) != 0)) {
-                for (entry = hint->callbacks; entry;) {
-                    /* Save the next entry in case this one is deleted */
-                    SDL_HintWatch *next = entry->next;
-                    entry->callback(entry->userdata, name, hint->value, env);
-                    entry = next;
-                }
-            }
-            SDL_free(hint->value);
-            hint->value = NULL;
-            hint->priority = SDL_HINT_DEFAULT;
-            return SDL_TRUE;
-        }
+    const char *env = SDL_getenv(name);
+
+    const SDL_PropertiesID hints = GetHintProperties();
+    if (!hints) {
+        return SDL_FALSE;
     }
-    return SDL_FALSE;
-}
 
-void SDL_ResetHints(void)
-{
-    const char *env;
-    SDL_Hint *hint;
-    SDL_HintWatch *entry;
+    SDL_bool retval = SDL_FALSE;
 
-    for (hint = SDL_hints; hint; hint = hint->next) {
-        env = SDL_getenv(hint->name);
-        if ((!env && hint->value) ||
-            (env && !hint->value) ||
-            (env && SDL_strcmp(env, hint->value) != 0)) {
-            for (entry = hint->callbacks; entry;) {
-                /* Save the next entry in case this one is deleted */
+    SDL_LockProperties(hints);
+
+    SDL_Hint *hint = SDL_GetProperty(hints, name, NULL);
+    if (hint) {
+        if ((!env && hint->value) || (env && !hint->value) || (env && SDL_strcmp(env, hint->value) != 0)) {
+            for (SDL_HintWatch *entry = hint->callbacks; entry;) {
+                // Save the next entry in case this one is deleted
                 SDL_HintWatch *next = entry->next;
-                entry->callback(entry->userdata, hint->name, hint->value, env);
+                entry->callback(entry->userdata, name, hint->value, env);
                 entry = next;
             }
         }
         SDL_free(hint->value);
         hint->value = NULL;
         hint->priority = SDL_HINT_DEFAULT;
+        retval = SDL_TRUE;
     }
+
+    SDL_UnlockProperties(hints);
+
+    return retval;
+}
+
+static void SDLCALL ResetHintsCallback(void *userdata, SDL_PropertiesID hints, const char *name)
+{
+    SDL_Hint *hint = SDL_GetProperty(hints, name, NULL);
+    if (!hint) {
+        return;  // uh...okay.
+    }
+
+    const char *env = SDL_getenv(name);
+    if ((!env && hint->value) || (env && !hint->value) || (env && SDL_strcmp(env, hint->value) != 0)) {
+        SDL_HintWatch *entry = hint->callbacks;
+        while (entry) {
+            // Save the next entry in case this one is deleted
+            SDL_HintWatch *next = entry->next;
+            entry->callback(entry->userdata, name, hint->value, env);
+            entry = next;
+        }
+    }
+    SDL_free(hint->value);
+    hint->value = NULL;
+    hint->priority = SDL_HINT_DEFAULT;
+}
+
+void SDL_ResetHints(void)
+{
+    SDL_EnumerateProperties(GetHintProperties(), ResetHintsCallback, NULL);
 }
 
 SDL_bool SDL_SetHint(const char *name, const char *value)
@@ -160,23 +187,30 @@ SDL_bool SDL_SetHint(const char *name, const char *value)
 
 const char *SDL_GetHint(const char *name)
 {
-    const char *env;
-    SDL_Hint *hint;
-
     if (!name) {
         return NULL;
     }
 
-    env = SDL_getenv(name);
-    for (hint = SDL_hints; hint; hint = hint->next) {
-        if (SDL_strcmp(name, hint->name) == 0) {
-            if (!env || hint->priority == SDL_HINT_OVERRIDE) {
-                return hint->value;
-            }
-            break;
+    const SDL_PropertiesID hints = GetHintProperties();
+    if (!hints) {
+        return NULL;
+    }
+
+    const char *env = SDL_getenv(name);
+
+    SDL_LockProperties(hints);
+
+    SDL_Hint *hint = SDL_GetProperty(hints, name, NULL);
+    const char *retval = env;
+    if (hint) {
+        if (!env || hint->priority == SDL_HINT_OVERRIDE) {
+            retval = hint->value;
         }
     }
-    return env;
+
+    SDL_UnlockProperties(hints);
+
+    return retval;
 }
 
 int SDL_GetStringInteger(const char *value, int default_value)
@@ -215,102 +249,92 @@ SDL_bool SDL_GetHintBoolean(const char *name, SDL_bool default_value)
 
 int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
-    SDL_Hint *hint;
-    SDL_HintWatch *entry;
-    const char *value;
-
     if (!name || !*name) {
         return SDL_InvalidParamError("name");
-    }
-    if (!callback) {
+    } else if (!callback) {
         return SDL_InvalidParamError("callback");
     }
 
-    SDL_DelHintCallback(name, callback, userdata);
+    const SDL_PropertiesID hints = GetHintProperties();
+    if (!hints) {
+        return -1;
+    }
 
-    entry = (SDL_HintWatch *)SDL_malloc(sizeof(*entry));
+    SDL_HintWatch *entry = (SDL_HintWatch *)SDL_malloc(sizeof(*entry));
     if (!entry) {
         return -1;
     }
     entry->callback = callback;
     entry->userdata = userdata;
 
-    for (hint = SDL_hints; hint; hint = hint->next) {
-        if (SDL_strcmp(name, hint->name) == 0) {
-            break;
-        }
-    }
-    if (!hint) {
-        /* Need to add a hint entry for this watcher */
+    int retval = -1;
+
+    SDL_LockProperties(hints);
+
+    SDL_DelHintCallback(name, callback, userdata);
+
+    SDL_Hint *hint = SDL_GetProperty(hints, name, NULL);
+    if (hint) {
+        retval = 0;
+    } else {  // Need to add a hint entry for this watcher
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
         if (!hint) {
             SDL_free(entry);
-            return -1;
+        } else {
+            hint->value = NULL;
+            hint->priority = SDL_HINT_DEFAULT;
+            hint->callbacks = NULL;
+            retval = SDL_SetPropertyWithCleanup(hints, name, hint, CleanupHintProperty, NULL);
         }
-        hint->name = SDL_strdup(name);
-        if (!hint->name) {
-            SDL_free(entry);
-            SDL_free(hint);
-            return -1;
-        }
-        hint->value = NULL;
-        hint->priority = SDL_HINT_DEFAULT;
-        hint->callbacks = NULL;
-        hint->next = SDL_hints;
-        SDL_hints = hint;
     }
 
-    /* Add it to the callbacks for this hint */
+    // Add it to the callbacks for this hint
     entry->next = hint->callbacks;
     hint->callbacks = entry;
 
-    /* Now call it with the current value */
-    value = SDL_GetHint(name);
+    // Now call it with the current value
+    const char *value = SDL_GetHint(name);
     callback(userdata, name, value, value);
-    return 0;
+
+    SDL_UnlockProperties(hints);
+
+    return retval;
 }
 
 void SDL_DelHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
-    SDL_Hint *hint;
-    SDL_HintWatch *entry, *prev;
+    if (!name || !*name) {
+        return;
+    }
 
-    for (hint = SDL_hints; hint; hint = hint->next) {
-        if (SDL_strcmp(name, hint->name) == 0) {
-            prev = NULL;
-            for (entry = hint->callbacks; entry; entry = entry->next) {
-                if (callback == entry->callback && userdata == entry->userdata) {
-                    if (prev) {
-                        prev->next = entry->next;
-                    } else {
-                        hint->callbacks = entry->next;
-                    }
-                    SDL_free(entry);
-                    break;
+    const SDL_PropertiesID hints = SDL_hint_props; // don't call GetHintProperties(), we don't want to create it if doesn't exist.
+    if (!hints) {
+        return;
+    }
+
+    SDL_LockProperties(hints);
+    SDL_Hint *hint = SDL_GetProperty(hints, name, NULL);
+    if (hint) {
+        SDL_HintWatch *prev = NULL;
+        for (SDL_HintWatch *entry = hint->callbacks; entry; entry = entry->next) {
+            if ((callback == entry->callback) && (userdata == entry->userdata)) {
+                if (prev) {
+                    prev->next = entry->next;
+                } else {
+                    hint->callbacks = entry->next;
                 }
-                prev = entry;
+                SDL_free(entry);
+                break;
             }
-            return;
+            prev = entry;
         }
     }
+    SDL_UnlockProperties(hints);
 }
 
-void SDL_ClearHints(void)
+void SDL_QuitHints(void)
 {
-    SDL_Hint *hint;
-    SDL_HintWatch *entry;
-
-    while (SDL_hints) {
-        hint = SDL_hints;
-        SDL_hints = hint->next;
-
-        SDL_free(hint->name);
-        SDL_free(hint->value);
-        for (entry = hint->callbacks; entry;) {
-            SDL_HintWatch *freeable = entry;
-            entry = entry->next;
-            SDL_free(freeable);
-        }
-        SDL_free(hint);
-    }
+    SDL_DestroyProperties(SDL_hint_props);
+    SDL_hint_props = 0;
 }
+
