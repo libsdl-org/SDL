@@ -589,6 +589,7 @@ SDL3_0.0.0 {
     SDL_OpenUserStorage;
     SDL_OutOfMemory;
     SDL_PauseAudioDevice;
+    SDL_PauseAudioStreamDevice;
     SDL_PauseHaptic;
     SDL_PeepEvents;
     SDL_PenConnected;
@@ -656,6 +657,7 @@ SDL3_0.0.0 {
     SDL_ResetLogPriorities;
     SDL_RestoreWindow;
     SDL_ResumeAudioDevice;
+    SDL_ResumeAudioStreamDevice;
     SDL_ResumeHaptic;
     SDL_RumbleGamepad;
     SDL_RumbleGamepadTriggers;
