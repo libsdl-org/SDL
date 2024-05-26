@@ -75,7 +75,20 @@ def main():
         parsing_comment = False
         current_comment = ""
 
+        ignore_wiki_documentation = False
+
         for line in input:
+
+            # Skip lines if we're in a wiki documentation block.
+            if ignore_wiki_documentation:
+                if line.startswith("#endif"):
+                    ignore_wiki_documentation = False
+                continue
+
+            # Discard wiki documentions blocks.
+            if line.startswith("#ifdef SDL_WIKI_DOCUMENTATION_SECTION"):
+                ignore_wiki_documentation = True
+                continue
 
             # Discard pre-processor directives ^#.*
             if line.startswith("#"):
