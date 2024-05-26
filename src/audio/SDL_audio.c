@@ -1947,13 +1947,20 @@ void SDL_UnbindAudioStream(SDL_AudioStream *stream)
 SDL_AudioDeviceID SDL_GetAudioStreamDevice(SDL_AudioStream *stream)
 {
     SDL_AudioDeviceID retval = 0;
-    if (stream) {
-        SDL_LockMutex(stream->lock);
-        if (stream->bound_device) {
-            retval = stream->bound_device->instance_id;
-        }
-        SDL_UnlockMutex(stream->lock);
+
+    if (!stream) {
+        SDL_InvalidParamError("stream");
+        return 0;
     }
+
+    SDL_LockMutex(stream->lock);
+    if (stream->bound_device) {
+        retval = stream->bound_device->instance_id;
+    } else {
+        SDL_SetError("Audio stream not bound to an audio device");
+    }
+    SDL_UnlockMutex(stream->lock);
+
     return retval;
 }
 
@@ -2022,6 +2029,26 @@ SDL_AudioStream *SDL_OpenAudioDeviceStream(SDL_AudioDeviceID devid, const SDL_Au
     }
 
     return stream;
+}
+
+int SDL_PauseAudioStreamDevice(SDL_AudioStream *stream)
+{
+    SDL_AudioDeviceID devid = SDL_GetAudioStreamDevice(stream);
+    if (!devid) {
+        return -1;
+    }
+
+    return SDL_PauseAudioDevice(devid);
+}
+
+int SDL_ResumeAudioStreamDevice(SDL_AudioStream *stream)
+{
+    SDL_AudioDeviceID devid = SDL_GetAudioStreamDevice(stream);
+    if (!devid) {
+        return -1;
+    }
+
+    return SDL_ResumeAudioDevice(devid);
 }
 
 #define NUM_FORMATS 8

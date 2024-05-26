@@ -614,6 +614,7 @@
 #define SDL_OpenUserStorage SDL_OpenUserStorage_REAL
 #define SDL_OutOfMemory SDL_OutOfMemory_REAL
 #define SDL_PauseAudioDevice SDL_PauseAudioDevice_REAL
+#define SDL_PauseAudioStreamDevice SDL_PauseAudioStreamDevice_REAL
 #define SDL_PauseHaptic SDL_PauseHaptic_REAL
 #define SDL_PeepEvents SDL_PeepEvents_REAL
 #define SDL_PenConnected SDL_PenConnected_REAL
@@ -681,6 +682,7 @@
 #define SDL_ResetLogPriorities SDL_ResetLogPriorities_REAL
 #define SDL_RestoreWindow SDL_RestoreWindow_REAL
 #define SDL_ResumeAudioDevice SDL_ResumeAudioDevice_REAL
+#define SDL_ResumeAudioStreamDevice SDL_ResumeAudioStreamDevice_REAL
 #define SDL_ResumeHaptic SDL_ResumeHaptic_REAL
 #define SDL_RumbleGamepad SDL_RumbleGamepad_REAL
 #define SDL_RumbleGamepadTriggers SDL_RumbleGamepadTriggers_REAL
