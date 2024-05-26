@@ -420,7 +420,11 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  * This only returns a list of physical devices; it will not have any device
  * IDs returned by SDL_OpenAudioDevice().
  *
- * \param count a pointer filled in with the number of devices returned
+ * If this function returns NULL, to signify an error, `*count` will be set
+ * to zero.
+ *
+ * \param count a pointer filled in with the number of devices returned. NULL
+ *              is allowed.
  * \returns a 0 terminated array of device instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.
@@ -445,7 +449,11 @@ extern SDL_DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioOutputDevices(int *co
  * This only returns a list of physical devices; it will not have any device
  * IDs returned by SDL_OpenAudioDevice().
  *
- * \param count a pointer filled in with the number of devices returned
+ * If this function returns NULL, to signify an error, `*count` will be set
+ * to zero.
+ *
+ * \param count a pointer filled in with the number of devices returned. NULL
+ *              is allowed.
  * \returns a 0 terminated array of device instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.
