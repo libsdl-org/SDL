@@ -54,10 +54,10 @@ static SDL_Cursor *WINRT_CreateSystemCursor(SDL_SystemCursor id)
     default:
         SDL_assert(0);
         return NULL;
-    case SDL_SYSTEM_CURSOR_ARROW:
+    case SDL_SYSTEM_CURSOR_DEFAULT:
         cursorType = CoreCursorType::Arrow;
         break;
-    case SDL_SYSTEM_CURSOR_IBEAM:
+    case SDL_SYSTEM_CURSOR_TEXT:
         cursorType = CoreCursorType::IBeam;
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
@@ -66,52 +66,52 @@ static SDL_Cursor *WINRT_CreateSystemCursor(SDL_SystemCursor id)
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
         cursorType = CoreCursorType::Cross;
         break;
-    case SDL_SYSTEM_CURSOR_WAITARROW:
+    case SDL_SYSTEM_CURSOR_PROGRESS:
         cursorType = CoreCursorType::Wait;
         break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:
+    case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
         cursorType = CoreCursorType::SizeNorthwestSoutheast;
         break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:
+    case SDL_SYSTEM_CURSOR_NESW_RESIZE:
         cursorType = CoreCursorType::SizeNortheastSouthwest;
         break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:
+    case SDL_SYSTEM_CURSOR_EW_RESIZE:
         cursorType = CoreCursorType::SizeWestEast;
         break;
-    case SDL_SYSTEM_CURSOR_SIZENS:
+    case SDL_SYSTEM_CURSOR_NS_RESIZE:
         cursorType = CoreCursorType::SizeNorthSouth;
         break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:
+    case SDL_SYSTEM_CURSOR_MOVE:
         cursorType = CoreCursorType::SizeAll;
         break;
-    case SDL_SYSTEM_CURSOR_NO:
+    case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
         cursorType = CoreCursorType::UniversalNo;
         break;
-    case SDL_SYSTEM_CURSOR_HAND:
+    case SDL_SYSTEM_CURSOR_POINTER:
         cursorType = CoreCursorType::Hand;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+    case SDL_SYSTEM_CURSOR_NW_RESIZE:
         cursorType = CoreCursorType::SizeNorthwestSoutheast;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+    case SDL_SYSTEM_CURSOR_N_RESIZE:
         cursorType = CoreCursorType::SizeNorthSouth;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+    case SDL_SYSTEM_CURSOR_NE_RESIZE:
         cursorType = CoreCursorType::SizeNortheastSouthwest;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+    case SDL_SYSTEM_CURSOR_E_RESIZE:
         cursorType = CoreCursorType::SizeWestEast;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+    case SDL_SYSTEM_CURSOR_SE_RESIZE:
         cursorType = CoreCursorType::SizeNorthwestSoutheast;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+    case SDL_SYSTEM_CURSOR_S_RESIZE:
         cursorType = CoreCursorType::SizeNorthSouth;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+    case SDL_SYSTEM_CURSOR_SW_RESIZE:
         cursorType = CoreCursorType::SizeNortheastSouthwest;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+    case SDL_SYSTEM_CURSOR_W_RESIZE:
         cursorType = CoreCursorType::SizeWestEast;
         break;
     }
@@ -133,7 +133,7 @@ static SDL_Cursor *WINRT_CreateSystemCursor(SDL_SystemCursor id)
 
 static SDL_Cursor *WINRT_CreateDefaultCursor()
 {
-    return WINRT_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+    return WINRT_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 }
 
 static void WINRT_FreeCursor(SDL_Cursor *cursor)

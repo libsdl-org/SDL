@@ -217,26 +217,26 @@ static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)
     switch (id) {
         /* X Font Cursors reference: */
         /*   http://tronche.com/gui/x/xlib/appendix/b/ */
-        case SDL_SYSTEM_CURSOR_ARROW: return XC_left_ptr;
-        case SDL_SYSTEM_CURSOR_IBEAM: return XC_xterm;
+        case SDL_SYSTEM_CURSOR_DEFAULT: return XC_left_ptr;
+        case SDL_SYSTEM_CURSOR_TEXT: return XC_xterm;
         case SDL_SYSTEM_CURSOR_WAIT: return XC_watch;
         case SDL_SYSTEM_CURSOR_CROSSHAIR: return XC_tcross;
-        case SDL_SYSTEM_CURSOR_WAITARROW: return XC_watch;
-        case SDL_SYSTEM_CURSOR_SIZENWSE: return XC_top_left_corner;
-        case SDL_SYSTEM_CURSOR_SIZENESW: return XC_top_right_corner;
-        case SDL_SYSTEM_CURSOR_SIZEWE: return XC_sb_h_double_arrow;
-        case SDL_SYSTEM_CURSOR_SIZENS: return XC_sb_v_double_arrow;
-        case SDL_SYSTEM_CURSOR_SIZEALL: return XC_fleur;
-        case SDL_SYSTEM_CURSOR_NO: return XC_pirate;
-        case SDL_SYSTEM_CURSOR_HAND: return XC_hand2;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT: return XC_top_left_corner;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOP: return XC_top_side;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT: return XC_top_right_corner;
-        case SDL_SYSTEM_CURSOR_WINDOW_RIGHT: return XC_right_side;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT: return XC_bottom_right_corner;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM: return XC_bottom_side;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT: return XC_bottom_left_corner;
-        case SDL_SYSTEM_CURSOR_WINDOW_LEFT: return XC_left_side;
+        case SDL_SYSTEM_CURSOR_PROGRESS: return XC_watch;
+        case SDL_SYSTEM_CURSOR_NWSE_RESIZE: return XC_top_left_corner;
+        case SDL_SYSTEM_CURSOR_NESW_RESIZE: return XC_top_right_corner;
+        case SDL_SYSTEM_CURSOR_EW_RESIZE: return XC_sb_h_double_arrow;
+        case SDL_SYSTEM_CURSOR_NS_RESIZE: return XC_sb_v_double_arrow;
+        case SDL_SYSTEM_CURSOR_MOVE: return XC_fleur;
+        case SDL_SYSTEM_CURSOR_NOT_ALLOWED: return XC_pirate;
+        case SDL_SYSTEM_CURSOR_POINTER: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_NW_RESIZE: return XC_top_left_corner;
+        case SDL_SYSTEM_CURSOR_N_RESIZE: return XC_top_side;
+        case SDL_SYSTEM_CURSOR_NE_RESIZE: return XC_top_right_corner;
+        case SDL_SYSTEM_CURSOR_E_RESIZE: return XC_right_side;
+        case SDL_SYSTEM_CURSOR_SE_RESIZE: return XC_bottom_right_corner;
+        case SDL_SYSTEM_CURSOR_S_RESIZE: return XC_bottom_side;
+        case SDL_SYSTEM_CURSOR_SW_RESIZE: return XC_bottom_left_corner;
+        case SDL_SYSTEM_CURSOR_W_RESIZE: return XC_left_side;
         case SDL_NUM_SYSTEM_CURSORS: break;  /* so the compiler might notice if an enum value is missing here. */
     }
 
@@ -486,16 +486,16 @@ void X11_InitMouse(SDL_VideoDevice *_this)
     SDL_HitTestResult r = SDL_HITTEST_NORMAL;
     while (r <= SDL_HITTEST_RESIZE_LEFT) {
         switch (r) {
-        case SDL_HITTEST_NORMAL: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
-        case SDL_HITTEST_DRAGGABLE: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
-        case SDL_HITTEST_RESIZE_TOPLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT); break;
-        case SDL_HITTEST_RESIZE_TOP: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOP); break;
-        case SDL_HITTEST_RESIZE_TOPRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT); break;
-        case SDL_HITTEST_RESIZE_RIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_RIGHT); break;
-        case SDL_HITTEST_RESIZE_BOTTOMRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT); break;
-        case SDL_HITTEST_RESIZE_BOTTOM: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOM); break;
-        case SDL_HITTEST_RESIZE_BOTTOMLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT); break;
-        case SDL_HITTEST_RESIZE_LEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_LEFT); break;
+        case SDL_HITTEST_NORMAL: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT); break;
+        case SDL_HITTEST_DRAGGABLE: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT); break;
+        case SDL_HITTEST_RESIZE_TOPLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_NW_RESIZE); break;
+        case SDL_HITTEST_RESIZE_TOP: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_N_RESIZE); break;
+        case SDL_HITTEST_RESIZE_TOPRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_NE_RESIZE); break;
+        case SDL_HITTEST_RESIZE_RIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_E_RESIZE); break;
+        case SDL_HITTEST_RESIZE_BOTTOMRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SE_RESIZE); break;
+        case SDL_HITTEST_RESIZE_BOTTOM: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_S_RESIZE); break;
+        case SDL_HITTEST_RESIZE_BOTTOMLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SW_RESIZE); break;
+        case SDL_HITTEST_RESIZE_LEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_W_RESIZE); break;
         }
         r++;
     }
