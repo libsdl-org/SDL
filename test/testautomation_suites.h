@@ -25,7 +25,6 @@ extern SDLTest_TestSuiteReference logTestSuite;
 extern SDLTest_TestSuiteReference mainTestSuite;
 extern SDLTest_TestSuiteReference mathTestSuite;
 extern SDLTest_TestSuiteReference mouseTestSuite;
-extern SDLTest_TestSuiteReference penTestSuite;
 extern SDLTest_TestSuiteReference pixelsTestSuite;
 extern SDLTest_TestSuiteReference platformTestSuite;
 extern SDLTest_TestSuiteReference propertiesTestSuite;

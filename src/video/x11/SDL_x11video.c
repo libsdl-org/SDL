@@ -456,9 +456,7 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 
     X11_InitTouch(_this);
 
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     X11_InitPen(_this);
-#endif
 
     return 0;
 }
@@ -485,6 +483,7 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);
     X11_QuitTouch(_this);
+    X11_QuitPen(_this);
     X11_QuitClipboard(_this);
     X11_QuitXsettings(_this);
 }

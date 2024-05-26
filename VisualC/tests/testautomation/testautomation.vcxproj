@@ -212,12 +212,6 @@
     <ClCompile Include="..\..\..\test\testautomation_main.c" />
     <ClCompile Include="..\..\..\test\testautomation_math.c" />
     <ClCompile Include="..\..\..\test\testautomation_mouse.c" />
-    <ClCompile Include="..\..\..\test\testautomation_pen.c">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
     <ClCompile Include="..\..\..\test\testautomation_pixels.c" />
     <ClCompile Include="..\..\..\test\testautomation_platform.c" />
     <ClCompile Include="..\..\..\test\testautomation_properties.c" />

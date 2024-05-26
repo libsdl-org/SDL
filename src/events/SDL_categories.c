@@ -153,16 +153,23 @@ SDL_EventCategory SDL_GetEventCategory(Uint32 type)
     case SDL_EVENT_SENSOR_UPDATE:
         return SDL_EVENTCATEGORY_SENSOR;
 
+    case SDL_EVENT_PEN_PROXIMITY_IN:
+    case SDL_EVENT_PEN_PROXIMITY_OUT:
+        return SDL_EVENTCATEGORY_PPROXIMITY;
+
     case SDL_EVENT_PEN_DOWN:
     case SDL_EVENT_PEN_UP:
-        return SDL_EVENTCATEGORY_PTIP;
-
-    case SDL_EVENT_PEN_MOTION:
-        return SDL_EVENTCATEGORY_PMOTION;
+        return SDL_EVENTCATEGORY_PTOUCH;
 
     case SDL_EVENT_PEN_BUTTON_DOWN:
     case SDL_EVENT_PEN_BUTTON_UP:
         return SDL_EVENTCATEGORY_PBUTTON;
+
+    case SDL_EVENT_PEN_MOTION:
+        return SDL_EVENTCATEGORY_PMOTION;
+
+    case SDL_EVENT_PEN_AXIS:
+        return SDL_EVENTCATEGORY_PAXIS;
 
     case SDL_EVENT_CAMERA_DEVICE_ADDED:
     case SDL_EVENT_CAMERA_DEVICE_REMOVED:
@@ -207,14 +214,20 @@ SDL_Window *SDL_GetWindowFromEvent(const SDL_Event *event)
     case SDL_EVENTCATEGORY_TFINGER:
         windowID = event->tfinger.windowID;
         break;
-    case SDL_EVENTCATEGORY_PTIP:
-        windowID = event->ptip.windowID;
+    case SDL_EVENTCATEGORY_PPROXIMITY:
+        windowID = event->pproximity.windowID;
+        break;
+    case SDL_EVENTCATEGORY_PTOUCH:
+        windowID = event->ptouch.windowID;
+        break;
+    case SDL_EVENTCATEGORY_PBUTTON:
+        windowID = event->pbutton.windowID;
         break;
     case SDL_EVENTCATEGORY_PMOTION:
         windowID = event->pmotion.windowID;
         break;
-    case SDL_EVENTCATEGORY_PBUTTON:
-        windowID = event->pbutton.windowID;
+    case SDL_EVENTCATEGORY_PAXIS:
+        windowID = event->paxis.windowID;
         break;
     case SDL_EVENTCATEGORY_DROP:
         windowID = event->drop.windowID;
