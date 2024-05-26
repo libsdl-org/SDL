@@ -2451,7 +2451,7 @@ static void tablet_tool_handle_hardware_id_wacom(void *data, struct zwp_tablet_t
     struct SDL_WaylandTool *sdltool = data;
     struct SDL_WaylandTabletInput *input = sdltool->tablet;
     SDL_Pen *pen = Wayland_get_current_pen(data, tool);
-    Uint32 axis_flags;
+    SDL_PenCapabilityFlags axis_flags;
 
 #if SDL_PEN_DEBUG_NOSERIAL_WACOM /* Check: have we disabled pen serial ID decoding for testing? */
     id_hi = 0;
@@ -2474,23 +2474,23 @@ static void tablet_tool_handle_capability(void *data, struct zwp_tablet_tool_v2 
 
     switch (capability) {
     case ZWP_TABLET_TOOL_V2_CAPABILITY_TILT:
-        SDL_PenModifyAddCapabilities(pen, SDL_PEN_AXIS_XTILT_MASK | SDL_PEN_AXIS_YTILT_MASK);
+        SDL_PenModifyAddCapabilities(pen, SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT);
         break;
 
     case ZWP_TABLET_TOOL_V2_CAPABILITY_PRESSURE:
-        SDL_PenModifyAddCapabilities(pen, SDL_PEN_AXIS_PRESSURE_MASK);
+        SDL_PenModifyAddCapabilities(pen, SDL_PEN_CAPABILITY_PRESSURE);
         break;
 
     case ZWP_TABLET_TOOL_V2_CAPABILITY_DISTANCE:
-        SDL_PenModifyAddCapabilities(pen, SDL_PEN_AXIS_DISTANCE_MASK);
+        SDL_PenModifyAddCapabilities(pen, SDL_PEN_CAPABILITY_DISTANCE);
         break;
 
     case ZWP_TABLET_TOOL_V2_CAPABILITY_ROTATION:
-        SDL_PenModifyAddCapabilities(pen, SDL_PEN_AXIS_ROTATION_MASK);
+        SDL_PenModifyAddCapabilities(pen, SDL_PEN_CAPABILITY_ROTATION);
         break;
 
     case ZWP_TABLET_TOOL_V2_CAPABILITY_SLIDER:
-        SDL_PenModifyAddCapabilities(pen, SDL_PEN_AXIS_SLIDER_MASK);
+        SDL_PenModifyAddCapabilities(pen, SDL_PEN_CAPABILITY_SLIDER);
         break;
 
     case ZWP_TABLET_TOOL_V2_CAPABILITY_WHEEL:
@@ -2600,7 +2600,7 @@ static void tablet_tool_handle_down(void *data, struct zwp_tablet_tool_v2 *tool,
     struct SDL_WaylandTool *sdltool = data;
     struct SDL_WaylandTabletInput *input = sdltool->tablet;
 
-    input->current_pen.buttons_pressed |= SDL_PEN_DOWN_MASK;
+    input->current_pen.buttons_pressed |= SDL_PEN_INPUT_DOWN_MASK;
 
     input->current_pen.serial = serial;
 }
@@ -2609,7 +2609,7 @@ static void tablet_tool_handle_up(void *data, struct zwp_tablet_tool_v2 *tool)
 {
     struct SDL_WaylandTool *sdltool = data;
     struct SDL_WaylandTabletInput *input = sdltool->tablet;
-    input->current_pen.buttons_released |= SDL_PEN_DOWN_MASK;
+    input->current_pen.buttons_released |= SDL_PEN_INPUT_DOWN_MASK;
 }
 
 static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *tool, wl_fixed_t sx_w, wl_fixed_t sy_w)
@@ -2628,7 +2628,7 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
         const float sx = sx_f * window->pointer_scale.x;
         const float sy = sy_f * window->pointer_scale.y;
 
-        if (penid != SDL_PEN_INVALID) {
+        if (penid != 0) {
             input->current_pen.update_status.x = sx;
             input->current_pen.update_status.y = sy;
             input->current_pen.update_window = window;
@@ -2738,14 +2738,14 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
 
     /* All newly released buttons + PEN_UP event */
     button_mask = input->current_pen.buttons_released;
-    if (button_mask & SDL_PEN_DOWN_MASK) {
+    if (button_mask & SDL_PEN_INPUT_DOWN_MASK) {
 	/* Perform hit test, if appropriate */
 	if (!SDL_PenPerformHitTest()
 	    || !ProcessHitTest(window, input->sdlWaylandInput->seat, input->sx_w, input->sy_w, input->current_pen.serial)) {
 	    SDL_SendPenTipEvent(timestamp, penid, SDL_RELEASED);
 	}
     }
-    button_mask &= ~SDL_PEN_DOWN_MASK;
+    button_mask &= ~SDL_PEN_INPUT_DOWN_MASK;
 
     for (button = 1; button_mask; ++button, button_mask >>= 1) {
         if (button_mask & 1) {
@@ -2755,14 +2755,14 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
 
     /* All newly pressed buttons + PEN_DOWN event */
     button_mask = input->current_pen.buttons_pressed;
-    if (button_mask & SDL_PEN_DOWN_MASK) {
+    if (button_mask & SDL_PEN_INPUT_DOWN_MASK) {
 	/* Perform hit test, if appropriate */
 	if (!SDL_PenPerformHitTest()
 	    || !ProcessHitTest(window, input->sdlWaylandInput->seat, input->sx_w, input->sy_w, input->current_pen.serial)) {
 	    SDL_SendPenTipEvent(timestamp, penid, SDL_PRESSED);
 	}
     }
-    button_mask &= ~SDL_PEN_DOWN_MASK;
+    button_mask &= ~SDL_PEN_INPUT_DOWN_MASK;
 
     for (button = 1; button_mask; ++button, button_mask >>= 1) {
         if (button_mask & 1) {

@@ -379,12 +379,10 @@
 #define SDL_GetNumberProperty SDL_GetNumberProperty_REAL
 #define SDL_GetOriginalMemoryFunctions SDL_GetOriginalMemoryFunctions_REAL
 #define SDL_GetPathInfo SDL_GetPathInfo_REAL
-#define SDL_GetPenCapabilities SDL_GetPenCapabilities_REAL
 #define SDL_GetPenFromGUID SDL_GetPenFromGUID_REAL
-#define SDL_GetPenGUID SDL_GetPenGUID_REAL
+#define SDL_GetPenInfo SDL_GetPenInfo_REAL
 #define SDL_GetPenName SDL_GetPenName_REAL
 #define SDL_GetPenStatus SDL_GetPenStatus_REAL
-#define SDL_GetPenType SDL_GetPenType_REAL
 #define SDL_GetPens SDL_GetPens_REAL
 #define SDL_GetPerformanceCounter SDL_GetPerformanceCounter_REAL
 #define SDL_GetPerformanceFrequency SDL_GetPerformanceFrequency_REAL

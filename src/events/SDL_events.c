@@ -699,11 +699,10 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_FINGER_EVENT
 
-#define PRINT_PTIP_EVENT(event)                                                                                    \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u tip=%u state=%s x=%g y=%g)", \
-                       (uint)event->ptip.timestamp, (uint)event->ptip.windowID,                                    \
-                       (uint)event->ptip.which, (uint)event->ptip.tip,                                             \
-                       event->ptip.state == SDL_PRESSED ? "down" : "up",                                           \
+#define PRINT_PTIP_EVENT(event)                                                                             \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u state=%s x=%g y=%g)", \
+                       (uint)event->ptip.timestamp, (uint)event->ptip.windowID,                             \
+                       (uint)event->ptip.which, event->ptip.state == SDL_PRESSED ? "down" : "up",           \
                        event->ptip.x, event->ptip.y)
         SDL_EVENT_CASE(SDL_EVENT_PEN_DOWN)
         PRINT_PTIP_EVENT(event);

@@ -718,6 +718,12 @@ typedef struct SDL_TouchFingerEvent
 /**
  * Pressure-sensitive pen touched or stopped touching surface (event.ptip.*)
  *
+ * Note that `axes` is an array of `SDL_PEN_NUM_AXES` items. This number may
+ * increase in future SDL releases. Since there is space in SDL's event union
+ * to allow for this, the extra space will be zeroed, so an app using newer
+ * SDL headers with an older SDL build will still get a reasonable default
+ * (0.0f) for an axis it knows about but the SDL build doesn't.
+ *
  * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_PenTipEvent
@@ -727,9 +733,12 @@ typedef struct SDL_PenTipEvent
     Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;  /**< The window with pen focus, if any */
     SDL_PenID which;        /**< The pen instance id */
-    Uint8 tip;              /**< SDL_PEN_TIP_INK when using a regular pen tip, or SDL_PEN_TIP_ERASER if the pen is being used as an eraser (e.g., flipped to use the eraser tip)  */
     Uint8 state;            /**< SDL_PRESSED on SDL_EVENT_PEN_DOWN and SDL_RELEASED on SDL_EVENT_PEN_UP */
-    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.), SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
+    SDL_PenInputFlags pen_state;   /**< Pen button masks (SDL_PEN_INPUT(1) is the
+                                        first button, SDL_PEN_INPUT(2) the second, etc),
+                                        SDL_PEN_INPUT_DOWN_MASK is set if the pen is touching
+                                        the surface, and SDL_PEN_INPUT_ERASER_TIP_MASK is set
+                                        if the pen is (used as) an eraser. */
     float x;                /**< X coordinate, relative to window */
     float y;                /**< Y coordinate, relative to window */
     float axes[SDL_PEN_NUM_AXES];   /**< Pen axes such as pressure and tilt (ordered as per SDL_PenAxis) */
@@ -738,6 +747,12 @@ typedef struct SDL_PenTipEvent
 /**
  * Pressure-sensitive pen motion / pressure / angle event structure
  * (event.pmotion.*)
+ *
+ * Note that `axes` is an array of `SDL_PEN_NUM_AXES` items. This number may
+ * increase in future SDL releases. Since there is space in SDL's event union
+ * to allow for this, the extra space will be zeroed, so an app using newer
+ * SDL headers with an older SDL build will still get a reasonable default
+ * (0.0f) for an axis it knows about but the SDL build doesn't.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -749,8 +764,11 @@ typedef struct SDL_PenMotionEvent
     SDL_WindowID windowID;  /**< The window with pen focus, if any */
     SDL_PenID which;        /**< The pen instance id */
     Uint8 padding1;
-    Uint8 padding2;
-    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.), SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
+    SDL_PenInputFlags pen_state;   /**< Pen button masks (SDL_PEN_INPUT(1) is the
+                                        first button, SDL_PEN_INPUT(2) the second, etc),
+                                        SDL_PEN_INPUT_DOWN_MASK is set if the pen is touching
+                                        the surface, and SDL_PEN_INPUT_ERASER_TIP_MASK is set
+                                        if the pen is (used as) an eraser. */
     float x;                /**< X coordinate, relative to window */
     float y;                /**< Y coordinate, relative to window */
     float axes[SDL_PEN_NUM_AXES];   /**< Pen axes such as pressure and tilt (ordered as per SDL_PenAxis) */
@@ -758,6 +776,12 @@ typedef struct SDL_PenMotionEvent
 
 /**
  * Pressure-sensitive pen button event structure (event.pbutton.*)
+ *
+ * Note that `axes` is an array of `SDL_PEN_NUM_AXES` items. This number may
+ * increase in future SDL releases. Since there is space in SDL's event union
+ * to allow for this, the extra space will be zeroed, so an app using newer
+ * SDL headers with an older SDL build will still get a reasonable default
+ * (0.0f) for an axis it knows about but the SDL build doesn't.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -770,7 +794,11 @@ typedef struct SDL_PenButtonEvent
     SDL_PenID which;        /**< The pen instance id */
     Uint8 button;           /**< The pen button index (1 represents the pen tip for compatibility with mouse events) */
     Uint8 state;            /**< SDL_PRESSED or SDL_RELEASED */
-    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.), SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
+    SDL_PenInputFlags pen_state;   /**< Pen button masks (SDL_PEN_INPUT(1) is the
+                                        first button, SDL_PEN_INPUT(2) the second, etc),
+                                        SDL_PEN_INPUT_DOWN_MASK is set if the pen is touching
+                                        the surface, and SDL_PEN_INPUT_ERASER_TIP_MASK is set
+                                        if the pen is (used as) an eraser. */
     float x;                /**< X coordinate, relative to window */
     float y;                /**< Y coordinate, relative to window */
     float axes[SDL_PEN_NUM_AXES]; /**< Pen axes such as pressure and tilt (ordered as per SDL_PenAxis) */

@@ -354,12 +354,10 @@ SDL3_0.0.0 {
     SDL_GetNumberProperty;
     SDL_GetOriginalMemoryFunctions;
     SDL_GetPathInfo;
-    SDL_GetPenCapabilities;
     SDL_GetPenFromGUID;
-    SDL_GetPenGUID;
+    SDL_GetPenInfo;
     SDL_GetPenName;
     SDL_GetPenStatus;
-    SDL_GetPenType;
     SDL_GetPens;
     SDL_GetPerformanceCounter;
     SDL_GetPerformanceFrequency;

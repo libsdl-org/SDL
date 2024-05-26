@@ -332,7 +332,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     case XI_RawMotion:
     {
         const XIRawEvent *rawev = (const XIRawEvent *)cookie->data;
-        const SDL_bool is_pen = X11_PenIDFromDeviceID(rawev->sourceid) != SDL_PEN_INVALID;
+        const SDL_bool is_pen = X11_PenIDFromDeviceID(rawev->sourceid) != 0;
         SDL_Mouse *mouse = SDL_GetMouse();
         SDL_XInput2DeviceInfo *devinfo;
         double coords[2];
