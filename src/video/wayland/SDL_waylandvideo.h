@@ -33,7 +33,6 @@
 
 struct xkb_context;
 struct SDL_WaylandInput;
-struct SDL_WaylandTabletManager;
 
 typedef struct
 {
@@ -84,10 +83,10 @@ struct SDL_VideoData
     struct wp_alpha_modifier_v1 *wp_alpha_modifier_v1;
     struct kde_output_order_v1 *kde_output_order;
     struct frog_color_management_factory_v1 *frog_color_management_factory_v1;
+    struct zwp_tablet_manager_v2 *tablet_manager;
 
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
-    struct SDL_WaylandTabletManager *tablet_manager;
     struct wl_list output_list;
     struct wl_list output_order;
 

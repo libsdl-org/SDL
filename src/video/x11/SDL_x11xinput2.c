@@ -274,18 +274,6 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
 
     return devinfo;
 }
-
-static void xinput2_pen_ensure_window(SDL_VideoDevice *_this, const SDL_Pen *pen, Window window)
-{
-    /* When "flipping" a Wacom eraser pen, we get an XI_DeviceChanged event
-     * with the newly-activated pen, but this event is global for the display.
-     * We won't get a window until the pen starts triggering motion or
-     * button events, so we instead hook the pen to its window at that point. */
-    const SDL_WindowData *windowdata = X11_FindWindow(_this, window);
-    if (windowdata) {
-        SDL_SendPenWindowEvent(0, pen->header.id, windowdata->window);
-    }
-}
 #endif
 
 void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
@@ -303,6 +291,14 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         const XIHierarchyEvent *hierev = (const XIHierarchyEvent *)cookie->data;
         int i;
         for (i = 0; i < hierev->num_info; i++) {
+            // pen stuff...
+            if ((hierev->info[i].flags & (XISlaveRemoved | XIDeviceDisabled)) != 0) {
+                X11_RemovePenByDeviceID(hierev->info[i].deviceid);  // it's okay if this thing isn't actually a pen, it'll handle it.
+            } else if ((hierev->info[i].flags & (XISlaveAdded | XIDeviceEnabled)) != 0) {
+                X11_MaybeAddPenByDeviceID(_this, hierev->info[i].deviceid);  // this will do more checks to make sure this is valid.
+            }
+
+            // not pen stuff...
             if (hierev->info[i].flags & XISlaveRemoved) {
                 xinput2_remove_device_info(videodata, hierev->info[i].deviceid);
             }
@@ -310,29 +306,14 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         videodata->xinput_hierarchy_changed = SDL_TRUE;
     } break;
 
-    case XI_PropertyEvent:
-    case XI_DeviceChanged:
-    {
-        // FIXME: We shouldn't rescan all devices for pen changes every time a property or active slave changes
-        X11_InitPen(_this);
-    } break;
-
-    case XI_Enter:
-    case XI_Leave:
-    {
-        const XIEnterEvent *enterev = (const XIEnterEvent *)cookie->data;
-        const SDL_WindowData *windowdata = X11_FindWindow(_this, enterev->event);
-        const SDL_Pen *pen = SDL_GetPenPtr(X11_PenIDFromDeviceID(enterev->sourceid));
-        SDL_Window *window = (windowdata && (cookie->evtype == XI_Enter)) ? windowdata->window : NULL;
-        if (pen) {
-            SDL_SendPenWindowEvent(0, pen->header.id, window);
-        }
-    } break;
+    // !!! FIXME: the pen code used to rescan all devices here, but we can do this device-by-device with XI_HierarchyChanged. When do these events fire and why?
+    //case XI_PropertyEvent:
+    //case XI_DeviceChanged:
 
     case XI_RawMotion:
     {
         const XIRawEvent *rawev = (const XIRawEvent *)cookie->data;
-        const SDL_bool is_pen = X11_PenIDFromDeviceID(rawev->sourceid) != SDL_PEN_INVALID;
+        const SDL_bool is_pen = X11_FindPenByDeviceID(rawev->sourceid) != NULL;
         SDL_Mouse *mouse = SDL_GetMouse();
         SDL_XInput2DeviceInfo *devinfo;
         double coords[2];
@@ -341,10 +322,8 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 
         videodata->global_mouse_changed = SDL_TRUE;
         if (is_pen) {
-            break; /* Pens check for XI_Motion instead */
+            break; // Pens check for XI_Motion instead
         }
-
-        /* Non-pen: */
 
         if (!mouse->relative_mode || mouse->relative_mode_warp) {
             break;
@@ -426,31 +405,17 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     case XI_ButtonRelease:
     {
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
-        const SDL_Pen *pen = SDL_GetPenPtr(X11_PenIDFromDeviceID(xev->deviceid));
+        X11_PenHandle *pen = X11_FindPenByDeviceID(xev->deviceid);
         const int button = xev->detail;
         const SDL_bool pressed = (cookie->evtype == XI_ButtonPress) ? SDL_TRUE : SDL_FALSE;
 
         if (pen) {
-            xinput2_pen_ensure_window(_this, pen, xev->event);
-
-            /* Only report button event; if there was also pen movement / pressure changes, we expect
-               an XI_Motion event first anyway */
-            if (button == 1) {
-                /* button 1 is the pen tip */
-                if (pressed && SDL_PenPerformHitTest()) {
-                    /* Check whether we should handle window resize / move events */
-                    SDL_WindowData *windowdata = X11_FindWindow(_this, xev->event);
-                    if (windowdata && X11_TriggerHitTestAction(_this, windowdata, pen->last.x, pen->last.y)) {
-                        SDL_SendWindowEvent(windowdata->window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
-                        break; /* Don't pass on this event */
-                    }
-                }
-                SDL_SendPenTipEvent(0, pen->header.id,
-                                    pressed ? SDL_PRESSED : SDL_RELEASED);
+            // Only report button event; if there was also pen movement / pressure changes, we expect an XI_Motion event first anyway.
+            SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            if (button == 1) { // button 1 is the pen tip
+                SDL_SendPenTouch(0, pen->pen, window, pressed ? SDL_PRESSED : SDL_RELEASED, pen->is_eraser);
             } else {
-                SDL_SendPenButton(0, pen->header.id,
-                                  pressed ? SDL_PRESSED : SDL_RELEASED,
-                                  button - 1);
+                SDL_SendPenButton(0, pen->pen, window, pressed ? SDL_PRESSED : SDL_RELEASED, button - 1);
             }
         } else {
             /* Otherwise assume a regular mouse */
@@ -475,7 +440,6 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     case XI_Motion:
     {
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
-        const SDL_Pen *pen = SDL_GetPenPtr(X11_PenIDFromDeviceID(xev->deviceid));
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
         SDL_bool pointer_emulated = ((xev->flags & XIPointerEmulated) != 0);
 #else
@@ -489,25 +453,20 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             break;
         }
 
+        X11_PenHandle *pen = X11_FindPenByDeviceID(xev->deviceid);
         if (pen) {
-            SDL_PenStatusInfo pen_status;
+            SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            SDL_SendPenMotion(0, pen->pen, window, (float) xev->event_x, (float) xev->event_y);
 
-            pen_status.x = (float)xev->event_x;
-            pen_status.y = (float)xev->event_y;
+            float axes[SDL_PEN_NUM_AXES];
+            X11_PenAxesFromValuators(pen, xev->valuators.values, xev->valuators.mask, xev->valuators.mask_len, axes);
 
-            X11_PenAxesFromValuators(pen,
-                                     xev->valuators.values, xev->valuators.mask, xev->valuators.mask_len,
-                                     &pen_status.axes[0]);
-
-            xinput2_pen_ensure_window(_this, pen, xev->event);
-
-            SDL_SendPenMotion(0, pen->header.id,
-                              SDL_TRUE,
-                              &pen_status);
-            break;
-        }
-
-        if (!pointer_emulated) {
+            for (int i = 0; i < SDL_arraysize(axes); i++) {
+                if (pen->valuator_for_axis[i] != SDL_X11_PEN_AXIS_VALUATOR_MISSING) {
+                    SDL_SendPenAxis(0, pen->pen, window, (SDL_PenAxis) i, axes[i]);
+                }
+            }
+        } else if (!pointer_emulated) {
             SDL_Mouse *mouse = SDL_GetMouse();
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);

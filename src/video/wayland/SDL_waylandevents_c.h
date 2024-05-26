@@ -41,41 +41,11 @@ enum SDL_WaylandAxisEvent
 
 struct SDL_WaylandTabletSeat;
 
-struct SDL_WaylandTabletObjectListNode
+typedef struct SDL_WaylandTabletInput
 {
-    void *object;
-    struct SDL_WaylandTabletObjectListNode *next;
-};
-
-struct SDL_WaylandTabletInput
-{
-    struct SDL_WaylandInput *sdlWaylandInput;
+    struct SDL_WaylandInput *input;
     struct zwp_tablet_seat_v2 *seat;
-
-    struct SDL_WaylandTabletObjectListNode *tablets;
-    struct SDL_WaylandTabletObjectListNode *tools;
-    struct SDL_WaylandTabletObjectListNode *pads;
-
-    Uint32 id;
-    Uint32 num_pens; /* next pen ID is num_pens+1 */
-    struct SDL_WaylandCurrentPen
-    {
-        SDL_Pen *builder;                /* pen that is being defined or receiving updates, if any */
-        SDL_bool builder_guid_complete;  /* have complete/precise GUID information */
-        SDL_PenStatusInfo update_status; /* collects pen update information before sending event */
-	Uint16 buttons_pressed;        /* Mask of newly pressed buttons, plus SDL_PEN_DOWN_MASK for PEN_DOWN */
-        Uint16 buttons_released;       /* Mask of newly pressed buttons, plus SDL_PEN_DOWN_MASK for PEN_UP */
-        Uint32 serial;                 /* Most recent serial event number observed, or 0 */
-        SDL_WindowData *update_window; /* NULL while no event is in progress, otherwise the affected window */
-    } current_pen;
-
-    SDL_WindowData *tool_focus;
-    uint32_t tool_prox_serial;
-
-    /* Last motion end location (kept separate from sx_w, sy_w for the mouse pointer) */
-    wl_fixed_t sx_w;
-    wl_fixed_t sy_w;
-};
+} SDL_WaylandTabletInput;
 
 typedef struct
 {
@@ -169,7 +139,7 @@ struct SDL_WaylandInput
 
     SDL_WaylandKeyboardRepeat keyboard_repeat;
 
-    struct SDL_WaylandTabletInput *tablet;
+    SDL_WaylandTabletInput *tablet_input;
 
     SDL_bool keyboard_is_virtual;
 
@@ -178,11 +148,6 @@ struct SDL_WaylandInput
     SDL_Keymod locked_modifiers;
 };
 
-struct SDL_WaylandTool
-{
-    SDL_PenID penid;
-    struct SDL_WaylandTabletInput *tablet;
-};
 
 extern Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandInput *input, Uint32 wl_timestamp_ms);
 
@@ -209,8 +174,8 @@ extern int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_W
 extern int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input);
 extern int Wayland_input_ungrab_keyboard(SDL_Window *window);
 
-extern void Wayland_input_add_tablet(struct SDL_WaylandInput *input, struct SDL_WaylandTabletManager *tablet_manager);
-extern void Wayland_input_destroy_tablet(struct SDL_WaylandInput *input);
+extern void Wayland_input_init_tablet_support(struct SDL_WaylandInput *input, struct zwp_tablet_manager_v2 *tablet_manager);
+extern void Wayland_input_quit_tablet_support(struct SDL_WaylandInput *input);
 
 extern void Wayland_RegisterTimestampListeners(struct SDL_WaylandInput *input);
 extern void Wayland_CreateCursorShapeDevice(struct SDL_WaylandInput *input);
