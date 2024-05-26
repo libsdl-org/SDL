@@ -748,7 +748,7 @@ SDL_DYNAPI_PROC(int,SDL_SetPaletteColors,(SDL_Palette *a, const SDL_Color *b, in
 SDL_DYNAPI_PROC(int,SDL_SetPixelFormatPalette,(SDL_PixelFormat *a, SDL_Palette *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetPrimarySelectionText,(const char *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SetProperty,(SDL_PropertiesID a, const char *b, void *c),(a,b,c),return)
-SDL_DYNAPI_PROC(int,SDL_SetPropertyWithCleanup,(SDL_PropertiesID a, const char *b, void *c, void (SDLCALL *d)(void *userdata, void *value), void *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(int,SDL_SetPropertyWithCleanup,(SDL_PropertiesID a, const char *b, void *c, SDL_CleanupPropertyCallback d, void *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_SetRelativeMouseMode,(SDL_bool a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SetRenderClipRect,(SDL_Renderer *a, const SDL_Rect *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetRenderColorScale,(SDL_Renderer *a, float b),(a,b),return)

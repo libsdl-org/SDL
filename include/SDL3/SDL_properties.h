@@ -146,11 +146,40 @@ extern SDL_DECLSPEC int SDLCALL SDL_LockProperties(SDL_PropertiesID props);
 extern SDL_DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
 
 /**
+ * A callback used to free resources when a property is deleted.
+ *
+ * This should release any resources associated with `value` that are
+ * no longer needed.
+ *
+ * This callback is set per-property. Different properties in the same
+ * set can have different cleanup callbacks.
+ *
+ * This callback will be called _during_ SDL_SetPropertyWithCleanup if the
+ * function fails for any reason.
+ *
+ * \param userdata an app-defined pointer passed to the callback.
+ * \param value the pointer assigned to the property to clean up.
+ *
+ * \threadsafety This callback may fire without any locks held; if this is
+ *               a concern, the app should provide its own locking.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetPropertyWithCleanup
+ */
+typedef void (SDLCALL *SDL_CleanupPropertyCallback)(void *userdata, void *value);
+
+/**
  * Set a property on a set of properties with a cleanup function that is
  * called when the property is deleted.
  *
  * The cleanup function is also called if setting the property fails for any
  * reason.
+ *
+ * For simply setting basic data types, like numbers, bools, or strings,
+ * use SDL_SetNumberProperty, SDL_SetBooleanProperty, or SDL_SetStringProperty
+ * instead, as those functions will handle cleanup on your behalf. This
+ * function is only for more complex, custom data.
  *
  * \param props the properties to modify
  * \param name the name of the property to modify
@@ -167,8 +196,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
  *
  * \sa SDL_GetProperty
  * \sa SDL_SetProperty
+ * \sa SDL_CleanupPropertyCallback
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, void (SDLCALL *cleanup)(void *userdata, void *value), void *userdata);
+extern SDL_DECLSPEC int SDLCALL SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata);
 
 /**
  * Set a property on a set of properties.
@@ -426,6 +456,22 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetBooleanProperty(SDL_PropertiesID pro
  */
 extern SDL_DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char *name);
 
+/**
+ * A callback used to enumerate all properties set in an SDL_PropertiesID.
+ *
+ * This callback is called from SDL_EnumerateProperties(), and is called once
+ * per property in the set.
+ *
+ * \param userdata an app-defined pointer passed to the callback.
+ * \param props the SDL_PropertiesID that is being enumerated.
+ * \param name the next property name in the enumeration.
+ *
+ * \threadsafety SDL_EnumerateProperties holds a lock on `props` during this callback.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_EnumerateProperties
+ */
 typedef void (SDLCALL *SDL_EnumeratePropertiesCallback)(void *userdata, SDL_PropertiesID props, const char *name);
 
 /**

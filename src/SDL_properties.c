@@ -38,7 +38,7 @@ typedef struct
 
     char *string_storage;
 
-    void (SDLCALL *cleanup)(void *userdata, void *value);
+    SDL_CleanupPropertyCallback cleanup;
     void *userdata;
 } SDL_Property;
 
@@ -338,7 +338,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     return result;
 }
 
-int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, void (SDLCALL *cleanup)(void *userdata, void *value), void *userdata)
+int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata)
 {
     SDL_Property *property;
 
