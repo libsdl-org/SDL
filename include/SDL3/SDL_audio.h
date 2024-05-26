@@ -420,8 +420,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  * This only returns a list of physical devices; it will not have any device
  * IDs returned by SDL_OpenAudioDevice().
  *
- * If this function returns NULL, to signify an error, `*count` will be set
- * to zero.
+ * If this function returns NULL, to signify an error, `*count` will be set to
+ * zero.
  *
  * \param count a pointer filled in with the number of devices returned. NULL
  *              is allowed.
@@ -449,8 +449,8 @@ extern SDL_DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioOutputDevices(int *co
  * This only returns a list of physical devices; it will not have any device
  * IDs returned by SDL_OpenAudioDevice().
  *
- * If this function returns NULL, to signify an error, `*count` will be set
- * to zero.
+ * If this function returns NULL, to signify an error, `*count` will be set to
+ * zero.
  *
  * \param count a pointer filled in with the number of devices returned. NULL
  *              is allowed.
@@ -1325,8 +1325,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream)
  * The `spec` parameter represents the app's side of the audio stream. That
  * is, for recording audio, this will be the output format, and for playing
  * audio, this will be the input format. If spec is NULL, the system will
- * choose the format, and the app can use SDL_GetAudioStreamFormat() to
- * obtain this information later.
+ * choose the format, and the app can use SDL_GetAudioStreamFormat() to obtain
+ * this information later.
  *
  * If you don't care about opening a specific audio device, you can (and
  * probably _should_), use SDL_AUDIO_DEVICE_DEFAULT_OUTPUT for playback and
