@@ -84,7 +84,7 @@ typedef enum SDL_MouseWheelDirection
 } SDL_MouseWheelDirection;
 
 /**
- * A bitmask used when testing if a mouse's buttons are pressed.
+ * A bitmask of pressed mouse buttons, as reported by SDL_GetMouseState, etc.
  *
  * - Button 1: Left mouse button
  * - Button 2: Middle mouse button
