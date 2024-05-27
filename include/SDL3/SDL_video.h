@@ -1804,10 +1804,18 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_GetWindowSurface(SDL_Window *window
 /**
  * Toggle VSync for the window surface.
  *
- * When a window surface is created, vsync defaults to SDL_WINDOW_SURFACE_VSYNC_DISABLED.
+ * When a window surface is created, vsync defaults to
+ * SDL_WINDOW_SURFACE_VSYNC_DISABLED.
  *
  * \param window the window
- * \param vsync the vertical refresh sync interval, 1 to synchronize present with every vertical refresh, 2 to synchronize present with every second vertical refresh, etc., SDL_WINDOW_SURFACE_VSYNC_ADAPTIVE for late swap tearing (adaptive vsync), or SDL_WINDOW_SURFACE_VSYNC_DISABLED to disable. Not every value is supported by every driver, so you should check the return value to see whether the requested setting is supported.
+ * \param vsync the vertical refresh sync interval, 1 to synchronize present
+ *              with every vertical refresh, 2 to synchronize present with
+ *              every second vertical refresh, etc.,
+ *              SDL_WINDOW_SURFACE_VSYNC_ADAPTIVE for late swap tearing
+ *              (adaptive vsync), or SDL_WINDOW_SURFACE_VSYNC_DISABLED to
+ *              disable. Not every value is supported by every driver, so you
+ *              should check the return value to see whether the requested
+ *              setting is supported.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
