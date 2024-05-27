@@ -279,6 +279,11 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
+    if (!callback_ms && !callback_ns) {
+        SDL_InvalidParamError("callback");
+        return 0;
+    }
+
     SDL_LockSpinlock(&data->lock);
     if (!SDL_AtomicGet(&data->active)) {
         if (SDL_InitTimers() < 0) {
@@ -349,6 +354,10 @@ int SDL_RemoveTimer(SDL_TimerID id)
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
     SDL_bool canceled = SDL_FALSE;
+
+    if (!id) {
+        return SDL_InvalidParamError("id");
+    }
 
     /* Find the timer */
     SDL_LockMutex(data->timermap_lock);
@@ -439,6 +448,11 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *entry;
 
+    if (!callback_ms && !callback_ns) {
+        SDL_InvalidParamError("callback");
+        return 0;
+    }
+
     entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
     if (!entry) {
         return 0;
@@ -473,6 +487,10 @@ int SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
+
+    if (!id) {
+        return SDL_InvalidParamError("id");
+    }
 
     /* Find the timer */
     prev = NULL;
