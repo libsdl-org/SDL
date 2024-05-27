@@ -30,6 +30,14 @@
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
 
+/* This must match the definition of EGL_DISPMANX_WINDOW_T in EGL/eglplatform.h,
+   and is defined here to allow compiling with standard headers. */
+typedef struct {
+    DISPMANX_ELEMENT_HANDLE_T element;
+    int width;
+    int height;
+} SDL_EGL_DISPMANX_WINDOW_T;
+
 typedef struct SDL_VideoData
 {
     uint32_t egl_refcount; /* OpenGL ES reference count              */
@@ -42,7 +50,7 @@ typedef struct SDL_DisplayData
 
 typedef struct SDL_WindowData
 {
-    EGL_DISPMANX_WINDOW_T dispman_window;
+    SDL_EGL_DISPMANX_WINDOW_T dispman_window;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif

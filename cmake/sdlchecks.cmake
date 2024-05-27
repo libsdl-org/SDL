@@ -1277,13 +1277,18 @@ endmacro()
 # - n/a
 macro(CheckRPI)
   if(SDL_RPI)
-    pkg_check_modules(VIDEO_RPI bcm_host brcmegl)
+    pkg_check_modules(VIDEO_RPI bcm_host)
     if (NOT VIDEO_RPI_FOUND)
       set(VIDEO_RPI_INCLUDE_DIRS "/opt/vc/include" "/opt/vc/include/interface/vcos/pthreads" "/opt/vc/include/interface/vmcs_host/linux/" )
       set(VIDEO_RPI_LIBRARY_DIRS "/opt/vc/lib" )
       set(VIDEO_RPI_LIBRARIES bcm_host )
-      set(VIDEO_RPI_LDFLAGS "-Wl,-rpath,/opt/vc/lib")
     endif()
+
+    pkg_check_modules(VIDEO_RPI_EGL brcmegl)
+    if (NOT VIDEO_RPI_EGL_FOUND)
+      set(VIDEO_RPI_EGL_LDFLAGS "-Wl,-rpath,/opt/vc/lib")
+    endif()
+
     listtostr(VIDEO_RPI_INCLUDE_DIRS VIDEO_RPI_INCLUDE_FLAGS "-I")
     listtostr(VIDEO_RPI_LIBRARY_DIRS VIDEO_RPI_LIBRARY_FLAGS "-L")
 
@@ -1292,9 +1297,7 @@ macro(CheckRPI)
     set(CMAKE_REQUIRED_LIBRARIES "${VIDEO_RPI_LIBRARIES}")
     check_c_source_compiles("
         #include <bcm_host.h>
-        #include <EGL/eglplatform.h>
         int main(int argc, char **argv) {
-          EGL_DISPMANX_WINDOW_T window;
           bcm_host_init();
         }" HAVE_RPI)
     set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
@@ -1308,7 +1311,7 @@ macro(CheckRPI)
       list(APPEND EXTRA_LIBS ${VIDEO_RPI_LIBRARIES})
       # !!! FIXME: shouldn't be using CMAKE_C_FLAGS, right?
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VIDEO_RPI_INCLUDE_FLAGS} ${VIDEO_RPI_LIBRARY_FLAGS}")
-      list(APPEND EXTRA_LDFLAGS ${VIDEO_RPI_LDFLAGS})
+      list(APPEND EXTRA_LDFLAGS ${VIDEO_RPI_LDFLAGS} ${VIDEO_RPI_EGL_LDFLAGS})
     endif()
   endif()
 endmacro()
