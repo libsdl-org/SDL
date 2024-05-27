@@ -22,6 +22,7 @@
 
 #ifdef SDL_TIME_PSP
 
+#include <psptypes.h>
 #include <psprtc.h>
 #include <psputility_sysparam.h>
 
