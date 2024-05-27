@@ -188,7 +188,7 @@ typedef int (SDLCALL *SDL_AppIterate_func)(void *appstate);
 typedef int (SDLCALL *SDL_AppEvent_func)(void *appstate, const SDL_Event *event);
 typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
 
-/**
+/*
  * You can (optionally!) define SDL_MAIN_USE_CALLBACKS before including
  * SDL_main.h, and then your application will _not_ have a standard
  * "main" entry point. Instead, it will operate as a collection of
@@ -213,6 +213,49 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
  * the functions listed below in your program.
  */
 #ifdef SDL_MAIN_USE_CALLBACKS
+
+/**
+ * Value that requests that the app continue from the main callbacks.
+ *
+ * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value,
+ * the program will continue to run. This is the normal return value case.
+ *
+ * This is always 0; using this macro may be clearer, but is not required.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_MAIN_CALLBACK_CONTINUE 0
+
+/**
+ * Value that requests termination with error from the main callbacks.
+ *
+ * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value,
+ * the program will terminate and report failure to the operating system.
+ *
+ * What that failure looks like is platform-dependent. On Unix, for example,
+ * the process error code will be non-zero.
+ *
+ * This is always -1; using this macro may be clearer, but is not required.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_MAIN_CALLBACK_EXIT_FAILURE -1
+
+/**
+ * Value that requests termination with success from the main callbacks.
+ *
+ * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value,
+ * the program will terminate and report success to the operating system.
+ *
+ * What that success looks like is platform-dependent. On Unix, for example,
+ * the process error code will be zero.
+ *
+ * This is always 1; using this macro may be clearer, but is not required.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
+#define SDL_MAIN_CALLBACK_EXIT_SUCCESS 1
+
 
 /**
  * App-implemented initial entry point for SDL_MAIN_USE_CALLBACKS apps.
