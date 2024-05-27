@@ -31,7 +31,7 @@ typedef struct SDL_Timer
 {
     SDL_TimerID timerID;
     SDL_TimerCallback callback;
-    void *param;
+    void *userdata;
     Uint64 interval;
     Uint64 scheduled;
     SDL_AtomicInt canceled;
@@ -161,7 +161,7 @@ static int SDLCALL SDL_TimerThread(void *_data)
                 interval = 0;
             } else {
                 /* FIXME: We could potentially support sub-millisecond timers now */
-                interval = SDL_MS_TO_NS(current->callback((Uint32)SDL_NS_TO_MS(current->interval), current->param));
+                interval = SDL_MS_TO_NS(current->callback(current->userdata, current->timerID, (Uint32)SDL_NS_TO_MS(current->interval)));
             }
 
             if (interval > 0) {
@@ -269,7 +269,7 @@ void SDL_QuitTimers(void)
     }
 }
 
-SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
+SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *userdata)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_Timer *timer;
@@ -299,7 +299,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     }
     timer->timerID = SDL_GetNextObjectID();
     timer->callback = callback;
-    timer->param = param;
+    timer->userdata = userdata;
     timer->interval = SDL_MS_TO_NS(interval);
     timer->scheduled = SDL_GetTicksNS() + timer->interval;
     SDL_AtomicSet(&timer->canceled, 0);
@@ -329,7 +329,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     return entry->timerID;
 }
 
-SDL_bool SDL_RemoveTimer(SDL_TimerID id)
+int SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
@@ -357,7 +357,11 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
         }
         SDL_free(entry);
     }
-    return canceled;
+    if (canceled) {
+        return 0;
+    } else {
+        return SDL_SetError("Timer not found");
+    }
 }
 
 #else
@@ -371,7 +375,7 @@ typedef struct SDL_TimerMap
     int timeoutID;
     Uint32 interval;
     SDL_TimerCallback callback;
-    void *param;
+    void *userdata;
     struct SDL_TimerMap *next;
 } SDL_TimerMap;
 
@@ -385,7 +389,7 @@ static SDL_TimerData SDL_timer_data;
 static void SDL_Emscripten_TimerHelper(void *userdata)
 {
     SDL_TimerMap *entry = (SDL_TimerMap *)userdata;
-    entry->interval = entry->callback(entry->interval, entry->param);
+    entry->interval = entry->callback(entry->userdata, entry->timerID, entry->interval);
     if (entry->interval > 0) {
         entry->timeoutID = emscripten_set_timeout(&SDL_Emscripten_TimerHelper,
                                                   entry->interval,
@@ -410,7 +414,7 @@ void SDL_QuitTimers(void)
     }
 }
 
-SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
+SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *userdata)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *entry;
@@ -421,7 +425,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     }
     entry->timerID = SDL_GetNextObjectID();
     entry->callback = callback;
-    entry->param = param;
+    entry->userdata = userdata;
     entry->interval = interval;
 
     entry->timeoutID = emscripten_set_timeout(&SDL_Emscripten_TimerHelper,
@@ -434,7 +438,7 @@ SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *para
     return entry->timerID;
 }
 
-SDL_bool SDL_RemoveTimer(SDL_TimerID id)
+int SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
@@ -455,10 +459,10 @@ SDL_bool SDL_RemoveTimer(SDL_TimerID id)
     if (entry) {
         emscripten_clear_timeout(entry->timeoutID);
         SDL_free(entry);
-
-        return SDL_TRUE;
+        return 0;
+    } else {
+        return SDL_SetError("Timer not found");
     }
-    return SDL_FALSE;
 }
 
 #endif /* !defined(SDL_PLATFORM_EMSCRIPTEN) || !SDL_THREADS_DISABLED */

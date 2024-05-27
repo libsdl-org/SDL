@@ -1677,6 +1677,13 @@ If you were using this macro for other things besides SDL ticks values, you can 
 #define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
 ```
 
+The callback passed to SDL_AddTimer() has changed parameters to:
+```c
+Uint32 SDLCALL TimerCallback(void *userdata, SDL_TimerID timerID, Uint32 interval);
+````
+
+The return value of SDL_RemoveTimer() has changed to the standard int error code.
+
 ## SDL_touch.h
 
 SDL_GetTouchName is replaced with SDL_GetTouchDeviceName(), which takes an SDL_TouchID instead of an index.

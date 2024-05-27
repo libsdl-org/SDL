@@ -100,7 +100,7 @@ Run(void *data)
 }
 
 #ifndef _WIN32
-static Uint32 hit_timeout(Uint32 interval, void *param) {
+static Uint32 hit_timeout(void *param, SDL_TimerID timerID, Uint32 interval) {
     SDL_Log("Hit timeout! Sending SIGINT!");
     (void)raise(SIGINT);
     return 0;
