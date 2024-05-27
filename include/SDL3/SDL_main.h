@@ -217,8 +217,8 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
 /**
  * Value that requests that the app continue from the main callbacks.
  *
- * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value,
- * the program will continue to run. This is the normal return value case.
+ * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value, the
+ * program will continue to run. This is the normal return value case.
  *
  * This is always 0; using this macro may be clearer, but is not required.
  *
@@ -229,8 +229,8 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
 /**
  * Value that requests termination with error from the main callbacks.
  *
- * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value,
- * the program will terminate and report failure to the operating system.
+ * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value, the
+ * program will terminate and report failure to the operating system.
  *
  * What that failure looks like is platform-dependent. On Unix, for example,
  * the process error code will be non-zero.
@@ -244,8 +244,8 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
 /**
  * Value that requests termination with success from the main callbacks.
  *
- * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value,
- * the program will terminate and report success to the operating system.
+ * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value, the
+ * program will terminate and report success to the operating system.
  *
  * What that success looks like is platform-dependent. On Unix, for example,
  * the process error code will be zero.
