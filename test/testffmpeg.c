@@ -291,11 +291,11 @@ static SDL_PixelFormatEnum GetTextureFormat(enum AVPixelFormat format)
     case AV_PIX_FMT_RGB8:
         return SDL_PIXELFORMAT_RGB332;
     case AV_PIX_FMT_RGB444:
-        return SDL_PIXELFORMAT_RGB444;
+        return SDL_PIXELFORMAT_XRGB4444;
     case AV_PIX_FMT_RGB555:
-        return SDL_PIXELFORMAT_RGB555;
+        return SDL_PIXELFORMAT_XRGB1555;
     case AV_PIX_FMT_BGR555:
-        return SDL_PIXELFORMAT_BGR555;
+        return SDL_PIXELFORMAT_XBGR1555;
     case AV_PIX_FMT_RGB565:
         return SDL_PIXELFORMAT_RGB565;
     case AV_PIX_FMT_BGR565:

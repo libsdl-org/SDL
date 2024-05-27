@@ -48,7 +48,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 {
     SDL_VideoData *phdata = _this->driverdata;
     SDL_Surface *surface;
-    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_RGB444;
+    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_XRGB4444;
     int w, h;
 
     /* Free the old framebuffer surface */
