@@ -165,7 +165,7 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID,
  * timer interval. If the value returned from the callback is 0, the timer is
  * canceled.
  *
- * The callback is run on a separate thread.
+ * The callback is run on a separate thread, and for short timeouts can potentially be called before this function returns.
  *
  * Timers take into account the amount of time it took to execute the
  * callback. For example, if the callback took 250 ms to execute and returned
@@ -226,7 +226,7 @@ typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerI
  * timer interval. If the value returned from the callback is 0, the timer is
  * canceled.
  *
- * The callback is run on a separate thread.
+ * The callback is run on a separate thread, and for short timeouts can potentially be called before this function returns.
  *
  * Timers take into account the amount of time it took to execute the
  * callback. For example, if the callback took 250 ns to execute and returned
