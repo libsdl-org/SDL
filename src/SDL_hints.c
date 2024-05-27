@@ -61,23 +61,23 @@ static void SDLCALL CleanupHintProperty(void *userdata, void *value)
     SDL_free(hint);
 }
 
-SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
+int SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
 {
-    if (!name) {
-        return SDL_FALSE;
+    if (!name || !*name) {
+        return SDL_InvalidParamError("name");
     }
 
     const char *env = SDL_getenv(name);
-    if (env && priority < SDL_HINT_OVERRIDE) {
-        return SDL_FALSE;
+    if (env && (priority < SDL_HINT_OVERRIDE)) {
+        return SDL_SetError("An environment variable is taking priority");
     }
 
     const SDL_PropertiesID hints = GetHintProperties();
     if (!hints) {
-        return SDL_FALSE;
+        return -1;
     }
 
-    SDL_bool retval = SDL_FALSE;
+    int retval = -1;
 
     SDL_LockProperties(hints);
 
@@ -98,7 +98,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
                 SDL_free(old_value);
             }
             hint->priority = priority;
-            retval = SDL_TRUE;
+            retval = 0;
         }
     } else {  // Couldn't find the hint? Add a new one.
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
@@ -115,20 +115,20 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
     return retval;
 }
 
-SDL_bool SDL_ResetHint(const char *name)
+int SDL_ResetHint(const char *name)
 {
-    if (!name) {
-        return SDL_FALSE;
+    if (!name || !*name) {
+        return SDL_InvalidParamError("name");
     }
 
     const char *env = SDL_getenv(name);
 
     const SDL_PropertiesID hints = GetHintProperties();
     if (!hints) {
-        return SDL_FALSE;
+        return -1;
     }
 
-    SDL_bool retval = SDL_FALSE;
+    int retval = -1;
 
     SDL_LockProperties(hints);
 
@@ -145,7 +145,7 @@ SDL_bool SDL_ResetHint(const char *name)
         SDL_free(hint->value);
         hint->value = NULL;
         hint->priority = SDL_HINT_DEFAULT;
-        retval = SDL_TRUE;
+        retval = 0;
     }
 
     SDL_UnlockProperties(hints);
@@ -180,7 +180,7 @@ void SDL_ResetHints(void)
     SDL_EnumerateProperties(GetHintProperties(), ResetHintsCallback, NULL);
 }
 
-SDL_bool SDL_SetHint(const char *name, const char *value)
+int SDL_SetHint(const char *name, const char *value)
 {
     return SDL_SetHintWithPriority(name, value, SDL_HINT_NORMAL);
 }

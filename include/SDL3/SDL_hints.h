@@ -3741,7 +3741,7 @@ typedef enum SDL_HintPriority
  * \param name the hint to set
  * \param value the value of the hint variable
  * \param priority the SDL_HintPriority level for the hint
- * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
+ * \returns 0 if the hint was set, -1 on error.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3751,9 +3751,9 @@ typedef enum SDL_HintPriority
  * \sa SDL_ResetHint
  * \sa SDL_SetHint
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
-                                                             const char *value,
-                                                             SDL_HintPriority priority);
+extern SDL_DECLSPEC int SDLCALL SDL_SetHintWithPriority(const char *name,
+                                                        const char *value,
+                                                        SDL_HintPriority priority);
 
 /**
  * Set a hint with normal priority.
@@ -3764,7 +3764,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  *
  * \param name the hint to set
  * \param value the value of the hint variable
- * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
+ * \returns 0 if the hint was set, -1 on error.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3774,7 +3774,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \sa SDL_ResetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *value);
+extern SDL_DECLSPEC int SDLCALL SDL_SetHint(const char *name, const char *value);
 
 /**
  * Reset a hint to the default value.
@@ -3784,7 +3784,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *v
  * change.
  *
  * \param name the hint to set
- * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
+ * \returns 0 if the hint was set, -1 on error.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3793,7 +3793,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name, const char *v
  * \sa SDL_SetHint
  * \sa SDL_ResetHints
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
+extern SDL_DECLSPEC int SDLCALL SDL_ResetHint(const char *name);
 
 /**
  * Reset all hints to the default values.
