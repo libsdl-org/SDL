@@ -62,7 +62,9 @@ ticktock(Uint32 interval, void *param)
 static Uint32 SDLCALL
 callback(Uint32 interval, void *param)
 {
-    SDL_Log("Timer %" SDL_PRIu32 " : param = %d\n", interval, (int)(uintptr_t)param);
+    int value = (int)(uintptr_t)param;
+    SDL_assert( value == 1 || value == 2 || value == 3 );
+    SDL_Log("Timer %" SDL_PRIu32 " : param = %d\n", interval, value);
     return interval;
 }
 
