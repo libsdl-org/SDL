@@ -142,7 +142,7 @@ SDL_PixelFormatEnum HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
     case B_RGBA15:
     case B_RGB15_BIG:
     case B_RGBA15_BIG:
-        return SDL_PIXELFORMAT_RGB555;
+        return SDL_PIXELFORMAT_XRGB1555;
         break;
     case B_RGB16:
     case B_RGB16_BIG:

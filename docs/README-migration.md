@@ -1004,6 +1004,14 @@ The following functions have been renamed:
 * SDL_MasksToPixelFormatEnum() => SDL_GetPixelFormatEnumForMasks()
 * SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormatEnum()
 
+The following symbols have been renamed:
+* SDL_PIXELFORMAT_BGR444 => SDL_PIXELFORMAT_XBGR4444
+* SDL_PIXELFORMAT_BGR555 => SDL_PIXELFORMAT_XBGR1555
+* SDL_PIXELFORMAT_BGR888 => SDL_PIXELFORMAT_XBGR8888
+* SDL_PIXELFORMAT_RGB444 => SDL_PIXELFORMAT_XRGB4444
+* SDL_PIXELFORMAT_RGB555 => SDL_PIXELFORMAT_XRGB1555
+* SDL_PIXELFORMAT_RGB888 => SDL_PIXELFORMAT_XRGB8888
+
 The following macros have been removed:
 * SDL_Colour - use SDL_Color instead
 

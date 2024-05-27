@@ -386,7 +386,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
         switch (biBitCount) {
         case 15:
         case 16:
-            /* SDL_PIXELFORMAT_RGB555 or SDL_PIXELFORMAT_ARGB1555 if Amask */
+            /* SDL_PIXELFORMAT_XRGB1555 or SDL_PIXELFORMAT_ARGB1555 if Amask */
             Rmask = 0x7C00;
             Gmask = 0x03E0;
             Bmask = 0x001F;

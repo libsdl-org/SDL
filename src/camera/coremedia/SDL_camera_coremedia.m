@@ -47,7 +47,7 @@ static Uint32 CoreMediaFormatToSDL(FourCharCode fmt)
         #define CASE(x, y) case x: return y
         // the 16LE ones should use 16BE if we're on a Bigendian system like PowerPC,
         // but at current time there is no bigendian Apple platform that has CoreMedia.
-        CASE(kCMPixelFormat_16LE555, SDL_PIXELFORMAT_RGB555);
+        CASE(kCMPixelFormat_16LE555, SDL_PIXELFORMAT_XRGB1555);
         CASE(kCMPixelFormat_16LE5551, SDL_PIXELFORMAT_RGBA5551);
         CASE(kCMPixelFormat_16LE565, SDL_PIXELFORMAT_RGB565);
         CASE(kCMPixelFormat_24RGB, SDL_PIXELFORMAT_RGB24);
