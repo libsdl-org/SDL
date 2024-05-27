@@ -932,8 +932,8 @@ typedef Uint32 SDL_HapticID;
 /**
  * Get a list of currently connected haptic devices.
  *
- * \param count a pointer filled in with the number of haptic devices returned
- * \returns a 0 terminated array of haptic device instance IDs which should be
+ * \param[out] count a pointer filled in with the number of haptic devices returned
+ * \returns[own] a 0 terminated array of haptic device instance IDs which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
  *
@@ -971,7 +971,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetHapticInstanceName(SDL_HapticID i
  * and SDL_SetHapticAutocenter().
  *
  * \param instance_id the haptic device instance ID
- * \returns the device identifier or NULL on failure; call SDL_GetError() for
+ * \returns[own] the device identifier or NULL on failure; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1000,7 +1000,7 @@ extern SDL_DECLSPEC SDL_Haptic *SDLCALL SDL_GetHapticFromInstanceID(SDL_HapticID
 /**
  * Get the instance ID of an opened haptic device.
  *
- * \param haptic the SDL_Haptic device to query
+ * \param[inout] haptic the SDL_Haptic device to query
  * \returns the instance ID of the specified haptic device on success or 0 on
  *          failure; call SDL_GetError() for more information.
  *
@@ -1011,7 +1011,7 @@ extern SDL_DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticInstanceID(SDL_Haptic *hap
 /**
  * Get the implementation dependent name of a haptic device.
  *
- * \param haptic the SDL_Haptic obtained from SDL_OpenJoystick()
+ * \param[inout] haptic the SDL_Haptic obtained from SDL_OpenJoystick()
  * \returns the name of the selected haptic device. If no name can be found,
  *          this function returns NULL; call SDL_GetError() for more
  *          information.
@@ -1049,7 +1049,7 @@ extern SDL_DECLSPEC SDL_Haptic *SDLCALL SDL_OpenHapticFromMouse(void);
 /**
  * Query if a joystick has haptic features.
  *
- * \param joystick the SDL_Joystick to test for haptic capabilities
+ * \param[inout] joystick the SDL_Joystick to test for haptic capabilities
  * \returns SDL_TRUE if the joystick is haptic or SDL_FALSE if it isn't.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1069,8 +1069,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsJoystickHaptic(SDL_Joystick *joystick
  * device will also get unallocated and you'll be unable to use force feedback
  * on that device.
  *
- * \param joystick the SDL_Joystick to create a haptic device from
- * \returns a valid haptic device identifier on success or NULL on failure;
+ * \param[inout] joystick the SDL_Joystick to create a haptic device from
+ * \returns[own] a valid haptic device identifier on success or NULL on failure;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1083,7 +1083,7 @@ extern SDL_DECLSPEC SDL_Haptic *SDLCALL SDL_OpenHapticFromJoystick(SDL_Joystick 
 /**
  * Close a haptic device previously opened with SDL_OpenHaptic().
  *
- * \param haptic the SDL_Haptic device to close
+ * \param[inout] haptic the SDL_Haptic device to close
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1098,7 +1098,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseHaptic(SDL_Haptic *haptic);
  * approximation. Always check to see if your created effect was actually
  * created and do not rely solely on SDL_GetMaxHapticEffects().
  *
- * \param haptic the SDL_Haptic device to query
+ * \param[inout] haptic the SDL_Haptic device to query
  * \returns the number of effects the haptic device can store or a negative
  *          error code on failure; call SDL_GetError() for more information.
  *
@@ -1114,7 +1114,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetMaxHapticEffects(SDL_Haptic *haptic);
  *
  * This is not supported on all platforms, but will always return a value.
  *
- * \param haptic the SDL_Haptic device to query maximum playing effects
+ * \param[inout] haptic the SDL_Haptic device to query maximum playing effects
  * \returns the number of effects the haptic device can play at the same time
  *          or a negative error code on failure; call SDL_GetError() for more
  *          information.
@@ -1129,7 +1129,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetMaxHapticEffectsPlaying(SDL_Haptic *hapti
 /**
  * Get the haptic device's supported features in bitwise manner.
  *
- * \param haptic the SDL_Haptic device to query
+ * \param[inout] haptic the SDL_Haptic device to query
  * \returns a list of supported haptic features in bitwise manner (OR'd), or 0
  *          on failure; call SDL_GetError() for more information.
  *
@@ -1146,7 +1146,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetHapticFeatures(SDL_Haptic *haptic);
  * The number of haptic axes might be useful if working with the
  * SDL_HapticDirection effect.
  *
- * \param haptic the SDL_Haptic device to query
+ * \param[inout] haptic the SDL_Haptic device to query
  * \returns the number of axes on success or a negative error code on failure;
  *          call SDL_GetError() for more information.
  *
@@ -1157,8 +1157,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumHapticAxes(SDL_Haptic *haptic);
 /**
  * Check to see if an effect is supported by a haptic device.
  *
- * \param haptic the SDL_Haptic device to query
- * \param effect the desired effect to query
+ * \param[inout] haptic the SDL_Haptic device to query
+ * \param[in] effect the desired effect to query
  * \returns SDL_TRUE if the effect is supported or SDL_FALSE if it isn't.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1171,8 +1171,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HapticEffectSupported(SDL_Haptic *hapti
 /**
  * Create a new haptic effect on a specified device.
  *
- * \param haptic an SDL_Haptic device to create the effect on
- * \param effect an SDL_HapticEffect structure containing the properties of
+ * \param[inout] haptic an SDL_Haptic device to create the effect on
+ * \param[in] effect an SDL_HapticEffect structure containing the properties of
  *               the effect to create
  * \returns the ID of the effect on success or a negative error code on
  *          failure; call SDL_GetError() for more information.
@@ -1193,9 +1193,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_CreateHapticEffect(SDL_Haptic *haptic, const
  * start playing from the start. You also cannot change the type either when
  * running SDL_UpdateHapticEffect().
  *
- * \param haptic the SDL_Haptic device that has the effect
+ * \param[inout] haptic the SDL_Haptic device that has the effect
  * \param effect the identifier of the effect to update
- * \param data an SDL_HapticEffect structure containing the new effect
+ * \param[in] data an SDL_HapticEffect structure containing the new effect
  *             properties to use
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1216,7 +1216,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_UpdateHapticEffect(SDL_Haptic *haptic, int e
  * set the effect's `length` in its structure/union to `SDL_HAPTIC_INFINITY`
  * instead.
  *
- * \param haptic the SDL_Haptic device to run the effect on
+ * \param[inout] haptic the SDL_Haptic device to run the effect on
  * \param effect the ID of the haptic effect to run
  * \param iterations the number of iterations to run the effect; use
  *                   `SDL_HAPTIC_INFINITY` to repeat forever
@@ -1234,7 +1234,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RunHapticEffect(SDL_Haptic *haptic, int effe
 /**
  * Stop the haptic effect on its associated haptic device.
  *
- * \param haptic the SDL_Haptic device to stop the effect on
+ * \param[inout] haptic the SDL_Haptic device to stop the effect on
  * \param effect the ID of the haptic effect to stop
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1252,7 +1252,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_StopHapticEffect(SDL_Haptic *haptic, int eff
  * This will stop the effect if it's running. Effects are automatically
  * destroyed when the device is closed.
  *
- * \param haptic the SDL_Haptic device to destroy the effect on
+ * \param[inout] haptic the SDL_Haptic device to destroy the effect on
  * \param effect the ID of the haptic effect to destroy
  *
  * \since This function is available since SDL 3.0.0.
@@ -1266,7 +1266,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyHapticEffect(SDL_Haptic *haptic, int
  *
  * Device must support the SDL_HAPTIC_STATUS feature.
  *
- * \param haptic the SDL_Haptic device to query for the effect status on
+ * \param[inout] haptic the SDL_Haptic device to query for the effect status on
  * \param effect the ID of the haptic effect to query its status
  * \returns 0 if it isn't playing, 1 if it is playing, or a negative error
  *          code on failure; call SDL_GetError() for more information.
@@ -1285,7 +1285,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetHapticEffectStatus(SDL_Haptic *haptic, in
  * SDL_SetHapticGain() will scale linearly using `SDL_HAPTIC_GAIN_MAX` as the
  * maximum.
  *
- * \param haptic the SDL_Haptic device to set the gain on
+ * \param[inout] haptic the SDL_Haptic device to set the gain on
  * \param gain value to set the gain to, should be between 0 and 100 (0 - 100)
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1304,7 +1304,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetHapticGain(SDL_Haptic *haptic, int gain);
  *
  * Device must support the SDL_HAPTIC_AUTOCENTER feature.
  *
- * \param haptic the SDL_Haptic device to set autocentering on
+ * \param[inout] haptic the SDL_Haptic device to set autocentering on
  * \param autocenter value to set autocenter to (0-100)
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1324,7 +1324,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetHapticAutocenter(SDL_Haptic *haptic, int 
  * Do not modify the effects nor add new ones while the device is paused. That
  * can cause all sorts of weird errors.
  *
- * \param haptic the SDL_Haptic device to pause
+ * \param[inout] haptic the SDL_Haptic device to pause
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1339,7 +1339,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_PauseHaptic(SDL_Haptic *haptic);
  *
  * Call to unpause after SDL_PauseHaptic().
  *
- * \param haptic the SDL_Haptic device to unpause
+ * \param[inout] haptic the SDL_Haptic device to unpause
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1352,7 +1352,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_ResumeHaptic(SDL_Haptic *haptic);
 /**
  * Stop all the currently playing effects on a haptic device.
  *
- * \param haptic the SDL_Haptic device to stop
+ * \param[inout] haptic the SDL_Haptic device to stop
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1366,7 +1366,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_StopHapticEffects(SDL_Haptic *haptic);
 /**
  * Check whether rumble is supported on a haptic device.
  *
- * \param haptic haptic device to check for rumble support
+ * \param[inout] haptic haptic device to check for rumble support
  * \returns SDL_TRUE if the effect is supported or SDL_FALSE if it isn't.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1378,7 +1378,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HapticRumbleSupported(SDL_Haptic *hapti
 /**
  * Initialize a haptic device for simple rumble playback.
  *
- * \param haptic the haptic device to initialize for simple rumble playback
+ * \param[inout] haptic the haptic device to initialize for simple rumble playback
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1393,7 +1393,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_InitHapticRumble(SDL_Haptic *haptic);
 /**
  * Run a simple rumble effect on a haptic device.
  *
- * \param haptic the haptic device to play the rumble effect on
+ * \param[inout] haptic the haptic device to play the rumble effect on
  * \param strength strength of the rumble to play as a 0-1 float value
  * \param length length of the rumble to play in milliseconds
  * \returns 0 on success or a negative error code on failure; call
@@ -1409,7 +1409,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_PlayHapticRumble(SDL_Haptic *haptic, float s
 /**
  * Stop the simple rumble on a haptic device.
  *
- * \param haptic the haptic device to stop the rumble effect on
+ * \param[inout] haptic the haptic device to stop the rumble effect on
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

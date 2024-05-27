@@ -232,9 +232,9 @@ typedef struct SDL_AssertData
  *
  * Use the SDL_assert* macros instead.
  *
- * \param data assert data structure
- * \param func function name
- * \param file file name
+ * \param[inout] data assert data structure
+ * \param[in] func function name
+ * \param[in] file file name
  * \param line line number
  * \returns assert state
  *
@@ -456,9 +456,9 @@ typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
  *
  * This callback is NOT reset to SDL's internal handler upon SDL_Quit()!
  *
- * \param handler the SDL_AssertionHandler function to call when an assertion
+ * \param[in,opt] handler the SDL_AssertionHandler function to call when an assertion
  *                fails or NULL for the default handler
- * \param userdata a pointer that is passed to `handler`
+ * \param[inout,opt] userdata a pointer that is passed to `handler`
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -498,7 +498,7 @@ extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(
  * will always be NULL for the default handler. If you don't care about this
  * data, it is safe to pass a NULL pointer to this function to ignore it.
  *
- * \param puserdata pointer which is filled with the "userdata" pointer that
+ * \param[out,opt] puserdata pointer which is filled with the "userdata" pointer that
  *                  was passed to SDL_SetAssertionHandler()
  * \returns the SDL_AssertionHandler that is called when an assert triggers.
  *

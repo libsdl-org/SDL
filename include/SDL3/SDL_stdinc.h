@@ -495,10 +495,10 @@ typedef void (SDLCALL *SDL_free_func)(void *mem);
 /**
  * Get the original set of SDL memory functions.
  *
- * \param malloc_func filled with malloc function
- * \param calloc_func filled with calloc function
- * \param realloc_func filled with realloc function
- * \param free_func filled with free function
+ * \param[out,opt] malloc_func filled with malloc function
+ * \param[out,opt] calloc_func filled with calloc function
+ * \param[out,opt] realloc_func filled with realloc function
+ * \param[out,opt] free_func filled with free function
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -510,10 +510,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func 
 /**
  * Get the current set of SDL memory functions.
  *
- * \param malloc_func filled with malloc function
- * \param calloc_func filled with calloc function
- * \param realloc_func filled with realloc function
- * \param free_func filled with free function
+ * \param[out,opt] malloc_func filled with malloc function
+ * \param[out,opt] calloc_func filled with calloc function
+ * \param[out,opt] realloc_func filled with realloc function
+ * \param[out,opt] free_func filled with free function
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -525,10 +525,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_
 /**
  * Replace SDL's memory allocation functions with a custom set.
  *
- * \param malloc_func custom malloc function
- * \param calloc_func custom calloc function
- * \param realloc_func custom realloc function
- * \param free_func custom free function
+ * \param[in] malloc_func custom malloc function
+ * \param[in] calloc_func custom calloc function
+ * \param[in] realloc_func custom realloc function
+ * \param[in] free_func custom free function
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -552,7 +552,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_fu
  *
  * \param alignment the alignment requested
  * \param size the size to allocate
- * \returns a pointer to the aligned memory
+ * \returns[own] a pointer to the aligned memory
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -889,8 +889,8 @@ extern SDL_DECLSPEC wchar_t *SDLCALL SDL_wcsnstr(const wchar_t *haystack, const 
  * character; it does not care if the string is well-formed UTF-16 (or UTF-32,
  * depending on your platform's wchar_t size), or uses valid Unicode values.
  *
- * \param str1 The first string to compare. NULL is not permitted!
- * \param str2 The second string to compare. NULL is not permitted!
+ * \param[in] str1 The first string to compare. NULL is not permitted!
+ * \param[in] str2 The second string to compare. NULL is not permitted!
  * \returns less than zero if str1 is "less than" str2, greater than zero if
  *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
@@ -919,8 +919,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcscmp(const wchar_t *str1, const wchar_t *s
  * null-terminator character before this count), they will be considered
  * equal.
  *
- * \param str1 The first string to compare. NULL is not permitted!
- * \param str2 The second string to compare. NULL is not permitted!
+ * \param[in] str1 The first string to compare. NULL is not permitted!
+ * \param[in] str2 The second string to compare. NULL is not permitted!
  * \param maxlen The maximum number of wchar_t to compare.
  * \returns less than zero if str1 is "less than" str2, greater than zero if
  *          str1 is "greater than" str2, and zero if the strings match
@@ -950,8 +950,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcsncmp(const wchar_t *str1, const wchar_t *
  * CHARACTER), which is to say two strings of random bits may turn out to
  * match if they convert to the same amount of replacement characters.
  *
- * \param str1 The first string to compare. NULL is not permitted!
- * \param str2 The second string to compare. NULL is not permitted!
+ * \param[in] str1 The first string to compare. NULL is not permitted!
+ * \param[in] str2 The second string to compare. NULL is not permitted!
  * \returns less than zero if str1 is "less than" str2, greater than zero if
  *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
@@ -991,8 +991,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcscasecmp(const wchar_t *str1, const wchar_
  * null-terminator character before this number of bytes), they will be
  * considered equal.
  *
- * \param str1 The first string to compare. NULL is not permitted!
- * \param str2 The second string to compare. NULL is not permitted!
+ * \param[in] str1 The first string to compare. NULL is not permitted!
+ * \param[in] str2 The second string to compare. NULL is not permitted!
  * \param maxlen The maximum number of wchar_t values to compare.
  * \returns less than zero if str1 is "less than" str2, greater than zero if
  *          str1 is "greater than" str2, and zero if the strings match
@@ -1043,7 +1043,7 @@ extern SDL_DECLSPEC char *SDLCALL SDL_strupr(char *str);
  * malformed UTF-8!--and converts ASCII characters 'A' through 'Z' to their
  * lowercase equivalents in-place, returning the original `str` pointer.
  *
- * \param str The string to convert in-place.
+ * \param[inout] str The string to convert in-place.
  * \returns The `str` pointer passed into this function.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1086,8 +1086,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_strtod(const char *str, char **endp);
  * null-terminating character. Also due to the nature of UTF-8, this can be
  * used with SDL_qsort() to put strings in (roughly) alphabetical order.
  *
- * \param str1 The first string to compare. NULL is not permitted!
- * \param str2 The second string to compare. NULL is not permitted!
+ * \param[in] str1 The first string to compare. NULL is not permitted!
+ * \param[in] str2 The second string to compare. NULL is not permitted!
  * \returns less than zero if str1 is "less than" str2, greater than zero if
  *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
@@ -1115,8 +1115,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_strcmp(const char *str1, const char *str2);
  * match to this number of bytes (or both have matched to a null-terminator
  * character before this number of bytes), they will be considered equal.
  *
- * \param str1 The first string to compare. NULL is not permitted!
- * \param str2 The second string to compare. NULL is not permitted!
+ * \param[in] str1 The first string to compare. NULL is not permitted!
+ * \param[in] str2 The second string to compare. NULL is not permitted!
  * \param maxlen The maximum number of _bytes_ to compare.
  * \returns less than zero if str1 is "less than" str2, greater than zero if
  *          str1 is "greater than" str2, and zero if the strings match
@@ -1144,8 +1144,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_strncmp(const char *str1, const char *str2, 
  * CHARACTER), which is to say two strings of random bits may turn out to
  * match if they convert to the same amount of replacement characters.
  *
- * \param str1 The first string to compare. NULL is not permitted!
- * \param str2 The second string to compare. NULL is not permitted!
+ * \param[in] str1 The first string to compare. NULL is not permitted!
+ * \param[in] str2 The second string to compare. NULL is not permitted!
  * \returns less than zero if str1 is "less than" str2, greater than zero if
  *          str1 is "greater than" str2, and zero if the strings match
  *          exactly.
@@ -1183,8 +1183,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str
  * match to this number of bytes (or both have matched to a null-terminator
  * character before this number of bytes), they will be considered equal.
  *
- * \param str1 The first string to compare. NULL is not permitted!
- * \param str2 The second string to compare. NULL is not permitted!
+ * \param[in] str1 The first string to compare. NULL is not permitted!
+ * \param[in] str2 The second string to compare. NULL is not permitted!
  * \param maxlen The maximum number of bytes to compare.
  * \returns less than zero if str1 is "less than" str2, greater than zero if
  *          str1 is "greater than" str2, and zero if the strings match

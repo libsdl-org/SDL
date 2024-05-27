@@ -177,9 +177,9 @@ typedef Uint32 SDL_TimerID;
  * callback needs to adjust for variances.
  *
  * \param interval the timer delay, in milliseconds, passed to `callback`
- * \param callback the SDL_TimerCallback function to call when the specified
+ * \param[in] callback the SDL_TimerCallback function to call when the specified
  *                 `interval` elapses
- * \param param a pointer that is passed to `callback`
+ * \param[inout,opt] param a pointer that is passed to `callback`
  * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
  *          information.
  *

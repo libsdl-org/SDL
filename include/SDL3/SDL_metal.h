@@ -58,7 +58,7 @@ typedef void *SDL_MetalView;
  * The returned handle can be casted directly to a NSView or UIView. To access
  * the backing CAMetalLayer, call SDL_Metal_GetLayer().
  *
- * \param window the window
+ * \param[inout] window the window
  * \returns handle NSView or UIView
  *
  * \since This function is available since SDL 3.0.0.
@@ -74,7 +74,7 @@ extern SDL_DECLSPEC SDL_MetalView SDLCALL SDL_Metal_CreateView(SDL_Window * wind
  * This should be called before SDL_DestroyWindow, if SDL_Metal_CreateView was
  * called after SDL_CreateWindow.
  *
- * \param view the SDL_MetalView object
+ * \param[inout] view the SDL_MetalView object
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -85,7 +85,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Metal_DestroyView(SDL_MetalView view);
 /**
  * Get a pointer to the backing CAMetalLayer for the given view.
  *
- * \param view the SDL_MetalView object
+ * \param[inout] view the SDL_MetalView object
  * \returns a pointer
  *
  * \since This function is available since SDL 3.0.0.

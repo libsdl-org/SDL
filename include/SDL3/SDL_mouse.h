@@ -135,8 +135,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * You should wait for input from a device before you consider it actively in
  * use.
  *
- * \param count a pointer filled in with the number of mice returned
- * \returns a 0 terminated array of mouse instance IDs which should be freed
+ * \param[out,opt] count a pointer filled in with the number of mice returned
+ * \returns[own] a 0 terminated array of mouse instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.
  *
@@ -180,9 +180,9 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * mouse cursor position relative to the focus window. You can pass NULL for
  * either `x` or `y`.
  *
- * \param x the x coordinate of the mouse cursor position relative to the
+ * \param[out,opt] x the x coordinate of the mouse cursor position relative to the
  *          focus window
- * \param y the y coordinate of the mouse cursor position relative to the
+ * \param[out,opt] y the y coordinate of the mouse cursor position relative to the
  *          focus window
  * \returns a 32-bit button bitmask of the current button state.
  *
@@ -209,9 +209,9 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, flo
  * efficient function. Unless you know what you're doing and have a good
  * reason to use this function, you probably want SDL_GetMouseState() instead.
  *
- * \param x filled in with the current X coord relative to the desktop; can be
+ * \param[out,opt] x filled in with the current X coord relative to the desktop; can be
  *          NULL
- * \param y filled in with the current Y coord relative to the desktop; can be
+ * \param[out,opt] y filled in with the current Y coord relative to the desktop; can be
  *          NULL
  * \returns the current button state as a bitmask which can be tested using
  *          the SDL_BUTTON(X) macros.
@@ -232,8 +232,8 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *
  * mouse deltas since the last call to SDL_GetRelativeMouseState() or since
  * event initialization. You can pass NULL for either `x` or `y`.
  *
- * \param x a pointer filled with the last recorded x coordinate of the mouse
- * \param y a pointer filled with the last recorded y coordinate of the mouse
+ * \param[out,opt] x a pointer filled with the last recorded x coordinate of the mouse
+ * \param[out,opt] y a pointer filled with the last recorded y coordinate of the mouse
  * \returns a 32-bit button bitmask of the relative button state.
  *
  * \since This function is available since SDL 3.0.0.
@@ -252,7 +252,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float
  * Note that this function will appear to succeed, but not actually move the
  * mouse when used over Microsoft Remote Desktop.
  *
- * \param window the window to move the mouse into, or NULL for the current
+ * \param[inout] window the window to move the mouse into, or NULL for the current
  *               mouse focus
  * \param x the x coordinate within the window
  * \param y the y coordinate within the window
@@ -386,15 +386,15 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  * Also, SDL_CreateSystemCursor() is available, which provides several
  * readily-available system cursors to pick from.
  *
- * \param data the color value for each pixel of the cursor
- * \param mask the mask value for each pixel of the cursor
+ * \param[in] data the color value for each pixel of the cursor
+ * \param[in] mask the mask value for each pixel of the cursor
  * \param w the width of the cursor
  * \param h the height of the cursor
  * \param hot_x the x-axis offset from the left of the cursor image to the
  *              mouse x position, in the range of 0 to `w` - 1
  * \param hot_y the y-axis offset from the top of the cursor image to the
  *              mouse y position, in the range of 0 to `h` - 1
- * \returns a new cursor with the specified parameters on success or NULL on
+ * \returns[own] a new cursor with the specified parameters on success or NULL on
  *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -412,10 +412,10 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
 /**
  * Create a color cursor.
  *
- * \param surface an SDL_Surface structure representing the cursor image
+ * \param[inout] surface an SDL_Surface structure representing the cursor image
  * \param hot_x the x position of the cursor hot spot
  * \param hot_y the y position of the cursor hot spot
- * \returns the new cursor on success or NULL on failure; call SDL_GetError()
+ * \returns[own] the new cursor on success or NULL on failure; call SDL_GetError()
  *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -433,7 +433,7 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateColorCursor(SDL_Surface *surfa
  * Create a system cursor.
  *
  * \param id an SDL_SystemCursor enum value
- * \returns a cursor on success or NULL on failure; call SDL_GetError() for
+ * \returns[own] a cursor on success or NULL on failure; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -450,7 +450,7 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor 
  * the display. SDL_SetCursor(NULL) can be used to force cursor redraw, if
  * this is desired for any reason.
  *
- * \param cursor a cursor to make active
+ * \param[inout] cursor a cursor to make active
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -492,7 +492,7 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_GetDefaultCursor(void);
  * Use this function to free cursor resources created with SDL_CreateCursor(),
  * SDL_CreateColorCursor() or SDL_CreateSystemCursor().
  *
- * \param cursor the cursor to free
+ * \param[inout] cursor the cursor to free
  *
  * \since This function is available since SDL 3.0.0.
  *

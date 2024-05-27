@@ -92,8 +92,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * power buttons, etc. You should wait for input from a device before you
  * consider it actively in use.
  *
- * \param count a pointer filled in with the number of keyboards returned
- * \returns a 0 terminated array of keyboards instance IDs which should be
+ * \param[out,opt] count a pointer filled in with the number of keyboards returned
+ * \returns[own] a 0 terminated array of keyboards instance IDs which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
  *
@@ -149,7 +149,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * Note: This function doesn't take into account whether shift has been
  * pressed or not.
  *
- * \param numkeys if non-NULL, receives the length of the returned array
+ * \param[out] numkeys if non-NULL, receives the length of the returned array
  * \returns a pointer to an array of key states.
  *
  * \since This function is available since SDL 3.0.0.
@@ -262,7 +262,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetScancodeName(SDL_Scancode scancod
 /**
  * Get a scancode from a human-readable name.
  *
- * \param name the human-readable scancode name
+ * \param[in] name the human-readable scancode name
  * \returns the SDL_Scancode, or `SDL_SCANCODE_UNKNOWN` if the name wasn't
  *          recognized; call SDL_GetError() for more information.
  *
@@ -296,7 +296,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetKeyName(SDL_Keycode key);
 /**
  * Get a key code from a human-readable name.
  *
- * \param name the human-readable key name
+ * \param[in] name the human-readable key name
  * \returns key code, or `SDLK_UNKNOWN` if the name wasn't recognized; call
  *          SDL_GetError() for more information.
  *
@@ -373,7 +373,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ClearComposition(void);
  * **SDL_HINT_IME_SHOW_UI** to **1**, otherwise this function won't give you
  * any feedback.
  *
- * \param rect the SDL_Rect structure representing the rectangle to receive
+ * \param[in,opt] rect the SDL_Rect structure representing the rectangle to receive
  *             text (ignored if NULL)
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -400,7 +400,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasScreenKeyboardSupport(void);
 /**
  * Check whether the screen keyboard is shown for given window.
  *
- * \param window the window for which screen keyboard should be queried
+ * \param[inout] window the window for which screen keyboard should be queried
  * \returns SDL_TRUE if screen keyboard is shown or SDL_FALSE if not.
  *
  * \since This function is available since SDL 3.0.0.

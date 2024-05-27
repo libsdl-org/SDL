@@ -154,7 +154,7 @@ typedef struct SDL_Mutex SDL_Mutex;
  *
  * SDL mutexes are reentrant.
  *
- * \returns the initialized and unlocked mutex or NULL on failure; call
+ * \returns[own] the initialized and unlocked mutex or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -181,7 +181,7 @@ extern SDL_DECLSPEC SDL_Mutex *SDLCALL SDL_CreateMutex(void);
  * having locked nothing. If the mutex is valid, this function will always
  * block until it can lock the mutex, and return with it locked.
  *
- * \param mutex the mutex to lock
+ * \param[inout] mutex the mutex to lock
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -204,7 +204,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockMutex(SDL_Mutex *mutex) SDL_ACQUIRE(mut
  * either lock the mutex and return 0, or return SDL_MUTEX_TIMEOUT and lock
  * nothing.
  *
- * \param mutex the mutex to try to lock
+ * \param[inout] mutex the mutex to try to lock
  * \returns 0 or `SDL_MUTEX_TIMEDOUT`
  *
  * \since This function is available since SDL 3.0.0.
@@ -224,7 +224,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_TryLockMutex(SDL_Mutex *mutex) SDL_TRY_ACQUI
  * It is illegal to unlock a mutex that has not been locked by the current
  * thread, and doing so results in undefined behavior.
  *
- * \param mutex the mutex to unlock.
+ * \param[inout] mutex the mutex to unlock.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -242,7 +242,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockMutex(SDL_Mutex *mutex) SDL_RELEASE(m
  * to destroy a locked mutex, and may result in undefined behavior depending
  * on the platform.
  *
- * \param mutex the mutex to destroy
+ * \param[inout] mutex the mutex to destroy
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -756,8 +756,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_BroadcastCondition(SDL_Condition *cond);
  * This function is the equivalent of calling SDL_WaitConditionTimeout() with
  * a time length of -1.
  *
- * \param cond the condition variable to wait on
- * \param mutex the mutex used to coordinate thread access
+ * \param[inout] cond the condition variable to wait on
+ * \param[inout] mutex the mutex used to coordinate thread access
  * \returns 0 when it is signaled or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -784,8 +784,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex
  * recursively (more than once) is not supported and leads to undefined
  * behavior.
  *
- * \param cond the condition variable to wait on
- * \param mutex the mutex used to coordinate thread access
+ * \param[inout] cond the condition variable to wait on
+ * \param[inout] mutex the mutex used to coordinate thread access
  * \param timeoutMS the maximum time to wait, in milliseconds, or -1 to wait
  *                  indefinitely
  * \returns 0 if the condition variable is signaled, `SDL_MUTEX_TIMEDOUT` if

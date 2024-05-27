@@ -60,7 +60,7 @@ extern "C" {
  * All this to say: this function can be useful, but you should definitely
  * test it on every platform you target.
  *
- * \param url A valid URL/URI to open. Use `file:///full/path/to/file` for
+ * \param[in] url A valid URL/URI to open. Use `file:///full/path/to/file` for
  *            local files, if supported.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
