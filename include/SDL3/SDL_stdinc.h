@@ -1262,6 +1262,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_acos(double x);
  * \param x floating point value.
  * \returns arc cosine of `x`, in radians
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_acos
@@ -1290,6 +1292,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_acosf(float x);
  * \param x floating point value.
  * \returns arc sine of `x`, in radians.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_asinf
@@ -1317,6 +1321,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_asin(double x);
  *
  * \param x floating point value.
  * \returns arc sine of `x`, in radians.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1348,6 +1354,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_asinf(float x);
  * \param x floating point value.
  * \returns arc tangent of of `x` in radians, or 0 if `x = 0`.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_atanf
@@ -1377,6 +1385,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_atan(double x);
  *
  * \param x floating point value.
  * \returns arc tangent of of `x` in radians, or 0 if `x = 0`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1412,6 +1422,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_atanf(float x);
  * \returns arc tangent of of `y / x` in radians, or, if `x = 0`, either
  *          `-Pi/2`, `0`, or `Pi/2`, depending on the value of `y`.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_atan2f
@@ -1446,6 +1458,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_atan2(double y, double x);
  * \returns arc tangent of of `y / x` in radians, or, if `x = 0`, either
  *          `-Pi/2`, `0`, or `Pi/2`, depending on the value of `y`.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_atan2f
@@ -1469,6 +1483,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
  *
  * \param x floating point value
  * \returns the ceiling of `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1496,6 +1512,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_ceil(double x);
  * \param x floating point value
  * \returns the ceiling of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ceil
@@ -1522,6 +1540,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_ceilf(float x);
  * \param y floating point value to use as the sign
  * \returns the floating point value with the sign of y and the magnitude of x
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_copysignf
@@ -1544,6 +1564,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_copysign(double x, double y);
  * \param x floating point value to use as the magnitude
  * \param y floating point value to use as the sign
  * \returns the floating point value with the sign of y and the magnitude of x
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1570,6 +1592,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_copysignf(float x, float y);
  * \param x floating point value, in radians
  * \returns cosine of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_cosf
@@ -1595,6 +1619,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_cos(double x);
  *
  * \param x floating point value, in radians
  * \returns cosine of `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1627,6 +1653,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_cosf(float x);
  * \param x floating point value
  * \returns value of `e^x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_expf
@@ -1657,6 +1685,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_exp(double x);
  * \param x floating point value
  * \returns value of `e^x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_exp
@@ -1677,6 +1707,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_expf(float x);
  * \param x floating point value to use as the magnitude
  * \returns the absolute value of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_fabsf
@@ -1695,6 +1727,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_fabs(double x);
  *
  * \param x floating point value to use as the magnitude
  * \returns the absolute value of `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1717,6 +1751,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_fabsf(float x);
  *
  * \param x floating point value
  * \returns the floor of `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1744,6 +1780,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_floor(double x);
  * \param x floating point value
  * \returns the floor of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_floor
@@ -1769,6 +1807,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_floorf(float x);
  *
  * \param x floating point value
  * \returns `x` truncated to an integer
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1797,6 +1837,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_trunc(double x);
  * \param x floating point value
  * \returns `x` truncated to an integer
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_trunc
@@ -1823,6 +1865,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_truncf(float x);
  * \param x the numerator
  * \param y the denominator. Must not be 0.
  * \returns the remainder of `x / y`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1851,6 +1895,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_fmod(double x, double y);
  * \param x the numerator
  * \param y the denominator. Must not be 0.
  * \returns the remainder of `x / y`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1884,6 +1930,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
  * \param x floating point value. Must be greater than 0.
  * \returns the natural logarithm of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_logf
@@ -1912,6 +1960,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_log(double x);
  * \param x floating point value. Must be greater than 0.
  * \returns the natural logarithm of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_log
@@ -1938,6 +1988,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_logf(float x);
  *
  * \param x floating point value. Must be greater than 0.
  * \returns the logarithm of `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1967,6 +2019,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_log10(double x);
  * \param x floating point value. Must be greater than 0.
  * \returns the logarithm of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_log10
@@ -1985,6 +2039,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_log10f(float x);
  * \param y output pointer to store the integer part of `x`
  * \returns the fractional part of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_modff
@@ -2002,6 +2058,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_modf(double x, double *y);
  * \param x floating point value
  * \param y output pointer to store the integer part of `x`
  * \returns the fractional part of `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2033,6 +2091,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_modff(float x, float *y);
  * \param y the exponent
  * \returns `x` raised to the power `y`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_powf
@@ -2063,6 +2123,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_pow(double x, double y);
  * \param y the exponent
  * \returns `x` raised to the power `y`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_pow
@@ -2087,6 +2149,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_powf(float x, float y);
  *
  * \param x floating point value
  * \returns the nearest integer to `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2115,6 +2179,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_round(double x);
  * \param x floating point value
  * \returns the nearest integer to `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_round
@@ -2141,6 +2207,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_roundf(float x);
  *
  * \param x floating point value
  * \returns the nearest integer to `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2169,6 +2237,8 @@ extern SDL_DECLSPEC long SDLCALL SDL_lround(double x);
  * \param x floating point value
  * \returns the nearest integer to `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_lround
@@ -2195,6 +2265,8 @@ extern SDL_DECLSPEC long SDLCALL SDL_lroundf(float x);
  * \param n integer exponent
  * \returns `x * 2^n`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_scalbnf
@@ -2217,6 +2289,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
  * \param x floating point value to be scaled
  * \param n integer exponent
  * \returns `x * 2^n`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2242,6 +2316,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
  *
  * \param x floating point value, in radians
  * \returns sine of `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2269,6 +2345,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_sin(double x);
  * \param x floating point value, in radians
  * \returns sine of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_sin
@@ -2295,6 +2373,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_sinf(float x);
  * \param x floating point value. Must be greater than or equal to 0.
  * \returns square root of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_sqrtf
@@ -2319,6 +2399,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_sqrt(double x);
  * \param x floating point value. Must be greater than or equal to 0.
  * \returns square root of `x`
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_sqrt
@@ -2342,6 +2424,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_sqrtf(float x);
  *
  * \param x floating point value, in radians
  * \returns tangent of `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2370,6 +2454,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_tan(double x);
  *
  * \param x floating point value, in radians
  * \returns tangent of `x`
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *

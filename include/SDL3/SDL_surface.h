@@ -924,6 +924,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety The same destination surface should not be used from two
+ *               threads at once. It is safe to use the same source surface
+ *               from multiple threads.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurfaceScaled
@@ -944,6 +948,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect
  *                the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety The same destination surface should not be used from two
+ *               threads at once. It is safe to use the same source surface
+ *               from multiple threads.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -988,6 +996,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src, const SDL_Rect
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety The same destination surface should not be used from two
+ *               threads at once. It is safe to use the same source surface
+ *               from multiple threads.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BlitSurface
@@ -1009,6 +1021,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const SD
  * \param scaleMode scale algorithm to be used
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety The same destination surface should not be used from two
+ *               threads at once. It is safe to use the same source surface
+ *               from multiple threads.
  *
  * \since This function is available since SDL 3.0.0.
  *

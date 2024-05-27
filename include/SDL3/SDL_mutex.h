@@ -714,6 +714,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyCondition(SDL_Condition *cond);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BroadcastCondition
@@ -728,6 +730,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SignalCondition(SDL_Condition *cond);
  * \param cond the condition variable to signal
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -757,6 +761,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_BroadcastCondition(SDL_Condition *cond);
  * \returns 0 when it is signaled or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_BroadcastCondition
@@ -785,6 +791,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_WaitCondition(SDL_Condition *cond, SDL_Mutex
  * \returns 0 if the condition variable is signaled, `SDL_MUTEX_TIMEDOUT` if
  *          the condition is not signaled in the allotted time, or a negative
  *          error code on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
