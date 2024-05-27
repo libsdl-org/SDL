@@ -344,7 +344,7 @@ jobs:
 
   mingw:
     needs: [src]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # FIXME: current ubuntu-latest ships an outdated mingw, replace with ubuntu-latest once 24.04 becomes the new default
     outputs:
       mingw-devel-tar-gz: ${{ steps.releaser.outputs.mingw-devel-tar-gz }}
       mingw-devel-tar-xz: ${{ steps.releaser.outputs.mingw-devel-tar-xz }}
