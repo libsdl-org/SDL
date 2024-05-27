@@ -34,6 +34,7 @@
 #define SDL_AddGamepadMappingsFromIO SDL_AddGamepadMappingsFromIO_REAL
 #define SDL_AddHintCallback SDL_AddHintCallback_REAL
 #define SDL_AddTimer SDL_AddTimer_REAL
+#define SDL_AddTimerNS SDL_AddTimerNS_REAL
 #define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
 #define SDL_AllocateEventMemory SDL_AllocateEventMemory_REAL
 #define SDL_AndroidBackButton SDL_AndroidBackButton_REAL

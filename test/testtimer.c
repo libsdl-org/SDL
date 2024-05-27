@@ -56,6 +56,13 @@ ticktock(void *param, SDL_TimerID timerID, Uint32 interval)
     return interval;
 }
 
+static Uint64 SDLCALL
+ticktockNS(void *param, SDL_TimerID timerID, Uint64 interval)
+{
+    ++ticks;
+    return interval;
+}
+
 static Uint32 SDLCALL
 callback(void *param, SDL_TimerID timerID, Uint32 interval)
 {
@@ -136,24 +143,48 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* Start the timer */
+    /* Start the millisecond timer */
     if (desired < 0) {
         desired = DEFAULT_RESOLUTION;
     }
+    ticks = 0;
     t1 = SDL_AddTimer(desired, ticktock, NULL);
 
-    /* Wait 10 seconds */
-    SDL_Log("Waiting 10 seconds\n");
-    SDL_Delay(10 * 1000);
+    /* Wait 1 seconds */
+    SDL_Log("Waiting 1 seconds for millisecond timer\n");
+    SDL_Delay(1 * 1000);
 
     /* Stop the timer */
     SDL_RemoveTimer(t1);
 
     /* Print the results */
     if (ticks) {
-        SDL_Log("Timer resolution: desired = %d ms, actual = %f ms\n",
+        SDL_Log("Millisecond timer resolution: desired = %d ms, actual = %f ms\n",
                 desired, (double)(10 * 1000) / ticks);
     }
+
+    /* Wait for the results to be seen */
+    SDL_Delay(1 * 1000);
+
+    /* Start the nanosecond timer */
+    ticks = 0;
+    t1 = SDL_AddTimerNS(desired, ticktockNS, NULL);
+
+    /* Wait 1 seconds */
+    SDL_Log("Waiting 1 seconds for nanosecond timer\n");
+    SDL_Delay(1 * 1000);
+
+    /* Stop the timer */
+    SDL_RemoveTimer(t1);
+
+    /* Print the results */
+    if (ticks) {
+        SDL_Log("Nanosecond timer resolution: desired = %d ns, actual = %f ns\n",
+                desired, (double)(10 * 1000000) / ticks);
+    }
+
+    /* Wait for the results to be seen */
+    SDL_Delay(1 * 1000);
 
     /* Test multiple timers */
     SDL_Log("Testing multiple timers...\n");
@@ -170,18 +201,19 @@ int main(int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 3: %s\n", SDL_GetError());
     }
 
-    /* Wait 10 seconds */
-    SDL_Log("Waiting 10 seconds\n");
-    SDL_Delay(10 * 1000);
+    /* Wait 3 seconds */
+    SDL_Log("Waiting 3 seconds\n");
+    SDL_Delay(3 * 1000);
 
-    SDL_Log("Removing timer 1 and waiting 5 more seconds\n");
+    SDL_Log("Removing timer 1 and waiting 3 more seconds\n");
     SDL_RemoveTimer(t1);
 
-    SDL_Delay(5 * 1000);
+    SDL_Delay(3 * 1000);
 
     SDL_RemoveTimer(t2);
     SDL_RemoveTimer(t3);
 
+    ticks = 0;
     start_perf = SDL_GetPerformanceCounter();
     for (i = 0; i < 1000000; ++i) {
         ticktock(NULL, 0, 0);
