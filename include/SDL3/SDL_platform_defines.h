@@ -65,7 +65,15 @@
 #define SDL_PLATFORM_APPLE  1
 /* lets us know what version of macOS we're compiling on */
 #include <AvailabilityMacros.h>
+#ifndef __has_extension /* see https://github.com/libsdl-org/SDL/issues/9632 */
+# define __has_extension(x) 0
+# define SDL_undef_has_extension
+#endif /* __has_extension */
 #include <TargetConditionals.h>
+#ifdef SDL_undef_has_extension
+# undef __has_extension
+# undef SDL_undef_has_extension
+#endif /* __has_extension */
 
 /* Fix building with older SDKs that don't define these
    See this for more information:
