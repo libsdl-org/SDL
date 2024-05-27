@@ -101,7 +101,7 @@ static int timer_delayAndGetTicks(void *arg)
 }
 
 /* Test callback */
-static Uint32 SDLCALL timerTestCallback(Uint32 interval, void *param)
+static Uint32 SDLCALL timerTestCallback(void *param, SDL_TimerID timerID, Uint32 interval)
 {
     g_timerCallbackCalled = 1;
 
@@ -121,7 +121,7 @@ static Uint32 SDLCALL timerTestCallback(Uint32 interval, void *param)
 static int timer_addRemoveTimer(void *arg)
 {
     SDL_TimerID id;
-    SDL_bool result;
+    int result;
     int param;
 
     /* Reset state */
@@ -136,13 +136,13 @@ static int timer_addRemoveTimer(void *arg)
     /* Remove timer again and check that callback was not called */
     result = SDL_RemoveTimer(id);
     SDLTest_AssertPass("Call to SDL_RemoveTimer()");
-    SDLTest_AssertCheck(result == SDL_TRUE, "Check result value, expected: %i, got: %i", SDL_TRUE, result);
+    SDLTest_AssertCheck(result == 0, "Check result value, expected: 0, got: %i", result);
     SDLTest_AssertCheck(g_timerCallbackCalled == 0, "Check callback WAS NOT called, expected: 0, got: %i", g_timerCallbackCalled);
 
     /* Try to remove timer again (should be a NOOP) */
     result = SDL_RemoveTimer(id);
     SDLTest_AssertPass("Call to SDL_RemoveTimer()");
-    SDLTest_AssertCheck(result == SDL_FALSE, "Check result value, expected: %i, got: %i", SDL_FALSE, result);
+    SDLTest_AssertCheck(result < 0, "Check result value, expected: <0, got: %i", result);
 
     /* Reset state */
     param = SDLTest_RandomIntegerInRange(-1024, 1024);
@@ -162,7 +162,7 @@ static int timer_addRemoveTimer(void *arg)
     /* Remove timer again and check that callback was called */
     result = SDL_RemoveTimer(id);
     SDLTest_AssertPass("Call to SDL_RemoveTimer()");
-    SDLTest_AssertCheck(result == SDL_FALSE, "Check result value, expected: %i, got: %i", SDL_FALSE, result);
+    SDLTest_AssertCheck(result < 0, "Check result value, expected: <0, got: %i", result);
     SDLTest_AssertCheck(g_timerCallbackCalled == 1, "Check callback WAS called, expected: 1, got: %i", g_timerCallbackCalled);
 
     return TEST_COMPLETED;

@@ -50,16 +50,18 @@ static int test_sdl_delay_within_bounds(void) {
 static int ticks = 0;
 
 static Uint32 SDLCALL
-ticktock(Uint32 interval, void *param)
+ticktock(void *param, SDL_TimerID timerID, Uint32 interval)
 {
     ++ticks;
     return interval;
 }
 
 static Uint32 SDLCALL
-callback(Uint32 interval, void *param)
+callback(void *param, SDL_TimerID timerID, Uint32 interval)
 {
-    SDL_Log("Timer %" SDL_PRIu32 " : param = %d\n", interval, (int)(uintptr_t)param);
+    int value = (int)(uintptr_t)param;
+    SDL_assert( value == 1 || value == 2 || value == 3 );
+    SDL_Log("Timer %" SDL_PRIu32 " : param = %d\n", interval, value);
     return interval;
 }
 
@@ -182,7 +184,7 @@ int main(int argc, char *argv[])
 
     start_perf = SDL_GetPerformanceCounter();
     for (i = 0; i < 1000000; ++i) {
-        ticktock(0, NULL);
+        ticktock(NULL, 0, 0);
     }
     now_perf = SDL_GetPerformanceCounter();
     SDL_Log("1 million iterations of ticktock took %f ms\n", (double)((now_perf - start_perf) * 1000) / SDL_GetPerformanceFrequency());
