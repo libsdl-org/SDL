@@ -280,11 +280,11 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
  * If this function returns SDL_MAIN_CALLBACK_CONTINUE, the app will proceed
  * to normal operation, and will begin receiving repeated calls to
  * SDL_AppIterate and SDL_AppEvent for the life of the program. If this
- * function returns SDL_MAIN_CALLBACK_EXIT_FAILURE, SDL will call
- * SDL_AppQuit and terminate the process with an exit code that reports an
- * error to the platform. If it returns SDL_MAIN_CALLBACK_EXIT_SUCCESS, SDL
- * calls SDL_AppQuit and terminates with an exit code that reports success to
- * the platform.
+ * function returns SDL_MAIN_CALLBACK_EXIT_FAILURE, SDL will call SDL_AppQuit
+ * and terminate the process with an exit code that reports an error to the
+ * platform. If it returns SDL_MAIN_CALLBACK_EXIT_SUCCESS, SDL calls
+ * SDL_AppQuit and terminates with an exit code that reports success to the
+ * platform.
  *
  * \param appstate a place where the app can optionally store a pointer for
  *                 future use.
@@ -335,17 +335,15 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(void **appstate, int argc, char 
  * If this function returns SDL_MAIN_CALLBACK_CONTINUE, the app will continue
  * normal operation, receiving repeated calls to SDL_AppIterate and
  * SDL_AppEvent for the life of the program. If this function returns
- * SDL_MAIN_CALLBACK_EXIT_FAILURE, SDL will call SDL_AppQuit and
- * terminate the process with an exit code that reports an error to the
- * platform. If it returns SDL_MAIN_CALLBACK_EXIT_SUCCESS, SDL calls
- * SDL_AppQuit and terminates with an exit code that reports success to the
- * platform.
+ * SDL_MAIN_CALLBACK_EXIT_FAILURE, SDL will call SDL_AppQuit and terminate the
+ * process with an exit code that reports an error to the platform. If it
+ * returns SDL_MAIN_CALLBACK_EXIT_SUCCESS, SDL calls SDL_AppQuit and
+ * terminates with an exit code that reports success to the platform.
  *
  * \param appstate an optional pointer, provided by the app in SDL_AppInit.
  * \returns SDL_MAIN_CALLBACK_EXIT_FAILURE to terminate with an error,
  *          SDL_MAIN_CALLBACK_EXIT_SUCCESS to terminate with success,
  *          SDL_MAIN_CALLBACK_CONTINUE to continue.
- *
  *
  * \threadsafety This function is not thread safe.
  *
