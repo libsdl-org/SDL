@@ -49,6 +49,45 @@ int SDL_powerof2(int x)
     return value;
 }
 
+// Algorithm adapted with thanks from John Cook's blog post:
+// http://www.johndcook.com/blog/2010/10/20/best-rational-approximation
+void SDL_CalculateFraction(float x, int *numerator, int *denominator)
+{
+    const int N = 1000;
+    int a = 0, b = 1;
+    int c = 1, d = 0;
+
+    while (b <= N && d <= N) {
+        float mediant = (float)(a + c) / (b + d);
+        if (x == mediant) {
+            if (b + d <= N) {
+                *numerator = a + c;
+                *denominator = b + d;
+            } else if (d > b) {
+                *numerator = c;
+                *denominator = d;
+            } else {
+                *numerator = a;
+                *denominator = b;
+            }
+            return;
+        } else if (x > mediant) {
+            a = a + c;
+            b = b + d;
+        } else {
+            c = a + c;
+            d = b + d;
+        }
+    }
+    if (b > N) {
+        *numerator = c;
+        *denominator = d;
+    } else {
+        *numerator = a;
+        *denominator = b;
+    }
+}
+
 SDL_bool SDL_endswith(const char *string, const char *suffix)
 {
     size_t string_length = string ? SDL_strlen(string) : 0;

@@ -478,6 +478,7 @@
 #define SDL_GetUserFolder SDL_GetUserFolder_REAL
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
+#define SDL_GetWindowAspectRatio SDL_GetWindowAspectRatio_REAL
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
 #define SDL_GetWindowDisplayScale SDL_GetWindowDisplayScale_REAL
 #define SDL_GetWindowFlags SDL_GetWindowFlags_REAL
@@ -773,6 +774,7 @@
 #define SDL_SetTextureScaleMode SDL_SetTextureScaleMode_REAL
 #define SDL_SetThreadPriority SDL_SetThreadPriority_REAL
 #define SDL_SetWindowAlwaysOnTop SDL_SetWindowAlwaysOnTop_REAL
+#define SDL_SetWindowAspectRatio SDL_SetWindowAspectRatio_REAL
 #define SDL_SetWindowBordered SDL_SetWindowBordered_REAL
 #define SDL_SetWindowFocusable SDL_SetWindowFocusable_REAL
 #define SDL_SetWindowFullscreen SDL_SetWindowFullscreen_REAL
