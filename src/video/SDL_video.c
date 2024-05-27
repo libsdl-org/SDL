@@ -395,10 +395,35 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
     return 0;
 }
 
-static SDL_VideoDevice *_this = NULL;
-static SDL_AtomicInt SDL_messagebox_count;
+int SDL_SetWindowTextureVSync(SDL_VideoDevice *_this, SDL_Window *window, int vsync)
+{
+    SDL_WindowTextureData *data;
 
-static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, const SDL_Rect *rects, int numrects)
+    data = (SDL_WindowTextureData *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
+    if (!data) {
+        return -1;
+    }
+    if (!data->renderer) {
+        return -1;
+    }
+    return SDL_SetRenderVSync(data->renderer, vsync);
+}
+
+static int SDL_GetWindowTextureVSync(SDL_VideoDevice *_this, SDL_Window *window, int *vsync)
+{
+    SDL_WindowTextureData *data;
+
+    data = (SDL_WindowTextureData *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
+    if (!data) {
+        return -1;
+    }
+    if (!data->renderer) {
+        return -1;
+    }
+    return SDL_GetRenderVSync(data->renderer, vsync);
+}
+
+static int SDL_UpdateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_WindowTextureData *data;
     SDL_Rect rect;
@@ -430,24 +455,13 @@ static int SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window *window, 
     return 0;
 }
 
-static void SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window *window)
+static void SDL_DestroyWindowTexture(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_ClearProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER);
 }
 
-int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync)
-{
-    SDL_WindowTextureData *data;
-
-    data = (SDL_WindowTextureData *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
-    if (!data) {
-        return -1;
-    }
-    if (!data->renderer) {
-        return -1;
-    }
-    return SDL_SetRenderVSync(data->renderer, vsync);
-}
+static SDL_VideoDevice *_this = NULL;
+static SDL_AtomicInt SDL_messagebox_count;
 
 static int SDLCALL cmpmodes(const void *A, const void *B)
 {
@@ -3202,6 +3216,8 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
                    !!! FIXME:  framebuffer at the right places; is it feasible we could have an
                    !!! FIXME:  accelerated OpenGL window and a second ends up in software? */
                 _this->CreateWindowFramebuffer = SDL_CreateWindowTexture;
+                _this->SetWindowFramebufferVSync = SDL_SetWindowTextureVSync;
+                _this->GetWindowFramebufferVSync = SDL_GetWindowTextureVSync;
                 _this->UpdateWindowFramebuffer = SDL_UpdateWindowTexture;
                 _this->DestroyWindowFramebuffer = SDL_DestroyWindowTexture;
                 created_framebuffer = SDL_TRUE;
@@ -3248,6 +3264,26 @@ SDL_Surface *SDL_GetWindowSurface(SDL_Window *window)
         }
     }
     return window->surface;
+}
+
+int SDL_SetWindowSurfaceVSync(SDL_Window *window, int vsync)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (!_this->SetWindowFramebufferVSync) {
+        return SDL_Unsupported();
+    }
+    return _this->SetWindowFramebufferVSync(_this, window, vsync);
+}
+
+int SDL_GetWindowSurfaceVSync(SDL_Window *window, int *vsync)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (!_this->GetWindowFramebufferVSync) {
+        return SDL_Unsupported();
+    }
+    return _this->GetWindowFramebufferVSync(_this, window, vsync);
 }
 
 int SDL_UpdateWindowSurface(SDL_Window *window)
