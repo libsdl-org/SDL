@@ -45,6 +45,8 @@ struct SDL_Window
     int w, h;
     int min_w, min_h;
     int max_w, max_h;
+    float min_aspect;
+    float max_aspect;
     int last_pixel_w, last_pixel_h;
     SDL_WindowFlags flags;
     SDL_WindowFlags pending_flags;
@@ -240,6 +242,7 @@ struct SDL_VideoDevice
     void (*SetWindowSize)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*SetWindowMinimumSize)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*SetWindowMaximumSize)(SDL_VideoDevice *_this, SDL_Window *window);
+    void (*SetWindowAspectRatio)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*GetWindowBordersSize)(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);
     void (*GetWindowSizeInPixels)(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
     int (*SetWindowOpacity)(SDL_VideoDevice *_this, SDL_Window *window, float opacity);

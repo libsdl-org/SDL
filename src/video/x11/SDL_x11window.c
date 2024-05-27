@@ -28,6 +28,7 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../core/unix/SDL_appid.h"
+#include "../../SDL_utils_c.h"
 
 #include "SDL_x11video.h"
 #include "SDL_x11mouse.h"
@@ -1086,7 +1087,7 @@ void X11_SetWindowMinMax(SDL_Window *window, SDL_bool use_current)
     long hint_flags = 0;
 
     X11_XGetWMNormalHints(display, data->xwindow, sizehints, &hint_flags);
-    sizehints->flags &= ~(PMinSize | PMaxSize);
+    sizehints->flags &= ~(PMinSize | PMaxSize | PAspect);
 
     if (data->window->flags & SDL_WINDOW_RESIZABLE) {
         if (data->window->min_w || data->window->min_h) {
@@ -1098,6 +1099,11 @@ void X11_SetWindowMinMax(SDL_Window *window, SDL_bool use_current)
             sizehints->flags |= PMaxSize;
             sizehints->max_width = data->window->max_w;
             sizehints->max_height = data->window->max_h;
+        }
+        if (data->window->min_aspect > 0.0f || data->window->max_aspect > 0.0f) {
+            sizehints->flags |= PAspect;
+            SDL_CalculateFraction(data->window->min_aspect, &sizehints->min_aspect.x, &sizehints->min_aspect.y);
+            SDL_CalculateFraction(data->window->max_aspect, &sizehints->max_aspect.x, &sizehints->max_aspect.y);
         }
     } else {
         /* Set the min/max to the same values to make the window non-resizable */
@@ -1122,6 +1128,17 @@ void X11_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 void X11_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    if (window->driverdata->pending_operation & X11_PENDING_OP_FULLSCREEN) {
+        X11_SyncWindow(_this, window);
+    }
+
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        X11_SetWindowMinMax(window, SDL_TRUE);
+    }
+}
+
+void X11_SetWindowAspectRatio(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (window->driverdata->pending_operation & X11_PENDING_OP_FULLSCREEN) {
         X11_SyncWindow(_this, window);
@@ -1645,7 +1662,7 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
             long flags = 0;
             X11_XGetWMNormalHints(display, data->xwindow, sizehints, &flags);
             /* we are going fullscreen so turn the flags off */
-            sizehints->flags &= ~(PMinSize | PMaxSize);
+            sizehints->flags &= ~(PMinSize | PMaxSize | PAspect);
             X11_XSetWMNormalHints(display, data->xwindow, sizehints);
             X11_XFree(sizehints);
         }
