@@ -2404,19 +2404,19 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
             }
             break;
         case SDLK_ESCAPE:
-            return SDL_MAIN_CALLBACK_EXIT_SUCCESS;
+            return SDL_APP_SUCCESS;
         default:
             break;
         }
         break;
     }
     case SDL_EVENT_QUIT:
-        return SDL_MAIN_CALLBACK_EXIT_SUCCESS;
+        return SDL_APP_SUCCESS;
     default:
         break;
     }
 
-    return SDL_MAIN_CALLBACK_CONTINUE;
+    return SDL_APP_CONTINUE;
 }
 
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)
