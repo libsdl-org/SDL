@@ -91,7 +91,7 @@ static const char GLES2_Fragment_Solid[] =                      \
 "}\n"                                                           \
 ;
 
-static const char GLES2_Fragment_TextureABGR[] =                \
+static const char GLES2_Fragment_Texture[] =                    \
 "uniform sampler2D u_texture;\n"                                \
 "varying mediump vec4 v_color;\n"                               \
 "varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
@@ -104,7 +104,7 @@ static const char GLES2_Fragment_TextureABGR[] =                \
 ;
 
 /* ARGB to ABGR conversion */
-static const char GLES2_Fragment_TextureARGB[] =                \
+static const char GLES2_Fragment_TextureSwapRB[] =              \
 "uniform sampler2D u_texture;\n"                                \
 "varying mediump vec4 v_color;\n"                               \
 "varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
@@ -120,7 +120,7 @@ static const char GLES2_Fragment_TextureARGB[] =                \
 ;
 
 /* RGB to ABGR conversion */
-static const char GLES2_Fragment_TextureRGB[] =                 \
+static const char GLES2_Fragment_TextureSwapRBOpaque[] =        \
 "uniform sampler2D u_texture;\n"                                \
 "varying mediump vec4 v_color;\n"                               \
 "varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
@@ -137,7 +137,7 @@ static const char GLES2_Fragment_TextureRGB[] =                 \
 ;
 
 /* BGR to ABGR conversion */
-static const char GLES2_Fragment_TextureBGR[] =                 \
+static const char GLES2_Fragment_TextureOpaque[] =              \
 "uniform sampler2D u_texture;\n"                                \
 "varying mediump vec4 v_color;\n"                               \
 "varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
@@ -405,14 +405,14 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Vertex_Default;
     case GLES2_SHADER_FRAGMENT_SOLID:
         return GLES2_Fragment_Solid;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_ABGR:
-        return GLES2_Fragment_TextureABGR;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_ARGB:
-        return GLES2_Fragment_TextureARGB;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_RGB:
-        return GLES2_Fragment_TextureRGB;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_BGR:
-        return GLES2_Fragment_TextureBGR;
+    case GLES2_SHADER_FRAGMENT_TEXTURE:
+        return GLES2_Fragment_Texture;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_SWAPRB:
+        return GLES2_Fragment_TextureSwapRB;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_SWAPRB_OPAQUE:
+        return GLES2_Fragment_TextureSwapRBOpaque;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_OPAQUE:
+        return GLES2_Fragment_TextureOpaque;
 #if SDL_HAVE_YUV
     case GLES2_SHADER_FRAGMENT_TEXTURE_YUV_JPEG:
         return GLES2_Fragment_TextureYUVJPEG;
