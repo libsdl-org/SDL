@@ -73,7 +73,13 @@
 #if defined(__APPLE__)
 /* lets us know what version of Mac OS X we're compiling on */
 #include <AvailabilityMacros.h>
+#ifndef __has_extension /* Older compilers don't support this */
+#define __has_extension(x) 0
 #include <TargetConditionals.h>
+#undef __has_extension
+#else
+#include <TargetConditionals.h>
+#endif
 
 /* Fix building with older SDKs that don't define these
    See this for more information:
