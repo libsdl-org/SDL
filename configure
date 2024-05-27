@@ -703,6 +703,8 @@ X_LIBS
 X_PRE_LIBS
 X_CFLAGS
 XMKMF
+RPI_EGL_LIBS
+RPI_EGL_CFLAGS
 RPI_LIBS
 RPI_CFLAGS
 DECOR_LIBS
@@ -991,6 +993,8 @@ DECOR_CFLAGS
 DECOR_LIBS
 RPI_CFLAGS
 RPI_LIBS
+RPI_EGL_CFLAGS
+RPI_EGL_LIBS
 XMKMF
 DIRECTFB_CFLAGS
 DIRECTFB_LIBS
@@ -1718,7 +1722,7 @@ Optional Features:
                           [default=yes]
   --enable-libdecor-shared
                           dynamically load libdecor [default=yes]
-  --enable-video-rpi      use Raspberry Pi 2/3 video driver [default=yes]
+  --enable-video-rpi      use Raspberry Pi 0-3 video driver [default=yes]
   --enable-video-x11      use X11 video driver [default=maybe]
   --enable-x11-shared     dynamically load X11 support [default=maybe]
   --enable-video-x11-xcursor
@@ -1848,6 +1852,10 @@ Some influential environment variables:
   DECOR_LIBS  linker flags for DECOR, overriding pkg-config
   RPI_CFLAGS  C compiler flags for RPI, overriding pkg-config
   RPI_LIBS    linker flags for RPI, overriding pkg-config
+  RPI_EGL_CFLAGS
+              C compiler flags for RPI_EGL, overriding pkg-config
+  RPI_EGL_LIBS
+              linker flags for RPI_EGL, overriding pkg-config
   XMKMF       Path to xmkmf, Makefile generator for X Window System
   DIRECTFB_CFLAGS
               C compiler flags for DIRECTFB, overriding pkg-config
@@ -14196,11 +14204,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++11 features" >&5
 printf %s "checking for $CXX option to enable C++11 features... " >&6; }
-if test ${ac_cv_prog_cxx_11+y}
+if test ${ac_cv_prog_cxx_cxx11+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_11=no
+  ac_cv_prog_cxx_cxx11=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14242,11 +14250,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++98 features" >&5
 printf %s "checking for $CXX option to enable C++98 features... " >&6; }
-if test ${ac_cv_prog_cxx_98+y}
+if test ${ac_cv_prog_cxx_cxx98+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_98=no
+  ac_cv_prog_cxx_cxx98=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -19210,13 +19218,15 @@ then :
   ac_cv_func_alloca_works=yes
 else $as_nop
   ac_cv_func_alloca_works=no
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 fi
+
+fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_alloca_works" >&5
 printf "%s\n" "$ac_cv_func_alloca_works" >&6; }
-fi
 
 if test $ac_cv_func_alloca_works = yes; then
 
@@ -23620,19 +23630,19 @@ fi
     if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
 
 pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for bcm_host brcmegl" >&5
-printf %s "checking for bcm_host brcmegl... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for bcm_host" >&5
+printf %s "checking for bcm_host... " >&6; }
 
 if test -n "$RPI_CFLAGS"; then
     pkg_cv_RPI_CFLAGS="$RPI_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"bcm_host brcmegl\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "bcm_host brcmegl") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"bcm_host\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "bcm_host") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_RPI_CFLAGS=`$PKG_CONFIG --cflags "bcm_host brcmegl" 2>/dev/null`
+  pkg_cv_RPI_CFLAGS=`$PKG_CONFIG --cflags "bcm_host" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -23644,12 +23654,12 @@ if test -n "$RPI_LIBS"; then
     pkg_cv_RPI_LIBS="$RPI_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"bcm_host brcmegl\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "bcm_host brcmegl") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"bcm_host\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "bcm_host") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_RPI_LIBS=`$PKG_CONFIG --libs "bcm_host brcmegl" 2>/dev/null`
+  pkg_cv_RPI_LIBS=`$PKG_CONFIG --libs "bcm_host" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -23670,9 +23680,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        RPI_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "bcm_host brcmegl" 2>&1`
+	        RPI_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "bcm_host" 2>&1`
         else
-	        RPI_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "bcm_host brcmegl" 2>&1`
+	        RPI_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "bcm_host" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$RPI_PKG_ERRORS" >&5
@@ -23690,13 +23700,92 @@ printf "%s\n" "yes" >&6; }
 	video_rpi=yes
 fi
 
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for brcmegl" >&5
+printf %s "checking for brcmegl... " >&6; }
+
+if test -n "$RPI_EGL_CFLAGS"; then
+    pkg_cv_RPI_EGL_CFLAGS="$RPI_EGL_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"brcmegl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "brcmegl") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_RPI_EGL_CFLAGS=`$PKG_CONFIG --cflags "brcmegl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$RPI_EGL_LIBS"; then
+    pkg_cv_RPI_EGL_LIBS="$RPI_EGL_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"brcmegl\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "brcmegl") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_RPI_EGL_LIBS=`$PKG_CONFIG --libs "brcmegl" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        RPI_EGL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "brcmegl" 2>&1`
+        else
+	        RPI_EGL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "brcmegl" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$RPI_EGL_PKG_ERRORS" >&5
+
+	video_rpi_egl=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+	video_rpi_egl=no
+else
+	RPI_EGL_CFLAGS=$pkg_cv_RPI_EGL_CFLAGS
+	RPI_EGL_LIBS=$pkg_cv_RPI_EGL_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	video_rpi_egl=yes
+fi
+
         if test x$video_rpi = xno; then
             if test x$ARCH = xnetbsd; then
                 RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
-                RPI_LIBS="-Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host"
+                RPI_LIBS="-L/usr/pkg/lib -lbcm_host"
             else
                 RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-                RPI_LIBS="-Wl,-rpath,/opt/vc/lib -L/opt/vc/lib -lbcm_host"
+                RPI_LIBS="-L/opt/vc/lib -lbcm_host"
+            fi
+        fi
+
+        if test x$video_rpi_egl = xno; then
+            if test x$ARCH = xnetbsd; then
+                RPI_EGL_LIBS="-Wl,-R/usr/pkg/lib"
+            else
+                RPI_EGL_LIBS="-Wl,-rpath,/opt/vc/lib"
             fi
         fi
 
@@ -23704,22 +23793,20 @@ fi
         ac_save_cflags="$CFLAGS"; ac_save_libs="$LIBS"
 
         # Add the Raspberry Pi compiler flags and libraries
-        CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_LIBS"
+        CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_EGL_LIBS $RPI_LIBS"
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Raspberry Pi 2/3" >&5
-printf %s "checking for Raspberry Pi 2/3... " >&6; }
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Raspberry Pi 0-3" >&5
+printf %s "checking for Raspberry Pi 0-3... " >&6; }
         have_video_rpi=no
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
           #include <bcm_host.h>
-          #include <EGL/eglplatform.h>
 
 int
 main (void)
 {
 
-          EGL_DISPMANX_WINDOW_T window;
           bcm_host_init();
 
   ;
@@ -23742,7 +23829,7 @@ printf "%s\n" "$have_video_rpi" >&6; }
             CFLAGS="$CFLAGS $RPI_CFLAGS"
             SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $RPI_LIBS"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $RPI_EGL_LIBS $RPI_LIBS"
             SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
 
 printf "%s\n" "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
