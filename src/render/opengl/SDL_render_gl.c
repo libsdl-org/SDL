@@ -412,17 +412,45 @@ convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
                GLint *internalFormat, GLenum *format, GLenum *type)
 {
     switch (pixel_format) {
+    case SDL_PIXELFORMAT_RGBA32:
+    case SDL_PIXELFORMAT_RGBX32:
+        *internalFormat = GL_RGBA;
+        *format = GL_RGBA;
+        *type = GL_UNSIGNED_BYTE;
+        break;
+    case SDL_PIXELFORMAT_RGB24:
+        *internalFormat = GL_RGB;
+        *format = GL_RGB;
+        *type = GL_UNSIGNED_BYTE;
+        break;
     case SDL_PIXELFORMAT_ARGB8888:
-    case SDL_PIXELFORMAT_RGB888:
+    case SDL_PIXELFORMAT_XRGB8888:
         *internalFormat = GL_RGBA8;
         *format = GL_BGRA;
         *type = GL_UNSIGNED_INT_8_8_8_8_REV;
         break;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
     case SDL_PIXELFORMAT_ABGR8888:
-    case SDL_PIXELFORMAT_BGR888:
+    case SDL_PIXELFORMAT_XBGR8888:
         *internalFormat = GL_RGBA8;
         *format = GL_RGBA;
         *type = GL_UNSIGNED_INT_8_8_8_8_REV;
+        break;
+#endif
+    case SDL_PIXELFORMAT_RGB565:
+        *internalFormat = GL_RGB;
+        *format = GL_RGB;
+        *type = GL_UNSIGNED_SHORT_5_6_5;
+        break;
+    case SDL_PIXELFORMAT_RGBA5551:
+        *internalFormat = GL_RGBA;
+        *format = GL_RGBA;
+        *type = GL_UNSIGNED_SHORT_5_5_5_1;
+        break;
+    case SDL_PIXELFORMAT_RGBA4444:
+        *internalFormat = GL_RGBA;
+        *format = GL_RGBA;
+        *type = GL_UNSIGNED_SHORT_4_4_4_4;
         break;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
@@ -564,6 +592,7 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         renderdata->glTexParameteri(textype, GL_TEXTURE_STORAGE_HINT_APPLE,
                                     GL_STORAGE_CACHED_APPLE);
     }
+    /* TODO: Should this handle other 32-bit pixel formats? */
     if (texture->access == SDL_TEXTUREACCESS_STREAMING && texture->format == SDL_PIXELFORMAT_ARGB8888 && (texture->w % 8) == 0) {
         renderdata->glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
         renderdata->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -635,10 +664,10 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 #endif
 
-    if (texture->format == SDL_PIXELFORMAT_ABGR8888 || texture->format == SDL_PIXELFORMAT_ARGB8888) {
-        data->shader = SHADER_RGBA;
-    } else {
+    if (texture->format == SDL_PIXELFORMAT_XBGR8888 || texture->format == SDL_PIXELFORMAT_XRGB8888 || texture->format == SDL_PIXELFORMAT_RGBX32) {
         data->shader = SHADER_RGB;
+    } else {
+        data->shader = SHADER_RGBA;
     }
 
 #if SDL_HAVE_YUV
@@ -1417,7 +1446,7 @@ static int GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
                                Uint32 pixel_format, void *pixels, int pitch)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
-    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ARGB8888;
+    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
     void *temp_pixels;
     int temp_pitch;
     GLint internalFormat;
@@ -1903,6 +1932,10 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
 #ifdef __MACOSX__
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
 #endif
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_ABGR8888,
+    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_XBGR8888,
+#endif
 
     renderer->rect_index_order[0] = 0;
     renderer->rect_index_order[1] = 1;
@@ -1961,11 +1994,15 @@ SDL_RenderDriver GL_RenderDriver = {
     GL_CreateRenderer,
     { "opengl",
       (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-      4,
-      { SDL_PIXELFORMAT_ARGB8888,
-        SDL_PIXELFORMAT_ABGR8888,
-        SDL_PIXELFORMAT_RGB888,
-        SDL_PIXELFORMAT_BGR888 },
+      8,
+      { SDL_PIXELFORMAT_RGBA32,
+        SDL_PIXELFORMAT_RGBX32,
+        SDL_PIXELFORMAT_RGB24,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_PIXELFORMAT_XRGB8888,
+        SDL_PIXELFORMAT_RGB565,
+        SDL_PIXELFORMAT_RGBA5551,
+        SDL_PIXELFORMAT_RGBA4444 },
       0,
       0 }
 };
