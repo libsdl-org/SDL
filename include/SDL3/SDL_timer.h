@@ -139,7 +139,8 @@ typedef Uint32 SDL_TimerID;
  * the one passed in, the periodic alarm continues, otherwise a new alarm is
  * scheduled. If the callback returns 0, the periodic alarm is cancelled.
  *
- * \param userdata an arbitrary pointer provided by the app through SDL_AddTimer, for its own use.
+ * \param userdata an arbitrary pointer provided by the app through
+ *                 SDL_AddTimer, for its own use.
  * \param timerID the current timer being processed
  * \param interval the current callback time interval.
  * \returns the new callback time interval, or 0 to disable further runs of
@@ -165,7 +166,8 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID,
  * timer interval. If the value returned from the callback is 0, the timer is
  * canceled.
  *
- * The callback is run on a separate thread, and for short timeouts can potentially be called before this function returns.
+ * The callback is run on a separate thread, and for short timeouts can
+ * potentially be called before this function returns.
  *
  * Timers take into account the amount of time it took to execute the
  * callback. For example, if the callback took 250 ms to execute and returned
@@ -200,7 +202,8 @@ extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerC
  * the one passed in, the periodic alarm continues, otherwise a new alarm is
  * scheduled. If the callback returns 0, the periodic alarm is cancelled.
  *
- * \param userdata an arbitrary pointer provided by the app through SDL_AddTimer, for its own use.
+ * \param userdata an arbitrary pointer provided by the app through
+ *                 SDL_AddTimer, for its own use.
  * \param timerID the current timer being processed
  * \param interval the current callback time interval.
  * \returns the new callback time interval, or 0 to disable further runs of
@@ -222,11 +225,12 @@ typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerI
  * If you use this function, you must pass `SDL_INIT_TIMER` to SDL_Init().
  *
  * The callback function is passed the current timer interval and the user
- * supplied parameter from the SDL_AddTimerNS() call and should return the next
- * timer interval. If the value returned from the callback is 0, the timer is
- * canceled.
+ * supplied parameter from the SDL_AddTimerNS() call and should return the
+ * next timer interval. If the value returned from the callback is 0, the
+ * timer is canceled.
  *
- * The callback is run on a separate thread, and for short timeouts can potentially be called before this function returns.
+ * The callback is run on a separate thread, and for short timeouts can
+ * potentially be called before this function returns.
  *
  * Timers take into account the amount of time it took to execute the
  * callback. For example, if the callback took 250 ns to execute and returned
