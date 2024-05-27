@@ -4727,10 +4727,13 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
 
     renderer->wanted_vsync = vsync ? SDL_TRUE : SDL_FALSE;
 
-    /* for the software renderer, forward eventually the call to the WindowTexture renderer */
+    /* for the software renderer, forward the call to the WindowTexture renderer */
 #if SDL_VIDEO_RENDER_SW
     if (renderer->software) {
-        if (SDL_SetWindowTextureVSync(renderer->window, vsync) == 0) {
+        if (!renderer->window) {
+            return SDL_Unsupported();
+        }
+        if (SDL_SetWindowTextureVSync(NULL, renderer->window, vsync) == 0) {
             renderer->simulate_vsync = SDL_FALSE;
             return 0;
         }
