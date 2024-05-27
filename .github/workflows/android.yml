@@ -43,11 +43,12 @@ jobs:
           ln -s ${{ github.workspace }} ${{ github.workspace }}/android-project/app/jni/SDL
           cd android-project
           ./gradlew -i assembleRelease
-     - name: Build library (Gradle)
-       if: ${{ matrix.platform.gradle }}
-       run: |
-         cd android-project
-         ./gradlew -i assembleRelease -PBUILD_AS_LIBRARY=1
+      - name: Build library (Gradle)
+        if: ${{ matrix.platform.gradle }}
+        run: |
+          ln -s ${{ github.workspace }} ${{ github.workspace }}/android-project/app/jni/SDL
+          cd android-project
+          ./gradlew -i assembleRelease -PBUILD_AS_LIBRARY=1
       - name: Setup (CMake)
         if: ${{ matrix.platform.cmake }}
         run: |
