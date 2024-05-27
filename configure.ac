@@ -1848,18 +1848,27 @@ CheckNativeClient()
 CheckRPI()
 {
     AC_ARG_ENABLE(video-rpi,
-[AS_HELP_STRING([--enable-video-rpi], [use Raspberry Pi 2/3 video driver [default=yes]])],
+[AS_HELP_STRING([--enable-video-rpi], [use Raspberry Pi 0-3 video driver [default=yes]])],
                   , enable_video_rpi=yes)
     if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
-        PKG_CHECK_MODULES([RPI], [bcm_host brcmegl], video_rpi=yes, video_rpi=no)
+        PKG_CHECK_MODULES([RPI], [bcm_host], video_rpi=yes, video_rpi=no)
+        PKG_CHECK_MODULES([RPI_EGL], [brcmegl], video_rpi_egl=yes, video_rpi_egl=no)
 
         if test x$video_rpi = xno; then
             if test x$ARCH = xnetbsd; then
                 RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
-                RPI_LIBS="-Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host"
+                RPI_LIBS="-L/usr/pkg/lib -lbcm_host"
             else
                 RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-                RPI_LIBS="-Wl,-rpath,/opt/vc/lib -L/opt/vc/lib -lbcm_host"
+                RPI_LIBS="-L/opt/vc/lib -lbcm_host"
+            fi
+        fi
+
+        if test x$video_rpi_egl = xno; then
+            if test x$ARCH = xnetbsd; then
+                RPI_EGL_LIBS="-Wl,-R/usr/pkg/lib"
+            else
+                RPI_EGL_LIBS="-Wl,-rpath,/opt/vc/lib"
             fi
         fi
 
@@ -1867,15 +1876,13 @@ CheckRPI()
         ac_save_cflags="$CFLAGS"; ac_save_libs="$LIBS"
 
         # Add the Raspberry Pi compiler flags and libraries
-        CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_LIBS"
+        CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_EGL_LIBS $RPI_LIBS"
 
-        AC_MSG_CHECKING(for Raspberry Pi 2/3)
+        AC_MSG_CHECKING(for Raspberry Pi 0-3)
         have_video_rpi=no
         AC_LINK_IFELSE([AC_LANG_PROGRAM([[
           #include <bcm_host.h>
-          #include <EGL/eglplatform.h>
         ]], [[
-          EGL_DISPMANX_WINDOW_T window;
           bcm_host_init();
         ]])], [have_video_rpi=yes],[])
         AC_MSG_RESULT($have_video_rpi)
@@ -1887,7 +1894,7 @@ CheckRPI()
             CFLAGS="$CFLAGS $RPI_CFLAGS"
             SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $RPI_LIBS"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $RPI_EGL_LIBS $RPI_LIBS"
             SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
             AC_DEFINE(SDL_VIDEO_DRIVER_RPI, 1, [ ])
             SUMMARY_video="${SUMMARY_video} rpi"
