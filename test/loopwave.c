@@ -39,7 +39,7 @@ static int fillerup(void)
     if (SDL_GetAudioStreamQueued(stream) < minimum) {
         SDL_PutAudioStreamData(stream, wave.sound, wave.soundlen);
     }
-    return 0;
+    return SDL_APP_CONTINUE;
 }
 
 int SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -53,7 +53,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
     if (!state) {
-        return 1;
+        return SDL_APP_SUCCESS;
     }
 
     /* Enable standard application logging */
@@ -82,21 +82,21 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     filename = GetResourceFilename(filename, "sample.wav");
 
     if (!filename) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     /* Load the wave file into memory */
     if (SDL_LoadWAV(filename, &wave.spec, &wave.sound, &wave.soundlen) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
         SDL_free(filename);
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     SDL_free(filename);
@@ -112,16 +112,16 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &wave.spec, NULL, NULL);
     if (!stream) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create audio stream: %s\n", SDL_GetError());
-        return -1;
+        return SDL_APP_FAILURE;
     }
     SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
 
-    return 0;
+    return SDL_APP_CONTINUE;
 }
 
 int SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
-    return (event->type == SDL_EVENT_QUIT) ? 1 : 0;
+    return (event->type == SDL_EVENT_QUIT) ? SDL_APP_SUCCESS : SDL_APP_CONTINUE;
 }
 
 int SDL_AppIterate(void *appstate)

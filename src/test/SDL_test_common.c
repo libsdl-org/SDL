@@ -22,6 +22,10 @@
 /* Ported from original test/common.c file. */
 #include <SDL3/SDL_test.h>
 
+#define SDL_MAIN_NOIMPL
+#define SDL_MAIN_USE_CALLBACKS
+#include <SDL3/SDL_main.h>
+
 static const char *common_usage[] = {
     "[-h | --help]",
     "[--trackmem]",
@@ -2400,19 +2404,19 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
             }
             break;
         case SDLK_ESCAPE:
-            return 1;
+            return SDL_APP_SUCCESS;
         default:
             break;
         }
         break;
     }
     case SDL_EVENT_QUIT:
-        return 1;
+        return SDL_APP_SUCCESS;
     default:
         break;
     }
 
-    return 0;  /* keep going */
+    return SDL_APP_CONTINUE;
 }
 
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)

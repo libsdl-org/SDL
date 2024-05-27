@@ -1042,7 +1042,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
 
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     if (!state) {
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     state->window_flags |= SDL_WINDOW_RESIZABLE;
@@ -1060,13 +1060,13 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
                 NULL
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
-            return -1;
+            return SDL_APP_FAILURE;
         }
         i += consumed;
     }
 
     if (!SDLTest_CommonInit(state)) {
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     if (state->audio_id) {
@@ -1088,7 +1088,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     CreateDefaultPhysicalDevice(SDL_FALSE);
     CreateDefaultPhysicalDevice(SDL_TRUE);
 
-    return 0;
+    return SDL_APP_CONTINUE;
 }
 
 
@@ -1229,7 +1229,7 @@ int SDL_AppIterate(void *appstate)
         SDL_Delay(10);
     }
 
-    return 0;  /* keep going. */
+    return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void *appstate)

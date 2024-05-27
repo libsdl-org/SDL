@@ -226,6 +226,8 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
         while (dbus->message_iter_get_arg_type(&uri_entry) == DBUS_TYPE_STRING)
         {
+            const char *prefix = "file://";
+            const int prefix_len = 7;
             const char *uri = NULL;
 
             if (current >= length - 1) {
@@ -241,8 +243,8 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
             /* https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileChooser.html */
             /* Returned paths will always start with 'file://'; truncate it */
-            if (SDL_strncmp(uri, "file://", SDL_strlen("file://"))) {
-                path[current] = uri + SDL_strlen("file://");
+            if (SDL_strncmp(uri, prefix, prefix_len) == 0) {
+                path[current] = uri + prefix_len;
             } else if (SDL_strstr(uri, "://")) {
                 SDL_SetError("Portal dialogs: Unsupported protocol: %s", uri);
                 signal_data->callback(signal_data->userdata, NULL, -1);

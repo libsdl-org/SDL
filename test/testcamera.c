@@ -34,14 +34,14 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_CAMERA);
     if (!state) {
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     /* Enable standard application logging */
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     state->num_windows = 1;
@@ -49,13 +49,13 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     /* Load the SDL library */
     if (!SDLTest_CommonInit(state)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     window = state->windows[0];
     if (!window) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
@@ -63,13 +63,13 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     renderer = state->renderers[0];
     if (!renderer) {
         /* SDL_Log("Couldn't create renderer: %s", SDL_GetError()); */
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     SDL_CameraDeviceID *devices = SDL_GetCameraDevices(&devcount);
     if (!devices) {
         SDL_Log("SDL_GetCameraDevices failed: %s", SDL_GetError());
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     SDL_Log("Saw %d camera devices.", devcount);
@@ -94,7 +94,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
 
     if (!devid) {
         SDL_Log("No cameras available?");
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     SDL_CameraSpec *pspec = &spec;
@@ -104,10 +104,10 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     camera = SDL_OpenCameraDevice(devid, pspec);
     if (!camera) {
         SDL_Log("Failed to open camera device: %s", SDL_GetError());
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
-    return 0;  /* start the main app loop. */
+    return SDL_APP_CONTINUE;
 }
 
 
@@ -115,7 +115,7 @@ static int FlipCamera(void)
 {
     static Uint64 last_flip = 0;
     if ((SDL_GetTicks() - last_flip) < 3000) {  /* must wait at least 3 seconds between flips. */
-        return 0;
+        return SDL_APP_CONTINUE;
     }
 
     if (camera) {
@@ -145,14 +145,14 @@ static int FlipCamera(void)
             camera = SDL_OpenCameraDevice(nextcam, NULL);
             if (!camera) {
                 SDL_Log("Failed to open camera device: %s", SDL_GetError());
-                return -1;
+                return SDL_APP_FAILURE;
             }
 
             last_flip = SDL_GetTicks();
         }
     }
 
-    return 0;
+    return SDL_APP_CONTINUE;
 }
 
 int SDL_AppEvent(void *appstate, const SDL_Event *event)
@@ -162,10 +162,10 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             const SDL_Keycode sym = event->key.keysym.sym;
             if (sym == SDLK_ESCAPE || sym == SDLK_AC_BACK) {
                 SDL_Log("Key : Escape!");
-                return 1;
+                return SDL_APP_SUCCESS;
             } else if (sym == SDLK_SPACE) {
                 FlipCamera();
-                return 0;
+                return SDL_APP_CONTINUE;
             }
             break;
         }
@@ -182,7 +182,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             SDL_Log("Camera approved!");
             if (SDL_GetCameraFormat(camera, &spec) < 0) {
                 SDL_Log("Couldn't get camera spec: %s", SDL_GetError());
-                return -1;
+                return SDL_APP_FAILURE;
             }
 
             /* Resize the window to match */
@@ -193,14 +193,14 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             texture = SDL_CreateTexture(renderer, spec.format, SDL_TEXTUREACCESS_STREAMING, spec.width, spec.height);
             if (!texture) {
                 SDL_Log("Couldn't create texture: %s", SDL_GetError());
-                return -1;
+                return SDL_APP_FAILURE;
             }
             break;
 
         case SDL_EVENT_CAMERA_DEVICE_DENIED:
             SDL_Log("Camera denied!");
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Camera permission denied!", "User denied access to the camera!", window);
-            return -1;
+            return SDL_APP_FAILURE;
         default:
             break;
     }
@@ -258,7 +258,7 @@ int SDL_AppIterate(void *appstate)
 
     SDL_RenderPresent(renderer);
 
-    return 0;  /* keep iterating. */
+    return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void *appstate)

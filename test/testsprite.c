@@ -422,7 +422,7 @@ int SDL_AppIterate(void *appstate)
         frames = 0;
     }
 
-    return 0;  /* keep going */
+    return SDL_APP_CONTINUE;
 }
 
 int SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -437,7 +437,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     for (i = 1; i < argc;) {
@@ -495,7 +495,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
                          * Use an 'indices' array */
                         use_rendergeometry = 2;
                     } else {
-                        return -1;
+                        return SDL_APP_FAILURE;
                     }
                 }
                 consumed = 2;
@@ -520,12 +520,12 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
                 NULL
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
-            return -1;
+            return SDL_APP_FAILURE;
         }
         i += consumed;
     }
     if (!SDLTest_CommonInit(state)) {
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     /* Create the windows, initialize the renderers, and load the textures */
@@ -533,7 +533,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
     if (!sprites) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
-        return -1;
+        return SDL_APP_FAILURE;
     }
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
@@ -541,7 +541,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_RenderClear(renderer);
     }
     if (LoadSprite(icon) < 0) {
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     /* Allocate memory for the sprite info */
@@ -549,7 +549,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
     if (!positions || !velocities) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     /* Position sprites and set their velocities using the fuzzer */
@@ -578,6 +578,6 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     frames = 0;
     next_fps_check = SDL_GetTicks() + fps_check_delay;
 
-    return 0;
+    return SDL_APP_CONTINUE;
 }
 

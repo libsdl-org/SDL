@@ -351,7 +351,7 @@ int main(int argc, char **argv)
                 yuv_format = SDL_PIXELFORMAT_NV21;
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--rgb555") == 0) {
-                rgb_format = SDL_PIXELFORMAT_RGB555;
+                rgb_format = SDL_PIXELFORMAT_XRGB1555;
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--rgb565") == 0) {
                 rgb_format = SDL_PIXELFORMAT_RGB565;

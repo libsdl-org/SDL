@@ -70,7 +70,7 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
                 mode->format = SDL_PIXELFORMAT_RGB565;
                 break;
             case 0x7C00:
-                mode->format = SDL_PIXELFORMAT_RGB555;
+                mode->format = SDL_PIXELFORMAT_XRGB1555;
                 break;
             }
         } else if (bmi->bmiHeader.biCompression == BI_RGB) {
@@ -96,7 +96,7 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
                 mode->format = SDL_PIXELFORMAT_RGB565;
                 break;
             case 15:
-                mode->format = SDL_PIXELFORMAT_RGB555;
+                mode->format = SDL_PIXELFORMAT_XRGB1555;
                 break;
             case 8:
                 mode->format = SDL_PIXELFORMAT_INDEX8;

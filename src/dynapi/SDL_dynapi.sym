@@ -9,6 +9,7 @@ SDL3_0.0.0 {
     SDL_AddGamepadMappingsFromIO;
     SDL_AddHintCallback;
     SDL_AddTimer;
+    SDL_AddTimerNS;
     SDL_AddVulkanRenderSemaphores;
     SDL_AllocateEventMemory;
     SDL_AndroidBackButton;
@@ -473,6 +474,7 @@ SDL3_0.0.0 {
     SDL_GetWindowSize;
     SDL_GetWindowSizeInPixels;
     SDL_GetWindowSurface;
+    SDL_GetWindowSurfaceVSync;
     SDL_GetWindowTitle;
     SDL_GlobDirectory;
     SDL_GlobStorageDirectory;
@@ -764,6 +766,7 @@ SDL3_0.0.0 {
     SDL_SetWindowResizable;
     SDL_SetWindowShape;
     SDL_SetWindowSize;
+    SDL_SetWindowSurfaceVSync;
     SDL_SetWindowTitle;
     SDL_SetWindowsMessageHook;
     SDL_SetX11EventHook;

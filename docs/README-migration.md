@@ -1004,6 +1004,14 @@ The following functions have been renamed:
 * SDL_MasksToPixelFormatEnum() => SDL_GetPixelFormatEnumForMasks()
 * SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormatEnum()
 
+The following symbols have been renamed:
+* SDL_PIXELFORMAT_BGR444 => SDL_PIXELFORMAT_XBGR4444
+* SDL_PIXELFORMAT_BGR555 => SDL_PIXELFORMAT_XBGR1555
+* SDL_PIXELFORMAT_BGR888 => SDL_PIXELFORMAT_XBGR8888
+* SDL_PIXELFORMAT_RGB444 => SDL_PIXELFORMAT_XRGB4444
+* SDL_PIXELFORMAT_RGB555 => SDL_PIXELFORMAT_XRGB1555
+* SDL_PIXELFORMAT_RGB888 => SDL_PIXELFORMAT_XRGB8888
+
 The following macros have been removed:
 * SDL_Colour - use SDL_Color instead
 
@@ -1668,6 +1676,13 @@ If you were using this macro for other things besides SDL ticks values, you can 
 ```c
 #define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
 ```
+
+The callback passed to SDL_AddTimer() has changed parameters to:
+```c
+Uint32 SDLCALL TimerCallback(void *userdata, SDL_TimerID timerID, Uint32 interval);
+````
+
+The return value of SDL_RemoveTimer() has changed to the standard int error code.
 
 ## SDL_touch.h
 

@@ -110,6 +110,7 @@ struct SDL_WaylandInput
     struct zwp_input_timestamps_v1 *touch_timestamps;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
+    struct Wayland_CursorData *current_cursor;
     Uint32 keyboard_id;
     Uint32 pointer_id;
     uint32_t pointer_enter_serial;

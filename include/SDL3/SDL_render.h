@@ -2142,6 +2142,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddVulkanRenderSemaphores(SDL_Renderer *rend
 /**
  * Toggle VSync of the given renderer.
  *
+ * When a renderer is created, vsync defaults to SDL_RENDERER_VSYNC_DISABLED.
+ *
  * \param[inout] renderer The renderer to toggle
  * \param vsync the vertical refresh sync interval, 1 to synchronize present
  *              with every vertical refresh, 2 to synchronize present with
@@ -2168,7 +2170,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetRenderVSync(SDL_Renderer *renderer, int v
  *
  * \param[inout] renderer The renderer to toggle
  * \param vsync an int filled with the current vertical refresh sync interval.
- *              See SDL_SetRenderVSync for the meaning of the value.
+ *              See SDL_SetRenderVSync() for the meaning of the value.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
