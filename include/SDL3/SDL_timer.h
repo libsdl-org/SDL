@@ -179,9 +179,9 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID,
  * callback needs to adjust for variances.
  *
  * \param interval the timer delay, in milliseconds, passed to `callback`
- * \param callback the SDL_TimerCallback function to call when the specified
+ * \param[in] callback the SDL_TimerCallback function to call when the specified
  *                 `interval` elapses
- * \param userdata a pointer that is passed to `callback`
+ * \param[inout,opt] userdata a pointer that is passed to `callback`
  * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
  *          information.
  *
@@ -242,10 +242,9 @@ typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerI
  * callback needs to adjust for variances.
  *
  * \param interval the timer delay, in nanoseconds, passed to `callback`
- * \param callback the SDL_TimerCallback function to call when the specified
+ * \param[in] callback the SDL_TimerCallback function to call when the specified
  *                 `interval` elapses
- * \param userdata a pointer that is passed to `callback`
- * \param[inout,opt] param a pointer that is passed to `callback`
+ * \param[inout,opt] userdata a pointer that is passed to `callback`
  * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
  *          information.
  *

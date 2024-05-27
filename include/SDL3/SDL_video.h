@@ -1807,7 +1807,7 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_GetWindowSurface(SDL_Window *window
  * When a window surface is created, vsync defaults to
  * SDL_WINDOW_SURFACE_VSYNC_DISABLED.
  *
- * \param window the window
+ * \param[inout] window the window
  * \param vsync the vertical refresh sync interval, 1 to synchronize present
  *              with every vertical refresh, 2 to synchronize present with
  *              every second vertical refresh, etc.,
@@ -1831,8 +1831,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSurfaceVSync(SDL_Window *window, in
 /**
  * Get VSync for the window surface.
  *
- * \param window the window to query
- * \param vsync an int filled with the current vertical refresh sync interval.
+ * \param[inout] window the window to query
+ * \param[out] vsync an int filled with the current vertical refresh sync interval.
  *              See SDL_SetWindowSurfaceVSync() for the meaning of the value.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
