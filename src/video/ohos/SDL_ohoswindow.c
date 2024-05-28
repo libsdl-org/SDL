@@ -112,8 +112,8 @@ void OHOS_DestroyWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
     SDL_Log("Destroy window is Calling.");
     SDL_LockMutex(g_ohosPageMutex);
 
-    if (!(((window->flags & SDL_WINDOW_RECREATE) != 0) ||
-        ((window->flags & SDL_WINDOW_FOREIGN_OHOS) == 0))) {
+    if (((window->flags & SDL_WINDOW_RECREATE) == 0) &&
+        ((window->flags & SDL_WINDOW_FOREIGN_OHOS) == 0)) {
         OHOS_RemoveChildNode(window->ohosHandle);
     }
 
