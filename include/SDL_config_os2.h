@@ -114,9 +114,6 @@
 #define HAVE_MEMCPY 1
 #define HAVE_MEMMOVE 1
 #define HAVE_MEMCMP 1
-#define HAVE_WCSLEN 1
-#define HAVE_WCSLCPY 1
-#define HAVE_WCSLCAT 1
 #define HAVE_WCSCMP 1
 #define HAVE__WCSICMP 1
 #define HAVE__WCSNICMP 1
