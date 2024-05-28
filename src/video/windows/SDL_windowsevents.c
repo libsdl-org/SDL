@@ -74,6 +74,9 @@
 #ifndef WM_MOUSEHWHEEL
 #define WM_MOUSEHWHEEL 0x020E
 #endif
+#ifndef RI_MOUSE_HWHEEL
+#define RI_MOUSE_HWHEEL 0x0800
+#endif
 #ifndef WM_POINTERUPDATE
 #define WM_POINTERUPDATE 0x0245
 #endif
