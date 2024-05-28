@@ -1917,6 +1917,14 @@ elseif(WINDOWS)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
   check_include_file(shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
+  check_c_source_compiles("
+    #include <windows.h>
+    #include <mfapi.h>
+    #include <mfidl.h>
+    #include <mfreadwrite.h>
+    int main(int argc, char **argv) { return 0; }
+    " HAVE_MFAPI_H
+  )
 
   if(SDL_AUDIO)
     if(HAVE_DSOUND_H AND NOT WINDOWS_STORE)
@@ -2113,7 +2121,7 @@ elseif(WINDOWS)
   endif()
 
   if(SDL_CAMERA)
-    if(NOT WINDOWS_STORE)
+    if(HAVE_MFAPI_H AND NOT WINDOWS_STORE)
       set(HAVE_CAMERA TRUE)
       set(SDL_CAMERA_DRIVER_MEDIAFOUNDATION 1)
       sdl_glob_sources("${SDL3_SOURCE_DIR}/src/camera/mediafoundation/*.c")
