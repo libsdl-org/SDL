@@ -1403,27 +1403,32 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, in
 /**
  * Request that the aspect ratio of a window's client area be set.
  *
- * The aspect ratio is the ratio of width divided by height, e.g. 2560x1600 would be 1.6. Larger aspect ratios are wider and smaller aspect ratios are narrower.
+ * The aspect ratio is the ratio of width divided by height, e.g. 2560x1600
+ * would be 1.6. Larger aspect ratios are wider and smaller aspect ratios are
+ * narrower.
  *
  * If, at the time of this request, the window in a fixed-size state, such as
  * maximized or fullscreen, the request will be deferred until the window
  * exits this state and becomes resizable again.
  *
  * On some windowing systems, this request is asynchronous and the new window
- * aspect ratio may not have have been applied immediately upon the return of this
- * function. If an immediate change is required, call SDL_SyncWindow() to
+ * aspect ratio may not have have been applied immediately upon the return of
+ * this function. If an immediate change is required, call SDL_SyncWindow() to
  * block until the changes have taken effect.
  *
  * When the window size changes, an SDL_EVENT_WINDOW_RESIZED event will be
  * emitted with the new window dimensions. Note that the new dimensions may
- * not match the exact aspect ratio requested, as some windowing systems can restrict
- * the window size in certain scenarios (e.g. constraining the size of the
- * content area to remain within the usable desktop bounds). Additionally, as
- * this is just a request, it can be denied by the windowing system.
+ * not match the exact aspect ratio requested, as some windowing systems can
+ * restrict the window size in certain scenarios (e.g. constraining the size
+ * of the content area to remain within the usable desktop bounds).
+ * Additionally, as this is just a request, it can be denied by the windowing
+ * system.
  *
  * \param window the window to change
- * \param min_aspect the minimum aspect ratio of the window, or 0.0f for no limit
- * \param max_aspect the maximum aspect ratio of the window, or 0.0f for no limit
+ * \param min_aspect the minimum aspect ratio of the window, or 0.0f for no
+ *                   limit
+ * \param max_aspect the maximum aspect ratio of the window, or 0.0f for no
+ *                   limit
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1438,8 +1443,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowAspectRatio(SDL_Window *window, flo
  * Get the size of a window's client area.
  *
  * \param window the window to query the width and height from
- * \param min_aspect a pointer filled in with the minimum aspect ratio of the window, may be NULL
- * \param max_aspect a pointer filled in with the maximum aspect ratio of the window, may be NULL
+ * \param min_aspect a pointer filled in with the minimum aspect ratio of the
+ *                   window, may be NULL
+ * \param max_aspect a pointer filled in with the maximum aspect ratio of the
+ *                   window, may be NULL
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
