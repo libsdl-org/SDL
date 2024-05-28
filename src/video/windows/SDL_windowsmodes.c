@@ -561,8 +561,8 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
                 SDL_SetDisplayContentScale(existing_display, content_scale);
 #ifdef HAVE_DXGI1_6_H
                 WIN_GetHDRProperties(_this, hMonitor, &HDR);
-#endif
                 SDL_SetDisplayHDRProperties(existing_display, &HDR);
+#endif
             }
             goto done;
         }
