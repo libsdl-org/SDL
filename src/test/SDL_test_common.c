@@ -1289,7 +1289,10 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
             }
             SDL_free(displays);
 
-            if (SDL_WINDOWPOS_ISCENTERED(state->window_x)) {
+            if (SDL_WINDOWPOS_ISUNDEFINED(state->window_x)) {
+                state->window_x = SDL_WINDOWPOS_UNDEFINED_DISPLAY(state->displayID);
+                state->window_y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(state->displayID);
+            } else if (SDL_WINDOWPOS_ISCENTERED(state->window_x)) {
                 state->window_x = SDL_WINDOWPOS_CENTERED_DISPLAY(state->displayID);
                 state->window_y = SDL_WINDOWPOS_CENTERED_DISPLAY(state->displayID);
             }
