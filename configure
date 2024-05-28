@@ -27513,11 +27513,32 @@ then :
   have_d3d11=yes
 fi
 
-        ac_fn_c_check_header_compile "$LINENO" "d3d12.h" "ac_cv_header_d3d12_h" "$ac_includes_default"
-if test "x$ac_cv_header_d3d12_h" = xyes
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for compatible d3d12 headers" >&5
+printf %s "checking for compatible d3d12 headers... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <d3d12.h>
+#include <d3d12sdklayers.h>
+ID3D12Device1 *device;
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
 then :
   have_d3d12=yes
+else $as_nop
+  have_d3d12=no
 fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_d3d12" >&5
+printf "%s\n" "$have_d3d12" >&6; }
 
         ac_fn_c_check_header_compile "$LINENO" "ddraw.h" "ac_cv_header_ddraw_h" "$ac_includes_default"
 if test "x$ac_cv_header_ddraw_h" = xyes

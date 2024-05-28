@@ -3343,7 +3343,14 @@ CheckDIRECTX()
     if test x$enable_directx = xyes; then
         AC_CHECK_HEADER(d3d9.h, have_d3d=yes)
         AC_CHECK_HEADER(d3d11_1.h, have_d3d11=yes)
-        AC_CHECK_HEADER(d3d12.h, have_d3d12=yes)
+        AC_MSG_CHECKING(for compatible d3d12 headers)
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <d3d12.h>
+#include <d3d12sdklayers.h>
+ID3D12Device1 *device;
+            ]])], [have_d3d12=yes],[have_d3d12=no])
+        AC_MSG_RESULT($have_d3d12)
+
         AC_CHECK_HEADER(ddraw.h, have_ddraw=yes)
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)
