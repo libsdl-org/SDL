@@ -25,8 +25,10 @@
 #include "SDL_windowsvideo.h"
 #include "../../events/SDL_displayevents_c.h"
 
+#ifdef HAVE_DXGI1_6_H
 #define COBJMACROS
 #include <dxgi1_6.h>
+#endif
 
 /* Windows CE compatibility */
 #ifndef CDS_FULLSCREEN
@@ -337,6 +339,7 @@ WIN_GetDisplayNameVista_failed:
     return NULL;
 }
 
+#ifdef HAVE_DXGI1_6_H
 static SDL_bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
 {
     typedef HRESULT (WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
@@ -353,7 +356,7 @@ static SDL_bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
     }
 #endif
     if (CreateDXGIFactoryFunc) {
-        static const GUID SDL_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } }; 
+        static const GUID SDL_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } };
         static const GUID SDL_IID_IDXGIOutput6 = { 0x068346e8, 0xaaec, 0x4b84, { 0xad, 0xd7, 0x13, 0x7f, 0x51, 0x3f, 0x77, 0xa1 } };
         IDXGIFactory1 *dxgiFactory;
 
@@ -488,6 +491,7 @@ static void WIN_GetHDRProperties(SDL_VideoDevice *_this, HMONITOR hMonitor, SDL_
         }
     }
 }
+#endif /* HAVE_DXGI1_6_H */
 
 static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONITORINFOEXW *info, int *display_index)
 {
@@ -555,7 +559,9 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
                 }
                 SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_ORIENTATION, current_orientation);
                 SDL_SetDisplayContentScale(existing_display, content_scale);
+#ifdef HAVE_DXGI1_6_H
                 WIN_GetHDRProperties(_this, hMonitor, &HDR);
+#endif
                 SDL_SetDisplayHDRProperties(existing_display, &HDR);
             }
             goto done;
@@ -588,7 +594,9 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     display.device = _this;
     display.driverdata = displaydata;
     WIN_GetDisplayBounds(_this, &display, &displaydata->bounds);
+#ifdef HAVE_DXGI1_6_H
     WIN_GetHDRProperties(_this, hMonitor, &display.HDR);
+#endif
     SDL_AddVideoDisplay(&display, SDL_FALSE);
     SDL_free(display.name);
 
