@@ -47,6 +47,10 @@ static const GUID SDL_MF_MT_SUBTYPE = { 0xf7e34c9a, 0x42e8, 0x4714, { 0xb7, 0x4b
 static const GUID SDL_MF_MT_FRAME_SIZE = { 0x1652c33d, 0xd6b2, 0x4012, { 0xb8, 0x34, 0x72, 0x03, 0x08, 0x49, 0xa3, 0x7d } };
 static const GUID SDL_MF_MT_FRAME_RATE = { 0xc459a2e8, 0x3d2c, 0x4e44, { 0xb1, 0x32, 0xfe, 0xe5, 0x15, 0x6c, 0x7b, 0xb0 } };
 static const GUID SDL_MFMediaType_Video = { 0x73646976, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 } };
+static const IID SDL_MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME = { 0x60d0e559, 0x52f8, 0x4fa2, { 0xbb, 0xce, 0xac, 0xdb, 0x34, 0xa8, 0xec, 0x1 } };
+static const IID SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE = { 0xc60ac5fe, 0x252a, 0x478f, { 0xa0, 0xef, 0xbc, 0x8f, 0xa5, 0xf7, 0xca, 0xd3 } };
+static const IID SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK = { 0x58f0aad8, 0x22bf, 0x4f8a, { 0xbb, 0x3d, 0xd2, 0xc4, 0x97, 0x8c, 0x6e, 0x2f } };
+static const IID SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID = { 0x8ac3587a, 0x4ae7, 0x42d8, { 0x99, 0xe0, 0x0a, 0x60, 0x13, 0xee, 0xf9, 0x0f } };
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -535,10 +539,10 @@ static int MEDIAFOUNDATION_OpenDevice(SDL_CameraDevice *device, const SDL_Camera
     ret = pMFCreateAttributes(&attrs, 1);
     CHECK_HRESULT("MFCreateAttributes", ret);
 
-    ret = IMFAttributes_SetGUID(attrs, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+    ret = IMFAttributes_SetGUID(attrs, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
     CHECK_HRESULT("IMFAttributes_SetGUID(srctype)", ret);
 
-    ret = IMFAttributes_SetString(attrs, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, wstrsymlink);
+    ret = IMFAttributes_SetString(attrs, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, wstrsymlink);
     CHECK_HRESULT("IMFAttributes_SetString(symlink)", ret);
 
     ret = pMFCreateDeviceSource(attrs, &source);
@@ -775,14 +779,14 @@ static SDL_bool FindMediaFoundationCameraDeviceBySymlink(SDL_CameraDevice *devic
 
 static void MaybeAddDevice(IMFActivate *activation)
 {
-    char *symlink = QueryActivationObjectString(activation, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK);
+    char *symlink = QueryActivationObjectString(activation, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK);
 
     if (SDL_FindPhysicalCameraDeviceByCallback(FindMediaFoundationCameraDeviceBySymlink, symlink)) {
         SDL_free(symlink);
         return;  // already have this one.
     }
 
-    char *name = QueryActivationObjectString(activation, &MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME);
+    char *name = QueryActivationObjectString(activation, &SDL_MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME);
     if (name && symlink) {
         IMFMediaSource *source = NULL;
         // "activating" here only creates an object, it doesn't open the actual camera hardware or start recording.
@@ -814,8 +818,7 @@ static void MEDIAFOUNDATION_DetectDevices(void)
         return;  // oh well, no cameras for you.
     }
 
-    // !!! FIXME: We need these GUIDs hardcoded in this file.
-    ret = IMFAttributes_SetGUID(attrs, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+    ret = IMFAttributes_SetGUID(attrs, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
     if (FAILED(ret)) {
         IMFAttributes_Release(attrs);
         return;  // oh well, no cameras for you.
