@@ -1808,6 +1808,11 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
                         X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
                     }
+                } else if (data->in_initial_configuration) {
+                    /* Don't clear this for 0 borders in the initial configuration sequence,
+                     * or the final position won't be sent later.
+                     */
+                    data->disable_size_position_events = SDL_TRUE;
                 }
             }
             if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {

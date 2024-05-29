@@ -99,6 +99,7 @@ struct SDL_WindowData
 
     SDL_bool window_was_maximized;
     SDL_bool disable_size_position_events;
+    SDL_bool in_initial_configuration;
     SDL_bool previous_borders_nonzero;
     SDL_bool toggle_borders;
     SDL_HitTestResult hit_test_result;

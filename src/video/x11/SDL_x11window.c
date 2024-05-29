@@ -1419,6 +1419,10 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
      * Don't emit size and position events during the initial configure events, they will be sent afterwards, when the
      * final coordinates are available to avoid sending garbage values.
      */
+    int target_x = window->floating.x;
+    int target_y = window->floating.y;
+
+    data->in_initial_configuration = SDL_TRUE;
     data->disable_size_position_events = SDL_TRUE;
     X11_XSync(display, False);
     X11_PumpEvents(_this);
@@ -1430,15 +1434,16 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
 
         /* If the borders appeared, this happened automatically in the event system, otherwise, set the position now. */
-        if (data->disable_size_position_events && (window->x != x || window->y != y)) {
+        if (data->disable_size_position_events) {
             data->pending_operation = X11_PENDING_OP_MOVE;
-            X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+            X11_XMoveWindow(display, data->xwindow, target_x, target_y);
         }
 
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, data->last_xconfigure.width, data->last_xconfigure.height);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
     }
 
+    data->in_initial_configuration = SDL_FALSE;
     data->disable_size_position_events = SDL_FALSE;
 }
 
