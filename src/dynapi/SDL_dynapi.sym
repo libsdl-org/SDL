@@ -209,6 +209,7 @@ SDL3_0.0.0 {
     SDL_GetDaysInMonth;
     SDL_GetDefaultAssertionHandler;
     SDL_GetDefaultCursor;
+    SDL_GetDefaultKeyFromScancode;
     SDL_GetDesktopDisplayMode;
     SDL_GetDisplayBounds;
     SDL_GetDisplayContentScale;

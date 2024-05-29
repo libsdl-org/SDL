@@ -234,6 +234,7 @@
 #define SDL_GetDaysInMonth SDL_GetDaysInMonth_REAL
 #define SDL_GetDefaultAssertionHandler SDL_GetDefaultAssertionHandler_REAL
 #define SDL_GetDefaultCursor SDL_GetDefaultCursor_REAL
+#define SDL_GetDefaultKeyFromScancode SDL_GetDefaultKeyFromScancode_REAL
 #define SDL_GetDesktopDisplayMode SDL_GetDesktopDisplayMode_REAL
 #define SDL_GetDisplayBounds SDL_GetDisplayBounds_REAL
 #define SDL_GetDisplayContentScale SDL_GetDisplayContentScale_REAL

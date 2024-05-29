@@ -203,6 +203,21 @@ extern SDL_DECLSPEC SDL_Keymod SDLCALL SDL_GetModState(void);
 extern SDL_DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
 
 /**
+ * Get the key code corresponding to the given scancode according to a default en_US keyboard layout.
+ *
+ * See SDL_Keycode for details.
+ *
+ * \param scancode the desired SDL_Scancode to query
+ * \returns the SDL_Keycode that corresponds to the given SDL_Scancode.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetKeyName
+ * \sa SDL_GetScancodeFromKey
+ */
+extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode);
+
+/**
  * Get the key code corresponding to the given scancode according to the
  * current keyboard layout.
  *
