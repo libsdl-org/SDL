@@ -779,6 +779,38 @@ int SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallb
     return 0;
 }
 
+static void SDLCALL SDL_DumpPropertiesCallback(void *userdata, SDL_PropertiesID props, const char *name)
+{
+    switch (SDL_GetPropertyType(props, name)) {
+    case SDL_PROPERTY_TYPE_POINTER:
+        SDL_Log("%s: %p\n", name, SDL_GetProperty(props, name, NULL));
+        break;
+    case SDL_PROPERTY_TYPE_STRING:
+        SDL_Log("%s: \"%s\"\n", name, SDL_GetStringProperty(props, name, ""));
+        break;
+    case SDL_PROPERTY_TYPE_NUMBER:
+        {
+            Sint64 value = SDL_GetNumberProperty(props, name, 0);
+            SDL_Log("%s: %" SDL_PRIs64 " (%" SDL_PRIx64 ")\n", name, value, value);
+        }
+        break;
+    case SDL_PROPERTY_TYPE_FLOAT:
+        SDL_Log("%s: %g\n", name, SDL_GetFloatProperty(props, name, 0.0f));
+        break;
+    case SDL_PROPERTY_TYPE_BOOLEAN:
+        SDL_Log("%s: %s\n", name, SDL_GetBooleanProperty(props, name, SDL_FALSE) ? "true" : "false");
+        break;
+    default:
+        SDL_Log("%s UNKNOWN TYPE\n", name);
+        break;
+    }
+}
+
+int SDL_DumpProperties(SDL_PropertiesID props)
+{
+    return SDL_EnumerateProperties(props, SDL_DumpPropertiesCallback, NULL);
+}
+
 void SDL_DestroyProperties(SDL_PropertiesID props)
 {
     if (!props) {
