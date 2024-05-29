@@ -206,6 +206,8 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD 
         default:
             /* Should never be here */
             SDL_assert_release(SDL_FALSE);
+            *width = 0;
+            *height = 0;
     }
 
     /* Copy the client size in pixels into this rect structure,
