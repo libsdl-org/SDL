@@ -2907,7 +2907,7 @@ endif()
 # Platform-independent options
 
 if(SDL_VIDEO)
-  if(SDL_OFFSCREEN AND SDL_VIDEO_OPENGL_EGL)
+  if(SDL_OFFSCREEN)
     set(SDL_VIDEO_DRIVER_OFFSCREEN 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/offscreen/*.c")
     set(HAVE_OFFSCREEN TRUE)

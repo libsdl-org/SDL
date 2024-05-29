@@ -268,7 +268,8 @@ typedef unsigned int uintptr_t;
 #define SDL_TIMER_WINDOWS   1
 
 /* Enable various video drivers */
-#define SDL_VIDEO_DRIVER_DUMMY  1
+#define SDL_VIDEO_DRIVER_DUMMY      1
+#define SDL_VIDEO_DRIVER_OFFSCREEN  1
 #define SDL_VIDEO_DRIVER_WINDOWS    1
 
 #ifndef SDL_VIDEO_RENDER_D3D
