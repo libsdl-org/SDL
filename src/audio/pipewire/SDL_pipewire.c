@@ -1326,7 +1326,28 @@ static SDL_bool PipewireInitialize(SDL_AudioDriverImpl *impl, SDL_bool check_pre
 
 static SDL_bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
 {
-    return PipewireInitialize(impl, SDL_TRUE);
+    if (!PipewireInitialize(impl, SDL_TRUE)) {
+        return SDL_FALSE;
+    }
+
+    // run device detection but don't add any devices to SDL; we're just waiting to see if PipeWire sees any devices. If not, fall back to the next backend.
+    PIPEWIRE_pw_thread_loop_lock(hotplug_loop);
+
+    // Wait until the initial registry enumeration is complete
+    if (!hotplug_init_complete) {
+        PIPEWIRE_pw_thread_loop_wait(hotplug_loop);
+    }
+
+    const int no_devices = spa_list_is_empty(&hotplug_io_list);
+
+    PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
+
+    if (no_devices) {
+        PIPEWIRE_Deinitialize();
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;  // this will move on to PIPEWIRE_DetectDevices and reuse hotplug_io_list.
 }
 
 static SDL_bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
