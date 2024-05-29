@@ -668,8 +668,8 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     /* Setup the normal size hints */
     sizehints->flags = 0;
     if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
-        sizehints->min_width = sizehints->max_width = window->w;
-        sizehints->min_height = sizehints->max_height = window->h;
+        sizehints->min_width = sizehints->max_width = window->floating.w;
+        sizehints->min_height = sizehints->max_height = window->floating.h;
         sizehints->flags |= (PMaxSize | PMinSize);
     }
     if (!undefined_position) {
