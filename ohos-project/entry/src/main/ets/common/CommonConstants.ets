@@ -42,7 +42,7 @@ export default class CommonConstants {
   /**
    * XComponent library name.
    */
-  static readonly XCOMPONENT_LIBRARY_NAME: string = 'SDL2d'
+  static readonly XCOMPONENT_LIBRARY_NAME: string = 'SDL2'
 
   /**
    * XComponent height.

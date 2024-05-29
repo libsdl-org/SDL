@@ -26,7 +26,6 @@ import { addChildNode, addRootNode } from '../service/adapter_c/utils/AdapterTs'
 import { NodeParams, NodeType, ViewNodeController} from '../service/adapter_c/common/Node'
 import { XComponentModel } from '../service/adapter_c/common/ComponentModel'
 import entry from 'libentry.so'
-import sdl from 'libSDL2d.so'
 
 let storage = LocalStorage.getShared()
 @Entry(storage)
@@ -37,7 +36,7 @@ struct Index {
   @State rootNodeController: ViewNodeController | null = null
   @State childNodeController: ViewNodeController | null = null
   aboutToAppear(): void {
-    let curModel = new XComponentModel(this.windowId.toString(), XComponentType.SURFACE, "SDL2d")
+    let curModel = new XComponentModel(this.windowId.toString(), XComponentType.SURFACE, CommonConstants.XCOMPONENT_LIBRARY_NAME)
     let nodeParams = new NodeParams(0, 0, '100%', '100%', NodeType.XComponent, curModel);
     nodeParams.border_color = "#FF0000"
     nodeParams.border_width = 3

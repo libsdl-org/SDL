@@ -49,4 +49,4 @@ find_library(
     hilog_ndk.z
 )
 
-target_link_libraries(entry PUBLIC libSDL2d.so ${libnapi-lib} ${hilog-lib})
+target_link_libraries(entry PUBLIC libSDL2.so ${libnapi-lib} ${hilog-lib})

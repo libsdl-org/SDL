@@ -14,7 +14,7 @@
  */
 
 import { Context } from '@ohos.abilityAccessCtrl'
-import sdl from 'libSDL2d.so'
+import sdl from 'libSDL2.so'
 import display from '@ohos.display'
 
 

@@ -736,7 +736,7 @@ char *OHOS_GetXComponentId(napi_ref nodeRef)
 
 void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, WindowPosition *windowPosition)
 {
-    XComponentModel xComponentModel(to_string(xComponentId), XComponentType::XCOMPONENTTYPE, "SDL2d");
+    XComponentModel xComponentModel(to_string(xComponentId), XComponentType::XCOMPONENTTYPE, "SDL2");
     xComponentId++;
     NodePosition nodePositon(to_string(windowPosition->width), to_string(windowPosition->height),
         to_string(windowPosition->x), to_string(windowPosition->y));
@@ -821,7 +821,7 @@ napi_module OHOSNapiModule = {
     .nm_flags = 0,
     .nm_filename = nullptr,
     .nm_register_func = SDLNapiInit,
-    .nm_modname = "SDL2d",
+    .nm_modname = "SDL2",
     .nm_priv = ((void *)0),
     .reserved = {0},
 };

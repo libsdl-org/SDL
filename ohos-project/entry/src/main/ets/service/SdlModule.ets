@@ -37,7 +37,7 @@ import {
 } from '../service/InvokeNative'
 
 import pointer from '@ohos.multimodalInput.pointer'
-import sdl from 'libSDL2d.so'
+import sdl from 'libSDL2.so'
 import common from '@ohos.app.ability.common'
 import window from '@ohos.window'
 import { BusinessError } from '@ohos.base'
