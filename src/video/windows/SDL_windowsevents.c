@@ -1481,7 +1481,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_SIZING:
         {
-            Uint32 edge = wParam;
+            WPARAM edge = wParam;
             RECT* dragRect = (RECT*)lParam;
             RECT clientDragRect = *dragRect;
             SDL_bool lock_aspect_ratio = (data->window->max_aspect == data->window->min_aspect) ? SDL_TRUE : SDL_FALSE;
