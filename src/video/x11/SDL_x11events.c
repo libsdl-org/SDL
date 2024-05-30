@@ -495,7 +495,14 @@ static void X11_DispatchMapNotify(SDL_WindowData *data)
 {
     SDL_Window *window = data->window;
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+
+    /* Sending this event can trigger calls that call into X11_ShowWindow, so don't send it
+     * if this is received while already in that function. The event will be sent later in
+     * that case.
+     */
+    if (!data->in_show_sequence) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+    }
     if (!(window->flags & SDL_WINDOW_HIDDEN) && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         SDL_UpdateWindowGrab(window);
     }

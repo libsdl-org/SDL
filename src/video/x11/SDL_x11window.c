@@ -1368,6 +1368,13 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, SDL_TRUE);
     XEvent event;
 
+    /* X11_RestoreWindow() can recurse back into this one. */
+    if (data->in_show_sequence) {
+        return;
+    }
+
+    data->in_show_sequence = SDL_TRUE;
+
     if (window->parent) {
         /* Update our position in case our parent moved while we were hidden */
         X11_UpdateWindowPosition(window, SDL_TRUE);
@@ -1429,11 +1436,13 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             X11_XMoveWindow(display, data->xwindow, window->x, window->y);
         }
 
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, data->last_xconfigure.width, data->last_xconfigure.height);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
     }
 
     data->disable_size_position_events = SDL_FALSE;
+    data->in_show_sequence = SDL_FALSE;
 }
 
 void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1692,6 +1701,14 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
 
             /* Only move the window if it isn't fullscreen or already on the target display. */
             if (!(window->flags & SDL_WINDOW_FULLSCREEN) || (!current || current != _display->id)) {
+                if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+                    /* Need to wait until the window actually becomes fullscreen before trying to move it,
+                     * or the compositor could refuse the move if the non-fullscreen windowed size is
+                     * larger than the usable desktop space on the target display.
+                     */
+                    X11_SyncWindowTimeout(_this, window, SDL_MS_TO_NS(100));
+                }
+
                 X11_XMoveWindow(display, data->xwindow, displaydata->x, displaydata->y);
                 data->pending_operation |= X11_PENDING_OP_MOVE;
             }
