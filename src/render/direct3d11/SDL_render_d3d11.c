@@ -1626,7 +1626,11 @@ static int D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         const Uint8 *Uplane = Yplane + rect->h * Ypitch;
         const Uint8 *Vplane = Uplane + ((rect->h + 1) / 2) * UVpitch;
 
-        return D3D11_UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Uplane, UVpitch, Vplane, UVpitch);
+        if (texture->format == SDL_PIXELFORMAT_YV12) {
+            return D3D11_UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Vplane, UVpitch, Uplane, UVpitch);
+        } else {
+            return D3D11_UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Uplane, UVpitch, Vplane, UVpitch);
+        }
     }
 #endif
 
@@ -1653,10 +1657,10 @@ static int D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
     if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, SDL_BYTESPERPIXEL(texture->format), rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch) < 0) {
         return -1;
     }
-    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureU, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Uplane, Upitch) < 0) {
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureU, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Uplane, Upitch) < 0) {
         return -1;
     }
-    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureV, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Vplane, Vpitch) < 0) {
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureV, SDL_BYTESPERPIXEL(texture->format), rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Vplane, Vpitch) < 0) {
         return -1;
     }
     return 0;
@@ -1693,6 +1697,11 @@ static int D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
     stagingTextureDesc.MiscFlags = 0;
     stagingTextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     stagingTextureDesc.Usage = D3D11_USAGE_STAGING;
+    if (stagingTextureDesc.Format == DXGI_FORMAT_NV12 ||
+        stagingTextureDesc.Format == DXGI_FORMAT_P010) {
+        stagingTextureDesc.Width = (stagingTextureDesc.Width + 1) & ~1;
+        stagingTextureDesc.Height = (stagingTextureDesc.Height + 1) & ~1;
+    }
     result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
                                           &stagingTextureDesc,
                                           NULL,
@@ -1714,11 +1723,10 @@ static int D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 
     src = Yplane;
-    dst = textureMemory.pData;
+    dst = (Uint8 *)textureMemory.pData;
     length = w;
     if (length == (UINT)Ypitch && length == textureMemory.RowPitch) {
-        SDL_memcpy(dst, src, (size_t)length * rect->h);
-        dst += length * rect->h;
+        SDL_memcpy(dst, src, (size_t)length * h);
     } else {
         if (length > (UINT)Ypitch) {
             length = Ypitch;
@@ -1733,26 +1741,21 @@ static int D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
         }
     }
 
-    /* Adjust dimensions for the UV plane */
-    w = ((w + 1) / 2) * 2;
-    h = ((h + 1) / 2);
-
     src = UVplane;
     length = w;
-    if (length == (UINT)UVpitch && length == textureMemory.RowPitch) {
-        SDL_memcpy(dst, src, (size_t)length * h);
+    h = (h + 1) / 2;
+    if (stagingTextureDesc.Format == DXGI_FORMAT_P010) {
+        length = (length + 3) & ~3;
+        UVpitch = (UVpitch + 3) & ~3;
     } else {
-        if (length > (UINT)UVpitch) {
-            length = UVpitch;
-        }
-        if (length > textureMemory.RowPitch) {
-            length = textureMemory.RowPitch;
-        }
-        for (row = 0; row < h; ++row) {
-            SDL_memcpy(dst, src, length);
-            src += UVpitch;
-            dst += textureMemory.RowPitch;
-        }
+        length = (length + 1) & ~1;
+        UVpitch = (UVpitch + 1) & ~1;
+    }
+    dst = (Uint8 *)textureMemory.pData + stagingTextureDesc.Height * textureMemory.RowPitch;
+    for (row = 0; row < h; ++row) {
+        SDL_memcpy(dst, src, length);
+        src += UVpitch;
+        dst += textureMemory.RowPitch;
     }
 
     /* Commit the pixel buffer's changes back to the staging texture: */
