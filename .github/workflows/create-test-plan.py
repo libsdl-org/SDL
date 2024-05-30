@@ -175,6 +175,7 @@ class JobDetails:
     test_pkg_config: bool = True
     cc_from_cmake: bool = False
     source_cmd: str = ""
+    pretest_cmd: str = ""
     java: bool = False
     android_apks: list[str] = dataclasses.field(default_factory=list)
     android_ndk: bool = False
@@ -224,6 +225,7 @@ class JobDetails:
             "no-cmake": self.no_cmake,
             "build-tests": self.build_tests,
             "source-cmd": self.source_cmd,
+            "pretest-cmd": self.pretest_cmd,
             "cmake-config-emulator": self.cmake_config_emulator,
             "cc": self.cc,
             "cxx": self.cxx,
@@ -484,11 +486,30 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                     "testsprite-apk",
                 ]
         case SdlPlatform.Emscripten:
-            job.run_tests = False
+            job.clang_tidy = False  # clang-tidy does not understand -gsource-map
             job.shared = False
             job.cmake_config_emulator = "emcmake"
             job.cmake_build_type = "Debug"
             job.test_pkg_config = False
+            job.apt_packages.append("python3-selenium")
+            job.cmake_arguments.extend((
+                "-DSDLTEST_BROWSER=chrome",
+                "-DSDLTEST_TIMEOUT_MULTIPLIER=4",
+                "-DSDLTEST_CHROME_BINARY=${CHROME_BINARY}",
+            ))
+            job.cflags.extend((
+                "-gsource-map",
+                "-ffile-prefix-map=${PWD}=/SDL",
+            ))
+            job.ldflags.extend((
+                "--source-map-base", "/",
+            ))
+            job.pretest_cmd = "\n".join([
+                "# Start local HTTP server",
+                "cmake --build build --target serve-sdl-tests --verbose &",
+                "chrome --version",
+                "chromedriver --version",
+            ])
         case SdlPlatform.Ps2:
             build_parallel = False
             job.shared = False
@@ -623,9 +644,9 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
     if not build_parallel:
         job.cmake_build_arguments.append("-j1")
     if job.cflags:
-        job.cmake_arguments.append(f"-DCMAKE_C_FLAGS={my_shlex_join(job.cflags)}")
+        job.cmake_arguments.append(f"-DCMAKE_C_FLAGS=\"{my_shlex_join(job.cflags)}\"")
     if job.cxxflags:
-        job.cmake_arguments.append(f"-DCMAKE_CXX_FLAGS={my_shlex_join(job.cxxflags)}")
+        job.cmake_arguments.append(f"-DCMAKE_CXX_FLAGS=\"{my_shlex_join(job.cxxflags)}\"")
     if job.ldflags:
         job.cmake_arguments.append(f"-DCMAKE_SHARED_LINKER_FLAGS=\"{my_shlex_join(job.ldflags)}\"")
         job.cmake_arguments.append(f"-DCMAKE_EXE_LINKER_FLAGS=\"{my_shlex_join(job.ldflags)}\"")
