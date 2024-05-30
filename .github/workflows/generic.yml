@@ -47,6 +47,22 @@ jobs:
         if: ${{ matrix.platform.platform == 'emscripten' }}
         with:
           version: 3.1.35
+      - uses: browser-actions/setup-chrome@v1
+        id: setup-chrome
+        if: ${{ matrix.platform.platform == 'emscripten' }}
+        with:
+          install-chromedriver: true
+      - name: 'Add chrome to PATH'
+        if: ${{ matrix.platform.platform == 'emscripten' }}
+        run: |
+          chrome_dir="$(dirname "${{ steps.setup-chrome.outputs.chrome-path }}")"
+          chromedriver_dir="$(dirname "${{ steps.setup-chrome.outputs.chromedriver-path }}")"
+          echo "CHROME_BINARY=${{ steps.setup-chrome.outputs.chrome-path }}" >>$GITHUB_ENV
+          echo "CHROMEDRIVER_BINARY=${{ steps.setup-chrome.outputs.chromedriver-path }}" >>$GITHUB_ENV
+          echo "chrome_dir=${chrome_dir}"
+          echo "chromedriver_dir=${chromedriver_dir}"
+          echo "${chrome_dir}" >>${GITHUB_PATH}
+          echo "${chromedriver_dir}" >>${GITHUB_PATH}
       - uses: nttld/setup-ndk@v1
         if: ${{ matrix.platform.android-ndk }}
         id: setup-ndk
@@ -115,7 +131,7 @@ jobs:
         with:
           type: ${{ matrix.platform.setup-vita-gles-type }}
 
-      - name: 'Pollute toolchain with "bad SDL headers'
+      - name: 'Pollute toolchain with "bad" SDL headers'
         if: ${{ matrix.platform.pollute-directories != '' }}
         #shell: ${{ matrix.platform.shell }}
         run: |
@@ -169,6 +185,7 @@ jobs:
 #        shell: ${{ matrix.platform.shell }}
         run: |
           ${{ matrix.platform.source-cmd }}
+          ${{ matrix.platform.pretest-cmd }}
           set -eu
           export SDL_TESTS_QUICK=1
           ctest -VV --test-dir build/ -j2
