@@ -100,6 +100,8 @@ jobs:
     - name: Configure (CMake)
       run: |
         ${{ matrix.platform.source_cmd }}
+        runtime_output_directory="${{ matrix.platform.shell == 'msys2 {0}' && format('$(cygpath -u "{0}")', github.workspace) || github.workspace }}"
+
         cmake -S . -B build -G Ninja \
           -Wdeprecated -Wdev -Werror \
           -DSDL_SHARED=ON \
@@ -113,6 +115,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
           -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="$runtime_output_directory" \
           ${{ matrix.platform.cmake-platform }} \
           ${{ matrix.platform.cmake }}
     - name: Build (CMake)
