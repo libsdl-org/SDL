@@ -1528,6 +1528,13 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
         displayID = window->current_fullscreen_mode.displayID;
     }
 
+    if (!displayID) {
+        displayID = window->initial_fullscreen_display;
+
+        /* Clear the value, as it is only valid for the first fullscreen switch. */
+        window->initial_fullscreen_display = 0;
+    }
+
     /* The floating position is used here as a very common pattern is
      * SDL_SetWindowPosition() followed by SDL_SetWindowFullscreen() to make the
      * window fullscreen desktop on a specific display. If the backend doesn't
@@ -2249,6 +2256,8 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
         SDL_Rect bounds;
 
+        window->initial_fullscreen_display = display->id;
+
         SDL_GetDisplayBounds(display->id, &bounds);
         window->x = bounds.x;
         window->y = bounds.y;
@@ -2377,6 +2386,11 @@ int SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
     }
     if ((flags & SDL_WINDOW_METAL) && !_this->Metal_CreateView) {
         return SDL_ContextNotSupported("Metal");
+    }
+
+    if (((window->flags & SDL_WINDOW_FULLSCREEN) || (window->pending_flags & SDL_WINDOW_FULLSCREEN)) &&
+        !window->initial_fullscreen_display) {
+        window->initial_fullscreen_display = window->last_displayID;
     }
 
     if (window->flags & SDL_WINDOW_EXTERNAL) {
@@ -2663,6 +2677,13 @@ int SDL_SetWindowPosition(SDL_Window *window, int x, int y)
     window->floating.y = y;
     window->undefined_x = SDL_FALSE;
     window->undefined_y = SDL_FALSE;
+
+    /* Update the pending display if the window was created fullscreen and has
+     * a pending show event, as the window may move when shown.
+     */
+    if (window->initial_fullscreen_display) {
+        window->initial_fullscreen_display = SDL_GetDisplayForWindowPosition(window);
+    }
 
     if (_this->SetWindowPosition) {
         window->is_repositioning = SDL_TRUE;

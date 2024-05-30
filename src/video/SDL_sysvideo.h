@@ -53,6 +53,7 @@ struct SDL_Window
     float display_scale;
     SDL_bool external_graphics_context;
     SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
+    SDL_DisplayID initial_fullscreen_display; /* The target fullscreen display if the window is created fullscreen. */
     SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
     SDL_DisplayID last_displayID;
 
