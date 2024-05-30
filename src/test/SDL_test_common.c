@@ -450,8 +450,8 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             } else {
                 max_aspect = min_aspect;
             }
-            state->window_min_aspect = SDL_atof(min_aspect);
-            state->window_max_aspect = SDL_atof(max_aspect);
+            state->window_min_aspect = (float)SDL_atof(min_aspect);
+            state->window_max_aspect = (float)SDL_atof(max_aspect);
             return 2;
         }
         if (SDL_strcasecmp(argv[index], "--logical") == 0) {
