@@ -2254,6 +2254,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         window->y = bounds.y;
         window->w = bounds.w;
         window->h = bounds.h;
+        window->pending_flags |= SDL_WINDOW_FULLSCREEN;
         flags |= SDL_WINDOW_FULLSCREEN;
     }
 
