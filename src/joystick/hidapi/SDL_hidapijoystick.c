@@ -186,7 +186,7 @@ SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
         /* Most Razer devices are not game controllers, and some of them lock up
          * or reset when we send them the Sony third-party query feature report,
          * so don't include that vendor here. Instead add devices as appropriate
-         * to controller_type.c
+         * to controller_list.h
          *
          * Reference: https://github.com/libsdl-org/SDL/issues/6733
          *            https://github.com/libsdl-org/SDL/issues/6799
