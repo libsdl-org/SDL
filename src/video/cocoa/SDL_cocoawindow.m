@@ -2313,14 +2313,16 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         /* isZoomed always returns true if the window is not resizable */
         if (!(window->flags & SDL_WINDOW_RESIZABLE) || !Cocoa_IsZoomed(window)) {
             if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-                NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
+				int x, y;
+				NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
 
                 /* Cocoa will resize the window from the bottom-left rather than the
                  * top-left when -[nswindow setContentSize:] is used, so we must set the
                  * entire frame based on the new size, in order to preserve the position.
                  */
-                rect.origin.x = window->floating.x;
-                rect.origin.y = window->floating.y;
+                SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &x, &y);
+				rect.origin.x = x;
+				rect.origin.y = y;
                 rect.size.width = window->floating.w;
                 rect.size.height = window->floating.h;
                 ConvertNSRect(&rect);
