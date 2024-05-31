@@ -755,6 +755,10 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     }
     windowdata = window->driverdata;
 
+    /* Set the flag if the borders were forced on when creating a fullscreen window for later removal. */
+    windowdata->fullscreen_borders_forced_on = !!(window->pending_flags & SDL_WINDOW_FULLSCREEN) &&
+                                               !!(window->flags & SDL_WINDOW_BORDERLESS);
+
 #if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2) || defined(SDL_VIDEO_OPENGL_EGL)
     if ((window->flags & SDL_WINDOW_OPENGL) &&
         ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
@@ -1320,6 +1324,7 @@ void X11_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool 
     } else {
         /* If fullscreen, set a flag to toggle the borders when returning to windowed mode. */
         data->toggle_borders = SDL_TRUE;
+        data->fullscreen_borders_forced_on = SDL_FALSE;
     }
 }
 
@@ -1732,10 +1737,6 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
             flags &= ~SDL_WINDOW_FULLSCREEN;
         }
         X11_SetNetWMState(_this, data->xwindow, flags);
-    }
-
-    if ((window->flags & SDL_WINDOW_BORDERLESS) && !fullscreen) {
-        SetWindowBordered(display, displaydata->screen, data->xwindow, SDL_FALSE);
     }
 
     if (data->visual->class == DirectColor) {

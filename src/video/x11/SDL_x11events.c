@@ -1723,6 +1723,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
                         /* Need to restore or update any limits changed while the window was fullscreen. */
                         X11_SetWindowMinMax(data->window, !!(flags & SDL_WINDOW_MAXIMIZED));
+
+                        /* Toggle the borders if they were forced on while creating a borderless fullscreen window. */
+                        if (data->fullscreen_borders_forced_on) {
+                            data->toggle_borders = SDL_TRUE;
+                            data->fullscreen_borders_forced_on = SDL_FALSE;
+                        }
                     }
 
                     if ((flags & SDL_WINDOW_FULLSCREEN) &&

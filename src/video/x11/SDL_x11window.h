@@ -101,6 +101,7 @@ struct SDL_WindowData
     SDL_bool disable_size_position_events;
     SDL_bool previous_borders_nonzero;
     SDL_bool toggle_borders;
+    SDL_bool fullscreen_borders_forced_on;
     SDL_HitTestResult hit_test_result;
 };
 
