@@ -37,7 +37,7 @@ typedef struct Thread_State
 } Thread_State;
 
 static void log_usage(char *progname, SDLTest_CommonState *state) {
-    static const char *options[] = { "init_value", NULL };
+    static const char *options[] = { "[--no-threads]", "init_value", NULL };
     SDLTest_CommonLogUsage(state, progname, options);
 }
 
@@ -120,8 +120,8 @@ TestWaitTimeout(void)
     duration = end_ticks - start_ticks;
 
     /* Accept a little offset in the effective wait */
-    SDL_assert(duration > 1900 && duration < 2050);
     SDL_Log("Wait took %" SDL_PRIu64 " milliseconds\n\n", duration);
+    SDL_assert(duration > 1900 && duration < 2050);
 
     /* Check to make sure the return value indicates timed out */
     if (retval != SDL_MUTEX_TIMEDOUT) {
@@ -257,6 +257,7 @@ int main(int argc, char **argv)
     int arg_count = 0;
     int i;
     int init_sem = 0;
+    SDL_bool enable_threads = SDL_TRUE;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
@@ -273,12 +274,18 @@ int main(int argc, char **argv)
         int consumed;
 
         consumed = SDLTest_CommonArg(state, i);
-        if (arg_count == 0) {
-            char *endptr;
-            init_sem = SDL_strtol(argv[i], &endptr, 0);
-            if (endptr != argv[i] && *endptr == '\0') {
-                arg_count++;
+        if (consumed == 0) {
+            consumed = -1;
+            if (SDL_strcasecmp(argv[i], "--no-threads") == 0) {
+                enable_threads = SDL_FALSE;
                 consumed = 1;
+            } else if (arg_count == 0) {
+                char *endptr;
+                init_sem = SDL_strtol(argv[i], &endptr, 0);
+                if (endptr != argv[i] && *endptr == '\0') {
+                    arg_count++;
+                    consumed = 1;
+                }
             }
         }
         if (consumed <= 0) {
@@ -302,17 +309,21 @@ int main(int argc, char **argv)
     (void)signal(SIGTERM, killed);
     (void)signal(SIGINT, killed);
 
-    if (init_sem > 0) {
-        TestRealWorld(init_sem);
-    }
+    if (enable_threads) {
+        if (init_sem > 0) {
+            TestRealWorld(init_sem);
+        }
 
-    TestWaitTimeout();
+        TestWaitTimeout();
+    }
 
     TestOverheadUncontended();
 
-    TestOverheadContended(SDL_FALSE);
+    if (enable_threads) {
+        TestOverheadContended(SDL_FALSE);
 
-    TestOverheadContended(SDL_TRUE);
+        TestOverheadContended(SDL_TRUE);
+    }
 
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
