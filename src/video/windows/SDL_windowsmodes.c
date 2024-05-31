@@ -249,7 +249,7 @@ static char *WIN_GetDisplayNameVista(SDL_VideoData *videodata, const WCHAR *devi
     LONG rc;
 
     if (!videodata->GetDisplayConfigBufferSizes || !videodata->QueryDisplayConfig || !videodata->DisplayConfigGetDeviceInfo) {
-        return SDL_FALSE;
+        return NULL;
     }
 
     do {
