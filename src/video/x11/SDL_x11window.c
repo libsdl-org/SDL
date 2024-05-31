@@ -655,8 +655,13 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         return SDL_SetError("Couldn't create window");
     }
 
-    SetWindowBordered(display, screen, w,
-                      !(window->flags & SDL_WINDOW_BORDERLESS));
+    /* Don't set the borderless flag if we're about to go fullscreen.
+     * This prevents the window manager from moving a full-screen borderless
+     * window to a different display before we actually go fullscreen.
+     */
+    if (!(window->pending_flags & SDL_WINDOW_FULLSCREEN)) {
+        SetWindowBordered(display, screen, w, !(window->flags & SDL_WINDOW_BORDERLESS));
+    }
 
     sizehints = X11_XAllocSizeHints();
     /* Setup the normal size hints */
@@ -1727,6 +1732,10 @@ static int X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *wind
             flags &= ~SDL_WINDOW_FULLSCREEN;
         }
         X11_SetNetWMState(_this, data->xwindow, flags);
+    }
+
+    if ((window->flags & SDL_WINDOW_BORDERLESS) && !fullscreen) {
+        SetWindowBordered(display, displaydata->screen, data->xwindow, SDL_FALSE);
     }
 
     if (data->visual->class == DirectColor) {
