@@ -22,8 +22,8 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_OFFSCREEN)
 
-#include "../SDL_sysvideo.h"
 #include "../SDL_vulkan_internal.h"
+#include "../SDL_sysvideo.h"
 
 
 static const char *s_defaultPaths[] = {
