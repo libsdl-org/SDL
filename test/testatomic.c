@@ -703,6 +703,8 @@ static void RunFIFOTest(SDL_bool lock_free)
 int main(int argc, char *argv[])
 {
     SDLTest_CommonState *state;
+    int i;
+    SDL_bool enable_threads = SDL_TRUE;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -714,8 +716,26 @@ int main(int argc, char *argv[])
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (consumed == 0) {
+            consumed = -1;
+            if (SDL_strcasecmp(argv[i], "--no-threads") == 0) {
+                enable_threads = SDL_FALSE;
+                consumed = 1;
+            }
+        }
+        if (consumed < 0) {
+            static const char *options[] = {
+                "[--no-threads]",
+                NULL
+            };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+        i += consumed;
     }
 
     RunBasicTest();
@@ -725,7 +745,9 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    RunEpicTest();
+    if (enable_threads) {
+        RunEpicTest();
+    }
 /* This test is really slow, so don't run it by default */
 #if 0
     RunFIFOTest(SDL_FALSE);
