@@ -63,6 +63,7 @@ int SDL_GetNumCameraDrivers(void)
     return SDL_arraysize(bootstrap) - 1;
 }
 
+// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetCameraDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumCameraDrivers()) {
@@ -71,6 +72,7 @@ const char *SDL_GetCameraDriver(int index)
     return NULL;
 }
 
+// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetCurrentCameraDriver(void)
 {
     return camera_driver.name;

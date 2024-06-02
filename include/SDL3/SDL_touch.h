@@ -96,7 +96,7 @@ extern SDL_DECLSPEC SDL_TouchID *SDLCALL SDL_GetTouchDevices(int *count);
 /**
  * Get the touch device name as reported from the driver.
  *
- * You do not own the returned string, do not modify or free it.
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param touchID the touch device instance ID.
  * \returns touch device name, or NULL on error; call SDL_GetError() for more
@@ -104,7 +104,7 @@ extern SDL_DECLSPEC SDL_TouchID *SDLCALL SDL_GetTouchDevices(int *count);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char* SDLCALL SDL_GetTouchDeviceName(SDL_TouchID touchID);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetTouchDeviceName(SDL_TouchID touchID);
 
 /**
  * Get the type of the given touch device.

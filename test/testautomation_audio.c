@@ -365,7 +365,7 @@ static int audio_enumerateAndNameAudioDevices(void *arg)
 {
     int t;
     int i, n;
-    char *name;
+    const char *name;
     SDL_AudioDeviceID *devices = NULL;
 
     /* Iterate over types: t=0 output device, t=1 input/capture device */
@@ -385,7 +385,6 @@ static int audio_enumerateAndNameAudioDevices(void *arg)
                 SDLTest_AssertCheck(name != NULL, "Verify result from SDL_GetAudioDeviceName(%i) is not NULL", i);
                 if (name != NULL) {
                     SDLTest_AssertCheck(name[0] != '\0', "verify result from SDL_GetAudioDeviceName(%i) is not empty, got: '%s'", i, name);
-                    SDL_free(name);
                 }
             }
         }

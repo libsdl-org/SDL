@@ -134,6 +134,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumCameraDrivers(void);
  * "coremedia" or "android". These never have Unicode characters, and are not
  * meant to be proper names.
  *
+ * The returned string follows the SDL_GetStringRule.
+ *
  * \param index the index of the camera driver; the value ranges from 0 to
  *              SDL_GetNumCameraDrivers() - 1
  * \returns the name of the camera driver at the requested index, or NULL if
@@ -150,11 +152,11 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCameraDriver(int index);
 /**
  * Get the name of the current camera driver.
  *
- * The returned string points to internal static memory and thus never becomes
- * invalid, even if you quit the camera subsystem and initialize a new driver
- * (although such a case would return a different static string from another
- * call to this function, of course). As such, you should not modify or free
- * the returned string.
+ * The names of drivers are all simple, low-ASCII identifiers, like "v4l2",
+ * "coremedia" or "android". These never have Unicode characters, and are not
+ * meant to be proper names.
+ *
+ * The returned string follows the SDL_GetStringRule.
  *
  * \returns the name of the current camera driver or NULL if no driver has
  *          been initialized.

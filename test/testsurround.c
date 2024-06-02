@@ -191,12 +191,11 @@ int main(int argc, char *argv[])
 
     for (i = 0; i < devcount; i++) {
         SDL_AudioStream *stream = NULL;
-        char *devname = SDL_GetAudioDeviceName(devices[i]);
+        const char *devname = SDL_GetAudioDeviceName(devices[i]);
         int j;
         SDL_AudioSpec spec;
 
         SDL_Log("Testing audio device: %s\n", devname);
-        SDL_free(devname);
 
         if (SDL_GetAudioDeviceFormat(devices[i], &spec, NULL) != 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioDeviceFormat() failed: %s\n", SDL_GetError());

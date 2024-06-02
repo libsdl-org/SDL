@@ -493,7 +493,7 @@ void SDL_DelTouch(SDL_TouchID id)
         SDL_free(touch->fingers[i]);
     }
     SDL_free(touch->fingers);
-    SDL_free(touch->name);
+    SDL_FreeLater(touch->name);  // this pointer might be given to the app by SDL_GetTouchDeviceName.
     SDL_free(touch);
 
     SDL_num_touch--;

@@ -2417,6 +2417,7 @@ void SDL_AndroidBackButton(void)
     (*env)->CallStaticVoidMethod(env, mActivityClass, midManualBackButton);
 }
 
+// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
 const char *SDL_AndroidGetInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
@@ -2516,6 +2517,7 @@ int SDL_AndroidGetExternalStorageState(Uint32 *state)
     return 0;
 }
 
+// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
 const char *SDL_AndroidGetExternalStoragePath(void)
 {
     static char *s_AndroidExternalFilesPath = NULL;

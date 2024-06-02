@@ -250,8 +250,7 @@ const char *SDL_GetSensorInstanceName(SDL_SensorID instance_id)
     }
     SDL_UnlockSensors();
 
-    /* FIXME: Really we should reference count this name so it doesn't go away after unlock */
-    return name;
+    return name ? SDL_FreeLater(SDL_strdup(name)) : NULL;
 }
 
 SDL_SensorType SDL_GetSensorInstanceType(SDL_SensorID instance_id)
@@ -527,7 +526,7 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
         }
 
         /* Free the data associated with this sensor */
-        SDL_free(sensor->name);
+        SDL_FreeLater(sensor->name);  // this pointer gets handed to the app by SDL_GetSensorName().
         SDL_free(sensor);
     }
     SDL_UnlockSensors();

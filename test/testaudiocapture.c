@@ -81,12 +81,11 @@ int SDL_AppInit(void **appstate, int argc, char **argv)
 
     devices = SDL_GetAudioCaptureDevices(NULL);
     for (i = 0; devices[i] != 0; i++) {
-        char *name = SDL_GetAudioDeviceName(devices[i]);
+        const char *name = SDL_GetAudioDeviceName(devices[i]);
         SDL_Log(" Capture device #%d: '%s'\n", i, name);
         if (devname && (SDL_strcmp(devname, name) == 0)) {
             want_device = devices[i];
         }
-        SDL_free(name);
     }
 
     if (devname && (want_device == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE)) {

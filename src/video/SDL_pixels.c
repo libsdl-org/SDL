@@ -85,6 +85,7 @@ Uint16 SDL_expand_byte10[] = {
 
 /* Helper functions */
 
+// This doesn't need SDL_FreeLater since it returns string literals.
 #define CASE(X) \
     case X:     \
         return #X;
