@@ -57,7 +57,7 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
 #endif
 
     for (i = 0; i < devcount; i++) {
-        char *devname = SDL_GetAudioDeviceName(devices[i]);
+        const char *devname = SDL_GetAudioDeviceName(devices[i]);
 
         SDL_Log("Playing on device #%d of %d: id=%u, name='%s'...", i, devcount, (unsigned int) devices[i], devname);
 
@@ -82,7 +82,6 @@ test_multi_audio(SDL_AudioDeviceID *devices, int devcount)
             SDL_Log("done.");
             SDL_DestroyAudioStream(stream);
         }
-        SDL_free(devname);
         stream = NULL;
     }
 

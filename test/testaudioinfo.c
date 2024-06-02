@@ -30,10 +30,9 @@ print_devices(SDL_bool iscapture)
         int i;
         SDL_Log("Found %d %s device%s:\n", n, typestr, n != 1 ? "s" : "");
         for (i = 0; i < n; i++) {
-            char *name = SDL_GetAudioDeviceName(devices[i]);
+            const char *name = SDL_GetAudioDeviceName(devices[i]);
             if (name) {
                 SDL_Log("  %d: %s\n", i, name);
-                SDL_free(name);
             } else {
                 SDL_Log("  %d Error: %s\n", i, SDL_GetError());
             }

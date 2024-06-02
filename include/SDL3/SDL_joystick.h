@@ -231,6 +231,8 @@ extern SDL_DECLSPEC SDL_JoystickID *SDLCALL SDL_GetJoysticks(int *count);
  *
  * This can be called before any joysticks are opened.
  *
+ * The returned string follows the SDL_GetStringRule.
+ *
  * \param instance_id the joystick instance ID
  * \returns the name of the selected joystick. If no name can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
@@ -246,6 +248,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetJoystickInstanceName(SDL_Joystick
  * Get the implementation dependent path of a joystick.
  *
  * This can be called before any joysticks are opened.
+ *
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param instance_id the joystick instance ID
  * \returns the path of the selected joystick. If no path can be found, this
@@ -669,6 +673,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joyst
 /**
  * Get the implementation dependent name of a joystick.
  *
+ * The returned string follows the SDL_GetStringRule.
+ *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick()
  * \returns the name of the selected joystick. If no name can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
@@ -681,6 +687,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetJoystickName(SDL_Joystick *joysti
 
 /**
  * Get the implementation dependent path of a joystick.
+ *
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick()
  * \returns the path of the selected joystick. If no path can be found, this
@@ -798,6 +806,8 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickFirmwareVersion(SDL_Joystick *
  * Get the serial number of an opened joystick, if available.
  *
  * Returns the serial number of the joystick, or NULL if it is not available.
+ *
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick()
  * \returns the serial number of the selected joystick, or NULL if

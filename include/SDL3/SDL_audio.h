@@ -374,8 +374,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
  * first (as far as the SDL developers believe) are earlier in the list.
  *
  * The names of drivers are all simple, low-ASCII identifiers, like "alsa",
- * "coreaudio" or "xaudio2". These never have Unicode characters, and are not
+ * "coreaudio" or "wasapi". These never have Unicode characters, and are not
  * meant to be proper names.
+ *
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param index the index of the audio driver; the value ranges from 0 to
  *              SDL_GetNumAudioDrivers() - 1
@@ -394,11 +396,11 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetAudioDriver(int index);
 /**
  * Get the name of the current audio driver.
  *
- * The returned string points to internal static memory and thus never becomes
- * invalid, even if you quit the audio subsystem and initialize a new driver
- * (although such a case would return a different static string from another
- * call to this function, of course). As such, you should not modify or free
- * the returned string.
+ * The names of drivers are all simple, low-ASCII identifiers, like "alsa",
+ * "coreaudio" or "wasapi". These never have Unicode characters, and are not
+ * meant to be proper names.
+ *
+ * The returned string follows the SDL_GetStringRule.
  *
  * \returns the name of the current audio driver or NULL if no driver has been
  *          initialized.
@@ -470,8 +472,7 @@ extern SDL_DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioCaptureDevices(int *c
 /**
  * Get the human-readable name of a specific audio device.
  *
- * The string returned by this function is UTF-8 encoded. The caller should
- * call SDL_free on the return value when done with it.
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param devid the instance ID of the device to query.
  * \returns the name of the audio device, or NULL on error.
@@ -484,7 +485,7 @@ extern SDL_DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioCaptureDevices(int *c
  * \sa SDL_GetAudioCaptureDevices
  * \sa SDL_GetDefaultAudioInfo
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
 
 /**
  * Get the current audio format of a specific audio device.

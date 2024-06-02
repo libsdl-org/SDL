@@ -213,7 +213,7 @@ SDL_DYNAPI_PROC(SDL_AssertionHandler,SDL_GetAssertionHandler,(void **a),(a),retu
 SDL_DYNAPI_PROC(const SDL_AssertData*,SDL_GetAssertionReport,(void),(),return)
 SDL_DYNAPI_PROC(SDL_AudioDeviceID*,SDL_GetAudioCaptureDevices,(int *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetAudioDeviceFormat,(SDL_AudioDeviceID a, SDL_AudioSpec *b, int *c),(a,b,c),return)
-SDL_DYNAPI_PROC(char*,SDL_GetAudioDeviceName,(SDL_AudioDeviceID a),(a),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetAudioDeviceName,(SDL_AudioDeviceID a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetAudioDriver,(int a),(a),return)
 SDL_DYNAPI_PROC(SDL_AudioDeviceID*,SDL_GetAudioOutputDevices,(int *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetAudioStreamAvailable,(SDL_AudioStream *a),(a),return)

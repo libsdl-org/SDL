@@ -783,6 +783,7 @@ int SDL_GetNumRenderDrivers(void)
 #endif
 }
 
+// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetRenderDriver(int index)
 {
 #ifndef SDL_RENDER_DISABLED

@@ -65,14 +65,12 @@ static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void
             }
             break;
         case SDL_PROPERTY_TYPE_STRING:
-            SDL_free(property->value.string_value);
+            SDL_FreeLater(property->value.string_value);  // this pointer might be given to the app by SDL_GetStringProperty.
             break;
         default:
             break;
         }
-        if (property->string_storage) {
-            SDL_free(property->string_storage);
-        }
+        SDL_FreeLater(property->string_storage);  // this pointer might be given to the app by SDL_GetStringProperty.
     }
     SDL_free((void *)key);
     SDL_free((void *)value);
@@ -552,12 +550,6 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
         return value;
     }
 
-    /* Note that taking the lock here only guarantees that we won't read the
-     * hashtable while it's being modified. The value itself can easily be
-     * freed from another thread after it is returned here.
-     *
-     * FIXME: Should we SDL_strdup() the return value to avoid this?
-     */
     SDL_LockMutex(properties->lock);
     {
         SDL_Property *property = NULL;

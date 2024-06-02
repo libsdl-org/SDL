@@ -973,7 +973,7 @@ static Thing *CreatePhysicalDeviceThing(const SDL_AudioDeviceID which, const SDL
     if (thing) {
         thing->data.physdev.devid = which;
         thing->data.physdev.iscapture = iscapture;
-        thing->data.physdev.name = SDL_GetAudioDeviceName(which);
+        thing->data.physdev.name = SDL_strdup(SDL_GetAudioDeviceName(which));
         thing->ondrag = DeviceThing_ondrag;
         thing->ondrop = PhysicalDeviceThing_ondrop;
         thing->ontick = PhysicalDeviceThing_ontick;

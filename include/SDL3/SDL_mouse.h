@@ -152,6 +152,8 @@ extern SDL_DECLSPEC SDL_MouseID *SDLCALL SDL_GetMice(int *count);
  *
  * This function returns "" if the mouse doesn't have a name.
  *
+ * The returned string follows the SDL_GetStringRule.
+ *
  * \param instance_id the mouse instance ID
  * \returns the name of the selected mouse, or NULL on failure; call
  *          SDL_GetError() for more information.

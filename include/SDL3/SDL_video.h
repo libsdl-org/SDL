@@ -338,6 +338,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
  * The video drivers are presented in the order in which they are normally
  * checked during initialization.
  *
+ * The names of drivers are all simple, low-ASCII identifiers, like "cocoa",
+ * "x11" or "windows". These never have Unicode characters, and are not
+ * meant to be proper names.
+ *
+ * The returned string follows the SDL_GetStringRule.
+ *
  * \param index the index of a video driver
  * \returns the name of the video driver with the given **index**.
  *
@@ -349,6 +355,12 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetVideoDriver(int index);
 
 /**
  * Get the name of the currently initialized video driver.
+ *
+ * The names of drivers are all simple, low-ASCII identifiers, like "cocoa",
+ * "x11" or "windows". These never have Unicode characters, and are not
+ * meant to be proper names.
+ *
+ * The returned string follows the SDL_GetStringRule.
  *
  * \returns the name of the current video driver or NULL if no driver has been
  *          initialized.
@@ -437,6 +449,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_Displa
 
 /**
  * Get the name of a display in UTF-8 encoding.
+ *
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param displayID the instance ID of the display to query
  * \returns the name of a display or NULL on failure; call SDL_GetError() for
@@ -1259,6 +1273,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowTitle(SDL_Window *window, const cha
 
 /**
  * Get the title of a window.
+ *
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param window the window to query
  * \returns the title of the window in UTF-8 format or "" if there is no

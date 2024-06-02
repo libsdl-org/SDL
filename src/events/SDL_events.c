@@ -108,35 +108,38 @@ static SDL_Mutex *SDL_event_memory_lock;
 static SDL_EventMemory *SDL_event_memory_head;
 static SDL_EventMemory *SDL_event_memory_tail;
 
-void *SDL_AllocateEventMemory(size_t size)
+void *SDL_FreeLater(void *memory)
 {
-    void *memory = SDL_malloc(size);
-    if (!memory) {
+    if (memory == NULL) {
         return NULL;
+    }
+
+    SDL_EventMemory *entry = (SDL_EventMemory *)SDL_malloc(sizeof(*entry));
+    if (!entry) {
+        return memory;  // this is now a leak, but you probably have bigger problems if malloc failed. We could probably pool up and reuse entries, though.
     }
 
     SDL_LockMutex(SDL_event_memory_lock);
     {
-        SDL_EventMemory *entry = (SDL_EventMemory *)SDL_malloc(sizeof(*entry));
-        if (entry) {
-            entry->eventID = SDL_last_event_id;
-            entry->memory = memory;
-            entry->next = NULL;
+        entry->eventID = SDL_last_event_id;
+        entry->memory = memory;
+        entry->next = NULL;
 
-            if (SDL_event_memory_tail) {
-                SDL_event_memory_tail->next = entry;
-            } else {
-                SDL_event_memory_head = entry;
-            }
-            SDL_event_memory_tail = entry;
+        if (SDL_event_memory_tail) {
+            SDL_event_memory_tail->next = entry;
         } else {
-            SDL_free(memory);
-            memory = NULL;
+            SDL_event_memory_head = entry;
         }
+        SDL_event_memory_tail = entry;
     }
     SDL_UnlockMutex(SDL_event_memory_lock);
 
     return memory;
+}
+
+void *SDL_AllocateEventMemory(size_t size)
+{
+    return SDL_FreeLater(SDL_malloc(size));
 }
 
 static void SDL_FlushEventMemory(Uint32 eventID)

@@ -299,9 +299,7 @@ void SDL_RunThread(SDL_Thread *thread)
     if (!SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
         /* Clean up if something already detached us. */
         if (SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_DETACHED, SDL_THREAD_STATE_CLEANED)) {
-            if (thread->name) {
-                SDL_free(thread->name);
-            }
+            SDL_FreeLater(thread->name);
             SDL_free(thread);
         }
     }
@@ -421,9 +419,7 @@ void SDL_WaitThread(SDL_Thread *thread, int *status)
         if (status) {
             *status = thread->status;
         }
-        if (thread->name) {
-            SDL_free(thread->name);
-        }
+        SDL_FreeLater(thread->name);
         SDL_free(thread);
     }
 }

@@ -786,8 +786,7 @@ const char *SDL_GetJoystickInstanceName(SDL_JoystickID instance_id)
     }
     SDL_UnlockJoysticks();
 
-    /* FIXME: Really we should reference count this name so it doesn't go away after unlock */
-    return name;
+    return name ? SDL_FreeLater(SDL_strdup(name)) : NULL;
 }
 
 /*
@@ -805,11 +804,10 @@ const char *SDL_GetJoystickInstancePath(SDL_JoystickID instance_id)
     }
     SDL_UnlockJoysticks();
 
-    /* FIXME: Really we should reference count this path so it doesn't go away after unlock */
     if (!path) {
         SDL_Unsupported();
     }
-    return path;
+    return path ? SDL_FreeLater(SDL_strdup(path)) : NULL;
 }
 
 /*
@@ -1663,7 +1661,6 @@ const char *SDL_GetJoystickName(SDL_Joystick *joystick)
     }
     SDL_UnlockJoysticks();
 
-    /* FIXME: Really we should reference count this name so it doesn't go away after unlock */
     return retval;
 }
 
@@ -1888,9 +1885,9 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
         }
 
         /* Free the data associated with this joystick */
-        SDL_free(joystick->name);
-        SDL_free(joystick->path);
-        SDL_free(joystick->serial);
+        SDL_FreeLater(joystick->name);  // SDL_GetJoystickName returns this pointer.
+        SDL_FreeLater(joystick->path);  // SDL_GetJoystickPath returns this pointer.
+        SDL_FreeLater(joystick->serial);  // SDL_GetJoystickSerial returns this pointer.
         SDL_free(joystick->axes);
         SDL_free(joystick->balls);
         SDL_free(joystick->hats);

@@ -101,7 +101,7 @@ const char *SDL_GetHapticInstanceName(SDL_HapticID instance_id)
     if (SDL_GetHapticIndex(instance_id, &device_index)) {
         name = SDL_SYS_HapticName(device_index);
     }
-    return name;
+    return name ? SDL_FreeLater(SDL_strdup(name)) : NULL;
 }
 
 SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
@@ -339,7 +339,7 @@ void SDL_CloseHaptic(SDL_Haptic *haptic)
     }
 
     /* Free the data associated with this device */
-    SDL_free(haptic->name);
+    SDL_FreeLater(haptic->name);  // this pointer is handed to the app in SDL_GetHapticName()
     SDL_free(haptic);
 }
 
