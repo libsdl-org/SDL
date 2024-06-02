@@ -543,7 +543,7 @@ void SDL_Quit(void)
     SDL_DBus_Quit();
 #endif
 
-    SDL_ClearHints();
+    SDL_QuitHints();
     SDL_AssertionsQuit();
 
     SDL_QuitCPUInfo();

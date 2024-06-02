@@ -722,6 +722,8 @@ SDL_AddHintCallback() now returns a standard int result instead of void, returni
 
 Calling SDL_GetHint() with the name of the hint being changed from within a hint callback will now return the new value rather than the old value. The old value is still passed as a parameter to the hint callback.
 
+SDL_SetHint, SDL_SetHintWithPriority, and SDL_ResetHint now return int (-1 on error, 0 on success) instead of SDL_bool (SDL_FALSE on error, SDL_TRUE on success).
+
 The following hints have been removed:
 * SDL_HINT_ACCELEROMETER_AS_JOYSTICK
 * SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS - gamepad buttons are always positional
