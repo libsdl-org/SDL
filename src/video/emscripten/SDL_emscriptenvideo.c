@@ -215,9 +215,9 @@ static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, S
         scaled_w = css_w * wdata->pixel_ratio;
         scaled_h = css_h * wdata->pixel_ratio;
 
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, (int)css_w, (int)css_h);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(css_w), SDL_lroundf(css_h));
     }
-    emscripten_set_canvas_element_size(wdata->canvas_id, (int)scaled_w, (int)scaled_h);
+    emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
 
     /* if the size is not being controlled by css, we need to scale down for hidpi */
     if (!wdata->external_size) {
@@ -252,7 +252,7 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
         }
-        emscripten_set_canvas_element_size(data->canvas_id, (int)(window->floating.w * data->pixel_ratio), (int)(window->floating.h * data->pixel_ratio));
+        emscripten_set_canvas_element_size(data->canvas_id, SDL_lroundf(window->floating.w * data->pixel_ratio), SDL_lroundf(window->floating.h * data->pixel_ratio));
 
         /*scale canvas down*/
         if (!data->external_size && data->pixel_ratio != 1.0f) {
@@ -268,8 +268,8 @@ static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window 
     SDL_WindowData *data;
     if (window->driverdata) {
         data = window->driverdata;
-        *w = (int)(window->w * data->pixel_ratio);
-        *h = (int)(window->h * data->pixel_ratio);
+        *w = SDL_lroundf(window->w * data->pixel_ratio);
+        *h = SDL_lroundf(window->h * data->pixel_ratio);
     }
 }
 
