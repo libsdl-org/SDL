@@ -1252,7 +1252,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                 } else if (window->max_aspect && aspect > window->max_aspect) {
                     wind->requested.pixel_width = SDL_roundf((float)wind->requested.pixel_height * window->max_aspect);
                 }
-                
+
                 wind->requested.logical_width = PixelToPoint(window, wind->requested.pixel_width);
                 wind->requested.logical_height = PixelToPoint(window, wind->requested.pixel_height);
             }
@@ -1854,7 +1854,7 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
     SDL_WindowData *popupdata;
 
     /* Basic sanity checks to weed out the weird popup closures */
-    if (!popup || popup->magic != &_this->window_magic) {
+    if (!SDL_ObjectValid(popup, SDL_OBJECT_TYPE_WINDOW)) {
         return;
     }
     popupdata = popup->driverdata;

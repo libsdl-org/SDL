@@ -37,7 +37,6 @@
 #include <sys/soundcard.h>
 
 #include "../SDL_audiodev_c.h"
-#include "../../SDL_utils_c.h"
 #include "SDL_dspaudio.h"
 
 static void DSP_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)

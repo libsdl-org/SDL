@@ -279,6 +279,8 @@
 #define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
 #include <SDL3/SDL_main.h>
 
+#include "SDL_utils_c.h"
+
 /* The internal implementations of these functions have up to nanosecond precision.
    We can expose these functions as part of the API if we want to later.
 */
@@ -287,7 +289,6 @@
 extern "C" {
 #endif
 
-extern Uint32 SDLCALL SDL_GetNextObjectID(void);
 extern int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
 extern int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
 extern SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);

@@ -40,8 +40,6 @@ struct haptic_effect
  */
 struct SDL_Haptic
 {
-    const void *magic;
-
     SDL_HapticID instance_id;       /* Device instance, monotonically increasing from 0 */
     char *name;                     /* Device name - system dependent */
 

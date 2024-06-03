@@ -44,8 +44,6 @@ typedef struct SDL_DRect
 /* The SDL 2D rendering system */
 
 typedef struct SDL_RenderDriver SDL_RenderDriver;
-extern char SDL_renderer_magic;
-extern char SDL_texture_magic;
 
 /* Rendering view state */
 typedef struct SDL_RenderViewState
@@ -62,7 +60,6 @@ typedef struct SDL_RenderViewState
 /* Define the SDL texture structure */
 struct SDL_Texture
 {
-    const void *magic;
     SDL_Colorspace colorspace;  /**< The colorspace of the texture */
     float SDR_white_point;      /**< The SDR white point for this content */
     float HDR_headroom;         /**< The HDR headroom needed by this content */
@@ -160,8 +157,6 @@ typedef enum
 /* Define the SDL renderer structure */
 struct SDL_Renderer
 {
-    const void *magic;
-
     void (*WindowEvent)(SDL_Renderer *renderer, const SDL_WindowEvent *event);
     int (*GetOutputSize)(SDL_Renderer *renderer, int *w, int *h);
     SDL_bool (*SupportsBlendMode)(SDL_Renderer *renderer, SDL_BlendMode blendMode);

@@ -26,7 +26,6 @@
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
 #include "../../video/SDL_pixels_c.h"
-#include "../../SDL_utils_c.h"
 
 #ifdef SDL_PLATFORM_MACOS
 #include <OpenGL/OpenGL.h>

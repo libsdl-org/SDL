@@ -543,6 +543,7 @@ void SDL_Quit(void)
     SDL_DBus_Quit();
 #endif
 
+    SDL_SetObjectsInvalid();
     SDL_ClearHints();
     SDL_AssertionsQuit();
 
@@ -561,20 +562,6 @@ void SDL_Quit(void)
     SDL_FreeEnvironmentMemory();
 
     SDL_bInMainQuit = SDL_FALSE;
-}
-
-/* Assume we can wrap SDL_AtomicInt values and cast to Uint32 */
-SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
-
-Uint32 SDL_GetNextObjectID(void)
-{
-    static SDL_AtomicInt last_id;
-
-    Uint32 id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
-    if (id == 0) {
-        id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
-    }
-    return id;
 }
 
 /* Get the library version number */

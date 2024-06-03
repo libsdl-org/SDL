@@ -25,10 +25,9 @@
 #include "../joystick/SDL_joystick_c.h" /* For SDL_IsJoystickValid */
 
 static SDL_Haptic *SDL_haptics = NULL;
-static char SDL_haptic_magic;
 
 #define CHECK_HAPTIC_MAGIC(haptic, retval)                  \
-    if (!haptic || haptic->magic != &SDL_haptic_magic) {    \
+    if (!SDL_ObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC)) { \
         SDL_InvalidParamError("haptic");                    \
         return retval;                                      \
     }
@@ -135,7 +134,7 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
     }
 
     /* Initialize the haptic device */
-    haptic->magic = &SDL_haptic_magic;
+    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, SDL_TRUE);
     haptic->instance_id = instance_id;
     haptic->rumble_id = -1;
     if (SDL_SYS_HapticOpen(haptic) < 0) {
@@ -318,7 +317,7 @@ void SDL_CloseHaptic(SDL_Haptic *haptic)
         }
     }
     SDL_SYS_HapticClose(haptic);
-    haptic->magic = NULL;
+    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, SDL_FALSE);
 
     /* Remove from the list */
     hapticlist = SDL_haptics;

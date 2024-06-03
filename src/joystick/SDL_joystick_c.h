@@ -33,7 +33,6 @@ extern "C" {
 
 struct SDL_JoystickDriver;
 struct SDL_SteamVirtualGamepadInfo;
-extern char SDL_joystick_magic;
 
 /* Initialization and shutdown functions */
 extern int SDL_InitJoysticks(void);

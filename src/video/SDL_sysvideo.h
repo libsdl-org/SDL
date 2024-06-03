@@ -37,7 +37,6 @@ typedef struct SDL_WindowData SDL_WindowData;
 /* Define the SDL window structure, corresponding to toplevel windows */
 struct SDL_Window
 {
-    const void *magic;
     SDL_WindowID id;
     char *title;
     SDL_Surface *icon;
@@ -371,7 +370,6 @@ struct SDL_VideoDevice
     SDL_Rect desktop_bounds;
     SDL_Window *windows;
     SDL_Window *grabbed_window;
-    Uint8 window_magic;
     Uint32 clipboard_sequence;
     SDL_ClipboardDataCallback clipboard_callback;
     SDL_ClipboardCleanupCallback clipboard_cleanup;
