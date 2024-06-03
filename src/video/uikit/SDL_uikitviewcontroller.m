@@ -522,7 +522,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #endif
 
     if (self.keyboardHeight) {
-        int rectbottom = self.textInputRect.y + self.textInputRect.h;
+        int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h);
         int keybottom = self.view.bounds.size.height - self.keyboardHeight;
         if (keybottom < rectbottom) {
             offset.y = keybottom - rectbottom;
