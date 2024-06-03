@@ -97,14 +97,14 @@ static SDL_bool ParseDBusReply(SDL_DBusContext *dbus, DBusMessage *reply, int ty
     return SDL_TRUE;
 }
 
-static void UpdateDisplayContentScale(double scale)
+static void UpdateDisplayContentScale(float scale)
 {
     SDL_VideoDevice *viddevice = SDL_GetVideoDevice();
     int i;
 
     if (viddevice) {
         for (i = 0; i < viddevice->num_displays; ++i) {
-            SDL_SetDisplayContentScale(viddevice->displays[i], (float)scale);
+            SDL_SetDisplayContentScale(viddevice->displays[i], scale);
         }
     }
 }
@@ -152,7 +152,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
         if (new_scale > 0.0) {
             *scale_factor = new_scale;
-            UpdateDisplayContentScale(new_scale);
+            UpdateDisplayContentScale((float)new_scale);
         }
 
         return DBUS_HANDLER_RESULT_HANDLED;
