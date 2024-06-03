@@ -97,14 +97,14 @@ static SDL_bool ParseDBusReply(SDL_DBusContext *dbus, DBusMessage *reply, int ty
     return SDL_TRUE;
 }
 
-static void UpdateDisplayContentScale(float scale)
+static void UpdateDisplayContentScale(double scale)
 {
     SDL_VideoDevice *viddevice = SDL_GetVideoDevice();
     int i;
 
     if (viddevice) {
         for (i = 0; i < viddevice->num_displays; ++i) {
-            SDL_SetDisplayContentScale(viddevice->displays[i], scale);
+            SDL_SetDisplayContentScale(viddevice->displays[i], (float)scale);
         }
     }
 }
@@ -245,7 +245,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
         }
     }
 
-    return scale_factor;
+    return (float)scale_factor;
 }
 
 static int get_visualinfo(Display *display, int screen, XVisualInfo *vinfo)
@@ -402,7 +402,7 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 
 static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
-    double vTotal = info->vTotal;
+    float vTotal = info->vTotal;
 
     if (info->modeFlags & RR_DoubleScan) {
         /* doublescan doubles the number of lines */
@@ -415,7 +415,7 @@ static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
         vTotal /= 2;
     }
 
-    if (info->hTotal && vTotal) {
+    if (info->hTotal && vTotal != 0.f) {
         return ((100 * (Sint64)info->dotClock) / (info->hTotal * vTotal)) / 100.0f;
     }
     return 0.0f;
