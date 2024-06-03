@@ -1367,7 +1367,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
             if (state->window_maxW || state->window_maxH) {
                 SDL_SetWindowMaximumSize(state->windows[i], state->window_maxW, state->window_maxH);
             }
-            if (state->window_min_aspect || state->window_max_aspect) {
+            if (state->window_min_aspect != 0.f || state->window_max_aspect != 0.f) {
                 SDL_SetWindowAspectRatio(state->windows[i], state->window_min_aspect, state->window_max_aspect);
             }
             SDL_GetWindowSize(state->windows[i], &w, &h);
