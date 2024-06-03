@@ -23,7 +23,6 @@
 #include "SDL_audio_c.h"
 #include "SDL_sysaudio.h"
 #include "../thread/SDL_systhread.h"
-#include "../SDL_utils_c.h"
 
 // Available audio drivers
 static const AudioBootStrap *const bootstrap[] = {

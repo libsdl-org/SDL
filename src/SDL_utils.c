@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_utils_c.h"
+#include "SDL_hashtable.h"
 
 /* Common utility functions that aren't in the public API */
 
@@ -99,4 +99,69 @@ SDL_bool SDL_endswith(const char *string, const char *suffix)
         }
     }
     return SDL_FALSE;
+}
+
+/* Assume we can wrap SDL_AtomicInt values and cast to Uint32 */
+SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
+
+Uint32 SDL_GetNextObjectID(void)
+{
+    static SDL_AtomicInt last_id;
+
+    Uint32 id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
+    if (id == 0) {
+        id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
+    }
+    return id;
+}
+
+static SDL_HashTable *SDL_objects;
+
+static Uint32 SDL_HashObject(const void *key, void *unused)
+{
+    return (Uint32)(uintptr_t)key;
+}
+
+static SDL_bool SDL_KeyMatchObject(const void *a, const void *b, void *unused)
+{
+    return (a == b);
+}
+
+void SDL_SetObjectValid(void *object, SDL_ObjectType type, SDL_bool valid)
+{
+    SDL_assert(object != NULL);
+
+    if (valid) {
+        if (!SDL_objects) {
+            SDL_objects = SDL_CreateHashTable(NULL, 32, SDL_HashObject, SDL_KeyMatchObject, NULL, SDL_FALSE);
+        }
+
+        SDL_InsertIntoHashTable(SDL_objects, object, (void *)(uintptr_t)type);
+    } else {
+        if (SDL_objects) {
+            SDL_RemoveFromHashTable(SDL_objects, object);
+        }
+    }
+}
+
+SDL_bool SDL_ObjectValid(void *object, SDL_ObjectType type)
+{
+    if (!object) {
+        return SDL_FALSE;
+    }
+
+    const void *object_type;
+    if (!SDL_FindInHashTable(SDL_objects, object, &object_type)) {
+        return SDL_FALSE;
+    }
+
+    return (((SDL_ObjectType)(uintptr_t)object_type) == type);
+}
+
+void SDL_SetObjectsInvalid(void)
+{
+    if (SDL_objects) {
+        SDL_DestroyHashTable(SDL_objects);
+        SDL_objects = NULL;
+    }
 }

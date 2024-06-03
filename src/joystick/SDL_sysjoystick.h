@@ -76,8 +76,6 @@ typedef struct SDL_JoystickSensorInfo
 
 struct SDL_Joystick
 {
-    const void *magic _guarded;
-
     SDL_JoystickID instance_id _guarded; /* Device instance, monotonically increasing from 0 */
     char *name _guarded;                 /* Joystick name - system dependent */
     char *path _guarded;                 /* Joystick path - system dependent */

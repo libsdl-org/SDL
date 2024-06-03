@@ -121,7 +121,6 @@ static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
 static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
-char SDL_joystick_magic;
 
 static Uint32 initial_arcadestick_devices[] = {
     MAKE_VIDPID(0x0079, 0x181a), /* Venom Arcade Stick */
@@ -415,11 +414,11 @@ static SDL_vidpid_list zero_centered_devices = {
     SDL_FALSE
 };
 
-#define CHECK_JOYSTICK_MAGIC(joystick, retval)             \
-    if (!joystick || joystick->magic != &SDL_joystick_magic) { \
-        SDL_InvalidParamError("joystick");                 \
-        SDL_UnlockJoysticks();                             \
-        return retval;                                     \
+#define CHECK_JOYSTICK_MAGIC(joystick, retval)                  \
+    if (!SDL_ObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK)) { \
+        SDL_InvalidParamError("joystick");                      \
+        SDL_UnlockJoysticks();                                  \
+        return retval;                                          \
     }
 
 SDL_bool SDL_JoysticksInitialized(void)
@@ -1096,7 +1095,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
         SDL_UnlockJoysticks();
         return NULL;
     }
-    joystick->magic = &SDL_joystick_magic;
+    SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, SDL_TRUE);
     joystick->driver = driver;
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
@@ -1104,6 +1103,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->battery_percent = -1;
 
     if (driver->Open(joystick, device_index) < 0) {
+        SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, SDL_FALSE);
         SDL_free(joystick);
         SDL_UnlockJoysticks();
         return NULL;
@@ -1346,7 +1346,7 @@ int SDL_SendJoystickVirtualSensorData(SDL_Joystick *joystick, SDL_SensorType typ
 SDL_bool SDL_IsJoystickValid(SDL_Joystick *joystick)
 {
     SDL_AssertJoysticksLocked();
-    return (joystick && joystick->magic == &SDL_joystick_magic);
+    return SDL_ObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK);
 }
 
 SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id, SDL_GamepadMapping *out)
@@ -1869,7 +1869,7 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
 
         joystick->driver->Close(joystick);
         joystick->hwdata = NULL;
-        joystick->magic = NULL;
+        SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, SDL_FALSE);
 
         joysticklist = SDL_joysticks;
         joysticklistprev = NULL;

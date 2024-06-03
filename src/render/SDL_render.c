@@ -46,10 +46,10 @@ this should probably be removed at some point in the future.  --ryan. */
 #define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
 #define SDL_PROP_TEXTURE_PARENT_POINTER "SDL.internal.texture.parent"
 
-#define CHECK_RENDERER_MAGIC_BUT_NOT_DESTROYED_FLAG(renderer, retval)                  \
-    if (!(renderer) || (renderer)->magic != &SDL_renderer_magic) { \
-        SDL_InvalidParamError("renderer");                      \
-        return retval;                                          \
+#define CHECK_RENDERER_MAGIC_BUT_NOT_DESTROYED_FLAG(renderer, retval)   \
+    if (!SDL_ObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER)) {         \
+        SDL_InvalidParamError("renderer");                              \
+        return retval;                                                  \
     }
 
 #define CHECK_RENDERER_MAGIC(renderer, retval)                  \
@@ -60,7 +60,7 @@ this should probably be removed at some point in the future.  --ryan. */
     }
 
 #define CHECK_TEXTURE_MAGIC(texture, retval)                    \
-    if (!(texture) || (texture)->magic != &SDL_texture_magic) { \
+    if (!SDL_ObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE)) {   \
         SDL_InvalidParamError("texture");                       \
         return retval;                                          \
     }
@@ -132,9 +132,6 @@ static const SDL_RenderDriver *render_drivers[] = {
 #endif
 };
 #endif /* !SDL_RENDER_DISABLED */
-
-char SDL_renderer_magic;
-char SDL_texture_magic;
 
 
 int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormatEnum format)
@@ -946,7 +943,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         return NULL;
     }
 
-    renderer->magic = &SDL_renderer_magic;
+    SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_TRUE);
 
 #ifdef SDL_PLATFORM_ANDROID
     Android_ActivityMutex_Lock_Running();
@@ -1007,7 +1004,6 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
                     break;  // Yay, we got one!
                 }
                 SDL_zerop(renderer);  // make sure we don't leave function pointers from a previous CreateRenderer() in this struct.
-                renderer->magic = &SDL_renderer_magic;
             }
         }
 
@@ -1021,7 +1017,6 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     VerifyDrawQueueFunctions(renderer);
 
-    renderer->magic = &SDL_renderer_magic;
     renderer->window = window;
     renderer->target_mutex = SDL_CreateMutex();
     if (surface) {
@@ -1113,6 +1108,8 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     return renderer;
 
 error:
+
+    SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);
 
 #ifdef SDL_PLATFORM_ANDROID
     Android_ActivityMutex_Unlock();
@@ -1316,7 +1313,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     if (!texture) {
         return NULL;
     }
-    texture->magic = &SDL_texture_magic;
+    SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, SDL_TRUE);
     texture->colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
     texture->format = format;
     texture->access = access;
@@ -4496,7 +4493,7 @@ static int SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroyi
         renderer->logical_target = NULL;
     }
 
-    texture->magic = NULL;
+    SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, SDL_FALSE);
 
     if (texture->next) {
         texture->next->prev = texture->prev;
@@ -4596,7 +4593,7 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
     // in either order.
     if (!renderer->destroyed) {
         SDL_DestroyRendererWithoutFreeing(renderer);
-        renderer->magic = NULL;     // It's no longer magical...
+        SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);  // It's no longer magical...
     }
 
     SDL_free((void *)renderer->info.texture_formats);

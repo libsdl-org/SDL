@@ -39,7 +39,6 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../core/linux/SDL_system_theme.h"
-#include "../../SDL_utils_c.h"
 #include "../SDL_sysvideo.h"
 
 #include <stdio.h>

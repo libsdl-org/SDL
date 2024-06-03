@@ -891,7 +891,7 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
     if (window) {
-        if (!video || window->magic != &video->window_magic || window->is_destroying) {
+        if (!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW) || window->is_destroying) {
             return SDL_SetError("Invalid window");
         }
     }

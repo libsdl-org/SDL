@@ -141,7 +141,7 @@ static VideoBootStrap *bootstrap[] = {
         SDL_UninitializedVideo();                                       \
         return retval;                                                  \
     }                                                                   \
-    if (!(window) || (window)->magic != &_this->window_magic) {         \
+    if (!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW)) {             \
         SDL_SetError("Invalid window");                                 \
         return retval;                                                  \
     }
@@ -2118,7 +2118,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         }
     }
 
-    if ((flags & SDL_WINDOW_MODAL) && (!parent || parent->magic != &_this->window_magic)) {
+    if ((flags & SDL_WINDOW_MODAL) && !SDL_ObjectValid(parent, SDL_OBJECT_TYPE_WINDOW)) {
         SDL_SetError("Modal windows must specify a parent window");
         return NULL;
     }
@@ -2130,7 +2130,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         }
 
         /* Tooltip and popup menu window must specify a parent window */
-        if (!parent || parent->magic != &_this->window_magic) {
+        if (!SDL_ObjectValid(parent, SDL_OBJECT_TYPE_WINDOW)) {
             SDL_SetError("Tooltip and popup menu windows must specify a parent window");
             return NULL;
         }
@@ -2236,7 +2236,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     if (!window) {
         return NULL;
     }
-    window->magic = &_this->window_magic;
+    SDL_SetObjectValid(window, SDL_OBJECT_TYPE_WINDOW, SDL_TRUE);
     window->id = SDL_GetNextObjectID();
     window->floating.x = window->windowed.x = window->x = x;
     window->floating.y = window->windowed.y = window->y = y;
@@ -3920,7 +3920,7 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
 
     /* Now invalidate magic */
-    window->magic = NULL;
+    SDL_SetObjectValid(window, SDL_OBJECT_TYPE_WINDOW, SDL_FALSE);
 
     /* Free memory associated with the window */
     SDL_free(window->title);
