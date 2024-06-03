@@ -3,7 +3,7 @@
 ## Encoding.
 
 Unless otherwise specified, all strings in SDL, across all platforms, are
-UTF-8 encoded.
+UTF-8 encoded and can represent the full range of [Unicode](https://unicode.org).
 
 
 ## The SDL Get String Rule.
@@ -45,8 +45,9 @@ When does "the event queue run"? There are several points:
 - SDL_PumpEvents is also called by several other APIs internally:
   SDL_PollEvent(), SDL_PeepEvents(), SDL_WaitEvent(),
   SDL_WaitEventTimeout(), and maybe others.
-- If you are using [the main callbacks](main-functions), the
-  event queue can run immediately after any of the callback functions return.
+- If you are using [the main callbacks](main-functions#main-callbacks-in-sdl3),
+  the event queue can run immediately after any of the callback functions
+  return.
 
 Note that these are just guaranteed minimum lifespans; any given string
 might live much longer--some might even be static memory that is _never_
