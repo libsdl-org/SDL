@@ -419,7 +419,7 @@ struct SDL_VideoData
     SDL_bool raw_mouse_enabled;
     SDL_bool raw_keyboard_enabled;
     SDL_bool pending_E1_key_sequence;
-    SDL_bool raw_input_enabled;
+    Uint32 raw_input_enabled;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_bool ime_com_initialized;
