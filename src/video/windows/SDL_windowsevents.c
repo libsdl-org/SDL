@@ -641,6 +641,10 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     if (nCode < 0 || nCode != HC_ACTION) {
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
+    if (hookData->scanCode == 0x21d) {
+	    // Skip fake LCtrl when RAlt is pressed
+	    return 1;
+    }
 
     switch (hookData->vkCode) {
     case VK_LWIN:
@@ -694,6 +698,39 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 }
 
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
+
+
+// Return 1 if spruious LCtrl is pressed
+// LCtrl is sent when RAltGR is pressed
+int skip_bad_lcrtl(WPARAM wParam, LPARAM lParam)
+{
+    MSG next_msg;
+    DWORD msg_time;
+    if (wParam != VK_CONTROL) {
+        return 0;
+    }
+    // Is this an extended key (i.e. right key)?
+    if (lParam & 0x01000000)
+                return 0;
+
+    // Here is a trick: "Alt Gr" sends LCTRL, then RALT. We only
+    // want the RALT message, so we try to see if the next message
+    // is a RALT message. In that case, this is a false LCTRL!
+    msg_time = GetMessageTime();
+    if (PeekMessage(&next_msg, NULL, 0, 0, PM_NOREMOVE)) {
+        if (next_msg.message == WM_KEYDOWN ||
+            next_msg.message == WM_SYSKEYDOWN) {
+            if (next_msg.wParam == VK_MENU &&
+                (next_msg.lParam & 0x01000000) &&
+                next_msg.time == msg_time) {
+                // Next message is a RALT down message, which
+                // means that this is NOT a proper LCTRL message!
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1009,6 +1046,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
     {
+        if (skip_bad_lcrtl(wParam, lParam)) {
+            returnCode = 0;
+            break;
+        }
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
@@ -1031,6 +1072,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_SYSKEYUP:
     case WM_KEYUP:
     {
+        if (skip_bad_lcrtl(wParam, lParam)) {
+            returnCode = 0;
+            break;
+        }
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
