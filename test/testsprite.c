@@ -568,7 +568,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         positions[i].h = sprite_h;
         velocities[i].x = 0;
         velocities[i].y = 0;
-        while (!velocities[i].x && !velocities[i].y) {
+        while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
             velocities[i].x = (float)SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
             velocities[i].y = (float)SDLTest_RandomIntegerInRange(-MAX_SPEED, MAX_SPEED);
         }
