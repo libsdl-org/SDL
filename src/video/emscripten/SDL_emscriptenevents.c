@@ -886,7 +886,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
                 emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
             }
 
-            emscripten_set_canvas_element_size(window_data->canvas_id, w * window_data->pixel_ratio, h * window_data->pixel_ratio);
+            emscripten_set_canvas_element_size(window_data->canvas_id, (int)(w * window_data->pixel_ratio), (int)(h * window_data->pixel_ratio));
 
             /* set_canvas_size unsets this */
             if (!window_data->external_size && window_data->pixel_ratio != 1.0f) {
@@ -899,7 +899,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
                 window_data->window->h = 0;
             }
 
-            SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+            SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, (int)w, (int)h);
         }
     }
 
@@ -915,7 +915,7 @@ Emscripten_HandleCanvasResize(int eventType, const void *reserved, void *userDat
     if (window_data->fullscreen_resize) {
         double css_w, css_h;
         emscripten_get_element_css_size(window_data->canvas_id, &css_w, &css_h);
-        SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, css_w, css_h);
+        SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, (int)css_w, (int)css_h);
     }
 
     return 0;
