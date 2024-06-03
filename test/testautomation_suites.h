@@ -8,6 +8,10 @@
 
 #include <SDL3/SDL_test.h>
 
+#define ISFINITE(X) isfinite((float)(X))
+#define ISINF(X)    isinf((float)(X))
+#define ISNAN(X)    isnan((float)(X))
+
 /* Test collections */
 extern SDLTest_TestSuiteReference audioTestSuite;
 extern SDLTest_TestSuiteReference clipboardTestSuite;
