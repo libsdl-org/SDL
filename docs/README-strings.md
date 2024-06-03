@@ -45,7 +45,7 @@ When does "the event queue run"? There are several points:
 - SDL_PumpEvents is also called by several other APIs internally:
   SDL_PollEvent(), SDL_PeepEvents(), SDL_WaitEvent(),
   SDL_WaitEventTimeout(), and maybe others.
-- If you are using [the main callbacks](README-main-functions), the
+- If you are using [the main callbacks](main-functions), the
   event queue can run immediately after any of the callback functions return.
 
 Note that these are just guaranteed minimum lifespans; any given string
