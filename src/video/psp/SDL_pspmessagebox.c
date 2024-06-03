@@ -53,6 +53,7 @@ static void configure_dialog(pspUtilityMsgDialogParams *dialog, size_t dialog_si
 
 int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
+	static unsigned char list[0x20000] __attribute__((aligned(64)));
 	pspUtilityMsgDialogParams dialog;
 	int status;
 
@@ -86,6 +87,10 @@ int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 	status = PSP_UTILITY_DIALOG_NONE;
 	do
 	{
+		sceGuStart(GU_DIRECT, list);
+		sceGuFinish();
+		sceGuSync(GU_SYNC_WHAT_DONE, GU_SYNC_FINISH);
+
 		status = sceUtilityMsgDialogGetStatus();
 
 		switch (status)
