@@ -339,8 +339,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
  * checked during initialization.
  *
  * The names of drivers are all simple, low-ASCII identifiers, like "cocoa",
- * "x11" or "windows". These never have Unicode characters, and are not
- * meant to be proper names.
+ * "x11" or "windows". These never have Unicode characters, and are not meant
+ * to be proper names.
  *
  * The returned string follows the SDL_GetStringRule.
  *
@@ -357,8 +357,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetVideoDriver(int index);
  * Get the name of the currently initialized video driver.
  *
  * The names of drivers are all simple, low-ASCII identifiers, like "cocoa",
- * "x11" or "windows". These never have Unicode characters, and are not
- * meant to be proper names.
+ * "x11" or "windows". These never have Unicode characters, and are not meant
+ * to be proper names.
  *
  * The returned string follows the SDL_GetStringRule.
  *
