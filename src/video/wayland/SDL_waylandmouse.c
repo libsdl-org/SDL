@@ -350,7 +350,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, struct Wayland_C
 
     /* Cursors use integer scaling. */
     *scale = SDL_ceilf(focusdata->windowed_scale_factor);
-    size *= *scale;
+    size *= (int)*scale;
     for (int i = 0; i < vdata->num_cursor_themes; i += 1) {
         if (vdata->cursor_themes[i].size == size) {
             theme = vdata->cursor_themes[i].theme;
@@ -638,12 +638,12 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
             }
         }
 
-        wl_surface_set_buffer_scale(data->surface, scale);
+        wl_surface_set_buffer_scale(data->surface, (int32_t)scale);
         wl_pointer_set_cursor(pointer,
                               input->pointer_enter_serial,
                               data->surface,
-                              data->hot_x / scale,
-                              data->hot_y / scale);
+                              (int32_t)(data->hot_x / scale),
+                              (int32_t)(data->hot_y / scale));
         if (data->is_system_cursor) {
             wl_surface_attach(data->surface, data->cursor_data.system.frames[0].wl_buffer, 0, 0);
 

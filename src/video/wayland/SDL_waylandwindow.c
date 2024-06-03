@@ -846,10 +846,10 @@ static void handle_configure_xdg_toplevel(void *data,
                 /* Aspect correction. */
                 const float aspect = (float)wind->requested.logical_width / (float)wind->requested.logical_height;
 
-                if (window->min_aspect && aspect < window->min_aspect) {
-                    wind->requested.logical_height = SDL_roundf((float)wind->requested.logical_width / window->min_aspect);
-                } else if (window->max_aspect && aspect > window->max_aspect) {
-                    wind->requested.logical_width = SDL_roundf((float)wind->requested.logical_height * window->max_aspect);
+                if (window->min_aspect != 0.f && aspect < window->min_aspect) {
+                    wind->requested.logical_height = SDL_lroundf((float)wind->requested.logical_width / window->min_aspect);
+                } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
+                    wind->requested.logical_width = SDL_lroundf((float)wind->requested.logical_height * window->max_aspect);
                 }
             } else {
                 if (window->max_w > 0) {
@@ -865,10 +865,10 @@ static void handle_configure_xdg_toplevel(void *data,
                 /* Aspect correction. */
                 const float aspect = (float)wind->requested.pixel_width / (float)wind->requested.pixel_height;
 
-                if (window->min_aspect && aspect < window->min_aspect) {
-                    wind->requested.pixel_height = SDL_roundf((float)wind->requested.pixel_width / window->min_aspect);
-                } else if (window->max_aspect && aspect > window->max_aspect) {
-                    wind->requested.pixel_width = SDL_roundf((float)wind->requested.pixel_height * window->max_aspect);
+                if (window->min_aspect != 0.f && aspect < window->min_aspect) {
+                    wind->requested.pixel_height = SDL_lroundf((float)wind->requested.pixel_width / window->min_aspect);
+                } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
+                    wind->requested.pixel_width = SDL_lroundf((float)wind->requested.pixel_height * window->max_aspect);
                 }
 
                 wind->requested.logical_width = PixelToPoint(window, wind->requested.pixel_width);
@@ -1228,10 +1228,10 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                 /* Aspect correction. */
                 const float aspect = (float)wind->requested.logical_width / (float)wind->requested.logical_height;
 
-                if (window->min_aspect && aspect < window->min_aspect) {
-                    wind->requested.logical_height = SDL_roundf((float)wind->requested.logical_width / window->min_aspect);
-                } else if (window->max_aspect && aspect > window->max_aspect) {
-                    wind->requested.logical_width = SDL_roundf((float)wind->requested.logical_height * window->max_aspect);
+                if (window->min_aspect != 0.f && aspect < window->min_aspect) {
+                    wind->requested.logical_height = SDL_lroundf((float)wind->requested.logical_width / window->min_aspect);
+                } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
+                    wind->requested.logical_width = SDL_lroundf((float)wind->requested.logical_height * window->max_aspect);
                 }
             } else {
                 if (window->max_w > 0) {
@@ -1247,10 +1247,10 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                 /* Aspect correction. */
                 const float aspect = (float)wind->requested.pixel_width / (float)wind->requested.pixel_height;
 
-                if (window->min_aspect && aspect < window->min_aspect) {
-                    wind->requested.pixel_height = SDL_roundf((float)wind->requested.pixel_width / window->min_aspect);
-                } else if (window->max_aspect && aspect > window->max_aspect) {
-                    wind->requested.pixel_width = SDL_roundf((float)wind->requested.pixel_height * window->max_aspect);
+                if (window->min_aspect != 0.f && aspect < window->min_aspect) {
+                    wind->requested.pixel_height = SDL_lroundf((float)wind->requested.pixel_width / window->min_aspect);
+                } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
+                    wind->requested.pixel_width = SDL_lroundf((float)wind->requested.pixel_height * window->max_aspect);
                 }
 
                 wind->requested.logical_width = PixelToPoint(window, wind->requested.pixel_width);
@@ -1471,7 +1471,7 @@ static const struct wl_surface_listener surface_listener = {
 
 static void handle_preferred_fractional_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale)
 {
-    const float factor = scale / 120.; /* 120 is a magic number defined in the spec as a common denominator */
+    const float factor = scale / 120.f; /* 120 is a magic number defined in the spec as a common denominator */
     Wayland_HandlePreferredScaleChanged(data, factor);
 }
 

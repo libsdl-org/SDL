@@ -838,8 +838,8 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
     if (data->drawstate.viewport_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
 
-        float sw = viewport->w / 2.;
-        float sh = viewport->h / 2.;
+        float sw = viewport->w / 2.f;
+        float sh = viewport->h / 2.f;
 
         float x_scale = sw;
         float x_off = viewport->x + sw;

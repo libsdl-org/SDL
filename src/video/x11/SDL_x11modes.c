@@ -152,7 +152,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
         if (new_scale > 0.0) {
             *scale_factor = new_scale;
-            UpdateDisplayContentScale(new_scale);
+            UpdateDisplayContentScale((float)new_scale);
         }
 
         return DBUS_HANDLER_RESULT_HANDLED;
@@ -245,7 +245,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
         }
     }
 
-    return scale_factor;
+    return (float)scale_factor;
 }
 
 static int get_visualinfo(Display *display, int screen, XVisualInfo *vinfo)
@@ -402,7 +402,7 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 
 static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
-    double vTotal = info->vTotal;
+    float vTotal = info->vTotal;
 
     if (info->modeFlags & RR_DoubleScan) {
         /* doublescan doubles the number of lines */
@@ -415,7 +415,7 @@ static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
         vTotal /= 2;
     }
 
-    if (info->hTotal && vTotal) {
+    if (info->hTotal && vTotal != 0.f) {
         return ((100 * (Sint64)info->dotClock) / (info->hTotal * vTotal)) / 100.0f;
     }
     return 0.0f;

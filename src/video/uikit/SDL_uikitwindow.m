@@ -376,8 +376,8 @@ void UIKit_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int
 
         /* Integer truncation of fractional values matches SDL_uikitmetalview and
          * SDL_uikitopenglview. */
-        *w = size.width * scale;
-        *h = size.height * scale;
+        *w = (int)(size.width * scale);
+        *h = (int)(size.height * scale);
     }
 }
 

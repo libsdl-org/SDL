@@ -59,6 +59,11 @@ function(SDL_AddCommonCompilerFlags TARGET)
       sdl_target_compile_option_all_languages(${TARGET} "-Wundef")
     endif()
 
+    check_c_compiler_flag(-Wfloat-conversion HAVE_GCC_WFLOAT_CONVERSION)
+    if(HAVE_GCC_WFLOAT_CONVERSION)
+      sdl_target_compile_option_all_languages(${TARGET} "-Wfloat-conversion")
+    endif()
+
     check_c_compiler_flag(-fno-strict-aliasing HAVE_GCC_NO_STRICT_ALIASING)
     if(HAVE_GCC_NO_STRICT_ALIASING)
       sdl_target_compile_option_all_languages(${TARGET} "-fno-strict-aliasing")

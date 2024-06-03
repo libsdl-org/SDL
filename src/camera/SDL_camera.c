@@ -966,8 +966,8 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
                 const int thisw = thisspec->width;
                 const int thish = thisspec->height;
                 const float thisaspect = ((float)thisw) / ((float)thish);
-                const float aspectdiff = SDL_fabs(wantaspect - thisaspect);
-                const float diff = SDL_fabs(closestaspect - thisaspect);
+                const float aspectdiff = SDL_fabsf(wantaspect - thisaspect);
+                const float diff = SDL_fabsf(closestaspect - thisaspect);
                 const int diffw = SDL_abs(thisw - wantw);
                 if (diff < epsilon) { // matches current closestaspect? See if resolution is closer in size.
                     if (diffw < closestdiffw) {
@@ -1022,7 +1022,7 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
                 }
 
                 const float thisfps = thisspec->interval_denominator ? (thisspec->interval_numerator / thisspec->interval_denominator) : 0.0f;
-                const float fpsdiff = SDL_fabs(wantfps - thisfps);
+                const float fpsdiff = SDL_fabsf(wantfps - thisfps);
                 if (fpsdiff < closestfps) {  // this is a closest FPS? Take it until something closer arrives.
                     closestfps = fpsdiff;
                     closest->interval_numerator = thisspec->interval_numerator;

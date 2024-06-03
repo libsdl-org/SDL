@@ -1047,8 +1047,8 @@ static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const
                          viewport->w, viewport->h);
         if (viewport->w && viewport->h) {
             data->glOrtho((GLdouble)0, (GLdouble)viewport->w,
-                          (GLdouble)istarget ? 0 : viewport->h,
-                          (GLdouble)istarget ? viewport->h : 0,
+                          (GLdouble)(istarget ? 0 : viewport->h),
+                          (GLdouble)(istarget ? viewport->h : 0),
                           0.0, 1.0);
         }
         data->glMatrixMode(GL_MODELVIEW);
