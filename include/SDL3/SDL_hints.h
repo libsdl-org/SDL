@@ -3464,8 +3464,8 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": The Windows message loop is used for keyboard events.
- * - "1": Low latency raw keyboard events are used. (default)
+ * - "0": The Windows message loop is used for keyboard events. (default)
+ * - "1": Low latency raw keyboard events are used.
  *
  * This hint can be set anytime.
  *

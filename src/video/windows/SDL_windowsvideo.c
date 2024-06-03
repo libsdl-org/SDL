@@ -54,7 +54,7 @@ SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
 static void SDLCALL UpdateWindowsRawKeyboard(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
-    SDL_bool enabled = SDL_GetStringBoolean(newValue, SDL_TRUE);
+    SDL_bool enabled = SDL_GetStringBoolean(newValue, SDL_FALSE);
     WIN_SetRawKeyboardEnabled(_this, enabled);
 }
 
