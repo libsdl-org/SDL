@@ -161,6 +161,47 @@ SDL_bool SDL_ObjectValid(void *object, SDL_ObjectType type)
 void SDL_SetObjectsInvalid(void)
 {
     if (SDL_objects) {
+        /* Log any leaked objects */
+        const void *object, *object_type;
+        void *iter = NULL;
+        while (SDL_IterateHashTable(SDL_objects, &object, &object_type, &iter)) {
+            const char *type;
+            switch ((SDL_ObjectType)(uintptr_t)object_type) {
+            case SDL_OBJECT_TYPE_WINDOW:
+                type = "SDL_Window";
+                break;
+            case SDL_OBJECT_TYPE_RENDERER:
+                type = "SDL_Renderer";
+                break;
+            case SDL_OBJECT_TYPE_TEXTURE:
+                type = "SDL_Texture";
+                break;
+            case SDL_OBJECT_TYPE_JOYSTICK:
+                type = "SDL_Joystick";
+                break;
+            case SDL_OBJECT_TYPE_GAMEPAD:
+                type = "SDL_Gamepad";
+                break;
+            case SDL_OBJECT_TYPE_HAPTIC:
+                type = "SDL_Haptic";
+                break;
+            case SDL_OBJECT_TYPE_SENSOR:
+                type = "SDL_Sensor";
+                break;
+            case SDL_OBJECT_TYPE_HIDAPI_DEVICE:
+                type = "hidapi device";
+                break;
+            case SDL_OBJECT_TYPE_HIDAPI_JOYSTICK:
+                type = "hidapi joystick";
+                break;
+            default:
+                type = "unknown object";
+                break;
+            }
+            SDL_Log("Leaked %s (%p)\n", type, object);
+        }
+        SDL_assert(SDL_HashTableEmpty(SDL_objects));
+
         SDL_DestroyHashTable(SDL_objects);
         SDL_objects = NULL;
     }
