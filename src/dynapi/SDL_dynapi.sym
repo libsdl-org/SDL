@@ -402,7 +402,7 @@ SDL3_0.0.0 {
     SDL_GetRenderWindow;
     SDL_GetRenderer;
     SDL_GetRendererFromTexture;
-    SDL_GetRendererInfo;
+    SDL_GetRendererName;
     SDL_GetRendererProperties;
     SDL_GetRevision;
     SDL_GetSIMDAlignment;

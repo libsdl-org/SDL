@@ -1675,7 +1675,7 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
     GL_InvalidateCachedState(renderer);
     renderer->window = window;
 
-    renderer->info.name = GL_RenderDriver.name;
+    renderer->name = GL_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);

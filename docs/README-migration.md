@@ -1143,6 +1143,8 @@ SDL_CreateRenderer()'s flags parameter has been removed. See specific flags belo
 
 SDL_CreateWindowAndRenderer() now takes the window title as the first parameter.
 
+SDL_GetRendererInfo() has been removed, the name of a renderer can be retrieved using SDL_GetRendererName(), and the other information is available as properties on the renderer.
+
 Mouse and touch events are no longer filtered to change their coordinates, instead you
 can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
 the rendering viewport.

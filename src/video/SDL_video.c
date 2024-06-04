@@ -281,12 +281,12 @@ static void SDLCALL SDL_CleanupWindowTextureData(void *userdata, void *value)
 
 static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
-    SDL_RendererInfo info;
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     SDL_WindowTextureData *data = (SDL_WindowTextureData *)SDL_GetProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
     const SDL_bool transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     int i;
     int w, h;
+    const SDL_PixelFormatEnum *texture_formats;
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
@@ -301,10 +301,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
         /* Check to see if there's a specific driver requested */
         if (specific_accelerated_renderer) {
             renderer = SDL_CreateRenderer(window, hint);
-            if (!renderer || (SDL_GetRendererInfo(renderer, &info) < 0)) {
-                if (renderer) {
-                    SDL_DestroyRenderer(renderer);
-                }
+            if (!renderer) {
                 return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
             }
         } else {
@@ -339,7 +336,8 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
         data->renderer = renderer;
     }
 
-    if (SDL_GetRendererInfo(data->renderer, &info) < 0) {
+    texture_formats = (const SDL_PixelFormatEnum *)SDL_GetProperty(SDL_GetRendererProperties(data->renderer), SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, NULL);
+    if (!texture_formats) {
         return -1;
     }
 
@@ -352,10 +350,10 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
     data->pixels = NULL;
 
     /* Find the first format with or without an alpha channel */
-    *format = info.texture_formats[0];
+    *format = texture_formats[0];
 
-    for (i = 0; i < info.num_texture_formats; ++i) {
-        SDL_PixelFormatEnum texture_format = info.texture_formats[i];
+    for (i = 0; texture_formats[i] != SDL_PIXELFORMAT_UNKNOWN; ++i) {
+        SDL_PixelFormatEnum texture_format = texture_formats[i];
         if (!SDL_ISPIXELFORMAT_FOURCC(texture_format) &&
             !SDL_ISPIXELFORMAT_10BIT(texture_format) &&
             !SDL_ISPIXELFORMAT_FLOAT(texture_format) &&

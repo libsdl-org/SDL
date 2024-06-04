@@ -2147,7 +2147,7 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         renderer->GetMetalLayer = METAL_GetMetalLayer;
         renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
 
-        renderer->info.name = METAL_RenderDriver.name;
+        renderer->name = METAL_RenderDriver.name;
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
