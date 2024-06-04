@@ -157,6 +157,7 @@ extern SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid
 /* Internal event queueing functions */
 extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers);
 extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate);
+extern void SDL_PrivateJoystickSensorRate(SDL_Joystick *joystick, SDL_SensorType type, float rate);
 extern void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id);
 extern SDL_bool SDL_IsJoystickBeingAdded(void);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id);
