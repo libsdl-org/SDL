@@ -1034,24 +1034,28 @@ static void SDLTest_PrintScaleMode(char *text, size_t maxlen, SDL_ScaleMode scal
 
 static void SDLTest_PrintRenderer(SDL_Renderer *renderer)
 {
-    SDL_RendererInfo info;
+    const char *name;
     int i;
     char text[1024];
     int max_texture_size;
+    const SDL_PixelFormatEnum *texture_formats;
 
-    SDL_GetRendererInfo(renderer, &info);
+    name = SDL_GetRendererName(renderer);
 
-    SDL_Log("  Renderer %s:\n", info.name);
+    SDL_Log("  Renderer %s:\n", name);
     SDL_Log("    VSync: %d\n", (int)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VSYNC_NUMBER, 0));
 
-    (void)SDL_snprintf(text, sizeof(text), "    Texture formats (%d): ", info.num_texture_formats);
-    for (i = 0; i < info.num_texture_formats; ++i) {
-        if (i > 0) {
-            SDL_snprintfcat(text, sizeof(text), ", ");
+    texture_formats = (const SDL_PixelFormatEnum *)SDL_GetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, NULL);
+    if (texture_formats) {
+        (void)SDL_snprintf(text, sizeof(text), "    Texture formats: ");
+        for (i = 0; texture_formats[i]; ++i) {
+            if (i > 0) {
+                SDL_snprintfcat(text, sizeof(text), ", ");
+            }
+            SDLTest_PrintPixelFormat(text, sizeof(text), texture_formats[i]);
         }
-        SDLTest_PrintPixelFormat(text, sizeof(text), info.texture_formats[i]);
+        SDL_Log("%s\n", text);
     }
-    SDL_Log("%s\n", text);
 
     max_texture_size = (int)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0);
     if (max_texture_size) {
@@ -2511,7 +2515,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     float scaleX, scaleY;
     SDL_MouseButtonFlags flags;
     SDL_DisplayID windowDisplayID = SDL_GetDisplayForWindow(window);
-    SDL_RendererInfo info;
+    const char *name;
     SDL_RendererLogicalPresentation logical_presentation;
     SDL_ScaleMode logical_scale_mode;
 
@@ -2535,11 +2539,10 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
 
     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
 
-    if (0 == SDL_GetRendererInfo(renderer, &info)) {
-        (void)SDL_snprintf(text, sizeof(text), "SDL_GetRendererInfo: name: %s", info.name);
-        SDLTest_DrawString(renderer, 0.0f, textY, text);
-        textY += lineHeight;
-    }
+    name = SDL_GetRendererName(renderer);
+    (void)SDL_snprintf(text, sizeof(text), "SDL_GetRendererName: %s", name);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
+    textY += lineHeight;
 
     if (0 == SDL_GetRenderOutputSize(renderer, &w, &h)) {
         (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderOutputSize: %dx%d", w, h);

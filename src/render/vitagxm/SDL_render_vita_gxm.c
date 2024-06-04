@@ -235,7 +235,7 @@ static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, S
     VITA_GXM_InvalidateCachedState(renderer);
     renderer->window = window;
 
-    renderer->info.name = VITA_GXM_RenderDriver.name;
+    renderer->name = VITA_GXM_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);

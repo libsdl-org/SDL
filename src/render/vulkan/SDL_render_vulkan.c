@@ -4101,7 +4101,7 @@ static int VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->driverdata = rendererData;
     VULKAN_InvalidateCachedState(renderer);
 
-    renderer->info.name = VULKAN_RenderDriver.name;
+    renderer->name = VULKAN_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);

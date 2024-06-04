@@ -1158,7 +1158,7 @@ int SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SD
     renderer->driverdata = data;
     SW_InvalidateCachedState(renderer);
 
-    renderer->info.name = SW_RenderDriver.name;
+    renderer->name = SW_RenderDriver.name;
 
     SW_SelectBestFormats(renderer, surface->format->format);
 

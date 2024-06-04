@@ -427,7 +427,7 @@
 #define SDL_GetRenderWindow SDL_GetRenderWindow_REAL
 #define SDL_GetRenderer SDL_GetRenderer_REAL
 #define SDL_GetRendererFromTexture SDL_GetRendererFromTexture_REAL
-#define SDL_GetRendererInfo SDL_GetRendererInfo_REAL
+#define SDL_GetRendererName SDL_GetRendererName_REAL
 #define SDL_GetRendererProperties SDL_GetRendererProperties_REAL
 #define SDL_GetRevision SDL_GetRevision_REAL
 #define SDL_GetSIMDAlignment SDL_GetSIMDAlignment_REAL

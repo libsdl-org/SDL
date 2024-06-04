@@ -2095,7 +2095,7 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     GLES2_InvalidateCachedState(renderer);
     renderer->window = window;
 
-    renderer->info.name = GLES2_RenderDriver.name;
+    renderer->name = GLES2_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);

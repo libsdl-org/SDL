@@ -3274,7 +3274,7 @@ int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propert
     renderer->driverdata = data;
     D3D12_InvalidateCachedState(renderer);
 
-    renderer->info.name = D3D12_RenderDriver.name;
+    renderer->name = D3D12_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);

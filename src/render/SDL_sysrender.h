@@ -214,7 +214,9 @@ struct SDL_Renderer
     int (*AddVulkanRenderSemaphores)(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore);
 
     /* The current renderer info */
-    SDL_RendererInfo info;
+    const char *name;
+    SDL_PixelFormatEnum *texture_formats;
+    int num_texture_formats;
     SDL_bool software;
 
     /* The window associated with the renderer */

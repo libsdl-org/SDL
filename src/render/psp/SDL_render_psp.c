@@ -1326,7 +1326,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     PSP_InvalidateCachedState(renderer);
     renderer->window = window;
 
-    renderer->info.name = PSP_RenderDriver.name;
+    renderer->name = PSP_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGR565);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR4444);

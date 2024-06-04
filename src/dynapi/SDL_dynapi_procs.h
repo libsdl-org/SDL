@@ -447,7 +447,7 @@ SDL_DYNAPI_PROC(int,SDL_GetRenderViewport,(SDL_Renderer *a, SDL_Rect *b),(a,b),r
 SDL_DYNAPI_PROC(SDL_Window*,SDL_GetRenderWindow,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Renderer*,SDL_GetRenderer,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Renderer*,SDL_GetRendererFromTexture,(SDL_Texture *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_GetRendererInfo,(SDL_Renderer *a, SDL_RendererInfo *b),(a,b),return)
+SDL_DYNAPI_PROC(const char *,SDL_GetRendererName,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetRendererProperties,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetRevision,(void),(),return)
 SDL_DYNAPI_PROC(size_t,SDL_GetSIMDAlignment,(void),(),return)
