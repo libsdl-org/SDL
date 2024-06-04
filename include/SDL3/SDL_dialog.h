@@ -79,8 +79,8 @@ typedef struct SDL_DialogFileFilter
  * freed when the callback returns.
  *
  * The filter argument is the index of the filter that was selected, or -1 if
- * no filter was selected or if the platform or method doesn't support fetching
- * the selected filter.
+ * no filter was selected or if the platform or method doesn't support
+ * fetching the selected filter.
  *
  * \param userdata An app-provided pointer, for the callback's use.
  * \param filelist The file(s) chosen by the user.
