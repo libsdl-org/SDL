@@ -404,7 +404,7 @@ SDL_Mouse *SDL_GetMouse(void)
     return &SDL_mouse;
 }
 
-SDL_MouseButtonFlags SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch)
+static SDL_MouseButtonFlags SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch)
 {
     int i;
     SDL_MouseButtonFlags buttonstate = 0;

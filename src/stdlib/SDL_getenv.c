@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#include "SDL_getenv_c.h"
+
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #include "../core/windows/SDL_windows.h"
 #endif

@@ -41,14 +41,15 @@
 #include "SDL_log_c.h"
 #include "SDL_properties_c.h"
 #include "audio/SDL_sysaudio.h"
+#include "camera/SDL_camera_c.h"
 #include "cpuinfo/SDL_cpuinfo_c.h"
-#include "video/SDL_video_c.h"
 #include "events/SDL_events_c.h"
 #include "haptic/SDL_haptic_c.h"
 #include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
 #include "sensor/SDL_sensor_c.h"
-#include "camera/SDL_camera_c.h"
+#include "stdlib/SDL_getenv_c.h"
+#include "video/SDL_video_c.h"
 
 #define SDL_INIT_EVERYTHING ~0U
 
@@ -58,7 +59,6 @@
 extern int SDL_HelperWindowCreate(void);
 extern int SDL_HelperWindowDestroy(void);
 #endif
-extern void SDL_FreeEnvironmentMemory(void);
 
 #ifdef SDL_BUILD_MAJOR_VERSION
 SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MAJOR_VERSION,
