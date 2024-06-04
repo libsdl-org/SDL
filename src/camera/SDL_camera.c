@@ -599,12 +599,14 @@ void SDL_CameraDevicePermissionOutcome(SDL_CameraDevice *device, SDL_bool approv
 
     ReleaseCameraDevice(device);
 
-    SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
-    SDL_assert(camera_driver.pending_events_tail != NULL);
-    SDL_assert(camera_driver.pending_events_tail->next == NULL);
-    camera_driver.pending_events_tail->next = pending.next;
-    camera_driver.pending_events_tail = pending_tail;
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
+    if (pending.next) {  // NULL if event is disabled or disaster struck.
+        SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
+        SDL_assert(camera_driver.pending_events_tail != NULL);
+        SDL_assert(camera_driver.pending_events_tail->next == NULL);
+        camera_driver.pending_events_tail->next = pending.next;
+        camera_driver.pending_events_tail = pending_tail;
+        SDL_UnlockRWLock(camera_driver.device_hash_lock);
+    }
 }
 
 
