@@ -327,7 +327,8 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetRenderWindow(SDL_Renderer *render
  * The returned string follows the SDL_GetStringRule.
  *
  * \param renderer the rendering context
- * \returns the name of the selected renderer, or NULL if the renderer is invalid.
+ * \returns the name of the selected renderer, or NULL if the renderer is
+ *          invalid.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -349,7 +350,9 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetRendererName(SDL_Renderer *render
  * - `SDL_PROP_RENDERER_VSYNC_NUMBER`: the current vsync setting
  * - `SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER`: the maximum texture width
  *   and height
- * - `SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER`: a (const SDL_PixelFormatEnum *) array of pixel formats, terminated with SDL_PIXELFORMAT_UNKNOWN, representing the available texture formats for this renderer.
+ * - `SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER`: a (const SDL_PixelFormatEnum
+ *   *) array of pixel formats, terminated with SDL_PIXELFORMAT_UNKNOWN,
+ *   representing the available texture formats for this renderer.
  * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value
  *   describing the colorspace for output to the display, defaults to
  *   SDL_COLORSPACE_SRGB.
