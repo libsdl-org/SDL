@@ -717,8 +717,8 @@ static void HIDAPI_DriverPS4_SetEnhancedModeAvailable(SDL_DriverPS4_Context *ctx
     }
 
     if (ctx->sensors_supported) {
-        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 250.0f);
-        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 250.0f);
+        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, (float)(1000 / ctx->report_interval));
+        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, (float)(1000 / ctx->report_interval));
     }
 
     if (ctx->official_controller) {
@@ -818,6 +818,10 @@ static void SDLCALL SDL_PS4ReportIntervalHintChanged(void *userdata, const char 
         ctx->report_interval = (Uint8)new_report_interval;
 
         HIDAPI_DriverPS4_UpdateEffects(ctx, SDL_FALSE);
+        SDL_LockJoysticks();
+        SDL_PrivateJoystickSensorRate(ctx->joystick, SDL_SENSOR_GYRO, (float)(1000 / ctx->report_interval));
+        SDL_PrivateJoystickSensorRate(ctx->joystick, SDL_SENSOR_ACCEL, (float)(1000 / ctx->report_interval));
+        SDL_UnlockJoysticks();
     }
 }
 
@@ -849,6 +853,7 @@ static SDL_bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     ctx->rumble_left = 0;
     ctx->rumble_right = 0;
     ctx->color_set = SDL_FALSE;
+    ctx->report_interval = 4;
     SDL_zero(ctx->last_state);
 
     /* Initialize player index (needed for setting LEDs) */
