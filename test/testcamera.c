@@ -30,6 +30,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     int devcount = 0;
     int i;
+    const char *camera_name = NULL;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_CAMERA);
@@ -40,8 +41,27 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     /* Enable standard application logging */
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return SDL_APP_FAILURE;
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (!consumed) {
+            if (SDL_strcmp(argv[i], "--camera") == 0 && argv[i+1]) {
+                camera_name = argv[i+1];
+                consumed = 2;
+            }
+        }
+        if (consumed <= 0) {
+            static const char *options[] = {
+                "[--camera name]",
+                NULL,
+            };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            SDLTest_CommonDestroyState(state);
+            return 1;
+        }
+        i += consumed;
     }
 
     state->num_windows = 1;
@@ -72,6 +92,8 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
+    SDL_CameraDeviceID camera_id = 0;
+
     SDL_Log("Saw %d camera devices.", devcount);
     for (i = 0; i < devcount; i++) {
         const SDL_CameraDeviceID device = devices[i];
@@ -85,14 +107,28 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
             back_camera = device;
             posstr = "[back-facing] ";
         }
+        if (camera_name && SDL_strcasecmp(name, camera_name) == 0) {
+            camera_id = device;
+        }
         SDL_Log("  - Camera #%d: %s %s", i, posstr, name);
         SDL_free(name);
     }
 
-    const SDL_CameraDeviceID devid = front_camera ? front_camera : devices[0];  /* no front-facing? just take the first one. */
+    if (!camera_id) {
+        if (camera_name) {
+            SDL_Log("Could not find camera \"%s\"", camera_name);
+            return SDL_APP_FAILURE;
+        }
+        if (front_camera) {
+            camera_id = front_camera;
+        } else if (devcount > 0) {
+            camera_id = devices[0];
+        }
+    }
+
     SDL_free(devices);
 
-    if (!devid) {
+    if (!camera_id) {
         SDL_Log("No cameras available?");
         return SDL_APP_FAILURE;
     }
@@ -101,7 +137,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     spec.interval_numerator = 1000;
     spec.interval_denominator = 1;
 
-    camera = SDL_OpenCameraDevice(devid, pspec);
+    camera = SDL_OpenCameraDevice(camera_id, pspec);
     if (!camera) {
         SDL_Log("Failed to open camera device: %s", SDL_GetError());
         return SDL_APP_FAILURE;
