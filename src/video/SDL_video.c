@@ -567,7 +567,7 @@ int SDL_VideoInit(const char *driver_name)
         SDL_DisableScreenSaver();
     }
 
-#if !defined(SDL_VIDEO_DRIVER_N3DS)
+#if !defined(SDL_VIDEO_DRIVER_N3DS) && !defined(SDL_VIDEO_DRIVER_PSP)
     /* In the initial state we don't want to pop up an on-screen keyboard,
      * but we do want to allow text input from other mechanisms.
      */
@@ -581,7 +581,7 @@ int SDL_VideoInit(const char *driver_name)
             SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, NULL);
         }
     }
-#endif /* !SDL_VIDEO_DRIVER_N3DS */
+#endif /* !SDL_VIDEO_DRIVER_N3DS && !SDL_VIDEO_DRIVER_PSP */
 
     SDL_MousePostInit();
 
