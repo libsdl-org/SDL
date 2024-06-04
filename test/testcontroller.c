@@ -203,27 +203,27 @@ static void CyclePS5AudioRoute(Controller *device)
     case 0:
         /* Audio disabled */
         state.ucEnableBits1 |= (0x80 | 0x20 | 0x10); /* Modify audio route and speaker / headphone volume */
-        state.ucSpeakerVolume = 0;                   /* Maximum volume */
-        state.ucHeadphoneVolume = 0;                 /* Maximum volume */
+        state.ucSpeakerVolume = 0;                   /* Minimum volume */
+        state.ucHeadphoneVolume = 0;                 /* Minimum volume */
         state.ucAudioEnableBits = 0x00;              /* Output to headphones */
         break;
     case 1:
         /* Headphones */
         state.ucEnableBits1 |= (0x80 | 0x10); /* Modify audio route and headphone volume */
-        state.ucHeadphoneVolume = 100;        /* Maximum volume */
+        state.ucHeadphoneVolume = 50;         /* 50% volume - don't blast into the ears */
         state.ucAudioEnableBits = 0x00;       /* Output to headphones */
         break;
     case 2:
         /* Speaker */
         state.ucEnableBits1 |= (0x80 | 0x20); /* Modify audio route and speaker volume */
         state.ucSpeakerVolume = 100;          /* Maximum volume */
-        state.ucAudioEnableBits = 0x30;       /* Output to headphones */
+        state.ucAudioEnableBits = 0x30;       /* Output to speaker */
         break;
     case 3:
         /* Both */
         state.ucEnableBits1 |= (0x80 | 0x20 | 0x10); /* Modify audio route and speaker / headphone volume */
         state.ucSpeakerVolume = 100;                 /* Maximum volume */
-        state.ucHeadphoneVolume = 100;               /* Maximum volume */
+        state.ucHeadphoneVolume = 50;                /* 50% volume - don't blast into the ears */
         state.ucAudioEnableBits = 0x20;              /* Output to both speaker and headphones */
         break;
     }
