@@ -60,6 +60,7 @@ typedef struct
     char *mapping;
     SDL_bool has_bindings;
 
+    int audio_route;
     int trigger_effect;
 } Controller;
 
@@ -190,6 +191,44 @@ typedef struct
     Uint8 ucLedGreen;                 /* 45 */
     Uint8 ucLedBlue;                  /* 46 */
 } DS5EffectsState_t;
+
+static void CyclePS5AudioRoute(Controller *device)
+{
+    DS5EffectsState_t state;
+
+    device->audio_route = (device->audio_route + 1) % 4;
+
+    SDL_zero(state);
+    switch (device->audio_route) {
+    case 0:
+        /* Audio disabled */
+        state.ucEnableBits1 |= (0x80 | 0x20 | 0x10); /* Modify audio route and speaker / headphone volume */
+        state.ucSpeakerVolume = 0;                   /* Maximum volume */
+        state.ucHeadphoneVolume = 0;                 /* Maximum volume */
+        state.ucAudioEnableBits = 0x00;              /* Output to headphones */
+        break;
+    case 1:
+        /* Headphones */
+        state.ucEnableBits1 |= (0x80 | 0x10); /* Modify audio route and headphone volume */
+        state.ucHeadphoneVolume = 100;        /* Maximum volume */
+        state.ucAudioEnableBits = 0x00;       /* Output to headphones */
+        break;
+    case 2:
+        /* Speaker */
+        state.ucEnableBits1 |= (0x80 | 0x20); /* Modify audio route and speaker volume */
+        state.ucSpeakerVolume = 100;          /* Maximum volume */
+        state.ucAudioEnableBits = 0x30;       /* Output to headphones */
+        break;
+    case 3:
+        /* Both */
+        state.ucEnableBits1 |= (0x80 | 0x20 | 0x10); /* Modify audio route and speaker / headphone volume */
+        state.ucSpeakerVolume = 100;                 /* Maximum volume */
+        state.ucHeadphoneVolume = 100;               /* Maximum volume */
+        state.ucAudioEnableBits = 0x20;              /* Output to both speaker and headphones */
+        break;
+    }
+    SDL_SendGamepadEffect(device->gamepad, &state, sizeof(state));
+}
 
 static void CyclePS5TriggerEffect(Controller *device)
 {
@@ -1715,11 +1754,17 @@ static void loop(void *arg)
 #endif /* VERBOSE_BUTTONS */
 
             if (display_mode == CONTROLLER_MODE_TESTING) {
-                /* Cycle PS5 trigger effects when the microphone button is pressed */
                 if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN &&
-                    controller && SDL_GetGamepadType(controller->gamepad) == SDL_GAMEPAD_TYPE_PS5 &&
-                    event.gbutton.button == SDL_GAMEPAD_BUTTON_MISC1) {
-                    CyclePS5TriggerEffect(controller);
+                    controller && SDL_GetGamepadType(controller->gamepad) == SDL_GAMEPAD_TYPE_PS5) {
+                    /* Cycle PS5 audio routing when the microphone button is pressed */
+                    if (event.gbutton.button == SDL_GAMEPAD_BUTTON_MISC1) {
+                        CyclePS5AudioRoute(controller);
+                    }
+
+                    /* Cycle PS5 trigger effects when the triangle button is pressed */
+                    if (event.gbutton.button == SDL_GAMEPAD_BUTTON_NORTH) {
+                        CyclePS5TriggerEffect(controller);
+                    }
                 }
             }
             break;
