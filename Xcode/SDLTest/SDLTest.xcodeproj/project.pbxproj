@@ -135,7 +135,6 @@
 		DB166E9416A1D7C700A1396C /* teststreaming.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CC616A1C74100A1396C /* teststreaming.c */; };
 		DB166E9A16A1D7F700A1396C /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
 		DB166E9C16A1D80900A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
-		DB166ED016A1D88100A1396C /* shapes in CopyFiles */ = {isa = PBXBuildFile; fileRef = DB166ECF16A1D87000A1396C /* shapes */; };
 		DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */ = {isa = PBXBuildFile; fileRef = DB445EFA18184BB600B306B0 /* testdropfile.c */; };
 		DB89958418A19B130092407C /* testhotplug.c in Sources */ = {isa = PBXBuildFile; fileRef = DB89958318A19B130092407C /* testhotplug.c */; };
 		F35E56CF2983130F00A43A5F /* testautomation_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B62983130A00A43A5F /* testautomation_main.c */; };
@@ -160,6 +159,10 @@
 		F35E56E32983130F00A43A5F /* testautomation_surface.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56CB2983130F00A43A5F /* testautomation_surface.c */; };
 		F35E56E42983130F00A43A5F /* testautomation.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56CC2983130F00A43A5F /* testautomation.c */; };
 		F35E56E52983130F00A43A5F /* testautomation_mouse.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56CD2983130F00A43A5F /* testautomation_mouse.c */; };
+		F36C34212C0F85DB00991150 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
+		F36C34232C0F85DB00991150 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F36C342D2C0F869B00991150 /* testcamera.c in Sources */ = {isa = PBXBuildFile; fileRef = F36C342C2C0F869B00991150 /* testcamera.c */; };
+		F36C342E2C0F869B00991150 /* testcamera.c in Sources */ = {isa = PBXBuildFile; fileRef = F36C342C2C0F869B00991150 /* testcamera.c */; };
 		F399C64E2A78929400C86979 /* gamepadutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6492A78929400C86979 /* gamepadutils.c */; };
 		F399C64F2A78929400C86979 /* gamepadutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6492A78929400C86979 /* gamepadutils.c */; };
 		F399C6512A7892D800C86979 /* testautomation_intrinsics.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6502A7892D800C86979 /* testautomation_intrinsics.c */; };
@@ -699,8 +702,18 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				DB166ED016A1D88100A1396C /* shapes in CopyFiles */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F36C34222C0F85DB00991150 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F36C34232C0F85DB00991150 /* SDL3.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F3CB568B2A7895F800766177 /* Embed Frameworks */ = {
@@ -1312,7 +1325,6 @@
 		DB166E6816A1D6F300A1396C /* testshader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testshader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166E7E16A1D78400A1396C /* testspriteminimal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testspriteminimal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166E9116A1D78C00A1396C /* teststreaming.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = teststreaming.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		DB166ECF16A1D87000A1396C /* shapes */ = {isa = PBXFileReference; lastKnownFileType = folder; path = shapes; sourceTree = "<group>"; };
 		DB445EF818184B7000B306B0 /* testdropfile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testdropfile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB445EFA18184BB600B306B0 /* testdropfile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testdropfile.c; sourceTree = "<group>"; };
 		DB89957E18A19ABA0092407C /* testhotplug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testhotplug.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1340,6 +1352,8 @@
 		F35E56CB2983130F00A43A5F /* testautomation_surface.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_surface.c; sourceTree = "<group>"; };
 		F35E56CC2983130F00A43A5F /* testautomation.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation.c; sourceTree = "<group>"; };
 		F35E56CD2983130F00A43A5F /* testautomation_mouse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_mouse.c; sourceTree = "<group>"; };
+		F36C34272C0F85DB00991150 /* testcamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testcamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F36C342C2C0F869B00991150 /* testcamera.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testcamera.c; sourceTree = "<group>"; };
 		F399C6492A78929400C86979 /* gamepadutils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gamepadutils.c; sourceTree = "<group>"; };
 		F399C6502A7892D800C86979 /* testautomation_intrinsics.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_intrinsics.c; sourceTree = "<group>"; };
 		F399C6542A78933000C86979 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -1710,6 +1724,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F36C34202C0F85DB00991150 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F36C34212C0F85DB00991150 /* SDL3.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F3C17CD928E416CF00E1A26D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1737,7 +1759,6 @@
 				00794E5F09D20839003FC8A1 /* picture.xbm */,
 				00794E6109D20839003FC8A1 /* sample.bmp */,
 				00794E6209D20839003FC8A1 /* sample.wav */,
-				DB166ECF16A1D87000A1396C /* shapes */,
 				00794E6309D20839003FC8A1 /* utf8.txt */,
 			);
 			name = Resources;
@@ -1774,6 +1795,7 @@
 				F35E56B72983130A00A43A5F /* testautomation_hints.c */,
 				F35E56BF2983130C00A43A5F /* testautomation_images.c */,
 				F399C6502A7892D800C86979 /* testautomation_intrinsics.c */,
+				F35E56B92983130B00A43A5F /* testautomation_iostream.c */,
 				F35E56C62983130D00A43A5F /* testautomation_joystick.c */,
 				F35E56C72983130E00A43A5F /* testautomation_keyboard.c */,
 				A1A8594A2BC72FC20045DD6C /* testautomation_log.c */,
@@ -1786,7 +1808,6 @@
 				A1A859482BC72FC20045DD6C /* testautomation_properties.c */,
 				F35E56C52983130D00A43A5F /* testautomation_rect.c */,
 				F35E56B82983130A00A43A5F /* testautomation_render.c */,
-				F35E56B92983130B00A43A5F /* testautomation_iostream.c */,
 				F35E56C82983130E00A43A5F /* testautomation_sdltest.c */,
 				F35E56BE2983130C00A43A5F /* testautomation_stdlib.c */,
 				A1A859492BC72FC20045DD6C /* testautomation_subsystems.c */,
@@ -1795,6 +1816,7 @@
 				F35E56BD2983130B00A43A5F /* testautomation_timer.c */,
 				F35E56C12983130C00A43A5F /* testautomation_video.c */,
 				F35E56CC2983130F00A43A5F /* testautomation.c */,
+				F36C342C2C0F869B00991150 /* testcamera.c */,
 				BBFC088E164C6820003E6A99 /* testcontroller.c */,
 				001797711074320D00F5D044 /* testdraw.c */,
 				DB0F48D717CA51D2008798C5 /* testdrawchessboard.c */,
@@ -1895,6 +1917,7 @@
 				DB445EF818184B7000B306B0 /* testdropfile.app */,
 				F3C17CDC28E416CF00E1A26D /* testgeometry.app */,
 				F35E56AA298312CB00A43A5F /* testautomation.app */,
+				F36C34272C0F85DB00991150 /* testcamera.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2716,6 +2739,23 @@
 			productReference = F35E56AA298312CB00A43A5F /* testautomation.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F36C341D2C0F85DB00991150 /* testcamera */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F36C34242C0F85DB00991150 /* Build configuration list for PBXNativeTarget "testcamera" */;
+			buildPhases = (
+				F36C341E2C0F85DB00991150 /* Sources */,
+				F36C34202C0F85DB00991150 /* Frameworks */,
+				F36C34222C0F85DB00991150 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testcamera;
+			productName = testalpha;
+			productReference = F36C34272C0F85DB00991150 /* testcamera.app */;
+			productType = "com.apple.product-type.application";
+		};
 		F3C17CDB28E416CF00E1A26D /* testgeometry */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F3C17CE828E416D000E1A26D /* Build configuration list for PBXNativeTarget "testgeometry" */;
@@ -2909,6 +2949,7 @@
 				0017957410741F7900F5D044 /* testatomic */,
 				00179595107421BF00F5D044 /* testaudioinfo */,
 				F35E56A2298312CB00A43A5F /* testautomation */,
+				F36C341D2C0F85DB00991150 /* testcamera */,
 				BBFC08B7164C6862003E6A99 /* testcontroller */,
 				00179756107431B300F5D044 /* testdraw */,
 				DB0F48D917CA51E5008798C5 /* testdrawchessboard */,
@@ -3232,6 +3273,7 @@
 			files = (
 				BEC567F00761D90600A33029 /* torturethread.c in Sources */,
 				F399C64F2A78929400C86979 /* gamepadutils.c in Sources */,
+				F36C342E2C0F869B00991150 /* testcamera.c in Sources */,
 				F399C6522A7892D800C86979 /* testautomation_intrinsics.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3394,6 +3436,14 @@
 				F35E56D02983130F00A43A5F /* testautomation_hints.c in Sources */,
 				A1A8594E2BC72FC20045DD6C /* testautomation_properties.c in Sources */,
 				F35E56DF2983130F00A43A5F /* testautomation_keyboard.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F36C341E2C0F85DB00991150 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F36C342D2C0F869B00991150 /* testcamera.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4622,6 +4672,30 @@
 			};
 			name = Release;
 		};
+		F36C34252C0F85DB00991150 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Testing camera capture";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Debug;
+		};
+		F36C34262C0F85DB00991150 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Testing camera capture";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
 		F3C17CE928E416D000E1A26D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5064,6 +5138,15 @@
 			buildConfigurations = (
 				F35E56A8298312CB00A43A5F /* Debug */,
 				F35E56A9298312CB00A43A5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F36C34242C0F85DB00991150 /* Build configuration list for PBXNativeTarget "testcamera" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F36C34252C0F85DB00991150 /* Debug */,
+				F36C34262C0F85DB00991150 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
