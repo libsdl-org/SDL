@@ -4595,8 +4595,8 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
     // in either order.
     if (!renderer->destroyed) {
         SDL_DestroyRendererWithoutFreeing(renderer);
-        SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);  // It's no longer magical...
     }
+    SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);  // It's no longer magical...
 
     SDL_free(renderer->texture_formats);
     SDL_free(renderer);
