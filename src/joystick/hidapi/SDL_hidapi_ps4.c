@@ -853,7 +853,6 @@ static SDL_bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     ctx->rumble_left = 0;
     ctx->rumble_right = 0;
     ctx->color_set = SDL_FALSE;
-    ctx->report_interval = 4;
     SDL_zero(ctx->last_state);
 
     /* Initialize player index (needed for setting LEDs) */
@@ -867,10 +866,10 @@ static SDL_bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
 
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
-                        SDL_PS4RumbleHintChanged, ctx);
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
                         SDL_PS4ReportIntervalHintChanged, ctx);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
+                        SDL_PS4RumbleHintChanged, ctx);
     return SDL_TRUE;
 }
 
@@ -1351,10 +1350,10 @@ static void HIDAPI_DriverPS4_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
 
-    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
-                        SDL_PS4RumbleHintChanged, ctx);
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
                         SDL_PS4ReportIntervalHintChanged, ctx);
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
+                        SDL_PS4RumbleHintChanged, ctx);
 
     ctx->joystick = NULL;
 }
