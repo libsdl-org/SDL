@@ -57,8 +57,8 @@ int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 	pspUtilityMsgDialogParams dialog;
 	int status;
 
-	/* TODO: AGHHHHHhhhHH */
-	if (SDL_WasInit(SDL_INIT_VIDEO) == 0 || SDL_GL_GetCurrentContext() == NULL || SDL_GL_GetCurrentWindow() == NULL)
+	/* check if it's possible to do a messagebox now */
+	if (SDL_WasInit(SDL_INIT_VIDEO) == 0 || SDL_GetKeyboardFocus() == NULL)
 		return SDL_SetError("No video context is available");
 
 	/* configure dialog */
@@ -88,8 +88,11 @@ int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 	do
 	{
 		sceGuStart(GU_DIRECT, list);
+		sceGuClearColor(0);
+		sceGuClearDepth(0);
+		sceGuClear(GU_COLOR_BUFFER_BIT|GU_DEPTH_BUFFER_BIT);
 		sceGuFinish();
-		sceGuSync(GU_SYNC_WHAT_DONE, GU_SYNC_FINISH);
+		sceGuSync(0,0);
 
 		status = sceUtilityMsgDialogGetStatus();
 
