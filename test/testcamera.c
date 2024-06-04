@@ -180,21 +180,6 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
 
         case SDL_EVENT_CAMERA_DEVICE_APPROVED:
             SDL_Log("Camera approved!");
-            if (SDL_GetCameraFormat(camera, &spec) < 0) {
-                SDL_Log("Couldn't get camera spec: %s", SDL_GetError());
-                return SDL_APP_FAILURE;
-            }
-
-            /* Resize the window to match */
-            SDL_SetWindowSize(window, spec.width, spec.height);
-
-            /* Create texture with appropriate format */
-            SDL_assert(texture == NULL);
-            texture = SDL_CreateTexture(renderer, spec.format, SDL_TEXTUREACCESS_STREAMING, spec.width, spec.height);
-            if (!texture) {
-                SDL_Log("Couldn't create texture: %s", SDL_GetError());
-                return SDL_APP_FAILURE;
-            }
             break;
 
         case SDL_EVENT_CAMERA_DEVICE_DENIED:
@@ -213,30 +198,48 @@ int SDL_AppIterate(void *appstate)
     SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, 255);
     SDL_RenderClear(renderer);
 
-    if (texture) {   /* if not NULL, camera is ready to go. */
-        int win_w, win_h, tw, th;
-        SDL_FRect d;
-        Uint64 timestampNS = 0;
-        SDL_Surface *frame_next = camera ? SDL_AcquireCameraFrame(camera, &timestampNS) : NULL;
+    int win_w, win_h, tw, th;
+    SDL_FRect d;
+    Uint64 timestampNS = 0;
+    SDL_Surface *frame_next = camera ? SDL_AcquireCameraFrame(camera, &timestampNS) : NULL;
 
-        #if 0
-        if (frame_next) {
-            SDL_Log("frame: %p  at %" SDL_PRIu64, (void*)frame_next->pixels, timestampNS);
+    #if 0
+    if (frame_next) {
+        SDL_Log("frame: %p  at %" SDL_PRIu64, (void*)frame_next->pixels, timestampNS);
+    }
+    #endif
+
+    if (frame_next) {
+        if (frame_current) {
+            if (SDL_ReleaseCameraFrame(camera, frame_current) < 0) {
+                SDL_Log("err SDL_ReleaseCameraFrame: %s", SDL_GetError());
+            }
         }
-        #endif
 
-        if (frame_next) {
-            if (frame_current) {
-                if (SDL_ReleaseCameraFrame(camera, frame_current) < 0) {
-                    SDL_Log("err SDL_ReleaseCameraFrame: %s", SDL_GetError());
-                }
+        /* It's not needed to keep the frame once updated the texture is updated.
+         * But in case of 0-copy, it's needed to have the frame while using the texture.
+         */
+         frame_current = frame_next;
+         texture_updated = SDL_FALSE;
+    }
+
+    if (frame_current) {
+        if (!texture ||
+            SDL_QueryTexture(texture, NULL, NULL, &tw, &th) < 0 ||
+            tw != frame_current->w || th != frame_current->h) {
+            /* Resize the window to match */
+            SDL_SetWindowSize(window, frame_current->w, frame_current->h);
+
+            if (texture) {
+                SDL_DestroyTexture(texture);
             }
 
-            /* It's not needed to keep the frame once updated the texture is updated.
-             * But in case of 0-copy, it's needed to have the frame while using the texture.
-             */
-             frame_current = frame_next;
-             texture_updated = SDL_FALSE;
+            /* Create texture with appropriate format */
+            texture = SDL_CreateTexture(renderer, frame_current->format->format, SDL_TEXTUREACCESS_STREAMING, frame_current->w, frame_current->h);
+            if (!texture) {
+                SDL_Log("Couldn't create texture: %s", SDL_GetError());
+                return SDL_APP_FAILURE;
+            }
         }
 
         /* Update SDL_Texture with last video frame (only once per new frame) */

@@ -41,7 +41,7 @@
  * <key>com.apple.security.device.camera</key> <true/>
  */
 
-static Uint32 CoreMediaFormatToSDL(FourCharCode fmt)
+static SDL_PixelFormatEnum CoreMediaFormatToSDL(FourCharCode fmt)
 {
     switch (fmt) {
         #define CASE(x, y) case x: return y
@@ -55,6 +55,10 @@ static Uint32 CoreMediaFormatToSDL(FourCharCode fmt)
         CASE(kCMPixelFormat_32BGRA, SDL_PIXELFORMAT_BGRA32);
         CASE(kCMPixelFormat_422YpCbCr8, SDL_PIXELFORMAT_YUY2);
         CASE(kCMPixelFormat_422YpCbCr8_yuvs, SDL_PIXELFORMAT_UYVY);
+        CASE(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange, SDL_PIXELFORMAT_NV12);
+        CASE(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, SDL_PIXELFORMAT_NV12);
+        CASE(kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange, SDL_PIXELFORMAT_P010);
+        CASE(kCVPixelFormatType_420YpCbCr10BiPlanarFullRange, SDL_PIXELFORMAT_P010);
         #undef CASE
         default:
             #if DEBUG_CAMERA
@@ -172,6 +176,9 @@ static int COREMEDIA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, 
     // !!! FIXME: this currently copies the data to the surface (see FIXME about non-contiguous planar surfaces, but in theory we could just keep this locked until ReleaseFrame...
     CVPixelBufferLockBaseAddress(image, 0);
 
+    frame->w = (int)CVPixelBufferGetWidth(image);
+    frame->h = (int)CVPixelBufferGetHeight(image);
+
     if ((planar == 0) && (numPlanes == 0)) {
         const int pitch = (int) CVPixelBufferGetBytesPerRow(image);
         const size_t buflen = pitch * frame->h;
@@ -185,22 +192,26 @@ static int COREMEDIA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, 
     } else {
         // !!! FIXME: we have an open issue in SDL3 to allow SDL_Surface to support non-contiguous planar data, but we don't have it yet.
         size_t buflen = 0;
-        for (int i = 0; (i < numPlanes) && (i < 3); i++) {
-            buflen += CVPixelBufferGetBytesPerRowOfPlane(image, i);
+        for (int i = 0; i < numPlanes; i++) {
+            size_t plane_height = CVPixelBufferGetHeightOfPlane(image, i);
+            size_t plane_pitch = CVPixelBufferGetBytesPerRowOfPlane(image, i);
+            size_t plane_size = (plane_pitch * plane_height);
+            buflen += plane_size;
         }
-        buflen *= frame->h;
 
+        frame->pitch = (int)CVPixelBufferGetBytesPerRowOfPlane(image, 0);  // this is what SDL3 currently expects
         frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
         if (frame->pixels == NULL) {
             retval = -1;
         } else {
             Uint8 *dst = frame->pixels;
-            frame->pitch = (int) CVPixelBufferGetBytesPerRowOfPlane(image, 0);  // this is what SDL3 currently expects, probably incorrectly.
-            for (int i = 0; (i < numPlanes) && (i < 3); i++) {
+            for (int i = 0; i < numPlanes; i++) {
                 const void *src = CVPixelBufferGetBaseAddressOfPlane(image, i);
-                const size_t pitch = CVPixelBufferGetBytesPerRowOfPlane(image, i);
-                SDL_memcpy(dst, src, pitch * frame->h);
-                dst += pitch * frame->h;
+                size_t plane_height = CVPixelBufferGetHeightOfPlane(image, i);
+                size_t plane_pitch = CVPixelBufferGetBytesPerRowOfPlane(image, i);
+                size_t plane_size = (plane_pitch * plane_height);
+                SDL_memcpy(dst, src, plane_size);
+                dst += plane_size;
             }
         }
     }
@@ -241,7 +252,7 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     AVCaptureDevice *avdevice = (__bridge AVCaptureDevice *) device->handle;
 
     // Pick format that matches the spec
-    const Uint32 sdlfmt = spec->format;
+    const SDL_PixelFormatEnum sdlfmt = spec->format;
     const int w = spec->width;
     const int h = spec->height;
     const int rate = spec->interval_denominator;
@@ -356,7 +367,7 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
             continue;
         }
 
-        const Uint32 sdlfmt = CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(fmt.formatDescription));
+        const SDL_PixelFormatEnum sdlfmt = CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(fmt.formatDescription));
         if (sdlfmt == SDL_PIXELFORMAT_UNKNOWN) {
             continue;
         }

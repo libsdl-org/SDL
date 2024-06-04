@@ -852,6 +852,8 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
             #if DEBUG_CAMERA
             SDL_Log("CAMERA: Frame is going through without conversion!");
             #endif
+            output_surface->w = acquired->w;
+            output_surface->h = acquired->h;
             output_surface->pixels = acquired->pixels;
             output_surface->pitch = acquired->pitch;
         } else {  // convert/scale into a different surface.
