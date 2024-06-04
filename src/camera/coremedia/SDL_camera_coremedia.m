@@ -308,6 +308,8 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
         return SDL_SetError("Cannot create AVCaptureVideoDataOutput");
     }
 
+    output.videoSettings = @{};
+
     char threadname[64];
     SDL_GetCameraThreadName(device, threadname, sizeof (threadname));
     dispatch_queue_t queue = dispatch_queue_create(threadname, NULL);
