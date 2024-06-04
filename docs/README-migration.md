@@ -156,9 +156,8 @@ Rather than iterating over audio devices using a device index, there are new fun
         if (devices) {
             for (i = 0; i < num_devices; ++i) {
                 SDL_AudioDeviceID instance_id = devices[i];
-                char *name = SDL_GetAudioDeviceName(instance_id);
+                const char *name = SDL_GetAudioDeviceName(instance_id);
                 SDL_Log("AudioDevice %" SDL_PRIu32 ": %s\n", instance_id, name);
-                SDL_free(name);
             }
             SDL_free(devices);
         }
