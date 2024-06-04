@@ -1261,8 +1261,6 @@ static void PSP_DestroyRenderer(SDL_Renderer *renderer)
             return;
         }
 
-        StartDrawing(renderer);
-
         sceKernelDisableSubIntr(PSP_VBLANK_INT, 0);
         sceKernelReleaseSubIntrHandler(PSP_VBLANK_INT, 0);
         sceDisplayWaitVblankStart();
