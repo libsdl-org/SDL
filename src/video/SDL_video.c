@@ -2003,24 +2003,26 @@ void SDL_ToggleDragAndDropSupport(void)
 
 static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)
 {
-    if (!(flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED))) {
-        SDL_RestoreWindow(window);
-    }
-    if (flags & SDL_WINDOW_MAXIMIZED) {
-        SDL_MaximizeWindow(window);
-    }
+    if (!SDL_WINDOW_IS_POPUP(window)) {
+        if (!(flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED))) {
+            SDL_RestoreWindow(window);
+        }
+        if (flags & SDL_WINDOW_MAXIMIZED) {
+            SDL_MaximizeWindow(window);
+        }
 
-    SDL_SetWindowFullscreen(window, (flags & SDL_WINDOW_FULLSCREEN) != 0);
+        SDL_SetWindowFullscreen(window, (flags & SDL_WINDOW_FULLSCREEN) != 0);
 
-    if (flags & SDL_WINDOW_MINIMIZED) {
-        SDL_MinimizeWindow(window);
-    }
+        if (flags & SDL_WINDOW_MINIMIZED) {
+            SDL_MinimizeWindow(window);
+        }
 
-    if (flags & SDL_WINDOW_MOUSE_GRABBED) {
-        SDL_SetWindowMouseGrab(window, SDL_TRUE);
-    }
-    if (flags & SDL_WINDOW_KEYBOARD_GRABBED) {
-        SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
+        if (flags & SDL_WINDOW_MOUSE_GRABBED) {
+            SDL_SetWindowMouseGrab(window, SDL_TRUE);
+        }
+        if (flags & SDL_WINDOW_KEYBOARD_GRABBED) {
+            SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
+        }
     }
 }
 
