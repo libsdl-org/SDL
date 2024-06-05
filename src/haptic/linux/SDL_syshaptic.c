@@ -503,7 +503,7 @@ int SDL_SYS_HapticMouse(void)
 /*
  * Checks to see if a joystick has haptic features.
  */
-int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
+SDL_bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_LINUX
     SDL_AssertJoysticksLocked();
@@ -521,21 +521,21 @@ int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 /*
  * Checks to see if the haptic device and joystick are in reality the same.
  */
-int SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
+SDL_bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_LINUX
     SDL_AssertJoysticksLocked();
 
     if (joystick->driver != &SDL_LINUX_JoystickDriver) {
-        return 0;
+        return SDL_FALSE;
     }
     /* We are assuming Linux is using evdev which should trump the old
      * joystick methods. */
     if (SDL_strcmp(joystick->hwdata->fname, haptic->hwdata->fname) == 0) {
-        return 1;
+        return SDL_TRUE;
     }
 #endif
-    return 0;
+    return SDL_FALSE;
 }
 
 /*
