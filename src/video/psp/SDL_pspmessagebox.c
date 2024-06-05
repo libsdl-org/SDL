@@ -58,7 +58,7 @@ int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 	int status;
 
 	/* check if it's possible to do a messagebox now */
-	if (SDL_WasInit(SDL_INIT_VIDEO) == 0 || SDL_GetKeyboardFocus() == NULL)
+	if (SDL_GetKeyboardFocus() == NULL)
 		return SDL_SetError("No video context is available");
 
 	/* configure dialog */
