@@ -600,7 +600,6 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 
     void *iodata = NULL;
     if (Android_JNI_FileOpen(&iodata, file, mode) < 0) {
-        Android_JNI_FileClose(iodata);
         return NULL;
     }
 
