@@ -85,4 +85,5 @@
     void pollHapticDevices();
     void hapticRun(int, float, int);
     void hapticStop(int);
+    void hapticRumble(int, float , float, int);
 }
