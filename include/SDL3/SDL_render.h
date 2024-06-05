@@ -1371,7 +1371,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderCoordinatesToWindow(SDL_Renderer *rend
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetRenderCoordinatesFromWindowCoordinates
+ * \sa SDL_RenderCoordinatesFromWindow
  */
 extern SDL_DECLSPEC int SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *event);
 
