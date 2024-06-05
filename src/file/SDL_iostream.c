@@ -577,13 +577,11 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         return SDL_IOFromFP(fp, SDL_TRUE);
     } else {
         /* Try opening it from internal storage if it's a relative path */
-        // !!! FIXME: why not just "char path[PATH_MAX];"
-        char *path = SDL_stack_alloc(char, PATH_MAX);
+        char *path = NULL;
+        SDL_asprintf(&path, "%s/%s", SDL_AndroidGetInternalStoragePath(), file);
         if (path) {
-            SDL_snprintf(path, PATH_MAX, "%s/%s",
-                         SDL_AndroidGetInternalStoragePath(), file);
             FILE *fp = fopen(path, mode);
-            SDL_stack_free(path);
+            SDL_free(path);
             if (fp) {
                 if (!IsRegularFileOrPipe(fp)) {
                     fclose(fp);
