@@ -2415,10 +2415,10 @@ libtool_validate_options ()
     # preserve --debug
     test : = "$debug_cmd" || func_append preserve_args " --debug"
 
-    case $host in
+    case $host_os in
       # Solaris2 added to fix http://debbugs.gnu.org/cgi/bugreport.cgi?bug=16452
       # see also: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=59788
-      *cygwin* | *mingw* | *windows* | *pw32* | *cegcc* | *solaris2* | *os2*)
+      cygwin* | mingw* | windows* | pw32* | cegcc* | solaris2* | os2*)
         # don't eliminate duplications in $postdeps and $predeps
         opt_duplicate_compiler_generated_deps=:
         ;;
@@ -5534,7 +5534,7 @@ EOF
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef _MSC_VER
+#if defined _WIN32 && !defined __GNUC__
 # include <direct.h>
 # include <process.h>
 # include <io.h>
@@ -7096,7 +7096,7 @@ func_mode_link ()
 	continue
 	;;
       -mt|-mthreads|-kthread|-Kthread|-pthreads|--thread-safe \
-      |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
+      |-threads|-fopenmp|-fopenmp=*|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
 	func_append compiler_flags " $arg"
 	func_append compile_command " $arg"
 	func_append finalize_command " $arg"
@@ -7310,7 +7310,10 @@ func_mode_link ()
       # -fno-sanitize*       Clang/GCC memory and address sanitizer
       # -shared-libsan       Link with shared sanitizer runtimes (Clang)
       # -static-libsan       Link with static sanitizer runtimes (Clang)
+      # -no-canonical-prefixes Do not expand any symbolic links
       # -fuse-ld=*           Linker select flags for GCC
+      # -static-*            direct GCC to link specific libraries statically
+      # -fcilkplus           Cilk Plus language extension features for C/C++
       # -rtlib=*             select c runtime lib with clang
       # --unwindlib=*        select unwinder library with clang
       # -f{file|debug|macro|profile}-prefix-map=* needed for lto linking
@@ -7318,12 +7321,12 @@ func_mode_link ()
       # -Werror, -Werror=*   Report (specified) warnings as errors
       -64|-mips[0-9]|-r[0-9][0-9]*|-xarch=*|-xtarget=*|+DA*|+DD*|-q*|-m*| \
       -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*|--sysroot=*| \
-      -O*|-g*|-flto*|-fwhopr*|-fuse-linker-plugin|-fstack-protector*| \
+      -O*|-g*|-flto*|-fwhopr*|-fuse-linker-plugin|-fstack-protector*|-no-canonical-prefixes| \
       -stdlib=*|-rtlib=*|--unwindlib=*| \
       -specs=*|-fsanitize=*|-fno-sanitize*|-shared-libsan|-static-libsan| \
       -ffile-prefix-map=*|-fdebug-prefix-map=*|-fmacro-prefix-map=*|-fprofile-prefix-map=*| \
       -fdiagnostics-color*|-frecord-gcc-switches| \
-      -fuse-ld=*|-Wa,*|-Werror|-Werror=*)
+      -fuse-ld=*|-static-*|-fcilkplus|-Wa,*|-Werror|-Werror=*)
         func_quote_for_eval "$arg"
 	arg=$func_quote_for_eval_result
         func_append compile_command " $arg"
@@ -7653,7 +7656,7 @@ func_mode_link ()
 	found=false
 	case $deplib in
 	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe \
-        |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
+        |-threads|-fopenmp|-fopenmp=*|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
 	  if test prog,link = "$linkmode,$pass"; then
 	    compile_deplibs="$deplib $compile_deplibs"
 	    finalize_deplibs="$deplib $finalize_deplibs"
@@ -8179,8 +8182,8 @@ func_mode_link ()
 	fi
 	if test -n "$library_names" &&
 	   { test no = "$use_static_libs" || test -z "$old_library"; }; then
-	  case $host in
-	  *cygwin* | *mingw* | *windows* | *cegcc* | *os2*)
+	  case $host_os in
+	  cygwin* | mingw* | windows* | cegcc* | os2*)
 	      # No point in relinking DLLs because paths are not encoded
 	      func_append notinst_deplibs " $lib"
 	      need_relink=no
@@ -8249,8 +8252,8 @@ func_mode_link ()
 	      soname=$dlname
 	    elif test -n "$soname_spec"; then
 	      # bleh windows
-	      case $host in
-	      *cygwin* | mingw* | *windows* | *cegcc*)  # | *os2* # SDL customization: removed OS/2 versioning support.
+	      case $host_os in
+	      cygwin* | mingw* | windows* | cegcc*)  # | os2* # SDL customization: removed OS/2 versioning support.
 	        func_arith $current - $age
 		major=$func_arith_result
 		versuffix=-$major
@@ -8392,7 +8395,7 @@ func_mode_link ()
 	       test no = "$hardcode_direct_absolute"; then
 	      add=$libdir/$linklib
 	    elif test yes = "$hardcode_minus_L"; then
-	      add_dir=-L$libdir
+	      add_dir=-L$lt_sysroot$libdir
 	      add=-l$name
 	    elif test yes = "$hardcode_shlibpath_var"; then
 	      case :$finalize_shlibpath: in
@@ -8409,7 +8412,7 @@ func_mode_link ()
 	      fi
 	    else
 	      # We cannot seem to hardcode it, guess we'll fake it.
-	      add_dir=-L$libdir
+	      add_dir=-L$lt_sysroot$libdir
 	      # Try looking first in the location we're being installed to.
 	      if test -n "$inst_prefix_dir"; then
 		case $libdir in
@@ -8680,7 +8683,7 @@ func_mode_link ()
       test CXX = "$tagname" && {
         case $host_os in
         linux*)
-          case `$CC -V 2>&1 | sed 5q` in
+          case `$CC -V 2>&1 | $SED 5q` in
           *Sun\ C*) # Sun C++ 5.9
             func_suncc_cstd_abi
 
@@ -8853,13 +8856,13 @@ func_mode_link ()
 	  #
 	  case $version_type in
 	  # correct linux to gnu/linux during the next big refactor
-	  darwin|freebsd-elf|linux|midnightbsd-elf|osf|windows|none)
+	  darwin|freebsd-elf|linux|midnightbsd-elf|osf|qnx|windows|none)
 	    func_arith $number_major + $number_minor
 	    current=$func_arith_result
 	    age=$number_minor
 	    revision=$number_revision
 	    ;;
-	  freebsd-aout|qnx|sco|sunos)
+	  freebsd-aout|sco|sunos)
 	    current=$number_major
 	    revision=$number_minor
 	    age=0
@@ -9006,8 +9009,9 @@ func_mode_link ()
 	  ;;
 
 	qnx)
-	  major=.$current
-	  versuffix=.$current
+	  func_arith $current - $age
+	  major=.$func_arith_result
+	  versuffix=$major.$age.$revision
 	  ;;
 
 	sco)
