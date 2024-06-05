@@ -53,7 +53,7 @@ static void configure_dialog(pspUtilityMsgDialogParams *dialog, size_t dialog_si
 
 int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
-	static unsigned char list[0x20000] __attribute__((aligned(64)));
+	unsigned char list[0x20000] __attribute__((aligned(64)));
 	pspUtilityMsgDialogParams dialog;
 	int status;
 
