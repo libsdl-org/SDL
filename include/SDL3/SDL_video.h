@@ -1127,9 +1127,13 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  *   UIWindow associated with the window
  * - `SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER`: the NSInteger tag
  *   assocated with metal views on the window
- * - `SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER`: the OpenGL view's framebuffer object. It must be bound when rendering to the screen using OpenGL.
- * - `SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER`: the OpenGL view's renderbuffer object. It must be bound when SDL_GL_SwapWindow is called.
- * - `SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER`: the OpenGL view's resolve framebuffer, when MSAA is used.
+ * - `SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER`: the OpenGL view's
+ *   framebuffer object. It must be bound when rendering to the screen using
+ *   OpenGL.
+ * - `SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER`: the OpenGL view's
+ *   renderbuffer object. It must be bound when SDL_GL_SwapWindow is called.
+ * - `SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER`: the OpenGL
+ *   view's resolve framebuffer, when MSAA is used.
  *
  * On KMS/DRM:
  *
