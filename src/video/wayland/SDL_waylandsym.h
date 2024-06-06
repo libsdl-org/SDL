@@ -146,6 +146,7 @@ SDL_WAYLAND_SYM(struct xkb_compose_table *, xkb_compose_table_new_from_locale, (
                       const char *locale, enum xkb_compose_compile_flags) )
 SDL_WAYLAND_SYM(void, xkb_compose_table_unref, (struct xkb_compose_table *) )
 SDL_WAYLAND_SYM(struct xkb_compose_state *, xkb_compose_state_new, (struct xkb_compose_table *, enum xkb_compose_state_flags) )
+SDL_WAYLAND_SYM(void, xkb_compose_state_reset, (struct xkb_compose_state *) )
 SDL_WAYLAND_SYM(void, xkb_compose_state_unref, (struct xkb_compose_state *) )
 SDL_WAYLAND_SYM(enum xkb_compose_feed_result, xkb_compose_state_feed, (struct xkb_compose_state *, xkb_keysym_t) )
 SDL_WAYLAND_SYM(enum xkb_compose_status, xkb_compose_state_get_status, (struct xkb_compose_state *) )

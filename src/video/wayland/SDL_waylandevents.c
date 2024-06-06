@@ -1305,10 +1305,8 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         keyboard_input_get_text(text, input, key, SDL_RELEASED, &handled_by_ime);
     }
 
-    if (!handled_by_ime) {
-        scancode = Wayland_get_scancode_from_key(input, key + 8);
-        SDL_SendKeyboardKey(state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
-    }
+    scancode = Wayland_get_scancode_from_key(input, key + 8);
+    SDL_SendKeyboardKey(state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
 
     Wayland_data_device_set_serial(input->data_device, serial);
     Wayland_primary_selection_device_set_serial(input->primary_selection_device, serial);
