@@ -369,6 +369,7 @@ static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x044f, 0xb691), /* Thrustmaster TS-XW (initial mode) */
     MAKE_VIDPID(0x044f, 0xb692), /* Thrustmaster TS-XW (active mode) */
     MAKE_VIDPID(0x0483, 0x0522), /* Simagic Wheelbase (including M10, Alpha Mini, Alpha, Alpha U) */
+    MAKE_VIDPID(0x0483, 0xa355), /* VRS DirectForce Pro Wheel Base */
     MAKE_VIDPID(0x0eb7, 0x0001), /* Fanatec ClubSport Wheel Base V2 */
     MAKE_VIDPID(0x0eb7, 0x0004), /* Fanatec ClubSport Wheel Base V2.5 */
     MAKE_VIDPID(0x0eb7, 0x0005), /* Fanatec CSL Elite Wheel Base+ (PS4) */
