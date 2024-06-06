@@ -1041,7 +1041,11 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     return Android_OnPadDown(device_id, keycode);
+#else
+    return -1;
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 /* Padup */
@@ -1049,7 +1053,11 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     return Android_OnPadUp(device_id, keycode);
+#else
+    return -1;
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 /* Joy */
@@ -1057,7 +1065,9 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint axis, jfloat value)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     Android_OnJoy(device_id, axis, value);
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 /* POV Hat */
@@ -1065,7 +1075,9 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint hat_id, jint x, jint y)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     Android_OnHat(device_id, hat_id, x, y);
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
@@ -1075,6 +1087,7 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble)
 {
     int retval;
+#ifdef SDL_JOYSTICK_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
@@ -1082,7 +1095,9 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
-
+#else
+    retval = -1;
+#endif /* SDL_JOYSTICK_ANDROID */
     return retval;
 }
 
@@ -1090,26 +1105,37 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     return Android_RemoveJoystick(device_id);
+#else
+    return -1;
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
     JNIEnv *env, jclass jcls, jint device_id, jstring device_name)
 {
     int retval;
+#ifdef SDL_HAPTIC_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
 
     retval = Android_AddHaptic(device_id, name);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
-
+#else
+    retval = -1;
+#endif /* SDL_HAPTIC_ANDROID */
     return retval;
 }
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
     JNIEnv *env, jclass jcls, jint device_id)
 {
+#ifdef SDL_HAPTIC_ANDROID
     return Android_RemoveHaptic(device_id);
+#else
+    return -1;
+#endif
 }
 
 /* Called from surfaceCreated() */
