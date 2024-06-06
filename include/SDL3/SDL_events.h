@@ -929,7 +929,9 @@ typedef enum SDL_EventAction
  *
  * This function is thread-safe.
  *
- * \param events destination buffer for the retrieved events, may be NULL to leave the events in the queue and return the number of events that would have been stored.
+ * \param events destination buffer for the retrieved events, may be NULL to
+ *               leave the events in the queue and return the number of events
+ *               that would have been stored.
  * \param numevents if action is SDL_ADDEVENT, the number of events to add
  *                  back to the event queue; if action is SDL_PEEKEVENT or
  *                  SDL_GETEVENT, the maximum number of events to retrieve.
