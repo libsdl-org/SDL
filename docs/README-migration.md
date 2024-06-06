@@ -1613,7 +1613,7 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
     if (nswindow) {
         ...
     }
-#elif defined(SDL_PLATFORM_LINUX)
+#elif defined(__LINUX__)
     if (SDL_GetWindowWMInfo(window, &info)) {
         if (info.subsystem == SDL_SYSWM_X11) {
             Display *xdisplay = info.info.x11.display;
@@ -1628,6 +1628,17 @@ The information previously available in SDL_GetWindowWMInfo() is now available a
                 ...
             }
         }
+    }
+#elif defined(__IPHONEOS__)
+    UIWindow *uiwindow = NULL;
+    if (SDL_GetWindowWMInfo(window, &info) && info.subsystem == SDL_SYSWM_UIKIT) {
+        uiwindow = (__bridge UIWindow *)info.info.uikit.window;
+    }
+    if (uiwindow) {
+        GLuint framebuffer = info.info.uikit.framebuffer;
+        GLuint colorbuffer = info.info.uikit.colorbuffer;
+        GLuint resolveFramebuffer = info.info.uikit.resolveFramebuffer;
+        ...
     }
 #endif
 ```
@@ -1656,6 +1667,15 @@ becomes:
         if (display && surface) {
             ...
         }
+    }
+#elif defined(SDL_PLATFORM_IOS)
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    UIWindow *uiwindow = (__bridge UIWindow *)SDL_GetProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
+    if (uiwindow) {
+        GLuint framebuffer = (GLuint)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER, 0);
+        GLuint colorbuffer = (GLuint)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER, 0);
+        GLuint resolveFramebuffer = (GLuint)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER, 0);
+        ...
     }
 #endif
 ```

@@ -619,6 +619,11 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
+    if (vendor_id == USB_VENDOR_LOGITECH &&
+        product_id == USB_PRODUCT_LOGITECH_CHILLSTREAM) {
+        return SDL_TRUE;
+    }
+
     if ((type == SDL_GAMEPAD_TYPE_PS3 && vendor_id != USB_VENDOR_SONY) ||
         HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
         if (device && device->dev) {
@@ -795,7 +800,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystic
             0,  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
             0,  /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
             14, /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
-            16, /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
+            15, /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
             8,  /* SDL_GAMEPAD_BUTTON_DPAD_UP */
             9,  /* SDL_GAMEPAD_BUTTON_DPAD_DOWN */
             7,  /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */

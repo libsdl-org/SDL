@@ -152,16 +152,12 @@ SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
     case USB_VENDOR_HORI:
         return SDL_TRUE;
     case USB_VENDOR_LOGITECH:
-        /* Most Logitech devices are fine with this, but there are a few exceptions */
-        if (product == USB_PRODUCT_LOGITECH_F310) {
-            /* The Logitech F310 gamepad will lock up */
-            return SDL_FALSE;
-        }
-        if (product == 0xc33f) {
-            /* The Logitech G815 keyboard will reset the LEDs */
-            return SDL_FALSE;
-        }
-        return SDL_TRUE;
+        /* Most Logitech devices are not PlayStation controllers, and some of them
+         * lock up or reset when we send them the Sony third-party query feature
+         * report, so don't include that vendor here. Instead add devices as
+         * appropriate to controller_list.h
+         */
+        return SDL_FALSE;
     case USB_VENDOR_MADCATZ:
         if (product == USB_PRODUCT_MADCATZ_SAITEK_SIDE_PANEL_CONTROL_DECK) {
             /* This is not a Playstation compatible device */
@@ -182,10 +178,10 @@ SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
     case USB_VENDOR_QANBA:
         return SDL_TRUE;
     case USB_VENDOR_RAZER:
-        /* Most Razer devices are not game controllers, and some of them lock up
-         * or reset when we send them the Sony third-party query feature report,
-         * so don't include that vendor here. Instead add devices as appropriate
-         * to controller_list.h
+        /* Most Razer devices are not PlayStation controllers, and some of them
+         * lock up or reset when we send them the Sony third-party query feature
+         * report, so don't include that vendor here. Instead add devices as
+         * appropriate to controller_list.h
          *
          * Reference: https://github.com/libsdl-org/SDL/issues/6733
          *            https://github.com/libsdl-org/SDL/issues/6799
