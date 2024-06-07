@@ -641,8 +641,9 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     if (nCode < 0 || nCode != HC_ACTION) {
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
+
     if (hookData->scanCode == 0x21d) {
-	    // Skip fake LCtrl when RAlt is pressed
+	    /* Skip fake LCtrl when RAlt is pressed */
 	    return 1;
     }
 
@@ -700,36 +701,35 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
 
 
-// Return 1 if spruious LCtrl is pressed
-// LCtrl is sent when RAltGR is pressed
-int skip_bad_lcrtl(WPARAM wParam, LPARAM lParam)
+/* Return SDL_TRUE if spurious LCtrl is pressed. LCtrl is sent when RAltGR is pressed. */
+static SDL_bool SkipAltGrLeftControl(WPARAM wParam, LPARAM lParam)
 {
     MSG next_msg;
     DWORD msg_time;
-    if (wParam != VK_CONTROL) {
-        return 0;
-    }
-    // Is this an extended key (i.e. right key)?
-    if (lParam & 0x01000000)
-                return 0;
 
-    // Here is a trick: "Alt Gr" sends LCTRL, then RALT. We only
-    // want the RALT message, so we try to see if the next message
-    // is a RALT message. In that case, this is a false LCTRL!
+    if (wParam != VK_CONTROL) {
+        return SDL_FALSE;
+    }
+
+    /* Is this an extended key (i.e. right key)? */
+    if (lParam & 0x01000000) {
+        return SDL_FALSE;
+    }
+
+    /* Here is a trick: "Alt Gr" sends LCTRL, then RALT. We only
+       want the RALT message, so we try to see if the next message
+       is a RALT message. In that case, this is a false LCTRL! */
     msg_time = GetMessageTime();
     if (PeekMessage(&next_msg, NULL, 0, 0, PM_NOREMOVE)) {
         if (next_msg.message == WM_KEYDOWN ||
             next_msg.message == WM_SYSKEYDOWN) {
-            if (next_msg.wParam == VK_MENU &&
-                (next_msg.lParam & 0x01000000) &&
-                next_msg.time == msg_time) {
-                // Next message is a RALT down message, which
-                // means that this is NOT a proper LCTRL message!
-                return 1;
+            if (next_msg.wParam == VK_MENU && (next_msg.lParam & 0x01000000) && next_msg.time == msg_time) {
+                /* Next message is a RALT down message, which means that this is NOT a proper LCTRL message! */
+                return SDL_TRUE;
             }
         }
     }
-    return 0;
+    return SDL_FALSE;
 }
 
 LRESULT CALLBACK
@@ -1049,7 +1049,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
-        if (skip_bad_lcrtl(wParam, lParam)) {
+        if (SkipAltGrLeftControl(wParam, lParam)) {
             returnCode = 0;
             break;
         }
@@ -1076,7 +1076,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
-        if (skip_bad_lcrtl(wParam, lParam)) {
+        if (SkipAltGrLeftControl(wParam, lParam)) {
             returnCode = 0;
             break;
         }
