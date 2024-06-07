@@ -2499,6 +2499,46 @@ extern SDL_DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
 #define SDL_iconv_utf8_ucs4(S)      (Uint32 *)SDL_iconv_string("UCS-4", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_wchar_utf8(S)     SDL_iconv_string("UTF-8", "WCHAR_T", (char *)S, (SDL_wcslen(S)+1)*sizeof(wchar_t))
 
+/**
+ * Compute the basename of `path`.
+ *
+ * This function returns the filename of `path` by splitting the path using slashes.
+ * Only the part beyond the last slash is returned.
+ *
+ * This function may return pointers to static memory or a pointer to some part of `path`.
+ * So it's important to not modify or free the input string as long the output pointer of this function is required.
+ *
+ * \param path valid UTF-8 encoded path. Can be NULL.
+ * \returns filename of `path`. Will never NULL. Do not free this memory.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_dirname
+ */
+extern SDL_DECLSPEC char *SDLCALL SDL_basename(char *path);
+
+/**
+ * Compute the directory of `path`.
+ *
+ * This function returns the directory of `path` by splitting the path using slashes.
+ * Only the part before the last slash is returned.
+ *
+ * This function may return pointers to static memory or a pointer to some part of `path`.
+ * So it's important to not modify or free the input string as long the output pointer of this function is required.
+ *
+ * \param path valid UTF-8 encoded path. Can be NULL.
+ * \returns directory of `path`. Will never NULL. Do not free this memory.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_basename
+ */
+extern SDL_DECLSPEC char *SDLCALL SDL_dirname(char *path);
+
 /* force builds using Clang's static analysis tools to use literal C runtime
    here, since there are possibly tests that are ineffective otherwise. */
 #if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)

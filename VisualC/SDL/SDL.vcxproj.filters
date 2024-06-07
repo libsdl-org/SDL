@@ -1390,6 +1390,9 @@
     <ClCompile Include="..\..\src\stdlib\SDL_memset.c">
       <Filter>stdlib</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_path.c">
+      <Filter>stdlib</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c">
       <Filter>stdlib</Filter>
     </ClCompile>
