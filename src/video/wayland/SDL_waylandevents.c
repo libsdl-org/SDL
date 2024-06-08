@@ -1622,11 +1622,9 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         keyboard_input_get_text(text, input, key, SDL_RELEASED, &handled_by_ime);
     }
 
-    if (!handled_by_ime) {
-        scancode = Wayland_get_scancode_from_key(input, key + 8);
-        Wayland_HandleModifierKeys(input, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
-        SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetKeyboardTimestamp(input, time), input->keyboard_id, state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
-    }
+    scancode = Wayland_get_scancode_from_key(input, key + 8);
+    Wayland_HandleModifierKeys(input, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
+    SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetKeyboardTimestamp(input, time), input->keyboard_id, state == WL_KEYBOARD_KEY_STATE_PRESSED ? SDL_PRESSED : SDL_RELEASED, scancode);
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         if (has_text && !(SDL_GetModState() & SDL_KMOD_CTRL)) {
