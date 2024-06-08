@@ -77,7 +77,11 @@ extern SDL_mutex *SDL_joystick_lock;
 struct _SDL_Joystick;
 typedef struct _SDL_Joystick SDL_Joystick;
 
-/* A structure that encodes the stable unique id for a joystick device */
+/**
+ * A structure that encodes the stable unique id for a joystick device.
+ *
+ * This is just a standard SDL_GUID by a different name.
+ */
 typedef SDL_GUID SDL_JoystickGUID;
 
 /**
