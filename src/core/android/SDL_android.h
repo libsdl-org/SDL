@@ -68,7 +68,7 @@ extern SDL_bool Android_IsChromebook(void);
 
 int Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode);
 Sint64 Android_JNI_FileSize(void *userdata);
-Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, int whence);
+Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence);
 size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOStatus *status);
 size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status);
 int Android_JNI_FileClose(void *userdata);

@@ -2040,9 +2040,9 @@ Sint64 Android_JNI_FileSize(void *userdata)
     return (Sint64) AAsset_getLength64((AAsset *)userdata);
 }
 
-Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, int whence)
+Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
-    return (Sint64) AAsset_seek64((AAsset *)userdata, offset, whence);
+    return (Sint64) AAsset_seek64((AAsset *)userdata, offset, (int)whence);
 }
 
 int Android_JNI_FileClose(void *userdata)
