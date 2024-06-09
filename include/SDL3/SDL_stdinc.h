@@ -279,12 +279,18 @@ typedef Sint64 SDL_Time;
  */
 /* @{ */
 
-/**
- * Epsilon constant, used for comparing floating-point numbers. Equals by default to platform-defined FLT_EPSILON, or 1.1920928955078125e-07F if that's not available.
- */
 #ifdef FLT_EPSILON
 #define SDL_FLT_EPSILON FLT_EPSILON
 #else
+
+/**
+ * Epsilon constant, used for comparing floating-point numbers.
+ *
+ * Equals by default to platform-defined `FLT_EPSILON`, or
+ * `1.1920928955078125e-07F` if that's not available.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_FLT_EPSILON 1.1920928955078125e-07F /* 0x0.000002p0 */
 #endif
 
