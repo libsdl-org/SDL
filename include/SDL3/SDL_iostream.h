@@ -63,8 +63,8 @@ typedef enum SDL_IOStatus
 /**
  * Possible `whence` values for SDL_IOStream seeking.
  *
- * These map to the same "whence" concept that `fseek` or `lseek` use in
- * the standard C runtime.
+ * These map to the same "whence" concept that `fseek` or `lseek` use in the
+ * standard C runtime.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -311,13 +311,13 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromConstMem(const void *mem, si
  * This supports the following properties to provide access to the memory and
  * control over allocations:
  *
- * - `SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER`: a
- * pointer to the internal memory of the stream. This can be set to NULL to
- * transfer ownership of the memory to the application, which should free the
- * memory with SDL_free(). If this is done, the next operation on the stream
- * must be SDL_CloseIO().
- * - `SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER`:
- * memory will be allocated in multiples of this size, defaulting to 1024.
+ * - `SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER`: a pointer to the internal
+ *   memory of the stream. This can be set to NULL to transfer ownership of
+ *   the memory to the application, which should free the memory with
+ *   SDL_free(). If this is done, the next operation on the stream must be
+ *   SDL_CloseIO().
+ * - `SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER`: memory will be allocated in
+ *   multiples of this size, defaulting to 1024.
  *
  * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails;
  *          call SDL_GetError() for more information.
