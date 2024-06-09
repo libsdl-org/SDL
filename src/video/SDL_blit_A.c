@@ -24,6 +24,16 @@
 
 #include "SDL_blit.h"
 
+#ifdef SDL_SSE4_1_INTRINSICS
+#include "intrin/SDL_blit_A_sse4.1.h"
+#endif
+#ifdef SDL_AVX2_INTRINSICS
+#include "intrin/SDL_blit_A_avx2.h"
+#endif
+#if defined(SDL_SSE4_1_INTRINSICS) || defined(SDL_AVX2_INTRINSICS)
+#include "SDL3/SDL_cpuinfo.h"
+#endif
+
 /* Functions to perform alpha blended blitting */
 
 /* N->1 blending with per-surface alpha */
@@ -1296,6 +1306,20 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
     srcbpp = srcfmt->bytes_per_pixel;
     dstbpp = dstfmt->bytes_per_pixel;
 
+#ifdef SDL_AVX2_INTRINSICS
+    if (srcbpp == 4 && dstbpp == 4 && width >= 4 && SDL_HasAVX2()) {
+        BlitNtoNPixelAlpha_AVX2(info);
+        return;
+    }
+#endif
+
+#ifdef SDL_SSE4_1_INTRINSICS
+	if (srcbpp == 4 && dstbpp == 4 && width >= 2 && SDL_HasSSE41()) {
+        BlitNtoNPixelAlpha_SSE4_1(info);
+	    return;
+    }
+#endif
+
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
         DUFFS_LOOP4(
@@ -1358,6 +1382,11 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             return BlitNtoNPixelAlpha;
 
         case 4:
+#if defined(SDL_SSE4_1_INTRINSICS) || defined(SDL_AVX2_INTRINSICS)
+            if (sf->BytesPerPixel == 4 && df->BytesPerPixel == 4) {
+                return BlitNtoNPixelAlpha;
+            }
+#endif
             if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->bytes_per_pixel == 4) {
 #ifdef SDL_MMX_INTRINSICS
                 if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && sf->Ashift % 8 == 0 && sf->Aloss == 0) {
@@ -1469,3 +1498,4 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 }
 
 #endif /* SDL_HAVE_BLIT_A */
+
