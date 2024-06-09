@@ -41,12 +41,12 @@
  * device that does not change over time, it identifies class of the device (a
  * X360 wired controller for example). This identifier is platform dependent.
  *
- * In order to use these functions, SDL_Init() must have been called
- * with the SDL_INIT_JOYSTICK flag.  This causes SDL to scan the system
- * for joysticks, and load appropriate drivers.
+ * In order to use these functions, SDL_Init() must have been called with the
+ * SDL_INIT_JOYSTICK flag. This causes SDL to scan the system for joysticks,
+ * and load appropriate drivers.
  *
- * If you would like to receive joystick updates while the application
- * is in the background, you should set the following hint before calling
+ * If you would like to receive joystick updates while the application is in
+ * the background, you should set the following hint before calling
  * SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
  */
 
