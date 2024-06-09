@@ -1219,7 +1219,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             }
 
         case 2:
-            if (sf->BytesPerPixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
+            if (sf->bytes_per_pixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
                 if (df->Gmask == 0x7e0) {
                     return BlitARGBto565PixelAlpha;
                 } else if (df->Gmask == 0x3e0) {
@@ -1230,7 +1230,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 
         case 4:
 #if defined(SDL_SSE4_1_INTRINSICS) || defined(SDL_AVX2_INTRINSICS)
-            if (sf->BytesPerPixel == 4 && df->BytesPerPixel == 4 && (SDL_HasSSE41() || SDL_HasAVX2())) {
+            if (sf->bytes_per_pixel == 4 && df->bytes_per_pixel == 4 && (SDL_HasSSE41() || SDL_HasAVX2())) {
                 return BlitNtoNPixelAlpha;
             }
 #endif

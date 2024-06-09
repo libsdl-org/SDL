@@ -292,7 +292,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 
     if (fill_function == NULL) {
-        switch (dst->format->BytesPerPixel) {
+        switch (dst->format->bytes_per_pixel) {
         case 1:
         {
             color |= (color << 8);
