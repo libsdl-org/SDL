@@ -45,10 +45,14 @@
 extern "C" {
 #endif
 
-/* SDL_IOStream status, set by a read or write operation */
+/**
+ * SDL_IOStream status, set by a read or write operation.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_IOStatus
 {
-    SDL_IO_STATUS_READY,     /**< Everything is ready */
+    SDL_IO_STATUS_READY,     /**< Everything is ready (no error or EOF). */
     SDL_IO_STATUS_ERROR,     /**< Read or write I/O error */
     SDL_IO_STATUS_EOF,       /**< End of file */
     SDL_IO_STATUS_NOT_READY, /**< Non blocking I/O, not ready */
@@ -305,11 +309,14 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_IOFromConstMem(const void *mem, si
  * allocated memory.
  *
  * This supports the following properties to provide access to the memory and
- * control over allocations: - `SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER`: a
+ * control over allocations:
+ *
+ * - `SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER`: a
  * pointer to the internal memory of the stream. This can be set to NULL to
  * transfer ownership of the memory to the application, which should free the
  * memory with SDL_free(). If this is done, the next operation on the stream
- * must be SDL_CloseIO(). - `SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER`:
+ * must be SDL_CloseIO().
+ * - `SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER`:
  * memory will be allocated in multiples of this size, defaulting to 1024.
  *
  * \returns a pointer to a new SDL_IOStream structure, or NULL if it fails;

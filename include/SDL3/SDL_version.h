@@ -39,10 +39,30 @@ extern "C" {
 #endif
 
 /**
- * The current version of SDL
+ * The current major version of SDL headers.
+ *
+ * If this were SDL version 3.2.1, this value would be 3.
+ *
+ * \since This macro is available since SDL 3.0.0.
  */
 #define SDL_MAJOR_VERSION   3
+
+/**
+ * The current minor version of the SDL headers.
+ *
+ * If this were SDL version 3.2.1, this value would be 2.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MINOR_VERSION   1
+
+/**
+ * The current micro (or patchlevel) version of the SDL headers.
+ *
+ * If this were SDL version 3.2.1, this value would be 1.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ */
 #define SDL_MICRO_VERSION   2
 
 /**
