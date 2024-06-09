@@ -527,6 +527,8 @@
     <ClInclude Include="..\..\src\video\dummy\SDL_nullframebuffer_c.h" />
     <ClInclude Include="..\..\src\video\dummy\SDL_nullvideo.h" />
     <ClInclude Include="..\..\src\video\gdk\SDL_gdktextinput.h" />
+    <ClInclude Include="..\..\src\video\intrin\SDL_blit_A_avx2.h" />
+    <ClInclude Include="..\..\src\video\intrin\SDL_blit_A_sse4.1.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_icd.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_layer.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_platform.h" />
@@ -810,6 +812,8 @@
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\intrin\SDL_blit_A_avx2.c" />
+    <ClCompile Include="..\..\src\video\intrin\SDL_blit_A_sse4_1.c" />
     <ClCompile Include="..\..\src\video\SDL_blit.c" />
     <ClCompile Include="..\..\src\video\SDL_blit_0.c" />
     <ClCompile Include="..\..\src\video\SDL_blit_1.c" />
