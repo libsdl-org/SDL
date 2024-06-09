@@ -171,7 +171,7 @@ static Sint64 SDLCALL windows_file_size(void *userdata)
     return size.QuadPart;
 }
 
-static Sint64 SDLCALL windows_file_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL windows_file_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
     DWORD windowswhence;
@@ -339,7 +339,7 @@ typedef struct IOStreamStdioData
 #define fseek_off_t long
 #endif
 
-static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     IOStreamStdioData *iodata = (IOStreamStdioData *) userdata;
     int stdiowhence;
@@ -454,7 +454,7 @@ static Sint64 SDLCALL mem_size(void *userdata)
     return (iodata->stop - iodata->base);
 }
 
-static Sint64 SDLCALL mem_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL mem_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     IOStreamMemData *iodata = (IOStreamMemData *) userdata;
     Uint8 *newpos;
@@ -760,7 +760,7 @@ static Sint64 SDLCALL dynamic_mem_size(void *userdata)
     return mem_size(&iodata->data);
 }
 
-static Sint64 SDLCALL dynamic_mem_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL dynamic_mem_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
     return mem_seek(&iodata->data, offset, whence);
@@ -993,7 +993,7 @@ Sint64 SDL_GetIOSize(SDL_IOStream *context)
     return context->iface.size(context->userdata);
 }
 
-Sint64 SDL_SeekIO(SDL_IOStream *context, Sint64 offset, int whence)
+Sint64 SDL_SeekIO(SDL_IOStream *context, Sint64 offset, SDL_IOWhence whence)
 {
     if (!context) {
         return SDL_InvalidParamError("context");

@@ -57,6 +57,21 @@ typedef enum SDL_IOStatus
 } SDL_IOStatus;
 
 /**
+ * Possible `whence` values for SDL_IOStream seeking.
+ *
+ * These map to the same "whence" concept that `fseek` or `lseek` use in
+ * the standard C runtime.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_IOWhence
+{
+    SDL_IO_SEEK_SET,  /**< Seek from the beginning of data */
+    SDL_IO_SEEK_CUR,  /**< Seek relative to current read point */
+    SDL_IO_SEEK_END,  /**< Seek relative to the end of data */
+} SDL_IOWhence;
+
+/**
  * The function pointers that drive an SDL_IOStream.
  *
  * Applications can provide this struct to SDL_OpenIO() to create their own
@@ -81,7 +96,7 @@ typedef struct SDL_IOStreamInterface
      *
      *  \return the final offset in the data stream, or -1 on error.
      */
-    Sint64 (SDLCALL *seek)(void *userdata, Sint64 offset, int whence);
+    Sint64 (SDLCALL *seek)(void *userdata, Sint64 offset, SDL_IOWhence whence);
 
     /**
      *  Read up to `size` bytes from the data stream to the area pointed
@@ -379,11 +394,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_CloseIO(SDL_IOStream *context);
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetIOProperties(SDL_IOStream *context);
 
-/* Possible `whence` values for SDL_IOStream seeking... */
-#define SDL_IO_SEEK_SET 0       /**< Seek from the beginning of data */
-#define SDL_IO_SEEK_CUR 1       /**< Seek relative to current read point */
-#define SDL_IO_SEEK_END 2       /**< Seek relative to the end of data */
-
 /**
  * Query the stream status of an SDL_IOStream.
  *
@@ -431,7 +441,7 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetIOSize(SDL_IOStream *context);
  * If this stream can not seek, it will return -1.
  *
  * \param context a pointer to an SDL_IOStream structure
- * \param offset an offset in bytes, relative to **whence** location; can be
+ * \param offset an offset in bytes, relative to `whence` location; can be
  *               negative
  * \param whence any of `SDL_IO_SEEK_SET`, `SDL_IO_SEEK_CUR`,
  *               `SDL_IO_SEEK_END`
@@ -442,7 +452,7 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetIOSize(SDL_IOStream *context);
  *
  * \sa SDL_TellIO
  */
-extern SDL_DECLSPEC Sint64 SDLCALL SDL_SeekIO(SDL_IOStream *context, Sint64 offset, int whence);
+extern SDL_DECLSPEC Sint64 SDLCALL SDL_SeekIO(SDL_IOStream *context, Sint64 offset, SDL_IOWhence whence);
 
 /**
  * Determine the current read/write offset in an SDL_IOStream data stream.
