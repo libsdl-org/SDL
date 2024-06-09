@@ -40,6 +40,14 @@
  * The term SDL_JoystickGUID is a stable 128-bit identifier for a joystick
  * device that does not change over time, it identifies class of the device (a
  * X360 wired controller for example). This identifier is platform dependent.
+ *
+ * In order to use these functions, SDL_Init() must have been called
+ * with the SDL_INIT_JOYSTICK flag.  This causes SDL to scan the system
+ * for joysticks, and load appropriate drivers.
+ *
+ * If you would like to receive joystick updates while the application
+ * is in the background, you should set the following hint before calling
+ * SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
  */
 
 #ifndef SDL_joystick_h_
@@ -58,18 +66,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- *  \file SDL_joystick.h
- *
- *  In order to use these functions, SDL_Init() must have been called
- *  with the SDL_INIT_JOYSTICK flag.  This causes SDL to scan the system
- *  for joysticks, and load appropriate drivers.
- *
- *  If you would like to receive joystick updates while the application
- *  is in the background, you should set the following hint before calling
- *  SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
- */
 
 #ifdef SDL_THREAD_SAFETY_ANALYSIS
 /*
