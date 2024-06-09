@@ -52,7 +52,7 @@ extern "C" {
  */
 typedef enum SDL_IOStatus
 {
-    SDL_IO_STATUS_READY,     /**< Everything is ready (no error or EOF). */
+    SDL_IO_STATUS_READY,     /**< Everything is ready (no errors and not EOF). */
     SDL_IO_STATUS_ERROR,     /**< Read or write I/O error */
     SDL_IO_STATUS_EOF,       /**< End of file */
     SDL_IO_STATUS_NOT_READY, /**< Non blocking I/O, not ready */
