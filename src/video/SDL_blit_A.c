@@ -1152,6 +1152,7 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
 #endif
 
 #ifdef SDL_SSE4_1_INTRINSICS
+    // TODO: Re-enable
 	if (srcbpp == 4 && dstbpp == 4 && width >= 2 && SDL_HasSSE41()) {
         BlitNtoNPixelAlpha_SSE4_1(info);
 	    return;
