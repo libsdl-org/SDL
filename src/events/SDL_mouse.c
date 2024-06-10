@@ -1541,7 +1541,7 @@ int SDL_SetCursor(SDL_Cursor *cursor)
         }
     }
 
-    if (cursor && mouse->cursor_shown && !mouse->relative_mode) {
+    if (cursor && (!mouse->focus || (mouse->cursor_shown && !mouse->relative_mode))) {
         if (mouse->ShowCursor) {
             mouse->ShowCursor(cursor);
         }
