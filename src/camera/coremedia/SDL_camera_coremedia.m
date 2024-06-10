@@ -53,8 +53,8 @@ static SDL_PixelFormatEnum CoreMediaFormatToSDL(FourCharCode fmt)
         CASE(kCMPixelFormat_24RGB, SDL_PIXELFORMAT_RGB24);
         CASE(kCMPixelFormat_32ARGB, SDL_PIXELFORMAT_ARGB32);
         CASE(kCMPixelFormat_32BGRA, SDL_PIXELFORMAT_BGRA32);
-        CASE(kCMPixelFormat_422YpCbCr8, SDL_PIXELFORMAT_YUY2);
-        CASE(kCMPixelFormat_422YpCbCr8_yuvs, SDL_PIXELFORMAT_UYVY);
+        CASE(kCMPixelFormat_422YpCbCr8, SDL_PIXELFORMAT_UYVY);
+        CASE(kCMPixelFormat_422YpCbCr8_yuvs, SDL_PIXELFORMAT_YUY2);
         CASE(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange, SDL_PIXELFORMAT_NV12);
         CASE(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, SDL_PIXELFORMAT_NV12);
         CASE(kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange, SDL_PIXELFORMAT_P010);
