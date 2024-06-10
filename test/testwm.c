@@ -187,17 +187,6 @@ static void loop(void)
                         SDL_GetDisplayName(SDL_GetDisplayForWindow(window)));
             }
         }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
-            relative_mode = SDL_GetRelativeMouseMode();
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_FALSE);
-            }
-        }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_TRUE);
-            }
-        }
         if (event.type == SDL_EVENT_KEY_UP) {
             SDL_bool updateCursor = SDL_FALSE;
 
