@@ -81,7 +81,7 @@ static SDL_INLINE Uint32 calc_hash(const SDL_HashTable *table, const void *key)
 SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value)
 {
     SDL_HashItem *item;
-    const Uint32 hash = calc_hash(table, key);
+    Uint32 hash;
 
     if (!table) {
         return SDL_FALSE;
@@ -97,6 +97,8 @@ SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const vo
         return SDL_FALSE;
     }
 
+    hash = calc_hash(table, key);
+
     item->key = key;
     item->value = value;
     item->next = table->table[hash];
@@ -107,13 +109,16 @@ SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const vo
 
 SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **_value)
 {
-    const Uint32 hash = calc_hash(table, key);
-    void *data = table->data;
+    Uint32 hash;
+    void *data;
     SDL_HashItem *i;
 
     if (!table) {
         return SDL_FALSE;
     }
+
+    hash = calc_hash(table, key);
+    data = table->data;
 
     for (i = table->table[hash]; i; i = i->next) {
         if (table->keymatch(key, i->key, data)) {
@@ -129,14 +134,17 @@ SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const 
 
 SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 {
-    const Uint32 hash = calc_hash(table, key);
+    Uint32 hash;
     SDL_HashItem *item = NULL;
     SDL_HashItem *prev = NULL;
-    void *data = table->data;
+    void *data;
 
     if (!table) {
         return SDL_FALSE;
     }
+
+    hash = calc_hash(table, key);
+    data = table->data;
 
     for (item = table->table[hash]; item; item = item->next) {
         if (table->keymatch(key, item->key, data)) {
@@ -161,11 +169,13 @@ SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 
 SDL_bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, const void **_value, void **iter)
 {
-    SDL_HashItem *item = *iter ? ((SDL_HashItem *) *iter)->next : table->table[calc_hash(table, key)];
+    SDL_HashItem *item;
 
     if (!table) {
         return SDL_FALSE;
     }
+
+    item = *iter ? ((SDL_HashItem *)*iter)->next : table->table[calc_hash(table, key)];
 
     while (item) {
         if (table->keymatch(key, item->key, table->data)) {
