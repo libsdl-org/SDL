@@ -31,6 +31,7 @@
 #include "usb_ids.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
 #include "../events/SDL_events_c.h"
+#include "../SDL_hashtable.h"
 
 
 #ifdef SDL_PLATFORM_ANDROID
@@ -103,6 +104,7 @@ static GamepadMapping_t *s_pSupportedGamepads SDL_GUARDED_BY(SDL_joystick_lock) 
 static GamepadMapping_t *s_pDefaultMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static GamepadMapping_t *s_pXInputMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static MappingChangeTracker *s_mappingChangeTracker SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static SDL_HashTable *s_gamepadInstanceIDs SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
 
@@ -561,8 +563,11 @@ static void PopMappingChangeTracking(void)
             GamepadMapping_t *old_mapping = gamepad ? gamepad->mapping : tracker->joystick_mappings[i];
 
             if (new_mapping && !old_mapping) {
+                SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)joystick, (const void *)SDL_TRUE);
                 SDL_PrivateGamepadAdded(joystick);
             } else if (old_mapping && !new_mapping) {
+                SDL_RemoveFromHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)joystick);
+                SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)joystick, (const void *)SDL_FALSE);
                 SDL_PrivateGamepadRemoved(joystick);
             } else if (old_mapping != new_mapping || HasMappingChangeTracking(tracker, new_mapping)) {
                 if (gamepad) {
@@ -2560,10 +2565,20 @@ SDL_bool SDL_IsGamepad(SDL_JoystickID instance_id)
 
     SDL_LockJoysticks();
     {
-        if (SDL_PrivateGetGamepadMapping(instance_id, SDL_TRUE) != NULL) {
-            retval = SDL_TRUE;
+        const void *value;
+        if (SDL_FindInHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, &value)) {
+            retval = (SDL_bool)(uintptr_t)value;
         } else {
-            retval = SDL_FALSE;
+            if (SDL_PrivateGetGamepadMapping(instance_id, SDL_TRUE) != NULL) {
+                retval = SDL_TRUE;
+            } else {
+                retval = SDL_FALSE;
+            }
+
+            if (!s_gamepadInstanceIDs) {
+                s_gamepadInstanceIDs = SDL_CreateHashTable(NULL, 4, SDL_HashID, SDL_KeyMatchID, NULL, SDL_FALSE);
+            }
+            SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, (void *)(uintptr_t)retval);
         }
     }
     SDL_UnlockJoysticks();
@@ -3667,6 +3682,11 @@ void SDL_QuitGamepads(void)
     while (SDL_gamepads) {
         SDL_gamepads->ref_count = 1;
         SDL_CloseGamepad(SDL_gamepads);
+    }
+
+    if (s_gamepadInstanceIDs) {
+        SDL_DestroyHashTable(s_gamepadInstanceIDs);
+        s_gamepadInstanceIDs = NULL;
     }
 
     SDL_UnlockJoysticks();

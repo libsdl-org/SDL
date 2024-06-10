@@ -118,7 +118,6 @@ struct SDL_Joystick
     Uint64 led_expiration _guarded;
 
     SDL_bool attached _guarded;
-    SDL_bool is_gamepad _guarded;
     SDL_JoystickConnectionState connection_state _guarded;
     SDL_PowerState battery_state _guarded;
     int battery_percent _guarded;

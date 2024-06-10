@@ -170,9 +170,9 @@ typedef enum SDL_EventType
     SDL_EVENT_GAMEPAD_AXIS_MOTION  = 0x650, /**< Gamepad axis motion */
     SDL_EVENT_GAMEPAD_BUTTON_DOWN,          /**< Gamepad button pressed */
     SDL_EVENT_GAMEPAD_BUTTON_UP,            /**< Gamepad button released */
-    SDL_EVENT_GAMEPAD_ADDED,               /**< A new gamepad has been inserted into the system */
-    SDL_EVENT_GAMEPAD_REMOVED,             /**< An opened gamepad has been removed */
-    SDL_EVENT_GAMEPAD_REMAPPED,            /**< The gamepad mapping was updated */
+    SDL_EVENT_GAMEPAD_ADDED,                /**< A new gamepad has been inserted into the system */
+    SDL_EVENT_GAMEPAD_REMOVED,              /**< A gamepad has been removed */
+    SDL_EVENT_GAMEPAD_REMAPPED,             /**< The gamepad mapping was updated */
     SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN,        /**< Gamepad touchpad was touched */
     SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION,      /**< Gamepad touchpad finger was moved */
     SDL_EVENT_GAMEPAD_TOUCHPAD_UP,          /**< Gamepad touchpad finger was lifted */

@@ -898,7 +898,7 @@ static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, SDL_bool *inve
     *invert_sensors = SDL_FALSE;
 
     /* The SDL controller sensor API is only available for gamepads (at the moment) */
-    if (!joystick->is_gamepad) {
+    if (!SDL_IsGamepad(joystick->instance_id)) {
         return SDL_FALSE;
     }
 
@@ -1149,8 +1149,6 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
             joystick->axes[i].has_initial_value = SDL_TRUE;
         }
     }
-
-    joystick->is_gamepad = SDL_IsGamepad(instance_id);
 
     /* Get the Steam Input API handle */
     info = SDL_GetJoystickInstanceVirtualGamepadInfo(instance_id);
@@ -2135,10 +2133,7 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id)
         }
     }
 
-    /* FIXME: The driver no longer provides the name and GUID at this point, so we
-     *        don't know whether this was a gamepad. For now always send the event.
-     */
-    if (SDL_TRUE /*SDL_IsGamepad(instance_id)*/) {
+    if (SDL_IsGamepad(instance_id)) {
         SDL_PrivateGamepadRemoved(instance_id);
     }
 
@@ -2363,7 +2358,7 @@ static void SendSteamHandleUpdateEvents(void)
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         SDL_bool changed = SDL_FALSE;
 
-        if (!joystick->is_gamepad) {
+        if (!SDL_IsGamepad(joystick->instance_id)) {
             continue;
         }
 
@@ -3449,7 +3444,7 @@ SDL_JoystickType SDL_GetJoystickType(SDL_Joystick *joystick)
         {
             CHECK_JOYSTICK_MAGIC(joystick, SDL_JOYSTICK_TYPE_UNKNOWN);
 
-            if (joystick->is_gamepad) {
+            if (SDL_IsGamepad(joystick->instance_id)) {
                 type = SDL_JOYSTICK_TYPE_GAMEPAD;
             }
         }
