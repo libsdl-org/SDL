@@ -70,7 +70,7 @@ jobs:
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
             -DSDL_SHARED=ON \
             -DSDL_STATIC=ON \
-            -DSDL_STATIC_PIC=ON \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_INSTALL_PREFIX=prefix \
             -DCMAKE_BUILD_TYPE=Release \

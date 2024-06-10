@@ -306,6 +306,13 @@ if(WIN32)
 endif()
 ```
 
+### Linking against a static SDL library fails due to relocation errors
+
+On unix platforms, all code that ends up in shared libraries needs to be built as relocatable (=position independent) code.
+However, by default CMake builds static libraries as non-relocatable.
+Configuring SDL with `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` will result in a static `libSDL3.a` library
+which you can link against to create a shared library.
+
 ## Help, it doesn't work!
 
 Below, a SDL3 CMake project can be found that builds 99.9% of time (assuming you have internet connectivity).
