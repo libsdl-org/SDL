@@ -1117,6 +1117,20 @@ SDL_bool SDL_ReadU8(SDL_IOStream *src, Uint8 *value)
     return result;
 }
 
+SDL_bool SDL_ReadS8(SDL_IOStream *src, Sint8 *value)
+{
+    Sint8 data = 0;
+    SDL_bool result = SDL_FALSE;
+
+    if (SDL_ReadIO(src, &data, sizeof(data)) == sizeof(data)) {
+        result = SDL_TRUE;
+    }
+    if (value) {
+        *value = data;
+    }
+    return result;
+}
+
 SDL_bool SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value)
 {
     Uint16 data = 0;
@@ -1232,6 +1246,11 @@ SDL_bool SDL_ReadS64BE(SDL_IOStream *src, Sint64 *value)
 }
 
 SDL_bool SDL_WriteU8(SDL_IOStream *dst, Uint8 value)
+{
+    return (SDL_WriteIO(dst, &value, sizeof(value)) == sizeof(value));
+}
+
+SDL_bool SDL_WriteS8(SDL_IOStream *dst, Sint8 value)
 {
     return (SDL_WriteIO(dst, &value, sizeof(value)) == sizeof(value));
 }
