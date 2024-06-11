@@ -3282,3 +3282,33 @@ typedef SDL_Colour, SDL_Color;
 @@
 - SDL_SYSTEM_CURSOR_WINDOW_LEFT
 + SDL_SYSTEM_CURSOR_W_RESIZE
+@@
+@@
+- SDL_SwapLE16
++ SDL_Swap16LE
+  (...)
+@@
+@@
+- SDL_SwapLE32
++ SDL_Swap32LE
+  (...)
+@@
+@@
+- SDL_SwapBE16
++ SDL_Swap16BE
+  (...)
+@@
+@@
+- SDL_SwapBE32
++ SDL_Swap32BE
+  (...)
+@@
+@@
+- SDL_SwapLE64
++ SDL_Swap64LE
+  (...)
+@@
+@@
+- SDL_SwapBE64
++ SDL_Swap64BE
+  (...)

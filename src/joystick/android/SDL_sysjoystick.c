@@ -343,8 +343,8 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
     /* Update the GUID with capability bits */
     {
         Uint16 *guid16 = (Uint16 *)guid.data;
-        guid16[6] = SDL_SwapLE16(button_mask);
-        guid16[7] = SDL_SwapLE16(axis_mask);
+        guid16[6] = SDL_Swap16LE(button_mask);
+        guid16[7] = SDL_Swap16LE(axis_mask);
     }
 
     item = (SDL_joylist_item *)SDL_malloc(sizeof(SDL_joylist_item));

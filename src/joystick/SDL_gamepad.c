@@ -599,8 +599,8 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_JoystickGUID gui
     int button_mask;
     int axis_mask;
 
-    button_mask = SDL_SwapLE16(*(Uint16 *)(&guid.data[sizeof(guid.data) - 4]));
-    axis_mask = SDL_SwapLE16(*(Uint16 *)(&guid.data[sizeof(guid.data) - 2]));
+    button_mask = SDL_Swap16LE(*(Uint16 *)(&guid.data[sizeof(guid.data) - 4]));
+    axis_mask = SDL_Swap16LE(*(Uint16 *)(&guid.data[sizeof(guid.data) - 2]));
     if (!button_mask && !axis_mask) {
         /* Accelerometer, shouldn't have a gamepad mapping */
         return NULL;

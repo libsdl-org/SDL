@@ -813,17 +813,17 @@ int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
 
     /* Write the BITMAPINFO header */
     bmi = (BITMAPINFOHEADER *)icon_bmp;
-    bmi->biSize = SDL_SwapLE32(sizeof(BITMAPINFOHEADER));
-    bmi->biWidth = SDL_SwapLE32(icon->w);
-    bmi->biHeight = SDL_SwapLE32(icon->h * 2);
-    bmi->biPlanes = SDL_SwapLE16(1);
-    bmi->biBitCount = SDL_SwapLE16(32);
-    bmi->biCompression = SDL_SwapLE32(BI_RGB);
-    bmi->biSizeImage = SDL_SwapLE32(icon->h * icon->w * sizeof(Uint32));
-    bmi->biXPelsPerMeter = SDL_SwapLE32(0);
-    bmi->biYPelsPerMeter = SDL_SwapLE32(0);
-    bmi->biClrUsed = SDL_SwapLE32(0);
-    bmi->biClrImportant = SDL_SwapLE32(0);
+    bmi->biSize = SDL_Swap32LE(sizeof(BITMAPINFOHEADER));
+    bmi->biWidth = SDL_Swap32LE(icon->w);
+    bmi->biHeight = SDL_Swap32LE(icon->h * 2);
+    bmi->biPlanes = SDL_Swap16LE(1);
+    bmi->biBitCount = SDL_Swap16LE(32);
+    bmi->biCompression = SDL_Swap32LE(BI_RGB);
+    bmi->biSizeImage = SDL_Swap32LE(icon->h * icon->w * sizeof(Uint32));
+    bmi->biXPelsPerMeter = SDL_Swap32LE(0);
+    bmi->biYPelsPerMeter = SDL_Swap32LE(0);
+    bmi->biClrUsed = SDL_Swap32LE(0);
+    bmi->biClrImportant = SDL_Swap32LE(0);
 
     /* Write the pixels upside down into the bitmap buffer */
     SDL_assert(icon->format->format == SDL_PIXELFORMAT_ARGB8888);
