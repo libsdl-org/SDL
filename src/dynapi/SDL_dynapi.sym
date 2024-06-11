@@ -615,6 +615,7 @@ SDL3_0.0.0 {
     SDL_ReadS32LE;
     SDL_ReadS64BE;
     SDL_ReadS64LE;
+    SDL_ReadS8;
     SDL_ReadStorageFile;
     SDL_ReadSurfacePixel;
     SDL_ReadU16BE;
@@ -849,6 +850,7 @@ SDL3_0.0.0 {
     SDL_WriteS32LE;
     SDL_WriteS64BE;
     SDL_WriteS64LE;
+    SDL_WriteS8;
     SDL_WriteStorageFile;
     SDL_WriteU16BE;
     SDL_WriteU16LE;

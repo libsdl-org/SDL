@@ -626,6 +626,18 @@ extern SDL_DECLSPEC void *SDLCALL SDL_LoadFile(const char *file, size_t *datasiz
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ReadU8(SDL_IOStream *src, Uint8 *value);
 
 /**
+ * Use this function to read a signed byte from an SDL_IOStream.
+ *
+ * \param src the SDL_IOStream to read from
+ * \param value a pointer filled in with the data read
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ReadS8(SDL_IOStream *src, Sint8 *value);
+
+/**
  * Use this function to read 16 bits of little-endian data from an
  * SDL_IOStream and return in native format.
  *
@@ -836,6 +848,18 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ReadS64BE(SDL_IOStream *src, Sint64 *va
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WriteU8(SDL_IOStream *dst, Uint8 value);
+
+/**
+ * Use this function to write a signed byte to an SDL_IOStream.
+ *
+ * \param dst the SDL_IOStream to write to
+ * \param value the byte value to write
+ * \returns SDL_TRUE on successful write, SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WriteS8(SDL_IOStream *dst, Sint8 value);
 
 /**
  * Use this function to write 16 bits in native format to an SDL_IOStream as
