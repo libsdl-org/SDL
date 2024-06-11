@@ -908,8 +908,8 @@ while (my $d = readdir(DH)) {
                 next;
             }
 
-            if (!$is_forced_inline) {  # !!! FIXME: maybe we need to do this for forced-inline stuff too?
-                $decl = '';  # build this with the line breaks, since it looks better for syntax highlighting.
+            if (!$is_forced_inline) {  # don't do with forced-inline because we don't want the implementation inserted in the wiki.
+                $decl = '';  # rebuild this with the line breaks, since it looks better for syntax highlighting.
                 foreach (@decllines) {
                     if ($decl eq '') {
                         $decl = $_;
