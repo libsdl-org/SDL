@@ -52,7 +52,7 @@
  * - 4.1 surround: FL, FR, LFE, BL, BR
  * - 5.1 surround: FL, FR, FC, LFE, SL, SR (last two can also be BL BR)
  * - 6.1 surround: FL, FR, FC, LFE, BC, SL, SR
- * - 5.1 surround: FL, FR, FC, LFE, BL, BR, SL, SR
+ * - 7.1 surround: FL, FR, FC, LFE, BL, BR, SL, SR
  *
  * This is the same order as DirectSound expects, but applied to all
  * platforms; SDL will swizzle the channels as necessary if a platform expects
