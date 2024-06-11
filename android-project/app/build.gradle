@@ -21,7 +21,7 @@ android {
                 abiFilters 'arm64-v8a'
             }
             cmake {
-                arguments "-DANDROID_PLATFORM=android-19", "-DANDROID_STL=c++_static"
+                arguments "-DANDROID_PLATFORM=android-19", "-DANDROID_STL=c++_shared"
                 // abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
                 abiFilters 'arm64-v8a'
             }
@@ -60,6 +60,20 @@ android {
     }
 
     if (buildAsLibrary) {
+        // Publishing prefab aar
+        buildFeatures {
+            prefabPublishing true
+        }
+
+        prefab {
+            // target : ndk-build: SDL3' ; cmake: 'SDL3-shared'
+            'SDL3' {
+                name "SDL3-shared" // alise not supported
+                headers "jni/SDL/include"
+                libraryName "libSDL3"
+            }
+        }
+
         libraryVariants.all { variant ->
             variant.outputs.all {
                 def fileName = "org.libsdl.app.aar";

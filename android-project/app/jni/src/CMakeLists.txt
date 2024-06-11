@@ -14,6 +14,15 @@ if(NOT TARGET SDL3::SDL3)
     set_property(TARGET SDL3::SDL3 PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SDL3_INCLUDE_DIR}")
 endif()
 
+#if (NOT TARGET SDL3::SDL3)
+#    message("SDL3::SDL3 not found, trying to find it...")
+#    #   find it from prefab generated SDL3Config.cmake
+#    find_package(SDL3 REQUIRED CONFIG)
+#
+#    #   make  SDL3::SDL3 ==  SDL3::SDL3-shared
+#    add_library(SDL3::SDL3 ALIAS SDL3::SDL3-shared)
+#endif ()
+
 if(NOT TARGET SDL3::SDL3)
     message(FATAL_ERROR "Cannot find SDL3.
 

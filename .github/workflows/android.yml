@@ -16,7 +16,7 @@ jobs:
       matrix:
         platform:
           - { name: "Android.mk", ndk-build: 1 }
-          - { name: "Gradle", gradle: 1 }
+          - { name: "Gradle", gradle: 1, artifact: "SDL-gradle-android-arm64", apk-artifact: "SDL-gradle-android-apks-arm64" }
           - { name: "CMake", cmake: 1, android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64", artifact: "SDL-android-arm64", apk-artifact: "SDL-android-apks-arm64" }
           - { name: "CMake (lean and mean)", cmake: 1, cppflags: "-DSDL_LEAN_AND_MEAN=1", android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64", artifact: "SDL-lean-android-arm64", apk-artifact: "SDL-lean-android-apks-arm64" }
 
@@ -122,3 +122,15 @@ jobs:
           if-no-files-found: error
           name: ${{ matrix.platform.apk-artifact }}
           path: build/test/*.apk
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.platform.gradle }}
+        with:
+          if-no-files-found: error
+          name: ${{ matrix.platform.artifact }}
+          path: android-project/app/build/outputs/aar/*.aar
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.platform.gradle }}
+        with:
+          if-no-files-found: error
+          name: ${{ matrix.platform.apk-artifact }}
+          path: android-project/app/build/outputs/apk/release/*.apk
