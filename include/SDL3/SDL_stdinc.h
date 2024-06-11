@@ -590,11 +590,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 extern SDL_DECLSPEC char *SDLCALL SDL_getenv(const char *name);
 extern SDL_DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int overwrite);
 
-extern SDL_DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
-extern SDL_DECLSPEC void * SDLCALL SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *));
+typedef int (SDLCALL *SDL_CompareCallback)(const void *a, const void *b);
+extern SDL_DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, SDL_CompareCallback compare);
+extern SDL_DECLSPEC void * SDLCALL SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, SDL_CompareCallback compare);
 
-extern SDL_DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (void *, const void *, const void *), void *userdata);
-extern SDL_DECLSPEC void * SDLCALL SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (void *, const void *, const void *), void *userdata);
+typedef int (SDLCALL *SDL_CompareCallback_r)(void *userdata, const void *a, const void *b);
+extern SDL_DECLSPEC void SDLCALL SDL_qsort_r(void *base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void *userdata);
+extern SDL_DECLSPEC void * SDLCALL SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void *userdata);
 
 extern SDL_DECLSPEC int SDLCALL SDL_abs(int x);
 

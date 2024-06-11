@@ -490,21 +490,34 @@ extern SDL_DECLSPEC SDL_TLSID SDLCALL SDL_CreateTLS(void);
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_GetTLS(SDL_TLSID id);
 
+
+/**
+ * The callback used to cleanup data passed to SDL_SetTLS.
+ *
+ * This is called when a thread exits, to allow an app to
+ * free any resources.
+ *
+ * \param value a pointer previously handed to SDL_SetTLS.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetTLS
+ */
+typedef void (SDLCALL *SDL_TLSDestructorCallback)(void *value);
+
 /**
  * Set the current thread's value associated with a thread local storage ID.
  *
- * The function prototype for `destructor` is:
+ * Note that replacing a value from a previous call to this function on the
+ * same thread does _not_ call the previous value's destructor!
  *
- * ```c
- * void destructor(void *value)
- * ```
- *
- * where its parameter `value` is what was passed as `value` to SDL_SetTLS().
+ * `destructor` can be NULL; it is assumed that `value` does not need
+ * to be cleaned up if so.
  *
  * \param id the thread local storage ID
  * \param value the value to associate with the ID for the current thread
  * \param destructor a function called when the thread exits, to free the
- *                   value
+ *                   value. Can be NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -512,7 +525,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetTLS(SDL_TLSID id);
  *
  * \sa SDL_GetTLS
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID id, const void *value, void (SDLCALL *destructor)(void*));
+extern SDL_DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID id, const void *value, SDL_TLSDestructorCallback destructor);
 
 /**
  * Cleanup all TLS data for this thread.
