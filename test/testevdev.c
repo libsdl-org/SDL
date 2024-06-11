@@ -1851,7 +1851,7 @@ static const GuessTest guess_tests[] =
  * an appropriate byteswapping function for the architecture's word size. */
 SDL_COMPILE_TIME_ASSERT(sizeof_long, sizeof(unsigned long) == 4 || sizeof(unsigned long) == 8);
 #define SwapLongLE(X) \
-    ((sizeof(unsigned long) == 4) ? SDL_SwapLE32(X) : SDL_SwapLE64(X))
+    ((sizeof(unsigned long) == 4) ? SDL_Swap32LE(X) : SDL_Swap64LE(X))
 
 static int
 run_test(void)

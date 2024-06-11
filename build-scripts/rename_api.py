@@ -24,7 +24,7 @@ def main():
 
     # Check whether we can still modify the ABI
     version_header = pathlib.Path( SDL_INCLUDE_DIR / "SDL_version.h" ).read_text()
-    if not re.search("SDL_MINOR_VERSION\s+[01]\s", version_header):
+    if not re.search(r"SDL_MINOR_VERSION\s+[01]\s", version_header):
         raise Exception("ABI is frozen, symbols cannot be renamed")
 
     # Find the symbol in the headers
@@ -239,8 +239,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
     parser.add_argument("--skip-header-check", action="store_true")
-    parser.add_argument("header");
-    parser.add_argument("type", choices=["enum", "function", "hint", "structure", "symbol"]);
+    parser.add_argument("header")
+    parser.add_argument("type", choices=["enum", "function", "hint", "structure", "symbol"])
     parser.add_argument("args", nargs="*")
     args = parser.parse_args()
 

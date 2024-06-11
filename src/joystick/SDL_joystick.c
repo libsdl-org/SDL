@@ -2497,7 +2497,7 @@ SDL_bool SDL_JoystickEventsEnabled(void)
 void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16)
 {
     Uint16 *guid16 = (Uint16 *)guid.data;
-    Uint16 bus = SDL_SwapLE16(guid16[0]);
+    Uint16 bus = SDL_Swap16LE(guid16[0]);
 
     if ((bus < ' ' || bus == SDL_HARDWARE_BUS_VIRTUAL) && guid16[3] == 0x0000 && guid16[5] == 0x0000) {
         /* This GUID fits the standard form:
@@ -2512,16 +2512,16 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
          * 8-bit driver-dependent type info
          */
         if (vendor) {
-            *vendor = SDL_SwapLE16(guid16[2]);
+            *vendor = SDL_Swap16LE(guid16[2]);
         }
         if (product) {
-            *product = SDL_SwapLE16(guid16[4]);
+            *product = SDL_Swap16LE(guid16[4]);
         }
         if (version) {
-            *version = SDL_SwapLE16(guid16[6]);
+            *version = SDL_Swap16LE(guid16[6]);
         }
         if (crc16) {
-            *crc16 = SDL_SwapLE16(guid16[1]);
+            *crc16 = SDL_Swap16LE(guid16[1]);
         }
     } else if (bus < ' ' || bus == SDL_HARDWARE_BUS_VIRTUAL) {
         /* This GUID fits the unknown VID/PID form:
@@ -2539,7 +2539,7 @@ void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *prod
             *version = 0;
         }
         if (crc16) {
-            *crc16 = SDL_SwapLE16(guid16[1]);
+            *crc16 = SDL_Swap16LE(guid16[1]);
         }
     } else {
         if (vendor) {
@@ -2729,15 +2729,15 @@ SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 produc
 
     /* We only need 16 bits for each of these; space them out to fill 128. */
     /* Byteswap so devices get same GUID on little/big endian platforms. */
-    *guid16++ = SDL_SwapLE16(bus);
-    *guid16++ = SDL_SwapLE16(crc);
+    *guid16++ = SDL_Swap16LE(bus);
+    *guid16++ = SDL_Swap16LE(crc);
 
     if (vendor) {
-        *guid16++ = SDL_SwapLE16(vendor);
+        *guid16++ = SDL_Swap16LE(vendor);
         *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(product);
+        *guid16++ = SDL_Swap16LE(product);
         *guid16++ = 0;
-        *guid16++ = SDL_SwapLE16(version);
+        *guid16++ = SDL_Swap16LE(version);
         guid.data[14] = driver_signature;
         guid.data[15] = driver_data;
     } else {
@@ -2764,28 +2764,28 @@ void SDL_SetJoystickGUIDVendor(SDL_JoystickGUID *guid, Uint16 vendor)
 {
     Uint16 *guid16 = (Uint16 *)guid->data;
 
-    guid16[2] = SDL_SwapLE16(vendor);
+    guid16[2] = SDL_Swap16LE(vendor);
 }
 
 void SDL_SetJoystickGUIDProduct(SDL_JoystickGUID *guid, Uint16 product)
 {
     Uint16 *guid16 = (Uint16 *)guid->data;
 
-    guid16[4] = SDL_SwapLE16(product);
+    guid16[4] = SDL_Swap16LE(product);
 }
 
 void SDL_SetJoystickGUIDVersion(SDL_JoystickGUID *guid, Uint16 version)
 {
     Uint16 *guid16 = (Uint16 *)guid->data;
 
-    guid16[6] = SDL_SwapLE16(version);
+    guid16[6] = SDL_Swap16LE(version);
 }
 
 void SDL_SetJoystickGUIDCRC(SDL_JoystickGUID *guid, Uint16 crc)
 {
     Uint16 *guid16 = (Uint16 *)guid->data;
 
-    guid16[1] = SDL_SwapLE16(crc);
+    guid16[1] = SDL_Swap16LE(crc);
 }
 
 SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, SDL_bool forUI)

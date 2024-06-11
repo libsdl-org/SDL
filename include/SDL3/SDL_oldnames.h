@@ -74,6 +74,14 @@
 /* ##SDL_cpuinfo.h */
 #define SDL_SIMDGetAlignment SDL_GetSIMDAlignment
 
+/* ##SDL_endian.h */
+#define SDL_SwapBE16 SDL_Swap16BE
+#define SDL_SwapBE32 SDL_Swap32BE
+#define SDL_SwapBE64 SDL_Swap64BE
+#define SDL_SwapLE16 SDL_Swap16LE
+#define SDL_SwapLE32 SDL_Swap32LE
+#define SDL_SwapLE64 SDL_Swap64LE
+
 /* ##SDL_events.h */
 #define SDL_APP_DIDENTERBACKGROUND SDL_EVENT_DID_ENTER_BACKGROUND
 #define SDL_APP_DIDENTERFOREGROUND SDL_EVENT_DID_ENTER_FOREGROUND
@@ -613,6 +621,14 @@
 
 /* ##SDL_cpuinfo.h */
 #define SDL_SIMDGetAlignment SDL_SIMDGetAlignment_renamed_SDL_GetSIMDAlignment
+
+/* ##SDL_endian.h */
+#define SDL_SwapBE16 SDL_SwapBE16_renamed_SDL_Swap16BE
+#define SDL_SwapBE32 SDL_SwapBE32_renamed_SDL_Swap32BE
+#define SDL_SwapBE64 SDL_SwapBE64_renamed_SDL_Swap64BE
+#define SDL_SwapLE16 SDL_SwapLE16_renamed_SDL_Swap16LE
+#define SDL_SwapLE32 SDL_SwapLE32_renamed_SDL_Swap32LE
+#define SDL_SwapLE64 SDL_SwapLE64_renamed_SDL_Swap64LE
 
 /* ##SDL_events.h */
 #define SDL_APP_DIDENTERBACKGROUND SDL_APP_DIDENTERBACKGROUND_renamed_SDL_EVENT_DID_ENTER_BACKGROUND
