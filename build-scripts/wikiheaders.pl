@@ -1707,6 +1707,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         if ($wikitype eq 'mediawiki') {
             $syntax = "<syntaxhighlight lang='c'>\n$decl</syntaxhighlight>\n";
         } elsif ($wikitype eq 'md') {
+            $decl =~ s/\n+\Z//;
             $syntax = "```c\n$decl\n```\n";
         } else { die("Expected wikitype '$wikitype'"); }
 
