@@ -139,6 +139,16 @@
 #endif
 #endif /* SDL_NORETURN not defined */
 
+#ifdef __clang__
+#if __has_feature(attribute_analyzer_noreturn)
+#define SDL_ANALYZER_NORETURN __attribute__((analyzer_noreturn))
+#endif
+#endif
+
+#ifndef SDL_ANALYZER_NORETURN
+#define SDL_ANALYZER_NORETURN
+#endif
+
 /* Apparently this is needed by several Windows compilers */
 #ifndef __MACH__
 #ifndef NULL
