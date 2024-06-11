@@ -889,9 +889,8 @@ while (my $d = readdir(DH)) {
 
             $decl =~ s/\s+\Z//;
 
-            $decl =~ s/\s*SDL_W?PRINTF_VARARG_FUNCV?\s*\(\d+\)\s*//;  # don't want this metadata as part of the documentation.
             $decl =~ s/SDL_PRINTF_FORMAT_STRING\s*//;  # don't want this metadata as part of the documentation.
-            $decl =~ s/\s*SDL_ANALYZER_NORETURN\s*//; # don't want this metadata as part of the documentation.
+            $decl =~ s/\)(\s*SDL_[a-zA-Z_]+(\(.*?\)|))*;/);/; # don't want this metadata as part of the documentation.
 
             if (!$is_forced_inline && $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
                 $sym = $7;
@@ -924,9 +923,8 @@ while (my $d = readdir(DH)) {
                 }
             }
 
-            $decl =~ s/\s*SDL_W?PRINTF_VARARG_FUNCV?\s*\(\d+\)\s*//;  # don't want this metadata as part of the documentation.
             $decl =~ s/SDL_PRINTF_FORMAT_STRING\s*//;  # don't want this metadata as part of the documentation.
-            $decl =~ s/\s*SDL_ANALYZER_NORETURN\s*//; # don't want this metadata as part of the documentation.
+            $decl =~ s/\)(\s*SDL_[a-zA-Z_]+(\(.*?\)|))*;/);/; # don't want this metadata as part of the documentation.
 
             # !!! FIXME: code duplication with typedef processing, below.
             # We assume any `#define`s directly after the function are related to it: probably bitflags for an integer typedef.
