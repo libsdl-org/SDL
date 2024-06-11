@@ -55,8 +55,8 @@
  * - 5.1 surround: FL, FR, FC, LFE, BL, BR, SL, SR
  *
  * This is the same order as DirectSound expects, but applied to all
- * platforms; SDL will swizzle the channels as necessary if a platform
- * expects something different.
+ * platforms; SDL will swizzle the channels as necessary if a platform expects
+ * something different.
  */
 
 #ifndef SDL_audio_h_
