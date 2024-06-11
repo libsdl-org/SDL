@@ -919,6 +919,9 @@ while (my $d = readdir(DH)) {
                 }
             }
 
+            $decl =~ s/\s*SDL_W?PRINTF_VARARG_FUNCV?\s*\(\d+\)\s*;\Z/;/;  # don't want this metadata as part of the documentation.
+            $decl =~ s/SDL_PRINTF_FORMAT_STRING\s*//;  # don't want this metadata as part of the documentation.
+
             # !!! FIXME: code duplication with typedef processing, below.
             # We assume any `#define`s directly after the function are related to it: probably bitflags for an integer typedef.
             # We'll also allow some other basic preprocessor lines.
