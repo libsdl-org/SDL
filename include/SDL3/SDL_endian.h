@@ -326,7 +326,7 @@ SDL_FORCE_INLINE float SDL_SwapFloat(float x)
  * Byte-swap an unsigned 16-bit number.
  *
  * This will always byte-swap the value, whether it's currently in the native
- * byteorder of the system or not. You should use SDL_Swap16LE or SDL_Swap16BE
+ * byteorder of the system or not. You should use SDL_SwapLE16 or SDL_SwapBE16
  * instead, in most cases.
  *
  * Note that this is a forced-inline function in a header, and not a public
@@ -347,7 +347,7 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
  * Byte-swap an unsigned 32-bit number.
  *
  * This will always byte-swap the value, whether it's currently in the native
- * byteorder of the system or not. You should use SDL_Swap32LE or SDL_Swap32BE
+ * byteorder of the system or not. You should use SDL_SwapLE32 or SDL_SwapBE32
  * instead, in most cases.
  *
  * Note that this is a forced-inline function in a header, and not a public
@@ -368,7 +368,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
  * Byte-swap an unsigned 64-bit number.
  *
  * This will always byte-swap the value, whether it's currently in the native
- * byteorder of the system or not. You should use SDL_Swap64LE or SDL_Swap64BE
+ * byteorder of the system or not. You should use SDL_SwapLE64 or SDL_SwapBE64
  * instead, in most cases.
  *
  * Note that this is a forced-inline function in a header, and not a public
