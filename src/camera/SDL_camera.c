@@ -84,7 +84,7 @@ char *SDL_GetCameraThreadName(SDL_CameraDevice *device, char *buf, size_t buflen
     return buf;
 }
 
-int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormatEnum fmt, int w, int h, int interval_numerator, int interval_denominator)
+int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormatEnum format, SDL_Colorspace colorspace, int w, int h, int interval_numerator, int interval_denominator)
 {
     SDL_assert(data != NULL);
     if (data->allocated_specs <= data->num_specs) {
@@ -98,7 +98,8 @@ int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormatEnum fmt, int 
     }
 
     SDL_CameraSpec *spec = &data->specs[data->num_specs];
-    spec->format = fmt;
+    spec->format = format;
+    spec->colorspace = colorspace;
     spec->width = w;
     spec->height = h;
     spec->interval_numerator = interval_numerator;
@@ -129,7 +130,7 @@ static size_t GetFrameBufLen(const SDL_CameraSpec *spec)
     const size_t w = (const size_t) spec->width;
     const size_t h = (const size_t) spec->height;
     const size_t wxh = w * h;
-    const Uint32 fmt = spec->format;
+    const SDL_PixelFormatEnum fmt = spec->format;
 
     switch (fmt) {
         // Some YUV formats have a larger Y plane than their U or V planes.
@@ -366,8 +367,8 @@ static int SDLCALL CameraSpecCmp(const void *vpa, const void *vpb)
     SDL_assert(b->width > 0);
     SDL_assert(b->height > 0);
 
-    const Uint32 afmt = a->format;
-    const Uint32 bfmt = b->format;
+    const SDL_PixelFormatEnum afmt = a->format;
+    const SDL_PixelFormatEnum bfmt = b->format;
     if (SDL_ISPIXELFORMAT_FOURCC(afmt) && !SDL_ISPIXELFORMAT_FOURCC(bfmt)) {
         return -1;
     } else if (!SDL_ISPIXELFORMAT_FOURCC(afmt) && SDL_ISPIXELFORMAT_FOURCC(bfmt)) {
@@ -398,6 +399,15 @@ static int SDLCALL CameraSpecCmp(const void *vpa, const void *vpb)
     if (fpsa > fpsb) {
         return -1;
     } else if (fpsb > fpsa) {
+        return 1;
+    }
+
+    if (SDL_COLORSPACERANGE(a->colorspace) == SDL_COLOR_RANGE_FULL &&
+        SDL_COLORSPACERANGE(b->colorspace) != SDL_COLOR_RANGE_FULL) {
+        return -1;
+    }
+    if (SDL_COLORSPACERANGE(a->colorspace) != SDL_COLOR_RANGE_FULL &&
+        SDL_COLORSPACERANGE(b->colorspace) == SDL_COLOR_RANGE_FULL) {
         return 1;
     }
 
@@ -1115,6 +1125,7 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
         ReleaseCameraDevice(device);
         return NULL;
     }
+    SDL_SetSurfaceColorspace(device->acquire_surface, closest.colorspace);
 
     // if we have to scale _and_ convert, we need a middleman surface, since we can't do both changes at once.
     if (device->needs_scaling && device->needs_conversion) {
@@ -1122,6 +1133,12 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
         const SDL_CameraSpec *s = downsampling_first ? &device->spec : &closest;
         const SDL_PixelFormatEnum fmt = downsampling_first ? closest.format : device->spec.format;
         device->conversion_surface = SDL_CreateSurface(s->width, s->height, fmt);
+        if (!device->conversion_surface) {
+            ClosePhysicalCameraDevice(device);
+            ReleaseCameraDevice(device);
+            return NULL;
+        }
+        SDL_SetSurfaceColorspace(device->conversion_surface, closest.colorspace);
     }
 
     // output surfaces are in the app-requested format. If no conversion is necessary, we'll just use the pointers
@@ -1140,12 +1157,12 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
         } else {
             surf = SDL_CreateSurfaceFrom(NULL, device->spec.width, device->spec.height, 0, device->spec.format);
         }
-
         if (!surf) {
             ClosePhysicalCameraDevice(device);
             ReleaseCameraDevice(device);
             return NULL;
         }
+        SDL_SetSurfaceColorspace(surf, closest.colorspace);
 
         device->output_surfaces[i].surface = surf;
     }
