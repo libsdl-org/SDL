@@ -62,6 +62,7 @@
 #include "xdg-foreign-unstable-v2-client-protocol.h"
 #include "xdg-output-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
+#include "pointer-gestures-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1114,6 +1115,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     } else if (SDL_strcmp(interface, "kde_output_order_v1") == 0) {
         d->kde_output_order = wl_registry_bind(d->registry, id, &kde_output_order_v1_interface, 1);
         kde_output_order_v1_add_listener(d->kde_output_order, &kde_output_order_listener, d);
+    } else if (SDL_strcmp(interface, "zwp_pointer_gestures_v1") == 0) {
+        d->zwp_pointer_gestures = wl_registry_bind(d->registry, id, &zwp_pointer_gestures_v1_interface, 1);
     }
 }
 
@@ -1382,6 +1385,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
         Wayland_FlushOutputOrder(data);
         kde_output_order_v1_destroy(data->kde_output_order);
         data->kde_output_order = NULL;
+    }
+
+    if (data->zwp_pointer_gestures) {
+        zwp_pointer_gestures_v1_destroy(data->zwp_pointer_gestures);
+        data->zwp_pointer_gestures = NULL;
     }
 
     if (data->compositor) {

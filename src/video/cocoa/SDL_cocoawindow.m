@@ -1771,6 +1771,27 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     [self handleTouches:NSTouchPhaseCancelled withEvent:theEvent];
 }
 
+- (void)magnifyWithEvent:(NSEvent *)theEvent
+{
+    switch ([theEvent phase]) {
+    case NSEventPhaseBegan:
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
+        break;
+    case NSEventPhaseChanged:
+        {
+            CGFloat magnification = [theEvent magnification];
+            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, magnification);
+        }
+        break;
+    case NSEventPhaseEnded:
+    case NSEventPhaseCancelled:
+        SDL_SendPinch(SDL_EVENT_PINCH_END, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
+        break;
+    default:
+        break;
+    }
+}
+
 - (void)handleTouches:(NSTouchPhase)phase withEvent:(NSEvent *)theEvent
 {
     NSSet *touches = [theEvent touchesMatchingPhase:phase inView:nil];

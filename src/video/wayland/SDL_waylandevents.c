@@ -42,6 +42,7 @@
 #include "tablet-v2-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
+#include "pointer-gestures-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1082,6 +1083,44 @@ static const struct wl_touch_listener touch_listener = {
     NULL, /* orientation */
 };
 
+
+void pinch_begin(void *data,
+          struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1,
+          uint32_t serial,
+          uint32_t time,
+          struct wl_surface *surface,
+          uint32_t fingers)
+{
+    SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, NULL, 0);
+}
+void pinch_update(void *data,
+           struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1,
+           uint32_t time,
+           wl_fixed_t dx,
+           wl_fixed_t dy,
+           wl_fixed_t scale,
+           wl_fixed_t rotation)
+{
+
+    float s = (float)(wl_fixed_to_double(scale));
+    SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, NULL, s);
+}
+
+void pinch_end(void *data,
+        struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1,
+        uint32_t serial,
+        uint32_t time,
+        int32_t cancelled)
+{
+    SDL_SendPinch(SDL_EVENT_PINCH_END, 0, NULL, 0);
+}
+
+static const struct zwp_pointer_gesture_pinch_v1_listener gesture_pinch_listener = {
+    pinch_begin,
+    pinch_update,
+    pinch_end
+};
+
 typedef struct Wayland_Keymap
 {
     xkb_layout_index_t layout;
@@ -1740,6 +1779,12 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         wl_touch_set_user_data(input->touch, input);
         wl_touch_add_listener(input->touch, &touch_listener,
                               input);
+
+        /* Pinch gesture */
+        input->gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(input->display->zwp_pointer_gestures, input->pointer);
+        zwp_pointer_gesture_pinch_v1_set_user_data(input->gesture_pinch, input);
+        zwp_pointer_gesture_pinch_v1_add_listener(input->gesture_pinch, &gesture_pinch_listener, input);
+
     } else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && input->touch) {
         SDL_DelTouch((SDL_TouchID)(intptr_t)input->touch);
         wl_touch_destroy(input->touch);
@@ -3092,6 +3137,11 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
 
     if (input->cursor_shape) {
         wp_cursor_shape_device_v1_destroy(input->cursor_shape);
+    }
+
+    if (input->gesture_pinch) {
+        zwp_pointer_gesture_pinch_v1_destroy(input->gesture_pinch);
+        input->gesture_pinch = NULL;
     }
 
     if (input->pointer) {

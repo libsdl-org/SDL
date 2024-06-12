@@ -32,6 +32,7 @@ static float angle = 0.0f;
 static int sprite_w, sprite_h;
 static int translate_cx = 0;
 static int translate_cy = 0;
+static float pinch_scale = 1.0f;
 
 static int done;
 
@@ -105,11 +106,14 @@ static void loop(void)
             } else if (event.key.keysym.sym == SDLK_DOWN) {
                 translate_cy += 1;
             } else {
-                SDLTest_CommonEvent(state, &event, &done);
+
             }
-        } else {
-            SDLTest_CommonEvent(state, &event, &done);
+        } else if (event.type == SDL_EVENT_PINCH_BEGIN) {
+        } else if (event.type == SDL_EVENT_PINCH_UPDATE) {
+            pinch_scale *= event.pinch.scale;
+        } else if (event.type == SDL_EVENT_PINCH_END) {
         }
+        SDLTest_CommonEvent(state, &event, &done);
     }
 
     for (i = 0; i < state->num_windows; ++i) {
@@ -138,24 +142,24 @@ static void loop(void)
             cy += translate_cy;
 
             a = (angle * SDL_PI_F) / 180.0f;
-            verts[0].position.x = cx + d * SDL_cosf(a);
-            verts[0].position.y = cy + d * SDL_sinf(a);
+            verts[0].position.x = cx + (d * SDL_cosf(a)) * pinch_scale;
+            verts[0].position.y = cy + (d * SDL_sinf(a)) * pinch_scale;
             verts[0].color.r = 1.0f;
             verts[0].color.g = 0;
             verts[0].color.b = 0;
             verts[0].color.a = 1.0f;
 
             a = ((angle + 120) * SDL_PI_F) / 180.0f;
-            verts[1].position.x = cx + d * SDL_cosf(a);
-            verts[1].position.y = cy + d * SDL_sinf(a);
+            verts[1].position.x = cx + (d * SDL_cosf(a)) * pinch_scale;
+            verts[1].position.y = cy + (d * SDL_sinf(a)) * pinch_scale;
             verts[1].color.r = 0;
             verts[1].color.g = 1.0f;
             verts[1].color.b = 0;
             verts[1].color.a = 1.0f;
 
             a = ((angle + 240) * SDL_PI_F) / 180.0f;
-            verts[2].position.x = cx + d * SDL_cosf(a);
-            verts[2].position.y = cy + d * SDL_sinf(a);
+            verts[2].position.x = cx + (d * SDL_cosf(a)) * pinch_scale;
+            verts[2].position.y = cy + (d * SDL_sinf(a)) * pinch_scale;
             verts[2].color.r = 0;
             verts[2].color.g = 0;
             verts[2].color.b = 1.0f;
