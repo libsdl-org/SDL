@@ -500,3 +500,19 @@ void SDL_QuitTouch(void)
     SDL_free(SDL_touchDevices);
     SDL_touchDevices = NULL;
 }
+
+int SDL_SendPinch(int event_type, Uint64 timestamp, SDL_Window *window, float scale)
+{
+    /* Post the event, if desired */
+    int posted = 0;
+    if (SDL_EventEnabled(event_type)) {
+        SDL_Event event;
+        event.type = event_type;
+        event.common.timestamp = timestamp;
+        event.pinch.scale = scale;
+        event.pinch.windowID = window ? SDL_GetWindowID(window) : 0;
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+    return posted;
+}
+
