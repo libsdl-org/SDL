@@ -41,24 +41,24 @@
  * <key>com.apple.security.device.camera</key> <true/>
  */
 
-static SDL_PixelFormatEnum CoreMediaFormatToSDL(FourCharCode fmt)
+static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormatEnum *pixel_format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
-        #define CASE(x, y) case x: return y
+        #define CASE(x, y, z) case x: *pixel_format = y; *colorspace = z; return
         // the 16LE ones should use 16BE if we're on a Bigendian system like PowerPC,
         // but at current time there is no bigendian Apple platform that has CoreMedia.
-        CASE(kCMPixelFormat_16LE555, SDL_PIXELFORMAT_XRGB1555);
-        CASE(kCMPixelFormat_16LE5551, SDL_PIXELFORMAT_RGBA5551);
-        CASE(kCMPixelFormat_16LE565, SDL_PIXELFORMAT_RGB565);
-        CASE(kCMPixelFormat_24RGB, SDL_PIXELFORMAT_RGB24);
-        CASE(kCMPixelFormat_32ARGB, SDL_PIXELFORMAT_ARGB32);
-        CASE(kCMPixelFormat_32BGRA, SDL_PIXELFORMAT_BGRA32);
-        CASE(kCMPixelFormat_422YpCbCr8, SDL_PIXELFORMAT_UYVY);
-        CASE(kCMPixelFormat_422YpCbCr8_yuvs, SDL_PIXELFORMAT_YUY2);
-        CASE(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange, SDL_PIXELFORMAT_NV12);
-        CASE(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, SDL_PIXELFORMAT_NV12);
-        CASE(kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange, SDL_PIXELFORMAT_P010);
-        CASE(kCVPixelFormatType_420YpCbCr10BiPlanarFullRange, SDL_PIXELFORMAT_P010);
+        CASE(kCMPixelFormat_16LE555, SDL_PIXELFORMAT_XRGB1555, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_16LE5551, SDL_PIXELFORMAT_RGBA5551, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_16LE565, SDL_PIXELFORMAT_RGB565, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_24RGB, SDL_PIXELFORMAT_RGB24, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_32ARGB, SDL_PIXELFORMAT_ARGB32, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_32BGRA, SDL_PIXELFORMAT_BGRA32, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_422YpCbCr8, SDL_PIXELFORMAT_UYVY, SDL_COLORSPACE_BT709_LIMITED);
+        CASE(kCMPixelFormat_422YpCbCr8_yuvs, SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED);
+        CASE(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange, SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_LIMITED);
+        CASE(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_FULL);
+        CASE(kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange, SDL_PIXELFORMAT_P010, SDL_COLORSPACE_BT2020_LIMITED);
+        CASE(kCVPixelFormatType_420YpCbCr10BiPlanarFullRange, SDL_PIXELFORMAT_P010, SDL_COLORSPACE_BT2020_FULL);
         #undef CASE
         default:
             #if DEBUG_CAMERA
@@ -66,7 +66,8 @@ static SDL_PixelFormatEnum CoreMediaFormatToSDL(FourCharCode fmt)
             #endif
             break;
     }
-    return SDL_PIXELFORMAT_UNKNOWN;
+    *pixel_format = SDL_PIXELFORMAT_UNKNOWN;
+    *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
 @class SDLCaptureVideoDataOutputSampleBufferDelegate;
@@ -252,7 +253,6 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     AVCaptureDevice *avdevice = (__bridge AVCaptureDevice *) device->handle;
 
     // Pick format that matches the spec
-    const SDL_PixelFormatEnum sdlfmt = spec->format;
     const int w = spec->width;
     const int h = spec->height;
     const int rate = spec->interval_denominator;
@@ -260,7 +260,10 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     NSArray<AVCaptureDeviceFormat *> *formats = [avdevice formats];
     for (AVCaptureDeviceFormat *format in formats) {
         CMFormatDescriptionRef formatDescription = [format formatDescription];
-        if (CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(formatDescription)) != sdlfmt) {
+        SDL_PixelFormatEnum device_format = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_Colorspace device_colorspace = SDL_COLORSPACE_UNKNOWN;
+        CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(formatDescription), &device_format, &device_colorspace);
+        if (device_format != spec->format || device_colorspace != spec->colorspace) {
             continue;
         }
 
@@ -296,6 +299,11 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     }
 
     session.sessionPreset = AVCaptureSessionPresetHigh;
+#if defined(SDL_PLATFORM_IOS)
+    if (@available(iOS 10.0, tvOS 17.0, *)) {
+        session.automaticallyConfiguresCaptureDeviceForWideColor = NO;
+    }
+#endif
 
     NSError *error = nil;
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:avdevice error:&error];
@@ -373,8 +381,11 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
             continue;
         }
 
-        const SDL_PixelFormatEnum sdlfmt = CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(fmt.formatDescription));
-        if (sdlfmt == SDL_PIXELFORMAT_UNKNOWN) {
+NSLog(@"Available camera format: %@\n", fmt);
+        SDL_PixelFormatEnum device_format = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_Colorspace device_colorspace = SDL_COLORSPACE_UNKNOWN;
+        CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(fmt.formatDescription), &device_format, &device_colorspace);
+        if (device_format == SDL_PIXELFORMAT_UNKNOWN) {
             continue;
         }
 
@@ -386,11 +397,11 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
 
             rate = (int) SDL_ceil((double) framerate.minFrameRate);
             if (rate) {
-                SDL_AddCameraFormat(add_data, sdlfmt, w, h, 1, rate);
+                SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, 1, rate);
             }
             rate = (int) SDL_floor((double) framerate.maxFrameRate);
             if (rate) {
-                SDL_AddCameraFormat(add_data, sdlfmt, w, h, 1, rate);
+                SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, 1, rate);
             }
         }
     }

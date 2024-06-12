@@ -252,18 +252,16 @@ static void DestroyCameraManager(void)
     }
 }
 
-static Uint32 format_android_to_sdl(Uint32 fmt)
+static void format_android_to_sdl(Uint32 fmt, SDL_PixelFormatEnum *format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
-        #define CASE(x, y)  case x: return y
-        CASE(AIMAGE_FORMAT_YUV_420_888, SDL_PIXELFORMAT_NV12);
-        CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565);
-        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888);
-        CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888);
-        CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888);
-        //CASE(AIMAGE_FORMAT_RGBA_FP16,   SDL_PIXELFORMAT_UNKNOWN); // 64bits
-        //CASE(AIMAGE_FORMAT_RAW_PRIVATE, SDL_PIXELFORMAT_UNKNOWN);
-        //CASE(AIMAGE_FORMAT_JPEG,        SDL_PIXELFORMAT_UNKNOWN);
+        #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
+        CASE(AIMAGE_FORMAT_YUV_420_888, SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_LIMITED);
+        CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGBA_FP16,   SDL_PIXELFORMAT_RGBA64_FLOAT, SDL_COLORSPACE_SRGB);
         #undef CASE
         default: break;
     }
@@ -272,10 +270,11 @@ static Uint32 format_android_to_sdl(Uint32 fmt)
     //SDL_Log("Unknown format AIMAGE_FORMAT '%d'", fmt);
     #endif
 
-    return SDL_PIXELFORMAT_UNKNOWN;
+    *format = SDL_PIXELFORMAT_UNKNOWN;
+    *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
-static Uint32 format_sdl_to_android(Uint32 fmt)
+static Uint32 format_sdl_to_android(SDL_PixelFormatEnum fmt)
 {
     switch (fmt) {
         #define CASE(x, y)  case y: return x
@@ -633,14 +632,18 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
         const int w = (int) i32ptr[1];
         const int h = (int) i32ptr[2];
         const int32_t type = i32ptr[3];
-        Uint32 sdlfmt;
+        SDL_PixelFormatEnum sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_Colorspace colorspace = SDL_COLORSPACE_UNKNOWN;
 
         if (type == ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS_INPUT) {
             continue;
         } else if ((w <= 0) || (h <= 0)) {
             continue;
-        } else if ((sdlfmt = format_android_to_sdl(fmt)) == SDL_PIXELFORMAT_UNKNOWN) {
-            continue;
+        } else {
+            format_android_to_sdl(fmt, &sdlfmt, &colorspace);
+            if (sdlfmt == SDL_PIXELFORMAT_UNKNOWN) {
+                continue;
+            }
         }
 
 #if 0 // !!! FIXME: these all come out with 0 durations on my test phone.  :(
@@ -650,13 +653,13 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
             const int fpsw = (int) i64ptr[1];
             const int fpsh = (int) i64ptr[2];
             const long long duration = (long long) i64ptr[3];
-                SDL_Log("CAMERA: possible fps %s %dx%d duration=%lld", SDL_GetPixelFormatName(format_android_to_sdl(fpsfmt)), fpsw, fpsh, duration);
+            SDL_Log("CAMERA: possible fps %s %dx%d duration=%lld", SDL_GetPixelFormatName(sdlfmt), fpsw, fpsh, duration);
             if ((duration > 0) && (fpsfmt == fmt) && (fpsw == w) && (fpsh == h)) {
-                SDL_AddCameraFormat(add_data, sdlfmt, w, h, duration, 1000000000);
+                SDL_AddCameraFormat(add_data, sdlfmt, colorspace, w, h, duration, 1000000000);
             }
         }
 #else
-        SDL_AddCameraFormat(add_data, sdlfmt, w, h, 1, 30);
+        SDL_AddCameraFormat(add_data, sdlfmt, colorspace, w, h, 1, 30);
 #endif
     }
 
