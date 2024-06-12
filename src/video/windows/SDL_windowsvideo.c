@@ -58,6 +58,13 @@ static void SDLCALL UpdateWindowsRawKeyboard(void *userdata, const char *name, c
     WIN_SetRawKeyboardEnabled(_this, enabled);
 }
 
+static void SDLCALL UpdateWindowsRawMouse(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
+    SDL_bool enabled = SDL_GetStringBoolean(newValue, SDL_FALSE);
+    WIN_SetRawMouseEnabled(_this, enabled);
+}
+
 static void SDLCALL UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     g_WindowsEnableMessageLoop = SDL_GetStringBoolean(newValue, SDL_TRUE);
@@ -473,6 +480,7 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
 #endif
 
     SDL_AddHintCallback(SDL_HINT_WINDOWS_RAW_KEYBOARD, UpdateWindowsRawKeyboard, _this);
+    SDL_AddHintCallback(SDL_HINT_WINDOWS_RAW_MOUSE, UpdateWindowsRawMouse, _this);
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);

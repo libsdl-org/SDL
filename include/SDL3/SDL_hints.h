@@ -3474,6 +3474,20 @@ extern "C" {
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD   "SDL_WINDOWS_RAW_KEYBOARD"
 
 /**
+ * A variable controlling whether raw mouse events are used on Windows.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": The Windows message loop is used for mouse events. (default)
+ * - "1": Low latency raw mouse events are used.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_WINDOWS_RAW_MOUSE   "SDL_WINDOWS_RAW_MOUSE"
+
+/**
  * A variable controlling whether SDL uses Critical Sections for mutexes on
  * Windows.
  *
