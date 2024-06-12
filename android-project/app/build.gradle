@@ -68,7 +68,7 @@ android {
         prefab {
             // target : ndk-build: SDL3' ; cmake: 'SDL3-shared'
             'SDL3' {
-                name "SDL3-shared" // alise not supported
+                name "SDL3-shared" // aliases are not supported
                 headers "jni/SDL/include"
                 libraryName "libSDL3"
             }
