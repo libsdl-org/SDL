@@ -2008,6 +2008,9 @@ int main(int argc, char *argv[])
     /* Enable standard application logging */
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
+    /* Enable input debug logging */
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_INPUT, SDL_LOG_PRIORITY_DEBUG);
+
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;
