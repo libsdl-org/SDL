@@ -402,19 +402,19 @@ static SDL_RenderCommand *AllocateRenderCommand(SDL_Renderer *renderer)
     return retval;
 }
 
-static void GetRenderViewportInPixels(SDL_Renderer *renderer, SDL_Rect *rect)
+static void UpdatePixelViewport(SDL_Renderer *renderer, SDL_RenderViewState *view)
 {
-    rect->x = (int)SDL_floorf(renderer->view->viewport.x * renderer->view->scale.x);
-    rect->y = (int)SDL_floorf(renderer->view->viewport.y * renderer->view->scale.y);
-    if (renderer->view->viewport.w >= 0) {
-        rect->w = (int)SDL_floorf(renderer->view->viewport.w * renderer->view->scale.x);
+    view->pixel_viewport.x = (int)SDL_floorf(view->viewport.x * view->scale.x);
+    view->pixel_viewport.y = (int)SDL_floorf(view->viewport.y * view->scale.y);
+    if (view->viewport.w >= 0) {
+        view->pixel_viewport.w = (int)SDL_ceilf(view->viewport.w * view->scale.x);
     } else {
-        rect->w = renderer->view->pixel_w;
+        view->pixel_viewport.w = (int)SDL_ceilf(view->pixel_w);
     }
-    if (renderer->view->viewport.h >= 0) {
-        rect->h = (int)SDL_floorf(renderer->view->viewport.h * renderer->view->scale.y);
+    if (view->viewport.h >= 0) {
+        view->pixel_viewport.h = (int)SDL_ceilf(view->viewport.h * view->scale.y);
     } else {
-        rect->h = renderer->view->pixel_h;
+        view->pixel_viewport.h = (int)SDL_ceilf(view->pixel_h);
     }
 }
 
@@ -423,7 +423,7 @@ static int QueueCmdSetViewport(SDL_Renderer *renderer)
     SDL_Rect viewport;
     int retval = 0;
 
-    GetRenderViewportInPixels(renderer, &viewport);
+    viewport = renderer->view->pixel_viewport;
 
     if (!renderer->viewport_queued ||
         SDL_memcmp(&viewport, &renderer->last_queued_viewport, sizeof(viewport)) != 0) {
@@ -446,15 +446,20 @@ static int QueueCmdSetViewport(SDL_Renderer *renderer)
     return retval;
 }
 
+static void UpdatePixelClipRect(SDL_Renderer *renderer, SDL_RenderViewState *view)
+{
+    view->pixel_cliprect.x = (int)SDL_floorf(view->clip_rect.x * view->scale.x);
+    view->pixel_cliprect.y = (int)SDL_floorf(view->clip_rect.y * view->scale.y);
+    view->pixel_cliprect.w = (int)SDL_ceilf(view->clip_rect.w * view->scale.x);
+    view->pixel_cliprect.h = (int)SDL_ceilf(view->clip_rect.h * view->scale.y);
+}
+
 static int QueueCmdSetClipRect(SDL_Renderer *renderer)
 {
     SDL_Rect clip_rect;
     int retval = 0;
 
-    clip_rect.x = (int)SDL_floorf(renderer->view->clip_rect.x * renderer->view->scale.x);
-    clip_rect.y = (int)SDL_floorf(renderer->view->clip_rect.y * renderer->view->scale.y);
-    clip_rect.w = (int)SDL_floorf(renderer->view->clip_rect.w * renderer->view->scale.x);
-    clip_rect.h = (int)SDL_floorf(renderer->view->clip_rect.h * renderer->view->scale.y);
+    clip_rect = renderer->view->pixel_cliprect;
 
     if (!renderer->cliprect_queued ||
         renderer->view->clipping_enabled != renderer->last_queued_cliprect_enabled ||
@@ -721,12 +726,13 @@ static void UpdateMainViewDimensions(SDL_Renderer *renderer)
     }
     SDL_GetRenderOutputSize(renderer, &renderer->main_view.pixel_w, &renderer->main_view.pixel_h);
     if (window_w > 0 && window_h > 0) {
-        renderer->dpi_scale.x = (float)renderer->main_view.pixel_w / window_w;
-        renderer->dpi_scale.y = (float)renderer->main_view.pixel_h / window_h;
+        renderer->dpi_scale.x = renderer->main_view.pixel_w / window_w;
+        renderer->dpi_scale.y = renderer->main_view.pixel_h / window_h;
     } else {
         renderer->dpi_scale.x = 1.0f;
         renderer->dpi_scale.y = 1.0f;
     }
+    UpdatePixelViewport(renderer, &renderer->main_view);
 }
 
 static void UpdateHDRProperties(SDL_Renderer *renderer)
@@ -1023,8 +1029,8 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     renderer->window = window;
     renderer->target_mutex = SDL_CreateMutex();
     if (surface) {
-        renderer->main_view.pixel_w = surface->w;
-        renderer->main_view.pixel_h = surface->h;
+        renderer->main_view.pixel_w = (float)surface->w;
+        renderer->main_view.pixel_h = (float)surface->h;
     }
     renderer->main_view.viewport.w = -1;
     renderer->main_view.viewport.h = -1;
@@ -1033,6 +1039,8 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     renderer->view = &renderer->main_view;
     renderer->dpi_scale.x = 1.0f;
     renderer->dpi_scale.y = 1.0f;
+    UpdatePixelViewport(renderer, &renderer->main_view);
+    UpdatePixelClipRect(renderer, &renderer->main_view);
     UpdateMainViewDimensions(renderer);
 
     /* Default value, if not specified by the renderer back-end */
@@ -1181,21 +1189,35 @@ SDL_PropertiesID SDL_GetRendererProperties(SDL_Renderer *renderer)
     return renderer->props;
 }
 
-int SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h)
+int SDL_GetRenderOutputSize(SDL_Renderer *renderer, float *w, float *h)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
+    int output_w = 0;
+    int output_h = 0;
 
     if (renderer->GetOutputSize) {
-        return renderer->GetOutputSize(renderer, w, h);
+        if (renderer->GetOutputSize(renderer, &output_w, &output_h) < 0) {
+            return -1;
+        }
     } else if (renderer->window) {
-        return SDL_GetWindowSizeInPixels(renderer->window, w, h);
+        if (SDL_GetWindowSizeInPixels(renderer->window, &output_w, &output_h) < 0) {
+            return -1;
+        }
     } else {
         SDL_assert(!"This should never happen");
         return SDL_SetError("Renderer doesn't support querying output size");
     }
+
+    if (w) {
+        *w = (float)output_w;
+    }
+    if (h) {
+        *h = (float)output_h;
+    }
+    return 0;
 }
 
-int SDL_GetCurrentRenderOutputSize(SDL_Renderer *renderer, int *w, int *h)
+int SDL_GetCurrentRenderOutputSize(SDL_Renderer *renderer, float *w, float *h)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -1326,8 +1348,8 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->color.b = 1.0f;
     texture->color.a = 1.0f;
     texture->scaleMode = SDL_SCALEMODE_LINEAR;
-    texture->view.pixel_w = w;
-    texture->view.pixel_h = h;
+    texture->view.pixel_w = (float)w;
+    texture->view.pixel_h = (float)h;
     texture->view.viewport.w = -1;
     texture->view.viewport.h = -1;
     texture->view.scale.x = 1.0f;
@@ -1338,6 +1360,9 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         renderer->textures->prev = texture;
     }
     renderer->textures = texture;
+
+    UpdatePixelViewport(renderer, &texture->view);
+    UpdatePixelClipRect(renderer, &texture->view);
 
     texture->SDR_white_point = SDL_GetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, SDL_GetDefaultSDRWhitePoint(texture->colorspace));
     texture->HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, SDL_GetDefaultHDRHeadroom(texture->colorspace));
@@ -1412,6 +1437,10 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     /* Now set the properties for the new texture */
     props = SDL_GetTextureProperties(texture);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_COLORSPACE_NUMBER, texture->colorspace);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_FORMAT_NUMBER, texture->format);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_ACCESS_NUMBER, texture->access);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, texture->w);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, texture->h);
     SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT, texture->SDR_white_point);
     if (texture->HDR_headroom > 0.0f) {
         SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_HDR_HEADROOM_FLOAT, texture->HDR_headroom);
@@ -1642,21 +1671,15 @@ SDL_PropertiesID SDL_GetTextureProperties(SDL_Texture *texture)
     return texture->props;
 }
 
-int SDL_QueryTexture(SDL_Texture *texture, SDL_PixelFormatEnum *format, int *access, int *w, int *h)
+int SDL_GetTextureSize(SDL_Texture *texture, float *w, float *h)
 {
     CHECK_TEXTURE_MAGIC(texture, -1);
 
-    if (format) {
-        *format = texture->format;
-    }
-    if (access) {
-        *access = texture->access;
-    }
     if (w) {
-        *w = texture->w;
+        *w = (float)texture->w;
     }
     if (h) {
-        *h = texture->h;
+        *h = (float)texture->h;
     }
     return 0;
 }
@@ -2405,9 +2428,9 @@ SDL_Texture *SDL_GetRenderTarget(SDL_Renderer *renderer)
 
 static int UpdateLogicalPresentation(SDL_Renderer *renderer)
 {
-    int logical_w = 1, logical_h = 1;
-    int output_w = renderer->main_view.pixel_w;
-    int output_h = renderer->main_view.pixel_h;
+    float logical_w = 1.0f, logical_h = 1.0f;
+    float output_w = renderer->main_view.pixel_w;
+    float output_h = renderer->main_view.pixel_h;
     float want_aspect = 1.0f;
     float real_aspect = 1.0f;
     float scale;
@@ -2417,23 +2440,23 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
         return 0;
     }
 
-    if (SDL_QueryTexture(renderer->logical_target, NULL, NULL, &logical_w, &logical_h) < 0) {
+    if (SDL_GetTextureSize(renderer->logical_target, &logical_w, &logical_h) < 0) {
         goto error;
     }
 
-    want_aspect = (float)logical_w / logical_h;
-    real_aspect = (float)output_w / output_h;
+    want_aspect = logical_w / logical_h;
+    real_aspect = output_w / output_h;
 
     renderer->logical_src_rect.x = 0.0f;
     renderer->logical_src_rect.y = 0.0f;
-    renderer->logical_src_rect.w = (float)logical_w;
-    renderer->logical_src_rect.h = (float)logical_h;
+    renderer->logical_src_rect.w = logical_w;
+    renderer->logical_src_rect.h = logical_h;
 
     if (renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_INTEGER_SCALE) {
         if (want_aspect > real_aspect) {
-            scale = (float)(output_w / logical_w); /* This an integer division! */
+            scale = (float)((int)output_w / (int)logical_w); /* This an integer division! */
         } else {
-            scale = (float)(output_h / logical_h); /* This an integer division! */
+            scale = (float)((int)output_h / (int)logical_h); /* This an integer division! */
         }
 
         if (scale < 1.0f) {
@@ -2449,15 +2472,15 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
                SDL_fabsf(want_aspect - real_aspect) < 0.0001f) {
         renderer->logical_dst_rect.x = 0.0f;
         renderer->logical_dst_rect.y = 0.0f;
-        renderer->logical_dst_rect.w = (float)output_w;
-        renderer->logical_dst_rect.h = (float)output_h;
+        renderer->logical_dst_rect.w = output_w;
+        renderer->logical_dst_rect.h = output_h;
 
     } else if (want_aspect > real_aspect) {
         if (renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_LETTERBOX) {
             /* We want a wider aspect ratio than is available - letterbox it */
-            scale = (float)output_w / logical_w;
+            scale = output_w / logical_w;
             renderer->logical_dst_rect.x = 0.0f;
-            renderer->logical_dst_rect.w = (float)output_w;
+            renderer->logical_dst_rect.w = output_w;
             renderer->logical_dst_rect.h = SDL_floorf(logical_h * scale);
             renderer->logical_dst_rect.y = (output_h - renderer->logical_dst_rect.h) / 2.0f;
         } else { /* renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_OVERSCAN */
@@ -2465,18 +2488,18 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
                zoom so logical height matches the real height
                and the width will grow off the screen
              */
-            scale = (float)output_h / logical_h;
+            scale = output_h / logical_h;
             renderer->logical_dst_rect.y = 0.0f;
-            renderer->logical_dst_rect.h = (float)output_h;
+            renderer->logical_dst_rect.h = output_h;
             renderer->logical_dst_rect.w = SDL_floorf(logical_w * scale);
             renderer->logical_dst_rect.x = (output_w - renderer->logical_dst_rect.w) / 2.0f;
         }
     } else {
         if (renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_LETTERBOX) {
             /* We want a narrower aspect ratio than is available - use side-bars */
-            scale = (float)output_h / logical_h;
+            scale = output_h / logical_h;
             renderer->logical_dst_rect.y = 0.0f;
-            renderer->logical_dst_rect.h = (float)output_h;
+            renderer->logical_dst_rect.h = output_h;
             renderer->logical_dst_rect.w = SDL_floorf(logical_w * scale);
             renderer->logical_dst_rect.x = (output_w - renderer->logical_dst_rect.w) / 2.0f;
         } else { /* renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_OVERSCAN */
@@ -2484,9 +2507,9 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
                zoom so logical width matches the real width
                and the height will grow off the screen
              */
-            scale = (float)output_w / logical_w;
+            scale = output_w / logical_w;
             renderer->logical_dst_rect.x = 0.0f;
-            renderer->logical_dst_rect.w = (float)output_w;
+            renderer->logical_dst_rect.w = output_w;
             renderer->logical_dst_rect.h = SDL_floorf(logical_h * scale);
             renderer->logical_dst_rect.y = (output_h - renderer->logical_dst_rect.h) / 2.0f;
         }
@@ -2501,13 +2524,16 @@ static int UpdateLogicalPresentation(SDL_Renderer *renderer)
     return 0;
 
 error:
-    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
+    SDL_SetRenderLogicalPresentation(renderer, 0.0f, 0.0f, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
     return -1;
 }
 
-int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_RendererLogicalPresentation mode, SDL_ScaleMode scale_mode)
+int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, float w, float h, SDL_RendererLogicalPresentation mode, SDL_ScaleMode scale_mode)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
+
+    w = SDL_ceilf(w);
+    h = SDL_ceilf(h);
 
     if (mode == SDL_LOGICAL_PRESENTATION_DISABLED) {
         if (renderer->logical_target) {
@@ -2515,9 +2541,9 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
         }
     } else {
         if (renderer->logical_target) {
-            int existing_w = 0, existing_h = 0;
+            float existing_w = 0.0f, existing_h = 0.0f;
 
-            if (SDL_QueryTexture(renderer->logical_target, NULL, NULL, &existing_w, &existing_h) < 0) {
+            if (SDL_GetTextureSize(renderer->logical_target, &existing_w, &existing_h) < 0) {
                 goto error;
             }
             if (w != existing_w || h != existing_h) {
@@ -2525,7 +2551,7 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
             }
         }
         if (!renderer->logical_target) {
-            renderer->logical_target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, w, h);
+            renderer->logical_target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, (int)w, (int)h);
             if (!renderer->logical_target) {
                 goto error;
             }
@@ -2539,24 +2565,24 @@ int SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_R
     return UpdateLogicalPresentation(renderer);
 
 error:
-    SDL_SetRenderLogicalPresentation(renderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
+    SDL_SetRenderLogicalPresentation(renderer, 0.0f, 0.0f, SDL_LOGICAL_PRESENTATION_DISABLED, SDL_SCALEMODE_NEAREST);
     return -1;
 }
 
-int SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode, SDL_ScaleMode *scale_mode)
+int SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, float *w, float *h, SDL_RendererLogicalPresentation *mode, SDL_ScaleMode *scale_mode)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (renderer->logical_target) {
-        if (SDL_QueryTexture(renderer->logical_target, NULL, NULL, w, h) < 0) {
+        if (SDL_GetTextureSize(renderer->logical_target, w, h) < 0) {
             return -1;
         }
     } else {
         if (w) {
-            *w = 0;
+            *w = 0.0f;
         }
         if (h) {
-            *h = 0;
+            *h = 0.0f;
         }
     }
 
@@ -2586,11 +2612,11 @@ static void SDL_RenderLogicalBorders(SDL_Renderer *renderer)
             rect.x = 0.0f;
             rect.y = 0.0f;
             rect.w = dst->x;
-            rect.h = (float)renderer->view->pixel_h;
+            rect.h = renderer->view->pixel_h;
             SDL_RenderFillRect(renderer, &rect);
 
             rect.x = dst->x + dst->w;
-            rect.w = (float)renderer->view->pixel_w - rect.x;
+            rect.w = renderer->view->pixel_w - rect.x;
             SDL_RenderFillRect(renderer, &rect);
         }
 
@@ -2599,12 +2625,12 @@ static void SDL_RenderLogicalBorders(SDL_Renderer *renderer)
 
             rect.x = 0.0f;
             rect.y = 0.0f;
-            rect.w = (float)renderer->view->pixel_w;
+            rect.w = renderer->view->pixel_w;
             rect.h = dst->y;
             SDL_RenderFillRect(renderer, &rect);
 
             rect.y = dst->y + dst->h;
-            rect.h = (float)renderer->view->pixel_h - rect.y;
+            rect.h = renderer->view->pixel_h - rect.y;
             SDL_RenderFillRect(renderer, &rect);
         }
 
@@ -2789,25 +2815,24 @@ int SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *event
     return 0;
 }
 
-int SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_Rect *rect)
+int SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_FRect *rect)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (rect) {
-        renderer->view->viewport.x = rect->x;
-        renderer->view->viewport.y = rect->y;
-        renderer->view->viewport.w = rect->w;
-        renderer->view->viewport.h = rect->h;
+        SDL_copyp(&renderer->view->viewport, rect);
     } else {
-        renderer->view->viewport.x = 0;
-        renderer->view->viewport.y = 0;
-        renderer->view->viewport.w = -1;
-        renderer->view->viewport.h = -1;
+        renderer->view->viewport.x = 0.0f;
+        renderer->view->viewport.y = 0.0f;
+        renderer->view->viewport.w = -1.0f;
+        renderer->view->viewport.h = -1.0f;
     }
+    UpdatePixelViewport(renderer, renderer->view);
+
     return QueueCmdSetViewport(renderer);
 }
 
-int SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect)
+int SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2817,12 +2842,12 @@ int SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect)
         if (renderer->view->viewport.w >= 0) {
             rect->w = renderer->view->viewport.w;
         } else {
-            rect->w = (int)SDL_ceilf(renderer->view->pixel_w / renderer->view->scale.x);
+            rect->w = SDL_ceilf(renderer->view->pixel_w / renderer->view->scale.x);
         }
         if (renderer->view->viewport.h >= 0) {
             rect->h = renderer->view->viewport.h;
         } else {
-            rect->h = (int)SDL_ceilf(renderer->view->pixel_h / renderer->view->scale.y);
+            rect->h = SDL_ceilf(renderer->view->pixel_h / renderer->view->scale.y);
         }
     }
     return 0;
@@ -2832,56 +2857,51 @@ SDL_bool SDL_RenderViewportSet(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-	if (renderer->view->viewport.w >= 0 &&
-		renderer->view->viewport.h >= 0) {
-		return SDL_TRUE;
-	}
-	return SDL_FALSE;
+    if (renderer->view->viewport.w >= 0.0f &&
+        renderer->view->viewport.h >= 0.0f) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
 static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     rect->x = 0.0f;
     rect->y = 0.0f;
-    if (renderer->view->viewport.w >= 0) {
-        rect->w = (float)renderer->view->viewport.w;
+    if (renderer->view->viewport.w >= 0.0f) {
+        rect->w = renderer->view->viewport.w;
     } else {
         rect->w = renderer->view->pixel_w / renderer->view->scale.x;
     }
-    if (renderer->view->viewport.h >= 0) {
-        rect->h = (float)renderer->view->viewport.h;
+    if (renderer->view->viewport.h >= 0.0f) {
+        rect->h = renderer->view->viewport.h;
     } else {
         rect->h = renderer->view->pixel_h / renderer->view->scale.y;
     }
 }
 
-int SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
+int SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_FRect *rect)
 {
     CHECK_RENDERER_MAGIC(renderer, -1)
 
     if (rect && rect->w >= 0 && rect->h >= 0) {
         renderer->view->clipping_enabled = SDL_TRUE;
-        renderer->view->clip_rect.x = rect->x;
-        renderer->view->clip_rect.y = rect->y;
-        renderer->view->clip_rect.w = rect->w;
-        renderer->view->clip_rect.h = rect->h;
+        SDL_copyp(&renderer->view->clip_rect, rect);
     } else {
         renderer->view->clipping_enabled = SDL_FALSE;
         SDL_zero(renderer->view->clip_rect);
     }
+    UpdatePixelClipRect(renderer, renderer->view);
 
     return QueueCmdSetClipRect(renderer);
 }
 
-int SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
+int SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     CHECK_RENDERER_MAGIC(renderer, -1)
 
     if (rect) {
-        rect->x = renderer->view->clip_rect.x;
-        rect->y = renderer->view->clip_rect.y;
-        rect->w = renderer->view->clip_rect.w;
-        rect->h = renderer->view->clip_rect.h;
+        SDL_copyp(rect, &renderer->view->clip_rect);
     }
     return 0;
 }
@@ -2905,6 +2925,8 @@ int SDL_SetRenderScale(SDL_Renderer *renderer, float scaleX, float scaleY)
 
     renderer->view->scale.x = scaleX;
     renderer->view->scale.y = scaleY;
+    UpdatePixelViewport(renderer, renderer->view);
+    UpdatePixelClipRect(renderer, renderer->view);
 
     /* The scale affects the existing viewport and clip rectangle */
     retval += QueueCmdSetViewport(renderer);
@@ -3115,7 +3137,7 @@ int SDL_RenderLine(SDL_Renderer *renderer, float x1, float y1, float x2, float y
 
 static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
 {
-    const int MAX_PIXELS = SDL_max(renderer->view->pixel_w, renderer->view->pixel_h) * 4;
+    const int MAX_PIXELS = (int)SDL_max(renderer->view->pixel_w, renderer->view->pixel_h) * 4;
     int i, deltax, deltay, numpixels;
     int d, dinc1, dinc2;
     int x, xinc1, xinc2;
@@ -3128,7 +3150,7 @@ static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, i
     /* the backend might clip this further to the clipping rect, but we
        just want a basic safety against generating millions of points for
        massive lines. */
-    GetRenderViewportInPixels(renderer, &viewport);
+    viewport = renderer->view->pixel_viewport;
     viewport.x = 0;
     viewport.y = 0;
     if (!SDL_GetRectAndLineIntersection(&viewport, &x1, &y1, &x2, &y2)) {
@@ -3896,7 +3918,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     int retval = 0;
     int count = indices ? num_indices : num_vertices;
     int prev[3]; /* Previous triangle vertex indices */
-    int texw = 0, texh = 0;
+    float texw = 0.0f, texh = 0.0f;
     SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
     float r = 0, g = 0, b = 0, a = 0;
 
@@ -3905,7 +3927,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     SDL_GetRenderDrawColorFloat(renderer, &r, &g, &b, &a);
 
     if (texture) {
-        SDL_QueryTexture(texture, NULL, NULL, &texw, &texh);
+        SDL_GetTextureSize(texture, &texw, &texh);
     }
 
     prev[0] = -1;
@@ -4352,7 +4374,7 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 
     FlushRenderCommands(renderer); /* we need to render before we read the results. */
 
-    GetRenderViewportInPixels(renderer, &real_rect);
+    real_rect = renderer->view->pixel_viewport;
 
     if (rect) {
         if (!SDL_GetRectIntersection(rect, &real_rect, &real_rect)) {

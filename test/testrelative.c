@@ -52,7 +52,7 @@ static void loop(void)
         }
     }
     for (i = 0; i < state->num_windows; ++i) {
-        SDL_Rect viewport;
+        SDL_FRect viewport;
         SDL_Renderer *renderer = state->renderers[i];
         if (state->windows[i] == NULL) {
             continue;

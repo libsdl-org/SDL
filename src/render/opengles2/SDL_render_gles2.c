@@ -1967,7 +1967,7 @@ static SDL_Surface *GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
     SDL_PixelFormatEnum format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
-    int w, h;
+    float h;
     SDL_Surface *surface;
 
     surface = SDL_CreateSurface(rect->w, rect->h, format);
@@ -1975,9 +1975,9 @@ static SDL_Surface *GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         return NULL;
     }
 
-    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
+    SDL_GetCurrentRenderOutputSize(renderer, NULL, &h);
 
-    data->glReadPixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
+    data->glReadPixels(rect->x, renderer->target ? rect->y : ((int)h - rect->y) - rect->h,
                        rect->w, rect->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
     if (GL_CheckError("glReadPixels()", renderer) < 0) {
         SDL_DestroySurface(surface);
