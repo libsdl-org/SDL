@@ -196,10 +196,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threa
  *
  * This datatype is only useful on Apple iOS.
  *
- * After passing a function pointer of this type to SDL_iOSSetAnimationCallback,
- * the system will call that function pointer at a regular interval.
+ * After passing a function pointer of this type to
+ * SDL_iOSSetAnimationCallback, the system will call that function pointer at
+ * a regular interval.
  *
- * \param userdata what was passed as `callbackParam` to SDL_iOSSetAnimationCallback as `callbackParam`.
+ * \param userdata what was passed as `callbackParam` to
+ *                 SDL_iOSSetAnimationCallback as `callbackParam`.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
