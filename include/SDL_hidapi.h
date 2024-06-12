@@ -232,7 +232,7 @@ extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, 
  *
  * \since This function is available since SDL 2.0.18.
  */
-extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
+extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive);
 
 /**
  * Write an Output report to a HID device.

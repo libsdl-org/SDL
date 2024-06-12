@@ -45,7 +45,7 @@ void *SDL_TLSGet(SDL_TLSID id)
     return storage->array[id - 1].data;
 }
 
-int SDL_TLSSet(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *))
+int SDL_TLSSet(SDL_TLSID id, const void *value, SDL_TLSDestructorCallback destructor)
 {
     SDL_TLSData *storage;
 

@@ -623,6 +623,8 @@ my %headersymshasdoxygen = ();   # $headersymshasdoxygen{"SDL_OpenAudio"} -> 1 i
 my %headersymstype = ();   # $headersymstype{"SDL_OpenAudio"} -> 1 (function), 2 (macro), 3 (struct), 4 (enum), 5 (other typedef)
 my %headersymscategory = ();   # $headersymscategory{"SDL_OpenAudio"} -> 'Audio' ... this is set with a `/* WIKI CATEGEORY: Audio */` comment in the headers that sets it on all symbols until a new comment changes it. So usually, once at the top of the header file.
 my %headercategorydocs = ();   # $headercategorydocs{"Audio"} -> (fake) symbol for this category's documentation. Undefined if not documented.
+my %headersymsparaminfo = (); # $headersymsparaminfo{"SDL_OpenAudio"} -> reference to array of parameters, pushed by name, then C type string, repeating. Undef'd if void params, or not a function.
+my %headersymsrettype = (); # $headersymsrettype{"SDL_OpenAudio"} -> string of C datatype of return value. Undef'd if not a function.
 my %wikitypes = ();  # contains string of wiki page extension, like $wikitypes{"SDL_OpenAudio"} == 'mediawiki'
 my %wikisyms = ();  # contains references to hash of strings, each string being the full contents of a section of a wiki page, like $wikisyms{"SDL_OpenAudio"}{"Remarks"}.
 my %wikisectionorder = ();   # contains references to array, each array item being a key to a wikipage section in the correct order, like $wikisectionorder{"SDL_OpenAudio"}[2] == 'Remarks'
@@ -677,6 +679,26 @@ sub print_undocumented_section {
     }
     print $fh "\n";
     }
+}
+
+sub strip_fn_declaration_metadata {
+    my $decl = shift;
+    $decl =~ s/SDL_(PRINTF|SCANF)_FORMAT_STRING\s*//;  # don't want this metadata as part of the documentation.
+    $decl =~ s/SDL_ALLOC_SIZE2?\(.*?\)\s*//;  # don't want this metadata as part of the documentation.
+    $decl =~ s/SDL_MALLOC\s*//;  # don't want this metadata as part of the documentation.
+    $decl =~ s/SDL_(IN|OUT|INOUT)_.*?CAP\s*\(.*?\)\s*//g;  # don't want this metadata as part of the documentation.
+    $decl =~ s/\)(\s*SDL_[a-zA-Z_]+(\(.*?\)|))*;/);/; # don't want this metadata as part of the documentation.
+    return $decl;
+}
+
+sub sanitize_c_typename {
+    my $str = shift;
+    $str =~ s/\A\s+//;
+    $str =~ s/\s+\Z//;
+    $str =~ s/const\s*(\*+)/const $1/g;  # one space between `const` and pointer stars: `char const* const *` becomes `char const * const *`.
+    $str =~ s/\*\s+\*/**/g;  # drop spaces between pointers: `void * *` becomes `void **`.
+    $str =~ s/\s*(\*+)\Z/ $1/;  # one space between pointer stars and what it points to: `void**` becomes `void **`.
+    return $str;
 }
 
 my $incpath = "$srcpath";
@@ -746,7 +768,7 @@ while (my $d = readdir(DH)) {
             #print("CATEGORY FOR '$dent' CHANGED TO " . (defined($current_wiki_category) ? "'$current_wiki_category'" : '(undef)') . "\n");
             push @contents, $_;
             next;
-        } elsif (/\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC/) {  # a function declaration without a doxygen comment?
+        } elsif (/\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC/) {  # a function declaration without a doxygen comment?
             $symtype = 1;   # function declaration
             @templines = ();
             $decl = $_;
@@ -819,7 +841,7 @@ while (my $d = readdir(DH)) {
                 $lineno++ if defined $decl;
                 $decl = '' if not defined $decl;
                 chomp($decl);
-                if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC/) {
+                if ($decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC/) {
                     $symtype = 1;   # function declaration
                 } elsif ($decl =~ /\A\s*SDL_FORCE_INLINE/) {
                     $symtype = 1;   # (forced-inline) function declaration
@@ -844,6 +866,8 @@ while (my $d = readdir(DH)) {
             }
         }
 
+        my @paraminfo = ();
+        my $rettype = undef;
         my @decllines = ( $decl );
         my $sym = '';
 
@@ -872,7 +896,7 @@ while (my $d = readdir(DH)) {
                 }
                 $decl =~ s/\s*\)\s*(\{.*|)\s*\Z/);/;
             } else {
-                if (not $decl =~ /\)\s*;/) {
+                if (not $decl =~ /;/) {
                     while (<FH>) {
                         chomp;
                         $lineno++;
@@ -880,20 +904,28 @@ while (my $d = readdir(DH)) {
                         s/\A\s+//;
                         s/\s+\Z//;
                         $decl .= " $_";
-                        last if /\)\s*;/;
+                        last if /;/;
                     }
                 }
                 $decl =~ s/\s+\);\Z/);/;
+                $decl =~ s/\s+;\Z/;/;
             }
 
             $decl =~ s/\s+\Z//;
 
-            if (!$is_forced_inline && $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)\s*(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
-                $sym = $7;
-                #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
-            } elsif ($is_forced_inline && $decl =~ /\A\s*SDL_FORCE_INLINE\s+(SDL_DEPRECATED\s+|)(const\s+|)(unsigned\s+|)(.*?)([\*\s]+)(.*?)\s*\((.*?)\);/) {
+            $decl = strip_fn_declaration_metadata($decl);
+
+            my $paramsstr = undef;
+
+            if (!$is_forced_inline && $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)([\*\s]+)(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
+                $sym = $8;
+                $rettype = "$3$4$5$6";
+                $paramsstr = $9;
+             } elsif ($is_forced_inline && $decl =~ /\A\s*SDL_FORCE_INLINE\s+(SDL_DEPRECATED\s+|)(const\s+|)(unsigned\s+|)(.*?)([\*\s]+)(.*?)\s*\((.*?)\);/) {
                 $sym = $6;
-            } else {
+                $rettype = "$2$3$4$5";
+                $paramsstr = $7;
+             } else {
                 #print "Found doxygen but no function sig:\n$str\n\n";
                 foreach (@templines) {
                     push @contents, $_;
@@ -904,21 +936,67 @@ while (my $d = readdir(DH)) {
                 next;
             }
 
-            if (!$is_forced_inline) {  # !!! FIXME: maybe we need to do this for forced-inline stuff too?
-                $decl = '';  # build this with the line breaks, since it looks better for syntax highlighting.
+            $rettype = sanitize_c_typename($rettype);
+
+            if ($paramsstr =~ /\(/) {
+                die("\n\n$0 FAILURE!\n" .
+                    "There's a '(' in the parameters for function '$sym' '$incpath/$dent'.\n" .
+                    "This usually means there's a parameter that's a function pointer type.\n" .
+                    "This causes problems for wikiheaders.pl and is less readable, too.\n" .
+                    "Please put that function pointer into a typedef,\n" .
+                    "and use the new type in this function's signature instead!\n\n");
+            }
+
+            my @params = split(/,/, $paramsstr);
+            my $dotdotdot = 0;
+            foreach (@params) {
+                my $p = $_;
+                $p =~ s/\A\s+//;
+                $p =~ s/\s+\Z//;
+                if (($p eq 'void') || ($p eq '')) {
+                    die("Void parameter in a function with multiple params?! ('$sym' in '$incpath/$dent')") if (scalar(@params) != 1);
+                } elsif ($p eq '...') {
+                    die("Mutiple '...' params?! ('$sym' in '$incpath/$dent')") if ($dotdotdot);
+                    $dotdotdot = 1;
+                    push @paraminfo, '...';
+                    push @paraminfo, '...';
+                } elsif ($p =~ /\A(.*)\s+([a-zA-Z0-9_\*\[\]]+)\Z/) {
+                    die("Parameter after '...' param?! ('$sym' in '$incpath/$dent')") if ($dotdotdot);
+                    my $t = $1;
+                    my $n = $2;
+                    if ($n =~ s/\A(\*+)//) {
+                        $t .= $1;  # move any `*` that stuck to the name over.
+                    }
+                    if ($n =~ s/\[\]\Z//) {
+                        $t = "$t*";  # move any `[]` that stuck to the name over, as a pointer.
+                    }
+                    $t = sanitize_c_typename($t);
+                    #print("$t\n");
+                    #print("$n\n");
+                    push @paraminfo, $n;
+                    push @paraminfo, $t;
+                } else {
+                    die("Unexpected parameter '$p' in function '$sym' in '$incpath/$dent'!");
+                }
+            }
+
+            if (!$is_forced_inline) {  # don't do with forced-inline because we don't want the implementation inserted in the wiki.
+                $decl = '';  # rebuild this with the line breaks, since it looks better for syntax highlighting.
                 foreach (@decllines) {
                     if ($decl eq '') {
                         $decl = $_;
-                        $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_)?DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$3$4 /;
+                        $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$3$4 /;
                     } else {
                         my $trimmed = $_;
                         # !!! FIXME: trim space for SDL_DEPRECATED if it was used, too.
-                        $trimmed =~ s/\A\s{24}//;  # 24 for shrinking to match the removed "extern DECLSPEC SDLCALL "
+                        $trimmed =~ s/\A\s{28}//;  # 28 for shrinking to match the removed "extern SDL_DECLSPEC SDLCALL "
                         $decl .= $trimmed;
                     }
                     $decl .= "\n";
                 }
             }
+
+            $decl = strip_fn_declaration_metadata($decl);
 
             # !!! FIXME: code duplication with typedef processing, below.
             # We assume any `#define`s directly after the function are related to it: probably bitflags for an integer typedef.
@@ -974,7 +1052,6 @@ while (my $d = readdir(DH)) {
         } elsif ($symtype == 2) {  # a macro
             if ($decl =~ /\A\s*\#\s*define\s+(.*?)(\(.*?\)|)\s+/) {
                 $sym = $1;
-                #$decl =~ s/\A\s*extern\s+DECLSPEC\s+(.*?)\s+SDLCALL/$1/;
             } else {
                 #print "Found doxygen but no macro:\n$str\n\n";
                 foreach (@templines) {
@@ -1176,6 +1253,8 @@ while (my $d = readdir(DH)) {
             $headersymschunk{$sym} = scalar(@contents);
             $headersymshasdoxygen{$sym} = $has_doxygen;
             $headersymstype{$sym} = $symtype;
+            $headersymsparaminfo{$sym} = \@paraminfo if (scalar(@paraminfo) > 0);
+            $headersymsrettype{$sym} = $rettype if (defined($rettype));
             push @contents, join("\n", @templines);
             push @contents, join("\n", @decllines) if (scalar(@decllines) > 0);
         }
@@ -1186,6 +1265,7 @@ while (my $d = readdir(DH)) {
     $headers{$dent} = \@contents;
 }
 closedir(DH);
+
 
 opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
 while (my $d = readdir(DH)) {
@@ -1354,14 +1434,14 @@ if ($warn_about_missing) {
     foreach (keys %wikisyms) {
         my $sym = $_;
         if (not defined $headersyms{$sym}) {
-            print("WARNING: $sym defined in the wiki but not the headers!\n");
+            print STDERR "WARNING: $sym defined in the wiki but not the headers!\n";
         }
     }
 
     foreach (keys %headersyms) {
         my $sym = $_;
         if (not defined $wikisyms{$sym}) {
-            print("WARNING: $sym defined in the headers but not the wiki!\n");
+            print STDERR "WARNING: $sym defined in the headers but not the wiki!\n";
         }
     }
 }
@@ -1451,15 +1531,26 @@ if ($copy_direction == 1) {  # --copy-to-headers
             if ($wikitype eq 'mediawiki') {
                 die("Unexpected data parsing MediaWiki table") if (shift @lines ne '{|');  # Dump the '{|' start
                 while (scalar(@lines) >= 3) {
+                    my $c_datatype = shift @lines;
                     my $name = shift @lines;
                     my $desc = shift @lines;
-                    my $terminator = shift @lines;  # the '|-' or '|}' line.
+                    my $terminator;  # the '|-' or '|}' line.
+
+                    if (($desc eq '|-') or ($desc eq '|}') or (not $desc =~ /\A\|/)) {  # we seem to be out of cells, which means there was no datatype column on this one.
+                        $terminator = $desc;
+                        $desc = $name;
+                        $name = $c_datatype;
+                        $c_datatype = '';
+                    } else {
+                        $terminator = shift @lines;
+                    }
+
                     last if ($terminator ne '|-') and ($terminator ne '|}');  # we seem to have run out of table.
                     $name =~ s/\A\|\s*//;
                     $name =~ s/\A\*\*(.*?)\*\*/$1/;
                     $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
                     $desc =~ s/\A\|\s*//;
-                    #print STDERR "SYM: $sym   NAME: $name   DESC: $desc TERM: $terminator\n";
+                    #print STDERR "SYM: $sym   CDATATYPE: $c_datatype  NAME: $name   DESC: $desc TERM: $terminator\n";
                     my $whitespacelen = length($name) + 8;
                     my $whitespace = ' ' x $whitespacelen;
                     $desc = wordwrap($desc, -$whitespacelen);
@@ -1473,28 +1564,35 @@ if ($copy_direction == 1) {  # --copy-to-headers
             } elsif ($wikitype eq 'md') {
                 my $l;
                 $l = shift @lines;
-                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\|\s*\|\s*\Z/);
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A(\s*\|)?\s*\|\s*\|\s*\|\s*\Z/);
                 $l = shift @lines;
-                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\-*\s*\|\s*\-*\s*\|\s*\Z/);
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*(\|\s*\-*\s*)?\|\s*\-*\s*\|\s*\-*\s*\|\s*\Z/);
                 while (scalar(@lines) >= 1) {
                     $l = shift @lines;
-                    if ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
-                        my $name = $1;
-                        my $desc = $2;
-                        $name =~ s/\A\*\*(.*?)\*\*/$1/;
-                        $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
-                        #print STDERR "SYM: $sym   NAME: $name   DESC: $desc\n";
-                        my $whitespacelen = length($name) + 8;
-                        my $whitespace = ' ' x $whitespacelen;
-                        $desc = wordwrap($desc, -$whitespacelen);
-                        my @desclines = split /\n/, $desc;
-                        my $firstline = shift @desclines;
-                        $str .= "$paramstr $name $firstline\n";
-                        foreach (@desclines) {
-                            $str .= "${whitespace}$_\n";
-                        }
+                    my $name;
+                    my $desc;
+                    if ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
+                        # c datatype is $1, but we don't care about it here.
+                        $name = $2;
+                        $desc = $3;
+                    } elsif ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
+                        $name = $1;
+                        $desc = $2;
                     } else {
                         last;  # we seem to have run out of table.
+                    }
+
+                    $name =~ s/\A\*\*(.*?)\*\*/$1/;
+                    $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
+                    #print STDERR "SYM: $sym   NAME: $name   DESC: $desc\n";
+                    my $whitespacelen = length($name) + 8;
+                    my $whitespace = ' ' x $whitespacelen;
+                    $desc = wordwrap($desc, -$whitespacelen);
+                    my @desclines = split /\n/, $desc;
+                    my $firstline = shift @desclines;
+                    $str .= "$paramstr $name $firstline\n";
+                    foreach (@desclines) {
+                        $str .= "${whitespace}$_\n";
                     }
                 }
             } else {
@@ -1505,8 +1603,9 @@ if ($copy_direction == 1) {  # --copy-to-headers
         if (defined $returns) {
             $str .= "\n" if $addblank; $addblank = 1;
             my $r = dewikify($wikitype, $returns);
+            $r =~ s/\A\(.*?\)\s*//;  # Chop datatype in parentheses off the front.
             my $retstr = "\\returns";
-            if ($r =~ s/\AReturn(s?) //) {
+            if ($r =~ s/\AReturn(s?)\s+//) {
                 $retstr = "\\return$1";
             }
 
@@ -1697,13 +1796,12 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $remarks =~ s/\s*\Z//;
 
         my $decl = $headerdecls{$sym};
-        #$decl =~ s/\*\s+SDLCALL/ *SDLCALL/;  # Try to make "void * Function" become "void *Function"
-        #$decl =~ s/\A\s*extern\s+(SDL_DEPRECATED\s+|)DECLSPEC\s+(.*?)\s+(\*?)SDLCALL/$2$3/;
 
         my $syntax = '';
         if ($wikitype eq 'mediawiki') {
             $syntax = "<syntaxhighlight lang='c'>\n$decl</syntaxhighlight>\n";
         } elsif ($wikitype eq 'md') {
+            $decl =~ s/\n+\Z//;
             $syntax = "```c\n$decl\n```\n";
         } else { die("Expected wikitype '$wikitype'"); }
 
@@ -1712,7 +1810,9 @@ if ($copy_direction == 1) {  # --copy-to-headers
         $sections{'Remarks'} = "$remarks\n" if $remarks ne '';
         $sections{'Syntax'} = $syntax;
 
-        my @params = ();  # have to parse these and build up the wiki tables after, since Markdown needs to know the length of the largest string.  :/
+        my %params = ();  # have to parse these and build up the wiki tables after, since Markdown needs to know the length of the largest string.  :/
+        my @paramsorder = ();
+        my $fnsigparams = $headersymsparaminfo{$sym};
 
         while (@doxygenlines) {
             my $l = shift @doxygenlines;
@@ -1734,10 +1834,24 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
                 $desc =~ s/[\s\n]+\Z//ms;
 
+                # Validate this param.
+                if (defined($params{$arg})) {
+                    print STDERR "WARNING: Symbol '$sym' has multiple '\\param $arg' declarations! Only keeping the first one!\n";
+                } elsif (defined $fnsigparams) {
+                    my $found = 0;
+                    for (my $i = 0; $i < scalar(@$fnsigparams); $i += 2) {
+                        $found = 1, last if (@$fnsigparams[$i] eq $arg);
+                    }
+                    if (!$found) {
+                        print STDERR "WARNING: Symbol '$sym' has a '\\param $arg' for a param that doesn't exist. It will be removed!\n";
+                    }
+                }
+
                 # We need to know the length of the longest string to make Markdown tables, so we just store these off until everything is parsed.
-                push @params, $arg;
-                push @params, $desc;
+                $params{$arg} = $desc;
+                push @paramsorder, $arg;
             } elsif ($l =~ /\A\\r(eturns?)\s+(.*)\Z/) {
+                # !!! FIXME: complain if this isn't a function or macro.
                 my $retstr = "R$1";  # "Return" or "Returns"
                 my $desc = $2;
                 while (@doxygenlines) {
@@ -1752,7 +1866,20 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     }
                 }
                 $desc =~ s/[\s\n]+\Z//ms;
-                $sections{'Return Value'} = wordwrap("$retstr " . wikify($wikitype, $desc)) . "\n";
+
+                # Make sure the \returns info is valid.
+                my $rettype = $headersymsrettype{$sym};
+                die("Don't have a rettype for '$sym' for some reason!") if (($symtype == 1) && (not defined($rettype)));
+                if (defined($sections{'Return Value'})) {
+                    print STDERR "WARNING: Symbol '$sym' has multiple '\\return' declarations! Only keeping the first one!\n";
+                } elsif (($symtype != 1) && ($symtype != 2) && ($symtype != 5)) {  # !!! FIXME: if 5, make sure it's a function pointer typedef!
+                    print STDERR "WARNING: Symbol '$sym' has a '\\return' declaration but isn't a function or macro! Removing it!\n";
+                } elsif (($symtype == 1) && ($headersymsrettype{$sym} eq 'void')) {
+                    print STDERR "WARNING: Function '$sym' has a '\\returns' declaration but function returns void! Removing it!\n";
+                } else {
+                    my $rettypestr = defined($rettype) ? ('(' . wikify($wikitype, $rettype) . ') ') : '';
+                    $sections{'Return Value'} = wordwrap("$rettypestr$retstr ". wikify($wikitype, $desc)) . "\n";
+                }
             } elsif ($l =~ /\A\\deprecated\s+(.*)\Z/) {
                 my $desc = $1;
                 while (@doxygenlines) {
@@ -1810,6 +1937,35 @@ if ($copy_direction == 1) {  # --copy-to-headers
             }
         }
 
+        # Make sure %params is in the same order as the actual function signature and add C datatypes...
+        my $params_has_c_datatype = 0;
+        my @final_params = ();
+        if (($symtype == 1) && (defined($headersymsparaminfo{$sym}))) {  # is a function and we have param info for it...
+            my $fnsigparams = $headersymsparaminfo{$sym};
+            for (my $i = 0; $i < scalar(@$fnsigparams); $i += 2) {
+                my $paramname = @$fnsigparams[$i];
+                my $paramdesc = $params{$paramname};
+                if (defined($paramdesc)) {
+                    push @final_params, $paramname;             # name
+                    push @final_params, @$fnsigparams[$i+1];    # C datatype
+                    push @final_params, $paramdesc;             # description
+                    $params_has_c_datatype = 1 if (defined(@$fnsigparams[$i+1]));
+                } else {
+                    print STDERR "WARNING: Symbol '$sym' is missing a '\\param $paramname' declaration!\n";
+                }
+            }
+        } else {
+            foreach (@paramsorder) {
+                my $paramname = $_;
+                my $paramdesc = $params{$paramname};
+                if (defined($paramdesc)) {
+                    push @final_params, $_;
+                    push @final_params, undef;
+                    push @final_params, $paramdesc;
+                }
+            }
+        }
+
         my $hfiletext = $wikiheaderfiletext;
         $hfiletext =~ s/\%fname\%/$headersymslocation{$sym}/g;
         $sections{'Header File'} = "$hfiletext\n";
@@ -1840,26 +1996,36 @@ if ($copy_direction == 1) {  # --copy-to-headers
         }
 
         # We can build the wiki table now that we have all the data.
-        if (scalar(@params) > 0) {
+        if (scalar(@final_params) > 0) {
             my $str = '';
             if ($wikitype eq 'mediawiki') {
-                while (scalar(@params) > 0) {
-                    my $arg = shift @params;
-                    my $desc = wikify($wikitype, shift @params);
+                while (scalar(@final_params) > 0) {
+                    my $arg = shift @final_params;
+                    my $c_datatype = shift @final_params;
+                    my $desc = wikify($wikitype, shift @final_params);
+                    $c_datatype = '' if not defined $c_datatype;
                     $str .= ($str eq '') ? "{|\n" : "|-\n";
+                    $str .= "|$c_datatype\n" if $params_has_c_datatype;
                     $str .= "|'''$arg'''\n";
                     $str .= "|$desc\n";
                 }
                 $str .= "|}\n";
             } elsif ($wikitype eq 'md') {
                 my $longest_arg = 0;
+                my $longest_c_datatype = 0;
                 my $longest_desc = 0;
                 my $which = 0;
-                foreach (@params) {
+                foreach (@final_params) {
                     if ($which == 0) {
-                        my $len = length($_) + 4;
+                        my $len = length($_);
                         $longest_arg = $len if ($len > $longest_arg);
                         $which = 1;
+                    } elsif ($which == 1) {
+                        if (defined($_)) {
+                            my $len = length(wikify($wikitype, $_));
+                            $longest_c_datatype = $len if ($len > $longest_c_datatype);
+                        }
+                        $which = 2;
                     } else {
                         my $len = length(wikify($wikitype, $_));
                         $longest_desc = $len if ($len > $longest_desc);
@@ -1868,13 +2034,22 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 }
 
                 # Markdown tables are sort of obnoxious.
-                $str .= '| ' . (' ' x ($longest_arg+4)) . ' | ' . (' ' x $longest_desc) . " |\n";
-                $str .= '| ' . ('-' x ($longest_arg+4)) . ' | ' . ('-' x $longest_desc) . " |\n";
+                my $c_datatype_cell;
+                $c_datatype_cell = ($longest_c_datatype > 0) ? ('| ' . (' ' x ($longest_c_datatype)) . ' ') : '';
+                $str .= $c_datatype_cell . '| ' . (' ' x ($longest_arg+4)) . ' | ' . (' ' x $longest_desc) . " |\n";
+                $c_datatype_cell = ($longest_c_datatype > 0) ? ('| ' . ('-' x ($longest_c_datatype)) . ' ') : '';
+                $str .= $c_datatype_cell . '| ' . ('-' x ($longest_arg+4)) . ' | ' . ('-' x $longest_desc) . " |\n";
 
-                while (@params) {
-                    my $arg = shift @params;
-                    my $desc = wikify($wikitype, shift @params);
-                    $str .= "| **$arg** " . (' ' x ($longest_arg - length($arg))) . "| $desc" . (' ' x ($longest_desc - length($desc))) . " |\n";
+                while (@final_params) {
+                    my $arg = shift @final_params;
+                    my $c_datatype = shift @final_params;
+                    $c_datatype_cell = '';
+                    if ($params_has_c_datatype) {
+                        $c_datatype = defined($c_datatype) ? wikify($wikitype, $c_datatype) : '';
+                        $c_datatype_cell = ($longest_c_datatype > 0) ? ("| $c_datatype " . (' ' x ($longest_c_datatype - length($c_datatype)))) : '';
+                    }
+                    my $desc = wikify($wikitype, shift @final_params);
+                    $str .= $c_datatype_cell . "| **$arg** " . (' ' x ($longest_arg - length($arg))) . "| $desc" . (' ' x ($longest_desc - length($desc))) . " |\n";
                 }
             } else {
                 die("Unexpected wikitype!");  # should have checked this elsewhere.
@@ -2311,16 +2486,27 @@ __EOF__
             if ($wikitype eq 'mediawiki') {
                 die("Unexpected data parsing MediaWiki table") if (shift @lines ne '{|');  # Dump the '{|' start
                 while (scalar(@lines) >= 3) {
+                    my $c_datatype = shift @lines;
                     my $name = shift @lines;
                     my $desc = shift @lines;
-                    my $terminator = shift @lines;  # the '|-' or '|}' line.
+                    my $terminator;  # the '|-' or '|}' line.
+
+                    if (($desc eq '|-') or ($desc eq '|}') or (not $desc =~ /\A\|/)) {  # we seem to be out of cells, which means there was no datatype column on this one.
+                        $terminator = $desc;
+                        $desc = $name;
+                        $name = $c_datatype;
+                        $c_datatype = '';
+                    } else {
+                        $terminator = shift @lines;
+                    }
+
                     last if ($terminator ne '|-') and ($terminator ne '|}');  # we seem to have run out of table.
                     $name =~ s/\A\|\s*//;
                     $name =~ s/\A\*\*(.*?)\*\*/$1/;
                     $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
                     $desc =~ s/\A\|\s*//;
                     $desc = dewikify($wikitype, $desc);
-                    #print STDERR "FN: $sym   NAME: $name   DESC: $desc TERM: $terminator\n";
+                    #print STDERR "SYM: $sym   CDATATYPE: $c_datatype  NAME: $name   DESC: $desc TERM: $terminator\n";
 
                     $str .= ".TP\n";
                     $str .= ".I $name\n";
@@ -2329,24 +2515,31 @@ __EOF__
             } elsif ($wikitype eq 'md') {
                 my $l;
                 $l = shift @lines;
-                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\|\s*\|\s*\Z/);
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A(\s*\|)?\s*\|\s*\|\s*\|\s*\Z/);
                 $l = shift @lines;
-                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\-*\s*\|\s*\-*\s*\|\s*\Z/);
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*(\|\s*\-*\s*)?\|\s*\-*\s*\|\s*\-*\s*\|\s*\Z/);
                 while (scalar(@lines) >= 1) {
                     $l = shift @lines;
-                    if ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
-                        my $name = $1;
-                        my $desc = $2;
-                        $name =~ s/\A\*\*(.*?)\*\*/$1/;
-                        $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
-                        $desc = dewikify($wikitype, $desc);
-
-                        $str .= ".TP\n";
-                        $str .= ".I $name\n";
-                        $str .= "$desc\n";
+                    my $name;
+                    my $desc;
+                    if ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
+                        # c datatype is $1, but we don't care about it here.
+                        $name = $2;
+                        $desc = $3;
+                    } elsif ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
+                        $name = $1;
+                        $desc = $2;
                     } else {
                         last;  # we seem to have run out of table.
                     }
+
+                    $name =~ s/\A\*\*(.*?)\*\*/$1/;
+                    $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
+                    $desc = dewikify($wikitype, $desc);
+
+                    $str .= ".TP\n";
+                    $str .= ".I $name\n";
+                    $str .= "$desc\n";
                 }
             } else {
                 die("write me");
@@ -2354,8 +2547,10 @@ __EOF__
         }
 
         if (defined $returns) {
+            $returns = dewikify($wikitype, $returns);
+            $returns =~ s/\A\(.*?\)\s*//;  # Chop datatype in parentheses off the front.
             $str .= ".SH RETURN VALUE\n";
-            $str .= dewikify($wikitype, $returns) . "\n";
+            $str .= "$returns\n";
         }
 
         if (defined $examples) {
@@ -2626,6 +2821,7 @@ __EOF__
             $str .= "    \\begin{tabular}{ | l | p{0.75\\textwidth} |}\n";
             $str .= "    \\hline\n";
 
+            # !!! FIXME: this table parsing has gotten complicated and is pasted three times in this file; move it to a subroutine!
             my @lines = split /\n/, $params;
             if ($wikitype eq 'mediawiki') {
                 die("Unexpected data parsing MediaWiki table") if (shift @lines ne '{|');  # Dump the '{|' start
@@ -2646,22 +2842,29 @@ __EOF__
             } elsif ($wikitype eq 'md') {
                 my $l;
                 $l = shift @lines;
-                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\|\s*\|\s*\Z/);
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A(\s*\|)?\s*\|\s*\|\s*\|\s*\Z/);
                 $l = shift @lines;
-                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*\|\s*\-*\s*\|\s*\-*\s*\|\s*\Z/);
+                die("Unexpected data parsing Markdown table") if (not $l =~ /\A\s*(\|\s*\-*\s*)?\|\s*\-*\s*\|\s*\-*\s*\|\s*\Z/);
                 while (scalar(@lines) >= 1) {
                     $l = shift @lines;
-                    if ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
-                        my $name = $1;
-                        my $desc = $2;
-                        $name =~ s/\A\*\*(.*?)\*\*/$1/;
-                        $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
-                        $name = escLaTeX($name);
-                        $desc = dewikify($wikitype, $desc);
-                        $str .= "    \\textbf{$name} & $desc \\\\ \\hline\n";
+                    my $name;
+                    my $desc;
+                    if ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
+                        # c datatype is $1, but we don't care about it here.
+                        $name = $2;
+                        $desc = $3;
+                    } elsif ($l =~ /\A\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*\Z/) {
+                        $name = $1;
+                        $desc = $2;
                     } else {
                         last;  # we seem to have run out of table.
                     }
+
+                    $name =~ s/\A\*\*(.*?)\*\*/$1/;
+                    $name =~ s/\A\'\'\'(.*?)\'\'\'/$1/;
+                    $name = escLaTeX($name);
+                    $desc = dewikify($wikitype, $desc);
+                    $str .= "    \\textbf{$name} & $desc \\\\ \\hline\n";
                 }
             } else {
                 die("write me");
@@ -2672,8 +2875,10 @@ __EOF__
         }
 
         if (defined $returns) {
+            $returns = dewikify($wikitype, $returns);
+            $returns =~ s/\A\(.*?\)\s*//;  # Chop datatype in parentheses off the front.
             $str .= "\\subsection{Return Value}\n\n";
-            $str .= dewikify($wikitype, $returns) . "\n";
+            $str .= "$returns\n";
         }
 
         if (defined $remarks) {
