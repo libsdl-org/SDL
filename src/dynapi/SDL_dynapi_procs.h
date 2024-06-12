@@ -950,7 +950,7 @@ SDL_DYNAPI_PROC(int,SDL_hid_read_timeout,(SDL_hid_device *a, unsigned char *b, s
 SDL_DYNAPI_PROC(int,SDL_hid_send_feature_report,(SDL_hid_device *a, const unsigned char *b, size_t c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_hid_set_nonblocking,(SDL_hid_device *a, int b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_hid_write,(SDL_hid_device *a, const unsigned char *b, size_t c),(a,b,c),return)
-SDL_DYNAPI_PROC(int,SDL_iOSSetAnimationCallback,(SDL_Window *a, int b, void (SDLCALL *c)(void*), void *d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_iOSSetAnimationCallback,(SDL_Window *a, int b, SDL_iOSAnimationCallback c, void *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_iOSSetEventPump,(SDL_bool a),(a),)
 SDL_DYNAPI_PROC(size_t,SDL_iconv,(SDL_iconv_t a, const char **b, size_t *c, char **d, size_t *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_iconv_close,(SDL_iconv_t a),(a),return)

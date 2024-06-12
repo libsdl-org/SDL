@@ -192,6 +192,22 @@ extern SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threa
 #ifdef SDL_PLATFORM_IOS
 
 /**
+ * The prototype for an Apple iOS animation callback.
+ *
+ * This datatype is only useful on Apple iOS.
+ *
+ * After passing a function pointer of this type to SDL_iOSSetAnimationCallback,
+ * the system will call that function pointer at a regular interval.
+ *
+ * \param userdata what was passed as `callbackParam` to SDL_iOSSetAnimationCallback as `callbackParam`.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_iOSSetAnimationCallback
+ */
+typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
+
+/**
  * Use this function to set the animation callback on Apple iOS.
  *
  * The function prototype for `callback` is:
@@ -228,7 +244,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threa
  *
  * \sa SDL_iOSSetEventPump
  */
-extern SDL_DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window * window, int interval, void (SDLCALL *callback)(void*), void *callbackParam);
+extern SDL_DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window * window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
 
 /**
  * Use this function to enable or disable the SDL event pump on Apple iOS.
