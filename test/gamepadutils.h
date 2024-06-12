@@ -52,17 +52,16 @@ enum
 /* Gamepad image display */
 
 extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
-extern void SetGamepadImagePosition(GamepadImage *ctx, int x, int y);
-extern void GetGamepadImageArea(GamepadImage *ctx, SDL_Rect *area);
-extern void GetGamepadTouchpadArea(GamepadImage *ctx, SDL_Rect *area);
+extern void SetGamepadImagePosition(GamepadImage *ctx, float x, float y);
+extern void GetGamepadImageArea(GamepadImage *ctx, SDL_FRect *area);
+extern void GetGamepadTouchpadArea(GamepadImage *ctx, SDL_FRect *area);
 extern void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front);
-extern void SetGamepadImageType(GamepadImage *ctx, SDL_GamepadType type);
 extern SDL_GamepadType GetGamepadImageType(GamepadImage *ctx);
 extern void SetGamepadImageDisplayMode(GamepadImage *ctx, ControllerDisplayMode display_mode);
-extern int GetGamepadImageButtonWidth(GamepadImage *ctx);
-extern int GetGamepadImageButtonHeight(GamepadImage *ctx);
-extern int GetGamepadImageAxisWidth(GamepadImage *ctx);
-extern int GetGamepadImageAxisHeight(GamepadImage *ctx);
+extern float GetGamepadImageButtonWidth(GamepadImage *ctx);
+extern float GetGamepadImageButtonHeight(GamepadImage *ctx);
+extern float GetGamepadImageAxisWidth(GamepadImage *ctx);
+extern float GetGamepadImageAxisHeight(GamepadImage *ctx);
 extern int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y);
 
 extern void ClearGamepadImage(GamepadImage *ctx);
@@ -78,7 +77,7 @@ typedef struct GamepadDisplay GamepadDisplay;
 
 extern GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer);
 extern void SetGamepadDisplayDisplayMode(GamepadDisplay *ctx, ControllerDisplayMode display_mode);
-extern void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_Rect *area);
+extern void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_FRect *area);
 extern int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float x, float y);
 extern void SetGamepadDisplayHighlight(GamepadDisplay *ctx, int element, SDL_bool pressed);
 extern void SetGamepadDisplaySelected(GamepadDisplay *ctx, int element);
@@ -95,7 +94,7 @@ enum
 typedef struct GamepadTypeDisplay GamepadTypeDisplay;
 
 extern GamepadTypeDisplay *CreateGamepadTypeDisplay(SDL_Renderer *renderer);
-extern void SetGamepadTypeDisplayArea(GamepadTypeDisplay *ctx, const SDL_Rect *area);
+extern void SetGamepadTypeDisplayArea(GamepadTypeDisplay *ctx, const SDL_FRect *area);
 extern int GetGamepadTypeDisplayAt(GamepadTypeDisplay *ctx, float x, float y);
 extern void SetGamepadTypeDisplayHighlight(GamepadTypeDisplay *ctx, int type, SDL_bool pressed);
 extern void SetGamepadTypeDisplaySelected(GamepadTypeDisplay *ctx, int type);
@@ -108,7 +107,7 @@ extern void DestroyGamepadTypeDisplay(GamepadTypeDisplay *ctx);
 typedef struct JoystickDisplay JoystickDisplay;
 
 extern JoystickDisplay *CreateJoystickDisplay(SDL_Renderer *renderer);
-extern void SetJoystickDisplayArea(JoystickDisplay *ctx, const SDL_Rect *area);
+extern void SetJoystickDisplayArea(JoystickDisplay *ctx, const SDL_FRect *area);
 extern char *GetJoystickDisplayElementAt(JoystickDisplay *ctx, SDL_Joystick *joystick, float x, float y);
 extern void SetJoystickDisplayHighlight(JoystickDisplay *ctx, const char *element, SDL_bool pressed);
 extern void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick);
@@ -119,11 +118,11 @@ extern void DestroyJoystickDisplay(JoystickDisplay *ctx);
 typedef struct GamepadButton GamepadButton;
 
 extern GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label);
-extern void SetGamepadButtonArea(GamepadButton *ctx, const SDL_Rect *area);
-extern void GetGamepadButtonArea(GamepadButton *ctx, SDL_Rect *area);
+extern void SetGamepadButtonArea(GamepadButton *ctx, const SDL_FRect *area);
+extern void GetGamepadButtonArea(GamepadButton *ctx, SDL_FRect *area);
 extern void SetGamepadButtonHighlight(GamepadButton *ctx, SDL_bool highlight, SDL_bool pressed);
-extern int GetGamepadButtonLabelWidth(GamepadButton *ctx);
-extern int GetGamepadButtonLabelHeight(GamepadButton *ctx);
+extern float GetGamepadButtonLabelWidth(GamepadButton *ctx);
+extern float GetGamepadButtonLabelHeight(GamepadButton *ctx);
 extern SDL_bool GamepadButtonContains(GamepadButton *ctx, float x, float y);
 extern void RenderGamepadButton(GamepadButton *ctx);
 extern void DestroyGamepadButton(GamepadButton *ctx);

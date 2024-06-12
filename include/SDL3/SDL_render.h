@@ -498,7 +498,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *ren
  * \sa SDL_CreateTextureFromSurface
  * \sa SDL_CreateTextureWithProperties
  * \sa SDL_DestroyTexture
- * \sa SDL_QueryTexture
+ * \sa SDL_GetTextureSize
  * \sa SDL_UpdateTexture
  */
 extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormatEnum format, int access, int w, int h);
@@ -512,8 +512,7 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *rendere
  * `SDL_TEXTUREACCESS_STATIC`.
  *
  * The pixel format of the created texture may be different from the pixel
- * format of the surface. Use SDL_QueryTexture() to query the pixel format of
- * the texture.
+ * format of the surface, and can be queried using the SDL_PROP_TEXTURE_FORMAT_NUMBER property.
  *
  * \param renderer the rendering context
  * \param surface the SDL_Surface structure containing pixel data used to fill
@@ -526,7 +525,6 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *rendere
  * \sa SDL_CreateTexture
  * \sa SDL_CreateTextureWithProperties
  * \sa SDL_DestroyTexture
- * \sa SDL_QueryTexture
  */
 extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
@@ -636,7 +634,7 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Render
  * \sa SDL_CreateTexture
  * \sa SDL_CreateTextureFromSurface
  * \sa SDL_DestroyTexture
- * \sa SDL_QueryTexture
+ * \sa SDL_GetTextureSize
  * \sa SDL_UpdateTexture
  */
 extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props);
@@ -670,8 +668,14 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Ren
  *
  * The following read-only properties are provided by SDL:
  *
- * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing
- *   the colorspace used by the texture
+ * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value
+ *   describing the texture colorspace.
+ * - `SDL_PROP_TEXTURE_FORMAT_NUMBER`: one of the enumerated values in
+ *   SDL_PixelFormatEnum.
+ * - `SDL_PROP_TEXTURE_ACCESS_NUMBER`: one of the enumerated values in
+ *   SDL_TextureAccess.
+ * - `SDL_PROP_TEXTURE_WIDTH_NUMBER`: the width of the texture in pixels.
+ * - `SDL_PROP_TEXTURE_HEIGHT_NUMBER`: the height of the texture in pixels.
  * - `SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point
  *   textures, this defines the value of 100% diffuse white, with higher
  *   values being displayed in the High Dynamic Range headroom. This defaults
@@ -760,6 +764,10 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Ren
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Texture *texture);
 
 #define SDL_PROP_TEXTURE_COLORSPACE_NUMBER                  "SDL.texture.colorspace"
+#define SDL_PROP_TEXTURE_FORMAT_NUMBER                      "SDL.texture.format"
+#define SDL_PROP_TEXTURE_ACCESS_NUMBER                      "SDL.texture.access"
+#define SDL_PROP_TEXTURE_WIDTH_NUMBER                       "SDL.texture.width"
+#define SDL_PROP_TEXTURE_HEIGHT_NUMBER                      "SDL.texture.height"
 #define SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT              "SDL.texture.SDR_white_point"
 #define SDL_PROP_TEXTURE_HDR_HEADROOM_FLOAT                 "SDL.texture.HDR_headroom"
 #define SDL_PROP_TEXTURE_D3D11_TEXTURE_POINTER              "SDL.texture.d3d11.texture"
@@ -796,16 +804,9 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Textur
 extern SDL_DECLSPEC SDL_Renderer *SDLCALL SDL_GetRendererFromTexture(SDL_Texture *texture);
 
 /**
- * Query the attributes of a texture.
+ * Get the size of a texture, as floating point values.
  *
  * \param texture the texture to query
- * \param format a pointer filled in with the raw format of the texture; the
- *               actual format may differ, but pixel transfers will use this
- *               format (one of the SDL_PixelFormatEnum values). This argument
- *               can be NULL if you don't need this information.
- * \param access a pointer filled in with the actual access to the texture
- *               (one of the SDL_TextureAccess values). This argument can be
- *               NULL if you don't need this information.
  * \param w a pointer filled in with the width of the texture in pixels. This
  *          argument can be NULL if you don't need this information.
  * \param h a pointer filled in with the height of the texture in pixels. This
@@ -815,7 +816,7 @@ extern SDL_DECLSPEC SDL_Renderer *SDLCALL SDL_GetRendererFromTexture(SDL_Texture
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_QueryTexture(SDL_Texture *texture, SDL_PixelFormatEnum *format, int *access, int *w, int *h);
+extern SDL_DECLSPEC int SDLCALL SDL_GetTextureSize(SDL_Texture *texture, float *w, float *h);
 
 /**
  * Set an additional color value multiplied into render copy operations.
@@ -1055,8 +1056,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture *texture, SD
 /**
  * Update the given texture rectangle with new pixel data.
  *
- * The pixel data must be in the pixel format of the texture. Use
- * SDL_QueryTexture() to query the pixel format of the texture.
+ * The pixel data must be in the pixel format of the texture, which can be queried using the SDL_PROP_TEXTURE_FORMAT_NUMBER property.
  *
  * This is a fairly slow function, intended for use with static textures that
  * do not change often.
