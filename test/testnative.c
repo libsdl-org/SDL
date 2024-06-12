@@ -63,14 +63,14 @@ quit(int rc)
 
 static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
-    int sprite_w, sprite_h;
+    float sprite_w, sprite_h;
     int i;
-    SDL_Rect viewport;
+    SDL_FRect viewport;
     SDL_FRect *position, *velocity;
 
     /* Query the sizes */
     SDL_GetRenderViewport(renderer, &viewport);
-    SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
+    SDL_GetTextureSize(sprite, &sprite_w, &sprite_h);
 
     /* Draw a gray background */
     SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     SDL_Renderer *renderer;
     SDL_Texture *sprite;
     int window_w, window_h;
-    int sprite_w, sprite_h;
+    float sprite_w, sprite_h;
     SDL_Event event;
 
     /* Initialize test framework */
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 
     /* Allocate memory for the sprite info */
     SDL_GetWindowSize(window, &window_w, &window_h);
-    SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
+    SDL_GetTextureSize(sprite, &sprite_w, &sprite_h);
     positions = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*positions));
     velocities = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*velocities));
     if (!positions || !velocities) {
@@ -190,10 +190,10 @@ int main(int argc, char *argv[])
     }
     srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(rand() % (window_w - sprite_w));
-        positions[i].y = (float)(rand() % (window_h - sprite_h));
-        positions[i].w = (float)sprite_w;
-        positions[i].h = (float)sprite_h;
+        positions[i].x = (float)(rand() % (window_w - (int)sprite_w));
+        positions[i].y = (float)(rand() % (window_h - (int)sprite_h));
+        positions[i].w = sprite_w;
+        positions[i].h = sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
         while (velocities[i].x == 0.f && velocities[i].y == 0.f) {

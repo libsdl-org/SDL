@@ -24,7 +24,7 @@
 
 static SDLTest_CommonState *state;
 
-static SDL_Rect viewport;
+static SDL_FRect viewport;
 static int done, j;
 static SDL_bool use_target = SDL_FALSE;
 #ifdef SDL_PLATFORM_EMSCRIPTEN
@@ -47,8 +47,8 @@ quit(int rc)
 static void DrawOnViewport(SDL_Renderer *renderer)
 {
     SDL_FRect rect;
-    SDL_Rect cliprect;
-    int w, h;
+    SDL_FRect cliprect;
+    float w, h;
 
     /* Set the viewport */
     SDL_SetRenderViewport(renderer, &viewport);
@@ -59,47 +59,47 @@ static void DrawOnViewport(SDL_Renderer *renderer)
 
     /* Test inside points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);
-    SDL_RenderPoint(renderer, (float)(viewport.h / 2 + 20), (float)(viewport.w / 2));
-    SDL_RenderPoint(renderer, (float)(viewport.h / 2 - 20), (float)(viewport.w / 2));
-    SDL_RenderPoint(renderer, (float)(viewport.h / 2), (float)(viewport.w / 2 - 20));
-    SDL_RenderPoint(renderer, (float)(viewport.h / 2), (float)(viewport.w / 2 + 20));
+    SDL_RenderPoint(renderer, (viewport.h / 2 + 20), (viewport.w / 2));
+    SDL_RenderPoint(renderer, (viewport.h / 2 - 20), (viewport.w / 2));
+    SDL_RenderPoint(renderer, (viewport.h / 2), (viewport.w / 2 - 20));
+    SDL_RenderPoint(renderer, (viewport.h / 2), (viewport.w / 2 + 20));
 
     /* Test horizontal and vertical lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);
-    SDL_RenderLine(renderer, 1.0f, 0.0f, (float)(viewport.w - 2), 0.0f);
-    SDL_RenderLine(renderer, 1.0f, (float)(viewport.h - 1), (float)(viewport.w - 2), (float)(viewport.h - 1));
-    SDL_RenderLine(renderer, 0.0f, 1.0f, 0.0f, (float)(viewport.h - 2));
-    SDL_RenderLine(renderer, (float)(viewport.w - 1), 1.0f, (float)(viewport.w - 1), (float)(viewport.h - 2));
+    SDL_RenderLine(renderer, 1.0f, 0.0f, (viewport.w - 2), 0.0f);
+    SDL_RenderLine(renderer, 1.0f, (viewport.h - 1), (viewport.w - 2), (viewport.h - 1));
+    SDL_RenderLine(renderer, 0.0f, 1.0f, 0.0f, (viewport.h - 2));
+    SDL_RenderLine(renderer, (viewport.w - 1), 1.0f, (viewport.w - 1), (viewport.h - 2));
 
     /* Test diagonal lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0xFF, 0xFF);
-    SDL_RenderLine(renderer, 0.0f, 0.0f, (float)(viewport.w - 1), (float)(viewport.h - 1));
-    SDL_RenderLine(renderer, (float)(viewport.w - 1), 0.0f, 0.0f, (float)(viewport.h - 1));
+    SDL_RenderLine(renderer, 0.0f, 0.0f, (viewport.w - 1), (viewport.h - 1));
+    SDL_RenderLine(renderer, (viewport.w - 1), 0.0f, 0.0f, (viewport.h - 1));
 
     /* Test outside points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);
-    SDL_RenderPoint(renderer, (float)(viewport.h / 2 + viewport.h), (float)(viewport.w / 2));
-    SDL_RenderPoint(renderer, (float)(viewport.h / 2 - viewport.h), (float)(viewport.w / 2));
-    SDL_RenderPoint(renderer, (float)(viewport.h / 2), (float)(viewport.w / 2 - viewport.w));
-    SDL_RenderPoint(renderer, (float)(viewport.h / 2), (float)(viewport.w / 2 + viewport.w));
+    SDL_RenderPoint(renderer, (viewport.h / 2 + viewport.h), (viewport.w / 2));
+    SDL_RenderPoint(renderer, (viewport.h / 2 - viewport.h), (viewport.w / 2));
+    SDL_RenderPoint(renderer, (viewport.h / 2), (viewport.w / 2 - viewport.w));
+    SDL_RenderPoint(renderer, (viewport.h / 2), (viewport.w / 2 + viewport.w));
 
     /* Add a box at the top */
     rect.w = 8.0f;
     rect.h = 8.0f;
-    rect.x = (float)((viewport.w - rect.w) / 2);
+    rect.x = ((viewport.w - rect.w) / 2);
     rect.y = 0.0f;
     SDL_RenderFillRect(renderer, &rect);
 
     /* Add a clip rect and fill it with the sprite */
-    SDL_QueryTexture(sprite, NULL, NULL, &w, &h);
+    SDL_GetTextureSize(sprite, &w, &h);
     cliprect.x = (viewport.w - w) / 2;
     cliprect.y = (viewport.h - h) / 2;
     cliprect.w = w;
     cliprect.h = h;
-    rect.x = (float)cliprect.x;
-    rect.y = (float)cliprect.y;
-    rect.w = (float)cliprect.w;
-    rect.h = (float)cliprect.h;
+    rect.x = cliprect.x;
+    rect.y = cliprect.y;
+    rect.w = cliprect.w;
+    rect.h = cliprect.h;
     SDL_SetRenderClipRect(renderer, &cliprect);
     SDL_RenderTexture(renderer, sprite, NULL, &rect);
     SDL_SetRenderClipRect(renderer, NULL);
@@ -127,7 +127,7 @@ static void loop(void)
     viewport.w = 100 + j * 50;
     viewport.h = 100 + j * 50;
     j = (j + 1) % 4;
-    SDL_Log("Current Viewport x=%i y=%i w=%i h=%i", viewport.x, viewport.y, viewport.w, viewport.h);
+    SDL_Log("Current Viewport x=%g y=%g w=%g h=%g", viewport.x, viewport.y, viewport.w, viewport.h);
 
     for (i = 0; i < state->num_windows; ++i) {
         if (state->windows[i] == NULL) {

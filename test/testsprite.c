@@ -79,7 +79,7 @@ static int LoadSprite(const char *file)
 static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
     int i;
-    SDL_Rect viewport;
+    SDL_FRect viewport;
     SDL_FRect temp;
     SDL_FRect *position, *velocity;
 
@@ -120,9 +120,9 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     /* Test points */
     SDL_SetRenderDrawColor(renderer, 0xFF, 0x00, 0x00, 0xFF);
     SDL_RenderPoint(renderer, 0.0f, 0.0f);
-    SDL_RenderPoint(renderer, (float)(viewport.w - 1), 0.0f);
-    SDL_RenderPoint(renderer, 0.0f, (float)(viewport.h - 1));
-    SDL_RenderPoint(renderer, (float)(viewport.w - 1), (float)(viewport.h - 1));
+    SDL_RenderPoint(renderer, (viewport.w - 1), 0.0f);
+    SDL_RenderPoint(renderer, 0.0f, (viewport.h - 1));
+    SDL_RenderPoint(renderer, (viewport.w - 1), (viewport.h - 1));
 
     /* Test horizontal and vertical lines */
     SDL_SetRenderDrawColor(renderer, 0x00, 0xFF, 0x00, 0xFF);

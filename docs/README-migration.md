@@ -1153,7 +1153,9 @@ SDL_CreateRenderer()'s flags parameter has been removed. See specific flags belo
 
 SDL_CreateWindowAndRenderer() now takes the window title as the first parameter.
 
-SDL_GetRendererInfo() has been removed, the name of a renderer can be retrieved using SDL_GetRendererName(), and the other information is available as properties on the renderer.
+SDL_GetRendererInfo() has been removed. The name of a renderer can be retrieved using SDL_GetRendererName(), and the other information is available as properties on the renderer.
+
+SDL_QueryTexture() has been removed. The properties of the texture can be queried using SDL_PROP_TEXTURE_FORMAT_NUMBER, SDL_PROP_TEXTURE_ACCESS_NUMBER, SDL_PROP_TEXTURE_WIDTH_NUMBER, and SDL_PROP_TEXTURE_HEIGHT_NUMBER. A function SDL_GetTextureSize() has been added to get the size of the texture as floating point values.
 
 Mouse and touch events are no longer filtered to change their coordinates, instead you
 can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
@@ -1162,6 +1164,15 @@ the rendering viewport.
 SDL_RenderWindowToLogical() and SDL_RenderLogicalToWindow() have been renamed SDL_RenderCoordinatesFromWindow() and SDL_RenderCoordinatesToWindow() and take floating point coordinates in both directions.
 
 The viewport, clipping state, and scale for render targets are now persistent and will remain set whenever they are active.
+
+The following functions have been changed to take floating point values to make them easier to use with the rest of the rendering API:
+* SDL_GetCurrentRenderOutputSize()
+* SDL_GetRenderClipRect()
+* SDL_GetRenderLogicalPresentation()
+* SDL_GetRenderOutputSize()
+* SDL_GetRenderViewport()
+* SDL_SetRenderLogicalPresentation()
+* SDL_SetRenderViewport()
 
 SDL_Vertex has been changed to use floating point colors, in the range of [0..1] for SDR content.
 

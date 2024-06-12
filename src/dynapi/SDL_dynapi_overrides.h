@@ -468,6 +468,7 @@
 #define SDL_GetTextureColorModFloat SDL_GetTextureColorModFloat_REAL
 #define SDL_GetTextureProperties SDL_GetTextureProperties_REAL
 #define SDL_GetTextureScaleMode SDL_GetTextureScaleMode_REAL
+#define SDL_GetTextureSize SDL_GetTextureSize_REAL
 #define SDL_GetThreadID SDL_GetThreadID_REAL
 #define SDL_GetThreadName SDL_GetThreadName_REAL
 #define SDL_GetTicks SDL_GetTicks_REAL
@@ -629,7 +630,6 @@
 #define SDL_PumpEvents SDL_PumpEvents_REAL
 #define SDL_PushEvent SDL_PushEvent_REAL
 #define SDL_PutAudioStreamData SDL_PutAudioStreamData_REAL
-#define SDL_QueryTexture SDL_QueryTexture_REAL
 #define SDL_Quit SDL_Quit_REAL
 #define SDL_QuitSubSystem SDL_QuitSubSystem_REAL
 #define SDL_RaiseWindow SDL_RaiseWindow_REAL

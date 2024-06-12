@@ -28,14 +28,14 @@
 #define DEBUG_AXIS_MAPPING
 #endif
 
-#define TITLE_HEIGHT 48
-#define PANEL_SPACING 25
-#define PANEL_WIDTH 250
-#define MINIMUM_BUTTON_WIDTH 96
-#define BUTTON_MARGIN 16
-#define BUTTON_PADDING 12
-#define GAMEPAD_WIDTH 512
-#define GAMEPAD_HEIGHT 560
+#define TITLE_HEIGHT 48.0f
+#define PANEL_SPACING 25.0f
+#define PANEL_WIDTH 250.0f
+#define MINIMUM_BUTTON_WIDTH 96.0f
+#define BUTTON_MARGIN 16.0f
+#define BUTTON_PADDING 12.0f
+#define GAMEPAD_WIDTH 512.0f
+#define GAMEPAD_HEIGHT 560.0f
 
 #define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
 #define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
@@ -1245,7 +1245,7 @@ static void VirtualGamepadMouseMotion(float x, float y)
     }
 
     if (virtual_touchpad_active) {
-        SDL_Rect touchpad;
+        SDL_FRect touchpad;
         GetGamepadTouchpadArea(image, &touchpad);
         virtual_touchpad_x = (x - touchpad.x) / touchpad.w;
         virtual_touchpad_y = (y - touchpad.y) / touchpad.h;
@@ -1258,10 +1258,10 @@ static void VirtualGamepadMouseDown(float x, float y)
     int element = GetGamepadImageElementAt(image, x, y);
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
-        SDL_Point point = { (int)x, (int)y };
-        SDL_Rect touchpad;
+        SDL_FPoint point = { x, y };
+        SDL_FRect touchpad;
         GetGamepadTouchpadArea(image, &touchpad);
-        if (SDL_PointInRect(&point, &touchpad)) {
+        if (SDL_PointInRectFloat(&point, &touchpad)) {
             virtual_touchpad_active = SDL_TRUE;
             virtual_touchpad_x = (x - touchpad.x) / touchpad.w;
             virtual_touchpad_y = (y - touchpad.y) / touchpad.h;
@@ -1328,8 +1328,8 @@ static void DrawGamepadWaiting(SDL_Renderer *renderer)
     const char *text = "Waiting for gamepad, press A to add a virtual controller";
     float x, y;
 
-    x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
-    y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2;
+    x = SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
+    y = TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2;
     SDLTest_DrawString(renderer, x, y, text);
 }
 
@@ -1372,7 +1372,7 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
 
     if (controller->joystick) {
         SDL_snprintf(text, sizeof(text), "(%" SDL_PRIu32 ")", SDL_GetJoystickInstanceID(controller->joystick));
-        x = (float)SCREEN_WIDTH - (FONT_CHARACTER_SIZE * SDL_strlen(text)) - 8.0f;
+        x = SCREEN_WIDTH - (FONT_CHARACTER_SIZE * SDL_strlen(text)) - 8.0f;
         y = 8.0f;
         SDLTest_DrawString(renderer, x, y, text);
     }
@@ -1385,8 +1385,8 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
 
     if (SDL_IsJoystickVirtual(controller->id)) {
         SDL_strlcpy(text, "Click on the gamepad image below to generate input", sizeof(text));
-        x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
-        y = (float)TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2 + FONT_LINE_HEIGHT + 2.0f;
+        x = SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
+        y = TITLE_HEIGHT / 2 - FONT_CHARACTER_SIZE / 2 + FONT_LINE_HEIGHT + 2.0f;
         SDLTest_DrawString(renderer, x, y, text);
     }
 
@@ -1399,23 +1399,23 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
         Uint64 steam_handle = SDL_GetGamepadSteamHandle(controller->gamepad);
         if (steam_handle) {
             SDL_snprintf(text, SDL_arraysize(text), "Steam: 0x%.16" SDL_PRIx64, steam_handle);
-            y = (float)SCREEN_HEIGHT - 2 * (8.0f + FONT_LINE_HEIGHT);
-            x = (float)SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
+            y = SCREEN_HEIGHT - 2 * (8.0f + FONT_LINE_HEIGHT);
+            x = SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
             SDLTest_DrawString(renderer, x, y, text);
         }
 
         SDL_snprintf(text, SDL_arraysize(text), "VID: 0x%.4x PID: 0x%.4x",
                      SDL_GetJoystickVendor(controller->joystick),
                      SDL_GetJoystickProduct(controller->joystick));
-        y = (float)SCREEN_HEIGHT - 8.0f - FONT_LINE_HEIGHT;
-        x = (float)SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
+        y = SCREEN_HEIGHT - 8.0f - FONT_LINE_HEIGHT;
+        x = SCREEN_WIDTH - 8.0f - (FONT_CHARACTER_SIZE * SDL_strlen(text));
         SDLTest_DrawString(renderer, x, y, text);
 
         serial = SDL_GetJoystickSerial(controller->joystick);
         if (serial && *serial) {
             SDL_snprintf(text, SDL_arraysize(text), "Serial: %s", serial);
-            x = (float)SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
-            y = (float)SCREEN_HEIGHT - 8.0f - FONT_LINE_HEIGHT;
+            x = SCREEN_WIDTH / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2;
+            y = SCREEN_HEIGHT - 8.0f - FONT_LINE_HEIGHT;
             SDLTest_DrawString(renderer, x, y, text);
         }
     }
@@ -1448,8 +1448,8 @@ static const char *GetButtonLabel(SDL_GamepadType type, SDL_GamepadButton button
 static void DrawBindingTips(SDL_Renderer *renderer)
 {
     const char *text;
-    SDL_Rect image_area, button_area;
-    int x, y;
+    SDL_FRect image_area, button_area;
+    float x, y;
 
     GetGamepadImageArea(image, &image_area);
     GetGamepadButtonArea(done_mapping_button, &button_area);
@@ -1460,7 +1460,7 @@ static void DrawBindingTips(SDL_Renderer *renderer)
     text = GetBindingInstruction();
 
     if (binding_element == SDL_GAMEPAD_ELEMENT_INVALID) {
-        SDLTest_DrawString(renderer, (float)x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, (float)y, text);
+        SDLTest_DrawString(renderer, x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, y, text);
     } else {
         Uint8 r, g, b, a;
         SDL_FRect rect;
@@ -1475,14 +1475,14 @@ static void DrawBindingTips(SDL_Renderer *renderer)
 
         rect.w = 2.0f + (FONT_CHARACTER_SIZE * SDL_strlen(text)) + 2.0f;
         rect.h = 2.0f + FONT_CHARACTER_SIZE + 2.0f;
-        rect.x = (float)x - rect.w / 2;
-        rect.y = (float)y - 2.0f;
+        rect.x = x - rect.w / 2;
+        rect.y = y - 2.0f;
 
         SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
         SDL_SetRenderDrawColor(renderer, SELECTED_COLOR);
         SDL_RenderFillRect(renderer, &rect);
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
-        SDLTest_DrawString(renderer, (float)x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, (float)y, text);
+        SDLTest_DrawString(renderer, x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, y, text);
 
         y += (FONT_CHARACTER_SIZE + BUTTON_MARGIN);
 
@@ -1506,7 +1506,7 @@ static void DrawBindingTips(SDL_Renderer *renderer)
                 text = "(press SPACE to delete and ESC to cancel)";
             }
         }
-        SDLTest_DrawString(renderer, (float)x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, (float)y, text);
+        SDLTest_DrawString(renderer, x - (FONT_CHARACTER_SIZE * SDL_strlen(text)) / 2, y, text);
     }
 }
 
@@ -1988,7 +1988,7 @@ int main(int argc, char *argv[])
     int i;
     float content_scale;
     int screen_width, screen_height;
-    SDL_Rect area;
+    SDL_FRect area;
     int gamepad_index = -1;
     SDLTest_CommonState *state;
 
@@ -2090,15 +2090,15 @@ int main(int argc, char *argv[])
                                      SDL_SCALEMODE_LINEAR);
 
 
-    title_area.w = (float)GAMEPAD_WIDTH;
-    title_area.h = (float)FONT_CHARACTER_SIZE + 2 * BUTTON_MARGIN;
-    title_area.x = (float)PANEL_WIDTH + PANEL_SPACING;
-    title_area.y = (float)TITLE_HEIGHT / 2 - title_area.h / 2;
+    title_area.w = GAMEPAD_WIDTH;
+    title_area.h = FONT_CHARACTER_SIZE + 2 * BUTTON_MARGIN;
+    title_area.x = PANEL_WIDTH + PANEL_SPACING;
+    title_area.y = TITLE_HEIGHT / 2 - title_area.h / 2;
 
-    type_area.w = (float)PANEL_WIDTH - 2 * BUTTON_MARGIN;
-    type_area.h = (float)FONT_CHARACTER_SIZE + 2 * BUTTON_MARGIN;
-    type_area.x = (float)BUTTON_MARGIN;
-    type_area.y = (float)TITLE_HEIGHT / 2 - type_area.h / 2;
+    type_area.w = PANEL_WIDTH - 2 * BUTTON_MARGIN;
+    type_area.h = FONT_CHARACTER_SIZE + 2 * BUTTON_MARGIN;
+    type_area.x = BUTTON_MARGIN;
+    type_area.y = TITLE_HEIGHT / 2 - type_area.h / 2;
 
     image = CreateGamepadImage(screen);
     if (!image) {

@@ -2509,8 +2509,9 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     float textY = 0.0f;
     const int lineHeight = 10;
     int x, y, w, h;
-    float fx, fy;
+    float fx, fy, fw, fh;
     SDL_Rect rect;
+    SDL_FRect frect;
     const SDL_DisplayMode *mode;
     float scaleX, scaleY;
     SDL_MouseButtonFlags flags;
@@ -2544,21 +2545,21 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
-    if (0 == SDL_GetRenderOutputSize(renderer, &w, &h)) {
-        (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderOutputSize: %dx%d", w, h);
+    if (0 == SDL_GetRenderOutputSize(renderer, &fw, &fh)) {
+        (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderOutputSize: %gx%g", fw, fh);
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
-    if (0 == SDL_GetCurrentRenderOutputSize(renderer, &w, &h)) {
-        (void)SDL_snprintf(text, sizeof(text), "SDL_GetCurrentRenderOutputSize: %dx%d", w, h);
+    if (0 == SDL_GetCurrentRenderOutputSize(renderer, &fw, &fh)) {
+        (void)SDL_snprintf(text, sizeof(text), "SDL_GetCurrentRenderOutputSize: %gx%g", fw, fh);
         SDLTest_DrawString(renderer, 0.0f, textY, text);
         textY += lineHeight;
     }
 
-    SDL_GetRenderViewport(renderer, &rect);
-    (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderViewport: %d,%d, %dx%d",
-                       rect.x, rect.y, rect.w, rect.h);
+    SDL_GetRenderViewport(renderer, &frect);
+    (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderViewport: %g,%g, %gx%g",
+                       frect.x, frect.y, frect.w, frect.h);
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
@@ -2568,8 +2569,8 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
-    SDL_GetRenderLogicalPresentation(renderer, &w, &h, &logical_presentation, &logical_scale_mode);
-    (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderLogicalPresentation: %dx%d ", w, h);
+    SDL_GetRenderLogicalPresentation(renderer, &fw, &fh, &logical_presentation, &logical_scale_mode);
+    (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderLogicalPresentation: %gx%g ", fw, fh);
     SDLTest_PrintLogicalPresentation(text, sizeof(text), logical_presentation);
     SDL_snprintfcat(text, sizeof(text), ", ");
     SDLTest_PrintScaleMode(text, sizeof(text), logical_scale_mode);

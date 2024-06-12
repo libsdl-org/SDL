@@ -155,7 +155,7 @@ static int render_testPrimitives(void *arg)
                 checkFailCount1++;
             }
 
-            ret = SDL_RenderPoint(renderer, (float)x, (float)y);
+            ret = SDL_RenderPoint(renderer, x, y);
             if (ret != 0) {
                 checkFailCount2++;
             }
@@ -166,7 +166,7 @@ static int render_testPrimitives(void *arg)
 
     /* Draw some lines. */
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
-    CHECK_FUNC(SDL_RenderLine, (renderer, 0.0f, 30.0f, (float)TESTRENDER_SCREEN_W, 30.0f))
+    CHECK_FUNC(SDL_RenderLine, (renderer, 0.0f, 30.0f, TESTRENDER_SCREEN_W, 30.0f))
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 55, 55, 5, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderLine, (renderer, 40.0f, 30.0f, 40.0f, 60.0f))
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 5, 105, 105, SDL_ALPHA_OPAQUE))
@@ -258,7 +258,7 @@ static int render_testPrimitivesBlend(void *arg)
             checkFailCount2++;
         }
 
-        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, (float)i, 59.0f);
+        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, i, 59.0f);
         if (ret != 0) {
             checkFailCount3++;
         }
@@ -282,7 +282,7 @@ static int render_testPrimitivesBlend(void *arg)
             checkFailCount2++;
         }
 
-        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, 79.0f, (float)i);
+        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, 79.0f, i);
         if (ret != 0) {
             checkFailCount3++;
         }
@@ -308,7 +308,7 @@ static int render_testPrimitivesBlend(void *arg)
                 checkFailCount2++;
             }
 
-            ret = SDL_RenderPoint(renderer, (float)i, (float)j);
+            ret = SDL_RenderPoint(renderer, i, j);
             if (ret != 0) {
                 checkFailCount3++;
             }
@@ -342,7 +342,7 @@ static int render_testPrimitivesBlend(void *arg)
  */
 static int render_testPrimitivesWithViewport(void *arg)
 {
-    SDL_Rect viewport;
+    SDL_FRect viewport;
     SDL_Surface *surface;
 
     /* Clear surface. */
@@ -388,9 +388,8 @@ static int render_testBlit(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    SDL_PixelFormatEnum tformat;
-    int taccess, tw, th;
-    int i, j, ni, nj;
+    float tw, th;
+    float i, j, ni, nj;
     int checkFailCount1;
 
     /* Clear surface. */
@@ -407,9 +406,9 @@ static int render_testBlit(void *arg)
     }
 
     /* Constant values. */
-    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
-    rect.w = (float)tw;
-    rect.h = (float)th;
+    CHECK_FUNC(SDL_GetTextureSize, (tface, &tw, &th))
+    rect.w = tw;
+    rect.h = th;
     ni = TESTRENDER_SCREEN_W - tw;
     nj = TESTRENDER_SCREEN_H - th;
 
@@ -418,8 +417,8 @@ static int render_testBlit(void *arg)
     for (j = 0; j <= nj; j += 4) {
         for (i = 0; i <= ni; i += 4) {
             /* Blitting. */
-            rect.x = (float)i;
-            rect.y = (float)j;
+            rect.x = i;
+            rect.y = j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount1++;
@@ -456,8 +455,7 @@ static int render_testBlitColor(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    SDL_PixelFormatEnum tformat;
-    int taccess, tw, th;
+    float tw, th;
     int i, j, ni, nj;
     int checkFailCount1;
     int checkFailCount2;
@@ -473,11 +471,11 @@ static int render_testBlitColor(void *arg)
     }
 
     /* Constant values. */
-    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
-    rect.w = (float)tw;
-    rect.h = (float)th;
-    ni = TESTRENDER_SCREEN_W - tw;
-    nj = TESTRENDER_SCREEN_H - th;
+    CHECK_FUNC(SDL_GetTextureSize, (tface, &tw, &th))
+    rect.w = tw;
+    rect.h = th;
+    ni = TESTRENDER_SCREEN_W - (int)tw;
+    nj = TESTRENDER_SCREEN_H - (int)th;
 
     /* Test blitting with color mod. */
     checkFailCount1 = 0;
@@ -491,8 +489,8 @@ static int render_testBlitColor(void *arg)
             }
 
             /* Blitting. */
-            rect.x = (float)i;
-            rect.y = (float)j;
+            rect.x = i;
+            rect.y = j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount2++;
@@ -530,9 +528,8 @@ static int render_testBlitAlpha(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    SDL_PixelFormatEnum tformat;
-    int taccess, tw, th;
-    int i, j, ni, nj;
+    float tw, th;
+    float i, j, ni, nj;
     int checkFailCount1;
     int checkFailCount2;
 
@@ -550,9 +547,9 @@ static int render_testBlitAlpha(void *arg)
     }
 
     /* Constant values. */
-    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
-    rect.w = (float)tw;
-    rect.h = (float)th;
+    CHECK_FUNC(SDL_GetTextureSize, (tface, &tw, &th))
+    rect.w = tw;
+    rect.h = th;
     ni = TESTRENDER_SCREEN_W - tw;
     nj = TESTRENDER_SCREEN_H - th;
 
@@ -568,8 +565,8 @@ static int render_testBlitAlpha(void *arg)
             }
 
             /* Blitting. */
-            rect.x = (float)i;
-            rect.y = (float)j;
+            rect.x = i;
+            rect.y = j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount2++;
@@ -604,9 +601,8 @@ static void
 testBlitBlendMode(SDL_Texture *tface, int mode)
 {
     int ret;
-    SDL_PixelFormatEnum tformat;
-    int taccess, tw, th;
-    int i, j, ni, nj;
+    float tw, th;
+    float i, j, ni, nj;
     SDL_FRect rect;
     int checkFailCount1;
     int checkFailCount2;
@@ -615,9 +611,9 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
     clearScreen();
 
     /* Constant values. */
-    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
-    rect.w = (float)tw;
-    rect.h = (float)th;
+    CHECK_FUNC(SDL_GetTextureSize, (tface, &tw, &th))
+    rect.w = tw;
+    rect.h = th;
     ni = TESTRENDER_SCREEN_W - tw;
     nj = TESTRENDER_SCREEN_H - th;
 
@@ -633,8 +629,8 @@ testBlitBlendMode(SDL_Texture *tface, int mode)
             }
 
             /* Blitting. */
-            rect.x = (float)i;
-            rect.y = (float)j;
+            rect.x = i;
+            rect.y = j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount2++;
@@ -659,8 +655,7 @@ static int render_testBlitBlend(void *arg)
     SDL_FRect rect;
     SDL_Texture *tface;
     SDL_Surface *referenceSurface = NULL;
-    SDL_PixelFormatEnum tformat;
-    int taccess, tw, th;
+    float tw, th;
     int i, j, ni, nj;
     int mode;
     int checkFailCount1;
@@ -680,11 +675,11 @@ static int render_testBlitBlend(void *arg)
     }
 
     /* Constant values. */
-    CHECK_FUNC(SDL_QueryTexture, (tface, &tformat, &taccess, &tw, &th))
-    rect.w = (float)tw;
-    rect.h = (float)th;
-    ni = TESTRENDER_SCREEN_W - tw;
-    nj = TESTRENDER_SCREEN_H - th;
+    CHECK_FUNC(SDL_GetTextureSize, (tface, &tw, &th))
+    rect.w = tw;
+    rect.h = th;
+    ni = TESTRENDER_SCREEN_W - (int)tw;
+    nj = TESTRENDER_SCREEN_H - (int)th;
 
     /* Set alpha mod. */
     CHECK_FUNC(SDL_SetTextureAlphaMod, (tface, 100))
@@ -757,7 +752,7 @@ static int render_testBlitBlend(void *arg)
             }
 
             /* Crazy blending mode magic. */
-            mode = (i / 4 * j / 4) % 4;
+            mode = (int)(i / 4 * j / 4) % 4;
             if (mode == 0) {
                 mode = SDL_BLENDMODE_NONE;
             } else if (mode == 1) {
@@ -773,8 +768,8 @@ static int render_testBlitBlend(void *arg)
             }
 
             /* Blitting. */
-            rect.x = (float)i;
-            rect.y = (float)j;
+            rect.x = i;
+            rect.y = j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount4++;
@@ -808,7 +803,7 @@ static int render_testBlitBlend(void *arg)
 static int render_testViewport(void *arg)
 {
     SDL_Surface *referenceSurface;
-    SDL_Rect viewport;
+    SDL_FRect viewport;
 
     viewport.x = TESTRENDER_SCREEN_W / 3;
     viewport.y = TESTRENDER_SCREEN_H / 3;
@@ -818,7 +813,12 @@ static int render_testViewport(void *arg)
     /* Create expected result */
     referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
     CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
-    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &viewport, RENDER_COLOR_GREEN))
+    SDL_Rect v;
+    v.x = (int)viewport.x;
+    v.y = (int)viewport.y;
+    v.w = (int)viewport.w;
+    v.h = (int)viewport.h;
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &v, RENDER_COLOR_GREEN))
 
     /* Clear surface. */
     clearScreen();
@@ -865,7 +865,7 @@ static int render_testViewport(void *arg)
 static int render_testClipRect(void *arg)
 {
     SDL_Surface *referenceSurface;
-    SDL_Rect cliprect;
+    SDL_FRect cliprect;
 
     cliprect.x = TESTRENDER_SCREEN_W / 3;
     cliprect.y = TESTRENDER_SCREEN_H / 3;
@@ -875,7 +875,12 @@ static int render_testClipRect(void *arg)
     /* Create expected result */
     referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
     CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
-    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &cliprect, RENDER_COLOR_GREEN))
+    SDL_Rect c;
+    c.x = (int)cliprect.x;
+    c.y = (int)cliprect.y;
+    c.w = (int)cliprect.w;
+    c.h = (int)cliprect.h;
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &c, RENDER_COLOR_GREEN))
 
     /* Clear surface. */
     clearScreen();
@@ -922,9 +927,9 @@ static int render_testClipRect(void *arg)
 static int render_testLogicalSize(void *arg)
 {
     SDL_Surface *referenceSurface;
-    SDL_Rect viewport;
+    SDL_FRect viewport;
     SDL_FRect rect;
-    int w, h;
+    float w, h;
     const int factor = 2;
 
     viewport.x = ((TESTRENDER_SCREEN_W / 4) / factor) * factor;
@@ -935,7 +940,12 @@ static int render_testLogicalSize(void *arg)
     /* Create expected result */
     referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
     CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
-    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &viewport, RENDER_COLOR_GREEN))
+    SDL_Rect v;
+    v.x = (int)viewport.x;
+    v.y = (int)viewport.y;
+    v.w = (int)viewport.w;
+    v.h = (int)viewport.h;
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &v, RENDER_COLOR_GREEN))
 
     /* Clear surface. */
     clearScreen();
@@ -946,10 +956,10 @@ static int render_testLogicalSize(void *arg)
                                            SDL_LOGICAL_PRESENTATION_LETTERBOX,
                                            SDL_SCALEMODE_NEAREST))
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
-    rect.x = (float)viewport.x / factor;
-    rect.y = (float)viewport.y / factor;
-    rect.w = (float)viewport.w / factor;
-    rect.h = (float)viewport.h / factor;
+    rect.x = viewport.x / factor;
+    rect.y = viewport.y / factor;
+    rect.w = viewport.w / factor;
+    rect.h = viewport.h / factor;
     CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
@@ -992,7 +1002,11 @@ static int render_testLogicalSize(void *arg)
 
     /* Create expected result */
     CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
-    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &viewport, RENDER_COLOR_GREEN))
+    v.x = (int)viewport.x;
+    v.y = (int)viewport.y;
+    v.w = (int)viewport.w;
+    v.h = (int)viewport.h;
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &v, RENDER_COLOR_GREEN))
 
     /* Clear surface. */
     clearScreen();

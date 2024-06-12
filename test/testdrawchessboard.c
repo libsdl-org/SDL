@@ -32,7 +32,7 @@ static void DrawChessBoard(void)
 {
     int row = 0, column = 0, x = 0;
     SDL_FRect rect;
-    SDL_Rect darea;
+    SDL_FRect darea;
 
     /* Get the Size of drawing surface */
     SDL_GetRenderViewport(renderer, &darea);
@@ -43,10 +43,10 @@ static void DrawChessBoard(void)
         for (; column < 4 + (row % 2); column++) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
 
-            rect.w = (float)(darea.w / 8);
-            rect.h = (float)(darea.h / 8);
-            rect.x = (float)(x * rect.w);
-            rect.y = (float)(row * rect.h);
+            rect.w = (darea.w / 8);
+            rect.h = (darea.h / 8);
+            rect.x = (x * rect.w);
+            rect.y = (row * rect.h);
             x = x + 2;
             SDL_RenderFillRect(renderer, &rect);
 

@@ -459,7 +459,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRendererProperties(SDL_Rende
  *
  * \sa SDL_GetCurrentRenderOutputSize
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h);
+extern SDL_DECLSPEC int SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer, float *w, float *h);
 
 /**
  * Get the current output size in pixels of a rendering context.
@@ -479,7 +479,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer, 
  *
  * \sa SDL_GetRenderOutputSize
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *renderer, int *w, int *h);
+extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *renderer, float *w, float *h);
 
 /**
  * Create a texture for a rendering context.
@@ -498,7 +498,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *ren
  * \sa SDL_CreateTextureFromSurface
  * \sa SDL_CreateTextureWithProperties
  * \sa SDL_DestroyTexture
- * \sa SDL_QueryTexture
+ * \sa SDL_GetTextureSize
  * \sa SDL_UpdateTexture
  */
 extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormatEnum format, int access, int w, int h);
@@ -512,8 +512,7 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *rendere
  * `SDL_TEXTUREACCESS_STATIC`.
  *
  * The pixel format of the created texture may be different from the pixel
- * format of the surface. Use SDL_QueryTexture() to query the pixel format of
- * the texture.
+ * format of the surface, and can be queried using the SDL_PROP_TEXTURE_FORMAT_NUMBER property.
  *
  * \param renderer the rendering context
  * \param surface the SDL_Surface structure containing pixel data used to fill
@@ -526,7 +525,6 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *rendere
  * \sa SDL_CreateTexture
  * \sa SDL_CreateTextureWithProperties
  * \sa SDL_DestroyTexture
- * \sa SDL_QueryTexture
  */
 extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
@@ -636,7 +634,7 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Render
  * \sa SDL_CreateTexture
  * \sa SDL_CreateTextureFromSurface
  * \sa SDL_DestroyTexture
- * \sa SDL_QueryTexture
+ * \sa SDL_GetTextureSize
  * \sa SDL_UpdateTexture
  */
 extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props);
@@ -670,8 +668,14 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Ren
  *
  * The following read-only properties are provided by SDL:
  *
- * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing
- *   the colorspace used by the texture
+ * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value
+ *   describing the texture colorspace.
+ * - `SDL_PROP_TEXTURE_FORMAT_NUMBER`: one of the enumerated values in
+ *   SDL_PixelFormatEnum.
+ * - `SDL_PROP_TEXTURE_ACCESS_NUMBER`: one of the enumerated values in
+ *   SDL_TextureAccess.
+ * - `SDL_PROP_TEXTURE_WIDTH_NUMBER`: the width of the texture in pixels.
+ * - `SDL_PROP_TEXTURE_HEIGHT_NUMBER`: the height of the texture in pixels.
  * - `SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point
  *   textures, this defines the value of 100% diffuse white, with higher
  *   values being displayed in the High Dynamic Range headroom. This defaults
@@ -760,6 +764,10 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Ren
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Texture *texture);
 
 #define SDL_PROP_TEXTURE_COLORSPACE_NUMBER                  "SDL.texture.colorspace"
+#define SDL_PROP_TEXTURE_FORMAT_NUMBER                      "SDL.texture.format"
+#define SDL_PROP_TEXTURE_ACCESS_NUMBER                      "SDL.texture.access"
+#define SDL_PROP_TEXTURE_WIDTH_NUMBER                       "SDL.texture.width"
+#define SDL_PROP_TEXTURE_HEIGHT_NUMBER                      "SDL.texture.height"
 #define SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT              "SDL.texture.SDR_white_point"
 #define SDL_PROP_TEXTURE_HDR_HEADROOM_FLOAT                 "SDL.texture.HDR_headroom"
 #define SDL_PROP_TEXTURE_D3D11_TEXTURE_POINTER              "SDL.texture.d3d11.texture"
@@ -796,16 +804,9 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Textur
 extern SDL_DECLSPEC SDL_Renderer *SDLCALL SDL_GetRendererFromTexture(SDL_Texture *texture);
 
 /**
- * Query the attributes of a texture.
+ * Get the size of a texture, as floating point values.
  *
  * \param texture the texture to query
- * \param format a pointer filled in with the raw format of the texture; the
- *               actual format may differ, but pixel transfers will use this
- *               format (one of the SDL_PixelFormatEnum values). This argument
- *               can be NULL if you don't need this information.
- * \param access a pointer filled in with the actual access to the texture
- *               (one of the SDL_TextureAccess values). This argument can be
- *               NULL if you don't need this information.
  * \param w a pointer filled in with the width of the texture in pixels. This
  *          argument can be NULL if you don't need this information.
  * \param h a pointer filled in with the height of the texture in pixels. This
@@ -815,7 +816,7 @@ extern SDL_DECLSPEC SDL_Renderer *SDLCALL SDL_GetRendererFromTexture(SDL_Texture
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_QueryTexture(SDL_Texture *texture, SDL_PixelFormatEnum *format, int *access, int *w, int *h);
+extern SDL_DECLSPEC int SDLCALL SDL_GetTextureSize(SDL_Texture *texture, float *w, float *h);
 
 /**
  * Set an additional color value multiplied into render copy operations.
@@ -1055,8 +1056,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture *texture, SD
 /**
  * Update the given texture rectangle with new pixel data.
  *
- * The pixel data must be in the pixel format of the texture. Use
- * SDL_QueryTexture() to query the pixel format of the texture.
+ * The pixel data must be in the pixel format of the texture, which can be queried using the SDL_PROP_TEXTURE_FORMAT_NUMBER property.
  *
  * This is a fairly slow function, intended for use with static textures that
  * do not change often.
@@ -1296,7 +1296,7 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_GetRenderTarget(SDL_Renderer *rende
  * \sa SDL_ConvertEventToRenderCoordinates
  * \sa SDL_GetRenderLogicalPresentation
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_RendererLogicalPresentation mode, SDL_ScaleMode scale_mode);
+extern SDL_DECLSPEC int SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, float w, float h, SDL_RendererLogicalPresentation mode, SDL_ScaleMode scale_mode);
 
 /**
  * Get device independent resolution and presentation mode for rendering.
@@ -1316,7 +1316,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *r
  *
  * \sa SDL_SetRenderLogicalPresentation
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode, SDL_ScaleMode *scale_mode);
+extern SDL_DECLSPEC int SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, float *w, float *h, SDL_RendererLogicalPresentation *mode, SDL_ScaleMode *scale_mode);
 
 /**
  * Get a point in render coordinates when given a point in window coordinates.
@@ -1379,7 +1379,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Renderer
  * Set the drawing area for rendering on the current target.
  *
  * \param renderer the rendering context
- * \param rect the SDL_Rect structure representing the drawing area, or NULL
+ * \param rect the SDL_FRect structure representing the drawing area, or NULL
  *             to set the viewport to the entire target
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1389,13 +1389,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Renderer
  * \sa SDL_GetRenderViewport
  * \sa SDL_RenderViewportSet
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_FRect *rect);
 
 /**
  * Get the drawing area for the current target.
  *
  * \param renderer the rendering context
- * \param rect an SDL_Rect structure filled in with the current drawing area
+ * \param rect an SDL_FRect structure filled in with the current drawing area
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1404,7 +1404,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, co
  * \sa SDL_RenderViewportSet
  * \sa SDL_SetRenderViewport
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_FRect *rect);
 
 /**
  * Return whether an explicit rectangle was set as the viewport.
@@ -1428,7 +1428,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RenderViewportSet(SDL_Renderer *rendere
  * Set the clip rectangle for rendering on the specified target.
  *
  * \param renderer the rendering context
- * \param rect an SDL_Rect structure representing the clip area, relative to
+ * \param rect an SDL_FRect structure representing the clip area, relative to
  *             the viewport, or NULL to disable clipping
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1438,13 +1438,13 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RenderViewportSet(SDL_Renderer *rendere
  * \sa SDL_GetRenderClipRect
  * \sa SDL_RenderClipEnabled
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_FRect *rect);
 
 /**
  * Get the clip rectangle for the current target.
  *
  * \param renderer the rendering context
- * \param rect an SDL_Rect structure filled in with the current clipping area
+ * \param rect an SDL_FRect structure filled in with the current clipping area
  *             or an empty rectangle if clipping is disabled
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1454,7 +1454,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, co
  * \sa SDL_RenderClipEnabled
  * \sa SDL_SetRenderClipRect
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_FRect *rect);
 
 /**
  * Get whether clipping is enabled on the given renderer.
