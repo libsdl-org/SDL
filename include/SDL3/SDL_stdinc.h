@@ -1428,8 +1428,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_atanf(float x);
  * the same input on different machines or operating systems, or if SDL is
  * updated.
  *
- * \param x floating point value of the denominator (x coordinate).
  * \param y floating point value of the numerator (y coordinate)
+ * \param x floating point value of the denominator (x coordinate).
  * \returns arc tangent of of `y / x` in radians, or, if `x = 0`, either
  *          `-Pi/2`, `0`, or `Pi/2`, depending on the value of `y`.
  *
@@ -1464,8 +1464,8 @@ extern SDL_DECLSPEC double SDLCALL SDL_atan2(double y, double x);
  * the same input on different machines or operating systems, or if SDL is
  * updated.
  *
- * \param x floating point value of the denominator (x coordinate).
  * \param y floating point value of the numerator (y coordinate)
+ * \param x floating point value of the denominator (x coordinate).
  * \returns arc tangent of of `y / x` in radians, or, if `x = 0`, either
  *          `-Pi/2`, `0`, or `Pi/2`, depending on the value of `y`.
  *
