@@ -27,6 +27,7 @@
 #include "SDL_x11settings.h"
 
 #define SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR "Gdk/WindowScalingFactor"
+#define SDL_XSETTINGS_XFT_DPI "Xft/DPI"
 
 static void X11_XsettingsNotify(const char *name, XSettingsAction action, XSettingsSetting *setting, void *data)
 {
@@ -34,7 +35,8 @@ static void X11_XsettingsNotify(const char *name, XSettingsAction action, XSetti
     float scale_factor = 1.0;
     int i;
 
-    if (SDL_strcmp(name, SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR) != 0) {
+    if (SDL_strcmp(name, SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR) != 0 ||
+        SDL_strcmp(name, SDL_XSETTINGS_XFT_DPI) != 0) {
         return;
     }
 
@@ -47,6 +49,9 @@ static void X11_XsettingsNotify(const char *name, XSettingsAction action, XSetti
         SDL_FALLTHROUGH;
     case XSETTINGS_ACTION_CHANGED:
         scale_factor = setting->data.v_int;
+        if (SDL_strcmp(name, SDL_XSETTINGS_XFT_DPI) == 0) {
+            scale_factor = scale_factor / 1024.0f / 96.0f;
+        }
         break;
     case XSETTINGS_ACTION_DELETED:
         scale_factor = 1.0;
