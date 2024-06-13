@@ -762,6 +762,14 @@ static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
         #if 0
         input_mode = k_eSwitchInputReportIDs_FullControllerState;
         #endif
+
+        /* However, Joy-Con controllers switch their thumbsticks into D-pad mode in simple mode,
+         * so let's enable full controller state for them.
+         */
+        if (ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT ||
+            ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
+            input_mode = k_eSwitchInputReportIDs_FullControllerState;
+        }
     }
     return input_mode;
 }
