@@ -855,7 +855,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_isgraph(int x);
  * cannot be converted, or is already uppercase, this function returns `x`.
  *
  * \param x character value to check.
- * \returns Capitalized version of x, or x if no conversion available.
+ * \returns capitalized version of x, or x if no conversion available.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -873,7 +873,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_toupper(int x);
  * cannot be converted, or is already lowercase, this function returns `x`.
  *
  * \param x character value to check.
- * \returns Lowercase version of x, or x if no conversion available.
+ * \returns lowercase version of x, or x if no conversion available.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1077,7 +1077,7 @@ extern SDL_DECLSPEC char *SDLCALL SDL_strrev(char *str);
  * uppercase equivalents in-place, returning the original `str` pointer.
  *
  * \param str The string to convert in-place. Can not be NULL.
- * \returns The `str` pointer passed into this function.
+ * \returns the `str` pointer passed into this function.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1098,7 +1098,7 @@ extern SDL_DECLSPEC char *SDLCALL SDL_strupr(char *str);
  * lowercase equivalents in-place, returning the original `str` pointer.
  *
  * \param str The string to convert in-place. Can not be NULL.
- * \returns The `str` pointer passed into this function.
+ * \returns the `str` pointer passed into this function.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

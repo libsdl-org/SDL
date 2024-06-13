@@ -507,7 +507,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(SDL_DisplayID display
  * Get the orientation of a display when it is unrotated.
  *
  * \param displayID the instance ID of the display to query
- * \returns The SDL_DisplayOrientation enum value of the display, or
+ * \returns the SDL_DisplayOrientation enum value of the display, or
  *          `SDL_ORIENTATION_UNKNOWN` if it isn't available.
  *
  * \since This function is available since SDL 3.0.0.
@@ -520,7 +520,7 @@ extern SDL_DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetNaturalDisplayOrientat
  * Get the orientation of a display.
  *
  * \param displayID the instance ID of the display to query
- * \returns The SDL_DisplayOrientation enum value of the display, or
+ * \returns the SDL_DisplayOrientation enum value of the display, or
  *          `SDL_ORIENTATION_UNKNOWN` if it isn't available.
  *
  * \since This function is available since SDL 3.0.0.
@@ -538,7 +538,7 @@ extern SDL_DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetCurrentDisplayOrientat
  * big on this display, to aid in readability.
  *
  * \param displayID the instance ID of the display to query
- * \returns The content scale of the display, or 0.0f on error; call
+ * \returns the content scale of the display, or 0.0f on error; call
  *          SDL_GetError() for more details.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2086,7 +2086,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window *window, const
  * Get the mouse confinement rectangle of a window.
  *
  * \param window The window to query
- * \returns A pointer to the mouse confinement rectangle of a window, or NULL
+ * \returns a pointer to the mouse confinement rectangle of a window, or NULL
  *          if there isn't one.
  *
  * \since This function is available since SDL 3.0.0.

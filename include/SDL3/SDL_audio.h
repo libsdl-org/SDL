@@ -588,7 +588,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid
  *              default device.
  * \param spec the requested device configuration. Can be NULL to use
  *             reasonable defaults.
- * \returns The device ID on success, 0 on error; call SDL_GetError() for more
+ * \returns the device ID on success, 0 on error; call SDL_GetError() for more
  *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -805,7 +805,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
  * ID.
  *
  * \param stream the audio stream to query.
- * \returns The bound audio device, or 0 if not bound or invalid.
+ * \returns the bound audio device, or 0 if not bound or invalid.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1700,7 +1700,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertAudioSamples(const SDL_AudioSpec *src
  * silence.
  *
  * \param format the audio data format to query.
- * \returns A byte value that can be passed to memset.
+ * \returns a byte value that can be passed to memset.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

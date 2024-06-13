@@ -1856,6 +1856,14 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 # !!! FIXME: complain if this isn't a function or macro.
                 my $retstr = "R$1";  # "Return" or "Returns"
                 my $desc = $2;
+
+                if (0) {  # !!! FIXME: disabled because it's not currently suitable for general use, but for manually inspecting the output, it can be useful.
+                    if (($desc =~ /\A[A-Z]/) && (not $desc =~ /\ASDL_/)) {
+                        print STDERR "WARNING: $sym\'s '\\returns' text starts with a capital letter: '$desc'. Fixing.\n";
+                        $desc = lcfirst($desc);
+                    }
+                }
+
                 while (@doxygenlines) {
                     my $subline = $doxygenlines[0];
                     $subline =~ s/\A\s*//;

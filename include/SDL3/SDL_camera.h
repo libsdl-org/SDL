@@ -228,14 +228,14 @@ extern SDL_DECLSPEC SDL_CameraDeviceID *SDLCALL SDL_GetCameraDevices(int *count)
 extern SDL_DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedFormats(SDL_CameraDeviceID devid, int *count);
 
 /**
- * Get human-readable device name for a camera.
+ * Get the human-readable device name for a camera.
  *
  * The returned string is owned by the caller; please release it with
  * SDL_free() when done with it.
  *
  * \param instance_id the camera device instance ID
- * \returns Human-readable device name, or NULL on error; call SDL_GetError()
- *          for more information.
+ * \returns a human-readable device name, or NULL on error; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -254,7 +254,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID in
  * filming in the direction the user is facing).
  *
  * \param instance_id the camera device instance ID
- * \returns The position of the camera on the system hardware.
+ * \returns the position of the camera on the system hardware.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -431,7 +431,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_Came
  * \param camera opened camera device
  * \param timestampNS a pointer filled in with the frame's timestamp, or 0 on
  *                    error. Can be NULL.
- * \returns A new frame of video on success, NULL if none is currently
+ * \returns a new frame of video on success, NULL if none is currently
  *          available.
  *
  * \threadsafety It is safe to call this function from any thread.
