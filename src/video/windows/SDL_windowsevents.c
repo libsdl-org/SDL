@@ -369,6 +369,21 @@ static SDL_bool ShouldGenerateWindowCloseOnAltF4(void)
     return SDL_GetHintBoolean(SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, SDL_TRUE);
 }
 
+static SDL_bool ShouldClearWindowOnEraseBackground(SDL_WindowData *data)
+{
+    switch (data->hint_erase_background_mode) {
+    case SDL_ERASEBACKGROUNDMODE_NEVER:
+        return SDL_FALSE;
+    case SDL_ERASEBACKGROUNDMODE_INITIAL:
+        return !data->videodata->cleared;
+    case SDL_ERASEBACKGROUNDMODE_ALWAYS:
+        return SDL_TRUE;
+    default:
+        // Unexpected value, fallback to default behaviour
+        return !data->videodata->cleared;
+    }
+}
+
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 /* We want to generate mouse events from mouse and pen, and touch events from touchscreens */
 #define MI_WP_SIGNATURE      0xFF515700
@@ -1689,7 +1704,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         /* We'll do our own drawing, prevent flicker */
     case WM_ERASEBKGND:
-        if (!data->videodata->cleared) {
+        if (ShouldClearWindowOnEraseBackground(data)) {
             RECT client_rect;
             HBRUSH brush;
             data->videodata->cleared = SDL_TRUE;

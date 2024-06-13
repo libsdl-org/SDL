@@ -3553,6 +3553,22 @@ extern "C" {
 #define SDL_HINT_WINDOWS_USE_D3D9EX "SDL_WINDOWS_USE_D3D9EX"
 
 /**
+ * A variable controlling whether SDL will clear the window contents when
+ * the WM_ERASEBKGND message is received.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0"/"never": Never clear the window.
+ * - "1"/"initial": Clear the window when the first WM_ERASEBKGND event fires. (default)
+ * - "2"/"always": Clear the window on every WM_ERASEBKGND event.
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE "SDL_WINDOWS_ERASE_BACKGROUND_MODE"
+
+/**
  * A variable controlling whether back-button-press events on Windows Phone to
  * be marked as handled.
  *

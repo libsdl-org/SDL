@@ -352,6 +352,30 @@ static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const cha
     data->mouse_relative_mode_center = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
+static SDL_WindowEraseBackgroundMode GetEraseBackgroundModeHint()
+{
+    const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE);
+    if (!hint)
+        return SDL_ERASEBACKGROUNDMODE_INITIAL;
+
+    if (SDL_strstr(hint, "never"))
+        return SDL_ERASEBACKGROUNDMODE_NEVER;
+
+    if (SDL_strstr(hint, "initial"))
+        return SDL_ERASEBACKGROUNDMODE_INITIAL;
+
+    if (SDL_strstr(hint, "always"))
+        return SDL_ERASEBACKGROUNDMODE_ALWAYS;
+
+    int mode = SDL_GetStringInteger(hint, 1);
+    if (mode < 0 || mode > 2) {
+        SDL_Log("GetEraseBackgroundModeHint: invalid value for SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE. Fallback to default");
+        return SDL_ERASEBACKGROUNDMODE_INITIAL;
+    }
+
+    return mode;
+}
+
 static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd, HWND parent)
 {
     SDL_VideoData *videodata = _this->driverdata;
@@ -377,6 +401,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     data->initializing = SDL_TRUE;
     data->last_displayID = window->last_displayID;
     data->dwma_border_color = DWMWA_COLOR_DEFAULT;
+    data->hint_erase_background_mode = GetEraseBackgroundModeHint();
 
     if (SDL_GetHintBoolean("SDL_WINDOW_RETAIN_CONTENT", SDL_FALSE)) {
         data->copybits_flag = 0;
