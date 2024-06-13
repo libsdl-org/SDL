@@ -94,4 +94,31 @@ void X11_HandleXsettings(SDL_VideoDevice *_this, const XEvent *xevent)
     }
 }
 
+int X11_GetXsettingsIntKey(SDL_VideoDevice *_this, const char *key, int fallback_value) {
+    SDL_VideoData *data = _this->driverdata;
+    SDLX11_SettingsData *xsettings_data = &data->xsettings_data;
+    XSettingsSetting *setting = NULL;
+    int res = fallback_value;
+
+
+    if (xsettings_data->xsettings) {
+        if (xsettings_client_get_setting(xsettings_data->xsettings, key, &setting) != XSETTINGS_SUCCESS) {
+            goto no_key;
+        }
+
+        if (setting->type != XSETTINGS_TYPE_INT) {
+            goto no_key;
+        }
+
+        res = setting->data.v_int;
+    }
+
+no_key:
+    if (setting) {
+        xsettings_setting_free(setting);
+    }
+
+    return res;
+}
+
 #endif /* SDL_VIDEO_DRIVER_X11 */
