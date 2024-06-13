@@ -2132,7 +2132,7 @@ static void HandleSimpleControllerState(SDL_Joystick *joystick, SDL_DriverSwitch
         axis = (packet->rgucButtons[0] & 0x40) ? 32767 : -32768;
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
 
-        axis = (packet->rgucButtons[0] & 0x80) ? 32767 : -32768;
+        axis = ((packet->rgucButtons[0] & 0x80) || (packet->rgucButtons[1] & 0x80)) ? 32767 : -32768;
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
 
         axis = ApplySimpleStickCalibration(ctx, 0, 0, packet->sJoystickLeft[0]);
