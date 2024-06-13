@@ -22,6 +22,7 @@
 #include <locale.h>
 #include <unistd.h>
 
+#define OHOS_EGL_ALPHA_SIZE_DEFAULT 8
 #define OHOS_GETWINDOW_DELAY_TIME 2
 #define TIMECONSTANT 3000
 
@@ -236,6 +237,9 @@ int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const
     }
     SDL_Log("Successful get windowdata, native_window = %p.", sdlWindowData->native_window);
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
+        if (thisDevice->gl_config.alpha_size == 0) {
+            thisDevice->gl_config.alpha_size = OHOS_EGL_ALPHA_SIZE_DEFAULT;
+        }
         sdlWindowData->egl_xcomponent =
             (EGLSurface)SDL_EGL_CreateSurface(thisDevice, (NativeWindowType)windowData->native_window);
         windowData->egl_xcomponent = sdlWindowData->egl_xcomponent;
