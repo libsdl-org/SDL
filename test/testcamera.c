@@ -28,6 +28,7 @@ static SDL_CameraDeviceID back_camera = 0;
 
 int SDL_AppInit(void **appstate, int argc, char *argv[])
 {
+    char window_title[128];
     int devcount = 0;
     int i;
     const char *camera_name = NULL;
@@ -142,6 +143,9 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Log("Failed to open camera device: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    SDL_snprintf(window_title, sizeof (window_title), "testcamera: %s (%s)", SDL_GetCameraDeviceName(camera_id), SDL_GetCurrentCameraDriver());
+    SDL_SetWindowTitle(window, window_title);
 
     return SDL_APP_CONTINUE;
 }
