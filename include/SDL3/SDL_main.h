@@ -470,8 +470,9 @@ typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
  *
  * \param argc an ANSI-C style main function's argc.
  * \param argv an ANSI-C style main function's argv.
- * \returns Generally 0 is considered successful program completion, small
- *          non-zero values are considered errors.
+ * \returns an ANSI-C main return code; generally 0 is considered successful
+ *          program completion, and small non-zero values are considered
+ *          errors.
  *
  * \threadsafety This is the program entry point.
  *
