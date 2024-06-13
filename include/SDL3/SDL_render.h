@@ -512,7 +512,8 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *rendere
  * `SDL_TEXTUREACCESS_STATIC`.
  *
  * The pixel format of the created texture may be different from the pixel
- * format of the surface, and can be queried using the SDL_PROP_TEXTURE_FORMAT_NUMBER property.
+ * format of the surface, and can be queried using the
+ * SDL_PROP_TEXTURE_FORMAT_NUMBER property.
  *
  * \param renderer the rendering context
  * \param surface the SDL_Surface structure containing pixel data used to fill
@@ -668,8 +669,8 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Ren
  *
  * The following read-only properties are provided by SDL:
  *
- * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value
- *   describing the texture colorspace.
+ * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing
+ *   the texture colorspace.
  * - `SDL_PROP_TEXTURE_FORMAT_NUMBER`: one of the enumerated values in
  *   SDL_PixelFormatEnum.
  * - `SDL_PROP_TEXTURE_ACCESS_NUMBER`: one of the enumerated values in
@@ -1056,7 +1057,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture *texture, SD
 /**
  * Update the given texture rectangle with new pixel data.
  *
- * The pixel data must be in the pixel format of the texture, which can be queried using the SDL_PROP_TEXTURE_FORMAT_NUMBER property.
+ * The pixel data must be in the pixel format of the texture, which can be
+ * queried using the SDL_PROP_TEXTURE_FORMAT_NUMBER property.
  *
  * This is a fairly slow function, intended for use with static textures that
  * do not change often.
