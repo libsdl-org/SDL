@@ -1164,7 +1164,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
         if (value < 0) {
             SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-            rect.w = (value / SDL_MIN_SINT16) * arrow_extent;
+            rect.w = ((float)value / SDL_MIN_SINT16) * arrow_extent;
             rect.x = dst.x + arrow_extent - rect.w;
             rect.y = dst.y + ctx->arrow_height * 0.25f;
             rect.h = ctx->arrow_height / 2.0f;
@@ -1185,7 +1185,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
         if (value > 0) {
             SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-            rect.w = (value / SDL_MAX_SINT16) * arrow_extent;
+            rect.w = ((float)value / SDL_MAX_SINT16) * arrow_extent;
             rect.x = dst.x;
             rect.y = dst.y + ctx->arrow_height * 0.25f;
             rect.h = ctx->arrow_height / 2.0f;
@@ -1805,7 +1805,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
             if (value < 0) {
                 SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-                rect.w = (value / SDL_MIN_SINT16) * arrow_extent;
+                rect.w = ((float)value / SDL_MIN_SINT16) * arrow_extent;
                 rect.x = dst.x + arrow_extent - rect.w;
                 rect.y = dst.y + ctx->arrow_height * 0.25f;
                 rect.h = ctx->arrow_height / 2.0f;
@@ -1816,7 +1816,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
             if (value > 0) {
                 SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-                rect.w = (value / SDL_MAX_SINT16) * arrow_extent;
+                rect.w = ((float)value / SDL_MAX_SINT16) * arrow_extent;
                 rect.x = dst.x;
                 rect.y = dst.y + ctx->arrow_height * 0.25f;
                 rect.h = ctx->arrow_height / 2.0f;
