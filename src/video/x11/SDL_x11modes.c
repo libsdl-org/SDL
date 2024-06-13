@@ -231,9 +231,18 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
             }
         }
 
-        /* If that failed, try the XSETTINGS key... */
+        /* If that failed, try the XSETTINGS keys... */
         if (scale_factor <= 0.0) {
             scale_factor = X11_GetXsettingsIntKey(_this, "Gdk/WindowScalingFactor", -1);
+
+            /* The Xft/DPI key is stored in increments of 1024th */
+            if (scale_factor <= 0.0) {
+                int dpi = X11_GetXsettingsIntKey(_this, "Xft/DPI", -1);
+                if (dpi > 0) {
+                    scale_factor = (double) dpi / 1024.0;
+                    scale_factor /= 96.0;
+                }
+            }
         }
 
         /* If that failed, try the GDK_SCALE envvar... */
