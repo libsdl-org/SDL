@@ -401,7 +401,7 @@ static void HandleKeyboardKeyDown(SDL_KeyboardEvent *event)
             case SDLK_RIGHT:
                 keyboard_state->position.x += CURSOR_SIZE;
                 if (keyboard_state->position.x > w) {
-                    keyboard_state->position.x = w;
+                    keyboard_state->position.x = (float)w;
                 }
                 break;
             case SDLK_UP:
@@ -413,7 +413,7 @@ static void HandleKeyboardKeyDown(SDL_KeyboardEvent *event)
             case SDLK_DOWN:
                 keyboard_state->position.y += CURSOR_SIZE;
                 if (keyboard_state->position.y > h) {
-                    keyboard_state->position.y = h;
+                    keyboard_state->position.y = (float)h;
                 }
                 break;
             default:

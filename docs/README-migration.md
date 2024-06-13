@@ -1165,15 +1165,6 @@ SDL_RenderWindowToLogical() and SDL_RenderLogicalToWindow() have been renamed SD
 
 The viewport, clipping state, and scale for render targets are now persistent and will remain set whenever they are active.
 
-The following functions have been changed to take floating point values to make them easier to use with the rest of the rendering API:
-* SDL_GetCurrentRenderOutputSize()
-* SDL_GetRenderClipRect()
-* SDL_GetRenderLogicalPresentation()
-* SDL_GetRenderOutputSize()
-* SDL_GetRenderViewport()
-* SDL_SetRenderLogicalPresentation()
-* SDL_SetRenderViewport()
-
 SDL_Vertex has been changed to use floating point colors, in the range of [0..1] for SDR content.
 
 SDL_RenderReadPixels() returns a surface instead of filling in preallocated memory.

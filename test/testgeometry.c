@@ -121,11 +121,11 @@ static void loop(void)
         SDL_RenderClear(renderer);
 
         {
-            SDL_FRect viewport;
+            SDL_Rect viewport;
             SDL_Vertex verts[3];
             float a;
             float d;
-            float cx, cy;
+            int cx, cy;
 
             /* Query the sizes */
             SDL_GetRenderViewport(renderer, &viewport);

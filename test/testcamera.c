@@ -234,7 +234,8 @@ int SDL_AppIterate(void *appstate)
     SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, 255);
     SDL_RenderClear(renderer);
 
-    float win_w, win_h, tw, th;
+    int win_w, win_h;
+    float tw, th;
     SDL_FRect d;
     Uint64 timestampNS = 0;
     SDL_Surface *frame_next = camera ? SDL_AcquireCameraFrame(camera, &timestampNS) : NULL;

@@ -1453,7 +1453,7 @@ static SDL_Surface *GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *
     SDL_PixelFormatEnum format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ARGB8888;
     GLint internalFormat;
     GLenum targetFormat, type;
-    float h;
+    int w, h;
     SDL_Surface *surface;
 
     GL_ActivateRenderer(renderer);
@@ -1468,12 +1468,12 @@ static SDL_Surface *GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *
         return NULL;
     }
 
-    SDL_GetCurrentRenderOutputSize(renderer, NULL, &h);
+    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
 
     data->glPixelStorei(GL_PACK_ALIGNMENT, 1);
     data->glPixelStorei(GL_PACK_ROW_LENGTH, (surface->pitch / SDL_BYTESPERPIXEL(format)));
 
-    data->glReadPixels(rect->x, renderer->target ? rect->y : ((int)h - rect->y) - rect->h,
+    data->glReadPixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
                        rect->w, rect->h, targetFormat, type, surface->pixels);
 
     if (GL_CheckError("glReadPixels()", renderer) < 0) {
