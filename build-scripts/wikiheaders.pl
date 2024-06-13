@@ -1813,6 +1813,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         my %params = ();  # have to parse these and build up the wiki tables after, since Markdown needs to know the length of the largest string.  :/
         my @paramsorder = ();
         my $fnsigparams = $headersymsparaminfo{$sym};
+        my $has_returns = 0;
 
         while (@doxygenlines) {
             my $l = shift @doxygenlines;
@@ -1851,6 +1852,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 $params{$arg} = $desc;
                 push @paramsorder, $arg;
             } elsif ($l =~ /\A\\r(eturns?)\s+(.*)\Z/) {
+                $has_returns = 1;
                 # !!! FIXME: complain if this isn't a function or macro.
                 my $retstr = "R$1";  # "Return" or "Returns"
                 my $desc = $2;
@@ -1935,6 +1937,10 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     $sections{'See Also'} .= "- [$sa]($sa)\n";
                 } else { die("Expected wikitype '$wikitype'"); }
             }
+        }
+
+        if (($symtype == 1) && ($headersymsrettype{$sym} ne 'void') && !$has_returns) {
+            print STDERR "WARNING: Function '$sym' has a non-void return type but no '\\returns' declaration\n";
         }
 
         # Make sure %params is in the same order as the actual function signature and add C datatypes...
