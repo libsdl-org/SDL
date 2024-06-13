@@ -75,8 +75,8 @@ static const struct
     { 400, 5, 180.0 },   /* SDL_GAMEPAD_ELEMENT_AXIS_RIGHT_TRIGGER */
 };
 
-static SDL_Rect touchpad_area = {
-    148, 20, 216, 118
+static SDL_FRect touchpad_area = {
+    148.0f, 20.0f, 216.0f, 118.0f
 };
 
 typedef struct
@@ -1935,7 +1935,7 @@ GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label)
         SDL_GetTextureSize(ctx->background, &ctx->background_width, &ctx->background_height);
 
         ctx->label = SDL_strdup(label);
-        ctx->label_width = (FONT_CHARACTER_SIZE * SDL_strlen(label));
+        ctx->label_width = (float)(FONT_CHARACTER_SIZE * SDL_strlen(label));
         ctx->label_height = (float)FONT_CHARACTER_SIZE;
     }
     return ctx;

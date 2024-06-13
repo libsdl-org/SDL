@@ -225,7 +225,8 @@ static void loop(void)
         SDL_Renderer *renderer = state->renderers[i];
         if (window && renderer) {
             float y = 0.0f;
-            SDL_FRect viewport, menurect;
+            SDL_Rect viewport;
+            SDL_FRect menurect;
 
             SDL_GetRenderViewport(renderer, &viewport);
 
@@ -237,8 +238,8 @@ static void loop(void)
 
             menurect.x = 0.0f;
             menurect.y = y;
-            menurect.w = viewport.w;
-            menurect.h = viewport.h - y;
+            menurect.w = (float)viewport.w;
+            menurect.h = (float)viewport.h - y;
             draw_modes_menu(window, renderer, menurect);
 
             SDL_Delay(16);

@@ -252,7 +252,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
 
 static void MoveSprite(void)
 {
-    SDL_FRect viewport;
+    SDL_Rect viewport;
     SDL_FRect *position, *velocity;
     int i;
 
@@ -1484,12 +1484,12 @@ int main(int argc, char *argv[])
     }
 
     /* Position sprites and set their velocities */
-    SDL_FRect viewport;
+    SDL_Rect viewport;
     SDL_GetRenderViewport(renderer, &viewport);
     srand((unsigned int)time(NULL));
     for (i = 0; i < num_sprites; ++i) {
-        positions[i].x = (float)(rand() % (int)(viewport.w - sprite_w));
-        positions[i].y = (float)(rand() % (int)(viewport.h - sprite_h));
+        positions[i].x = (float)(rand() % (viewport.w - sprite_w));
+        positions[i].y = (float)(rand() % (viewport.h - sprite_h));
         positions[i].w = (float)sprite_w;
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;

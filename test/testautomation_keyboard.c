@@ -302,7 +302,7 @@ static int keyboard_getSetModState(void *arg)
     currentState = result;
 
     /* Set random state */
-    newState = SDLTest_RandomIntegerInRange(0, allStates);
+    newState = (SDL_Keymod)SDLTest_RandomIntegerInRange(0, allStates);
     SDL_SetModState(newState);
     SDLTest_AssertPass("Call to SDL_SetModState(0x%.4x)", newState);
     result = SDL_GetModState();

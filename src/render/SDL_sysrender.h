@@ -48,12 +48,12 @@ typedef struct SDL_RenderDriver SDL_RenderDriver;
 /* Rendering view state */
 typedef struct SDL_RenderViewState
 {
-    float pixel_w;
-    float pixel_h;
-    SDL_FRect viewport;
+    int pixel_w;
+    int pixel_h;
+    SDL_Rect viewport;
     SDL_Rect pixel_viewport;
-    SDL_FRect clip_rect;
-    SDL_Rect pixel_cliprect;
+    SDL_Rect clip_rect;
+    SDL_Rect pixel_clip_rect;
     SDL_bool clipping_enabled;
     SDL_FPoint scale;
 

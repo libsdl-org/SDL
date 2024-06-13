@@ -155,7 +155,7 @@ static int render_testPrimitives(void *arg)
                 checkFailCount1++;
             }
 
-            ret = SDL_RenderPoint(renderer, x, y);
+            ret = SDL_RenderPoint(renderer, (float)x, (float)y);
             if (ret != 0) {
                 checkFailCount2++;
             }
@@ -258,7 +258,7 @@ static int render_testPrimitivesBlend(void *arg)
             checkFailCount2++;
         }
 
-        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, i, 59.0f);
+        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, (float)i, 59.0f);
         if (ret != 0) {
             checkFailCount3++;
         }
@@ -282,7 +282,7 @@ static int render_testPrimitivesBlend(void *arg)
             checkFailCount2++;
         }
 
-        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, 79.0f, i);
+        ret = SDL_RenderLine(renderer, 0.0f, 0.0f, 79.0f, (float)i);
         if (ret != 0) {
             checkFailCount3++;
         }
@@ -308,7 +308,7 @@ static int render_testPrimitivesBlend(void *arg)
                 checkFailCount2++;
             }
 
-            ret = SDL_RenderPoint(renderer, i, j);
+            ret = SDL_RenderPoint(renderer, (float)i, (float)j);
             if (ret != 0) {
                 checkFailCount3++;
             }
@@ -342,7 +342,7 @@ static int render_testPrimitivesBlend(void *arg)
  */
 static int render_testPrimitivesWithViewport(void *arg)
 {
-    SDL_FRect viewport;
+    SDL_Rect viewport;
     SDL_Surface *surface;
 
     /* Clear surface. */
@@ -489,8 +489,8 @@ static int render_testBlitColor(void *arg)
             }
 
             /* Blitting. */
-            rect.x = i;
-            rect.y = j;
+            rect.x = (float)i;
+            rect.y = (float)j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount2++;
@@ -768,8 +768,8 @@ static int render_testBlitBlend(void *arg)
             }
 
             /* Blitting. */
-            rect.x = i;
-            rect.y = j;
+            rect.x = (float)i;
+            rect.y = (float)j;
             ret = SDL_RenderTexture(renderer, tface, NULL, &rect);
             if (ret != 0) {
                 checkFailCount4++;
@@ -803,7 +803,7 @@ static int render_testBlitBlend(void *arg)
 static int render_testViewport(void *arg)
 {
     SDL_Surface *referenceSurface;
-    SDL_FRect viewport;
+    SDL_Rect viewport;
 
     viewport.x = TESTRENDER_SCREEN_W / 3;
     viewport.y = TESTRENDER_SCREEN_H / 3;
@@ -813,12 +813,7 @@ static int render_testViewport(void *arg)
     /* Create expected result */
     referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
     CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
-    SDL_Rect v;
-    v.x = (int)viewport.x;
-    v.y = (int)viewport.y;
-    v.w = (int)viewport.w;
-    v.h = (int)viewport.h;
-    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &v, RENDER_COLOR_GREEN))
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &viewport, RENDER_COLOR_GREEN))
 
     /* Clear surface. */
     clearScreen();
@@ -865,7 +860,7 @@ static int render_testViewport(void *arg)
 static int render_testClipRect(void *arg)
 {
     SDL_Surface *referenceSurface;
-    SDL_FRect cliprect;
+    SDL_Rect cliprect;
 
     cliprect.x = TESTRENDER_SCREEN_W / 3;
     cliprect.y = TESTRENDER_SCREEN_H / 3;
@@ -875,12 +870,7 @@ static int render_testClipRect(void *arg)
     /* Create expected result */
     referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
     CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
-    SDL_Rect c;
-    c.x = (int)cliprect.x;
-    c.y = (int)cliprect.y;
-    c.w = (int)cliprect.w;
-    c.h = (int)cliprect.h;
-    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &c, RENDER_COLOR_GREEN))
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &cliprect, RENDER_COLOR_GREEN))
 
     /* Clear surface. */
     clearScreen();
@@ -927,9 +917,9 @@ static int render_testClipRect(void *arg)
 static int render_testLogicalSize(void *arg)
 {
     SDL_Surface *referenceSurface;
-    SDL_FRect viewport;
+    SDL_Rect viewport;
     SDL_FRect rect;
-    float w, h;
+    int w, h;
     const int factor = 2;
 
     viewport.x = ((TESTRENDER_SCREEN_W / 4) / factor) * factor;
@@ -940,12 +930,7 @@ static int render_testLogicalSize(void *arg)
     /* Create expected result */
     referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, RENDER_COMPARE_FORMAT);
     CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
-    SDL_Rect v;
-    v.x = (int)viewport.x;
-    v.y = (int)viewport.y;
-    v.w = (int)viewport.w;
-    v.h = (int)viewport.h;
-    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &v, RENDER_COLOR_GREEN))
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &viewport, RENDER_COLOR_GREEN))
 
     /* Clear surface. */
     clearScreen();
@@ -956,10 +941,10 @@ static int render_testLogicalSize(void *arg)
                                            SDL_LOGICAL_PRESENTATION_LETTERBOX,
                                            SDL_SCALEMODE_NEAREST))
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
-    rect.x = viewport.x / factor;
-    rect.y = viewport.y / factor;
-    rect.w = viewport.w / factor;
-    rect.h = viewport.h / factor;
+    rect.x = (float)viewport.x / factor;
+    rect.y = (float)viewport.y / factor;
+    rect.w = (float)viewport.w / factor;
+    rect.h = (float)viewport.h / factor;
     CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
@@ -1002,11 +987,7 @@ static int render_testLogicalSize(void *arg)
 
     /* Create expected result */
     CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, NULL, RENDER_COLOR_CLEAR))
-    v.x = (int)viewport.x;
-    v.y = (int)viewport.y;
-    v.w = (int)viewport.w;
-    v.h = (int)viewport.h;
-    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &v, RENDER_COLOR_GREEN))
+    CHECK_FUNC(SDL_FillSurfaceRect, (referenceSurface, &viewport, RENDER_COLOR_GREEN))
 
     /* Clear surface. */
     clearScreen();

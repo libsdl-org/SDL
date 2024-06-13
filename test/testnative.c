@@ -65,7 +65,7 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
     float sprite_w, sprite_h;
     int i;
-    SDL_FRect viewport;
+    SDL_Rect viewport;
     SDL_FRect *position, *velocity;
 
     /* Query the sizes */

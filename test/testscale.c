@@ -49,7 +49,7 @@ quit(int rc)
 
 static void Draw(DrawState *s)
 {
-    SDL_FRect viewport;
+    SDL_Rect viewport;
 
     SDL_GetRenderViewport(s->renderer, &viewport);
 
@@ -68,8 +68,8 @@ static void Draw(DrawState *s)
             s->scale_direction = 1;
         }
     }
-    s->sprite_rect.x = ((viewport.w - s->sprite_rect.w) / 2);
-    s->sprite_rect.y = ((viewport.h - s->sprite_rect.h) / 2);
+    s->sprite_rect.x = (float)((viewport.w - s->sprite_rect.w) / 2);
+    s->sprite_rect.y = (float)((viewport.h - s->sprite_rect.h) / 2);
 
     SDL_RenderTexture(s->renderer, s->sprite, NULL, &s->sprite_rect);
 
@@ -126,7 +126,6 @@ int main(int argc, char *argv[])
     drawstates = SDL_stack_alloc(DrawState, state->num_windows);
     for (i = 0; i < state->num_windows; ++i) {
         DrawState *drawstate = &drawstates[i];
-        float w, h;
 
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
@@ -135,9 +134,7 @@ int main(int argc, char *argv[])
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }
-        SDL_GetTextureSize(drawstate->sprite, &w, &h);
-        drawstate->sprite_rect.w = w;
-        drawstate->sprite_rect.h = h;
+        SDL_GetTextureSize(drawstate->sprite, &drawstate->sprite_rect.w, &drawstate->sprite_rect.h);
         drawstate->scale_direction = 1;
     }
 
