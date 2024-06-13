@@ -504,10 +504,17 @@ typedef void (SDLCALL *SDL_free_func)(void *mem);
 /**
  * Get the original set of SDL memory functions.
  *
+ * This is what SDL_malloc and friends will use by default, if there has been
+ * no call to SDL_SetMemoryFunctions. This is not necessarily using the C
+ * runtime's `malloc` functions behind the scenes! Different platforms and
+ * build configurations might do any number of unexpected things.
+ *
  * \param malloc_func filled with malloc function
  * \param calloc_func filled with calloc function
  * \param realloc_func filled with realloc function
  * \param free_func filled with free function
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -524,7 +531,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func 
  * \param realloc_func filled with realloc function
  * \param free_func filled with free function
  *
+ * \threadsafety This does not hold a lock, so do not call this in the unlikely
+ *               event of a background thread calling SDL_SetMemoryFunctions
+ *               simultaneously.
+ *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetMemoryFunctions
+ * \sa SDL_GetOriginalMemoryFunctions
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
                                                     SDL_calloc_func *calloc_func,
@@ -534,6 +548,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_
 /**
  * Replace SDL's memory allocation functions with a custom set.
  *
+ * It is not safe to call this function once any allocations have been made,
+ * as future calls to SDL_free will use the new allocator, even if they came
+ * from an SDL_malloc made with the old one!
+ *
+ * If used, usually this needs to be the first call made into the SDL library,
+ * if not the very first thing done at program startup time.
+ *
  * \param malloc_func custom malloc function
  * \param calloc_func custom calloc function
  * \param realloc_func custom realloc function
@@ -541,7 +562,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety It is safe to call this function from any thread, but one
+ *               should not replace the memory functions once any allocations
+ *               are made!
+ *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetMemoryFunctions
+ * \sa SDL_GetOriginalMemoryFunctions
  */
 extern SDL_DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                                    SDL_calloc_func calloc_func,
@@ -557,11 +585,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_fu
  * The returned memory address will be a multiple of the alignment value, and
  * the amount of memory allocated will be a multiple of the alignment value.
  *
- * The memory returned by this function must be freed with SDL_aligned_free()
+ * The memory returned by this function must be freed with SDL_aligned_free(),
+ * and _not_ SDL_free.
  *
  * \param alignment the alignment requested
  * \param size the size to allocate
  * \returns a pointer to the aligned memory
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -571,6 +602,13 @@ extern SDL_DECLSPEC SDL_MALLOC void *SDLCALL SDL_aligned_alloc(size_t alignment,
 
 /**
  * Free memory allocated by SDL_aligned_alloc().
+ *
+ * The pointer is no longer valid after this call and cannot be dereferenced
+ * anymore.
+ *
+ * \param mem a pointer previously returned by SDL_aligned_alloc.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -582,6 +620,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
  * Get the number of outstanding (unfreed) allocations.
  *
  * \returns the number of allocations
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1036,6 +1076,9 @@ extern SDL_DECLSPEC char *SDLCALL SDL_strrev(char *str);
  * malformed UTF-8!--and converts ASCII characters 'a' through 'z' to their
  * uppercase equivalents in-place, returning the original `str` pointer.
  *
+ * \param str The string to convert in-place. Can not be NULL.
+ * \returns The `str` pointer passed into this function.
+ *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1054,7 +1097,7 @@ extern SDL_DECLSPEC char *SDLCALL SDL_strupr(char *str);
  * malformed UTF-8!--and converts ASCII characters 'A' through 'Z' to their
  * lowercase equivalents in-place, returning the original `str` pointer.
  *
- * \param str The string to convert in-place.
+ * \param str The string to convert in-place. Can not be NULL.
  * \returns The `str` pointer passed into this function.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -2494,8 +2537,23 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
                                          size_t * outbytesleft);
 
 /**
- * This function converts a buffer or string between encodings in one pass,
- * returning a string that must be freed with SDL_free() or NULL on error.
+ * Helper function to convert a string's encoding in one call.
+ *
+ * This function converts a buffer or string between encodings in one pass.
+ *
+ * The string does not need to be NULL-terminated; this function operates
+ * on the number of bytes specified in `inbytesleft` whether there is a
+ * NULL character anywhere in the buffer.
+ *
+ * The returned string is owned by the caller, and should be passed to
+ * SDL_free when no longer needed.
+ *
+ * \param tocode the character encoding of the output string. Examples are "UTF-8", "UCS-4", etc.
+ * \param fromcode the character encoding of data in `inbuf`.
+ * \param inbuf the string to convert to a different encoding.
+ * \param inbytesleft the size of the input string _in bytes_.
+ *
+ * \returns a new string, converted to the new encoding, or NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -2577,9 +2635,18 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 #endif
 
 /**
- * If a * b would overflow, return -1.
+ * Multiply two integers, checking for overflow.
  *
- * Otherwise store a * b via ret and return 0.
+ * If `a * b` would overflow, return -1.
+ *
+ * Otherwise store `a * b` via ret and return 0.
+ *
+ * \param a the multiplicand
+ * \param b the multiplier
+ * \param ret on non-overflow output, stores the multiplication result. May not be NULL.
+ * \returns -1 on overflow, 0 if result doesn't overflow.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -2610,9 +2677,18 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow_builtin (size_t a,
 #endif
 
 /**
- * If a + b would overflow, return -1.
+ * Add two integers, checking for overflow.
  *
- * Otherwise store a + b via ret and return 0.
+ * If `a + b` would overflow, return -1.
+ *
+ * Otherwise store `a + b` via ret and return 0.
+ *
+ * \param a the first addend.
+ * \param b the second addend.
+ * \param ret on non-overflow output, stores the addition result. May not be NULL.
+ * \returns -1 on overflow, 0 if result doesn't overflow.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */

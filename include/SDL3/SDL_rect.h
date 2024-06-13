@@ -354,6 +354,7 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEmptyFloat(const SDL_FRect *r)
  *
  * \param a the first rectangle to test.
  * \param b the second rectangle to test.
+ * \param epsilon the epsilon value for comparison.
  * \returns SDL_TRUE if the rectangles are equal, SDL_FALSE otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.

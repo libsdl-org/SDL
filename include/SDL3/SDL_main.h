@@ -438,6 +438,10 @@ extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void *appstate);
 /**
  * The prototype for the application's main() function
  *
+ * \param argc an ANSI-C style main function's argc.
+ * \param argv an ANSI-C style main function's argv.
+ * \returns Generally 0 is considered successful program completion, small non-zero values are considered errors.
+ *
  * \since This datatype is available since SDL 3.0.0.
  */
 typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
@@ -462,6 +466,10 @@ typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
  * [README/main-functions](README/main-functions), (or
  * docs/README-main-functions.md in the source tree) for a more detailed
  * explanation.
+ *
+ * \param argc an ANSI-C style main function's argc.
+ * \param argv an ANSI-C style main function's argv.
+ * \returns Generally 0 is considered successful program completion, small non-zero values are considered errors.
  *
  * \threadsafety This is the program entry point.
  *
@@ -498,14 +506,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
  *             if the platform's main-equivalent has no argc
  * \param argv The argv parameter from the application's main() function, or
  *             NULL if the platform's main-equivalent has no argv
- * \param mainFunction Your SDL app's C-style main(), an SDL_main_func. NOT
+ * \param mainFunction Your SDL app's C-style main(). NOT
  *                     the function you're calling this from! Its name doesn't
- *                     matter, but its signature must be like int my_main(int
- *                     argc, char* argv[])
+ *                     matter; it doesn't literally have to be `main`.
  * \param reserved should be NULL (reserved for future use, will probably be
  *                 platform-specific then)
  * \returns the return value from mainFunction: 0 on success, -1 on failure;
  *          SDL_GetError() might have more information on the failure
+ *
+ * \threadsafety Generally this is called once, near startup, from the
+ *               process's initial thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
