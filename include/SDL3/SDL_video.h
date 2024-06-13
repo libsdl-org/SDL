@@ -2312,8 +2312,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowShape(SDL_Window *window, SDL_Surfa
 /**
  * Request a window to demand attention from the user.
  *
- * \param window the SDL_Window to be flashed
- * \param operation the SDL_FlashOperation to perform
+ * \param window the window to be flashed
+ * \param operation the operation to perform
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
