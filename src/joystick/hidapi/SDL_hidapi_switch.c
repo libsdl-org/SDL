@@ -1295,6 +1295,27 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case k_eSwitchDeviceInfoControllerType_Unknown:
         /* We couldn't read the device info for this controller, might not be fully compliant */
+        if (device->vendor_id == USB_VENDOR_NINTENDO) {
+            switch (device->product_id) {
+            case USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT:
+                ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_JoyConLeft;
+                HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (L)");
+                device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
+                break;
+            case USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT:
+                ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_JoyConRight;
+                HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (R)");
+                device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
+                break;
+            case USB_PRODUCT_NINTENDO_SWITCH_PRO:
+                ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_ProController;
+                HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
+                device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+                break;
+            default:
+                break;
+            }
+        }
         return;
     default:
         device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
