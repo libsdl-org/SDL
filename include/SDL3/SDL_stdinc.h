@@ -531,9 +531,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func 
  * \param realloc_func filled with realloc function
  * \param free_func filled with free function
  *
- * \threadsafety This does not hold a lock, so do not call this in the unlikely
- *               event of a background thread calling SDL_SetMemoryFunctions
- *               simultaneously.
+ * \threadsafety This does not hold a lock, so do not call this in the
+ *               unlikely event of a background thread calling
+ *               SDL_SetMemoryFunctions simultaneously.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2541,18 +2541,18 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
  *
  * This function converts a buffer or string between encodings in one pass.
  *
- * The string does not need to be NULL-terminated; this function operates
- * on the number of bytes specified in `inbytesleft` whether there is a
- * NULL character anywhere in the buffer.
+ * The string does not need to be NULL-terminated; this function operates on
+ * the number of bytes specified in `inbytesleft` whether there is a NULL
+ * character anywhere in the buffer.
  *
  * The returned string is owned by the caller, and should be passed to
  * SDL_free when no longer needed.
  *
- * \param tocode the character encoding of the output string. Examples are "UTF-8", "UCS-4", etc.
+ * \param tocode the character encoding of the output string. Examples are
+ *               "UTF-8", "UCS-4", etc.
  * \param fromcode the character encoding of data in `inbuf`.
  * \param inbuf the string to convert to a different encoding.
  * \param inbytesleft the size of the input string _in bytes_.
- *
  * \returns a new string, converted to the new encoding, or NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2643,7 +2643,8 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
  *
  * \param a the multiplicand
  * \param b the multiplier
- * \param ret on non-overflow output, stores the multiplication result. May not be NULL.
+ * \param ret on non-overflow output, stores the multiplication result. May
+ *            not be NULL.
  * \returns -1 on overflow, 0 if result doesn't overflow.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -2685,7 +2686,8 @@ SDL_FORCE_INLINE int SDL_size_mul_overflow_builtin (size_t a,
  *
  * \param a the first addend.
  * \param b the second addend.
- * \param ret on non-overflow output, stores the addition result. May not be NULL.
+ * \param ret on non-overflow output, stores the addition result. May not be
+ *            NULL.
  * \returns -1 on overflow, 0 if result doesn't overflow.
  *
  * \threadsafety It is safe to call this function from any thread.

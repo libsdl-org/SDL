@@ -440,7 +440,8 @@ extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void *appstate);
  *
  * \param argc an ANSI-C style main function's argc.
  * \param argv an ANSI-C style main function's argv.
- * \returns Generally 0 is considered successful program completion, small non-zero values are considered errors.
+ * \returns Generally 0 is considered successful program completion, small
+ *          non-zero values are considered errors.
  *
  * \since This datatype is available since SDL 3.0.0.
  */
@@ -469,7 +470,8 @@ typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
  *
  * \param argc an ANSI-C style main function's argc.
  * \param argv an ANSI-C style main function's argv.
- * \returns Generally 0 is considered successful program completion, small non-zero values are considered errors.
+ * \returns Generally 0 is considered successful program completion, small
+ *          non-zero values are considered errors.
  *
  * \threadsafety This is the program entry point.
  *
@@ -506,9 +508,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
  *             if the platform's main-equivalent has no argc
  * \param argv The argv parameter from the application's main() function, or
  *             NULL if the platform's main-equivalent has no argv
- * \param mainFunction Your SDL app's C-style main(). NOT
- *                     the function you're calling this from! Its name doesn't
- *                     matter; it doesn't literally have to be `main`.
+ * \param mainFunction Your SDL app's C-style main(). NOT the function you're
+ *                     calling this from! Its name doesn't matter; it doesn't
+ *                     literally have to be `main`.
  * \param reserved should be NULL (reserved for future use, will probably be
  *                 platform-specific then)
  * \returns the return value from mainFunction: 0 on success, -1 on failure;
