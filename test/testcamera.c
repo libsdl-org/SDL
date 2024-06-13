@@ -98,7 +98,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_Log("Saw %d camera devices.", devcount);
     for (i = 0; i < devcount; i++) {
         const SDL_CameraDeviceID device = devices[i];
-        char *name = SDL_GetCameraDeviceName(device);
+        const char *name = SDL_GetCameraDeviceName(device);
         const SDL_CameraPosition position = SDL_GetCameraDevicePosition(device);
         const char *posstr = "";
         if (position == SDL_CAMERA_POSITION_FRONT_FACING) {
@@ -112,7 +112,6 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
             camera_id = device;
         }
         SDL_Log("  - Camera #%d: %s %s", i, posstr, name);
-        SDL_free(name);
     }
 
     if (!camera_id) {

@@ -285,7 +285,7 @@ static void DestroyPhysicalCameraDevice(SDL_CameraDevice *device)
         camera_driver.impl.FreeDeviceHandle(device);
         SDL_DestroyMutex(device->lock);
         SDL_free(device->all_specs);
-        SDL_free(device->name);
+        SDL_FreeLater(device->name);  // this is returned in SDL_GetCameraDeviceName.
         SDL_free(device);
     }
 }
@@ -662,12 +662,12 @@ int SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
     return 0;
 }
 
-char *SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
+const char *SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
 {
     char *retval = NULL;
     SDL_CameraDevice *device = ObtainPhysicalCameraDevice(instance_id);
     if (device) {
-        retval = SDL_strdup(device->name);
+        retval = device->name;
         ReleaseCameraDevice(device);
     }
     return retval;

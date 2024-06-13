@@ -230,8 +230,7 @@ extern SDL_DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedFormats(
 /**
  * Get the human-readable device name for a camera.
  *
- * The returned string is owned by the caller; please release it with
- * SDL_free() when done with it.
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param instance_id the camera device instance ID
  * \returns a human-readable device name, or NULL on error; call
@@ -243,7 +242,7 @@ extern SDL_DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraDeviceSupportedFormats(
  *
  * \sa SDL_GetCameraDevices
  */
-extern SDL_DECLSPEC char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id);
 
 /**
  * Get the position of the camera in relation to the system.
