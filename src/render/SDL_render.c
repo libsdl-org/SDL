@@ -219,23 +219,23 @@ static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
             case SDL_RENDERCMD_SETDRAWCOLOR:
                 SDL_Log(" %u. set draw color (first=%u, r=%d, g=%d, b=%d, a=%d, color_scale=%g)", i++,
                         (unsigned int) cmd->data.color.first,
-                        (int) cmd->data.color.r, (int) cmd->data.color.g,
-                        (int) cmd->data.color.b, (int) cmd->data.color.a, cmd->data.color.color_scale);
+                        (int) cmd->data.color.color.r, (int) cmd->data.color.color.g,
+                        (int) cmd->data.color.color.b, (int) cmd->data.color.color.a, cmd->data.color.color_scale);
                 break;
 
             case SDL_RENDERCMD_CLEAR:
                 SDL_Log(" %u. clear (first=%u, r=%d, g=%d, b=%d, a=%d, color_scale=%g)", i++,
                         (unsigned int) cmd->data.color.first,
-                        (int) cmd->data.color.r, (int) cmd->data.color.g,
-                        (int) cmd->data.color.b, (int) cmd->data.color.a, cmd->data.color.color_scale);
+                        (int) cmd->data.color.color.r, (int) cmd->data.color.color.g,
+                        (int) cmd->data.color.color.b, (int) cmd->data.color.color.a, cmd->data.color.color_scale);
                 break;
 
             case SDL_RENDERCMD_DRAW_POINTS:
                 SDL_Log(" %u. draw points (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, color_scale=%g)", i++,
                         (unsigned int) cmd->data.draw.first,
                         (unsigned int) cmd->data.draw.count,
-                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
-                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.color.r, (int) cmd->data.draw.color.g,
+                        (int) cmd->data.draw.color.b, (int) cmd->data.draw.color.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.color_scale);
                 break;
 
@@ -243,8 +243,8 @@ static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                 SDL_Log(" %u. draw lines (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, color_scale=%g)", i++,
                         (unsigned int) cmd->data.draw.first,
                         (unsigned int) cmd->data.draw.count,
-                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
-                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.color.r, (int) cmd->data.draw.color.g,
+                        (int) cmd->data.draw.color.b, (int) cmd->data.draw.color.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.color_scale);
                 break;
 
@@ -252,8 +252,8 @@ static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                 SDL_Log(" %u. fill rects (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, color_scale=%g)", i++,
                         (unsigned int) cmd->data.draw.first,
                         (unsigned int) cmd->data.draw.count,
-                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
-                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.color.r, (int) cmd->data.draw.color.g,
+                        (int) cmd->data.draw.color.b, (int) cmd->data.draw.color.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.color_scale);
                 break;
 
@@ -261,8 +261,8 @@ static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                 SDL_Log(" %u. copy (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, color_scale=%g, tex=%p)", i++,
                         (unsigned int) cmd->data.draw.first,
                         (unsigned int) cmd->data.draw.count,
-                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
-                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.color.r, (int) cmd->data.draw.color.g,
+                        (int) cmd->data.draw.color.b, (int) cmd->data.draw.color.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.color_scale, cmd->data.draw.texture);
                 break;
 
@@ -271,8 +271,8 @@ static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                 SDL_Log(" %u. copyex (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, color_scale=%g, tex=%p)", i++,
                         (unsigned int) cmd->data.draw.first,
                         (unsigned int) cmd->data.draw.count,
-                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
-                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.color.r, (int) cmd->data.draw.color.g,
+                        (int) cmd->data.draw.color.b, (int) cmd->data.draw.color.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.color_scale, cmd->data.draw.texture);
                 break;
 
@@ -280,8 +280,8 @@ static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
                 SDL_Log(" %u. geometry (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, color_scale=%g, tex=%p)", i++,
                         (unsigned int) cmd->data.draw.first,
                         (unsigned int) cmd->data.draw.count,
-                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
-                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.color.r, (int) cmd->data.draw.color.g,
+                        (int) cmd->data.draw.color.b, (int) cmd->data.draw.color.a,
                         (int) cmd->data.draw.blend, cmd->data.draw.color_scale, cmd->data.draw.texture);
                 break;
 
