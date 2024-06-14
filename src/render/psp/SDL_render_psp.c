@@ -460,9 +460,9 @@ static int PSP_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     prepareTextureForDownload(texture);
 
     *pixels =
-        (void *)((Uint8 *)psp_tex->data + rect->y * psp_tex->width * SDL_BYTESPERPIXEL(texture->format) +
+        (void *)((Uint8 *)psp_tex->data + rect->y * psp_tex->pitch +
                  rect->x * SDL_BYTESPERPIXEL(texture->format));
-    *pitch = psp_tex->width * SDL_BYTESPERPIXEL(texture->format);
+    *pitch = psp_tex->pitch;
 
     return 0;
 }
