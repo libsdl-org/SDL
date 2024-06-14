@@ -49,7 +49,7 @@ typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsi
  * Set a callback for every Windows message, run before TranslateMessage().
  *
  * \param callback The SDL_WindowsMessageHook function to call.
- * \param userdata a pointer to pass to every iteration of `callback`
+ * \param userdata a pointer to pass to every iteration of `callback`.
  *
  * \since This function is available since SDL 2.0.4.
  */
@@ -66,7 +66,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook ca
  * controls on which monitor a full screen application will appear.
  *
  * \param displayIndex the display index for which to get the D3D9 adapter
- *                     index
+ *                     index.
  * \returns the D3D9 adapter index on success or a negative error code on
  *          failure; call SDL_GetError() for more information.
  *
@@ -82,7 +82,7 @@ typedef struct IDirect3DDevice9 IDirect3DDevice9;
  * Once you are done using the device, you should release it to avoid a
  * resource leak.
  *
- * \param renderer the renderer from which to get the associated D3D device
+ * \param renderer the renderer from which to get the associated D3D device.
  * \returns the D3D9 device associated with given renderer or NULL if it is
  *          not a D3D9 renderer; call SDL_GetError() for more information.
  *
@@ -98,7 +98,7 @@ typedef struct ID3D11Device ID3D11Device;
  * Once you are done using the device, you should release it to avoid a
  * resource leak.
  *
- * \param renderer the renderer from which to get the associated D3D11 device
+ * \param renderer the renderer from which to get the associated D3D11 device.
  * \returns the D3D11 device associated with given renderer or NULL if it is
  *          not a D3D11 renderer; call SDL_GetError() for more information.
  *
@@ -118,7 +118,7 @@ typedef struct ID3D12Device ID3D12Device;
  * Once you are done using the device, you should release it to avoid a
  * resource leak.
  *
- * \param renderer the renderer from which to get the associated D3D12 device
+ * \param renderer the renderer from which to get the associated D3D12 device.
  * \returns the D3D12 device associated with given renderer or NULL if it is
  *          not a D3D12 renderer; call SDL_GetError() for more information.
  *
@@ -140,9 +140,9 @@ extern DECLSPEC ID3D12Device* SDLCALL SDL_RenderGetD3D12Device(SDL_Renderer* ren
  * Before SDL 2.0.4 this function did not return a value. Since SDL 2.0.4 it
  * returns an SDL_bool.
  *
- * \param displayIndex the display index for which to get both indices
- * \param adapterIndex a pointer to be filled in with the adapter index
- * \param outputIndex a pointer to be filled in with the output index
+ * \param displayIndex the display index for which to get both indices.
+ * \param adapterIndex a pointer to be filled in with the adapter index.
+ * \param outputIndex a pointer to be filled in with the output index.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
@@ -176,7 +176,7 @@ extern DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int prio
  * \param threadID The Unix thread ID to change priority of.
  * \param sdlPriority The new SDL_ThreadPriority value.
  * \param schedPolicy The new scheduling policy (SCHED_FIFO, SCHED_RR,
- *                    SCHED_OTHER, etc...)
+ *                    SCHED_OTHER, etc...).
  * \returns 0 on success, or -1 on error.
  *
  * \since This function is available since SDL 2.0.18.
@@ -210,9 +210,9 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void*);
  * This functions is also accessible using the macro
  * SDL_iOSSetAnimationCallback() since SDL 2.0.4.
  *
- * \param window the window for which the animation callback should be set
+ * \param window the window for which the animation callback should be set.
  * \param interval the number of frames after which **callback** will be
- *                 called
+ *                 called.
  * \param callback the function to call for every frame.
  * \param callbackParam a pointer that is passed to `callback`.
  * \returns 0 on success or a negative error code on failure; call
@@ -235,7 +235,7 @@ extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, 
  * This functions is also accessible using the macro SDL_iOSSetEventPump()
  * since SDL 2.0.4.
  *
- * \param enabled SDL_TRUE to enable the event pump, SDL_FALSE to disable it
+ * \param enabled SDL_TRUE to enable the event pump, SDL_FALSE to disable it.
  *
  * \since This function is available since SDL 2.0.0.
  *
@@ -445,11 +445,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permis
  *
  * https://developer.android.com/reference/android/view/Gravity
  *
- * \param message text message to be shown
- * \param duration 0=short, 1=long
+ * \param message text message to be shown.
+ * \param duration 0=short, 1=long.
  * \param gravity where the notification should appear on the screen.
- * \param xoffset set this parameter only when gravity >=0
- * \param yoffset set this parameter only when gravity >=0
+ * \param xoffset set this parameter only when gravity >=0.
+ * \param yoffset set this parameter only when gravity >=0.
  * \returns 0 if success, -1 if any error occurs.
  *
  * \since This function is available since SDL 2.0.16.
@@ -461,8 +461,8 @@ extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int durati
  *
  * Override "boolean onUnhandledMessage(Message msg)" to handle the message.
  *
- * \param command user command that must be greater or equal to 0x8000
- * \param param user parameter
+ * \param command user command that must be greater or equal to 0x8000.
+ * \param param user parameter.
  *
  * \since This function is available since SDL 2.0.22.
  */
@@ -528,7 +528,7 @@ typedef enum SDL_WinRT_DeviceFamily
  *
  * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
  *
- * \param pathType the type of path to retrieve, one of SDL_WinRT_Path
+ * \param pathType the type of path to retrieve, one of SDL_WinRT_Path.
  * \returns a UCS-2 string (16-bit, wide-char) containing the path, or NULL if
  *          the path is not available for any reason; call SDL_GetError() for
  *          more information.
@@ -551,7 +551,7 @@ extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path
  *
  * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
  *
- * \param pathType the type of path to retrieve, one of SDL_WinRT_Path
+ * \param pathType the type of path to retrieve, one of SDL_WinRT_Path.
  * \returns a UTF-8 string (8-bit, multi-byte) containing the path, or NULL if
  *          the path is not available for any reason; call SDL_GetError() for
  *          more information.

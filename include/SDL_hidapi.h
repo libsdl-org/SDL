@@ -226,7 +226,7 @@ extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, 
  * The path name be determined by calling SDL_hid_enumerate(), or a
  * platform-specific path name can be used (eg: /dev/hidraw0 on Linux).
  *
- * \param path The path name of the device to open
+ * \param path The path name of the device to open.
  * \returns a pointer to a SDL_hid_device object on success or NULL on
  *          failure.
  *
@@ -426,7 +426,7 @@ extern DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int 
 /**
  * Start or stop a BLE scan on iOS and tvOS to pair Steam Controllers
  *
- * \param active SDL_TRUE to start the scan, SDL_FALSE to stop the scan
+ * \param active SDL_TRUE to start the scan, SDL_FALSE to stop the scan.
  *
  * \since This function is available since SDL 2.0.18.
  */

@@ -97,7 +97,7 @@ typedef VkSurfaceKHR SDL_vulkanSurface; /* for compatibility with Tizen */
  * supported. Either do not link to the Vulkan loader or link to a dynamic
  * library version.
  *
- * \param path The platform dependent Vulkan loader library name or NULL
+ * \param path The platform dependent Vulkan loader library name or NULL.
  * \returns 0 on success or -1 if the library couldn't be loaded; call
  *          SDL_GetError() for more information.
  *
@@ -146,11 +146,11 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  * however, this parameter will likely be removed in future releases
  *
  * \param window A window for which the required Vulkan instance extensions
- *               should be retrieved (will be deprecated in a future release)
+ *               should be retrieved (will be deprecated in a future release).
  * \param pCount A pointer to an unsigned int corresponding to the number of
- *               extensions to be returned
+ *               extensions to be returned.
  * \param pNames NULL or a pointer to an array to be filled with required
- *               Vulkan instance extensions
+ *               Vulkan instance extensions.
  * \returns SDL_TRUE on success, SDL_FALSE on error.
  *
  * \since This function is available since SDL 2.0.6.
@@ -168,10 +168,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(SDL_Window *wi
  * `instance` must have been created with extensions returned by
  * SDL_Vulkan_GetInstanceExtensions() enabled.
  *
- * \param window The window to which to attach the Vulkan surface
- * \param instance The Vulkan instance handle
+ * \param window The window to which to attach the Vulkan surface.
+ * \param instance The Vulkan instance handle.
  * \param surface A pointer to a VkSurfaceKHR handle to output the newly
- *                created surface
+ *                created surface.
  * \returns SDL_TRUE on success, SDL_FALSE on error.
  *
  * \since This function is available since SDL 2.0.6.
@@ -191,9 +191,9 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
  * platform with high-DPI support (Apple calls this "Retina"), and not
  * disabled by the `SDL_HINT_VIDEO_HIGHDPI_DISABLED` hint.
  *
- * \param window an SDL_Window for which the size is to be queried
- * \param w Pointer to the variable to write the width to or NULL
- * \param h Pointer to the variable to write the height to or NULL
+ * \param window an SDL_Window for which the size is to be queried.
+ * \param w Pointer to the variable to write the width to or NULL.
+ * \param h Pointer to the variable to write the height to or NULL.
  *
  * \since This function is available since SDL 2.0.6.
  *

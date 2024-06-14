@@ -184,7 +184,7 @@ extern __inline Uint16 SDL_Swap16(Uint16);
 /**
  * Use this function to swap the byte order of a 16-bit value.
  *
- * \param x the value to be swapped
+ * \param x the value to be swapped.
  * \returns the swapped value.
  *
  * \sa SDL_SwapBE16
@@ -245,7 +245,7 @@ extern __inline Uint32 SDL_Swap32(Uint32);
 /**
  * Use this function to swap the byte order of a 32-bit value.
  *
- * \param x the value to be swapped
+ * \param x the value to be swapped.
  * \returns the swapped value.
  *
  * \sa SDL_SwapBE32
@@ -300,7 +300,7 @@ extern __inline Uint64 SDL_Swap64(Uint64);
 /**
  * Use this function to swap the byte order of a 64-bit value.
  *
- * \param x the value to be swapped
+ * \param x the value to be swapped.
  * \returns the swapped value.
  *
  * \sa SDL_SwapBE64
@@ -326,7 +326,7 @@ SDL_Swap64(Uint64 x)
 /**
  * Use this function to swap the byte order of a floating point value.
  *
- * \param x the value to be swapped
+ * \param x the value to be swapped.
  * \returns the swapped value.
  *
  * \sa SDL_SwapFloatBE

@@ -66,10 +66,10 @@ typedef enum SDL_PowerState
  *
  * \param seconds seconds of battery life left, you can pass a NULL here if
  *                you don't care, will return -1 if we can't determine a
- *                value, or we're not running on a battery
+ *                value, or we're not running on a battery.
  * \param percent percentage of battery life left, between 0 and 100, you can
  *                pass a NULL here if you don't care, will return -1 if we
- *                can't determine a value, or we're not running on a battery
+ *                can't determine a value, or we're not running on a battery.
  * \returns an SDL_PowerState enum representing the current battery state.
  *
  * \since This function is available since SDL 2.0.0.

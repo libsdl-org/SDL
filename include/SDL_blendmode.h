@@ -159,18 +159,18 @@ typedef enum SDL_BlendFactor
  * case.
  *
  * \param srcColorFactor the SDL_BlendFactor applied to the red, green, and
- *                       blue components of the source pixels
+ *                       blue components of the source pixels.
  * \param dstColorFactor the SDL_BlendFactor applied to the red, green, and
- *                       blue components of the destination pixels
+ *                       blue components of the destination pixels.
  * \param colorOperation the SDL_BlendOperation used to combine the red,
  *                       green, and blue components of the source and
- *                       destination pixels
+ *                       destination pixels.
  * \param srcAlphaFactor the SDL_BlendFactor applied to the alpha component of
- *                       the source pixels
+ *                       the source pixels.
  * \param dstAlphaFactor the SDL_BlendFactor applied to the alpha component of
- *                       the destination pixels
+ *                       the destination pixels.
  * \param alphaOperation the SDL_BlendOperation used to combine the alpha
- *                       component of the source and destination pixels
+ *                       component of the source and destination pixels.
  * \returns an SDL_BlendMode that represents the chosen factors and
  *          operations.
  *

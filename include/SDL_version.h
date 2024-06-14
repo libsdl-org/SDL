@@ -133,7 +133,7 @@ typedef struct SDL_version
  *
  * This function may be called safely at any time, even before SDL_Init().
  *
- * \param ver the SDL_version structure that contains the version information
+ * \param ver the SDL_version structure that contains the version information.
  *
  * \since This function is available since SDL 2.0.0.
  *

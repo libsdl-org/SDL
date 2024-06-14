@@ -140,7 +140,7 @@ extern DECLSPEC Uint64 SDLCALL SDL_GetPerformanceFrequency(void);
  * waits at least the specified time, but possibly longer due to OS
  * scheduling.
  *
- * \param ms the number of milliseconds to delay
+ * \param ms the number of milliseconds to delay.
  *
  * \since This function is available since SDL 2.0.0.
  */
@@ -182,10 +182,10 @@ typedef int SDL_TimerID;
  * time with SDL_GetTicks() or SDL_GetPerformanceCounter() in case your
  * callback needs to adjust for variances.
  *
- * \param interval the timer delay, in milliseconds, passed to `callback`
+ * \param interval the timer delay, in milliseconds, passed to `callback`.
  * \param callback the SDL_TimerCallback function to call when the specified
- *                 `interval` elapses
- * \param param a pointer that is passed to `callback`
+ *                 `interval` elapses.
+ * \param param a pointer that is passed to `callback`.
  * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
  *          information.
  *
@@ -200,7 +200,7 @@ extern DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval,
 /**
  * Remove a timer created with SDL_AddTimer().
  *
- * \param id the ID of the timer to remove
+ * \param id the ID of the timer to remove.
  * \returns SDL_TRUE if the timer is removed or SDL_FALSE if the timer wasn't
  *          found.
  *

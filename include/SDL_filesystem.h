@@ -126,8 +126,8 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  * The pointer returned is owned by the caller. Please call SDL_free() on the
  * pointer when done with it.
  *
- * \param org the name of your organization
- * \param app the name of your application
+ * \param org the name of your organization.
+ * \param app the name of your application.
  * \returns a UTF-8 string of the user directory in platform-dependent
  *          notation. NULL if there's a problem (creating directory failed,
  *          etc.).

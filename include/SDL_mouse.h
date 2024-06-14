@@ -90,9 +90,9 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * either `x` or `y`.
  *
  * \param x the x coordinate of the mouse cursor position relative to the
- *          focus window
+ *          focus window.
  * \param y the y coordinate of the mouse cursor position relative to the
- *          focus window
+ *          focus window.
  * \returns a 32-bit button bitmask of the current button state.
  *
  * \since This function is available since SDL 2.0.0.
@@ -120,9 +120,9 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetMouseState(int *x, int *y);
  * reason to use this function, you probably want SDL_GetMouseState() instead.
  *
  * \param x filled in with the current X coord relative to the desktop; can be
- *          NULL
+ *          NULL.
  * \param y filled in with the current Y coord relative to the desktop; can be
- *          NULL
+ *          NULL.
  * \returns the current button state as a bitmask which can be tested using
  *          the SDL_BUTTON(X) macros.
  *
@@ -141,8 +141,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetGlobalMouseState(int *x, int *y);
  * mouse deltas since the last call to SDL_GetRelativeMouseState() or since
  * event initialization. You can pass NULL for either `x` or `y`.
  *
- * \param x a pointer filled with the last recorded x coordinate of the mouse
- * \param y a pointer filled with the last recorded y coordinate of the mouse
+ * \param x a pointer filled with the last recorded x coordinate of the mouse.
+ * \param y a pointer filled with the last recorded y coordinate of the mouse.
  * \returns a 32-bit button bitmask of the relative button state.
  *
  * \since This function is available since SDL 2.0.0.
@@ -162,9 +162,9 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
  * mouse when used over Microsoft Remote Desktop.
  *
  * \param window the window to move the mouse into, or NULL for the current
- *               mouse focus
- * \param x the x coordinate within the window
- * \param y the y coordinate within the window
+ *               mouse focus.
+ * \param x the x coordinate within the window.
+ * \param y the y coordinate within the window.
  *
  * \since This function is available since SDL 2.0.0.
  *
@@ -184,8 +184,8 @@ extern DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
  * Note that this function will appear to succeed, but not actually move the
  * mouse when used over Microsoft Remote Desktop.
  *
- * \param x the x coordinate
- * \param y the y coordinate
+ * \param x the x coordinate.
+ * \param y the y coordinate.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -297,14 +297,14 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  * Also, since SDL 2.0.0, SDL_CreateSystemCursor() is available, which
  * provides twelve readily available system cursors to pick from.
  *
- * \param data the color value for each pixel of the cursor
- * \param mask the mask value for each pixel of the cursor
- * \param w the width of the cursor
- * \param h the height of the cursor
+ * \param data the color value for each pixel of the cursor.
+ * \param mask the mask value for each pixel of the cursor.
+ * \param w the width of the cursor.
+ * \param h the height of the cursor.
  * \param hot_x the X-axis location of the upper left corner of the cursor
- *              relative to the actual mouse position
+ *              relative to the actual mouse position.
  * \param hot_y the Y-axis location of the upper left corner of the cursor
- *              relative to the actual mouse position
+ *              relative to the actual mouse position.
  * \returns a new cursor with the specified parameters on success or NULL on
  *          failure; call SDL_GetError() for more information.
  *
@@ -322,9 +322,9 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
 /**
  * Create a color cursor.
  *
- * \param surface an SDL_Surface structure representing the cursor image
- * \param hot_x the x position of the cursor hot spot
- * \param hot_y the y position of the cursor hot spot
+ * \param surface an SDL_Surface structure representing the cursor image.
+ * \param hot_x the x position of the cursor hot spot.
+ * \param hot_y the y position of the cursor hot spot.
  * \returns the new cursor on success or NULL on failure; call SDL_GetError()
  *          for more information.
  *
@@ -340,7 +340,7 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateColorCursor(SDL_Surface *surface,
 /**
  * Create a system cursor.
  *
- * \param id an SDL_SystemCursor enum value
+ * \param id an SDL_SystemCursor enum value.
  * \returns a cursor on success or NULL on failure; call SDL_GetError() for
  *          more information.
  *
@@ -358,7 +358,7 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
  * the display. SDL_SetCursor(NULL) can be used to force cursor redraw, if
  * this is desired for any reason.
  *
- * \param cursor a cursor to make active
+ * \param cursor a cursor to make active.
  *
  * \since This function is available since SDL 2.0.0.
  *
@@ -402,7 +402,7 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_GetDefaultCursor(void);
  * Use this function to free cursor resources created with SDL_CreateCursor(),
  * SDL_CreateColorCursor() or SDL_CreateSystemCursor().
  *
- * \param cursor the cursor to free
+ * \param cursor the cursor to free.
  *
  * \since This function is available since SDL 2.0.0.
  *

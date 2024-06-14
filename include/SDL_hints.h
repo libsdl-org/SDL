@@ -3097,9 +3097,9 @@ typedef enum SDL_HintPriority
  * value. Hints will replace existing hints of their priority and lower.
  * Environment variables are considered to have override priority.
  *
- * \param name the hint to set
- * \param value the value of the hint variable
- * \param priority the SDL_HintPriority level for the hint
+ * \param name the hint to set.
+ * \param value the value of the hint variable.
+ * \param priority the SDL_HintPriority level for the hint.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 2.0.0.
@@ -3118,8 +3118,8 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * variable that takes precedence. You can use SDL_SetHintWithPriority() to
  * set the hint with override priority instead.
  *
- * \param name the hint to set
- * \param value the value of the hint variable
+ * \param name the hint to set.
+ * \param value the value of the hint variable.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 2.0.0.
@@ -3137,7 +3137,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * the environment isn't set. Callbacks will be called normally with this
  * change.
  *
- * \param name the hint to set
+ * \param name the hint to set.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 2.24.0.
@@ -3165,7 +3165,7 @@ extern DECLSPEC void SDLCALL SDL_ResetHints(void);
 /**
  * Get the value of a hint.
  *
- * \param name the hint to query
+ * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
  * \since This function is available since SDL 2.0.0.
@@ -3178,8 +3178,8 @@ extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 /**
  * Get the boolean value of a hint variable.
  *
- * \param name the name of the hint to get the boolean value from
- * \param default_value the value to return if the hint does not exist
+ * \param name the name of the hint to get the boolean value from.
+ * \param default_value the value to return if the hint does not exist.
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.
  *
@@ -3193,20 +3193,20 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool d
 /**
  * Type definition of the hint callback function.
  *
- * \param userdata what was passed as `userdata` to SDL_AddHintCallback()
- * \param name what was passed as `name` to SDL_AddHintCallback()
- * \param oldValue the previous hint value
- * \param newValue the new value hint is to be set to
+ * \param userdata what was passed as `userdata` to SDL_AddHintCallback().
+ * \param name what was passed as `name` to SDL_AddHintCallback().
+ * \param oldValue the previous hint value.
+ * \param newValue the new value hint is to be set to.
  */
 typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const char *oldValue, const char *newValue);
 
 /**
  * Add a function to watch a particular hint.
  *
- * \param name the hint to watch
+ * \param name the hint to watch.
  * \param callback An SDL_HintCallback function that will be called when the
- *                 hint value changes
- * \param userdata a pointer to pass to the callback function
+ *                 hint value changes.
+ * \param userdata a pointer to pass to the callback function.
  *
  * \since This function is available since SDL 2.0.0.
  *
@@ -3219,10 +3219,10 @@ extern DECLSPEC void SDLCALL SDL_AddHintCallback(const char *name,
 /**
  * Remove a function watching a particular hint.
  *
- * \param name the hint being watched
+ * \param name the hint being watched.
  * \param callback An SDL_HintCallback function that will be called when the
- *                 hint value changes
- * \param userdata a pointer being passed to the callback function
+ *                 hint value changes.
+ * \param userdata a pointer being passed to the callback function.
  *
  * \since This function is available since SDL 2.0.0.
  *

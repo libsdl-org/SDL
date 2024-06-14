@@ -363,8 +363,8 @@ typedef struct SDL_SysWMinfo SDL_SysWMinfo;
  * `SDL_VERSION(&info.version)`, and then this function will fill in the rest
  * of the structure with information about the given window.
  *
- * \param window the window about which information is being requested
- * \param info an SDL_SysWMinfo structure filled in with window information
+ * \param window the window about which information is being requested.
+ * \param info an SDL_SysWMinfo structure filled in with window information.
  * \returns SDL_TRUE if the function is implemented and the `version` member
  *          of the `info` struct is valid, or SDL_FALSE if the information
  *          could not be retrieved; call SDL_GetError() for more information.
