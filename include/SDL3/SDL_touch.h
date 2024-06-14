@@ -109,8 +109,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetTouchDeviceName(SDL_TouchID touch
 /**
  * Get the type of the given touch device.
  *
- * \param touchID the ID of a touch device
- * \returns touch device type
+ * \param touchID the ID of a touch device.
+ * \returns touch device type.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -119,7 +119,7 @@ extern SDL_DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_Touch
 /**
  * Get a list of active fingers for a given touch device.
  *
- * \param touchID the ID of a touch device
+ * \param touchID the ID of a touch device.
  * \param count a pointer filled in with the number of fingers returned, can
  *              be NULL.
  * \returns a NULL terminated array of SDL_Finger pointers which should be

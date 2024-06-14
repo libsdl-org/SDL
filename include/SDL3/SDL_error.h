@@ -53,9 +53,9 @@ extern "C" {
  * }
  * ```
  *
- * \param fmt a printf()-style message format string
+ * \param fmt a printf()-style message format string.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
- *            any
+ *            any.
  * \returns always -1.
  *
  * \since This function is available since SDL 3.0.0.
@@ -70,7 +70,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char
  *
  * This function does not do any memory allocation.
  *
- * \returns -1
+ * \returns -1.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -115,7 +115,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetError(void);
 /**
  * Clear any previous error message for this thread.
  *
- * \returns 0
+ * \returns 0.
  *
  * \since This function is available since SDL 3.0.0.
  *

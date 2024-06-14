@@ -80,8 +80,8 @@ typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  * message should continue to be processed, or SDL_FALSE to prevent further
  * processing.
  *
- * \param callback The SDL_WindowsMessageHook function to call.
- * \param userdata a pointer to pass to every iteration of `callback`
+ * \param callback the SDL_WindowsMessageHook function to call.
+ * \param userdata a pointer to pass to every iteration of `callback`.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -100,7 +100,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHoo
  * The returned adapter index can be passed to `IDirect3D9::CreateDevice` and
  * controls on which monitor a full screen application will appear.
  *
- * \param displayID the instance of the display to query
+ * \param displayID the instance of the display to query.
  * \returns the D3D9 adapter index on success or a negative error code on
  *          failure; call SDL_GetError() for more information.
  *
@@ -119,9 +119,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displ
  * `EnumOutputs` respectively to get the objects required to create a DX10 or
  * DX11 device and swap chain.
  *
- * \param displayID the instance of the display to query
- * \param adapterIndex a pointer to be filled in with the adapter index
- * \param outputIndex a pointer to be filled in with the output index
+ * \param displayID the instance of the display to query.
+ * \param adapterIndex a pointer to be filled in with the adapter index.
+ * \param outputIndex a pointer to be filled in with the output index.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
@@ -145,8 +145,8 @@ typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
  * should continue to be processed, or SDL_FALSE to prevent further
  * processing.
  *
- * \param callback The SDL_X11EventHook function to call.
- * \param userdata a pointer to pass to every iteration of `callback`
+ * \param callback the SDL_X11EventHook function to call.
+ * \param userdata a pointer to pass to every iteration of `callback`.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -161,7 +161,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, 
  * This uses setpriority() if possible, and RealtimeKit if available.
  *
  * \param threadID the Unix thread ID to change priority of.
- * \param priority The new, Unix-specific, priority value.
+ * \param priority the new, Unix-specific, priority value.
  * \returns 0 on success, or -1 on error.
  *
  * \since This function is available since SDL 3.0.0.
@@ -173,10 +173,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int 
  *
  * This uses setpriority() if possible, and RealtimeKit if available.
  *
- * \param threadID The Unix thread ID to change priority of.
- * \param sdlPriority The new SDL_ThreadPriority value.
- * \param schedPolicy The new scheduling policy (SCHED_FIFO, SCHED_RR,
- *                    SCHED_OTHER, etc...)
+ * \param threadID the Unix thread ID to change priority of.
+ * \param sdlPriority the new SDL_ThreadPriority value.
+ * \param schedPolicy the new scheduling policy (SCHED_FIFO, SCHED_RR,
+ *                    SCHED_OTHER, etc...).
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -234,9 +234,9 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  *
  * https://wiki.libsdl.org/SDL3/README/main-functions
  *
- * \param window the window for which the animation callback should be set
+ * \param window the window for which the animation callback should be set.
  * \param interval the number of frames after which **callback** will be
- *                 called
+ *                 called.
  * \param callback the function to call for every frame.
  * \param callbackParam a pointer that is passed to `callback`.
  * \returns 0 on success or a negative error code on failure; call
@@ -253,7 +253,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window * window,
  *
  * This function is only available on Apple iOS.
  *
- * \param enabled SDL_TRUE to enable the event pump, SDL_FALSE to disable it
+ * \param enabled SDL_TRUE to enable the event pump, SDL_FALSE to disable it.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -475,9 +475,9 @@ typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, con
  * like memory running out. Normally there will be a yes or no to the request
  * through the callback.
  *
- * \param permission The permission to request.
- * \param cb The callback to trigger when the request has a response.
- * \param userdata An app-controlled pointer that is passed to the callback.
+ * \param permission the permission to request.
+ * \param cb the callback to trigger when the request has a response.
+ * \param userdata an app-controlled pointer that is passed to the callback.
  * \returns zero if the request was submitted, -1 if there was an error
  *          submitting. The result of the request is only ever reported
  *          through the callback, not this return value.
@@ -502,11 +502,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permiss
  *
  * https://developer.android.com/reference/android/view/Gravity
  *
- * \param message text message to be shown
- * \param duration 0=short, 1=long
+ * \param message text message to be shown.
+ * \param duration 0=short, 1=long.
  * \param gravity where the notification should appear on the screen.
- * \param xoffset set this parameter only when gravity >=0
- * \param yoffset set this parameter only when gravity >=0
+ * \param xoffset set this parameter only when gravity >=0.
+ * \param yoffset set this parameter only when gravity >=0.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -521,8 +521,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int du
  *
  * Override "boolean onUnhandledMessage(Message msg)" to handle the message.
  *
- * \param command user command that must be greater or equal to 0x8000
- * \param param user parameter
+ * \param command user command that must be greater or equal to 0x8000.
+ * \param param user parameter.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -600,7 +600,7 @@ typedef enum SDL_WinRT_DeviceFamily
  *
  * The returned string follows the SDL_GetStringRule.
  *
- * \param pathType the type of path to retrieve, one of SDL_WinRT_Path
+ * \param pathType the type of path to retrieve, one of SDL_WinRT_Path.
  * \returns a UTF-8 string (8-bit, multi-byte) containing the path, or NULL if
  *          the path is not available for any reason; call SDL_GetError() for
  *          more information.

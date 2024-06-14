@@ -87,7 +87,7 @@ typedef int SDL_SpinLock;
  * ***Please note that spinlocks are dangerous if you don't know what you're
  * doing. Please be careful using any sort of spinlock!***
  *
- * \param lock a pointer to a lock variable
+ * \param lock a pointer to a lock variable.
  * \returns SDL_TRUE if the lock succeeded, SDL_FALSE if the lock is already
  *          held.
  *
@@ -104,7 +104,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
  * ***Please note that spinlocks are dangerous if you don't know what you're
  * doing. Please be careful using any sort of spinlock!***
  *
- * \param lock a pointer to a lock variable
+ * \param lock a pointer to a lock variable.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -121,7 +121,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
  * ***Please note that spinlocks are dangerous if you don't know what you're
  * doing. Please be careful using any sort of spinlock!***
  *
- * \param lock a pointer to a lock variable
+ * \param lock a pointer to a lock variable.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -333,9 +333,9 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicInt variable to be modified
- * \param oldval the old value
- * \param newval the new value
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param oldval the old value.
+ * \param newval the new value.
  * \returns SDL_TRUE if the atomic variable was set, SDL_FALSE otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -354,8 +354,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, 
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicInt variable to be modified
- * \param v the desired value
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param v the desired value.
  * \returns the previous value of the atomic variable.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -372,7 +372,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicSet(SDL_AtomicInt *a, int v);
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicInt variable
+ * \param a a pointer to an SDL_AtomicInt variable.
  * \returns the current value of an atomic variable.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -391,8 +391,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicGet(SDL_AtomicInt *a);
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicInt variable to be modified
- * \param v the desired value to add
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param v the desired value to add.
  * \returns the previous value of the atomic variable.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -430,7 +430,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  *
  * \param a a pointer to an SDL_AtomicInt to increment.
  * \returns SDL_TRUE if the variable reached zero after decrementing,
- *          SDL_FALSE otherwise
+ *          SDL_FALSE otherwise.
  *
  * \since This macro is available since SDL 3.0.0.
  *
@@ -445,9 +445,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_AtomicAdd(SDL_AtomicInt *a, int v);
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to a pointer
- * \param oldval the old pointer value
- * \param newval the new pointer value
+ * \param a a pointer to a pointer.
+ * \param oldval the old pointer value.
+ * \param newval the new pointer value.
  * \returns SDL_TRUE if the pointer was set, SDL_FALSE otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -466,8 +466,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AtomicCompareAndSwapPointer(void **a, v
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to a pointer
- * \param v the desired pointer value
+ * \param a a pointer to a pointer.
+ * \param v the desired pointer value.
  * \returns the previous value of the pointer.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -485,7 +485,7 @@ extern SDL_DECLSPEC void* SDLCALL SDL_AtomicSetPtr(void **a, void* v);
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to a pointer
+ * \param a a pointer to a pointer.
  * \returns the current value of a pointer.
  *
  * \threadsafety It is safe to call this function from any thread.

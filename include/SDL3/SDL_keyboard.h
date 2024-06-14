@@ -92,7 +92,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * power buttons, etc. You should wait for input from a device before you
  * consider it actively in use.
  *
- * \param count a pointer filled in with the number of keyboards returned
+ * \param count a pointer filled in with the number of keyboards returned.
  * \returns a 0 terminated array of keyboards instance IDs which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
@@ -111,7 +111,7 @@ extern SDL_DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
  *
  * The returned string follows the SDL_GetStringRule.
  *
- * \param instance_id the keyboard instance ID
+ * \param instance_id the keyboard instance ID.
  * \returns the name of the selected keyboard, or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -151,7 +151,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * Note: This function doesn't take into account whether shift has been
  * pressed or not.
  *
- * \param numkeys if non-NULL, receives the length of the returned array
+ * \param numkeys if non-NULL, receives the length of the returned array.
  * \returns a pointer to an array of key states.
  *
  * \since This function is available since SDL 3.0.0.
@@ -196,7 +196,7 @@ extern SDL_DECLSPEC SDL_Keymod SDLCALL SDL_GetModState(void);
  * This does not change the keyboard state, only the key modifier flags that
  * SDL reports.
  *
- * \param modstate the desired SDL_Keymod for the keyboard
+ * \param modstate the desired SDL_Keymod for the keyboard.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -210,7 +210,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
  *
  * See SDL_Keycode for details.
  *
- * \param scancode the desired SDL_Scancode to query
+ * \param scancode the desired SDL_Scancode to query.
  * \returns the SDL_Keycode that corresponds to the given SDL_Scancode.
  *
  * \since This function is available since SDL 3.0.0.
@@ -226,7 +226,7 @@ extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetDefaultKeyFromScancode(SDL_Scanco
  *
  * See SDL_Keycode for details.
  *
- * \param scancode the desired SDL_Scancode to query
+ * \param scancode the desired SDL_Scancode to query.
  * \returns the SDL_Keycode that corresponds to the given SDL_Scancode.
  *
  * \since This function is available since SDL 3.0.0.
@@ -242,7 +242,7 @@ extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scan
  *
  * See SDL_Scancode for details.
  *
- * \param key the desired SDL_Keycode to query
+ * \param key the desired SDL_Keycode to query.
  * \returns the SDL_Scancode that corresponds to the given SDL_Keycode.
  *
  * \since This function is available since SDL 3.0.0.
@@ -268,7 +268,7 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key)
  * unsuitable for creating a stable cross-platform two-way mapping between
  * strings and scancodes.
  *
- * \param scancode the desired SDL_Scancode to query
+ * \param scancode the desired SDL_Scancode to query.
  * \returns a pointer to the name for the scancode. If the scancode doesn't
  *          have a name this function returns an empty string ("").
  *
@@ -282,7 +282,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetScancodeName(SDL_Scancode scancod
 /**
  * Get a scancode from a human-readable name.
  *
- * \param name the human-readable scancode name
+ * \param name the human-readable scancode name.
  * \returns the SDL_Scancode, or `SDL_SCANCODE_UNKNOWN` if the name wasn't
  *          recognized; call SDL_GetError() for more information.
  *
@@ -301,7 +301,7 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
  *
  * The returned string follows the SDL_GetStringRule.
  *
- * \param key the desired SDL_Keycode to query
+ * \param key the desired SDL_Keycode to query.
  * \returns a pointer to a UTF-8 string that stays valid at least until the
  *          next call to this function. If you need it around any longer, you
  *          must copy it. If the key doesn't have a name, this function
@@ -318,7 +318,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetKeyName(SDL_Keycode key);
 /**
  * Get a key code from a human-readable name.
  *
- * \param name the human-readable key name
+ * \param name the human-readable key name.
  * \returns key code, or `SDLK_UNKNOWN` if the name wasn't recognized; call
  *          SDL_GetError() for more information.
  *
@@ -396,7 +396,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ClearComposition(void);
  * any feedback.
  *
  * \param rect the SDL_Rect structure representing the rectangle to receive
- *             text (ignored if NULL)
+ *             text (ignored if NULL).
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -422,7 +422,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasScreenKeyboardSupport(void);
 /**
  * Check whether the screen keyboard is shown for given window.
  *
- * \param window the window for which screen keyboard should be queried
+ * \param window the window for which screen keyboard should be queried.
  * \returns SDL_TRUE if screen keyboard is shown or SDL_FALSE if not.
  *
  * \since This function is available since SDL 3.0.0.
