@@ -494,8 +494,15 @@ static void FlushFullscreenEvents(SDL_Window *window)
 static void Wayland_move_window(SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
-    SDL_DisplayData *display = wind->outputs[wind->num_outputs - 1];
+    SDL_DisplayData *display;
     SDL_DisplayID *displays;
+
+    if (wind->outputs && wind->num_outputs) {
+        display = wind->outputs[wind->num_outputs - 1];
+    } else {
+        /* A window may not be on any displays if minimized. */
+        return;
+    }
 
     displays = SDL_GetDisplays(NULL);
     if (displays) {
