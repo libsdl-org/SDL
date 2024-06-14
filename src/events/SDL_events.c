@@ -35,13 +35,6 @@
 #endif
 #include "../video/SDL_sysvideo.h"
 
-#undef SDL_PRIs64
-#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_CYGWIN)
-#define SDL_PRIs64 "I64d"
-#else
-#define SDL_PRIs64 "lld"
-#endif
-
 /* An arbitrary limit so we don't have unbounded growth */
 #define SDL_MAX_QUEUED_EVENTS 65535
 
