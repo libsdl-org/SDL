@@ -71,12 +71,12 @@ public class SDLAudioManager {
         }
     }
 
-    protected static int[] open(boolean isCapture, int sampleRate, int audioFormat, int desiredChannels, int desiredFrames, int deviceId) {
+    protected static int[] open(boolean recording, int sampleRate, int audioFormat, int desiredChannels, int desiredFrames, int deviceId) {
         int channelConfig;
         int sampleSize;
         int frameSize;
 
-        Log.v(TAG, "Opening " + (isCapture ? "capture" : "playback") + ", requested " + desiredFrames + " frames of " + desiredChannels + " channel " + getAudioFormatString(audioFormat) + " audio at " + sampleRate + " Hz");
+        Log.v(TAG, "Opening " + (recording ? "recording" : "playback") + ", requested " + desiredFrames + " frames of " + desiredChannels + " channel " + getAudioFormatString(audioFormat) + " audio at " + sampleRate + " Hz");
 
         /* On older devices let's use known good settings */
         if (Build.VERSION.SDK_INT < 21 /* Android 5.0 (LOLLIPOP) */) {
@@ -95,7 +95,7 @@ public class SDLAudioManager {
         }
 
         if (audioFormat == AudioFormat.ENCODING_PCM_FLOAT) {
-            int minSDKVersion = (isCapture ? 23 /* Android 6.0 (M) */ : 21 /* Android 5.0 (LOLLIPOP) */);
+            int minSDKVersion = (recording ? 23 /* Android 6.0 (M) */ : 21 /* Android 5.0 (LOLLIPOP) */);
             if (Build.VERSION.SDK_INT < minSDKVersion) {
                 audioFormat = AudioFormat.ENCODING_PCM_16BIT;
             }
@@ -118,7 +118,7 @@ public class SDLAudioManager {
             break;
         }
 
-        if (isCapture) {
+        if (recording) {
             switch (desiredChannels) {
             case 1:
                 channelConfig = AudioFormat.CHANNEL_IN_MONO;
@@ -215,7 +215,7 @@ public class SDLAudioManager {
         // gods they probably shouldn't, the minimums are horrifyingly high
         // latency already
         int minBufferSize;
-        if (isCapture) {
+        if (recording) {
             minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
         } else {
             minBufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig, audioFormat);
@@ -224,7 +224,7 @@ public class SDLAudioManager {
 
         int[] results = new int[4];
 
-        if (isCapture) {
+        if (recording) {
             if (mAudioRecord == null) {
                 mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, sampleRate,
                         channelConfig, audioFormat, desiredFrames * frameSize);
@@ -238,7 +238,7 @@ public class SDLAudioManager {
                 }
 
                 if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */ && deviceId != 0) {
-                    mAudioRecord.setPreferredDevice(getOutputAudioDeviceInfo(deviceId));
+                    mAudioRecord.setPreferredDevice(getPlaybackAudioDeviceInfo(deviceId));
                 }
 
                 mAudioRecord.startRecording();
@@ -277,7 +277,7 @@ public class SDLAudioManager {
         }
         results[3] = desiredFrames;
 
-        Log.v(TAG, "Opening " + (isCapture ? "capture" : "playback") + ", got " + results[3] + " frames of " + results[2] + " channel " + getAudioFormatString(results[1]) + " audio at " + results[0] + " Hz");
+        Log.v(TAG, "Opening " + (recording ? "recording" : "playback") + ", got " + results[3] + " frames of " + results[2] + " channel " + getAudioFormatString(results[1]) + " audio at " + results[0] + " Hz");
 
         return results;
     }
@@ -294,7 +294,7 @@ public class SDLAudioManager {
         return null;
     }
 
-    private static AudioDeviceInfo getOutputAudioDeviceInfo(int deviceId) {
+    private static AudioDeviceInfo getPlaybackAudioDeviceInfo(int deviceId) {
         if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             for (AudioDeviceInfo deviceInfo : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
@@ -423,12 +423,12 @@ public class SDLAudioManager {
     /**
      * This method is called by SDL using JNI.
      */
-    public static int[] captureOpen(int sampleRate, int audioFormat, int desiredChannels, int desiredFrames, int deviceId) {
+    public static int[] recordingOpen(int sampleRate, int audioFormat, int desiredChannels, int desiredFrames, int deviceId) {
         return open(true, sampleRate, audioFormat, desiredChannels, desiredFrames, deviceId);
     }
 
     /** This method is called by SDL using JNI. */
-    public static int captureReadFloatBuffer(float[] buffer, boolean blocking) {
+    public static int recordingReadFloatBuffer(float[] buffer, boolean blocking) {
         if (Build.VERSION.SDK_INT < 23 /* Android 6.0 (M) */) {
             return 0;
         } else {
@@ -437,7 +437,7 @@ public class SDLAudioManager {
     }
 
     /** This method is called by SDL using JNI. */
-    public static int captureReadShortBuffer(short[] buffer, boolean blocking) {
+    public static int recordingReadShortBuffer(short[] buffer, boolean blocking) {
         if (Build.VERSION.SDK_INT < 23 /* Android 6.0 (M) */) {
             return mAudioRecord.read(buffer, 0, buffer.length);
         } else {
@@ -446,7 +446,7 @@ public class SDLAudioManager {
     }
 
     /** This method is called by SDL using JNI. */
-    public static int captureReadByteBuffer(byte[] buffer, boolean blocking) {
+    public static int recordingReadByteBuffer(byte[] buffer, boolean blocking) {
         if (Build.VERSION.SDK_INT < 23 /* Android 6.0 (M) */) {
             return mAudioRecord.read(buffer, 0, buffer.length);
         } else {
@@ -464,7 +464,7 @@ public class SDLAudioManager {
     }
 
     /** This method is called by SDL using JNI. */
-    public static void captureClose() {
+    public static void recordingClose() {
         if (mAudioRecord != null) {
             mAudioRecord.stop();
             mAudioRecord.release();
@@ -473,11 +473,11 @@ public class SDLAudioManager {
     }
 
     /** This method is called by SDL using JNI. */
-    public static void audioSetThreadPriority(boolean iscapture, int device_id) {
+    public static void audioSetThreadPriority(boolean recording, int device_id) {
         try {
 
             /* Set thread name */
-            if (iscapture) {
+            if (recording) {
                 Thread.currentThread().setName("SDLAudioC" + device_id);
             } else {
                 Thread.currentThread().setName("SDLAudioP" + device_id);
@@ -493,8 +493,8 @@ public class SDLAudioManager {
 
     public static native int nativeSetupJNI();
 
-    public static native void removeAudioDevice(boolean isCapture, int deviceId);
+    public static native void removeAudioDevice(boolean recording, int deviceId);
 
-    public static native void addAudioDevice(boolean isCapture, String name, int deviceId);
+    public static native void addAudioDevice(boolean recording, String name, int deviceId);
 
 }

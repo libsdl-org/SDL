@@ -46,7 +46,7 @@ Here is a rough list of what works, and what doesn't:
   * mouse input  (unsupported on Windows Phone)
   * audio, via SDL's WASAPI backend (if you want to record, your app must
     have "Microphone" capabilities enabled in its manifest, and the user must
-    not have blocked access. Otherwise, capture devices will fail to work,
+    not have blocked access. Otherwise, recording devices will fail to work,
     presenting as a device disconnect shortly after opening it.)
   * .DLL file loading.  Libraries *MUST* be packaged inside applications.  Loading
     anything outside of the app is not supported.

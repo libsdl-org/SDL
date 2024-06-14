@@ -36,8 +36,8 @@ struct SDL_PrivateAudioData
     int resume;  // Resume device if it was paused automatically
 };
 
-static SDL_AudioDevice *audioDevice = NULL;
-static SDL_AudioDevice *captureDevice = NULL;
+static SDL_AudioDevice *playbackDevice = NULL;
+static SDL_AudioDevice *recordingDevice = NULL;
 
 static int ANDROIDAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
@@ -46,18 +46,18 @@ static int ANDROIDAUDIO_OpenDevice(SDL_AudioDevice *device)
         return -1;
     }
 
-    const SDL_bool iscapture = device->iscapture;
+    const SDL_bool recording = device->recording;
 
-    if (iscapture) {
-        if (captureDevice) {
-            return SDL_SetError("An audio capture device is already opened");
+    if (recording) {
+        if (recordingDevice) {
+            return SDL_SetError("An audio recording device is already opened");
         }
-        captureDevice = device;
+        recordingDevice = device;
     } else {
-        if (audioDevice) {
+        if (playbackDevice) {
             return SDL_SetError("An audio playback device is already opened");
         }
-        audioDevice = device;
+        playbackDevice = device;
     }
 
     SDL_AudioFormat test_format;
@@ -97,14 +97,14 @@ static Uint8 *ANDROIDAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_siz
     return Android_JNI_GetAudioBuffer();
 }
 
-static int ANDROIDAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+static int ANDROIDAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
-    return Android_JNI_CaptureAudioBuffer(buffer, buflen);
+    return Android_JNI_RecordAudioBuffer(buffer, buflen);
 }
 
-static void ANDROIDAUDIO_FlushCapture(SDL_AudioDevice *device)
+static void ANDROIDAUDIO_FlushRecording(SDL_AudioDevice *device)
 {
-    Android_JNI_FlushCapturedAudio();
+    Android_JNI_FlushRecordedAudio();
 }
 
 static void ANDROIDAUDIO_CloseDevice(SDL_AudioDevice *device)
@@ -113,13 +113,13 @@ static void ANDROIDAUDIO_CloseDevice(SDL_AudioDevice *device)
        so it's safe to terminate the Java side buffer and AudioTrack
      */
     if (device->hidden) {
-        Android_JNI_CloseAudioDevice(device->iscapture);
-        if (device->iscapture) {
-            SDL_assert(captureDevice == device);
-            captureDevice = NULL;
+        Android_JNI_CloseAudioDevice(device->recording);
+        if (device->recording) {
+            SDL_assert(recordingDevice == device);
+            recordingDevice = NULL;
         } else {
-            SDL_assert(audioDevice == device);
-            audioDevice = NULL;
+            SDL_assert(playbackDevice == device);
+            playbackDevice = NULL;
         }
         SDL_free(device->hidden);
         device->hidden = NULL;
@@ -131,15 +131,15 @@ void ANDROIDAUDIO_PauseDevices(void)
 {
     // TODO: Handle multiple devices?
     struct SDL_PrivateAudioData *hidden;
-    if (audioDevice && audioDevice->hidden) {
-        hidden = (struct SDL_PrivateAudioData *)audioDevice->hidden;
-        SDL_LockMutex(audioDevice->lock);
+    if (playbackDevice && playbackDevice->hidden) {
+        hidden = (struct SDL_PrivateAudioData *)playbackDevice->hidden;
+        SDL_LockMutex(playbackDevice->lock);
         hidden->resume = SDL_TRUE;
     }
 
-    if (captureDevice && captureDevice->hidden) {
-        hidden = (struct SDL_PrivateAudioData *)captureDevice->hidden;
-        SDL_LockMutex(captureDevice->lock);
+    if (recordingDevice && recordingDevice->hidden) {
+        hidden = (struct SDL_PrivateAudioData *)recordingDevice->hidden;
+        SDL_LockMutex(recordingDevice->lock);
         hidden->resume = SDL_TRUE;
     }
 }
@@ -149,26 +149,26 @@ void ANDROIDAUDIO_ResumeDevices(void)
 {
     // TODO: Handle multiple devices?
     struct SDL_PrivateAudioData *hidden;
-    if (audioDevice && audioDevice->hidden) {
-        hidden = (struct SDL_PrivateAudioData *)audioDevice->hidden;
+    if (playbackDevice && playbackDevice->hidden) {
+        hidden = (struct SDL_PrivateAudioData *)playbackDevice->hidden;
         if (hidden->resume) {
             hidden->resume = SDL_FALSE;
-            SDL_UnlockMutex(audioDevice->lock);
+            SDL_UnlockMutex(playbackDevice->lock);
         }
     }
 
-    if (captureDevice && captureDevice->hidden) {
-        hidden = (struct SDL_PrivateAudioData *)captureDevice->hidden;
+    if (recordingDevice && recordingDevice->hidden) {
+        hidden = (struct SDL_PrivateAudioData *)recordingDevice->hidden;
         if (hidden->resume) {
             hidden->resume = SDL_FALSE;
-            SDL_UnlockMutex(captureDevice->lock);
+            SDL_UnlockMutex(recordingDevice->lock);
         }
     }
 }
 
 static SDL_bool ANDROIDAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    // !!! FIXME: if on Android API < 24, DetectDevices and Deinitialize should be NULL and OnlyHasDefaultOutputDevice and OnlyHasDefaultCaptureDevice should be SDL_TRUE, since audio device enum and hotplug appears to require Android 7.0+.
+    // !!! FIXME: if on Android API < 24, DetectDevices and Deinitialize should be NULL and OnlyHasDefaultPlaybackDevice and OnlyHasDefaultRecordingDevice should be SDL_TRUE, since audio device enum and hotplug appears to require Android 7.0+.
     impl->ThreadInit = Android_AudioThreadInit;
     impl->DetectDevices = Android_StartAudioHotplug;
     impl->DeinitializeStart = Android_StopAudioHotplug;
@@ -176,10 +176,10 @@ static SDL_bool ANDROIDAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->PlayDevice = ANDROIDAUDIO_PlayDevice;
     impl->GetDeviceBuf = ANDROIDAUDIO_GetDeviceBuf;
     impl->CloseDevice = ANDROIDAUDIO_CloseDevice;
-    impl->CaptureFromDevice = ANDROIDAUDIO_CaptureFromDevice;
-    impl->FlushCapture = ANDROIDAUDIO_FlushCapture;
+    impl->RecordDevice = ANDROIDAUDIO_RecordDevice;
+    impl->FlushRecording = ANDROIDAUDIO_FlushRecording;
 
-    impl->HasCaptureSupport = SDL_TRUE;
+    impl->HasRecordingSupport = SDL_TRUE;
 
     return SDL_TRUE;
 }

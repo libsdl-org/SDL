@@ -39,7 +39,7 @@
 #include "../SDL_audiodev_c.h"
 #include "SDL_dspaudio.h"
 
-static void DSP_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
+static void DSP_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
     SDL_EnumUnixAudioDevices(SDL_FALSE, NULL);
 }
@@ -74,7 +74,7 @@ static int DSP_OpenDevice(SDL_AudioDevice *device)
     }
 
     // Open the audio device; we hardcode the device path in `device->name` for lack of better info, so use that.
-    const int flags = ((device->iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
+    const int flags = ((device->recording) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     device->hidden->audio_fd = open(device->name, flags | O_CLOEXEC, 0);
     if (device->hidden->audio_fd < 0) {
         return SDL_SetError("Couldn't open %s: %s", device->name, strerror(errno));
@@ -188,7 +188,7 @@ static int DSP_OpenDevice(SDL_AudioDevice *device)
 #endif
 
     // Allocate mixing buffer
-    if (!device->iscapture) {
+    if (!device->recording) {
         device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return -1;
@@ -201,7 +201,7 @@ static int DSP_OpenDevice(SDL_AudioDevice *device)
 
 static int DSP_WaitDevice(SDL_AudioDevice *device)
 {
-    const unsigned long ioctlreq = device->iscapture ? SNDCTL_DSP_GETISPACE : SNDCTL_DSP_GETOSPACE;
+    const unsigned long ioctlreq = device->recording ? SNDCTL_DSP_GETISPACE : SNDCTL_DSP_GETOSPACE;
     struct SDL_PrivateAudioData *h = device->hidden;
 
     while (!SDL_AtomicGet(&device->shutdown)) {
@@ -242,12 +242,12 @@ static Uint8 *DSP_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     return device->hidden->mixbuf;
 }
 
-static int DSP_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+static int DSP_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     return (int)read(device->hidden->audio_fd, buffer, buflen);
 }
 
-static void DSP_FlushCapture(SDL_AudioDevice *device)
+static void DSP_FlushRecording(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     audio_buf_info info;
@@ -287,11 +287,11 @@ static SDL_bool DSP_Init(SDL_AudioDriverImpl *impl)
     impl->PlayDevice = DSP_PlayDevice;
     impl->GetDeviceBuf = DSP_GetDeviceBuf;
     impl->CloseDevice = DSP_CloseDevice;
-    impl->WaitCaptureDevice = DSP_WaitDevice;
-    impl->CaptureFromDevice = DSP_CaptureFromDevice;
-    impl->FlushCapture = DSP_FlushCapture;
+    impl->WaitRecordingDevice = DSP_WaitDevice;
+    impl->RecordDevice = DSP_RecordDevice;
+    impl->FlushRecording = DSP_FlushRecording;
 
-    impl->HasCaptureSupport = SDL_TRUE;
+    impl->HasRecordingSupport = SDL_TRUE;
 
     return SDL_TRUE;
 }

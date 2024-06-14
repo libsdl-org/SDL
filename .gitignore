@@ -94,7 +94,7 @@ test/gamepadmap
 test/loopwave
 test/loopwavequeue
 test/testatomic
-test/testaudiocapture
+test/testaudiorecording
 test/testaudiohotplug
 test/testaudioinfo
 test/testautomation

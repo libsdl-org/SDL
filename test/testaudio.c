@@ -1,3 +1,15 @@
+/*
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely.
+*/
+
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
@@ -19,9 +31,9 @@ typedef enum ThingType
 {
     THING_NULL,
     THING_PHYSDEV,
-    THING_PHYSDEV_CAPTURE,
+    THING_PHYSDEV_RECORDING,
     THING_LOGDEV,
-    THING_LOGDEV_CAPTURE,
+    THING_LOGDEV_RECORDING,
     THING_TRASHCAN,
     THING_STREAM,
     THING_POOF,
@@ -38,13 +50,13 @@ struct Thing
     union {
         struct {
             SDL_AudioDeviceID devid;
-            SDL_bool iscapture;
+            SDL_bool recording;
             SDL_AudioSpec spec;
             char *name;
         } physdev;
         struct {
             SDL_AudioDeviceID devid;
-            SDL_bool iscapture;
+            SDL_bool recording;
             SDL_AudioSpec spec;
             Thing *physdev;
             SDL_bool visualizer_enabled;
@@ -268,7 +280,7 @@ static void DestroyThing(Thing *thing)
         case THING_TRASHCAN: break;
 
         case THING_LOGDEV:
-        case THING_LOGDEV_CAPTURE:
+        case THING_LOGDEV_RECORDING:
             SDL_CloseAudioDevice(thing->data.logdev.devid);
             if (state->renderers[0] != NULL) {
                 SDL_DestroyTexture(thing->data.logdev.visualizer);
@@ -278,7 +290,7 @@ static void DestroyThing(Thing *thing)
             break;
 
         case THING_PHYSDEV:
-        case THING_PHYSDEV_CAPTURE:
+        case THING_PHYSDEV_RECORDING:
             SDL_free(thing->data.physdev.name);
             break;
 
@@ -537,7 +549,7 @@ static void StreamThing_ondrag(Thing *thing, int button, float x, float y)
     if (button == SDL_BUTTON_RIGHT) {  /* this is kinda hacky, but use this to disconnect from a playing source. */
         if (thing->line_connected_to) {
             SDL_UnbindAudioStream(thing->data.stream.stream); /* unbind from current device */
-            if (thing->line_connected_to->what == THING_LOGDEV_CAPTURE) {
+            if (thing->line_connected_to->what == THING_LOGDEV_RECORDING) {
                 SDL_FlushAudioStream(thing->data.stream.stream);
             }
             thing->line_connected_to = NULL;
@@ -550,19 +562,19 @@ static void StreamThing_ondrop(Thing *thing, int button, float x, float y)
     if (droppable_highlighted_thing) {
         if (droppable_highlighted_thing->what == THING_TRASHCAN) {
             TrashThing(thing);
-        } else if (((droppable_highlighted_thing->what == THING_LOGDEV) || (droppable_highlighted_thing->what == THING_LOGDEV_CAPTURE)) && (droppable_highlighted_thing != thing->line_connected_to)) {
+        } else if (((droppable_highlighted_thing->what == THING_LOGDEV) || (droppable_highlighted_thing->what == THING_LOGDEV_RECORDING)) && (droppable_highlighted_thing != thing->line_connected_to)) {
             /* connect to a logical device! */
             SDL_Log("Binding audio stream ('%s') to logical device %u", thing->titlebar, (unsigned int) droppable_highlighted_thing->data.logdev.devid);
             if (thing->line_connected_to) {
                 SDL_UnbindAudioStream(thing->data.stream.stream); /* unbind from current device */
-                if (thing->line_connected_to->what == THING_LOGDEV_CAPTURE) {
+                if (thing->line_connected_to->what == THING_LOGDEV_RECORDING) {
                     SDL_FlushAudioStream(thing->data.stream.stream);
                 }
             }
 
             SDL_BindAudioStream(droppable_highlighted_thing->data.logdev.devid, thing->data.stream.stream); /* bind to new device! */
             thing->data.stream.total_bytes = SDL_GetAudioStreamAvailable(thing->data.stream.stream);
-            thing->progress = 0.0f;  /* ontick will adjust this if we're on an output device.*/
+            thing->progress = 0.0f;  /* ontick will adjust this if we're on a playback device.*/
             thing->data.stream.next_level_update = SDL_GetTicks() + 100;
             thing->line_connected_to = droppable_highlighted_thing;
         }
@@ -592,7 +604,7 @@ static void StreamThing_ondraw(Thing *thing, SDL_Renderer *renderer)
 
 static Thing *CreateStreamThing(const SDL_AudioSpec *spec, const Uint8 *buf, const Uint32 buflen, const char *fname, const float x, const float y)
 {
-    static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_LOGDEV, THING_LOGDEV_CAPTURE, THING_NULL };
+    static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_LOGDEV, THING_LOGDEV_RECORDING, THING_NULL };
     Thing *thing = CreateThing(THING_STREAM, x, y, 0, -1, -1, soundboard_texture, fname);
     if (thing) {
         SDL_Log("Adding audio stream for %s", fname ? fname : "(null)");
@@ -725,7 +737,7 @@ static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID wh
 
 static void DeviceThing_ondrag(Thing *thing, int button, float x, float y)
 {
-    if ((button == SDL_BUTTON_MIDDLE) && (thing->what == THING_LOGDEV_CAPTURE)) {  /* drag out a new stream. This is a UX mess. :/ */
+    if ((button == SDL_BUTTON_MIDDLE) && (thing->what == THING_LOGDEV_RECORDING)) {  /* drag out a new stream. This is a UX mess. :/ */
         dragging_thing = CreateStreamThing(&thing->data.logdev.spec, NULL, 0, NULL, x, y);
         if (dragging_thing) {
             dragging_thing->data.stream.next_level_update = SDL_GetTicks() + 100;
@@ -733,7 +745,7 @@ static void DeviceThing_ondrag(Thing *thing, int button, float x, float y)
             dragging_thing->line_connected_to = thing;
         }
     } else if (button == SDL_BUTTON_RIGHT) {  /* drag out a new logical device. */
-        const SDL_AudioDeviceID which = ((thing->what == THING_LOGDEV) || (thing->what == THING_LOGDEV_CAPTURE)) ? thing->data.logdev.devid : thing->data.physdev.devid;
+        const SDL_AudioDeviceID which = ((thing->what == THING_LOGDEV) || (thing->what == THING_LOGDEV_RECORDING)) ? thing->data.logdev.devid : thing->data.physdev.devid;
         const SDL_AudioDeviceID devid = SDL_OpenAudioDevice(which, NULL);
         dragging_thing = devid ? CreateLogicalDeviceThing(thing, devid, x - (thing->rect.w / 2), y - (thing->rect.h / 2)) : NULL;
     }
@@ -745,7 +757,7 @@ static void SetLogicalDeviceTitlebar(Thing *thing)
     int frames = 0;
     SDL_GetAudioDeviceFormat(thing->data.logdev.devid, spec, &frames);
     SDL_free(thing->titlebar);
-    SDL_asprintf(&thing->titlebar, "Logical device #%u (%s, %s, %s, %uHz, %d frames)", (unsigned int) thing->data.logdev.devid, thing->data.logdev.iscapture ? "CAPTURE" : "OUTPUT", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
+    SDL_asprintf(&thing->titlebar, "Logical device #%u (%s, %s, %s, %uHz, %d frames)", (unsigned int) thing->data.logdev.devid, thing->data.logdev.recording ? "RECORDING" : "PLAYBACK", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
 }
 
 static void LogicalDeviceThing_ondrop(Thing *thing, int button, float x, float y)
@@ -889,15 +901,15 @@ static void LogicalDeviceThing_ondraw(Thing *thing, SDL_Renderer *renderer)
 static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID which, const float x, const float y)
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_NULL };
-    Thing *physthing = ((parent->what == THING_LOGDEV) || (parent->what == THING_LOGDEV_CAPTURE)) ? parent->data.logdev.physdev : parent;
-    const SDL_bool iscapture = physthing->data.physdev.iscapture;
+    Thing *physthing = ((parent->what == THING_LOGDEV) || (parent->what == THING_LOGDEV_RECORDING)) ? parent->data.logdev.physdev : parent;
+    const SDL_bool recording = physthing->data.physdev.recording;
     Thing *thing;
 
     SDL_Log("Adding logical audio device %u", (unsigned int) which);
-    thing = CreateThing(iscapture ? THING_LOGDEV_CAPTURE : THING_LOGDEV, x, y, 5, -1, -1, logdev_texture, NULL);
+    thing = CreateThing(recording ? THING_LOGDEV_RECORDING : THING_LOGDEV, x, y, 5, -1, -1, logdev_texture, NULL);
     if (thing) {
         thing->data.logdev.devid = which;
-        thing->data.logdev.iscapture = iscapture;
+        thing->data.logdev.recording = recording;
         thing->data.logdev.physdev = physthing;
         thing->data.logdev.visualizer = SDL_CreateTexture(state->renderers[0], SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, VISUALIZER_WIDTH, VISUALIZER_HEIGHT);
         thing->data.logdev.postmix_lock = SDL_CreateMutex();
@@ -922,12 +934,12 @@ static void SetPhysicalDeviceTitlebar(Thing *thing)
     SDL_AudioSpec *spec = &thing->data.physdev.spec;
     SDL_GetAudioDeviceFormat(thing->data.physdev.devid, spec, &frames);
     SDL_free(thing->titlebar);
-    if (thing->data.physdev.devid == SDL_AUDIO_DEVICE_DEFAULT_CAPTURE) {
-        SDL_asprintf(&thing->titlebar, "Default system device (CAPTURE, %s, %s, %uHz, %d frames)", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
-    } else if (thing->data.physdev.devid == SDL_AUDIO_DEVICE_DEFAULT_OUTPUT) {
-        SDL_asprintf(&thing->titlebar, "Default system device (OUTPUT, %s, %s, %uHz, %d frames)", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
+    if (thing->data.physdev.devid == SDL_AUDIO_DEVICE_DEFAULT_RECORDING) {
+        SDL_asprintf(&thing->titlebar, "Default system device (RECORDING, %s, %s, %uHz, %d frames)", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
+    } else if (thing->data.physdev.devid == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK) {
+        SDL_asprintf(&thing->titlebar, "Default system device (PLAYBACK, %s, %s, %uHz, %d frames)", AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
     } else {
-        SDL_asprintf(&thing->titlebar, "Physical device #%u (%s, \"%s\", %s, %s, %uHz, %d frames)", (unsigned int) thing->data.physdev.devid, thing->data.physdev.iscapture ? "CAPTURE" : "OUTPUT", thing->data.physdev.name, AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
+        SDL_asprintf(&thing->titlebar, "Physical device #%u (%s, \"%s\", %s, %s, %uHz, %d frames)", (unsigned int) thing->data.physdev.devid, thing->data.physdev.recording ? "RECORDING" : "PLAYBACK", thing->data.physdev.name, AudioFmtToString(spec->format), AudioChansToStr(spec->channels), (unsigned int) spec->freq, frames);
     }
 }
 
@@ -956,7 +968,7 @@ static void PhysicalDeviceThing_ontick(Thing *thing, Uint64 now)
 }
 
 
-static Thing *CreatePhysicalDeviceThing(const SDL_AudioDeviceID which, const SDL_bool iscapture)
+static Thing *CreatePhysicalDeviceThing(const SDL_AudioDeviceID which, const SDL_bool recording)
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_NULL };
     static float next_physdev_x = 0;
@@ -969,10 +981,10 @@ static Thing *CreatePhysicalDeviceThing(const SDL_AudioDeviceID which, const SDL
     }
 
     SDL_Log("Adding physical audio device %u", (unsigned int) which);
-    thing = CreateThing(iscapture ? THING_PHYSDEV_CAPTURE : THING_PHYSDEV, next_physdev_x, 170, 5, -1, -1, physdev_texture, NULL);
+    thing = CreateThing(recording ? THING_PHYSDEV_RECORDING : THING_PHYSDEV, next_physdev_x, 170, 5, -1, -1, physdev_texture, NULL);
     if (thing) {
         thing->data.physdev.devid = which;
-        thing->data.physdev.iscapture = iscapture;
+        thing->data.physdev.recording = recording;
         thing->data.physdev.name = SDL_strdup(SDL_GetAudioDeviceName(which));
         thing->ondrag = DeviceThing_ondrag;
         thing->ondrop = PhysicalDeviceThing_ondrop;
@@ -982,7 +994,7 @@ static Thing *CreatePhysicalDeviceThing(const SDL_AudioDeviceID which, const SDL
         SetPhysicalDeviceTitlebar(thing);
         if (SDL_GetTicks() <= (app_ready_ticks + 2000)) {  /* assume this is the initial batch if it happens in the first two seconds. */
             RepositionRowOfThings(THING_PHYSDEV, 10.0f);  /* don't rearrange them after the initial add. */
-            RepositionRowOfThings(THING_PHYSDEV_CAPTURE, 170.0f);  /* don't rearrange them after the initial add. */
+            RepositionRowOfThings(THING_PHYSDEV_RECORDING, 170.0f);  /* don't rearrange them after the initial add. */
             next_physdev_x = 0.0f;
         } else {
             next_physdev_x += physdev_texture->w * 1.5f;
@@ -999,9 +1011,9 @@ static Thing *CreateTrashcanThing(void)
     return CreateThing(THING_TRASHCAN, winw - trashcan_texture->w, winh - trashcan_texture->h, 10, -1, -1, trashcan_texture, "Drag things here to remove them.");
 }
 
-static Thing *CreateDefaultPhysicalDevice(const SDL_bool iscapture)
+static Thing *CreateDefaultPhysicalDevice(const SDL_bool recording)
 {
-    return CreatePhysicalDeviceThing(iscapture ? SDL_AUDIO_DEVICE_DEFAULT_CAPTURE : SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, iscapture);
+    return CreatePhysicalDeviceThing(recording ? SDL_AUDIO_DEVICE_DEFAULT_RECORDING : SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, recording);
 }
 
 static void TickThings(void)
@@ -1188,7 +1200,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             break;
 
         case SDL_EVENT_AUDIO_DEVICE_ADDED:
-            CreatePhysicalDeviceThing(event->adevice.which, event->adevice.iscapture);
+            CreatePhysicalDeviceThing(event->adevice.which, event->adevice.recording);
             break;
 
         case SDL_EVENT_AUDIO_DEVICE_REMOVED: {
@@ -1197,10 +1209,10 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             SDL_Log("Removing audio device %u", (unsigned int) which);
             for (i = things; i; i = next) {
                 next = i->next;
-                if (((i->what == THING_PHYSDEV) || (i->what == THING_PHYSDEV_CAPTURE)) && (i->data.physdev.devid == which)) {
+                if (((i->what == THING_PHYSDEV) || (i->what == THING_PHYSDEV_RECORDING)) && (i->data.physdev.devid == which)) {
                     TrashThing(i);
                     next = things;  /* in case we mangled the list. */
-                } else if (((i->what == THING_LOGDEV) || (i->what == THING_LOGDEV_CAPTURE)) && (i->data.logdev.devid == which)) {
+                } else if (((i->what == THING_LOGDEV) || (i->what == THING_LOGDEV_RECORDING)) && (i->data.logdev.devid == which)) {
                     TrashThing(i);
                     next = things;  /* in case we mangled the list. */
                 }

@@ -178,9 +178,9 @@ int main(int argc, char *argv[])
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
-    devices = SDL_GetAudioOutputDevices(&devcount);
+    devices = SDL_GetAudioPlaybackDevices(&devcount);
     if (!devices) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioOutputDevices() failed: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioPlaybackDevices() failed: %s\n", SDL_GetError());
         devcount = 0;
     }
 

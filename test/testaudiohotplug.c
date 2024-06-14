@@ -52,9 +52,9 @@ static void poked(int sig)
     done = 1;
 }
 
-static const char *devtypestr(int iscapture)
+static const char *devtypestr(int recording)
 {
-    return iscapture ? "capture" : "output";
+    return recording ? "capture" : "output";
 }
 
 static void iteration(void)
@@ -70,16 +70,16 @@ static void iteration(void)
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_ADDED) {
             const SDL_AudioDeviceID which = (SDL_AudioDeviceID) e.adevice.which;
-            const SDL_bool iscapture = e.adevice.iscapture ? SDL_TRUE : SDL_FALSE;
+            const SDL_bool recording = e.adevice.recording ? SDL_TRUE : SDL_FALSE;
             const char *name = SDL_GetAudioDeviceName(which);
             if (name) {
-                SDL_Log("New %s audio device at id %u: %s", devtypestr(iscapture), (unsigned int)which, name);
+                SDL_Log("New %s audio device at id %u: %s", devtypestr(recording), (unsigned int)which, name);
             } else {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Got new %s device, id %u, but failed to get the name: %s",
-                             devtypestr(iscapture), (unsigned int)which, SDL_GetError());
+                             devtypestr(recording), (unsigned int)which, SDL_GetError());
                 continue;
             }
-            if (!iscapture) {
+            if (!recording) {
                 SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(which, &spec, NULL, NULL);
                 if (!stream) {
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create/bind an audio stream to %u ('%s'): %s", (unsigned int) which, name, SDL_GetError());
@@ -94,7 +94,7 @@ static void iteration(void)
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_REMOVED) {
             dev = (SDL_AudioDeviceID)e.adevice.which;
-            SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.iscapture), (unsigned int)dev);
+            SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.recording), (unsigned int)dev);
             /* !!! FIXME: we need to keep track of our streams and destroy them here. */
         }
     }

@@ -253,24 +253,24 @@ static void DeinitManagementThread(void)
 
 typedef struct
 {
-    SDL_AudioDevice **default_output;
-    SDL_AudioDevice **default_capture;
+    SDL_AudioDevice **default_playback;
+    SDL_AudioDevice **default_recording;
 } mgmtthrtask_DetectDevicesData;
 
 static int mgmtthrtask_DetectDevices(void *userdata)
 {
     mgmtthrtask_DetectDevicesData *data = (mgmtthrtask_DetectDevicesData *)userdata;
-    WASAPI_EnumerateEndpoints(data->default_output, data->default_capture);
+    WASAPI_EnumerateEndpoints(data->default_playback, data->default_recording);
     return 0;
 }
 
-static void WASAPI_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
+static void WASAPI_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
     int rc;
     // this blocks because it needs to finish before the audio subsystem inits
     mgmtthrtask_DetectDevicesData data;
-    data.default_output = default_output;
-    data.default_capture = default_capture;
+    data.default_playback = default_playback;
+    data.default_recording = default_recording;
     WASAPI_ProxyToManagementThread(mgmtthrtask_DetectDevices, &data, &rc);
 }
 
@@ -471,9 +471,9 @@ static int WASAPI_WaitDevice(SDL_AudioDevice *device)
             UINT32 padding = 0;
             if (!WasapiFailed(device, IAudioClient_GetCurrentPadding(device->hidden->client, &padding))) {
                 //SDL_Log("WASAPI EVENT! padding=%u maxpadding=%u", (unsigned int)padding, (unsigned int)maxpadding);*/
-                if (device->iscapture && (padding > 0)) {
+                if (device->recording && (padding > 0)) {
                     break;
-                } else if (!device->iscapture && (padding <= maxpadding)) {
+                } else if (!device->recording && (padding <= maxpadding)) {
                     break;
                 }
             }
@@ -487,7 +487,7 @@ static int WASAPI_WaitDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static int WASAPI_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+static int WASAPI_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     BYTE *ptr = NULL;
     UINT32 frames = 0;
@@ -524,7 +524,7 @@ static int WASAPI_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int b
     return -1; // unrecoverable error.
 }
 
-static void WASAPI_FlushCapture(SDL_AudioDevice *device)
+static void WASAPI_FlushRecording(SDL_AudioDevice *device)
 {
     BYTE *ptr = NULL;
     UINT32 frames = 0;
@@ -706,7 +706,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
 
     device->hidden->framesize = SDL_AUDIO_FRAMESIZE(device->spec);
 
-    if (device->iscapture) {
+    if (device->recording) {
         IAudioCaptureClient *capture = NULL;
         ret = IAudioClient_GetService(client, &SDL_IID_IAudioCaptureClient, (void **)&capture);
         if (FAILED(ret)) {
@@ -720,7 +720,7 @@ static int mgmtthrtask_PrepDevice(void *userdata)
             return WIN_SetErrorFromHRESULT("WASAPI can't start capture", ret);
         }
 
-        WASAPI_FlushCapture(device); // MSDN says you should flush capture endpoint right after startup.
+        WASAPI_FlushRecording(device); // MSDN says you should flush the recording endpoint right after startup.
     } else {
         IAudioRenderClient *render = NULL;
         ret = IAudioClient_GetService(client, &SDL_IID_IAudioRenderClient, (void **)&render);
@@ -757,7 +757,7 @@ static int WASAPI_OpenDevice(SDL_AudioDevice *device)
     }
 
     /* Ready, but possibly waiting for async device activation.
-       Until activation is successful, we will report silence from capture
+       Until activation is successful, we will report silence from recording
        devices and ignore data on playback devices. Upon activation, we'll make
        sure any bound audio streams are adjusted for the final device format. */
 
@@ -816,15 +816,15 @@ static SDL_bool WASAPI_Init(SDL_AudioDriverImpl *impl)
     impl->PlayDevice = WASAPI_PlayDevice;
     impl->WaitDevice = WASAPI_WaitDevice;
     impl->GetDeviceBuf = WASAPI_GetDeviceBuf;
-    impl->WaitCaptureDevice = WASAPI_WaitDevice;
-    impl->CaptureFromDevice = WASAPI_CaptureFromDevice;
-    impl->FlushCapture = WASAPI_FlushCapture;
+    impl->WaitRecordingDevice = WASAPI_WaitDevice;
+    impl->RecordDevice = WASAPI_RecordDevice;
+    impl->FlushRecording = WASAPI_FlushRecording;
     impl->CloseDevice = WASAPI_CloseDevice;
     impl->DeinitializeStart = WASAPI_DeinitializeStart;
     impl->Deinitialize = WASAPI_Deinitialize;
     impl->FreeDeviceHandle = WASAPI_FreeDeviceHandle;
 
-    impl->HasCaptureSupport = SDL_TRUE;
+    impl->HasRecordingSupport = SDL_TRUE;
 
     return SDL_TRUE;
 }

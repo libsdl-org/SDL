@@ -170,7 +170,7 @@ static void DSOUND_FreeDeviceHandle(SDL_AudioDevice *device)
 // FindAllDevs is presumably only used on WinXP; Vista and later can use IMMDevice for better results.
 typedef struct FindAllDevsData
 {
-    SDL_bool iscapture;
+    SDL_bool recording;
     SDL_AudioDevice **default_device;
     LPCGUID default_device_guid;
 } FindAllDevsData;
@@ -189,7 +189,7 @@ static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVO
                  * device before getting the channel mask and output format, making
                  * this information inaccessible at enumeration time
                  */
-                SDL_AudioDevice *device = SDL_AddAudioDevice(data->iscapture, str, NULL, cpyguid);
+                SDL_AudioDevice *device = SDL_AddAudioDevice(data->recording, str, NULL, cpyguid);
                 if (device && data->default_device && data->default_device_guid) {
                     if (SDL_memcmp(cpyguid, data->default_device_guid, sizeof (GUID)) == 0) {
                         *data->default_device = device;
@@ -202,11 +202,11 @@ static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVO
     return TRUE; // keep enumerating.
 }
 
-static void DSOUND_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
+static void DSOUND_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
 #ifdef HAVE_MMDEVICEAPI_H
     if (SupportsIMMDevice) {
-        SDL_IMMDevice_EnumerateEndpoints(default_output, default_capture);
+        SDL_IMMDevice_EnumerateEndpoints(default_playback, default_recording);
     } else
 #endif
     {
@@ -216,13 +216,13 @@ static void DSOUND_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevi
         FindAllDevsData data;
         GUID guid;
 
-        data.iscapture = SDL_TRUE;
-        data.default_device = default_capture;
+        data.recording = SDL_TRUE;
+        data.default_device = default_recording;
         data.default_device_guid = (pGetDeviceID(&SDL_DSDEVID_DefaultCapture, &guid) == DS_OK) ? &guid : NULL;
         pDirectSoundCaptureEnumerateW(FindAllDevs, &data);
 
-        data.iscapture = SDL_FALSE;
-        data.default_device = default_output;
+        data.recording = SDL_FALSE;
+        data.default_device = default_playback;
         data.default_device_guid = (pGetDeviceID(&SDL_DSDEVID_DefaultPlayback, &guid) == DS_OK) ? &guid : NULL;
         pDirectSoundEnumerateW(FindAllDevs, &data);
     }
@@ -333,7 +333,7 @@ static Uint8 *DSOUND_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     return device->hidden->locked_buf;
 }
 
-static int DSOUND_WaitCaptureDevice(SDL_AudioDevice *device)
+static int DSOUND_WaitRecordingDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     while (!SDL_AtomicGet(&device->shutdown)) {
@@ -349,7 +349,7 @@ static int DSOUND_WaitCaptureDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static int DSOUND_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+static int DSOUND_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     DWORD ptr1len, ptr2len;
@@ -376,7 +376,7 @@ static int DSOUND_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int b
     return (int) ptr1len;
 }
 
-static void DSOUND_FlushCapture(SDL_AudioDevice *device)
+static void DSOUND_FlushRecording(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     DWORD junk, cursor;
@@ -409,7 +409,7 @@ static void DSOUND_CloseDevice(SDL_AudioDevice *device)
 
 /* This function tries to create a secondary audio buffer, and returns the
    number of audio chunks available in the created buffer. This is for
-   playback devices, not capture.
+   playback devices, not recording.
 */
 static int CreateSecondary(SDL_AudioDevice *device, const DWORD bufsize, WAVEFORMATEX *wfmt)
 {
@@ -450,7 +450,7 @@ static int CreateSecondary(SDL_AudioDevice *device, const DWORD bufsize, WAVEFOR
 
 /* This function tries to create a capture buffer, and returns the
    number of audio chunks available in the created buffer. This is for
-   capture devices, not playback.
+   recording devices, not playback.
 */
 static int CreateCaptureBuffer(SDL_AudioDevice *device, const DWORD bufsize, WAVEFORMATEX *wfmt)
 {
@@ -513,7 +513,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
     SDL_assert(guid != NULL);
 
     HRESULT result;
-    if (device->iscapture) {
+    if (device->recording) {
         result = pDirectSoundCaptureCreate8(guid, &device->hidden->capture, NULL);
         if (result != DS_OK) {
             return SetDSerror("DirectSoundCaptureCreate8", result);
@@ -603,7 +603,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
                 wfmt.Format.nBlockAlign = wfmt.Format.nChannels * (wfmt.Format.wBitsPerSample / 8);
                 wfmt.Format.nAvgBytesPerSec = wfmt.Format.nSamplesPerSec * wfmt.Format.nBlockAlign;
 
-                const int rc = device->iscapture ? CreateCaptureBuffer(device, bufsize, (WAVEFORMATEX *)&wfmt) : CreateSecondary(device, bufsize, (WAVEFORMATEX *)&wfmt);
+                const int rc = device->recording ? CreateCaptureBuffer(device, bufsize, (WAVEFORMATEX *)&wfmt) : CreateSecondary(device, bufsize, (WAVEFORMATEX *)&wfmt);
                 if (rc == 0) {
                     device->hidden->num_buffers = numchunks;
                     break;
@@ -660,15 +660,15 @@ static SDL_bool DSOUND_Init(SDL_AudioDriverImpl *impl)
     impl->PlayDevice = DSOUND_PlayDevice;
     impl->WaitDevice = DSOUND_WaitDevice;
     impl->GetDeviceBuf = DSOUND_GetDeviceBuf;
-    impl->WaitCaptureDevice = DSOUND_WaitCaptureDevice;
-    impl->CaptureFromDevice = DSOUND_CaptureFromDevice;
-    impl->FlushCapture = DSOUND_FlushCapture;
+    impl->WaitRecordingDevice = DSOUND_WaitRecordingDevice;
+    impl->RecordDevice = DSOUND_RecordDevice;
+    impl->FlushRecording = DSOUND_FlushRecording;
     impl->CloseDevice = DSOUND_CloseDevice;
     impl->FreeDeviceHandle = DSOUND_FreeDeviceHandle;
     impl->DeinitializeStart = DSOUND_DeinitializeStart;
     impl->Deinitialize = DSOUND_Deinitialize;
 
-    impl->HasCaptureSupport = SDL_TRUE;
+    impl->HasRecordingSupport = SDL_TRUE;
 
     return SDL_TRUE;
 }

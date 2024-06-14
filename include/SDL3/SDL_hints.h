@@ -370,7 +370,7 @@ extern "C" {
  * Some audio backends (such as Pipewire) allow you to describe the role of
  * your audio stream. Among other things, this description might show up in a
  * system control panel or software for displaying and manipulating media
- * playback/capture graphs.
+ * playback/recording graphs.
  *
  * This hints lets you transmit that information to the OS. The contents of
  * this hint are used while opening an audio device. You should use a string

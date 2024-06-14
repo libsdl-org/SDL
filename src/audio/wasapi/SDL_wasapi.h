@@ -59,7 +59,7 @@ int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, in
 int WASAPI_PlatformInit(void);
 void WASAPI_PlatformDeinit(void);
 void WASAPI_PlatformDeinitializeStart(void);
-void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
+void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
 int WASAPI_ActivateDevice(SDL_AudioDevice *device);
 void WASAPI_PlatformThreadInit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
 void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
