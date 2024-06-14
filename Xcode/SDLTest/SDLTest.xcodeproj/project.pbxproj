@@ -4677,7 +4677,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Testing camera capture";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Testing camera recording";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -4689,7 +4689,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Testing camera capture";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Testing camera recording";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

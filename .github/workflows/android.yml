@@ -82,7 +82,7 @@ jobs:
       - name: Build test apk's (CMake)
         if: ${{ matrix.platform.cmake }}
         run: |
-          cmake --build build --config Release --parallel --verbose --target testautomation-apk testaudiocapture-apk testcontroller-apk testmultiaudio-apk testsprite-apk
+          cmake --build build --config Release --parallel --verbose --target testautomation-apk testaudiorecording-apk testcontroller-apk testmultiaudio-apk testsprite-apk
       - name: Install (CMake)
         if: ${{ matrix.platform.cmake }}
         run: |

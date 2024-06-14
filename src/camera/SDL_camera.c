@@ -760,7 +760,7 @@ void SDL_CameraThreadSetup(SDL_CameraDevice *device)
     {
         // Set thread priority to THREAD_PRIORITY_VIDEO
         extern void Android_JNI_CameraSetThreadPriority(int, int);
-        Android_JNI_CameraSetThreadPriority(device->iscapture, device);
+        Android_JNI_CameraSetThreadPriority(device->recording, device);
     }*/
 #else
     // The camera capture is always a high priority thread
@@ -897,7 +897,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
 
 void SDL_CameraThreadShutdown(SDL_CameraDevice *device)
 {
-    //device->FlushCapture(device);
+    //device->FlushRecording(device);
     //camera_driver.impl.ThreadDeinit(device);
     //SDL_CameraThreadFinalize(device);
 }

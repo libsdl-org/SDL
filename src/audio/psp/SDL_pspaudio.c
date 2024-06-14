@@ -170,9 +170,9 @@ static SDL_bool PSPAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = PSPAUDIO_GetDeviceBuf;
     impl->CloseDevice = PSPAUDIO_CloseDevice;
     impl->ThreadInit = PSPAUDIO_ThreadInit;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    //impl->HasCaptureSupport = SDL_TRUE;
-    //impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
+    //impl->HasRecordingSupport = SDL_TRUE;
+    //impl->OnlyHasDefaultRecordingDevice = SDL_TRUE;
     return SDL_TRUE;
 }
 

@@ -1466,7 +1466,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
         }
 
         const SDL_AudioSpec spec = { state->audio_format, state->audio_channels, state->audio_freq };
-        state->audio_id = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec);
+        state->audio_id = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
         if (!state->audio_id) {
             SDL_Log("Couldn't open audio: %s\n", SDL_GetError());
             return SDL_FALSE;

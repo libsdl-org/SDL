@@ -472,7 +472,7 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
 
     // quietly refuse to change the format of the end currently bound to a device.
     if (stream->bound_device) {
-        if (stream->bound_device->physical_device->iscapture) {
+        if (stream->bound_device->physical_device->recording) {
             src_spec = NULL;
         } else {
             dst_spec = NULL;

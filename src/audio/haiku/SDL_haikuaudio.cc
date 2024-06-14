@@ -63,7 +63,7 @@ static void FillSound(void *data, void *stream, size_t len, const media_raw_audi
     SDL_assert(device->hidden->current_buffer_len == 0);
     device->hidden->current_buffer = (Uint8 *) stream;
     device->hidden->current_buffer_len = (int) len;
-    SDL_OutputAudioThreadIterate(device);
+    SDL_PlaybackAudioThreadIterate(device);
 }
 
 static void HAIKUAUDIO_CloseDevice(SDL_AudioDevice *device)
@@ -207,7 +207,7 @@ static SDL_bool HAIKUAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice = HAIKUAUDIO_CloseDevice;
     impl->Deinitialize = HAIKUAUDIO_Deinitialize;
     impl->ProvidesOwnCallbackThread = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
 
     return SDL_TRUE;
 }

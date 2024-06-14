@@ -157,7 +157,7 @@ different depending on what sort of build you're compiling.
 Audio works as expected at the API level, but not exactly like other
 platforms.
 
-You'll only see a single default audio device. Audio capture also works;
+You'll only see a single default audio device. Audio recording also works;
 if the browser pops up a prompt to ask for permission to access the
 microphone, the SDL_OpenAudioDevice call will succeed and start producing
 silence at a regular interval. Once the user approves the request, real

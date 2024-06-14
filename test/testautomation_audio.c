@@ -200,11 +200,11 @@ static int audio_initOpenCloseQuitAudio(void *arg)
 
             /* Call Open (maybe multiple times) */
             for (k = 0; k <= j; k++) {
-                result = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &desired);
+                result = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired);
                 if (k == 0) {
                     g_audio_id = result;
                 }
-                SDLTest_AssertPass("Call to SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, desired_spec_%d), call %d", j, k + 1);
+                SDLTest_AssertPass("Call to SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, desired_spec_%d), call %d", j, k + 1);
                 SDLTest_AssertCheck(result > 0, "Verify return value; expected: > 0, got: %d", result);
             }
 
@@ -290,9 +290,9 @@ static int audio_pauseUnpauseAudio(void *arg)
             }
 
             /* Call Open */
-            g_audio_id = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &desired);
+            g_audio_id = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired);
             result = g_audio_id;
-            SDLTest_AssertPass("Call to SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, desired_spec_%d)", j);
+            SDLTest_AssertPass("Call to SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, desired_spec_%d)", j);
             SDLTest_AssertCheck(result > 0, "Verify return value; expected > 0 got: %d", result);
 
 #if 0  /* !!! FIXME: maybe update this? */
@@ -356,7 +356,7 @@ static int audio_pauseUnpauseAudio(void *arg)
 }
 
 /**
- * Enumerate and name available audio devices (output and capture).
+ * Enumerate and name available audio devices (playback and recording).
  *
  * \sa SDL_GetNumAudioDevices
  * \sa SDL_GetAudioDeviceName
@@ -368,12 +368,12 @@ static int audio_enumerateAndNameAudioDevices(void *arg)
     const char *name;
     SDL_AudioDeviceID *devices = NULL;
 
-    /* Iterate over types: t=0 output device, t=1 input/capture device */
+    /* Iterate over types: t=0 playback device, t=1 recording device */
     for (t = 0; t < 2; t++) {
         /* Get number of devices. */
-        devices = (t) ? SDL_GetAudioCaptureDevices(&n) : SDL_GetAudioOutputDevices(&n);
-        SDLTest_AssertPass("Call to SDL_GetAudio%sDevices(%i)", (t) ? "Capture" : "Output", t);
-        SDLTest_Log("Number of %s devices < 0, reported as %i", (t) ? "capture" : "output", n);
+        devices = (t) ? SDL_GetAudioRecordingDevices(&n) : SDL_GetAudioPlaybackDevices(&n);
+        SDLTest_AssertPass("Call to SDL_GetAudio%sDevices(%i)", (t) ? "Recording" : "Playback", t);
+        SDLTest_Log("Number of %s devices < 0, reported as %i", (t) ? "recording" : "playback", n);
         SDLTest_AssertCheck(n >= 0, "Validate result is >= 0, got: %i", n);
 
         /* List devices. */
@@ -1369,7 +1369,7 @@ cleanup:
 
 /* Audio test cases */
 static const SDLTest_TestCaseReference audioTest1 = {
-    audio_enumerateAndNameAudioDevices, "audio_enumerateAndNameAudioDevices", "Enumerate and name available audio devices (output and capture)", TEST_ENABLED
+    audio_enumerateAndNameAudioDevices, "audio_enumerateAndNameAudioDevices", "Enumerate and name available audio devices (playback and recording)", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference audioTest2 = {

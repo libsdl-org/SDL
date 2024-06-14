@@ -68,12 +68,12 @@
     void audioWriteFloatBuffer(float[]);
     void audioWriteShortBuffer(short[]);
     void audioWriteByteBuffer(byte[]);
-    int[] captureOpen(int, int, int, int, int);
-    int captureReadFloatBuffer(float[], boolean);
-    int captureReadShortBuffer(short[], boolean);
-    int captureReadByteBuffer(byte[], boolean);
+    int[] recordingOpen(int, int, int, int, int);
+    int recordingReadFloatBuffer(float[], boolean);
+    int recordingReadShortBuffer(short[], boolean);
+    int recordingReadByteBuffer(byte[], boolean);
     void audioClose();
-    void captureClose();
+    void recordingClose();
     void audioSetThreadPriority(boolean, int);
     int nativeSetupJNI();
     void removeAudioDevice(boolean, int);

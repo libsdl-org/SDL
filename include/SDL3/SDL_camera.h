@@ -264,7 +264,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDevic
 extern SDL_DECLSPEC SDL_CameraPosition SDLCALL SDL_GetCameraDevicePosition(SDL_CameraDeviceID instance_id);
 
 /**
- * Open a video capture device (a "camera").
+ * Open a video recording device (a "camera").
  *
  * You can open the device with any reasonable spec, and if the hardware can't
  * directly support it, it will convert data seamlessly to the requested

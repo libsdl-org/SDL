@@ -107,10 +107,10 @@ static const char *sldevaudioplayerstr   = "SLES Audio Player";
 
 #define SLES_DEV_AUDIO_RECORDER sldevaudiorecorderstr
 #define SLES_DEV_AUDIO_PLAYER   sldevaudioplayerstr
-static void OPENSLES_DetectDevices( int iscapture )
+static void OPENSLES_DetectDevices( int recording )
 {
     LOGI( "openSLES_DetectDevices()" );
-    if ( iscapture )
+    if ( recording )
             addfn( SLES_DEV_AUDIO_RECORDER );
     else
             addfn( SLES_DEV_AUDIO_PLAYER );
@@ -622,12 +622,12 @@ static int OPENSLES_OpenDevice(SDL_AudioDevice *device)
         return -1;
     }
 
-    if (device->iscapture) {
-        LOGI("OPENSLES_OpenDevice() for capture");
+    if (device->recording) {
+        LOGI("OPENSLES_OpenDevice() for recording");
         return OPENSLES_CreatePCMRecorder(device);
     } else {
         int ret;
-        LOGI("OPENSLES_OpenDevice() for playing");
+        LOGI("OPENSLES_OpenDevice() for playback");
         ret = OPENSLES_CreatePCMPlayer(device);
         if (ret < 0) {
             // Another attempt to open the device with a lower frequency
@@ -699,7 +699,7 @@ static Uint8 *OPENSLES_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
     return audiodata->pmixbuff[audiodata->next_buffer];
 }
 
-static int OPENSLES_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+static int OPENSLES_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *audiodata = device->hidden;
 
@@ -726,8 +726,8 @@ static void OPENSLES_CloseDevice(SDL_AudioDevice *device)
 {
     // struct SDL_PrivateAudioData *audiodata = device->hidden;
     if (device->hidden) {
-        if (device->iscapture) {
-            LOGI("OPENSLES_CloseDevice() for capture");
+        if (device->recording) {
+            LOGI("OPENSLES_CloseDevice() for recording");
             OPENSLES_DestroyPCMRecorder(device);
         } else {
             LOGI("OPENSLES_CloseDevice() for playing");
@@ -756,15 +756,15 @@ static SDL_bool OPENSLES_Init(SDL_AudioDriverImpl *impl)
     impl->WaitDevice = OPENSLES_WaitDevice;
     impl->PlayDevice = OPENSLES_PlayDevice;
     impl->GetDeviceBuf = OPENSLES_GetDeviceBuf;
-    impl->WaitCaptureDevice = OPENSLES_WaitDevice;
-    impl->CaptureFromDevice = OPENSLES_CaptureFromDevice;
+    impl->WaitRecordingDevice = OPENSLES_WaitDevice;
+    impl->RecordDevice = OPENSLES_RecordDevice;
     impl->CloseDevice = OPENSLES_CloseDevice;
     impl->Deinitialize = OPENSLES_DestroyEngine;
 
     // and the capabilities
-    impl->HasCaptureSupport = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
+    impl->HasRecordingSupport = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
+    impl->OnlyHasDefaultRecordingDevice = SDL_TRUE;
 
     LOGI("OPENSLES_Init() - success");
 

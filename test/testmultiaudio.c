@@ -180,9 +180,9 @@ int main(int argc, char **argv)
 
     filename = GetResourceFilename(filename, "sample.wav");
 
-    devices = SDL_GetAudioOutputDevices(&devcount);
+    devices = SDL_GetAudioPlaybackDevices(&devcount);
     if (!devices) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio playback devices!");
     } else {
         /* Load the wave file into memory */
         if (SDL_LoadWAV(filename, &spec, &sound, &soundlen) == -1) {
