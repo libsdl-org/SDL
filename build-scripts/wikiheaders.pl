@@ -1835,6 +1835,18 @@ if ($copy_direction == 1) {  # --copy-to-headers
 
                 $desc =~ s/[\s\n]+\Z//ms;
 
+                if (0) {  # !!! FIXME: disabled because it's not currently suitable for general use, but for manually inspecting the output, it can be useful.
+                    if (($desc =~ /\A[A-Z]/) && (not $desc =~ /\ASDL_/)) {
+                        print STDERR "WARNING: $sym\'s '\\param $arg' text starts with a capital letter: '$desc'. Fixing.\n";
+                        $desc = lcfirst($desc);
+                    }
+                }
+
+                if (not $desc =~ /[\.\!]\Z/) {
+                    print STDERR "WARNING: $sym\'s '\\param $arg' text doesn't end with punctuation: '$desc'. Fixing.\n";
+                    $desc .= '.';
+                }
+
                 # Validate this param.
                 if (defined($params{$arg})) {
                     print STDERR "WARNING: Symbol '$sym' has multiple '\\param $arg' declarations! Only keeping the first one!\n";
@@ -1857,13 +1869,6 @@ if ($copy_direction == 1) {  # --copy-to-headers
                 my $retstr = "R$1";  # "Return" or "Returns"
                 my $desc = $2;
 
-                if (0) {  # !!! FIXME: disabled because it's not currently suitable for general use, but for manually inspecting the output, it can be useful.
-                    if (($desc =~ /\A[A-Z]/) && (not $desc =~ /\ASDL_/)) {
-                        print STDERR "WARNING: $sym\'s '\\returns' text starts with a capital letter: '$desc'. Fixing.\n";
-                        $desc = lcfirst($desc);
-                    }
-                }
-
                 while (@doxygenlines) {
                     my $subline = $doxygenlines[0];
                     $subline =~ s/\A\s*//;
@@ -1876,6 +1881,18 @@ if ($copy_direction == 1) {  # --copy-to-headers
                     }
                 }
                 $desc =~ s/[\s\n]+\Z//ms;
+
+                if (0) {  # !!! FIXME: disabled because it's not currently suitable for general use, but for manually inspecting the output, it can be useful.
+                    if (($desc =~ /\A[A-Z]/) && (not $desc =~ /\ASDL_/)) {
+                        print STDERR "WARNING: $sym\'s '\\returns' text starts with a capital letter: '$desc'. Fixing.\n";
+                        $desc = lcfirst($desc);
+                    }
+                }
+
+                if (not $desc =~ /[\.\!]\Z/) {
+                    print STDERR "WARNING: $sym\'s '\\returns' text doesn't end with punctuation: '$desc'. Fixing.\n";
+                    $desc .= '.';
+                }
 
                 # Make sure the \returns info is valid.
                 my $rettype = $headersymsrettype{$sym};
