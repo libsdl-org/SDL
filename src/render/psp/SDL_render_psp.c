@@ -54,8 +54,8 @@ typedef struct
 
 typedef struct
 {
-    void *data;                 /**< Image data. */
-    void *swizzledData;          /**< Swizzled image data. */
+    void *data;             /**< Image data. */
+    void *swizzledData;     /**< Swizzled image data. */
     uint32_t textureWidth;  /**< Texture width (power of two). */
     uint32_t textureHeight; /**< Texture height (power of two). */
     uint32_t width;         /**< Image width. */
@@ -66,9 +66,9 @@ typedef struct
     uint32_t swizzledPitch; /**< Swizzled image pitch. */
     uint32_t size;          /**< Image size in bytes. */
     uint32_t swizzledSize;  /**< Swizzled image size in bytes. */
-    uint8_t format;        /**< Image format - one of ::pgePixelFormat. */
-    uint8_t filter;        /**< Image filter - one of GU_NEAREST or GU_LINEAR. */
-    uint8_t swizzled;      /**< Whether the image is swizzled or not. */
+    uint8_t format;         /**< Image format - one of ::pgePixelFormat. */
+    uint8_t filter;         /**< Image filter - one of GU_NEAREST or GU_LINEAR. */
+    uint8_t swizzled;       /**< Whether the image is swizzled or not. */
 
 } PSP_Texture;
 
@@ -263,22 +263,30 @@ static inline void fillSingleSliceVertices(VertTV *vertices, const SDL_Rect *src
 static inline void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSize *sliceSize,
                          const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
+
+    int i, j;
+    int remainingWidth, remainingHeight;
+    int hasRemainingWidth, hasRemainingHeight;
+    float srcrectRateWidth, srcrectRateHeight;
+    float srcWidth, srcHeight;
+    float remainingSrcWidth, remainingSrcHeight;
+
     // For avoiding division by zero
     if (dimensions->width == 1 && dimensions->height == 1) {
-        fillSingleSliceVertices((VertV *)vertices, srcrect, dstrect);
+        fillSingleSliceVertices(vertices, srcrect, dstrect);
         return;
     }
-    int i, j;
-    int remainingWidth = (int)dstrect->w % sliceSize->width;
-    int remainingHeight = (int)dstrect->h % sliceSize->height;
-    int hasRemainingWidth = remainingWidth > 0;
-    int hasRemainingHeight = remainingHeight > 0;
-    float srcrectRateWidth =  (float)(abs(srcrect->w - dimensions->width)) / (float)(abs(dstrect->w - dimensions->width));
-    float srcrectRateHeight = (float)(abs(srcrect->h - dimensions->height)) / (float)(abs(dstrect->h - dimensions->height));
-    float srcWidth = sliceSize->width * srcrectRateWidth;
-    float srcHeight = sliceSize->height * srcrectRateHeight;
-    float remainingSrcWidth = remainingWidth * srcrectRateWidth;
-    float remainingSrcHeight = remainingHeight * srcrectRateHeight;
+
+    remainingWidth = (int)dstrect->w % sliceSize->width;
+    remainingHeight = (int)dstrect->h % sliceSize->height;
+    hasRemainingWidth = remainingWidth > 0;
+    hasRemainingHeight = remainingHeight > 0;
+    srcrectRateWidth =  (float)(abs(srcrect->w - dimensions->width)) / (float)(abs(dstrect->w - dimensions->width));
+    srcrectRateHeight = (float)(abs(srcrect->h - dimensions->height)) / (float)(abs(dstrect->h - dimensions->height));
+    srcWidth = sliceSize->width * srcrectRateWidth;
+    srcHeight = sliceSize->height * srcrectRateHeight;
+    remainingSrcWidth = remainingWidth * srcrectRateWidth;
+    remainingSrcHeight = remainingHeight * srcrectRateHeight;
 
     for (i = 0; i < dimensions->width; i++) {
         for (j = 0; j < dimensions->height; j++) {
@@ -824,7 +832,8 @@ static inline int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL
     PSP_SetBlendMode(data, blendInfo);
 
     if (texture) {
-        uint32_t tbw, twp;
+        uint32_t tbw;
+        void *twp;
         const VertTCV *verts = (VertTCV *)(vertices + cmd->data.draw.first);
         
         PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
@@ -899,7 +908,8 @@ static inline int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_R
 
 static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
-    uint32_t tbw, twp;
+    uint32_t tbw;
+    void *twp;
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
     SDL_Texture *texture = cmd->data.draw.texture;
     PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
