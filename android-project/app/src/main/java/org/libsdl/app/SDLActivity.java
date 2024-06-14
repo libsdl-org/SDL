@@ -330,6 +330,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             Log.v(TAG, "modify thread properties failed " + e.toString());
         }
 
+        // So we can call stuff from static callbacks
+        mSingleton = this;
+        SDL.setContext(this);
+
         // Load shared libraries
         String errorMsgBrokenLib = "";
         try {
@@ -383,10 +387,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         // Initialize state
         SDL.initialize();
-
-        // So we can call stuff from static callbacks
-        mSingleton = this;
-        SDL.setContext(this);
 
         mClipboardHandler = new SDLClipboardHandler();
 
