@@ -756,8 +756,8 @@ SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         }
 
         /* Make the context current */
-        if (WIN_GL_MakeCurrent(_this, window, temp_context) < 0) {
-            WIN_GL_DeleteContext(_this, temp_context);
+        if (WIN_GL_MakeCurrent(_this, window, (SDL_GLContext)temp_context) < 0) {
+            WIN_GL_DeleteContext(_this, (SDL_GLContext)temp_context);
             return NULL;
         }
 
@@ -819,12 +819,12 @@ SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         return NULL;
     }
 
-    if (WIN_GL_MakeCurrent(_this, window, context) < 0) {
-        WIN_GL_DeleteContext(_this, context);
+    if (WIN_GL_MakeCurrent(_this, window, (SDL_GLContext)context) < 0) {
+        WIN_GL_DeleteContext(_this, (SDL_GLContext)context);
         return NULL;
     }
 
-    return context;
+    return (SDL_GLContext)context;
 }
 
 int WIN_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)

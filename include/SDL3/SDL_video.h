@@ -200,7 +200,7 @@ typedef enum SDL_FlashOperation
  *
  * \sa SDL_GL_CreateContext
  */
-typedef void *SDL_GLContext;
+typedef struct SDL_GLContextState *SDL_GLContext;
 
 /**
  * Opaque EGL types.
