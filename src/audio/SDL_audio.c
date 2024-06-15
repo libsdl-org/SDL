@@ -622,7 +622,7 @@ static SDL_AudioDevice *CreateAudioPlaybackDevice(const char *name, const SDL_Au
 }
 
 // The audio backends call this when a new device is plugged in.
-SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool recording, const char *name, const SDL_AudioSpec *inspec, void *handle)
+SDL_AudioDevice *SDL_AddAudioDevice(SDL_bool recording, const char *name, const SDL_AudioSpec *inspec, void *handle)
 {
     // device handles MUST be unique! If the target reuses the same handle for hardware with both recording and playback interfaces, wrap it in a pointer you SDL_malloc'd!
     SDL_assert(SDL_FindPhysicalAudioDeviceByHandle(handle) == NULL);
