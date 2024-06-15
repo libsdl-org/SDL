@@ -417,8 +417,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  * Get a list of currently-connected audio playback devices.
  *
  * This returns of list of available devices that play sound, perhaps to
- * speakers or headphones ("playback" devices). If you want devices that record
- * audio, like a microphone ("recording" devices), use
+ * speakers or headphones ("playback" devices). If you want devices that
+ * record audio, like a microphone ("recording" devices), use
  * SDL_GetAudioRecordingDevices() instead.
  *
  * This only returns a list of physical devices; it will not have any device
@@ -528,10 +528,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid
 /**
  * Open a specific audio device.
  *
- * You can open both playback and recording devices through this function. Playback
- * devices will take data from bound audio streams, mix it, and send it to the
- * hardware. Recording devices will feed any bound audio streams with a copy of
- * any incoming data.
+ * You can open both playback and recording devices through this function.
+ * Playback devices will take data from bound audio streams, mix it, and send
+ * it to the hardware. Recording devices will feed any bound audio streams
+ * with a copy of any incoming data.
  *
  * An opened audio device starts out with no audio streams bound. To start
  * audio playing, bind a stream and supply audio data to it. Unlike SDL2,
@@ -541,14 +541,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid
  * function).
  *
  * If you don't care about opening a specific device, pass a `devid` of either
- * `SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK` or `SDL_AUDIO_DEVICE_DEFAULT_RECORDING`. In
- * this case, SDL will try to pick the most reasonable default, and may also
- * switch between physical devices seamlessly later, if the most reasonable
- * default changes during the lifetime of this opened device (user changed the
- * default in the OS's system preferences, the default got unplugged so the
- * system jumped to a new default, the user plugged in headphones on a mobile
- * device, etc). Unless you have a good reason to choose a specific device,
- * this is probably what you want.
+ * `SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK` or
+ * `SDL_AUDIO_DEVICE_DEFAULT_RECORDING`. In this case, SDL will try to pick
+ * the most reasonable default, and may also switch between physical devices
+ * seamlessly later, if the most reasonable default changes during the
+ * lifetime of this opened device (user changed the default in the OS's system
+ * preferences, the default got unplugged so the system jumped to a new
+ * default, the user plugged in headphones on a mobile device, etc). Unless
+ * you have a good reason to choose a specific device, this is probably what
+ * you want.
  *
  * You may request a specific format for the audio device, but there is no
  * promise the device will honor that request for several reasons. As such,
@@ -718,10 +719,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * It is an error to bind an already-bound stream; it must be explicitly
  * unbound first.
  *
- * Binding a stream to a device will set its output format for playback devices,
- * and its input format for recording devices, so they match the device's
- * settings. The caller is welcome to change the other end of the stream's
- * format at any time.
+ * Binding a stream to a device will set its output format for playback
+ * devices, and its input format for recording devices, so they match the
+ * device's settings. The caller is welcome to change the other end of the
+ * stream's format at any time.
  *
  * \param devid an audio device to bind a stream to.
  * \param streams an array of audio streams to unbind.
@@ -1389,13 +1390,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyAudioStream(SDL_AudioStream *stream)
  * Destroying the returned stream with SDL_DestroyAudioStream will also close
  * the audio device associated with this stream.
  *
- * \param devid an audio device to open, or SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK or
- *              SDL_AUDIO_DEVICE_DEFAULT_RECORDING.
+ * \param devid an audio device to open, or SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK
+ *              or SDL_AUDIO_DEVICE_DEFAULT_RECORDING.
  * \param spec the audio stream's data format. Can be NULL.
  * \param callback a callback where the app will provide new data for
- *                 playback, or receive new data for recording. Can be NULL, in
- *                 which case the app will need to call SDL_PutAudioStreamData
- *                 or SDL_GetAudioStreamData as necessary.
+ *                 playback, or receive new data for recording. Can be NULL,
+ *                 in which case the app will need to call
+ *                 SDL_PutAudioStreamData or SDL_GetAudioStreamData as
+ *                 necessary.
  * \param userdata app-controlled pointer passed to callback. Can be NULL.
  *                 Ignored if callback is NULL.
  * \returns an audio stream on success, ready to use. NULL on error; call
