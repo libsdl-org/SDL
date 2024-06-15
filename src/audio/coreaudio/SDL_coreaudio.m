@@ -732,10 +732,10 @@ static int AssignDeviceToAudioQueue(SDL_AudioDevice *device)
 
     //This is the quickest fix
     if (result != noErr) {
-            const char* msg = "AudioQueueSetProperty (kAudioQueueProperty_CurrentDevice)";
-            SDL_Log("COREAUDIO: Got error %d from '%s'!\n", (int)result, msg);
-            CFRelease(devuid);
-            return SDL_SetError("CoreAudio error (%s): %d", msg, (int)result);
+        const char* msg = "AudioQueueSetProperty (kAudioQueueProperty_CurrentDevice)";
+        SDL_Log("COREAUDIO: Got error %d from '%s'!\n", (int)result, msg);
+        CFRelease(devuid);
+        return SDL_SetError("CoreAudio error (%s): %d", msg, (int)result);
     }
 
     //Release once you've finished using CFStringRef
