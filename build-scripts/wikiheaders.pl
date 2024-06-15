@@ -847,9 +847,9 @@ while (my $d = readdir(DH)) {
                     $symtype = 1;   # (forced-inline) function declaration
                 } elsif ($decl =~ /\A\s*\#\s*define\s+/) {
                     $symtype = 2;   # macro
-                } elsif ($decl =~ /\A\s*(typedef\s+|)(struct|union)/) {
+                } elsif ($decl =~ /\A\s*(typedef\s+|)(struct|union)\s*([a-zA-Z0-9_]*?)\s*(\n|\{|\Z)/) {
                     $symtype = 3;   # struct or union
-                } elsif ($decl =~ /\A\s*(typedef\s+|)enum/) {
+                } elsif ($decl =~ /\A\s*(typedef\s+|)enum\s*([a-zA-Z0-9_]*?)\s*(\n|\{|\Z)/) {
                     $symtype = 4;   # enum
                 } elsif ($decl =~ /\A\s*typedef\s+.*\Z/) {
                     $symtype = 5;   # other typedef
@@ -1075,7 +1075,7 @@ while (my $d = readdir(DH)) {
             }
         } elsif (($symtype == 3) || ($symtype == 4)) {  # struct or union or enum
             my $has_definition = 0;
-            if ($decl =~ /\A\s*(typedef\s+|)(struct|union|enum)\s*(.*?)\s*(\n|\{|\;|\Z)/) {
+            if ($decl =~ /\A\s*(typedef\s+|)(struct|union|enum)\s*([a-zA-Z0-9_]*?)\s*(\n|\{|\;|\Z)/) {
                 my $ctype = $2;
                 my $origsym = $3;
                 my $ending = $4;
