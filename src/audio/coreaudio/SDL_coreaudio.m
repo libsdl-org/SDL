@@ -713,34 +713,8 @@ static int AssignDeviceToAudioQueue(SDL_AudioDevice *device)
     result = AudioObjectGetPropertyData(device->hidden->deviceID, &prop, 0, NULL, &devuidsize, &devuid);
     CHECK_RESULT("AudioObjectGetPropertyData (kAudioDevicePropertyDeviceUID)");
     result = AudioQueueSetProperty(device->hidden->audioQueue, kAudioQueueProperty_CurrentDevice, &devuid, devuidsize);
-
-    /*
-       If AudioObjectGetPropertyData succeeds and AudioQueueSetProperty fails,
-       calling CHECK_RESULT("AudioQueueSetProperty (kAudioQueueProperty_CurrentDevice)");
-       will cause a memory leak since it returns
-    */
-
-    // !!! FIXME: do we need to CFRelease(devuid)
-    /* Yes
-     CFStringRef is passed to AudioObjectGetPropertyData as an argument of type
-     UnsafeMutableRawPointer. As stated in the Apple Developer Documentation,
-     "The UnsafeMutableRawPointer type provides no automated memory management,
-     no type safety, and no alignment guarantees. You are responsible for
-     handling the life cycle of any memory you work with through
-     unsafe pointers, to avoid leaks or undefined behavior"
-    */
-
-    //This is the quickest fix
-    if (result != noErr) {
-        const char* msg = "AudioQueueSetProperty (kAudioQueueProperty_CurrentDevice)";
-        SDL_Log("COREAUDIO: Got error %d from '%s'!\n", (int)result, msg);
-        CFRelease(devuid);
-        return SDL_SetError("CoreAudio error (%s): %d", msg, (int)result);
-    }
-
-    //Release once you've finished using CFStringRef
-    CFRelease(devuid);
-
+    CFRelease(devuid);  // Release devuid; we're done with it and AudioQueueSetProperty should have retained if it wants to keep it.
+    CHECK_RESULT("AudioQueueSetProperty (kAudioQueueProperty_CurrentDevice)");
     return 0;
 }
 #endif
