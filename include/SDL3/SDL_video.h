@@ -2578,7 +2578,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
  * extension-handling library or with SDL_GL_GetProcAddress() and its related
  * functions.
  *
- * SDL_GLContext is an alias for `void *`. It's opaque to the application.
+ * SDL_GLContext is opaque to the application.
  *
  * \param window the window to associate with the context.
  * \returns the OpenGL context associated with `window` or NULL on error; call
