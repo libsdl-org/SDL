@@ -69,7 +69,7 @@ extern void SDL_SetupAudioResampler(void);
 /* Backends should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern SDL_AudioDevice *SDL_AddAudioDevice(const SDL_bool recording, const char *name, const SDL_AudioSpec *spec, void *handle);
+extern SDL_AudioDevice *SDL_AddAudioDevice(SDL_bool recording, const char *name, const SDL_AudioSpec *spec, void *handle);
 
 /* Backends should call this if an opened audio device is lost.
    This can happen due to i/o errors, or a device being unplugged, etc. */
