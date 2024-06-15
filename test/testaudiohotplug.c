@@ -54,7 +54,7 @@ static void poked(int sig)
 
 static const char *devtypestr(int recording)
 {
-    return recording ? "capture" : "output";
+    return recording ? "recording" : "playback";
 }
 
 static void iteration(void)
