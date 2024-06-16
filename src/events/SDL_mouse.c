@@ -1129,7 +1129,7 @@ void SDL_QuitMouse(void)
 
     SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
                         SDL_MouseRelativeWarpMotionChanged, mouse);
-    
+
     SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
                         SDL_MouseRelativeCursorVisibleChanged, mouse);
 
@@ -1554,7 +1554,7 @@ int SDL_SetCursor(SDL_Cursor *cursor)
         }
     }
 
-    if (cursor && (!mouse->focus || (mouse->cursor_shown && (mouse->relative_mode_cursor_visible || !mouse->relative_mode) ) ) ) {
+    if (cursor && (!mouse->focus || (mouse->cursor_shown && (!mouse->relative_mode || mouse->relative_mode_cursor_visible)))) {
         if (mouse->ShowCursor) {
             mouse->ShowCursor(cursor);
         }
