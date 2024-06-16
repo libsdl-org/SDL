@@ -4062,14 +4062,14 @@ static Uint8 VULKAN_INTERNAL_QuerySwapchainSupport(
         surface,
         &supportsPresent);
 
+    /* Initialize these in case anything fails */
+    outputDetails->formatsLength = 0;
+    outputDetails->presentModesLength = 0;
+
     if (!supportsPresent) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "This surface does not support presenting!");
         return 0;
     }
-
-    /* Initialize these in case anything fails */
-    outputDetails->formatsLength = 0;
-    outputDetails->presentModesLength = 0;
 
     /* Run the device surface queries */
     result = renderer->vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -4129,6 +4129,7 @@ static Uint8 VULKAN_INTERNAL_QuerySwapchainSupport(
             sizeof(VkPresentModeKHR) * outputDetails->presentModesLength);
 
         if (!outputDetails->presentModes) {
+            SDL_free(outputDetails->formats);
             SDL_OutOfMemory();
             return 0;
         }
@@ -6454,13 +6455,14 @@ static SDL_GpuComputePipeline *VULKAN_CreateComputePipeline(
     VkResult vulkanResult;
     Uint32 i;
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
-    VulkanComputePipeline *vulkanComputePipeline = SDL_malloc(sizeof(VulkanComputePipeline));
+    VulkanComputePipeline *vulkanComputePipeline;
 
     if (pipelineCreateInfo->format != SDL_GPU_SHADERFORMAT_SPIRV) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Incompatible shader format for Vulkan!");
         return NULL;
     }
 
+    vulkanComputePipeline = SDL_malloc(sizeof(VulkanComputePipeline));
     shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     shaderModuleCreateInfo.pNext = NULL;
     shaderModuleCreateInfo.flags = 0;
@@ -6593,7 +6595,7 @@ static SDL_GpuShader *VULKAN_CreateShader(
     SDL_GpuRenderer *driverData,
     SDL_GpuShaderCreateInfo *shaderCreateInfo)
 {
-    VulkanShader *vulkanShader = SDL_malloc(sizeof(VulkanShader));
+    VulkanShader *vulkanShader;
     VkResult vulkanResult;
     VkShaderModuleCreateInfo vkShaderModuleCreateInfo;
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
@@ -6604,6 +6606,7 @@ static SDL_GpuShader *VULKAN_CreateShader(
         return NULL;
     }
 
+    vulkanShader = SDL_malloc(sizeof(VulkanShader));
     vkShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     vkShaderModuleCreateInfo.pNext = NULL;
     vkShaderModuleCreateInfo.flags = 0;
@@ -9055,7 +9058,7 @@ static void VULKAN_INTERNAL_AllocateCommandBuffers(
         commandBuffer->presentDataCapacity = 1;
         commandBuffer->presentDataCount = 0;
         commandBuffer->presentDatas = SDL_malloc(
-            commandBuffer->presentDataCapacity * sizeof(VkPresentInfoKHR));
+            commandBuffer->presentDataCapacity * sizeof(VulkanPresentData));
 
         commandBuffer->waitSemaphoreCapacity = 1;
         commandBuffer->waitSemaphoreCount = 0;
@@ -9402,22 +9405,22 @@ static SDL_bool VULKAN_SupportsSwapchainComposition(
         surface = windowData->swapchainData->surface;
     }
 
-    VULKAN_INTERNAL_QuerySwapchainSupport(
+    if (VULKAN_INTERNAL_QuerySwapchainSupport(
         renderer,
         renderer->physicalDevice,
         surface,
-        &supportDetails);
-
-    for (i = 0; i < supportDetails.formatsLength; i += 1) {
-        if (supportDetails.formats[i].format == SwapchainCompositionToFormat[swapchainComposition] &&
-            supportDetails.formats[i].colorSpace == SwapchainCompositionToColorSpace[swapchainComposition]) {
-            result = SDL_TRUE;
-            break;
+        &supportDetails)) {
+        for (i = 0; i < supportDetails.formatsLength; i += 1) {
+            if (supportDetails.formats[i].format == SwapchainCompositionToFormat[swapchainComposition] &&
+                supportDetails.formats[i].colorSpace == SwapchainCompositionToColorSpace[swapchainComposition]) {
+                result = SDL_TRUE;
+                break;
+            }
         }
-    }
 
-    SDL_free(supportDetails.formats);
-    SDL_free(supportDetails.presentModes);
+        SDL_free(supportDetails.formats);
+        SDL_free(supportDetails.presentModes);
+    }
 
     if (destroySurface) {
         SDL_Vulkan_DestroySurface(
@@ -9459,21 +9462,22 @@ static SDL_bool VULKAN_SupportsPresentMode(
         surface = windowData->swapchainData->surface;
     }
 
-    VULKAN_INTERNAL_QuerySwapchainSupport(
+    if (VULKAN_INTERNAL_QuerySwapchainSupport(
         renderer,
         renderer->physicalDevice,
         surface,
-        &supportDetails);
+        &supportDetails)) {
 
-    for (i = 0; i < supportDetails.presentModesLength; i += 1) {
-        if (supportDetails.presentModes[i] == SDLToVK_PresentMode[presentMode]) {
-            result = SDL_TRUE;
-            break;
+        for (i = 0; i < supportDetails.presentModesLength; i += 1) {
+            if (supportDetails.presentModes[i] == SDLToVK_PresentMode[presentMode]) {
+                result = SDL_TRUE;
+                break;
+            }
         }
-    }
 
-    SDL_free(supportDetails.formats);
-    SDL_free(supportDetails.presentModes);
+        SDL_free(supportDetails.formats);
+        SDL_free(supportDetails.presentModes);
+    }
 
     if (destroySurface) {
         SDL_Vulkan_DestroySurface(
@@ -9724,7 +9728,7 @@ static SDL_GpuTexture *VULKAN_AcquireSwapchainTexture(
         vulkanCommandBuffer->presentDataCapacity += 1;
         vulkanCommandBuffer->presentDatas = SDL_realloc(
             vulkanCommandBuffer->presentDatas,
-            vulkanCommandBuffer->presentDataCapacity * sizeof(VkPresentInfoKHR));
+            vulkanCommandBuffer->presentDataCapacity * sizeof(VulkanPresentData));
     }
 
     presentData = &vulkanCommandBuffer->presentDatas[vulkanCommandBuffer->presentDataCount];
@@ -11004,10 +11008,10 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         physicalDevice,
         surface,
         &swapchainSupportDetails);
-    if (swapchainSupportDetails.formatsLength > 0) {
+    if (querySuccess && swapchainSupportDetails.formatsLength > 0) {
         SDL_free(swapchainSupportDetails.formats);
     }
-    if (swapchainSupportDetails.presentModesLength > 0) {
+    if (querySuccess && swapchainSupportDetails.presentModesLength > 0) {
         SDL_free(swapchainSupportDetails.presentModes);
     }
 
