@@ -714,7 +714,7 @@ SDL_GameControllerHasAxis(SDL_GameController *gamecontroller, SDL_GameController
  *
  * Triggers range from 0 when released to 32767 when fully pressed, and never
  * return a negative value. Note that this differs from the value reported by
- * the lower-level SDL_GetJoystickAxis(), which normally uses the full range.
+ * the lower-level SDL_JoystickGetAxis(), which normally uses the full range.
  *
  * \param gamecontroller a game controller.
  * \param axis an axis index (one of the SDL_GameControllerAxis values).
