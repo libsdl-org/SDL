@@ -1285,7 +1285,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
  *
  * \returns a random value in the range of [0-SDL_MAX_UINT32].
  *
- * \threadsafety All calls should be from from a single thread, use
+ * \threadsafety All calls should be made from a single thread, use
  *               SDL_rand_r() when using multiple threads.
  *
  * \since This function is available since SDL 3.0.0.
