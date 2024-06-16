@@ -169,7 +169,7 @@ def main():
             func = func.replace(" SDL_WPRINTF_VARARG_FUNC(3)", "");
             func = func.replace(" SDL_SCANF_VARARG_FUNC(2)", "");
             func = func.replace(" SDL_SCANF_VARARG_FUNCV(2)", "");
-            func = func.replace(" __attribute__((analyzer_noreturn))", "");
+            func = func.replace(" SDL_ANALYZER_NORETURN", "");
             func = func.replace(" SDL_MALLOC", "");
             func = func.replace(" SDL_ALLOC_SIZE2(1, 2)", "");
             func = func.replace(" SDL_ALLOC_SIZE(2)", "");
