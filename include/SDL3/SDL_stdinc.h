@@ -1262,9 +1262,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STR
 /**
  * Seed the pseudo-random number generator
  *
- * \param seed the value to use as a random number seed, or 0 to use SDL_GetPerformanceCounter()
+ * \param seed the value to use as a random number seed, or 0 to use
+ *             SDL_GetPerformanceCounter().
  *
- * \threadsafety This should be called on the same thread that calls SDL_rand()
+ * \threadsafety This should be called on the same thread that calls
+ *               SDL_rand()
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1275,11 +1277,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
 /**
  * Get a pseudo-random number.
  *
- * There are no guarantees as to the quality of the random sequence produced, and this should not be used for cryptography or anything that requires good random distribution. There are many random number libraries available with different characteristics and you should pick one of those to meet any serious needs.
+ * There are no guarantees as to the quality of the random sequence produced,
+ * and this should not be used for cryptography or anything that requires good
+ * random distribution. There are many random number libraries available with
+ * different characteristics and you should pick one of those to meet any
+ * serious needs.
  *
- * \returns a random value in the range of [0-SDL_MAX_UINT32]
+ * \returns a random value in the range of [0-SDL_MAX_UINT32].
  *
- * \threadsafety All calls should be from from a single thread, use SDL_rand_r() when using multiple threads.
+ * \threadsafety All calls should be from from a single thread, use
+ *               SDL_rand_r() when using multiple threads.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1291,12 +1298,20 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand(void);
 /**
  * Get a pseudo-random number.
  *
- * There are no guarantees as to the quality of the random sequence produced, and this should not be used for cryptography or anything that requires good random distribution. There are many random number libraries available with different characteristics and you should pick one of those to meet any serious needs.
+ * There are no guarantees as to the quality of the random sequence produced,
+ * and this should not be used for cryptography or anything that requires good
+ * random distribution. There are many random number libraries available with
+ * different characteristics and you should pick one of those to meet any
+ * serious needs.
  *
- * \param state a pointer to a 64-bit seed value that will be updated with each call to SDL_rand_r(). If the value of the seed is 0, it will be initialized with SDL_GetPerformanceCounter().
- * \returns a random value in the range of [0-SDL_MAX_UINT32], or 0 if state is NULL.
+ * \param state a pointer to a 64-bit seed value that will be updated with
+ *              each call to SDL_rand_r(). If the value of the seed is 0, it
+ *              will be initialized with SDL_GetPerformanceCounter().
+ * \returns a random value in the range of [0-SDL_MAX_UINT32], or 0 if state
+ *          is NULL.
  *
- * \threadsafety This can be called from any thread, however each thread should pass its own state pointer.
+ * \threadsafety This can be called from any thread, however each thread
+ *               should pass its own state pointer.
  *
  * \since This function is available since SDL 3.0.0.
  *
