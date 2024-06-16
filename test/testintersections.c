@@ -19,9 +19,6 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include <stdlib.h>
-#include <time.h>
-
 #define SWAP(typ, a, b) \
     do {                \
         typ t = a;      \
@@ -77,8 +74,8 @@ static void DrawPoints(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
                                (Uint8)current_color, (Uint8)current_alpha);
 
-        x = (float)(rand() % viewport.w);
-        y = (float)(rand() % viewport.h);
+        x = (float)(SDL_rand() % viewport.w);
+        y = (float)(SDL_rand() % viewport.h);
         SDL_RenderPoint(renderer, x, y);
     }
 }
@@ -234,10 +231,10 @@ static void loop(void *arg)
                     num_lines = 0;
                 } else {
                     add_line(
-                        (float)(rand() % 640),
-                        (float)(rand() % 480),
-                        (float)(rand() % 640),
-                        (float)(rand() % 480));
+                        (float)(SDL_rand() % 640),
+                        (float)(SDL_rand() % 480),
+                        (float)(SDL_rand() % 640),
+                        (float)(SDL_rand() % 480));
                 }
                 break;
             case 'r':
@@ -245,10 +242,10 @@ static void loop(void *arg)
                     num_rects = 0;
                 } else {
                     add_rect(
-                        (float)(rand() % 640),
-                        (float)(rand() % 480),
-                        (float)(rand() % 640),
-                        (float)(rand() % 480));
+                        (float)(SDL_rand() % 640),
+                        (float)(SDL_rand() % 480),
+                        (float)(SDL_rand() % 640),
+                        (float)(SDL_rand() % 480));
                 }
                 break;
             default:
@@ -362,8 +359,6 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
         SDL_RenderClear(renderer);
     }
-
-    srand((unsigned int)time(NULL));
 
     /* Main render loop */
     frames = 0;

@@ -14,9 +14,6 @@
  * For a more complete video example, see ffplay.c in the ffmpeg sources.
  */
 
-#include <stdlib.h>
-#include <time.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -1486,17 +1483,16 @@ int main(int argc, char *argv[])
     /* Position sprites and set their velocities */
     SDL_Rect viewport;
     SDL_GetRenderViewport(renderer, &viewport);
-    srand((unsigned int)time(NULL));
     for (i = 0; i < num_sprites; ++i) {
-        positions[i].x = (float)(rand() % (viewport.w - sprite_w));
-        positions[i].y = (float)(rand() % (viewport.h - sprite_h));
+        positions[i].x = (float)(SDL_rand() % (viewport.w - sprite_w));
+        positions[i].y = (float)(SDL_rand() % (viewport.h - sprite_h));
         positions[i].w = (float)sprite_w;
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
         while (velocities[i].x == 0.f || velocities[i].y == 0.f) {
-            velocities[i].x = (float)((rand() % (2 + 1)) - 1);
-            velocities[i].y = (float)((rand() % (2 + 1)) - 1);
+            velocities[i].x = (float)((SDL_rand() % (2 + 1)) - 1);
+            velocities[i].y = (float)((SDL_rand() % (2 + 1)) - 1);
         }
     }
 

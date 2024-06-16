@@ -1393,6 +1393,9 @@
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c">
       <Filter>stdlib</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_random.c">
+      <Filter>stdlib</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c">
       <Filter>stdlib</Filter>
     </ClCompile>

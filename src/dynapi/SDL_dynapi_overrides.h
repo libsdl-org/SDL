@@ -980,6 +980,8 @@
 #define SDL_powf SDL_powf_REAL
 #define SDL_qsort SDL_qsort_REAL
 #define SDL_qsort_r SDL_qsort_r_REAL
+#define SDL_rand SDL_rand_REAL
+#define SDL_rand_r SDL_rand_r_REAL
 #define SDL_realloc SDL_realloc_REAL
 #define SDL_round SDL_round_REAL
 #define SDL_roundf SDL_roundf_REAL
@@ -991,6 +993,7 @@
 #define SDL_snprintf    SDL_snprintf_REAL
 #define SDL_sqrt SDL_sqrt_REAL
 #define SDL_sqrtf SDL_sqrtf_REAL
+#define SDL_srand SDL_srand_REAL
 #define SDL_sscanf  SDL_sscanf_REAL
 #define SDL_strcasecmp SDL_strcasecmp_REAL
 #define SDL_strcasestr SDL_strcasestr_REAL

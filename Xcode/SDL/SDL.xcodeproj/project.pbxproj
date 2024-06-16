@@ -383,6 +383,9 @@
 		E4F7981C2AD8D85500669F54 /* SDL_dynapi_unsupported.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F7981B2AD8D85500669F54 /* SDL_dynapi_unsupported.h */; };
 		E4F7981E2AD8D86A00669F54 /* SDL_render_unsupported.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F7981D2AD8D86A00669F54 /* SDL_render_unsupported.c */; };
 		E4F798202AD8D87F00669F54 /* SDL_video_unsupported.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F7981F2AD8D87F00669F54 /* SDL_video_unsupported.c */; };
+		F310138D2C1F2CB700FBE946 /* SDL_getenv_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F310138A2C1F2CB700FBE946 /* SDL_getenv_c.h */; };
+		F310138E2C1F2CB700FBE946 /* SDL_random.c in Sources */ = {isa = PBXBuildFile; fileRef = F310138B2C1F2CB700FBE946 /* SDL_random.c */; };
+		F310138F2C1F2CB700FBE946 /* SDL_sysstdlib.h in Headers */ = {isa = PBXBuildFile; fileRef = F310138C2C1F2CB700FBE946 /* SDL_sysstdlib.h */; };
 		F316ABD82B5C3185002EF551 /* SDL_memset.c in Sources */ = {isa = PBXBuildFile; fileRef = F316ABD62B5C3185002EF551 /* SDL_memset.c */; };
 		F316ABD92B5C3185002EF551 /* SDL_memcpy.c in Sources */ = {isa = PBXBuildFile; fileRef = F316ABD72B5C3185002EF551 /* SDL_memcpy.c */; };
 		F316ABDB2B5CA721002EF551 /* SDL_memmove.c in Sources */ = {isa = PBXBuildFile; fileRef = F316ABDA2B5CA721002EF551 /* SDL_memmove.c */; };
@@ -909,6 +912,9 @@
 		E4F7981B2AD8D85500669F54 /* SDL_dynapi_unsupported.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dynapi_unsupported.h; sourceTree = "<group>"; };
 		E4F7981D2AD8D86A00669F54 /* SDL_render_unsupported.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_unsupported.c; sourceTree = "<group>"; };
 		E4F7981F2AD8D87F00669F54 /* SDL_video_unsupported.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_video_unsupported.c; sourceTree = "<group>"; };
+		F310138A2C1F2CB700FBE946 /* SDL_getenv_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_getenv_c.h; sourceTree = "<group>"; };
+		F310138B2C1F2CB700FBE946 /* SDL_random.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_random.c; sourceTree = "<group>"; };
+		F310138C2C1F2CB700FBE946 /* SDL_sysstdlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysstdlib.h; sourceTree = "<group>"; };
 		F316ABD62B5C3185002EF551 /* SDL_memset.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_memset.c; sourceTree = "<group>"; };
 		F316ABD72B5C3185002EF551 /* SDL_memcpy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_memcpy.c; sourceTree = "<group>"; };
 		F316ABDA2B5CA721002EF551 /* SDL_memmove.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_memmove.c; sourceTree = "<group>"; };
@@ -2035,6 +2041,7 @@
 			children = (
 				F3973FA128A59BDD00B84553 /* SDL_crc16.c */,
 				F395BF6425633B2400942BFF /* SDL_crc32.c */,
+				F310138A2C1F2CB700FBE946 /* SDL_getenv_c.h */,
 				A7D8A8D423E2514000DCD162 /* SDL_getenv.c */,
 				A7D8A8D323E2514000DCD162 /* SDL_iconv.c */,
 				A7D8A8D923E2514000DCD162 /* SDL_malloc.c */,
@@ -2042,9 +2049,11 @@
 				F316ABDA2B5CA721002EF551 /* SDL_memmove.c */,
 				F316ABD62B5C3185002EF551 /* SDL_memset.c */,
 				A7D8A8D723E2514000DCD162 /* SDL_qsort.c */,
+				F310138B2C1F2CB700FBE946 /* SDL_random.c */,
 				A7D8A8D823E2514000DCD162 /* SDL_stdlib.c */,
 				A7D8A8D523E2514000DCD162 /* SDL_string.c */,
 				A7D8A8D623E2514000DCD162 /* SDL_strtokr.c */,
+				F310138C2C1F2CB700FBE946 /* SDL_sysstdlib.h */,
 				F3973FA028A59BDD00B84553 /* SDL_vacopy.h */,
 			);
 			path = stdlib;
@@ -2291,6 +2300,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3F7D9812933074E00816151 /* SDL.h in Headers */,
+				F310138D2C1F2CB700FBE946 /* SDL_getenv_c.h in Headers */,
 				A7D8B39E23E2514200DCD162 /* SDL_RLEaccel_c.h in Headers */,
 				F3F7D9C52933074E00816151 /* SDL_assert.h in Headers */,
 				A7D8B61723E2514300DCD162 /* SDL_assert_c.h in Headers */,
@@ -2439,6 +2449,7 @@
 				A7D8B98C23E2514400DCD162 /* SDL_shaders_metal_ios.h in Headers */,
 				A7D8B99B23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */,
 				A7D8B9A123E2514400DCD162 /* SDL_shaders_metal_tvos.h in Headers */,
+				F310138F2C1F2CB700FBE946 /* SDL_sysstdlib.h in Headers */,
 				F3F7D8F52933074E00816151 /* SDL_stdinc.h in Headers */,
 				F362B91B2B3349E200D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
 				A7D8BBC723E2561500DCD162 /* SDL_steamcontroller.h in Headers */,
@@ -2869,6 +2880,7 @@
 				0000A4DA2F45A31DC4F00000 /* SDL_sysmain_callbacks.m in Sources */,
 				000028F8113A53F4333E0000 /* SDL_main_callbacks.c in Sources */,
 				000098E9DAA43EF6FF7F0000 /* SDL_camera.c in Sources */,
+				F310138E2C1F2CB700FBE946 /* SDL_random.c in Sources */,
 				00001B2471F503DD3C1B0000 /* SDL_camera_dummy.c in Sources */,
 				00002B20A48E055EB0350000 /* SDL_camera_coremedia.m in Sources */,
 				000080903BC03006F24E0000 /* SDL_filesystem.c in Sources */,
