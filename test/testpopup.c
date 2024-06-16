@@ -20,7 +20,6 @@ freely.
 #endif
 
 #include <stdlib.h>
-#include <time.h>
 
 #define MENU_WIDTH  120
 #define MENU_HEIGHT 300

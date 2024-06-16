@@ -19,9 +19,6 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include <stdlib.h>
-#include <time.h>
-
 static SDLTest_CommonState *state;
 static int i, done;
 static float mouseX, mouseY;
@@ -115,7 +112,6 @@ int main(int argc, char *argv[])
         SDL_RenderClear(renderer);
     }
 
-    srand((unsigned int)time(NULL));
     if (SDL_SetRelativeMouseMode(SDL_TRUE) < 0) {
         return 3;
     }

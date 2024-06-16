@@ -160,6 +160,7 @@
     <ClCompile Include="..\..\src\stdlib\SDL_memset.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_random.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_string.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_strtokr.c" />

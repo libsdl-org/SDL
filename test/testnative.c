@@ -11,15 +11,14 @@
 */
 /* Simple program:  Create a native window and attach an SDL renderer */
 
+#include <stdlib.h>
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
 #include "testnative.h"
 #include "testutils.h"
-
-#include <stdlib.h> /* for srand() */
-#include <time.h>   /* for time() */
 
 #define WINDOW_W    640
 #define WINDOW_H    480
@@ -188,17 +187,16 @@ int main(int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }
-    srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(rand() % (window_w - (int)sprite_w));
-        positions[i].y = (float)(rand() % (window_h - (int)sprite_h));
+        positions[i].x = (float)(SDL_rand() % (window_w - (int)sprite_w));
+        positions[i].y = (float)(SDL_rand() % (window_h - (int)sprite_h));
         positions[i].w = sprite_w;
         positions[i].h = sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
         while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
-            velocities[i].x = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
-            velocities[i].y = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+            velocities[i].x = (float)((SDL_rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+            velocities[i].y = (float)((SDL_rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
         }
     }
 

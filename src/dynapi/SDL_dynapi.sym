@@ -955,6 +955,8 @@ SDL3_0.0.0 {
     SDL_powf;
     SDL_qsort;
     SDL_qsort_r;
+    SDL_rand;
+    SDL_rand_r;
     SDL_realloc;
     SDL_round;
     SDL_roundf;
@@ -966,6 +968,7 @@ SDL3_0.0.0 {
     SDL_snprintf;
     SDL_sqrt;
     SDL_sqrtf;
+    SDL_srand;
     SDL_sscanf;
     SDL_strcasecmp;
     SDL_strcasestr;

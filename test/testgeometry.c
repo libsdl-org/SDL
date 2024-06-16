@@ -12,6 +12,8 @@
 
 /* Simple program:  draw a RGB triangle, with texture  */
 
+#include <stdlib.h>
+
 #include "testutils.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -20,9 +22,6 @@
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
-
-#include <stdlib.h>
-#include <time.h>
 
 static SDLTest_CommonState *state;
 static SDL_bool use_texture = SDL_FALSE;
@@ -259,8 +258,6 @@ int main(int argc, char *argv[])
             quit(2);
         }
     }
-
-    srand((unsigned int)time(NULL));
 
     /* Main render loop */
     frames = 0;
