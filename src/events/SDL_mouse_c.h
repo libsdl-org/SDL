@@ -92,6 +92,7 @@ typedef struct
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
     SDL_bool relative_mode_warp_motion;
+    SDL_bool relative_mode_cursor_visible;
     SDL_bool enable_normal_speed_scale;
     float normal_speed_scale;
     SDL_bool enable_relative_speed_scale;
