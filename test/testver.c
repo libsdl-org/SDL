@@ -19,11 +19,8 @@
 
 int main(int argc, char *argv[])
 {
-    SDL_Version compiled;
-    SDL_Version linked;
-
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (argc > 1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "USAGE: %s", argv[0]);
@@ -35,13 +32,12 @@ int main(int argc, char *argv[])
 #else
     SDL_Log("Compiled with SDL older than 3.0\n");
 #endif
-    SDL_VERSION(&compiled);
     SDL_Log("Compiled version: %d.%d.%d (%s)\n",
-            compiled.major, compiled.minor, compiled.patch,
+            SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION,
             SDL_REVISION);
-    SDL_GetVersion(&linked);
-    SDL_Log("Linked version: %d.%d.%d (%s)\n",
-            linked.major, linked.minor, linked.patch,
+    int version = SDL_GetVersion();
+    SDL_Log("Runtime version: %d.%d.%d (%s)\n",
+            SDL_VERSIONNUM_MAJOR(version), SDL_VERSIONNUM_MINOR(version), SDL_VERSIONNUM_MICRO(version),
             SDL_GetRevision());
     SDL_Quit();
     return 0;

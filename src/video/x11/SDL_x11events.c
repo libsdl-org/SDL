@@ -33,13 +33,13 @@
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
+#include "SDL_x11settings.h"
 #include "../SDL_clipboard_c.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../core/linux/SDL_system_theme.h"
-#include "../../SDL_utils_c.h"
 #include "../SDL_sysvideo.h"
 
 #include <stdio.h>
@@ -571,7 +571,7 @@ SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const 
 {
     SDL_Window *window = data->window;
     if (!window->hit_test) return SDL_FALSE;
-    const SDL_Point point = { x, y };
+    const SDL_Point point = { (int)x, (int)y };
     SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
     if (!force_new_result && rc == data->hit_test_result) {
         return SDL_TRUE;
@@ -586,7 +586,7 @@ SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, 
     SDL_Window *window = data->window;
 
     if (window->hit_test) {
-        const SDL_Point point = { x, y };
+        const SDL_Point point = { (int)x, (int)y };
         static const int directions[] = {
             _NET_WM_MOVERESIZE_SIZE_TOPLEFT, _NET_WM_MOVERESIZE_SIZE_TOP,
             _NET_WM_MOVERESIZE_SIZE_TOPRIGHT, _NET_WM_MOVERESIZE_SIZE_RIGHT,
@@ -764,7 +764,30 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             SDL_zerop(clipboard);
         }
     } break;
+
+    case PropertyNotify:
+    {
+        char *name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
+
+        if (SDL_strncmp(name_of_atom, "SDL_SELECTION", sizeof("SDL_SELECTION") - 1) == 0 && xevent->xproperty.state == PropertyNewValue) {
+            videodata->selection_incr_waiting = SDL_FALSE;
+        }
+
+        if (name_of_atom) {
+            X11_XFree(name_of_atom);
+        }
+    } break;
     }
+}
+
+static void X11_HandleSettingsEvent(SDL_VideoDevice *_this, const XEvent *xevent)
+{
+    SDL_VideoData *videodata = _this->driverdata;
+
+    SDL_assert(videodata->xsettings_window != None);
+    SDL_assert(xevent->xany.window == videodata->xsettings_window);
+
+    X11_HandleXsettings(_this, xevent);
 }
 
 static Bool isMapNotify(Display *display, XEvent *ev, XPointer arg)
@@ -839,6 +862,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     Display *display = videodata->display;
     KeyCode keycode = xevent->xkey.keycode;
     KeySym keysym = NoSymbol;
+    int text_length = 0;
     char text[64];
     Status status = 0;
     SDL_bool handled_by_ime = SDL_FALSE;
@@ -891,13 +915,13 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
 
 #ifdef X_HAVE_UTF8_STRING
         if (windowdata->ic && xevent->type == KeyPress) {
-            X11_Xutf8LookupString(windowdata->ic, &xevent->xkey, text, sizeof(text),
+            text_length = X11_Xutf8LookupString(windowdata->ic, &xevent->xkey, text, sizeof(text) - 1,
                                   &keysym, &status);
         } else {
-            XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+            text_length = XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text) - 1, &keysym, NULL);
         }
 #else
-        XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text), &keysym, NULL);
+        text_length = XLookupStringAsUTF8(&xevent->xkey, text, sizeof(text) - 1, &keysym, NULL);
 #endif
 
 #ifdef SDL_USE_IME
@@ -912,6 +936,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
                 SDL_SendKeyboardKey(0, keyboardID, SDL_PRESSED, videodata->key_layout[keycode]);
             }
             if (*text) {
+                text[text_length] = '\0';
                 SDL_SendKeyboardText(text);
             }
         } else {
@@ -1086,6 +1111,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     if ((videodata->clipboard_window != None) &&
         (videodata->clipboard_window == xevent->xany.window)) {
         X11_HandleClipboardEvent(_this, xevent);
+        return;
+    }
+
+    if ((videodata->xsettings_window != None) &&
+        (videodata->xsettings_window == xevent->xany.window)) {
+        X11_HandleSettingsEvent(_this, xevent);
         return;
     }
 
@@ -1695,9 +1726,9 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                                  * becoming fullscreen. Switch to the application requested mode if necessary.
                                  */
                                 SDL_copyp(&data->window->current_fullscreen_mode, &data->window->requested_fullscreen_mode);
-                                SDL_UpdateFullscreenMode(data->window, SDL_TRUE, SDL_TRUE);
+                                SDL_UpdateFullscreenMode(data->window, SDL_FULLSCREEN_OP_UPDATE, SDL_TRUE);
                             } else {
-                                SDL_UpdateFullscreenMode(data->window, SDL_TRUE, SDL_FALSE);
+                                SDL_UpdateFullscreenMode(data->window, SDL_FULLSCREEN_OP_ENTER, SDL_FALSE);
                             }
                         }
                     } else {
@@ -1708,6 +1739,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
                         /* Need to restore or update any limits changed while the window was fullscreen. */
                         X11_SetWindowMinMax(data->window, !!(flags & SDL_WINDOW_MAXIMIZED));
+
+                        /* Toggle the borders if they were forced on while creating a borderless fullscreen window. */
+                        if (data->fullscreen_borders_forced_on) {
+                            data->toggle_borders = SDL_TRUE;
+                            data->fullscreen_borders_forced_on = SDL_FALSE;
+                        }
                     }
 
                     if ((flags & SDL_WINDOW_FULLSCREEN) &&

@@ -31,6 +31,9 @@
 
 // Available camera drivers
 static const CameraBootStrap *const bootstrap[] = {
+#ifdef SDL_CAMERA_DRIVER_PIPEWIRE
+    &PIPEWIRECAMERA_bootstrap,
+#endif
 #ifdef SDL_CAMERA_DRIVER_V4L2
     &V4L2_bootstrap,
 #endif
@@ -60,6 +63,7 @@ int SDL_GetNumCameraDrivers(void)
     return SDL_arraysize(bootstrap) - 1;
 }
 
+// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetCameraDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumCameraDrivers()) {
@@ -68,6 +72,7 @@ const char *SDL_GetCameraDriver(int index)
     return NULL;
 }
 
+// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetCurrentCameraDriver(void)
 {
     return camera_driver.name;
@@ -148,7 +153,7 @@ static int ZombieAcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint
     if (!device->zombie_pixels) {
         // attempt to allocate and initialize a fake frame of pixels.
         const size_t buflen = GetFrameBufLen(&device->actual_spec);
-        device->zombie_pixels = (Uint8 *)SDL_aligned_alloc(SDL_SIMDGetAlignment(), buflen);
+        device->zombie_pixels = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
         if (!device->zombie_pixels) {
             *timestampNS = 0;
             return 0;  // oh well, say there isn't a frame yet, so we'll go back to waiting. Maybe allocation will succeed later...?
@@ -280,7 +285,7 @@ static void DestroyPhysicalCameraDevice(SDL_CameraDevice *device)
         camera_driver.impl.FreeDeviceHandle(device);
         SDL_DestroyMutex(device->lock);
         SDL_free(device->all_specs);
-        SDL_free(device->name);
+        SDL_FreeLater(device->name);  // this is returned in SDL_GetCameraDeviceName.
         SDL_free(device);
     }
 }
@@ -594,12 +599,14 @@ void SDL_CameraDevicePermissionOutcome(SDL_CameraDevice *device, SDL_bool approv
 
     ReleaseCameraDevice(device);
 
-    SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
-    SDL_assert(camera_driver.pending_events_tail != NULL);
-    SDL_assert(camera_driver.pending_events_tail->next == NULL);
-    camera_driver.pending_events_tail->next = pending.next;
-    camera_driver.pending_events_tail = pending_tail;
-    SDL_UnlockRWLock(camera_driver.device_hash_lock);
+    if (pending.next) {  // NULL if event is disabled or disaster struck.
+        SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
+        SDL_assert(camera_driver.pending_events_tail != NULL);
+        SDL_assert(camera_driver.pending_events_tail->next == NULL);
+        camera_driver.pending_events_tail->next = pending.next;
+        camera_driver.pending_events_tail = pending_tail;
+        SDL_UnlockRWLock(camera_driver.device_hash_lock);
+    }
 }
 
 
@@ -655,12 +662,12 @@ int SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
     return 0;
 }
 
-char *SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
+const char *SDL_GetCameraDeviceName(SDL_CameraDeviceID instance_id)
 {
     char *retval = NULL;
     SDL_CameraDevice *device = ObtainPhysicalCameraDevice(instance_id);
     if (device) {
-        retval = SDL_strdup(device->name);
+        retval = device->name;
         ReleaseCameraDevice(device);
     }
     return retval;
@@ -753,7 +760,7 @@ void SDL_CameraThreadSetup(SDL_CameraDevice *device)
     {
         // Set thread priority to THREAD_PRIORITY_VIDEO
         extern void Android_JNI_CameraSetThreadPriority(int, int);
-        Android_JNI_CameraSetThreadPriority(device->iscapture, device);
+        Android_JNI_CameraSetThreadPriority(device->recording, device);
     }*/
 #else
     // The camera capture is always a high priority thread
@@ -845,6 +852,8 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
             #if DEBUG_CAMERA
             SDL_Log("CAMERA: Frame is going through without conversion!");
             #endif
+            output_surface->w = acquired->w;
+            output_surface->h = acquired->h;
             output_surface->pixels = acquired->pixels;
             output_surface->pitch = acquired->pitch;
         } else {  // convert/scale into a different surface.
@@ -888,7 +897,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
 
 void SDL_CameraThreadShutdown(SDL_CameraDevice *device)
 {
-    //device->FlushCapture(device);
+    //device->FlushRecording(device);
     //camera_driver.impl.ThreadDeinit(device);
     //SDL_CameraThreadFinalize(device);
 }
@@ -948,34 +957,38 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
         int wantw = spec->width;
         int wanth = spec->height;
 
-        // Find the sizes with the closest aspect ratio and then find the best fit of those.
-        const float wantaspect = ((float)wantw) / ((float) wanth);
-        const float epsilon = 1e-6f;
-        float closestaspect = -9999999.0f;
-        float closestdiff = 999999.0f;
-        int closestdiffw = 9999999;
+        if (wantw > 0 && wanth > 0) {
+            // Find the sizes with the closest aspect ratio and then find the best fit of those.
+            const float wantaspect = ((float)wantw) / ((float)wanth);
+            const float epsilon = 1e-6f;
+            float closestaspect = -9999999.0f;
+            float closestdiff = 999999.0f;
+            int closestdiffw = 9999999;
 
-        for (int i = 0; i < num_specs; i++) {
-            const SDL_CameraSpec *thisspec = &device->all_specs[i];
-            const int thisw = thisspec->width;
-            const int thish = thisspec->height;
-            const float thisaspect = ((float)thisw) / ((float) thish);
-            const float aspectdiff = SDL_fabs(wantaspect - thisaspect);
-            const float diff = SDL_fabs(closestaspect - thisaspect);
-            const int diffw = SDL_abs(thisw - wantw);
-            if (diff < epsilon) {  // matches current closestaspect? See if resolution is closer in size.
-                if (diffw < closestdiffw) {
+            for (int i = 0; i < num_specs; i++) {
+                const SDL_CameraSpec *thisspec = &device->all_specs[i];
+                const int thisw = thisspec->width;
+                const int thish = thisspec->height;
+                const float thisaspect = ((float)thisw) / ((float)thish);
+                const float aspectdiff = SDL_fabsf(wantaspect - thisaspect);
+                const float diff = SDL_fabsf(closestaspect - thisaspect);
+                const int diffw = SDL_abs(thisw - wantw);
+                if (diff < epsilon) { // matches current closestaspect? See if resolution is closer in size.
+                    if (diffw < closestdiffw) {
+                        closestdiffw = diffw;
+                        closest->width = thisw;
+                        closest->height = thish;
+                    }
+                } else if (aspectdiff < closestdiff) { // this is a closer aspect ratio? Take it, reset resolution checks.
+                    closestdiff = aspectdiff;
+                    closestaspect = thisaspect;
                     closestdiffw = diffw;
                     closest->width = thisw;
                     closest->height = thish;
                 }
-            } else if (aspectdiff < closestdiff) {  // this is a closer aspect ratio? Take it, reset resolution checks.
-                closestdiff = aspectdiff;
-                closestaspect = thisaspect;
-                closestdiffw = diffw;
-                closest->width = thisw;
-                closest->height = thish;
             }
+        } else {
+            SDL_copyp(closest, &device->all_specs[0]);
         }
 
         SDL_assert(closest->width > 0);
@@ -1001,7 +1014,7 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
         closest->format = bestfmt;
 
         // We have a resolution and a format, find the closest framerate...
-        const float wantfps = spec->interval_numerator ? (spec->interval_denominator / spec->interval_numerator) : 0.0f;
+        const float wantfps = spec->interval_denominator ? (spec->interval_numerator / spec->interval_denominator) : 0.0f;
         float closestfps = 9999999.0f;
         for (int i = 0; i < num_specs; i++) {
             const SDL_CameraSpec *thisspec = &device->all_specs[i];
@@ -1012,8 +1025,8 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
                     break;  // exact match, stop looking.
                 }
 
-                const float thisfps = thisspec->interval_numerator ? (thisspec->interval_denominator / thisspec->interval_numerator) : 0.0f;
-                const float fpsdiff = SDL_fabs(wantfps - thisfps);
+                const float thisfps = thisspec->interval_denominator ? (thisspec->interval_numerator / thisspec->interval_denominator) : 0.0f;
+                const float fpsdiff = SDL_fabsf(wantfps - thisfps);
                 if (fpsdiff < closestfps) {  // this is a closest FPS? Take it until something closer arrives.
                     closestfps = fpsdiff;
                     closest->interval_numerator = thisspec->interval_numerator;
@@ -1030,16 +1043,6 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
 
 SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_CameraSpec *spec)
 {
-    if (spec) {
-        if ((spec->width <= 0) || (spec->height <= 0)) {
-            SDL_SetError("Requested spec frame size is invalid");
-            return NULL;
-        } else if (spec->format == SDL_PIXELFORMAT_UNKNOWN) {
-            SDL_SetError("Requested spec format is invalid");
-            return NULL;
-        }
-    }
-
     SDL_CameraDevice *device = ObtainPhysicalCameraDevice(instance_id);
     if (!device) {
         return NULL;
@@ -1073,10 +1076,21 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
         return NULL;
     }
 
-    if (!spec) {
-        SDL_copyp(&device->spec, &closest);
-    } else {
+    if (spec) {
         SDL_copyp(&device->spec, spec);
+        if (spec->width <= 0 || spec->height <= 0) {
+            device->spec.width = closest.width;
+            device->spec.height = closest.height;
+        }
+        if (spec->format == SDL_PIXELFORMAT_UNKNOWN) {
+            device->spec.format = closest.format;
+        }
+        if (spec->interval_denominator == 0) {
+            device->spec.interval_numerator = closest.interval_numerator;
+            device->spec.interval_denominator = closest.interval_denominator;
+        }
+    } else {
+        SDL_copyp(&device->spec, &closest);
     }
 
     SDL_copyp(&device->actual_spec, &closest);
@@ -1142,7 +1156,7 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
     if (!camera_driver.impl.ProvidesOwnCallbackThread) {
         char threadname[64];
         SDL_GetCameraThreadName(device, threadname, sizeof (threadname));
-        device->thread = SDL_CreateThreadInternal(CameraThread, threadname, 0, device);
+        device->thread = SDL_CreateThread(CameraThread, threadname, device);
         if (!device->thread) {
             ClosePhysicalCameraDevice(device);
             ReleaseCameraDevice(device);

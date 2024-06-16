@@ -19,9 +19,9 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows (mingw32),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, artifact: 'SDL-mingw32' }
+        - { name: Windows (mingw32),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, artifact: 'SDL-mingw32', no-perl: true }
         - { name: Windows (mingw64),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64, artifact: 'SDL-mingw64' }
-        - { name: Windows (clang32),              os: windows-latest, shell: 'msys2 {0}', msystem: clang32, msys-env: mingw-w64-clang-i686, artifact: 'SDL-msys2-clang32' }
+        - { name: Windows (clang32),              os: windows-latest, shell: 'msys2 {0}', msystem: clang32, msys-env: mingw-w64-clang-i686, artifact: 'SDL-msys2-clang32', no-perl: true }
         - { name: Windows (clang64),              os: windows-latest, shell: 'msys2 {0}', msystem: clang64, msys-env: mingw-w64-clang-x86_64, artifact: 'SDL-msys2-clang64' }
         - { name: Windows (ucrt64),               os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64, artifact: 'SDL-msys2-ucrt64' }
         - { name: Ubuntu 20.04,                   os: ubuntu-20.04,   shell: sh, artifact: 'SDL-ubuntu20.04' }
@@ -30,8 +30,9 @@ jobs:
         - { name: Intel Compiler (Ubuntu 20.04),  os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-icc', intel: true, cmake: '-DSDL_CLANG_TIDY=OFF',
             source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icc; export CXX=icpc; export CFLAGS=-diag-disable=10441; export CXXFLAGS=-diag-disable=10441; '}
         - { name: Ubuntu 22.04,                   os: ubuntu-22.04,   shell: sh, artifact: 'SDL-ubuntu22.04' }
-        - { name: MacOS (Framework),              os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework', no-static: true }
-        - { name: MacOS (GNU prefix),             os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64"', cmake: '-DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-gnu' }
+        - { name: MacOS (Framework) (x86_64),     os: macos-12,       shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, artifact: 'SDL-macos-framework', no-static: true }
+        - { name: MacOS (Framework) (arm64),      os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cmake: '-DSDL_FRAMEWORK=ON -DSDL_CLANG_TIDY=OFF', skip_test_pkgconfig: true, no-static: true }
+        - { name: MacOS (GNU prefix),             os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_OSX_ARCHITECTURES="arm64"', cmake: '-DCLANG_TIDY_BINARY="$(brew --prefix llvm)/bin/clang-tidy"', artifact: 'SDL-macos-arm64-gnu' }
         - { name: iOS (GNU prefix),               os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"',  cross-build: true, skip_test_pkgconfig: true, artifact: 'SDL-ios-gnu' }
         - { name: tvOS (GNU prefix),              os: macos-latest,   shell: sh, cmake-platform: '-DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"', cross-build: true, skip_test_pkgconfig: true, artifact: 'SDL-tvos-gnu' }
 
@@ -45,7 +46,7 @@ jobs:
           ${{ matrix.platform.msys-env }}-cc
           ${{ matrix.platform.msys-env }}-cmake
           ${{ matrix.platform.msys-env }}-ninja
-          ${{ matrix.platform.msys-env }}-perl
+          ${{ (!matrix.platform.no-perl && format('{0}-perl', matrix.platform.msys-env)) || '' }}
           ${{ matrix.platform.msys-env }}-pkg-config
           ${{ matrix.platform.msys-env }}-clang-tools-extra
 
@@ -108,7 +109,9 @@ jobs:
           -DSDL_INSTALL_TESTS=ON \
           -DSDL_VENDOR_INFO="Github Workflow" \
           -DSDL_CLANG_TIDY=ON \
+          -DSDL_DISABLE_INSTALL_DOCS=${{ !matrix.platform.no-perl }} \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
+          -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.cmake-platform }} \
           ${{ matrix.platform.cmake }}
@@ -137,7 +140,22 @@ jobs:
     - name: Package (CPack)
       if: ${{ always() && steps.build.outcome == 'success' }}
       run: |
-        cmake --build build/ --config Release --target package
+        # DMG creation on macOS occasionally fails, so try multiple times
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/25671
+        success=0
+        max_tries=10
+        for i in $(seq $max_tries); do
+         cmake --build build/ --config Release --target package && success=1
+         if test $success = 1; then
+          break
+         fi
+         echo "Package creation failed. Sleep 1 second and try again."
+         sleep 1
+        done
+        if test $success = 0; then
+         echo "Package creation failed after $max_tries attempts."
+         exit 1
+        fi
     - name: Verify CMake configuration files
       run: |
         ${{ matrix.platform.source_cmd }}
@@ -155,7 +173,7 @@ jobs:
         export PKG_CONFIG_PATH=$(echo "${{ github.workspace }}/cmake_prefix/lib/pkgconfig" | sed  -e 's#\\#/#g')
         cmake/test/test_pkgconfig.sh
     - uses: actions/upload-artifact@v4
-      if: ${{ always() && steps.build.outcome == 'success' }}
+      if: ${{ always() && matrix.platform.artifact != '' && steps.build.outcome == 'success' }}
       with:
         if-no-files-found: error
         name: ${{ matrix.platform.artifact }}

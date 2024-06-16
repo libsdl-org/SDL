@@ -19,10 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_platform_defines.h
- *
- *  Try to get a standard set of platform defines.
+/* WIKI CATEGORY: Platform */
+
+/*
+ * SDL_platform_defines.h tries to get a standard set of platform defines.
  */
 
 #ifndef SDL_platform_defines_h_
@@ -65,7 +65,13 @@
 #define SDL_PLATFORM_APPLE  1
 /* lets us know what version of macOS we're compiling on */
 #include <AvailabilityMacros.h>
+#ifndef __has_extension /* Older compilers don't support this */
+#define __has_extension(x) 0
 #include <TargetConditionals.h>
+#undef __has_extension
+#else
+#include <TargetConditionals.h>
+#endif
 
 /* Fix building with older SDKs that don't define these
    See this for more information:

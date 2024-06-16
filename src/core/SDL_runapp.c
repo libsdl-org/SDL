@@ -24,8 +24,7 @@
  * If not, you can special case it here by appending || defined(__YOUR_PLATFORM__) */
 #if ( !defined(SDL_MAIN_NEEDED) && !defined(SDL_MAIN_AVAILABLE) ) || defined(SDL_PLATFORM_ANDROID)
 
-DECLSPEC int
-SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
+int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
     (void)reserved;
 

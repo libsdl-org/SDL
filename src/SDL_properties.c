@@ -38,7 +38,7 @@ typedef struct
 
     char *string_storage;
 
-    void (SDLCALL *cleanup)(void *userdata, void *value);
+    SDL_CleanupPropertyCallback cleanup;
     void *userdata;
 } SDL_Property;
 
@@ -65,14 +65,12 @@ static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void
             }
             break;
         case SDL_PROPERTY_TYPE_STRING:
-            SDL_free(property->value.string_value);
+            SDL_FreeLater(property->value.string_value);  // this pointer might be given to the app by SDL_GetStringProperty.
             break;
         default:
             break;
         }
-        if (property->string_storage) {
-            SDL_free(property->string_storage);
-        }
+        SDL_FreeLater(property->string_storage);  // this pointer might be given to the app by SDL_GetStringProperty.
     }
     SDL_free((void *)key);
     SDL_free((void *)value);
@@ -305,11 +303,11 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     int result = 0;
 
     if (!props) {
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_TRUE);
         return SDL_InvalidParamError("props");
     }
     if (!name || !*name) {
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_TRUE);
         return SDL_InvalidParamError("name");
     }
 
@@ -318,7 +316,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_TRUE);
         return SDL_InvalidParamError("props");
     }
 
@@ -328,7 +326,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
         if (property) {
             char *key = SDL_strdup(name);
             if (!SDL_InsertIntoHashTable(properties->props, key, property)) {
-                SDL_FreePropertyWithCleanup(key, property, NULL, SDL_FALSE);
+                SDL_FreePropertyWithCleanup(key, property, NULL, SDL_TRUE);
                 result = -1;
             }
         }
@@ -338,16 +336,22 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     return result;
 }
 
-int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, void (SDLCALL *cleanup)(void *userdata, void *value), void *userdata)
+int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata)
 {
     SDL_Property *property;
 
     if (!value) {
+        if (cleanup) {
+            cleanup(userdata, value);
+        }
         return SDL_ClearProperty(props, name);
     }
 
     property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
     if (!property) {
+        if (cleanup) {
+            cleanup(userdata, value);
+        }
         SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
         return -1;
     }
@@ -546,12 +550,6 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
         return value;
     }
 
-    /* Note that taking the lock here only guarantees that we won't read the
-     * hashtable while it's being modified. The value itself can easily be
-     * freed from another thread after it is returned here.
-     *
-     * FIXME: Should we SDL_strdup() the return value to avoid this?
-     */
     SDL_LockMutex(properties->lock);
     {
         SDL_Property *property = NULL;
@@ -771,6 +769,38 @@ int SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallb
     SDL_UnlockMutex(properties->lock);
 
     return 0;
+}
+
+static void SDLCALL SDL_DumpPropertiesCallback(void *userdata, SDL_PropertiesID props, const char *name)
+{
+    switch (SDL_GetPropertyType(props, name)) {
+    case SDL_PROPERTY_TYPE_POINTER:
+        SDL_Log("%s: %p\n", name, SDL_GetProperty(props, name, NULL));
+        break;
+    case SDL_PROPERTY_TYPE_STRING:
+        SDL_Log("%s: \"%s\"\n", name, SDL_GetStringProperty(props, name, ""));
+        break;
+    case SDL_PROPERTY_TYPE_NUMBER:
+        {
+            Sint64 value = SDL_GetNumberProperty(props, name, 0);
+            SDL_Log("%s: %" SDL_PRIs64 " (%" SDL_PRIx64 ")\n", name, value, value);
+        }
+        break;
+    case SDL_PROPERTY_TYPE_FLOAT:
+        SDL_Log("%s: %g\n", name, SDL_GetFloatProperty(props, name, 0.0f));
+        break;
+    case SDL_PROPERTY_TYPE_BOOLEAN:
+        SDL_Log("%s: %s\n", name, SDL_GetBooleanProperty(props, name, SDL_FALSE) ? "true" : "false");
+        break;
+    default:
+        SDL_Log("%s UNKNOWN TYPE\n", name);
+        break;
+    }
+}
+
+int SDL_DumpProperties(SDL_PropertiesID props)
+{
+    return SDL_EnumerateProperties(props, SDL_DumpPropertiesCallback, NULL);
 }
 
 void SDL_DestroyProperties(SDL_PropertiesID props)

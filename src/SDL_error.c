@@ -50,7 +50,7 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
             }
         }
 
-        if (SDL_LogGetPriority(SDL_LOG_CATEGORY_ERROR) <= SDL_LOG_PRIORITY_DEBUG) {
+        if (SDL_GetLogPriority(SDL_LOG_CATEGORY_ERROR) <= SDL_LOG_PRIORITY_DEBUG) {
             /* If we are in debug mode, print out the error message */
             SDL_LogDebug(SDL_LOG_CATEGORY_ERROR, "%s", error->str);
         }
@@ -59,7 +59,6 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     return -1;
 }
 
-/* Available for backwards compatibility */
 const char *SDL_GetError(void)
 {
     const SDL_error *error = SDL_GetErrBuf(SDL_FALSE);
@@ -78,31 +77,23 @@ const char *SDL_GetError(void)
     }
 }
 
-void SDL_ClearError(void)
+int SDL_ClearError(void)
 {
     SDL_error *error = SDL_GetErrBuf(SDL_FALSE);
 
     if (error) {
         error->error = SDL_ErrorCodeNone;
     }
+    return 0;
 }
 
-/* Very common errors go here */
-int SDL_Error(SDL_errorcode code)
+int SDL_OutOfMemory(void)
 {
-    switch (code) {
-    case SDL_ENOMEM:
-        SDL_GetErrBuf(SDL_TRUE)->error = SDL_ErrorCodeOutOfMemory;
-        return -1;
-    case SDL_EFREAD:
-        return SDL_SetError("Error reading from datastream");
-    case SDL_EFWRITE:
-        return SDL_SetError("Error writing to datastream");
-    case SDL_EFSEEK:
-        return SDL_SetError("Error seeking in datastream");
-    case SDL_UNSUPPORTED:
-        return SDL_SetError("That operation is not supported");
-    default:
-        return SDL_SetError("Unknown SDL error");
+    SDL_error *error = SDL_GetErrBuf(SDL_TRUE);
+
+    if (error) {
+        error->error = SDL_ErrorCodeOutOfMemory;
     }
+    return -1;
 }
+

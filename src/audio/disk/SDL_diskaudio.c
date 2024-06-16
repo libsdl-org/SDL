@@ -58,7 +58,7 @@ static Uint8 *DISKAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     return device->hidden->mixbuf;
 }
 
-static int DISKAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+static int DISKAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     const int origbuflen = buflen;
@@ -79,7 +79,7 @@ static int DISKAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, in
     return origbuflen;
 }
 
-static void DISKAUDIO_FlushCapture(SDL_AudioDevice *device)
+static void DISKAUDIO_FlushRecording(SDL_AudioDevice *device)
 {
     // no op...we don't advance the file pointer or anything.
 }
@@ -96,19 +96,19 @@ static void DISKAUDIO_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-static const char *get_filename(const SDL_bool iscapture)
+static const char *get_filename(const SDL_bool recording)
 {
-    const char *devname = SDL_getenv(iscapture ? DISKENVR_INFILE : DISKENVR_OUTFILE);
+    const char *devname = SDL_getenv(recording ? DISKENVR_INFILE : DISKENVR_OUTFILE);
     if (!devname) {
-        devname = iscapture ? DISKDEFAULT_INFILE : DISKDEFAULT_OUTFILE;
+        devname = recording ? DISKDEFAULT_INFILE : DISKDEFAULT_OUTFILE;
     }
     return devname;
 }
 
 static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    SDL_bool iscapture = device->iscapture;
-    const char *fname = get_filename(iscapture);
+    SDL_bool recording = device->recording;
+    const char *fname = get_filename(recording);
     const char *envr = SDL_getenv(DISKENVR_IODELAY);
 
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
@@ -123,13 +123,13 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     // Open the "audio device"
-    device->hidden->io = SDL_IOFromFile(fname, iscapture ? "rb" : "wb");
+    device->hidden->io = SDL_IOFromFile(fname, recording ? "rb" : "wb");
     if (!device->hidden->io) {
         return -1;
     }
 
     // Allocate mixing buffer
-    if (!iscapture) {
+    if (!recording) {
         device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return -1;
@@ -138,30 +138,30 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, "You are using the SDL disk i/o audio driver!");
-    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s].\n", iscapture ? "Reading from" : "Writing to", fname);
+    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s].\n", recording ? "Reading from" : "Writing to", fname);
 
     return 0;  // We're ready to rock and roll. :-)
 }
 
-static void DISKAUDIO_DetectDevices(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
+static void DISKAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
-    *default_output = SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, NULL, (void *)0x1);
-    *default_capture = SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, NULL, (void *)0x2);
+    *default_playback = SDL_AddAudioDevice(SDL_FALSE, DEFAULT_PLAYBACK_DEVNAME, NULL, (void *)0x1);
+    *default_recording = SDL_AddAudioDevice(SDL_TRUE, DEFAULT_RECORDING_DEVNAME, NULL, (void *)0x2);
 }
 
 static SDL_bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     impl->OpenDevice = DISKAUDIO_OpenDevice;
     impl->WaitDevice = DISKAUDIO_WaitDevice;
-    impl->WaitCaptureDevice = DISKAUDIO_WaitDevice;
+    impl->WaitRecordingDevice = DISKAUDIO_WaitDevice;
     impl->PlayDevice = DISKAUDIO_PlayDevice;
     impl->GetDeviceBuf = DISKAUDIO_GetDeviceBuf;
-    impl->CaptureFromDevice = DISKAUDIO_CaptureFromDevice;
-    impl->FlushCapture = DISKAUDIO_FlushCapture;
+    impl->RecordDevice = DISKAUDIO_RecordDevice;
+    impl->FlushRecording = DISKAUDIO_FlushRecording;
     impl->CloseDevice = DISKAUDIO_CloseDevice;
     impl->DetectDevices = DISKAUDIO_DetectDevices;
 
-    impl->HasCaptureSupport = SDL_TRUE;
+    impl->HasRecordingSupport = SDL_TRUE;
 
     return SDL_TRUE;
 }

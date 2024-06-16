@@ -507,8 +507,8 @@ fprintf(stderr, "after partitioning first=#%lu last=#%lu\n", (first-(char*)base)
 
 /* ---------------------------------------------------------------------- */
 
-extern void SDL_qsort_r(void *base, size_t nmemb, size_t size,
-           int (SDLCALL * compare)(void *, const void *, const void *), void *userdata) {
+void SDL_qsort_r(void *base, size_t nmemb, size_t size,
+           SDL_CompareCallback_r compare, void *userdata) {
 
   if (nmemb<=1) return;
   if (((size_t)base|size)&(WORD_BYTES-1))
@@ -525,7 +525,7 @@ static int SDLCALL qsort_non_r_bridge(void *userdata, const void *a, const void 
     return compare(a, b);
 }
 
-void SDL_qsort(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (const void *, const void *))
+void SDL_qsort(void *base, size_t nmemb, size_t size, SDL_CompareCallback compare)
 {
     SDL_qsort_r(base, nmemb, size, qsort_non_r_bridge, compare);
 }
@@ -533,7 +533,7 @@ void SDL_qsort(void *base, size_t nmemb, size_t size, int (SDLCALL *compare) (co
 // Don't use the C runtime for such a simple function, since we want to allow SDLCALL callbacks and userdata.
 // SDL's replacement: Taken from the Public Domain C Library (PDCLib):
 // Permission is granted to use, modify, and / or redistribute at will.
-void *SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare)(void *, const void *, const void *), void *userdata)
+void *SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size, SDL_CompareCallback_r compare, void *userdata)
 {
     const void *pivot;
     size_t corr;
@@ -558,7 +558,7 @@ void *SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size
     return NULL;
 }
 
-void *SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, int (SDLCALL *compare)(const void *, const void *))
+void *SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, SDL_CompareCallback compare)
 {
     // qsort_non_r_bridge just happens to match calling conventions, so reuse it.
     return SDL_bsearch_r(key, base, nmemb, size, qsort_non_r_bridge, compare);

@@ -40,54 +40,58 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
      * Android didn't add this until SDK version 26, so a check is needed...
      */
 #ifdef HAVE_NL_LANGINFO
-    const char *s = nl_langinfo(D_FMT);
+    if (df) {
+        const char *s = nl_langinfo(D_FMT);
 
-    /* Figure out the preferred system date format from the first format character. */
-    if (s) {
-        while (*s) {
-            switch (*s++) {
-            case 'Y':
-            case 'y':
-            case 'F':
-            case 'C':
-                *df = SDL_DATE_FORMAT_YYYYMMDD;
-                goto found_date;
-            case 'd':
-            case 'e':
-                *df = SDL_DATE_FORMAT_DDMMYYYY;
-                goto found_date;
-            case 'b':
-            case 'D':
-            case 'h':
-            case 'm':
-                *df = SDL_DATE_FORMAT_MMDDYYYY;
-                goto found_date;
-            default:
-                break;
+        /* Figure out the preferred system date format from the first format character. */
+        if (s) {
+            while (*s) {
+                switch (*s++) {
+                case 'Y':
+                case 'y':
+                case 'F':
+                case 'C':
+                    *df = SDL_DATE_FORMAT_YYYYMMDD;
+                    goto found_date;
+                case 'd':
+                case 'e':
+                    *df = SDL_DATE_FORMAT_DDMMYYYY;
+                    goto found_date;
+                case 'b':
+                case 'D':
+                case 'h':
+                case 'm':
+                    *df = SDL_DATE_FORMAT_MMDDYYYY;
+                    goto found_date;
+                default:
+                    break;
+                }
             }
         }
     }
 
 found_date:
 
-    s = nl_langinfo(T_FMT);
+    if (tf) {
+        const char *s = nl_langinfo(T_FMT);
 
-    /* Figure out the preferred system date format. */
-    if (s) {
-        while (*s) {
-            switch (*s++) {
-            case 'H':
-            case 'k':
-            case 'T':
-                *tf = SDL_TIME_FORMAT_24HR;
-                return;
-            case 'I':
-            case 'l':
-            case 'r':
-                *tf = SDL_TIME_FORMAT_12HR;
-                return;
-            default:
-                break;
+        /* Figure out the preferred system date format. */
+        if (s) {
+            while (*s) {
+                switch (*s++) {
+                case 'H':
+                case 'k':
+                case 'T':
+                    *tf = SDL_TIME_FORMAT_24HR;
+                    return;
+                case 'I':
+                case 'l':
+                case 'r':
+                    *tf = SDL_TIME_FORMAT_12HR;
+                    return;
+                default:
+                    break;
+                }
             }
         }
     }

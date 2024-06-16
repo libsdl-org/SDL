@@ -136,35 +136,79 @@ static SDL_bool WildcardMatch(const char *pattern, const char *str, SDL_bool *ma
     return (pch == '\0');  // survived the whole pattern? That's a match!
 }
 
+
+// Note that this will currently encode illegal codepoints: UTF-16 surrogates, 0xFFFE, and 0xFFFF.
+// and a codepoint > 0x10FFFF will fail the same as if there wasn't enough memory.
+// clean this up if you want to move this to SDL_string.c.
+static size_t EncodeCodepointToUtf8(char *ptr, Uint32 cp, size_t remaining)
+{
+    if (cp < 0x80) {  // fits in a single UTF-8 byte.
+        if (remaining) {
+            *ptr = (char) cp;
+            return 1;
+        }
+    } else if (cp < 0x800) {  // fits in 2 bytes.
+        if (remaining >= 2) {
+            ptr[0] = (char) ((cp >> 6) | 128 | 64);
+            ptr[1] = (char) (cp & 0x3F) | 128;
+            return 2;
+        }
+    } else if (cp < 0x10000) { // fits in 3 bytes.
+        if (remaining >= 3) {
+            ptr[0] = (char) ((cp >> 12) | 128 | 64 | 32);
+            ptr[1] = (char) ((cp >> 6) & 0x3F) | 128;
+            ptr[2] = (char) (cp & 0x3F) | 128;
+            return 3;
+        }
+    } else if (cp <= 0x10FFFF) {  // fits in 4 bytes.
+        if (remaining >= 4) {
+            ptr[0] = (char) ((cp >> 18) | 128 | 64 | 32 | 16);
+            ptr[1] = (char) ((cp >> 12) & 0x3F) | 128;
+            ptr[2] = (char) ((cp >> 6) & 0x3F) | 128;
+            ptr[3] = (char) (cp & 0x3F) | 128;
+            return 4;
+        }
+    }
+
+    return 0;
+}
+
 static char *CaseFoldUtf8String(const char *fname)
 {
     SDL_assert(fname != NULL);
-    const size_t allocation = (SDL_strlen(fname) + 1) * 3;
+    const size_t allocation = (SDL_strlen(fname) + 1) * 3 * 4;
     char *retval = (char *) SDL_malloc(allocation);  // lazy: just allocating the max needed.
     if (!retval) {
         return NULL;
     }
 
     Uint32 codepoint;
-    size_t written = 0;
+    char *ptr = retval;
+    size_t remaining = allocation;
     while ((codepoint = SDL_StepUTF8(&fname, 4)) != 0) {
         Uint32 folded[3];
         const int num_folded = SDL_CaseFoldUnicode(codepoint, folded);
         SDL_assert(num_folded > 0);
         SDL_assert(num_folded <= SDL_arraysize(folded));
         for (int i = 0; i < num_folded; i++) {
-            SDL_assert(written < allocation);
-            retval[written++] = folded[i];
+            SDL_assert(remaining > 0);
+            const size_t rc = EncodeCodepointToUtf8(ptr, folded[i], remaining);
+            SDL_assert(rc > 0);
+            SDL_assert(rc < remaining);
+            remaining -= rc;
+            ptr += rc;
         }
     }
 
-    SDL_assert(written < allocation);
-    retval[written++] = '\0';
+    SDL_assert(remaining > 0);
+    remaining--;
+    *ptr = '\0';
 
-    if (written < allocation) {
-        void *ptr = SDL_realloc(retval, written);  // shrink it down.
+    if (remaining > 0) {
+        SDL_assert(allocation > remaining);
+        ptr = SDL_realloc(retval, allocation - remaining);  // shrink it down.
         if (ptr) {  // shouldn't fail, but if it does, `retval` is still valid.
-            retval = (char *) ptr;
+            retval = ptr;
         }
     }
 
@@ -177,7 +221,7 @@ typedef struct GlobDirCallbackData
     SDL_bool (*matcher)(const char *pattern, const char *str, SDL_bool *matched_to_dir);
     const char *pattern;
     int num_entries;
-    Uint32 flags;
+    SDL_GlobFlags flags;
     SDL_GlobEnumeratorFunc enumerator;
     SDL_GlobGetPathInfoFunc getpathinfo;
     void *fsuserdata;
@@ -242,7 +286,7 @@ static int SDLCALL GlobDirectoryCallback(void *userdata, const char *dirname, co
     return retval;
 }
 
-char **SDL_InternalGlobDirectory(const char *path, const char *pattern, Uint32 flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata)
+char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata)
 {
     int dummycount;
     if (!count) {
@@ -350,7 +394,7 @@ static int GlobDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallb
     return SDL_EnumerateDirectory(path, cb, cbuserdata);
 }
 
-char **SDL_GlobDirectory(const char *path, const char *pattern, Uint32 flags, int *count)
+char **SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count)
 {
     //SDL_Log("SDL_GlobDirectory('%s', '%s') ...", path, pattern);
     return SDL_InternalGlobDirectory(path, pattern, flags, count, GlobDirectoryEnumerator, GlobDirectoryGetPathInfo, NULL);

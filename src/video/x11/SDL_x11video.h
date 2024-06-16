@@ -36,6 +36,7 @@
 #include "SDL_x11modes.h"
 #include "SDL_x11mouse.h"
 #include "SDL_x11opengl.h"
+#include "SDL_x11settings.h"
 #include "SDL_x11window.h"
 #include "SDL_x11vulkan.h"
 
@@ -58,6 +59,8 @@ struct SDL_VideoData
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_Window *active_cursor_confined_window;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+    Window xsettings_window;
+    SDLX11_SettingsData xsettings_data;
 
     /* This is true for ICCCM2.0-compliant window managers */
     SDL_bool net_wm;
@@ -67,6 +70,7 @@ struct SDL_VideoData
     Atom WM_DELETE_WINDOW;
     Atom WM_TAKE_FOCUS;
     Atom WM_NAME;
+    Atom WM_TRANSIENT_FOR;
     Atom _NET_WM_STATE;
     Atom _NET_WM_STATE_HIDDEN;
     Atom _NET_WM_STATE_FOCUSED;
@@ -76,6 +80,7 @@ struct SDL_VideoData
     Atom _NET_WM_STATE_ABOVE;
     Atom _NET_WM_STATE_SKIP_TASKBAR;
     Atom _NET_WM_STATE_SKIP_PAGER;
+    Atom _NET_WM_STATE_MODAL;
     Atom _NET_WM_ALLOWED_ACTIONS;
     Atom _NET_WM_ACTION_FULLSCREEN;
     Atom _NET_WM_NAME;
@@ -101,6 +106,7 @@ struct SDL_VideoData
 
     SDL_Scancode key_layout[256];
     SDL_bool selection_waiting;
+    SDL_bool selection_incr_waiting;
 
     SDL_bool broken_pointer_grab; /* true if XGrabPointer seems unreliable. */
 

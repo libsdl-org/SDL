@@ -47,19 +47,15 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -451,6 +447,12 @@
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_xcb.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_xlib.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_xlib_xrandr.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenevents_c.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenframebuffer_c.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenopengles.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenvideo.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenvulkan.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenwindow.h" />
     <ClInclude Include="..\..\src\video\SDL_blit.h" />
     <ClInclude Include="..\..\src\video\SDL_blit_auto.h" />
     <ClInclude Include="..\..\src\video\SDL_blit_copy.h" />
@@ -660,6 +662,12 @@
     <ClCompile Include="..\..\src\video\dummy\SDL_nullevents.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullframebuffer.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenevents.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenframebuffer.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenopengles.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenvideo.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenvulkan.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenwindow.c" />
     <ClCompile Include="..\..\src\video\SDL_blit.c" />
     <ClCompile Include="..\..\src\video\SDL_blit_0.c" />
     <ClCompile Include="..\..\src\video\SDL_blit_1.c" />

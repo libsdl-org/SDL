@@ -386,8 +386,8 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
         for (UIScreenMode *uimode in availableModes) {
             CGSize size = GetUIScreenModeSize(data.uiscreen, uimode);
-            int w = size.width;
-            int h = size.height;
+            int w = (int)size.width;
+            int h = (int)size.height;
 
             /* Make sure the width/height are oriented correctly */
             if (isLandscape != (w > h)) {
@@ -449,10 +449,10 @@ int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
             return -1;
         }
 
-        rect->x += frame.origin.x;
-        rect->y += frame.origin.y;
-        rect->w = frame.size.width;
-        rect->h = frame.size.height;
+        rect->x += (int)frame.origin.x;
+        rect->y += (int)frame.origin.y;
+        rect->w = (int)frame.size.width;
+        rect->h = (int)frame.size.height;
     }
 
     return 0;

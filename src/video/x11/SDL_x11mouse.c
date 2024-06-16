@@ -75,7 +75,6 @@ static SDL_Cursor *X11_CreateDefaultCursor(void)
         /* None is used to indicate the default cursor */
         cursor->driverdata = (void *)(uintptr_t)None;
     }
-
     return cursor;
 }
 
@@ -218,26 +217,26 @@ static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)
     switch (id) {
         /* X Font Cursors reference: */
         /*   http://tronche.com/gui/x/xlib/appendix/b/ */
-        case SDL_SYSTEM_CURSOR_ARROW: return XC_left_ptr;
-        case SDL_SYSTEM_CURSOR_IBEAM: return XC_xterm;
+        case SDL_SYSTEM_CURSOR_DEFAULT: return XC_left_ptr;
+        case SDL_SYSTEM_CURSOR_TEXT: return XC_xterm;
         case SDL_SYSTEM_CURSOR_WAIT: return XC_watch;
         case SDL_SYSTEM_CURSOR_CROSSHAIR: return XC_tcross;
-        case SDL_SYSTEM_CURSOR_WAITARROW: return XC_watch;
-        case SDL_SYSTEM_CURSOR_SIZENWSE: return XC_top_left_corner;
-        case SDL_SYSTEM_CURSOR_SIZENESW: return XC_top_right_corner;
-        case SDL_SYSTEM_CURSOR_SIZEWE: return XC_sb_h_double_arrow;
-        case SDL_SYSTEM_CURSOR_SIZENS: return XC_sb_v_double_arrow;
-        case SDL_SYSTEM_CURSOR_SIZEALL: return XC_fleur;
-        case SDL_SYSTEM_CURSOR_NO: return XC_pirate;
-        case SDL_SYSTEM_CURSOR_HAND: return XC_hand2;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT: return XC_top_left_corner;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOP: return XC_top_side;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT: return XC_top_right_corner;
-        case SDL_SYSTEM_CURSOR_WINDOW_RIGHT: return XC_right_side;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT: return XC_bottom_right_corner;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM: return XC_bottom_side;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT: return XC_bottom_left_corner;
-        case SDL_SYSTEM_CURSOR_WINDOW_LEFT: return XC_left_side;
+        case SDL_SYSTEM_CURSOR_PROGRESS: return XC_watch;
+        case SDL_SYSTEM_CURSOR_NWSE_RESIZE: return XC_top_left_corner;
+        case SDL_SYSTEM_CURSOR_NESW_RESIZE: return XC_top_right_corner;
+        case SDL_SYSTEM_CURSOR_EW_RESIZE: return XC_sb_h_double_arrow;
+        case SDL_SYSTEM_CURSOR_NS_RESIZE: return XC_sb_v_double_arrow;
+        case SDL_SYSTEM_CURSOR_MOVE: return XC_fleur;
+        case SDL_SYSTEM_CURSOR_NOT_ALLOWED: return XC_pirate;
+        case SDL_SYSTEM_CURSOR_POINTER: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_NW_RESIZE: return XC_top_left_corner;
+        case SDL_SYSTEM_CURSOR_N_RESIZE: return XC_top_side;
+        case SDL_SYSTEM_CURSOR_NE_RESIZE: return XC_top_right_corner;
+        case SDL_SYSTEM_CURSOR_E_RESIZE: return XC_right_side;
+        case SDL_SYSTEM_CURSOR_SE_RESIZE: return XC_bottom_right_corner;
+        case SDL_SYSTEM_CURSOR_S_RESIZE: return XC_bottom_side;
+        case SDL_SYSTEM_CURSOR_SW_RESIZE: return XC_bottom_left_corner;
+        case SDL_SYSTEM_CURSOR_W_RESIZE: return XC_left_side;
         case SDL_NUM_SYSTEM_CURSORS: break;  /* so the compiler might notice if an enum value is missing here. */
     }
 
@@ -263,9 +262,7 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
 
     if (x11_cursor != None) {
         cursor = SDL_calloc(1, sizeof(*cursor));
-        if (!cursor) {
-            SDL_OutOfMemory();
-        } else {
+        if (cursor) {
             cursor->driverdata = (void *)(uintptr_t)x11_cursor;
         }
     }
@@ -391,13 +388,19 @@ static int X11_CaptureMouse(SDL_Window *window)
 
     if (window) {
         SDL_WindowData *data = window->driverdata;
-        const unsigned int mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask;
-        Window confined = (data->mouse_grabbed ? data->xwindow : None);
-        const int rc = X11_XGrabPointer(display, data->xwindow, False,
-                                        mask, GrabModeAsync, GrabModeAsync,
-                                        confined, None, CurrentTime);
-        if (rc != GrabSuccess) {
-            return SDL_SetError("X server refused mouse capture");
+
+        /* If XInput2 is handling the pointer input, non-confinement grabs will always fail with 'AlreadyGrabbed',
+         * since the pointer is being grabbed by XInput2.
+         */
+        if (!data->xinput2_mouse_enabled || data->mouse_grabbed) {
+            const unsigned int mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask;
+            Window confined = (data->mouse_grabbed ? data->xwindow : None);
+            const int rc = X11_XGrabPointer(display, data->xwindow, False,
+                                            mask, GrabModeAsync, GrabModeAsync,
+                                            confined, None, CurrentTime);
+            if (rc != GrabSuccess) {
+                return SDL_SetError("X server refused mouse capture");
+            }
         }
     } else if (mouse_focus) {
         SDL_UpdateWindowGrab(mouse_focus);
@@ -410,7 +413,7 @@ static int X11_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 X11_GetGlobalMouseState(float *x, float *y)
+static SDL_MouseButtonFlags X11_GetGlobalMouseState(float *x, float *y)
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice()->driverdata;
     SDL_DisplayID *displays;
@@ -436,7 +439,7 @@ static Uint32 X11_GetGlobalMouseState(float *x, float *y)
                     unsigned int mask;
                     if (X11_XQueryPointer(display, RootWindow(display, data->screen), &root, &child, &rootx, &rooty, &winx, &winy, &mask)) {
                         XWindowAttributes root_attrs;
-                        Uint32 buttons = 0;
+                        SDL_MouseButtonFlags buttons = 0;
                         buttons |= (mask & Button1Mask) ? SDL_BUTTON_LMASK : 0;
                         buttons |= (mask & Button2Mask) ? SDL_BUTTON_MMASK : 0;
                         buttons |= (mask & Button3Mask) ? SDL_BUTTON_RMASK : 0;
@@ -483,16 +486,16 @@ void X11_InitMouse(SDL_VideoDevice *_this)
     SDL_HitTestResult r = SDL_HITTEST_NORMAL;
     while (r <= SDL_HITTEST_RESIZE_LEFT) {
         switch (r) {
-        case SDL_HITTEST_NORMAL: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
-        case SDL_HITTEST_DRAGGABLE: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW); break;
-        case SDL_HITTEST_RESIZE_TOPLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT); break;
-        case SDL_HITTEST_RESIZE_TOP: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOP); break;
-        case SDL_HITTEST_RESIZE_TOPRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT); break;
-        case SDL_HITTEST_RESIZE_RIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_RIGHT); break;
-        case SDL_HITTEST_RESIZE_BOTTOMRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT); break;
-        case SDL_HITTEST_RESIZE_BOTTOM: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOM); break;
-        case SDL_HITTEST_RESIZE_BOTTOMLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT); break;
-        case SDL_HITTEST_RESIZE_LEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_LEFT); break;
+        case SDL_HITTEST_NORMAL: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT); break;
+        case SDL_HITTEST_DRAGGABLE: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT); break;
+        case SDL_HITTEST_RESIZE_TOPLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_NW_RESIZE); break;
+        case SDL_HITTEST_RESIZE_TOP: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_N_RESIZE); break;
+        case SDL_HITTEST_RESIZE_TOPRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_NE_RESIZE); break;
+        case SDL_HITTEST_RESIZE_RIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_E_RESIZE); break;
+        case SDL_HITTEST_RESIZE_BOTTOMRIGHT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SE_RESIZE); break;
+        case SDL_HITTEST_RESIZE_BOTTOM: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_S_RESIZE); break;
+        case SDL_HITTEST_RESIZE_BOTTOMLEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_SW_RESIZE); break;
+        case SDL_HITTEST_RESIZE_LEFT: sys_cursors[r] = X11_CreateSystemCursor(SDL_SYSTEM_CURSOR_W_RESIZE); break;
         }
         r++;
     }

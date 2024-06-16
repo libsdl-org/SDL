@@ -32,7 +32,7 @@ static int mouse_getMouseState(void *arg)
 {
     float x;
     float y;
-    Uint32 state;
+    SDL_MouseButtonFlags state;
 
     /* Pump some events to update mouse state */
     SDL_PumpEvents();
@@ -77,7 +77,7 @@ static int mouse_getRelativeMouseState(void *arg)
 {
     float x;
     float y;
-    Uint32 state;
+    SDL_MouseButtonFlags state;
 
     /* Pump some events to update mouse state */
     SDL_PumpEvents();
@@ -580,7 +580,7 @@ static int mouse_getGlobalMouseState(void *arg)
 {
     float x;
     float y;
-    Uint32 state;
+    SDL_MouseButtonFlags state;
 
     x = -FLT_MAX;
     y = -FLT_MAX;

@@ -19,10 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_egl.h
- *
- *  This is a simple file to encapsulate the EGL API headers.
+/*
+ * This is a simple file to encapsulate the EGL API headers.
  */
 
 #include <SDL3/SDL_platform_defines.h>

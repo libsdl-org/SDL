@@ -386,7 +386,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
         switch (biBitCount) {
         case 15:
         case 16:
-            /* SDL_PIXELFORMAT_RGB555 or SDL_PIXELFORMAT_ARGB1555 if Amask */
+            /* SDL_PIXELFORMAT_XRGB1555 or SDL_PIXELFORMAT_ARGB1555 if Amask */
             Rmask = 0x7C00;
             Gmask = 0x03E0;
             Bmask = 0x001F;
@@ -442,7 +442,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
     palette = (surface->format)->palette;
     if (palette) {
         if (SDL_SeekIO(src, fp_offset + 14 + biSize, SDL_IO_SEEK_SET) < 0) {
-            SDL_Error(SDL_EFSEEK);
+            SDL_SetError("Error seeking in datastream");
             goto done;
         }
 
@@ -493,13 +493,13 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
 
     /* Read the surface pixels.  Note that the bmp image is upside down */
     if (SDL_SeekIO(src, fp_offset + bfOffBits, SDL_IO_SEEK_SET) < 0) {
-        SDL_Error(SDL_EFSEEK);
+        SDL_SetError("Error seeking in datastream");
         goto done;
     }
     if ((biCompression == BI_RLE4) || (biCompression == BI_RLE8)) {
         was_error = readRlePixels(surface, src, biCompression == BI_RLE8);
         if (was_error) {
-            SDL_Error(SDL_EFREAD);
+            SDL_SetError("Error reading from datastream");
         }
         goto done;
     }

@@ -95,6 +95,7 @@ static SDL_VideoDevice *VIVANTE_Create()
     device->Vulkan_UnloadLibrary = VIVANTE_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = VIVANTE_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = VIVANTE_Vulkan_CreateSurface;
+    device->Vulkan_DestroySurface = VIVANTE_Vulkan_DestroySurface;
 #endif
 
     device->PumpEvents = VIVANTE_PumpEvents;

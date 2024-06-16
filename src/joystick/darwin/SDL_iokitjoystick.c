@@ -206,7 +206,7 @@ static SDL_bool GetHIDScaledCalibratedState(recDevice *pDevice, recElement *pEle
         if (readScale == 0) {
             returnValue = SDL_TRUE; /* no scaling at all */
         } else {
-            *pValue = ((*pValue - pElement->minReport) * deviceScale / readScale) + min;
+            *pValue = (Sint32)(((*pValue - pElement->minReport) * deviceScale / readScale) + min);
             returnValue = SDL_TRUE;
         }
     }

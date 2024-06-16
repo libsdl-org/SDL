@@ -42,6 +42,7 @@
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <d3d12sdklayers.h>
+#include <sdkddkver.h>
 #endif
 
 #include "SDL_shaders_d3d12.h"
@@ -52,7 +53,7 @@
 #define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
 #endif
 
-#ifdef __cplusplus
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #define SAFE_RELEASE(X) \
     if (X) {            \
         (X)->Release(); \
@@ -61,6 +62,8 @@
 #define D3D_CALL(THIS, FUNC, ...)             (THIS)->FUNC(__VA_ARGS__)
 #define D3D_CALL_RET(THIS, FUNC, RETVAL, ...) *(RETVAL) = (THIS)->FUNC(__VA_ARGS__)
 #define D3D_GUID(X)                           (X)
+/* DXGI_PRESENT flags are removed on Xbox */
+#define DXGI_PRESENT_ALLOW_TEARING 0
 #else
 #define SAFE_RELEASE(X)          \
     if (X) {                     \
@@ -70,6 +73,54 @@
 #define D3D_CALL(THIS, FUNC, ...)     (THIS)->lpVtbl->FUNC((THIS), ##__VA_ARGS__)
 #define D3D_CALL_RET(THIS, FUNC, ...) (THIS)->lpVtbl->FUNC((THIS), ##__VA_ARGS__)
 #define D3D_GUID(X)                   &(X)
+#endif
+
+/*
+ * Older MS Windows SDK headers declare some d3d12 functions with the wrong function prototype.
+ * - ID3D12Heap::GetDesc
+ * - ID3D12Resource::GetDesc
+ * - ID3D12DescriptorHeap::GetDesc
+ * (and 9 more)
+ * This is fixed in SDKs since WDK_NTDDI_VERSION >= NTDDI_WIN10_FE (0x0A00000A)
+ */
+
+#if !(defined(__MINGW32__) || defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) \
+    && (WDK_NTDDI_VERSION < 0x0A00000A)
+
+#define D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(THIS, ...) do { \
+        void (STDMETHODCALLTYPE * func)(ID3D12DescriptorHeap * This, D3D12_CPU_DESCRIPTOR_HANDLE * Handle) = \
+            (void*)(THIS)->lpVtbl->GetCPUDescriptorHandleForHeapStart; \
+        func((THIS), ##__VA_ARGS__); \
+    } while (0)
+
+#define D3D_CALL_RET_ID3D12DescriptorHeap_GetGPUDescriptorHandleForHeapStart(THIS, ...) do { \
+        void (STDMETHODCALLTYPE * func)(ID3D12DescriptorHeap * This, D3D12_GPU_DESCRIPTOR_HANDLE * Handle) = \
+            (void*)(THIS)->lpVtbl->GetGPUDescriptorHandleForHeapStart; \
+        func((THIS), ##__VA_ARGS__); \
+    } while (0)
+
+#define D3D_CALL_RET_ID3D12Resource_GetDesc(THIS, ...) do { \
+        void (STDMETHODCALLTYPE * func)(ID3D12Resource * This, D3D12_RESOURCE_DESC * Desc) = \
+            (void*)(THIS)->lpVtbl->GetDesc; \
+        func((THIS), ##__VA_ARGS__); \
+    } while (0)
+
+#else
+
+/*
+ * MinGW has correct function prototypes in the vtables, but defines wrong functions
+ * Xbox just needs these macros defined as used below (because CINTERFACE doesn't exist)
+ */
+
+#define D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(THIS, ...) \
+    D3D_CALL_RET(THIS, GetCPUDescriptorHandleForHeapStart, ##__VA_ARGS__);
+
+#define D3D_CALL_RET_ID3D12DescriptorHeap_GetGPUDescriptorHandleForHeapStart(THIS, ...) \
+    D3D_CALL_RET(THIS, GetGPUDescriptorHandleForHeapStart, ##__VA_ARGS__);
+
+#define D3D_CALL_RET_ID3D12Resource_GetDesc(THIS, ...) \
+    D3D_CALL_RET(THIS, GetDesc, ##__VA_ARGS__);
+
 #endif
 
 /* Set up for C function definitions, even when using C++ */
@@ -212,6 +263,8 @@ typedef struct
     ID3D12GraphicsCommandList2 *commandList;
     DXGI_SWAP_EFFECT swapEffect;
     UINT swapFlags;
+    UINT syncInterval;
+    UINT presentFlags;
     DXGI_FORMAT renderTargetFormat;
     SDL_bool pixelSizeChanged;
 
@@ -477,10 +530,10 @@ static D3D12_GPU_DESCRIPTOR_HANDLE D3D12_CPUtoGPUHandle(ID3D12DescriptorHeap *he
     SIZE_T offset;
 
     /* Calculate the correct offset into the heap */
-    D3D_CALL_RET(heap, GetCPUDescriptorHandleForHeapStart, &CPUHeapStart);
+    D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(heap, &CPUHeapStart);
     offset = CPUHandle.ptr - CPUHeapStart.ptr;
 
-    D3D_CALL_RET(heap, GetGPUDescriptorHandleForHeapStart, &GPUHandle);
+    D3D_CALL_RET_ID3D12DescriptorHeap_GetGPUDescriptorHandleForHeapStart(heap, &GPUHandle);
     GPUHandle.ptr += offset;
 
     return GPUHandle;
@@ -511,7 +564,7 @@ static D3D12_CPU_DESCRIPTOR_HANDLE D3D12_GetCurrentRenderTargetView(SDL_Renderer
     }
 
     SDL_zero(rtvDescriptor);
-    D3D_CALL_RET(data->rtvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &rtvDescriptor);
+    D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(data->rtvDescriptorHeap, &rtvDescriptor);
     rtvDescriptor.ptr += data->currentBackBufferIndex * data->rtvDescriptorSize;
     return rtvDescriptor;
 }
@@ -587,7 +640,6 @@ static void D3D12_DestroyRenderer(SDL_Renderer *renderer)
     if (data) {
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 static D3D12_BLEND GetBlendFunc(SDL_BlendFactor factor)
@@ -1123,7 +1175,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     samplerDesc.MinLOD = 0.0f;
     samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    D3D_CALL_RET(data->samplerDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &data->nearestPixelSampler);
+    D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(data->samplerDescriptorHeap, &data->nearestPixelSampler);
     D3D_CALL(data->d3dDevice, CreateSampler, &samplerDesc, data->nearestPixelSampler);
 
     samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
@@ -1319,6 +1371,8 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         result = DXGI_ERROR_UNSUPPORTED;
     }
 
+    SDL_SetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, data->swapChain);
+
 done:
     SAFE_RELEASE(swapChain);
     return result;
@@ -1450,7 +1504,7 @@ static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
         rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
         SDL_zero(rtvDescriptor);
-        D3D_CALL_RET(data->rtvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &rtvDescriptor);
+        D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(data->rtvDescriptorHeap, &rtvDescriptor);
         rtvDescriptor.ptr += i * data->rtvDescriptorSize;
         D3D_CALL(data->d3dDevice, CreateRenderTargetView, data->renderTargets[i], &rtvDesc, rtvDescriptor);
     }
@@ -1707,7 +1761,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
     resourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
 
     textureData->mainSRVIndex = D3D12_GetAvailableSRVIndex(renderer);
-    D3D_CALL_RET(rendererData->srvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &textureData->mainTextureResourceView);
+    D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceView);
     textureData->mainTextureResourceView.ptr += textureData->mainSRVIndex * rendererData->srvDescriptorSize;
 
     D3D_CALL(rendererData->d3dDevice, CreateShaderResourceView,
@@ -1716,7 +1770,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
              textureData->mainTextureResourceView);
 #if SDL_HAVE_YUV
     if (textureData->yuv) {
-        D3D_CALL_RET(rendererData->srvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &textureData->mainTextureResourceViewU);
+        D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceViewU);
         textureData->mainSRVIndexU = D3D12_GetAvailableSRVIndex(renderer);
         textureData->mainTextureResourceViewU.ptr += textureData->mainSRVIndexU * rendererData->srvDescriptorSize;
         D3D_CALL(rendererData->d3dDevice, CreateShaderResourceView,
@@ -1724,7 +1778,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
                  &resourceViewDesc,
                  textureData->mainTextureResourceViewU);
 
-        D3D_CALL_RET(rendererData->srvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &textureData->mainTextureResourceViewV);
+        D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceViewV);
         textureData->mainSRVIndexV = D3D12_GetAvailableSRVIndex(renderer);
         textureData->mainTextureResourceViewV.ptr += textureData->mainSRVIndexV * rendererData->srvDescriptorSize;
         D3D_CALL(rendererData->d3dDevice, CreateShaderResourceView,
@@ -1743,7 +1797,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
         nvResourceViewDesc.Texture2D.PlaneSlice = 1;
 
-        D3D_CALL_RET(rendererData->srvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &textureData->mainTextureResourceViewNV);
+        D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->srvDescriptorHeap, &textureData->mainTextureResourceViewNV);
         textureData->mainSRVIndexNV = D3D12_GetAvailableSRVIndex(renderer);
         textureData->mainTextureResourceViewNV.ptr += textureData->mainSRVIndexNV * rendererData->srvDescriptorSize;
         D3D_CALL(rendererData->d3dDevice, CreateShaderResourceView,
@@ -1760,7 +1814,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         renderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
         renderTargetViewDesc.Texture2D.MipSlice = 0;
 
-        D3D_CALL_RET(rendererData->textureRTVDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &textureData->mainTextureRenderTargetView);
+        D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(rendererData->textureRTVDescriptorHeap, &textureData->mainTextureRenderTargetView);
         textureData->mainTextureRenderTargetView.ptr += textureData->mainSRVIndex * rendererData->rtvDescriptorSize;
 
         D3D_CALL(rendererData->d3dDevice, CreateRenderTargetView,
@@ -1824,7 +1878,7 @@ static int D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Res
 
     /* Create an upload buffer, which will be used to write to the main texture. */
     SDL_zero(textureDesc);
-    D3D_CALL_RET(texture, GetDesc, &textureDesc);
+    D3D_CALL_RET_ID3D12Resource_GetDesc(texture, &textureDesc);
     textureDesc.Width = w;
     textureDesc.Height = h;
     if (textureDesc.Format == DXGI_FORMAT_NV12 ||
@@ -2080,7 +2134,7 @@ static int D3D12_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     /* Create an upload buffer, which will be used to write to the main texture. */
     SDL_zero(textureDesc);
-    D3D_CALL_RET(textureData->mainTexture, GetDesc, &textureDesc);
+    D3D_CALL_RET_ID3D12Resource_GetDesc(textureData->mainTexture, &textureDesc);
     textureDesc.Width = rect->w;
     textureDesc.Height = rect->h;
 
@@ -2189,7 +2243,7 @@ static void D3D12_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     D3D_CALL(textureData->stagingBuffer, Unmap, 0, NULL);
 
     SDL_zero(textureDesc);
-    D3D_CALL_RET(textureData->mainTexture, GetDesc, &textureDesc);
+    D3D_CALL_RET_ID3D12Resource_GetDesc(textureData->mainTexture, &textureDesc);
     textureDesc.Width = textureData->lockedRect.w;
     textureDesc.Height = textureData->lockedRect.h;
 
@@ -2961,7 +3015,7 @@ static SDL_Surface *D3D12_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
 
     /* Create a staging texture to copy the screen's data to: */
     SDL_zero(textureDesc);
-    D3D_CALL_RET(backBuffer, GetDesc, &textureDesc);
+    D3D_CALL_RET_ID3D12Resource_GetDesc(backBuffer, &textureDesc);
     textureDesc.Width = rect->w;
     textureDesc.Height = rect->h;
 
@@ -3084,10 +3138,6 @@ done:
 static int D3D12_RenderPresent(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    UINT syncInterval;
-    UINT presentFlags;
-#endif
     HRESULT result;
 
     /* Transition the render target to present state */
@@ -3103,18 +3153,10 @@ static int D3D12_RenderPresent(SDL_Renderer *renderer)
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     result = D3D12_XBOX_PresentFrame(data->commandQueue, data->frameToken, data->renderTargets[data->currentBackBufferIndex]);
 #else
-    if (renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) {
-        syncInterval = 1;
-        presentFlags = 0;
-    } else {
-        syncInterval = 0;
-        presentFlags = DXGI_PRESENT_ALLOW_TEARING;
-    }
-
     /* The application may optionally specify "dirty" or "scroll"
      * rects to improve efficiency in certain scenarios.
      */
-    result = D3D_CALL(data->swapChain, Present, syncInterval, presentFlags);
+    result = D3D_CALL(data->swapChain, Present, data->syncInterval, data->presentFlags);
 #endif
 
     if (FAILED(result) && result != DXGI_ERROR_WAS_STILL_DRAWING) {
@@ -3165,45 +3207,42 @@ static int D3D12_RenderPresent(SDL_Renderer *renderer)
 
 static int D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
-    if (vsync) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    D3D12_RenderData *data = (D3D12_RenderData *)renderer->driverdata;
+
+    if (vsync < 0) {
+        return SDL_Unsupported();
+    }
+
+    if (vsync > 0) {
+        data->syncInterval = vsync;
+        data->presentFlags = 0;
     } else {
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+        data->syncInterval = 0;
+        data->presentFlags = DXGI_PRESENT_ALLOW_TEARING;
     }
     return 0;
 }
 
-SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     D3D12_RenderData *data;
 
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_TRANSPARENT) {
 		/* D3D12 removed the swap effect needed to support transparent windows, use D3D11 instead */
-		SDL_SetError("The direct3d12 renderer doesn't work with transparent windows");
-		return NULL;
+		return SDL_SetError("The direct3d12 renderer doesn't work with transparent windows");
 	}
-
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
 
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
         renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR
         /*&& renderer->output_colorspace != SDL_COLORSPACE_HDR10*/) {
-        SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
     data = (D3D12_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        SDL_free(renderer);
-        return NULL;
+        return -1;
     }
 
     data->identity = MatrixIdentity();
@@ -3231,14 +3270,24 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     renderer->RenderPresent = D3D12_RenderPresent;
     renderer->DestroyTexture = D3D12_DestroyTexture;
     renderer->DestroyRenderer = D3D12_DestroyRenderer;
-    renderer->info = D3D12_RenderDriver.info;
+    renderer->SetVSync = D3D12_SetVSync;
     renderer->driverdata = data;
     D3D12_InvalidateCachedState(renderer);
 
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-    renderer->SetVSync = D3D12_SetVSync;
+    renderer->name = D3D12_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
+
+    data->syncInterval = 0;
+    data->presentFlags = DXGI_PRESENT_ALLOW_TEARING;
 
     /* HACK: make sure the SDL_Renderer references the SDL_Window data now, in
      * order to give init functions access to the underlying window handle:
@@ -3248,35 +3297,18 @@ SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_p
     /* Initialize Direct3D resources */
     if (FAILED(D3D12_CreateDeviceResources(renderer))) {
         D3D12_DestroyRenderer(renderer);
-        return NULL;
+        return -1;
     }
     if (FAILED(D3D12_CreateWindowSizeDependentResources(renderer))) {
         D3D12_DestroyRenderer(renderer);
-        return NULL;
+        return -1;
     }
 
-    return renderer;
+    return 0;
 }
 
 SDL_RenderDriver D3D12_RenderDriver = {
-    D3D12_CreateRenderer,
-    {
-        "direct3d12",
-        SDL_RENDERER_PRESENTVSYNC,   /* flags.  see SDL_RendererFlags */
-        9,                           /* num_texture_formats */
-        {                            /* texture_formats */
-          SDL_PIXELFORMAT_ARGB8888,
-          SDL_PIXELFORMAT_XRGB8888,
-          SDL_PIXELFORMAT_XBGR2101010,
-          SDL_PIXELFORMAT_RGBA64_FLOAT,
-          SDL_PIXELFORMAT_YV12,
-          SDL_PIXELFORMAT_IYUV,
-          SDL_PIXELFORMAT_NV12,
-          SDL_PIXELFORMAT_NV21,
-          SDL_PIXELFORMAT_P010 },
-        16384, /* max_texture_width */
-        16384  /* max_texture_height */
-    }
+    D3D12_CreateRenderer, "direct3d12"
 };
 
 /* Ends C function definitions when using C++ */

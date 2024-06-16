@@ -290,7 +290,7 @@ void SDL_AddMouse(SDL_MouseID mouseID, const char *name, SDL_bool send_event)
     }
 }
 
-void SDL_RemoveMouse(SDL_MouseID mouseID)
+void SDL_RemoveMouse(SDL_MouseID mouseID, SDL_bool send_event)
 {
     int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index < 0) {
@@ -298,7 +298,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID)
         return;
     }
 
-    SDL_free(SDL_mice[mouse_index].name);
+    SDL_FreeLater(SDL_mice[mouse_index].name);  // SDL_GetMouseInstanceName returns this pointer.
 
     if (mouse_index != SDL_mouse_count - 1) {
         SDL_memcpy(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
@@ -318,11 +318,13 @@ void SDL_RemoveMouse(SDL_MouseID mouseID)
         }
     }
 
-    SDL_Event event;
-    SDL_zero(event);
-    event.type = SDL_EVENT_MOUSE_REMOVED;
-    event.mdevice.which = mouseID;
-    SDL_PushEvent(&event);
+    if (send_event) {
+        SDL_Event event;
+        SDL_zero(event);
+        event.type = SDL_EVENT_MOUSE_REMOVED;
+        event.mdevice.which = mouseID;
+        SDL_PushEvent(&event);
+    }
 }
 
 SDL_bool SDL_HasMouse(void)
@@ -412,10 +414,10 @@ SDL_Mouse *SDL_GetMouse(void)
     return &SDL_mouse;
 }
 
-Uint32 SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch)
+static SDL_MouseButtonFlags SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch)
 {
     int i;
-    Uint32 buttonstate = 0;
+    SDL_MouseButtonFlags buttonstate = 0;
 
     for (i = 0; i < mouse->num_sources; ++i) {
         if (mouseID == SDL_GLOBAL_MOUSE_ID || mouseID == SDL_TOUCH_MOUSEID) {
@@ -1131,12 +1133,14 @@ void SDL_QuitMouse(void)
     SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
                         SDL_MouseRelativeCursorVisibleChanged, mouse);
 
-    SDL_mouse_count = 0;
+    for (int i = SDL_mouse_count; i--; ) {
+        SDL_RemoveMouse(SDL_mice[i].instance_id, SDL_FALSE);
+    }
     SDL_free(SDL_mice);
     SDL_mice = NULL;
 }
 
-Uint32 SDL_GetMouseState(float *x, float *y)
+SDL_MouseButtonFlags SDL_GetMouseState(float *x, float *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1149,7 +1153,7 @@ Uint32 SDL_GetMouseState(float *x, float *y)
     return SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, SDL_TRUE);
 }
 
-Uint32 SDL_GetRelativeMouseState(float *x, float *y)
+SDL_MouseButtonFlags SDL_GetRelativeMouseState(float *x, float *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1164,7 +1168,7 @@ Uint32 SDL_GetRelativeMouseState(float *x, float *y)
     return SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, SDL_TRUE);
 }
 
-Uint32 SDL_GetGlobalMouseState(float *x, float *y)
+SDL_MouseButtonFlags SDL_GetGlobalMouseState(float *x, float *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1550,7 +1554,7 @@ int SDL_SetCursor(SDL_Cursor *cursor)
         }
     }
 
-    if (cursor && mouse->cursor_shown && !(mouse->relative_mode && !mouse->relative_mode_cursor_visible)) {
+    if (cursor && (!mouse->focus || (mouse->cursor_shown && (mouse->relative_mode_cursor_visible || !mouse->relative_mode) ) ) ) {
         if (mouse->ShowCursor) {
             mouse->ShowCursor(cursor);
         }

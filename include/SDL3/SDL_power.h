@@ -23,9 +23,9 @@
 #define SDL_power_h_
 
 /**
- *  \file SDL_power.h
+ * # CategoryPower
  *
- *  Header for the SDL power management routines.
+ * SDL power management routines.
  */
 
 #include <SDL3/SDL_stdinc.h>
@@ -82,7 +82,7 @@ typedef enum SDL_PowerState
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_PowerState SDLCALL SDL_GetPowerInfo(int *seconds, int *percent);
+extern SDL_DECLSPEC SDL_PowerState SDLCALL SDL_GetPowerInfo(int *seconds, int *percent);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

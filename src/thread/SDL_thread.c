@@ -43,7 +43,7 @@ void *SDL_GetTLS(SDL_TLSID id)
     return storage->array[id - 1].data;
 }
 
-int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *))
+int SDL_SetTLS(SDL_TLSID id, const void *value, SDL_TLSDestructorCallback destructor)
 {
     SDL_TLSData *storage;
 
@@ -60,7 +60,6 @@ int SDL_SetTLS(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
         newlimit = (id + TLS_ALLOC_CHUNKSIZE);
         new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
         if (!new_storage) {
-            SDL_OutOfMemory();
             return -1;
         }
         storage = new_storage;
@@ -300,45 +299,42 @@ void SDL_RunThread(SDL_Thread *thread)
     if (!SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
         /* Clean up if something already detached us. */
         if (SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_DETACHED, SDL_THREAD_STATE_CLEANED)) {
-            if (thread->name) {
-                SDL_free(thread->name);
-            }
+            SDL_FreeLater(thread->name);
             SDL_free(thread);
         }
     }
 }
 
-#ifdef SDL_CreateThread
-#undef SDL_CreateThread
-#undef SDL_CreateThreadWithStackSize
-#endif
-#if SDL_DYNAMIC_API
-#define SDL_CreateThread              SDL_CreateThread_REAL
-#define SDL_CreateThreadWithStackSize SDL_CreateThreadWithStackSize_REAL
-#endif
-
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
-                              const char *name, const size_t stacksize, void *data,
-                              pfnSDL_CurrentBeginThread pfnBeginThread,
-                              pfnSDL_CurrentEndThread pfnEndThread)
-#else
-SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
-                              const char *name, const size_t stacksize, void *data)
-#endif
+SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
+                              SDL_FunctionPointer pfnBeginThread,
+                              SDL_FunctionPointer pfnEndThread)
 {
-    SDL_Thread *thread;
-    int ret;
+    // rather than check this in every backend, just make sure it's correct upfront. Only allow non-NULL if non-WinRT Windows, or Microsoft GDK.
+    #if (!defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)) || defined(SDL_PLATFORM_WINRT)
+    if (pfnBeginThread || pfnEndThread) {
+        SDL_SetError("_beginthreadex/_endthreadex not supported on this platform");
+        return NULL;
+    }
+    #endif
 
-    /* Allocate memory for the thread info structure */
-    thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
+    SDL_ThreadFunction fn = (SDL_ThreadFunction) SDL_GetProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, NULL);
+    const char *name = SDL_GetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, NULL);
+    const size_t stacksize = (size_t) SDL_GetNumberProperty(props, SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER, 0);
+    void *userdata = SDL_GetProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, NULL);
+
+    if (!fn) {
+        SDL_SetError("Thread entry function is NULL");
+        return NULL;
+    }
+
+    SDL_Thread *thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
     if (!thread) {
         return NULL;
     }
     thread->status = -1;
     SDL_AtomicSet(&thread->state, SDL_THREAD_STATE_ALIVE);
 
-    /* Set up the arguments for the thread */
+    // Set up the arguments for the thread
     if (name) {
         thread->name = SDL_strdup(name);
         if (!thread->name) {
@@ -348,51 +344,46 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
     }
 
     thread->userfunc = fn;
-    thread->userdata = data;
+    thread->userdata = userdata;
     thread->stacksize = stacksize;
 
-    /* Create the thread and go! */
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-    ret = SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread);
-#else
-    ret = SDL_SYS_CreateThread(thread);
-#endif
-    if (ret < 0) {
-        /* Oops, failed.  Gotta free everything */
+    // Create the thread and go!
+    if (SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread) < 0) {
+        // Oops, failed.  Gotta free everything
         SDL_free(thread->name);
         SDL_free(thread);
         thread = NULL;
     }
 
-    /* Everything is running now */
+    // Everything is running now
     return thread;
 }
 
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
-                 const char *name, void *data,
-                 pfnSDL_CurrentBeginThread pfnBeginThread,
-                 pfnSDL_CurrentEndThread pfnEndThread)
-#else
-DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread(int(SDLCALL *fn)(void *),
-                 const char *name, void *data)
-#endif
+SDL_Thread *SDL_CreateThreadRuntime(SDL_ThreadFunction fn,
+                 const char *name, void *userdata,
+                 SDL_FunctionPointer pfnBeginThread,
+                 SDL_FunctionPointer pfnEndThread)
 {
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-    return SDL_CreateThreadWithStackSize(fn, name, 0, data, pfnBeginThread, pfnEndThread);
-#else
-    return SDL_CreateThreadWithStackSize(fn, name, 0, data);
-#endif
+    const SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, (void *) fn);
+    SDL_SetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, name);
+    SDL_SetProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, userdata);
+    SDL_Thread *thread = SDL_CreateThreadWithPropertiesRuntime(props, pfnBeginThread, pfnEndThread);
+    SDL_DestroyProperties(props);
+    return thread;
 }
 
-SDL_Thread *SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
-                         const size_t stacksize, void *data)
+// internal helper function, not in the public API.
+SDL_Thread *SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, size_t stacksize, void *userdata)
 {
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-    return SDL_CreateThreadWithStackSize(fn, name, stacksize, data, NULL, NULL);
-#else
-    return SDL_CreateThreadWithStackSize(fn, name, stacksize, data);
-#endif
+    const SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, (void *) fn);
+    SDL_SetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, name);
+    SDL_SetProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, userdata);
+    SDL_SetNumberProperty(props, SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER, (Sint64) stacksize);
+    SDL_Thread *thread = SDL_CreateThreadWithProperties(props);
+    SDL_DestroyProperties(props);
+    return thread;
 }
 
 SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)
@@ -428,9 +419,7 @@ void SDL_WaitThread(SDL_Thread *thread, int *status)
         if (status) {
             *status = thread->status;
         }
-        if (thread->name) {
-            SDL_free(thread->name);
-        }
+        SDL_FreeLater(thread->name);
         SDL_free(thread);
     }
 }

@@ -50,7 +50,7 @@ typedef struct SDL_Keyboard
 {
     /* Data common to all keyboards */
     SDL_Window *focus;
-    Uint16 modstate;
+    SDL_Keymod modstate;
     Uint8 keysource[SDL_NUM_SCANCODES];
     Uint8 keystate[SDL_NUM_SCANCODES];
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
@@ -734,7 +734,7 @@ void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, SDL_bool send_
     }
 }
 
-void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID)
+void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, SDL_bool send_event)
 {
     int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index < 0) {
@@ -742,18 +742,20 @@ void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID)
         return;
     }
 
-    SDL_free(SDL_keyboards[keyboard_index].name);
+    SDL_FreeLater(SDL_keyboards[keyboard_index].name);
 
     if (keyboard_index != SDL_keyboard_count - 1) {
         SDL_memcpy(&SDL_keyboards[keyboard_index], &SDL_keyboards[keyboard_index + 1], (SDL_keyboard_count - keyboard_index - 1) * sizeof(SDL_keyboards[keyboard_index]));
     }
     --SDL_keyboard_count;
 
-    SDL_Event event;
-    SDL_zero(event);
-    event.type = SDL_EVENT_KEYBOARD_REMOVED;
-    event.kdevice.which = keyboardID;
-    SDL_PushEvent(&event);
+    if (send_event) {
+        SDL_Event event;
+        SDL_zero(event);
+        event.type = SDL_EVENT_KEYBOARD_REMOVED;
+        event.kdevice.which = keyboardID;
+        SDL_PushEvent(&event);
+    }
 }
 
 SDL_bool SDL_HasKeyboard(void)
@@ -889,7 +891,7 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
     if (window) {
-        if (!video || window->magic != &video->window_magic || window->is_destroying) {
+        if (!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW) || window->is_destroying) {
             return SDL_SetError("Invalid window");
         }
     }
@@ -907,9 +909,15 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
 
         /* old window must lose an existing mouse capture. */
         if (keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE) {
-            SDL_CaptureMouse(SDL_FALSE); /* drop the capture. */
-            SDL_UpdateMouseCapture(SDL_TRUE);
-            SDL_assert(!(keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE));
+            SDL_Mouse *mouse = SDL_GetMouse();
+
+            if (mouse->CaptureMouse) {
+                SDL_CaptureMouse(SDL_FALSE); /* drop the capture. */
+                SDL_UpdateMouseCapture(SDL_TRUE);
+                SDL_assert(!(keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE));
+            } else {
+                keyboard->focus->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+            }
         }
 
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
@@ -998,7 +1006,7 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
     }
 
     /* Update modifiers state if applicable */
-    if (!(flags & KEYBOARD_IGNOREMODIFIERS)) {
+    if (!(flags & KEYBOARD_IGNOREMODIFIERS) && !repeat) {
         switch (keycode) {
         case SDLK_LCTRL:
             modifier = SDL_KMOD_LCTRL;
@@ -1248,7 +1256,9 @@ int SDL_SendEditingText(const char *text, int start, int length)
 
 void SDL_QuitKeyboard(void)
 {
-    SDL_keyboard_count = 0;
+    for (int i = SDL_keyboard_count; i--;) {
+        SDL_RemoveKeyboard(SDL_keyboards[i].instance_id, SDL_FALSE);
+    }
     SDL_free(SDL_keyboards);
     SDL_keyboards = NULL;
 }
@@ -1324,6 +1334,7 @@ SDL_Scancode SDL_GetScancodeFromKey(SDL_Keycode key)
     return SDL_SCANCODE_UNKNOWN;
 }
 
+// these are static memory, so we don't use SDL_FreeLater on them.
 const char *SDL_GetScancodeName(SDL_Scancode scancode)
 {
     const char *name;
@@ -1364,7 +1375,7 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
 
 const char *SDL_GetKeyName(SDL_Keycode key)
 {
-    static char name[8];
+    char name[8];
     char *end;
 
     if (key & SDLK_SCANCODE_MASK) {
@@ -1395,7 +1406,7 @@ const char *SDL_GetKeyName(SDL_Keycode key)
 
         end = SDL_UCS4ToUTF8((Uint32)key, name);
         *end = '\0';
-        return name;
+        return SDL_FreeLater(SDL_strdup(name));
     }
 }
 

@@ -76,7 +76,6 @@ static void UpdateHDRState(void)
 static void CreateRenderer(void)
 {
     SDL_PropertiesID props;
-    SDL_RendererInfo info;
 
     props = SDL_CreateProperties();
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
@@ -89,9 +88,8 @@ static void CreateRenderer(void)
         return;
     }
 
-    SDL_GetRendererInfo(renderer, &info);
-    SDL_Log("Created renderer %s\n", info.name);
-    renderer_name = info.name;
+    renderer_name = SDL_GetRendererName(renderer);
+    SDL_Log("Created renderer %s\n", renderer_name);
 
     UpdateHDRState();
 }

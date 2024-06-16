@@ -561,7 +561,7 @@ static int createDevice(VulkanVideoContext *context)
         VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME,
         VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME,
         VK_KHR_VIDEO_DECODE_H265_EXTENSION_NAME,
-        "VK_MESA_video_decode_av1"
+        VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME
     };
     VkDeviceCreateInfo deviceCreateInfo = { 0 };
     VkDeviceQueueCreateInfo *queueCreateInfos = NULL;

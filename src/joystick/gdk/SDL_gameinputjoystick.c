@@ -109,13 +109,13 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 
     elem = (GAMEINPUT_InternalDevice *)SDL_calloc(1, sizeof(*elem));
     if (!elem) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     devicelist = (GAMEINPUT_InternalDevice **)SDL_realloc(g_GameInputList.devices, sizeof(elem) * (g_GameInputList.count + 1LL));
     if (!devicelist) {
         SDL_free(elem);
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     /* Generate a device path */
@@ -264,7 +264,7 @@ static int GAMEINPUT_JoystickGetCount(void)
 
 static void GAMEINPUT_JoystickDetect(void)
 {
-    int idx = 0;
+    int idx;
     GAMEINPUT_InternalDevice *elem = NULL;
 
     for (idx = 0; idx < g_GameInputList.count; ++idx) {
@@ -396,7 +396,7 @@ static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     hwdata = (GAMEINPUT_InternalJoystickHwdata *)SDL_calloc(1, sizeof(*hwdata));
     if (!hwdata) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
     hwdata->devref = elem;

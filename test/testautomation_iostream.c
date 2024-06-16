@@ -190,7 +190,7 @@ static void testGenericIOStreamValidations(SDL_IOStream *rw, SDL_bool write)
         (int)i);
 
     /* Invalid whence seek */
-    i = SDL_SeekIO(rw, 0, 999);
+    i = SDL_SeekIO(rw, 0, (SDL_IOWhence)999);
     SDLTest_AssertPass("Call to SDL_SeekIO(...,0,invalid_whence) succeeded");
     SDLTest_AssertCheck(
         i == (Sint64)(-1),

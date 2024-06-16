@@ -28,10 +28,11 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WAYLAND)
 
+#include "../SDL_vulkan_internal.h"
+
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
 
-#include "../SDL_vulkan_internal.h"
 #include "SDL_waylandvulkan.h"
 
 #ifdef SDL_PLATFORM_OPENBSD
@@ -166,6 +167,16 @@ SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         return SDL_FALSE;
     }
     return SDL_TRUE;
+}
+
+void Wayland_Vulkan_DestroySurface(SDL_VideoDevice *_this,
+                                   VkInstance instance,
+                                   VkSurfaceKHR surface,
+                                   const struct VkAllocationCallbacks *allocator)
+{
+    if (_this->vulkan_config.loader_handle) {
+        SDL_Vulkan_DestroySurface_Internal(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
+    }
 }
 
 #endif

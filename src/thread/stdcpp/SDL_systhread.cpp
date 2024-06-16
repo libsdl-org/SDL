@@ -41,7 +41,9 @@ static void RunThread(void *args)
 }
 
 extern "C" int
-SDL_SYS_CreateThread(SDL_Thread *thread)
+SDL_SYS_CreateThread(SDL_Thread *thread,
+                     SDL_FunctionPointer pfnBeginThread,
+                     SDL_FunctionPointer pfnEndThread)
 {
     try {
         // !!! FIXME: no way to set a thread stack size here.

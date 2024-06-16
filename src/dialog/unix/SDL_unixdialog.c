@@ -23,8 +23,8 @@
 #include "./SDL_portaldialog.h"
 #include "./SDL_zenitydialog.h"
 
-static void (*detected_open)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many) = NULL;
-static void (*detected_save)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location) = NULL;
+static void (*detected_open)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many) = NULL;
+static void (*detected_save)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location) = NULL;
 static void (*detected_folder)(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many) = NULL;
 
 static int detect_available_methods(const char *value);
@@ -73,7 +73,7 @@ static int detect_available_methods(const char *value)
     return 0;
 }
 
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location, SDL_bool allow_many)
+void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
 {
     /* Call detect_available_methods() again each time in case the situation changed */
     if (!detected_open && !detect_available_methods(NULL)) {
@@ -82,10 +82,10 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
         return;
     }
 
-    detected_open(callback, userdata, window, filters, default_location, allow_many);
+    detected_open(callback, userdata, window, filters, nfilters, default_location, allow_many);
 }
 
-void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, const char* default_location)
+void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
 {
     /* Call detect_available_methods() again each time in case the situation changed */
     if (!detected_save && !detect_available_methods(NULL)) {
@@ -94,7 +94,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
         return;
     }
 
-    detected_save(callback, userdata, window, filters, default_location);
+    detected_save(callback, userdata, window, filters, nfilters, default_location);
 }
 
 void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, SDL_bool allow_many)

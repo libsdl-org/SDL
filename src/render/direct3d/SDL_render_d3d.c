@@ -1469,7 +1469,6 @@ static void D3D_DestroyRenderer(SDL_Renderer *renderer)
         }
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 static int D3D_Reset(SDL_Renderer *renderer)
@@ -1553,13 +1552,38 @@ static int D3D_Reset(SDL_Renderer *renderer)
 static int D3D_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
-    if (vsync) {
-        data->pparams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    } else {
-        data->pparams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+
+    DWORD PresentationInterval;
+    switch (vsync) {
+    case 0:
+        PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+        break;
+    case 1:
+        PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+        break;
+    case 2:
+        PresentationInterval = D3DPRESENT_INTERVAL_TWO;
+        break;
+    case 3:
+        PresentationInterval = D3DPRESENT_INTERVAL_THREE;
+        break;
+    case 4:
+        PresentationInterval = D3DPRESENT_INTERVAL_FOUR;
+        break;
+    default:
+        return SDL_Unsupported();
     }
+
+    D3DCAPS9 caps;
+    HRESULT result = IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
+    if (FAILED(result)) {
+        return D3D_SetError("GetDeviceCaps()", result);
+    }
+    if (!(caps.PresentationIntervals & PresentationInterval)) {
+        return SDL_Unsupported();
+    }
+    data->pparams.PresentationInterval = PresentationInterval;
+
     if (D3D_Reset(renderer) < 0) {
         /* D3D_Reset will call SDL_SetError() */
         return -1;
@@ -1567,9 +1591,8 @@ static int D3D_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     D3D_RenderData *data;
     HRESULT result;
     D3DPRESENT_PARAMETERS pparams;
@@ -1580,31 +1603,20 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     SDL_DisplayID displayID;
     const SDL_DisplayMode *fullscreen_mode = NULL;
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
-
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
     data = (D3D_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        SDL_free(renderer);
-        return NULL;
+        return -1;
     }
 
     if (!D3D_LoadDLL(&data->d3dDLL, &data->d3d)) {
-        SDL_SetError("Unable to create Direct3D interface");
-        SDL_free(renderer);
         SDL_free(data);
-        return NULL;
+        return SDL_SetError("Unable to create Direct3D interface");
     }
 
     renderer->WindowEvent = D3D_WindowEvent;
@@ -1630,9 +1642,11 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->DestroyTexture = D3D_DestroyTexture;
     renderer->DestroyRenderer = D3D_DestroyRenderer;
     renderer->SetVSync = D3D_SetVSync;
-    renderer->info = D3D_RenderDriver.info;
     renderer->driverdata = data;
     D3D_InvalidateCachedState(renderer);
+
+    renderer->name = D3D_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
@@ -1655,17 +1669,17 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
         pparams.BackBufferFormat = D3DFMT_UNKNOWN;
         pparams.FullScreen_RefreshRateInHz = 0;
     }
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        pparams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-    } else {
-        pparams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-    }
+    pparams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
     /* Get the adapter for the display that the window is on */
     displayID = SDL_GetDisplayForWindow(window);
     data->adapter = SDL_Direct3D9GetAdapterIndex(displayID);
 
-    IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
+    result = IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
+    if (FAILED(result)) {
+        D3D_DestroyRenderer(renderer);
+        return D3D_SetError("GetDeviceCaps()", result);
+    }
 
     device_flags = D3DCREATE_FPU_PRESERVE;
     if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) {
@@ -1685,33 +1699,26 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
                                      &pparams, &data->device);
     if (FAILED(result)) {
         D3D_DestroyRenderer(renderer);
-        D3D_SetError("CreateDevice()", result);
-        return NULL;
+        return D3D_SetError("CreateDevice()", result);
     }
 
     /* Get presentation parameters to fill info */
     result = IDirect3DDevice9_GetSwapChain(data->device, 0, &chain);
     if (FAILED(result)) {
         D3D_DestroyRenderer(renderer);
-        D3D_SetError("GetSwapChain()", result);
-        return NULL;
+        return D3D_SetError("GetSwapChain()", result);
     }
     result = IDirect3DSwapChain9_GetPresentParameters(chain, &pparams);
     if (FAILED(result)) {
         IDirect3DSwapChain9_Release(chain);
         D3D_DestroyRenderer(renderer);
-        D3D_SetError("GetPresentParameters()", result);
-        return NULL;
+        return D3D_SetError("GetPresentParameters()", result);
     }
     IDirect3DSwapChain9_Release(chain);
-    if (pparams.PresentationInterval == D3DPRESENT_INTERVAL_ONE) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
     data->pparams = pparams;
 
     IDirect3DDevice9_GetDeviceCaps(data->device, &caps);
-    renderer->info.max_texture_width = caps.MaxTextureWidth;
-    renderer->info.max_texture_height = caps.MaxTextureHeight;
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, SDL_min(caps.MaxTextureWidth, caps.MaxTextureHeight));
 
     if (caps.PrimitiveMiscCaps & D3DPMISCCAPS_SEPARATEALPHABLEND) {
         data->enableSeparateAlphaBlend = SDL_TRUE;
@@ -1733,24 +1740,18 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
             }
         }
         if (data->shaders[SHADER_YUV]) {
-            renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-            renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
+            SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+            SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
         }
     }
 #endif
 
     SDL_SetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D9_DEVICE_POINTER, data->device);
 
-    return renderer;
+    return 0;
 }
 
 SDL_RenderDriver D3D_RenderDriver = {
-    D3D_CreateRenderer,
-    { "direct3d",
-      SDL_RENDERER_PRESENTVSYNC,
-      1,
-      { SDL_PIXELFORMAT_ARGB8888 },
-      0,
-      0 }
+    D3D_CreateRenderer, "direct3d"
 };
 #endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */

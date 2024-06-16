@@ -102,17 +102,17 @@ static void xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x,
         if (window->w == 1) {
             *out_x = 0.5f;
         } else {
-            *out_x = in_x / (window->w - 1);
+            *out_x = (float)in_x / (window->w - 1);
         }
         if (window->h == 1) {
             *out_y = 0.5f;
         } else {
-            *out_y = in_y / (window->h - 1);
+            *out_y = (float)in_y / (window->h - 1);
         }
     } else {
         // couldn't find the window...
-        *out_x = in_x;
-        *out_y = in_y;
+        *out_x = (float)in_x;
+        *out_y = (float)in_y;
     }
 }
 #endif /* SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH */
@@ -400,10 +400,10 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         xevent.xkey.root = xev->root;
         xevent.xkey.subwindow = xev->child;
         xevent.xkey.time = xev->time;
-        xevent.xkey.x = xev->event_x;
-        xevent.xkey.y = xev->event_y;
-        xevent.xkey.x_root = xev->root_x;
-        xevent.xkey.y_root = xev->root_y;
+        xevent.xkey.x = (int)xev->event_x;
+        xevent.xkey.y = (int)xev->event_y;
+        xevent.xkey.x_root = (int)xev->root_x;
+        xevent.xkey.y_root = (int)xev->root_y;
         xevent.xkey.state = xev->mods.effective;
         xevent.xkey.keycode = xev->detail;
         xevent.xkey.same_screen = 1;
@@ -463,7 +463,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 
             if (pressed) {
                 X11_HandleButtonPress(_this, windowdata, (SDL_MouseID)xev->sourceid, button,
-                                      xev->event_x, xev->event_y, xev->time);
+                                      (float)xev->event_x, (float)xev->event_y, xev->time);
             } else {
                 X11_HandleButtonRelease(_this, windowdata, (SDL_MouseID)xev->sourceid, button);
             }
@@ -492,8 +492,8 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         if (pen) {
             SDL_PenStatusInfo pen_status;
 
-            pen_status.x = xev->event_x;
-            pen_status.y = xev->event_y;
+            pen_status.x = (float)xev->event_x;
+            pen_status.y = (float)xev->event_y;
 
             X11_PenAxesFromValuators(pen,
                                      xev->valuators.values, xev->valuators.mask, xev->valuators.mask_len,
@@ -823,13 +823,13 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
 
     for (int i = old_keyboard_count; i--;) {
         if (!HasDeviceID(old_keyboards[i], new_keyboards, new_keyboard_count)) {
-            SDL_RemoveKeyboard(old_keyboards[i]);
+            SDL_RemoveKeyboard(old_keyboards[i], send_event);
         }
     }
 
     for (int i = old_mouse_count; i--;) {
         if (!HasDeviceID(old_mice[i], new_mice, new_mouse_count)) {
-            SDL_RemoveMouse(old_mice[i]);
+            SDL_RemoveMouse(old_mice[i], send_event);
         }
     }
 

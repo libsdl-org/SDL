@@ -27,6 +27,7 @@ jobs:
           -DSDL_INSTALL_TESTS=ON \
           -DSDL_VENDOR_INFO=Github_Workflow \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
+          -DSDL_DISABLE_INSTALL_DOCS=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_SYSTEM_NAME=Haiku
     - name: Build (CMake)

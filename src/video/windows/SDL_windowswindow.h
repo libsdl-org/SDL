@@ -41,6 +41,13 @@ typedef enum SDL_WindowRect
     SDL_WINDOWRECT_FLOATING
 } SDL_WindowRect;
 
+typedef enum SDL_WindowEraseBackgroundMode
+{
+    SDL_ERASEBACKGROUNDMODE_NEVER,
+    SDL_ERASEBACKGROUNDMODE_INITIAL,
+    SDL_ERASEBACKGROUNDMODE_ALWAYS,
+} SDL_WindowEraseBackgroundMode;
+
 struct SDL_WindowData
 {
     SDL_Window *window;
@@ -74,6 +81,7 @@ struct SDL_WindowData
     SDL_DisplayID last_displayID;
     WCHAR *ICMFileName;
     SDL_Window *keyboard_focus;
+    SDL_WindowEraseBackgroundMode hint_erase_background_mode;
     struct SDL_VideoData *videodata;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
@@ -100,7 +108,7 @@ extern void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered);
 extern void WIN_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable);
 extern void WIN_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool on_top);
-extern int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
+extern int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 extern void WIN_UpdateWindowICCProfile(SDL_Window *window, SDL_bool send_event);
 extern void *WIN_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
 extern int WIN_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
@@ -118,6 +126,7 @@ extern void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern int WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable);
 extern int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type);
 extern int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi);
+extern int WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

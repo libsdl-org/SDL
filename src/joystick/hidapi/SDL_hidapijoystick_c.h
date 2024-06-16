@@ -66,7 +66,6 @@ struct SDL_HIDAPI_DeviceDriver;
 
 typedef struct SDL_HIDAPI_Device
 {
-    const void *magic;
     char *name;
     char *manufacturer_string;
     char *product_string;

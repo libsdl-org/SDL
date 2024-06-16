@@ -71,7 +71,7 @@ static void *X11_GetSym(const char *fnname, int *pHasModule)
 {
     int i;
     void *fn = NULL;
-    for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
+    for (i = 0; i < SDL_arraysize(x11libs); i++) {
         if (x11libs[i].lib) {
             fn = SDL_LoadFunction(x11libs[i].lib, fnname);
             if (fn) {
@@ -132,7 +132,7 @@ void SDL_X11_UnloadSymbols(void)
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
-            for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
+            for (i = 0; i < SDL_arraysize(x11libs); i++) {
                 if (x11libs[i].lib) {
                     SDL_UnloadObject(x11libs[i].lib);
                     x11libs[i].lib = NULL;
@@ -153,7 +153,7 @@ int SDL_X11_LoadSymbols(void)
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
         int i;
         int *thismod = NULL;
-        for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
+        for (i = 0; i < SDL_arraysize(x11libs); i++) {
             if (x11libs[i].libname) {
                 x11libs[i].lib = SDL_LoadObject(x11libs[i].libname);
             }

@@ -42,7 +42,7 @@
 #include <psp2/sysmodule.h>
 #endif
 
-static SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props);
+static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props);
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
 
@@ -100,24 +100,7 @@ static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture
 static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer);
 
 SDL_RenderDriver VITA_GXM_RenderDriver = {
-    .CreateRenderer = VITA_GXM_CreateRenderer,
-    .info = {
-        .name = "VITA gxm",
-        .flags = SDL_RENDERER_PRESENTVSYNC,
-        .num_texture_formats = 8,
-        .texture_formats = {
-            [0] = SDL_PIXELFORMAT_ABGR8888,
-            [1] = SDL_PIXELFORMAT_ARGB8888,
-            [2] = SDL_PIXELFORMAT_RGB565,
-            [3] = SDL_PIXELFORMAT_BGR565,
-            [4] = SDL_PIXELFORMAT_YV12,
-            [5] = SDL_PIXELFORMAT_IYUV,
-            [6] = SDL_PIXELFORMAT_NV12,
-            [7] = SDL_PIXELFORMAT_NV21,
-        },
-        .max_texture_width = 4096,
-        .max_texture_height = 4096,
-    }
+    VITA_GXM_CreateRenderer, "VITA gxm"
 };
 
 static int PixelFormatToVITAFMT(Uint32 format)
@@ -202,37 +185,25 @@ static int VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
     VITA_GXM_RenderData *data = renderer->driverdata;
     if (vsync) {
         data->displayData.wait_vblank = SDL_TRUE;
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     } else {
         data->displayData.wait_vblank = SDL_FALSE;
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
     }
     return 0;
 }
 
-SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     VITA_GXM_RenderData *data;
-
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
 
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
     data = (VITA_GXM_RenderData *)SDL_calloc(1, sizeof(VITA_GXM_RenderData));
     if (!data) {
-        SDL_free(renderer);
-        return NULL;
+        return -1;
     }
 
     renderer->WindowEvent = VITA_GXM_WindowEvent;
@@ -260,19 +231,22 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID creat
     renderer->DestroyRenderer = VITA_GXM_DestroyRenderer;
     renderer->SetVSync = VITA_GXM_SetVSync;
 
-    renderer->info = VITA_GXM_RenderDriver.info;
     renderer->driverdata = data;
     VITA_GXM_InvalidateCachedState(renderer);
     renderer->window = window;
 
-    data->initialized = SDL_TRUE;
+    renderer->name = VITA_GXM_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGR565);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 4096);
 
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        data->displayData.wait_vblank = SDL_TRUE;
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    } else {
-        data->displayData.wait_vblank = SDL_FALSE;
-    }
+    data->initialized = SDL_TRUE;
 
 #ifdef DEBUG_RAZOR
     sceSysmoduleLoadModule(SCE_SYSMODULE_RAZOR_HUD);
@@ -281,11 +255,10 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, SDL_PropertiesID creat
 
     if (gxm_init(renderer) != 0) {
         SDL_free(data);
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("gxm_init failed");
     }
 
-    return renderer;
+    return 0;
 }
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
@@ -865,8 +838,8 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
     if (data->drawstate.viewport_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
 
-        float sw = viewport->w / 2.;
-        float sh = viewport->h / 2.;
+        float sw = viewport->w / 2.f;
+        float sh = viewport->h / 2.f;
 
         float x_scale = sw;
         float x_off = viewport->x + sw;
@@ -1230,7 +1203,6 @@ static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
         data->drawing = SDL_FALSE;
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */

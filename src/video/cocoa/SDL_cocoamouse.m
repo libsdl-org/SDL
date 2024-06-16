@@ -152,10 +152,10 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         SDL_Cursor *cursor = NULL;
 
         switch (id) {
-        case SDL_SYSTEM_CURSOR_ARROW:
+        case SDL_SYSTEM_CURSOR_DEFAULT:
             nscursor = [NSCursor arrowCursor];
             break;
-        case SDL_SYSTEM_CURSOR_IBEAM:
+        case SDL_SYSTEM_CURSOR_TEXT:
             nscursor = [NSCursor IBeamCursor];
             break;
         case SDL_SYSTEM_CURSOR_CROSSHAIR:
@@ -164,52 +164,52 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         case SDL_SYSTEM_CURSOR_WAIT: /* !!! FIXME: this is more like WAITARROW */
             nscursor = LoadHiddenSystemCursor(@"busybutclickable", @selector(arrowCursor));
             break;
-        case SDL_SYSTEM_CURSOR_WAITARROW: /* !!! FIXME: this is meant to be animated */
+        case SDL_SYSTEM_CURSOR_PROGRESS: /* !!! FIXME: this is meant to be animated */
             nscursor = LoadHiddenSystemCursor(@"busybutclickable", @selector(arrowCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZENWSE:
+        case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZENESW:
+        case SDL_SYSTEM_CURSOR_NESW_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZEWE:
+        case SDL_SYSTEM_CURSOR_EW_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZENS:
+        case SDL_SYSTEM_CURSOR_NS_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZEALL:
+        case SDL_SYSTEM_CURSOR_MOVE:
             nscursor = LoadHiddenSystemCursor(@"move", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_NO:
+        case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
             nscursor = [NSCursor operationNotAllowedCursor];
             break;
-        case SDL_SYSTEM_CURSOR_HAND:
+        case SDL_SYSTEM_CURSOR_POINTER:
             nscursor = [NSCursor pointingHandCursor];
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+        case SDL_SYSTEM_CURSOR_NW_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+        case SDL_SYSTEM_CURSOR_N_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+        case SDL_SYSTEM_CURSOR_NE_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+        case SDL_SYSTEM_CURSOR_E_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+        case SDL_SYSTEM_CURSOR_SE_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+        case SDL_SYSTEM_CURSOR_S_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+        case SDL_SYSTEM_CURSOR_SW_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+        case SDL_SYSTEM_CURSOR_W_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
             break;
         default:
@@ -369,11 +369,11 @@ static int Cocoa_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
-static Uint32 Cocoa_GetGlobalMouseState(float *x, float *y)
+static SDL_MouseButtonFlags Cocoa_GetGlobalMouseState(float *x, float *y)
 {
     const NSUInteger cocoaButtons = [NSEvent pressedMouseButtons];
     const NSPoint cocoaLocation = [NSEvent mouseLocation];
-    Uint32 retval = 0;
+    SDL_MouseButtonFlags retval = 0;
 
     *x = cocoaLocation.x;
     *y = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);

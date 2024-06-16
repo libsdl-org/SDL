@@ -22,7 +22,7 @@ jobs:
       - name: 'Set up Python'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       - name: 'Fetch build-release.py'
         uses: actions/checkout@v4
         with:
@@ -106,9 +106,9 @@ jobs:
       - name: 'Untar ${{ needs.src.outputs.src-tar-gz }}'
         id: tar
         run: |
-          mkdir -p /tmp/tardir
-          tar -C /tmp/tardir -v -x -f "${{ github.workspace }}/${{ needs.src.outputs.src-tar-gz }}"
-          echo "path=/tmp/tardir/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$GITHUB_OUTPUT
+          mkdir -p "${{ github.workspace }}/tardir"
+          tar -C "${{ github.workspace }}/tardir" -v -x -f "${{ github.workspace }}/${{ needs.src.outputs.src-tar-gz }}"
+          echo "path=${{ github.workspace }}/tardir/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$GITHUB_OUTPUT
       - name: 'Build SDL3.dmg'
         id: releaser
         shell: bash
@@ -167,6 +167,17 @@ jobs:
               -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"                      \
               -Werror=dev                                                   \
               -B build_darwin
+          cmake --build build_darwin --config Release --verbose
+
+          cmake -S "${{ steps.src.outputs.path }}/cmake/test"                                                   \
+              -DTEST_FULL=FALSE                                                                                 \
+              -DTEST_STATIC=FALSE                                                                               \
+              -DTEST_TEST=FALSE                                                                                 \
+              -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}/SDL3.xcframework/macos-arm64_x86_64"  \
+              -DCMAKE_SYSTEM_NAME=Darwin                                                                        \
+              -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"                                                          \
+              -Werror=dev                                                                                       \
+              -B build_darwin_2
           cmake --build build_darwin --config Release --verbose
       - name: 'CMake (configure + build) iOS'
         run: |
@@ -247,14 +258,14 @@ jobs:
       - name: 'Unzip ${{ needs.src.outputs.src-zip }}'
         id: zip
         run: |
-          mkdir C:\zipdir
-          cd C:\zipdir
+          New-Item C:\temp -ItemType Directory -ErrorAction SilentlyContinue
+          cd C:\temp
           unzip "${{ github.workspace }}/${{ needs.src.outputs.src-zip }}"
-          echo "path=C:\zipdir\${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$Env:GITHUB_OUTPUT
+          echo "path=C:\temp\${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$Env:GITHUB_OUTPUT
       - name: 'Build MSVC binary archives'
         id: releaser
         run: |
-          python build-scripts/build-release.py          `
+          python build-scripts/build-release.py     `
             --create win32                          `
             --commit ${{ inputs.commit }}           `
             --project SDL3                          `
@@ -319,11 +330,21 @@ jobs:
               -B build_x64 -A x64
           cmake --build build_x64 --config Release --verbose
           ctest --test-dir build_x64 --no-tests=error -C Release --output-on-failure
-
+      - name: 'CMake (configure + build) arm64'
+        run: |
+          $env:PATH += ";${{ steps.bin.outputs.path }}/x86"
+          cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -DTEST_FULL=TRUE                                    `
+              -DTEST_STATIC=FALSE                                 `
+              -DTEST_TEST=TRUE                                    `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}" `
+              -Werror=dev                                         `
+              -B build_arm64 -A ARM64
+          cmake --build build_arm64 --config Release --verbose
 
   mingw:
     needs: [src]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # FIXME: current ubuntu-latest ships an outdated mingw, replace with ubuntu-latest once 24.04 becomes the new default
     outputs:
       mingw-devel-tar-gz: ${{ steps.releaser.outputs.mingw-devel-tar-gz }}
       mingw-devel-tar-xz: ${{ steps.releaser.outputs.mingw-devel-tar-xz }}
@@ -423,3 +444,59 @@ jobs:
               -Werror=dev                                                                                               \
               -B build_x64
           cmake --build build_x64 --config Release --verbose
+
+  android:
+    needs: [src]
+    runs-on: ubuntu-latest
+    outputs:
+      android-aar: ${{ steps.releaser.outputs.android-aar }}
+    steps:
+      - name: 'Set up Python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: 'Fetch build-release.py'
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: 'build-scripts/build-release.py'
+      - name: 'Setup Android NDK'
+        uses: nttld/setup-ndk@v1
+        id: setup_ndk
+        with:
+          local-cache: true
+          ndk-version: r21e
+      - name: 'Setup Java JDK'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      - name: 'Install ninja'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build
+      - name: 'Download source archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: sources
+          path: '${{ github.workspace }}'
+      - name: 'Untar ${{ needs.src.outputs.src-tar-gz }}'
+        id: tar
+        run: |
+          mkdir -p /tmp/tardir
+          tar -C /tmp/tardir -v -x -f "${{ github.workspace }}/${{ needs.src.outputs.src-tar-gz }}"
+          echo "path=/tmp/tardir/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$GITHUB_OUTPUT
+      - name: 'Build Android prefab binary archive(s)'
+        id: releaser
+        run: |
+          python build-scripts/build-release.py     \
+            --create android                        \
+            --commit ${{ inputs.commit }}           \
+            --project SDL3                          \
+            --root "${{ steps.tar.outputs.path }}"  \
+            --github                                \
+            --debug
+      - name: 'Store Android archive(s)'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: '${{ github.workspace }}/dist'

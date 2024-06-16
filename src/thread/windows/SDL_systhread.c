@@ -32,20 +32,15 @@
 #define STACK_SIZE_PARAM_IS_A_RESERVATION 0x00010000
 #endif
 
-#ifndef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-/* We'll use the C library from this DLL */
-#include <process.h>
-typedef uintptr_t(__cdecl *pfnSDL_CurrentBeginThread)(void *, unsigned,
-                                                      unsigned(__stdcall *func)(void*),
-                                                      void *arg, unsigned,
-                                                      unsigned *threadID);
-typedef void(__cdecl *pfnSDL_CurrentEndThread)(unsigned code);
-#endif /* !SDL_PASSED_BEGINTHREAD_ENDTHREAD */
+typedef void (__cdecl * SDL_EndThreadExCallback) (unsigned retval);
+typedef uintptr_t (__cdecl * SDL_BeginThreadExCallback)
+                   (void *security, unsigned stacksize, unsigned (__stdcall *startaddr)(void *),
+                    void * arglist, unsigned initflag, unsigned *threadaddr);
 
 static DWORD RunThread(void *data)
 {
     SDL_Thread *thread = (SDL_Thread *)data;
-    pfnSDL_CurrentEndThread pfnEndThread = (pfnSDL_CurrentEndThread)thread->endfunc;
+    SDL_EndThreadExCallback pfnEndThread = (SDL_EndThreadExCallback)thread->endfunc;
     SDL_RunThread(thread);
     if (pfnEndThread) {
         pfnEndThread(0);
@@ -63,26 +58,16 @@ static unsigned __stdcall MINGW32_FORCEALIGN RunThreadViaBeginThreadEx(void *dat
     return (unsigned)RunThread(data);
 }
 
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
 int SDL_SYS_CreateThread(SDL_Thread *thread,
-                         pfnSDL_CurrentBeginThread pfnBeginThread,
-                         pfnSDL_CurrentEndThread pfnEndThread)
+                         SDL_FunctionPointer vpfnBeginThread,
+                         SDL_FunctionPointer vpfnEndThread)
 {
-#elif defined(SDL_PLATFORM_CYGWIN) || defined(SDL_PLATFORM_WINRT)
-int SDL_SYS_CreateThread(SDL_Thread *thread)
-{
-    pfnSDL_CurrentBeginThread pfnBeginThread = NULL;
-    pfnSDL_CurrentEndThread pfnEndThread = NULL;
-#else
-int SDL_SYS_CreateThread(SDL_Thread *thread)
-{
-    pfnSDL_CurrentBeginThread pfnBeginThread = (pfnSDL_CurrentBeginThread)_beginthreadex;
-    pfnSDL_CurrentEndThread pfnEndThread = (pfnSDL_CurrentEndThread)_endthreadex;
-#endif /* SDL_PASSED_BEGINTHREAD_ENDTHREAD */
+    SDL_BeginThreadExCallback pfnBeginThread = (SDL_BeginThreadExCallback) vpfnBeginThread;
+
     const DWORD flags = thread->stacksize ? STACK_SIZE_PARAM_IS_A_RESERVATION : 0;
 
     /* Save the function which we will have to call to clear the RTL of calling app! */
-    thread->endfunc = (SDL_FunctionPointer)pfnEndThread;
+    thread->endfunc = vpfnEndThread;
 
     /* thread->stacksize == 0 means "system default", same as win32 expects */
     if (pfnBeginThread) {

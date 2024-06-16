@@ -25,7 +25,7 @@
 #define EULER M_E
 #endif
 
-#define IS_INFINITY(V) isinf(V)
+#define IS_INFINITY(V) ISINF(V)
 
 /* Square root of 3 (used in atan2) */
 #define SQRT3 1.7320508075688771931766041234368458390235900878906250
@@ -207,7 +207,7 @@ helper_range(const char *func_name, d_to_d_func func)
     for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
         double result;
         /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
+        if (ISNAN(test_value) || ISINF(test_value)) {
             continue;
         }
 
@@ -272,7 +272,7 @@ static int
 floor_nanCase(void *args)
 {
     const double result = SDL_floor(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Floor(nan), expected nan, got %f",
                         result);
     return TEST_COMPLETED;
@@ -376,7 +376,7 @@ static int
 ceil_nanCase(void *args)
 {
     const double result = SDL_ceil(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Ceil(nan), expected nan, got %f",
                         result);
     return TEST_COMPLETED;
@@ -480,7 +480,7 @@ static int
 trunc_nanCase(void *args)
 {
     const double result = SDL_trunc(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Trunc(nan), expected nan, got %f",
                         result);
     return TEST_COMPLETED;
@@ -584,7 +584,7 @@ static int
 round_nanCase(void *args)
 {
     const double result = SDL_round(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Round(nan), expected nan, got %f",
                         result);
     return TEST_COMPLETED;
@@ -688,7 +688,7 @@ static int
 fabs_nanCase(void *args)
 {
     const double result = SDL_fabs(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fabs(nan), expected nan, got %f",
                         result);
     return TEST_COMPLETED;
@@ -765,12 +765,12 @@ copysign_nanCases(void *args)
     double result;
 
     result = SDL_copysign(NAN, 1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Copysign(nan,1.0), expected nan, got %f",
                         result);
 
     result = SDL_copysign(NAN, -1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Copysign(nan,-1.0), expected nan, got %f",
                         result);
     return TEST_COMPLETED;
@@ -793,7 +793,7 @@ copysign_rangeTest(void *args)
     for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
         double result;
         /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
+        if (ISNAN(test_value) || ISINF(test_value)) {
             continue;
         }
 
@@ -829,22 +829,22 @@ fmod_divOfInfCases(void *args)
     double result;
 
     result = SDL_fmod(INFINITY, -1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(%f,%.1f), expected %f, got %f",
                         INFINITY, -1.0, NAN, result);
 
     result = SDL_fmod(INFINITY, 1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(%f,%.1f), expected %f, got %f",
                         INFINITY, 1.0, NAN, result);
 
     result = SDL_fmod(-INFINITY, -1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(%f,%.1f), expected %f, got %f",
                         -INFINITY, -1.0, NAN, result);
 
     result = SDL_fmod(-INFINITY, 1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(%f,%.1f), expected %f, got %f",
                         -INFINITY, 1.0, NAN, result);
 
@@ -909,22 +909,22 @@ fmod_divByZeroCases(void *args)
     double result;
 
     result = SDL_fmod(1.0, 0.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(1.0,0.0), expected nan, got %f",
                         result);
 
     result = SDL_fmod(-1.0, 0.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(-1.0,0.0), expected nan, got %f",
                         result);
 
     result = SDL_fmod(1.0, -0.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(1.0,-0.0), expected nan, got %f",
                         result);
 
     result = SDL_fmod(-1.0, -0.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(-1.0,-0.0), expected nan, got %f",
                         result);
 
@@ -941,22 +941,22 @@ fmod_nanCases(void *args)
     double result;
 
     result = SDL_fmod(NAN, 1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(nan,1.0), expected nan, got %f",
                         result);
 
     result = SDL_fmod(NAN, -1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(nan,-1.0), expected nan, got %f",
                         result);
 
     result = SDL_fmod(1.0, NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(1.0,nan), expected nan, got %f",
                         result);
 
     result = SDL_fmod(-1.0, NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Fmod(-1.0,nan), expected nan, got %f",
                         result);
 
@@ -996,7 +996,7 @@ fmod_rangeTest(void *args)
     for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
         double result;
         /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
+        if (ISNAN(test_value) || ISINF(test_value)) {
             continue;
         }
 
@@ -1065,7 +1065,7 @@ exp_overflowCase(void *args)
     }
 
     result = SDL_exp(710.0);
-    SDLTest_AssertCheck(isinf(result),
+    SDLTest_AssertCheck(ISINF(result),
                         "Exp(%f), expected %f, got %f",
                         710.0, INFINITY, result);
     return TEST_COMPLETED;
@@ -1169,12 +1169,12 @@ log_nanCases(void *args)
     double result;
 
     result = SDL_log(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Log(%f), expected %f, got %f",
                         NAN, NAN, result);
 
     result = SDL_log(-1234.5678);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Log(%f), expected %f, got %f",
                         -1234.5678, NAN, result);
 
@@ -1259,12 +1259,12 @@ log10_nanCases(void *args)
     double result;
 
     result = SDL_log10(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Log10(%f), expected %f, got %f",
                         NAN, NAN, result);
 
     result = SDL_log10(-1234.5678);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Log10(%f), expected %f, got %f",
                         -1234.5678, NAN, result);
 
@@ -1477,7 +1477,7 @@ static int
 pow_badOperationCase(void *args)
 {
     const double result = SDL_pow(-2.0, 4.2);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Pow(%f,%f), expected %f, got %f",
                         -2.0, 4.2, NAN, result);
     return TEST_COMPLETED;
@@ -1529,17 +1529,17 @@ pow_nanArgsCases(void *args)
     double result;
 
     result = SDL_pow(7.8, NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Pow(%f,%f), expected %f, got %f",
                         7.8, NAN, NAN, result);
 
     result = SDL_pow(NAN, 10.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Pow(%f,%f), expected %f, got %f",
                         NAN, 10.0, NAN, result);
 
     result = SDL_pow(NAN, NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Pow(%f,%f), expected %f, got %f",
                         NAN, NAN, NAN, result);
 
@@ -1727,7 +1727,7 @@ pow_rangeTest(void *args)
     for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
         double result;
         /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
+        if (ISNAN(test_value) || ISINF(test_value)) {
             continue;
         }
 
@@ -1775,7 +1775,7 @@ static int
 sqrt_nanCase(void *args)
 {
     const double result = SDL_sqrt(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Sqrt(%f), expected %f, got %f",
                         NAN, NAN, result);
     return TEST_COMPLETED;
@@ -1791,17 +1791,17 @@ sqrt_outOfDomainCases(void *args)
     double result;
 
     result = SDL_sqrt(-1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Sqrt(%f), expected %f, got %f",
                         -1.0, NAN, result);
 
     result = SDL_sqrt(-12345.6789);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Sqrt(%f), expected %f, got %f",
                         -12345.6789, NAN, result);
 
     result = SDL_sqrt(-INFINITY);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Sqrt(%f), expected %f, got %f",
                         -INFINITY, NAN, result);
 
@@ -1910,7 +1910,7 @@ static int
 scalbn_nanCase(void *args)
 {
     const double result = SDL_scalbn(NAN, 2);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Scalbn(%f,%d), expected %f, got %f",
                         NAN, 2, NAN, result);
     return TEST_COMPLETED;
@@ -1965,12 +1965,12 @@ cos_infCases(void *args)
     double result;
 
     result = SDL_cos(INFINITY);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Cos(%f), expected %f, got %f",
                         INFINITY, NAN, result);
 
     result = SDL_cos(-INFINITY);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Cos(%f), expected %f, got %f",
                         -INFINITY, NAN, result);
 
@@ -1985,7 +1985,7 @@ static int
 cos_nanCase(void *args)
 {
     const double result = SDL_cos(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Cos(%f), expected %f, got %f",
                         NAN, NAN, result);
     return TEST_COMPLETED;
@@ -2054,7 +2054,7 @@ cos_rangeTest(void *args)
     for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
         double result;
         /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
+        if (ISNAN(test_value) || ISINF(test_value)) {
             continue;
         }
 
@@ -2082,12 +2082,12 @@ sin_infCases(void *args)
     double result;
 
     result = SDL_sin(INFINITY);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Sin(%f), expected %f, got %f",
                         INFINITY, NAN, result);
 
     result = SDL_sin(-INFINITY);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Sin(%f), expected %f, got %f",
                         -INFINITY, NAN, result);
 
@@ -2102,7 +2102,7 @@ static int
 sin_nanCase(void *args)
 {
     const double result = SDL_sin(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Sin(%f), expected %f, got %f",
                         NAN, NAN, result);
     return TEST_COMPLETED;
@@ -2172,7 +2172,7 @@ sin_rangeTest(void *args)
     for (i = 0; i < RANGE_TEST_ITERATIONS; i++, test_value += RANGE_TEST_STEP) {
         double result;
         /* These are tested elsewhere */
-        if (isnan(test_value) || isinf(test_value)) {
+        if (ISNAN(test_value) || ISINF(test_value)) {
             continue;
         }
 
@@ -2200,12 +2200,12 @@ tan_infCases(void *args)
     double result;
 
     result = SDL_tan(INFINITY);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Tan(%f), expected %f, got %f",
                         INFINITY, NAN, result);
 
     result = SDL_tan(-INFINITY);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Tan(%f), expected %f, got %f",
                         -INFINITY, NAN, result);
 
@@ -2220,7 +2220,7 @@ static int
 tan_nanCase(void *args)
 {
     const double result = SDL_tan(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Tan(%f), expected %f, got %f",
                         NAN, NAN, result);
     return TEST_COMPLETED;
@@ -2307,12 +2307,12 @@ acos_outOfDomainCases(void *args)
     double result;
 
     result = SDL_acos(1.1);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Acos(%f), expected %f, got %f",
                         1.1, NAN, result);
 
     result = SDL_acos(-1.1);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Acos(%f), expected %f, got %f",
                         -1.1, NAN, result);
 
@@ -2327,7 +2327,7 @@ static int
 acos_nanCase(void *args)
 {
     const double result = SDL_acos(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Acos(%f), expected %f, got %f",
                         NAN, NAN, result);
     return TEST_COMPLETED;
@@ -2399,12 +2399,12 @@ asin_outOfDomainCases(void *args)
     double result;
 
     result = SDL_asin(1.1);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Asin(%f), expected %f, got %f",
                         1.1, NAN, result);
 
     result = SDL_asin(-1.1);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Asin(%f), expected %f, got %f",
                         -1.1, NAN, result);
 
@@ -2419,7 +2419,7 @@ static int
 asin_nanCase(void *args)
 {
     const double result = SDL_asin(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Asin(%f), expected %f, got %f",
                         NAN, NAN, result);
     return TEST_COMPLETED;
@@ -2513,7 +2513,7 @@ static int
 atan_nanCase(void *args)
 {
     const double result = SDL_atan(NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Atan(%f), expected %f, got %f",
                         NAN, NAN, result);
     return TEST_COMPLETED;
@@ -2723,17 +2723,17 @@ atan2_nanCases(void *args)
     double result;
 
     result = SDL_atan2(NAN, NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Atan2(%f,%f), expected %f, got %f",
                         NAN, NAN, NAN, result);
 
     result = SDL_atan2(NAN, 1.0);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Atan2(%f,%f), expected %f, got %f",
                         NAN, 1.0, NAN, result);
 
     result = SDL_atan2(1.0, NAN);
-    SDLTest_AssertCheck(isnan(result),
+    SDLTest_AssertCheck(ISNAN(result),
                         "Atan2(%f,%f), expected %f, got %f",
                         1.0, NAN, NAN, result);
 

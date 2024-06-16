@@ -29,20 +29,23 @@
 #ifndef SDL_windowsvulkan_h_
 #define SDL_windowsvulkan_h_
 
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WINDOWS)
+#include <SDL3/SDL_vulkan.h>
 
-#include "../SDL_vulkan_internal.h"
-#include "../SDL_sysvideo.h"
+#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WINDOWS)
 
 int WIN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
 char const* const* WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          Uint32 *count);
+                                                    Uint32 *count);
 SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   SDL_Window *window,
                                   VkInstance instance,
                                   const struct VkAllocationCallbacks *allocator,
                                   VkSurfaceKHR *surface);
+void WIN_Vulkan_DestroySurface(SDL_VideoDevice *_this,
+                               VkInstance instance,
+                               VkSurfaceKHR surface,
+                               const struct VkAllocationCallbacks *allocator);
 
 #endif
 

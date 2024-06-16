@@ -128,7 +128,7 @@ void PSP_InitOSKeymap(SDL_VideoDevice *_this)
 {
 #ifdef PSPIRKEYB
     int i;
-    for (i = 0; i < SDL_TABLESIZE(keymap); ++i) {
+    for (i = 0; i < SDL_arraysize(keymap); ++i) {
         keymap[i] = SDLK_UNKNOWN;
     }
 
@@ -149,7 +149,7 @@ void PSP_InitOSKeymap(SDL_VideoDevice *_this)
     keymap[KEY_F13] = SDLK_PRINT;
     keymap[KEY_F14] = SDLK_PAUSE;
 
-    keymap[KEY_GRAVE] = SDLK_BACKQUOTE;
+    keymap[KEY_GRAVE] = SDLK_GRAVE;
     keymap[KEY_1] = SDLK_1;
     keymap[KEY_2] = SDLK_2;
     keymap[KEY_3] = SDLK_3;
@@ -190,7 +190,7 @@ void PSP_InitOSKeymap(SDL_VideoDevice *_this)
     keymap[KEY_K] = SDLK_k;
     keymap[KEY_L] = SDLK_l;
     keymap[KEY_SEMICOLON] = SDLK_SEMICOLON;
-    keymap[KEY_APOSTROPHE] = SDLK_QUOTE;
+    keymap[KEY_APOSTROPHE] = SDLK_APOSTROPHE;
     keymap[KEY_BACKSLASH] = SDLK_BACKSLASH;
 
     keymap[KEY_Z] = SDLK_z;
@@ -252,7 +252,7 @@ int PSP_EventInit(SDL_VideoDevice *_this)
         return SDL_SetError("Can't create input semaphore");
     }
     running = 1;
-    if ((thread = SDL_CreateThreadInternal(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
+    if ((thread = SDL_CreateThreadWithStackSize(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
         return SDL_SetError("Can't create input thread");
     }
     return 0;

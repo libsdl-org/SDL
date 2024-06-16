@@ -22,27 +22,34 @@
 
 #include "SDL_dialog_utils.h"
 
-char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
-                      const char *prefix, const char *separator,
-                      const char *suffix, const char *filt_prefix,
-                      const char *filt_separator, const char *filt_suffix,
-                      const char *ext_prefix, const char *ext_separator,
-                      const char *ext_suffix)
+char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
+                      NameTransform ntf, const char *prefix,
+                      const char *separator, const char *suffix,
+                      const char *filt_prefix, const char *filt_separator,
+                      const char *filt_suffix, const char *ext_prefix,
+                      const char *ext_separator, const char *ext_suffix)
 {
     char *combined;
     char *new_combined;
     char *converted;
     const char *terminator;
-    int new_length;
+    size_t new_length;
+    int i;
+
+    if (!filters) {
+        SDL_SetError("Called convert_filters() with NULL filters (SDL bug)");
+        return NULL;
+    }
 
     combined = SDL_strdup(prefix);
 
     if (!combined) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
-    for (const SDL_DialogFileFilter *f = filters; f->name; f++) {
+    for (i = 0; i < nfilters; i++) {
+        const SDL_DialogFileFilter *f = &filters[i];
+
         converted = convert_filter(*f, ntf, filt_prefix, filt_separator,
                                    filt_suffix, ext_prefix, ext_separator,
                                    ext_suffix);
@@ -54,14 +61,13 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
 
         terminator = f[1].name ? separator : suffix;
         new_length = SDL_strlen(combined) + SDL_strlen(converted)
-                   + SDL_strlen(terminator);
+                   + SDL_strlen(terminator) + 1;
 
         new_combined = SDL_realloc(combined, new_length);
 
         if (!new_combined) {
             SDL_free(converted);
             SDL_free(combined);
-            SDL_OutOfMemory();
             return NULL;
         }
 
@@ -72,17 +78,33 @@ char *convert_filters(const SDL_DialogFileFilter *filters, NameTransform ntf,
         SDL_free(converted);
     }
 
+    /* If the filter list is empty, put the suffix */
+    if (!filters->name || !filters->pattern) {
+        new_length = SDL_strlen(combined) + SDL_strlen(suffix) + 1;
+
+        new_combined = SDL_realloc(combined, new_length);
+
+        if (!new_combined) {
+            SDL_free(combined);
+            return NULL;
+        }
+
+        combined = new_combined;
+
+        SDL_strlcat(combined, suffix, new_length);
+    }
+
     return combined;
 }
 
 char *convert_filter(const SDL_DialogFileFilter filter, NameTransform ntf,
-                      const char *prefix, const char *separator,
-                      const char *suffix, const char *ext_prefix,
-                      const char *ext_separator, const char *ext_suffix)
+                     const char *prefix, const char *separator,
+                     const char *suffix, const char *ext_prefix,
+                     const char *ext_separator, const char *ext_suffix)
 {
     char *converted;
     char *name_filtered;
-    int total_length;
+    size_t total_length;
     char *list;
 
     list = convert_ext_list(filter.pattern, ext_prefix, ext_separator,
@@ -113,7 +135,6 @@ char *convert_filter(const SDL_DialogFileFilter filter, NameTransform ntf,
     if (!converted) {
         SDL_free(list);
         SDL_free(name_filtered);
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -131,7 +152,7 @@ char *convert_ext_list(const char *list, const char *prefix,
 {
     char *converted;
     int semicolons;
-    int total_length;
+    size_t total_length;
 
     semicolons = 0;
 
@@ -148,7 +169,6 @@ char *convert_ext_list(const char *list, const char *prefix,
     converted = (char *) SDL_malloc(total_length);
 
     if (!converted) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -196,11 +216,11 @@ char *convert_ext_list(const char *list, const char *prefix,
     return converted;
 }
 
-const char *validate_filters(const SDL_DialogFileFilter *filters)
+const char *validate_filters(const SDL_DialogFileFilter *filters, int nfilters)
 {
     if (filters) {
-        for (const SDL_DialogFileFilter *f = filters; f->name; f++) {
-             const char *msg = validate_list(f->pattern);
+        for (int i = 0; i < nfilters; i++) {
+             const char *msg = validate_list(filters[i].pattern);
 
              if (msg) {
                  return msg;

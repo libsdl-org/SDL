@@ -563,6 +563,14 @@ Uint64 Cocoa_GetEventTimestamp(NSTimeInterval nsTimestamp)
 
 int Cocoa_PumpEventsUntilDate(SDL_VideoDevice *_this, NSDate *expiration, bool accumulate)
 {
+    /* Run any existing modal sessions. */
+    for (SDL_Window *w = _this->windows; w; w = w->next) {
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)w->driverdata;
+        if (data.modal_session) {
+            [NSApp runModalSession:data.modal_session];
+        }
+    }
+
     for (;;) {
         NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:expiration inMode:NSDefaultRunLoopMode dequeue:YES];
         if (event == nil) {

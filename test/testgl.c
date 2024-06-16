@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     for (i = 1; i < argc;) {
         int consumed;
@@ -295,18 +295,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (state->render_flags & SDL_RENDERER_PRESENTVSYNC) {
-        /* try late-swap-tearing first. If not supported, try normal vsync. */
-        if (SDL_GL_SetSwapInterval(-1) == 0) {
-            swap_interval = -1;
-        } else {
-            SDL_GL_SetSwapInterval(1);
-            swap_interval = 1;
-        }
-    } else {
-        SDL_GL_SetSwapInterval(0); /* disable vsync. */
-        swap_interval = 0;
-    }
+    SDL_GL_SetSwapInterval(state->render_vsync);
+    swap_interval = state->render_vsync;
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
     if (mode) {

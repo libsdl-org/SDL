@@ -199,7 +199,7 @@ static const SDL_Keycode emscripten_keycode_table[] = {
     /* 157 */ SDLK_UNKNOWN,
     /* 158 */ SDLK_UNKNOWN,
     /* 159 */ SDLK_UNKNOWN,
-    /* 160 */ SDLK_BACKQUOTE,
+    /* 160 */ SDLK_GRAVE,
     /* 161 */ SDLK_UNKNOWN,
     /* 162 */ SDLK_UNKNOWN,
     /* 163 */ SDLK_KP_HASH, /*KaiOS phone keypad*/
@@ -231,7 +231,7 @@ static const SDL_Keycode emscripten_keycode_table[] = {
     /* 189 */ SDLK_MINUS, /*IE, Chrome, D3E legacy*/
     /* 190 */ SDLK_PERIOD,
     /* 191 */ SDLK_SLASH,
-    /* 192 */ SDLK_BACKQUOTE, /*FX, D3E legacy (SDLK_APOSTROPHE in IE/Chrome)*/
+    /* 192 */ SDLK_GRAVE, /*FX, D3E legacy (SDLK_APOSTROPHE in IE/Chrome)*/
     /* 193 */ SDLK_UNKNOWN,
     /* 194 */ SDLK_UNKNOWN,
     /* 195 */ SDLK_UNKNOWN,
@@ -261,7 +261,7 @@ static const SDL_Keycode emscripten_keycode_table[] = {
     /* 219 */ SDLK_LEFTBRACKET,
     /* 220 */ SDLK_BACKSLASH,
     /* 221 */ SDLK_RIGHTBRACKET,
-    /* 222 */ SDLK_QUOTE, /*FX, D3E legacy*/
+    /* 222 */ SDLK_APOSTROPHE, /*FX, D3E legacy*/
 };
 
 /*
@@ -762,7 +762,7 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
             continue;
         }
 
-        id = touchEvent->touches[i].identifier;
+        id = touchEvent->touches[i].identifier + 1;
         if (client_w <= 1) {
             x = 0.5f;
         } else {
@@ -886,7 +886,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
                 emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
             }
 
-            emscripten_set_canvas_element_size(window_data->canvas_id, w * window_data->pixel_ratio, h * window_data->pixel_ratio);
+            emscripten_set_canvas_element_size(window_data->canvas_id, SDL_lroundf(w * window_data->pixel_ratio), SDL_lroundf(h * window_data->pixel_ratio));
 
             /* set_canvas_size unsets this */
             if (!window_data->external_size && window_data->pixel_ratio != 1.0f) {
@@ -899,7 +899,7 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
                 window_data->window->h = 0;
             }
 
-            SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+            SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(w), SDL_lroundf(h));
         }
     }
 
@@ -915,7 +915,7 @@ Emscripten_HandleCanvasResize(int eventType, const void *reserved, void *userDat
     if (window_data->fullscreen_resize) {
         double css_w, css_h;
         emscripten_get_element_css_size(window_data->canvas_id, &css_w, &css_h);
-        SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, css_w, css_h);
+        SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(css_w), SDL_lroundf(css_h));
     }
 
     return 0;

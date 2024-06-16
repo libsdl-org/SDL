@@ -41,19 +41,19 @@
 #include "SDL_log_c.h"
 #include "SDL_properties_c.h"
 #include "audio/SDL_sysaudio.h"
+#include "camera/SDL_camera_c.h"
 #include "cpuinfo/SDL_cpuinfo_c.h"
-#include "video/SDL_video_c.h"
 #include "events/SDL_events_c.h"
 #include "haptic/SDL_haptic_c.h"
 #include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
 #include "sensor/SDL_sensor_c.h"
-#include "camera/SDL_camera_c.h"
+#include "stdlib/SDL_getenv_c.h"
+#include "video/SDL_video_c.h"
 
 #define SDL_INIT_EVERYTHING ~0U
 
 /* Initialization/Cleanup routines */
-#include "time/SDL_time_c.h"
 #include "timer/SDL_timer_c.h"
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern int SDL_HelperWindowCreate(void);
@@ -66,20 +66,16 @@ SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MAJOR_VERSION,
 SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MINOR_VERSION,
                         SDL_MINOR_VERSION == SDL_BUILD_MINOR_VERSION);
 SDL_COMPILE_TIME_ASSERT(SDL_BUILD_MICRO_VERSION,
-                        SDL_PATCHLEVEL == SDL_BUILD_MICRO_VERSION);
+                        SDL_MICRO_VERSION == SDL_BUILD_MICRO_VERSION);
 #endif
 
+/* Limited by its encoding in SDL_VERSIONNUM */
 SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_min, SDL_MAJOR_VERSION >= 0);
-/* Limited only by the need to fit in SDL_Version */
-SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_max, SDL_MAJOR_VERSION <= 255);
-
+SDL_COMPILE_TIME_ASSERT(SDL_MAJOR_VERSION_max, SDL_MAJOR_VERSION <= 10);
 SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_min, SDL_MINOR_VERSION >= 0);
-/* Limited only by the need to fit in SDL_Version */
-SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_max, SDL_MINOR_VERSION <= 255);
-
-SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_min, SDL_PATCHLEVEL >= 0);
-/* Limited by its encoding in SDL_VERSIONNUM and in the ABI versions */
-SDL_COMPILE_TIME_ASSERT(SDL_PATCHLEVEL_max, SDL_PATCHLEVEL <= 99);
+SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_max, SDL_MINOR_VERSION <= 999);
+SDL_COMPILE_TIME_ASSERT(SDL_MICRO_VERSION_min, SDL_MICRO_VERSION >= 0);
+SDL_COMPILE_TIME_ASSERT(SDL_MICRO_VERSION_max, SDL_MICRO_VERSION <= 999);
 
 /* This is not declared in any header, although it is shared between some
     parts of SDL, because we don't want anything calling it without an
@@ -210,7 +206,6 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 #endif
 
-    SDL_InitTime();
     SDL_InitTicks();
 
     /* Initialize the event subsystem */
@@ -400,7 +395,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
     (void)flags_initialized; /* make static analysis happy, since this only gets used in error cases. */
 
-    return 0;
+    return SDL_ClearError();
 
 quit_and_error:
     SDL_QuitSubSystem(flags_initialized);
@@ -543,12 +538,12 @@ void SDL_Quit(void)
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
     SDL_QuitTicks();
-    SDL_QuitTime();
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
 
+    SDL_SetObjectsInvalid();
     SDL_ClearHints();
     SDL_AssertionsQuit();
 
@@ -564,55 +559,25 @@ void SDL_Quit(void)
 
     SDL_CleanupTLS();
 
+    SDL_FreeEnvironmentMemory();
+
     SDL_bInMainQuit = SDL_FALSE;
 }
 
-/* Assume we can wrap SDL_AtomicInt values and cast to Uint32 */
-SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
-
-Uint32 SDL_GetNextObjectID(void)
-{
-    static SDL_AtomicInt last_id;
-
-    Uint32 id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
-    if (id == 0) {
-        id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
-    }
-    return id;
-}
-
 /* Get the library version number */
-int SDL_GetVersion(SDL_Version *ver)
+int SDL_GetVersion(void)
 {
-    static SDL_bool check_hint = SDL_TRUE;
-    static SDL_bool legacy_version = SDL_FALSE;
-
-    if (!ver) {
-        return SDL_InvalidParamError("ver");
-    }
-
-    SDL_VERSION(ver);
-
-    if (check_hint) {
-        check_hint = SDL_FALSE;
-        legacy_version = SDL_GetHintBoolean("SDL_LEGACY_VERSION", SDL_FALSE);
-    }
-
-    if (legacy_version) {
-        /* Prior to SDL 2.24.0, the patch version was incremented with every release */
-        ver->patch = ver->minor;
-        ver->minor = 0;
-    }
-    return 0;
+    return SDL_VERSION;
 }
 
 /* Get the library source revision */
 const char *SDL_GetRevision(void)
 {
-    return SDL_REVISION;
+    return SDL_REVISION;  // a string literal, no need to SDL_FreeLater it.
 }
 
-/* Get the name of the platform */
+// Get the name of the platform
+// (a string literal, no need to SDL_FreeLater it.)
 const char *SDL_GetPlatform(void)
 {
 #if defined(SDL_PLATFORM_AIX)

@@ -619,7 +619,7 @@ static int SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
 
 static void SDL_EVDEV_destroy_keyboard(SDL_evdevlist_item *item)
 {
-    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd);
+    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd, SDL_TRUE);
 }
 
 static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
@@ -656,7 +656,7 @@ static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
 
 static void SDL_EVDEV_destroy_mouse(SDL_evdevlist_item *item)
 {
-    SDL_RemoveMouse((SDL_MouseID)item->fd);
+    SDL_RemoveMouse((SDL_MouseID)item->fd, SDL_TRUE);
 }
 
 static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)

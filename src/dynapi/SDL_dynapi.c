@@ -60,14 +60,10 @@ extern "C" {
 static void SDL_InitDynamicAPI(void);
 
 /* BE CAREFUL CALLING ANY SDL CODE IN HERE, IT WILL BLOW UP.
-   Even self-contained stuff might call SDL_Error and break everything. */
+   Even self-contained stuff might call SDL_SetError() and break everything. */
 
 /* behold, the macro salsa! */
 
-/* !!! FIXME: ...disabled...until we write it.  :) */
-#define DISABLE_JUMP_MAGIC 1
-
-#if DISABLE_JUMP_MAGIC
 /* Can't use the macro for varargs nonsense. This is atrocious. */
 #define SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, logname, prio)                                     \
     _static void SDLCALL SDL_Log##logname##name(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) \
@@ -178,7 +174,6 @@ static void SDL_InitDynamicAPI(void);
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Warn, WARN)                                                                         \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Error, ERROR)                                                                       \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Critical, CRITICAL)
-#endif
 
 /* Typedefs for function pointers for jump table, and predeclare funcs */
 /* The DEFAULT funcs will init jump table and then call real function. */
@@ -211,7 +206,6 @@ static SDL_DYNAPI_jump_table jump_table = {
 };
 
 /* Default functions init the function table then call right thing. */
-#if DISABLE_JUMP_MAGIC
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) \
     static rc SDLCALL fn##_DEFAULT params          \
     {                                              \
@@ -223,13 +217,8 @@ static SDL_DYNAPI_jump_table jump_table = {
 #undef SDL_DYNAPI_PROC
 #undef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_VARARGS(static, _DEFAULT, SDL_InitDynamicAPI())
-#else
-/* !!! FIXME: need the jump magic. */
-#error Write me.
-#endif
 
 /* Public API functions to jump into the jump table. */
-#if DISABLE_JUMP_MAGIC
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) \
     rc SDLCALL fn params                           \
     {                                              \
@@ -240,10 +229,6 @@ SDL_DYNAPI_VARARGS(static, _DEFAULT, SDL_InitDynamicAPI())
 #undef SDL_DYNAPI_PROC
 #undef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_VARARGS(, , )
-#else
-/* !!! FIXME: need the jump magic. */
-#error Write me.
-#endif
 
 #define ENABLE_SDL_CALL_LOGGING 0
 #if ENABLE_SDL_CALL_LOGGING
@@ -297,7 +282,7 @@ static int SDLCALL SDL_swprintf_LOGSDLCALLS(SDL_OUT_Z_CAP(maxlen) wchar_t *buf, 
     va_end(ap);
     return retval;
 }
-_static size_t SDLCALL SDL_IOprintf_LOGSDLCALLS(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+static size_t SDLCALL SDL_IOprintf_LOGSDLCALLS(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     size_t retval;
     va_list ap;
@@ -397,7 +382,7 @@ static Sint32 initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
 /* Here's the exported entry point that fills in the jump table. */
 /*  Use specific types when an "int" might suffice to keep this sane. */
 typedef Sint32 (SDLCALL *SDL_DYNAPI_ENTRYFN)(Uint32 apiver, void *table, Uint32 tablesize);
-extern DECLSPEC Sint32 SDLCALL SDL_DYNAPI_entry(Uint32, void *, Uint32);
+extern SDL_DECLSPEC Sint32 SDLCALL SDL_DYNAPI_entry(Uint32, void *, Uint32);
 
 Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 {

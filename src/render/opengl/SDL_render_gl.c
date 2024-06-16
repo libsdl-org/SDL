@@ -26,7 +26,6 @@
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
 #include "../../video/SDL_pixels_c.h"
-#include "../../SDL_utils_c.h"
 
 #ifdef SDL_PLATFORM_MACOS
 #include <OpenGL/OpenGL.h>
@@ -1048,8 +1047,8 @@ static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const
                          viewport->w, viewport->h);
         if (viewport->w && viewport->h) {
             data->glOrtho((GLdouble)0, (GLdouble)viewport->w,
-                          (GLdouble)istarget ? 0 : viewport->h,
-                          (GLdouble)istarget ? viewport->h : 0,
+                          (GLdouble)(istarget ? 0 : viewport->h),
+                          (GLdouble)(istarget ? viewport->h : 0),
                           0.0, 1.0);
         }
         data->glMatrixMode(GL_MODELVIEW);
@@ -1583,19 +1582,15 @@ static void GL_DestroyRenderer(SDL_Renderer *renderer)
         }
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     int retval;
     int interval = 0;
-    if (vsync) {
-        retval = SDL_GL_SetSwapInterval(1);
-    } else {
-        retval = SDL_GL_SetSwapInterval(0);
-    }
-    if (retval != 0) {
+
+    retval = SDL_GL_SetSwapInterval(vsync);
+    if (retval < 0) {
         return retval;
     }
 
@@ -1603,19 +1598,15 @@ static int GL_SetVSync(SDL_Renderer *renderer, const int vsync)
     if (retval < 0) {
         return retval;
     }
-
-    if (interval != 0) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    } else {
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    if (interval != vsync) {
+        return SDL_Unsupported();
     }
-    return retval;
+    return 0;
 }
 
-static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
-    GL_RenderData *data;
+    GL_RenderData *data = NULL;
     GLint value;
     SDL_WindowFlags window_flags;
     int profile_mask = 0, major = 0, minor = 0;
@@ -1644,22 +1635,15 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     }
 #endif
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        goto error;
-    }
-
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
         SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
         goto error;
     }
 
     data = (GL_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        SDL_free(renderer);
         goto error;
     }
 
@@ -1687,29 +1671,27 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     renderer->DestroyTexture = GL_DestroyTexture;
     renderer->DestroyRenderer = GL_DestroyRenderer;
     renderer->SetVSync = GL_SetVSync;
-    renderer->info = GL_RenderDriver.info;
-    renderer->info.flags = 0; /* will set some flags below. */
     renderer->driverdata = data;
     GL_InvalidateCachedState(renderer);
     renderer->window = window;
 
+    renderer->name = GL_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR8888);
+
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
-        SDL_free(renderer);
-        SDL_free(data);
         goto error;
     }
     if (SDL_GL_MakeCurrent(window, data->context) < 0) {
         SDL_GL_DeleteContext(data->context);
-        SDL_free(renderer);
-        SDL_free(data);
         goto error;
     }
 
     if (GL_LoadFunctions(data) < 0) {
         SDL_GL_DeleteContext(data->context);
-        SDL_free(renderer);
-        SDL_free(data);
         goto error;
     }
 
@@ -1719,21 +1701,6 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
        CGLEnable(CGLGetCurrentContext(), kCGLCEMPEngine);
      */
 #endif
-
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        SDL_GL_SetSwapInterval(1);
-    } else {
-        SDL_GL_SetSwapInterval(0);
-    }
-
-    {
-        int interval = 0;
-        if (SDL_GL_GetSwapInterval(&interval) < 0) {
-            /* Error */
-        } else if (interval != 0) {
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-        }
-    }
 
     /* Check for debug output support */
     if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &value) == 0 &&
@@ -1777,19 +1744,16 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     if (non_power_of_two_supported) {
         data->GL_ARB_texture_non_power_of_two_supported = SDL_TRUE;
         data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
-        renderer->info.max_texture_width = value;
-        renderer->info.max_texture_height = value;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, value);
     } else if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle") ||
                SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle")) {
         data->GL_ARB_texture_rectangle_supported = SDL_TRUE;
         data->textype = GL_TEXTURE_RECTANGLE_ARB;
         data->glGetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB, &value);
-        renderer->info.max_texture_width = value;
-        renderer->info.max_texture_height = value;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, value);
     } else {
         data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
-        renderer->info.max_texture_width = value;
-        renderer->info.max_texture_height = value;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, value);
     }
 
     /* Check for multitexture support */
@@ -1808,18 +1772,18 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
 #if SDL_HAVE_YUV
     /* We support YV12 textures using 3 textures and a shader */
     if (data->shaders && data->num_texture_units >= 3) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
     }
 
     /* We support NV12 textures using 2 textures and a shader */
     if (data->shaders && data->num_texture_units >= 2) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
     }
 #endif
 #ifdef SDL_PLATFORM_MACOS
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_UYVY);
 #endif
 
     renderer->rect_index_order[0] = 0;
@@ -1844,8 +1808,6 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     } else {
         SDL_SetError("Can't create render targets, GL_EXT_framebuffer_object not available");
         SDL_GL_DeleteContext(data->context);
-        SDL_free(renderer);
-        SDL_free(data);
         goto error;
     }
 
@@ -1870,9 +1832,10 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, SDL_PropertiesID crea
     data->drawstate.clear_color.b = 1.0f;
     data->drawstate.clear_color.a = 1.0f;
 
-    return renderer;
+    return 0;
 
 error:
+    SDL_free(data);
     if (changed_window) {
         /* Uh oh, better try to put it back... */
         char *error = SDL_strdup(SDL_GetError());
@@ -1883,20 +1846,11 @@ error:
         SDL_SetError("%s", error);
         SDL_free(error);
     }
-    return NULL;
+    return -1;
 }
 
 SDL_RenderDriver GL_RenderDriver = {
-    GL_CreateRenderer,
-    { "opengl",
-      SDL_RENDERER_PRESENTVSYNC,
-      4,
-      { SDL_PIXELFORMAT_ARGB8888,
-        SDL_PIXELFORMAT_ABGR8888,
-        SDL_PIXELFORMAT_XRGB8888,
-        SDL_PIXELFORMAT_XBGR8888 },
-      0,
-      0 }
+    GL_CreateRenderer, "opengl"
 };
 
 #endif /* SDL_VIDEO_RENDER_OGL */

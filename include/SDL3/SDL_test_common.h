@@ -27,7 +27,7 @@
  *  This code is a part of the SDL test library, not the main SDL library.
  */
 
-/* Ported from original test\common.h file. */
+/* Ported from original test/common.h file. */
 
 #ifndef SDL_test_common_h_
 #define SDL_test_common_h_
@@ -45,6 +45,7 @@
 #define DEFAULT_WINDOW_HEIGHT 480
 #endif
 
+typedef Uint32 SDLTest_VerboseFlags;
 #define VERBOSE_VIDEO   0x00000001
 #define VERBOSE_MODES   0x00000002
 #define VERBOSE_RENDER  0x00000004
@@ -56,8 +57,8 @@ typedef struct
 {
     /* SDL init flags */
     char **argv;
-    Uint32 flags;
-    Uint32 verbose;
+    SDL_InitFlags flags;
+    SDLTest_VerboseFlags verbose;
 
     /* Video info */
     const char *videodriver;
@@ -75,6 +76,8 @@ typedef struct
     int window_minH;
     int window_maxW;
     int window_maxH;
+    float window_min_aspect;
+    float window_max_aspect;
     int logical_w;
     int logical_h;
     SDL_bool auto_scale_content;
@@ -83,6 +86,7 @@ typedef struct
     float scale;
     int depth;
     float refresh_rate;
+    SDL_bool fill_usable_bounds;
     SDL_bool fullscreen_exclusive;
     SDL_DisplayMode fullscreen_mode;
     int num_windows;
@@ -90,7 +94,7 @@ typedef struct
 
     /* Renderer info */
     const char *renderdriver;
-    Uint32 render_flags;
+    int render_vsync;
     SDL_bool skip_renderer;
     SDL_Renderer **renderers;
     SDL_Texture **targets;
@@ -127,6 +131,7 @@ typedef struct
 
     /* Mouse info */
     SDL_Rect confine;
+    SDL_bool hide_cursor;
 
 } SDLTest_CommonState;
 
@@ -146,7 +151,7 @@ extern "C" {
  *
  * \returns a newly allocated common state object.
  */
-SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
+SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags);
 
 /**
  * Free the common state object.

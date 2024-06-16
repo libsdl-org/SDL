@@ -75,7 +75,20 @@ def main():
         parsing_comment = False
         current_comment = ""
 
+        ignore_wiki_documentation = False
+
         for line in input:
+
+            # Skip lines if we're in a wiki documentation block.
+            if ignore_wiki_documentation:
+                if line.startswith("#endif"):
+                    ignore_wiki_documentation = False
+                continue
+
+            # Discard wiki documentions blocks.
+            if line.startswith("#ifdef SDL_WIKI_DOCUMENTATION_SECTION"):
+                ignore_wiki_documentation = True
+                continue
 
             # Discard pre-processor directives ^#.*
             if line.startswith("#"):
@@ -87,7 +100,7 @@ def main():
                 continue
 
             # Remove one line comment /* ... */
-            # eg: extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
+            # eg: extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
             line = reg_comment_remove_content.sub('', line)
 
             # Get the comment block /* ... */ across several lines
@@ -183,7 +196,7 @@ def main():
             #
             func_ret = func_ret.replace('extern', ' ')
             func_ret = func_ret.replace('SDLCALL', ' ')
-            func_ret = func_ret.replace('DECLSPEC', ' ')
+            func_ret = func_ret.replace('SDL_DECLSPEC', ' ')
             # Remove trailing spaces in front of '*'
             tmp = ""
             while func_ret != tmp:
@@ -342,7 +355,7 @@ def main():
 def full_API_json():
     if args.dump:
         filename = 'sdl.json'
-        with open(filename, 'w') as f:
+        with open(filename, 'w', newline='') as f:
             json.dump(full_API, f, indent=4, sort_keys=True)
             print("dump API to '%s'" % filename);
 
@@ -470,7 +483,7 @@ def add_dyn_api(proc):
     #
     # Add at last
     # SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentEGLConfig,(void),(),return)
-    f = open(SDL_DYNAPI_PROCS_H, "a")
+    f = open(SDL_DYNAPI_PROCS_H, "a", newline="")
     dyn_proc = "SDL_DYNAPI_PROC(" + func_ret + "," + func_name + ",("
 
     i = ord('a')
@@ -532,7 +545,7 @@ def add_dyn_api(proc):
     #
     # Add at last
     # "#define SDL_DelayNS SDL_DelayNS_REAL
-    f = open(SDL_DYNAPI_OVERRIDES_H, "a")
+    f = open(SDL_DYNAPI_OVERRIDES_H, "a", newline="")
     f.write("#define " + func_name + " " + func_name + "_REAL\n")
     f.close()
 
@@ -546,7 +559,7 @@ def add_dyn_api(proc):
             new_input.append("    " + func_name + ";\n")
         new_input.append(line)
     input.close()
-    f = open(SDL_DYNAPI_SYM, 'w')
+    f = open(SDL_DYNAPI_SYM, 'w', newline='')
     for line in new_input:
         f.write(line)
     f.close()

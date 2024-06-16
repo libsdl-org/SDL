@@ -19,8 +19,4 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_copying.h
- *
- *  Header file containing SDL's license.
- */
+/* Header file containing SDL's license. */

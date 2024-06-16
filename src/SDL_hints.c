@@ -74,9 +74,7 @@ SDL_bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPr
                     entry->callback(entry->userdata, name, old_value, value);
                     entry = next;
                 }
-                if (old_value) {
-                    SDL_free(old_value);
-                }
+                SDL_FreeLater(old_value);
             }
             hint->priority = priority;
             return SDL_TRUE;
@@ -120,7 +118,7 @@ SDL_bool SDL_ResetHint(const char *name)
                     entry = next;
                 }
             }
-            SDL_free(hint->value);
+            SDL_FreeLater(hint->value);
             hint->value = NULL;
             hint->priority = SDL_HINT_DEFAULT;
             return SDL_TRUE;
@@ -147,7 +145,7 @@ void SDL_ResetHints(void)
                 entry = next;
             }
         }
-        SDL_free(hint->value);
+        SDL_FreeLater(hint->value);
         hint->value = NULL;
         hint->priority = SDL_HINT_DEFAULT;
     }
@@ -162,6 +160,10 @@ const char *SDL_GetHint(const char *name)
 {
     const char *env;
     SDL_Hint *hint;
+
+    if (!name) {
+        return NULL;
+    }
 
     env = SDL_getenv(name);
     for (hint = SDL_hints; hint; hint = hint->next) {
@@ -301,7 +303,7 @@ void SDL_ClearHints(void)
         SDL_hints = hint->next;
 
         SDL_free(hint->name);
-        SDL_free(hint->value);
+        SDL_FreeLater(hint->value);
         for (entry = hint->callbacks; entry;) {
             SDL_HintWatch *freeable = entry;
             entry = entry->next;

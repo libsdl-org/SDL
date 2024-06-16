@@ -154,6 +154,19 @@ PrintText(const char *eventtype, const char *text)
     SDL_Log("%s Text (%s): \"%s%s\"\n", eventtype, expanded, *text == '"' ? "\\" : "", text);
 }
 
+static void CountKeysDown(void)
+{
+    int i, count = 0, max_keys = 0;
+    const Uint8 *keystate = SDL_GetKeyboardState(&max_keys);
+
+    for (i = 0; i < max_keys; ++i) {
+        if (keystate[i]) {
+            ++count;
+        }
+    }
+    SDL_Log("Keys down: %d\n", count);
+}
+
 static void loop(void)
 {
     SDL_Event event;
@@ -178,6 +191,7 @@ static void loop(void)
                     break;
                 }
             }
+            CountKeysDown();
             break;
         case SDL_EVENT_TEXT_EDITING:
             PrintText("EDIT", event.edit.text);
@@ -239,6 +253,8 @@ int main(int argc, char *argv[])
 {
     int w, h;
 
+    SDL_SetHint(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1");
+
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
@@ -247,7 +263,7 @@ int main(int argc, char *argv[])
     state->window_title = "CheckKeys Test";
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {

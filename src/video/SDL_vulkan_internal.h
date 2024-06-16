@@ -67,6 +67,17 @@ extern SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
                                                  VkInstance instance,
                                                  const struct VkAllocationCallbacks *allocator,
                                                  VkSurfaceKHR *surface);
+
+/* Platform independent base function for destroying the Vulkan surface. Unlike surface
+ * creation, surface destruction doesn't require platform specific extensions like
+ * VK_KHR_wayland_surface, VK_KHR_android_surface or VK_EXT_metal_surface. The only
+ * necessary extension is cross platform VK_KHR_surface, which is a dependency to all
+ * WSI platform extensions, so we can handle surface destruction in an platform-independent
+ * manner. */
+extern void SDL_Vulkan_DestroySurface_Internal(void *vkGetInstanceProcAddr,
+                                               VkInstance instance,
+                                               VkSurfaceKHR surface,
+                                               const struct VkAllocationCallbacks *allocator);
 #else
 
 /* No SDL Vulkan support, just include the header for typedefs */

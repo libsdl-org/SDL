@@ -43,6 +43,7 @@
 
 #include <wayland-util.h>
 
+#include "alpha-modifier-v1-client-protocol.h"
 #include "cursor-shape-v1-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
 #include "idle-inhibit-unstable-v1-client-protocol.h"
@@ -57,6 +58,7 @@
 #include "viewporter-client-protocol.h"
 #include "xdg-activation-v1-client-protocol.h"
 #include "xdg-decoration-unstable-v1-client-protocol.h"
+#include "xdg-dialog-v1-client-protocol.h"
 #include "xdg-foreign-unstable-v2-client-protocol.h"
 #include "xdg-output-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
@@ -422,6 +424,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     data->display = display;
     data->input = input;
     data->display_externally_owned = display_is_external;
+    data->scale_to_display_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY, SDL_FALSE);
     WAYLAND_wl_list_init(&data->output_list);
     WAYLAND_wl_list_init(&data->output_order);
     WAYLAND_wl_list_init(&external_window_list);
@@ -485,8 +488,10 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->SetWindowMinimumSize = Wayland_SetWindowMinimumSize;
     device->SetWindowMaximumSize = Wayland_SetWindowMaximumSize;
     device->SetWindowModalFor = Wayland_SetWindowModalFor;
+    device->SetWindowOpacity = Wayland_SetWindowOpacity;
     device->SetWindowTitle = Wayland_SetWindowTitle;
     device->GetWindowSizeInPixels = Wayland_GetWindowSizeInPixels;
+    device->GetDisplayForWindow = Wayland_GetDisplayForWindow;
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
     device->FlashWindow = Wayland_FlashWindow;
@@ -512,13 +517,16 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->Vulkan_UnloadLibrary = Wayland_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = Wayland_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = Wayland_Vulkan_CreateSurface;
+    device->Vulkan_DestroySurface = Wayland_Vulkan_DestroySurface;
 #endif
 
     device->free = Wayland_DeleteDevice;
 
     device->device_caps = VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED |
                           VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
-                          VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
+                          VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS |
+                          VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES |
+                          VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS;
 
     return device;
 }
@@ -830,15 +838,26 @@ static void display_handle_done(void *data,
     SDL_zero(desktop_mode);
     desktop_mode.format = SDL_PIXELFORMAT_XRGB8888;
 
-    desktop_mode.w = driverdata->screen_width;
-    desktop_mode.h = driverdata->screen_height;
-    desktop_mode.pixel_density = driverdata->scale_factor;
+    if (!video->scale_to_display_enabled) {
+        desktop_mode.w = driverdata->screen_width;
+        desktop_mode.h = driverdata->screen_height;
+        desktop_mode.pixel_density = driverdata->scale_factor;
+    } else {
+        desktop_mode.w = native_mode.w;
+        desktop_mode.h = native_mode.h;
+        desktop_mode.pixel_density = 1.0f;
+    }
+
     desktop_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
 
     if (driverdata->display > 0) {
         dpy = SDL_GetVideoDisplay(driverdata->display);
     } else {
         dpy = &driverdata->placeholder;
+    }
+
+    if (video->scale_to_display_enabled) {
+        SDL_SetDisplayContentScale(dpy, driverdata->scale_factor);
     }
 
     /* Set the desktop display mode. */
@@ -1088,6 +1107,10 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         }
     } else if (SDL_strcmp(interface, "zxdg_exporter_v2") == 0) {
         d->zxdg_exporter_v2 = wl_registry_bind(d->registry, id, &zxdg_exporter_v2_interface, 1);
+    } else if (SDL_strcmp(interface, "xdg_wm_dialog_v1") == 0) {
+        d->xdg_wm_dialog_v1 = wl_registry_bind(d->registry, id, &xdg_wm_dialog_v1_interface, 1);
+    } else if (SDL_strcmp(interface, "wp_alpha_modifier_v1") == 0) {
+        d->wp_alpha_modifier_v1 = wl_registry_bind(d->registry, id, &wp_alpha_modifier_v1_interface, 1);
     } else if (SDL_strcmp(interface, "kde_output_order_v1") == 0) {
         d->kde_output_order = wl_registry_bind(d->registry, id, &kde_output_order_v1_interface, 1);
         kde_output_order_v1_add_listener(d->kde_output_order, &kde_output_order_listener, d);
@@ -1173,6 +1196,12 @@ int Wayland_VideoInit(SDL_VideoDevice *_this)
     // First roundtrip to receive all registry objects.
     WAYLAND_wl_display_roundtrip(data->display);
 
+    // Require viewports for display scaling.
+    if (data->scale_to_display_enabled && !data->viewporter) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Display scaling requires the missing 'wp_viewporter' protocol: disabling");
+        data->scale_to_display_enabled = SDL_FALSE;
+    }
+
     /* Now that we have all the protocols, load libdecor if applicable */
     Wayland_LoadLibdecor(data, SDL_FALSE);
 
@@ -1200,6 +1229,7 @@ int Wayland_VideoInit(SDL_VideoDevice *_this)
 
 static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
+    SDL_VideoData *viddata = _this->driverdata;
     SDL_DisplayData *driverdata = display->driverdata;
     rect->x = driverdata->x;
     rect->y = driverdata->y;
@@ -1213,15 +1243,7 @@ static int Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *di
         rect->w = display->fullscreen_window->current_fullscreen_mode.w;
         rect->h = display->fullscreen_window->current_fullscreen_mode.h;
     } else {
-        /* If the focused window is on the requested display and requires display scaling,
-         * return the physical dimensions in pixels.
-         */
-        SDL_Window *kb = SDL_GetKeyboardFocus();
-        SDL_Window *m = SDL_GetMouseFocus();
-        SDL_bool scale_output = (kb && kb->driverdata->scale_to_display && (kb->last_displayID == display->id)) ||
-                                (m && m->driverdata->scale_to_display && (m->last_displayID == display->id));
-
-        if (!scale_output) {
+        if (!viddata->scale_to_display_enabled) {
             rect->w = display->current_mode->w;
             rect->h = display->current_mode->h;
         } else if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
@@ -1344,6 +1366,16 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->zxdg_exporter_v2) {
         zxdg_exporter_v2_destroy(data->zxdg_exporter_v2);
         data->zxdg_exporter_v2 = NULL;
+    }
+
+    if (data->xdg_wm_dialog_v1) {
+        xdg_wm_dialog_v1_destroy(data->xdg_wm_dialog_v1);
+        data->xdg_wm_dialog_v1 = NULL;
+    }
+
+    if (data->wp_alpha_modifier_v1) {
+        wp_alpha_modifier_v1_destroy(data->wp_alpha_modifier_v1);
+        data->wp_alpha_modifier_v1 = NULL;
     }
 
     if (data->kde_output_order) {

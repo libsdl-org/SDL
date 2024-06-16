@@ -32,8 +32,6 @@
 /* The SDL sensor structure */
 struct SDL_Sensor
 {
-    const void *magic _guarded;
-
     SDL_SensorID instance_id _guarded;   /* Device instance, monotonically increasing from 0 */
     char *name _guarded;                 /* Sensor name - system dependent */
     SDL_SensorType type _guarded;        /* Type of the sensor */

@@ -1495,7 +1495,7 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
         return SDL_FALSE;
     }
 
-    surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
+    surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
     if (!surface->pixels) {
         return SDL_FALSE;
     }
@@ -1567,7 +1567,7 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
                     surface->flags |= SDL_RLEACCEL;
                     return;
                 }
-                surface->pixels = SDL_aligned_alloc(SDL_SIMDGetAlignment(), size);
+                surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
                 if (!surface->pixels) {
                     /* Oh crap... */
                     surface->flags |= SDL_RLEACCEL;

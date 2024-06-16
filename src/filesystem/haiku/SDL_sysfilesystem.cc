@@ -107,15 +107,30 @@ char *SDL_GetUserFolder(SDL_Folder folder)
 
     switch (folder) {
     case SDL_FOLDER_HOME:
-        return SDL_strdup(home);
+        retval = (char *) SDL_malloc(SDL_strlen(home) + 2);
+        if (!retval) {
+            return NULL;
+        }
+
+        if (SDL_snprintf(retval, SDL_strlen(home) + 2, "%s/", home) < 0) {
+            SDL_SetError("Couldn't snprintf home path for Haiku: %s", home);
+            SDL_free(retval);
+            return NULL;
+        }
+
+        return retval;
 
         /* TODO: Is Haiku's desktop folder always ~/Desktop/ ? */
     case SDL_FOLDER_DESKTOP:
         retval = (char *) SDL_malloc(SDL_strlen(home) + 10);
+        if (!retval) {
+            return NULL;
+        }
 
-        if (retval) {
-            SDL_strlcpy(retval, home, SDL_strlen(home) + 10);
-            SDL_strlcat(retval, "/Desktop/", SDL_strlen(home) + 10);
+        if (SDL_snprintf(retval, SDL_strlen(home) + 10, "%s/Desktop/", home) < 0) {
+            SDL_SetError("Couldn't snprintf desktop path for Haiku: %s/Desktop/", home);
+            SDL_free(retval);
+            return NULL;
         }
 
         return retval;

@@ -209,41 +209,11 @@ static int platform_testHasFunctions(void *arg)
  */
 static int platform_testGetVersion(void *arg)
 {
-    SDL_Version linked;
-    int major = SDL_MAJOR_VERSION;
-    int minor = SDL_MINOR_VERSION;
-
-    SDL_GetVersion(&linked);
-    SDLTest_AssertCheck(linked.major >= major,
-                        "SDL_GetVersion(): returned major %i (>= %i)",
-                        linked.major,
-                        major);
-    SDLTest_AssertCheck(linked.minor >= minor,
-                        "SDL_GetVersion(): returned minor %i (>= %i)",
-                        linked.minor,
-                        minor);
-
-    return TEST_COMPLETED;
-}
-
-/**
- * Tests SDL_VERSION macro
- */
-static int platform_testSDLVersion(void *arg)
-{
-    SDL_Version compiled;
-    int major = SDL_MAJOR_VERSION;
-    int minor = SDL_MINOR_VERSION;
-
-    SDL_VERSION(&compiled);
-    SDLTest_AssertCheck(compiled.major >= major,
-                        "SDL_VERSION() returned major %i (>= %i)",
-                        compiled.major,
-                        major);
-    SDLTest_AssertCheck(compiled.minor >= minor,
-                        "SDL_VERSION() returned minor %i (>= %i)",
-                        compiled.minor,
-                        minor);
+    int linked = SDL_GetVersion();
+    SDLTest_AssertCheck(linked >= SDL_VERSION,
+                        "SDL_GetVersion(): returned version %d (>= %d)",
+                        linked,
+                        SDL_VERSION);
 
     return TEST_COMPLETED;
 }
@@ -544,26 +514,22 @@ static const SDLTest_TestCaseReference platformTest5 = {
 };
 
 static const SDLTest_TestCaseReference platformTest6 = {
-    (SDLTest_TestCaseFp)platform_testSDLVersion, "platform_testSDLVersion", "Tests SDL_VERSION macro", TEST_ENABLED
-};
-
-static const SDLTest_TestCaseReference platformTest7 = {
     (SDLTest_TestCaseFp)platform_testDefaultInit, "platform_testDefaultInit", "Tests default SDL_Init", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference platformTest8 = {
+static const SDLTest_TestCaseReference platformTest7 = {
     (SDLTest_TestCaseFp)platform_testGetSetClearError, "platform_testGetSetClearError", "Tests SDL_Get/Set/ClearError", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference platformTest9 = {
+static const SDLTest_TestCaseReference platformTest8 = {
     (SDLTest_TestCaseFp)platform_testSetErrorEmptyInput, "platform_testSetErrorEmptyInput", "Tests SDL_SetError with empty input", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference platformTest10 = {
+static const SDLTest_TestCaseReference platformTest9 = {
     (SDLTest_TestCaseFp)platform_testSetErrorInvalidInput, "platform_testSetErrorInvalidInput", "Tests SDL_SetError with invalid input", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference platformTest11 = {
+static const SDLTest_TestCaseReference platformTest10 = {
     (SDLTest_TestCaseFp)platform_testGetPowerInfo, "platform_testGetPowerInfo", "Tests SDL_GetPowerInfo function", TEST_ENABLED
 };
 
@@ -579,7 +545,6 @@ static const SDLTest_TestCaseReference *platformTests[] = {
     &platformTest8,
     &platformTest9,
     &platformTest10,
-    &platformTest11,
     NULL
 };
 

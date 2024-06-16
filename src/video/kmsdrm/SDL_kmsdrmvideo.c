@@ -76,6 +76,7 @@ static int get_driindex(void)
     int devindex = -1;
     DIR *folder;
     const char *hint;
+    struct dirent *res;
 
     hint = SDL_GetHint(SDL_HINT_KMSDRM_DEVICE_INDEX);
     if (hint && *hint) {
@@ -95,7 +96,7 @@ static int get_driindex(void)
 
     SDL_strlcpy(device + kmsdrm_dri_pathsize, kmsdrm_dri_devname,
                 sizeof(device) - kmsdrm_dri_devnamesize);
-    for (struct dirent *res; (res = readdir(folder));) {
+    while((res = readdir(folder)) != NULL) {
         if (SDL_memcmp(res->d_name, kmsdrm_dri_devname,
                        kmsdrm_dri_devnamesize) == 0) {
             SDL_strlcpy(device + kmsdrm_dri_pathsize + kmsdrm_dri_devnamesize,
@@ -309,6 +310,7 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->Vulkan_UnloadLibrary = KMSDRM_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = KMSDRM_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = KMSDRM_Vulkan_CreateSurface;
+    device->Vulkan_DestroySurface = KMSDRM_Vulkan_DestroySurface;
 #endif
 
     device->PumpEvents = KMSDRM_PumpEvents;
@@ -672,6 +674,77 @@ static SDL_bool KMSDRM_CrtcGetVrr(uint32_t drm_fd, uint32_t crtc_id)
     return SDL_FALSE;
 }
 
+static SDL_bool KMSDRM_OrientationPropId(uint32_t drm_fd, uint32_t crtc_id, uint32_t *orientation_prop_id)
+{
+    drmModeObjectPropertiesPtr drm_props;
+
+    drm_props = KMSDRM_drmModeObjectGetProperties(drm_fd,
+                                                  crtc_id,
+                                                  DRM_MODE_OBJECT_CONNECTOR);
+
+    if (!drm_props) {
+        return SDL_FALSE;
+    }
+
+    *orientation_prop_id = KMSDRM_CrtcGetPropId(drm_fd,
+                                                drm_props,
+                                                "panel orientation");
+
+    KMSDRM_drmModeFreeObjectProperties(drm_props);
+
+    return SDL_TRUE;
+}
+
+static int KMSDRM_CrtcGetOrientation(uint32_t drm_fd, uint32_t crtc_id)
+{
+    uint32_t orientation_prop_id;
+    drmModeObjectPropertiesPtr props;
+    int i;
+    SDL_bool done = SDL_FALSE;
+    int orientation = 0;
+
+    if (!KMSDRM_OrientationPropId(drm_fd, crtc_id, &orientation_prop_id)) {
+        return orientation;
+    }
+
+    props = KMSDRM_drmModeObjectGetProperties(drm_fd,
+                                              crtc_id,
+                                              DRM_MODE_OBJECT_CONNECTOR);
+
+    if (!props) {
+        return orientation;
+    }
+
+    for (i = 0; i < props->count_props && !done; ++i) {
+        drmModePropertyPtr drm_prop = KMSDRM_drmModeGetProperty(drm_fd, props->props[i]);
+
+        if (!drm_prop) {
+            continue;
+        }
+
+        if (drm_prop->prop_id == orientation_prop_id && (drm_prop->flags & DRM_MODE_PROP_ENUM)) {
+            if (drm_prop->count_enums) {
+                /* "Normal" is the default of no rotation (0 degrees) */
+                if (SDL_strcmp(drm_prop->enums[0].name, "Left Side Up") == 0) {
+                    orientation = 90;
+                } else if (SDL_strcmp(drm_prop->enums[0].name, "Upside Down") == 0) {
+                    orientation = 180;
+                } else if (SDL_strcmp(drm_prop->enums[0].name, "Right Side Up") == 0) {
+                    orientation = 270;
+                }
+            }
+
+            done = SDL_TRUE;
+        }
+
+        KMSDRM_drmModeFreeProperty(drm_prop);
+    }
+
+    KMSDRM_drmModeFreeObjectProperties(props);
+
+    return orientation;
+}
+
 /* Gets a DRM connector, builds an SDL_Display with it, and adds it to the
    list of SDL Displays in _this->displays[]  */
 static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connector, drmModeRes *resources)
@@ -682,6 +755,9 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connecto
     SDL_DisplayModeData *modedata = NULL;
     drmModeEncoder *encoder = NULL;
     drmModeCrtc *crtc = NULL;
+    SDL_DisplayID display_id;
+    SDL_PropertiesID display_properties;
+    int orientation;
     int mode_index;
     int i, j;
     int ret = 0;
@@ -866,10 +942,15 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connecto
     display.desktop_mode.driverdata = modedata;
 
     /* Add the display to the list of SDL displays. */
-    if (SDL_AddVideoDisplay(&display, SDL_FALSE) == 0) {
+    display_id = SDL_AddVideoDisplay(&display, SDL_FALSE);
+    if (!display_id) {
         ret = -1;
         goto cleanup;
     }
+
+    orientation = KMSDRM_CrtcGetOrientation(viddata->drm_fd, crtc->crtc_id);
+    display_properties = SDL_GetDisplayProperties(display_id);
+    SDL_SetNumberProperty(display_properties, SDL_PROP_DISPLAY_KMSDRM_PANEL_ORIENTATION_NUMBER, orientation);
 
 cleanup:
     if (encoder) {
@@ -1599,7 +1680,7 @@ void KMSDRM_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         KMSDRM_DirtySurfaces(window);
     }
 }
-int KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
+int KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     SDL_VideoData *viddata = _this->driverdata;
     if (!viddata->vulkan_mode) {

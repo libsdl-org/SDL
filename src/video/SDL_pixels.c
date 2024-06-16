@@ -85,6 +85,7 @@ Uint16 SDL_expand_byte10[] = {
 
 /* Helper functions */
 
+// This doesn't need SDL_FreeLater since it returns string literals.
 #define CASE(X) \
     case X:     \
         return #X;
@@ -100,10 +101,10 @@ const char *SDL_GetPixelFormatName(SDL_PixelFormatEnum format)
         CASE(SDL_PIXELFORMAT_INDEX4MSB)
         CASE(SDL_PIXELFORMAT_INDEX8)
         CASE(SDL_PIXELFORMAT_RGB332)
-        CASE(SDL_PIXELFORMAT_RGB444)
-        CASE(SDL_PIXELFORMAT_BGR444)
-        CASE(SDL_PIXELFORMAT_RGB555)
-        CASE(SDL_PIXELFORMAT_BGR555)
+        CASE(SDL_PIXELFORMAT_XRGB4444)
+        CASE(SDL_PIXELFORMAT_XBGR4444)
+        CASE(SDL_PIXELFORMAT_XRGB1555)
+        CASE(SDL_PIXELFORMAT_XBGR1555)
         CASE(SDL_PIXELFORMAT_ARGB4444)
         CASE(SDL_PIXELFORMAT_RGBA4444)
         CASE(SDL_PIXELFORMAT_ABGR4444)
@@ -360,24 +361,24 @@ SDL_PixelFormatEnum SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32
         return SDL_PIXELFORMAT_INDEX8;
     case 12:
         if (Rmask == 0) {
-            return SDL_PIXELFORMAT_RGB444;
+            return SDL_PIXELFORMAT_XRGB4444;
         }
         if (Rmask == 0x0F00 &&
             Gmask == 0x00F0 &&
             Bmask == 0x000F &&
             Amask == 0x0000) {
-            return SDL_PIXELFORMAT_RGB444;
+            return SDL_PIXELFORMAT_XRGB4444;
         }
         if (Rmask == 0x000F &&
             Gmask == 0x00F0 &&
             Bmask == 0x0F00 &&
             Amask == 0x0000) {
-            return SDL_PIXELFORMAT_BGR444;
+            return SDL_PIXELFORMAT_XBGR4444;
         }
         break;
     case 15:
         if (Rmask == 0) {
-            return SDL_PIXELFORMAT_RGB555;
+            return SDL_PIXELFORMAT_XRGB1555;
         }
         SDL_FALLTHROUGH;
     case 16:
@@ -388,13 +389,13 @@ SDL_PixelFormatEnum SDL_GetPixelFormatEnumForMasks(int bpp, Uint32 Rmask, Uint32
             Gmask == 0x03E0 &&
             Bmask == 0x001F &&
             Amask == 0x0000) {
-            return SDL_PIXELFORMAT_RGB555;
+            return SDL_PIXELFORMAT_XRGB1555;
         }
         if (Rmask == 0x001F &&
             Gmask == 0x03E0 &&
             Bmask == 0x7C00 &&
             Amask == 0x0000) {
-            return SDL_PIXELFORMAT_BGR555;
+            return SDL_PIXELFORMAT_XBGR1555;
         }
         if (Rmask == 0x0F00 &&
             Gmask == 0x00F0 &&

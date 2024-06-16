@@ -322,6 +322,19 @@ char *SDL_GetUserFolder(SDL_Folder folder)
         }
     }
 
+    if (retval) {
+        char *newretval = (char *) SDL_realloc(retval, SDL_strlen(retval) + 2);
+
+        if (!newretval) {
+            SDL_free(retval);
+            retval = NULL; /* will be returned */
+            goto done;
+        }
+
+        retval = newretval;
+        SDL_strlcat(retval, "\\", SDL_strlen(retval) + 2);
+    }
+
 done:
     if (lib) {
         FreeLibrary(lib);

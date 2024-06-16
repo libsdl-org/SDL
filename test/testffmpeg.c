@@ -46,17 +46,17 @@
 #endif
 #endif
 
-#define DRM_FORMAT_MOD_VENDOR_NONE    0
-#define DRM_FORMAT_RESERVED	      ((1ULL << 56) - 1)
+#define DRM_FORMAT_MOD_VENDOR_NONE  0
+#define DRM_FORMAT_RESERVED         ((1ULL << 56) - 1)
 
 #define fourcc_mod_get_vendor(modifier) \
-	(((modifier) >> 56) & 0xff)
+    (((modifier) >> 56) & 0xff)
 
 #define fourcc_mod_is_vendor(modifier, vendor) \
-	(fourcc_mod_get_vendor(modifier) == DRM_FORMAT_MOD_VENDOR_## vendor)
+    (fourcc_mod_get_vendor(modifier) == DRM_FORMAT_MOD_VENDOR_## vendor)
 
 #define fourcc_mod_code(vendor, val) \
-	((((Uint64)DRM_FORMAT_MOD_VENDOR_## vendor) << 56) | ((val) & 0x00ffffffffffffffULL))
+    ((((Uint64)DRM_FORMAT_MOD_VENDOR_## vendor) << 56) | ((val) & 0x00ffffffffffffffULL))
 
 #define DRM_FORMAT_MOD_INVALID  fourcc_mod_code(NONE, DRM_FORMAT_RESERVED)
 #define DRM_FORMAT_MOD_LINEAR   fourcc_mod_code(NONE, 0)
@@ -111,7 +111,6 @@ static SDL_bool verbose;
 static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *driver)
 {
     SDL_PropertiesID props;
-    SDL_RendererInfo info;
     SDL_bool useOpenGL = (driver && (SDL_strcmp(driver, "opengl") == 0 || SDL_strcmp(driver, "opengles2") == 0));
     SDL_bool useEGL = (driver && SDL_strcmp(driver, "opengles2") == 0);
     SDL_bool useVulkan = (driver && SDL_strcmp(driver, "vulkan") == 0);
@@ -177,9 +176,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
         return SDL_FALSE;
     }
 
-    if (SDL_GetRendererInfo(renderer, &info) == 0) {
-        SDL_Log("Created renderer %s\n", info.name);
-    }
+    SDL_Log("Created renderer %s\n", SDL_GetRendererName(renderer));
 
 #ifdef HAVE_EGL
     if (useEGL) {
@@ -291,11 +288,11 @@ static SDL_PixelFormatEnum GetTextureFormat(enum AVPixelFormat format)
     case AV_PIX_FMT_RGB8:
         return SDL_PIXELFORMAT_RGB332;
     case AV_PIX_FMT_RGB444:
-        return SDL_PIXELFORMAT_RGB444;
+        return SDL_PIXELFORMAT_XRGB4444;
     case AV_PIX_FMT_RGB555:
-        return SDL_PIXELFORMAT_RGB555;
+        return SDL_PIXELFORMAT_XRGB1555;
     case AV_PIX_FMT_BGR555:
-        return SDL_PIXELFORMAT_BGR555;
+        return SDL_PIXELFORMAT_XBGR1555;
     case AV_PIX_FMT_RGB565:
         return SDL_PIXELFORMAT_RGB565;
     case AV_PIX_FMT_BGR565:
@@ -478,6 +475,14 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
     /* Allow supported hardware accelerated pixel formats */
     context->get_format = GetSupportedPixelFormat;
 
+    if (codecpar->codec_id == AV_CODEC_ID_VVC) {
+        context->strict_std_compliance = -2;
+
+        /* Enable threaded decoding, VVC decode is slow */
+        context->thread_count = SDL_GetCPUCount();
+        context->thread_type = (FF_THREAD_FRAME | FF_THREAD_SLICE);
+    }
+
     result = avcodec_open2(context, codec, NULL);
     if (result < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open codec %s: %s", avcodec_get_name(context->codec_id), av_err2str(result));
@@ -573,7 +578,10 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
     SDL_PixelFormatEnum frame_format = GetTextureFormat(frame->format);
 
     if (*texture) {
-        SDL_QueryTexture(*texture, &texture_format, NULL, &texture_width, &texture_height);
+        SDL_PropertiesID props = SDL_GetTextureProperties(*texture);
+        texture_format = (SDL_PixelFormatEnum)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_FORMAT_NUMBER, SDL_PIXELFORMAT_UNKNOWN);
+        texture_width = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, 0);
+        texture_height = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, 0);
     }
     if (!*texture || texture_width != frame->width || texture_height != frame->height ||
         (frame_format != SDL_PIXELFORMAT_UNKNOWN && texture_format != frame_format) ||
@@ -971,7 +979,9 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
     UINT iSliceIndex = (UINT)(uintptr_t)frame->data[1];
 
     if (*texture) {
-        SDL_QueryTexture(*texture, NULL, NULL, &texture_width, &texture_height);
+        SDL_PropertiesID props = SDL_GetTextureProperties(*texture);
+        texture_width = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, 0);
+        texture_height = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, 0);
     }
     if (!*texture || texture_width != frames->width || texture_height != frames->height) {
         if (*texture) {
@@ -1161,7 +1171,7 @@ static AVCodecContext *OpenAudioStream(AVFormatContext *ic, int stream, const AV
     }
 
     SDL_AudioSpec spec = { SDL_AUDIO_F32, codecpar->ch_layout.nb_channels, codecpar->sample_rate };
-    audio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec, NULL, NULL);
+    audio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
     if (audio) {
         SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audio));
     } else {
@@ -1315,7 +1325,7 @@ int main(int argc, char *argv[])
     state = SDLTest_CommonCreateState(argv, 0);
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Log ffmpeg messages */
     av_log_set_callback( av_log_callback );
@@ -1484,7 +1494,7 @@ int main(int argc, char *argv[])
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
-        while (!velocities[i].x || !velocities[i].y) {
+        while (velocities[i].x == 0.f || velocities[i].y == 0.f) {
             velocities[i].x = (float)((rand() % (2 + 1)) - 1);
             velocities[i].y = (float)((rand() % (2 + 1)) - 1);
         }

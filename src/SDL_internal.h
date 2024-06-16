@@ -66,12 +66,12 @@
 
 #if SDL_DYNAMIC_API
 #include "dynapi/SDL_dynapi_overrides.h"
-/* force DECLSPEC off...it's all internal symbols now.
+/* force SDL_DECLSPEC off...it's all internal symbols now.
    These will have actual #defines during SDL_dynapi.c only */
-#ifdef DECLSPEC
-#undef DECLSPEC
+#ifdef SDL_DECLSPEC
+#undef SDL_DECLSPEC
 #endif
-#define DECLSPEC
+#define SDL_DECLSPEC
 #endif
 
 #ifdef SDL_PLATFORM_APPLE
@@ -265,11 +265,21 @@
 #error SDL_RENDER enabled without any backend drivers.
 #endif
 
+#if !defined(HAVE_LIBC)
+// If not using _any_ C runtime, these have to be defined before SDL_thread.h
+// gets included, so internal SDL_CreateThread calls will not try to reference
+// the (unavailable and unneeded) _beginthreadex/_endthreadex functions.
+#define SDL_BeginThreadFunction NULL
+#define SDL_EndThreadFunction NULL
+#endif
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
 
 #define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
 #include <SDL3/SDL_main.h>
+
+#include "SDL_utils_c.h"
 
 /* The internal implementations of these functions have up to nanosecond precision.
    We can expose these functions as part of the API if we want to later.
@@ -279,10 +289,16 @@
 extern "C" {
 #endif
 
-extern DECLSPEC Uint32 SDLCALL SDL_GetNextObjectID(void);
-extern DECLSPEC int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
-extern DECLSPEC int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
-extern DECLSPEC SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
+extern int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
+extern int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
+extern SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
+
+/* Queue `memory` to be passed to SDL_free once the event queue is emptied.
+   this manages the list of pointers to SDL_AllocateEventMemory, but you
+   can use it to queue pointers from other subsystems that can die at any
+   moment but definitely need to live long enough for the app to copy them
+   if they happened to query them in their last moments. */
+extern void *SDL_FreeLater(void *memory);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

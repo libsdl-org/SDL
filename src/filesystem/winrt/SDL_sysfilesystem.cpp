@@ -93,6 +93,7 @@ static const wchar_t *SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
     return NULL;
 }
 
+// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
 extern "C" const char *SDL_WinRTGetFSPath(SDL_WinRT_Path pathType)
 {
     typedef unordered_map<SDL_WinRT_Path, string> UTF8PathMap;
@@ -249,6 +250,8 @@ char *SDL_GetUserFolder(SDL_Folder folder)
             SDL_SetError("Invalid SDL_Folder: %d", (int)folder);
             return NULL;
     };
+
+    wpath += L"\\";
 
     return WIN_StringToUTF8(wpath.c_str());
 }

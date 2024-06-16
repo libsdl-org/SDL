@@ -293,6 +293,7 @@ typedef struct
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
     VkSurfaceFormatKHR *surfaceFormats;
     SDL_bool recreateSwapchain;
+    int vsync;
 
     VkFramebuffer *framebuffers;
     VkRenderPass renderPasses[SDL_VULKAN_NUM_RENDERPASSES];
@@ -1061,14 +1062,13 @@ static VkResult VULKAN_IssueBatch(VULKAN_RenderData *rendererData)
 static void VULKAN_DestroyRenderer(SDL_Renderer *renderer)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
-    if (rendererData->device != VK_NULL_HANDLE) {
-        vkDeviceWaitIdle(rendererData->device);
-        VULKAN_DestroyAll(renderer);
-    }
     if (rendererData) {
+        if (rendererData->device != VK_NULL_HANDLE) {
+            vkDeviceWaitIdle(rendererData->device);
+            VULKAN_DestroyAll(renderer);
+        }
         SDL_free(rendererData);
     }
-    SDL_free(renderer);
 }
 
 static VkBlendFactor GetBlendFactor(SDL_BlendFactor factor)
@@ -2092,7 +2092,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 
     /* Choose a present mode. If vsync is requested, then use VK_PRESENT_MODE_FIFO_KHR which is guaranteed to be supported */
     VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
-    if (!(renderer->info.flags & SDL_RENDERER_PRESENTVSYNC)) {
+    if (rendererData->vsync <= 0) {
         uint32_t presentModeCount = 0;
         result = vkGetPhysicalDeviceSurfacePresentModesKHR(rendererData->physicalDevice, rendererData->surface, &presentModeCount, NULL);
         if (result != VK_SUCCESS) {
@@ -2108,21 +2108,30 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                 return result;
             }
 
-            /* If vsync is not requested, in favor these options in order:
-               VK_PRESENT_MODE_IMMEDIATE_KHR    - no v-sync with tearing
-               VK_PRESENT_MODE_MAILBOX_KHR      - no v-sync without tearing
-               VK_PRESENT_MODE_FIFO_RELAXED_KHR - no v-sync, may tear */
-            for (uint32_t i = 0; i < presentModeCount; i++) {
-                if (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-                    presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-                    break;
+            if (rendererData->vsync == 0) {
+                /* If vsync is not requested, in favor these options in order:
+                   VK_PRESENT_MODE_IMMEDIATE_KHR    - no v-sync with tearing
+                   VK_PRESENT_MODE_MAILBOX_KHR      - no v-sync without tearing
+                   VK_PRESENT_MODE_FIFO_RELAXED_KHR - no v-sync, may tear */
+                for (uint32_t i = 0; i < presentModeCount; i++) {
+                    if (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+                        presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+                        break;
+                    }
+                    else if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
+                        presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+                    }
+                    else if ((presentMode != VK_PRESENT_MODE_MAILBOX_KHR) &&
+                             (presentModes[i] == VK_PRESENT_MODE_FIFO_RELAXED_KHR)) {
+                        presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+                    }
                 }
-                else if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
-                    presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-                }
-                else if ((presentMode != VK_PRESENT_MODE_MAILBOX_KHR) &&
-                         (presentModes[i] == VK_PRESENT_MODE_FIFO_RELAXED_KHR)) {
-                    presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+            } else if (rendererData->vsync == -1) {
+                for (uint32_t i = 0; i < presentModeCount; i++) {
+                    if (presentModes[i] == VK_PRESENT_MODE_FIFO_RELAXED_KHR) {
+                        presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+                        break;
+                    }
                 }
             }
             SDL_free(presentModes);
@@ -4025,42 +4034,37 @@ static int VULKAN_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->driverdata;
 
-    Uint32 prevFlags = renderer->info.flags;
-    if (vsync) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    } else {
-        renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+    switch (vsync) {
+    case -1:
+    case 0:
+    case 1:
+        /* Supported */
+        break;
+    default:
+        return SDL_Unsupported();
     }
-    if (prevFlags != renderer->info.flags) {
+    if (vsync != rendererData->vsync) {
+        rendererData->vsync = vsync;
         rendererData->recreateSwapchain = SDL_TRUE;
     }
     return 0;
 }
 
-SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     VULKAN_RenderData *rendererData;
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
         renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
         renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
-        SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
     rendererData = (VULKAN_RenderData *)SDL_calloc(1, sizeof(*rendererData));
     if (!rendererData) {
-        SDL_free(renderer);
-        return NULL;
+        return -1;
     }
 
     rendererData->identity = MatrixIdentity();
@@ -4093,14 +4097,16 @@ SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_
     renderer->RenderPresent = VULKAN_RenderPresent;
     renderer->DestroyTexture = VULKAN_DestroyTexture;
     renderer->DestroyRenderer = VULKAN_DestroyRenderer;
-    renderer->info = VULKAN_RenderDriver.info;
+    renderer->SetVSync = VULKAN_SetVSync;
     renderer->driverdata = rendererData;
     VULKAN_InvalidateCachedState(renderer);
 
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-    renderer->SetVSync = VULKAN_SetVSync;
+    renderer->name = VULKAN_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
 
     /* HACK: make sure the SDL_Renderer references the SDL_Window data now, in
      * order to give init functions access to the underlying window handle:
@@ -4110,40 +4116,27 @@ SDL_Renderer *VULKAN_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_
     /* Initialize Vulkan resources */
     if (VULKAN_CreateDeviceResources(renderer, create_props) != VK_SUCCESS) {
         VULKAN_DestroyRenderer(renderer);
-        return NULL;
-    }
-    if (VULKAN_CreateWindowSizeDependentResources(renderer) != VK_SUCCESS) {
+        return -1;
+    } else if (VULKAN_CreateWindowSizeDependentResources(renderer) != VK_SUCCESS) {
         VULKAN_DestroyRenderer(renderer);
-        return NULL;
+        return -1;
     }
 
 #if SDL_HAVE_YUV
     if (rendererData->supportsKHRSamplerYCbCrConversion) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_P010;
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
     }
 #endif
 
-    return renderer;
+    return 0;
 }
 
 SDL_RenderDriver VULKAN_RenderDriver = {
-    VULKAN_CreateRenderer,
-    {
-        "vulkan",
-        SDL_RENDERER_PRESENTVSYNC,   /* flags.  see SDL_RendererFlags */
-        4,                           /* num_texture_formats */
-        {                            /* texture_formats */
-          SDL_PIXELFORMAT_ARGB8888,
-          SDL_PIXELFORMAT_XRGB8888,
-          SDL_PIXELFORMAT_XBGR2101010,
-          SDL_PIXELFORMAT_RGBA64_FLOAT },
-        16384, /* max_texture_width */
-        16384  /* max_texture_height */
-    }
+    VULKAN_CreateRenderer, "vulkan"
 };
 
 #endif /* SDL_VIDEO_RENDER_VULKAN */

@@ -75,8 +75,8 @@ static const struct
     { 400, 5, 180.0 },   /* SDL_GAMEPAD_ELEMENT_AXIS_RIGHT_TRIGGER */
 };
 
-static SDL_Rect touchpad_area = {
-    148, 20, 216, 118
+static SDL_FRect touchpad_area = {
+    148.0f, 20.0f, 216.0f, 118.0f
 };
 
 typedef struct
@@ -99,21 +99,21 @@ struct GamepadImage
     SDL_Texture *touchpad_texture;
     SDL_Texture *button_texture;
     SDL_Texture *axis_texture;
-    int gamepad_width;
-    int gamepad_height;
-    int face_width;
-    int face_height;
-    int battery_width;
-    int battery_height;
-    int touchpad_width;
-    int touchpad_height;
-    int button_width;
-    int button_height;
-    int axis_width;
-    int axis_height;
+    float gamepad_width;
+    float gamepad_height;
+    float face_width;
+    float face_height;
+    float battery_width;
+    float battery_height;
+    float touchpad_width;
+    float touchpad_height;
+    float button_width;
+    float button_height;
+    float axis_width;
+    float axis_height;
 
-    int x;
-    int y;
+    float x;
+    float y;
     SDL_bool showing_front;
     SDL_bool showing_touchpad;
     SDL_GamepadType type;
@@ -150,26 +150,26 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         ctx->renderer = renderer;
         ctx->front_texture = CreateTexture(renderer, gamepad_front_bmp, gamepad_front_bmp_len);
         ctx->back_texture = CreateTexture(renderer, gamepad_back_bmp, gamepad_back_bmp_len);
-        SDL_QueryTexture(ctx->front_texture, NULL, NULL, &ctx->gamepad_width, &ctx->gamepad_height);
+        SDL_GetTextureSize(ctx->front_texture, &ctx->gamepad_width, &ctx->gamepad_height);
 
         ctx->face_abxy_texture = CreateTexture(renderer, gamepad_face_abxy_bmp, gamepad_face_abxy_bmp_len);
         ctx->face_bayx_texture = CreateTexture(renderer, gamepad_face_bayx_bmp, gamepad_face_bayx_bmp_len);
         ctx->face_sony_texture = CreateTexture(renderer, gamepad_face_sony_bmp, gamepad_face_sony_bmp_len);
-        SDL_QueryTexture(ctx->face_abxy_texture, NULL, NULL, &ctx->face_width, &ctx->face_height);
+        SDL_GetTextureSize(ctx->face_abxy_texture, &ctx->face_width, &ctx->face_height);
 
         ctx->battery_texture[0] = CreateTexture(renderer, gamepad_battery_bmp, gamepad_battery_bmp_len);
         ctx->battery_texture[1] = CreateTexture(renderer, gamepad_battery_wired_bmp, gamepad_battery_wired_bmp_len);
-        SDL_QueryTexture(ctx->battery_texture[0], NULL, NULL, &ctx->battery_width, &ctx->battery_height);
+        SDL_GetTextureSize(ctx->battery_texture[0], &ctx->battery_width, &ctx->battery_height);
 
         ctx->touchpad_texture = CreateTexture(renderer, gamepad_touchpad_bmp, gamepad_touchpad_bmp_len);
-        SDL_QueryTexture(ctx->touchpad_texture, NULL, NULL, &ctx->touchpad_width, &ctx->touchpad_height);
+        SDL_GetTextureSize(ctx->touchpad_texture, &ctx->touchpad_width, &ctx->touchpad_height);
 
         ctx->button_texture = CreateTexture(renderer, gamepad_button_bmp, gamepad_button_bmp_len);
-        SDL_QueryTexture(ctx->button_texture, NULL, NULL, &ctx->button_width, &ctx->button_height);
+        SDL_GetTextureSize(ctx->button_texture, &ctx->button_width, &ctx->button_height);
         SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
 
         ctx->axis_texture = CreateTexture(renderer, gamepad_axis_bmp, gamepad_axis_bmp_len);
-        SDL_QueryTexture(ctx->axis_texture, NULL, NULL, &ctx->axis_width, &ctx->axis_height);
+        SDL_GetTextureSize(ctx->axis_texture, &ctx->axis_width, &ctx->axis_height);
         SDL_SetTextureColorMod(ctx->axis_texture, 10, 255, 21);
 
         ctx->showing_front = SDL_TRUE;
@@ -177,7 +177,7 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
     return ctx;
 }
 
-void SetGamepadImagePosition(GamepadImage *ctx, int x, int y)
+void SetGamepadImagePosition(GamepadImage *ctx, float x, float y)
 {
     if (!ctx) {
         return;
@@ -187,10 +187,11 @@ void SetGamepadImagePosition(GamepadImage *ctx, int x, int y)
     ctx->y = y;
 }
 
-void GetGamepadImageArea(GamepadImage *ctx, SDL_Rect *area)
+void GetGamepadImageArea(GamepadImage *ctx, SDL_FRect *area)
 {
     if (!ctx) {
         SDL_zerop(area);
+        return;
     }
 
     area->x = ctx->x;
@@ -202,6 +203,19 @@ void GetGamepadImageArea(GamepadImage *ctx, SDL_Rect *area)
     }
 }
 
+void GetGamepadTouchpadArea(GamepadImage *ctx, SDL_FRect *area)
+{
+    if (!ctx) {
+        SDL_zerop(area);
+        return;
+    }
+
+    area->x = ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2 + touchpad_area.x;
+    area->y = ctx->y + ctx->gamepad_height + touchpad_area.y;
+    area->w = touchpad_area.w;
+    area->h = touchpad_area.h;
+}
+
 void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front)
 {
     if (!ctx) {
@@ -209,15 +223,6 @@ void SetGamepadImageShowingFront(GamepadImage *ctx, SDL_bool showing_front)
     }
 
     ctx->showing_front = showing_front;
-}
-
-void SetGamepadImageFaceButtonType(GamepadImage *ctx, SDL_GamepadType type)
-{
-    if (!ctx) {
-        return;
-    }
-
-    ctx->type = type;
 }
 
 SDL_GamepadType GetGamepadImageType(GamepadImage *ctx)
@@ -238,7 +243,7 @@ void SetGamepadImageDisplayMode(GamepadImage *ctx, ControllerDisplayMode display
     ctx->display_mode = display_mode;
 }
 
-int GetGamepadImageButtonWidth(GamepadImage *ctx)
+float GetGamepadImageButtonWidth(GamepadImage *ctx)
 {
     if (!ctx) {
         return 0;
@@ -247,7 +252,7 @@ int GetGamepadImageButtonWidth(GamepadImage *ctx)
     return ctx->button_width;
 }
 
-int GetGamepadImageButtonHeight(GamepadImage *ctx)
+float GetGamepadImageButtonHeight(GamepadImage *ctx)
 {
     if (!ctx) {
         return 0;
@@ -256,7 +261,7 @@ int GetGamepadImageButtonHeight(GamepadImage *ctx)
     return ctx->button_height;
 }
 
-int GetGamepadImageAxisWidth(GamepadImage *ctx)
+float GetGamepadImageAxisWidth(GamepadImage *ctx)
 {
     if (!ctx) {
         return 0;
@@ -265,7 +270,7 @@ int GetGamepadImageAxisWidth(GamepadImage *ctx)
     return ctx->axis_width;
 }
 
-int GetGamepadImageAxisHeight(GamepadImage *ctx)
+float GetGamepadImageAxisHeight(GamepadImage *ctx)
 {
     if (!ctx) {
         return 0;
@@ -293,10 +298,10 @@ int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y)
 
             if (element == SDL_GAMEPAD_ELEMENT_AXIS_LEFT_TRIGGER ||
                 element == SDL_GAMEPAD_ELEMENT_AXIS_RIGHT_TRIGGER) {
-                rect.w = (float)ctx->axis_width;
-                rect.h = (float)ctx->axis_height;
-                rect.x = (float)ctx->x + axis_positions[i].x - rect.w / 2;
-                rect.y = (float)ctx->y + axis_positions[i].y - rect.h / 2;
+                rect.w = ctx->axis_width;
+                rect.h = ctx->axis_height;
+                rect.x = ctx->x + axis_positions[i].x - rect.w / 2;
+                rect.y = ctx->y + axis_positions[i].y - rect.h / 2;
                 if (SDL_PointInRectFloat(&point, &rect)) {
                     if (element == SDL_GAMEPAD_ELEMENT_AXIS_LEFT_TRIGGER) {
                         return SDL_GAMEPAD_ELEMENT_AXIS_LEFT_TRIGGER;
@@ -305,14 +310,14 @@ int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y)
                     }
                 }
             } else if (element == SDL_GAMEPAD_ELEMENT_AXIS_LEFTX_POSITIVE) {
-                rect.w = (float)ctx->button_width * 2.0f;
-                rect.h = (float)ctx->button_height * 2.0f;
-                rect.x = (float)ctx->x + button_positions[SDL_GAMEPAD_BUTTON_LEFT_STICK].x - rect.w / 2;
-                rect.y = (float)ctx->y + button_positions[SDL_GAMEPAD_BUTTON_LEFT_STICK].y - rect.h / 2;
+                rect.w = ctx->button_width * 2.0f;
+                rect.h = ctx->button_height * 2.0f;
+                rect.x = ctx->x + button_positions[SDL_GAMEPAD_BUTTON_LEFT_STICK].x - rect.w / 2;
+                rect.y = ctx->y + button_positions[SDL_GAMEPAD_BUTTON_LEFT_STICK].y - rect.h / 2;
                 if (SDL_PointInRectFloat(&point, &rect)) {
                     float delta_x, delta_y;
                     float delta_squared;
-                    float thumbstick_radius = (float)ctx->button_width * 0.1f;
+                    float thumbstick_radius = ctx->button_width * 0.1f;
 
                     delta_x = (x - (ctx->x + button_positions[SDL_GAMEPAD_BUTTON_LEFT_STICK].x));
                     delta_y = (y - (ctx->y + button_positions[SDL_GAMEPAD_BUTTON_LEFT_STICK].y));
@@ -333,14 +338,14 @@ int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y)
                     }
                 }
             } else if (element == SDL_GAMEPAD_ELEMENT_AXIS_RIGHTX_POSITIVE) {
-                rect.w = (float)ctx->button_width * 2.0f;
-                rect.h = (float)ctx->button_height * 2.0f;
-                rect.x = (float)ctx->x + button_positions[SDL_GAMEPAD_BUTTON_RIGHT_STICK].x - rect.w / 2;
-                rect.y = (float)ctx->y + button_positions[SDL_GAMEPAD_BUTTON_RIGHT_STICK].y - rect.h / 2;
+                rect.w = ctx->button_width * 2.0f;
+                rect.h = ctx->button_height * 2.0f;
+                rect.x = ctx->x + button_positions[SDL_GAMEPAD_BUTTON_RIGHT_STICK].x - rect.w / 2;
+                rect.y = ctx->y + button_positions[SDL_GAMEPAD_BUTTON_RIGHT_STICK].y - rect.h / 2;
                 if (SDL_PointInRectFloat(&point, &rect)) {
                     float delta_x, delta_y;
                     float delta_squared;
-                    float thumbstick_radius = (float)ctx->button_width * 0.1f;
+                    float thumbstick_radius = ctx->button_width * 0.1f;
 
                     delta_x = (x - (ctx->x + button_positions[SDL_GAMEPAD_BUTTON_RIGHT_STICK].x));
                     delta_y = (y - (ctx->y + button_positions[SDL_GAMEPAD_BUTTON_RIGHT_STICK].y));
@@ -372,10 +377,10 @@ int GetGamepadImageElementAt(GamepadImage *ctx, float x, float y)
         }
         if (on_front == ctx->showing_front) {
             SDL_FRect rect;
-            rect.x = (float)ctx->x + button_positions[i].x - ctx->button_width / 2;
-            rect.y = (float)ctx->y + button_positions[i].y - ctx->button_height / 2;
-            rect.w = (float)ctx->button_width;
-            rect.h = (float)ctx->button_height;
+            rect.x = ctx->x + button_positions[i].x - ctx->button_width / 2;
+            rect.y = ctx->y + button_positions[i].y - ctx->button_height / 2;
+            rect.w = ctx->button_width;
+            rect.h = ctx->button_height;
             if (SDL_PointInRectFloat(&point, &rect)) {
                 return (SDL_GamepadButton)i;
             }
@@ -500,10 +505,10 @@ void RenderGamepadImage(GamepadImage *ctx)
         return;
     }
 
-    dst.x = (float)ctx->x;
-    dst.y = (float)ctx->y;
-    dst.w = (float)ctx->gamepad_width;
-    dst.h = (float)ctx->gamepad_height;
+    dst.x = ctx->x;
+    dst.y = ctx->y;
+    dst.w = ctx->gamepad_width;
+    dst.h = ctx->gamepad_height;
 
     if (ctx->showing_front) {
         SDL_RenderTexture(ctx->renderer, ctx->front_texture, NULL, &dst);
@@ -520,20 +525,20 @@ void RenderGamepadImage(GamepadImage *ctx)
                 on_front = SDL_FALSE;
             }
             if (on_front == ctx->showing_front) {
-                dst.w = (float)ctx->button_width;
-                dst.h = (float)ctx->button_height;
-                dst.x = (float)ctx->x + button_positions[button_position].x - dst.w / 2;
-                dst.y = (float)ctx->y + button_positions[button_position].y - dst.h / 2;
+                dst.w = ctx->button_width;
+                dst.h = ctx->button_height;
+                dst.x = ctx->x + button_positions[button_position].x - dst.w / 2;
+                dst.y = ctx->y + button_positions[button_position].y - dst.h / 2;
                 SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
             }
         }
     }
 
     if (ctx->showing_front) {
-        dst.x = (float)ctx->x + 363;
-        dst.y = (float)ctx->y + 118;
-        dst.w = (float)ctx->face_width;
-        dst.h = (float)ctx->face_height;
+        dst.x = ctx->x + 363;
+        dst.y = ctx->y + 118;
+        dst.w = ctx->face_width;
+        dst.h = ctx->face_height;
 
         switch (SDL_GetGamepadButtonLabelForType(ctx->type, SDL_GAMEPAD_BUTTON_SOUTH)) {
         case SDL_GAMEPAD_BUTTON_LABEL_A:
@@ -555,10 +560,10 @@ void RenderGamepadImage(GamepadImage *ctx)
             const int element = SDL_GAMEPAD_BUTTON_MAX + i;
             if (ctx->elements[element]) {
                 const double angle = axis_positions[i].angle;
-                dst.w = (float)ctx->axis_width;
-                dst.h = (float)ctx->axis_height;
-                dst.x = (float)ctx->x + axis_positions[i].x - dst.w / 2;
-                dst.y = (float)ctx->y + axis_positions[i].y - dst.h / 2;
+                dst.w = ctx->axis_width;
+                dst.h = ctx->axis_height;
+                dst.x = ctx->x + axis_positions[i].x - dst.w / 2;
+                dst.y = ctx->y + axis_positions[i].y - dst.h / 2;
                 SDL_RenderTextureRotated(ctx->renderer, ctx->axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
             }
         }
@@ -570,10 +575,10 @@ void RenderGamepadImage(GamepadImage *ctx)
         Uint8 r, g, b, a;
         SDL_FRect fill;
 
-        dst.x = (float)ctx->x + ctx->gamepad_width - ctx->battery_width;
-        dst.y = (float)ctx->y;
-        dst.w = (float)ctx->battery_width;
-        dst.h = (float)ctx->battery_height;
+        dst.x = ctx->x + ctx->gamepad_width - ctx->battery_width;
+        dst.y = ctx->y;
+        dst.w = ctx->battery_width;
+        dst.h = ctx->battery_height;
 
         SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
         if (ctx->battery_percent > 40) {
@@ -600,24 +605,24 @@ void RenderGamepadImage(GamepadImage *ctx)
     }
 
     if (ctx->display_mode == CONTROLLER_MODE_TESTING && ctx->showing_touchpad) {
-        dst.x = (float)ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2;
-        dst.y = (float)ctx->y + ctx->gamepad_height;
-        dst.w = (float)ctx->touchpad_width;
-        dst.h = (float)ctx->touchpad_height;
+        dst.x = ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2;
+        dst.y = ctx->y + ctx->gamepad_height;
+        dst.w = ctx->touchpad_width;
+        dst.h = ctx->touchpad_height;
         SDL_RenderTexture(ctx->renderer, ctx->touchpad_texture, NULL, &dst);
 
         for (i = 0; i < ctx->num_fingers; ++i) {
             GamepadTouchpadFinger *finger = &ctx->fingers[i];
 
             if (finger->state) {
-                dst.x = (float)ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2;
+                dst.x = ctx->x + (ctx->gamepad_width - ctx->touchpad_width) / 2;
                 dst.x += touchpad_area.x + finger->x * touchpad_area.w;
                 dst.x -= ctx->button_width / 2;
-                dst.y = (float)ctx->y + ctx->gamepad_height;
+                dst.y = ctx->y + ctx->gamepad_height;
                 dst.y += touchpad_area.y + finger->y * touchpad_area.h;
                 dst.y -= ctx->button_height / 2;
-                dst.w = (float)ctx->button_width;
-                dst.h = (float)ctx->button_height;
+                dst.w = ctx->button_width;
+                dst.h = ctx->button_height;
                 SDL_SetTextureAlphaMod(ctx->button_texture, (Uint8)(finger->pressure * SDL_ALPHA_OPAQUE));
                 SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
                 SDL_SetTextureAlphaMod(ctx->button_texture, SDL_ALPHA_OPAQUE);
@@ -692,10 +697,10 @@ struct GamepadDisplay
     SDL_Renderer *renderer;
     SDL_Texture *button_texture;
     SDL_Texture *arrow_texture;
-    int button_width;
-    int button_height;
-    int arrow_width;
-    int arrow_height;
+    float button_width;
+    float button_height;
+    float arrow_width;
+    float arrow_height;
 
     float accel_data[3];
     float gyro_data[3];
@@ -706,7 +711,7 @@ struct GamepadDisplay
     SDL_bool element_pressed;
     int element_selected;
 
-    SDL_Rect area;
+    SDL_FRect area;
 };
 
 GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer)
@@ -716,10 +721,10 @@ GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer)
         ctx->renderer = renderer;
 
         ctx->button_texture = CreateTexture(renderer, gamepad_button_small_bmp, gamepad_button_small_bmp_len);
-        SDL_QueryTexture(ctx->button_texture, NULL, NULL, &ctx->button_width, &ctx->button_height);
+        SDL_GetTextureSize(ctx->button_texture, &ctx->button_width, &ctx->button_height);
 
         ctx->arrow_texture = CreateTexture(renderer, gamepad_axis_arrow_bmp, gamepad_axis_arrow_bmp_len);
-        SDL_QueryTexture(ctx->arrow_texture, NULL, NULL, &ctx->arrow_width, &ctx->arrow_height);
+        SDL_GetTextureSize(ctx->arrow_texture, &ctx->arrow_width, &ctx->arrow_height);
 
         ctx->element_highlighted = SDL_GAMEPAD_ELEMENT_INVALID;
         ctx->element_selected = SDL_GAMEPAD_ELEMENT_INVALID;
@@ -736,7 +741,7 @@ void SetGamepadDisplayDisplayMode(GamepadDisplay *ctx, ControllerDisplayMode dis
     ctx->display_mode = display_mode;
 }
 
-void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_Rect *area)
+void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_FRect *area)
 {
     if (!ctx) {
         return;
@@ -911,8 +916,8 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
 
     rect.x = ctx->area.x + margin;
     rect.y = ctx->area.y + margin + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-    rect.w = (float)ctx->area.w - (margin * 2);
-    rect.h = (float)ctx->button_height;
+    rect.w = ctx->area.w - (margin * 2);
+    rect.h = ctx->button_height;
 
     for (i = 0; i < SDL_GAMEPAD_BUTTON_MAX; ++i) {
         SDL_GamepadButton button = (SDL_GamepadButton)i;
@@ -927,7 +932,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
             return i;
         }
 
-        rect.y += (float)ctx->button_height + 2.0f;
+        rect.y += ctx->button_height + 2.0f;
     }
 
     for (i = 0; i < SDL_GAMEPAD_AXIS_MAX; ++i) {
@@ -941,8 +946,8 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
 
         area.x = rect.x + center + 2.0f;
         area.y = rect.y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-        area.w = (float)ctx->arrow_width + arrow_extent;
-        area.h = (float)ctx->button_height;
+        area.w = ctx->arrow_width + arrow_extent;
+        area.h = ctx->button_height;
 
         if (SDL_PointInRectFloat(&point, &area)) {
             switch (axis) {
@@ -980,7 +985,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
             }
         }
 
-        rect.y += (float)ctx->button_height + 2.0f;
+        rect.y += ctx->button_height + 2.0f;
     }
     return SDL_GAMEPAD_ELEMENT_INVALID;
 }
@@ -1042,8 +1047,8 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
         highlight.x = x;
         highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-        highlight.w = (float)ctx->area.w - (margin * 2);
-        highlight.h = (float)ctx->button_height;
+        highlight.w = ctx->area.w - (margin * 2);
+        highlight.h = ctx->button_height;
         RenderGamepadElementHighlight(ctx, i, &highlight);
 
         SDL_snprintf(text, sizeof(text), "%s:", gamepad_button_names[i]);
@@ -1057,8 +1062,8 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
         dst.x = x + center + 2.0f;
         dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-        dst.w = (float)ctx->button_width;
-        dst.h = (float)ctx->button_height;
+        dst.w = ctx->button_width;
+        dst.h = ctx->button_height;
         SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
         if (ctx->display_mode == CONTROLLER_MODE_BINDING) {
@@ -1088,8 +1093,8 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
         highlight.x = x + center + 2.0f;
         highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-        highlight.w = (float)ctx->arrow_width + arrow_extent;
-        highlight.h = (float)ctx->button_height;
+        highlight.w = ctx->arrow_width + arrow_extent;
+        highlight.h = ctx->button_height;
 
         switch (axis) {
         case SDL_GAMEPAD_AXIS_LEFTX:
@@ -1135,8 +1140,8 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
         dst.x = x + center + 2.0f;
         dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->arrow_height / 2;
-        dst.w = (float)ctx->arrow_width;
-        dst.h = (float)ctx->arrow_height;
+        dst.w = ctx->arrow_width;
+        dst.h = ctx->arrow_height;
 
         if (has_negative) {
             if (value == SDL_MIN_SINT16) {
@@ -1147,13 +1152,13 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             SDL_RenderTextureRotated(ctx->renderer, ctx->arrow_texture, NULL, &dst, 0.0f, NULL, SDL_FLIP_HORIZONTAL);
         }
 
-        dst.x += (float)ctx->arrow_width;
+        dst.x += ctx->arrow_width;
 
         SDL_SetRenderDrawColor(ctx->renderer, 200, 200, 200, SDL_ALPHA_OPAQUE);
         rect.x = dst.x + arrow_extent - 2.0f;
         rect.y = dst.y;
         rect.w = 4.0f;
-        rect.h = (float)ctx->arrow_height;
+        rect.h = ctx->arrow_height;
         SDL_RenderFillRect(ctx->renderer, &rect);
         SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
 
@@ -1171,7 +1176,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                 float text_x;
 
                 SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-                text_x = dst.x + arrow_extent / 2 - ((float)FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
+                text_x = dst.x + arrow_extent / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
                 SDLTest_DrawString(ctx->renderer, text_x, y, binding);
             }
         }
@@ -1192,7 +1197,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                 float text_x;
 
                 SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-                text_x = dst.x + arrow_extent / 2 - ((float)FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
+                text_x = dst.x + arrow_extent / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
                 SDLTest_DrawString(ctx->renderer, text_x, y, binding);
             }
         }
@@ -1233,8 +1238,8 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
                 dst.x = x + center + 2.0f;
                 dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-                dst.w = (float)ctx->button_width;
-                dst.h = (float)ctx->button_height;
+                dst.w = ctx->button_width;
+                dst.h = ctx->button_height;
                 SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
                 if (state) {
@@ -1305,7 +1310,7 @@ struct GamepadTypeDisplay
     int type_selected;
     SDL_GamepadType real_type;
 
-    SDL_Rect area;
+    SDL_FRect area;
 };
 
 GamepadTypeDisplay *CreateGamepadTypeDisplay(SDL_Renderer *renderer)
@@ -1321,7 +1326,7 @@ GamepadTypeDisplay *CreateGamepadTypeDisplay(SDL_Renderer *renderer)
     return ctx;
 }
 
-void SetGamepadTypeDisplayArea(GamepadTypeDisplay *ctx, const SDL_Rect *area)
+void SetGamepadTypeDisplayArea(GamepadTypeDisplay *ctx, const SDL_FRect *area)
 {
     if (!ctx) {
         return;
@@ -1379,8 +1384,8 @@ int GetGamepadTypeDisplayAt(GamepadTypeDisplay *ctx, float x, float y)
     for (i = SDL_GAMEPAD_TYPE_UNKNOWN; i < SDL_GAMEPAD_TYPE_MAX; ++i) {
         highlight.x = x;
         highlight.y = y;
-        highlight.w = (float)ctx->area.w - (margin * 2);
-        highlight.h = (float)line_height;
+        highlight.w = ctx->area.w - (margin * 2);
+        highlight.h = line_height;
 
         if (SDL_PointInRectFloat(&point, &highlight)) {
             return i;
@@ -1433,8 +1438,8 @@ void RenderGamepadTypeDisplay(GamepadTypeDisplay *ctx)
     for (i = SDL_GAMEPAD_TYPE_UNKNOWN; i < SDL_GAMEPAD_TYPE_MAX; ++i) {
         highlight.x = x;
         highlight.y = y;
-        highlight.w = (float)ctx->area.w - (margin * 2);
-        highlight.h = (float)line_height;
+        highlight.w = ctx->area.w - (margin * 2);
+        highlight.h = line_height;
         RenderGamepadTypeHighlight(ctx, i, &highlight);
 
         if (i == SDL_GAMEPAD_TYPE_UNKNOWN) {
@@ -1473,12 +1478,12 @@ struct JoystickDisplay
     SDL_Renderer *renderer;
     SDL_Texture *button_texture;
     SDL_Texture *arrow_texture;
-    int button_width;
-    int button_height;
-    int arrow_width;
-    int arrow_height;
+    float button_width;
+    float button_height;
+    float arrow_width;
+    float arrow_height;
 
-    SDL_Rect area;
+    SDL_FRect area;
 
     char *element_highlighted;
     SDL_bool element_pressed;
@@ -1491,15 +1496,15 @@ JoystickDisplay *CreateJoystickDisplay(SDL_Renderer *renderer)
         ctx->renderer = renderer;
 
         ctx->button_texture = CreateTexture(renderer, gamepad_button_small_bmp, gamepad_button_small_bmp_len);
-        SDL_QueryTexture(ctx->button_texture, NULL, NULL, &ctx->button_width, &ctx->button_height);
+        SDL_GetTextureSize(ctx->button_texture, &ctx->button_width, &ctx->button_height);
 
         ctx->arrow_texture = CreateTexture(renderer, gamepad_axis_arrow_bmp, gamepad_axis_arrow_bmp_len);
-        SDL_QueryTexture(ctx->arrow_texture, NULL, NULL, &ctx->arrow_width, &ctx->arrow_height);
+        SDL_GetTextureSize(ctx->arrow_texture, &ctx->arrow_width, &ctx->arrow_height);
     }
     return ctx;
 }
 
-void SetJoystickDisplayArea(JoystickDisplay *ctx, const SDL_Rect *area)
+void SetJoystickDisplayArea(JoystickDisplay *ctx, const SDL_FRect *area)
 {
     if (!ctx) {
         return;
@@ -1529,8 +1534,8 @@ char *GetJoystickDisplayElementAt(JoystickDisplay *ctx, SDL_Joystick *joystick, 
     point.x = x;
     point.y = y;
 
-    x = (float)ctx->area.x + margin;
-    y = (float)ctx->area.y + margin;
+    x = ctx->area.x + margin;
+    y = ctx->area.y + margin;
 
     if (nbuttons > 0) {
         y += FONT_LINE_HEIGHT + 2;
@@ -1539,7 +1544,7 @@ char *GetJoystickDisplayElementAt(JoystickDisplay *ctx, SDL_Joystick *joystick, 
             highlight.x = x;
             highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
             highlight.w = center - (margin * 2);
-            highlight.h = (float)ctx->button_height;
+            highlight.h = ctx->button_height;
             if (SDL_PointInRectFloat(&point, &highlight)) {
                 SDL_asprintf(&element, "b%d", i);
                 return element;
@@ -1549,8 +1554,8 @@ char *GetJoystickDisplayElementAt(JoystickDisplay *ctx, SDL_Joystick *joystick, 
         }
     }
 
-    x = (float)ctx->area.x + margin + center + margin;
-    y = (float)ctx->area.y + margin;
+    x = ctx->area.x + margin + center + margin;
+    y = ctx->area.y + margin;
 
     if (naxes > 0) {
         y += FONT_LINE_HEIGHT + 2;
@@ -1560,8 +1565,8 @@ char *GetJoystickDisplayElementAt(JoystickDisplay *ctx, SDL_Joystick *joystick, 
 
             highlight.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
             highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-            highlight.w = (float)ctx->arrow_width + arrow_extent;
-            highlight.h = (float)ctx->button_height;
+            highlight.w = ctx->arrow_width + arrow_extent;
+            highlight.h = ctx->button_height;
             if (SDL_PointInRectFloat(&point, &highlight)) {
                 SDL_asprintf(&element, "-a%d", i);
                 return element;
@@ -1587,27 +1592,27 @@ char *GetJoystickDisplayElementAt(JoystickDisplay *ctx, SDL_Joystick *joystick, 
 
             dst.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2;
             dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-            dst.w = (float)ctx->button_width;
-            dst.h = (float)ctx->button_height;
+            dst.w = ctx->button_width;
+            dst.h = ctx->button_height;
             if (SDL_PointInRectFloat(&point, &dst)) {
                 SDL_asprintf(&element, "h%d.%d", i, SDL_HAT_LEFT);
                 return element;
             }
 
-            dst.x += (float)ctx->button_width;
-            dst.y -= (float)ctx->button_height;
+            dst.x += ctx->button_width;
+            dst.y -= ctx->button_height;
             if (SDL_PointInRectFloat(&point, &dst)) {
                 SDL_asprintf(&element, "h%d.%d", i, SDL_HAT_UP);
                 return element;
             }
 
-            dst.y += (float)ctx->button_height * 2;
+            dst.y += ctx->button_height * 2;
             if (SDL_PointInRectFloat(&point, &dst)) {
                 SDL_asprintf(&element, "h%d.%d", i, SDL_HAT_DOWN);
                 return element;
             }
 
-            dst.x += (float)ctx->button_width;
+            dst.x += ctx->button_width;
             dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
             if (SDL_PointInRectFloat(&point, &dst)) {
                 SDL_asprintf(&element, "h%d.%d", i, SDL_HAT_RIGHT);
@@ -1721,8 +1726,8 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
     SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
 
-    x = (float)ctx->area.x + margin;
-    y = (float)ctx->area.y + margin;
+    x = ctx->area.x + margin;
+    y = ctx->area.y + margin;
 
     if (nbuttons > 0) {
         SDLTest_DrawString(ctx->renderer, x, y, "BUTTONS");
@@ -1732,7 +1737,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
             highlight.x = x;
             highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
             highlight.w = center - (margin * 2);
-            highlight.h = (float)ctx->button_height;
+            highlight.h = ctx->button_height;
             RenderJoystickButtonHighlight(ctx, i, &highlight);
 
             SDL_snprintf(text, sizeof(text), "%2d:", i);
@@ -1746,16 +1751,16 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
             dst.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2;
             dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-            dst.w = (float)ctx->button_width;
-            dst.h = (float)ctx->button_height;
+            dst.w = ctx->button_width;
+            dst.h = ctx->button_height;
             SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
             y += ctx->button_height + 2;
         }
     }
 
-    x = (float)ctx->area.x + margin + center + margin;
-    y = (float)ctx->area.y + margin;
+    x = ctx->area.x + margin + center + margin;
+    y = ctx->area.y + margin;
 
     if (naxes > 0) {
         SDLTest_DrawString(ctx->renderer, x, y, "AXES");
@@ -1769,8 +1774,8 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
             highlight.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
             highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-            highlight.w = (float)ctx->arrow_width + arrow_extent;
-            highlight.h = (float)ctx->button_height;
+            highlight.w = ctx->arrow_width + arrow_extent;
+            highlight.h = ctx->button_height;
             RenderJoystickAxisHighlight(ctx, i, -1, &highlight);
 
             highlight.x += highlight.w;
@@ -1778,8 +1783,8 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
             dst.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
             dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->arrow_height / 2;
-            dst.w = (float)ctx->arrow_width;
-            dst.h = (float)ctx->arrow_height;
+            dst.w = ctx->arrow_width;
+            dst.h = ctx->arrow_height;
 
             if (value == SDL_MIN_SINT16) {
                 SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
@@ -1788,13 +1793,13 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
             }
             SDL_RenderTextureRotated(ctx->renderer, ctx->arrow_texture, NULL, &dst, 0.0f, NULL, SDL_FLIP_HORIZONTAL);
 
-            dst.x += (float)ctx->arrow_width;
+            dst.x += ctx->arrow_width;
 
             SDL_SetRenderDrawColor(ctx->renderer, 200, 200, 200, SDL_ALPHA_OPAQUE);
             rect.x = dst.x + arrow_extent - 2.0f;
             rect.y = dst.y;
             rect.w = 4.0f;
-            rect.h = (float)ctx->arrow_height;
+            rect.h = ctx->arrow_height;
             SDL_RenderFillRect(ctx->renderer, &rect);
             SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
 
@@ -1853,8 +1858,8 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
 
             dst.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2;
             dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-            dst.w = (float)ctx->button_width;
-            dst.h = (float)ctx->button_height;
+            dst.w = ctx->button_width;
+            dst.h = ctx->button_height;
             SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
             if (value & SDL_HAT_UP) {
@@ -1863,8 +1868,8 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
                 SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
             }
 
-            dst.x += (float)ctx->button_width;
-            dst.y -= (float)ctx->button_height;
+            dst.x += ctx->button_width;
+            dst.y -= ctx->button_height;
             SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
             if (value & SDL_HAT_DOWN) {
@@ -1873,7 +1878,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
                 SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
             }
 
-            dst.y += (float)ctx->button_height * 2;
+            dst.y += ctx->button_height * 2;
             SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
             if (value & SDL_HAT_RIGHT) {
@@ -1882,7 +1887,7 @@ void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick)
                 SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
             }
 
-            dst.x += (float)ctx->button_width;
+            dst.x += ctx->button_width;
             dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
             SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
@@ -1907,14 +1912,14 @@ struct GamepadButton
 {
     SDL_Renderer *renderer;
     SDL_Texture *background;
-    int background_width;
-    int background_height;
+    float background_width;
+    float background_height;
 
     SDL_FRect area;
 
     char *label;
-    int label_width;
-    int label_height;
+    float label_width;
+    float label_height;
 
     SDL_bool highlight;
     SDL_bool pressed;
@@ -1927,37 +1932,32 @@ GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label)
         ctx->renderer = renderer;
 
         ctx->background = CreateTexture(renderer, gamepad_button_background_bmp, gamepad_button_background_bmp_len);
-        SDL_QueryTexture(ctx->background, NULL, NULL, &ctx->background_width, &ctx->background_height);
+        SDL_GetTextureSize(ctx->background, &ctx->background_width, &ctx->background_height);
 
         ctx->label = SDL_strdup(label);
-        ctx->label_width = (int)(FONT_CHARACTER_SIZE * SDL_strlen(label));
-        ctx->label_height = FONT_CHARACTER_SIZE;
+        ctx->label_width = (float)(FONT_CHARACTER_SIZE * SDL_strlen(label));
+        ctx->label_height = (float)FONT_CHARACTER_SIZE;
     }
     return ctx;
 }
 
-void SetGamepadButtonArea(GamepadButton *ctx, const SDL_Rect *area)
+void SetGamepadButtonArea(GamepadButton *ctx, const SDL_FRect *area)
 {
     if (!ctx) {
         return;
     }
 
-    ctx->area.x = (float)area->x;
-    ctx->area.y = (float)area->y;
-    ctx->area.w = (float)area->w;
-    ctx->area.h = (float)area->h;
+    SDL_copyp(&ctx->area, area);
 }
 
-void GetGamepadButtonArea(GamepadButton *ctx, SDL_Rect *area)
+void GetGamepadButtonArea(GamepadButton *ctx, SDL_FRect *area)
 {
     if (!ctx) {
         SDL_zerop(area);
+        return;
     }
 
-    area->x = (int)ctx->area.x;
-    area->y = (int)ctx->area.y;
-    area->w = (int)ctx->area.w;
-    area->h = (int)ctx->area.h;
+    SDL_copyp(area, &ctx->area);
 }
 
 void SetGamepadButtonHighlight(GamepadButton *ctx, SDL_bool highlight, SDL_bool pressed)
@@ -1974,7 +1974,7 @@ void SetGamepadButtonHighlight(GamepadButton *ctx, SDL_bool highlight, SDL_bool 
     }
 }
 
-int GetGamepadButtonLabelWidth(GamepadButton *ctx)
+float GetGamepadButtonLabelWidth(GamepadButton *ctx)
 {
     if (!ctx) {
         return 0;
@@ -1983,7 +1983,7 @@ int GetGamepadButtonLabelWidth(GamepadButton *ctx)
     return ctx->label_width;
 }
 
-int GetGamepadButtonLabelHeight(GamepadButton *ctx)
+float GetGamepadButtonLabelHeight(GamepadButton *ctx)
 {
     if (!ctx) {
         return 0;
@@ -2015,8 +2015,8 @@ void RenderGamepadButton(GamepadButton *ctx)
         return;
     }
 
-    one_third_src_width = (float)ctx->background_width / 3;
-    one_third_src_height = (float)ctx->background_height / 3;
+    one_third_src_width = ctx->background_width / 3;
+    one_third_src_height = ctx->background_height / 3;
 
     if (ctx->pressed) {
         SDL_SetTextureColorMod(ctx->background, PRESSED_TEXTURE_MOD);
@@ -2038,12 +2038,12 @@ void RenderGamepadButton(GamepadButton *ctx)
     SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
 
     /* Bottom left */
-    src.y = (float)ctx->background_height - src.h;
+    src.y = ctx->background_height - src.h;
     dst.y = ctx->area.y + ctx->area.h - dst.h;
     SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
 
     /* Bottom right */
-    src.x = (float)ctx->background_width - src.w;
+    src.x = ctx->background_width - src.w;
     dst.x = ctx->area.x + ctx->area.w - dst.w;
     SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
 
@@ -2058,11 +2058,11 @@ void RenderGamepadButton(GamepadButton *ctx)
     dst.x = ctx->area.x;
     dst.y = ctx->area.y + one_third_src_height;
     dst.w = one_third_src_width;
-    dst.h = (float)ctx->area.h - 2 * one_third_src_height;
+    dst.h = ctx->area.h - 2 * one_third_src_height;
     SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
 
     /* Right */
-    src.x = (float)ctx->background_width - one_third_src_width;
+    src.x = ctx->background_width - one_third_src_width;
     dst.x = ctx->area.x + ctx->area.w - one_third_src_width;
     SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
 
@@ -2076,7 +2076,7 @@ void RenderGamepadButton(GamepadButton *ctx)
     SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
 
     /* Bottom */
-    src.y = (float)ctx->background_height - src.h;
+    src.y = ctx->background_height - src.h;
     dst.y = ctx->area.y + ctx->area.h - one_third_src_height;
     SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
 
@@ -2086,7 +2086,7 @@ void RenderGamepadButton(GamepadButton *ctx)
     dst.x = ctx->area.x + one_third_src_width;
     dst.y = ctx->area.y + one_third_src_height;
     dst.w = ctx->area.w - 2 * one_third_src_width;
-    dst.h = (float)ctx->area.h - 2 * one_third_src_height;
+    dst.h = ctx->area.h - 2 * one_third_src_height;
     SDL_RenderTexture(ctx->renderer, ctx->background, &src, &dst);
 
     /* Label */

@@ -627,7 +627,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
         MTLPixelFormat pixfmt;
         MTLTextureDescriptor *mtltexdesc;
-        id<MTLTexture> mtltexture, mtltextureUv;
+        id<MTLTexture> mtltexture = nil, mtltextureUv = nil;
         BOOL yuv = FALSE;
         BOOL nv12 = FALSE;
         METAL_TextureData *texturedata;
@@ -644,6 +644,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
+        case SDL_PIXELFORMAT_XBGR8888:
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
             } else {
@@ -651,6 +652,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
+        case SDL_PIXELFORMAT_XRGB8888:
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
             } else {
@@ -694,7 +696,9 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
 
         if (surface) {
-            mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
+            if (@available(iOS 11.0, *)) {
+                mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
+            }
         } else {
             mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
         }
@@ -725,7 +729,9 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         if (yuv || nv12) {
             if (surface) {
-                mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
+                if (@available(iOS 11.0, *)) {
+                    mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
+                }
             } else {
                 mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
             }
@@ -1800,8 +1806,6 @@ static void METAL_DestroyRenderer(SDL_Renderer *renderer)
             /* SDL_Metal_DestroyView(data.mtlview); */
             CFBridgingRelease(data.mtlview);
         }
-
-        SDL_free(renderer);
     }
 }
 
@@ -1831,17 +1835,25 @@ static int METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
 #if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
     if (@available(macOS 10.13, *)) {
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
-        if (vsync) {
-            data.mtllayer.displaySyncEnabled = YES;
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-        } else {
+        switch (vsync) {
+        case 0:
             data.mtllayer.displaySyncEnabled = NO;
-            renderer->info.flags &= ~SDL_RENDERER_PRESENTVSYNC;
+            break;
+        case 1:
+            data.mtllayer.displaySyncEnabled = YES;
+            break;
+        default:
+            return SDL_Unsupported();
         }
         return 0;
     }
 #endif
-    return SDL_SetError("This Apple OS does not support displaySyncEnabled!");
+    switch (vsync) {
+    case 1:
+        return 0;
+    default:
+        return SDL_Unsupported();
+    }
 }
 
 static SDL_MetalView GetWindowView(SDL_Window *window)
@@ -1874,10 +1886,9 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
     return nil;
 }
 
-static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
-        SDL_Renderer *renderer = NULL;
         METAL_RenderData *data = NULL;
         id<MTLDevice> mtldevice = nil;
         SDL_MetalView view = NULL;
@@ -1939,14 +1950,8 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         const size_t YCbCr_shader_matrix_size = 4 * 4 * sizeof(float);
 
         if (!IsMetalAvailable()) {
-            return NULL;
+            return -1;
         }
-
-        renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-        if (!renderer) {
-            return NULL;
-        }
-        renderer->magic = &SDL_renderer_magic;
 
         SDL_SetupRendererColorspace(renderer, create_props);
 
@@ -1959,9 +1964,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR && scRGB_supported) {
                 /* This colorspace is supported */
             } else {
-                SDL_SetError("Unsupported output colorspace");
-                SDL_free(renderer);
-                return NULL;
+                return SDL_SetError("Unsupported output colorspace");
             }
         }
 
@@ -1983,9 +1986,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         }
 
         if (mtldevice == nil) {
-            SDL_free(renderer);
-            SDL_SetError("Failed to obtain Metal device");
-            return NULL;
+            return SDL_SetError("Failed to obtain Metal device");
         }
 
         view = GetWindowView(window);
@@ -1994,8 +1995,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         }
 
         if (view == NULL) {
-            SDL_free(renderer);
-            return NULL;
+            return -1;
         }
 
         // !!! FIXME: error checking on all of this.
@@ -2007,8 +2007,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
              */
             /* SDL_Metal_DestroyView(view); */
             CFBridgingRelease(view);
-            SDL_free(renderer);
-            return NULL;
+            return SDL_SetError("METAL_RenderData alloc/init failed");
         }
 
         renderer->driverdata = (void *)CFBridgingRetain(data);
@@ -2154,19 +2153,25 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         renderer->GetMetalLayer = METAL_GetMetalLayer;
         renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
 
-        renderer->info = METAL_RenderDriver.info;
+        renderer->name = METAL_RenderDriver.name;
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR8888);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA128_FLOAT);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
 #if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
         if (@available(macOS 10.13, *)) {
-            data.mtllayer.displaySyncEnabled = SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE);
-            if (data.mtllayer.displaySyncEnabled) {
-                renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-            }
-        } else
-#endif
-        {
-            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+            data.mtllayer.displaySyncEnabled = NO;
         }
+#endif
 
         /* https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf */
         maxtexsize = 4096;
@@ -2202,32 +2207,14 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window *window, SDL_PropertiesID c
         }
 #endif
 
-        renderer->info.max_texture_width = maxtexsize;
-        renderer->info.max_texture_height = maxtexsize;
+        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, maxtexsize);
 
-        return renderer;
+        return 0;
     }
 }
 
 SDL_RenderDriver METAL_RenderDriver = {
-    METAL_CreateRenderer,
-    {
-        "metal",
-        SDL_RENDERER_PRESENTVSYNC,
-        10,
-        { SDL_PIXELFORMAT_ARGB8888,
-          SDL_PIXELFORMAT_ABGR8888,
-          SDL_PIXELFORMAT_XBGR2101010,
-          SDL_PIXELFORMAT_RGBA64_FLOAT,
-          SDL_PIXELFORMAT_RGBA128_FLOAT,
-          SDL_PIXELFORMAT_YV12,
-          SDL_PIXELFORMAT_IYUV,
-          SDL_PIXELFORMAT_NV12,
-          SDL_PIXELFORMAT_NV21,
-          SDL_PIXELFORMAT_P010 },
-        0,
-        0,
-    }
+    METAL_CreateRenderer, "metal"
 };
 
 #endif /* SDL_VIDEO_RENDER_METAL */

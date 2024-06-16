@@ -137,7 +137,7 @@ static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identify
             }
 #endif
 
-            const Uint32 latestFlags = WINRT_DetectWindowFlags(window);
+            const SDL_WindowFlags latestFlags = WINRT_DetectWindowFlags(window);
             if (latestFlags & SDL_WINDOW_MAXIMIZED) {
                 SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
             } else {
@@ -479,7 +479,7 @@ void SDL_WinRTApp::OnVisibilityChanged(CoreWindow ^ sender, VisibilityChangedEve
     m_windowVisible = args->Visible;
     if (WINRT_GlobalSDLWindow) {
         SDL_bool wasSDLWindowSurfaceValid = WINRT_GlobalSDLWindow->surface_valid;
-        Uint32 latestWindowFlags = WINRT_DetectWindowFlags(WINRT_GlobalSDLWindow);
+        SDL_WindowFlags latestWindowFlags = WINRT_DetectWindowFlags(WINRT_GlobalSDLWindow);
         if (args->Visible) {
             SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_SHOWN, 0, 0);
             SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_EVENT_WINDOW_FOCUS_GAINED, 0, 0);
@@ -612,7 +612,7 @@ void SDL_WinRTApp::OnSuspending(Platform::Object ^ sender, SuspendingEventArgs ^
 #if SDL_VIDEO_RENDER_D3D11
         if (WINRT_GlobalSDLWindow) {
             SDL_Renderer *renderer = SDL_GetRenderer(WINRT_GlobalSDLWindow);
-            if (renderer && (SDL_strcmp(renderer->info.name, "direct3d11") == 0)) {
+            if (renderer && (SDL_strcmp(renderer->name, "direct3d11") == 0)) {
                 D3D11_Trim(renderer);
             }
         }

@@ -35,13 +35,6 @@
 #endif
 #include "../video/SDL_sysvideo.h"
 
-#undef SDL_PRIs64
-#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)) && !defined(SDL_PLATFORM_CYGWIN)
-#define SDL_PRIs64 "I64d"
-#else
-#define SDL_PRIs64 "lld"
-#endif
-
 /* An arbitrary limit so we don't have unbounded growth */
 #define SDL_MAX_QUEUED_EVENTS 65535
 
@@ -108,35 +101,38 @@ static SDL_Mutex *SDL_event_memory_lock;
 static SDL_EventMemory *SDL_event_memory_head;
 static SDL_EventMemory *SDL_event_memory_tail;
 
-void *SDL_AllocateEventMemory(size_t size)
+void *SDL_FreeLater(void *memory)
 {
-    void *memory = SDL_malloc(size);
-    if (!memory) {
+    if (memory == NULL) {
         return NULL;
+    }
+
+    SDL_EventMemory *entry = (SDL_EventMemory *)SDL_malloc(sizeof(*entry));
+    if (!entry) {
+        return memory;  // this is now a leak, but you probably have bigger problems if malloc failed. We could probably pool up and reuse entries, though.
     }
 
     SDL_LockMutex(SDL_event_memory_lock);
     {
-        SDL_EventMemory *entry = (SDL_EventMemory *)SDL_malloc(sizeof(*entry));
-        if (entry) {
-            entry->eventID = SDL_last_event_id;
-            entry->memory = memory;
-            entry->next = NULL;
+        entry->eventID = SDL_last_event_id;
+        entry->memory = memory;
+        entry->next = NULL;
 
-            if (SDL_event_memory_tail) {
-                SDL_event_memory_tail->next = entry;
-            } else {
-                SDL_event_memory_head = entry;
-            }
-            SDL_event_memory_tail = entry;
+        if (SDL_event_memory_tail) {
+            SDL_event_memory_tail->next = entry;
         } else {
-            SDL_free(memory);
-            memory = NULL;
+            SDL_event_memory_head = entry;
         }
+        SDL_event_memory_tail = entry;
     }
     SDL_UnlockMutex(SDL_event_memory_lock);
 
     return memory;
+}
+
+void *SDL_AllocateEventMemory(size_t size)
+{
+    return SDL_FreeLater(SDL_malloc(size));
 }
 
 static void SDL_FlushEventMemory(Uint32 eventID)
@@ -428,11 +424,20 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_JBUTTON_EVENT
 
+        SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BATTERY_UPDATED)
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d state=%u percent=%d)",
+                           (uint)event->jbattery.timestamp, (int)event->jbattery.which,
+                           event->jbattery.state, event->jbattery.percent);
+        break;
+
 #define PRINT_JOYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d)", (uint)event->jdevice.timestamp, (int)event->jdevice.which)
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_ADDED)
         PRINT_JOYDEV_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_REMOVED)
+        PRINT_JOYDEV_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE)
         PRINT_JOYDEV_EVENT(event);
         break;
 #undef PRINT_JOYDEV_EVENT
@@ -463,6 +468,9 @@ static void SDL_LogEvent(const SDL_Event *event)
         PRINT_GAMEPADDEV_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_REMAPPED)
+        PRINT_GAMEPADDEV_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_UPDATE_COMPLETE)
         PRINT_GAMEPADDEV_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED)
@@ -573,7 +581,7 @@ static void SDL_LogEvent(const SDL_Event *event)
         break;
 #undef PRINT_DROP_EVENT
 
-#define PRINT_AUDIODEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u iscapture=%s)", (uint)event->adevice.timestamp, (uint)event->adevice.which, event->adevice.iscapture ? "true" : "false")
+#define PRINT_AUDIODEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u recording=%s)", (uint)event->adevice.timestamp, (uint)event->adevice.which, event->adevice.recording ? "true" : "false")
         SDL_EVENT_CASE(SDL_EVENT_AUDIO_DEVICE_ADDED)
         PRINT_AUDIODEV_EVENT(event);
         break;
@@ -615,8 +623,12 @@ static void SDL_LogEvent(const SDL_Event *event)
 
     default:
         if (!name[0]) {
-            SDL_strlcpy(name, "UNKNOWN", sizeof(name));
-            (void)SDL_snprintf(details, sizeof(details), " #%u! (Bug? FIXME?)", (uint)event->type);
+            if (event->type >= SDL_EVENT_USER) {
+                SDL_strlcpy(name, "USER", sizeof(name));
+            } else {
+                SDL_strlcpy(name, "UNKNOWN", sizeof(name));
+            }
+            (void)SDL_snprintf(details, sizeof(details), " 0x%x", (uint)event->type);
         }
         break;
     }
@@ -859,6 +871,10 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
             return -1;
         }
         if (action == SDL_ADDEVENT) {
+            if (!events) {
+                SDL_UnlockMutex(SDL_EventQ.lock);
+                return SDL_InvalidParamError("events");
+            }
             for (i = 0; i < numevents; ++i) {
                 used += SDL_AddEvent(&events[i]);
             }
@@ -1248,7 +1264,8 @@ int SDL_PushEvent(SDL_Event *event)
         event->common.timestamp = SDL_GetTicksNS();
     }
 
-    if (SDL_EventOK.callback || SDL_event_watchers_count > 0) {
+    if ((SDL_EventOK.callback || SDL_event_watchers_count > 0) &&
+        (event->common.type != SDL_EVENT_POLL_SENTINEL)) {
         SDL_LockMutex(SDL_event_watchers_lock);
         {
             if (SDL_EventOK.callback && !SDL_EventOK.callback(SDL_EventOK.userdata, event)) {
@@ -1293,12 +1310,25 @@ int SDL_PushEvent(SDL_Event *event)
 
 void SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
 {
+    SDL_EventEntry *event, *next;
     SDL_LockMutex(SDL_event_watchers_lock);
     {
         /* Set filter and discard pending events */
         SDL_EventOK.callback = filter;
         SDL_EventOK.userdata = userdata;
-        SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
+        if (filter) {
+            /* Cut all events not accepted by the filter */
+            SDL_LockMutex(SDL_EventQ.lock);
+            {
+                for (event = SDL_EventQ.head; event; event = next) {
+                    next = event->next;
+                    if (!filter(userdata, &event->event)) {
+                        SDL_CutEvent(event);
+                    }
+                }
+            }
+            SDL_UnlockMutex(SDL_EventQ.lock);
+        }
     }
     SDL_UnlockMutex(SDL_event_watchers_lock);
 }

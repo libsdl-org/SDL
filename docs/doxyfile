@@ -1297,7 +1297,7 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 PREDEFINED             = DOXYGEN_SHOULD_IGNORE_THIS=1 \
-                         DECLSPEC= \
+                         SDL_DECLSPEC= \
                          SDLCALL= \
                          _WIN32=1
 

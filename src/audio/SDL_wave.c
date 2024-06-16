@@ -1527,8 +1527,8 @@ static int WaveNextChunk(SDL_IOStream *src, WaveChunk *chunk)
         return -1;
     }
 
-    chunk->fourcc = SDL_SwapLE32(chunkheader[0]);
-    chunk->length = SDL_SwapLE32(chunkheader[1]);
+    chunk->fourcc = SDL_Swap32LE(chunkheader[0]);
+    chunk->length = SDL_Swap32LE(chunkheader[1]);
     chunk->position = nextposition + 8;
 
     return 0;

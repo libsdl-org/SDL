@@ -1158,7 +1158,7 @@ int SDL_GetSystemRAM(void)
     return SDL_SystemRAM;
 }
 
-size_t SDL_SIMDGetAlignment(void)
+size_t SDL_GetSIMDAlignment(void)
 {
     if (SDL_SIMDAlignment == 0xFFFFFFFF) {
         SDL_GetCPUFeatures(); /* make sure this has been calculated */

@@ -91,7 +91,6 @@ static SDL_SpinLock SDL_HIDAPI_spinlock;
 static SDL_bool SDL_HIDAPI_hints_changed = SDL_FALSE;
 static Uint32 SDL_HIDAPI_change_count = 0;
 static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_joystick_lock);
-static char SDL_HIDAPI_device_magic;
 static int SDL_HIDAPI_numjoysticks = 0;
 static SDL_bool SDL_HIDAPI_combine_joycons = SDL_TRUE;
 static SDL_bool initialized = SDL_FALSE;
@@ -153,16 +152,12 @@ SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
     case USB_VENDOR_HORI:
         return SDL_TRUE;
     case USB_VENDOR_LOGITECH:
-        /* Most Logitech devices are fine with this, but there are a few exceptions */
-        if (product == USB_PRODUCT_LOGITECH_F310) {
-            /* The Logitech F310 gamepad will lock up */
-            return SDL_FALSE;
-        }
-        if (product == 0xc33f) {
-            /* The Logitech G815 keyboard will reset the LEDs */
-            return SDL_FALSE;
-        }
-        return SDL_TRUE;
+        /* Most Logitech devices are not PlayStation controllers, and some of them
+         * lock up or reset when we send them the Sony third-party query feature
+         * report, so don't include that vendor here. Instead add devices as
+         * appropriate to controller_list.h
+         */
+        return SDL_FALSE;
     case USB_VENDOR_MADCATZ:
         if (product == USB_PRODUCT_MADCATZ_SAITEK_SIDE_PANEL_CONTROL_DECK) {
             /* This is not a Playstation compatible device */
@@ -183,10 +178,10 @@ SDL_bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
     case USB_VENDOR_QANBA:
         return SDL_TRUE;
     case USB_VENDOR_RAZER:
-        /* Most Razer devices are not game controllers, and some of them lock up
-         * or reset when we send them the Sony third-party query feature report,
-         * so don't include that vendor here. Instead add devices as appropriate
-         * to controller_type.c
+        /* Most Razer devices are not PlayStation controllers, and some of them
+         * lock up or reset when we send them the Sony third-party query feature
+         * report, so don't include that vendor here. Instead add devices as
+         * appropriate to controller_list.h
          *
          * Reference: https://github.com/libsdl-org/SDL/issues/6733
          *            https://github.com/libsdl-org/SDL/issues/6799
@@ -933,7 +928,7 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     if (!device) {
         return NULL;
     }
-    device->magic = &SDL_HIDAPI_device_magic;
+    SDL_SetObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_JOYSTICK, SDL_TRUE);
     device->path = SDL_strdup(info->path);
     if (!device->path) {
         SDL_free(device);
@@ -1008,11 +1003,9 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
         return NULL;
     }
 
-#ifdef DEBUG_HIDAPI
-    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version,
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, bluetooth %d, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->is_bluetooth, device->version,
             device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage,
             device->path, device->driver ? device->driver->name : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
-#endif
 
     return device;
 }
@@ -1024,11 +1017,9 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 
     SDL_AssertJoysticksLocked();
 
-#ifdef DEBUG_HIDAPI
-    SDL_Log("Removing HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version,
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Removing HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, bluetooth %d, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->is_bluetooth, device->version,
             device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage,
             device->path, device->driver ? device->driver->name : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
-#endif
 
     for (curr = SDL_HIDAPI_devices, last = NULL; curr; last = curr, curr = curr->next) {
         if (curr == device) {
@@ -1049,7 +1040,7 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
                 device->children[i]->parent = NULL;
             }
 
-            device->magic = NULL;
+            SDL_SetObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_JOYSTICK, SDL_FALSE);
             SDL_DestroyMutex(device->dev_lock);
             SDL_free(device->manufacturer_string);
             SDL_free(device->product_string);
@@ -1547,7 +1538,7 @@ static SDL_bool HIDAPI_GetJoystickDevice(SDL_Joystick *joystick, SDL_HIDAPI_Devi
 
     if (joystick && joystick->hwdata) {
         *device = joystick->hwdata->device;
-        if (*device && (*device)->magic == &SDL_HIDAPI_device_magic && (*device)->driver != NULL) {
+        if (SDL_ObjectValid(*device, SDL_OBJECT_TYPE_HIDAPI_JOYSTICK) && (*device)->driver != NULL) {
             return SDL_TRUE;
         }
     }

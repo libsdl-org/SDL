@@ -227,7 +227,7 @@ SDL_PenSubtype SDL_GetPenType(SDL_PenID instance_id)
     return result;
 }
 
-Uint32 SDL_GetPenCapabilities(SDL_PenID instance_id, SDL_PenCapabilityInfo *info)
+SDL_PenCapabilityFlags SDL_GetPenCapabilities(SDL_PenID instance_id, SDL_PenCapabilityInfo *info)
 {
     Uint32 result;
     SDL_LOAD_LOCK_PEN(pen, instance_id, 0u);

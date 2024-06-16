@@ -169,6 +169,26 @@ static int time_dateTimeUtilities(void *arg)
     SDLTest_AssertPass("Call to SDL_TimeFromWindows()");
     SDLTest_AssertCheck(ticks > 0 && ticks <= SDL_MAX_TIME, "Check result value, expected >0 && <=%" SDL_PRIs64 ", got: %" SDL_PRIs64, SDL_MAX_TIME, ticks);
 
+    /* Test time locale functions */
+    SDL_DateFormat dateFormat;
+    SDL_TimeFormat timeFormat;
+
+    result = SDL_GetDateTimeLocalePreferences(&dateFormat, &timeFormat);
+    SDLTest_AssertPass("Call to SDL_GetDateTimeLocalePreferences(&dateFormat, &timeFormat)");
+    SDLTest_AssertCheck(result == 0, "Check result value, expected 0, got: %i", result);
+
+    result = SDL_GetDateTimeLocalePreferences(&dateFormat, NULL);
+    SDLTest_AssertPass("Call to SDL_GetDateTimeLocalePreferences(&dateFormat, NULL)");
+    SDLTest_AssertCheck(result == 0, "Check result value, expected 0, got: %i", result);
+
+    result = SDL_GetDateTimeLocalePreferences(NULL, &timeFormat);
+    SDLTest_AssertPass("Call to SDL_GetDateTimeLocalePreferences(NULL, &timeFormat)");
+    SDLTest_AssertCheck(result == 0, "Check result value, expected 0, got: %i", result);
+
+    result = SDL_GetDateTimeLocalePreferences(NULL, NULL);
+    SDLTest_AssertPass("Call to SDL_GetDateTimeLocalePreferences(NULL, NULL)");
+    SDLTest_AssertCheck(result == 0, "Check result value, expected 0, got: %i", result);
+
     return TEST_COMPLETED;
 }
 

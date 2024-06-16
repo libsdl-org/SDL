@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_locale.h
+ * # CategoryLocale
  *
- *  Include file for SDL locale services
+ * SDL locale services.
  */
 
 #ifndef SDL_locale_h
@@ -100,7 +100,7 @@ typedef struct SDL_Locale
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern DECLSPEC SDL_Locale * SDLCALL SDL_GetPreferredLocales(void);
+extern SDL_DECLSPEC SDL_Locale * SDLCALL SDL_GetPreferredLocales(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

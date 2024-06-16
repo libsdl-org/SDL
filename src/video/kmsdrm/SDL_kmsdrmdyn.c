@@ -48,7 +48,7 @@ static void *KMSDRM_GetSym(const char *fnname, int *pHasModule)
 {
     int i;
     void *fn = NULL;
-    for (i = 0; i < SDL_TABLESIZE(kmsdrmlibs); i++) {
+    for (i = 0; i < SDL_arraysize(kmsdrmlibs); i++) {
         if (kmsdrmlibs[i].lib) {
             fn = SDL_LoadFunction(kmsdrmlibs[i].lib, fnname);
             if (fn) {
@@ -97,7 +97,7 @@ void SDL_KMSDRM_UnloadSymbols(void)
 #include "SDL_kmsdrmsym.h"
 
 #ifdef SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC
-            for (i = 0; i < SDL_TABLESIZE(kmsdrmlibs); i++) {
+            for (i = 0; i < SDL_arraysize(kmsdrmlibs); i++) {
                 if (kmsdrmlibs[i].lib) {
                     SDL_UnloadObject(kmsdrmlibs[i].lib);
                     kmsdrmlibs[i].lib = NULL;
@@ -118,7 +118,7 @@ int SDL_KMSDRM_LoadSymbols(void)
 #ifdef SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC
         int i;
         int *thismod = NULL;
-        for (i = 0; i < SDL_TABLESIZE(kmsdrmlibs); i++) {
+        for (i = 0; i < SDL_arraysize(kmsdrmlibs); i++) {
             if (kmsdrmlibs[i].libname) {
                 kmsdrmlibs[i].lib = SDL_LoadObject(kmsdrmlibs[i].libname);
             }

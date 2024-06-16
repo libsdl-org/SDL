@@ -47,7 +47,6 @@ SDL_COMPILE_TIME_ASSERT(cursorNames, SDL_arraysize(cursorNames) == SDL_NUM_SYSTE
 
 static int system_cursor = -1;
 static SDL_Cursor *cursor = NULL;
-static SDL_bool relative_mode = SDL_FALSE;
 static const SDL_DisplayMode *highlighted_mode = NULL;
 
 /* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
@@ -187,17 +186,6 @@ static void loop(void)
                         SDL_GetDisplayName(SDL_GetDisplayForWindow(window)));
             }
         }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
-            relative_mode = SDL_GetRelativeMouseMode();
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_FALSE);
-            }
-        }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_TRUE);
-            }
-        }
         if (event.type == SDL_EVENT_KEY_UP) {
             SDL_bool updateCursor = SDL_FALSE;
 
@@ -276,7 +264,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
         SDLTest_CommonQuit(state);

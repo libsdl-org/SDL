@@ -199,6 +199,9 @@
     <Filter Include="dialog">
       <UniqueIdentifier>{00008dfdfa0190856fbf3c7db52d0000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="video\offscreen">
+      <UniqueIdentifier>{748cf015-00b8-4e71-ac48-02e947e4d93d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -871,6 +874,24 @@
     <ClInclude Include="..\..\src\render\vulkan\SDL_shaders_vulkan.h">
       <Filter>render\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenevents_c.h">
+      <Filter>video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenframebuffer_c.h">
+      <Filter>video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenopengles.h">
+      <Filter>video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenvideo.h">
+      <Filter>video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenvulkan.h">
+      <Filter>video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenwindow.h">
+      <Filter>video\offscreen</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1478,6 +1499,24 @@
     </ClCompile>
     <ClCompile Include="..\..\src\render\vulkan\SDL_shaders_vulkan.c">
       <Filter>render\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenevents.c">
+      <Filter>video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenframebuffer.c">
+      <Filter>video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenopengles.c">
+      <Filter>video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenvideo.c">
+      <Filter>video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenvulkan.c">
+      <Filter>video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenwindow.c">
+      <Filter>video\offscreen</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

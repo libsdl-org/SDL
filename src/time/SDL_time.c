@@ -22,8 +22,6 @@
 
 #include "SDL_time_c.h"
 
-static SDL_bool time_initialized;
-
 /* The following algorithms are based on those of Howard Hinnant and are in the public domain.
  *
  * http://howardhinnant.github.io/date_algorithms.html
@@ -59,38 +57,25 @@ Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_
     return z;
 }
 
-void SDL_InitTime()
+int SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat)
 {
-    if (time_initialized) {
-        return;
-    }
-
     /* Default to ISO 8061 date format, as it is unambiguous, and 24 hour time. */
-    SDL_DateFormat dateFormat = SDL_DATE_FORMAT_YYYYMMDD;
-    SDL_TimeFormat timeFormat = SDL_TIME_FORMAT_24HR;
-    SDL_PropertiesID props = SDL_GetGlobalProperties();
-
-    SDL_GetSystemTimeLocalePreferences(&dateFormat, &timeFormat);
-
-    if (!SDL_HasProperty(props, SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER)) {
-        SDL_SetNumberProperty(props, SDL_PROP_GLOBAL_SYSTEM_DATE_FORMAT_NUMBER, dateFormat);
+    if (dateFormat) {
+        *dateFormat = SDL_DATE_FORMAT_YYYYMMDD;
     }
-    if (!SDL_HasProperty(props, SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER)) {
-        SDL_SetNumberProperty(props, SDL_PROP_GLOBAL_SYSTEM_TIME_FORMAT_NUMBER, timeFormat);
+    if (timeFormat) {
+        *timeFormat = SDL_TIME_FORMAT_24HR;
     }
 
-    time_initialized = SDL_TRUE;
-}
+    SDL_GetSystemTimeLocalePreferences(dateFormat, timeFormat);
 
-void SDL_QuitTime()
-{
-    time_initialized = SDL_FALSE;
+    return 0;
 }
 
 int SDL_GetDaysInMonth(int year, int month)
 {
     static const int DAYS_IN_MONTH[] = {
-        30, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+        31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
     };
 
     if (month < 1 || month > 12) {

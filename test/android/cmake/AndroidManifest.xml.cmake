@@ -33,6 +33,10 @@
     <!-- Allow access to the microphone -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- Allow access to the camera -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/sdl-test"

@@ -96,6 +96,8 @@ struct SDL_WindowData
     struct wp_viewport *viewport;
     struct wp_fractional_scale_v1 *fractional_scale;
     struct zxdg_exported_v2 *exported;
+    struct xdg_dialog_v1 *xdg_dialog_v1;
+    struct wp_alpha_modifier_surface_v1 *wp_alpha_modifier_surface_v1;
 
     SDL_AtomicInt swap_interval_ready;
 
@@ -113,42 +115,33 @@ struct SDL_WindowData
         float y;
     } pointer_scale;
 
-    /* The current pending user requested resize event. */
-    struct
-    {
-        /* These units can represent points or pixels, depending on the scaling mode. */
-        int width;
-        int height;
-    } pending_size_event;
-
     /* The in-flight window size request. */
     struct
     {
-        /* These units can represent points or pixels, depending on the scaling mode. */
-        int width;
-        int height;
-
-        /* The requested logical window size when using screen space scaling. */
+        /* The requested logical window size. */
         int logical_width;
         int logical_height;
+
+        /* The size of the window in pixels, when using screen space scaling. */
+        int pixel_width;
+        int pixel_height;
     } requested;
 
     /* The current size of the window and drawable backing store. */
     struct
     {
-        /* The size of the window backbuffer in pixels. */
-        int drawable_width;
-        int drawable_height;
-
         /* The size of the underlying window. */
         int logical_width;
         int logical_height;
+
+        /* The size of the window backbuffer in pixels. */
+        int pixel_width;
+        int pixel_height;
     } current;
 
     /* The last compositor requested parameters; used for deduplication of window geometry configuration. */
     struct
     {
-        /* These units can be points or pixels, depending on the scaling mode. */
         int width;
         int height;
     } last_configure;
@@ -172,6 +165,7 @@ struct SDL_WindowData
     SDL_bool fullscreen_was_positioned;
     SDL_bool show_hide_sync_required;
     SDL_bool scale_to_display;
+    SDL_bool modal_reparenting_required;
 
     SDL_HitTestResult hit_test_result;
 
@@ -183,7 +177,7 @@ extern void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window,
                                         SDL_VideoDisplay *_display,
-                                        SDL_bool fullscreen);
+                                        SDL_FullscreenOp fullscreen);
 extern void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
@@ -198,7 +192,9 @@ extern void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
+extern SDL_DisplayID Wayland_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Wayland_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
+extern int Wayland_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
 extern void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);

@@ -193,7 +193,7 @@ static void OnGCKeyboardDisconnected(GCKeyboard *keyboard) API_AVAILABLE(macos(1
 {
     SDL_KeyboardID keyboardID = (SDL_KeyboardID)(uintptr_t)keyboard;
 
-    SDL_RemoveKeyboard(keyboardID);
+    SDL_RemoveKeyboard(keyboardID, SDL_TRUE);
 
     keyboard.keyboardInput.keyChangedHandler = nil;
 }
@@ -385,7 +385,7 @@ static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios
 
     UpdatePointerLock();
 
-    SDL_RemoveMouse(mouseID);
+    SDL_RemoveMouse(mouseID, SDL_TRUE);
 }
 
 void SDL_InitGCMouse(void)

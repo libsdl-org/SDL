@@ -57,6 +57,9 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
     case SDL_EVENT_DISPLAY_ADDED:
         SDL_OnDisplayAdded(display);
         break;
+    case SDL_EVENT_DISPLAY_MOVED:
+        SDL_OnDisplayMoved(display);
+        break;
     default:
         break;
     }

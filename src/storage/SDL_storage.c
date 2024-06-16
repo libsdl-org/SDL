@@ -27,6 +27,7 @@
 /* Available title storage drivers */
 static TitleStorageBootStrap *titlebootstrap[] = {
     &GENERIC_titlebootstrap,
+    NULL
 };
 
 /* Available user storage drivers */
@@ -35,6 +36,7 @@ static UserStorageBootStrap *userbootstrap[] = {
     &STEAM_userbootstrap,
 #endif
     &GENERIC_userbootstrap,
+    NULL
 };
 
 struct SDL_Storage
@@ -333,7 +335,7 @@ static int GlobStorageDirectoryEnumerator(const char *path, SDL_EnumerateDirecto
     return SDL_EnumerateStorageDirectory((SDL_Storage *) userdata, path, cb, cbuserdata);
 }
 
-char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, Uint32 flags, int *count)
+char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, SDL_GlobFlags flags, int *count)
 {
     CHECK_STORAGE_MAGIC_RET(NULL)
     return SDL_InternalGlobDirectory(path, pattern, flags, count, GlobStorageDirectoryEnumerator, GlobStorageDirectoryGetPathInfo, storage);

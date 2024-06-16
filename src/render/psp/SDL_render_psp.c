@@ -128,10 +128,8 @@ typedef struct
     float x, y, z;
 } VertTCV;
 
-#define PI 3.14159265358979f
-
-#define radToDeg(x) ((x)*180.f / PI)
-#define degToRad(x) ((x)*PI / 180.f)
+#define radToDeg(x) ((x)*180.f / SDL_PI_F)
+#define degToRad(x) ((x)*SDL_PI_F / 180.f)
 
 static float MathAbs(float x)
 {
@@ -809,7 +807,7 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
         float curX = x;
         const float endX = x + width;
         const float slice = 64.0f;
-        const size_t count = SDL_ceilf(width / slice);
+        const size_t count = (size_t)SDL_ceilf(width / slice);
         size_t i;
         float ustep = (u1 - u0) / width * slice;
 
@@ -877,7 +875,7 @@ static int PSP_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_T
 
     cmd->data.draw.count = 1;
 
-    MathSincos(degToRad(360 - angle), &s, &c);
+    MathSincos(degToRad((float)(360 - angle)), &s, &c);
 
     cw1 = c * -centerx;
     sw1 = s * -centerx;
@@ -1263,8 +1261,6 @@ static void PSP_DestroyRenderer(SDL_Renderer *renderer)
             return;
         }
 
-        StartDrawing(renderer);
-
         sceKernelDisableSubIntr(PSP_VBLANK_INT, 0);
         sceKernelReleaseSubIntrHandler(PSP_VBLANK_INT, 0);
         sceDisplayWaitVblankStart();
@@ -1277,7 +1273,6 @@ static void PSP_DestroyRenderer(SDL_Renderer *renderer)
         data->displayListAvail = SDL_FALSE;
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
@@ -1287,31 +1282,21 @@ static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_props)
+static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_Renderer *renderer;
     PSP_RenderData *data;
     int pixelformat;
     void *doublebuffer = NULL;
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        return NULL;
-    }
-    renderer->magic = &SDL_renderer_magic;
-
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
-        SDL_free(renderer);
-        return NULL;
+        return SDL_SetError("Unsupported output colorspace");
     }
 
     data = (PSP_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        PSP_DestroyRenderer(renderer);
-        return NULL;
+        return -1;
     }
 
     renderer->WindowEvent = PSP_WindowEvent;
@@ -1335,20 +1320,20 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     renderer->DestroyTexture = PSP_DestroyTexture;
     renderer->DestroyRenderer = PSP_DestroyRenderer;
     renderer->SetVSync = PSP_SetVSync;
-    renderer->info = PSP_RenderDriver.info;
     renderer->driverdata = data;
     PSP_InvalidateCachedState(renderer);
     renderer->window = window;
 
+    renderer->name = PSP_RenderDriver.name;
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGR565);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR4444);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 512);
+
     data->initialized = SDL_TRUE;
     data->most_recent_target = NULL;
     data->least_recent_target = NULL;
-
-    if (SDL_GetBooleanProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_BOOLEAN, SDL_FALSE)) {
-        data->vsync = SDL_TRUE;
-    } else {
-        data->vsync = SDL_FALSE;
-    }
 
     pixelformat = PixelFormatToPSPFMT(SDL_GetWindowPixelFormat(window));
     switch (pixelformat) {
@@ -1403,27 +1388,11 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, SDL_PropertiesID create_pro
     sceKernelRegisterSubIntrHandler(PSP_VBLANK_INT, 0, psp_on_vblank, data);
     sceKernelEnableSubIntr(PSP_VBLANK_INT, 0);
 
-    if (data->vsync) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-    return renderer;
+    return 0;
 }
 
 SDL_RenderDriver PSP_RenderDriver = {
-    .CreateRenderer = PSP_CreateRenderer,
-    .info = {
-        .name = "PSP",
-        .flags = SDL_RENDERER_PRESENTVSYNC,
-        .num_texture_formats = 4,
-        .texture_formats = {
-            [0] = SDL_PIXELFORMAT_BGR565,
-            [1] = SDL_PIXELFORMAT_ABGR1555,
-            [2] = SDL_PIXELFORMAT_ABGR4444,
-            [3] = SDL_PIXELFORMAT_ABGR8888,
-        },
-        .max_texture_width = 512,
-        .max_texture_height = 512,
-    }
+    PSP_CreateRenderer, "PSP"
 };
 
 #endif /* SDL_VIDEO_RENDER_PSP */

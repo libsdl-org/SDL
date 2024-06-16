@@ -169,7 +169,7 @@ int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     info->modify_time = SDL_TimeFromWindows(winstat.ftLastWriteTime.dwLowDateTime, winstat.ftLastWriteTime.dwHighDateTime);
     info->access_time = SDL_TimeFromWindows(winstat.ftLastAccessTime.dwLowDateTime, winstat.ftLastAccessTime.dwHighDateTime);
 
-    return 1;
+    return 0;
 }
 
 #endif // SDL_FSOPS_WINDOWS

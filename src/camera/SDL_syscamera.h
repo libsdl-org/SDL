@@ -204,6 +204,7 @@ typedef struct CameraBootStrap
 
 // Not all of these are available in a given build. Use #ifdefs, etc.
 extern CameraBootStrap DUMMYCAMERA_bootstrap;
+extern CameraBootStrap PIPEWIRECAMERA_bootstrap;
 extern CameraBootStrap V4L2_bootstrap;
 extern CameraBootStrap COREMEDIA_bootstrap;
 extern CameraBootStrap ANDROIDCAMERA_bootstrap;

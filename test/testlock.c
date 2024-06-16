@@ -100,9 +100,9 @@ Run(void *data)
 }
 
 #ifndef _WIN32
-static Uint32 hit_timeout(Uint32 interval, void *param) {
+static Uint32 hit_timeout(void *param, SDL_TimerID timerID, Uint32 interval) {
     SDL_Log("Hit timeout! Sending SIGINT!");
-    kill(0, SIGINT);
+    (void)raise(SIGINT);
     return 0;
 }
 #endif
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
     /* Parse commandline */
     for (i = 1; i < argc;) {
         int consumed;

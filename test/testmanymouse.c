@@ -401,7 +401,7 @@ static void HandleKeyboardKeyDown(SDL_KeyboardEvent *event)
             case SDLK_RIGHT:
                 keyboard_state->position.x += CURSOR_SIZE;
                 if (keyboard_state->position.x > w) {
-                    keyboard_state->position.x = w;
+                    keyboard_state->position.x = (float)w;
                 }
                 break;
             case SDLK_UP:
@@ -413,7 +413,7 @@ static void HandleKeyboardKeyDown(SDL_KeyboardEvent *event)
             case SDLK_DOWN:
                 keyboard_state->position.y += CURSOR_SIZE;
                 if (keyboard_state->position.y > h) {
-                    keyboard_state->position.y = h;
+                    keyboard_state->position.y = (float)h;
                 }
                 break;
             default:
@@ -502,7 +502,7 @@ int main(int argc, char *argv[])
     int i;
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Log all events, including mouse motion */
     SDL_SetHint(SDL_HINT_EVENT_LOGGING, "2");

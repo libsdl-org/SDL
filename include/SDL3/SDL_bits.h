@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_bits.h
+ * # CategoryBits
  *
- *  Functions for fiddling with bits and bitmasks.
+ * Functions for fiddling with bits and bitmasks.
  */
 
 #ifndef SDL_bits_h_
@@ -60,7 +60,7 @@ extern __inline int _SDL_bsr_watcom(Uint32);
  * embedded in the calling program and the linker and dynamic loader will not
  * be able to find this function inside SDL itself).
  *
- * \param x the 32-bit value to examine
+ * \param x the 32-bit value to examine.
  * \returns the index of the most significant bit, or -1 if the value is 0.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -128,7 +128,7 @@ SDL_FORCE_INLINE int SDL_MostSignificantBitIndex32(Uint32 x)
  * embedded in the calling program and the linker and dynamic loader will not
  * be able to find this function inside SDL itself).
  *
- * \param x the 32-bit value to examine
+ * \param x the 32-bit value to examine.
  * \returns SDL_TRUE if exactly one bit is set in `x`, SDL_FALSE otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.

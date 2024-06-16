@@ -25,7 +25,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
 
     window = SDL_CreateWindow(title, w, h, flags);
-    SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu32 ")", w, h, flags);
+    SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu64 ")", w, h, flags);
     SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
     /* Wayland and XWayland windows require that a frame be presented before they are fully mapped and visible onscreen.
@@ -45,7 +45,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     }
 
     if (needs_renderer) {
-        SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL, 0);
+        SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
         if (renderer) {
             SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
             SDL_RenderClear(renderer);
@@ -75,6 +75,10 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
 static void destroyVideoSuiteTestWindow(SDL_Window *window)
 {
     if (window != NULL) {
+        SDL_Renderer *renderer = SDL_GetRenderer(window);
+        if (renderer) {
+            SDL_DestroyRenderer(renderer);
+        }
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("Call to SDL_DestroyWindow()");
@@ -252,7 +256,7 @@ static int video_createWindowVariousFlags(void *arg)
         }
 
         window = SDL_CreateWindow(title, w, h, flags);
-        SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu32 ")", w, h, flags);
+        SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu64 ")", w, h, flags);
         SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
 
         /* Clean up */
@@ -270,7 +274,7 @@ static int video_getWindowFlags(void *arg)
     SDL_Window *window;
     const char *title = "video_getWindowFlags Test Window";
     SDL_WindowFlags flags;
-    Uint32 actualFlags;
+    SDL_WindowFlags actualFlags;
 
     /* Reliable flag set always set in test window */
     flags = 0;
@@ -280,7 +284,7 @@ static int video_getWindowFlags(void *arg)
     if (window != NULL) {
         actualFlags = SDL_GetWindowFlags(window);
         SDLTest_AssertPass("Call to SDL_GetWindowFlags()");
-        SDLTest_AssertCheck((flags & actualFlags) == flags, "Verify returned value has flags %" SDL_PRIu32 " set, got: %" SDL_PRIu32, flags, actualFlags);
+        SDLTest_AssertCheck((flags & actualFlags) == flags, "Verify returned value has flags %" SDL_PRIu64 " set, got: %" SDL_PRIu64, flags, actualFlags);
     }
 
     /* Clean up */
@@ -1676,15 +1680,15 @@ static int video_setWindowCenteredOnDisplay(void *arg)
     if (displays) {
 
         /* Get display bounds */
-        result = SDL_GetDisplayBounds(displays[0 % displayNum], &display0);
-        SDLTest_AssertPass("SDL_GetDisplayBounds()");
+        result = SDL_GetDisplayUsableBounds(displays[0 % displayNum], &display0);
+        SDLTest_AssertPass("SDL_GetDisplayUsableBounds()");
         SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
         if (result != 0) {
             return TEST_ABORTED;
         }
 
-        result = SDL_GetDisplayBounds(displays[1 % displayNum], &display1);
-        SDLTest_AssertPass("SDL_GetDisplayBounds()");
+        result = SDL_GetDisplayUsableBounds(displays[1 % displayNum], &display1);
+        SDLTest_AssertPass("SDL_GetDisplayUsableBounds()");
         SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
         if (result != 0) {
             return TEST_ABORTED;
@@ -1724,7 +1728,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
 
                 /* Wayland windows require that a frame be presented before they are fully mapped and visible onscreen. */
                 if (video_driver_is_wayland) {
-                    SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL, 0);
+                    SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
 
                     if (renderer) {
                         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);

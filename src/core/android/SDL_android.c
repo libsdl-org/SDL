@@ -177,6 +177,10 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeAllowRecreateActivity)(
 JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter)(
     JNIEnv *env, jclass jcls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
+    JNIEnv *env, jclass jcls,
+    jint requestCode, jobjectArray fileList, jint filter);
+
 static JNINativeMethod SDLActivity_tab[] = {
     { "nativeGetVersion", "()Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetVersion) },
     { "nativeSetupJNI", "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
@@ -211,7 +215,8 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "nativeAddTouch", "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) },
     { "nativePermissionResult", "(IZ)V", SDL_JAVA_INTERFACE(nativePermissionResult) },
     { "nativeAllowRecreateActivity", "()Z", SDL_JAVA_INTERFACE(nativeAllowRecreateActivity) },
-    { "nativeCheckSDLThreadCounter", "()I", SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter) }
+    { "nativeCheckSDLThreadCounter", "()I", SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter) },
+    { "onNativeFileDialog", "(I[Ljava/lang/String;I)V", SDL_JAVA_INTERFACE(onNativeFileDialog) }
 };
 
 /* Java class SDLInputConnection */
@@ -233,11 +238,11 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(
     JNIEnv *env, jclass jcls);
 
 JNIEXPORT void JNICALL
-    SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_capture, jstring name,
+    SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording, jstring name,
                                              jint device_id);
 
 JNIEXPORT void JNICALL
-    SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_capture,
+    SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
                                                 jint device_id);
 
 static JNINativeMethod SDLAudioManager_tab[] = {
@@ -269,7 +274,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc, jint vendor_id, jint product_id,
-    jint button_mask, jint naxes, jint axis_mask, jint nhats);
+    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble);
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     JNIEnv *env, jclass jcls,
@@ -289,7 +294,7 @@ static JNINativeMethod SDLControllerManager_tab[] = {
     { "onNativePadUp", "(II)I", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
     { "onNativeJoy", "(IIF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy) },
     { "onNativeHat", "(IIII)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat) },
-    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIII)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
+    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZ)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
     { "nativeRemoveJoystick", "(I)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick) },
     { "nativeAddHaptic", "(ILjava/lang/String;)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic) },
     { "nativeRemoveHaptic", "(I)I", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic) }
@@ -345,6 +350,8 @@ static jmethodID midSetWindowStyle;
 static jmethodID midShouldMinimizeOnFocusLoss;
 static jmethodID midShowTextInput;
 static jmethodID midSupportsRelativeMouse;
+static jmethodID midOpenFileDescriptor;
+static jmethodID midShowFileDialog;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -357,11 +364,11 @@ static jmethodID midAudioWriteByteBuffer;
 static jmethodID midAudioWriteShortBuffer;
 static jmethodID midAudioWriteFloatBuffer;
 static jmethodID midAudioClose;
-static jmethodID midCaptureOpen;
-static jmethodID midCaptureReadByteBuffer;
-static jmethodID midCaptureReadShortBuffer;
-static jmethodID midCaptureReadFloatBuffer;
-static jmethodID midCaptureClose;
+static jmethodID midRecordingOpen;
+static jmethodID midRecordingReadByteBuffer;
+static jmethodID midRecordingReadShortBuffer;
+static jmethodID midRecordingReadFloatBuffer;
+static jmethodID midRecordingClose;
 static jmethodID midAudioSetThreadPriority;
 
 /* controller manager */
@@ -371,6 +378,7 @@ static jclass mControllerManagerClass;
 static jmethodID midPollInputDevices;
 static jmethodID midPollHapticDevices;
 static jmethodID midHapticRun;
+static jmethodID midHapticRumble;
 static jmethodID midHapticStop;
 
 /* Accelerometer data storage */
@@ -560,7 +568,7 @@ JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(JNIEnv *env, jcla
 {
     char version[128];
 
-    SDL_snprintf(version, sizeof(version), "%d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+    SDL_snprintf(version, sizeof(version), "%d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
 
     return (*env)->NewStringUTF(env, version);
 }
@@ -638,6 +646,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass, "shouldMinimizeOnFocusLoss", "()Z");
     midShowTextInput = (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIII)Z");
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
+    midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
+    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
 
     if (!midClipboardGetText ||
         !midClipboardHasText ||
@@ -667,7 +677,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midSetWindowStyle ||
         !midShouldMinimizeOnFocusLoss ||
         !midShowTextInput ||
-        !midSupportsRelativeMouse) {
+        !midSupportsRelativeMouse ||
+        !midOpenFileDescriptor ||
+        !midShowFileDialog) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -697,15 +709,15 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
                                                          "audioWriteFloatBuffer", "([F)V");
     midAudioClose = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                               "audioClose", "()V");
-    midCaptureOpen = (*env)->GetStaticMethodID(env, mAudioManagerClass,
+    midRecordingOpen = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                                "captureOpen", "(IIIII)[I");
-    midCaptureReadByteBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
+    midRecordingReadByteBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                                          "captureReadByteBuffer", "([BZ)I");
-    midCaptureReadShortBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
+    midRecordingReadShortBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                                           "captureReadShortBuffer", "([SZ)I");
-    midCaptureReadFloatBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
+    midRecordingReadFloatBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                                           "captureReadFloatBuffer", "([FZ)I");
-    midCaptureClose = (*env)->GetStaticMethodID(env, mAudioManagerClass,
+    midRecordingClose = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                                 "captureClose", "()V");
     midAudioSetThreadPriority = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                                           "audioSetThreadPriority", "(ZI)V");
@@ -713,8 +725,8 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
     if (!midRegisterAudioDeviceCallback || !midUnregisterAudioDeviceCallback || !midAudioOpen ||
         !midAudioWriteByteBuffer || !midAudioWriteShortBuffer || !midAudioWriteFloatBuffer ||
         !midAudioClose ||
-        !midCaptureOpen || !midCaptureReadByteBuffer || !midCaptureReadShortBuffer ||
-        !midCaptureReadFloatBuffer || !midCaptureClose || !midAudioSetThreadPriority) {
+        !midRecordingOpen || !midRecordingReadByteBuffer || !midRecordingReadShortBuffer ||
+        !midRecordingReadFloatBuffer || !midRecordingClose || !midAudioSetThreadPriority) {
         __android_log_print(ANDROID_LOG_WARN, "SDL",
                             "Missing some Java callbacks, do you have the latest version of SDLAudioManager.java?");
     }
@@ -735,10 +747,12 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
                                                      "pollHapticDevices", "()V");
     midHapticRun = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                              "hapticRun", "(IFI)V");
+    midHapticRumble = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                             "hapticRumble", "(IFFI)V");
     midHapticStop = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "hapticStop", "(I)V");
 
-    if (!midPollInputDevices || !midPollHapticDevices || !midHapticRun || !midHapticStop) {
+    if (!midPollInputDevices || !midPollHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
@@ -995,7 +1009,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
 }
 
 JNIEXPORT void JNICALL
-SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_capture,
+SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
                                          jstring name, jint device_id)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
@@ -1003,7 +1017,7 @@ SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_c
         void *handle = (void *)((size_t)device_id);
         if (!SDL_FindPhysicalAudioDeviceByHandle(handle)) {
             const char *utf8name = (*env)->GetStringUTFChars(env, name, NULL);
-            SDL_AddAudioDevice(is_capture, SDL_strdup(utf8name), NULL, handle);
+            SDL_AddAudioDevice(recording, SDL_strdup(utf8name), NULL, handle);
             (*env)->ReleaseStringUTFChars(env, name, utf8name);
         }
     }
@@ -1011,12 +1025,12 @@ SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_c
 }
 
 JNIEXPORT void JNICALL
-SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice)(JNIEnv *env, jclass jcls, jboolean is_capture,
+SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
                                             jint device_id)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
     if (SDL_GetCurrentAudioDriver() != NULL) {
-        SDL_Log("Removing device with handle %d, capture %d", device_id, is_capture);
+        SDL_Log("Removing device with handle %d, recording %d", device_id, recording);
         SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByHandle((void *)((size_t)device_id)));
     }
 #endif
@@ -1027,7 +1041,11 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     return Android_OnPadDown(device_id, keycode);
+#else
+    return -1;
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 /* Padup */
@@ -1035,7 +1053,11 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint keycode)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     return Android_OnPadUp(device_id, keycode);
+#else
+    return -1;
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 /* Joy */
@@ -1043,7 +1065,9 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint axis, jfloat value)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     Android_OnJoy(device_id, axis, value);
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 /* POV Hat */
@@ -1051,24 +1075,29 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint hat_id, jint x, jint y)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     Android_OnHat(device_id, hat_id, x, y);
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc,
     jint vendor_id, jint product_id,
-    jint button_mask, jint naxes, jint axis_mask, jint nhats)
+    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble)
 {
     int retval;
+#ifdef SDL_JOYSTICK_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
-    retval = Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats);
+    retval = Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats, can_rumble);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
-
+#else
+    retval = -1;
+#endif /* SDL_JOYSTICK_ANDROID */
     return retval;
 }
 
@@ -1076,26 +1105,37 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id)
 {
+#ifdef SDL_JOYSTICK_ANDROID
     return Android_RemoveJoystick(device_id);
+#else
+    return -1;
+#endif /* SDL_JOYSTICK_ANDROID */
 }
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
     JNIEnv *env, jclass jcls, jint device_id, jstring device_name)
 {
     int retval;
+#ifdef SDL_HAPTIC_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
 
     retval = Android_AddHaptic(device_id, name);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
-
+#else
+    retval = -1;
+#endif /* SDL_HAPTIC_ANDROID */
     return retval;
 }
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
     JNIEnv *env, jclass jcls, jint device_id)
 {
+#ifdef SDL_HAPTIC_ANDROID
     return Android_RemoveHaptic(device_id);
+#else
+    return -1;
+#endif
 }
 
 /* Called from surfaceCreated() */
@@ -1555,15 +1595,15 @@ SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
 static int audioBufferFormat = 0;
 static jobject audioBuffer = NULL;
 static void *audioBufferPinned = NULL;
-static int captureBufferFormat = 0;
-static jobject captureBuffer = NULL;
+static int recordingBufferFormat = 0;
+static jobject recordingBuffer = NULL;
 
-void Android_StartAudioHotplug(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
+void Android_StartAudioHotplug(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     // this will fire the callback for each existing device right away (which will eventually SDL_AddAudioDevice), and again later when things change.
     (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midRegisterAudioDeviceCallback);
-    *default_output = *default_capture = NULL;  // !!! FIXME: how do you decide the default device id?
+    *default_playback = *default_recording = NULL;  // !!! FIXME: how do you decide the default device id?
 }
 
 void Android_StopAudioHotplug(void)
@@ -1574,7 +1614,7 @@ void Android_StopAudioHotplug(void)
 
 int Android_JNI_OpenAudioDevice(SDL_AudioDevice *device)
 {
-    const SDL_bool iscapture = device->iscapture;
+    const SDL_bool recording = device->recording;
     SDL_AudioSpec *spec = &device->spec;
     const int device_id = (int) ((size_t) device->handle);
     int audioformat;
@@ -1599,11 +1639,11 @@ int Android_JNI_OpenAudioDevice(SDL_AudioDevice *device)
         return SDL_SetError("Unsupported audio format: 0x%x", spec->format);
     }
 
-    if (iscapture) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for capture");
-        result = (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midCaptureOpen, spec->freq, audioformat, spec->channels, device->sample_frames, device_id);
+    if (recording) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for recording");
+        result = (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midRecordingOpen, spec->freq, audioformat, spec->channels, device->sample_frames, device_id);
     } else {
-        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for output");
+        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for playback");
         result = (*env)->CallStaticObjectMethod(env, mAudioManagerClass, midAudioOpen, spec->freq, audioformat, spec->channels, device->sample_frames, device_id);
     }
     if (!result) {
@@ -1672,15 +1712,15 @@ int Android_JNI_OpenAudioDevice(SDL_AudioDevice *device)
         return SDL_OutOfMemory();
     }
 
-    if (iscapture) {
-        captureBufferFormat = audioformat;
-        captureBuffer = jbufobj;
+    if (recording) {
+        recordingBufferFormat = audioformat;
+        recordingBuffer = jbufobj;
     } else {
         audioBufferFormat = audioformat;
         audioBuffer = jbufobj;
     }
 
-    if (!iscapture) {
+    if (!recording) {
         isCopy = JNI_FALSE;
 
         switch (audioformat) {
@@ -1740,103 +1780,103 @@ void Android_JNI_WriteAudioBuffer(void)
     /* JNI_COMMIT means the changes are committed to the VM but the buffer remains pinned */
 }
 
-int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen)
+int Android_JNI_RecordAudioBuffer(void *buffer, int buflen)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jboolean isCopy = JNI_FALSE;
     jint br = -1;
 
-    switch (captureBufferFormat) {
+    switch (recordingBufferFormat) {
     case ENCODING_PCM_8BIT:
-        SDL_assert((*env)->GetArrayLength(env, (jshortArray)captureBuffer) == buflen);
-        br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadByteBuffer, (jbyteArray)captureBuffer, JNI_TRUE);
+        SDL_assert((*env)->GetArrayLength(env, (jshortArray)recordingBuffer) == buflen);
+        br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midRecordingReadByteBuffer, (jbyteArray)recordingBuffer, JNI_TRUE);
         if (br > 0) {
-            jbyte *ptr = (*env)->GetByteArrayElements(env, (jbyteArray)captureBuffer, &isCopy);
+            jbyte *ptr = (*env)->GetByteArrayElements(env, (jbyteArray)recordingBuffer, &isCopy);
             SDL_memcpy(buffer, ptr, br);
-            (*env)->ReleaseByteArrayElements(env, (jbyteArray)captureBuffer, ptr, JNI_ABORT);
+            (*env)->ReleaseByteArrayElements(env, (jbyteArray)recordingBuffer, ptr, JNI_ABORT);
         }
         break;
     case ENCODING_PCM_16BIT:
-        SDL_assert((*env)->GetArrayLength(env, (jshortArray)captureBuffer) == (buflen / sizeof(Sint16)));
-        br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadShortBuffer, (jshortArray)captureBuffer, JNI_TRUE);
+        SDL_assert((*env)->GetArrayLength(env, (jshortArray)recordingBuffer) == (buflen / sizeof(Sint16)));
+        br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midRecordingReadShortBuffer, (jshortArray)recordingBuffer, JNI_TRUE);
         if (br > 0) {
-            jshort *ptr = (*env)->GetShortArrayElements(env, (jshortArray)captureBuffer, &isCopy);
+            jshort *ptr = (*env)->GetShortArrayElements(env, (jshortArray)recordingBuffer, &isCopy);
             br *= sizeof(Sint16);
             SDL_memcpy(buffer, ptr, br);
-            (*env)->ReleaseShortArrayElements(env, (jshortArray)captureBuffer, ptr, JNI_ABORT);
+            (*env)->ReleaseShortArrayElements(env, (jshortArray)recordingBuffer, ptr, JNI_ABORT);
         }
         break;
     case ENCODING_PCM_FLOAT:
-        SDL_assert((*env)->GetArrayLength(env, (jfloatArray)captureBuffer) == (buflen / sizeof(float)));
-        br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadFloatBuffer, (jfloatArray)captureBuffer, JNI_TRUE);
+        SDL_assert((*env)->GetArrayLength(env, (jfloatArray)recordingBuffer) == (buflen / sizeof(float)));
+        br = (*env)->CallStaticIntMethod(env, mAudioManagerClass, midRecordingReadFloatBuffer, (jfloatArray)recordingBuffer, JNI_TRUE);
         if (br > 0) {
-            jfloat *ptr = (*env)->GetFloatArrayElements(env, (jfloatArray)captureBuffer, &isCopy);
+            jfloat *ptr = (*env)->GetFloatArrayElements(env, (jfloatArray)recordingBuffer, &isCopy);
             br *= sizeof(float);
             SDL_memcpy(buffer, ptr, br);
-            (*env)->ReleaseFloatArrayElements(env, (jfloatArray)captureBuffer, ptr, JNI_ABORT);
+            (*env)->ReleaseFloatArrayElements(env, (jfloatArray)recordingBuffer, ptr, JNI_ABORT);
         }
         break;
     default:
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: unhandled capture buffer format");
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: unhandled recording buffer format");
         break;
     }
     return br;
 }
 
-void Android_JNI_FlushCapturedAudio(void)
+void Android_JNI_FlushRecordedAudio(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
 #if 0 /* !!! FIXME: this needs API 23, or it'll do blocking reads and never end. */
-    switch (captureBufferFormat) {
+    switch (recordingBufferFormat) {
     case ENCODING_PCM_8BIT:
         {
-            const jint len = (*env)->GetArrayLength(env, (jbyteArray)captureBuffer);
-            while ((*env)->CallStaticIntMethod(env, mActivityClass, midCaptureReadByteBuffer, (jbyteArray)captureBuffer, JNI_FALSE) == len) { /* spin */ }
+            const jint len = (*env)->GetArrayLength(env, (jbyteArray)recordingBuffer);
+            while ((*env)->CallStaticIntMethod(env, mActivityClass, midRecordingReadByteBuffer, (jbyteArray)recordingBuffer, JNI_FALSE) == len) { /* spin */ }
         }
         break;
     case ENCODING_PCM_16BIT:
         {
-            const jint len = (*env)->GetArrayLength(env, (jshortArray)captureBuffer);
-            while ((*env)->CallStaticIntMethod(env, mActivityClass, midCaptureReadShortBuffer, (jshortArray)captureBuffer, JNI_FALSE) == len) { /* spin */ }
+            const jint len = (*env)->GetArrayLength(env, (jshortArray)recordingBuffer);
+            while ((*env)->CallStaticIntMethod(env, mActivityClass, midRecordingReadShortBuffer, (jshortArray)recordingBuffer, JNI_FALSE) == len) { /* spin */ }
         }
         break;
     case ENCODING_PCM_FLOAT:
         {
-            const jint len = (*env)->GetArrayLength(env, (jfloatArray)captureBuffer);
-            while ((*env)->CallStaticIntMethod(env, mActivityClass, midCaptureReadFloatBuffer, (jfloatArray)captureBuffer, JNI_FALSE) == len) { /* spin */ }
+            const jint len = (*env)->GetArrayLength(env, (jfloatArray)recordingBuffer);
+            while ((*env)->CallStaticIntMethod(env, mActivityClass, midRecordingReadFloatBuffer, (jfloatArray)recordingBuffer, JNI_FALSE) == len) { /* spin */ }
         }
         break;
     default:
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: flushing unhandled capture buffer format");
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: flushing unhandled recording buffer format");
         break;
     }
 #else
-    switch (captureBufferFormat) {
+    switch (recordingBufferFormat) {
     case ENCODING_PCM_8BIT:
-        (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadByteBuffer, (jbyteArray)captureBuffer, JNI_FALSE);
+        (*env)->CallStaticIntMethod(env, mAudioManagerClass, midRecordingReadByteBuffer, (jbyteArray)recordingBuffer, JNI_FALSE);
         break;
     case ENCODING_PCM_16BIT:
-        (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadShortBuffer, (jshortArray)captureBuffer, JNI_FALSE);
+        (*env)->CallStaticIntMethod(env, mAudioManagerClass, midRecordingReadShortBuffer, (jshortArray)recordingBuffer, JNI_FALSE);
         break;
     case ENCODING_PCM_FLOAT:
-        (*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureReadFloatBuffer, (jfloatArray)captureBuffer, JNI_FALSE);
+        (*env)->CallStaticIntMethod(env, mAudioManagerClass, midRecordingReadFloatBuffer, (jfloatArray)recordingBuffer, JNI_FALSE);
         break;
     default:
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: flushing unhandled capture buffer format");
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: flushing unhandled recording buffer format");
         break;
     }
 #endif
 }
 
-void Android_JNI_CloseAudioDevice(const int iscapture)
+void Android_JNI_CloseAudioDevice(const int recording)
 {
     JNIEnv *env = Android_JNI_GetEnv();
 
-    if (iscapture) {
-        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midCaptureClose);
-        if (captureBuffer) {
-            (*env)->DeleteGlobalRef(env, captureBuffer);
-            captureBuffer = NULL;
+    if (recording) {
+        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midRecordingClose);
+        if (recordingBuffer) {
+            (*env)->DeleteGlobalRef(env, recordingBuffer);
+            recordingBuffer = NULL;
         }
     } else {
         (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioClose);
@@ -1848,15 +1888,15 @@ void Android_JNI_CloseAudioDevice(const int iscapture)
     }
 }
 
-static void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id)
+static void Android_JNI_AudioSetThreadPriority(int recording, int device_id)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioSetThreadPriority, iscapture, device_id);
+    (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioSetThreadPriority, recording, device_id);
 }
 
 void Android_AudioThreadInit(SDL_AudioDevice *device)
 {
-    Android_JNI_AudioSetThreadPriority((int) device->iscapture, (int)device->instance_id);
+    Android_JNI_AudioSetThreadPriority((int) device->recording, (int)device->instance_id);
 }
 
 /* Test for an exception and call SDL_SetError with its detail if one occurs */
@@ -2000,9 +2040,9 @@ Sint64 Android_JNI_FileSize(void *userdata)
     return (Sint64) AAsset_getLength64((AAsset *)userdata);
 }
 
-Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, int whence)
+Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
-    return (Sint64) AAsset_seek64((AAsset *)userdata, offset, whence);
+    return (Sint64) AAsset_seek64((AAsset *)userdata, offset, (int)whence);
 }
 
 int Android_JNI_FileClose(void *userdata)
@@ -2188,6 +2228,12 @@ void Android_JNI_HapticRun(int device_id, float intensity, int length)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticRun, device_id, intensity, length);
+}
+
+void Android_JNI_HapticRumble(int device_id, float low_frequency_intensity, float high_frequency_intensity, int length)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticRumble, device_id, low_frequency_intensity, high_frequency_intensity, length);
 }
 
 void Android_JNI_HapticStop(int device_id)
@@ -2406,6 +2452,7 @@ void SDL_AndroidBackButton(void)
     (*env)->CallStaticVoidMethod(env, mActivityClass, midManualBackButton);
 }
 
+// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
 const char *SDL_AndroidGetInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
@@ -2505,6 +2552,7 @@ int SDL_AndroidGetExternalStorageState(Uint32 *state)
     return 0;
 }
 
+// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
 const char *SDL_AndroidGetExternalStoragePath(void)
 {
     static char *s_AndroidExternalFilesPath = NULL;
@@ -2647,7 +2695,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
-    SDL_assert(!"Shouldn't have hit this code");  // we had a permission response for a request we never made...?
 }
 
 int SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata)
@@ -2764,6 +2811,187 @@ int Android_JNI_OpenURL(const char *url)
     const int ret = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenURL, jurl);
     (*env)->DeleteLocalRef(env, jurl);
     return ret;
+}
+
+int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
+{
+    /* Get fopen-style modes */
+    int moderead = 0, modewrite = 0, modeappend = 0, modeupdate = 0;
+
+    for (const char *cmode = mode; *cmode; cmode++) {
+        switch (*cmode) {
+            case 'a':
+                modeappend = 1;
+                break;
+            case 'r':
+                moderead = 1;
+                break;
+            case 'w':
+                modewrite = 1;
+                break;
+            case '+':
+                modeupdate = 1;
+                break;
+            default:
+                break;
+        }
+    }
+
+    /* Translate fopen-style modes to ContentResolver modes. */
+    /* Android only allows "r", "w", "wt", "wa", "rw" or "rwt". */
+    const char *contentResolverMode = "r";
+
+    if (moderead) {
+        if (modewrite) {
+            contentResolverMode = "rwt";
+        } else {
+            contentResolverMode = modeupdate ? "rw" : "r";
+        }
+    } else if (modewrite) {
+        contentResolverMode = modeupdate ? "rwt" : "wt";
+    } else if (modeappend) {
+        contentResolverMode = modeupdate ? "rw" : "wa";
+    }
+
+    JNIEnv *env = Android_JNI_GetEnv();
+    jstring jstringUri = (*env)->NewStringUTF(env, uri);
+    jstring jstringMode = (*env)->NewStringUTF(env, contentResolverMode);
+    jint fd = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenFileDescriptor, jstringUri, jstringMode);
+    (*env)->DeleteLocalRef(env, jstringUri);
+    (*env)->DeleteLocalRef(env, jstringMode);
+
+    if (fd == -1) {
+        SDL_SetError("Unspecified error in JNI");
+    }
+
+    return fd;
+}
+
+static struct AndroidFileDialog
+{
+    int request_code;
+    SDL_DialogFileCallback callback;
+    void *userdata;
+} mAndroidFileDialogData;
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
+    JNIEnv *env, jclass jcls,
+    jint requestCode, jobjectArray fileList, jint filter)
+{
+    if (mAndroidFileDialogData.callback != NULL && mAndroidFileDialogData.request_code == requestCode) {
+        if (fileList == NULL) {
+            SDL_SetError("Unspecified error in JNI");
+            mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, NULL, -1);
+            mAndroidFileDialogData.callback = NULL;
+            return;
+        }
+
+        /* Convert fileList to string */
+        size_t count = (*env)->GetArrayLength(env, fileList);
+        char **charFileList = SDL_calloc(sizeof(char*), count + 1);
+
+        if (charFileList == NULL) {
+            mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, NULL, -1);
+            mAndroidFileDialogData.callback = NULL;
+            return;
+        }
+
+        /* Convert to UTF-8 */
+        /* TODO: Fix modified UTF-8 to classic UTF-8 */
+        for (int i = 0; i < count; i++) {
+            jstring string = (*env)->GetObjectArrayElement(env, fileList, i);
+            if (!string) {
+                continue;
+            }
+
+            const char *utf8string = (*env)->GetStringUTFChars(env, string, NULL);
+            if (!utf8string) {
+                (*env)->DeleteLocalRef(env, string);
+                continue;
+            }
+
+            char *newFile = SDL_strdup(utf8string);
+            if (!newFile) {
+                (*env)->ReleaseStringUTFChars(env, string, utf8string);
+                (*env)->DeleteLocalRef(env, string);
+                mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, NULL, -1);
+                mAndroidFileDialogData.callback = NULL;
+
+                /* Cleanup memory */
+                for (int j = 0; j < i; j++) {
+                    SDL_free(charFileList[j]);
+                }
+                SDL_free(charFileList);
+                return;
+            }
+
+            charFileList[i] = newFile;
+            (*env)->ReleaseStringUTFChars(env, string, utf8string);
+            (*env)->DeleteLocalRef(env, string);
+        }
+
+        /* Call user-provided callback */
+        SDL_ClearError();
+        mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, (const char *const *) charFileList, filter);
+        mAndroidFileDialogData.callback = NULL;
+
+        /* Cleanup memory */
+        for (int i = 0; i < count; i++) {
+            SDL_free(charFileList[i]);
+        }
+        SDL_free(charFileList);
+    }
+}
+
+SDL_bool Android_JNI_OpenFileDialog(
+    SDL_DialogFileCallback callback, void* userdata,
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_bool forwrite,
+    SDL_bool multiple)
+{
+    if (mAndroidFileDialogData.callback != NULL) {
+        SDL_SetError("Only one file dialog can be run at a time.");
+        return SDL_FALSE;
+    }
+
+    if (forwrite) {
+        multiple = SDL_FALSE;
+    }
+
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    /* Setup filters */
+    jobjectArray filtersArray = NULL;
+    if (filters) {
+        jclass stringClass = (*env)->FindClass(env, "java/lang/String");
+        filtersArray = (*env)->NewObjectArray(env, nfilters, stringClass, NULL);
+
+        /* Convert to string */
+        for (int i = 0; i < nfilters; i++) {
+            jstring str = (*env)->NewStringUTF(env, filters[i].pattern);
+            (*env)->SetObjectArrayElement(env, filtersArray, i, str);
+            (*env)->DeleteLocalRef(env, str);
+        }
+    }
+
+    /* Setup data */
+    static SDL_AtomicInt next_request_code;
+    mAndroidFileDialogData.request_code = SDL_AtomicAdd(&next_request_code, 1);
+    mAndroidFileDialogData.userdata = userdata;
+    mAndroidFileDialogData.callback = callback;
+
+    /* Invoke JNI */
+    jboolean success = (*env)->CallStaticBooleanMethod(env, mActivityClass,
+        midShowFileDialog, filtersArray, (jboolean) multiple, (jboolean) forwrite, mAndroidFileDialogData.request_code);
+    (*env)->DeleteLocalRef(env, filtersArray);
+    if (!success) {
+        mAndroidFileDialogData.callback = NULL;
+        SDL_AtomicAdd(&next_request_code, -1);
+        SDL_SetError("Unspecified error in JNI");
+
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
 }
 
 #endif /* SDL_PLATFORM_ANDROID */

@@ -93,6 +93,7 @@
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103         0x7210
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104         0x7214
 #define USB_PRODUCT_RAZER_ATROX                           0x0a00
+#define USB_PRODUCT_RAZER_KITSUNE                         0x1012
 #define USB_PRODUCT_RAZER_PANTHERA                        0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                    0x1008
 #define USB_PRODUCT_RAZER_RAIJU                           0x1000

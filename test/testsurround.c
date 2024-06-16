@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
     }
 
     /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
         SDLTest_CommonQuit(state);
@@ -178,9 +178,9 @@ int main(int argc, char *argv[])
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
-    devices = SDL_GetAudioOutputDevices(&devcount);
+    devices = SDL_GetAudioPlaybackDevices(&devcount);
     if (!devices) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioOutputDevices() failed: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioPlaybackDevices() failed: %s\n", SDL_GetError());
         devcount = 0;
     }
 
@@ -191,12 +191,11 @@ int main(int argc, char *argv[])
 
     for (i = 0; i < devcount; i++) {
         SDL_AudioStream *stream = NULL;
-        char *devname = SDL_GetAudioDeviceName(devices[i]);
+        const char *devname = SDL_GetAudioDeviceName(devices[i]);
         int j;
         SDL_AudioSpec spec;
 
         SDL_Log("Testing audio device: %s\n", devname);
-        SDL_free(devname);
 
         if (SDL_GetAudioDeviceFormat(devices[i], &spec, NULL) != 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioDeviceFormat() failed: %s\n", SDL_GetError());

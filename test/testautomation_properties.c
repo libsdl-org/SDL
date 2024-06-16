@@ -293,7 +293,7 @@ static int properties_testCleanup(void *arg)
     SDLTest_AssertPass("Call to SDL_SetProperty(cleanup)");
     count = 0;
     SDL_SetPropertyWithCleanup(props, "a", "0", cleanup, &count);
-    SDL_SetPropertyWithCleanup(props, "a", NULL, cleanup, &count);
+    SDL_ClearProperty(props, "a");
     SDLTest_AssertCheck(count == 1,
         "Verify cleanup for deleting property, got %d, expected 1", count);
 

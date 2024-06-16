@@ -49,6 +49,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Debug \
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DTEST_SHARED=FALSE \
+            -DSDL_DISABLE_INSTALL_DOCS=OFF \
             -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }}
           cmake --build cmake_config_build --verbose
       - uses: actions/upload-artifact@v4

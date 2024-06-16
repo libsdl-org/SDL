@@ -111,7 +111,7 @@ void SDL_WAYLAND_UnloadSymbols(void)
 #include "SDL_waylandsym.h"
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
-            for (i = 0; i < SDL_TABLESIZE(waylandlibs); i++) {
+            for (i = 0; i < SDL_arraysize(waylandlibs); i++) {
                 if (waylandlibs[i].lib) {
                     SDL_UnloadObject(waylandlibs[i].lib);
                     waylandlibs[i].lib = NULL;
@@ -132,7 +132,7 @@ int SDL_WAYLAND_LoadSymbols(void)
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
         int i;
         int *thismod = NULL;
-        for (i = 0; i < SDL_TABLESIZE(waylandlibs); i++) {
+        for (i = 0; i < SDL_arraysize(waylandlibs); i++) {
             if (waylandlibs[i].libname) {
                 waylandlibs[i].lib = SDL_LoadObject(waylandlibs[i].libname);
             }
