@@ -1319,6 +1319,47 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand(void);
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_r(Uint64 *state);
 
+/**
+ * Generates a pseudo-random number less than n
+ *
+ * The method used is faster and of better quality than `SDL_rand() % n`.
+ * However just like with `SDL_rand() % n`, bias increases with larger n.
+ *
+ * Example: to simulate a d6 use `SDL_rand_n(6) + 1`
+ * The +1 converts 0..5 to 1..6
+ *
+ * There are no guarantees as to the quality of the random sequence produced,
+ * and this should not be used for cryptography or anything that requires good
+ * random distribution.
+ *
+ * \param n the number of possible values
+ *
+ * \returns a random value in the range of [0 ..  n-1]
+ *
+ * \threadsafety All calls should be made from a single thread
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_rand
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_n(Uint32 n);
+
+/**
+ * Generates a pseudo-random floating point number less than 1.0
+ *
+ * There are no guarantees as to the quality of the random sequence produced,
+ * and this should not be used for cryptography or anything that requires good
+ * random distribution.
+ *
+ * \returns a random value in the range of [0.0, 1.0)
+ *
+ * \threadsafety All calls should be made from a single thread
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_rand
+ */
+extern SDL_DECLSPEC float SDLCALL SDL_rand_float(void);
 
 #ifndef SDL_PI_D
 #define SDL_PI_D   3.141592653589793238462643383279502884       /**< pi (double) */

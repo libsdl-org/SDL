@@ -42,20 +42,13 @@ Uint32 SDL_rand(void)
     return SDL_rand_r(&SDL_rand_state);
 }
 
-/*
- * Return a number between [0, n)
- * Fast but slightly biased. Don't run your casino with this.
- */
-Sint32 SDL_rand_n(Sint32 n)
+Uint32 SDL_rand_n(Uint32 n)
 {
 	// On 32-bit arch, the compiler will optimize to a single 32-bit multiply
 	Uint64 val = (Uint64)SDL_rand() * n;
-	return (Sint32)(val >> 32);
+	return (Uint32)(val >> 32);
 }
 
-/*
- * Random float in range [0,1)
- */
 float SDL_rand_float(void)
 {
 	return (SDL_rand() >> (32-24)) * 0x1p-24f;
