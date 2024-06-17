@@ -32,6 +32,11 @@
 #include "SDL_pspvideo.h"
 #include "SDL_pspevents_c.h"
 #include "SDL_pspgl_c.h"
+#include "SDL_pspmessagebox.h"
+
+#include <psputility.h>
+#include <pspgu.h>
+#include <pspdisplay.h>
 
 /* unused
 static SDL_bool PSP_initialized = SDL_FALSE;
@@ -119,7 +124,7 @@ VideoBootStrap PSP_bootstrap = {
     "psp",
     "PSP Video Driver",
     PSP_Create,
-    NULL /* no ShowMessageBox implementation */
+    PSP_ShowMessageBox
 };
 
 /*****************************************************************************/
@@ -239,13 +244,78 @@ void PSP_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-/* TO Write Me */
 SDL_bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
-    return SDL_FALSE;
+    return SDL_TRUE;
 }
+
 void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    char list[0x20000] __attribute__((aligned(64)));  // Needed for sceGuStart to work
+    int i;
+    int done = 0;
+    int input_text_length = 32; // SDL_SendKeyboardText supports up to 32 characters per event
+    unsigned short outtext[input_text_length];
+    char text_string[input_text_length];
+
+    SceUtilityOskData data;
+    SceUtilityOskParams params;
+
+    SDL_memset(outtext, 0, input_text_length * sizeof(unsigned short));
+
+    data.language = PSP_UTILITY_OSK_LANGUAGE_DEFAULT;
+    data.lines = 1;
+    data.unk_24 = 1;
+    data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_ALL;
+    data.desc = NULL;
+    data.intext = NULL;
+    data.outtextlength = input_text_length;
+    data.outtextlimit = input_text_length;
+    data.outtext = outtext;
+
+    params.base.size = sizeof(params);
+    sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_LANGUAGE, &params.base.language);
+    sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_UNKNOWN, &params.base.buttonSwap);
+    params.base.graphicsThread = 17;
+    params.base.accessThread = 19;
+    params.base.fontThread = 18;
+    params.base.soundThread = 16;
+    params.datacount = 1;
+    params.data = &data;
+
+    sceUtilityOskInitStart(&params);
+
+    while(!done) {
+        sceGuStart(GU_DIRECT, list);
+        sceGuClearColor(0);
+        sceGuClearDepth(0);
+        sceGuClear(GU_COLOR_BUFFER_BIT|GU_DEPTH_BUFFER_BIT);
+        sceGuFinish();
+        sceGuSync(0,0);
+
+        switch(sceUtilityOskGetStatus())
+        {
+            case PSP_UTILITY_DIALOG_VISIBLE:
+                sceUtilityOskUpdate(1);
+                break;
+            case PSP_UTILITY_DIALOG_QUIT:
+                sceUtilityOskShutdownStart();
+                break;
+            case PSP_UTILITY_DIALOG_NONE:
+                done = 1;
+                break;
+            default :
+                break;
+        }
+        sceDisplayWaitVblankStart();
+        sceGuSwapBuffers();
+    }
+
+    // Convert input list to string
+    for (i = 0; i < input_text_length; i++) {
+        text_string[i] = outtext[i];
+    }
+    SDL_SendKeyboardText((const char *) text_string);
 }
 void PSP_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {

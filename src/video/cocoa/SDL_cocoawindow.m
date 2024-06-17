@@ -986,6 +986,27 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         _data.checking_zoom = NO;
     }
 
+    if (window->min_aspect > 0.0f || window->max_aspect > 0.0f) {
+        NSWindow *nswindow = _data.nswindow;
+        NSRect newContentRect = [nswindow contentRectForFrameRect:NSMakeRect(0, 0, frameSize.width, frameSize.height)];
+        NSSize newSize = newContentRect.size;
+        CGFloat minAspectRatio = window->min_aspect;
+        CGFloat maxAspectRatio = window->max_aspect;
+        CGFloat aspectRatio;
+
+        if (newSize.height > 0) {
+            aspectRatio = newSize.width / newSize.height;
+
+            if (maxAspectRatio > 0.0f && aspectRatio > maxAspectRatio) {
+                newSize.width = (int)SDL_roundf(newSize.height * maxAspectRatio);
+            } else if (minAspectRatio > 0.0f && aspectRatio < minAspectRatio) {
+                newSize.height = (int)SDL_roundf(newSize.width / minAspectRatio);
+            }
+
+            NSRect newFrameRect = [nswindow frameRectForContentRect:NSMakeRect(0, 0, newSize.width, newSize.height)];
+            frameSize = newFrameRect.size;
+        }
+    }
     return frameSize;
 }
 
@@ -1476,8 +1497,8 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     if (focus && ([theEvent window] == ((__bridge SDL_CocoaWindowData *)focus->driverdata).nswindow)) {
         rc = SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, state, button, clicks);
     } else {
-        const int orig_x = mouse->x;
-        const int orig_y = mouse->y;
+        const float orig_x = mouse->x;
+        const float orig_y = mouse->y;
         const NSPoint point = [theEvent locationInWindow];
         mouse->x = (int)point.x;
         mouse->y = (int)(window->h - point.y);
@@ -2292,14 +2313,16 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         /* isZoomed always returns true if the window is not resizable */
         if (!(window->flags & SDL_WINDOW_RESIZABLE) || !Cocoa_IsZoomed(window)) {
             if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-                NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
+				int x, y;
+				NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
 
                 /* Cocoa will resize the window from the bottom-left rather than the
                  * top-left when -[nswindow setContentSize:] is used, so we must set the
                  * entire frame based on the new size, in order to preserve the position.
                  */
-                rect.origin.x = window->floating.x;
-                rect.origin.y = window->floating.y;
+                SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &x, &y);
+				rect.origin.x = x;
+				rect.origin.y = y;
                 rect.size.width = window->floating.w;
                 rect.size.height = window->floating.h;
                 ConvertNSRect(&rect);
@@ -2353,8 +2376,8 @@ void Cocoa_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int
             viewport = [contentView convertRectToBacking:viewport];
         }
 
-        *w = viewport.size.width;
-        *h = viewport.size.height;
+        *w = (int)viewport.size.width;
+        *h = (int)viewport.size.height;
     }
 }
 

@@ -796,7 +796,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
         if (tonemap_operator) {
             if (SDL_strncmp(tonemap_operator, "*=", 2) == 0) {
                 tonemap.op = SDL_TONEMAP_LINEAR;
-                tonemap.data.linear.scale = SDL_atof(tonemap_operator + 2);
+                tonemap.data.linear.scale = (float)SDL_atof(tonemap_operator + 2);
             } else if (SDL_strcasecmp(tonemap_operator, "chrome") == 0) {
                 tonemap.op = SDL_TONEMAP_CHROME;
             } else if (SDL_strcasecmp(tonemap_operator, "none") == 0) {

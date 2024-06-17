@@ -391,22 +391,23 @@ static int AllocBufferUserPtr(SDL_CameraDevice *device, size_t buffer_size)
     return 0;
 }
 
-static Uint32 format_v4l2_to_sdl(Uint32 fmt)
+static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormatEnum *format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
-        #define CASE(x, y)  case x: return y
-        CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2);
-        CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_UNKNOWN);
-        #undef CASE
-        default:
-            #if DEBUG_CAMERA
-            SDL_Log("CAMERA: Unknown format V4L2_PIX_FORMAT '%d'", fmt);
-            #endif
-            return SDL_PIXELFORMAT_UNKNOWN;
+    #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
+    CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED);
+    #undef CASE
+    default:
+        #if DEBUG_CAMERA
+        SDL_Log("CAMERA: Unknown format V4L2_PIX_FORMAT '%d'", fmt);
+        #endif
+        break;
     }
+    *format = SDL_PIXELFORMAT_UNKNOWN;
+    *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
-static Uint32 format_sdl_to_v4l2(Uint32 fmt)
+static Uint32 format_sdl_to_v4l2(SDL_PixelFormatEnum fmt)
 {
     switch (fmt) {
         #define CASE(y, x)  case x: return y
@@ -644,7 +645,7 @@ static SDL_bool FindV4L2CameraDeviceByBusInfoCallback(SDL_CameraDevice *device, 
     return (SDL_strcmp(handle->bus_info, (const char *) userdata) == 0);
 }
 
-static int AddCameraFormat(const int fd, CameraFormatAddData *data, Uint32 sdlfmt, Uint32 v4l2fmt, int w, int h)
+static int AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFormatEnum sdlfmt, SDL_Colorspace colorspace, Uint32 v4l2fmt, int w, int h)
 {
     struct v4l2_frmivalenum frmivalenum;
     SDL_zero(frmivalenum);
@@ -660,7 +661,7 @@ static int AddCameraFormat(const int fd, CameraFormatAddData *data, Uint32 sdlfm
             const float fps = (float) denominator / (float) numerator;
             SDL_Log("CAMERA:       * Has discrete frame interval (%d / %d), fps=%f", numerator, denominator, fps);
             #endif
-            if (SDL_AddCameraFormat(data, sdlfmt, w, h, numerator, denominator) == -1) {
+            if (SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, numerator, denominator) == -1) {
                 return -1;  // Probably out of memory; we'll go with what we have, if anything.
             }
             frmivalenum.index++;  // set up for the next one.
@@ -672,7 +673,7 @@ static int AddCameraFormat(const int fd, CameraFormatAddData *data, Uint32 sdlfm
                 const float fps = (float) d / (float) n;
                 SDL_Log("CAMERA:       * Has %s frame interval (%d / %d), fps=%f", (frmivalenum.type == V4L2_FRMIVAL_TYPE_STEPWISE) ? "stepwise" : "continuous", n, d, fps);
                 #endif
-                if (SDL_AddCameraFormat(data, sdlfmt, w, h, n, d) == -1) {
+                if (SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, n, d) == -1) {
                     return -1;  // Probably out of memory; we'll go with what we have, if anything.
                 }
                 d += (int) frmivalenum.stepwise.step.denominator;
@@ -727,7 +728,9 @@ static void MaybeAddDevice(const char *path)
     SDL_zero(fmtdesc);
     fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     while (ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
-        const Uint32 sdlfmt = format_v4l2_to_sdl(fmtdesc.pixelformat);
+        SDL_PixelFormatEnum sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_Colorspace colorspace = SDL_COLORSPACE_UNKNOWN;
+        format_v4l2_to_sdl(fmtdesc.pixelformat, &sdlfmt, &colorspace);
 
         #if DEBUG_CAMERA
         SDL_Log("CAMERA:   - Has format '%s'%s%s", SDL_GetPixelFormatName(sdlfmt),
@@ -752,7 +755,7 @@ static void MaybeAddDevice(const char *path)
                 #if DEBUG_CAMERA
                 SDL_Log("CAMERA:     * Has discrete size %dx%d", w, h);
                 #endif
-                if (AddCameraFormat(fd, &add_data, sdlfmt, fmtdesc.pixelformat, w, h) == -1) {
+                if (AddCameraFormat(fd, &add_data, sdlfmt, colorspace, fmtdesc.pixelformat, w, h) == -1) {
                     break;  // Probably out of memory; we'll go with what we have, if anything.
                 }
                 frmsizeenum.index++;  // set up for the next one.
@@ -768,7 +771,7 @@ static void MaybeAddDevice(const char *path)
                         #if DEBUG_CAMERA
                         SDL_Log("CAMERA:     * Has %s size %dx%d", (frmsizeenum.type == V4L2_FRMSIZE_TYPE_STEPWISE) ? "stepwise" : "continuous", w, h);
                         #endif
-                        if (AddCameraFormat(fd, &add_data, sdlfmt, fmtdesc.pixelformat, w, h) == -1) {
+                        if (AddCameraFormat(fd, &add_data, sdlfmt, colorspace, fmtdesc.pixelformat, w, h) == -1) {
                             break;  // Probably out of memory; we'll go with what we have, if anything.
                         }
                     }

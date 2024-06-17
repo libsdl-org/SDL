@@ -171,6 +171,13 @@ static void SDLCALL SDL_MouseRelativeWarpMotionChanged(void *userdata, const cha
     mouse->relative_mode_warp_motion = SDL_GetStringBoolean(hint, SDL_FALSE);
 }
 
+static void SDLCALL SDL_MouseRelativeCursorVisibleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->relative_mode_cursor_visible = SDL_GetStringBoolean(hint, SDL_FALSE);
+}
+
 /* Public functions */
 int SDL_PreInitMouse(void)
 {
@@ -209,6 +216,9 @@ int SDL_PreInitMouse(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
                         SDL_MouseRelativeWarpMotionChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
+                        SDL_MouseRelativeCursorVisibleChanged, mouse);
 
     mouse->was_touch_mouse_events = SDL_FALSE; /* no touch to mouse movement event pending */
 
@@ -288,7 +298,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, SDL_bool send_event)
         return;
     }
 
-    SDL_free(SDL_mice[mouse_index].name);
+    SDL_FreeLater(SDL_mice[mouse_index].name);  // SDL_GetMouseInstanceName returns this pointer.
 
     if (mouse_index != SDL_mouse_count - 1) {
         SDL_memcpy(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
@@ -404,7 +414,7 @@ SDL_Mouse *SDL_GetMouse(void)
     return &SDL_mouse;
 }
 
-SDL_MouseButtonFlags SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch)
+static SDL_MouseButtonFlags SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch)
 {
     int i;
     SDL_MouseButtonFlags buttonstate = 0;
@@ -1120,6 +1130,9 @@ void SDL_QuitMouse(void)
     SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
                         SDL_MouseRelativeWarpMotionChanged, mouse);
 
+    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
+                        SDL_MouseRelativeCursorVisibleChanged, mouse);
+
     for (int i = SDL_mouse_count; i--; ) {
         SDL_RemoveMouse(SDL_mice[i].instance_id, SDL_FALSE);
     }
@@ -1541,7 +1554,7 @@ int SDL_SetCursor(SDL_Cursor *cursor)
         }
     }
 
-    if (cursor && mouse->cursor_shown && !mouse->relative_mode) {
+    if (cursor && (!mouse->focus || (mouse->cursor_shown && (!mouse->relative_mode || mouse->relative_mode_cursor_visible)))) {
         if (mouse->ShowCursor) {
             mouse->ShowCursor(cursor);
         }

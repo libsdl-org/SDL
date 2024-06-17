@@ -36,7 +36,7 @@
 #endif
 #undef WINVER
 #undef _WIN32_WINNT
-#if SDL_VIDEO_RENDER_D3D12
+#if SDL_VIDEO_RENDER_D3D12 || defined(HAVE_DXGI1_6_H)
 #define _WIN32_WINNT 0xA00 /* For D3D12, 0xA00 is required */
 #elif defined(HAVE_SHELLSCALINGAPI_H)
 #define _WIN32_WINNT 0x603 /* For DPI support */

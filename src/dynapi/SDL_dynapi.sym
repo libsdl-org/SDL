@@ -166,11 +166,11 @@ SDL3_0.0.0 {
     SDL_GetAndroidSDKVersion;
     SDL_GetAssertionHandler;
     SDL_GetAssertionReport;
-    SDL_GetAudioCaptureDevices;
     SDL_GetAudioDeviceFormat;
     SDL_GetAudioDeviceName;
     SDL_GetAudioDriver;
-    SDL_GetAudioOutputDevices;
+    SDL_GetAudioPlaybackDevices;
+    SDL_GetAudioRecordingDevices;
     SDL_GetAudioStreamAvailable;
     SDL_GetAudioStreamData;
     SDL_GetAudioStreamDevice;
@@ -209,6 +209,7 @@ SDL3_0.0.0 {
     SDL_GetDaysInMonth;
     SDL_GetDefaultAssertionHandler;
     SDL_GetDefaultCursor;
+    SDL_GetDefaultKeyFromScancode;
     SDL_GetDesktopDisplayMode;
     SDL_GetDisplayBounds;
     SDL_GetDisplayContentScale;
@@ -401,7 +402,7 @@ SDL3_0.0.0 {
     SDL_GetRenderWindow;
     SDL_GetRenderer;
     SDL_GetRendererFromTexture;
-    SDL_GetRendererInfo;
+    SDL_GetRendererName;
     SDL_GetRendererProperties;
     SDL_GetRevision;
     SDL_GetSIMDAlignment;
@@ -442,6 +443,7 @@ SDL3_0.0.0 {
     SDL_GetTextureColorModFloat;
     SDL_GetTextureProperties;
     SDL_GetTextureScaleMode;
+    SDL_GetTextureSize;
     SDL_GetThreadID;
     SDL_GetThreadName;
     SDL_GetTicks;
@@ -453,6 +455,7 @@ SDL3_0.0.0 {
     SDL_GetUserFolder;
     SDL_GetVersion;
     SDL_GetVideoDriver;
+    SDL_GetWindowAspectRatio;
     SDL_GetWindowBordersSize;
     SDL_GetWindowDisplayScale;
     SDL_GetWindowFlags;
@@ -602,7 +605,6 @@ SDL3_0.0.0 {
     SDL_PumpEvents;
     SDL_PushEvent;
     SDL_PutAudioStreamData;
-    SDL_QueryTexture;
     SDL_Quit;
     SDL_QuitSubSystem;
     SDL_RaiseWindow;
@@ -613,6 +615,7 @@ SDL3_0.0.0 {
     SDL_ReadS32LE;
     SDL_ReadS64BE;
     SDL_ReadS64LE;
+    SDL_ReadS8;
     SDL_ReadStorageFile;
     SDL_ReadSurfacePixel;
     SDL_ReadU16BE;
@@ -748,6 +751,7 @@ SDL3_0.0.0 {
     SDL_SetTextureScaleMode;
     SDL_SetThreadPriority;
     SDL_SetWindowAlwaysOnTop;
+    SDL_SetWindowAspectRatio;
     SDL_SetWindowBordered;
     SDL_SetWindowFocusable;
     SDL_SetWindowFullscreen;
@@ -846,6 +850,7 @@ SDL3_0.0.0 {
     SDL_WriteS32LE;
     SDL_WriteS64BE;
     SDL_WriteS64LE;
+    SDL_WriteS8;
     SDL_WriteStorageFile;
     SDL_WriteU16BE;
     SDL_WriteU16LE;
@@ -950,6 +955,8 @@ SDL3_0.0.0 {
     SDL_powf;
     SDL_qsort;
     SDL_qsort_r;
+    SDL_rand;
+    SDL_rand_r;
     SDL_realloc;
     SDL_round;
     SDL_roundf;
@@ -961,6 +968,7 @@ SDL3_0.0.0 {
     SDL_snprintf;
     SDL_sqrt;
     SDL_sqrtf;
+    SDL_srand;
     SDL_sscanf;
     SDL_strcasecmp;
     SDL_strcasestr;

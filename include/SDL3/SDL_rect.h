@@ -192,8 +192,8 @@ SDL_FORCE_INLINE SDL_bool SDL_RectsEqual(const SDL_Rect *a, const SDL_Rect *b)
  *
  * If either pointer is NULL the function will return SDL_FALSE.
  *
- * \param[in] A an SDL_Rect structure representing the first rectangle
- * \param[in] B an SDL_Rect structure representing the second rectangle
+ * \param[in] A an SDL_Rect structure representing the first rectangle.
+ * \param[in] B an SDL_Rect structure representing the second rectangle.
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -210,10 +210,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasRectIntersection(const SDL_Rect * A,
  *
  * If `result` is NULL then this function will return SDL_FALSE.
  *
- * \param[in] A an SDL_Rect structure representing the first rectangle
- * \param[in] B an SDL_Rect structure representing the second rectangle
+ * \param[in] A an SDL_Rect structure representing the first rectangle.
+ * \param[in] B an SDL_Rect structure representing the second rectangle.
  * \param[out] result an SDL_Rect structure filled in with the intersection of
- *               rectangles `A` and `B`
+ *               rectangles `A` and `B`.
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -227,10 +227,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectIntersection(const SDL_Rect * A,
 /**
  * Calculate the union of two rectangles.
  *
- * \param[in] A an SDL_Rect structure representing the first rectangle
- * \param[in] B an SDL_Rect structure representing the second rectangle
+ * \param[in] A an SDL_Rect structure representing the first rectangle.
+ * \param[in] B an SDL_Rect structure representing the second rectangle.
  * \param[out] result an SDL_Rect structure filled in with the union of rectangles
- *               `A` and `B`
+ *               `A` and `B`.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -247,11 +247,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetRectUnion(const SDL_Rect * A,
  * considered.
  *
  * \param[in] points an array of SDL_Point structures representing points to be
- *               enclosed
- * \param count the number of structures in the `points` array
- * \param[in,opt] clip an SDL_Rect used for clipping or NULL to enclose all points
+ *               enclosed.
+ * \param count the number of structures in the `points` array.
+ * \param[in,opt] clip an SDL_Rect used for clipping or NULL to enclose all points.
  * \param[out] result an SDL_Rect structure filled in with the minimal enclosing
- *               rectangle
+ *               rectangle.
  * \returns SDL_TRUE if any points were enclosed or SDL_FALSE if all the
  *          points were outside of the clipping rectangle.
  *
@@ -271,11 +271,11 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectEnclosingPoints(const SDL_Point 
  * both ends will be clipped to the boundary of the rectangle and the new
  * coordinates saved in `X1`, `Y1`, `X2`, and/or `Y2` as necessary.
  *
- * \param[in] rect an SDL_Rect structure representing the rectangle to intersect
- * \param[inout] X1 a pointer to the starting X-coordinate of the line
- * \param[inout] Y1 a pointer to the starting Y-coordinate of the line
- * \param[inout] X2 a pointer to the ending X-coordinate of the line
- * \param[inout] Y2 a pointer to the ending Y-coordinate of the line
+ * \param[in] rect an SDL_Rect structure representing the rectangle to intersect.
+ * \param[inout] X1 a pointer to the starting X-coordinate of the line.
+ * \param[inout] Y1 a pointer to the starting Y-coordinate of the line.
+ * \param[inout] X2 a pointer to the ending X-coordinate of the line.
+ * \param[inout] Y2 a pointer to the ending Y-coordinate of the line.
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -354,6 +354,7 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEmptyFloat(const SDL_FRect *r)
  *
  * \param[in] a the first rectangle to test.
  * \param[in] b the second rectangle to test.
+ * \param epsilon the epsilon value for comparison.
  * \returns SDL_TRUE if the rectangles are equal, SDL_FALSE otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -407,8 +408,8 @@ SDL_FORCE_INLINE SDL_bool SDL_RectsEqualFloat(const SDL_FRect *a, const SDL_FRec
  *
  * If either pointer is NULL the function will return SDL_FALSE.
  *
- * \param[in] A an SDL_FRect structure representing the first rectangle
- * \param[in] B an SDL_FRect structure representing the second rectangle
+ * \param[in] A an SDL_FRect structure representing the first rectangle.
+ * \param[in] B an SDL_FRect structure representing the second rectangle.
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -423,10 +424,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasRectIntersectionFloat(const SDL_FRec
  *
  * If `result` is NULL then this function will return SDL_FALSE.
  *
- * \param[in] A an SDL_FRect structure representing the first rectangle
- * \param[in] B an SDL_FRect structure representing the second rectangle
+ * \param[in] A an SDL_FRect structure representing the first rectangle.
+ * \param[in] B an SDL_FRect structure representing the second rectangle.
  * \param[out] result an SDL_FRect structure filled in with the intersection of
- *               rectangles `A` and `B`
+ *               rectangles `A` and `B`.
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -440,10 +441,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectIntersectionFloat(const SDL_FRec
 /**
  * Calculate the union of two rectangles with float precision.
  *
- * \param[in] A an SDL_FRect structure representing the first rectangle
- * \param[in] B an SDL_FRect structure representing the second rectangle
+ * \param[in] A an SDL_FRect structure representing the first rectangle.
+ * \param[in] B an SDL_FRect structure representing the second rectangle.
  * \param[out] result an SDL_FRect structure filled in with the union of rectangles
- *               `A` and `B`
+ *               `A` and `B`.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -461,11 +462,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetRectUnionFloat(const SDL_FRect * A,
  * considered.
  *
  * \param[in] points an array of SDL_FPoint structures representing points to be
- *               enclosed
- * \param count the number of structures in the `points` array
- * \param[in,opt] clip an SDL_FRect used for clipping or NULL to enclose all points
+ *               enclosed.
+ * \param count the number of structures in the `points` array.
+ * \param[in,opt] clip an SDL_FRect used for clipping or NULL to enclose all points.
  * \param[out] result an SDL_FRect structure filled in with the minimal enclosing
- *               rectangle
+ *               rectangle.
  * \returns SDL_TRUE if any points were enclosed or SDL_FALSE if all the
  *          points were outside of the clipping rectangle.
  *
@@ -486,11 +487,11 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectEnclosingPointsFloat(const SDL_F
  * both ends will be clipped to the boundary of the rectangle and the new
  * coordinates saved in `X1`, `Y1`, `X2`, and/or `Y2` as necessary.
  *
- * \param[in] rect an SDL_FRect structure representing the rectangle to intersect
- * \param[inout] X1 a pointer to the starting X-coordinate of the line
- * \param[inout] Y1 a pointer to the starting Y-coordinate of the line
- * \param[inout] X2 a pointer to the ending X-coordinate of the line
- * \param[inout] Y2 a pointer to the ending Y-coordinate of the line
+ * \param[in] rect an SDL_FRect structure representing the rectangle to intersect.
+ * \param[inout] X1 a pointer to the starting X-coordinate of the line.
+ * \param[inout] Y1 a pointer to the starting Y-coordinate of the line.
+ * \param[inout] X2 a pointer to the ending X-coordinate of the line.
+ * \param[inout] Y2 a pointer to the ending Y-coordinate of the line.
  * \returns SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.

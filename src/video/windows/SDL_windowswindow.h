@@ -41,6 +41,13 @@ typedef enum SDL_WindowRect
     SDL_WINDOWRECT_FLOATING
 } SDL_WindowRect;
 
+typedef enum SDL_WindowEraseBackgroundMode
+{
+    SDL_ERASEBACKGROUNDMODE_NEVER,
+    SDL_ERASEBACKGROUNDMODE_INITIAL,
+    SDL_ERASEBACKGROUNDMODE_ALWAYS,
+} SDL_WindowEraseBackgroundMode;
+
 struct SDL_WindowData
 {
     SDL_Window *window;
@@ -74,6 +81,7 @@ struct SDL_WindowData
     SDL_DisplayID last_displayID;
     WCHAR *ICMFileName;
     SDL_Window *keyboard_focus;
+    SDL_WindowEraseBackgroundMode hint_erase_background_mode;
     struct SDL_VideoData *videodata;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;

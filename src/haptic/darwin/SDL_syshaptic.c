@@ -587,7 +587,7 @@ int SDL_SYS_HapticMouse(void)
 /*
  * Checks to see if a joystick has haptic features.
  */
-int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
+SDL_bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_IOKIT
     if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
@@ -603,18 +603,18 @@ int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 /*
  * Checks to see if the haptic device and joystick are in reality the same.
  */
-int SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
+SDL_bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_IOKIT
     if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
-        return 0;
+        return SDL_FALSE;
     }
     if (IOObjectIsEqualTo((io_object_t)((size_t)haptic->hwdata->device),
                           joystick->hwdata->ffservice)) {
-        return 1;
+        return SDL_TRUE;
     }
 #endif
-    return 0;
+    return SDL_FALSE;
 }
 
 /*

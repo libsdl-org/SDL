@@ -30,9 +30,13 @@
 
 #include "../../joystick/usb_ids.h"
 
+#define ENABLE_RAW_MOUSE_INPUT      0x01
+#define ENABLE_RAW_KEYBOARD_INPUT   0x02
+
 typedef struct
 {
     SDL_bool done;
+    Uint32 flags;
     HANDLE ready_event;
     HANDLE done_event;
     HANDLE thread;
@@ -40,6 +44,7 @@ typedef struct
 
 static RawInputThreadData thread_data = {
     SDL_FALSE,
+    0,
     INVALID_HANDLE_VALUE,
     INVALID_HANDLE_VALUE,
     INVALID_HANDLE_VALUE
@@ -51,23 +56,30 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
     RawInputThreadData *data = (RawInputThreadData *)param;
     RAWINPUTDEVICE devices[2];
     HWND window;
+    UINT count = 0;
 
     window = CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
     if (!window) {
         return 0;
     }
 
-    devices[0].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
-    devices[0].usUsage = USB_USAGE_GENERIC_MOUSE;
-    devices[0].dwFlags = 0;
-    devices[0].hwndTarget = window;
+    if (data->flags & ENABLE_RAW_MOUSE_INPUT) {
+        devices[count].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
+        devices[count].usUsage = USB_USAGE_GENERIC_MOUSE;
+        devices[count].dwFlags = 0;
+        devices[count].hwndTarget = window;
+        ++count;
+    }
 
-    devices[1].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
-    devices[1].usUsage = USB_USAGE_GENERIC_KEYBOARD;
-    devices[1].dwFlags = 0;
-    devices[1].hwndTarget = window;
+    if (data->flags & ENABLE_RAW_KEYBOARD_INPUT) {
+        devices[count].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
+        devices[count].usUsage = USB_USAGE_GENERIC_KEYBOARD;
+        devices[count].dwFlags = 0;
+        devices[count].hwndTarget = window;
+        ++count;
+    }
 
-    if (!RegisterRawInputDevices(devices, SDL_arraysize(devices), sizeof(devices[0]))) {
+    if (!RegisterRawInputDevices(devices, count, sizeof(devices[0]))) {
         DestroyWindow(window);
         return 0;
     }
@@ -91,7 +103,7 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
 
     devices[0].dwFlags |= RIDEV_REMOVE;
     devices[1].dwFlags |= RIDEV_REMOVE;
-    RegisterRawInputDevices(devices, SDL_arraysize(devices), sizeof(devices[0]));
+    RegisterRawInputDevices(devices, count, sizeof(devices[0]));
 
     DestroyWindow(window);
 
@@ -119,13 +131,16 @@ static void CleanupRawInputThreadData(RawInputThreadData *data)
     }
 }
 
-static int WIN_SetRawInputEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
+static int WIN_SetRawInputEnabled(SDL_VideoDevice *_this, Uint32 flags)
 {
     int result = -1;
 
-    if (enabled) {
+    CleanupRawInputThreadData(&thread_data);
+
+    if (flags) {
         HANDLE handles[2];
 
+        thread_data.flags = flags;
         thread_data.ready_event = CreateEvent(NULL, FALSE, FALSE, NULL);
         if (thread_data.ready_event == INVALID_HANDLE_VALUE) {
             WIN_SetError("CreateEvent");
@@ -154,12 +169,11 @@ static int WIN_SetRawInputEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
         }
         result = 0;
     } else {
-        CleanupRawInputThreadData(&thread_data);
         result = 0;
     }
 
 done:
-    if (enabled && result < 0) {
+    if (result < 0) {
         CleanupRawInputThreadData(&thread_data);
     }
     return result;
@@ -168,10 +182,16 @@ done:
 static int WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
-    SDL_bool enabled = (data->raw_mouse_enabled || data->raw_keyboard_enabled);
-    if (enabled != data->raw_input_enabled) {
-        if (WIN_SetRawInputEnabled(_this, enabled) == 0) {
-            data->raw_input_enabled = enabled;
+    Uint32 flags = 0;
+    if (data->raw_mouse_enabled) {
+        flags |= ENABLE_RAW_MOUSE_INPUT;
+    }
+    if (data->raw_keyboard_enabled) {
+        flags |= ENABLE_RAW_KEYBOARD_INPUT;
+    }
+    if (flags != data->raw_input_enabled) {
+        if (WIN_SetRawInputEnabled(_this, flags) == 0) {
+            data->raw_input_enabled = flags;
         } else {
             return -1;
         }

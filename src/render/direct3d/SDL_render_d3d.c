@@ -1645,7 +1645,7 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
     renderer->driverdata = data;
     D3D_InvalidateCachedState(renderer);
 
-    renderer->info.name = D3D_RenderDriver.name;
+    renderer->name = D3D_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
 
     SDL_GetWindowSizeInPixels(window, &w, &h);

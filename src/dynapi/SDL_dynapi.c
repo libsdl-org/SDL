@@ -282,7 +282,7 @@ static int SDLCALL SDL_swprintf_LOGSDLCALLS(SDL_OUT_Z_CAP(maxlen) wchar_t *buf, 
     va_end(ap);
     return retval;
 }
-_static size_t SDLCALL SDL_IOprintf_LOGSDLCALLS(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+static size_t SDLCALL SDL_IOprintf_LOGSDLCALLS(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     size_t retval;
     va_list ap;

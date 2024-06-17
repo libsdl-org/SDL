@@ -141,7 +141,7 @@ static VideoBootStrap *bootstrap[] = {
         SDL_UninitializedVideo();                                       \
         return retval;                                                  \
     }                                                                   \
-    if (!(window) || (window)->magic != &_this->window_magic) {         \
+    if (!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW)) {             \
         SDL_SetError("Invalid window");                                 \
         return retval;                                                  \
     }
@@ -281,12 +281,12 @@ static void SDLCALL SDL_CleanupWindowTextureData(void *userdata, void *value)
 
 static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
 {
-    SDL_RendererInfo info;
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     SDL_WindowTextureData *data = (SDL_WindowTextureData *)SDL_GetProperty(props, SDL_PROP_WINDOW_TEXTUREDATA_POINTER, NULL);
     const SDL_bool transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     int i;
     int w, h;
+    const SDL_PixelFormatEnum *texture_formats;
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
@@ -301,10 +301,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
         /* Check to see if there's a specific driver requested */
         if (specific_accelerated_renderer) {
             renderer = SDL_CreateRenderer(window, hint);
-            if (!renderer || (SDL_GetRendererInfo(renderer, &info) < 0)) {
-                if (renderer) {
-                    SDL_DestroyRenderer(renderer);
-                }
+            if (!renderer) {
                 return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
             }
         } else {
@@ -339,7 +336,8 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
         data->renderer = renderer;
     }
 
-    if (SDL_GetRendererInfo(data->renderer, &info) < 0) {
+    texture_formats = (const SDL_PixelFormatEnum *)SDL_GetProperty(SDL_GetRendererProperties(data->renderer), SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, NULL);
+    if (!texture_formats) {
         return -1;
     }
 
@@ -352,10 +350,10 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
     data->pixels = NULL;
 
     /* Find the first format with or without an alpha channel */
-    *format = info.texture_formats[0];
+    *format = texture_formats[0];
 
-    for (i = 0; i < info.num_texture_formats; ++i) {
-        SDL_PixelFormatEnum texture_format = info.texture_formats[i];
+    for (i = 0; texture_formats[i] != SDL_PIXELFORMAT_UNKNOWN; ++i) {
+        SDL_PixelFormatEnum texture_format = texture_formats[i];
         if (!SDL_ISPIXELFORMAT_FOURCC(texture_format) &&
             !SDL_ISPIXELFORMAT_10BIT(texture_format) &&
             !SDL_ISPIXELFORMAT_FLOAT(texture_format) &&
@@ -498,6 +496,7 @@ int SDL_GetNumVideoDrivers(void)
     return SDL_arraysize(bootstrap) - 1;
 }
 
+// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetVideoDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumVideoDrivers()) {
@@ -642,6 +641,7 @@ pre_driver_error:
     return -1;
 }
 
+// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetCurrentVideoDriver(void)
 {
     if (!_this) {
@@ -2003,24 +2003,26 @@ void SDL_ToggleDragAndDropSupport(void)
 
 static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)
 {
-    if (!(flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED))) {
-        SDL_RestoreWindow(window);
-    }
-    if (flags & SDL_WINDOW_MAXIMIZED) {
-        SDL_MaximizeWindow(window);
-    }
+    if (!SDL_WINDOW_IS_POPUP(window)) {
+        if (!(flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED))) {
+            SDL_RestoreWindow(window);
+        }
+        if (flags & SDL_WINDOW_MAXIMIZED) {
+            SDL_MaximizeWindow(window);
+        }
 
-    SDL_SetWindowFullscreen(window, (flags & SDL_WINDOW_FULLSCREEN) != 0);
+        SDL_SetWindowFullscreen(window, (flags & SDL_WINDOW_FULLSCREEN) != 0);
 
-    if (flags & SDL_WINDOW_MINIMIZED) {
-        SDL_MinimizeWindow(window);
-    }
+        if (flags & SDL_WINDOW_MINIMIZED) {
+            SDL_MinimizeWindow(window);
+        }
 
-    if (flags & SDL_WINDOW_MOUSE_GRABBED) {
-        SDL_SetWindowMouseGrab(window, SDL_TRUE);
-    }
-    if (flags & SDL_WINDOW_KEYBOARD_GRABBED) {
-        SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
+        if (flags & SDL_WINDOW_MOUSE_GRABBED) {
+            SDL_SetWindowMouseGrab(window, SDL_TRUE);
+        }
+        if (flags & SDL_WINDOW_KEYBOARD_GRABBED) {
+            SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
+        }
     }
 }
 
@@ -2118,7 +2120,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         }
     }
 
-    if ((flags & SDL_WINDOW_MODAL) && (!parent || parent->magic != &_this->window_magic)) {
+    if ((flags & SDL_WINDOW_MODAL) && !SDL_ObjectValid(parent, SDL_OBJECT_TYPE_WINDOW)) {
         SDL_SetError("Modal windows must specify a parent window");
         return NULL;
     }
@@ -2130,7 +2132,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         }
 
         /* Tooltip and popup menu window must specify a parent window */
-        if (!parent || parent->magic != &_this->window_magic) {
+        if (!SDL_ObjectValid(parent, SDL_OBJECT_TYPE_WINDOW)) {
             SDL_SetError("Tooltip and popup menu windows must specify a parent window");
             return NULL;
         }
@@ -2236,7 +2238,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     if (!window) {
         return NULL;
     }
-    window->magic = &_this->window_magic;
+    SDL_SetObjectValid(window, SDL_OBJECT_TYPE_WINDOW, SDL_TRUE);
     window->id = SDL_GetNextObjectID();
     window->floating.x = window->windowed.x = window->x = x;
     window->floating.y = window->windowed.y = window->y = y;
@@ -2254,6 +2256,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         window->y = bounds.y;
         window->w = bounds.w;
         window->h = bounds.h;
+        window->pending_flags |= SDL_WINDOW_FULLSCREEN;
         flags |= SDL_WINDOW_FULLSCREEN;
     }
 
@@ -2502,6 +2505,10 @@ int SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
 
     if (_this->SetWindowMaximumSize && (window->max_w || window->max_h)) {
         _this->SetWindowMaximumSize(_this, window);
+    }
+
+    if (_this->SetWindowAspectRatio && (window->min_aspect > 0.0f || window->max_aspect > 0.0f)) {
+        _this->SetWindowAspectRatio(_this, window);
     }
 
     if (window->hit_test) {
@@ -2776,11 +2783,22 @@ int SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top)
 int SDL_SetWindowSize(SDL_Window *window, int w, int h)
 {
     CHECK_WINDOW_MAGIC(window, -1);
+
     if (w <= 0) {
         return SDL_InvalidParamError("w");
     }
     if (h <= 0) {
         return SDL_InvalidParamError("h");
+    }
+
+    /* It is possible for the aspect ratio contraints to not satisfy the size constraints. */
+    /* The size constraints will override the aspect ratio contraints so we will apply the */
+    /* the aspect ratio constraints first */
+    float new_aspect = w / (float)h;
+    if (window->max_aspect > 0.0f && new_aspect > window->max_aspect) {
+        w = (int)SDL_roundf(h * window->max_aspect);
+    } else if (window->min_aspect > 0.0f && new_aspect < window->min_aspect) {
+        h = (int)SDL_roundf(w / window->min_aspect);
     }
 
     /* Make sure we don't exceed any window size limits */
@@ -2817,6 +2835,31 @@ int SDL_GetWindowSize(SDL_Window *window, int *w, int *h)
     }
     if (h) {
         *h = window->h;
+    }
+    return 0;
+}
+
+int SDL_SetWindowAspectRatio(SDL_Window *window, float min_aspect, float max_aspect)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    window->min_aspect = min_aspect;
+    window->max_aspect = max_aspect;
+    if (_this->SetWindowAspectRatio) {
+        _this->SetWindowAspectRatio(_this, window);
+    }
+    return SDL_SetWindowSize(window, window->floating.w, window->floating.h);
+}
+
+int SDL_GetWindowAspectRatio(SDL_Window *window, float *min_aspect, float *max_aspect)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (min_aspect) {
+        *min_aspect = window->min_aspect;
+    }
+    if (max_aspect) {
+        *max_aspect = window->max_aspect;
     }
     return 0;
 }
@@ -3879,7 +3922,7 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
 
     /* Now invalidate magic */
-    window->magic = NULL;
+    SDL_SetObjectValid(window, SDL_OBJECT_TYPE_WINDOW, SDL_FALSE);
 
     /* Free memory associated with the window */
     SDL_free(window->title);
@@ -5457,10 +5500,10 @@ const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name
     /* Reference: https://www.w3.org/TR/css-ui-4/#cursor */
     /* Also in: https://www.freedesktop.org/wiki/Specifications/cursor-spec/ */
     switch (id) {
-    case SDL_SYSTEM_CURSOR_ARROW:
+    case SDL_SYSTEM_CURSOR_DEFAULT:
         return "default";
 
-    case SDL_SYSTEM_CURSOR_IBEAM:
+    case SDL_SYSTEM_CURSOR_TEXT:
         return "text";
 
     case SDL_SYSTEM_CURSOR_WAIT:
@@ -5469,70 +5512,69 @@ const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
         return "crosshair";
 
-    case SDL_SYSTEM_CURSOR_WAITARROW:
+    case SDL_SYSTEM_CURSOR_PROGRESS:
         return "progress";
 
-    case SDL_SYSTEM_CURSOR_SIZENWSE:
+    case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
         if (fallback_name) {
             /* only a single arrow */
             *fallback_name = "nw-resize";
         }
         return "nwse-resize";
 
-    case SDL_SYSTEM_CURSOR_SIZENESW:
+    case SDL_SYSTEM_CURSOR_NESW_RESIZE:
         if (fallback_name) {
             /* only a single arrow */
             *fallback_name = "ne-resize";
         }
         return "nesw-resize";
 
-    case SDL_SYSTEM_CURSOR_SIZEWE:
+    case SDL_SYSTEM_CURSOR_EW_RESIZE:
         if (fallback_name) {
             *fallback_name = "col-resize";
         }
         return "ew-resize";
 
-    case SDL_SYSTEM_CURSOR_SIZENS:
+    case SDL_SYSTEM_CURSOR_NS_RESIZE:
         if (fallback_name) {
             *fallback_name = "row-resize";
         }
         return "ns-resize";
 
-    case SDL_SYSTEM_CURSOR_SIZEALL:
+    case SDL_SYSTEM_CURSOR_MOVE:
         return "all-scroll";
 
-    case SDL_SYSTEM_CURSOR_NO:
+    case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
         return "not-allowed";
 
-    case SDL_SYSTEM_CURSOR_HAND:
+    case SDL_SYSTEM_CURSOR_POINTER:
         return "pointer";
 
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+    case SDL_SYSTEM_CURSOR_NW_RESIZE:
         return "nw-resize";
 
-    case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+    case SDL_SYSTEM_CURSOR_N_RESIZE:
         return "n-resize";
 
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+    case SDL_SYSTEM_CURSOR_NE_RESIZE:
         return "ne-resize";
 
-    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+    case SDL_SYSTEM_CURSOR_E_RESIZE:
         return "e-resize";
 
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+    case SDL_SYSTEM_CURSOR_SE_RESIZE:
         return "se-resize";
 
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+    case SDL_SYSTEM_CURSOR_S_RESIZE:
         return "s-resize";
 
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+    case SDL_SYSTEM_CURSOR_SW_RESIZE:
         return "sw-resize";
 
-    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+    case SDL_SYSTEM_CURSOR_W_RESIZE:
         return "w-resize";
 
     default:
-        SDL_assert(0);
         return "default";
     }
 }

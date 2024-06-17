@@ -70,7 +70,7 @@ jobs:
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
             -DSDL_SHARED=ON \
             -DSDL_STATIC=ON \
-            -DSDL_STATIC_PIC=ON \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_INSTALL_PREFIX=prefix \
             -DCMAKE_BUILD_TYPE=Release \
@@ -82,7 +82,7 @@ jobs:
       - name: Build test apk's (CMake)
         if: ${{ matrix.platform.cmake }}
         run: |
-          cmake --build build --config Release --parallel --verbose --target testautomation-apk testaudiocapture-apk testcontroller-apk testmultiaudio-apk testsprite-apk
+          cmake --build build --config Release --parallel --verbose --target testautomation-apk testaudiorecording-apk testcontroller-apk testmultiaudio-apk testsprite-apk
       - name: Install (CMake)
         if: ${{ matrix.platform.cmake }}
         run: |

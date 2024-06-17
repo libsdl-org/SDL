@@ -194,6 +194,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->SetWindowSize = X11_SetWindowSize;
     device->SetWindowMinimumSize = X11_SetWindowMinimumSize;
     device->SetWindowMaximumSize = X11_SetWindowMaximumSize;
+    device->SetWindowAspectRatio = X11_SetWindowAspectRatio;
     device->GetWindowBordersSize = X11_GetWindowBordersSize;
     device->SetWindowOpacity = X11_SetWindowOpacity;
     device->SetWindowModalFor = X11_SetWindowModalFor;
@@ -442,6 +443,8 @@ int X11_VideoInit(SDL_VideoDevice *_this)
     X11_InitXfixes(_this);
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
 
+    X11_InitXsettings(_this);
+
 #ifndef X_HAVE_UTF8_STRING
 #warning X server does not support UTF8_STRING, a feature introduced in 2000! This is likely to become a hard error in a future libSDL3.
 #endif
@@ -468,6 +471,10 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
         X11_XDestroyWindow(data->display, data->clipboard_window);
     }
 
+    if (data->xsettings_window) {
+        X11_XDestroyWindow(data->display, data->xsettings_window);
+    }
+
 #ifdef X_HAVE_UTF8_STRING
     if (data->im) {
         X11_XCloseIM(data->im);
@@ -479,6 +486,7 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     X11_QuitMouse(_this);
     X11_QuitTouch(_this);
     X11_QuitClipboard(_this);
+    X11_QuitXsettings(_this);
 }
 
 SDL_bool X11_UseDirectColorVisuals(void)

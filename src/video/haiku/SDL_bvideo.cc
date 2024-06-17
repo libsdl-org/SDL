@@ -136,37 +136,38 @@ void HAIKU_DeleteDevice(SDL_VideoDevice * device)
 
 static SDL_Cursor * HAIKU_CreateSystemCursor(SDL_SystemCursor id)
 {
-    SDL_Cursor *cursor;
     BCursorID cursorId = B_CURSOR_ID_SYSTEM_DEFAULT;
 
     switch(id)
     {
-    default:
-        SDL_assert(0);
-        return NULL;
-    case SDL_SYSTEM_CURSOR_ARROW:     cursorId = B_CURSOR_ID_SYSTEM_DEFAULT; break;
-    case SDL_SYSTEM_CURSOR_IBEAM:     cursorId = B_CURSOR_ID_I_BEAM; break;
-    case SDL_SYSTEM_CURSOR_WAIT:      cursorId = B_CURSOR_ID_PROGRESS; break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR: cursorId = B_CURSOR_ID_CROSS_HAIR; break;
-    case SDL_SYSTEM_CURSOR_WAITARROW: cursorId = B_CURSOR_ID_PROGRESS; break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:  cursorId = B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST; break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:  cursorId = B_CURSOR_ID_RESIZE_NORTH_EAST_SOUTH_WEST; break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:    cursorId = B_CURSOR_ID_RESIZE_EAST_WEST; break;
-    case SDL_SYSTEM_CURSOR_SIZENS:    cursorId = B_CURSOR_ID_RESIZE_NORTH_SOUTH; break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:   cursorId = B_CURSOR_ID_MOVE; break;
-    case SDL_SYSTEM_CURSOR_NO:        cursorId = B_CURSOR_ID_NOT_ALLOWED; break;
-    case SDL_SYSTEM_CURSOR_HAND:      cursorId = B_CURSOR_ID_FOLLOW_LINK; break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:     cursorId = B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST; break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOP:         cursorId = B_CURSOR_ID_RESIZE_NORTH_SOUTH; break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:    cursorId = B_CURSOR_ID_RESIZE_NORTH_EAST_SOUTH_WEST; break;
-    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:       cursorId = B_CURSOR_ID_RESIZE_EAST_WEST; break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT: cursorId = B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST; break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:      cursorId = B_CURSOR_ID_RESIZE_NORTH_SOUTH; break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:  cursorId = B_CURSOR_ID_RESIZE_NORTH_EAST_SOUTH_WEST; break;
-    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:        cursorId = B_CURSOR_ID_RESIZE_EAST_WEST; break;
+        #define CURSORCASE(sdlname, bname) case SDL_SYSTEM_CURSOR_##sdlname: cursorId = B_CURSOR_ID_##bname; break
+        CURSORCASE(DEFAULT, SYSTEM_DEFAULT);
+        CURSORCASE(TEXT, I_BEAM);
+        CURSORCASE(WAIT, PROGRESS);
+        CURSORCASE(CROSSHAIR, CROSS_HAIR);
+        CURSORCASE(PROGRESS, PROGRESS);
+        CURSORCASE(NWSE_RESIZE, RESIZE_NORTH_WEST_SOUTH_EAST);
+        CURSORCASE(NESW_RESIZE, RESIZE_NORTH_EAST_SOUTH_WEST);
+        CURSORCASE(EW_RESIZE, RESIZE_EAST_WEST);
+        CURSORCASE(NS_RESIZE, RESIZE_NORTH_SOUTH);
+        CURSORCASE(MOVE, MOVE);
+        CURSORCASE(NOT_ALLOWED, NOT_ALLOWED);
+        CURSORCASE(POINTER, FOLLOW_LINK);
+        CURSORCASE(NW_RESIZE, RESIZE_NORTH_WEST_SOUTH_EAST);
+        CURSORCASE(N_RESIZE, RESIZE_NORTH_SOUTH);
+        CURSORCASE(NE_RESIZE, RESIZE_NORTH_EAST_SOUTH_WEST);
+        CURSORCASE(E_RESIZE, RESIZE_EAST_WEST);
+        CURSORCASE(SE_RESIZE, RESIZE_NORTH_WEST_SOUTH_EAST);
+        CURSORCASE(S_RESIZE, RESIZE_NORTH_SOUTH);
+        CURSORCASE(SW_RESIZE, RESIZE_NORTH_EAST_SOUTH_WEST);
+        CURSORCASE(W_RESIZE, RESIZE_EAST_WEST);
+        #undef CURSORCASE
+        default:
+            SDL_assert(0);
+            return NULL;
     }
 
-    cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         cursor->driverdata = (void *)new BCursor(cursorId);
     }
@@ -176,7 +177,7 @@ static SDL_Cursor * HAIKU_CreateSystemCursor(SDL_SystemCursor id)
 
 static SDL_Cursor * HAIKU_CreateDefaultCursor()
 {
-    return HAIKU_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+    return HAIKU_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 }
 
 static void HAIKU_FreeCursor(SDL_Cursor * cursor)

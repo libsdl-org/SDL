@@ -32,7 +32,7 @@ extern int Android_OnPadDown(int device_id, int keycode);
 extern int Android_OnPadUp(int device_id, int keycode);
 extern int Android_OnJoy(int device_id, int axisnum, float value);
 extern int Android_OnHat(int device_id, int hat_id, int x, int y);
-extern int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats);
+extern int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, SDL_bool can_rumble);
 extern int Android_RemoveJoystick(int device_id);
 
 /* A linked list of available joysticks */
@@ -45,6 +45,7 @@ typedef struct SDL_joylist_item
     SDL_Joystick *joystick;
     int nbuttons, naxes, nhats;
     int dpad_state;
+    SDL_bool can_rumble;
 
     struct SDL_joylist_item *next;
 } SDL_joylist_item;

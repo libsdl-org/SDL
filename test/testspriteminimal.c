@@ -18,9 +18,6 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include <stdlib.h>
-#include <time.h>
-
 #include "icon.h"
 
 #define WINDOW_WIDTH  640
@@ -136,17 +133,16 @@ int main(int argc, char *argv[])
     }
 
     /* Initialize the sprite positions */
-    srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(rand() % (WINDOW_WIDTH - sprite_w));
-        positions[i].y = (float)(rand() % (WINDOW_HEIGHT - sprite_h));
+        positions[i].x = (float)(SDL_rand() % (WINDOW_WIDTH - sprite_w));
+        positions[i].y = (float)(SDL_rand() % (WINDOW_HEIGHT - sprite_h));
         positions[i].w = (float)sprite_w;
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
-        while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
-            velocities[i].y = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+        while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
+            velocities[i].x = (float)((SDL_rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+            velocities[i].y = (float)((SDL_rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
         }
     }
 

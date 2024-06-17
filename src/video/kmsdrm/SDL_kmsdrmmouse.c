@@ -422,7 +422,7 @@ static int KMSDRM_MoveCursor(SDL_Cursor *cursor)
             return SDL_SetError("Cursor not initialized properly.");
         }
 
-        ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, mouse->x, mouse->y);
+        ret = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, (int)mouse->x, (int)mouse->y);
 
         if (ret) {
             return SDL_SetError("drmModeMoveCursor() failed.");

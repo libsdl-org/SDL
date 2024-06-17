@@ -105,7 +105,7 @@ typedef Uint32 SDL_InitFlags;
  * call SDL_Quit() to force shutdown). If a subsystem is already loaded then
  * this call will increase the ref-count and return.
  *
- * \param flags subsystem initialization flags
+ * \param flags subsystem initialization flags.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

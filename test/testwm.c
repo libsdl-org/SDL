@@ -47,7 +47,6 @@ SDL_COMPILE_TIME_ASSERT(cursorNames, SDL_arraysize(cursorNames) == SDL_NUM_SYSTE
 
 static int system_cursor = -1;
 static SDL_Cursor *cursor = NULL;
-static SDL_bool relative_mode = SDL_FALSE;
 static const SDL_DisplayMode *highlighted_mode = NULL;
 
 /* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
@@ -185,17 +184,6 @@ static void loop(void)
                         event.window.data1,
                         event.window.data2,
                         SDL_GetDisplayName(SDL_GetDisplayForWindow(window)));
-            }
-        }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
-            relative_mode = SDL_GetRelativeMouseMode();
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_FALSE);
-            }
-        }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_TRUE);
             }
         }
         if (event.type == SDL_EVENT_KEY_UP) {

@@ -76,6 +76,8 @@ typedef struct
     int window_minH;
     int window_maxW;
     int window_maxH;
+    float window_min_aspect;
+    float window_max_aspect;
     int logical_w;
     int logical_h;
     SDL_bool auto_scale_content;
@@ -84,6 +86,7 @@ typedef struct
     float scale;
     int depth;
     float refresh_rate;
+    SDL_bool fill_usable_bounds;
     SDL_bool fullscreen_exclusive;
     SDL_DisplayMode fullscreen_mode;
     int num_windows;

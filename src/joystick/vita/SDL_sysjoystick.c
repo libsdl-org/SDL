@@ -64,30 +64,24 @@ static const unsigned int ext_button_map[] = {
 
 static int analog_map[256]; /* Map analog inputs to -32768 -> 32767 */
 
-typedef struct
-{
-    int x;
-    int y;
-} point;
-
 /* 4 points define the bezier-curve. */
 /* The Vita has a good amount of analog travel, so use a linear curve */
-static point a = { 0, 0 };
-static point b = { 0, 0 };
-static point c = { 128, 32767 };
-static point d = { 128, 32767 };
+static SDL_Point a = { 0, 0 };
+static SDL_Point b = { 0, 0 };
+static SDL_Point c = { 128, 32767 };
+static SDL_Point d = { 128, 32767 };
 
 /* simple linear interpolation between two points */
-static SDL_INLINE void lerp(point *dest, point *first, point *second, float t)
+static SDL_INLINE void lerp(SDL_Point *dest, const SDL_Point *first, const SDL_Point *second, float t)
 {
-    dest->x = first->x + (second->x - first->x) * t;
-    dest->y = first->y + (second->y - first->y) * t;
+    dest->x = first->x + (int)((second->x - first->x) * t);
+    dest->y = first->y + (int)((second->y - first->y) * t);
 }
 
 /* evaluate a point on a bezier-curve. t goes from 0 to 1.0 */
 static int calc_bezier_y(float t)
 {
-    point ab, bc, cd, abbc, bccd, dest;
+    SDL_Point ab, bc, cd, abbc, bccd, dest;
     lerp(&ab, &a, &b, t);         /* point between a and b */
     lerp(&bc, &b, &c, t);         /* point between b and c */
     lerp(&cd, &c, &d, t);         /* point between c and d */

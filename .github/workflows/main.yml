@@ -111,6 +111,7 @@ jobs:
           -DSDL_CLANG_TIDY=ON \
           -DSDL_DISABLE_INSTALL_DOCS=${{ !matrix.platform.no-perl }} \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
+          -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
           -DCMAKE_BUILD_TYPE=Release \
           ${{ matrix.platform.cmake-platform }} \
           ${{ matrix.platform.cmake }}

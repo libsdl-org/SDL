@@ -494,8 +494,15 @@ static void FlushFullscreenEvents(SDL_Window *window)
 static void Wayland_move_window(SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
-    SDL_DisplayData *display = wind->outputs[wind->num_outputs - 1];
+    SDL_DisplayData *display;
     SDL_DisplayID *displays;
+
+    if (wind->outputs && wind->num_outputs) {
+        display = wind->outputs[wind->num_outputs - 1];
+    } else {
+        /* A window may not be on any displays if minimized. */
+        return;
+    }
 
     displays = SDL_GetDisplays(NULL);
     if (displays) {
@@ -818,11 +825,18 @@ static void handle_configure_xdg_toplevel(void *data,
             }
         }
 
-        /* The content limits are only a hint, which the compositor is free to ignore,
-         * so apply them manually when appropriate.
+        /* Notes on the spec:
          *
-         * Per the spec, maximized windows must have their exact dimensions respected,
-         * thus they must not be resized, or a protocol violation can occur.
+         * - The content limits are only a hint, which the compositor is free to ignore,
+         *   so apply them manually when appropriate.
+         *
+         * - Maximized windows must have their exact dimensions respected, thus they must
+         *   not be resized, or a protocol violation can occur.
+         *
+         * - When resizing a window, the width/height are maximum values, so aspect ratio
+         *   correction can't resize beyond the existing dimensions, or a protocol violation
+         *   can occur. In practice, nothing seems to kill clients that do this, but doing
+         *   so causes GNOME to glitch out.
          */
         if (!maximized) {
             if (!wind->scale_to_display) {
@@ -835,6 +849,15 @@ static void handle_configure_xdg_toplevel(void *data,
                     wind->requested.logical_height = SDL_min(wind->requested.logical_height, window->max_h);
                 }
                 wind->requested.logical_height = SDL_max(wind->requested.logical_height, window->min_h);
+
+                /* Aspect correction. */
+                const float aspect = (float)wind->requested.logical_width / (float)wind->requested.logical_height;
+
+                if (window->min_aspect != 0.f && aspect < window->min_aspect) {
+                    wind->requested.logical_height = SDL_lroundf((float)wind->requested.logical_width / window->min_aspect);
+                } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
+                    wind->requested.logical_width = SDL_lroundf((float)wind->requested.logical_height * window->max_aspect);
+                }
             } else {
                 if (window->max_w > 0) {
                     wind->requested.pixel_width = SDL_min(wind->requested.pixel_width, window->max_w);
@@ -845,6 +868,15 @@ static void handle_configure_xdg_toplevel(void *data,
                     wind->requested.pixel_height = SDL_min(wind->requested.pixel_height, window->max_h);
                 }
                 wind->requested.pixel_height = SDL_max(wind->requested.pixel_height, window->min_h);
+
+                /* Aspect correction. */
+                const float aspect = (float)wind->requested.pixel_width / (float)wind->requested.pixel_height;
+
+                if (window->min_aspect != 0.f && aspect < window->min_aspect) {
+                    wind->requested.pixel_height = SDL_lroundf((float)wind->requested.pixel_width / window->min_aspect);
+                } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
+                    wind->requested.pixel_width = SDL_lroundf((float)wind->requested.pixel_height * window->max_aspect);
+                }
 
                 wind->requested.logical_width = PixelToPoint(window, wind->requested.pixel_width);
                 wind->requested.logical_height = PixelToPoint(window, wind->requested.pixel_height);
@@ -1175,11 +1207,18 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
             }
         }
 
-        /* The content limits are only a hint, which the compositor is free to ignore,
-         * so apply them manually when appropriate.
+        /* Notes on the spec:
          *
-         * Per the spec, maximized windows must have their exact dimensions respected,
-         * thus they must not be resized, or a protocol violation can occur.
+         * - The content limits are only a hint, which the compositor is free to ignore,
+         *   so apply them manually when appropriate.
+         *
+         * - Maximized windows must have their exact dimensions respected, thus they must
+         *   not be resized, or a protocol violation can occur.
+         *
+         * - When resizing a window, the width/height are maximum values, so aspect ratio
+         *   correction can't resize beyond the existing dimensions, or a protocol violation
+         *   can occur. In practice, nothing seems to kill clients that do this, but doing
+         *   so causes GNOME to glitch out.
          */
         if (!maximized) {
             if (!wind->scale_to_display) {
@@ -1192,6 +1231,15 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                     wind->requested.logical_height = SDL_min(wind->requested.logical_height, window->max_h);
                 }
                 wind->requested.logical_height = SDL_max(wind->requested.logical_height, window->min_h);
+
+                /* Aspect correction. */
+                const float aspect = (float)wind->requested.logical_width / (float)wind->requested.logical_height;
+
+                if (window->min_aspect != 0.f && aspect < window->min_aspect) {
+                    wind->requested.logical_height = SDL_lroundf((float)wind->requested.logical_width / window->min_aspect);
+                } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
+                    wind->requested.logical_width = SDL_lroundf((float)wind->requested.logical_height * window->max_aspect);
+                }
             } else {
                 if (window->max_w > 0) {
                     wind->requested.pixel_width = SDL_min(wind->requested.pixel_width, window->max_w);
@@ -1202,6 +1250,15 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                     wind->requested.pixel_height = SDL_min(wind->requested.pixel_height, window->max_h);
                 }
                 wind->requested.pixel_height = SDL_max(wind->requested.pixel_height, window->min_h);
+
+                /* Aspect correction. */
+                const float aspect = (float)wind->requested.pixel_width / (float)wind->requested.pixel_height;
+
+                if (window->min_aspect != 0.f && aspect < window->min_aspect) {
+                    wind->requested.pixel_height = SDL_lroundf((float)wind->requested.pixel_width / window->min_aspect);
+                } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
+                    wind->requested.pixel_width = SDL_lroundf((float)wind->requested.pixel_height * window->max_aspect);
+                }
 
                 wind->requested.logical_width = PixelToPoint(window, wind->requested.pixel_width);
                 wind->requested.logical_height = PixelToPoint(window, wind->requested.pixel_height);
@@ -1421,7 +1478,7 @@ static const struct wl_surface_listener surface_listener = {
 
 static void handle_preferred_fractional_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale)
 {
-    const float factor = scale / 120.; /* 120 is a magic number defined in the spec as a common denominator */
+    const float factor = scale / 120.f; /* 120 is a magic number defined in the spec as a common denominator */
     Wayland_HandlePreferredScaleChanged(data, factor);
 }
 
@@ -1804,7 +1861,7 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
     SDL_WindowData *popupdata;
 
     /* Basic sanity checks to weed out the weird popup closures */
-    if (!popup || popup->magic != &_this->window_magic) {
+    if (!SDL_ObjectValid(popup, SDL_OBJECT_TYPE_WINDOW)) {
         return;
     }
     popupdata = popup->driverdata;

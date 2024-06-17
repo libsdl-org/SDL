@@ -370,7 +370,7 @@ extern "C" {
  * Some audio backends (such as Pipewire) allow you to describe the role of
  * your audio stream. Among other things, this description might show up in a
  * system control panel or software for displaying and manipulating media
- * playback/capture graphs.
+ * playback/recording graphs.
  *
  * This hints lets you transmit that information to the OS. The contents of
  * this hint are used while opening an audio device. You should use a string
@@ -2290,6 +2290,20 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_WARP_MOTION  "SDL_MOUSE_RELATIVE_WARP_MOTION"
 
 /**
+ * A variable controlling whether the hardware cursor stays visible when
+ * relative mode is active.
+ *
+ * This variable can be set to the following values: "0" - The cursor will be
+ * hidden while relative mode is active (default) "1" - The cursor will remain
+ * visible while relative mode is active
+ *
+ * Note that for systems without raw hardware inputs, relative mode is
+ * implemented using warping, so the hardware cursor will visibly warp between
+ * frames if this is enabled on those systems.
+ */
+#define SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE  "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"
+
+/**
  * A variable controlling whether mouse events should generate synthetic touch
  * events.
  *
@@ -3464,8 +3478,8 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": The Windows message loop is used for keyboard events.
- * - "1": Low latency raw keyboard events are used. (default)
+ * - "0": The Windows message loop is used for keyboard events. (default)
+ * - "1": Low latency raw keyboard events are used.
  *
  * This hint can be set anytime.
  *
@@ -3551,6 +3565,23 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_WINDOWS_USE_D3D9EX "SDL_WINDOWS_USE_D3D9EX"
+
+/**
+ * A variable controlling whether SDL will clear the window contents when the
+ * WM_ERASEBKGND message is received.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0"/"never": Never clear the window.
+ * - "1"/"initial": Clear the window when the first WM_ERASEBKGND event fires.
+ *   (default)
+ * - "2"/"always": Clear the window on every WM_ERASEBKGND event.
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE "SDL_WINDOWS_ERASE_BACKGROUND_MODE"
 
 /**
  * A variable controlling whether back-button-press events on Windows Phone to
@@ -3738,9 +3769,9 @@ typedef enum SDL_HintPriority
  * value. Hints will replace existing hints of their priority and lower.
  * Environment variables are considered to have override priority.
  *
- * \param[in] name the hint to set
- * \param[in] value the value of the hint variable
- * \param priority the SDL_HintPriority level for the hint
+ * \param[in] name the hint to set.
+ * \param[in] value the value of the hint variable.
+ * \param priority the SDL_HintPriority level for the hint.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3760,8 +3791,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * variable that takes precedence. You can use SDL_SetHintWithPriority() to
  * set the hint with override priority instead.
  *
- * \param[in] name the hint to set
- * \param[in] value the value of the hint variable
+ * \param[in] name the hint to set.
+ * \param[in] value the value of the hint variable.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3780,7 +3811,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * the environment isn't set. Callbacks will be called normally with this
  * change.
  *
- * \param[in] name the hint to set
+ * \param[in] name the hint to set.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3806,7 +3837,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
 /**
  * Get the value of a hint.
  *
- * \param[in] name the hint to query
+ * The returned string follows the SDL_GetStringRule.
+ *
+ * \param[in] name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3819,8 +3852,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 /**
  * Get the boolean value of a hint variable.
  *
- * \param[in] name the name of the hint to get the boolean value from
- * \param default_value the value to return if the hint does not exist
+ * \param[in] name the name of the hint to get the boolean value from.
+ * \param default_value the value to return if the hint does not exist.
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.
  *
@@ -3834,10 +3867,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bo
 /**
  * Type definition of the hint callback function.
  *
- * \param userdata what was passed as `userdata` to SDL_AddHintCallback()
- * \param name what was passed as `name` to SDL_AddHintCallback()
- * \param oldValue the previous hint value
- * \param newValue the new value hint is to be set to
+ * \param userdata what was passed as `userdata` to SDL_AddHintCallback().
+ * \param name what was passed as `name` to SDL_AddHintCallback().
+ * \param oldValue the previous hint value.
+ * \param newValue the new value hint is to be set to.
  *
  * \since This datatype is available since SDL 3.0.0.
  */
@@ -3846,10 +3879,10 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
 /**
  * Add a function to watch a particular hint.
  *
- * \param[in] name the hint to watch
- * \param[in] callback An SDL_HintCallback function that will be called when the
- *                 hint value changes
- * \param[inout,opt] userdata a pointer to pass to the callback function
+ * \param[in] name the hint to watch.
+ * \param[in] callback an SDL_HintCallback function that will be called when the
+ *                 hint value changes.
+ * \param[inout,opt] userdata a pointer to pass to the callback function.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -3867,10 +3900,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddHintCallback(const char *name,
 /**
  * Remove a function watching a particular hint.
  *
- * \param[in] name the hint being watched
- * \param[in] callback An SDL_HintCallback function that will be called when the
- *                 hint value changes
- * \param[inout,opt] userdata a pointer being passed to the callback function
+ * \param[in] name the hint being watched.
+ * \param[in] callback an SDL_HintCallback function that will be called when the
+ *                 hint value changes.
+ * \param[inout,opt] userdata a pointer being passed to the callback function.
  *
  * \since This function is available since SDL 3.0.0.
  *

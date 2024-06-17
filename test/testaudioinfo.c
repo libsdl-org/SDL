@@ -14,13 +14,13 @@
 #include <SDL3/SDL_test.h>
 
 static void
-print_devices(SDL_bool iscapture)
+print_devices(SDL_bool recording)
 {
     SDL_AudioSpec spec;
-    const char *typestr = ((iscapture) ? "capture" : "output");
+    const char *typestr = (recording ? "recording" : "playback");
     int n = 0;
     int frames;
-    SDL_AudioDeviceID *devices = iscapture ? SDL_GetAudioCaptureDevices(&n) : SDL_GetAudioOutputDevices(&n);
+    SDL_AudioDeviceID *devices = recording ? SDL_GetAudioRecordingDevices(&n) : SDL_GetAudioPlaybackDevices(&n);
 
     if (!devices) {
         SDL_Log("  Driver failed to report %s devices: %s\n\n", typestr, SDL_GetError());
@@ -30,10 +30,9 @@ print_devices(SDL_bool iscapture)
         int i;
         SDL_Log("Found %d %s device%s:\n", n, typestr, n != 1 ? "s" : "");
         for (i = 0; i < n; i++) {
-            char *name = SDL_GetAudioDeviceName(devices[i]);
+            const char *name = SDL_GetAudioDeviceName(devices[i]);
             if (name) {
                 SDL_Log("  %d: %s\n", i, name);
-                SDL_free(name);
             } else {
                 SDL_Log("  %d Error: %s\n", i, SDL_GetError());
             }
@@ -95,20 +94,20 @@ int main(int argc, char **argv)
     print_devices(SDL_FALSE);
     print_devices(SDL_TRUE);
 
-    if (SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec, &frames) < 0) {
-        SDL_Log("Error when calling SDL_GetAudioDeviceFormat(default output): %s\n", SDL_GetError());
+    if (SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &frames) < 0) {
+        SDL_Log("Error when calling SDL_GetAudioDeviceFormat(default playback): %s\n", SDL_GetError());
     } else {
-        SDL_Log("Default Output Device:\n");
+        SDL_Log("Default Playback Device:\n");
         SDL_Log("Sample Rate: %d\n", spec.freq);
         SDL_Log("Channels: %d\n", spec.channels);
         SDL_Log("SDL_AudioFormat: %X\n", spec.format);
         SDL_Log("Buffer Size: %d frames\n", frames);
     }
 
-    if (SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_CAPTURE, &spec, &frames) < 0) {
-        SDL_Log("Error when calling SDL_GetAudioDeviceFormat(default capture): %s\n", SDL_GetError());
+    if (SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_RECORDING, &spec, &frames) < 0) {
+        SDL_Log("Error when calling SDL_GetAudioDeviceFormat(default recording): %s\n", SDL_GetError());
     } else {
-        SDL_Log("Default Capture Device:\n");
+        SDL_Log("Default Recording Device:\n");
         SDL_Log("Sample Rate: %d\n", spec.freq);
         SDL_Log("Channels: %d\n", spec.channels);
         SDL_Log("SDL_AudioFormat: %X\n", spec.format);

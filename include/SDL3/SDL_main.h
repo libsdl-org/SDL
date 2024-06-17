@@ -287,8 +287,8 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
  *
  * \param appstate a place where the app can optionally store a pointer for
  *                 future use.
- * \param argc The standard ANSI C main's argc; number of elements in `argv`
- * \param argv The standard ANSI C main's argv; array of command line
+ * \param argc the standard ANSI C main's argc; number of elements in `argv`.
+ * \param argv the standard ANSI C main's argv; array of command line
  *             arguments.
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
@@ -438,6 +438,12 @@ extern SDLMAIN_DECLSPEC void SDLCALL SDL_AppQuit(void *appstate);
 /**
  * The prototype for the application's main() function
  *
+ * \param argc an ANSI-C style main function's argc.
+ * \param argv an ANSI-C style main function's argv.
+ * \returns an ANSI-C main return code; generally 0 is considered successful
+ *          program completion, and small non-zero values are considered
+ *          errors.
+ *
  * \since This datatype is available since SDL 3.0.0.
  */
 typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
@@ -462,6 +468,12 @@ typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
  * [README/main-functions](README/main-functions), (or
  * docs/README-main-functions.md in the source tree) for a more detailed
  * explanation.
+ *
+ * \param argc an ANSI-C style main function's argc.
+ * \param argv an ANSI-C style main function's argv.
+ * \returns an ANSI-C main return code; generally 0 is considered successful
+ *          program completion, and small non-zero values are considered
+ *          errors.
  *
  * \threadsafety This is the program entry point.
  *
@@ -494,18 +506,20 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
  * using SDL_main (like when using SDL_MAIN_HANDLED). When using this, you do
  * *not* need SDL_SetMainReady().
  *
- * \param argc The argc parameter from the application's main() function, or 0
- *             if the platform's main-equivalent has no argc
- * \param[in] argv The argv parameter from the application's main() function, or
- *             NULL if the platform's main-equivalent has no argv
- * \param[in] mainFunction Your SDL app's C-style main(), an SDL_main_func. NOT
- *                     the function you're calling this from! Its name doesn't
- *                     matter, but its signature must be like int my_main(int
- *                     argc, char* argv[])
+ * \param argc the argc parameter from the application's main() function, or 0
+ *             if the platform's main-equivalent has no argc.
+ * \param[in] argv the argv parameter from the application's main() function, or
+ *             NULL if the platform's main-equivalent has no argv.
+ * \param[in] mainFunction your SDL app's C-style main(). NOT the function you're
+ *                     calling this from! Its name doesn't matter; it doesn't
+ *                     literally have to be `main`.
  * \param reserved should be NULL (reserved for future use, will probably be
- *                 platform-specific then)
+ *                 platform-specific then).
  * \returns the return value from mainFunction: 0 on success, -1 on failure;
- *          SDL_GetError() might have more information on the failure
+ *          SDL_GetError() might have more information on the failure.
+ *
+ * \threadsafety Generally this is called once, near startup, from the
+ *               process's initial thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -523,13 +537,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func
  * header-only library, and you should not call this directly unless you
  * _really_ know what you're doing.
  *
- * \param argc standard Unix main argc
- * \param[in] argv standard Unix main argv
- * \param[in] appinit The application's SDL_AppInit function
- * \param[in] appiter The application's SDL_AppIterate function
- * \param[in] appevent The application's SDL_AppEvent function
- * \param[in] appquit The application's SDL_AppQuit function
- * \returns standard Unix main return value
+ * \param argc standard Unix main argc.
+ * \param[in] argv standard Unix main argv.
+ * \param[in] appinit the application's SDL_AppInit function.
+ * \param[in] appiter the application's SDL_AppIterate function.
+ * \param[in] appevent the application's SDL_AppEvent function.
+ * \param[in] appquit the application's SDL_AppQuit function.
+ * \returns standard Unix main return value.
  *
  * \threadsafety It is not safe to call this anywhere except as the only
  *               function call in SDL_main.

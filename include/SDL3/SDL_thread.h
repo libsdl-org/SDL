@@ -107,7 +107,7 @@ typedef enum SDL_ThreadPriority {
 /**
  * The function passed to SDL_CreateThread() as the new thread's entry point.
  *
- * \param data what was passed as `data` to SDL_CreateThread()
+ * \param data what was passed as `data` to SDL_CreateThread().
  * \returns a value that can be reported through SDL_WaitThread().
  *
  * \since This datatype is available since SDL 3.0.0.
@@ -173,9 +173,9 @@ typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
  * Usually, apps should just call this function the same way on every platform
  * and let the macros hide the details.
  *
- * \param fn the SDL_ThreadFunction function to call in the new thread
- * \param name the name of the thread
- * \param data a pointer that is passed to `fn`
+ * \param fn the SDL_ThreadFunction function to call in the new thread.
+ * \param name the name of the thread.
+ * \param data a pointer that is passed to `fn`.
  * \returns an opaque pointer to the new thread object on success, NULL if the
  *          new thread could not be created; call SDL_GetError() for more
  *          information.
@@ -241,7 +241,7 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  * Usually, apps should just call this function the same way on every platform
  * and let the macros hide the details.
  *
- * \param props the properties to use
+ * \param props the properties to use.
  * \returns an opaque pointer to the new thread object on success, NULL if the
  *          new thread could not be created; call SDL_GetError() for more
  *          information.
@@ -331,10 +331,9 @@ extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadWithPropertiesRuntime(SD
 /**
  * Get the thread name as it was specified in SDL_CreateThread().
  *
- * This is internal memory, not to be freed by the caller, and remains valid
- * until the specified thread is cleaned up by SDL_WaitThread().
+ * The returned string follows the SDL_GetStringRule.
  *
- * \param[inout] thread the thread to query
+ * \param[inout] thread the thread to query.
  * \returns a pointer to a UTF-8 string that names the specified thread, or
  *          NULL if it doesn't have a name.
  *
@@ -367,7 +366,7 @@ extern SDL_DECLSPEC SDL_ThreadID SDLCALL SDL_GetCurrentThreadID(void);
  * If SDL is running on a platform that does not support threads the return
  * value will always be zero.
  *
- * \param[inout] thread the thread to query
+ * \param[inout] thread the thread to query.
  * \returns the ID of the specified thread, or the ID of the current thread if
  *          `thread` is NULL.
  *
@@ -384,7 +383,7 @@ extern SDL_DECLSPEC SDL_ThreadID SDLCALL SDL_GetThreadID(SDL_Thread * thread);
  * promote the thread to a higher priority) at all, and some require you to be
  * an administrator account. Be prepared for this to fail.
  *
- * \param priority the SDL_ThreadPriority to set
+ * \param priority the SDL_ThreadPriority to set.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -415,7 +414,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetThreadPriority(SDL_ThreadPriority priorit
  * afterward.
  *
  * \param[inout] thread the SDL_Thread pointer that was returned from the
- *               SDL_CreateThread() call that started this thread
+ *               SDL_CreateThread() call that started this thread.
  * \param[out] status pointer to an integer that will receive the value returned
  *               from the thread function by its 'return', or NULL to not
  *               receive such value back.
@@ -454,7 +453,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread * thread, int *status
  * It is safe to pass NULL to this function; it is a no-op.
  *
  * \param[inout] thread the SDL_Thread pointer that was returned from the
- *               SDL_CreateThread() call that started this thread
+ *               SDL_CreateThread() call that started this thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -481,7 +480,7 @@ extern SDL_DECLSPEC SDL_TLSID SDLCALL SDL_CreateTLS(void);
 /**
  * Get the current thread's value associated with a thread local storage ID.
  *
- * \param id the thread local storage ID
+ * \param id the thread local storage ID.
  * \returns the value associated with the ID for the current thread or NULL if
  *          no value has been set; call SDL_GetError() for more information.
  *
@@ -491,21 +490,33 @@ extern SDL_DECLSPEC SDL_TLSID SDLCALL SDL_CreateTLS(void);
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_GetTLS(SDL_TLSID id);
 
+
+/**
+ * The callback used to cleanup data passed to SDL_SetTLS.
+ *
+ * This is called when a thread exits, to allow an app to free any resources.
+ *
+ * \param value a pointer previously handed to SDL_SetTLS.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetTLS
+ */
+typedef void (SDLCALL *SDL_TLSDestructorCallback)(void *value);
+
 /**
  * Set the current thread's value associated with a thread local storage ID.
  *
- * The function prototype for `destructor` is:
+ * Note that replacing a value from a previous call to this function on the
+ * same thread does _not_ call the previous value's destructor!
  *
- * ```c
- * void destructor(void *value)
- * ```
+ * `destructor` can be NULL; it is assumed that `value` does not need to be
+ * cleaned up if so.
  *
- * where its parameter `value` is what was passed as `value` to SDL_SetTLS().
- *
- * \param id the thread local storage ID
- * \param[in] value the value to associate with the ID for the current thread
+ * \param id the thread local storage ID.
+ * \param[in] value the value to associate with the ID for the current thread.
  * \param[in] destructor a function called when the thread exits, to free the
- *                   value
+ *                   value. Can be NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -513,7 +524,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetTLS(SDL_TLSID id);
  *
  * \sa SDL_GetTLS
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID id, const void *value, void (SDLCALL *destructor)(void*));
+extern SDL_DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID id, const void *value, SDL_TLSDestructorCallback destructor);
 
 /**
  * Cleanup all TLS data for this thread.

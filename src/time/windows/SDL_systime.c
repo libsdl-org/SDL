@@ -23,8 +23,6 @@
 #ifdef SDL_TIME_WINDOWS
 
 #include "../../core/windows/SDL_windows.h"
-#include <minwinbase.h>
-#include <timezoneapi.h>
 
 #include "../SDL_time_c.h"
 

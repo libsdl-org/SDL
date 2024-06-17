@@ -627,9 +627,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->driverdata;
         MTLPixelFormat pixfmt;
         MTLTextureDescriptor *mtltexdesc;
-        id<MTLTexture> mtltexture, mtltextureUv;
-        BOOL yuv = FALSE;
-        BOOL nv12 = FALSE;
+        id<MTLTexture> mtltexture = nil, mtltextureUv = nil;
         METAL_TextureData *texturedata;
         CVPixelBufferRef pixelbuffer = nil;
         IOSurfaceRef surface = nil;
@@ -644,6 +642,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
+        case SDL_PIXELFORMAT_XBGR8888:
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
             } else {
@@ -651,6 +650,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
+        case SDL_PIXELFORMAT_XRGB8888:
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
             } else {
@@ -694,7 +694,9 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
 
         if (surface) {
-            mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
+            if (@available(iOS 11.0, *)) {
+                mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
+            }
         } else {
             mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
         }
@@ -704,8 +706,8 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         mtltextureUv = nil;
 #if SDL_HAVE_YUV
-        yuv = (texture->format == SDL_PIXELFORMAT_IYUV || texture->format == SDL_PIXELFORMAT_YV12);
-        nv12 = (texture->format == SDL_PIXELFORMAT_NV12 || texture->format == SDL_PIXELFORMAT_NV21 || texture->format == SDL_PIXELFORMAT_P010);
+        BOOL yuv = (texture->format == SDL_PIXELFORMAT_IYUV || texture->format == SDL_PIXELFORMAT_YV12);
+        BOOL nv12 = (texture->format == SDL_PIXELFORMAT_NV12 || texture->format == SDL_PIXELFORMAT_NV21 || texture->format == SDL_PIXELFORMAT_P010);
 
         if (yuv) {
             mtltexdesc.pixelFormat = MTLPixelFormatR8Unorm;
@@ -725,7 +727,9 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         if (yuv || nv12) {
             if (surface) {
-                mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
+                if (@available(iOS 11.0, *)) {
+                    mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
+                }
             } else {
                 mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
             }
@@ -742,16 +746,18 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
         if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
+#if SDL_HAVE_YUV
         } else if (yuv) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_YUV;
+#endif
         } else {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_ADVANCED;
         }
         texturedata.mtltexture = mtltexture;
         texturedata.mtltextureUv = mtltextureUv;
+#if SDL_HAVE_YUV
         texturedata.yuv = yuv;
         texturedata.nv12 = nv12;
-#if SDL_HAVE_YUV
         if (yuv || nv12) {
             size_t offset = GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
             if (offset == 0) {
@@ -1007,7 +1013,9 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         id<MTLBlitCommandEncoder> blitcmd;
         SDL_Rect rect = texturedata.lockedrect;
         int pitch = SDL_BYTESPERPIXEL(texture->format) * rect.w;
+#if SDL_HAVE_YUV
         SDL_Rect UVrect = { rect.x / 2, rect.y / 2, (rect.w + 1) / 2, (rect.h + 1) / 2 };
+#endif
 
         if (texturedata.lockedbuffer == nil) {
             return;
@@ -2147,9 +2155,11 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         renderer->GetMetalLayer = METAL_GetMetalLayer;
         renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
 
-        renderer->info.name = METAL_RenderDriver.name;
+        renderer->name = METAL_RenderDriver.name;
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR8888);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA128_FLOAT);

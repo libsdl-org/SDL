@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_utils_c.h"
+#include "SDL_hashtable.h"
 
 /* Common utility functions that aren't in the public API */
 
@@ -49,6 +49,45 @@ int SDL_powerof2(int x)
     return value;
 }
 
+// Algorithm adapted with thanks from John Cook's blog post:
+// http://www.johndcook.com/blog/2010/10/20/best-rational-approximation
+void SDL_CalculateFraction(float x, int *numerator, int *denominator)
+{
+    const int N = 1000;
+    int a = 0, b = 1;
+    int c = 1, d = 0;
+
+    while (b <= N && d <= N) {
+        float mediant = (float)(a + c) / (b + d);
+        if (x == mediant) {
+            if (b + d <= N) {
+                *numerator = a + c;
+                *denominator = b + d;
+            } else if (d > b) {
+                *numerator = c;
+                *denominator = d;
+            } else {
+                *numerator = a;
+                *denominator = b;
+            }
+            return;
+        } else if (x > mediant) {
+            a = a + c;
+            b = b + d;
+        } else {
+            c = a + c;
+            d = b + d;
+        }
+    }
+    if (b > N) {
+        *numerator = c;
+        *denominator = d;
+    } else {
+        *numerator = a;
+        *denominator = b;
+    }
+}
+
 SDL_bool SDL_endswith(const char *string, const char *suffix)
 {
     size_t string_length = string ? SDL_strlen(string) : 0;
@@ -60,4 +99,110 @@ SDL_bool SDL_endswith(const char *string, const char *suffix)
         }
     }
     return SDL_FALSE;
+}
+
+/* Assume we can wrap SDL_AtomicInt values and cast to Uint32 */
+SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
+
+Uint32 SDL_GetNextObjectID(void)
+{
+    static SDL_AtomicInt last_id;
+
+    Uint32 id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
+    if (id == 0) {
+        id = (Uint32)SDL_AtomicIncRef(&last_id) + 1;
+    }
+    return id;
+}
+
+static SDL_HashTable *SDL_objects;
+
+static Uint32 SDL_HashObject(const void *key, void *unused)
+{
+    return (Uint32)(uintptr_t)key;
+}
+
+static SDL_bool SDL_KeyMatchObject(const void *a, const void *b, void *unused)
+{
+    return (a == b);
+}
+
+void SDL_SetObjectValid(void *object, SDL_ObjectType type, SDL_bool valid)
+{
+    SDL_assert(object != NULL);
+
+    if (valid) {
+        if (!SDL_objects) {
+            SDL_objects = SDL_CreateHashTable(NULL, 32, SDL_HashObject, SDL_KeyMatchObject, NULL, SDL_FALSE);
+        }
+
+        SDL_InsertIntoHashTable(SDL_objects, object, (void *)(uintptr_t)type);
+    } else {
+        if (SDL_objects) {
+            SDL_RemoveFromHashTable(SDL_objects, object);
+        }
+    }
+}
+
+SDL_bool SDL_ObjectValid(void *object, SDL_ObjectType type)
+{
+    if (!object) {
+        return SDL_FALSE;
+    }
+
+    const void *object_type;
+    if (!SDL_FindInHashTable(SDL_objects, object, &object_type)) {
+        return SDL_FALSE;
+    }
+
+    return (((SDL_ObjectType)(uintptr_t)object_type) == type);
+}
+
+void SDL_SetObjectsInvalid(void)
+{
+    if (SDL_objects) {
+        /* Log any leaked objects */
+        const void *object, *object_type;
+        void *iter = NULL;
+        while (SDL_IterateHashTable(SDL_objects, &object, &object_type, &iter)) {
+            const char *type;
+            switch ((SDL_ObjectType)(uintptr_t)object_type) {
+            case SDL_OBJECT_TYPE_WINDOW:
+                type = "SDL_Window";
+                break;
+            case SDL_OBJECT_TYPE_RENDERER:
+                type = "SDL_Renderer";
+                break;
+            case SDL_OBJECT_TYPE_TEXTURE:
+                type = "SDL_Texture";
+                break;
+            case SDL_OBJECT_TYPE_JOYSTICK:
+                type = "SDL_Joystick";
+                break;
+            case SDL_OBJECT_TYPE_GAMEPAD:
+                type = "SDL_Gamepad";
+                break;
+            case SDL_OBJECT_TYPE_HAPTIC:
+                type = "SDL_Haptic";
+                break;
+            case SDL_OBJECT_TYPE_SENSOR:
+                type = "SDL_Sensor";
+                break;
+            case SDL_OBJECT_TYPE_HIDAPI_DEVICE:
+                type = "hidapi device";
+                break;
+            case SDL_OBJECT_TYPE_HIDAPI_JOYSTICK:
+                type = "hidapi joystick";
+                break;
+            default:
+                type = "unknown object";
+                break;
+            }
+            SDL_Log("Leaked %s (%p)\n", type, object);
+        }
+        SDL_assert(SDL_HashTableEmpty(SDL_objects));
+
+        SDL_DestroyHashTable(SDL_objects);
+        SDL_objects = NULL;
+    }
 }

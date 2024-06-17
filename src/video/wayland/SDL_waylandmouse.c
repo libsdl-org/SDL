@@ -350,7 +350,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, struct Wayland_C
 
     /* Cursors use integer scaling. */
     *scale = SDL_ceilf(focusdata->windowed_scale_factor);
-    size *= *scale;
+    size *= (int)*scale;
     for (int i = 0; i < vdata->num_cursor_themes; i += 1) {
         if (vdata->cursor_themes[i].size == size) {
             theme = vdata->cursor_themes[i].theme;
@@ -486,7 +486,7 @@ static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
 
 static SDL_Cursor *Wayland_CreateDefaultCursor(void)
 {
-    return Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+    return Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 }
 
 static void Wayland_FreeCursorData(struct Wayland_CursorData *d)
@@ -529,10 +529,10 @@ static void Wayland_SetSystemCursorShape(struct SDL_WaylandInput *input, SDL_Sys
     Uint32 shape;
 
     switch (id) {
-    case SDL_SYSTEM_CURSOR_ARROW:
+    case SDL_SYSTEM_CURSOR_DEFAULT:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT;
         break;
-    case SDL_SYSTEM_CURSOR_IBEAM:
+    case SDL_SYSTEM_CURSOR_TEXT:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_TEXT;
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
@@ -541,52 +541,52 @@ static void Wayland_SetSystemCursorShape(struct SDL_WaylandInput *input, SDL_Sys
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR;
         break;
-    case SDL_SYSTEM_CURSOR_WAITARROW:
+    case SDL_SYSTEM_CURSOR_PROGRESS:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS;
         break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:
+    case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NWSE_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:
+    case SDL_SYSTEM_CURSOR_NESW_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NESW_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:
+    case SDL_SYSTEM_CURSOR_EW_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_SIZENS:
+    case SDL_SYSTEM_CURSOR_NS_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:
+    case SDL_SYSTEM_CURSOR_MOVE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ALL_SCROLL;
         break;
-    case SDL_SYSTEM_CURSOR_NO:
+    case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NOT_ALLOWED;
         break;
-    case SDL_SYSTEM_CURSOR_HAND:
+    case SDL_SYSTEM_CURSOR_POINTER:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_POINTER;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+    case SDL_SYSTEM_CURSOR_NW_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NW_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+    case SDL_SYSTEM_CURSOR_N_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_N_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+    case SDL_SYSTEM_CURSOR_NE_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NE_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+    case SDL_SYSTEM_CURSOR_E_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_E_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+    case SDL_SYSTEM_CURSOR_SE_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_SE_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+    case SDL_SYSTEM_CURSOR_S_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_S_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+    case SDL_SYSTEM_CURSOR_SW_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_SW_RESIZE;
         break;
-    case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+    case SDL_SYSTEM_CURSOR_W_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_W_RESIZE;
         break;
     default:
@@ -638,12 +638,12 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
             }
         }
 
-        wl_surface_set_buffer_scale(data->surface, scale);
+        wl_surface_set_buffer_scale(data->surface, (int32_t)scale);
         wl_pointer_set_cursor(pointer,
                               input->pointer_enter_serial,
                               data->surface,
-                              data->hot_x / scale,
-                              data->hot_y / scale);
+                              (int32_t)(data->hot_x / scale),
+                              (int32_t)(data->hot_y / scale));
         if (data->is_system_cursor) {
             wl_surface_attach(data->surface, data->cursor_data.system.frames[0].wl_buffer, 0, 0);
 
@@ -880,34 +880,34 @@ void Wayland_InitMouse(void)
     while (r <= SDL_HITTEST_RESIZE_LEFT) {
         switch (r) {
         case SDL_HITTEST_NORMAL:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
             break;
         case SDL_HITTEST_DRAGGABLE:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
             break;
         case SDL_HITTEST_RESIZE_TOPLEFT:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_NW_RESIZE);
             break;
         case SDL_HITTEST_RESIZE_TOP:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOP);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_N_RESIZE);
             break;
         case SDL_HITTEST_RESIZE_TOPRIGHT:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_NE_RESIZE);
             break;
         case SDL_HITTEST_RESIZE_RIGHT:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_RIGHT);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_E_RESIZE);
             break;
         case SDL_HITTEST_RESIZE_BOTTOMRIGHT:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SE_RESIZE);
             break;
         case SDL_HITTEST_RESIZE_BOTTOM:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOM);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_S_RESIZE);
             break;
         case SDL_HITTEST_RESIZE_BOTTOMLEFT:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_SW_RESIZE);
             break;
         case SDL_HITTEST_RESIZE_LEFT:
-            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_WINDOW_LEFT);
+            sys_cursors[r] = Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_W_RESIZE);
             break;
         }
         r++;

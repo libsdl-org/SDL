@@ -23,6 +23,7 @@
 #ifdef SDL_VIDEO_DRIVER_X11
 
 #include "SDL_x11video.h"
+#include "SDL_x11settings.h"
 #include "edid.h"
 
 /* #define X11MODES_DEBUG */
@@ -152,7 +153,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
         if (new_scale > 0.0) {
             *scale_factor = new_scale;
-            UpdateDisplayContentScale(new_scale);
+            UpdateDisplayContentScale((float)new_scale);
         }
 
         return DBUS_HANDLER_RESULT_HANDLED;
@@ -230,9 +231,22 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
             }
         }
 
+        /* If that failed, try the XSETTINGS keys... */
+        if (scale_factor <= 0.0) {
+            scale_factor = X11_GetXsettingsIntKey(_this, "Gdk/WindowScalingFactor", -1);
+
+            /* The Xft/DPI key is stored in increments of 1024th */
+            if (scale_factor <= 0.0) {
+                int dpi = X11_GetXsettingsIntKey(_this, "Xft/DPI", -1);
+                if (dpi > 0) {
+                    scale_factor = (double) dpi / 1024.0;
+                    scale_factor /= 96.0;
+                }
+            }
+        }
+
         /* If that failed, try the GDK_SCALE envvar... */
-        if (scale_factor <= 0.0)
-        {
+        if (scale_factor <= 0.0) {
             const char *scale_str = SDL_getenv("GDK_SCALE");
             if (scale_str) {
                 scale_factor = SDL_atoi(scale_str);
@@ -245,7 +259,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
         }
     }
 
-    return scale_factor;
+    return (float)scale_factor;
 }
 
 static int get_visualinfo(Display *display, int screen, XVisualInfo *vinfo)
@@ -402,7 +416,7 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 
 static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
-    double vTotal = info->vTotal;
+    float vTotal = info->vTotal;
 
     if (info->modeFlags & RR_DoubleScan) {
         /* doublescan doubles the number of lines */
@@ -415,7 +429,7 @@ static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
         vTotal /= 2;
     }
 
-    if (info->hTotal && vTotal) {
+    if (info->hTotal && vTotal != 0.f) {
         return ((100 * (Sint64)info->dotClock) / (info->hTotal * vTotal)) / 100.0f;
     }
     return 0.0f;

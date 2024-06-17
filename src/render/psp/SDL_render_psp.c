@@ -128,10 +128,8 @@ typedef struct
     float x, y, z;
 } VertTCV;
 
-#define PI 3.14159265358979f
-
-#define radToDeg(x) ((x)*180.f / PI)
-#define degToRad(x) ((x)*PI / 180.f)
+#define radToDeg(x) ((x)*180.f / SDL_PI_F)
+#define degToRad(x) ((x)*SDL_PI_F / 180.f)
 
 static float MathAbs(float x)
 {
@@ -809,7 +807,7 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
         float curX = x;
         const float endX = x + width;
         const float slice = 64.0f;
-        const size_t count = SDL_ceilf(width / slice);
+        const size_t count = (size_t)SDL_ceilf(width / slice);
         size_t i;
         float ustep = (u1 - u0) / width * slice;
 
@@ -877,7 +875,7 @@ static int PSP_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_T
 
     cmd->data.draw.count = 1;
 
-    MathSincos(degToRad(360 - angle), &s, &c);
+    MathSincos(degToRad((float)(360 - angle)), &s, &c);
 
     cw1 = c * -centerx;
     sw1 = s * -centerx;
@@ -1263,8 +1261,6 @@ static void PSP_DestroyRenderer(SDL_Renderer *renderer)
             return;
         }
 
-        StartDrawing(renderer);
-
         sceKernelDisableSubIntr(PSP_VBLANK_INT, 0);
         sceKernelReleaseSubIntrHandler(PSP_VBLANK_INT, 0);
         sceDisplayWaitVblankStart();
@@ -1328,7 +1324,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     PSP_InvalidateCachedState(renderer);
     renderer->window = window;
 
-    renderer->info.name = PSP_RenderDriver.name;
+    renderer->name = PSP_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGR565);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR4444);

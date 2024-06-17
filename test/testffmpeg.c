@@ -14,9 +14,6 @@
  * For a more complete video example, see ffplay.c in the ffmpeg sources.
  */
 
-#include <stdlib.h>
-#include <time.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -111,7 +108,6 @@ static SDL_bool verbose;
 static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *driver)
 {
     SDL_PropertiesID props;
-    SDL_RendererInfo info;
     SDL_bool useOpenGL = (driver && (SDL_strcmp(driver, "opengl") == 0 || SDL_strcmp(driver, "opengles2") == 0));
     SDL_bool useEGL = (driver && SDL_strcmp(driver, "opengles2") == 0);
     SDL_bool useVulkan = (driver && SDL_strcmp(driver, "vulkan") == 0);
@@ -177,9 +173,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
         return SDL_FALSE;
     }
 
-    if (SDL_GetRendererInfo(renderer, &info) == 0) {
-        SDL_Log("Created renderer %s\n", info.name);
-    }
+    SDL_Log("Created renderer %s\n", SDL_GetRendererName(renderer));
 
 #ifdef HAVE_EGL
     if (useEGL) {
@@ -581,7 +575,10 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
     SDL_PixelFormatEnum frame_format = GetTextureFormat(frame->format);
 
     if (*texture) {
-        SDL_QueryTexture(*texture, &texture_format, NULL, &texture_width, &texture_height);
+        SDL_PropertiesID props = SDL_GetTextureProperties(*texture);
+        texture_format = (SDL_PixelFormatEnum)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_FORMAT_NUMBER, SDL_PIXELFORMAT_UNKNOWN);
+        texture_width = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, 0);
+        texture_height = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, 0);
     }
     if (!*texture || texture_width != frame->width || texture_height != frame->height ||
         (frame_format != SDL_PIXELFORMAT_UNKNOWN && texture_format != frame_format) ||
@@ -979,7 +976,9 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
     UINT iSliceIndex = (UINT)(uintptr_t)frame->data[1];
 
     if (*texture) {
-        SDL_QueryTexture(*texture, NULL, NULL, &texture_width, &texture_height);
+        SDL_PropertiesID props = SDL_GetTextureProperties(*texture);
+        texture_width = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, 0);
+        texture_height = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, 0);
     }
     if (!*texture || texture_width != frames->width || texture_height != frames->height) {
         if (*texture) {
@@ -1169,7 +1168,7 @@ static AVCodecContext *OpenAudioStream(AVFormatContext *ic, int stream, const AV
     }
 
     SDL_AudioSpec spec = { SDL_AUDIO_F32, codecpar->ch_layout.nb_channels, codecpar->sample_rate };
-    audio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec, NULL, NULL);
+    audio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
     if (audio) {
         SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audio));
     } else {
@@ -1484,17 +1483,16 @@ int main(int argc, char *argv[])
     /* Position sprites and set their velocities */
     SDL_Rect viewport;
     SDL_GetRenderViewport(renderer, &viewport);
-    srand((unsigned int)time(NULL));
     for (i = 0; i < num_sprites; ++i) {
-        positions[i].x = (float)(rand() % (viewport.w - sprite_w));
-        positions[i].y = (float)(rand() % (viewport.h - sprite_h));
+        positions[i].x = (float)(SDL_rand() % (viewport.w - sprite_w));
+        positions[i].y = (float)(SDL_rand() % (viewport.h - sprite_h));
         positions[i].w = (float)sprite_w;
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
-        while (!velocities[i].x || !velocities[i].y) {
-            velocities[i].x = (float)((rand() % (2 + 1)) - 1);
-            velocities[i].y = (float)((rand() % (2 + 1)) - 1);
+        while (velocities[i].x == 0.f || velocities[i].y == 0.f) {
+            velocities[i].x = (float)((SDL_rand() % (2 + 1)) - 1);
+            velocities[i].y = (float)((SDL_rand() % (2 + 1)) - 1);
         }
     }
 

@@ -18,7 +18,7 @@ There have been too many changes to list them all, but here are some of the high
 * An example of hardware accelerated video playback using ffmpeg has been added in test/testffmpeg.c
 * The shaped window API has been replaced with transparent windows
 * Time and date functions have been added in SDL_time.h
-* Support for webcam video capture has been added in SDL_camera.h
+* Support for webcam video recording has been added in SDL_camera.h
 * Support for handling pens and tablets has been added in SDL_pen.h
 * Support for file open and save dialogs has been added in SDL_dialog.h
 * Cross-platform functions for working with files and directories are available in SDL_filesystem.h

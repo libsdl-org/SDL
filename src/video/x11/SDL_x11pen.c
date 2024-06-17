@@ -481,8 +481,8 @@ void X11_InitPen(SDL_VideoDevice *_this)
                 Atom vname = val_classinfo->label;
                 int axis = -1;
 
-                float min = val_classinfo->min;
-                float max = val_classinfo->max;
+                float min = (float)val_classinfo->min;
+                float max = (float)val_classinfo->max;
 
                 if (vname == pen_atoms.abs_pressure) {
                     axis = SDL_PEN_AXIS_PRESSURE;
@@ -653,7 +653,7 @@ static void xinput2_normalize_pen_axes(const SDL_Pen *peninfo,
 
             case SDL_PEN_AXIS_ROTATION:
                 /* normalised to -1..1, so let's convert to degrees */
-                value *= 180.0;
+                value *= 180.0f;
                 value += xpen->rotation_bias;
 
                 /* handle simple over/underflow */
@@ -685,7 +685,7 @@ void X11_PenAxesFromValuators(const SDL_Pen *peninfo,
         if (valuator == SDL_PEN_AXIS_VALUATOR_MISSING || valuator >= mask_len * 8 || !(XIMaskIsSet(mask, valuator))) {
             axis_values[i] = 0.0f;
         } else {
-            axis_values[i] = input_values[valuator];
+            axis_values[i] = (float)input_values[valuator];
         }
     }
     xinput2_normalize_pen_axes(peninfo, pen, axis_values);

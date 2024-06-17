@@ -55,7 +55,7 @@ extern "C" {
 /**
  * Dynamically load a shared object.
  *
- * \param[in] sofile a system-dependent name of the object file
+ * \param[in] sofile a system-dependent name of the object file.
  * \returns[own] an opaque pointer to the object handle or NULL if there was an
  *          error; call SDL_GetError() for more information.
  *
@@ -81,8 +81,8 @@ extern SDL_DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
  *
  * If the requested function doesn't exist, NULL is returned.
  *
- * \param[inout] handle a valid shared object handle returned by SDL_LoadObject()
- * \param[in] name the name of the function to look up
+ * \param[inout] handle a valid shared object handle returned by SDL_LoadObject().
+ * \param[in] name the name of the function to look up.
  * \returns a pointer to the function or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
@@ -95,7 +95,7 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(void *handle, c
 /**
  * Unload a shared object from memory.
  *
- * \param[inout] handle a valid shared object handle returned by SDL_LoadObject()
+ * \param[inout] handle a valid shared object handle returned by SDL_LoadObject().
  *
  * \since This function is available since SDL 3.0.0.
  *

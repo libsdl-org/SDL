@@ -206,6 +206,8 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD 
         default:
             /* Should never be here */
             SDL_assert_release(SDL_FALSE);
+            *width = 0;
+            *height = 0;
     }
 
     /* Copy the client size in pixels into this rect structure,
@@ -350,6 +352,30 @@ static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const cha
     data->mouse_relative_mode_center = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
+static SDL_WindowEraseBackgroundMode GetEraseBackgroundModeHint()
+{
+    const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE);
+    if (!hint)
+        return SDL_ERASEBACKGROUNDMODE_INITIAL;
+
+    if (SDL_strstr(hint, "never"))
+        return SDL_ERASEBACKGROUNDMODE_NEVER;
+
+    if (SDL_strstr(hint, "initial"))
+        return SDL_ERASEBACKGROUNDMODE_INITIAL;
+
+    if (SDL_strstr(hint, "always"))
+        return SDL_ERASEBACKGROUNDMODE_ALWAYS;
+
+    int mode = SDL_GetStringInteger(hint, 1);
+    if (mode < 0 || mode > 2) {
+        SDL_Log("GetEraseBackgroundModeHint: invalid value for SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE. Fallback to default");
+        return SDL_ERASEBACKGROUNDMODE_INITIAL;
+    }
+
+    return mode;
+}
+
 static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd, HWND parent)
 {
     SDL_VideoData *videodata = _this->driverdata;
@@ -375,6 +401,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     data->initializing = SDL_TRUE;
     data->last_displayID = window->last_displayID;
     data->dwma_border_color = DWMWA_COLOR_DEFAULT;
+    data->hint_erase_background_mode = GetEraseBackgroundModeHint();
 
     if (SDL_GetHintBoolean("SDL_WINDOW_RETAIN_CONTENT", SDL_FALSE)) {
         data->copybits_flag = 0;
@@ -811,17 +838,17 @@ int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
 
     /* Write the BITMAPINFO header */
     bmi = (BITMAPINFOHEADER *)icon_bmp;
-    bmi->biSize = SDL_SwapLE32(sizeof(BITMAPINFOHEADER));
-    bmi->biWidth = SDL_SwapLE32(icon->w);
-    bmi->biHeight = SDL_SwapLE32(icon->h * 2);
-    bmi->biPlanes = SDL_SwapLE16(1);
-    bmi->biBitCount = SDL_SwapLE16(32);
-    bmi->biCompression = SDL_SwapLE32(BI_RGB);
-    bmi->biSizeImage = SDL_SwapLE32(icon->h * icon->w * sizeof(Uint32));
-    bmi->biXPelsPerMeter = SDL_SwapLE32(0);
-    bmi->biYPelsPerMeter = SDL_SwapLE32(0);
-    bmi->biClrUsed = SDL_SwapLE32(0);
-    bmi->biClrImportant = SDL_SwapLE32(0);
+    bmi->biSize = SDL_Swap32LE(sizeof(BITMAPINFOHEADER));
+    bmi->biWidth = SDL_Swap32LE(icon->w);
+    bmi->biHeight = SDL_Swap32LE(icon->h * 2);
+    bmi->biPlanes = SDL_Swap16LE(1);
+    bmi->biBitCount = SDL_Swap16LE(32);
+    bmi->biCompression = SDL_Swap32LE(BI_RGB);
+    bmi->biSizeImage = SDL_Swap32LE(icon->h * icon->w * sizeof(Uint32));
+    bmi->biXPelsPerMeter = SDL_Swap32LE(0);
+    bmi->biYPelsPerMeter = SDL_Swap32LE(0);
+    bmi->biClrUsed = SDL_Swap32LE(0);
+    bmi->biClrImportant = SDL_Swap32LE(0);
 
     /* Write the pixels upside down into the bitmap buffer */
     SDL_assert(icon->format->format == SDL_PIXELFORMAT_ARGB8888);

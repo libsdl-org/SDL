@@ -44,9 +44,18 @@ static const IID SDL_IID_IMF2DBuffer2 = { 0x33ae5ea6, 0x4316, 0x436f, { 0x8d, 0x
 static const GUID SDL_MF_MT_DEFAULT_STRIDE = { 0x644b4e48, 0x1e02, 0x4516, { 0xb0, 0xeb, 0xc0, 0x1c, 0xa9, 0xd4, 0x9a, 0xc6 } };
 static const GUID SDL_MF_MT_MAJOR_TYPE = { 0x48eba18e, 0xf8c9, 0x4687, { 0xbf, 0x11, 0x0a, 0x74, 0xc9, 0xf9, 0x6a, 0x8f } };
 static const GUID SDL_MF_MT_SUBTYPE = { 0xf7e34c9a, 0x42e8, 0x4714, { 0xb7, 0x4b, 0xcb, 0x29, 0xd7, 0x2c, 0x35, 0xe5 } };
+static const GUID SDL_MF_MT_VIDEO_NOMINAL_RANGE = { 0xc21b8ee5, 0xb956, 0x4071, { 0x8d, 0xaf, 0x32, 0x5e, 0xdf, 0x5c, 0xab, 0x11 } };
+static const GUID SDL_MF_MT_VIDEO_PRIMARIES = { 0xdbfbe4d7, 0x0740, 0x4ee0, { 0x81, 0x92, 0x85, 0x0a, 0xb0, 0xe2, 0x19, 0x35 } };
+static const GUID SDL_MF_MT_TRANSFER_FUNCTION = { 0x5fb0fce9, 0xbe5c, 0x4935, { 0xa8, 0x11, 0xec, 0x83, 0x8f, 0x8e, 0xed, 0x93 } };
+static const GUID SDL_MF_MT_YUV_MATRIX = { 0x3e23d450, 0x2c75, 0x4d25, { 0xa0, 0x0e, 0xb9, 0x16, 0x70, 0xd1, 0x23, 0x27 } };
+static const GUID SDL_MF_MT_VIDEO_CHROMA_SITING = { 0x65df2370, 0xc773, 0x4c33, { 0xaa, 0x64, 0x84, 0x3e, 0x06, 0x8e, 0xfb, 0x0c } };
 static const GUID SDL_MF_MT_FRAME_SIZE = { 0x1652c33d, 0xd6b2, 0x4012, { 0xb8, 0x34, 0x72, 0x03, 0x08, 0x49, 0xa3, 0x7d } };
 static const GUID SDL_MF_MT_FRAME_RATE = { 0xc459a2e8, 0x3d2c, 0x4e44, { 0xb1, 0x32, 0xfe, 0xe5, 0x15, 0x6c, 0x7b, 0xb0 } };
 static const GUID SDL_MFMediaType_Video = { 0x73646976, 0x0000, 0x0010, { 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71 } };
+static const IID SDL_MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME = { 0x60d0e559, 0x52f8, 0x4fa2, { 0xbb, 0xce, 0xac, 0xdb, 0x34, 0xa8, 0xec, 0x1 } };
+static const IID SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE = { 0xc60ac5fe, 0x252a, 0x478f, { 0xa0, 0xef, 0xbc, 0x8f, 0xa5, 0xf7, 0xca, 0xd3 } };
+static const IID SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK = { 0x58f0aad8, 0x22bf, 0x4f8a, { 0xbb, 0x3d, 0xd2, 0xc4, 0x97, 0x8c, 0x6e, 0x2f } };
+static const IID SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID = { 0x8ac3587a, 0x4ae7, 0x42d8, { 0x99, 0xe0, 0x0a, 0x60, 0x13, 0xee, 0xf9, 0x0f } };
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -76,39 +85,225 @@ SDL_DEFINE_MEDIATYPE_GUID(MFVideoFormat_NV21, FCC('NV21'));
 static const struct
 {
     const GUID *guid;
-    const SDL_PixelFormatEnum sdlfmt;
+    SDL_PixelFormatEnum format;
+    SDL_Colorspace colorspace;
 } fmtmappings[] = {
     // This is not every possible format, just popular ones that SDL can reasonably handle.
     // (and we should probably trim this list more.)
-    { &SDL_MFVideoFormat_RGB555, SDL_PIXELFORMAT_XRGB1555 },
-    { &SDL_MFVideoFormat_RGB565, SDL_PIXELFORMAT_RGB565 },
-    { &SDL_MFVideoFormat_RGB24, SDL_PIXELFORMAT_RGB24 },
-    { &SDL_MFVideoFormat_RGB32, SDL_PIXELFORMAT_XRGB8888 },
-    { &SDL_MFVideoFormat_ARGB32, SDL_PIXELFORMAT_ARGB8888 },
-    { &SDL_MFVideoFormat_A2R10G10B10, SDL_PIXELFORMAT_ARGB2101010 },
-    { &SDL_MFVideoFormat_YV12, SDL_PIXELFORMAT_YV12 },
-    { &SDL_MFVideoFormat_IYUV, SDL_PIXELFORMAT_IYUV },
-    { &SDL_MFVideoFormat_YUY2,  SDL_PIXELFORMAT_YUY2 },
-    { &SDL_MFVideoFormat_UYVY, SDL_PIXELFORMAT_UYVY },
-    { &SDL_MFVideoFormat_YVYU, SDL_PIXELFORMAT_YVYU },
-    { &SDL_MFVideoFormat_NV12, SDL_PIXELFORMAT_NV12 },
-    { &SDL_MFVideoFormat_NV21, SDL_PIXELFORMAT_NV21 }
+    { &SDL_MFVideoFormat_RGB555, SDL_PIXELFORMAT_XRGB1555, SDL_COLORSPACE_SRGB },
+    { &SDL_MFVideoFormat_RGB565, SDL_PIXELFORMAT_RGB565, SDL_COLORSPACE_SRGB },
+    { &SDL_MFVideoFormat_RGB24, SDL_PIXELFORMAT_RGB24, SDL_COLORSPACE_SRGB },
+    { &SDL_MFVideoFormat_RGB32, SDL_PIXELFORMAT_XRGB8888, SDL_COLORSPACE_SRGB },
+    { &SDL_MFVideoFormat_ARGB32, SDL_PIXELFORMAT_ARGB8888, SDL_COLORSPACE_SRGB },
+    { &SDL_MFVideoFormat_A2R10G10B10, SDL_PIXELFORMAT_ARGB2101010, SDL_COLORSPACE_SRGB },
+    { &SDL_MFVideoFormat_YV12, SDL_PIXELFORMAT_YV12, SDL_COLORSPACE_BT709_LIMITED },
+    { &SDL_MFVideoFormat_IYUV, SDL_PIXELFORMAT_IYUV, SDL_COLORSPACE_BT709_LIMITED },
+    { &SDL_MFVideoFormat_YUY2,  SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED },
+    { &SDL_MFVideoFormat_UYVY, SDL_PIXELFORMAT_UYVY, SDL_COLORSPACE_BT709_LIMITED },
+    { &SDL_MFVideoFormat_YVYU, SDL_PIXELFORMAT_YVYU, SDL_COLORSPACE_BT709_LIMITED },
+    { &SDL_MFVideoFormat_NV12, SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_LIMITED },
+    { &SDL_MFVideoFormat_NV21, SDL_PIXELFORMAT_NV21, SDL_COLORSPACE_BT709_LIMITED }
 };
 
-static SDL_PixelFormatEnum MFVidFmtGuidToSDLFmt(const GUID *guid)
+static SDL_Colorspace GetMediaTypeColorspace(IMFMediaType *mediatype, SDL_Colorspace default_colorspace)
 {
-    for (size_t i = 0; i < SDL_arraysize(fmtmappings); i++) {
-        if (WIN_IsEqualGUID(guid, fmtmappings[i].guid)) {
-            return fmtmappings[i].sdlfmt;
+    SDL_Colorspace colorspace = default_colorspace;
+
+    if (SDL_COLORSPACETYPE(colorspace) == SDL_COLOR_TYPE_YCBCR) {
+        HRESULT ret;
+        UINT32 range = 0, primaries = 0, transfer = 0, matrix = 0, chroma = 0;
+
+        ret = IMFMediaType_GetUINT32(mediatype, &SDL_MF_MT_VIDEO_NOMINAL_RANGE, &range);
+        if (SUCCEEDED(ret)) {
+            switch (range) {
+            case MFNominalRange_0_255:
+                range = SDL_COLOR_RANGE_FULL;
+                break;
+            case MFNominalRange_16_235:
+                range = SDL_COLOR_RANGE_LIMITED;
+                break;
+            default:
+                range = (UINT32)SDL_COLORSPACERANGE(default_colorspace);
+                break;
+            }
+        } else {
+            range = (UINT32)SDL_COLORSPACERANGE(default_colorspace);
         }
+
+        ret = IMFMediaType_GetUINT32(mediatype, &SDL_MF_MT_VIDEO_PRIMARIES, &primaries);
+        if (SUCCEEDED(ret)) {
+            switch (primaries) {
+            case MFVideoPrimaries_BT709:
+                primaries = SDL_COLOR_PRIMARIES_BT709;
+                break;
+            case MFVideoPrimaries_BT470_2_SysM:
+                primaries = SDL_COLOR_PRIMARIES_BT470M;
+                break;
+            case MFVideoPrimaries_BT470_2_SysBG:
+                primaries = SDL_COLOR_PRIMARIES_BT470BG;
+                break;
+            case MFVideoPrimaries_SMPTE170M:
+                primaries = SDL_COLOR_PRIMARIES_BT601;
+                break;
+            case MFVideoPrimaries_SMPTE240M:
+                primaries = SDL_COLOR_PRIMARIES_SMPTE240;
+                break;
+            case MFVideoPrimaries_EBU3213:
+                primaries = SDL_COLOR_PRIMARIES_EBU3213;
+                break;
+            case MFVideoPrimaries_BT2020:
+                primaries = SDL_COLOR_PRIMARIES_BT2020;
+                break;
+            case MFVideoPrimaries_XYZ:
+                primaries = SDL_COLOR_PRIMARIES_XYZ;
+                break;
+            case MFVideoPrimaries_DCI_P3:
+                primaries = SDL_COLOR_PRIMARIES_SMPTE432;
+                break;
+            default:
+                primaries = (UINT32)SDL_COLORSPACEPRIMARIES(default_colorspace);
+                break;
+            }
+        } else {
+            primaries = (UINT32)SDL_COLORSPACEPRIMARIES(default_colorspace);
+        }
+
+        ret = IMFMediaType_GetUINT32(mediatype, &SDL_MF_MT_TRANSFER_FUNCTION, &transfer);
+        if (SUCCEEDED(ret)) {
+            switch (transfer) {
+            case MFVideoTransFunc_10:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_LINEAR;
+                break;
+            case MFVideoTransFunc_22:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_GAMMA22;
+                break;
+            case MFVideoTransFunc_709:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_BT709;
+                break;
+            case MFVideoTransFunc_240M:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_SMPTE240;
+                break;
+            case MFVideoTransFunc_sRGB:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_SRGB;
+                break;
+            case MFVideoTransFunc_28:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_GAMMA28;
+                break;
+            case MFVideoTransFunc_Log_100:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_LOG100;
+                break;
+            case MFVideoTransFunc_2084:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_PQ;
+                break;
+            case MFVideoTransFunc_HLG:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_HLG;
+                break;
+            case 18 /* MFVideoTransFunc_BT1361_ECG */:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_BT1361;
+                break;
+            case 19 /* MFVideoTransFunc_SMPTE428 */:
+                transfer = SDL_TRANSFER_CHARACTERISTICS_SMPTE428;
+                break;
+            default:
+                transfer = (UINT32)SDL_COLORSPACETRANSFER(default_colorspace);
+                break;
+            }
+        } else {
+            transfer = (UINT32)SDL_COLORSPACETRANSFER(default_colorspace);
+        }
+
+        ret = IMFMediaType_GetUINT32(mediatype, &SDL_MF_MT_YUV_MATRIX, &matrix);
+        if (SUCCEEDED(ret)) {
+            switch (matrix) {
+            case MFVideoTransferMatrix_BT709:
+                matrix = SDL_MATRIX_COEFFICIENTS_BT709;
+                break;
+            case MFVideoTransferMatrix_BT601:
+                matrix = SDL_MATRIX_COEFFICIENTS_BT601;
+                break;
+            case MFVideoTransferMatrix_SMPTE240M:
+                matrix = SDL_MATRIX_COEFFICIENTS_SMPTE240;
+                break;
+            case MFVideoTransferMatrix_BT2020_10:
+                matrix = SDL_MATRIX_COEFFICIENTS_BT2020_NCL;
+                break;
+            case 6 /* MFVideoTransferMatrix_Identity */:
+                matrix = SDL_MATRIX_COEFFICIENTS_IDENTITY;
+                break;
+            case 7 /* MFVideoTransferMatrix_FCC47 */:
+                matrix = SDL_MATRIX_COEFFICIENTS_FCC;
+                break;
+            case 8 /* MFVideoTransferMatrix_YCgCo */:
+                matrix = SDL_MATRIX_COEFFICIENTS_YCGCO;
+                break;
+            case 9 /* MFVideoTransferMatrix_SMPTE2085 */:
+                matrix = SDL_MATRIX_COEFFICIENTS_SMPTE2085;
+                break;
+            case 10 /* MFVideoTransferMatrix_Chroma */:
+                matrix = SDL_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL;
+                break;
+            case 11 /* MFVideoTransferMatrix_Chroma_const */:
+                matrix = SDL_MATRIX_COEFFICIENTS_CHROMA_DERIVED_CL;
+                break;
+            case 12 /* MFVideoTransferMatrix_ICtCp */:
+                matrix = SDL_MATRIX_COEFFICIENTS_ICTCP;
+                break;
+            default:
+                matrix = (UINT32)SDL_COLORSPACEMATRIX(default_colorspace);
+                break;
+            }
+        } else {
+            matrix = (UINT32)SDL_COLORSPACEMATRIX(default_colorspace);
+        }
+
+        ret = IMFMediaType_GetUINT32(mediatype, &SDL_MF_MT_VIDEO_CHROMA_SITING, &chroma);
+        if (SUCCEEDED(ret)) {
+            switch (chroma) {
+            case MFVideoChromaSubsampling_MPEG2:
+                chroma = SDL_CHROMA_LOCATION_LEFT;
+                break;
+            case MFVideoChromaSubsampling_MPEG1:
+                chroma = SDL_CHROMA_LOCATION_CENTER;
+                break;
+            case MFVideoChromaSubsampling_DV_PAL:
+                chroma = SDL_CHROMA_LOCATION_TOPLEFT;
+                break;
+            default:
+                chroma = (UINT32)SDL_COLORSPACECHROMA(default_colorspace);
+                break;
+            }
+        } else {
+            chroma = (UINT32)SDL_COLORSPACECHROMA(default_colorspace);
+        }
+
+        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR, range, primaries, transfer, matrix, chroma);
     }
-    return SDL_PIXELFORMAT_UNKNOWN;
+    return colorspace;
 }
 
-static const GUID *SDLFmtToMFVidFmtGuid(SDL_PixelFormatEnum sdlfmt)
+static void MediaTypeToSDLFmt(IMFMediaType *mediatype, SDL_PixelFormatEnum *format, SDL_Colorspace *colorspace)
+{
+    HRESULT ret;
+    GUID type;
+
+    ret = IMFMediaType_GetGUID(mediatype, &SDL_MF_MT_SUBTYPE, &type);
+    if (SUCCEEDED(ret)) {
+        for (size_t i = 0; i < SDL_arraysize(fmtmappings); i++) {
+            if (WIN_IsEqualGUID(&type, fmtmappings[i].guid)) {
+                *format = fmtmappings[i].format;
+                *colorspace = GetMediaTypeColorspace(mediatype, fmtmappings[i].colorspace);
+                return;
+            }
+        }
+    }
+    *format = SDL_PIXELFORMAT_UNKNOWN;
+    *colorspace = SDL_COLORSPACE_UNKNOWN;
+}
+
+static const GUID *SDLFmtToMFVidFmtGuid(SDL_PixelFormatEnum format)
 {
     for (size_t i = 0; i < SDL_arraysize(fmtmappings); i++) {
-        if (fmtmappings[i].sdlfmt == sdlfmt) {
+        if (fmtmappings[i].format == format) {
             return fmtmappings[i].guid;
         }
     }
@@ -535,10 +730,10 @@ static int MEDIAFOUNDATION_OpenDevice(SDL_CameraDevice *device, const SDL_Camera
     ret = pMFCreateAttributes(&attrs, 1);
     CHECK_HRESULT("MFCreateAttributes", ret);
 
-    ret = IMFAttributes_SetGUID(attrs, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+    ret = IMFAttributes_SetGUID(attrs, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
     CHECK_HRESULT("IMFAttributes_SetGUID(srctype)", ret);
 
-    ret = IMFAttributes_SetString(attrs, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, wstrsymlink);
+    ret = IMFAttributes_SetString(attrs, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, wstrsymlink);
     CHECK_HRESULT("IMFAttributes_SetString(symlink)", ret);
 
     ret = pMFCreateDeviceSource(attrs, &source);
@@ -735,23 +930,22 @@ static void GatherCameraSpecs(IMFMediaSource *source, CameraFormatAddData *add_d
                         GUID type;
                         ret = IMFMediaType_GetGUID(mediatype, &SDL_MF_MT_MAJOR_TYPE, &type);
                         if (SUCCEEDED(ret) && WIN_IsEqualGUID(&type, &SDL_MFMediaType_Video)) {
-                            ret = IMFMediaType_GetGUID(mediatype, &SDL_MF_MT_SUBTYPE, &type);
-                            if (SUCCEEDED(ret)) {
-                                const SDL_PixelFormatEnum sdlfmt = MFVidFmtGuidToSDLFmt(&type);
-                                if (sdlfmt != SDL_PIXELFORMAT_UNKNOWN) {
-                                    UINT64 val = 0;
-                                    UINT32 w = 0, h = 0;
-                                    ret = IMFMediaType_GetUINT64(mediatype, &SDL_MF_MT_FRAME_SIZE, &val);
-                                    w = (UINT32)(val >> 32);
-                                    h = (UINT32)val;
-                                    if (SUCCEEDED(ret) && w && h) {
-                                        UINT32 interval_numerator = 0, interval_denominator = 0;
-                                        ret = IMFMediaType_GetUINT64(mediatype, &SDL_MF_MT_FRAME_RATE, &val);
-                                        interval_numerator = (UINT32)(val >> 32);
-                                        interval_denominator = (UINT32)val;
-                                        if (SUCCEEDED(ret) && interval_numerator && interval_denominator) {
-                                            SDL_AddCameraFormat(add_data, sdlfmt, (int) w, (int) h, (int) interval_numerator, (int) interval_denominator);  // whew.
-                                        }
+                            SDL_PixelFormatEnum sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
+                            SDL_Colorspace colorspace = SDL_COLORSPACE_UNKNOWN;
+                            MediaTypeToSDLFmt(mediatype, &sdlfmt, &colorspace);
+                            if (sdlfmt != SDL_PIXELFORMAT_UNKNOWN) {
+                                UINT64 val = 0;
+                                UINT32 w = 0, h = 0;
+                                ret = IMFMediaType_GetUINT64(mediatype, &SDL_MF_MT_FRAME_SIZE, &val);
+                                w = (UINT32)(val >> 32);
+                                h = (UINT32)val;
+                                if (SUCCEEDED(ret) && w && h) {
+                                    UINT32 interval_numerator = 0, interval_denominator = 0;
+                                    ret = IMFMediaType_GetUINT64(mediatype, &SDL_MF_MT_FRAME_RATE, &val);
+                                    interval_numerator = (UINT32)(val >> 32);
+                                    interval_denominator = (UINT32)val;
+                                    if (SUCCEEDED(ret) && interval_numerator && interval_denominator) {
+                                        SDL_AddCameraFormat(add_data, sdlfmt, colorspace, (int) w, (int) h, (int)interval_numerator, (int)interval_denominator);
                                     }
                                 }
                             }
@@ -775,14 +969,14 @@ static SDL_bool FindMediaFoundationCameraDeviceBySymlink(SDL_CameraDevice *devic
 
 static void MaybeAddDevice(IMFActivate *activation)
 {
-    char *symlink = QueryActivationObjectString(activation, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK);
+    char *symlink = QueryActivationObjectString(activation, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK);
 
     if (SDL_FindPhysicalCameraDeviceByCallback(FindMediaFoundationCameraDeviceBySymlink, symlink)) {
         SDL_free(symlink);
         return;  // already have this one.
     }
 
-    char *name = QueryActivationObjectString(activation, &MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME);
+    char *name = QueryActivationObjectString(activation, &SDL_MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME);
     if (name && symlink) {
         IMFMediaSource *source = NULL;
         // "activating" here only creates an object, it doesn't open the actual camera hardware or start recording.
@@ -814,8 +1008,7 @@ static void MEDIAFOUNDATION_DetectDevices(void)
         return;  // oh well, no cameras for you.
     }
 
-    // !!! FIXME: We need these GUIDs hardcoded in this file.
-    ret = IMFAttributes_SetGUID(attrs, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+    ret = IMFAttributes_SetGUID(attrs, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
     if (FAILED(ret)) {
         IMFAttributes_Release(attrs);
         return;  // oh well, no cameras for you.

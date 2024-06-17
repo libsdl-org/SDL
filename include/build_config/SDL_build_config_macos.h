@@ -183,6 +183,7 @@
 /* Enable various video drivers */
 #define SDL_VIDEO_DRIVER_COCOA  1
 #define SDL_VIDEO_DRIVER_DUMMY  1
+#define SDL_VIDEO_DRIVER_OFFSCREEN 1
 #undef SDL_VIDEO_DRIVER_X11
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC "/opt/X11/lib/libX11.6.dylib"
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT "/opt/X11/lib/libXext.6.dylib"

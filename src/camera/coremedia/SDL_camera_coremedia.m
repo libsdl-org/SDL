@@ -41,20 +41,24 @@
  * <key>com.apple.security.device.camera</key> <true/>
  */
 
-static Uint32 CoreMediaFormatToSDL(FourCharCode fmt)
+static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormatEnum *pixel_format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
-        #define CASE(x, y) case x: return y
+        #define CASE(x, y, z) case x: *pixel_format = y; *colorspace = z; return
         // the 16LE ones should use 16BE if we're on a Bigendian system like PowerPC,
         // but at current time there is no bigendian Apple platform that has CoreMedia.
-        CASE(kCMPixelFormat_16LE555, SDL_PIXELFORMAT_XRGB1555);
-        CASE(kCMPixelFormat_16LE5551, SDL_PIXELFORMAT_RGBA5551);
-        CASE(kCMPixelFormat_16LE565, SDL_PIXELFORMAT_RGB565);
-        CASE(kCMPixelFormat_24RGB, SDL_PIXELFORMAT_RGB24);
-        CASE(kCMPixelFormat_32ARGB, SDL_PIXELFORMAT_ARGB32);
-        CASE(kCMPixelFormat_32BGRA, SDL_PIXELFORMAT_BGRA32);
-        CASE(kCMPixelFormat_422YpCbCr8, SDL_PIXELFORMAT_YUY2);
-        CASE(kCMPixelFormat_422YpCbCr8_yuvs, SDL_PIXELFORMAT_UYVY);
+        CASE(kCMPixelFormat_16LE555, SDL_PIXELFORMAT_XRGB1555, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_16LE5551, SDL_PIXELFORMAT_RGBA5551, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_16LE565, SDL_PIXELFORMAT_RGB565, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_24RGB, SDL_PIXELFORMAT_RGB24, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_32ARGB, SDL_PIXELFORMAT_ARGB32, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_32BGRA, SDL_PIXELFORMAT_BGRA32, SDL_COLORSPACE_SRGB);
+        CASE(kCMPixelFormat_422YpCbCr8, SDL_PIXELFORMAT_UYVY, SDL_COLORSPACE_BT709_LIMITED);
+        CASE(kCMPixelFormat_422YpCbCr8_yuvs, SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED);
+        CASE(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange, SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_LIMITED);
+        CASE(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_FULL);
+        CASE(kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange, SDL_PIXELFORMAT_P010, SDL_COLORSPACE_BT2020_LIMITED);
+        CASE(kCVPixelFormatType_420YpCbCr10BiPlanarFullRange, SDL_PIXELFORMAT_P010, SDL_COLORSPACE_BT2020_FULL);
         #undef CASE
         default:
             #if DEBUG_CAMERA
@@ -62,7 +66,8 @@ static Uint32 CoreMediaFormatToSDL(FourCharCode fmt)
             #endif
             break;
     }
-    return SDL_PIXELFORMAT_UNKNOWN;
+    *pixel_format = SDL_PIXELFORMAT_UNKNOWN;
+    *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
 @class SDLCaptureVideoDataOutputSampleBufferDelegate;
@@ -172,6 +177,9 @@ static int COREMEDIA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, 
     // !!! FIXME: this currently copies the data to the surface (see FIXME about non-contiguous planar surfaces, but in theory we could just keep this locked until ReleaseFrame...
     CVPixelBufferLockBaseAddress(image, 0);
 
+    frame->w = (int)CVPixelBufferGetWidth(image);
+    frame->h = (int)CVPixelBufferGetHeight(image);
+
     if ((planar == 0) && (numPlanes == 0)) {
         const int pitch = (int) CVPixelBufferGetBytesPerRow(image);
         const size_t buflen = pitch * frame->h;
@@ -185,22 +193,26 @@ static int COREMEDIA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, 
     } else {
         // !!! FIXME: we have an open issue in SDL3 to allow SDL_Surface to support non-contiguous planar data, but we don't have it yet.
         size_t buflen = 0;
-        for (int i = 0; (i < numPlanes) && (i < 3); i++) {
-            buflen += CVPixelBufferGetBytesPerRowOfPlane(image, i);
+        for (int i = 0; i < numPlanes; i++) {
+            size_t plane_height = CVPixelBufferGetHeightOfPlane(image, i);
+            size_t plane_pitch = CVPixelBufferGetBytesPerRowOfPlane(image, i);
+            size_t plane_size = (plane_pitch * plane_height);
+            buflen += plane_size;
         }
-        buflen *= frame->h;
 
+        frame->pitch = (int)CVPixelBufferGetBytesPerRowOfPlane(image, 0);  // this is what SDL3 currently expects
         frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
         if (frame->pixels == NULL) {
             retval = -1;
         } else {
             Uint8 *dst = frame->pixels;
-            frame->pitch = (int) CVPixelBufferGetBytesPerRowOfPlane(image, 0);  // this is what SDL3 currently expects, probably incorrectly.
-            for (int i = 0; (i < numPlanes) && (i < 3); i++) {
+            for (int i = 0; i < numPlanes; i++) {
                 const void *src = CVPixelBufferGetBaseAddressOfPlane(image, i);
-                const size_t pitch = CVPixelBufferGetBytesPerRowOfPlane(image, i);
-                SDL_memcpy(dst, src, pitch * frame->h);
-                dst += pitch * frame->h;
+                size_t plane_height = CVPixelBufferGetHeightOfPlane(image, i);
+                size_t plane_pitch = CVPixelBufferGetBytesPerRowOfPlane(image, i);
+                size_t plane_size = (plane_pitch * plane_height);
+                SDL_memcpy(dst, src, plane_size);
+                dst += plane_size;
             }
         }
     }
@@ -241,7 +253,6 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     AVCaptureDevice *avdevice = (__bridge AVCaptureDevice *) device->handle;
 
     // Pick format that matches the spec
-    const Uint32 sdlfmt = spec->format;
     const int w = spec->width;
     const int h = spec->height;
     const int rate = spec->interval_denominator;
@@ -249,7 +260,10 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     NSArray<AVCaptureDeviceFormat *> *formats = [avdevice formats];
     for (AVCaptureDeviceFormat *format in formats) {
         CMFormatDescriptionRef formatDescription = [format formatDescription];
-        if (CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(formatDescription)) != sdlfmt) {
+        SDL_PixelFormatEnum device_format = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_Colorspace device_colorspace = SDL_COLORSPACE_UNKNOWN;
+        CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(formatDescription), &device_format, &device_colorspace);
+        if (device_format != spec->format || device_colorspace != spec->colorspace) {
             continue;
         }
 
@@ -285,6 +299,11 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     }
 
     session.sessionPreset = AVCaptureSessionPresetHigh;
+#if defined(SDL_PLATFORM_IOS)
+    if (@available(iOS 10.0, tvOS 17.0, *)) {
+        session.automaticallyConfiguresCaptureDeviceForWideColor = NO;
+    }
+#endif
 
     NSError *error = nil;
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:avdevice error:&error];
@@ -296,6 +315,12 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     if (!output) {
         return SDL_SetError("Cannot create AVCaptureVideoDataOutput");
     }
+
+    output.videoSettings = @{
+        (id)kCVPixelBufferWidthKey : @(spec->width),
+        (id)kCVPixelBufferHeightKey : @(spec->height),
+        (id)kCVPixelBufferPixelFormatTypeKey : @(CMFormatDescriptionGetMediaSubType([spec_format formatDescription]))
+    };
 
     char threadname[64];
     SDL_GetCameraThreadName(device, threadname, sizeof (threadname));
@@ -356,8 +381,11 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
             continue;
         }
 
-        const Uint32 sdlfmt = CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(fmt.formatDescription));
-        if (sdlfmt == SDL_PIXELFORMAT_UNKNOWN) {
+NSLog(@"Available camera format: %@\n", fmt);
+        SDL_PixelFormatEnum device_format = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_Colorspace device_colorspace = SDL_COLORSPACE_UNKNOWN;
+        CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(fmt.formatDescription), &device_format, &device_colorspace);
+        if (device_format == SDL_PIXELFORMAT_UNKNOWN) {
             continue;
         }
 
@@ -369,11 +397,11 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
 
             rate = (int) SDL_ceil((double) framerate.minFrameRate);
             if (rate) {
-                SDL_AddCameraFormat(add_data, sdlfmt, w, h, 1, rate);
+                SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, 1, rate);
             }
             rate = (int) SDL_floor((double) framerate.maxFrameRate);
             if (rate) {
-                SDL_AddCameraFormat(add_data, sdlfmt, w, h, 1, rate);
+                SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, 1, rate);
             }
         }
     }

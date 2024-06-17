@@ -171,7 +171,7 @@ static Sint64 SDLCALL windows_file_size(void *userdata)
     return size.QuadPart;
 }
 
-static Sint64 SDLCALL windows_file_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL windows_file_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
     DWORD windowswhence;
@@ -339,7 +339,7 @@ typedef struct IOStreamStdioData
 #define fseek_off_t long
 #endif
 
-static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     IOStreamStdioData *iodata = (IOStreamStdioData *) userdata;
     int stdiowhence;
@@ -454,7 +454,7 @@ static Sint64 SDLCALL mem_size(void *userdata)
     return (iodata->stop - iodata->base);
 }
 
-static Sint64 SDLCALL mem_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL mem_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     IOStreamMemData *iodata = (IOStreamMemData *) userdata;
     Uint8 *newpos;
@@ -577,13 +577,11 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         return SDL_IOFromFP(fp, SDL_TRUE);
     } else {
         /* Try opening it from internal storage if it's a relative path */
-        // !!! FIXME: why not just "char path[PATH_MAX];"
-        char *path = SDL_stack_alloc(char, PATH_MAX);
+        char *path = NULL;
+        SDL_asprintf(&path, "%s/%s", SDL_AndroidGetInternalStoragePath(), file);
         if (path) {
-            SDL_snprintf(path, PATH_MAX, "%s/%s",
-                         SDL_AndroidGetInternalStoragePath(), file);
             FILE *fp = fopen(path, mode);
-            SDL_stack_free(path);
+            SDL_free(path);
             if (fp) {
                 if (!IsRegularFileOrPipe(fp)) {
                     fclose(fp);
@@ -600,7 +598,6 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 
     void *iodata = NULL;
     if (Android_JNI_FileOpen(&iodata, file, mode) < 0) {
-        SDL_CloseIO(iostr);
         return NULL;
     }
 
@@ -629,7 +626,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     }
 
     if (windows_file_open(iodata, file, mode) < 0) {
-        SDL_CloseIO(iostr);
+        windows_file_close(iodata);
         return NULL;
     }
 
@@ -763,7 +760,7 @@ static Sint64 SDLCALL dynamic_mem_size(void *userdata)
     return mem_size(&iodata->data);
 }
 
-static Sint64 SDLCALL dynamic_mem_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL dynamic_mem_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
     return mem_seek(&iodata->data, offset, whence);
@@ -996,7 +993,7 @@ Sint64 SDL_GetIOSize(SDL_IOStream *context)
     return context->iface.size(context->userdata);
 }
 
-Sint64 SDL_SeekIO(SDL_IOStream *context, Sint64 offset, int whence)
+Sint64 SDL_SeekIO(SDL_IOStream *context, Sint64 offset, SDL_IOWhence whence)
 {
     if (!context) {
         return SDL_InvalidParamError("context");
@@ -1120,6 +1117,20 @@ SDL_bool SDL_ReadU8(SDL_IOStream *src, Uint8 *value)
     return result;
 }
 
+SDL_bool SDL_ReadS8(SDL_IOStream *src, Sint8 *value)
+{
+    Sint8 data = 0;
+    SDL_bool result = SDL_FALSE;
+
+    if (SDL_ReadIO(src, &data, sizeof(data)) == sizeof(data)) {
+        result = SDL_TRUE;
+    }
+    if (value) {
+        *value = data;
+    }
+    return result;
+}
+
 SDL_bool SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value)
 {
     Uint16 data = 0;
@@ -1129,7 +1140,7 @@ SDL_bool SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value)
         result = SDL_TRUE;
     }
     if (value) {
-        *value = SDL_SwapLE16(data);
+        *value = SDL_Swap16LE(data);
     }
     return result;
 }
@@ -1148,7 +1159,7 @@ SDL_bool SDL_ReadU16BE(SDL_IOStream *src, Uint16 *value)
         result = SDL_TRUE;
     }
     if (value) {
-        *value = SDL_SwapBE16(data);
+        *value = SDL_Swap16BE(data);
     }
     return result;
 }
@@ -1167,7 +1178,7 @@ SDL_bool SDL_ReadU32LE(SDL_IOStream *src, Uint32 *value)
         result = SDL_TRUE;
     }
     if (value) {
-        *value = SDL_SwapLE32(data);
+        *value = SDL_Swap32LE(data);
     }
     return result;
 }
@@ -1186,7 +1197,7 @@ SDL_bool SDL_ReadU32BE(SDL_IOStream *src, Uint32 *value)
         result = SDL_TRUE;
     }
     if (value) {
-        *value = SDL_SwapBE32(data);
+        *value = SDL_Swap32BE(data);
     }
     return result;
 }
@@ -1205,7 +1216,7 @@ SDL_bool SDL_ReadU64LE(SDL_IOStream *src, Uint64 *value)
         result = SDL_TRUE;
     }
     if (value) {
-        *value = SDL_SwapLE64(data);
+        *value = SDL_Swap64LE(data);
     }
     return result;
 }
@@ -1224,7 +1235,7 @@ SDL_bool SDL_ReadU64BE(SDL_IOStream *src, Uint64 *value)
         result = SDL_TRUE;
     }
     if (value) {
-        *value = SDL_SwapBE64(data);
+        *value = SDL_Swap64BE(data);
     }
     return result;
 }
@@ -1239,9 +1250,14 @@ SDL_bool SDL_WriteU8(SDL_IOStream *dst, Uint8 value)
     return (SDL_WriteIO(dst, &value, sizeof(value)) == sizeof(value));
 }
 
+SDL_bool SDL_WriteS8(SDL_IOStream *dst, Sint8 value)
+{
+    return (SDL_WriteIO(dst, &value, sizeof(value)) == sizeof(value));
+}
+
 SDL_bool SDL_WriteU16LE(SDL_IOStream *dst, Uint16 value)
 {
-    const Uint16 swapped = SDL_SwapLE16(value);
+    const Uint16 swapped = SDL_Swap16LE(value);
     return (SDL_WriteIO(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
@@ -1252,7 +1268,7 @@ SDL_bool SDL_WriteS16LE(SDL_IOStream *dst, Sint16 value)
 
 SDL_bool SDL_WriteU16BE(SDL_IOStream *dst, Uint16 value)
 {
-    const Uint16 swapped = SDL_SwapBE16(value);
+    const Uint16 swapped = SDL_Swap16BE(value);
     return (SDL_WriteIO(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
@@ -1263,7 +1279,7 @@ SDL_bool SDL_WriteS16BE(SDL_IOStream *dst, Sint16 value)
 
 SDL_bool SDL_WriteU32LE(SDL_IOStream *dst, Uint32 value)
 {
-    const Uint32 swapped = SDL_SwapLE32(value);
+    const Uint32 swapped = SDL_Swap32LE(value);
     return (SDL_WriteIO(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
@@ -1274,7 +1290,7 @@ SDL_bool SDL_WriteS32LE(SDL_IOStream *dst, Sint32 value)
 
 SDL_bool SDL_WriteU32BE(SDL_IOStream *dst, Uint32 value)
 {
-    const Uint32 swapped = SDL_SwapBE32(value);
+    const Uint32 swapped = SDL_Swap32BE(value);
     return (SDL_WriteIO(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
@@ -1285,7 +1301,7 @@ SDL_bool SDL_WriteS32BE(SDL_IOStream *dst, Sint32 value)
 
 SDL_bool SDL_WriteU64LE(SDL_IOStream *dst, Uint64 value)
 {
-    const Uint64 swapped = SDL_SwapLE64(value);
+    const Uint64 swapped = SDL_Swap64LE(value);
     return (SDL_WriteIO(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 
@@ -1296,7 +1312,7 @@ SDL_bool SDL_WriteS64LE(SDL_IOStream *dst, Sint64 value)
 
 SDL_bool SDL_WriteU64BE(SDL_IOStream *dst, Uint64 value)
 {
-    const Uint64 swapped = SDL_SwapBE64(value);
+    const Uint64 swapped = SDL_Swap64BE(value);
     return (SDL_WriteIO(dst, &swapped, sizeof(swapped)) == sizeof(swapped));
 }
 

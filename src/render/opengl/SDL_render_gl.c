@@ -26,7 +26,6 @@
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
 #include "../../video/SDL_pixels_c.h"
-#include "../../SDL_utils_c.h"
 
 #ifdef SDL_PLATFORM_MACOS
 #include <OpenGL/OpenGL.h>
@@ -1048,8 +1047,8 @@ static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const
                          viewport->w, viewport->h);
         if (viewport->w && viewport->h) {
             data->glOrtho((GLdouble)0, (GLdouble)viewport->w,
-                          (GLdouble)istarget ? 0 : viewport->h,
-                          (GLdouble)istarget ? viewport->h : 0,
+                          (GLdouble)(istarget ? 0 : viewport->h),
+                          (GLdouble)(istarget ? viewport->h : 0),
                           0.0, 1.0);
         }
         data->glMatrixMode(GL_MODELVIEW);
@@ -1676,7 +1675,7 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
     GL_InvalidateCachedState(renderer);
     renderer->window = window;
 
-    renderer->info.name = GL_RenderDriver.name;
+    renderer->name = GL_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);

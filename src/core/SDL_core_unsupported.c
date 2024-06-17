@@ -141,7 +141,7 @@ int SDL_AndroidGetExternalStorageState(Uint32 *state)
     return SDL_Unsupported();
 }
 SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetInternalStoragePath(void);
-const char *SDL_AndroidGetInternalStoragePath()
+const char *SDL_AndroidGetInternalStoragePath(void)
 {
     SDL_Unsupported();
     return NULL;

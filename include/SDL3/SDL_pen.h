@@ -154,9 +154,9 @@ typedef enum SDL_PenSubtype
  * throughout a session. To track pens across sessions (program restart), use
  * SDL_GUID .
  *
- * \param[out] count The number of pens in the array (number of array elements
+ * \param[out] count the number of pens in the array (number of array elements
  *              minus 1, i.e., not counting the terminator 0).
- * \returns[own] A 0 terminated array of SDL_PenID values, or NULL on error. The
+ * \returns[own] a 0 terminated array of SDL_PenID values, or NULL on error. The
  *          array must be freed with SDL_free(). On a NULL return,
  *          SDL_GetError() is set.
  *
@@ -170,12 +170,12 @@ extern SDL_DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
  * If the pen is detached (cf. SDL_PenConnected), this operation may return
  * default values.
  *
- * \param instance_id The pen to query.
- * \param[out] x Out-mode parameter for pen x coordinate. May be NULL.
- * \param[out] y Out-mode parameter for pen y coordinate. May be NULL.
- * \param[out] axes Out-mode parameter for axis information. May be null. The axes
+ * \param instance_id the pen to query.
+ * \param[out] x out-mode parameter for pen x coordinate. May be NULL.
+ * \param[out] y out-mode parameter for pen y coordinate. May be NULL.
+ * \param[out] axes out-mode parameter for axis information. May be null. The axes
  *             are in the same order as SDL_PenAxis.
- * \param num_axes Maximum number of axes to write to "axes".
+ * \param num_axes maximum number of axes to write to "axes".
  * \returns a bit mask with the current pen button states (SDL_BUTTON_LMASK
  *          etc.), possibly SDL_PEN_DOWN_MASK, and exactly one of
  *          SDL_PEN_INK_MASK or SDL_PEN_ERASER_MASK , or 0 on error (see
@@ -188,8 +188,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetPenStatus(SDL_PenID instance_id, float
 /**
  * Retrieves an SDL_PenID for the given SDL_GUID.
  *
- * \param guid A pen GUID.
- * \returns A valid SDL_PenID, or SDL_PEN_INVALID if there is no matching
+ * \param guid a pen GUID.
+ * \returns a valid SDL_PenID, or SDL_PEN_INVALID if there is no matching
  *          SDL_PenID.
  *
  * \since This function is available since SDL 3.0.0.
@@ -199,8 +199,8 @@ extern SDL_DECLSPEC SDL_PenID SDLCALL SDL_GetPenFromGUID(SDL_GUID guid);
 /**
  * Retrieves the SDL_GUID for a given SDL_PenID.
  *
- * \param instance_id The pen to query.
- * \returns The corresponding pen GUID; persistent across multiple sessions.
+ * \param instance_id the pen to query.
+ * \returns the corresponding pen GUID; persistent across multiple sessions.
  *          If "instance_id" is SDL_PEN_INVALID, returns an all-zeroes GUID.
  *
  * \since This function is available since SDL 3.0.0.
@@ -213,7 +213,7 @@ extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GetPenGUID(SDL_PenID instance_id);
  * If a pen is detached, it will not show up for SDL_GetPens(). Other
  * operations will still be available but may return default values.
  *
- * \param instance_id A pen ID.
+ * \param instance_id a pen ID.
  * \returns SDL_TRUE if "instance_id" is valid and the corresponding pen is
  *          attached, or SDL_FALSE otherwise.
  *
@@ -224,14 +224,16 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
 /**
  * Retrieves a human-readable description for a SDL_PenID.
  *
- * \param instance_id The pen to query.
- * \returns A string that contains the name of the pen, intended for human
+ * The returned string follows the SDL_GetStringRule.
+ *
+ * \param instance_id the pen to query.
+ * \returns a string that contains the name of the pen, intended for human
  *          consumption. The string might or might not be localised, depending
  *          on platform settings. It is not guaranteed to be unique; use
  *          SDL_GetPenGUID() for (best-effort) unique identifiers. The pointer
  *          is managed by the SDL pen subsystem and must not be deallocated.
  *          The pointer remains valid until SDL is shut down. Returns NULL on
- *          error (cf. SDL_GetError())
+ *          error (cf. SDL_GetError()).
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -252,10 +254,10 @@ typedef struct SDL_PenCapabilityInfo
 /**
  * Retrieves capability flags for a given SDL_PenID.
  *
- * \param instance_id The pen to query.
- * \param[out] capabilities Detail information about pen capabilities, such as the
- *                     number of buttons
- * \returns a set of capability flags, cf. SDL_PEN_CAPABILITIES
+ * \param instance_id the pen to query.
+ * \param[out] capabilities detail information about pen capabilities, such as the
+ *                     number of buttons.
+ * \returns a set of capability flags, cf. SDL_PEN_CAPABILITIES.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -264,8 +266,8 @@ extern SDL_DECLSPEC SDL_PenCapabilityFlags SDLCALL SDL_GetPenCapabilities(SDL_Pe
 /**
  * Retrieves the pen type for a given SDL_PenID.
  *
- * \param instance_id The pen to query.
- * \returns The corresponding pen type (cf. SDL_PenSubtype) or 0 on error.
+ * \param instance_id the pen to query.
+ * \returns the corresponding pen type (cf. SDL_PenSubtype) or 0 on error.
  *          Note that the pen type does not dictate whether the pen tip is
  *          SDL_PEN_TIP_INK or SDL_PEN_TIP_ERASER; to determine whether a pen
  *          is being used for drawing or in eraser mode, check either the pen

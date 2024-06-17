@@ -36,14 +36,6 @@ ANDROID_AVAILABLE_ABIS = [
 ANDROID_MINIMUM_API = 19
 ANDROID_TARGET_API = 29
 ANDROID_MINIMUM_NDK = 21
-ANDROID_LIBRARIES = [
-    "dl",
-    "GLESv1_CM",
-    "GLESv2",
-    "log",
-    "android",
-    "OpenSLES",
-]
 
 
 class Executer:
@@ -630,10 +622,9 @@ class Releaser:
                         f"-DCMAKE_TOOLCHAIN_FILE={cmake_toolchain_file}",
                         f"-DANDROID_PLATFORM={android_api}",
                         f"-DANDROID_ABI={android_abi}",
-                        f"-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
+                        "-DCMAKE_POSITION_INDEPENDENT_CODE=ON",
                         "-DSDL_SHARED=ON",
-                        "-DSDL_STATIC=ON",
-                        "-DSDL_STATIC_PIC=ON",
+                        "-DSDL_STATIC=OFF",
                         "-DSDL_TEST_LIBRARY=ON",
                         "-DSDL_DISABLE_ANDROID_JAR=OFF",
                         "-DSDL_TESTS=OFF",
@@ -644,6 +635,7 @@ class Releaser:
                         "-DCMAKE_INSTALL_LIBDIR=lib",
                         "-DCMAKE_INSTALL_DATAROOTDIR=share",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        f"-DSDL_ANDROID_HOME={android_home}",
                         f"-G{self.cmake_generator}",
                     ]
                     build_args = [
@@ -663,10 +655,6 @@ class Releaser:
                     main_so_library = install_dir / "lib" / f"lib{self.project}.so"
                     logger.debug("Expecting library %s", main_so_library)
                     assert main_so_library.is_file(), "CMake should have built a shared library (e.g. libSDL3.so)"
-
-                    main_static_library = install_dir / "lib" / f"lib{self.project}.a"
-                    logger.debug("Expecting library %s", main_static_library)
-                    assert main_static_library.is_file(), "CMake should have built a static library (e.g. libSDL3.a)"
 
                     test_library = install_dir / "lib" / f"lib{self.project}_test.a"
                     logger.debug("Expecting library %s", test_library)
@@ -695,18 +683,14 @@ class Releaser:
                         zip_object.write(doc_jar_path, arcname="classes-doc.jar")
 
                         for header in (install_dir / "include" / self.project).iterdir():
-                            zip_object.write(header, arcname=f"prefab/modules/{self.project}-shared/include/{self.project}/{header.name}")
-                            zip_object.write(header, arcname=f"prefab/modules/{self.project}-static/include/{self.project}/{header.name}")
+                            zip_object.write(header, arcname=f"prefab/modules/{self.project}/include/{self.project}/{header.name}")
 
-                        zip_object.writestr(f"prefab/modules/{self.project}-shared/module.json", self.get_prefab_module_json_text(library_name=self.project, extra_libs=[]))
-                        zip_object.writestr(f"prefab/modules/{self.project}-static/module.json", self.get_prefab_module_json_text(library_name=self.project, extra_libs=list(ANDROID_LIBRARIES)))
+                        zip_object.writestr(f"prefab/modules/{self.project}/module.json", self.get_prefab_module_json_text(library_name=self.project, extra_libs=[]))
                         zip_object.writestr(f"prefab/modules/{self.project}_test/module.json", self.get_prefab_module_json_text(library_name=f"{self.project}_test", extra_libs=list()))
                         added_global_files = True
 
-                    zip_object.write(main_so_library, arcname=f"prefab/modules/{self.project}-shared/libs/android.{android_abi}/lib{self.project}.so")
-                    zip_object.writestr(f"prefab/modules/{self.project}-shared/libs/android.{android_abi}/abi.json", self.get_prefab_abi_json_text(abi=android_abi, cpp=False, shared=True))
-                    zip_object.write(main_static_library, arcname=f"prefab/modules/{self.project}-static/libs/android.{android_abi}/lib{self.project}.a")
-                    zip_object.writestr(f"prefab/modules/{self.project}-static/libs/android.{android_abi}/abi.json", self.get_prefab_abi_json_text(abi=android_abi, cpp=False, shared=False))
+                    zip_object.write(main_so_library, arcname=f"prefab/modules/{self.project}/libs/android.{android_abi}/lib{self.project}.so")
+                    zip_object.writestr(f"prefab/modules/{self.project}/libs/android.{android_abi}/abi.json", self.get_prefab_abi_json_text(abi=android_abi, cpp=False, shared=True))
                     zip_object.write(test_library, arcname=f"prefab/modules/{self.project}_test/libs/android.{android_abi}/lib{self.project}_test.a")
                     zip_object.writestr(f"prefab/modules/{self.project}_test/libs/android.{android_abi}/abi.json", self.get_prefab_abi_json_text(abi=android_abi, cpp=False, shared=False))
 

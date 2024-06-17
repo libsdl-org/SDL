@@ -144,6 +144,7 @@ SDL_WAYLAND_SYM(enum xkb_state_component, xkb_state_update_mask, (struct xkb_sta
                       xkb_layout_index_t locked_layout) )
 SDL_WAYLAND_SYM(struct xkb_compose_table *, xkb_compose_table_new_from_locale, (struct xkb_context *,\
                       const char *locale, enum xkb_compose_compile_flags) )
+SDL_WAYLAND_SYM(void, xkb_compose_state_reset, (struct xkb_compose_state *) )
 SDL_WAYLAND_SYM(void, xkb_compose_table_unref, (struct xkb_compose_table *) )
 SDL_WAYLAND_SYM(struct xkb_compose_state *, xkb_compose_state_new, (struct xkb_compose_table *, enum xkb_compose_state_flags) )
 SDL_WAYLAND_SYM(void, xkb_compose_state_unref, (struct xkb_compose_state *) )
