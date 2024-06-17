@@ -1,0 +1,5 @@
+.gradle
+.cxx
+build
+# ignore link directory
+app/jni/SDL

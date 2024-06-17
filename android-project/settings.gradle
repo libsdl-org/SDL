@@ -1,1 +1,9 @@
 include ':app'
+
+def buildAsLibrary = gradle.startParameter.projectProperties['BUILD_AS_LIBRARY']
+
+if (buildAsLibrary != null) {
+    // For generate prefab's name
+    project(':app').name = 'SDL3'
+}
+
