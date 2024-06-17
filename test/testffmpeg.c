@@ -156,7 +156,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
     if (useVulkan) {
         SetupVulkanRenderProperties(vulkan_context, props);
     }
-    if (SDL_GetBooleanProperty(SDL_GetDisplayProperties(SDL_GetDisplayForWindow(window)), SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, SDL_FALSE)) {
+    if (SDL_GetBooleanProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, SDL_FALSE)) {
         /* Try to create an HDR capable renderer */
         SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB_LINEAR);
         renderer = SDL_CreateRendererWithProperties(props);

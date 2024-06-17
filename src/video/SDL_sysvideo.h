@@ -34,6 +34,12 @@ typedef struct SDL_DisplayData SDL_DisplayData;
 typedef struct SDL_DisplayModeData SDL_DisplayModeData;
 typedef struct SDL_WindowData SDL_WindowData;
 
+typedef struct
+{
+    float SDR_white_level;
+    float HDR_headroom;
+} SDL_HDROutputProperties;
+
 /* Define the SDL window structure, corresponding to toplevel windows */
 struct SDL_Window
 {
@@ -82,6 +88,7 @@ struct SDL_Window
 
     SDL_DisplayMode requested_fullscreen_mode;
     SDL_DisplayMode current_fullscreen_mode;
+    SDL_HDROutputProperties HDR;
 
     float opacity;
 
@@ -119,12 +126,6 @@ struct SDL_Window
 #define SDL_WINDOW_IS_POPUP(W) \
     (((W)->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU)) != 0)
 
-typedef struct
-{
-    float SDR_white_point;
-    float HDR_headroom;
-} SDL_HDRDisplayProperties;
-
 /*
  * Define the SDL display structure.
  * This corresponds to physical monitors attached to the system.
@@ -141,7 +142,7 @@ struct SDL_VideoDisplay
     SDL_DisplayOrientation natural_orientation;
     SDL_DisplayOrientation current_orientation;
     float content_scale;
-    SDL_HDRDisplayProperties HDR;
+    SDL_HDROutputProperties HDR;
 
     SDL_Window *fullscreen_window;
 
@@ -160,7 +161,8 @@ typedef enum
     VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS = 0x04,
     VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY = 0x08,
     VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES = 0x10,
-    VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS = 0x20
+    VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS = 0x20,
+    VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES = 0x40
 } DeviceCaps;
 
 /* Fullscreen operations */
@@ -511,7 +513,7 @@ extern void SDL_ResetFullscreenDisplayModes(SDL_VideoDisplay *display);
 extern void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
 extern void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode);
 extern void SDL_SetDisplayContentScale(SDL_VideoDisplay *display, float scale);
-extern void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDRDisplayProperties *HDR);
+extern void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDROutputProperties *HDR);
 extern int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern SDL_VideoDisplay *SDL_GetVideoDisplay(SDL_DisplayID display);
 extern SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window);
@@ -521,6 +523,7 @@ extern int SDL_GetDisplayIndex(SDL_DisplayID displayID);
 extern SDL_DisplayData *SDL_GetDisplayDriverData(SDL_DisplayID display);
 extern SDL_DisplayData *SDL_GetDisplayDriverDataForWindow(SDL_Window *window);
 extern int SDL_GetMessageBoxCount(void);
+extern void SDL_SetWindowHDRProperties(SDL_Window *window, const SDL_HDROutputProperties *HDR, SDL_bool send_event);
 
 extern void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor);
 

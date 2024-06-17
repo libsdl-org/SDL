@@ -737,16 +737,11 @@ static void UpdateMainViewDimensions(SDL_Renderer *renderer)
 
 static void UpdateHDRProperties(SDL_Renderer *renderer)
 {
-    SDL_DisplayID displayID = SDL_GetDisplayForWindow(renderer->window);
-    SDL_PropertiesID display_props;
+    SDL_PropertiesID window_props;
     SDL_PropertiesID renderer_props;
 
-    if (!displayID) {
-        return;
-    }
-
-    display_props = SDL_GetDisplayProperties(displayID);
-    if (!display_props) {
+    window_props = SDL_GetWindowProperties(renderer->window);
+    if (!window_props) {
         return;
     }
 
@@ -758,8 +753,8 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
     renderer->color_scale /= renderer->SDR_white_point;
 
     if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-        renderer->SDR_white_point = SDL_GetFloatProperty(display_props, SDL_PROP_DISPLAY_SDR_WHITE_POINT_FLOAT, 1.0f);
-        renderer->HDR_headroom = SDL_GetFloatProperty(display_props, SDL_PROP_DISPLAY_HDR_HEADROOM_FLOAT, 1.0f);
+        renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+        renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
     } else {
         renderer->SDR_white_point = 1.0f;
         renderer->HDR_headroom = 1.0f;
@@ -836,7 +831,7 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 UpdateHDRProperties(renderer);
             }
         }
-    } else if (event->type == SDL_EVENT_DISPLAY_HDR_STATE_CHANGED) {
+    } else if (event->type == SDL_EVENT_WINDOW_HDR_STATE_CHANGED) {
         UpdateHDRProperties(renderer);
     }
 
