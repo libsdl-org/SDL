@@ -595,7 +595,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1102 ), k_eControllerType_SteamController, NULL },	// Valve wired Steam Controller (D0G)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1105 ), k_eControllerType_SteamController, NULL },	// Valve Bluetooth Steam Controller (D0G)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1106 ), k_eControllerType_SteamController, NULL },	// Valve Bluetooth Steam Controller (D0G)
-	{ MAKE_CONTROLLER_ID( 0x28de, 0x11ff ), k_eControllerType_UnknownNonSteamController, "Steam Virtual Gamepad" },	// Steam virtual gamepad
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x11ff ), k_eControllerType_UnknownNonSteamController, NULL },	// Steam Virtual Gamepad
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1142 ), k_eControllerType_SteamController, NULL },	// Valve wireless Steam Controller
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1201 ), k_eControllerType_SteamControllerV2, NULL },	// Valve wired Steam Controller (HEADCRAB)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1202 ), k_eControllerType_SteamControllerV2, NULL },	// Valve Bluetooth Steam Controller (HEADCRAB)
