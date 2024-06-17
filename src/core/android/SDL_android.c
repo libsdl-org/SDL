@@ -710,15 +710,15 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
     midAudioClose = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                               "audioClose", "()V");
     midRecordingOpen = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                               "captureOpen", "(IIIII)[I");
+                                               "recordingOpen", "(IIIII)[I");
     midRecordingReadByteBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                         "captureReadByteBuffer", "([BZ)I");
+                                                         "recordingReadByteBuffer", "([BZ)I");
     midRecordingReadShortBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                          "captureReadShortBuffer", "([SZ)I");
+                                                          "recordingReadShortBuffer", "([SZ)I");
     midRecordingReadFloatBuffer = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                          "captureReadFloatBuffer", "([FZ)I");
+                                                          "recordingReadFloatBuffer", "([FZ)I");
     midRecordingClose = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                "captureClose", "()V");
+                                                "recordingClose", "()V");
     midAudioSetThreadPriority = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                                           "audioSetThreadPriority", "(ZI)V");
 
