@@ -628,8 +628,6 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         MTLPixelFormat pixfmt;
         MTLTextureDescriptor *mtltexdesc;
         id<MTLTexture> mtltexture = nil, mtltextureUv = nil;
-        BOOL yuv = FALSE;
-        BOOL nv12 = FALSE;
         METAL_TextureData *texturedata;
         CVPixelBufferRef pixelbuffer = nil;
         IOSurfaceRef surface = nil;
@@ -708,8 +706,8 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         mtltextureUv = nil;
 #if SDL_HAVE_YUV
-        yuv = (texture->format == SDL_PIXELFORMAT_IYUV || texture->format == SDL_PIXELFORMAT_YV12);
-        nv12 = (texture->format == SDL_PIXELFORMAT_NV12 || texture->format == SDL_PIXELFORMAT_NV21 || texture->format == SDL_PIXELFORMAT_P010);
+        BOOL yuv = (texture->format == SDL_PIXELFORMAT_IYUV || texture->format == SDL_PIXELFORMAT_YV12);
+        BOOL nv12 = (texture->format == SDL_PIXELFORMAT_NV12 || texture->format == SDL_PIXELFORMAT_NV21 || texture->format == SDL_PIXELFORMAT_P010);
 
         if (yuv) {
             mtltexdesc.pixelFormat = MTLPixelFormatR8Unorm;
@@ -748,16 +746,18 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
         if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
+#if SDL_HAVE_YUV
         } else if (yuv) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_YUV;
+#endif
         } else {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_ADVANCED;
         }
         texturedata.mtltexture = mtltexture;
         texturedata.mtltextureUv = mtltextureUv;
+#if SDL_HAVE_YUV
         texturedata.yuv = yuv;
         texturedata.nv12 = nv12;
-#if SDL_HAVE_YUV
         if (yuv || nv12) {
             size_t offset = GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
             if (offset == 0) {
@@ -1013,7 +1013,9 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         id<MTLBlitCommandEncoder> blitcmd;
         SDL_Rect rect = texturedata.lockedrect;
         int pitch = SDL_BYTESPERPIXEL(texture->format) * rect.w;
+#if SDL_HAVE_YUV
         SDL_Rect UVrect = { rect.x / 2, rect.y / 2, (rect.w + 1) / 2, (rect.h + 1) / 2 };
+#endif
 
         if (texturedata.lockedbuffer == nil) {
             return;
