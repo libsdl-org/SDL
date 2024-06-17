@@ -443,7 +443,7 @@ static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
 {
     DISPLAYCONFIG_PATH_INFO path_info;
     SDL_VideoData *videodata = _this->driverdata;
-    float SDR_white_point = 1.0f;
+    float SDR_white_level = 1.0f;
 
     if (WIN_GetMonitorPathInfo(videodata, hMonitor, &path_info)) {
         DISPLAYCONFIG_SDR_WHITE_LEVEL white_level;
@@ -456,13 +456,13 @@ static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
         /* WIN_GetMonitorPathInfo() succeeded: DisplayConfigGetDeviceInfo is not NULL */
         if (videodata->DisplayConfigGetDeviceInfo(&white_level.header) == ERROR_SUCCESS &&
             white_level.SDRWhiteLevel > 0) {
-            SDR_white_point = (white_level.SDRWhiteLevel / 1000.0f);
+            SDR_white_level = (white_level.SDRWhiteLevel / 1000.0f);
         }
     }
-    return SDR_white_point;
+    return SDR_white_level;
 }
 
-static void WIN_GetHDRProperties(SDL_VideoDevice *_this, HMONITOR hMonitor, SDL_HDRDisplayProperties *HDR)
+static void WIN_GetHDRProperties(SDL_VideoDevice *_this, HMONITOR hMonitor, SDL_HDROutputProperties *HDR)
 {
     DXGI_OUTPUT_DESC1 desc;
 
@@ -470,8 +470,8 @@ static void WIN_GetHDRProperties(SDL_VideoDevice *_this, HMONITOR hMonitor, SDL_
 
     if (WIN_GetMonitorDESC1(hMonitor, &desc)) {
         if (desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
-            HDR->SDR_white_point = WIN_GetSDRWhitePoint(_this, hMonitor);
-            HDR->HDR_headroom = (desc.MaxLuminance / 80.0f) / HDR->SDR_white_point;
+            HDR->SDR_white_level = WIN_GetSDRWhitePoint(_this, hMonitor);
+            HDR->HDR_headroom = (desc.MaxLuminance / 80.0f) / HDR->SDR_white_level;
         }
     }
 }
@@ -529,7 +529,6 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
             if (!_this->setting_display_mode) {
                 SDL_VideoDisplay *existing_display = _this->displays[i];
                 SDL_Rect bounds;
-                SDL_HDRDisplayProperties HDR;
 
                 SDL_ResetFullscreenDisplayModes(existing_display);
                 SDL_SetDesktopDisplayMode(existing_display, &mode);
@@ -544,6 +543,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
                 SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_ORIENTATION, current_orientation);
                 SDL_SetDisplayContentScale(existing_display, content_scale);
 #ifdef HAVE_DXGI1_6_H
+                SDL_HDROutputProperties HDR;
                 WIN_GetHDRProperties(_this, hMonitor, &HDR);
                 SDL_SetDisplayHDRProperties(existing_display, &HDR);
 #endif

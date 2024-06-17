@@ -290,9 +290,9 @@ static char *Cocoa_GetDisplayName(CGDirectDisplayID displayID)
     return displayName;
 }
 
-static void Cocoa_GetHDRProperties(CGDirectDisplayID displayID, SDL_HDRDisplayProperties *HDR)
+static void Cocoa_GetHDRProperties(CGDirectDisplayID displayID, SDL_HDROutputProperties *HDR)
 {
-    HDR->SDR_white_point = 1.0f;
+    HDR->SDR_white_level = 1.0f;
     HDR->HDR_headroom = 1.0f;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500 /* Added in the 10.15 SDK */
@@ -397,7 +397,7 @@ void Cocoa_InitModes(SDL_VideoDevice *_this)
 
 void Cocoa_UpdateDisplays(SDL_VideoDevice *_this)
 {
-    SDL_HDRDisplayProperties HDR;
+    SDL_HDROutputProperties HDR;
     int i;
 
     for (i = 0; i < _this->num_displays; ++i) {

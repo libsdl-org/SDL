@@ -1576,12 +1576,6 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
                     event->display.displayID, (int)(scale * 100.0f));
         }
         break;
-    case SDL_EVENT_DISPLAY_HDR_STATE_CHANGED:
-        {
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " HDR %s",
-                    event->display.displayID, event->display.data1 ? "enabled" : "disabled");
-        }
-        break;
     case SDL_EVENT_DISPLAY_MOVED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",
                 event->display.displayID);
@@ -1667,6 +1661,9 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         break;
     case SDL_EVENT_WINDOW_DESTROYED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " destroyed", event->window.windowID);
+        break;
+    case SDL_EVENT_WINDOW_HDR_STATE_CHANGED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " HDR %s", event->window.windowID, event->window.data1 ? "enabled" : "disabled");
         break;
     case SDL_EVENT_KEYBOARD_ADDED:
         SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " attached",

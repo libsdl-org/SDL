@@ -98,6 +98,7 @@ struct SDL_WindowData
     struct zxdg_exported_v2 *exported;
     struct xdg_dialog_v1 *xdg_dialog_v1;
     struct wp_alpha_modifier_surface_v1 *wp_alpha_modifier_surface_v1;
+    struct frog_color_managed_surface *frog_color_managed_surface;
 
     SDL_AtomicInt swap_interval_ready;
 

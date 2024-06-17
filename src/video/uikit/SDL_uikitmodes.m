@@ -242,7 +242,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
     display.desktop_mode = mode;
 
-    display.HDR.SDR_white_point = 1.0f;
+    display.HDR.SDR_white_level = 1.0f;
     display.HDR.HDR_headroom = 1.0f;
 
 #ifndef SDL_PLATFORM_TVOS

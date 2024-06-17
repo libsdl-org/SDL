@@ -46,6 +46,7 @@
 #include "alpha-modifier-v1-client-protocol.h"
 #include "cursor-shape-v1-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
+#include "frog-color-management-v1-client-protocol.h"
 #include "idle-inhibit-unstable-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
 #include "kde-output-order-v1-client-protocol.h"
@@ -526,7 +527,8 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
                           VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
                           VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS |
                           VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES |
-                          VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS;
+                          VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS |
+                          VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES;
 
     return device;
 }
@@ -1114,6 +1116,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     } else if (SDL_strcmp(interface, "kde_output_order_v1") == 0) {
         d->kde_output_order = wl_registry_bind(d->registry, id, &kde_output_order_v1_interface, 1);
         kde_output_order_v1_add_listener(d->kde_output_order, &kde_output_order_listener, d);
+    } else if (SDL_strcmp(interface, "frog_color_management_factory_v1") == 0) {
+        d->frog_color_management_factory_v1 = wl_registry_bind(d->registry, id, &frog_color_management_factory_v1_interface, 1);
     }
 }
 
@@ -1382,6 +1386,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
         Wayland_FlushOutputOrder(data);
         kde_output_order_v1_destroy(data->kde_output_order);
         data->kde_output_order = NULL;
+    }
+
+    if (data->frog_color_management_factory_v1) {
+        frog_color_management_factory_v1_destroy(data->frog_color_management_factory_v1);
+        data->frog_color_management_factory_v1 = NULL;
     }
 
     if (data->compositor) {
