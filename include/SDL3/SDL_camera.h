@@ -82,8 +82,8 @@ typedef struct SDL_CameraSpec
     SDL_Colorspace colorspace;  /**< Frame colorspace */
     int width;                  /**< Frame width */
     int height;                 /**< Frame height */
-    int interval_numerator;     /**< Frame rate numerator ((dom / num) == fps, (num / dom) == duration) */
-    int interval_denominator;   /**< Frame rate demoninator ((dom / num) == fps, (num / dom) == duration) */
+    int framerate_numerator;     /**< Frame rate numerator ((num / denom) == FPS, (denom / num) == duration in seconds) */
+    int framerate_denominator;   /**< Frame rate demoninator ((num / denom) == FPS, (denom / num) == duration in seconds) */
 } SDL_CameraSpec;
 
 /**

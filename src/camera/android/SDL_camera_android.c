@@ -655,11 +655,11 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
             const long long duration = (long long) i64ptr[3];
             SDL_Log("CAMERA: possible fps %s %dx%d duration=%lld", SDL_GetPixelFormatName(sdlfmt), fpsw, fpsh, duration);
             if ((duration > 0) && (fpsfmt == fmt) && (fpsw == w) && (fpsh == h)) {
-                SDL_AddCameraFormat(add_data, sdlfmt, colorspace, w, h, duration, 1000000000);
+                SDL_AddCameraFormat(add_data, sdlfmt, colorspace, w, h, 1000000000, duration);
             }
         }
 #else
-        SDL_AddCameraFormat(add_data, sdlfmt, colorspace, w, h, 1, 30);
+        SDL_AddCameraFormat(add_data, sdlfmt, colorspace, w, h, 30, 1);
 #endif
     }
 

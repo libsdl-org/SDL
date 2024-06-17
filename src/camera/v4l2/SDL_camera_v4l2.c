@@ -538,16 +538,16 @@ static int V4L2_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
         return SDL_SetError("Error VIDIOC_S_FMT");
     }
 
-    if (spec->interval_numerator && spec->interval_denominator) {
+    if (spec->framerate_numerator && spec->framerate_denominator) {
         struct v4l2_streamparm setfps;
         SDL_zero(setfps);
         setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         if (xioctl(fd, VIDIOC_G_PARM, &setfps) == 0) {
-            if ( (setfps.parm.capture.timeperframe.numerator != spec->interval_numerator) ||
-                 (setfps.parm.capture.timeperframe.denominator = spec->interval_denominator) ) {
+            if ( (setfps.parm.capture.timeperframe.denominator != spec->framerate_numerator) ||
+                 (setfps.parm.capture.timeperframe.numerator = spec->framerate_denominator) ) {
                 setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                setfps.parm.capture.timeperframe.numerator = spec->interval_numerator;
-                setfps.parm.capture.timeperframe.denominator = spec->interval_denominator;
+                setfps.parm.capture.timeperframe.numerator = spec->framerate_numerator;
+                setfps.parm.capture.timeperframe.denominator = spec->framerate_denominator;
                 if (xioctl(fd, VIDIOC_S_PARM, &setfps) == -1) {
                     return SDL_SetError("Error VIDIOC_S_PARM");
                 }
@@ -661,7 +661,7 @@ static int AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFor
             const float fps = (float) denominator / (float) numerator;
             SDL_Log("CAMERA:       * Has discrete frame interval (%d / %d), fps=%f", numerator, denominator, fps);
             #endif
-            if (SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, numerator, denominator) == -1) {
+            if (SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, denominator, numerator) == -1) {
                 return -1;  // Probably out of memory; we'll go with what we have, if anything.
             }
             frmivalenum.index++;  // set up for the next one.
@@ -673,7 +673,8 @@ static int AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFor
                 const float fps = (float) d / (float) n;
                 SDL_Log("CAMERA:       * Has %s frame interval (%d / %d), fps=%f", (frmivalenum.type == V4L2_FRMIVAL_TYPE_STEPWISE) ? "stepwise" : "continuous", n, d, fps);
                 #endif
-                if (SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, n, d) == -1) {
+                // SDL expects framerate, V4L2 provides interval
+                if (SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, d, n) == -1) {
                     return -1;  // Probably out of memory; we'll go with what we have, if anything.
                 }
                 d += (int) frmivalenum.stepwise.step.denominator;
