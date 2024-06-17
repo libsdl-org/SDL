@@ -525,9 +525,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceColorMod(SDL_Surface *surface, Uin
  * Get the additional color value multiplied into blit operations.
  *
  * \param[inout] surface the SDL_Surface structure to query
- * \param[out,opt] r a pointer filled in with the current red color value
- * \param[out,opt] g a pointer filled in with the current green color value
- * \param[out,opt] b a pointer filled in with the current blue color value
+ * \param[out] r a pointer filled in with the current red color value
+ * \param[out] g a pointer filled in with the current green color value
+ * \param[out] b a pointer filled in with the current blue color value
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -562,7 +562,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uin
  * Get the additional alpha value used in blit operations.
  *
  * \param[inout] surface the SDL_Surface structure to query
- * \param[out,opt] alpha a pointer filled in with the current alpha value
+ * \param[out] alpha a pointer filled in with the current alpha value
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -595,7 +595,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceBlendMode(SDL_Surface *surface, SD
  * Get the blend mode used for blit operations.
  *
  * \param[inout] surface the SDL_Surface structure to query
- * \param[out,opt] blendMode a pointer filled in with the current SDL_BlendMode
+ * \param[out] blendMode a pointer filled in with the current SDL_BlendMode
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -634,7 +634,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetSurfaceClipRect(SDL_Surface *surface
  *
  * \param[inout] surface the SDL_Surface structure representing the surface to be
  *                clipped
- * \param[out,opt] rect an SDL_Rect structure filled in with the clipping rectangle for
+ * \param[out] rect an SDL_Rect structure filled in with the clipping rectangle for
  *             the surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -917,7 +917,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL
  * \param[in,opt] srcrect the SDL_Rect structure representing the rectangle to be
  *                copied, or NULL to copy the entire surface
  * \param[inout] dst the SDL_Surface structure that is the blit target
- * \param[out,opt] dstrect the SDL_Rect structure representing the x and y position in
+ * \param[out] dstrect the SDL_Rect structure representing the x and y position in
  *                the destination surface. On input the width and height are
  *                ignored (taken from srcrect), and on output this is filled
  *                in with the actual rectangle used after clipping.
@@ -944,7 +944,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect
  * \param[in,opt] srcrect the SDL_Rect structure representing the rectangle to be
  *                copied, or NULL to copy the entire surface
  * \param[inout] dst the SDL_Surface structure that is the blit target
- * \param[out,opt] dstrect the SDL_Rect structure representing the target rectangle in
+ * \param[out] dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1044,13 +1044,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src,
  * \param[inout] surface the surface to read
  * \param x the horizontal coordinate, 0 <= x < width
  * \param y the vertical coordinate, 0 <= y < height
- * \param[out,opt] r a pointer filled in with the red channel, 0-255, or NULL to ignore
+ * \param[out] r a pointer filled in with the red channel, 0-255, or NULL to ignore
  *          this channel
- * \param[out,opt] g a pointer filled in with the green channel, 0-255, or NULL to
+ * \param[out] g a pointer filled in with the green channel, 0-255, or NULL to
  *          ignore this channel
- * \param[out,opt] b a pointer filled in with the blue channel, 0-255, or NULL to
+ * \param[out] b a pointer filled in with the blue channel, 0-255, or NULL to
  *          ignore this channel
- * \param[out,opt] a a pointer filled in with the alpha channel, 0-255, or NULL to
+ * \param[out] a a pointer filled in with the alpha channel, 0-255, or NULL to
  *          ignore this channel
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.

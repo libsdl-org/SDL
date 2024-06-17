@@ -146,7 +146,7 @@ typedef enum SDL_SensorType
 /**
  * Get a list of currently connected sensors.
  *
- * \param[out,opt] count a pointer filled in with the number of sensors returned
+ * \param[out] count a pointer filled in with the number of sensors returned
  * \returns[own] a 0 terminated array of sensor instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.

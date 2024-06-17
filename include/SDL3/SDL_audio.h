@@ -423,7 +423,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  * If this function returns NULL, to signify an error, `*count` will be set to
  * zero.
  *
- * \param[out,opt] count a pointer filled in with the number of devices returned. NULL
+ * \param[out] count a pointer filled in with the number of devices returned. NULL
  *              is allowed.
  * \returns[own] a 0 terminated array of device instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
@@ -452,7 +452,7 @@ extern SDL_DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioOutputDevices(int *co
  * If this function returns NULL, to signify an error, `*count` will be set to
  * zero.
  *
- * \param[out,opt] count a pointer filled in with the number of devices returned. NULL
+ * \param[out] count a pointer filled in with the number of devices returned. NULL
  *              is allowed.
  * \returns[own] a 0 terminated array of device instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
@@ -510,7 +510,7 @@ extern SDL_DECLSPEC char *SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid
  *
  * \param devid the instance ID of the device to query.
  * \param[out] spec On return, will be filled with device details.
- * \param[out,opt] sample_frames Pointer to store device buffer size, in sample frames.
+ * \param[out] sample_frames Pointer to store device buffer size, in sample frames.
  *                      Can be NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -852,8 +852,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetAudioStreamProperties(SDL_Au
  * Query the current format of an audio stream.
  *
  * \param[inout] stream the SDL_AudioStream to query.
- * \param[out,opt] src_spec Where to store the input audio format; ignored if NULL.
- * \param[out,opt] dst_spec Where to store the output audio format; ignored if NULL.
+ * \param[out] src_spec Where to store the input audio format; ignored if NULL.
+ * \param[out] dst_spec Where to store the output audio format; ignored if NULL.
  * \returns 0 on success, or -1 on error.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds

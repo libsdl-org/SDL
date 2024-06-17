@@ -495,10 +495,10 @@ typedef void (SDLCALL *SDL_free_func)(void *mem);
 /**
  * Get the original set of SDL memory functions.
  *
- * \param[out,opt] malloc_func filled with malloc function
- * \param[out,opt] calloc_func filled with calloc function
- * \param[out,opt] realloc_func filled with realloc function
- * \param[out,opt] free_func filled with free function
+ * \param[out] malloc_func filled with malloc function
+ * \param[out] calloc_func filled with calloc function
+ * \param[out] realloc_func filled with realloc function
+ * \param[out] free_func filled with free function
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -510,10 +510,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func 
 /**
  * Get the current set of SDL memory functions.
  *
- * \param[out,opt] malloc_func filled with malloc function
- * \param[out,opt] calloc_func filled with calloc function
- * \param[out,opt] realloc_func filled with realloc function
- * \param[out,opt] free_func filled with free function
+ * \param[out] malloc_func filled with malloc function
+ * \param[out] calloc_func filled with calloc function
+ * \param[out] realloc_func filled with realloc function
+ * \param[out] free_func filled with free function
  *
  * \since This function is available since SDL 3.0.0.
  */

@@ -392,7 +392,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_ReloadGamepadMappings(void);
  * You must free the returned pointer with SDL_free() when you are done with
  * it, but you do _not_ free each string in the array.
  *
- * \param[out,opt] count a pointer filled in with the number of mappings returned, can
+ * \param[out] count a pointer filled in with the number of mappings returned, can
  *              be NULL.
  * \returns[own] an array of the mapping strings, NULL-terminated. Must be freed
  *          with SDL_free(). Returns NULL on error.
@@ -929,7 +929,7 @@ extern SDL_DECLSPEC SDL_JoystickConnectionState SDLCALL SDL_GetGamepadConnection
  * reports, or completely drain when reporting it has 20 percent left, etc.
  *
  * \param[inout] gamepad the gamepad object to query.
- * \param[out,opt] percent a pointer filled in with the percentage of battery life
+ * \param[out] percent a pointer filled in with the percentage of battery life
  *                left, between 0 and 100, or NULL to ignore. This will be
  *                filled in with -1 we can't determine a value or there is no
  *                battery.
@@ -1004,7 +1004,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
  * Get the SDL joystick layer bindings for a gamepad.
  *
  * \param[inout] gamepad a gamepad
- * \param[out,opt] count a pointer filled in with the number of bindings returned
+ * \param[out] count a pointer filled in with the number of bindings returned
  * \returns[own] a NULL terminated array of pointers to bindings which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
@@ -1261,7 +1261,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGamepadTouchpadFingers(SDL_Gamepad *ga
  * \param[inout] gamepad a gamepad
  * \param touchpad a touchpad
  * \param finger a finger
- * \param state filled with state
+ * \param[out] state filled with state
  * \param[out] x filled with x position, normalized 0 to 1, with the origin in the
  *          upper left
  * \param[out] y filled with y position, normalized 0 to 1, with the origin in the

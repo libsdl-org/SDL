@@ -226,7 +226,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
  *
  * \param[inout] storage a storage container to query
  * \param[in] path the relative path of the file to query
- * \param[out,opt] length a pointer to be filled with the file's length
+ * \param[out] length a pointer to be filled with the file's length
  * \returns 0 if the file could be queried, a negative value otherwise; call
  *          SDL_GetError() for more information.
  *
@@ -342,7 +342,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenameStoragePath(SDL_Storage *storage, cons
  *
  * \param[inout] storage a storage container
  * \param[in] path the path to query
- * \param[out,opt] info a pointer filled in with information about the path, or NULL to
+ * \param[out] info a pointer filled in with information about the path, or NULL to
  *             check for the existence of a file
  * \returns 0 on success or a negative error code if the file doesn't exist,
  *          or another failure; call SDL_GetError() for more information.
@@ -390,7 +390,7 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *sto
  * \param[in,opt] pattern the pattern that files in the directory must match. Can be
  *                NULL.
  * \param flags `SDL_GLOB_*` bitflags that affect this search.
- * \param[out,opt] count on return, will be set to the number of items in the returned
+ * \param[out] count on return, will be set to the number of items in the returned
  *              array. Can be NULL.
  * \returns[own] an array of strings on success or NULL on failure; call
  *          SDL_GetError() for more information. The caller should pass the

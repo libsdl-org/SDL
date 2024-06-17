@@ -825,7 +825,7 @@ extern SDL_DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickType(SDL_Joystick *j
  * You should supply at least 33 bytes for pszGUID.
  *
  * \param guid the SDL_JoystickGUID you wish to convert to string
- * \param pszGUID buffer in which to write the ASCII string
+ * \param[inout] pszGUID buffer in which to write the ASCII string
  * \param cbGUID the size of pszGUID
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -845,7 +845,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetJoystickGUIDString(SDL_JoystickGUID guid,
  * an invalid GUID, the function will silently succeed, but the GUID generated
  * will not be useful.
  *
- * \param pchGUID string containing an ASCII representation of a GUID
+ * \param[in] pchGUID string containing an ASCII representation of a GUID
  * \returns a SDL_JoystickGUID structure.
  *
  * \since This function is available since SDL 3.0.0.
@@ -858,13 +858,13 @@ extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUIDFromString(const
  * Get the device information encoded in a SDL_JoystickGUID structure.
  *
  * \param guid the SDL_JoystickGUID you wish to get info about
- * \param[out,opt] vendor A pointer filled in with the device VID, or 0 if not
+ * \param[out] vendor A pointer filled in with the device VID, or 0 if not
  *               available
- * \param[out,opt] product A pointer filled in with the device PID, or 0 if not
+ * \param[out] product A pointer filled in with the device PID, or 0 if not
  *                available
- * \param[out,opt] version A pointer filled in with the device version, or 0 if not
+ * \param[out] version A pointer filled in with the device version, or 0 if not
  *                available
- * \param[out,opt] crc16 A pointer filled in with a CRC used to distinguish different
+ * \param[out] crc16 A pointer filled in with a CRC used to distinguish different
  *              products with the same VID/PID, or 0 if not available
  *
  * \since This function is available since SDL 3.0.0.
@@ -1044,7 +1044,7 @@ extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetJoystickAxis(SDL_Joystick *joystick, i
  *
  * \param[inout] joystick an SDL_Joystick structure containing joystick information
  * \param axis the axis to query; the axis indices start at index 0
- * \param[out,opt] state Upon return, the initial value is supplied here.
+ * \param[out] state Upon return, the initial value is supplied here.
  * \returns SDL_TRUE if this axis has any initial value, or SDL_FALSE if not.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1061,8 +1061,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetJoystickAxisInitialState(SDL_Joystic
  *
  * \param[inout] joystick the SDL_Joystick to query
  * \param ball the ball index to query; ball indices start at index 0
- * \param[out,opt] dx stores the difference in the x axis position since the last poll
- * \param[out,opt] dy stores the difference in the y axis position since the last poll
+ * \param[out] dx stores the difference in the x axis position since the last poll
+ * \param[out] dy stores the difference in the y axis position since the last poll
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1227,7 +1227,7 @@ extern SDL_DECLSPEC SDL_JoystickConnectionState SDLCALL SDL_GetJoystickConnectio
  * reports, or completely drain when reporting it has 20 percent left, etc.
  *
  * \param[inout] joystick The joystick to query
- * \param[out,opt] percent a pointer filled in with the percentage of battery life
+ * \param[out] percent a pointer filled in with the percentage of battery life
  *                left, between 0 and 100, or NULL to ignore. This will be
  *                filled in with -1 we can't determine a value or there is no
  *                battery.

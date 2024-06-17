@@ -83,7 +83,7 @@ typedef struct SDL_Finger
  * Therefore the returned list might be empty, although devices are available.
  * After using all devices at least once the number will be correct.
  *
- * \param[out,opt] count a pointer filled in with the number of devices returned, can
+ * \param[out] count a pointer filled in with the number of devices returned, can
  *              be NULL.
  * \returns[own] a 0 terminated array of touch device IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
@@ -120,7 +120,7 @@ extern SDL_DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_Touch
  * Get a list of active fingers for a given touch device.
  *
  * \param touchID the ID of a touch device
- * \param[out,opt] count a pointer filled in with the number of fingers returned, can
+ * \param[out] count a pointer filled in with the number of fingers returned, can
  *              be NULL.
  * \returns[own] a NULL terminated array of SDL_Finger pointers which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for

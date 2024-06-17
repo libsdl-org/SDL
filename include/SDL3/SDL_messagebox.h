@@ -152,7 +152,7 @@ typedef struct SDL_MessageBoxData
  *
  * \param[in] messageboxdata the SDL_MessageBoxData structure with title, text and
  *                       other options
- * \param[out,opt] buttonid the pointer to which user id of hit button should be copied
+ * \param[out] buttonid the pointer to which user id of hit button should be copied
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

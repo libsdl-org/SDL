@@ -372,7 +372,7 @@ extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
 /**
  * Get a list of currently connected displays.
  *
- * \param[out,opt] count a pointer filled in with the number of displays returned
+ * \param[out] count a pointer filled in with the number of displays returned
  * \returns[own] a 0 terminated array of display instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.
@@ -546,7 +546,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displ
  * - pixel density -> lowest to highest
  *
  * \param displayID the instance ID of the display to query
- * \param[out,opt] count a pointer filled in with the number of display modes returned
+ * \param[out] count a pointer filled in with the number of display modes returned
  * \returns[own] a NULL terminated array of display mode pointers which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
@@ -1332,8 +1332,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x,
  * in the `x` or `y` parameter.
  *
  * \param[inout] window the window to query
- * \param[out,opt] x a pointer filled in with the x position of the window, may be NULL
- * \param[out,opt] y a pointer filled in with the y position of the window, may be NULL
+ * \param[out] x a pointer filled in with the x position of the window, may be NULL
+ * \param[out] y a pointer filled in with the y position of the window, may be NULL
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1393,8 +1393,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int
  * or SDL_GetRenderOutputSize() to get the real client area size in pixels.
  *
  * \param[inout] window the window to query the width and height from
- * \param[out,opt] w a pointer filled in with the width of the window, may be NULL
- * \param[out,opt] h a pointer filled in with the height of the window, may be NULL
+ * \param[out] w a pointer filled in with the width of the window, may be NULL
+ * \param[out] h a pointer filled in with the height of the window, may be NULL
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1423,13 +1423,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, in
  *
  * \param[inout] window the window to query the size values of the border
  *               (decorations) from
- * \param[out,opt] top pointer to variable for storing the size of the top border; NULL
+ * \param[out] top pointer to variable for storing the size of the top border; NULL
  *            is permitted
- * \param[out,opt] left pointer to variable for storing the size of the left border;
+ * \param[out] left pointer to variable for storing the size of the left border;
  *             NULL is permitted
- * \param[out,opt] bottom pointer to variable for storing the size of the bottom
+ * \param[out] bottom pointer to variable for storing the size of the bottom
  *               border; NULL is permitted
- * \param[out,opt] right pointer to variable for storing the size of the right border;
+ * \param[out] right pointer to variable for storing the size of the right border;
  *              NULL is permitted
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1444,8 +1444,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window *window, int
  * Get the size of a window's client area, in pixels.
  *
  * \param[inout] window the window from which the drawable size should be queried
- * \param[out,opt] w a pointer to variable for storing the width in pixels, may be NULL
- * \param[out,opt] h a pointer to variable for storing the height in pixels, may be
+ * \param[out] w a pointer to variable for storing the width in pixels, may be NULL
+ * \param[out] h a pointer to variable for storing the height in pixels, may be
  *          NULL
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1477,9 +1477,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMinimumSize(SDL_Window *window, int
  * Get the minimum size of a window's client area.
  *
  * \param[inout] window the window to query
- * \param[out,opt] w a pointer filled in with the minimum width of the window, may be
+ * \param[out] w a pointer filled in with the minimum width of the window, may be
  *          NULL
- * \param[out,opt] h a pointer filled in with the minimum height of the window, may be
+ * \param[out] h a pointer filled in with the minimum height of the window, may be
  *          NULL
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1511,9 +1511,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMaximumSize(SDL_Window *window, int
  * Get the maximum size of a window's client area.
  *
  * \param[inout] window the window to query
- * \param[out,opt] w a pointer filled in with the maximum width of the window, may be
+ * \param[out] w a pointer filled in with the maximum width of the window, may be
  *          NULL
- * \param[out,opt] h a pointer filled in with the maximum height of the window, may be
+ * \param[out] h a pointer filled in with the maximum height of the window, may be
  *          NULL
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -2049,7 +2049,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window *window, float o
  * This function also returns -1 if an invalid window was provided.
  *
  * \param[inout] window the window to get the current opacity value from
- * \param[out,opt] out_opacity the float filled in (0.0f - transparent, 1.0f - opaque)
+ * \param[out] out_opacity the float filled in (0.0f - transparent, 1.0f - opaque)
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *

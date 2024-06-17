@@ -91,9 +91,9 @@ typedef enum SDL_TimeFormat
  * formats can change, usually because the user has changed a system
  * preference outside of your program.
  *
- * \param[out,opt] dateFormat a pointer to the SDL_DateFormat to hold the returned date
+ * \param[out] dateFormat a pointer to the SDL_DateFormat to hold the returned date
  *                   format, may be NULL
- * \param[out,opt] timeFormat a pointer to the SDL_TimeFormat to hold the returned time
+ * \param[out] timeFormat a pointer to the SDL_TimeFormat to hold the returned time
  *                   format, may be NULL
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
@@ -106,7 +106,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat 
  * Gets the current value of the system realtime clock in nanoseconds since
  * Jan 1, 1970 in Universal Coordinated Time (UTC).
  *
- * \param[out,opt] ticks the SDL_Time to hold the returned tick count
+ * \param[out] ticks the SDL_Time to hold the returned tick count
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
@@ -152,9 +152,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_T
  * This function fills in the two 32-bit values of the FILETIME structure.
  *
  * \param ticks the time to convert
- * \param[out,opt] dwLowDateTime a pointer filled in with the low portion of the
+ * \param[out] dwLowDateTime a pointer filled in with the low portion of the
  *                      Windows FILETIME value
- * \param[out,opt] dwHighDateTime a pointer filled in with the high portion of the
+ * \param[out] dwHighDateTime a pointer filled in with the high portion of the
  *                       Windows FILETIME value
  *
  * \since This function is available since SDL 3.0.0.

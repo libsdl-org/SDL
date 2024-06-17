@@ -92,7 +92,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * power buttons, etc. You should wait for input from a device before you
  * consider it actively in use.
  *
- * \param[out,opt] count a pointer filled in with the number of keyboards returned
+ * \param[out] count a pointer filled in with the number of keyboards returned
  * \returns[own] a 0 terminated array of keyboards instance IDs which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.

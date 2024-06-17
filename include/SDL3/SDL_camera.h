@@ -168,7 +168,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentCameraDriver(void);
 /**
  * Get a list of currently connected camera devices.
  *
- * \param[out,opt] count a pointer filled in with the number of camera devices. Can be
+ * \param[out] count a pointer filled in with the number of camera devices. Can be
  *              NULL.
  * \returns[own] a 0 terminated array of camera instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
@@ -210,7 +210,7 @@ extern SDL_DECLSPEC SDL_CameraDeviceID *SDLCALL SDL_GetCameraDevices(int *count)
  * scary warning popup.
  *
  * \param devid the camera device instance ID to query.
- * \param[out,opt] count a pointer filled in with the number of elements in the list.
+ * \param[out] count a pointer filled in with the number of elements in the list.
  *              Can be NULL.
  * \returns[own] a 0 terminated array of SDL_CameraSpecs, which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
@@ -427,7 +427,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_Came
  * occasionally until it returns non-zero.
  *
  * \param[inout] camera opened camera device
- * \param[out,opt] timestampNS a pointer filled in with the frame's timestamp, or 0 on
+ * \param[out] timestampNS a pointer filled in with the frame's timestamp, or 0 on
  *                    error. Can be NULL.
  * \returns[own] A new frame of video on success, NULL if none is currently
  *          available.

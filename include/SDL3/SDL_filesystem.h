@@ -367,7 +367,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  * \param[in,opt] pattern the pattern that files in the directory must match. Can be
  *                NULL.
  * \param flags `SDL_GLOB_*` bitflags that affect this search.
- * \param[out,opt] count on return, will be set to the number of items in the returned
+ * \param[out] count on return, will be set to the number of items in the returned
  *              array. Can be NULL.
  * \returns[own] an array of strings on success or NULL on failure; call
  *          SDL_GetError() for more information. The caller should pass the

@@ -100,7 +100,7 @@ typedef enum SDL_PenAxis
 #define SDL_PEN_FLAG_ERASER_BIT_INDEX 15 /* Bit for storing is-eraser or has-eraser-capability property */
 #define SDL_PEN_FLAG_AXIS_BIT_OFFSET  16 /* Bit for storing has-axis-0 property */
 
-#define SDL_PEN_CAPABILITY(capbit)    (1ul << (capbit))
+#define SDL_PEN_CAPABILITY(capbit)    (1u << (capbit))
 #define SDL_PEN_AXIS_CAPABILITY(axis) SDL_PEN_CAPABILITY((axis) + SDL_PEN_FLAG_AXIS_BIT_OFFSET)
 
 /* Pen tips */
@@ -154,7 +154,7 @@ typedef enum SDL_PenSubtype
  * throughout a session. To track pens across sessions (program restart), use
  * SDL_GUID .
  *
- * \param[out,opt] count The number of pens in the array (number of array elements
+ * \param[out] count The number of pens in the array (number of array elements
  *              minus 1, i.e., not counting the terminator 0).
  * \returns[own] A 0 terminated array of SDL_PenID values, or NULL on error. The
  *          array must be freed with SDL_free(). On a NULL return,
@@ -171,9 +171,9 @@ extern SDL_DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
  * default values.
  *
  * \param instance_id The pen to query.
- * \param[out,opt] x Out-mode parameter for pen x coordinate. May be NULL.
- * \param[out,opt] y Out-mode parameter for pen y coordinate. May be NULL.
- * \param[out,opt] axes Out-mode parameter for axis information. May be null. The axes
+ * \param[out] x Out-mode parameter for pen x coordinate. May be NULL.
+ * \param[out] y Out-mode parameter for pen y coordinate. May be NULL.
+ * \param[out] axes Out-mode parameter for axis information. May be null. The axes
  *             are in the same order as SDL_PenAxis.
  * \param num_axes Maximum number of axes to write to "axes".
  * \returns a bit mask with the current pen button states (SDL_BUTTON_LMASK
@@ -253,7 +253,7 @@ typedef struct SDL_PenCapabilityInfo
  * Retrieves capability flags for a given SDL_PenID.
  *
  * \param instance_id The pen to query.
- * \param[out,opt] capabilities Detail information about pen capabilities, such as the
+ * \param[out] capabilities Detail information about pen capabilities, such as the
  *                     number of buttons
  * \returns a set of capability flags, cf. SDL_PEN_CAPABILITIES
  *

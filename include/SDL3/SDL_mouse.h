@@ -135,7 +135,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * You should wait for input from a device before you consider it actively in
  * use.
  *
- * \param[out,opt] count a pointer filled in with the number of mice returned
+ * \param[out] count a pointer filled in with the number of mice returned
  * \returns[own] a 0 terminated array of mouse instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.
@@ -180,9 +180,9 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * mouse cursor position relative to the focus window. You can pass NULL for
  * either `x` or `y`.
  *
- * \param[out,opt] x the x coordinate of the mouse cursor position relative to the
+ * \param[out] x the x coordinate of the mouse cursor position relative to the
  *          focus window
- * \param[out,opt] y the y coordinate of the mouse cursor position relative to the
+ * \param[out] y the y coordinate of the mouse cursor position relative to the
  *          focus window
  * \returns a 32-bit button bitmask of the current button state.
  *
@@ -209,9 +209,9 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, flo
  * efficient function. Unless you know what you're doing and have a good
  * reason to use this function, you probably want SDL_GetMouseState() instead.
  *
- * \param[out,opt] x filled in with the current X coord relative to the desktop; can be
+ * \param[out] x filled in with the current X coord relative to the desktop; can be
  *          NULL
- * \param[out,opt] y filled in with the current Y coord relative to the desktop; can be
+ * \param[out] y filled in with the current Y coord relative to the desktop; can be
  *          NULL
  * \returns the current button state as a bitmask which can be tested using
  *          the SDL_BUTTON(X) macros.
@@ -232,8 +232,8 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *
  * mouse deltas since the last call to SDL_GetRelativeMouseState() or since
  * event initialization. You can pass NULL for either `x` or `y`.
  *
- * \param[out,opt] x a pointer filled with the last recorded x coordinate of the mouse
- * \param[out,opt] y a pointer filled with the last recorded y coordinate of the mouse
+ * \param[out] x a pointer filled with the last recorded x coordinate of the mouse
+ * \param[out] y a pointer filled with the last recorded y coordinate of the mouse
  * \returns a 32-bit button bitmask of the relative button state.
  *
  * \since This function is available since SDL 3.0.0.

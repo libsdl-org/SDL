@@ -416,7 +416,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetThreadPriority(SDL_ThreadPriority priorit
  *
  * \param[inout] thread the SDL_Thread pointer that was returned from the
  *               SDL_CreateThread() call that started this thread
- * \param[out,opt] status pointer to an integer that will receive the value returned
+ * \param[out] status pointer to an integer that will receive the value returned
  *               from the thread function by its 'return', or NULL to not
  *               receive such value back.
  *

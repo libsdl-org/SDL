@@ -1068,7 +1068,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  * }
  * ```
  *
- * \param[out,opt] event the SDL_Event structure to be filled with the next event from
+ * \param[out] event the SDL_Event structure to be filled with the next event from
  *              the queue, or NULL
  * \returns SDL_TRUE if this got an event or SDL_FALSE if there are none
  *          available.
@@ -1090,7 +1090,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PollEvent(SDL_Event *event);
  * As this function may implicitly call SDL_PumpEvents(), you can only call
  * this function in the thread that initialized the video subsystem.
  *
- * \param[out,opt] event the SDL_Event structure to be filled in with the next event
+ * \param[out] event the SDL_Event structure to be filled in with the next event
  *              from the queue, or NULL
  * \returns SDL_TRUE on success or SDL_FALSE if there was an error while
  *          waiting for events; call SDL_GetError() for more information.
@@ -1116,7 +1116,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  * The timeout is not guaranteed, the actual wait time could be longer due to
  * system scheduling.
  *
- * \param[out,opt] event the SDL_Event structure to be filled in with the next event
+ * \param[out] event the SDL_Event structure to be filled in with the next event
  *              from the queue, or NULL
  * \param timeoutMS the maximum number of milliseconds to wait for the next
  *                  available event

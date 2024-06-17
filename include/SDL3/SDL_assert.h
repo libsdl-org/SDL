@@ -498,7 +498,7 @@ extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(
  * will always be NULL for the default handler. If you don't care about this
  * data, it is safe to pass a NULL pointer to this function to ignore it.
  *
- * \param[out,opt] puserdata pointer which is filled with the "userdata" pointer that
+ * \param[out] puserdata pointer which is filled with the "userdata" pointer that
  *                  was passed to SDL_SetAssertionHandler()
  * \returns the SDL_AssertionHandler that is called when an assert triggers.
  *

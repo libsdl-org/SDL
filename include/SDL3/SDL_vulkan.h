@@ -147,7 +147,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *
  * You should not free the returned array; it is owned by SDL.
  *
- * \param[out,opt] count a pointer filled in with the number of extensions returned.
+ * \param[out] count a pointer filled in with the number of extensions returned.
  * \returns An array of extension name strings on success, NULL on error.
  *
  * \since This function is available since SDL 3.0.0.

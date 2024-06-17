@@ -218,7 +218,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
  * guaranteed to be null terminated.
  *
  * \param[in] mime_type The mime type to read from the clipboard
- * \param size A pointer filled in with the length of the returned data
+ * \param[out] size A pointer filled in with the length of the returned data
  * \returns[own] the retrieved data buffer or NULL on failure; call SDL_GetError()
  *          for more information. Caller must call SDL_free() on the returned
  *          pointer when done with it.

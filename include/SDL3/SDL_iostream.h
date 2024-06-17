@@ -472,7 +472,7 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  * SDL_GetIOStatus().
  *
  * \param[inout] context a pointer to an SDL_IOStream structure
- * \param[out] ptr a pointer to a buffer to read data into
+ * \param[inout] ptr a pointer to a buffer to read data into
  * \param size the number of bytes to read from the data source.
  * \returns the number of bytes read, or 0 on end of file or other error.
  *
@@ -559,7 +559,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRIN
  * The data should be freed with SDL_free().
  *
  * \param[inout] src the SDL_IOStream to read all available data from
- * \param[out,opt] datasize if not NULL, will store the number of bytes read
+ * \param[out] datasize if not NULL, will store the number of bytes read
  * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error
  * \returns[own] the data, or NULL if there was an error.
@@ -580,7 +580,7 @@ extern SDL_DECLSPEC void *SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *dat
  * The data should be freed with SDL_free().
  *
  * \param[inout] file the path to read all available data from
- * \param[out,opt] datasize if not NULL, will store the number of bytes read
+ * \param[out] datasize if not NULL, will store the number of bytes read
  * \returns[own] the data, or NULL if there was an error.
  *
  * \since This function is available since SDL 3.0.0.
