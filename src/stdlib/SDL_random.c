@@ -23,15 +23,23 @@
 /* This file contains portable random functions for SDL */
 
 static Uint64 SDL_rand_state;
+static SDL_bool SDL_rand_initialized = SDL_FALSE;
 
 void SDL_srand(Uint64 seed)
 {
+    if (!seed) {
+        seed = SDL_GetPerformanceCounter();
+    }
     SDL_rand_state = seed;
+    SDL_rand_initialized = SDL_TRUE;
 }
 
 Uint32 SDL_rand(void)
 {
-	return SDL_rand_r(&SDL_rand_state);
+    if(!SDL_rand_initialized) {
+        SDL_srand(0);
+    }
+    return SDL_rand_r(&SDL_rand_state);
 }
 
 /*
@@ -60,10 +68,6 @@ Uint32 SDL_rand_r(Uint64 *state)
 {
     if (!state) {
         return 0;
-    }
-
-    if (!*state) {
-        *state = SDL_GetPerformanceCounter();
     }
 
 	// Multiplier from Table 6 of
