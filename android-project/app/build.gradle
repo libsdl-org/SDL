@@ -1,3 +1,4 @@
+def buildWithCMake = project.hasProperty('BUILD_WITH_CMAKE');
 def buildAsLibrary = project.hasProperty('BUILD_AS_LIBRARY');
 def buildAsApplication = !buildAsLibrary
 if (buildAsApplication) {
@@ -45,11 +46,14 @@ android {
             jniLibs.srcDir 'libs'
         }
         externalNativeBuild {
-            // ndkBuild {
-            //     path 'jni/Android.mk'
-            // }
-            cmake {
-                path 'jni/CMakeLists.txt'
+            if (buildWithCMake) {
+                cmake {
+                    path 'jni/CMakeLists.txt'
+                }
+            } else {
+                ndkBuild {
+                    path 'jni/Android.mk'
+                }
             }
         }
 

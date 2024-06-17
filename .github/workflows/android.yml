@@ -37,16 +37,28 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Build app (Gradle)
+      - name: Create Gradle project
         if: ${{ matrix.platform.gradle }}
         run: |
-          ln -s ${{ github.workspace }} ${{ github.workspace }}/android-project/app/jni/SDL
-          cd android-project
+          build-scripts/androidbuild.sh org.libsdl.testcontroller src/test/SDL_test_* test/testcontroller.c test/gamepad* test/testutils*
+          echo ""
+          echo "Project contents:"
+          echo ""
+          find "build/org.libsdl.testcontroller"
+      - name: Build app (Gradle & ndk-build)
+        if: ${{ matrix.platform.gradle }}
+        run: |
+          cd build/org.libsdl.testcontroller
           ./gradlew -i assembleRelease
+      - name: Build app (Gradle & CMake)
+        if: ${{ matrix.platform.gradle }}
+        run: |
+          cd build/org.libsdl.testcontroller
+          ./gradlew -i assembleRelease -PBUILD_WITH_CMAKE=1
 #      - name: Build library (Gradle)
 #        if: ${{ matrix.platform.gradle }}
 #        run: |
-#          cd android-project
+#          cd build/org.libsdl.testcontroller
 #          ./gradlew -i assembleRelease -PBUILD_AS_LIBRARY=1
       - name: Setup (CMake)
         if: ${{ matrix.platform.cmake }}

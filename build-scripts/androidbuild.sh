@@ -61,8 +61,13 @@ else
     cp -r $SDLPATH/include $BUILDPATH/app/jni/SDL
 fi
 
+cp -r $SDLPATH/LICENSE.txt $BUILDPATH/app/jni/SDL
+cp -r $SDLPATH/README.md $BUILDPATH/app/jni/SDL
 cp -r $SDLPATH/Android.mk $BUILDPATH/app/jni/SDL
+cp -r $SDLPATH/CMakeLists.txt $BUILDPATH/app/jni/SDL
+cp -r $SDLPATH/cmake $BUILDPATH/app/jni/SDL
 sed -i -e "s|YourSourceHere.c|$MKSOURCES|g" $BUILDPATH/app/jni/src/Android.mk
+sed -i -e "s|YourSourceHere.c|$MKSOURCES|g" $BUILDPATH/app/jni/src/CMakeLists.txt
 sed -i -e "s|org\.libsdl\.app|$APP|g" $BUILDPATH/app/build.gradle
 sed -i -e "s|org\.libsdl\.app|$APP|g" $BUILDPATH/app/src/main/AndroidManifest.xml
 
