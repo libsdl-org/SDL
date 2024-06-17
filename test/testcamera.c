@@ -134,8 +134,8 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     SDL_CameraSpec *pspec = &spec;
-    spec.interval_numerator = 1000;
-    spec.interval_denominator = 1;
+    spec.framerate_numerator = 1000;
+    spec.framerate_denominator = 1;
 
     camera = SDL_OpenCameraDevice(camera_id, pspec);
     if (!camera) {

@@ -517,7 +517,7 @@ static int PIPEWIRECAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraS
                     SPA_FORMAT_VIDEO_format, SPA_POD_Id(sdl_format_to_id(spec->format)),
                     SPA_FORMAT_VIDEO_size, SPA_POD_Rectangle(&SPA_RECTANGLE(spec->width, spec->height)),
                     SPA_FORMAT_VIDEO_framerate,
-		        SPA_POD_Fraction(&SPA_FRACTION(spec->interval_numerator, spec->interval_denominator)));
+		        SPA_POD_Fraction(&SPA_FRACTION(spec->framerate_numerator, spec->framerate_denominator)));
 
     if ((res = PIPEWIRE_pw_stream_connect(device->hidden->stream,
                                     PW_DIRECTION_INPUT,
@@ -625,8 +625,7 @@ static void collect_rates(CameraFormatAddData *data, struct param *p, SDL_PixelF
     SPA_FALLTHROUGH;
     case SPA_CHOICE_Enum:
         for (i = 0; i < n_vals; i++) {
-            // denom and num are switched, because SDL expects an interval, while pw provides a rate
-            if (SDL_AddCameraFormat(data, sdlfmt, colorspace, size->width, size->height, rates[i].denom, rates[i].num) < 0) {
+            if (SDL_AddCameraFormat(data, sdlfmt, colorspace, size->width, size->height, rates[i].num, rates[i].denom) < 0) {
                 return;  // Probably out of memory; we'll go with what we have, if anything.
             }
         }

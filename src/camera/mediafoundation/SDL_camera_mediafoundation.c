@@ -765,7 +765,7 @@ static int MEDIAFOUNDATION_OpenDevice(SDL_CameraDevice *device, const SDL_Camera
     ret = IMFMediaType_SetUINT64(mediatype, &SDL_MF_MT_FRAME_SIZE, (((UINT64)spec->width) << 32) | ((UINT64)spec->height));
     CHECK_HRESULT("MFSetAttributeSize(frame_size)", ret);
 
-    ret = IMFMediaType_SetUINT64(mediatype, &SDL_MF_MT_FRAME_RATE, (((UINT64)spec->interval_numerator) << 32) | ((UINT64)spec->interval_denominator));
+    ret = IMFMediaType_SetUINT64(mediatype, &SDL_MF_MT_FRAME_RATE, (((UINT64)spec->framerate_numerator) << 32) | ((UINT64)spec->framerate_denominator));
     CHECK_HRESULT("MFSetAttributeRatio(frame_rate)", ret);
 
     ret = IMFSourceReader_SetCurrentMediaType(srcreader, (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, mediatype);
@@ -940,12 +940,12 @@ static void GatherCameraSpecs(IMFMediaSource *source, CameraFormatAddData *add_d
                                 w = (UINT32)(val >> 32);
                                 h = (UINT32)val;
                                 if (SUCCEEDED(ret) && w && h) {
-                                    UINT32 interval_numerator = 0, interval_denominator = 0;
+                                    UINT32 framerate_numerator = 0, framerate_denominator = 0;
                                     ret = IMFMediaType_GetUINT64(mediatype, &SDL_MF_MT_FRAME_RATE, &val);
-                                    interval_numerator = (UINT32)(val >> 32);
-                                    interval_denominator = (UINT32)val;
-                                    if (SUCCEEDED(ret) && interval_numerator && interval_denominator) {
-                                        SDL_AddCameraFormat(add_data, sdlfmt, colorspace, (int) w, (int) h, (int)interval_numerator, (int)interval_denominator);
+                                    framerate_numerator = (UINT32)(val >> 32);
+                                    framerate_denominator = (UINT32)val;
+                                    if (SUCCEEDED(ret) && framerate_numerator && framerate_denominator) {
+                                        SDL_AddCameraFormat(add_data, sdlfmt, colorspace, (int) w, (int) h, (int)framerate_numerator, (int)framerate_denominator);
                                     }
                                 }
                             }

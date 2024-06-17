@@ -102,8 +102,8 @@ static void SDLEmscriptenCameraDevicePermissionOutcome(SDL_CameraDevice *device,
 {
     device->spec.width = device->actual_spec.width = w;
     device->spec.height = device->actual_spec.height = h;
-    device->spec.interval_numerator = device->actual_spec.interval_numerator = 1;
-    device->spec.interval_denominator = device->actual_spec.interval_denominator = fps;
+    device->spec.framerate_numerator = device->actual_spec.framerate_numerator = fps;
+    device->spec.framerate_denominator = device->actual_spec.framerate_denominator = 1;
     SDL_CameraDevicePermissionOutcome(device, approved ? SDL_TRUE : SDL_FALSE);
 }
 
@@ -115,8 +115,8 @@ static int EMSCRIPTENCAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_Camer
         const device = $0;
         const w = $1;
         const h = $2;
-        const interval_numerator = $3;
-        const interval_denominator = $4;
+        const framerate_numerator = $3;
+        const framerate_denominator = $4;
         const outcome = $5;
         const iterate = $6;
 
@@ -129,8 +129,8 @@ static int EMSCRIPTENCAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_Camer
             constraints.video.height = h;
         }
 
-        if ((interval_numerator > 0) && (interval_denominator > 0)) {
-            var fps = interval_denominator / interval_numerator;
+        if ((framerate_numerator > 0) && (framerate_denominator > 0)) {
+            var fps = framerate_numerator / framerate_denominator;
             constraints.video.frameRate = { ideal: fps };
         }
 
@@ -199,7 +199,7 @@ static int EMSCRIPTENCAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_Camer
                 console.error("Tried to open camera but it threw an error! " + err.name + ": " +  err.message);
                 dynCall('viiiii', outcome, [device, 0, 0, 0, 0]);   // we call this a permission error, because it probably is.
             });
-    }, device, spec->width, spec->height, spec->interval_numerator, spec->interval_denominator, SDLEmscriptenCameraDevicePermissionOutcome, SDL_CameraThreadIterate);
+    }, device, spec->width, spec->height, spec->framerate_numerator, spec->framerate_denominator, SDLEmscriptenCameraDevicePermissionOutcome, SDL_CameraThreadIterate);
 
     return 0;  // the real work waits until the user approves a camera.
 }

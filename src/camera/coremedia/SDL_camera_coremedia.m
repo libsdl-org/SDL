@@ -255,7 +255,7 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     // Pick format that matches the spec
     const int w = spec->width;
     const int h = spec->height;
-    const int rate = spec->interval_denominator;
+    const float rate = (float)spec->framerate_numerator / spec->framerate_denominator;
     AVCaptureDeviceFormat *spec_format = nil;
     NSArray<AVCaptureDeviceFormat *> *formats = [avdevice formats];
     for (AVCaptureDeviceFormat *format in formats) {
@@ -273,7 +273,7 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
         }
 
         for (AVFrameRateRange *framerate in format.videoSupportedFrameRateRanges) {
-            if ((rate == (int) SDL_ceil((double) framerate.minFrameRate)) || (rate == (int) SDL_floor((double) framerate.maxFrameRate))) {
+            if (rate >= framerate.minFrameRate && rate <= framerate.maxFrameRate) {
                 spec_format = format;
                 break;
             }
@@ -381,7 +381,7 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
             continue;
         }
 
-NSLog(@"Available camera format: %@\n", fmt);
+//NSLog(@"Available camera format: %@\n", fmt);
         SDL_PixelFormatEnum device_format = SDL_PIXELFORMAT_UNKNOWN;
         SDL_Colorspace device_colorspace = SDL_COLORSPACE_UNKNOWN;
         CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(fmt.formatDescription), &device_format, &device_colorspace);
@@ -393,16 +393,12 @@ NSLog(@"Available camera format: %@\n", fmt);
         const int w = (int) dims.width;
         const int h = (int) dims.height;
         for (AVFrameRateRange *framerate in fmt.videoSupportedFrameRateRanges) {
-            int rate;
+            int numerator = 0, denominator = 1;
 
-            rate = (int) SDL_ceil((double) framerate.minFrameRate);
-            if (rate) {
-                SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, 1, rate);
-            }
-            rate = (int) SDL_floor((double) framerate.maxFrameRate);
-            if (rate) {
-                SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, 1, rate);
-            }
+            SDL_CalculateFraction(framerate.minFrameRate, &numerator, &denominator);
+            SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, numerator, denominator);
+            SDL_CalculateFraction(framerate.maxFrameRate, &numerator, &denominator);
+            SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, numerator, denominator);
         }
     }
 }
