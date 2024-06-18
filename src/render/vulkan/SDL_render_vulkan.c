@@ -4057,8 +4057,8 @@ static int VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
-        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
-        renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
+        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR
+        /*&& renderer->output_colorspace != SDL_COLORSPACE_HDR10*/) {
         return SDL_SetError("Unsupported output colorspace");
     }
 
