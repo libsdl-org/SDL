@@ -79,9 +79,9 @@ static int keyboard_getKeyFromName(void *arg)
     SDLTest_AssertCheck(result == SDLK_FIND, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_FIND, result);
 
     /* Case where Key is known, multiple character input */
-    result = SDL_GetKeyFromName("AudioStop");
+    result = SDL_GetKeyFromName("MediaStop");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(known/multi)");
-    SDLTest_AssertCheck(result == SDLK_AUDIOSTOP, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_AUDIOSTOP, result);
+    SDLTest_AssertCheck(result == SDLK_MEDIA_STOP, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_MEDIA_STOP, result);
 
     /* Case where Key is unknown */
     result = SDL_GetKeyFromName("NotThere");
@@ -191,8 +191,8 @@ static int keyboard_getKeyName(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);
 
     /* Case where key has a N character name */
-    expected = "BrightnessUp";
-    result = SDL_GetKeyName(SDLK_BRIGHTNESSUP);
+    expected = "MediaPlay";
+    result = SDL_GetKeyName(SDLK_MEDIA_PLAY);
     SDLTest_AssertPass("Call to SDL_GetKeyName()");
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);

@@ -215,12 +215,12 @@ static const SDL_Keycode emscripten_keycode_table[] = {
     /* 173 */ SDLK_MINUS,      /*FX*/
     /* 174 */ SDLK_VOLUMEDOWN, /*IE, Chrome*/
     /* 175 */ SDLK_VOLUMEUP,   /*IE, Chrome*/
-    /* 176 */ SDLK_AUDIONEXT,  /*IE, Chrome*/
-    /* 177 */ SDLK_AUDIOPREV,  /*IE, Chrome*/
+    /* 176 */ SDLK_MEDIA_NEXT_TRACK,  /*IE, Chrome*/
+    /* 177 */ SDLK_MEDIA_PREVIOUS_TRACK,  /*IE, Chrome*/
     /* 178 */ SDLK_UNKNOWN,
-    /* 179 */ SDLK_AUDIOPLAY, /*IE, Chrome*/
+    /* 179 */ SDLK_MEDIA_PLAY, /*IE, Chrome*/
     /* 180 */ SDLK_UNKNOWN,
-    /* 181 */ SDLK_AUDIOMUTE,  /*FX*/
+    /* 181 */ SDLK_UNKNOWN,
     /* 182 */ SDLK_VOLUMEDOWN, /*FX*/
     /* 183 */ SDLK_VOLUMEUP,   /*FX*/
     /* 184 */ SDLK_UNKNOWN,
@@ -410,27 +410,25 @@ static SDL_Scancode Emscripten_MapScanCode(const char *code)
     case DOM_PK_PASTE:
         return SDL_SCANCODE_PASTE;
     case DOM_PK_MEDIA_TRACK_PREVIOUS:
-        return SDL_SCANCODE_AUDIOPREV;
+        return SDL_SCANCODE_MEDIA_PREVIOUS_TRACK;
     case DOM_PK_CUT:
         return SDL_SCANCODE_CUT;
     case DOM_PK_COPY:
         return SDL_SCANCODE_COPY;
     case DOM_PK_MEDIA_TRACK_NEXT:
-        return SDL_SCANCODE_AUDIONEXT;
+        return SDL_SCANCODE_MEDIA_NEXT_TRACK;
     case DOM_PK_NUMPAD_ENTER:
         return SDL_SCANCODE_KP_ENTER;
     case DOM_PK_CONTROL_RIGHT:
         return SDL_SCANCODE_RCTRL;
     case DOM_PK_AUDIO_VOLUME_MUTE:
-        return SDL_SCANCODE_AUDIOMUTE;
-    case DOM_PK_LAUNCH_APP_2:
-        return SDL_SCANCODE_CALCULATOR;
+        return SDL_SCANCODE_MUTE;
     case DOM_PK_MEDIA_PLAY_PAUSE:
-        return SDL_SCANCODE_AUDIOPLAY;
+        return SDL_SCANCODE_MEDIA_PLAY_PAUSE;
     case DOM_PK_MEDIA_STOP:
-        return SDL_SCANCODE_AUDIOSTOP;
+        return SDL_SCANCODE_MEDIA_STOP;
     case DOM_PK_EJECT:
-        return SDL_SCANCODE_EJECT;
+        return SDL_SCANCODE_MEDIA_EJECT;
     case DOM_PK_AUDIO_VOLUME_DOWN:
         return SDL_SCANCODE_VOLUMEDOWN;
     case DOM_PK_AUDIO_VOLUME_UP:
@@ -485,12 +483,8 @@ static SDL_Scancode Emscripten_MapScanCode(const char *code)
         return SDL_SCANCODE_AC_FORWARD;
     case DOM_PK_BROWSER_BACK:
         return SDL_SCANCODE_AC_BACK;
-    case DOM_PK_LAUNCH_APP_1:
-        return SDL_SCANCODE_COMPUTER;
-    case DOM_PK_LAUNCH_MAIL:
-        return SDL_SCANCODE_MAIL;
     case DOM_PK_MEDIA_SELECT:
-        return SDL_SCANCODE_MEDIASELECT;
+        return SDL_SCANCODE_MEDIA_SELECT;
     }
 
     return SDL_SCANCODE_UNKNOWN;
@@ -802,10 +796,42 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
     SDL_bool is_nav_key = SDL_FALSE;
 
     if (scancode == SDL_SCANCODE_UNKNOWN) {
+        if (SDL_strcmp(keyEvent->key, "Sleep") == 0) {
+            scancode = SDL_SCANCODE_SLEEP;
+        } else if (SDL_strcmp(keyEvent->key, "ChannelUp") == 0) {
+            scancode = SDL_SCANCODE_CHANNEL_INCREMENT;
+        } else if (SDL_strcmp(keyEvent->key, "ChannelDown") == 0) {
+            scancode = SDL_SCANCODE_CHANNEL_DECREMENT;
+        } else if (SDL_strcmp(keyEvent->key, "MediaPlay") == 0) {
+            scancode = SDL_SCANCODE_MEDIA_PLAY;
+        } else if (SDL_strcmp(keyEvent->key, "MediaPause") == 0) {
+            scancode = SDL_SCANCODE_MEDIA_PAUSE;
+        } else if (SDL_strcmp(keyEvent->key, "MediaRecord") == 0) {
+            scancode = SDL_SCANCODE_MEDIA_RECORD;
+        } else if (SDL_strcmp(keyEvent->key, "MediaFastForward") == 0) {
+            scancode = SDL_SCANCODE_MEDIA_FAST_FORWARD;
+        } else if (SDL_strcmp(keyEvent->key, "MediaRewind") == 0) {
+            scancode = SDL_SCANCODE_MEDIA_REWIND;
+        } else if (SDL_strcmp(keyEvent->key, "Close") == 0) {
+            scancode = SDL_SCANCODE_AC_CLOSE;
+        } else if (SDL_strcmp(keyEvent->key, "New") == 0) {
+            scancode = SDL_SCANCODE_AC_NEW;
+        } else if (SDL_strcmp(keyEvent->key, "Open") == 0) {
+            scancode = SDL_SCANCODE_AC_OPEN;
+        } else if (SDL_strcmp(keyEvent->key, "Print") == 0) {
+            scancode = SDL_SCANCODE_AC_PRINT;
+        } else if (SDL_strcmp(keyEvent->key, "Save") == 0) {
+            scancode = SDL_SCANCODE_AC_SAVE;
+        } else if (SDL_strcmp(keyEvent->key, "Props") == 0) {
+            scancode = SDL_SCANCODE_AC_PROPERTIES;
+        }
+    }
+
+    if (scancode == SDL_SCANCODE_UNKNOWN) {
         /* KaiOS Left Soft Key and Right Soft Key, they act as OK/Next/Menu and Cancel/Back/Clear */
-        if (SDL_strncmp(keyEvent->key, "SoftLeft", 9) == 0) {
+        if (SDL_strcmp(keyEvent->key, "SoftLeft") == 0) {
             scancode = SDL_SCANCODE_AC_FORWARD;
-        } else if (SDL_strncmp(keyEvent->key, "SoftRight", 10) == 0) {
+        } else if (SDL_strcmp(keyEvent->key, "SoftRight") == 0) {
             scancode = SDL_SCANCODE_AC_BACK;
         }
     }
