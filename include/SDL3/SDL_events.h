@@ -327,7 +327,7 @@ typedef struct SDL_TextEditingEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with keyboard focus, if any */
-    char *text;         /**< The editing text */
+    const char *text;   /**< The editing text */
     Sint32 start;       /**< The start cursor of selected editing text */
     Sint32 length;      /**< The length of selected editing text */
 } SDL_TextEditingEvent;
@@ -352,7 +352,7 @@ typedef struct SDL_TextInputEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with keyboard focus, if any */
-    char *text;         /**< The input text, UTF-8 encoded */
+    const char *text;   /**< The input text, UTF-8 encoded */
 } SDL_TextInputEvent;
 
 /**
@@ -733,8 +733,7 @@ typedef struct SDL_PenButtonEvent
  * An event used to drop text or request a file open by the system
  * (event.drop.*)
  *
- * The `data` is owned by SDL and should be copied if the application wants to
- * hold onto it beyond the scope of handling this event. Do not free it!
+ * The `source` and `data` are owned by SDL and should be copied if the application wants to hold onto them beyond the scope of handling this event.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -746,8 +745,8 @@ typedef struct SDL_DropEvent
     SDL_WindowID windowID;    /**< The window that was dropped on, if any */
     float x;            /**< X coordinate, relative to window (not on begin) */
     float y;            /**< Y coordinate, relative to window (not on begin) */
-    char *source;       /**< The source app that sent this drop event, or NULL if that isn't available */
-    char *data;         /**< The text for SDL_EVENT_DROP_TEXT and the file name for SDL_EVENT_DROP_FILE, NULL for other events */
+    const char *source; /**< The source app that sent this drop event, or NULL if that isn't available */
+    const char *data;   /**< The text for SDL_EVENT_DROP_TEXT and the file name for SDL_EVENT_DROP_FILE, NULL for other events */
 } SDL_DropEvent;
 
 /**

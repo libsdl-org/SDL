@@ -40,6 +40,8 @@ extern int SDL_StartEventLoop(void);
 extern void SDL_StopEventLoop(void);
 extern void SDL_QuitInterrupt(void);
 
+extern const char *SDL_AllocateEventString(const char *string);
+
 extern int SDL_SendAppEvent(SDL_EventType eventType);
 extern int SDL_SendKeymapChangedEvent(void);
 extern int SDL_SendLocaleChangedEvent(void);
