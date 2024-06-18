@@ -1935,7 +1935,8 @@ extern SDL_DECLSPEC SDL_GpuTextureFormat SDLCALL SDL_GpuGetSwapchainTextureForma
 /**
  * Acquire a command buffer.
  * This command buffer is managed by the implementation and should not be freed by the user.
- * A command buffer may only be used on the thread it was acquired on.
+ * The command buffer may only be used on the thread it was acquired on.
+ * The command buffer should be submitted on the thread it was acquired on.
  *
  * \param device a GPU context
  * \returns a command buffer
@@ -1952,6 +1953,7 @@ extern SDL_DECLSPEC SDL_GpuCommandBuffer *SDLCALL SDL_GpuAcquireCommandBuffer(
  * Acquire a texture to use in presentation.
  * When a swapchain texture is acquired on a command buffer,
  * it will automatically be submitted for presentation when the command buffer is submitted.
+ * The swapchain texture should only be referenced by the command buffer used to acquire it.
  * May return NULL under certain conditions. This is not necessarily an error.
  * This texture is managed by the implementation and must not be freed by the user.
  * You MUST NOT call this function from any thread other than the one that created the window.
