@@ -135,6 +135,14 @@ void *SDL_AllocateEventMemory(size_t size)
     return SDL_FreeLater(SDL_malloc(size));
 }
 
+const char *SDL_AllocateEventString(const char *string)
+{
+    if (string) {
+        return SDL_FreeLater(SDL_strdup(string));
+    }
+    return NULL;
+}
+
 static void SDL_FlushEventMemory(Uint32 eventID)
 {
     SDL_LockMutex(SDL_event_memory_lock);
