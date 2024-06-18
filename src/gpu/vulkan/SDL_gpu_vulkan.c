@@ -1217,9 +1217,10 @@ struct VulkanRenderer
     Uint8 outOfDeviceLocalMemoryWarning;
     Uint8 outofBARMemoryWarning;
 
-    Uint8 supportsDebugUtils;
-    Uint8 debugMode;
+    SDL_bool debugMode;
     VulkanExtensions supports;
+    SDL_bool supportsDebugUtils;
+    SDL_bool supportsColorspace;
 
     VulkanMemoryAllocator *memoryAllocator;
     VkPhysicalDeviceMemoryProperties memoryProperties;
@@ -10665,7 +10666,8 @@ static inline Uint8 SupportsInstanceExtension(
 static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     const char **requiredExtensions,
     Uint32 requiredExtensionsLength,
-    Uint8 *supportsDebugUtils)
+    SDL_bool *supportsDebugUtils,
+    SDL_bool *supportsColorspace)
 {
     Uint32 extensionCount, i;
     VkExtensionProperties *availableExtensions;
@@ -10695,6 +10697,12 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     /* This is optional, but nice to have! */
     *supportsDebugUtils = SupportsInstanceExtension(
         VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+        availableExtensions,
+        extensionCount);
+
+    /* Also optional and nice to have! */
+    *supportsColorspace = SupportsInstanceExtension(
+        VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME,
         availableExtensions,
         extensionCount);
 
@@ -10814,9 +10822,6 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(
     instanceExtensionNames[instanceExtensionCount++] =
         VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
 
-    instanceExtensionNames[instanceExtensionCount++] =
-        VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME;
-
 #ifdef SDL_PLATFORM_APPLE
     instanceExtensionNames[instanceExtensionCount++] =
         VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
@@ -10826,7 +10831,8 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(
     if (!VULKAN_INTERNAL_CheckInstanceExtensions(
             instanceExtensionNames,
             instanceExtensionCount,
-            &renderer->supportsDebugUtils)) {
+            &renderer->supportsDebugUtils,
+            &renderer->supportsColorspace)) {
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
             "Required Vulkan instance extensions not supported");
@@ -10836,7 +10842,7 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(
     }
 
     if (renderer->supportsDebugUtils) {
-        /* Append the debug extension to the end */
+        /* Append the debug extension */
         instanceExtensionNames[instanceExtensionCount++] =
             VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
     } else {
@@ -10844,6 +10850,12 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(
             SDL_LOG_CATEGORY_APPLICATION,
             "%s is not supported!",
             VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+
+    if (renderer->supportsColorspace) {
+        /* Append colorspace extension */
+        instanceExtensionNames[instanceExtensionCount++] =
+            VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME;
     }
 
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
