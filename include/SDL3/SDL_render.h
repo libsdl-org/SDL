@@ -2053,8 +2053,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_Renderer *renderer);
  *
  * This means you do not need to save state in your rendering code to protect
  * the SDL renderer. However, there lots of arbitrary pieces of Direct3D and
- * OpenGL state that can confuse things; you should use your best judgment
- * and be prepared to make changes if specific state needs to be protected.
+ * OpenGL state that can confuse things; you should use your best judgment and
+ * be prepared to make changes if specific state needs to be protected.
  *
  * \param renderer the rendering context.
  * \returns 0 on success or a negative error code on failure; call
