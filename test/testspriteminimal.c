@@ -33,7 +33,8 @@ static int sprite_w, sprite_h;
 static SDL_Renderer *renderer;
 static int done;
 
-static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h) {
+static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h)
+{
     SDL_Texture *texture = NULL;
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
@@ -134,15 +135,15 @@ int main(int argc, char *argv[])
 
     /* Initialize the sprite positions */
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(SDL_rand() % (WINDOW_WIDTH - sprite_w));
-        positions[i].y = (float)(SDL_rand() % (WINDOW_HEIGHT - sprite_h));
+        positions[i].x = (float)SDL_rand_n(WINDOW_WIDTH - sprite_w);
+        positions[i].y = (float)SDL_rand_n(WINDOW_HEIGHT - sprite_h);
         positions[i].w = (float)sprite_w;
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
         while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
-            velocities[i].x = (float)((SDL_rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
-            velocities[i].y = (float)((SDL_rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+            velocities[i].x = (float)(SDL_rand_n(MAX_SPEED * 2 + 1) - MAX_SPEED);
+            velocities[i].y = (float)(SDL_rand_n(MAX_SPEED * 2 + 1) - MAX_SPEED);
         }
     }
 

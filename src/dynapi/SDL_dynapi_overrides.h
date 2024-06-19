@@ -980,7 +980,7 @@
 #define SDL_powf SDL_powf_REAL
 #define SDL_qsort SDL_qsort_REAL
 #define SDL_qsort_r SDL_qsort_r_REAL
-#define SDL_rand SDL_rand_REAL
+#define SDL_rand_bits SDL_rand_bits_REAL
 #define SDL_rand_float SDL_rand_float_REAL
 #define SDL_rand_n SDL_rand_n_REAL
 #define SDL_realloc SDL_realloc_REAL
