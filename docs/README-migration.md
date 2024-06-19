@@ -70,7 +70,7 @@ The SDL 1.2 audio compatibility API has also been removed, as it was a simplifie
 
 SDL3 will not implicitly initialize the audio subsystem on your behalf if you open a device without doing so. Please explicitly call SDL_Init(SDL_INIT_AUDIO) at some point.
 
-SDL2 refered to audio devices that record sound as "capture" devices, and ones that play sound to speakers as "output" devices. In SDL3, we've changed this terminology to be "recording" devices and "playback" devices, which we hope is more clear.
+SDL2 referred to audio devices that record sound as "capture" devices, and ones that play sound to speakers as "output" devices. In SDL3, we've changed this terminology to be "recording" devices and "playback" devices, which we hope is more clear.
 
 SDL3's audio subsystem offers an enormous amount of power over SDL2, but if you just want a simple migration of your existing code, you can ignore most of it. The simplest migration path from SDL2 looks something like this:
 
@@ -1918,7 +1918,7 @@ a corresponding event has been received:
 * SDL_RestoreWindow() (SDL_EVENT_WINDOW_RESTORED)
 * SDL_SetWindowFullscreen() (SDL_EVENT_WINDOW_ENTER_FULLSCREEN / SDL_EVENT_WINDOW_LEAVE_FULLSCREEN)
 
-If it is required that operations be applied immediately after one of the preceeding calls, the `SDL_SyncWindow()` function
+If it is required that operations be applied immediately after one of the preceding calls, the `SDL_SyncWindow()` function
 will attempt to wait until all pending window operations have completed. The `SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS` hint
 can also be set to automatically synchronize after all calls to an asynchronous window operation, mimicking the behavior
 of SDL 2. Be aware that synchronizing can potentially block for long periods of time, as it may have to wait for window
