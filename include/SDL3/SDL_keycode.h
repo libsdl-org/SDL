@@ -314,7 +314,7 @@ typedef Uint16 SDL_Keymod;
 #define SDL_KMOD_NUM    0x1000u /**< the Num Lock key (may be located on an extended keypad) is down. */
 #define SDL_KMOD_CAPS   0x2000u /**< the Caps Lock key is down. */
 #define SDL_KMOD_MODE   0x4000u /**< the !AltGr key is down. */
-#define SDL_KMOD_SCROLL 0x8000u /**< the Scoll Lock key is down. */
+#define SDL_KMOD_SCROLL 0x8000u /**< the Scroll Lock key is down. */
 #define SDL_KMOD_CTRL   (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL)   /**< Any Ctrl key is down. */
 #define SDL_KMOD_SHIFT  (SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT) /**< Any Shift key is down. */
 #define SDL_KMOD_ALT    (SDL_KMOD_LALT | SDL_KMOD_RALT)     /**< Any Alt key is down. */
