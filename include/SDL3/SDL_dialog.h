@@ -68,7 +68,7 @@ typedef struct SDL_DialogFileFilter
  *
  * If `filelist` is:
  *
- * - NULL, an error occured. Details can be obtained with SDL_GetError().
+ * - NULL, an error occurred. Details can be obtained with SDL_GetError().
  * - A pointer to NULL, the user either didn't choose any file or canceled the
  *   dialog.
  * - A pointer to non-`NULL`, the user chose one or more files. The argument
@@ -105,7 +105,7 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
  *
  * The callback will be invoked with a null-terminated list of files the user
  * chose. The list will be empty if the user canceled the dialog, and it will
- * be NULL if an error occured.
+ * be NULL if an error occurred.
  *
  * Note that the callback may be called from a different thread than the one
  * the function was invoked on.
@@ -122,7 +122,7 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
  *                 error occurs. The first argument is a null-terminated list
  *                 of C strings, representing the paths chosen by the user.
  *                 The list will be empty if the user canceled the dialog, and
- *                 it will be NULL if an error occured. If an error occured,
+ *                 it will be NULL if an error occurred. If an error occurred,
  *                 it can be fetched with SDL_GetError(). The second argument
  *                 is the userdata pointer passed to the function. The third
  *                 argument is the index of the filter selected by the user,
@@ -163,7 +163,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  *
  * The callback will be invoked with a null-terminated list of files the user
  * chose. The list will be empty if the user canceled the dialog, and it will
- * be NULL if an error occured.
+ * be NULL if an error occurred.
  *
  * Note that the callback may be called from a different thread than the one
  * the function was invoked on.
@@ -179,7 +179,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  *                 error occurs. The first argument is a null-terminated list
  *                 of C strings, representing the paths chosen by the user.
  *                 The list will be empty if the user canceled the dialog, and
- *                 it will be NULL if an error occured. If an error occured,
+ *                 it will be NULL if an error occurred. If an error occurred,
  *                 it can be fetched with SDL_GetError(). The second argument
  *                 is the userdata pointer passed to the function. The third
  *                 argument is the index of the filter selected by the user,
@@ -217,7 +217,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  *
  * The callback will be invoked with a null-terminated list of files the user
  * chose. The list will be empty if the user canceled the dialog, and it will
- * be NULL if an error occured.
+ * be NULL if an error occurred.
  *
  * Note that the callback may be called from a different thread than the one
  * the function was invoked on.
@@ -234,7 +234,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  *                 error occurs. The first argument is a null-terminated list
  *                 of C strings, representing the paths chosen by the user.
  *                 The list will be empty if the user canceled the dialog, and
- *                 it will be NULL if an error occured. If an error occured,
+ *                 it will be NULL if an error occurred. If an error occurred,
  *                 it can be fetched with SDL_GetError(). The second argument
  *                 is the userdata pointer passed to the function. The third
  *                 argument is always -1 for SDL_ShowOpenFolderDialog.
