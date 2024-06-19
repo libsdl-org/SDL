@@ -110,7 +110,7 @@ to actually run if main() were to continue on, since we're just
 getting started.
 
 There's a lot of little details that are beyond the scope of this
-document, but that's the biggest intial set of hurdles to porting
+document, but that's the biggest initial set of hurdles to porting
 your app to the web.
 
 
