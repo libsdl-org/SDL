@@ -1260,7 +1260,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRI
 extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
 /**
- * Seed the pseudo-random number generator
+ * Seed the pseudo-random number generator.
+ *
+ * Reusing the seed number will cause SDL_rand() to repeat the same stream
+ * of 'random' numbers.
  *
  * \param seed the value to use as a random number seed, or 0 to use
  *             SDL_GetPerformanceCounter().
@@ -1275,13 +1278,17 @@ extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STR
 extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
 
 /**
- * Get a pseudo-random number.
+ * Get 32 pseudo-random bits.
+ *
+ * You likely want to use SDL_rand_n() to get a psuedo-randum number instead.
+ *
+ * If you want reproducible output, be sure to initialize with SDL_srand() first.
  *
  * There are no guarantees as to the quality of the random sequence produced,
- * and this should not be used for cryptography or anything that requires good
- * random distribution. There are many random number libraries available with
- * different characteristics and you should pick one of those to meet any
- * serious needs.
+ * and this should not be used for security (cryptography, passwords) or where
+ * money is on the line (loot-boxes, casinos). There are many random number
+ * libraries available with different characteristics and you should pick one of
+ * those to meet any serious needs.
  *
  * \returns a random value in the range of [0-SDL_MAX_UINT32].
  *
@@ -1292,17 +1299,19 @@ extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
  *
  * \sa SDL_rand_r
  * \sa SDL_srand
+ * \sa SDL_rand_n
+ * \sa SDL_rand_float
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand(void);
 
 /**
- * Get a pseudo-random number.
+ * Get 32 pseudo-random bits.
  *
  * There are no guarantees as to the quality of the random sequence produced,
- * and this should not be used for cryptography or anything that requires good
- * random distribution. There are many random number libraries available with
- * different characteristics and you should pick one of those to meet any
- * serious needs.
+ * and this should not be used for security (cryptography, passwords) or where
+ * money is on the line (loot-boxes, casinos). There are many random number
+ * libraries available with different characteristics and you should pick one of
+ * those to meet any serious needs.
  *
  * \param state a pointer to a 64-bit seed value that will be updated with
  *              each call to SDL_rand_r(). If the value of the seed is 0, it
@@ -1324,13 +1333,16 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_r(Uint64 *state);
  *
  * The method used is faster and of better quality than `SDL_rand() % n`.
  * However just like with `SDL_rand() % n`, bias increases with larger n.
+ * Odds are better than 99.9% even for n under  1 million.
  *
  * Example: to simulate a d6 use `SDL_rand_n(6) + 1`
  * The +1 converts 0..5 to 1..6
  *
  * There are no guarantees as to the quality of the random sequence produced,
- * and this should not be used for cryptography or anything that requires good
- * random distribution.
+ * and this should not be used for security (cryptography, passwords) or where
+ * money is on the line (loot-boxes, casinos). There are many random number
+ * libraries available with different characteristics and you should pick one of
+ * those to meet any serious needs.
  *
  * \param n the number of possible values
  *
@@ -1345,11 +1357,13 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_r(Uint64 *state);
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_n(Uint32 n);
 
 /**
- * Generates a pseudo-random floating point number less than 1.0
+ * Generates a uniform pseudo-random floating point number less than 1.0
  *
  * There are no guarantees as to the quality of the random sequence produced,
- * and this should not be used for cryptography or anything that requires good
- * random distribution.
+ * and this should not be used for security (cryptography, passwords) or where
+ * money is on the line (loot-boxes, casinos). There are many random number
+ * libraries available with different characteristics and you should pick one of
+ * those to meet any serious needs.
  *
  * \returns a random value in the range of [0.0, 1.0)
  *
