@@ -12,8 +12,8 @@
 
 /* Simple program:  draw as many random objects on the screen as possible */
 
-#include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_common.h>
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
@@ -74,8 +74,8 @@ static void DrawPoints(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 255, (Uint8)current_color,
                                (Uint8)current_color, (Uint8)current_alpha);
 
-        x = (float)(SDL_rand() % viewport.w);
-        y = (float)(SDL_rand() % viewport.h);
+        x = (float)SDL_rand_n(viewport.w);
+        y = (float)SDL_rand_n(viewport.h);
         SDL_RenderPoint(renderer, x, y);
     }
 }
@@ -206,7 +206,7 @@ static void loop(void *arg)
 {
     int i;
     SDL_Event event;
-    int *done = (int*)arg;
+    int *done = (int *)arg;
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
@@ -231,10 +231,10 @@ static void loop(void *arg)
                     num_lines = 0;
                 } else {
                     add_line(
-                        (float)(SDL_rand() % 640),
-                        (float)(SDL_rand() % 480),
-                        (float)(SDL_rand() % 640),
-                        (float)(SDL_rand() % 480));
+                        (float)SDL_rand_n(640),
+                        (float)SDL_rand_n(480),
+                        (float)SDL_rand_n(640),
+                        (float)SDL_rand_n(480));
                 }
                 break;
             case 'r':
@@ -242,10 +242,10 @@ static void loop(void *arg)
                     num_rects = 0;
                 } else {
                     add_rect(
-                        (float)(SDL_rand() % 640),
-                        (float)(SDL_rand() % 480),
-                        (float)(SDL_rand() % 640),
-                        (float)(SDL_rand() % 480));
+                        (float)SDL_rand_n(640),
+                        (float)SDL_rand_n(480),
+                        (float)SDL_rand_n(640),
+                        (float)SDL_rand_n(480));
                 }
                 break;
             default:
@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
     int done;
 
     /* Initialize parameters */
-    num_objects = -1;  /* -1 means not initialized */
+    num_objects = -1; /* -1 means not initialized */
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);

@@ -34,7 +34,7 @@ void SDL_srand(Uint64 seed)
     SDL_rand_initialized = SDL_TRUE;
 }
 
-Uint32 SDL_rand(void)
+Uint32 SDL_rand_bits(void)
 {
     if(!SDL_rand_initialized) {
         SDL_srand(0);
@@ -61,14 +61,14 @@ Uint32 SDL_rand(void)
     return (Uint32)(SDL_rand_state >> 32);
 }
 
-Uint32 SDL_rand_n(Uint32 n)
+Sint32 SDL_rand_n(Sint32 n)
 {
 	// On 32-bit arch, the compiler will optimize to a single 32-bit multiply
-	Uint64 val = (Uint64)SDL_rand() * n;
-	return (Uint32)(val >> 32);
+	Uint64 val = (Uint64)SDL_rand_bits() * n;
+	return (Sint32)(val >> 32);
 }
 
 float SDL_rand_float(void)
 {
-	return (SDL_rand() >> (32-24)) * 0x1p-24f;
+	return (SDL_rand_bits() >> (32-24)) * 0x1p-24f;
 }

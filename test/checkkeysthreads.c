@@ -206,7 +206,7 @@ static void loop(void)
         default:
             break;
         }
-       SDL_Log("waiting new event\n");
+        SDL_Log("waiting new event\n");
     }
     SDL_Log("exiting event loop\n");
 #ifdef SDL_PLATFORM_EMSCRIPTEN
@@ -227,7 +227,7 @@ static int SDLCALL ping_thread(void *ptr)
         sdlevent.type = SDL_EVENT_KEY_DOWN;
         sdlevent.key.keysym.sym = SDLK_1;
         SDL_PushEvent(&sdlevent);
-        SDL_Delay(1000 + SDL_rand() % 1000);
+        SDL_Delay(1000 + SDL_rand_n(1000));
     }
     return cnt;
 }

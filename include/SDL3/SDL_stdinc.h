@@ -1260,25 +1260,27 @@ extern SDL_DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRI
 extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
 /**
- * Seed the pseudo-random number generator.
+ * Seeds the pseudo-random number generator.
  *
- * Reusing the seed number will cause SDL_rand() to repeat the same stream of
- * 'random' numbers.
+ * Reusing the seed number will cause SDL_rand_*()  to repeat the same stream
+ * of 'random' numbers.
  *
  * \param seed the value to use as a random number seed, or 0 to use
  *             SDL_GetPerformanceCounter().
  *
  * \threadsafety This should be called on the same thread that calls
- *               SDL_rand()
+ *               SDL_rand*()
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_rand
+ * \sa SDL_rand_n
+ * \sa SDL_rand_float
+ * \sa SDL_rand_bits
  */
 extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
 
 /**
- * Get 32 pseudo-random bits.
+ * Generates 32 pseudo-random bits.
  *
  * You likely want to use SDL_rand_n() to get a psuedo-randum number instead.
  *
@@ -1301,17 +1303,19 @@ extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
  * \sa SDL_rand_n
  * \sa SDL_rand_float
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand(void);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);
 
 /**
- * Generates a pseudo-random number less than n
+ * Generates a pseudo-random number less than n for positive n
  *
- * The method used is faster and of better quality than `SDL_rand() % n`.
- * However just like with `SDL_rand() % n`, bias increases with larger n. Odds
- * are better than 99.9% even for n under 1 million.
+ * The method used is faster and of better quality than `rand() % n`.
+ * Odds are roughly 99.9% even for n = 1 million. Evenness is better for
+ * smaller n, and much worse as n gets bigger.
  *
  * Example: to simulate a d6 use `SDL_rand_n(6) + 1` The +1 converts 0..5 to
  * 1..6
+ *
+ * If you want reproducible output, be sure to initialize with SDL_srand() first.
  *
  * There are no guarantees as to the quality of the random sequence produced,
  * and this should not be used for security (cryptography, passwords) or where
@@ -1319,19 +1323,23 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand(void);
  * libraries available with different characteristics and you should pick one
  * of those to meet any serious needs.
  *
- * \param n the number of possible values.
- * \returns a random value in the range of [0 .. n-1].
+ * \param n the number of possible outcomes. n must be positive.
+ *
+ * \returns a random value in the range of [0 ..  n-1]
  *
  * \threadsafety All calls should be made from a single thread
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_rand
+ * \sa SDL_srand
+ * \sa SDL_rand_float
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_n(Uint32 n);
+extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand_n(Sint32 n);
 
 /**
  * Generates a uniform pseudo-random floating point number less than 1.0
+ *
+ * If you want reproducible output, be sure to initialize with SDL_srand() first.
  *
  * There are no guarantees as to the quality of the random sequence produced,
  * and this should not be used for security (cryptography, passwords) or where
@@ -1345,7 +1353,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_n(Uint32 n);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_rand
+ * \sa SDL_srand
+ * \sa SDL_rand_n
  */
 extern SDL_DECLSPEC float SDLCALL SDL_rand_float(void);
 
