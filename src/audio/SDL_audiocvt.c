@@ -49,7 +49,7 @@
  *
  * These are listed in the order they are laid out in
  * memory, so "FL+FR" means "the front left speaker is
- * layed out in memory first, then the front right, then
+ * laid out in memory first, then the front right, then
  * it repeats for the next audio frame".
  *
  * 1 channel (mono) layout: FRONT
