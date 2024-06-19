@@ -54,24 +54,29 @@ float SDL_rand_float(void)
 	return (SDL_rand() >> (32-24)) * 0x1p-24f;
 }
 
-/* A fast psuedo-random number generator.
- * Not suitable for cryptography or gambling
- */
 Uint32 SDL_rand_r(Uint64 *state)
 {
     if (!state) {
         return 0;
     }
 
-	// Multiplier from Table 6 of
-	// Steele GL, Vigna S. Computationally easy, spectrally good multipliers
-	// for congruential pseudorandom number generators.
-	// Softw Pract Exper. 2022;52(2):443-458. doi: 10.1002/spe.3030
+    // The C and A parameters of this LCG have been chosen based on hundreds
+    // of core-hours of testing with PractRand and TestU01's Crush.
+    // Using a 32-bit A improves performance on 32-bit architectures.
+    // C can be any odd number, but < 256 generates smaller code on ARM32
+    // These values perform as well as a full 64-bit implementation against
+    // Crush and PractRand. Plus, their worst-case performance is better
+    // than common 64-bit constants when tested against PractRand using seeds
+    // with only a single bit set.
 
-	// 32-bit 'a' improves performance on 32-bit architectures
-	// 'c' can be any odd number, but < 256 generates smaller code on some arch
-	*state = *state * 0xf9b25d65ul + 0xFD;
+    // We tested all 32-bit and 33-bit A with all C < 256 from a v2 of:
+    // Steele GL, Vigna S. Computationally easy, spectrally good multipliers
+    // for congruential pseudorandom number generators.
+    // Softw Pract Exper. 2022;52(2):443-458. doi: 10.1002/spe.3030
+    // https://arxiv.org/abs/2001.05304v2
 
-	// Only return top 32 bits because they have a longer period
-	return (Uint32)(*state >> 32);
+    *state = *state * 0xff1cd035ul + 0x05;
+
+    // Only return top 32 bits because they have a longer period
+    return (Uint32)(*state >> 32);
 }
