@@ -563,6 +563,7 @@ static void PopMappingChangeTracking(void)
             GamepadMapping_t *old_mapping = gamepad ? gamepad->mapping : tracker->joystick_mappings[i];
 
             if (new_mapping && !old_mapping) {
+                SDL_RemoveFromHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)joystick);
                 SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)joystick, (const void *)SDL_TRUE);
                 SDL_PrivateGamepadAdded(joystick);
             } else if (old_mapping && !new_mapping) {
