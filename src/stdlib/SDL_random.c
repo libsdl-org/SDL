@@ -67,6 +67,14 @@ Sint32 SDL_rand_n(Sint32 n)
     // fixed point number. Multiply by the 31.0 bit n to get a 31.32 bit
     // result. Shift right by 32 to get the 31 bit integer that we want.
 
+    if (n < 0) {
+        // The algorithm looks like it works for numbers < 0 but it has an
+        // infintesimal chance of returning a value out of range.
+        // Returning -SDL_rand_n(abs(n)) blows up at INT_MIN instead.
+        // It's easier to just say no.
+        return 0;
+    }
+
     // On 32-bit arch, the compiler will optimize to a single 32-bit multiply
     Uint64 val = (Uint64)SDL_rand_bits() * n;
     return (Sint32)(val >> 32);
