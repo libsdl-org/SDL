@@ -36,7 +36,7 @@ void SDL_srand(Uint64 seed)
 
 Uint32 SDL_rand_bits(void)
 {
-    if(!SDL_rand_initialized) {
+    if (!SDL_rand_initialized) {
         SDL_srand(0);
     }
 
@@ -63,12 +63,17 @@ Uint32 SDL_rand_bits(void)
 
 Sint32 SDL_rand_n(Sint32 n)
 {
-	// On 32-bit arch, the compiler will optimize to a single 32-bit multiply
-	Uint64 val = (Uint64)SDL_rand_bits() * n;
-	return (Sint32)(val >> 32);
+    // Algorithm: get 32 bits from SDL_rand_bits() and treat it as a 0.32 bit
+    // fixed point number. Multiply by the 31.0 bit n to get a 31.32 bit
+    // result. Shift right by 32 to get the 31 bit integer that we want.
+
+    // On 32-bit arch, the compiler will optimize to a single 32-bit multiply
+    Uint64 val = (Uint64)SDL_rand_bits() * n;
+    return (Sint32)(val >> 32);
 }
 
 float SDL_rand_float(void)
 {
-	return (SDL_rand_bits() >> (32-24)) * 0x1p-24f;
+    // Note: its using 24 bits because float has 23 bits significand + 1 implicit bit
+    return (SDL_rand_bits() >> (32 - 24)) * 0x1p-24f;
 }
