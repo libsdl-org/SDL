@@ -992,7 +992,6 @@ SDL_DYNAPI_PROC(void,SDL_qsort_r,(void *a, size_t b, size_t c, SDL_CompareCallba
 SDL_DYNAPI_PROC(Uint32,SDL_rand,(void),(),return)
 SDL_DYNAPI_PROC(float,SDL_rand_float,(void),(),return)
 SDL_DYNAPI_PROC(Uint32,SDL_rand_n,(Uint32 a),(a),return)
-SDL_DYNAPI_PROC(Uint32,SDL_rand_r,(Uint64 *a),(a),return)
 SDL_DYNAPI_PROC(void*,SDL_realloc,(void *a, size_t b),(a,b),return)
 SDL_DYNAPI_PROC(double,SDL_round,(double a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_roundf,(float a),(a),return)
