@@ -773,7 +773,7 @@ void SDL_GpuBindFragmentStorageBuffers(
 void SDL_GpuPushVertexUniformData(
     SDL_GpuRenderPass *renderPass,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     NULL_ASSERT(renderPass)
@@ -789,7 +789,7 @@ void SDL_GpuPushVertexUniformData(
 void SDL_GpuPushFragmentUniformData(
     SDL_GpuRenderPass *renderPass,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     NULL_ASSERT(renderPass)
@@ -961,7 +961,7 @@ void SDL_GpuBindComputeStorageBuffers(
 void SDL_GpuPushComputeUniformData(
     SDL_GpuComputePass *computePass,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     NULL_ASSERT(computePass)
@@ -1035,7 +1035,7 @@ void SDL_GpuUnmapTransferBuffer(
 
 void SDL_GpuSetTransferData(
     SDL_GpuDevice *device,
-    void *data,
+    const void *data,
     SDL_GpuTransferBuffer *transferBuffer,
     SDL_GpuBufferCopy *copyParams,
     SDL_bool cycle)

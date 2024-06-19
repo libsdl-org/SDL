@@ -1377,7 +1377,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuBindFragmentStorageBuffers(
 extern SDL_DECLSPEC void SDLCALL SDL_GpuPushVertexUniformData(
     SDL_GpuRenderPass *renderPass,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes);
 
 /**
@@ -1394,7 +1394,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuPushVertexUniformData(
 extern SDL_DECLSPEC void SDLCALL SDL_GpuPushFragmentUniformData(
     SDL_GpuRenderPass *renderPass,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes);
 
 /* Drawing */
@@ -1577,7 +1577,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuBindComputeStorageBuffers(
 extern SDL_DECLSPEC void SDLCALL SDL_GpuPushComputeUniformData(
     SDL_GpuComputePass *computePass,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes);
 
 /**
@@ -1659,7 +1659,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuUnmapTransferBuffer(
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GpuSetTransferData(
     SDL_GpuDevice *device,
-    void *data,
+    const void *data,
     SDL_GpuTransferBuffer *transferBuffer,
     SDL_GpuBufferCopy *copyParams,
     SDL_bool cycle);

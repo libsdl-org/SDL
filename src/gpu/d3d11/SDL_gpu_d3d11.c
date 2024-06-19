@@ -2756,7 +2756,7 @@ static void D3D11_UnmapTransferBuffer(
 
 static void D3D11_SetTransferData(
     SDL_GpuRenderer *driverData,
-    void *data,
+    const void *data,
     SDL_GpuTransferBuffer *transferBuffer,
     SDL_GpuBufferCopy *copyParams,
     SDL_bool cycle)
@@ -3220,7 +3220,7 @@ static void D3D11_INTERNAL_SetUniformBufferData(
     D3D11CommandBuffer *commandBuffer,
     D3D11Buffer *uniformBuffer,
     Uint32 offset,
-    void *data,
+    const void *data,
     Uint32 dataLength)
 {
     D3D11_MAPPED_SUBRESOURCE subres;
@@ -3438,7 +3438,7 @@ static void D3D11_INTERNAL_PushUniformData(
     D3D11CommandBuffer *d3d11CommandBuffer,
     SDL_GpuShaderStage shaderStage,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     D3D11Renderer *renderer = d3d11CommandBuffer->renderer;
@@ -4270,7 +4270,7 @@ static void D3D11_EndRenderPass(
 static void D3D11_PushVertexUniformData(
     SDL_GpuCommandBuffer *commandBuffer,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -4291,7 +4291,7 @@ static void D3D11_PushVertexUniformData(
 static void D3D11_PushFragmentUniformData(
     SDL_GpuCommandBuffer *commandBuffer,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -4586,7 +4586,7 @@ static void D3D11_BindComputeStorageBuffers(
 static void D3D11_PushComputeUniformData(
     SDL_GpuCommandBuffer *commandBuffer,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;

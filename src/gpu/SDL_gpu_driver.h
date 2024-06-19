@@ -357,13 +357,13 @@ struct SDL_GpuDevice
     void (*PushVertexUniformData)(
         SDL_GpuCommandBuffer *commandBuffer,
         Uint32 slotIndex,
-        void *data,
+        const void *data,
         Uint32 dataLengthInBytes);
 
     void (*PushFragmentUniformData)(
         SDL_GpuCommandBuffer *commandBuffer,
         Uint32 slotIndex,
-        void *data,
+        const void *data,
         Uint32 dataLengthInBytes);
 
     void (*DrawIndexedPrimitives)(
@@ -423,7 +423,7 @@ struct SDL_GpuDevice
     void (*PushComputeUniformData)(
         SDL_GpuCommandBuffer *commandBuffer,
         Uint32 slotIndex,
-        void *data,
+        const void *data,
         Uint32 dataLengthInBytes);
 
     void (*DispatchCompute)(
@@ -449,7 +449,7 @@ struct SDL_GpuDevice
 
     void (*SetTransferData)(
         SDL_GpuRenderer *driverData,
-        void *data,
+        const void *data,
         SDL_GpuTransferBuffer *transferBuffer,
         SDL_GpuBufferCopy *copyParams,
         SDL_bool cycle);

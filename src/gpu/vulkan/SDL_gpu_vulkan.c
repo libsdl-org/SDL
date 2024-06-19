@@ -7450,7 +7450,7 @@ static void VULKAN_INTERNAL_PushUniformData(
     VulkanCommandBuffer *commandBuffer,
     VulkanUniformBuffer *uniformBuffer,
     VulkanUniformBufferStage uniformBufferStage,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     Uint32 blockSize =
@@ -7852,7 +7852,7 @@ static void VULKAN_BindIndexBuffer(
 static void VULKAN_PushVertexUniformData(
     SDL_GpuCommandBuffer *commandBuffer,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -7874,7 +7874,7 @@ static void VULKAN_PushVertexUniformData(
 static void VULKAN_PushFragmentUniformData(
     SDL_GpuCommandBuffer *commandBuffer,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8103,7 +8103,7 @@ static void VULKAN_BindComputeStorageBuffers(
 static void VULKAN_PushComputeUniformData(
     SDL_GpuCommandBuffer *commandBuffer,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8482,7 +8482,7 @@ static void VULKAN_UnmapTransferBuffer(
 
 static void VULKAN_SetTransferData(
     SDL_GpuRenderer *driverData,
-    void *data,
+    const void *data,
     SDL_GpuTransferBuffer *transferBuffer,
     SDL_GpuBufferCopy *copyParams,
     SDL_bool cycle)

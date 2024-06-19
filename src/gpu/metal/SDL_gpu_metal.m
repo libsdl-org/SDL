@@ -1565,7 +1565,7 @@ static void METAL_UnmapTransferBuffer(
 
 static void METAL_SetTransferData(
     SDL_GpuRenderer *driverData,
-    void *data,
+    const void *data,
     SDL_GpuTransferBuffer *transferBuffer,
     SDL_GpuBufferCopy *copyParams,
     SDL_bool cycle)
@@ -2564,7 +2564,7 @@ static void METAL_INTERNAL_PushUniformData(
     MetalCommandBuffer *metalCommandBuffer,
     SDL_GpuShaderStage shaderStage,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     MetalRenderer *renderer = metalCommandBuffer->renderer;
@@ -2629,7 +2629,7 @@ static void METAL_INTERNAL_PushUniformData(
 static void METAL_PushVertexUniformData(
     SDL_GpuCommandBuffer *commandBuffer,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2650,7 +2650,7 @@ static void METAL_PushVertexUniformData(
 static void METAL_PushFragmentUniformData(
     SDL_GpuCommandBuffer *commandBuffer,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2953,7 +2953,7 @@ static void METAL_BindComputeStorageBuffers(
 static void METAL_PushComputeUniformData(
     SDL_GpuCommandBuffer *commandBuffer,
     Uint32 slotIndex,
-    void *data,
+    const void *data,
     Uint32 dataLengthInBytes)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
