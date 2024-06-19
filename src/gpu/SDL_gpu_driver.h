@@ -467,15 +467,15 @@ struct SDL_GpuDevice
 
     void (*UploadToTexture)(
         SDL_GpuCommandBuffer *commandBuffer,
-        SDL_GpuTransferBuffer *transferBuffer,
-        SDL_GpuTextureRegion *textureSlice,
+        SDL_GpuTransferBuffer *source,
+        SDL_GpuTextureRegion *destination,
         SDL_GpuBufferImageCopy *copyParams,
         SDL_bool cycle);
 
     void (*UploadToBuffer)(
         SDL_GpuCommandBuffer *commandBuffer,
-        SDL_GpuTransferBuffer *transferBuffer,
-        SDL_GpuBuffer *buffer,
+        SDL_GpuTransferBuffer *source,
+        SDL_GpuBuffer *destination,
         SDL_GpuBufferCopy *copyParams,
         SDL_bool cycle);
 
@@ -498,14 +498,14 @@ struct SDL_GpuDevice
 
     void (*DownloadFromTexture)(
         SDL_GpuCommandBuffer *commandBuffer,
-        SDL_GpuTextureRegion *textureSlice,
-        SDL_GpuTransferBuffer *transferBuffer,
+        SDL_GpuTextureRegion *source,
+        SDL_GpuTransferBuffer *destination,
         SDL_GpuBufferImageCopy *copyParams);
 
     void (*DownloadFromBuffer)(
         SDL_GpuCommandBuffer *commandBuffer,
-        SDL_GpuBuffer *buffer,
-        SDL_GpuTransferBuffer *transferBuffer,
+        SDL_GpuBuffer *source,
+        SDL_GpuTransferBuffer *destination,
         SDL_GpuBufferCopy *copyParams);
 
     void (*EndCopyPass)(

@@ -1619,28 +1619,28 @@ static void METAL_BeginCopyPass(
 
 static void METAL_UploadToTexture(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTransferBuffer *transferBuffer,
-    SDL_GpuTextureRegion *textureRegion,
+    SDL_GpuTransferBuffer *source,
+    SDL_GpuTextureRegion *destination,
     SDL_GpuBufferImageCopy *copyParams,
     SDL_bool cycle)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalRenderer *renderer = metalCommandBuffer->renderer;
-    MetalBufferContainer *bufferContainer = (MetalBufferContainer *)transferBuffer;
-    MetalTextureContainer *textureContainer = (MetalTextureContainer *)textureRegion->textureSlice.texture;
+    MetalBufferContainer *bufferContainer = (MetalBufferContainer *)source;
+    MetalTextureContainer *textureContainer = (MetalTextureContainer *)destination->textureSlice.texture;
 
     MetalTexture *metalTexture = METAL_INTERNAL_PrepareTextureForWrite(renderer, textureContainer, cycle);
 
     [metalCommandBuffer->blitEncoder
              copyFromBuffer:bufferContainer->activeBuffer->handle
                sourceOffset:copyParams->bufferOffset
-          sourceBytesPerRow:BytesPerRow(textureRegion->w, textureContainer->createInfo.format)
-        sourceBytesPerImage:BytesPerImage(textureRegion->w, textureRegion->h, textureContainer->createInfo.format)
-                 sourceSize:MTLSizeMake(textureRegion->w, textureRegion->h, textureRegion->d)
+          sourceBytesPerRow:BytesPerRow(destination->w, textureContainer->createInfo.format)
+        sourceBytesPerImage:BytesPerImage(destination->w, destination->h, textureContainer->createInfo.format)
+                 sourceSize:MTLSizeMake(destination->w, destination->h, destination->d)
                   toTexture:metalTexture->handle
-           destinationSlice:textureRegion->textureSlice.layer
-           destinationLevel:textureRegion->textureSlice.mipLevel
-          destinationOrigin:MTLOriginMake(textureRegion->x, textureRegion->y, textureRegion->z)];
+           destinationSlice:destination->textureSlice.layer
+           destinationLevel:destination->textureSlice.mipLevel
+          destinationOrigin:MTLOriginMake(destination->x, destination->y, destination->z)];
 
     METAL_INTERNAL_TrackTexture(metalCommandBuffer, metalTexture);
     METAL_INTERNAL_TrackBuffer(metalCommandBuffer, bufferContainer->activeBuffer);
@@ -1648,15 +1648,15 @@ static void METAL_UploadToTexture(
 
 static void METAL_UploadToBuffer(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTransferBuffer *transferBuffer,
-    SDL_GpuBuffer *buffer,
+    SDL_GpuTransferBuffer *source,
+    SDL_GpuBuffer *destination,
     SDL_GpuBufferCopy *copyParams,
     SDL_bool cycle)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalRenderer *renderer = metalCommandBuffer->renderer;
-    MetalBufferContainer *transferContainer = (MetalBufferContainer *)transferBuffer;
-    MetalBufferContainer *bufferContainer = (MetalBufferContainer *)buffer;
+    MetalBufferContainer *transferContainer = (MetalBufferContainer *)source;
+    MetalBufferContainer *bufferContainer = (MetalBufferContainer *)destination;
 
     MetalBuffer *metalBuffer = METAL_INTERNAL_PrepareBufferForWrite(
         renderer,
@@ -1756,16 +1756,16 @@ static void METAL_GenerateMipmaps(
 
 static void METAL_DownloadFromTexture(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTextureRegion *textureRegion,
-    SDL_GpuTransferBuffer *transferBuffer,
+    SDL_GpuTextureRegion *source,
+    SDL_GpuTransferBuffer *destination,
     SDL_GpuBufferImageCopy *copyParams)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalRenderer *renderer = metalCommandBuffer->renderer;
-    SDL_GpuTextureSlice *textureSlice = &textureRegion->textureSlice;
+    SDL_GpuTextureSlice *textureSlice = &source->textureSlice;
     MetalTextureContainer *textureContainer = (MetalTextureContainer *)textureSlice->texture;
     MetalTexture *metalTexture = textureContainer->activeTexture;
-    MetalBufferContainer *bufferContainer = (MetalBufferContainer *)transferBuffer;
+    MetalBufferContainer *bufferContainer = (MetalBufferContainer *)destination;
     Uint32 bufferStride = copyParams->bufferStride;
     Uint32 bufferImageHeight = copyParams->bufferImageHeight;
     Uint32 bytesPerRow, bytesPerDepthSlice;
@@ -1776,18 +1776,18 @@ static void METAL_DownloadFromTexture(
         SDL_FALSE);
 
     MTLOrigin regionOrigin = MTLOriginMake(
-        textureRegion->x,
-        textureRegion->y,
-        textureRegion->z);
+        source->x,
+        source->y,
+        source->z);
 
     MTLSize regionSize = MTLSizeMake(
-        textureRegion->w,
-        textureRegion->h,
-        textureRegion->d);
+        source->w,
+        source->h,
+        source->d);
 
     if (bufferStride == 0 || bufferImageHeight == 0) {
-        bufferStride = textureRegion->w;
-        bufferImageHeight = textureRegion->h;
+        bufferStride = source->w;
+        bufferImageHeight = source->h;
     }
 
     bytesPerRow = BytesPerRow(bufferStride, textureContainer->createInfo.format);
@@ -1811,12 +1811,12 @@ static void METAL_DownloadFromTexture(
 static void METAL_DownloadFromBuffer(
     SDL_GpuCommandBuffer *commandBuffer,
     SDL_GpuBuffer *buffer,
-    SDL_GpuTransferBuffer *transferBuffer,
+    SDL_GpuTransferBuffer *destination,
     SDL_GpuBufferCopy *copyParams)
 {
     METAL_CopyBufferToBuffer(
         commandBuffer,
-        (SDL_GpuBuffer *)transferBuffer,
+        (SDL_GpuBuffer *)destination,
         buffer,
         copyParams,
         SDL_FALSE);

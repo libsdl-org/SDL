@@ -1082,8 +1082,8 @@ SDL_GpuCopyPass *SDL_GpuBeginCopyPass(
 
 void SDL_GpuUploadToTexture(
     SDL_GpuCopyPass *copyPass,
-    SDL_GpuTransferBuffer *transferBuffer,
-    SDL_GpuTextureRegion *textureRegion,
+    SDL_GpuTransferBuffer *source,
+    SDL_GpuTextureRegion *destination,
     SDL_GpuBufferImageCopy *copyParams,
     SDL_bool cycle)
 {
@@ -1091,24 +1091,24 @@ void SDL_GpuUploadToTexture(
     CHECK_COPYPASS
     COPYPASS_DEVICE->UploadToTexture(
         COPYPASS_COMMAND_BUFFER,
-        transferBuffer,
-        textureRegion,
+        source,
+        destination,
         copyParams,
         cycle);
 }
 
 void SDL_GpuUploadToBuffer(
     SDL_GpuCopyPass *copyPass,
-    SDL_GpuTransferBuffer *transferBuffer,
-    SDL_GpuBuffer *buffer,
+    SDL_GpuTransferBuffer *source,
+    SDL_GpuBuffer *destination,
     SDL_GpuBufferCopy *copyParams,
     SDL_bool cycle)
 {
     NULL_ASSERT(copyPass)
     COPYPASS_DEVICE->UploadToBuffer(
         COPYPASS_COMMAND_BUFFER,
-        transferBuffer,
-        buffer,
+        source,
+        destination,
         copyParams,
         cycle);
 }
@@ -1155,29 +1155,29 @@ void SDL_GpuGenerateMipmaps(
 
 void SDL_GpuDownloadFromTexture(
     SDL_GpuCopyPass *copyPass,
-    SDL_GpuTextureRegion *textureRegion,
-    SDL_GpuTransferBuffer *transferBuffer,
+    SDL_GpuTextureRegion *source,
+    SDL_GpuTransferBuffer *destination,
     SDL_GpuBufferImageCopy *copyParams)
 {
     NULL_ASSERT(copyPass);
     COPYPASS_DEVICE->DownloadFromTexture(
         COPYPASS_COMMAND_BUFFER,
-        textureRegion,
-        transferBuffer,
+        source,
+        destination,
         copyParams);
 }
 
 void SDL_GpuDownloadFromBuffer(
     SDL_GpuCopyPass *copyPass,
-    SDL_GpuBuffer *buffer,
-    SDL_GpuTransferBuffer *transferBuffer,
+    SDL_GpuBuffer *source,
+    SDL_GpuTransferBuffer *destination,
     SDL_GpuBufferCopy *copyParams)
 {
     NULL_ASSERT(copyPass);
     COPYPASS_DEVICE->DownloadFromBuffer(
         COPYPASS_COMMAND_BUFFER,
-        buffer,
-        transferBuffer,
+        source,
+        destination,
         copyParams);
 }
 

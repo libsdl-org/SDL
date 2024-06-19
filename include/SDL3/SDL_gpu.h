@@ -1705,17 +1705,17 @@ extern SDL_DECLSPEC SDL_GpuCopyPass *SDLCALL SDL_GpuBeginCopyPass(
  * the texel size of the texture format.
  *
  * \param copyPass a copy pass handle
- * \param transferBuffer a transfer buffer
- * \param textureRegion a struct containing parameters specifying the texture region to upload data to
- * \param copyParams a struct containing parameters specifying buffer offset, stride, and height
+ * \param source the source transfer buffer
+ * \param destination the destination texture region
+ * \param copyParams buffer offset, stride, and height
  * \param cycle if SDL_TRUE, cycles the texture if the texture slice is bound, otherwise overwrites the data.
  *
  * \since This function is available since SDL 3.x.x
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GpuUploadToTexture(
     SDL_GpuCopyPass *copyPass,
-    SDL_GpuTransferBuffer *transferBuffer,
-    SDL_GpuTextureRegion *textureRegion,
+    SDL_GpuTransferBuffer *source,
+    SDL_GpuTextureRegion *destination,
     SDL_GpuBufferImageCopy *copyParams,
     SDL_bool cycle);
 
@@ -1727,17 +1727,17 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuUploadToTexture(
  * You may assume that the upload has finished in subsequent commands.
  *
  * \param copyPass a copy pass handle
- * \param transferBuffer a transfer buffer
- * \param buffer a buffer
- * \param copyParams a struct containing offsets and length
+ * \param source the source transfer buffer
+ * \param destination the destination buffer
+ * \param copyParams buffer offsets and length
  * \param cycle if SDL_TRUE, cycles the buffer if it is bound, otherwise overwrites the data.
  *
  * \since This function is available since SDL 3.x.x
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GpuUploadToBuffer(
     SDL_GpuCopyPass *copyPass,
-    SDL_GpuTransferBuffer *transferBuffer,
-    SDL_GpuBuffer *buffer,
+    SDL_GpuTransferBuffer *source,
+    SDL_GpuBuffer *destination,
     SDL_GpuBufferCopy *copyParams,
     SDL_bool cycle);
 
@@ -1798,16 +1798,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuGenerateMipmaps(
  * This data is not guaranteed to be copied until the command buffer fence is signaled.
  *
  * \param copyPass a copy pass handle
- * \param textureRegion the texture region to download
- * \param transferBuffer the transfer buffer to download into
+ * \param source the source texture region
+ * \param destination the destination transfer buffer
  * \param copyParams a struct containing parameters specifying buffer offset, stride, and height
  *
  * \since This function is available since SDL 3.x.x
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GpuDownloadFromTexture(
     SDL_GpuCopyPass *copyPass,
-    SDL_GpuTextureRegion *textureRegion,
-    SDL_GpuTransferBuffer *transferBuffer,
+    SDL_GpuTextureRegion *source,
+    SDL_GpuTransferBuffer *destination,
     SDL_GpuBufferImageCopy *copyParams);
 
 /**
@@ -1815,16 +1815,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuDownloadFromTexture(
  * This data is not guaranteed to be copied until the command buffer fence is signaled.
  *
  * \param copyPass a copy pass handle
- * \param buffer the buffer to download
- * \param transferBuffer the transfer buffer to download into
+ * \param source the source buffer
+ * \param destination the destination transfer buffer
  * \param copyParams a struct containing offsets and length
  *
  * \since This function is available since SDL 3.x.x
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GpuDownloadFromBuffer(
     SDL_GpuCopyPass *copyPass,
-    SDL_GpuBuffer *buffer,
-    SDL_GpuTransferBuffer *transferBuffer,
+    SDL_GpuBuffer *source,
+    SDL_GpuTransferBuffer *destination,
     SDL_GpuBufferCopy *copyParams);
 
 /**
