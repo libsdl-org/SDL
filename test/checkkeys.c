@@ -121,16 +121,18 @@ PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
     /* Print the keycode, name and state */
     if (sym->sym) {
         print_string(&spot, &left,
-                     "Key %s:  scancode %d = %s, keycode 0x%08X = %s ",
+                     "Key %s:  raw 0x%.2x, scancode %d = %s, keycode 0x%08X = %s ",
                      pressed ? "pressed " : "released",
+                     sym->raw,
                      sym->scancode,
-                     SDL_GetScancodeName(sym->scancode),
+                     sym->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(sym->scancode),
                      sym->sym, SDL_GetKeyName(sym->sym));
     } else {
         print_string(&spot, &left,
-                     "Unknown Key (scancode %d = %s) %s ",
+                     "Unknown Key (raw 0x%.2x, scancode %d = %s) %s ",
+                     sym->raw,
                      sym->scancode,
-                     SDL_GetScancodeName(sym->scancode),
+                     sym->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(sym->scancode),
                      pressed ? "pressed " : "released");
     }
     print_modifiers(&spot, &left);
