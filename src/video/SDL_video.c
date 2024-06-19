@@ -3428,7 +3428,7 @@ int SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
     const int ret = _this->SetWindowModalFor(_this, modal_window, parent_window);
 
     /* The existing parent might be needed when changing the modal status,
-     * so don't change the heirarchy until after setting the new modal state.
+     * so don't change the hierarchy until after setting the new modal state.
      */
     if (!ret) {
         SDL_SetWindowParent(modal_window, !ret ? parent_window : NULL);

@@ -151,7 +151,7 @@ In general, the same process in the Windows GDK instructions work. There are jus
 * For Xbox Series consoles, use the Gaming.Xbox.Scarlett.x64 target
 * The Xbox One target sets the `SDL_PLATFORM_XBOXONE` define and the Xbox Series target sets the `SDL_PLATFORM_XBOXSERIES` define
 * You don't need to link against the Xbox.Services Thunks lib nor include that dll in your package (it doesn't exist for Xbox)
-* The shader blobs for Xbox are created in a pre-build step for the Xbox targets, rather than included in the source (due to NDA and version compatability reasons)
+* The shader blobs for Xbox are created in a pre-build step for the Xbox targets, rather than included in the source (due to NDA and version compatibility reasons)
 * To create a package, use:
   `makepkg pack /f PackageLayout.xml /lt /d . /pd Package`
 * To install the package, use:
