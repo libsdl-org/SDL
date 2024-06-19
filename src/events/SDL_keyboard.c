@@ -806,7 +806,7 @@ void SDL_ResetKeyboard(void)
 #endif
     for (scancode = (SDL_Scancode)0; scancode < SDL_NUM_SCANCODES; ++scancode) {
         if (keyboard->keystate[scancode] == SDL_PRESSED) {
-            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, scancode, SDL_RELEASED);
         }
     }
 }
@@ -944,7 +944,7 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
     return 0;
 }
 
-static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_KeyboardID keyboardID, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, SDL_Keycode keycode, Uint8 state)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
@@ -952,10 +952,6 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
     Uint32 type;
     Uint8 repeat = SDL_FALSE;
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
-
-    if (scancode == SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
-        return 0;
-    }
 
 #ifdef DEBUG_KEYBOARD
     printf("The '%s' key has been %s\n", SDL_GetScancodeName(scancode),
@@ -975,28 +971,34 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
         return 0;
     }
 
-    /* Drop events that don't change state */
-    if (state) {
-        if (keyboard->keystate[scancode]) {
-            if (!(keyboard->keysource[scancode] & source)) {
-                keyboard->keysource[scancode] |= source;
+    if (scancode != SDL_SCANCODE_UNKNOWN && scancode < SDL_NUM_SCANCODES) {
+        /* Drop events that don't change state */
+        if (state) {
+            if (keyboard->keystate[scancode]) {
+                if (!(keyboard->keysource[scancode] & source)) {
+                    keyboard->keysource[scancode] |= source;
+                    return 0;
+                }
+                repeat = SDL_TRUE;
+            }
+            keyboard->keysource[scancode] |= source;
+        } else {
+            if (!keyboard->keystate[scancode]) {
                 return 0;
             }
-            repeat = SDL_TRUE;
+            keyboard->keysource[scancode] = 0;
         }
-        keyboard->keysource[scancode] |= source;
-    } else {
-        if (!keyboard->keystate[scancode]) {
-            return 0;
+
+        /* Update internal keyboard state */
+        keyboard->keystate[scancode] = state;
+
+        if (keycode == SDLK_UNKNOWN) {
+            keycode = keyboard->keymap[scancode];
         }
-        keyboard->keysource[scancode] = 0;
-    }
 
-    /* Update internal keyboard state */
-    keyboard->keystate[scancode] = state;
-
-    if (keycode == SDLK_UNKNOWN) {
-        keycode = keyboard->keymap[scancode];
+    } else if (keycode == SDLK_UNKNOWN && rawcode == 0) {
+        /* Nothing to do! */
+        return 0;
     }
 
     if (source == KEYBOARD_HARDWARE) {
@@ -1070,6 +1072,7 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
         event.key.keysym.scancode = scancode;
         event.key.keysym.sym = keycode;
         event.key.keysym.mod = keyboard->modstate;
+        event.key.keysym.raw = (Uint16)rawcode;
         event.key.windowID = keyboard->focus ? keyboard->focus->id : 0;
         event.key.which = keyboardID;
         posted = (SDL_PushEvent(&event) > 0);
@@ -1105,43 +1108,43 @@ int SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch)
 
     if (mod & SDL_KMOD_SHIFT) {
         /* If the character uses shift, press shift down */
-        SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, SDL_SCANCODE_LSHIFT, SDLK_UNKNOWN);
+        SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_LSHIFT, SDLK_UNKNOWN, SDL_PRESSED);
     }
 
     /* Send a keydown and keyup for the character */
-    SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, code, SDLK_UNKNOWN);
-    SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, code, SDLK_UNKNOWN);
+    SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, code, SDLK_UNKNOWN, SDL_PRESSED);
+    SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, code, SDLK_UNKNOWN, SDL_RELEASED);
 
     if (mod & SDL_KMOD_SHIFT) {
         /* If the character uses shift, release shift */
-        SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, SDL_SCANCODE_LSHIFT, SDLK_UNKNOWN);
+        SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_LSHIFT, SDLK_UNKNOWN, SDL_RELEASED);
     }
     return 0;
 }
 
 int SDL_SendVirtualKeyboardKey(Uint64 timestamp, Uint8 state, SDL_Scancode scancode)
 {
-    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, state, scancode, SDLK_UNKNOWN);
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, scancode, SDLK_UNKNOWN, state);
 }
 
-int SDL_SendKeyboardKey(Uint64 timestamp, SDL_KeyboardID keyboardID, Uint8 state, SDL_Scancode scancode)
+int SDL_SendKeyboardKey(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, Uint8 state)
 {
-    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE, keyboardID, state, scancode, SDLK_UNKNOWN);
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE, keyboardID, rawcode, scancode, SDLK_UNKNOWN, state);
 }
 
-int SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, SDL_KeyboardID keyboardID, Uint8 state, SDL_Scancode scancode, SDL_Keycode keycode)
+int SDL_SendKeyboardKeyAndKeycode(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, SDL_Keycode keycode, Uint8 state)
 {
-    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE, keyboardID, state, scancode, keycode);
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE, keyboardID, rawcode, scancode, keycode, state);
 }
 
 int SDL_SendKeyboardKeyAutoRelease(Uint64 timestamp, SDL_Scancode scancode)
 {
-    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_AUTORELEASE, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, scancode, SDLK_UNKNOWN);
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_AUTORELEASE, SDL_GLOBAL_KEYBOARD_ID, 0, scancode, SDLK_UNKNOWN, SDL_PRESSED);
 }
 
-int SDL_SendKeyboardKeyIgnoreModifiers(Uint64 timestamp, SDL_KeyboardID keyboardID, Uint8 state, SDL_Scancode scancode)
+int SDL_SendKeyboardKeyIgnoreModifiers(Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, Uint8 state)
 {
-    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE | KEYBOARD_IGNOREMODIFIERS, keyboardID, state, scancode, SDLK_UNKNOWN);
+    return SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_HARDWARE | KEYBOARD_IGNOREMODIFIERS, keyboardID, rawcode, scancode, SDLK_UNKNOWN, state);
 }
 
 void SDL_ReleaseAutoReleaseKeys(void)
@@ -1152,7 +1155,7 @@ void SDL_ReleaseAutoReleaseKeys(void)
     if (keyboard->autorelease_pending) {
         for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES; ++scancode) {
             if (keyboard->keysource[scancode] == KEYBOARD_AUTORELEASE) {
-                SDL_SendKeyboardKeyInternal(0, KEYBOARD_AUTORELEASE, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, scancode, SDLK_UNKNOWN);
+                SDL_SendKeyboardKeyInternal(0, KEYBOARD_AUTORELEASE, SDL_GLOBAL_KEYBOARD_ID, 0, scancode, SDLK_UNKNOWN, SDL_RELEASED);
             }
         }
         keyboard->autorelease_pending = SDL_FALSE;

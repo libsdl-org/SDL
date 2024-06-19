@@ -304,7 +304,7 @@ class SDL_BLooper : public BLooper
             return;
         }
         HAIKU_SetKeyState(scancode, state);
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, state, HAIKU_GetScancodeFromBeKey(scancode));
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, scancode, HAIKU_GetScancodeFromBeKey(scancode), state);
 
         if (state == SDL_PRESSED && SDL_TextInputActive()) {
             const int8 *keyUtf8;

@@ -68,7 +68,7 @@ typedef struct SDL_Keysym
     SDL_Scancode scancode;      /**< SDL physical key code - see SDL_Scancode for details */
     SDL_Keycode sym;            /**< SDL virtual key code - see SDL_Keycode for details */
     SDL_Keymod mod;             /**< current key modifiers */
-    Uint16 unused;
+    Uint16 raw;                 /**< The platform dependent scancode for this event */
 } SDL_Keysym;
 
 /* Function prototypes */

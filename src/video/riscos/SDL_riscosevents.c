@@ -58,7 +58,7 @@ void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
     for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
         if (driverdata->key_pressed[i] != 255) {
             if ((_kernel_osbyte(129, driverdata->key_pressed[i] ^ 0xff, 0xff) & 0xff) != 255) {
-                SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, SDL_RELEASED, SDL_RISCOS_translate_keycode(driverdata->key_pressed[i]));
+                SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, driverdata->key_pressed[i], SDL_RISCOS_translate_keycode(driverdata->key_pressed[i]), SDL_RELEASED);
                 driverdata->key_pressed[i] = 255;
             }
         }
@@ -81,7 +81,7 @@ void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
             break;
 
         default:
-            SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, SDL_PRESSED, SDL_RISCOS_translate_keycode(key));
+            SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, key, SDL_RISCOS_translate_keycode(key), SDL_PRESSED);
 
             /* Record the press so we can detect release later. */
             for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {

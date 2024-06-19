@@ -724,8 +724,8 @@ void SDL_WinRTApp::OnCharacterReceived(Windows::UI::Core::CoreWindow ^ sender, W
 template <typename BackButtonEventArgs>
 static void WINRT_OnBackButtonPressed(BackButtonEventArgs ^ args)
 {
-    SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, SDL_SCANCODE_AC_BACK);
-    SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, SDL_SCANCODE_AC_BACK);
+    SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_AC_BACK, SDL_PRESSED);
+    SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_AC_BACK, SDL_RELEASED);
 
     if (SDL_GetHintBoolean(SDL_HINT_WINRT_HANDLE_BACK_BUTTON, SDL_FALSE)) {
         args->Handled = true;
