@@ -48,7 +48,7 @@
 
 /*
 This code came from Gareth McCaughan, under the zlib license.
-Specifically this: https://www.mccaughan.org.uk/software/qsort.c-1.15
+Specifically this: https://www.mccaughan.org.uk/software/qsort.c-1.16
 
 Everything below this comment until the HAVE_QSORT #endif was from Gareth
 (any minor changes will be noted inline).
@@ -97,7 +97,7 @@ Update for SDL3: we have modified this from a qsort function to qsort_r.
  * Gareth McCaughan
  */
 
-/* Copyright (c) 1998-2016 Gareth McCaughan
+/* Copyright (c) 1998-2021 Gareth McCaughan
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
@@ -133,17 +133,23 @@ Update for SDL3: we have modified this from a qsort function to qsort_r.
  *                    (pre-insertion-sort messed up).
  *                    Disable DEBUG_QSORT by default.
  *                    Tweak comments very slightly.
+ *   2021-02-20 v1.16 Fix bug kindly reported by Ray Gardner
+ *                    (error in recursion leading to possible
+ *                    stack overflow).
+ *                    When checking alignment, avoid casting
+ *                    pointer to possibly-smaller integer.
  */
 
 /* BEGIN SDL CHANGE ... commented this out with an #if 0 block. --ryan. */
 #if 0
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #undef DEBUG_QSORT
 
-static char _ID[]="<qsort.c gjm WITH CHANGES FOR SDL3 1.15 2016-03-10>";
+static char _ID[]="<qsort.c gjm WITH CHANGES FOR SDL3 1.16 2021-02-20>";
 #endif
 /* END SDL CHANGE ... commented this out with an #if 0 block. --ryan. */
 
@@ -153,7 +159,8 @@ static char _ID[]="<qsort.c gjm WITH CHANGES FOR SDL3 1.15 2016-03-10>";
 #define WORD_BYTES sizeof(int)
 
 /* How big does our stack need to be? Answer: one entry per
- * bit in a |size_t|.
+ * bit in a |size_t|. (Actually, a bit less because we don't
+ * recurse all the way down to size-1 subarrays.)
  */
 #define STACK_SIZE (8*sizeof(size_t))
 
@@ -192,11 +199,12 @@ typedef struct { char * first; char * last; } stack_entry;
  *    on large datasets for locality-of-reference reasons,
  *    but it makes the code much nastier and increases
  *    bookkeeping overhead.
- * 2. We always save the shorter and get to work on the
- *    longer. This guarantees that every time we push
- *    an item onto the stack its size is <= 1/2 of that
- *    of its parent; so the stack can't need more than
- *    log_2(max-array-size) entries.
+ * 2. We always save the longer and get to work on the
+ *    shorter. This guarantees that whenever we push
+ *    a k'th entry onto the stack we are about to get
+ *    working on something of size <= N/2^k where N is
+ *    the original array size; so the stack can't need
+ *    more than log_2(max-array-size) entries.
  * 3. We choose a pivot by looking at the first, last
  *    and middle elements. We arrange them into order
  *    because it's easy to do that in conjunction with
@@ -258,8 +266,8 @@ typedef struct { char * first; char * last; } stack_entry;
           if (r>=Trunc) doRight			\
           else pop				\
         }					\
-        else if (l<=r) { pushLeft; doRight }	\
-        else if (r>=Trunc) { pushRight; doLeft }\
+        else if (l<=r) { pushRight; doLeft }	\
+        else if (r>=Trunc) { pushLeft; doRight }\
         else doLeft				\
       }
 
@@ -511,7 +519,7 @@ void SDL_qsort_r(void *base, size_t nmemb, size_t size,
            SDL_CompareCallback_r compare, void *userdata) {
 
   if (nmemb<=1) return;
-  if (((size_t)base|size)&(WORD_BYTES-1))
+  if (((uintptr_t)base|size)&(WORD_BYTES-1))
     qsort_r_nonaligned(base,nmemb,size,compare,userdata);
   else if (size!=WORD_BYTES)
     qsort_r_aligned(base,nmemb,size,compare,userdata);
