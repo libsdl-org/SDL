@@ -444,15 +444,13 @@ SDL_GpuBuffer *SDL_GpuCreateBuffer(
 
 SDL_GpuTransferBuffer *SDL_GpuCreateTransferBuffer(
     SDL_GpuDevice *device,
-    SDL_GpuTransferUsage usage,
-    SDL_GpuTransferBufferMapFlags mapFlags,
+    SDL_GpuTransferBufferUsage usage,
     Uint32 sizeInBytes)
 {
     NULL_ASSERT(device)
     return device->CreateTransferBuffer(
         device->driverData,
         usage,
-        mapFlags,
         sizeInBytes);
 }
 

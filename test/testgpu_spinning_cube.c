@@ -455,8 +455,7 @@ init_render_state(void)
 
     buf_transfer = SDL_GpuCreateTransferBuffer(
         gpu_device,
-        SDL_GPU_TRANSFERUSAGE_BUFFER,
-        SDL_GPU_TRANSFER_MAP_WRITE,
+        SDL_TRUE,
         sizeof(vertex_data)
     );
     CHECK_CREATE(buf_transfer, "Vertex transfer buffer")

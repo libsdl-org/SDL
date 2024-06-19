@@ -6766,8 +6766,7 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
 
 static SDL_GpuTransferBuffer *VULKAN_CreateTransferBuffer(
     SDL_GpuRenderer *driverData,
-    SDL_GpuTransferUsage usage,             /* ignored on Vulkan */
-    SDL_GpuTransferBufferMapFlags mapFlags, /* ignored on Vulkan */
+    SDL_GpuTransferBufferUsage usage, /* ignored on Vulkan */
     Uint32 sizeInBytes)
 {
     return (SDL_GpuTransferBuffer *)VULKAN_INTERNAL_CreateBufferContainer(

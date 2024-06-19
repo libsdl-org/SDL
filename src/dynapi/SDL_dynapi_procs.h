@@ -1080,7 +1080,7 @@ SDL_DYNAPI_PROC(SDL_GpuSampler*,SDL_GpuCreateSampler,(SDL_GpuDevice *a, SDL_GpuS
 SDL_DYNAPI_PROC(SDL_GpuShader*,SDL_GpuCreateShader,(SDL_GpuDevice *a, SDL_GpuShaderCreateInfo *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_GpuTexture*,SDL_GpuCreateTexture,(SDL_GpuDevice *a, SDL_GpuTextureCreateInfo *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_GpuBuffer*,SDL_GpuCreateBuffer,(SDL_GpuDevice *a, SDL_GpuBufferUsageFlags b, Uint32 c),(a,b,c),return)
-SDL_DYNAPI_PROC(SDL_GpuTransferBuffer*,SDL_GpuCreateTransferBuffer,(SDL_GpuDevice *a, SDL_GpuTransferUsage b, SDL_GpuTransferBufferMapFlags c, Uint32 d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(SDL_GpuTransferBuffer*,SDL_GpuCreateTransferBuffer,(SDL_GpuDevice *a, SDL_GpuTransferBufferUsage b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_GpuSetBufferName,(SDL_GpuDevice *a, SDL_GpuBuffer *b, const char *c),(a,b,c),)
 SDL_DYNAPI_PROC(void,SDL_GpuSetTextureName,(SDL_GpuDevice *a, SDL_GpuTexture *b, const char *c),(a,b,c),)
 SDL_DYNAPI_PROC(void,SDL_GpuSetStringMarker,(SDL_GpuCommandBuffer *a, const char *b),(a,b),)

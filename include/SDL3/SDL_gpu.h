@@ -177,13 +177,11 @@ typedef enum SDL_GpuBufferUsageFlagBits
 
 typedef Uint32 SDL_GpuBufferUsageFlags;
 
-typedef enum SDL_GpuTransferBufferMapFlagBits
+typedef enum SDL_GpuTransferBufferUsage
 {
-    SDL_GPU_TRANSFER_MAP_READ = 0x00000001,
-    SDL_GPU_TRANSFER_MAP_WRITE = 0x00000002
-} SDL_GpuTransferBufferMapFlagBits;
-
-typedef Uint32 SDL_GpuTransferBufferMapFlags;
+    SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+    SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD
+} SDL_GpuTransferBufferUsage;
 
 typedef enum SDL_GpuShaderStage
 {
@@ -335,12 +333,6 @@ typedef enum SDL_GpuBorderColor
     SDL_GPU_BORDERCOLOR_FLOAT_OPAQUE_WHITE,
     SDL_GPU_BORDERCOLOR_INT_OPAQUE_WHITE
 } SDL_GpuBorderColor;
-
-typedef enum SDL_GpuTransferUsage
-{
-    SDL_GPU_TRANSFERUSAGE_BUFFER,
-    SDL_GPU_TRANSFERUSAGE_TEXTURE
-} SDL_GpuTransferUsage;
 
 /*
  * VSYNC:
@@ -950,8 +942,7 @@ extern SDL_DECLSPEC SDL_GpuBuffer *SDLCALL SDL_GpuCreateBuffer(
  * Creates a transfer buffer to be used when uploading to or downloading from graphics resources.
  *
  * \param device a GPU Context
- * \param usage specifies whether the transfer buffer will transfer buffers or textures
- * \param mapFlags specify read-write options for the transfer buffer
+ * \param usage whether the transfer buffer will be used for uploads or downloads
  * \param sizeInBytes the size of the transfer buffer
  * \returns a transfer buffer on success, or NULL on failure
  *
@@ -965,8 +956,7 @@ extern SDL_DECLSPEC SDL_GpuBuffer *SDLCALL SDL_GpuCreateBuffer(
  */
 extern SDL_DECLSPEC SDL_GpuTransferBuffer *SDLCALL SDL_GpuCreateTransferBuffer(
     SDL_GpuDevice *device,
-    SDL_GpuTransferUsage usage,
-    SDL_GpuTransferBufferMapFlags mapFlags,
+    SDL_GpuTransferBufferUsage usage,
     Uint32 sizeInBytes);
 
 /* Debug Naming */
