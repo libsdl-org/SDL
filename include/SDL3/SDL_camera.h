@@ -249,7 +249,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCameraDeviceName(SDL_CameraDevic
  * Get the position of the camera in relation to the system.
  *
  * Most platforms will report UNKNOWN, but mobile devices, like phones, can
- * often make a distiction between cameras on the front of the device (that
+ * often make a distinction between cameras on the front of the device (that
  * points towards the user, for taking "selfies") and cameras on the back (for
  * filming in the direction the user is facing).
  *
