@@ -677,6 +677,9 @@ typedef struct D3D11CommandBuffer
     /* Compute Pass */
     D3D11ComputePipeline *computePipeline;
 
+    /* Debug Annotation */
+    ID3DUserDefinedAnnotation *annotation;
+
     /* Resource slot state */
 
     SDL_bool needVertexSamplerBind;
@@ -761,7 +764,6 @@ struct D3D11Renderer
     BOOL supportsTearing;
     Uint8 supportsFlipDiscard;
 
-    ID3DUserDefinedAnnotation *annotation;
     SDL_iconv_t iconv;
 
     /* Blit */
@@ -970,6 +972,9 @@ static void D3D11_DestroyDevice(
     /* Release command buffer infrastructure */
     for (Uint32 i = 0; i < renderer->availableCommandBufferCount; i += 1) {
         D3D11CommandBuffer *commandBuffer = renderer->availableCommandBuffers[i];
+        if (commandBuffer->annotation) {
+            ID3DUserDefinedAnnotation_Release(commandBuffer->annotation);
+        }
         ID3D11DeviceContext_Release(commandBuffer->context);
         SDL_free(commandBuffer->usedBuffers);
         SDL_free(commandBuffer->usedTransferBuffers);
@@ -1005,10 +1010,7 @@ static void D3D11_DestroyDevice(
     }
     SDL_free(renderer->availableFences);
 
-    /* Release the annotation/iconv, if applicable */
-    if (renderer->annotation != NULL) {
-        ID3DUserDefinedAnnotation_Release(renderer->annotation);
-    }
+    /* Release the iconv, if applicable */
     if (renderer->iconv != NULL) {
         SDL_iconv_close(renderer->iconv);
     }
@@ -1776,20 +1778,14 @@ static void D3D11_SetTextureName(
     }
 }
 
-static void D3D11_SetStringMarker(
-    SDL_GpuCommandBuffer *commandBuffer,
-    const char *text)
+static SDL_bool D3D11_INTERNAL_StrToWStr(
+    D3D11Renderer *renderer,
+    const char *str,
+    wchar_t *wstr,
+    size_t wstr_size)
 {
-    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
-    D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
-
-    if (renderer->annotation == NULL) {
-        return;
-    }
-
-    wchar_t wstr[256];
-    wchar_t *out = wstr;
-    size_t inlen, outlen, result;
+    size_t inlen, result;
+    size_t outlen = wstr_size;
 
     if (renderer->iconv == NULL) {
         renderer->iconv = SDL_iconv_open("WCHAR_T", "UTF-8");
@@ -1797,13 +1793,12 @@ static void D3D11_SetStringMarker(
     }
 
     /* Convert... */
-    inlen = SDL_strlen(text) + 1;
-    outlen = sizeof(wstr);
+    inlen = SDL_strlen(str) + 1;
     result = SDL_iconv(
         renderer->iconv,
-        &text,
+        &str,
         &inlen,
-        (char **)&out,
+        (char **)&wstr,
         &outlen);
 
     /* Check... */
@@ -1812,14 +1807,61 @@ static void D3D11_SetStringMarker(
     case SDL_ICONV_E2BIG:
     case SDL_ICONV_EILSEQ:
     case SDL_ICONV_EINVAL:
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Failed to convert string marker to wchar_t!");
-        return;
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Failed to convert string to wchar_t!");
+        return SDL_FALSE;
     default:
         break;
     }
 
-    /* Mark, finally. */
-    ID3DUserDefinedAnnotation_SetMarker(renderer->annotation, wstr);
+    return SDL_TRUE;
+}
+
+static void D3D11_InsertDebugLabel(
+    SDL_GpuCommandBuffer *commandBuffer,
+    const char *text)
+{
+    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
+    D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
+
+    if (d3d11CommandBuffer->annotation == NULL) {
+        return;
+    }
+
+    wchar_t wstr[256];
+    if (!D3D11_INTERNAL_StrToWStr(renderer, text, wstr, sizeof(wstr))) {
+        return;
+    }
+
+    ID3DUserDefinedAnnotation_SetMarker(d3d11CommandBuffer->annotation, wstr);
+}
+
+static void D3D11_PushDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer,
+    const char *name)
+{
+    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
+    D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
+
+    if (d3d11CommandBuffer->annotation == NULL) {
+        return;
+    }
+
+    wchar_t wstr[256];
+    if (!D3D11_INTERNAL_StrToWStr(renderer, name, wstr, sizeof(wstr))) {
+        return;
+    }
+
+    ID3DUserDefinedAnnotation_BeginEvent(d3d11CommandBuffer->annotation, wstr);
+}
+
+static void D3D11_PopDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer)
+{
+    D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
+    if (d3d11CommandBuffer->annotation == NULL) {
+        return;
+    }
+    ID3DUserDefinedAnnotation_EndEvent(d3d11CommandBuffer->annotation);
 }
 
 /* Resource Creation */
@@ -3219,7 +3261,7 @@ static void D3D11_INTERNAL_AllocateCommandBuffers(
         sizeof(D3D11CommandBuffer *) * renderer->availableCommandBufferCapacity);
 
     for (Uint32 i = 0; i < allocateCount; i += 1) {
-        commandBuffer = SDL_malloc(sizeof(D3D11CommandBuffer));
+        commandBuffer = SDL_calloc(1, sizeof(D3D11CommandBuffer));
         commandBuffer->renderer = renderer;
 
         /* Deferred Device Context */
@@ -3228,6 +3270,12 @@ static void D3D11_INTERNAL_AllocateCommandBuffers(
             0,
             &commandBuffer->context);
         ERROR_CHECK("Could not create deferred context");
+
+        /* Initialize debug annotation support, if available */
+        ID3D11DeviceContext_QueryInterface(
+            commandBuffer->context,
+            &D3D_IID_ID3DUserDefinedAnnotation,
+            (void **)&commandBuffer->annotation);
 
         commandBuffer->initializedVertexUniformBufferCount = 0;
         commandBuffer->initializedFragmentUniformBufferCount = 0;
@@ -6251,17 +6299,6 @@ tryCreateDevice:
 
     /* Initialize miscellaneous renderer members */
     renderer->debugMode = (flags & D3D11_CREATE_DEVICE_DEBUG);
-
-    /* Initialize SetStringMarker support, if available */
-    res = ID3D11DeviceContext_QueryInterface(
-        renderer->immediateContext,
-        &D3D_IID_ID3DUserDefinedAnnotation,
-        (void **)&renderer->annotation);
-
-    if (res < 0) {
-        D3D11_INTERNAL_LogError(renderer->device, "Could not get UserDefinedAnnotation", res);
-        renderer->annotation = NULL;
-    }
 
     /* Create command buffer pool */
     D3D11_INTERNAL_AllocateCommandBuffers(renderer, 2);

@@ -5344,7 +5344,7 @@ static void VULKAN_SetTextureName(
     }
 }
 
-static void VULKAN_SetStringMarker(
+static void VULKAN_InsertDebugLabel(
     SDL_GpuCommandBuffer *commandBuffer,
     const char *text)
 {
@@ -5360,6 +5360,36 @@ static void VULKAN_SetStringMarker(
         renderer->vkCmdInsertDebugUtilsLabelEXT(
             vulkanCommandBuffer->commandBuffer,
             &labelInfo);
+    }
+}
+
+static void VULKAN_PushDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer,
+    const char *name)
+{
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VkDebugUtilsLabelEXT labelInfo;
+
+    if (renderer->supportsDebugUtils) {
+        labelInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+        labelInfo.pNext = NULL;
+        labelInfo.pLabelName = name;
+
+        renderer->vkCmdBeginDebugUtilsLabelEXT(
+            vulkanCommandBuffer->commandBuffer,
+            &labelInfo);
+    }
+}
+
+static void VULKAN_PopDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer)
+{
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+
+    if (renderer->supportsDebugUtils) {
+        renderer->vkCmdEndDebugUtilsLabelEXT(vulkanCommandBuffer->commandBuffer);
     }
 }
 

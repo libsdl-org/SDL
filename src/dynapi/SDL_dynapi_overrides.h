@@ -1077,7 +1077,9 @@
 #define SDL_GpuCreateTransferBuffer SDL_GpuCreateTransferBuffer_REAL
 #define SDL_GpuSetBufferName SDL_GpuSetBufferName_REAL
 #define SDL_GpuSetTextureName SDL_GpuSetTextureName_REAL
-#define SDL_GpuSetStringMarker SDL_GpuSetStringMarker_REAL
+#define SDL_GpuInsertDebugLabel SDL_GpuInsertDebugLabel_REAL
+#define SDL_GpuPushDebugGroup SDL_GpuPushDebugGroup_REAL
+#define SDL_GpuPopDebugGroup SDL_GpuPopDebugGroup_REAL
 #define SDL_GpuReleaseTexture SDL_GpuReleaseTexture_REAL
 #define SDL_GpuReleaseSampler SDL_GpuReleaseSampler_REAL
 #define SDL_GpuReleaseBuffer SDL_GpuReleaseBuffer_REAL

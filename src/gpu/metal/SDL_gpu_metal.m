@@ -1096,7 +1096,7 @@ static void METAL_SetTextureName(
     }
 }
 
-static void METAL_SetStringMarker(
+static void METAL_InsertDebugLabel(
     SDL_GpuCommandBuffer *commandBuffer,
     const char *text)
 {
@@ -1110,7 +1110,42 @@ static void METAL_SetStringMarker(
     } else if (metalCommandBuffer->computeEncoder) {
         [metalCommandBuffer->computeEncoder insertDebugSignpost:label];
     } else {
+        /* Metal doesn't have insertDebugSignpost for command buffers... */
         [metalCommandBuffer->handle pushDebugGroup:label];
+        [metalCommandBuffer->handle popDebugGroup];
+    }
+}
+
+static void METAL_PushDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer,
+    const char *name)
+{
+    MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+    NSString *label = @(name);
+
+    if (metalCommandBuffer->renderEncoder) {
+        [metalCommandBuffer->renderEncoder pushDebugGroup:label];
+    } else if (metalCommandBuffer->blitEncoder) {
+        [metalCommandBuffer->blitEncoder pushDebugGroup:label];
+    } else if (metalCommandBuffer->computeEncoder) {
+        [metalCommandBuffer->computeEncoder pushDebugGroup:label];
+    } else {
+        [metalCommandBuffer->handle pushDebugGroup:label];
+    }
+}
+
+static void METAL_PopDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer)
+{
+    MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+
+    if (metalCommandBuffer->renderEncoder) {
+        [metalCommandBuffer->renderEncoder popDebugGroup];
+    } else if (metalCommandBuffer->blitEncoder) {
+        [metalCommandBuffer->blitEncoder popDebugGroup];
+    } else if (metalCommandBuffer->computeEncoder) {
+        [metalCommandBuffer->computeEncoder popDebugGroup];
+    } else {
         [metalCommandBuffer->handle popDebugGroup];
     }
 }

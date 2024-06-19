@@ -484,14 +484,32 @@ void SDL_GpuSetTextureName(
         text);
 }
 
-void SDL_GpuSetStringMarker(
+void SDL_GpuInsertDebugLabel(
     SDL_GpuCommandBuffer *commandBuffer,
     const char *text)
 {
     CHECK_COMMAND_BUFFER
-    COMMAND_BUFFER_DEVICE->SetStringMarker(
+    COMMAND_BUFFER_DEVICE->InsertDebugLabel(
         commandBuffer,
         text);
+}
+
+void SDL_GpuPushDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer,
+    const char *name)
+{
+    CHECK_COMMAND_BUFFER
+    COMMAND_BUFFER_DEVICE->PushDebugGroup(
+        commandBuffer,
+        name);
+}
+
+void SDL_GpuPopDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer)
+{
+    CHECK_COMMAND_BUFFER
+    COMMAND_BUFFER_DEVICE->PopDebugGroup(
+        commandBuffer);
 }
 
 /* Disposal */

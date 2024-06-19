@@ -1052,7 +1052,9 @@ SDL3_0.0.0 {
     SDL_GpuCreateTransferBuffer;
     SDL_GpuSetBufferName;
     SDL_GpuSetTextureName;
-    SDL_GpuSetStringMarker;
+    SDL_GpuInsertDebugLabel;
+    SDL_GpuPushDebugGroup;
+    SDL_GpuPopDebugGroup;
     SDL_GpuReleaseTexture;
     SDL_GpuReleaseSampler;
     SDL_GpuReleaseBuffer;

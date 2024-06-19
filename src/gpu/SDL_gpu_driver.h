@@ -246,9 +246,16 @@ struct SDL_GpuDevice
         SDL_GpuTexture *texture,
         const char *text);
 
-    void (*SetStringMarker)(
+    void (*InsertDebugLabel)(
         SDL_GpuCommandBuffer *commandBuffer,
         const char *text);
+
+    void (*PushDebugGroup)(
+        SDL_GpuCommandBuffer *commandBuffer,
+        const char *name);
+
+    void (*PopDebugGroup)(
+        SDL_GpuCommandBuffer *commandBuffer);
 
     /* Disposal */
 
@@ -608,7 +615,9 @@ struct SDL_GpuDevice
     ASSIGN_DRIVER_FUNC(CreateTransferBuffer, name)          \
     ASSIGN_DRIVER_FUNC(SetBufferName, name)                 \
     ASSIGN_DRIVER_FUNC(SetTextureName, name)                \
-    ASSIGN_DRIVER_FUNC(SetStringMarker, name)               \
+    ASSIGN_DRIVER_FUNC(InsertDebugLabel, name)              \
+    ASSIGN_DRIVER_FUNC(PushDebugGroup, name)                \
+    ASSIGN_DRIVER_FUNC(PopDebugGroup, name)                 \
     ASSIGN_DRIVER_FUNC(ReleaseTexture, name)                \
     ASSIGN_DRIVER_FUNC(ReleaseSampler, name)                \
     ASSIGN_DRIVER_FUNC(ReleaseBuffer, name)                 \

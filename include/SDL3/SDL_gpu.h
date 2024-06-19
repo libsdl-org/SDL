@@ -990,16 +990,51 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuSetTextureName(
     const char *text);
 
 /**
- * Sets an arbitrary string constant to label a section of a command buffer. Useful for debugging.
+ * Inserts an arbitrary string label into the command buffer callstream.
+ * Useful for debugging.
  *
  * \param commandBuffer a command buffer
- * \param text a UTF-8 string constant to mark as the label
+ * \param text a UTF-8 string constant to insert as the label
  *
  * \since This function is available since SDL 3.x.x
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GpuSetStringMarker(
+extern SDL_DECLSPEC void SDLCALL SDL_GpuInsertDebugLabel(
     SDL_GpuCommandBuffer *commandBuffer,
     const char *text);
+
+/**
+ * Begins a debug group with an arbitary name.
+ * Used for denoting groups of calls when viewing the command buffer callstream
+ * in a graphics debugging tool.
+ *
+ * Each call to SDL_GpuPushDebugGroup must have a corresponding call to SDL_GpuPopDebugGroup.
+ *
+ * On some backends (e.g. Metal), pushing a debug group during a render/blit/compute pass
+ * will create a group that is scoped to the native pass rather than the command buffer.
+ * For best results, if you push a debug group during a pass, always pop it in the same pass.
+ *
+ * \param commandBuffer a command buffer
+ * \param name a UTF-8 string constant that names the group
+ *
+ * \since This function is available since SDL 3.x.x
+ *
+ * \sa SDL_GpuPopDebugGroup
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_GpuPushDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer,
+    const char *name);
+
+/**
+ * Ends the most-recently pushed debug group.
+ *
+ * \param commandBuffer a command buffer
+ *
+ * \since This function is available since SDL 3.x.x
+ *
+ * \sa SDL_GpuPushDebugGroup
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_GpuPopDebugGroup(
+    SDL_GpuCommandBuffer *commandBuffer);
 
 /* Disposal */
 
