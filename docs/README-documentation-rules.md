@@ -175,7 +175,7 @@ code/preformatted blocks.
 
 You can use Markdown's `[link markup format](https://example.com/)`, but
 sometimes it's clearer to list bare URLs; the URL will be visible on the
-wiki page, but also clickable to follow the link. This is up to your judgement
+wiki page, but also clickable to follow the link. This is up to your judgment
 on a case-by-case basis.
 
 
