@@ -1292,41 +1292,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
  *
  * \returns a random value in the range of [0-SDL_MAX_UINT32].
  *
- * \threadsafety All calls should be made from a single thread, use
- *               SDL_rand_r() when using multiple threads.
+ * \threadsafety All calls should be made from a single thread
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_rand_r
  * \sa SDL_srand
  * \sa SDL_rand_n
  * \sa SDL_rand_float
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand(void);
-
-/**
- * Get 32 pseudo-random bits.
- *
- * There are no guarantees as to the quality of the random sequence produced,
- * and this should not be used for security (cryptography, passwords) or where
- * money is on the line (loot-boxes, casinos). There are many random number
- * libraries available with different characteristics and you should pick one of
- * those to meet any serious needs.
- *
- * \param state a pointer to a 64-bit seed value that will be updated with
- *              each call to SDL_rand_r(). If the value of the seed is 0, it
- *              will be initialized with SDL_GetPerformanceCounter().
- * \returns a random value in the range of [0-SDL_MAX_UINT32], or 0 if state
- *          is NULL.
- *
- * \threadsafety This can be called from any thread, however each thread
- *               should pass its own state pointer.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_rand
- */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_r(Uint64 *state);
 
 /**
  * Generates a pseudo-random number less than n

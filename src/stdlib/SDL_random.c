@@ -39,26 +39,6 @@ Uint32 SDL_rand(void)
     if(!SDL_rand_initialized) {
         SDL_srand(0);
     }
-    return SDL_rand_r(&SDL_rand_state);
-}
-
-Uint32 SDL_rand_n(Uint32 n)
-{
-	// On 32-bit arch, the compiler will optimize to a single 32-bit multiply
-	Uint64 val = (Uint64)SDL_rand() * n;
-	return (Uint32)(val >> 32);
-}
-
-float SDL_rand_float(void)
-{
-	return (SDL_rand() >> (32-24)) * 0x1p-24f;
-}
-
-Uint32 SDL_rand_r(Uint64 *state)
-{
-    if (!state) {
-        return 0;
-    }
 
     // The C and A parameters of this LCG have been chosen based on hundreds
     // of core-hours of testing with PractRand and TestU01's Crush.
@@ -75,8 +55,20 @@ Uint32 SDL_rand_r(Uint64 *state)
     // Softw Pract Exper. 2022;52(2):443-458. doi: 10.1002/spe.3030
     // https://arxiv.org/abs/2001.05304v2
 
-    *state = *state * 0xff1cd035ul + 0x05;
+    SDL_rand_state = SDL_rand_state * 0xff1cd035ul + 0x05;
 
     // Only return top 32 bits because they have a longer period
-    return (Uint32)(*state >> 32);
+    return (Uint32)(SDL_rand_state >> 32);
+}
+
+Uint32 SDL_rand_n(Uint32 n)
+{
+	// On 32-bit arch, the compiler will optimize to a single 32-bit multiply
+	Uint64 val = (Uint64)SDL_rand() * n;
+	return (Uint32)(val >> 32);
+}
+
+float SDL_rand_float(void)
+{
+	return (SDL_rand() >> (32-24)) * 0x1p-24f;
 }

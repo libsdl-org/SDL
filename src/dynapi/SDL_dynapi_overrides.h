@@ -983,7 +983,6 @@
 #define SDL_rand SDL_rand_REAL
 #define SDL_rand_float SDL_rand_float_REAL
 #define SDL_rand_n SDL_rand_n_REAL
-#define SDL_rand_r SDL_rand_r_REAL
 #define SDL_realloc SDL_realloc_REAL
 #define SDL_round SDL_round_REAL
 #define SDL_roundf SDL_roundf_REAL
