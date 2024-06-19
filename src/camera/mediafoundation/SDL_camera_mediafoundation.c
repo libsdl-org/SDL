@@ -362,7 +362,7 @@ static int MEDIAFOUNDATION_WaitDevice(SDL_CameraDevice *device)
         }
 
         // we currently ignore stream_flags format changes, but my _hope_ is that IMFSourceReader is handling this and
-        // will continue to give us the explictly-specified format we requested when opening the device, though, and
+        // will continue to give us the explicitly-specified format we requested when opening the device, though, and
         // we don't have to manually deal with it.
 
         if (sample != NULL) {
