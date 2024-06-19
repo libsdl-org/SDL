@@ -428,7 +428,7 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
 
         if (x11KeyPressed && !sdlKeyPressed) {
             /* Only update modifier state for keys that are pressed in another application */
-            switch (SDL_GetKeyFromScancode(scancode)) {
+            switch (SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE)) {
             case SDLK_LCTRL:
             case SDLK_RCTRL:
             case SDLK_LSHIFT:

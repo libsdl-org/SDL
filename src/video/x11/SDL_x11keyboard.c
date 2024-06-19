@@ -257,7 +257,6 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
         }
     }
     if (best_index >= 0 && best_distance <= 2) {
-        SDL_Keycode default_keymap[SDL_NUM_SCANCODES];
         int table_size;
         const SDL_Scancode *table = SDL_GetScancodeTable(scancode_set[best_index], &table_size);
 
@@ -274,8 +273,6 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
            However, there are a number of extended scancodes that have no standard location, so use
            the X11 mapping for all non-character keys.
          */
-        SDL_GetDefaultKeymap(default_keymap);
-
         for (i = min_keycode; i <= max_keycode; ++i) {
             SDL_Scancode scancode = X11_KeyCodeToSDLScancode(_this, i);
 #ifdef DEBUG_KEYBOARD
@@ -289,7 +286,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
             if (scancode == data->key_layout[i]) {
                 continue;
             }
-            if (default_keymap[scancode] >= SDLK_SCANCODE_MASK && X11_ScancodeIsRemappable(scancode)) {
+            if ((SDL_GetDefaultKeyFromScancode(scancode, SDL_KMOD_NONE) & SDLK_SCANCODE_MASK) && X11_ScancodeIsRemappable(scancode)) {
                 /* Not a character key and the scancode is safe to remap */
 #ifdef DEBUG_KEYBOARD
                 SDL_Log("Changing scancode, was %d (%s), now %d (%s)\n", data->key_layout[i], SDL_GetScancodeName(data->key_layout[i]), scancode, SDL_GetScancodeName(scancode));
@@ -340,10 +337,10 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
     SDL_VideoData *data = _this->driverdata;
     int i;
     SDL_Scancode scancode;
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    SDL_Keymap *keymap;
     unsigned char group = 0;
 
-    SDL_GetDefaultKeymap(keymap);
+    keymap = SDL_CreateKeymap();
 
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     if (data->xkb) {
@@ -356,8 +353,10 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
     }
 #endif
 
+    // FIXME: Need to get the mapping for all modifiers, not just the first one
     for (i = 0; i < SDL_arraysize(data->key_layout); i++) {
         Uint32 key;
+        SDL_Keycode keycode;
 
         /* Make sure this is a valid scancode */
         scancode = data->key_layout[i];
@@ -368,33 +367,37 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
         /* See if there is a UCS keycode for this scancode */
         key = X11_KeyCodeToUcs4(_this, (KeyCode)i, group);
         if (key) {
-            keymap[scancode] = key;
+            keycode = (SDL_Keycode)key;
         } else {
             SDL_Scancode keyScancode = X11_KeyCodeToSDLScancode(_this, (KeyCode)i);
 
             switch (keyScancode) {
+            case SDL_SCANCODE_UNKNOWN:
+                keycode = SDLK_UNKNOWN;
+                break;
             case SDL_SCANCODE_RETURN:
-                keymap[scancode] = SDLK_RETURN;
+                keycode = SDLK_RETURN;
                 break;
             case SDL_SCANCODE_ESCAPE:
-                keymap[scancode] = SDLK_ESCAPE;
+                keycode = SDLK_ESCAPE;
                 break;
             case SDL_SCANCODE_BACKSPACE:
-                keymap[scancode] = SDLK_BACKSPACE;
+                keycode = SDLK_BACKSPACE;
                 break;
             case SDL_SCANCODE_TAB:
-                keymap[scancode] = SDLK_TAB;
+                keycode = SDLK_TAB;
                 break;
             case SDL_SCANCODE_DELETE:
-                keymap[scancode] = SDLK_DELETE;
+                keycode = SDLK_DELETE;
                 break;
             default:
-                keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(keyScancode);
+                keycode = SDL_SCANCODE_TO_KEYCODE(keyScancode);
                 break;
             }
         }
+        SDL_SetKeymapEntry(keymap, scancode, SDL_KMOD_NONE, keycode);
     }
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
+    SDL_SetKeymap(keymap, send_event);
 }
 
 void X11_QuitKeyboard(SDL_VideoDevice *_this)

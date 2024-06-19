@@ -70,81 +70,81 @@ TBool isCursorVisible = EFalse;
 
 static SDL_Scancode ConvertScancode(SDL_VideoDevice *_this, int key)
 {
-    SDL_Keycode keycode;
+    SDL_Keycode scancode;
 
     switch (key) {
     case EStdKeyBackspace: // Clear key
-        keycode = SDLK_BACKSPACE;
+        scancode = SDL_SCANCODE_BACKSPACE;
         break;
     case 0x31: // 1
-        keycode = SDLK_1;
+        scancode = SDL_SCANCODE_1;
         break;
     case 0x32: // 2
-        keycode = SDLK_2;
+        scancode = SDL_SCANCODE_2;
         break;
     case 0x33: // 3
-        keycode = SDLK_3;
+        scancode = SDL_SCANCODE_3;
         break;
     case 0x34: // 4
-        keycode = SDLK_4;
+        scancode = SDL_SCANCODE_4;
         break;
     case 0x35: // 5
-        keycode = SDLK_5;
+        scancode = SDL_SCANCODE_5;
         break;
     case 0x36: // 6
-        keycode = SDLK_6;
+        scancode = SDL_SCANCODE_6;
         break;
     case 0x37: // 7
-        keycode = SDLK_7;
+        scancode = SDL_SCANCODE_7;
         break;
     case 0x38: // 8
-        keycode = SDLK_8;
+        scancode = SDL_SCANCODE_8;
         break;
     case 0x39: // 9
-        keycode = SDLK_9;
+        scancode = SDL_SCANCODE_9;
         break;
     case 0x30: // 0
-        keycode = SDLK_0;
+        scancode = SDL_SCANCODE_0;
         break;
     case 0x2a: // Asterisk
-        keycode = SDLK_ASTERISK;
+        scancode = SDL_SCANCODE_ASTERISK;
         break;
     case EStdKeyHash: // Hash
-        keycode = SDLK_HASH;
+        scancode = SDL_SCANCODE_HASH;
         break;
     case EStdKeyDevice0: // Left softkey
-        keycode = SDLK_SOFTLEFT;
+        scancode = SDL_SCANCODE_SOFTLEFT;
         break;
     case EStdKeyDevice1: // Right softkey
-        keycode = SDLK_SOFTRIGHT;
+        scancode = SDL_SCANCODE_SOFTRIGHT;
         break;
     case EStdKeyApplication0: // Call softkey
-        keycode = SDLK_CALL;
+        scancode = SDL_SCANCODE_CALL;
         break;
     case EStdKeyApplication1: // End call softkey
-        keycode = SDLK_ENDCALL;
+        scancode = SDL_SCANCODE_ENDCALL;
         break;
     case EStdKeyDevice3: // Middle softkey
-        keycode = SDLK_SELECT;
+        scancode = SDL_SCANCODE_SELECT;
         break;
     case EStdKeyUpArrow: // Up arrow
-        keycode = SDLK_UP;
+        scancode = SDL_SCANCODE_UP;
         break;
     case EStdKeyDownArrow: // Down arrow
-        keycode = SDLK_DOWN;
+        scancode = SDL_SCANCODE_DOWN;
         break;
     case EStdKeyLeftArrow: // Left arrow
-        keycode = SDLK_LEFT;
+        scancode = SDL_SCANCODE_LEFT;
         break;
     case EStdKeyRightArrow: // Right arrow
-        keycode = SDLK_RIGHT;
+        scancode = SDL_SCANCODE_RIGHT;
         break;
     default:
-        keycode = SDLK_UNKNOWN;
+        scancode = SDL_SCANCODE_UNKNOWN;
         break;
     }
 
-    return SDL_GetScancodeFromKey(keycode);
+    return scancode;
 }
 
 int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)

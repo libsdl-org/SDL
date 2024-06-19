@@ -507,6 +507,9 @@
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h">
       <Filter>events</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_keymap_c.h">
+      <Filter>events</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h">
       <Filter>events</Filter>
     </ClInclude>
@@ -998,6 +1001,9 @@
       <Filter>events</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\events\SDL_keyboard.c">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_keymap.c">
       <Filter>events</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\events\SDL_mouse.c">

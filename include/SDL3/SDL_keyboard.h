@@ -211,6 +211,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
  * See SDL_Keycode for details.
  *
  * \param scancode the desired SDL_Scancode to query.
+ * \param modstate the modifier state to use when translating the scancode to a keycode.
  * \returns the SDL_Keycode that corresponds to the given SDL_Scancode.
  *
  * \since This function is available since SDL 3.0.0.
@@ -218,7 +219,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
  * \sa SDL_GetKeyName
  * \sa SDL_GetScancodeFromKey
  */
-extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode);
+extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate);
 
 /**
  * Get the key code corresponding to the given scancode according to the
@@ -227,35 +228,67 @@ extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetDefaultKeyFromScancode(SDL_Scanco
  * See SDL_Keycode for details.
  *
  * \param scancode the desired SDL_Scancode to query.
+ * \param modstate the modifier state to use when translating the scancode to a keycode.
  * \returns the SDL_Keycode that corresponds to the given SDL_Scancode.
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetDefaultKeyFromScancode
  * \sa SDL_GetKeyName
  * \sa SDL_GetScancodeFromKey
  */
-extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode);
+extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate);
+
+/**
+ * Get the scancode corresponding to the given key code according to a default en_US keyboard layout.
+ *
+ * Note that there may be multiple scancode+modifier states that can generate this keycode, this will just return the first one found.
+ *
+ * \param key the desired SDL_Keycode to query.
+ * \param modstate a pointer to the modifier state that would be used when the scancode generates this key, may be NULL.
+ * \returns the SDL_Scancode that corresponds to the given SDL_Keycode.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetScancodeFromKey
+ * \sa SDL_GetScancodeName
+ */
+extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate);
 
 /**
  * Get the scancode corresponding to the given key code according to the
  * current keyboard layout.
  *
- * See SDL_Scancode for details.
+ * Note that there may be multiple scancode+modifier states that can generate this keycode, this will just return the first one found.
  *
  * \param key the desired SDL_Keycode to query.
+ * \param modstate a pointer to the modifier state that would be used when the scancode generates this key, may be NULL.
  * \returns the SDL_Scancode that corresponds to the given SDL_Keycode.
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetDefaultScancodeFromKey
  * \sa SDL_GetKeyFromScancode
  * \sa SDL_GetScancodeName
  */
-extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key);
+extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate);
+
+/**
+ * Set a human-readable name for a scancode.
+ *
+ * \param scancode the desired SDL_Scancode.
+ * \param name the name to use for the scancode, encoded as UTF-8. The string is not copied, so the pointer given to this function must stay valid while SDL is being used.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetScancodeName
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_SetScancodeName(SDL_Scancode scancode, const char *name);
 
 /**
  * Get a human-readable name for a scancode.
- *
- * See SDL_Scancode for details.
  *
  * The returned string follows the SDL_GetStringRule.
  *
@@ -276,6 +309,7 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key)
  *
  * \sa SDL_GetScancodeFromKey
  * \sa SDL_GetScancodeFromName
+ * \sa SDL_SetScancodeName
  */
 extern SDL_DECLSPEC const char *SDLCALL SDL_GetScancodeName(SDL_Scancode scancode);
 
@@ -296,8 +330,6 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
 
 /**
  * Get a human-readable name for a key.
- *
- * See SDL_Scancode and SDL_Keycode for details.
  *
  * The returned string follows the SDL_GetStringRule.
  *
