@@ -327,7 +327,7 @@ extern "C" {
  * latency or higher throughput AND ARE WILLING TO DEAL WITH what that might
  * require of the app), they can specify it.
  *
- * SDL will try to accomodate this value, but there is no promise you'll get
+ * SDL will try to accommodate this value, but there is no promise you'll get
  * the buffer size requested. Many platforms won't honor this request at all,
  * or might adjust it.
  *
@@ -1050,7 +1050,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"
 
 /**
- * A variable containing a list of devices that should not be considerd
+ * A variable containing a list of devices that should not be considered
  * joysticks.
  *
  * The format of the string is a comma separated list of USB VID/PID pairs in
@@ -2590,7 +2590,7 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": Use the prefered OS device. (default)
+ * - "0": Use the preferred OS device. (default)
  * - "1": Select a low power device.
  *
  * This hint should be set before creating a renderer.
