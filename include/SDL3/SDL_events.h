@@ -316,8 +316,7 @@ typedef struct SDL_KeyboardEvent
 /**
  * Keyboard text editing event structure (event.edit.*)
  *
- * The `text` is owned by SDL and should be copied if the application wants to
- * hold onto it beyond the scope of handling this event.
+ * The text string follows the SDL_GetStringRule.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -335,8 +334,7 @@ typedef struct SDL_TextEditingEvent
 /**
  * Keyboard text input event structure (event.text.*)
  *
- * The `text` is owned by SDL and should be copied if the application wants to
- * hold onto it beyond the scope of handling this event.
+ * The text string follows the SDL_GetStringRule.
  *
  * This event will never be delivered unless text input is enabled by calling
  * SDL_StartTextInput(). Text input is disabled by default!
@@ -733,7 +731,7 @@ typedef struct SDL_PenButtonEvent
  * An event used to drop text or request a file open by the system
  * (event.drop.*)
  *
- * The `source` and `data` are owned by SDL and should be copied if the application wants to hold onto them beyond the scope of handling this event.
+ * The source and data strings follow the SDL_GetStringRule.
  *
  * \since This struct is available since SDL 3.0.0.
  */

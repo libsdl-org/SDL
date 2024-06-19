@@ -111,57 +111,81 @@ void WIN_InitKeyboard(SDL_VideoDevice *_this)
 
 void WIN_UpdateKeymap(SDL_bool send_event)
 {
-    int i;
     SDL_Scancode scancode;
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    SDL_Keymap *keymap;
     BYTE keyboardState[256] = { 0 };
     WCHAR buffer[16];
+    SDL_Keymod mods[] = {
+        SDL_KMOD_NONE,
+        SDL_KMOD_SHIFT,
+        SDL_KMOD_CAPS,
+        (SDL_KMOD_SHIFT | SDL_KMOD_CAPS),
+        SDL_KMOD_MODE,
+        (SDL_KMOD_MODE | SDL_KMOD_SHIFT),
+        (SDL_KMOD_MODE | SDL_KMOD_CAPS),
+        (SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS)
+    };
 
-    SDL_GetDefaultKeymap(keymap);
     WIN_ResetDeadKeys();
 
-    for (i = 0; i < SDL_arraysize(windows_scancode_table); i++) {
-        int vk, sc, result;
-        Uint32 *ch = 0;
+    keymap = SDL_CreateKeymap();
 
-        /* Make sure this scancode is a valid character scancode */
-        scancode = windows_scancode_table[i];
-        if (scancode == SDL_SCANCODE_UNKNOWN) {
-            continue;
-        }
+    for (int m = 0; m < SDL_arraysize(mods); ++m) {
+        for (int i = 0; i < SDL_arraysize(windows_scancode_table); i++) {
+            int vk, sc, result;
+            Uint32 *ch = 0;
 
-        /* If this key is one of the non-mappable keys, ignore it */
-        /* Uncomment the third part to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
-        if ((keymap[scancode] & SDLK_SCANCODE_MASK) || scancode == SDL_SCANCODE_DELETE /*|| scancode == SDL_SCANCODE_GRAVE*/) {
-            continue;
-        }
+            /* Make sure this scancode is a valid character scancode */
+            scancode = windows_scancode_table[i];
+            if (scancode == SDL_SCANCODE_UNKNOWN ||
+                (SDL_GetDefaultKeyFromScancode(scancode, SDL_KMOD_NONE) & SDLK_SCANCODE_MASK)) {
+                continue;
+            }
 
-        /* Unpack the single byte index to make the scan code. */
-        sc = MAKEWORD(i & 0x7f, (i & 0x80) ? 0xe0 : 0x00);
-        vk = LOBYTE(MapVirtualKey(sc, MAPVK_VSC_TO_VK));
-        if (!vk) {
-            continue;
-        }
+            /* If this key is one of the non-mappable keys, ignore it */
+            /* Uncomment the second part to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
+            if (scancode == SDL_SCANCODE_DELETE /*|| scancode == SDL_SCANCODE_GRAVE*/) {
+                continue;
+            }
 
-        result = ToUnicode(vk, sc, keyboardState, buffer, 16, 0);
-        buffer[SDL_abs(result)] = 0;
+            /* Unpack the single byte index to make the scan code. */
+            sc = MAKEWORD(i & 0x7f, (i & 0x80) ? 0xe0 : 0x00);
+            vk = LOBYTE(MapVirtualKey(sc, MAPVK_VSC_TO_VK));
+            if (!vk) {
+                continue;
+            }
 
-        /* Convert UTF-16 to UTF-32 code points */
-        ch = (Uint32 *)SDL_iconv_string("UTF-32LE", "UTF-16LE", (const char *)buffer, (SDL_abs(result) + 1) * sizeof(WCHAR));
-        if (ch) {
-            /* Windows keyboard layouts can emit several UTF-32 code points on a single key press.
-             * Use <U+FFFD REPLACEMENT CHARACTER> since we cannot fit into single SDL_Keycode value in SDL keymap.
-             * See https://kbdlayout.info/features/ligatures for a list of such keys. */
-            keymap[scancode] = ch[1] == 0 ? ch[0] : 0xfffd;
-            SDL_free(ch);
-        }
+            // Update the keyboard state for the modifiers
+            keyboardState[VK_SHIFT] = (mods[m] & SDL_KMOD_SHIFT) ? 0x80 : 0x00;
+            keyboardState[VK_CAPITAL] = (mods[m] & SDL_KMOD_CAPS) ? 0x01 : 0x00;
+            keyboardState[VK_CONTROL] = (mods[m] & SDL_KMOD_MODE) ? 0x80 : 0x00;
+            keyboardState[VK_MENU] = (mods[m] & SDL_KMOD_MODE) ? 0x80 : 0x00;
 
-        if (result < 0) {
-            WIN_ResetDeadKeys();
+            result = ToUnicode(vk, sc, keyboardState, buffer, 16, 0);
+            buffer[SDL_abs(result)] = 0;
+
+            /* Convert UTF-16 to UTF-32 code points */
+            ch = (Uint32 *)SDL_iconv_string("UTF-32LE", "UTF-16LE", (const char *)buffer, (SDL_abs(result) + 1) * sizeof(WCHAR));
+            if (ch) {
+                /* Windows keyboard layouts can emit several UTF-32 code points on a single key press.
+                 * Use <U+FFFD REPLACEMENT CHARACTER> since we cannot fit into single SDL_Keycode value in SDL keymap.
+                 * See https://kbdlayout.info/features/ligatures for a list of such keys. */
+                SDL_SetKeymapEntry(keymap, scancode, mods[m], ch[1] == 0 ? ch[0] : 0xfffd);
+                SDL_free(ch);
+            } else {
+                // The default keymap doesn't have any SDL_KMOD_MODE entries, so we don't need to override them
+                if (!(mods[m] & SDL_KMOD_MODE)) {
+                    SDL_SetKeymapEntry(keymap, scancode, mods[m], SDLK_UNKNOWN);
+                }
+            }
+
+            if (result < 0) {
+                WIN_ResetDeadKeys();
+            }
         }
     }
 
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
+    SDL_SetKeymap(keymap, send_event);
 }
 
 void WIN_QuitKeyboard(SDL_VideoDevice *_this)

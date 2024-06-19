@@ -27,8 +27,7 @@ static SDLTest_CommonState *state;
 static SDLTest_TextWindow *textwin;
 static int done;
 
-static void
-print_string(char **text, size_t *maxlen, const char *fmt, ...)
+static void print_string(char **text, size_t *maxlen, const char *fmt, ...)
 {
     int len;
     va_list ap;
@@ -46,39 +45,52 @@ print_string(char **text, size_t *maxlen, const char *fmt, ...)
     va_end(ap);
 }
 
-static void
-print_modifiers(char **text, size_t *maxlen)
+static void print_modifiers(char **text, size_t *maxlen, SDL_Keymod mod)
 {
-    int mod;
     print_string(text, maxlen, " modifiers:");
-    mod = SDL_GetModState();
-    if (!mod) {
+    if (mod == SDL_KMOD_NONE) {
         print_string(text, maxlen, " (none)");
         return;
     }
-    if (mod & SDL_KMOD_LSHIFT) {
-        print_string(text, maxlen, " LSHIFT");
+    if ((mod & SDL_KMOD_SHIFT) == SDL_KMOD_SHIFT) {
+        print_string(text, maxlen, " SHIFT");
+    } else {
+        if (mod & SDL_KMOD_LSHIFT) {
+            print_string(text, maxlen, " LSHIFT");
+        }
+        if (mod & SDL_KMOD_RSHIFT) {
+            print_string(text, maxlen, " RSHIFT");
+        }
     }
-    if (mod & SDL_KMOD_RSHIFT) {
-        print_string(text, maxlen, " RSHIFT");
+    if ((mod & SDL_KMOD_CTRL) == SDL_KMOD_CTRL) {
+        print_string(text, maxlen, " CTRL");
+    } else {
+        if (mod & SDL_KMOD_LCTRL) {
+            print_string(text, maxlen, " LCTRL");
+        }
+        if (mod & SDL_KMOD_RCTRL) {
+            print_string(text, maxlen, " RCTRL");
+        }
     }
-    if (mod & SDL_KMOD_LCTRL) {
-        print_string(text, maxlen, " LCTRL");
+    if ((mod & SDL_KMOD_ALT) == SDL_KMOD_ALT) {
+        print_string(text, maxlen, " ALT");
+    } else {
+        if (mod & SDL_KMOD_LALT) {
+            print_string(text, maxlen, " LALT");
+        }
+        if (mod & SDL_KMOD_RALT) {
+            print_string(text, maxlen, " RALT");
+        }
     }
-    if (mod & SDL_KMOD_RCTRL) {
-        print_string(text, maxlen, " RCTRL");
-    }
-    if (mod & SDL_KMOD_LALT) {
-        print_string(text, maxlen, " LALT");
-    }
-    if (mod & SDL_KMOD_RALT) {
-        print_string(text, maxlen, " RALT");
-    }
-    if (mod & SDL_KMOD_LGUI) {
-        print_string(text, maxlen, " LGUI");
-    }
-    if (mod & SDL_KMOD_RGUI) {
-        print_string(text, maxlen, " RGUI");
+    if ((mod & SDL_KMOD_GUI) == SDL_KMOD_GUI) {
+        print_string(text, maxlen, " GUI");
+    } else {
+        if (mod & SDL_KMOD_LGUI) {
+            print_string(text, maxlen, " LGUI");
+        }
+        if (mod & SDL_KMOD_RGUI) {
+            print_string(text, maxlen, " RGUI");
+        }
     }
     if (mod & SDL_KMOD_NUM) {
         print_string(text, maxlen, " NUM");
@@ -94,8 +106,47 @@ print_modifiers(char **text, size_t *maxlen)
     }
 }
 
-static void
-PrintModifierState(void)
+static void PrintKeymap(void)
+{
+    SDL_Keymod mods[] = {
+        SDL_KMOD_NONE,
+        SDL_KMOD_SHIFT,
+        SDL_KMOD_CAPS,
+        (SDL_KMOD_SHIFT | SDL_KMOD_CAPS),
+        SDL_KMOD_ALT,
+        (SDL_KMOD_ALT | SDL_KMOD_SHIFT),
+        (SDL_KMOD_ALT | SDL_KMOD_CAPS),
+        (SDL_KMOD_ALT | SDL_KMOD_SHIFT | SDL_KMOD_CAPS),
+        SDL_KMOD_MODE,
+        (SDL_KMOD_MODE | SDL_KMOD_SHIFT),
+        (SDL_KMOD_MODE | SDL_KMOD_CAPS),
+        (SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS)
+    };
+    int i, m;
+
+    SDL_Log("Differences from the default keymap:\n");
+    for (m = 0; m < SDL_arraysize(mods); ++m) {
+        for (i = 0; i < SDL_NUM_SCANCODES; ++i) {
+            SDL_Keycode key = SDL_GetKeyFromScancode((SDL_Scancode)i, mods[m]);
+			SDL_Keycode default_key = SDL_GetDefaultKeyFromScancode((SDL_Scancode)i, mods[m]);
+            if (key != default_key) {
+                char message[512];
+                char *spot;
+                size_t left;
+
+                spot = message;
+                left = sizeof(message);
+
+                print_string(&spot, &left, "Scancode %s", SDL_GetScancodeName((SDL_Scancode)i));
+                print_modifiers(&spot, &left, mods[m]);
+                print_string(&spot, &left, ": %s 0x%x (default: %s 0x%x)", SDL_GetKeyName(key), key, SDL_GetKeyName(default_key), default_key);
+                SDL_Log("%s", message);
+            }
+        }
+    }
+}
+
+static void PrintModifierState(void)
 {
     char message[512];
     char *spot;
@@ -104,12 +155,11 @@ PrintModifierState(void)
     spot = message;
     left = sizeof(message);
 
-    print_modifiers(&spot, &left);
+    print_modifiers(&spot, &left, SDL_GetModState());
     SDL_Log("Initial state:%s\n", message);
 }
 
-static void
-PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
+static void PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
 {
     char message[512];
     char *spot;
@@ -135,15 +185,14 @@ PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
                      sym->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(sym->scancode),
                      pressed ? "pressed " : "released");
     }
-    print_modifiers(&spot, &left);
+    print_modifiers(&spot, &left, sym->mod);
     if (repeat) {
         print_string(&spot, &left, " (repeat)");
     }
     SDL_Log("%s\n", message);
 }
 
-static void
-PrintText(const char *eventtype, const char *text)
+static void PrintText(const char *eventtype, const char *text)
 {
     const char *spot;
     char expanded[1024];
@@ -225,6 +274,10 @@ static void loop(void)
                 }
             }
             break;
+        case SDL_EVENT_KEYMAP_CHANGED:
+            SDL_Log("Keymap changed!\n");
+            PrintKeymap();
+            break;
         case SDL_EVENT_QUIT:
             done = 1;
             break;
@@ -296,8 +349,9 @@ int main(int argc, char *argv[])
 
     SDL_StartTextInput();
 
-    /* Print initial modifier state */
+    /* Print initial state */
     SDL_PumpEvents();
+    PrintKeymap();
     PrintModifierState();
 
     /* Watch keystrokes */

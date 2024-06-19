@@ -240,10 +240,7 @@ static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned 
 static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
 {
     TISInputSourceRef key_layout;
-    const void *chr_data;
-    int i;
-    SDL_Scancode scancode;
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    UCKeyboardLayout *keyLayoutPtr = NULL;
     CFDataRef uchrDataRef;
 
     /* See if the keymap needs to be updated */
@@ -253,29 +250,45 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
     }
     data.key_layout = key_layout;
 
-    SDL_GetDefaultKeymap(keymap);
-
     /* Try Unicode data first */
     uchrDataRef = TISGetInputSourceProperty(key_layout, kTISPropertyUnicodeKeyLayoutData);
     if (uchrDataRef) {
-        chr_data = CFDataGetBytePtr(uchrDataRef);
-    } else {
-        goto cleanup;
+        keyLayoutPtr = (UCKeyboardLayout *)CFDataGetBytePtr(uchrDataRef);
     }
 
-    if (chr_data) {
-        UInt32 keyboard_type = LMGetKbdType();
-        OSStatus err;
+    if (!keyLayoutPtr) {
+        CFRelease(key_layout);
+        return;
+    }
 
-        for (i = 0; i < SDL_arraysize(darwin_scancode_table); i++) {
+    static struct {
+        int flags;
+        SDL_Keymod modstate;
+    } mods[] = {
+        { 0, SDL_KMOD_NONE },
+        { shiftKey, SDL_KMOD_SHIFT },
+        { alphaLock, SDL_KMOD_CAPS },
+        { (shiftKey | alphaLock), (SDL_KMOD_SHIFT | SDL_KMOD_CAPS) },
+        { optionKey, SDL_KMOD_ALT },
+        { (optionKey | shiftKey), (SDL_KMOD_ALT | SDL_KMOD_SHIFT) },
+        { (optionKey | alphaLock), (SDL_KMOD_ALT | SDL_KMOD_CAPS) },
+        { (optionKey | shiftKey | alphaLock), (SDL_KMOD_ALT | SDL_KMOD_SHIFT | SDL_KMOD_CAPS) }
+    };
+
+    UInt32 keyboard_type = LMGetKbdType();
+
+    SDL_Keymap *keymap = SDL_CreateKeymap();
+    for (int m = 0; m < SDL_arraysize(mods); ++m) {
+        for (int i = 0; i < SDL_arraysize(darwin_scancode_table); i++) {
+            OSStatus err;
             UniChar s[8];
             UniCharCount len;
             UInt32 dead_key_state;
 
             /* Make sure this scancode is a valid character scancode */
-            scancode = darwin_scancode_table[i];
+            SDL_Scancode scancode = darwin_scancode_table[i];
             if (scancode == SDL_SCANCODE_UNKNOWN ||
-                (keymap[scancode] & SDLK_SCANCODE_MASK)) {
+                (SDL_GetDefaultKeyFromScancode(scancode, SDL_KMOD_NONE) & SDLK_SCANCODE_MASK)) {
                 continue;
             }
 
@@ -291,9 +304,8 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
             }
 
             dead_key_state = 0;
-            err = UCKeyTranslate((UCKeyboardLayout *)chr_data,
-                                 i, kUCKeyActionDown,
-                                 0, keyboard_type,
+            err = UCKeyTranslate(keyLayoutPtr, i, kUCKeyActionDown,
+                                 ((mods[m].flags >> 8) & 0xFF), keyboard_type,
                                  kUCKeyTranslateNoDeadKeysMask,
                                  &dead_key_state, 8, &len, s);
             if (err != noErr) {
@@ -301,15 +313,16 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
             }
 
             if (len > 0 && s[0] != 0x10) {
-                keymap[scancode] = s[0];
+                SDL_SetKeymapEntry(keymap, scancode, mods[m].modstate, s[0]);
+            } else {
+                // The default keymap doesn't have any SDL_KMOD_ALT entries, so we don't need to override them
+                if (!(mods[m].modstate & SDL_KMOD_ALT)) {
+                    SDL_SetKeymapEntry(keymap, scancode, mods[m].modstate, SDLK_UNKNOWN);
+                }
             }
         }
-        SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
-        return;
     }
-
-cleanup:
-    CFRelease(key_layout);
+    SDL_SetKeymap(keymap, send_event);
 }
 
 void Cocoa_InitKeyboard(SDL_VideoDevice *_this)

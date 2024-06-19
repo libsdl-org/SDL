@@ -1107,7 +1107,7 @@ static void Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, vo
 
             /* Note: The default SDL keymap always sets this to right alt instead of AltGr/Mode, so handle it separately. */
             if (syms[0] != XKB_KEY_ISO_Level3_Shift) {
-                keycode = SDL_GetDefaultKeyFromScancode(sc);
+                keycode = SDL_GetDefaultKeyFromScancode(sc, SDL_KMOD_NONE);
             } else {
                 keycode = SDLK_MODE;
             }
@@ -1218,13 +1218,13 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     if (input->xkb.current_group != XKB_GROUP_INVALID) {
         Wayland_Keymap keymap;
         keymap.layout = input->xkb.current_group;
-        SDL_GetDefaultKeymap(keymap.keymap);
+        //SDL_GetDefaultKeymap(keymap.keymap);
         if (!input->keyboard_is_virtual) {
             WAYLAND_xkb_keymap_key_for_each(input->xkb.keymap,
                                             Wayland_keymap_iter,
                                             &keymap);
         }
-        SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES, SDL_TRUE);
+        //SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES, SDL_TRUE);
     }
 
     /*
@@ -1398,7 +1398,7 @@ static void Wayland_ReconcileModifiers(struct SDL_WaylandInput *input)
 
 static void Wayland_HandleModifierKeys(struct SDL_WaylandInput *input, SDL_Scancode scancode, SDL_bool pressed)
 {
-    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode);
+    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE);
     SDL_Keymod mod;
 
     switch (keycode) {
@@ -1475,7 +1475,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 
     wl_array_for_each (key, keys) {
         const SDL_Scancode scancode = Wayland_get_scancode_from_key(input, *key + 8);
-        const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode);
+        const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE);
 
         switch (keycode) {
         case SDLK_LSHIFT:
@@ -1677,13 +1677,13 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
     /* The layout changed, remap and fire an event. Virtual keyboards use the default keymap. */
     input->xkb.current_group = group;
     keymap.layout = group;
-    SDL_GetDefaultKeymap(keymap.keymap);
+    //SDL_GetDefaultKeymap(keymap.keymap);
     if (!input->keyboard_is_virtual) {
         WAYLAND_xkb_keymap_key_for_each(input->xkb.keymap,
                                         Wayland_keymap_iter,
                                         &keymap);
     }
-    SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES, SDL_TRUE);
+    //SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES, SDL_TRUE);
 }
 
 static void keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,

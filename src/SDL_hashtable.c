@@ -241,7 +241,7 @@ SDL_bool SDL_HashTableEmpty(SDL_HashTable *table)
     return SDL_TRUE;
 }
 
-void SDL_DestroyHashTable(SDL_HashTable *table)
+void SDL_EmptyHashTable(SDL_HashTable *table)
 {
     if (table) {
         void *data = table->data;
@@ -257,8 +257,15 @@ void SDL_DestroyHashTable(SDL_HashTable *table)
                 SDL_free(item);
                 item = next;
             }
+            table->table[i] = NULL;
         }
+    }
+}
 
+void SDL_DestroyHashTable(SDL_HashTable *table)
+{
+    if (table) {
+        SDL_EmptyHashTable(table);
         SDL_free(table->table);
         SDL_free(table);
     }

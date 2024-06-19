@@ -380,7 +380,6 @@ SceImeCaret caret_rev;
 void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)arg;
-    SDL_Scancode scancode;
     uint8_t utf8_buffer[SCE_IME_MAX_TEXT_LENGTH];
     switch (e->id) {
     case SCE_IME_EVENT_UPDATE_TEXT:
@@ -388,11 +387,10 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
             SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_BACKSPACE);
             sceImeSetText((SceWChar16 *)libime_initval, 4);
         } else {
-            scancode = SDL_GetScancodeFromKey(*(SceWChar16 *)&libime_out[1]);
-            if (scancode == SDL_SCANCODE_SPACE) {
+            utf16_to_utf8((SceWChar16 *)&libime_out[1], utf8_buffer);
+            if (utf8_buffer[0] == ' ') {
                 SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_SPACE);
             } else {
-                utf16_to_utf8((SceWChar16 *)&libime_out[1], utf8_buffer);
                 SDL_SendKeyboardText((const char *)utf8_buffer);
             }
             SDL_memset(&caret_rev, 0, sizeof(SceImeCaret));

@@ -36,6 +36,7 @@ SDL_HashTable *SDL_CreateHashTable(void *data,
                                    const SDL_HashTable_NukeFn nukefn,
                                    const SDL_bool stackable);
 
+void SDL_EmptyHashTable(SDL_HashTable *table);
 void SDL_DestroyHashTable(SDL_HashTable *table);
 SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value);
 SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key);

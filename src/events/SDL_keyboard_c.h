@@ -23,6 +23,8 @@
 #ifndef SDL_keyboard_c_h_
 #define SDL_keyboard_c_h_
 
+#include "SDL_keymap_c.h"
+
 /* Keyboard events not associated with a specific input device */
 #define SDL_GLOBAL_KEYBOARD_ID     0
 
@@ -41,20 +43,8 @@ extern void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, SDL_boo
 /* A keyboard has been removed from the system */
 extern void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, SDL_bool send_event);
 
-/* Get the default keymap */
-extern void SDL_GetDefaultKeymap(SDL_Keycode *keymap);
-
-/* Get the default key code for a scancode */
-extern SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode);
-
 /* Set the mapping of scancode to key codes */
-extern void SDL_SetKeymap(int start, const SDL_Keycode *keys, int length, SDL_bool send_event);
-
-/* Set a platform-dependent key name, overriding the default platform-agnostic
-   name. Encoded as UTF-8. The string is not copied, thus the pointer given to
-   this function must stay valid forever (or at least until the call to
-   VideoQuit()). */
-extern void SDL_SetScancodeName(SDL_Scancode scancode, const char *name);
+extern void SDL_SetKeymap(SDL_Keymap *keymap, SDL_bool send_event);
 
 /* Set the keyboard focus window */
 extern int SDL_SetKeyboardFocus(SDL_Window *window);
@@ -90,9 +80,6 @@ extern int SDL_SendEditingText(const char *text, int start, int length);
 
 /* Shutdown the keyboard subsystem */
 extern void SDL_QuitKeyboard(void);
-
-/* Convert to UTF-8 */
-extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);
 
 /* Toggle on or off pieces of the keyboard mod state. */
 extern void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle);

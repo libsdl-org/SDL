@@ -235,6 +235,7 @@
 #define SDL_GetDefaultAssertionHandler SDL_GetDefaultAssertionHandler_REAL
 #define SDL_GetDefaultCursor SDL_GetDefaultCursor_REAL
 #define SDL_GetDefaultKeyFromScancode SDL_GetDefaultKeyFromScancode_REAL
+#define SDL_GetDefaultScancodeFromKey SDL_GetDefaultScancodeFromKey_REAL
 #define SDL_GetDesktopDisplayMode SDL_GetDesktopDisplayMode_REAL
 #define SDL_GetDisplayBounds SDL_GetDisplayBounds_REAL
 #define SDL_GetDisplayContentScale SDL_GetDisplayContentScale_REAL
@@ -757,6 +758,7 @@
 #define SDL_SetRenderTarget SDL_SetRenderTarget_REAL
 #define SDL_SetRenderVSync SDL_SetRenderVSync_REAL
 #define SDL_SetRenderViewport SDL_SetRenderViewport_REAL
+#define SDL_SetScancodeName SDL_SetScancodeName_REAL
 #define SDL_SetStringProperty SDL_SetStringProperty_REAL
 #define SDL_SetSurfaceAlphaMod SDL_SetSurfaceAlphaMod_REAL
 #define SDL_SetSurfaceBlendMode SDL_SetSurfaceBlendMode_REAL

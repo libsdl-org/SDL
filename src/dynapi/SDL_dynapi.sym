@@ -210,6 +210,7 @@ SDL3_0.0.0 {
     SDL_GetDefaultAssertionHandler;
     SDL_GetDefaultCursor;
     SDL_GetDefaultKeyFromScancode;
+    SDL_GetDefaultScancodeFromKey;
     SDL_GetDesktopDisplayMode;
     SDL_GetDisplayBounds;
     SDL_GetDisplayContentScale;
@@ -732,6 +733,7 @@ SDL3_0.0.0 {
     SDL_SetRenderTarget;
     SDL_SetRenderVSync;
     SDL_SetRenderViewport;
+    SDL_SetScancodeName;
     SDL_SetStringProperty;
     SDL_SetSurfaceAlphaMod;
     SDL_SetSurfaceBlendMode;

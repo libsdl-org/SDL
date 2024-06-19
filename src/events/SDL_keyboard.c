@@ -23,8 +23,8 @@
 /* General keyboard handling code for SDL */
 
 #include "SDL_events_c.h"
+#include "SDL_keymap_c.h"
 #include "../video/SDL_sysvideo.h"
-#include "scancodes_ascii.h"
 
 /* #define DEBUG_KEYBOARD */
 
@@ -53,7 +53,7 @@ typedef struct SDL_Keyboard
     SDL_Keymod modstate;
     Uint8 keysource[SDL_NUM_SCANCODES];
     Uint8 keystate[SDL_NUM_SCANCODES];
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    SDL_Keymap *keymap;
     SDL_bool autorelease_pending;
     Uint64 hardware_timestamp;
 } SDL_Keyboard;
@@ -62,625 +62,9 @@ static SDL_Keyboard SDL_keyboard;
 static int SDL_keyboard_count;
 static SDL_KeyboardInstance *SDL_keyboards;
 
-static const SDL_Keycode SDL_default_keymap[SDL_NUM_SCANCODES] = {
-    /* 0 */ SDLK_UNKNOWN,
-    /* 1 */ SDLK_UNKNOWN,
-    /* 2 */ SDLK_UNKNOWN,
-    /* 3 */ SDLK_UNKNOWN,
-    /* 4 */ 'a',
-    /* 5 */ 'b',
-    /* 6 */ 'c',
-    /* 7 */ 'd',
-    /* 8 */ 'e',
-    /* 9 */ 'f',
-    /* 10 */ 'g',
-    /* 11 */ 'h',
-    /* 12 */ 'i',
-    /* 13 */ 'j',
-    /* 14 */ 'k',
-    /* 15 */ 'l',
-    /* 16 */ 'm',
-    /* 17 */ 'n',
-    /* 18 */ 'o',
-    /* 19 */ 'p',
-    /* 20 */ 'q',
-    /* 21 */ 'r',
-    /* 22 */ 's',
-    /* 23 */ 't',
-    /* 24 */ 'u',
-    /* 25 */ 'v',
-    /* 26 */ 'w',
-    /* 27 */ 'x',
-    /* 28 */ 'y',
-    /* 29 */ 'z',
-    /* 30 */ '1',
-    /* 31 */ '2',
-    /* 32 */ '3',
-    /* 33 */ '4',
-    /* 34 */ '5',
-    /* 35 */ '6',
-    /* 36 */ '7',
-    /* 37 */ '8',
-    /* 38 */ '9',
-    /* 39 */ '0',
-    /* 40 */ SDLK_RETURN,
-    /* 41 */ SDLK_ESCAPE,
-    /* 42 */ SDLK_BACKSPACE,
-    /* 43 */ SDLK_TAB,
-    /* 44 */ SDLK_SPACE,
-    /* 45 */ '-',
-    /* 46 */ '=',
-    /* 47 */ '[',
-    /* 48 */ ']',
-    /* 49 */ '\\',
-    /* 50 */ '#',
-    /* 51 */ ';',
-    /* 52 */ '\'',
-    /* 53 */ '`',
-    /* 54 */ ',',
-    /* 55 */ '.',
-    /* 56 */ '/',
-    /* 57 */ SDLK_CAPSLOCK,
-    /* 58 */ SDLK_F1,
-    /* 59 */ SDLK_F2,
-    /* 60 */ SDLK_F3,
-    /* 61 */ SDLK_F4,
-    /* 62 */ SDLK_F5,
-    /* 63 */ SDLK_F6,
-    /* 64 */ SDLK_F7,
-    /* 65 */ SDLK_F8,
-    /* 66 */ SDLK_F9,
-    /* 67 */ SDLK_F10,
-    /* 68 */ SDLK_F11,
-    /* 69 */ SDLK_F12,
-    /* 70 */ SDLK_PRINTSCREEN,
-    /* 71 */ SDLK_SCROLLLOCK,
-    /* 72 */ SDLK_PAUSE,
-    /* 73 */ SDLK_INSERT,
-    /* 74 */ SDLK_HOME,
-    /* 75 */ SDLK_PAGEUP,
-    /* 76 */ SDLK_DELETE,
-    /* 77 */ SDLK_END,
-    /* 78 */ SDLK_PAGEDOWN,
-    /* 79 */ SDLK_RIGHT,
-    /* 80 */ SDLK_LEFT,
-    /* 81 */ SDLK_DOWN,
-    /* 82 */ SDLK_UP,
-    /* 83 */ SDLK_NUMLOCKCLEAR,
-    /* 84 */ SDLK_KP_DIVIDE,
-    /* 85 */ SDLK_KP_MULTIPLY,
-    /* 86 */ SDLK_KP_MINUS,
-    /* 87 */ SDLK_KP_PLUS,
-    /* 88 */ SDLK_KP_ENTER,
-    /* 89 */ SDLK_KP_1,
-    /* 90 */ SDLK_KP_2,
-    /* 91 */ SDLK_KP_3,
-    /* 92 */ SDLK_KP_4,
-    /* 93 */ SDLK_KP_5,
-    /* 94 */ SDLK_KP_6,
-    /* 95 */ SDLK_KP_7,
-    /* 96 */ SDLK_KP_8,
-    /* 97 */ SDLK_KP_9,
-    /* 98 */ SDLK_KP_0,
-    /* 99 */ SDLK_KP_PERIOD,
-    /* 100 */ SDLK_UNKNOWN,
-    /* 101 */ SDLK_APPLICATION,
-    /* 102 */ SDLK_POWER,
-    /* 103 */ SDLK_KP_EQUALS,
-    /* 104 */ SDLK_F13,
-    /* 105 */ SDLK_F14,
-    /* 106 */ SDLK_F15,
-    /* 107 */ SDLK_F16,
-    /* 108 */ SDLK_F17,
-    /* 109 */ SDLK_F18,
-    /* 110 */ SDLK_F19,
-    /* 111 */ SDLK_F20,
-    /* 112 */ SDLK_F21,
-    /* 113 */ SDLK_F22,
-    /* 114 */ SDLK_F23,
-    /* 115 */ SDLK_F24,
-    /* 116 */ SDLK_EXECUTE,
-    /* 117 */ SDLK_HELP,
-    /* 118 */ SDLK_MENU,
-    /* 119 */ SDLK_SELECT,
-    /* 120 */ SDLK_STOP,
-    /* 121 */ SDLK_AGAIN,
-    /* 122 */ SDLK_UNDO,
-    /* 123 */ SDLK_CUT,
-    /* 124 */ SDLK_COPY,
-    /* 125 */ SDLK_PASTE,
-    /* 126 */ SDLK_FIND,
-    /* 127 */ SDLK_MUTE,
-    /* 128 */ SDLK_VOLUMEUP,
-    /* 129 */ SDLK_VOLUMEDOWN,
-    /* 130 */ SDLK_UNKNOWN,
-    /* 131 */ SDLK_UNKNOWN,
-    /* 132 */ SDLK_UNKNOWN,
-    /* 133 */ SDLK_KP_COMMA,
-    /* 134 */ SDLK_KP_EQUALSAS400,
-    /* 135 */ SDLK_UNKNOWN,
-    /* 136 */ SDLK_UNKNOWN,
-    /* 137 */ SDLK_UNKNOWN,
-    /* 138 */ SDLK_UNKNOWN,
-    /* 139 */ SDLK_UNKNOWN,
-    /* 140 */ SDLK_UNKNOWN,
-    /* 141 */ SDLK_UNKNOWN,
-    /* 142 */ SDLK_UNKNOWN,
-    /* 143 */ SDLK_UNKNOWN,
-    /* 144 */ SDLK_UNKNOWN,
-    /* 145 */ SDLK_UNKNOWN,
-    /* 146 */ SDLK_UNKNOWN,
-    /* 147 */ SDLK_UNKNOWN,
-    /* 148 */ SDLK_UNKNOWN,
-    /* 149 */ SDLK_UNKNOWN,
-    /* 150 */ SDLK_UNKNOWN,
-    /* 151 */ SDLK_UNKNOWN,
-    /* 152 */ SDLK_UNKNOWN,
-    /* 153 */ SDLK_ALTERASE,
-    /* 154 */ SDLK_SYSREQ,
-    /* 155 */ SDLK_CANCEL,
-    /* 156 */ SDLK_CLEAR,
-    /* 157 */ SDLK_PRIOR,
-    /* 158 */ SDLK_RETURN2,
-    /* 159 */ SDLK_SEPARATOR,
-    /* 160 */ SDLK_OUT,
-    /* 161 */ SDLK_OPER,
-    /* 162 */ SDLK_CLEARAGAIN,
-    /* 163 */ SDLK_CRSEL,
-    /* 164 */ SDLK_EXSEL,
-    /* 165 */ SDLK_UNKNOWN,
-    /* 166 */ SDLK_UNKNOWN,
-    /* 167 */ SDLK_UNKNOWN,
-    /* 168 */ SDLK_UNKNOWN,
-    /* 169 */ SDLK_UNKNOWN,
-    /* 170 */ SDLK_UNKNOWN,
-    /* 171 */ SDLK_UNKNOWN,
-    /* 172 */ SDLK_UNKNOWN,
-    /* 173 */ SDLK_UNKNOWN,
-    /* 174 */ SDLK_UNKNOWN,
-    /* 175 */ SDLK_UNKNOWN,
-    /* 176 */ SDLK_KP_00,
-    /* 177 */ SDLK_KP_000,
-    /* 178 */ SDLK_THOUSANDSSEPARATOR,
-    /* 179 */ SDLK_DECIMALSEPARATOR,
-    /* 180 */ SDLK_CURRENCYUNIT,
-    /* 181 */ SDLK_CURRENCYSUBUNIT,
-    /* 182 */ SDLK_KP_LEFTPAREN,
-    /* 183 */ SDLK_KP_RIGHTPAREN,
-    /* 184 */ SDLK_KP_LEFTBRACE,
-    /* 185 */ SDLK_KP_RIGHTBRACE,
-    /* 186 */ SDLK_KP_TAB,
-    /* 187 */ SDLK_KP_BACKSPACE,
-    /* 188 */ SDLK_KP_A,
-    /* 189 */ SDLK_KP_B,
-    /* 190 */ SDLK_KP_C,
-    /* 191 */ SDLK_KP_D,
-    /* 192 */ SDLK_KP_E,
-    /* 193 */ SDLK_KP_F,
-    /* 194 */ SDLK_KP_XOR,
-    /* 195 */ SDLK_KP_POWER,
-    /* 196 */ SDLK_KP_PERCENT,
-    /* 197 */ SDLK_KP_LESS,
-    /* 198 */ SDLK_KP_GREATER,
-    /* 199 */ SDLK_KP_AMPERSAND,
-    /* 200 */ SDLK_KP_DBLAMPERSAND,
-    /* 201 */ SDLK_KP_VERTICALBAR,
-    /* 202 */ SDLK_KP_DBLVERTICALBAR,
-    /* 203 */ SDLK_KP_COLON,
-    /* 204 */ SDLK_KP_HASH,
-    /* 205 */ SDLK_KP_SPACE,
-    /* 206 */ SDLK_KP_AT,
-    /* 207 */ SDLK_KP_EXCLAM,
-    /* 208 */ SDLK_KP_MEMSTORE,
-    /* 209 */ SDLK_KP_MEMRECALL,
-    /* 210 */ SDLK_KP_MEMCLEAR,
-    /* 211 */ SDLK_KP_MEMADD,
-    /* 212 */ SDLK_KP_MEMSUBTRACT,
-    /* 213 */ SDLK_KP_MEMMULTIPLY,
-    /* 214 */ SDLK_KP_MEMDIVIDE,
-    /* 215 */ SDLK_KP_PLUSMINUS,
-    /* 216 */ SDLK_KP_CLEAR,
-    /* 217 */ SDLK_KP_CLEARENTRY,
-    /* 218 */ SDLK_KP_BINARY,
-    /* 219 */ SDLK_KP_OCTAL,
-    /* 220 */ SDLK_KP_DECIMAL,
-    /* 221 */ SDLK_KP_HEXADECIMAL,
-    /* 222 */ SDLK_UNKNOWN,
-    /* 223 */ SDLK_UNKNOWN,
-    /* 224 */ SDLK_LCTRL,
-    /* 225 */ SDLK_LSHIFT,
-    /* 226 */ SDLK_LALT,
-    /* 227 */ SDLK_LGUI,
-    /* 228 */ SDLK_RCTRL,
-    /* 229 */ SDLK_RSHIFT,
-    /* 230 */ SDLK_RALT,
-    /* 231 */ SDLK_RGUI,
-    /* 232 */ SDLK_UNKNOWN,
-    /* 233 */ SDLK_UNKNOWN,
-    /* 234 */ SDLK_UNKNOWN,
-    /* 235 */ SDLK_UNKNOWN,
-    /* 236 */ SDLK_UNKNOWN,
-    /* 237 */ SDLK_UNKNOWN,
-    /* 238 */ SDLK_UNKNOWN,
-    /* 239 */ SDLK_UNKNOWN,
-    /* 240 */ SDLK_UNKNOWN,
-    /* 241 */ SDLK_UNKNOWN,
-    /* 242 */ SDLK_UNKNOWN,
-    /* 243 */ SDLK_UNKNOWN,
-    /* 244 */ SDLK_UNKNOWN,
-    /* 245 */ SDLK_UNKNOWN,
-    /* 246 */ SDLK_UNKNOWN,
-    /* 247 */ SDLK_UNKNOWN,
-    /* 248 */ SDLK_UNKNOWN,
-    /* 249 */ SDLK_UNKNOWN,
-    /* 250 */ SDLK_UNKNOWN,
-    /* 251 */ SDLK_UNKNOWN,
-    /* 252 */ SDLK_UNKNOWN,
-    /* 253 */ SDLK_UNKNOWN,
-    /* 254 */ SDLK_UNKNOWN,
-    /* 255 */ SDLK_UNKNOWN,
-    /* 256 */ SDLK_UNKNOWN,
-    /* 257 */ SDLK_MODE,
-    /* 258 */ SDLK_SLEEP,
-    /* 258 */ SDLK_WAKE,
-    /* 260 */ SDLK_CHANNEL_INCREMENT,
-    /* 261 */ SDLK_CHANNEL_DECREMENT,
-    /* 262 */ SDLK_MEDIA_PLAY,
-    /* 263 */ SDLK_MEDIA_PAUSE,
-    /* 264 */ SDLK_MEDIA_RECORD,
-    /* 265 */ SDLK_MEDIA_FAST_FORWARD,
-    /* 266 */ SDLK_MEDIA_REWIND,
-    /* 267 */ SDLK_MEDIA_NEXT_TRACK,
-    /* 268 */ SDLK_MEDIA_PREVIOUS_TRACK,
-    /* 269 */ SDLK_MEDIA_STOP,
-    /* 270 */ SDLK_MEDIA_EJECT,
-    /* 271 */ SDLK_MEDIA_PLAY_PAUSE,
-    /* 272 */ SDLK_MEDIA_SELECT,
-    /* 273 */ SDLK_AC_NEW,
-    /* 274 */ SDLK_AC_OPEN,
-    /* 275 */ SDLK_AC_CLOSE,
-    /* 276 */ SDLK_AC_EXIT,
-    /* 277 */ SDLK_AC_SAVE,
-    /* 278 */ SDLK_AC_PRINT,
-    /* 279 */ SDLK_AC_PROPERTIES,
-    /* 280 */ SDLK_AC_SEARCH,
-    /* 281 */ SDLK_AC_HOME,
-    /* 282 */ SDLK_AC_BACK,
-    /* 283 */ SDLK_AC_FORWARD,
-    /* 284 */ SDLK_AC_STOP,
-    /* 285 */ SDLK_AC_REFRESH,
-    /* 286 */ SDLK_AC_BOOKMARKS,
-    /* 287 */ SDLK_SOFTLEFT,
-    /* 288 */ SDLK_SOFTRIGHT,
-    /* 289 */ SDLK_CALL,
-    /* 290 */ SDLK_ENDCALL,
-};
-
-static const char *SDL_scancode_names[SDL_NUM_SCANCODES] = {
-    /* 0 */ NULL,
-    /* 1 */ NULL,
-    /* 2 */ NULL,
-    /* 3 */ NULL,
-    /* 4 */ "A",
-    /* 5 */ "B",
-    /* 6 */ "C",
-    /* 7 */ "D",
-    /* 8 */ "E",
-    /* 9 */ "F",
-    /* 10 */ "G",
-    /* 11 */ "H",
-    /* 12 */ "I",
-    /* 13 */ "J",
-    /* 14 */ "K",
-    /* 15 */ "L",
-    /* 16 */ "M",
-    /* 17 */ "N",
-    /* 18 */ "O",
-    /* 19 */ "P",
-    /* 20 */ "Q",
-    /* 21 */ "R",
-    /* 22 */ "S",
-    /* 23 */ "T",
-    /* 24 */ "U",
-    /* 25 */ "V",
-    /* 26 */ "W",
-    /* 27 */ "X",
-    /* 28 */ "Y",
-    /* 29 */ "Z",
-    /* 30 */ "1",
-    /* 31 */ "2",
-    /* 32 */ "3",
-    /* 33 */ "4",
-    /* 34 */ "5",
-    /* 35 */ "6",
-    /* 36 */ "7",
-    /* 37 */ "8",
-    /* 38 */ "9",
-    /* 39 */ "0",
-    /* 40 */ "Return",
-    /* 41 */ "Escape",
-    /* 42 */ "Backspace",
-    /* 43 */ "Tab",
-    /* 44 */ "Space",
-    /* 45 */ "-",
-    /* 46 */ "=",
-    /* 47 */ "[",
-    /* 48 */ "]",
-    /* 49 */ "\\",
-    /* 50 */ "#",
-    /* 51 */ ";",
-    /* 52 */ "'",
-    /* 53 */ "`",
-    /* 54 */ ",",
-    /* 55 */ ".",
-    /* 56 */ "/",
-    /* 57 */ "CapsLock",
-    /* 58 */ "F1",
-    /* 59 */ "F2",
-    /* 60 */ "F3",
-    /* 61 */ "F4",
-    /* 62 */ "F5",
-    /* 63 */ "F6",
-    /* 64 */ "F7",
-    /* 65 */ "F8",
-    /* 66 */ "F9",
-    /* 67 */ "F10",
-    /* 68 */ "F11",
-    /* 69 */ "F12",
-    /* 70 */ "PrintScreen",
-    /* 71 */ "ScrollLock",
-    /* 72 */ "Pause",
-    /* 73 */ "Insert",
-    /* 74 */ "Home",
-    /* 75 */ "PageUp",
-    /* 76 */ "Delete",
-    /* 77 */ "End",
-    /* 78 */ "PageDown",
-    /* 79 */ "Right",
-    /* 80 */ "Left",
-    /* 81 */ "Down",
-    /* 82 */ "Up",
-    /* 83 */ "Numlock",
-    /* 84 */ "Keypad /",
-    /* 85 */ "Keypad *",
-    /* 86 */ "Keypad -",
-    /* 87 */ "Keypad +",
-    /* 88 */ "Keypad Enter",
-    /* 89 */ "Keypad 1",
-    /* 90 */ "Keypad 2",
-    /* 91 */ "Keypad 3",
-    /* 92 */ "Keypad 4",
-    /* 93 */ "Keypad 5",
-    /* 94 */ "Keypad 6",
-    /* 95 */ "Keypad 7",
-    /* 96 */ "Keypad 8",
-    /* 97 */ "Keypad 9",
-    /* 98 */ "Keypad 0",
-    /* 99 */ "Keypad .",
-    /* 100 */ NULL,
-    /* 101 */ "Application",
-    /* 102 */ "Power",
-    /* 103 */ "Keypad =",
-    /* 104 */ "F13",
-    /* 105 */ "F14",
-    /* 106 */ "F15",
-    /* 107 */ "F16",
-    /* 108 */ "F17",
-    /* 109 */ "F18",
-    /* 110 */ "F19",
-    /* 111 */ "F20",
-    /* 112 */ "F21",
-    /* 113 */ "F22",
-    /* 114 */ "F23",
-    /* 115 */ "F24",
-    /* 116 */ "Execute",
-    /* 117 */ "Help",
-    /* 118 */ "Menu",
-    /* 119 */ "Select",
-    /* 120 */ "Stop",
-    /* 121 */ "Again",
-    /* 122 */ "Undo",
-    /* 123 */ "Cut",
-    /* 124 */ "Copy",
-    /* 125 */ "Paste",
-    /* 126 */ "Find",
-    /* 127 */ "Mute",
-    /* 128 */ "VolumeUp",
-    /* 129 */ "VolumeDown",
-    /* 130 */ NULL,
-    /* 131 */ NULL,
-    /* 132 */ NULL,
-    /* 133 */ "Keypad ,",
-    /* 134 */ "Keypad = (AS400)",
-    /* 135 */ NULL,
-    /* 136 */ NULL,
-    /* 137 */ NULL,
-    /* 138 */ NULL,
-    /* 139 */ NULL,
-    /* 140 */ NULL,
-    /* 141 */ NULL,
-    /* 142 */ NULL,
-    /* 143 */ NULL,
-    /* 144 */ NULL,
-    /* 145 */ NULL,
-    /* 146 */ NULL,
-    /* 147 */ NULL,
-    /* 148 */ NULL,
-    /* 149 */ NULL,
-    /* 150 */ NULL,
-    /* 151 */ NULL,
-    /* 152 */ NULL,
-    /* 153 */ "AltErase",
-    /* 154 */ "SysReq",
-    /* 155 */ "Cancel",
-    /* 156 */ "Clear",
-    /* 157 */ "Prior",
-    /* 158 */ "Return",
-    /* 159 */ "Separator",
-    /* 160 */ "Out",
-    /* 161 */ "Oper",
-    /* 162 */ "Clear / Again",
-    /* 163 */ "CrSel",
-    /* 164 */ "ExSel",
-    /* 165 */ NULL,
-    /* 166 */ NULL,
-    /* 167 */ NULL,
-    /* 168 */ NULL,
-    /* 169 */ NULL,
-    /* 170 */ NULL,
-    /* 171 */ NULL,
-    /* 172 */ NULL,
-    /* 173 */ NULL,
-    /* 174 */ NULL,
-    /* 175 */ NULL,
-    /* 176 */ "Keypad 00",
-    /* 177 */ "Keypad 000",
-    /* 178 */ "ThousandsSeparator",
-    /* 179 */ "DecimalSeparator",
-    /* 180 */ "CurrencyUnit",
-    /* 181 */ "CurrencySubUnit",
-    /* 182 */ "Keypad (",
-    /* 183 */ "Keypad )",
-    /* 184 */ "Keypad {",
-    /* 185 */ "Keypad }",
-    /* 186 */ "Keypad Tab",
-    /* 187 */ "Keypad Backspace",
-    /* 188 */ "Keypad A",
-    /* 189 */ "Keypad B",
-    /* 190 */ "Keypad C",
-    /* 191 */ "Keypad D",
-    /* 192 */ "Keypad E",
-    /* 193 */ "Keypad F",
-    /* 194 */ "Keypad XOR",
-    /* 195 */ "Keypad ^",
-    /* 196 */ "Keypad %",
-    /* 197 */ "Keypad <",
-    /* 198 */ "Keypad >",
-    /* 199 */ "Keypad &",
-    /* 200 */ "Keypad &&",
-    /* 201 */ "Keypad |",
-    /* 202 */ "Keypad ||",
-    /* 203 */ "Keypad :",
-    /* 204 */ "Keypad #",
-    /* 205 */ "Keypad Space",
-    /* 206 */ "Keypad @",
-    /* 207 */ "Keypad !",
-    /* 208 */ "Keypad MemStore",
-    /* 209 */ "Keypad MemRecall",
-    /* 210 */ "Keypad MemClear",
-    /* 211 */ "Keypad MemAdd",
-    /* 212 */ "Keypad MemSubtract",
-    /* 213 */ "Keypad MemMultiply",
-    /* 214 */ "Keypad MemDivide",
-    /* 215 */ "Keypad +/-",
-    /* 216 */ "Keypad Clear",
-    /* 217 */ "Keypad ClearEntry",
-    /* 218 */ "Keypad Binary",
-    /* 219 */ "Keypad Octal",
-    /* 220 */ "Keypad Decimal",
-    /* 221 */ "Keypad Hexadecimal",
-    /* 222 */ NULL,
-    /* 223 */ NULL,
-    /* 224 */ "Left Ctrl",
-    /* 225 */ "Left Shift",
-    /* 226 */ "Left Alt",
-    /* 227 */ "Left GUI",
-    /* 228 */ "Right Ctrl",
-    /* 229 */ "Right Shift",
-    /* 230 */ "Right Alt",
-    /* 231 */ "Right GUI",
-    /* 232 */ NULL,
-    /* 233 */ NULL,
-    /* 234 */ NULL,
-    /* 235 */ NULL,
-    /* 236 */ NULL,
-    /* 237 */ NULL,
-    /* 238 */ NULL,
-    /* 239 */ NULL,
-    /* 240 */ NULL,
-    /* 241 */ NULL,
-    /* 242 */ NULL,
-    /* 243 */ NULL,
-    /* 244 */ NULL,
-    /* 245 */ NULL,
-    /* 246 */ NULL,
-    /* 247 */ NULL,
-    /* 248 */ NULL,
-    /* 249 */ NULL,
-    /* 250 */ NULL,
-    /* 251 */ NULL,
-    /* 252 */ NULL,
-    /* 253 */ NULL,
-    /* 254 */ NULL,
-    /* 255 */ NULL,
-    /* 256 */ NULL,
-    /* 257 */ "ModeSwitch",
-    /* 258 */ "Sleep",
-    /* 259 */ "Wake",
-    /* 260 */ "ChannelUp",
-    /* 261 */ "ChannelDown",
-    /* 262 */ "MediaPlay",
-    /* 263 */ "MediaPause",
-    /* 264 */ "MediaRecord",
-    /* 265 */ "MediaFastForward",
-    /* 266 */ "MediaRewind",
-    /* 267 */ "MediaTrackNext",
-    /* 268 */ "MediaTrackPrevious",
-    /* 269 */ "MediaStop",
-    /* 270 */ "Eject",
-    /* 271 */ "MediaPlayPause",
-    /* 272 */ "MediaSelect",
-    /* 273 */ "AC New",
-    /* 274 */ "AC Open",
-    /* 275 */ "AC Close",
-    /* 276 */ "AC Exit",
-    /* 277 */ "AC Save",
-    /* 278 */ "AC Print",
-    /* 279 */ "AC Properties",
-    /* 280 */ "AC Search",
-    /* 281 */ "AC Home",
-    /* 282 */ "AC Back",
-    /* 283 */ "AC Forward",
-    /* 284 */ "AC Stop",
-    /* 285 */ "AC Refresh",
-    /* 286 */ "AC Bookmarks",
-    /* 287 */ "SoftLeft",
-    /* 288 */ "SoftRight",
-    /* 289 */ "Call",
-    /* 290 */ "EndCall",
-};
-
-/* Taken from SDL_iconv() */
-char *SDL_UCS4ToUTF8(Uint32 ch, char *dst)
-{
-    Uint8 *p = (Uint8 *)dst;
-    if (ch <= 0x7F) {
-        *p = (Uint8)ch;
-        ++dst;
-    } else if (ch <= 0x7FF) {
-        p[0] = 0xC0 | (Uint8)((ch >> 6) & 0x1F);
-        p[1] = 0x80 | (Uint8)(ch & 0x3F);
-        dst += 2;
-    } else if (ch <= 0xFFFF) {
-        p[0] = 0xE0 | (Uint8)((ch >> 12) & 0x0F);
-        p[1] = 0x80 | (Uint8)((ch >> 6) & 0x3F);
-        p[2] = 0x80 | (Uint8)(ch & 0x3F);
-        dst += 3;
-    } else {
-        p[0] = 0xF0 | (Uint8)((ch >> 18) & 0x07);
-        p[1] = 0x80 | (Uint8)((ch >> 12) & 0x3F);
-        p[2] = 0x80 | (Uint8)((ch >> 6) & 0x3F);
-        p[3] = 0x80 | (Uint8)(ch & 0x3F);
-        dst += 4;
-    }
-    return dst;
-}
-
 /* Public functions */
 int SDL_InitKeyboard(void)
 {
-    /* Set the default keymap */
-    SDL_SetKeymap(0, SDL_default_keymap, SDL_NUM_SCANCODES, SDL_FALSE);
     return 0;
 }
 
@@ -811,71 +195,19 @@ void SDL_ResetKeyboard(void)
     }
 }
 
-void SDL_GetDefaultKeymap(SDL_Keycode *keymap)
-{
-    SDL_memcpy(keymap, SDL_default_keymap, sizeof(SDL_default_keymap));
-}
-
-void SDL_SetKeymap(int start, const SDL_Keycode *keys, int length, SDL_bool send_event)
+void SDL_SetKeymap(SDL_Keymap *keymap, SDL_bool send_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
-    SDL_Scancode scancode;
-    SDL_Keycode normalized_keymap[SDL_NUM_SCANCODES];
-    SDL_bool is_azerty = SDL_FALSE;
 
-    if (start < 0 || start + length > SDL_NUM_SCANCODES) {
-        return;
+    if (keyboard->keymap) {
+        SDL_DestroyKeymap(keyboard->keymap);
     }
 
-    if (start > 0) {
-        SDL_memcpy(&normalized_keymap[0], &keyboard->keymap[0], sizeof(*keys) * start);
-    }
-
-    SDL_memcpy(&normalized_keymap[start], keys, sizeof(*keys) * length);
-
-    if (start + length < SDL_NUM_SCANCODES) {
-        int offset = start + length;
-        SDL_memcpy(&normalized_keymap[offset], &keyboard->keymap[offset], sizeof(*keys) * (SDL_NUM_SCANCODES - offset));
-    }
-
-    /* On AZERTY layouts the number keys are technically symbols, but users (and games)
-     * always think of them and view them in UI as number keys, so remap them here.
-     */
-    if (normalized_keymap[SDL_SCANCODE_0] < SDLK_0 || normalized_keymap[SDL_SCANCODE_0] > SDLK_9) {
-        is_azerty = SDL_TRUE;
-        for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
-            if (normalized_keymap[scancode] >= SDLK_0 && normalized_keymap[scancode] <= SDLK_9) {
-                /* There's a number on this row, it's not AZERTY */
-                is_azerty = SDL_FALSE;
-                break;
-            }
-        }
-    }
-    if (is_azerty) {
-        normalized_keymap[SDL_SCANCODE_0] = SDLK_0;
-        for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
-            normalized_keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
-        }
-    }
-
-    /* If the mapping didn't really change, we're done here */
-    if (!SDL_memcmp(&keyboard->keymap[start], &normalized_keymap[start], sizeof(*keys) * length)) {
-        return;
-    }
-
-    SDL_memcpy(&keyboard->keymap[start], &normalized_keymap[start], sizeof(*keys) * length);
+    keyboard->keymap = keymap;
 
     if (send_event) {
         SDL_SendKeymapChangedEvent();
     }
-}
-
-void SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
-{
-    if (scancode >= SDL_NUM_SCANCODES) {
-        return;
-    }
-    SDL_scancode_names[scancode] = name;
 }
 
 SDL_Window *SDL_GetKeyboardFocus(void)
@@ -993,7 +325,7 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
         keyboard->keystate[scancode] = state;
 
         if (keycode == SDLK_UNKNOWN) {
-            keycode = keyboard->keymap[scancode];
+            keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE);
         }
 
     } else if (keycode == SDLK_UNKNOWN && rawcode == 0) {
@@ -1098,26 +430,22 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
 
 int SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch)
 {
-    SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
-    uint16_t mod = 0;
+    SDL_Keymod modstate = SDL_KMOD_NONE;
+    SDL_Scancode scancode = SDL_GetDefaultScancodeFromKey(ch, &modstate);
 
-    if (ch < SDL_arraysize(SDL_ASCIIKeyInfoTable)) {
-        code = SDL_ASCIIKeyInfoTable[ch].code;
-        mod = SDL_ASCIIKeyInfoTable[ch].mod;
-    }
 
-    if (mod & SDL_KMOD_SHIFT) {
+    if (modstate & SDL_KMOD_SHIFT) {
         /* If the character uses shift, press shift down */
-        SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_LSHIFT, SDLK_UNKNOWN, SDL_PRESSED);
+        SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT, SDL_PRESSED);
     }
 
     /* Send a keydown and keyup for the character */
-    SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, code, SDLK_UNKNOWN, SDL_PRESSED);
-    SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, code, SDLK_UNKNOWN, SDL_RELEASED);
+    SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, scancode, ch, SDL_PRESSED);
+    SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, scancode, ch, SDL_RELEASED);
 
-    if (mod & SDL_KMOD_SHIFT) {
+    if (modstate & SDL_KMOD_SHIFT) {
         /* If the character uses shift, release shift */
-        SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_LSHIFT, SDLK_UNKNOWN, SDL_RELEASED);
+        SDL_SendKeyboardKeyInternal(timestamp, KEYBOARD_VIRTUAL, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT, SDL_RELEASED);
     }
     return 0;
 }
@@ -1256,6 +584,11 @@ void SDL_QuitKeyboard(void)
     }
     SDL_free(SDL_keyboards);
     SDL_keyboards = NULL;
+
+    if (SDL_keyboard.keymap) {
+        SDL_DestroyKeymap(SDL_keyboard.keymap);
+        SDL_keyboard.keymap = NULL;
+    }
 }
 
 const Uint8 *SDL_GetKeyboardState(int *numkeys)
@@ -1293,165 +626,13 @@ void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle)
     }
 }
 
-SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode)
+SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate)
 {
-    SDL_Keyboard *keyboard = &SDL_keyboard;
-
-    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
-        SDL_InvalidParamError("scancode");
-        return 0;
-    }
-
-    return keyboard->keymap[scancode];
+    return SDL_GetKeymapKeycode(SDL_keyboard.keymap, scancode, modstate);
 }
 
-SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode)
+SDL_Scancode SDL_GetScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate)
 {
-    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
-        SDL_InvalidParamError("scancode");
-        return 0;
-    }
-
-    return SDL_default_keymap[scancode];
+    return SDL_GetKeymapScancode(SDL_keyboard.keymap, key, modstate);
 }
 
-SDL_Scancode SDL_GetScancodeFromKey(SDL_Keycode key)
-{
-    SDL_Keyboard *keyboard = &SDL_keyboard;
-    SDL_Scancode scancode;
-
-    for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES;
-         ++scancode) {
-        if (keyboard->keymap[scancode] == key) {
-            return scancode;
-        }
-    }
-    return SDL_SCANCODE_UNKNOWN;
-}
-
-// these are static memory, so we don't use SDL_FreeLater on them.
-const char *SDL_GetScancodeName(SDL_Scancode scancode)
-{
-    const char *name;
-    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
-        SDL_InvalidParamError("scancode");
-        return "";
-    }
-
-    name = SDL_scancode_names[scancode];
-    if (name) {
-        return name;
-    }
-
-    return "";
-}
-
-SDL_Scancode SDL_GetScancodeFromName(const char *name)
-{
-    int i;
-
-    if (!name || !*name) {
-        SDL_InvalidParamError("name");
-        return SDL_SCANCODE_UNKNOWN;
-    }
-
-    for (i = 0; i < SDL_arraysize(SDL_scancode_names); ++i) {
-        if (!SDL_scancode_names[i]) {
-            continue;
-        }
-        if (SDL_strcasecmp(name, SDL_scancode_names[i]) == 0) {
-            return (SDL_Scancode)i;
-        }
-    }
-
-    SDL_InvalidParamError("name");
-    return SDL_SCANCODE_UNKNOWN;
-}
-
-const char *SDL_GetKeyName(SDL_Keycode key)
-{
-    char name[8];
-    char *end;
-
-    if (key & SDLK_SCANCODE_MASK) {
-        return SDL_GetScancodeName((SDL_Scancode)(key & ~SDLK_SCANCODE_MASK));
-    }
-
-    switch (key) {
-    case SDLK_RETURN:
-        return SDL_GetScancodeName(SDL_SCANCODE_RETURN);
-    case SDLK_ESCAPE:
-        return SDL_GetScancodeName(SDL_SCANCODE_ESCAPE);
-    case SDLK_BACKSPACE:
-        return SDL_GetScancodeName(SDL_SCANCODE_BACKSPACE);
-    case SDLK_TAB:
-        return SDL_GetScancodeName(SDL_SCANCODE_TAB);
-    case SDLK_SPACE:
-        return SDL_GetScancodeName(SDL_SCANCODE_SPACE);
-    case SDLK_DELETE:
-        return SDL_GetScancodeName(SDL_SCANCODE_DELETE);
-    default:
-        /* Unaccented letter keys on latin keyboards are normally
-           labeled in upper case (and probably on others like Greek or
-           Cyrillic too, so if you happen to know for sure, please
-           adapt this). */
-        if (key >= 'a' && key <= 'z') {
-            key -= 32;
-        }
-
-        end = SDL_UCS4ToUTF8((Uint32)key, name);
-        *end = '\0';
-        return SDL_FreeLater(SDL_strdup(name));
-    }
-}
-
-SDL_Keycode SDL_GetKeyFromName(const char *name)
-{
-    SDL_Keycode key;
-
-    /* Check input */
-    if (!name) {
-        return SDLK_UNKNOWN;
-    }
-
-    /* If it's a single UTF-8 character, then that's the keycode itself */
-    key = *(const unsigned char *)name;
-    if (key >= 0xF0) {
-        if (SDL_strlen(name) == 4) {
-            int i = 0;
-            key = (Uint16)(name[i] & 0x07) << 18;
-            key |= (Uint16)(name[++i] & 0x3F) << 12;
-            key |= (Uint16)(name[++i] & 0x3F) << 6;
-            key |= (Uint16)(name[++i] & 0x3F);
-            return key;
-        }
-        return SDLK_UNKNOWN;
-    } else if (key >= 0xE0) {
-        if (SDL_strlen(name) == 3) {
-            int i = 0;
-            key = (Uint16)(name[i] & 0x0F) << 12;
-            key |= (Uint16)(name[++i] & 0x3F) << 6;
-            key |= (Uint16)(name[++i] & 0x3F);
-            return key;
-        }
-        return SDLK_UNKNOWN;
-    } else if (key >= 0xC0) {
-        if (SDL_strlen(name) == 2) {
-            int i = 0;
-            key = (Uint16)(name[i] & 0x1F) << 6;
-            key |= (Uint16)(name[++i] & 0x3F);
-            return key;
-        }
-        return SDLK_UNKNOWN;
-    } else {
-        if (SDL_strlen(name) == 1) {
-            if (key >= 'A' && key <= 'Z') {
-                key += 32;
-            }
-            return key;
-        }
-
-        /* Get the scancode for this name, and the associated keycode */
-        return SDL_default_keymap[SDL_GetScancodeFromName(name)];
-    }
-}

@@ -124,12 +124,12 @@ static int keyboard_getKeyFromScancode(void *arg)
     SDL_Keycode result;
 
     /* Case where input is valid */
-    result = SDL_GetKeyFromScancode(SDL_SCANCODE_A);
+    result = SDL_GetKeyFromScancode(SDL_SCANCODE_A, SDL_KMOD_NONE);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(valid)");
     SDLTest_AssertCheck(result == SDLK_a, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_a, result);
 
     /* Case where input is zero */
-    result = SDL_GetKeyFromScancode(0);
+    result = SDL_GetKeyFromScancode(SDL_SCANCODE_UNKNOWN, SDL_KMOD_NONE);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(0)");
     SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIs32, SDLK_UNKNOWN, result);
 
@@ -138,13 +138,13 @@ static int keyboard_getKeyFromScancode(void *arg)
     SDLTest_AssertPass("Call to SDL_ClearError()");
 
     /* Case where input is invalid (too small) */
-    result = SDL_GetKeyFromScancode(-999);
+    result = SDL_GetKeyFromScancode((SDL_Scancode)-999, SDL_KMOD_NONE);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(-999)");
     SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIs32, SDLK_UNKNOWN, result);
     checkInvalidScancodeError();
 
     /* Case where input is invalid (too big) */
-    result = SDL_GetKeyFromScancode(999);
+    result = SDL_GetKeyFromScancode((SDL_Scancode)999, SDL_KMOD_NONE);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(999)");
     SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIs32, SDLK_UNKNOWN, result);
     checkInvalidScancodeError();
@@ -499,16 +499,19 @@ static int keyboard_setTextInputRectNegative(void *arg)
 static int keyboard_getScancodeFromKey(void *arg)
 {
     SDL_Scancode scancode;
+    SDL_Keymod modstate;
 
     /* Regular key */
-    scancode = SDL_GetScancodeFromKey(SDLK_4);
+    scancode = SDL_GetDefaultScancodeFromKey(SDLK_4, &modstate);
     SDLTest_AssertPass("Call to SDL_GetScancodeFromKey(SDLK_4)");
-    SDLTest_AssertCheck(scancode == SDL_SCANCODE_4, "Validate return value from SDL_GetScancodeFromKey, expected: %d, got: %d", SDL_SCANCODE_4, scancode);
+    SDLTest_AssertCheck(scancode == SDL_SCANCODE_4, "Validate return value from SDL_GetDefaultScancodeFromKey, expected: %d, got: %d", SDL_SCANCODE_4, scancode);
+    SDLTest_AssertCheck(modstate == SDL_KMOD_NONE, "Validate modstate from SDL_GetDefaultScancodeFromKey, expected: %d, got: %d", SDL_KMOD_NONE, modstate);
 
     /* Virtual key */
-    scancode = SDL_GetScancodeFromKey(SDLK_PLUS);
+    scancode = SDL_GetDefaultScancodeFromKey(SDLK_PLUS, &modstate);
     SDLTest_AssertPass("Call to SDL_GetScancodeFromKey(SDLK_PLUS)");
-    SDLTest_AssertCheck(scancode == 0, "Validate return value from SDL_GetScancodeFromKey, expected: 0, got: %d", scancode);
+    SDLTest_AssertCheck(scancode == SDL_SCANCODE_EQUALS, "Validate return value from SDL_GetDefaultScancodeFromKey, expected: %d, got: %d", SDL_SCANCODE_EQUALS, scancode);
+    SDLTest_AssertCheck(modstate == SDL_KMOD_SHIFT, "Validate modstate from SDL_GetDefaultScancodeFromKey, expected: %d, got: %d", SDL_KMOD_SHIFT, modstate);
 
     return TEST_COMPLETED;
 }
