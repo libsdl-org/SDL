@@ -17,7 +17,7 @@ rules we need to obey to cooperate with those scripts.
 ## The wiki and headers share the same text.
 
 There is a massive Perl script (`build-scripts/wikiheaders.pl`, hereafter
-refered to as "wikiheaders") that can read both the wiki and the public
+referred to as "wikiheaders") that can read both the wiki and the public
 headers, and move changes in one across to the other.
 
 If you prefer to use the wiki, go ahead and edit there. If you prefer to use
