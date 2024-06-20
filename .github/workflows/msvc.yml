@@ -60,6 +60,7 @@ jobs:
         -DSDL_DISABLE_INSTALL=OFF `
         -DSDL_DISABLE_INSTALL_CPACK=OFF `
         -DSDL_DISABLE_INSTALL_DOCS=OFF `
+        -DSDLTEST_PROCDUMP=ON `
         ${{ matrix.platform.flags }} `
         -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build (CMake)
@@ -67,6 +68,7 @@ jobs:
       run: |
         cmake --build build/ --config Release --parallel
     - name: Run build-time tests
+      id: tests
       if: ${{ !matrix.platform.notests }}
       run: |
         $env:SDL_TESTS_QUICK=1
@@ -85,13 +87,18 @@ jobs:
           -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} `
           ${{ matrix.platform.flags }}
         cmake --build cmake_config_build --config Release
-
     - name: Add msbuild to PATH
       if: ${{ matrix.platform.project != '' }}
       uses: microsoft/setup-msbuild@v2
     - name: Build msbuild
       if: ${{ matrix.platform.project != '' }}
       run: msbuild ${{ matrix.platform.project }} /m /p:BuildInParallel=true /p:Configuration=Release ${{ matrix.platform.projectflags }}
+    - uses: actions/upload-artifact@v4
+      if: ${{ always() && steps.tests.outcome == 'failure' }}
+      with:
+        if-no-files-found: ignore
+        name: '${{ matrix.platform.artifact }}-minidumps'
+        path: build/minidumps/*
     - uses: actions/upload-artifact@v4
       if: ${{ always() && steps.build.outcome == 'success' }}
       with:
