@@ -28,6 +28,7 @@
 #include "../../events/SDL_touch_c.h"
 
 #include "SDL_waylandvideo.h"
+#include "SDL_waylandshmbuffer.h"
 
 struct SDL_WaylandInput;
 
@@ -98,6 +99,7 @@ struct SDL_WindowData
     struct zxdg_exported_v2 *exported;
     struct xdg_dialog_v1 *xdg_dialog_v1;
     struct wp_alpha_modifier_surface_v1 *wp_alpha_modifier_surface_v1;
+    struct xdg_toplevel_icon_v1 *xdg_toplevel_icon_v1;
 
     SDL_AtomicInt swap_interval_ready;
 
@@ -108,6 +110,8 @@ struct SDL_WindowData
 
     char *app_id;
     float windowed_scale_factor;
+
+    struct Wayland_SHMBuffer icon;
 
     struct
     {
@@ -199,6 +203,7 @@ extern void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Wayland_SuspendScreenSaver(SDL_VideoDevice *_this);
+extern int Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
 
 extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 extern int Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
