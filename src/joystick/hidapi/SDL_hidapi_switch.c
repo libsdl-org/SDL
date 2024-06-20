@@ -2562,13 +2562,13 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        if (ctx->m_rgucReadBuffer[0] == k_eSwitchInputReportIDs_SubcommandReply) {
-            continue;
-        }
-
         if (ctx->m_bInputOnly) {
             HandleInputOnlyControllerState(joystick, ctx, (SwitchInputOnlyControllerStatePacket_t *)&ctx->m_rgucReadBuffer[0]);
         } else {
+            if (ctx->m_rgucReadBuffer[0] == k_eSwitchInputReportIDs_SubcommandReply) {
+                continue;
+            }
+
             ctx->m_nCurrentInputMode = ctx->m_rgucReadBuffer[0];
 
             switch (ctx->m_rgucReadBuffer[0]) {
