@@ -411,9 +411,9 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  * The following read-only properties are provided by SDL:
  *
  * - `SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN`: true if the display has HDR
- *   headroom above the SDR white point. This is for informational and diagnostic
- *   purposes only, as not all platforms provide this information at the display
- *   level.
+ *   headroom above the SDR white point. This is for informational and
+ *   diagnostic purposes only, as not all platforms provide this information
+ *   at the display level.
  *
  * On KMS/DRM:
  *
@@ -1103,7 +1103,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  *
  * - `SDL_PROP_WINDOW_SHAPE_POINTER`: the surface associated with a shaped
  *   window
- *  - `SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN`: true if the window has HDR
+ * - `SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN`: true if the window has HDR
  *   headroom above the SDR white point. This property can change dynamically
  *   when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
  * - `SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT`: the value of SDR white in the
