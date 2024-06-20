@@ -99,6 +99,7 @@ struct SDL_WaylandInput
     struct wl_seat *seat;
     struct wl_pointer *pointer;
     struct wl_touch *touch;
+    struct zwp_pointer_gesture_pinch_v1 *gesture_pinch;
     struct wl_keyboard *keyboard;
     SDL_WaylandDataDevice *data_device;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device;

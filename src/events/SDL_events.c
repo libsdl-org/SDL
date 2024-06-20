@@ -207,10 +207,11 @@ static void SDL_LogEvent(const SDL_Event *event)
     char name[64];
     char details[128];
 
-    /* sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded. */
+    /* sensor/mouse/pen/finger/pinch motion are spammy, ignore these if they aren't demanded. */
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_EVENT_MOUSE_MOTION) ||
          (event->type == SDL_EVENT_FINGER_MOTION) ||
+         (event->type == SDL_EVENT_PINCH_UPDATE) ||
          (event->type == SDL_EVENT_PEN_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_SENSOR_UPDATE) ||
@@ -515,6 +516,20 @@ static void SDL_LogEvent(const SDL_Event *event)
         PRINT_FINGER_EVENT(event);
         break;
 #undef PRINT_FINGER_EVENT
+
+#define PRINT_PINCH_EVENT(event)                                                                                                                      \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u scale=%f)", \
+                       (uint)event->pinch.timestamp, event->pinch.scale)
+        SDL_EVENT_CASE(SDL_EVENT_PINCH_BEGIN)
+        PRINT_PINCH_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_PINCH_UPDATE)
+        PRINT_PINCH_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_PINCH_END)
+        PRINT_PINCH_EVENT(event);
+        break;
+#undef PRINT_PINCH_EVENT
 
 #define PRINT_PTIP_EVENT(event)                                                                                    \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u tip=%u state=%s x=%g y=%g)", \

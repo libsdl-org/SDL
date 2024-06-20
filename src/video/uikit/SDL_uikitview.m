@@ -71,6 +71,12 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         [self addGestureRecognizer:swipeRight];
 #endif
 
+#if !defined(SDL_PLATFORM_TVOS)
+        /* Pinch gestures */
+        UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(sdlPinchGesture:)];
+        [self addGestureRecognizer:pinchGesture];
+#endif
+
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.autoresizesSubviews = YES;
 
@@ -367,6 +373,36 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         }
     }
 }
+
+#if !defined(SDL_PLATFORM_TVOS)
+- (IBAction)sdlPinchGesture:(UIPinchGestureRecognizer *)sender
+{
+    CGFloat scale = sender.scale;
+    UIGestureRecognizerState state = sender.state;
+
+    switch (state) {
+
+        case UIGestureRecognizerStateBegan:
+            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0);
+            break;
+
+        case UIGestureRecognizerStateChanged:
+            /* TODO/FIXME: this isn't the same scale scale as others backed, should send the delta scale instead */
+            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale);
+            break;
+
+        case UIGestureRecognizerStateFailed:
+        case UIGestureRecognizerStateEnded:
+        case UIGestureRecognizerStateCancelled:
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0);
+            break;
+
+        default:
+            break;
+    }
+
+}
+#endif
 
 #if defined(SDL_PLATFORM_TVOS) || defined(__IPHONE_9_1)
 - (SDL_Scancode)scancodeFromPress:(UIPress *)press

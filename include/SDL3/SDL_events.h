@@ -185,6 +185,11 @@ typedef enum SDL_EventType
     SDL_EVENT_FINGER_UP,
     SDL_EVENT_FINGER_MOTION,
 
+    /* Pinch events */
+    SDL_EVENT_PINCH_BEGIN      = 0x710,     /**< Pinch gesture started */
+    SDL_EVENT_PINCH_UPDATE,                 /**< Pinch gesture updated */
+    SDL_EVENT_PINCH_END,                    /**< Pinch gesture ended */
+
     /* 0x800, 0x801, and 0x802 were the Gesture events from SDL2. Do not reuse these values! sdl2-compat needs them! */
 
     /* Clipboard events */
@@ -667,6 +672,17 @@ typedef struct SDL_TouchFingerEvent
     SDL_WindowID windowID; /**< The window underneath the finger, if any */
 } SDL_TouchFingerEvent;
 
+/**
+ *  Pinch event structure (event.pinch.*)
+ */
+typedef struct SDL_PinchFingerEvent
+{
+    SDL_EventType type; /**< ::SDL_EVENT_PINCH_BEGIN or ::SDL_EVENT_PINCH_UPDATE or ::SDL_EVENT_PINCH_END */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    float scale;        /**< The scale factor provided with SDL_EVENT_PINCH_UPDATE. Scale < 1 is "zoom out". Scale > 1 is "zoom in". */
+    SDL_WindowID windowID; /**< The window underneath the finger, if any */
+} SDL_PinchFingerEvent;
 
 /**
  * Pressure-sensitive pen touched or stopped touching surface (event.ptip.*)
@@ -849,6 +865,7 @@ typedef union SDL_Event
     SDL_QuitEvent quit;                     /**< Quit request event data */
     SDL_UserEvent user;                     /**< Custom event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
+    SDL_PinchFingerEvent pinch;             /**< Pinch event data */
     SDL_PenTipEvent ptip;                   /**< Pen tip touching or leaving drawing surface */
     SDL_PenMotionEvent pmotion;             /**< Pen change in position, pressure, or angle */
     SDL_PenButtonEvent pbutton;             /**< Pen button press */

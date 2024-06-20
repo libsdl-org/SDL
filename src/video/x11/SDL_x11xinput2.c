@@ -38,6 +38,11 @@ static int xinput2_initialized = 0;
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
 static int xinput2_multitouch_supported = 0;
 #endif
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE
+static int xinput2_gesture_supported = 0;
+#endif
+
+static int X11_Xinput2IsGestureSupported(void);
 
 /* Opcode returned X11_XQueryExtension
  * It will be used in event processing
@@ -143,16 +148,21 @@ SDL_bool X11_InitXinput2(SDL_VideoDevice *_this)
         return SDL_FALSE; /* X server does not have XInput at all */
     }
 
-    /* We need at least 2.2 for Multitouch, 2.0 otherwise. */
-    version = query_xinput2_version(data->display, 2, 2);
+    /* We need at least 2.4 for Gesture, 2.2 for Multitouch, 2.0 otherwise. */
+    version = query_xinput2_version(data->display, 2, 4);
     if (!xinput2_version_atleast(version, 2, 0)) {
         return SDL_FALSE; /* X server does not support the version we want at all. */
     }
 
     xinput2_initialized = 1;
 
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH /* Multitouch needs XInput 2.2 */
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+    /* Multitouch needs XInput 2.2 */
     xinput2_multitouch_supported = xinput2_version_atleast(version, 2, 2);
+#endif
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE
+    /* Gesture needs XInput 2.4 */
+    xinput2_gesture_supported = xinput2_version_atleast(version, 2, 4);
 #endif
 
     /* Enable raw motion events for this display */
@@ -476,7 +486,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     {
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
         const SDL_Pen *pen = SDL_GetPenPtr(X11_PenIDFromDeviceID(xev->deviceid));
-#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
         SDL_bool pointer_emulated = ((xev->flags & XIPointerEmulated) != 0);
 #else
         SDL_bool pointer_emulated = SDL_FALSE;
@@ -519,7 +529,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         }
     } break;
 
-#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     case XI_TouchBegin:
     {
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
@@ -547,6 +557,27 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         SDL_SendTouchMotion(0, xev->sourceid, xev->detail, window, x, y, 1.0);
     } break;
 #endif /* SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH */
+
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE
+    case XI_GesturePinchBegin:
+    case XI_GesturePinchUpdate:
+    case XI_GesturePinchEnd:
+    {
+        const XIGesturePinchEvent *xev = (const XIGesturePinchEvent *)cookie->data;
+        float x, y;
+        SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+        xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
+
+        if (cookie->evtype == XI_GesturePinchBegin) {
+            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, window, 0);
+        } else if (cookie->evtype == XI_GesturePinchUpdate) {
+            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, window, (float)xev->scale);
+        } else {
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, window, 0);
+        }
+    } break;
+
+#endif /* SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE */
     }
 #endif /* SDL_VIDEO_DRIVER_X11_XINPUT2 */
 }
@@ -560,7 +591,7 @@ void X11_Xinput2SelectTouch(SDL_VideoDevice *_this, SDL_Window *window)
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     SDL_VideoData *data = NULL;
     XIEventMask eventmask;
-    unsigned char mask[4] = { 0, 0, 0, 0 };
+    unsigned char mask[5] = { 0, 0, 0, 0, 0 };
     SDL_WindowData *window_data = NULL;
 
     if (!X11_Xinput2IsMultitouchSupported()) {
@@ -578,6 +609,16 @@ void X11_Xinput2SelectTouch(SDL_VideoDevice *_this, SDL_Window *window)
     XISetMask(mask, XI_TouchUpdate);
     XISetMask(mask, XI_TouchEnd);
     XISetMask(mask, XI_Motion);
+
+
+    if (X11_Xinput2IsGestureSupported()) {
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE
+        XISetMask(mask, XI_GesturePinchBegin);
+        XISetMask(mask, XI_GesturePinchUpdate);
+        XISetMask(mask, XI_GesturePinchEnd);
+#endif
+    }
+
 
     X11_XISelectEvents(data->display, window_data->xwindow, &eventmask, 1);
 #endif
@@ -645,6 +686,15 @@ int X11_Xinput2IsMultitouchSupported(void)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     return xinput2_initialized && xinput2_multitouch_supported;
+#else
+    return 0;
+#endif
+}
+
+int X11_Xinput2IsGestureSupported(void)
+{
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE
+    return xinput2_initialized && xinput2_gesture_supported;
 #else
     return 0;
 #endif

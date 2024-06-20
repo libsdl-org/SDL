@@ -83,6 +83,7 @@ struct SDL_VideoData
     struct xdg_wm_dialog_v1 *xdg_wm_dialog_v1;
     struct wp_alpha_modifier_v1 *wp_alpha_modifier_v1;
     struct kde_output_order_v1 *kde_output_order;
+    struct zwp_pointer_gestures_v1 *zwp_pointer_gestures;
 
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
