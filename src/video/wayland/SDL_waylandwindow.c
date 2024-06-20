@@ -118,45 +118,10 @@ static void GetFullScreenDimensions(SDL_Window *window, int *width, int *height,
     }
 }
 
-SDL_FORCE_INLINE SDL_bool SurfaceScaleIsFractional(SDL_Window *window)
-{
-    SDL_WindowData *data = window->driverdata;
-    return !FloatEqual(SDL_roundf(data->scale_factor), data->scale_factor);
-}
-
 SDL_FORCE_INLINE SDL_bool FullscreenModeEmulation(SDL_Window *window)
 {
     return (window->flags & SDL_WINDOW_FULLSCREEN) &&
            ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP);
-}
-
-static SDL_bool NeedViewport(SDL_Window *window)
-{
-    SDL_WindowData *wind = window->driverdata;
-    SDL_VideoData *video = wind->waylandData;
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_WaylandOutputData *output = display ? ((SDL_WaylandOutputData *)display->driverdata) : NULL;
-    const int output_width = wind->fs_output_width ? wind->fs_output_width : (output ? output->width : wind->window_width);
-    const int output_height = wind->fs_output_height ? wind->fs_output_height : (output ? output->height : wind->window_height);
-    int fs_width, fs_height;
-
-    /*
-     * A viewport is only required when scaling is enabled and:
-     *  - A fullscreen mode is being emulated and the mode does not match the logical desktop dimensions.
-     *  - The desktop uses fractional scaling and the high-DPI flag is set.
-     */
-    if (video->viewporter) {
-        if (FullscreenModeEmulation(window)) {
-            GetFullScreenDimensions(window, &fs_width, &fs_height, NULL, NULL);
-            if (fs_width != output_width || fs_height != output_height) {
-                return SDL_TRUE;
-            }
-        } else if (SurfaceScaleIsFractional(window) && (window->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
-            return SDL_TRUE;
-        }
-    }
-
-    return SDL_FALSE;
 }
 
 static void GetBufferSize(SDL_Window *window, int *width, int *height)
@@ -167,15 +132,12 @@ static void GetBufferSize(SDL_Window *window, int *width, int *height)
 
     if (FullscreenModeEmulation(window)) {
         GetFullScreenDimensions(window, NULL, NULL, &buf_width, &buf_height);
-    } else if (NeedViewport(window)) {
+    } else if (data->draw_viewport) {
         /* Round fractional backbuffer sizes halfway away from zero. */
         buf_width = (int)SDL_lroundf(window->w * data->scale_factor);
         buf_height = (int)SDL_lroundf(window->h * data->scale_factor);
     } else {
-        /*
-         * Integer scaled windowed or fullscreen with no viewport
-         *
-         * Round the scale factor up in the unlikely scenario of a compositor
+        /* Round the scale factor up in the unlikely scenario of a compositor
          * that supports fractional scaling, but not viewports.
          */
         int scale_factor = (int)SDL_ceilf(data->scale_factor);
@@ -189,31 +151,6 @@ static void GetBufferSize(SDL_Window *window, int *width, int *height)
     }
     if (height) {
         *height = buf_height;
-    }
-}
-
-static void SetDrawSurfaceViewport(SDL_Window *window, int src_width, int src_height, int dst_width, int dst_height)
-{
-    SDL_WindowData *wind = window->driverdata;
-    SDL_VideoData *video = wind->waylandData;
-
-    if (video->viewporter) {
-        if (!wind->draw_viewport) {
-            wind->draw_viewport = wp_viewporter_get_viewport(video->viewporter, wind->surface);
-        }
-
-        wp_viewport_set_source(wind->draw_viewport, wl_fixed_from_int(-1), wl_fixed_from_int(-1), wl_fixed_from_int(-1), wl_fixed_from_int(-1));
-        wp_viewport_set_destination(wind->draw_viewport, dst_width, dst_height);
-    }
-}
-
-static void UnsetDrawSurfaceViewport(SDL_Window *window)
-{
-    SDL_WindowData *wind = window->driverdata;
-
-    if (wind->draw_viewport) {
-        wp_viewport_destroy(wind->draw_viewport);
-        wind->draw_viewport = NULL;
     }
 }
 
@@ -240,7 +177,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
                                      0, 0);
     }
 
-    if (FullscreenModeEmulation(window) && NeedViewport(window)) {
+    if (FullscreenModeEmulation(window) && data->draw_viewport) {
         int fs_width, fs_height;
         const int output_width = data->fs_output_width ? data->fs_output_width : (output ? output->width : data->window_width);
         const int output_height = data->fs_output_height ? data->fs_output_height : (output ? output->height : data->window_height);
@@ -252,8 +189,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
             /* Set the buffer scale to 1 since a viewport will be used. */
             wl_surface_set_buffer_scale(data->surface, 1);
-            SetDrawSurfaceViewport(window, data->drawable_width, data->drawable_height,
-                                   output_width, output_height);
+            wp_viewport_set_destination(data->draw_viewport, output_width, output_height);
 
             data->window_width = output_width;
             data->window_height = output_height;
@@ -265,12 +201,10 @@ static void ConfigureWindowGeometry(SDL_Window *window)
         window_size_changed = data->window_width != window->w || data->window_height != window->h;
 
         if (window_size_changed || drawable_size_changed) {
-            if (NeedViewport(window)) {
+            if (data->draw_viewport) {
                 wl_surface_set_buffer_scale(data->surface, 1);
-                SetDrawSurfaceViewport(window, data->drawable_width, data->drawable_height, window->w, window->h);
+                wp_viewport_set_destination(data->draw_viewport, window->w, window->h);
             } else {
-                UnsetDrawSurfaceViewport(window);
-
                 if (!FullscreenModeEmulation(window)) {
                     /* Round to the next integer in case of a fractional value. */
                     wl_surface_set_buffer_scale(data->surface, (int32_t)SDL_ceilf(data->scale_factor));
@@ -293,8 +227,11 @@ static void ConfigureWindowGeometry(SDL_Window *window)
      * need to be recalculated if the output size has changed.
      */
     if (window_size_changed) {
-        /* libdecor does this internally on frame commits, so it's only needed for xdg surfaces. */
-        if (data->shell_surface_type != WAYLAND_SURFACE_LIBDECOR &&
+        /* XXX: This is a hack and only set on the xdg-toplevel path when viewports
+         *      aren't supported to avoid a potential protocol violation if a buffer
+         *      with an old size is committed.
+         */
+        if (!data->draw_viewport && data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL &&
             viddata->shell.xdg && data->shell_surface.xdg.surface) {
             xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, data->window_width, data->window_height);
         }
@@ -1420,9 +1357,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
                                                      &decoration_listener,
                                                      window);
         }
-
-        /* Set the geometry */
-        xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, data->window_width, data->window_height);
     } else {
         /* Nothing to see here, just commit. */
         wl_surface_commit(data->surface);
@@ -2035,6 +1969,13 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     wl_surface_add_listener(data->surface, &surface_listener, data);
 
     SDL_WAYLAND_register_surface(data->surface);
+
+    if (c->viewporter) {
+        data->draw_viewport = wp_viewporter_get_viewport(c->viewporter, data->surface);
+        wp_viewport_set_source(data->draw_viewport,
+                               wl_fixed_from_int(-1), wl_fixed_from_int(-1),
+                               wl_fixed_from_int(-1), wl_fixed_from_int(-1));
+    }
 
     /* Must be called before EGL configuration to set the drawable backbuffer size. */
     ConfigureWindowGeometry(window);
