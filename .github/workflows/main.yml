@@ -19,11 +19,11 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows (mingw32),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686, artifact: 'SDL-mingw32', no-perl: true }
-        - { name: Windows (mingw64),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64, artifact: 'SDL-mingw64' }
-        - { name: Windows (clang32),              os: windows-latest, shell: 'msys2 {0}', msystem: clang32, msys-env: mingw-w64-clang-i686, artifact: 'SDL-msys2-clang32', no-perl: true }
-        - { name: Windows (clang64),              os: windows-latest, shell: 'msys2 {0}', msystem: clang64, msys-env: mingw-w64-clang-x86_64, artifact: 'SDL-msys2-clang64' }
-        - { name: Windows (ucrt64),               os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64, artifact: 'SDL-msys2-ucrt64' }
+        - { name: Windows (mingw32),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686,         cmake: '-DSDLTEST_PROCDUMP=ON', artifact: 'SDL-mingw32', no-perl: true }
+        - { name: Windows (mingw64),              os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64,       cmake: '-DSDLTEST_PROCDUMP=ON', artifact: 'SDL-mingw64' }
+        - { name: Windows (clang32),              os: windows-latest, shell: 'msys2 {0}', msystem: clang32, msys-env: mingw-w64-clang-i686,   cmake: '-DSDLTEST_PROCDUMP=ON', artifact: 'SDL-msys2-clang32', no-perl: true }
+        - { name: Windows (clang64),              os: windows-latest, shell: 'msys2 {0}', msystem: clang64, msys-env: mingw-w64-clang-x86_64, cmake: '-DSDLTEST_PROCDUMP=ON', artifact: 'SDL-msys2-clang64' }
+        - { name: Windows (ucrt64),               os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64,  cmake: '-DSDLTEST_PROCDUMP=ON', artifact: 'SDL-msys2-ucrt64' }
         - { name: Ubuntu 20.04,                   os: ubuntu-20.04,   shell: sh, artifact: 'SDL-ubuntu20.04' }
         - { name: Intel oneAPI (Ubuntu 20.04),    os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-oneapi', intel: true,
             source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icx; export CXX=icx;'}
@@ -121,6 +121,7 @@ jobs:
         ${{ matrix.platform.source_cmd }}
         cmake --build build/ --config Release --verbose --parallel
     - name: Run build-time tests (CMake)
+      id: tests
       if: ${{ !matrix.platform.cross-build }}
       run: |
         ${{ matrix.platform.source_cmd }}
@@ -172,6 +173,12 @@ jobs:
         ${{ matrix.platform.source_cmd }}
         export PKG_CONFIG_PATH=$(echo "${{ github.workspace }}/cmake_prefix/lib/pkgconfig" | sed  -e 's#\\#/#g')
         cmake/test/test_pkgconfig.sh
+    - uses: actions/upload-artifact@v4
+      if: ${{ always() && steps.tests.outcome == 'failure' }}
+      with:
+        if-no-files-found: ignore
+        name: '${{ matrix.platform.artifact }}-minidumps'
+        path: build/minidumps/*
     - uses: actions/upload-artifact@v4
       if: ${{ always() && matrix.platform.artifact != '' && steps.build.outcome == 'success' }}
       with:

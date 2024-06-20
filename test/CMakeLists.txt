@@ -38,6 +38,17 @@ target_link_libraries(sdltests_utils PRIVATE SDL3::Headers)
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
 
+if(WIN32 AND NOT WINDOWS_STORE)
+    option(SDLTEST_PROCDUMP "Run tests using sdlprocdump for minidump generation" OFF)
+    add_executable(sdlprocdump win32/sdlprocdump.c)
+    SDL_AddCommonCompilerFlags(sdlprocdump)
+    if(SDLTEST_PROCDUMP)
+        set(CMAKE_TEST_LAUNCHER "$<TARGET_FILE:sdlprocdump>")
+    else()
+        set_property(TARGET sdlprocdump PROPERTY EXCLUDE_FROM_ALL "1")
+    endif()
+endif()
+
 if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
     set(test_bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     if(NOT IS_ABSOLUTE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
