@@ -9,6 +9,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
+#include "build_config/SDL_build_config.h"
 
 /**
  * Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
@@ -96,6 +97,7 @@ main_testSetError(void *arg)
     char error_input[1024];
     int result;
     const char *error;
+    size_t expected_len;
 
     SDLTest_AssertPass("SDL_SetError(NULL)");
     result = SDL_SetError(NULL);
@@ -118,8 +120,14 @@ main_testSetError(void *arg)
     result = SDL_SetError("%s", error_input);
     SDLTest_AssertCheck(result == -1, "SDL_SetError(\"abc...\") -> %d (expected %d)", result, -1);
     error = SDL_GetError();
+
+#ifdef SDL_THREADS_DISABLED
+    expected_len = 128 - 1;
+#else
+    expected_len = sizeof(error_input) - 1;
+#endif
     SDLTest_AssertPass("Verify SDL error is identical to the input error");
-    SDLTest_CompareMemory(error, SDL_strlen(error), error_input, SDL_strlen(error_input));
+    SDLTest_CompareMemory(error, SDL_strlen(error), error_input, expected_len);
 
     return TEST_COMPLETED;
 }
