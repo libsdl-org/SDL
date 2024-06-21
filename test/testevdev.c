@@ -851,6 +851,25 @@ static const GuessTest guess_tests[] =
       .hid_report_descriptor = &steam_deck_oled_js_hid_report_descriptor[0],
     },
     {
+      .name = "Steam Input virtual controller",
+      .eviocgname = "Microsoft X-Box 360 pad 0",
+      .bus_type = 0x0003,
+      .vendor_id = 0x28de,
+      .product_id = 0x11ff,
+      .version = 0x0001,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* SYN, KEY, ABS, FF */
+      .ev = { 0x0b, 0x00, 0x20 },
+      /* XYZ, RXYZ, hat 0 */
+      .abs = { 0x3f, 0x00, 0x03 },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* 0x130 0xdb: gamepad ABXY, TL/TR */
+          /* 0x138 0x7f: gamepad SELECT/START, MODE, THUMBL/R */
+          /* 0x100 */ ZEROx4, 0x00, 0x00, 0xdb, 0x7c,
+      },
+    },
+    {
       .name = "Guitar Hero for PS3",
       /* SWITCH CO.,LTD. Controller (Dinput) off-brand N64-style USB controller
        * 0003:2563:0575 v0111 is functionally equivalent.
