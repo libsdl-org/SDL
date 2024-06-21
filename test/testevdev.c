@@ -198,6 +198,55 @@ static unsigned char ps3_hid_report_descriptor[] =
 };
 SDL_COMPILE_TIME_ASSERT (ps3, sizeof (ps3_hid_report_descriptor) == 149);
 
+/* Same for Steam Deck LCD (jupiter) and OLED (galileo) */
+static unsigned char steam_deck_mouse_hid_report_descriptor[] =
+{
+    0x05, 0x01, 0x09, 0x02, 0xa1, 0x01, 0x09, 0x01,
+    0xa1, 0x00, 0x05, 0x09, 0x19, 0x01, 0x29, 0x02,
+    0x15, 0x00, 0x25, 0x01, 0x75, 0x01, 0x95, 0x02,
+    0x81, 0x02, 0x75, 0x06, 0x95, 0x01, 0x81, 0x01,
+    0x05, 0x01, 0x09, 0x30, 0x09, 0x31, 0x15, 0x81,
+    0x25, 0x7f, 0x75, 0x08, 0x95, 0x02, 0x81, 0x06,
+    0x95, 0x01, 0x09, 0x38, 0x81, 0x06, 0x05, 0x0c,
+    0x0a, 0x38, 0x02, 0x95, 0x01, 0x81, 0x06, 0xc0,
+    0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (steam_deck_mouse,
+                         sizeof (steam_deck_mouse_hid_report_descriptor) == 65);
+
+/* Same for Steam Deck LCD (jupiter) and OLED (galileo) */
+static unsigned char steam_deck_kb_hid_report_descriptor[] =
+{
+    0x05, 0x01, 0x09, 0x06, 0xa1, 0x01, 0x05, 0x07,
+    0x19, 0xe0, 0x29, 0xe7, 0x15, 0x00, 0x25, 0x01,
+    0x75, 0x01, 0x95, 0x08, 0x81, 0x02, 0x81, 0x01,
+    0x19, 0x00, 0x29, 0x65, 0x15, 0x00, 0x25, 0x65,
+    0x75, 0x08, 0x95, 0x06, 0x81, 0x00, 0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (steam_deck_oled_kb,
+                         sizeof (steam_deck_kb_hid_report_descriptor) == 39);
+
+static unsigned char steam_deck_lcd_js_hid_report_descriptor[] =
+{
+    0x06, 0xff, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x15,
+    0x00, 0x26, 0xff, 0x00, 0x75, 0x08, 0x95, 0x40,
+    0x09, 0x01, 0x81, 0x02, 0x09, 0x01, 0xb1, 0x02,
+    0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (steam_deck_lcd_js,
+                         sizeof (steam_deck_lcd_js_hid_report_descriptor) == 25);
+
+static unsigned char steam_deck_oled_js_hid_report_descriptor[] =
+{
+    0x06, 0xff, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09,
+    0x02, 0x09, 0x03, 0x15, 0x00, 0x26, 0xff, 0x00,
+    0x75, 0x08, 0x95, 0x40, 0x81, 0x02, 0x09, 0x06,
+    0x09, 0x07, 0x15, 0x00, 0x26, 0xff, 0x00, 0x75,
+    0x08, 0x95, 0x40, 0xb1, 0x02, 0xc0,
+};
+SDL_COMPILE_TIME_ASSERT (steam_deck_oled_js,
+                         sizeof (steam_deck_oled_js_hid_report_descriptor) == 38);
+
 #if 0 /* unused for now */
 static unsigned char vrs_pedals_hid_report_descriptor[] =
 {
@@ -671,6 +720,135 @@ static const GuessTest guess_tests[] =
           /* 0xc0 */ ZEROx8,
           /* 0x100 */ 0x00, 0x00, 0x1f, 0x00, ZEROx4,
       },
+    },
+    {
+      .name = "Steam Deck - mouse",
+      /* This is the LCD model (jupiter).
+       * Steam Deck OLED (galileo, possibly pre-production) has
+       * .eviocgname = "Valve Software Steam Controller"
+       * .version = 0x0110
+       * .usb_device_version = 0x0300
+       * but is otherwise equivalent.
+       */
+      .eviocgname = "Valve Software Steam Deck Controller",
+      .usb_vendor_name = "Valve Software",
+      .usb_product_name = "Steam Deck Controller",
+      .bus_type = 0x0003,
+      .vendor_id = 0x28de,
+      .product_id = 0x1205,
+      .version = 0x011,
+      .usb_device_version = 0x0200,
+      /* SYN, KEY, REL, MSC */
+      .ev = { 0x17 },
+      /* X, Y, mouse wheel v/h, high-res mouse wheel v/h */
+      .rel = { 0x43, 0x19 },
+      .keys = {
+        /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+        /* left/right mouse button */
+        /* 0x100 */ 0x00, 0x00, 0x03, 0x00, ZEROx4,
+      },
+      .expected = SDL_UDEV_DEVICE_MOUSE,
+      .hid_report_descriptor_length = sizeof (steam_deck_mouse_hid_report_descriptor),
+      .hid_report_descriptor = &steam_deck_mouse_hid_report_descriptor[0],
+    },
+    {
+      .name = "Steam Deck - keyboard",
+      /* This is the LCD model (jupiter).
+       * Steam Deck OLED (galileo, possibly pre-production) has
+       * .eviocgname = "Valve Software Steam Controller"
+       * .version = 0x0110
+       * .usb_device_version = 0x0300
+       * but is otherwise equivalent.
+       */
+      .eviocgname = "Valve Software Steam Deck Controller",
+      .usb_vendor_name = "Valve Software",
+      .usb_product_name = "Steam Deck Controller",
+      .bus_type = 0x0003,
+      .vendor_id = 0x28de,
+      .product_id = 0x1205,
+      .version = 0x0110,
+      .usb_device_version = 0x0300,
+      /* SYN, KEY, MSC, REP */
+      .ev = { 0x13, 0x00, 0x10 },
+      .keys = {
+        /* 0x00 */ 0xfe, 0xff, 0xff, 0xff, FFx4,
+        /* 0x40 */ 0xff, 0xff, 0xcf, 0x01, 0xdf, 0xff, 0x80, 0xe0,
+      },
+      .expected = SDL_UDEV_DEVICE_KEYBOARD | SDL_UDEV_DEVICE_HAS_KEYS,
+      .hid_report_descriptor_length = sizeof (steam_deck_kb_hid_report_descriptor),
+      .hid_report_descriptor = &steam_deck_kb_hid_report_descriptor[0],
+    },
+    {
+      .name = "Steam Deck LCD - gamepad",
+      .eviocgname = "Valve Software Steam Deck Controller",
+      .usb_vendor_name = "Valve Software",
+      .usb_product_name = "Steam Deck Controller",
+      .bus_type = 0x0003,
+      .vendor_id = 0x28de,
+      .product_id = 0x1205,
+      .version = 0x0111,
+      .usb_device_version = 0x0200,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      /* TODO: The data I have for Steam Deck LCD didn't seem to have
+       * an evdev device available, so this is extrapolated from
+       * kernel source code as being the same as the OLED model
+       * (the kernel driver doesn't distinguish). */
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, RX, RY, hat 0-2 x/y */
+      .abs = { 0x1b, 0x00, 0x3f },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* 0x120 0x46: joystick THUMB, THUMB2, BASE */
+          /* 0x130 0xdb: gamepad ABXY, TL/TR */
+          /* 0x138 0x7f: gamepad TL2/TR2, SELECT/START, MODE, THUMBL/R */
+          /* 0x100 */ ZEROx4, 0x46, 0x00, 0xdb, 0x7f,
+          /* 0x140 */ ZEROx8,
+          /* 0x180 */ ZEROx8,
+          /* 0x1c0 */ ZEROx8,
+          /* 0x220 0x0f: dpad up/down/left/right */
+          /* 0x200 */ ZEROx4, 0x0f, 0x00, 0x00, 0x00,
+          /* 0x240 */ ZEROx8,
+          /* 0x280 */ ZEROx8,
+          /* 0x2c0 0x0f: joystick TRIGGER_HAPPY1..TRIGGER_HAPPY4 */
+          /* 0x2c0 */ 0x0f,
+      },
+      .hid_report_descriptor_length = sizeof (steam_deck_lcd_js_hid_report_descriptor),
+      .hid_report_descriptor = &steam_deck_lcd_js_hid_report_descriptor[0],
+    },
+    {
+      .name = "Steam Deck OLED - gamepad",
+      .eviocgname = "Valve Software Steam Controller",
+      .usb_vendor_name = "Valve Software",
+      .usb_product_name = "Steam Controller",
+      .bus_type = 0x0003,
+      .vendor_id = 0x28de,
+      .product_id = 0x1205,
+      .version = 0x0110,
+      .usb_device_version = 0x0300,
+      /* SYN, KEY, ABS */
+      .ev = { 0x0b },
+      /* X, Y, RX, RY, hat 0-2 x/y */
+      .abs = { 0x1b, 0x00, 0x3f },
+      .keys = {
+          /* 0x00-0xff */ ZEROx8, ZEROx8, ZEROx8, ZEROx8,
+          /* 0x120 0x46: joystick THUMB, THUMB2, BASE */
+          /* 0x130 0xdb: gamepad ABXY, TL/TR */
+          /* 0x138 0x7f: gamepad TL2/TR2, SELECT/START, MODE, THUMBL/R */
+          /* 0x100 */ ZEROx4, 0x46, 0x00, 0xdb, 0x7f,
+          /* 0x140 */ ZEROx8,
+          /* 0x180 */ ZEROx8,
+          /* 0x1c0 */ ZEROx8,
+          /* 0x220 0x0f: dpad up/down/left/right */
+          /* 0x200 */ ZEROx4, 0x0f, 0x00, 0x00, 0x00,
+          /* 0x240 */ ZEROx8,
+          /* 0x280 */ ZEROx8,
+          /* 0x2c0 0x0f: joystick TRIGGER_HAPPY1..TRIGGER_HAPPY4 */
+          /* 0x2c0 */ 0x0f,
+      },
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
+      .hid_report_descriptor_length = sizeof (steam_deck_oled_js_hid_report_descriptor),
+      .hid_report_descriptor = &steam_deck_oled_js_hid_report_descriptor[0],
     },
     {
       .name = "Guitar Hero for PS3",
@@ -1545,6 +1723,8 @@ static const GuessTest guess_tests[] =
     {
       /* Assumed to be a reasonably typical i8042 (PC AT) keyboard */
       .name = "Thinkpad T520 and X280 keyboards",
+      /* Steam Deck LCD/OLED keyboard interface is version 0xab83 but
+       * otherwise equivalent */
       .eviocgname = "AT Translated Set 2 keyboard",
       .bus_type = 0x0011,   /* BUS_I8042 */
       .vendor_id = 0x0001,
@@ -1578,7 +1758,8 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      .name = "Thinkpad X280 lid switch",
+      /* As seen on Thinkpad X280, Steam Deck LCD, Steam Deck OLED */
+      .name = "ACPI lid switch",
       .eviocgname = "Lid Switch",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
@@ -1589,7 +1770,8 @@ static const GuessTest guess_tests[] =
       .ev = { 0x21 },
     },
     {
-      .name = "Thinkpad X280 power button",
+      /* As seen on Thinkpad X280, Steam Deck LCD, Steam Deck OLED */
+      .name = "ACPI power button",
       .eviocgname = "Power Button",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
@@ -1605,7 +1787,8 @@ static const GuessTest guess_tests[] =
       },
     },
     {
-      .name = "Thinkpad X280 video bus",
+      /* As seen on Thinkpad X280, Steam Deck LCD, Steam Deck OLED */
+      .name = "ACPI video bus",
       .eviocgname = "Video Bus",
       .bus_type = 0x0019,   /* BUS_HOST */
       .vendor_id = 0x0000,
