@@ -374,40 +374,8 @@ static D3D11_INPUT_CLASSIFICATION SDLToD3D11_VertexInputRate[] = {
 static D3D11_TEXTURE_ADDRESS_MODE SDLToD3D11_SamplerAddressMode[] = {
     D3D11_TEXTURE_ADDRESS_WRAP,   /* REPEAT */
     D3D11_TEXTURE_ADDRESS_MIRROR, /* MIRRORED_REPEAT */
-    D3D11_TEXTURE_ADDRESS_CLAMP,  /* CLAMP_TO_EDGE */
-    D3D11_TEXTURE_ADDRESS_BORDER  /* CLAMP_TO_BORDER */
+    D3D11_TEXTURE_ADDRESS_CLAMP   /* CLAMP_TO_EDGE */
 };
-
-static void SDLToD3D11_BorderColor(
-    SDL_GpuSamplerCreateInfo *createInfo,
-    D3D11_SAMPLER_DESC *desc)
-{
-    switch (createInfo->borderColor) {
-    case SDL_GPU_BORDERCOLOR_FLOAT_OPAQUE_BLACK:
-    case SDL_GPU_BORDERCOLOR_INT_OPAQUE_BLACK:
-        desc->BorderColor[0] = 0.0f;
-        desc->BorderColor[1] = 0.0f;
-        desc->BorderColor[2] = 0.0f;
-        desc->BorderColor[3] = 1.0f;
-        break;
-
-    case SDL_GPU_BORDERCOLOR_FLOAT_OPAQUE_WHITE:
-    case SDL_GPU_BORDERCOLOR_INT_OPAQUE_WHITE:
-        desc->BorderColor[0] = 1.0f;
-        desc->BorderColor[1] = 1.0f;
-        desc->BorderColor[2] = 1.0f;
-        desc->BorderColor[3] = 1.0f;
-        break;
-
-    case SDL_GPU_BORDERCOLOR_FLOAT_TRANSPARENT_BLACK:
-    case SDL_GPU_BORDERCOLOR_INT_TRANSPARENT_BLACK:
-        desc->BorderColor[0] = 0.0f;
-        desc->BorderColor[1] = 0.0f;
-        desc->BorderColor[2] = 0.0f;
-        desc->BorderColor[3] = 0.0f;
-        break;
-    }
-}
 
 static D3D11_FILTER SDLToD3D11_Filter(SDL_GpuSamplerCreateInfo *createInfo)
 {
@@ -1875,17 +1843,13 @@ static SDL_GpuSampler *D3D11_CreateSampler(
     samplerDesc.AddressU = SDLToD3D11_SamplerAddressMode[samplerCreateInfo->addressModeU];
     samplerDesc.AddressV = SDLToD3D11_SamplerAddressMode[samplerCreateInfo->addressModeV];
     samplerDesc.AddressW = SDLToD3D11_SamplerAddressMode[samplerCreateInfo->addressModeW];
-
-    SDLToD3D11_BorderColor(
-        samplerCreateInfo,
-        &samplerDesc);
-
     samplerDesc.ComparisonFunc = (samplerCreateInfo->compareEnable ? SDLToD3D11_CompareOp[samplerCreateInfo->compareOp] : SDLToD3D11_CompareOp[SDL_GPU_COMPAREOP_ALWAYS]);
     samplerDesc.MaxAnisotropy = (samplerCreateInfo->anisotropyEnable ? (UINT)samplerCreateInfo->maxAnisotropy : 0);
     samplerDesc.Filter = SDLToD3D11_Filter(samplerCreateInfo);
     samplerDesc.MaxLOD = samplerCreateInfo->maxLod;
     samplerDesc.MinLOD = samplerCreateInfo->minLod;
     samplerDesc.MipLODBias = samplerCreateInfo->mipLodBias;
+    SDL_zeroa(samplerDesc.BorderColor); /* arbitrary, unused */
 
     res = ID3D11Device_CreateSamplerState(
         renderer->device,
@@ -6059,7 +6023,6 @@ static void D3D11_INTERNAL_InitBlitPipelines(
     samplerCreateInfo.mipLodBias = 0.0f;
     samplerCreateInfo.minLod = 0;
     samplerCreateInfo.maxLod = 1000;
-    samplerCreateInfo.borderColor = SDL_GPU_BORDERCOLOR_FLOAT_TRANSPARENT_BLACK;
 
     renderer->blitNearestSampler = D3D11_CreateSampler(
         (SDL_GpuRenderer *)renderer,

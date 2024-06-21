@@ -319,20 +319,8 @@ typedef enum SDL_GpuSamplerAddressMode
 {
     SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
     SDL_GPU_SAMPLERADDRESSMODE_MIRRORED_REPEAT,
-    SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-    SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_BORDER
+    SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
 } SDL_GpuSamplerAddressMode;
-
-/* FIXME: we should probably make a library-level decision about color types */
-typedef enum SDL_GpuBorderColor
-{
-    SDL_GPU_BORDERCOLOR_FLOAT_TRANSPARENT_BLACK,
-    SDL_GPU_BORDERCOLOR_INT_TRANSPARENT_BLACK,
-    SDL_GPU_BORDERCOLOR_FLOAT_OPAQUE_BLACK,
-    SDL_GPU_BORDERCOLOR_INT_OPAQUE_BLACK,
-    SDL_GPU_BORDERCOLOR_FLOAT_OPAQUE_WHITE,
-    SDL_GPU_BORDERCOLOR_INT_OPAQUE_WHITE
-} SDL_GpuBorderColor;
 
 /*
  * VSYNC:
@@ -486,7 +474,6 @@ typedef struct SDL_GpuSamplerCreateInfo
     SDL_GpuCompareOp compareOp;
     float minLod;
     float maxLod;
-    SDL_GpuBorderColor borderColor;
 } SDL_GpuSamplerCreateInfo;
 
 typedef struct SDL_GpuVertexBinding

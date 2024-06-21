@@ -250,17 +250,7 @@ static MTLStencilOperation SDLToMetal_StencilOp[] = {
 static MTLSamplerAddressMode SDLToMetal_SamplerAddressMode[] = {
     MTLSamplerAddressModeRepeat,             /* REPEAT */
     MTLSamplerAddressModeMirrorRepeat,       /* MIRRORED_REPEAT */
-    MTLSamplerAddressModeClampToEdge,        /* CLAMP_TO_EDGE */
-    MTLSamplerAddressModeClampToBorderColor, /* CLAMP_TO_BORDER */
-};
-
-static MTLSamplerBorderColor SDLToMetal_BorderColor[] = {
-    MTLSamplerBorderColorTransparentBlack, /* FLOAT_TRANSPARENT_BLACK */
-    MTLSamplerBorderColorTransparentBlack, /* INT_TRANSPARENT_BLACK */
-    MTLSamplerBorderColorOpaqueBlack,      /* FLOAT_OPAQUE_BLACK */
-    MTLSamplerBorderColorOpaqueBlack,      /* INT_OPAQUE_BLACK */
-    MTLSamplerBorderColorOpaqueWhite,      /* FLOAT_OPAQUE_WHITE */
-    MTLSamplerBorderColorOpaqueWhite,      /* INT_OPAQUE_WHITE */
+    MTLSamplerAddressModeClampToEdge         /* CLAMP_TO_EDGE */
 };
 
 static MTLSamplerMinMagFilter SDLToMetal_MinMagFilter[] = {
@@ -1163,7 +1153,6 @@ static SDL_GpuSampler *METAL_CreateSampler(
     samplerDesc.rAddressMode = SDLToMetal_SamplerAddressMode[samplerCreateInfo->addressModeU];
     samplerDesc.sAddressMode = SDLToMetal_SamplerAddressMode[samplerCreateInfo->addressModeV];
     samplerDesc.tAddressMode = SDLToMetal_SamplerAddressMode[samplerCreateInfo->addressModeW];
-    samplerDesc.borderColor = SDLToMetal_BorderColor[samplerCreateInfo->borderColor];
     samplerDesc.minFilter = SDLToMetal_MinMagFilter[samplerCreateInfo->minFilter];
     samplerDesc.magFilter = SDLToMetal_MinMagFilter[samplerCreateInfo->magFilter];
     samplerDesc.mipFilter = SDLToMetal_MipFilter[samplerCreateInfo->mipmapMode]; /* FIXME: Is this right with non-mipmapped samplers? */
@@ -1171,6 +1160,7 @@ static SDL_GpuSampler *METAL_CreateSampler(
     samplerDesc.lodMaxClamp = samplerCreateInfo->maxLod;
     samplerDesc.maxAnisotropy = (NSUInteger)((samplerCreateInfo->anisotropyEnable) ? samplerCreateInfo->maxAnisotropy : 1);
     samplerDesc.compareFunction = (samplerCreateInfo->compareEnable) ? SDLToMetal_CompareOp[samplerCreateInfo->compareOp] : MTLCompareFunctionAlways;
+    samplerDesc.borderColor = MTLSamplerBorderColorTransparentBlack; /* arbitrary, unused */
 
     sampler = [renderer->device newSamplerStateWithDescriptor:samplerDesc];
     if (sampler == NULL) {
@@ -3619,7 +3609,6 @@ static void METAL_INTERNAL_InitBlitResources(
     samplerCreateInfo.mipLodBias = 0.0f;
     samplerCreateInfo.minLod = 0;
     samplerCreateInfo.maxLod = 1000;
-    samplerCreateInfo.borderColor = SDL_GPU_BORDERCOLOR_FLOAT_TRANSPARENT_BLACK;
 
     renderer->blitNearestSampler = METAL_CreateSampler(
         (SDL_GpuRenderer *)renderer,
