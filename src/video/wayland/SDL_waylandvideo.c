@@ -761,12 +761,11 @@ static void Wayland_free_display(SDL_VideoData *d, uint32_t id)
                 Wayland_RemoveOutputFromWindow(window->driverdata, data->output);
             }
 
-            SDL_DelVideoDisplay(i);
             if (data->xdg_output) {
                 zxdg_output_v1_destroy(data->xdg_output);
             }
             wl_output_destroy(data->output);
-            SDL_free(data);
+            SDL_DelVideoDisplay(i);
 
             /* Update the index for all remaining displays */
             num_displays -= 1;
@@ -1031,9 +1030,6 @@ static void Wayland_VideoCleanup(_THIS)
         }
 
         wl_output_destroy(((SDL_WaylandOutputData *)display->driverdata)->output);
-        SDL_free(display->driverdata);
-        display->driverdata = NULL;
-
         SDL_DelVideoDisplay(i);
     }
     data->output_list = NULL;
