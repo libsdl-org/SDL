@@ -140,36 +140,46 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
 }
 
 int SDLTest_CompareMemory(const void *actual, size_t size_actual, const void *reference, size_t size_reference) {
+#define WIDTH 16
+
     const size_t size_max = SDL_max(size_actual, size_reference);
     size_t i;
     struct {
+        const char *header;
         const Uint8 *data;
         size_t size;
-    } columns[2] = {
+    } columns[] = {
         {
+            "actual",
             actual,
             size_actual,
         },
         {
+            "reference",
             reference,
             size_reference,
         },
     };
-
-#define WIDTH 16
+    char line_buffer[16 + SDL_arraysize(columns) * (4 * WIDTH + 1) + (SDL_arraysize(columns) - 1) * 2 + 1];
 
     SDLTest_AssertCheck(size_actual == size_reference, "Sizes of memory blocks must be equal (actual=%" SDL_PRIu64 " expected=%" SDL_PRIu64 ")", (Uint64)size_actual, (Uint64)size_reference);
     if (size_actual == size_reference) {
         int equals;
         equals = SDL_memcmp(actual, reference, size_max) == 0;
-        SDLTest_AssertCheck(equals, "Memory blocks contain the same data (actual | reference)");
+        SDLTest_AssertCheck(equals, "Memory blocks contain the same data");
         if (equals) {
             return 0;
         }
     }
 
+    SDL_memset(line_buffer, ' ', sizeof(line_buffer));
+    line_buffer[sizeof(line_buffer) - 1] = '\0';
+    for (i = 0; i < SDL_arraysize(columns); i++) {
+        SDL_memcpy(line_buffer + 16 + 1 + i * (4 * WIDTH + 3), columns[i].header, SDL_strlen(columns[i].header));
+    }
+    SDLTest_LogError("%s", line_buffer);
+
     for (i = 0; i < size_max; i += WIDTH) {
-        char line_buffer[16 + SDL_arraysize(columns) * (4 * WIDTH + 1) + (SDL_arraysize(columns) - 1) * 2 + 1];
         size_t pos = 0;
         size_t col;
 
