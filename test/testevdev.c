@@ -81,6 +81,7 @@ typedef struct
     uint16_t vendor_id;
     uint16_t product_id;
     uint16_t version;
+    uint16_t usb_device_version;
     uint8_t ev[(EV_MAX + 1) / 8];
     uint8_t keys[(KEY_MAX + 1) / 8];
     uint8_t abs[(ABS_MAX + 1) / 8];
