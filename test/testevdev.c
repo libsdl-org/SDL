@@ -1537,6 +1537,10 @@ static const GuessTest guess_tests[] =
     {
       .name = "Wiimote - Classic Controller",
       .eviocgname = "Nintendo Wii Remote Classic Controller",
+      .bus_type = 0x0005,
+      .vendor_id = 0x057e,
+      .product_id = 0x0306,
+      .version = 0x0600,
       /* TODO: Should this be JOYSTICK, or maybe JOYSTICK|HAS_KEYS?
        * It's unusual in the same ways as the Wiimote */
       .expected = SDL_UDEV_DEVICE_HAS_KEYS,
