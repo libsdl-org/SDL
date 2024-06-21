@@ -8469,13 +8469,12 @@ static void VULKAN_UnmapTransferBuffer(
 
 static void VULKAN_SetTransferData(
     SDL_GpuRenderer *driverData,
-    const void *data,
-    SDL_GpuTransferBuffer *transferBuffer,
-    SDL_GpuBufferCopy *copyParams,
+    const void *source,
+    SDL_GpuTransferBufferRegion *destination,
     SDL_bool cycle)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
-    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)transferBuffer;
+    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transferBuffer;
 
     if (
         cycle &&
@@ -8488,33 +8487,26 @@ static void VULKAN_SetTransferData(
     Uint8 *bufferPointer =
         transferBufferContainer->activeBufferHandle->vulkanBuffer->usedRegion->allocation->mapPointer +
         transferBufferContainer->activeBufferHandle->vulkanBuffer->usedRegion->resourceOffset +
-        copyParams->dstOffset;
+        destination->offset;
 
-    SDL_memcpy(
-        bufferPointer,
-        ((Uint8 *)data) + copyParams->srcOffset,
-        copyParams->size);
+    SDL_memcpy(bufferPointer, source, destination->size);
 }
 
 static void VULKAN_GetTransferData(
     SDL_GpuRenderer *driverData,
-    SDL_GpuTransferBuffer *transferBuffer,
-    void *data,
-    SDL_GpuBufferCopy *copyParams)
+    SDL_GpuTransferBufferRegion *source,
+    void *destination)
 {
     (void)driverData; /* used by other backends */
-    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)transferBuffer;
+    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)source->transferBuffer;
     VulkanBuffer *vulkanBuffer = transferBufferContainer->activeBufferHandle->vulkanBuffer;
 
     Uint8 *bufferPointer =
         vulkanBuffer->usedRegion->allocation->mapPointer +
         vulkanBuffer->usedRegion->resourceOffset +
-        copyParams->srcOffset;
+        source->offset;
 
-    SDL_memcpy(
-        ((Uint8 *)data) + copyParams->dstOffset,
-        bufferPointer,
-        copyParams->size);
+    SDL_memcpy(destination, bufferPointer, source->size);
 }
 
 static void VULKAN_BeginCopyPass(
@@ -8526,14 +8518,13 @@ static void VULKAN_BeginCopyPass(
 
 static void VULKAN_UploadToTexture(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTransferBuffer *source,
+    SDL_GpuTextureTransferInfo *source,
     SDL_GpuTextureRegion *destination,
-    SDL_GpuBufferImageCopy *copyParams,
     SDL_bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)source;
+    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)source->transferBuffer;
     VulkanTextureContainer *vulkanTextureContainer = (VulkanTextureContainer *)destination->textureSlice.texture;
     VulkanTextureSlice *vulkanTextureSlice;
     VkBufferImageCopy imageCopy;
@@ -8559,9 +8550,9 @@ static void VULKAN_UploadToTexture(
     imageCopy.imageSubresource.baseArrayLayer = destination->textureSlice.layer;
     imageCopy.imageSubresource.layerCount = 1;
     imageCopy.imageSubresource.mipLevel = destination->textureSlice.mipLevel;
-    imageCopy.bufferOffset = copyParams->bufferOffset;
-    imageCopy.bufferRowLength = copyParams->bufferStride;
-    imageCopy.bufferImageHeight = copyParams->bufferImageHeight;
+    imageCopy.bufferOffset = source->offset;
+    imageCopy.bufferRowLength = source->imagePitch;
+    imageCopy.bufferImageHeight = source->imageHeight;
 
     renderer->vkCmdCopyBufferToImage(
         vulkanCommandBuffer->commandBuffer,
@@ -8583,15 +8574,14 @@ static void VULKAN_UploadToTexture(
 
 static void VULKAN_UploadToBuffer(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTransferBuffer *source,
-    SDL_GpuBuffer *destination,
-    SDL_GpuBufferCopy *copyParams,
+    SDL_GpuTransferBufferLocation *source,
+    SDL_GpuBufferRegion *destination,
     SDL_bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)source;
-    VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)destination;
+    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)source->transferBuffer;
+    VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
 
     /* Note that the transfer buffer does not need a barrier, as it is synced by the client */
@@ -8603,9 +8593,9 @@ static void VULKAN_UploadToBuffer(
         cycle,
         VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION);
 
-    bufferCopy.srcOffset = copyParams->srcOffset;
-    bufferCopy.dstOffset = copyParams->dstOffset;
-    bufferCopy.size = copyParams->size;
+    bufferCopy.srcOffset = source->offset;
+    bufferCopy.dstOffset = destination->offset;
+    bufferCopy.size = destination->size;
 
     renderer->vkCmdCopyBuffer(
         vulkanCommandBuffer->commandBuffer,
@@ -8629,13 +8619,12 @@ static void VULKAN_UploadToBuffer(
 static void VULKAN_DownloadFromTexture(
     SDL_GpuCommandBuffer *commandBuffer,
     SDL_GpuTextureRegion *source,
-    SDL_GpuTransferBuffer *destination,
-    SDL_GpuBufferImageCopy *copyParams)
+    SDL_GpuTextureTransferInfo *destination)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanTextureSlice *vulkanTextureSlice;
-    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination;
+    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transferBuffer;
     VkBufferImageCopy imageCopy;
     vulkanTextureSlice = VULKAN_INTERNAL_SDLToVulkanTextureSlice(&source->textureSlice);
 
@@ -8657,9 +8646,9 @@ static void VULKAN_DownloadFromTexture(
     imageCopy.imageSubresource.baseArrayLayer = source->textureSlice.layer;
     imageCopy.imageSubresource.layerCount = 1;
     imageCopy.imageSubresource.mipLevel = source->textureSlice.mipLevel;
-    imageCopy.bufferOffset = copyParams->bufferOffset;
-    imageCopy.bufferRowLength = copyParams->bufferStride;
-    imageCopy.bufferImageHeight = copyParams->bufferImageHeight;
+    imageCopy.bufferOffset = destination->offset;
+    imageCopy.bufferRowLength = destination->imagePitch;
+    imageCopy.bufferImageHeight = destination->imageHeight;
 
     renderer->vkCmdCopyImageToBuffer(
         vulkanCommandBuffer->commandBuffer,
@@ -8681,14 +8670,13 @@ static void VULKAN_DownloadFromTexture(
 
 static void VULKAN_DownloadFromBuffer(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBuffer *source,
-    SDL_GpuTransferBuffer *destination,
-    SDL_GpuBufferCopy *copyParams)
+    SDL_GpuBufferRegion *source,
+    SDL_GpuTransferBufferLocation *destination)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
-    VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)source;
-    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination;
+    VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)source->buffer;
+    VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transferBuffer;
     VkBufferCopy bufferCopy;
 
     /* Note that transfer buffer does not need a barrier, as it is synced by the client */
@@ -8699,9 +8687,9 @@ static void VULKAN_DownloadFromBuffer(
         VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
         bufferContainer->activeBufferHandle->vulkanBuffer);
 
-    bufferCopy.srcOffset = copyParams->srcOffset;
-    bufferCopy.dstOffset = copyParams->dstOffset;
-    bufferCopy.size = copyParams->size;
+    bufferCopy.srcOffset = source->offset;
+    bufferCopy.dstOffset = destination->offset;
+    bufferCopy.size = source->size;
 
     renderer->vkCmdCopyBuffer(
         vulkanCommandBuffer->commandBuffer,
@@ -8722,8 +8710,11 @@ static void VULKAN_DownloadFromBuffer(
 
 static void VULKAN_CopyTextureToTexture(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTextureRegion *source,
-    SDL_GpuTextureRegion *destination,
+    SDL_GpuTextureLocation *source,
+    SDL_GpuTextureLocation *destination,
+    Uint32 w,
+    Uint32 h,
+    Uint32 d,
     SDL_bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
@@ -8764,9 +8755,9 @@ static void VULKAN_CopyTextureToTexture(
     imageCopy.dstSubresource.baseArrayLayer = destination->textureSlice.layer;
     imageCopy.dstSubresource.layerCount = 1;
     imageCopy.dstSubresource.mipLevel = destination->textureSlice.mipLevel;
-    imageCopy.extent.width = source->w;
-    imageCopy.extent.height = source->h;
-    imageCopy.extent.depth = source->d;
+    imageCopy.extent.width = w;
+    imageCopy.extent.height = h;
+    imageCopy.extent.depth = d;
 
     renderer->vkCmdCopyImage(
         vulkanCommandBuffer->commandBuffer,
@@ -8795,15 +8786,15 @@ static void VULKAN_CopyTextureToTexture(
 
 static void VULKAN_CopyBufferToBuffer(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBuffer *source,
-    SDL_GpuBuffer *destination,
-    SDL_GpuBufferCopy *copyParams,
+    SDL_GpuBufferLocation *source,
+    SDL_GpuBufferLocation *destination,
+    Uint32 size,
     SDL_bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-    VulkanBufferContainer *srcContainer = (VulkanBufferContainer *)source;
-    VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination;
+    VulkanBufferContainer *srcContainer = (VulkanBufferContainer *)source->buffer;
+    VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
 
     VulkanBuffer *dstBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
@@ -8819,9 +8810,9 @@ static void VULKAN_CopyBufferToBuffer(
         VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
         srcContainer->activeBufferHandle->vulkanBuffer);
 
-    bufferCopy.srcOffset = copyParams->srcOffset;
-    bufferCopy.dstOffset = copyParams->dstOffset;
-    bufferCopy.size = copyParams->size;
+    bufferCopy.srcOffset = source->offset;
+    bufferCopy.dstOffset = destination->offset;
+    bufferCopy.size = size;
 
     renderer->vkCmdCopyBuffer(
         vulkanCommandBuffer->commandBuffer,

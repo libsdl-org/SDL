@@ -2716,38 +2716,35 @@ static void D3D11_UnmapTransferBuffer(
 
 static void D3D11_SetTransferData(
     SDL_GpuRenderer *driverData,
-    const void *data,
-    SDL_GpuTransferBuffer *transferBuffer,
-    SDL_GpuBufferCopy *copyParams,
+    const void *source,
+    SDL_GpuTransferBufferRegion *destination,
     SDL_bool cycle)
 {
-    D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer *)transferBuffer;
+    D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer *)destination->transferBuffer;
     void *dataPtr;
 
-    D3D11_MapTransferBuffer(driverData, transferBuffer, cycle, &dataPtr);
+    D3D11_MapTransferBuffer(driverData, destination->transferBuffer, cycle, &dataPtr);
 
     SDL_memcpy(
-        ((Uint8 *)container->activeBuffer->data) + copyParams->dstOffset,
-        ((Uint8 *)data) + copyParams->srcOffset,
-        copyParams->size);
+        ((Uint8 *)container->activeBuffer->data) + destination->offset,
+        source,
+        destination->size);
 
-    D3D11_UnmapTransferBuffer(driverData, transferBuffer);
+    D3D11_UnmapTransferBuffer(driverData, destination->transferBuffer);
 }
 
 static void D3D11_GetTransferData(
     SDL_GpuRenderer *driverData,
-    SDL_GpuTransferBuffer *transferBuffer,
-    void *data,
-    SDL_GpuBufferCopy *copyParams)
+    SDL_GpuTransferBufferRegion *source,
+    void *destination)
 {
-	(void)driverData;
-    D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer *)transferBuffer;
-    D3D11TransferBuffer *d3d11TransferBuffer = container->activeBuffer;
+    (void)driverData;
+    D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer *)source->transferBuffer;
 
     SDL_memcpy(
-		((Uint8 *)data) + copyParams->dstOffset,
-		d3d11TransferBuffer->data + copyParams->srcOffset,
-		copyParams->size
+        destination,
+        ((Uint8 *)container->activeBuffer->data) + source->offset,
+        source->size
     );
 }
 
@@ -2761,18 +2758,17 @@ static void D3D11_BeginCopyPass(
 
 static void D3D11_UploadToTexture(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTransferBuffer *source,
+    SDL_GpuTextureTransferInfo *source,
     SDL_GpuTextureRegion *destination,
-    SDL_GpuBufferImageCopy *copyParams,
     SDL_bool cycle)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
-    D3D11TransferBufferContainer *transferContainer = (D3D11TransferBufferContainer *)source;
+    D3D11TransferBufferContainer *transferContainer = (D3D11TransferBufferContainer *)source->transferBuffer;
     D3D11TransferBuffer *d3d11TransferBuffer = transferContainer->activeBuffer;
     D3D11TextureContainer *d3d11TextureContainer = (D3D11TextureContainer *)destination->textureSlice.texture;
-    Uint32 bufferStride = copyParams->bufferStride;
-    Uint32 bufferImageHeight = copyParams->bufferImageHeight;
+    Uint32 bufferStride = source->imagePitch;
+    Uint32 bufferImageHeight = source->imageHeight;
     Sint32 w = destination->w;
     Sint32 h = destination->h;
     D3D11Texture *stagingTexture;
@@ -2812,7 +2808,7 @@ static void D3D11_UploadToTexture(
     stagingTextureCreateInfo.sampleCount = SDL_GPU_SAMPLECOUNT_1;
     stagingTextureCreateInfo.format = ((D3D11TextureContainer *)destination->textureSlice.texture)->createInfo.format;
 
-    initialData.pSysMem = d3d11TransferBuffer->data + copyParams->bufferOffset;
+    initialData.pSysMem = d3d11TransferBuffer->data + source->offset;
     initialData.SysMemPitch = bufferStride;
     initialData.SysMemSlicePitch = bufferStride * bufferImageHeight;
 
@@ -2848,16 +2844,15 @@ static void D3D11_UploadToTexture(
 
 static void D3D11_UploadToBuffer(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTransferBuffer *source,
-    SDL_GpuBuffer *destination,
-    SDL_GpuBufferCopy *copyParams,
+    SDL_GpuTransferBufferLocation *source,
+    SDL_GpuBufferRegion *destination,
     SDL_bool cycle)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
-    D3D11TransferBufferContainer *transferContainer = (D3D11TransferBufferContainer *)source;
+    D3D11TransferBufferContainer *transferContainer = (D3D11TransferBufferContainer *)source->transferBuffer;
     D3D11TransferBuffer *d3d11TransferBuffer = transferContainer->activeBuffer;
-    D3D11BufferContainer *bufferContainer = (D3D11BufferContainer *)destination;
+    D3D11BufferContainer *bufferContainer = (D3D11BufferContainer *)destination->buffer;
     D3D11Buffer *d3d11Buffer = D3D11_INTERNAL_PrepareBufferForWrite(
         renderer,
         bufferContainer,
@@ -2868,14 +2863,14 @@ static void D3D11_UploadToBuffer(
     HRESULT res;
 
     /* Upload to staging buffer immediately */
-    stagingBufferDesc.ByteWidth = copyParams->size;
+    stagingBufferDesc.ByteWidth = destination->size;
     stagingBufferDesc.Usage = D3D11_USAGE_STAGING;
     stagingBufferDesc.BindFlags = 0;
     stagingBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     stagingBufferDesc.MiscFlags = 0;
     stagingBufferDesc.StructureByteStride = 0;
 
-    stagingBufferData.pSysMem = d3d11TransferBuffer->data + copyParams->srcOffset;
+    stagingBufferData.pSysMem = d3d11TransferBuffer->data + source->offset;
     stagingBufferData.SysMemPitch = 0;
     stagingBufferData.SysMemSlicePitch = 0;
 
@@ -2892,7 +2887,7 @@ static void D3D11_UploadToBuffer(
         d3d11CommandBuffer->context,
         (ID3D11Resource *)d3d11Buffer->handle,
         0,
-        copyParams->dstOffset,
+        destination->offset,
         0,
         0,
         (ID3D11Resource *)stagingBuffer,
@@ -2910,12 +2905,11 @@ static void D3D11_UploadToBuffer(
 static void D3D11_DownloadFromTexture(
     SDL_GpuCommandBuffer *commandBuffer,
     SDL_GpuTextureRegion *source,
-    SDL_GpuTransferBuffer *destination,
-    SDL_GpuBufferImageCopy *copyParams)
+    SDL_GpuTextureTransferInfo *destination)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = d3d11CommandBuffer->renderer;
-    D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer *)destination;
+    D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer *)destination->transferBuffer;
     D3D11TransferBuffer *d3d11TransferBuffer = container->activeBuffer;
     D3D11TextureContainer *d3d11TextureContainer = (D3D11TextureContainer *)source->textureSlice.texture;
     D3D11_TEXTURE2D_DESC stagingDesc2D;
@@ -2925,8 +2919,8 @@ static void D3D11_DownloadFromTexture(
         source->textureSlice.layer,
         source->textureSlice.mipLevel);
     D3D11TextureDownload *textureDownload;
-    Uint32 bufferStride = copyParams->bufferStride;
-    Uint32 bufferImageHeight = copyParams->bufferImageHeight;
+    Uint32 bufferStride = destination->imagePitch;
+    Uint32 bufferImageHeight = destination->imageHeight;
     Uint32 bytesPerRow, bytesPerDepthSlice;
     D3D11_BOX srcBox = { source->x, source->y, source->z, source->x + source->w, source->y + source->h, 1 };
     HRESULT res;
@@ -2990,7 +2984,7 @@ static void D3D11_DownloadFromTexture(
     textureDownload->width = source->w;
     textureDownload->height = source->h;
     textureDownload->depth = source->d;
-    textureDownload->bufferOffset = copyParams->bufferOffset;
+    textureDownload->bufferOffset = destination->offset;
     textureDownload->bytesPerRow = bytesPerRow;
     textureDownload->bytesPerDepthSlice = bytesPerDepthSlice;
 
@@ -3012,17 +3006,16 @@ static void D3D11_DownloadFromTexture(
 
 static void D3D11_DownloadFromBuffer(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBuffer *source,
-    SDL_GpuTransferBuffer *destination,
-    SDL_GpuBufferCopy *copyParams)
+    SDL_GpuBufferRegion *source,
+    SDL_GpuTransferBufferLocation *destination)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = d3d11CommandBuffer->renderer;
-    D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer *)destination;
+    D3D11TransferBufferContainer *container = (D3D11TransferBufferContainer *)destination->transferBuffer;
     D3D11TransferBuffer *d3d11TransferBuffer = container->activeBuffer;
-    D3D11BufferContainer *d3d11BufferContainer = (D3D11BufferContainer *)source;
+    D3D11BufferContainer *d3d11BufferContainer = (D3D11BufferContainer *)source->buffer;
     D3D11BufferDownload *bufferDownload;
-    D3D11_BOX srcBox = { copyParams->srcOffset, 0, 0, copyParams->size, 1, 1 };
+    D3D11_BOX srcBox = { source->offset, 0, 0, source->size, 1, 1 };
     D3D11_BUFFER_DESC stagingBufferDesc;
     HRESULT res;
 
@@ -3037,7 +3030,7 @@ static void D3D11_DownloadFromBuffer(
     bufferDownload = &d3d11TransferBuffer->bufferDownloads[d3d11TransferBuffer->bufferDownloadCount];
     d3d11TransferBuffer->bufferDownloadCount += 1;
 
-    stagingBufferDesc.ByteWidth = copyParams->size;
+    stagingBufferDesc.ByteWidth = source->size;
     stagingBufferDesc.Usage = D3D11_USAGE_STAGING;
     stagingBufferDesc.BindFlags = 0;
     stagingBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
@@ -3064,8 +3057,8 @@ static void D3D11_DownloadFromBuffer(
         &srcBox,
         D3D11_COPY_NO_OVERWRITE);
 
-    bufferDownload->dstOffset = copyParams->dstOffset;
-    bufferDownload->size = copyParams->size;
+    bufferDownload->dstOffset = destination->offset;
+    bufferDownload->size = source->size;
 
     D3D11_INTERNAL_TrackBuffer(d3d11CommandBuffer, d3d11BufferContainer->activeBuffer);
     D3D11_INTERNAL_TrackTransferBuffer(d3d11CommandBuffer, d3d11TransferBuffer);
@@ -3073,8 +3066,11 @@ static void D3D11_DownloadFromBuffer(
 
 static void D3D11_CopyTextureToTexture(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuTextureRegion *source,
-    SDL_GpuTextureRegion *destination,
+    SDL_GpuTextureLocation *source,
+    SDL_GpuTextureLocation *destination,
+    Uint32 w,
+    Uint32 h,
+    Uint32 d,
     SDL_bool cycle)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3082,7 +3078,7 @@ static void D3D11_CopyTextureToTexture(
     D3D11TextureContainer *srcContainer = (D3D11TextureContainer *)source->textureSlice.texture;
     D3D11TextureContainer *dstContainer = (D3D11TextureContainer *)destination->textureSlice.texture;
 
-    D3D11_BOX srcBox = { source->x, source->y, source->z, source->x + source->w, source->y + source->h, 1 };
+    D3D11_BOX srcBox = { source->x, source->y, source->z, source->x + w, source->y + h, 1 };
 
     D3D11TextureSubresource *srcSubresource = D3D11_INTERNAL_FetchTextureSubresource(
         srcContainer->activeTexture,
@@ -3114,16 +3110,16 @@ static void D3D11_CopyTextureToTexture(
 
 static void D3D11_CopyBufferToBuffer(
     SDL_GpuCommandBuffer *commandBuffer,
-    SDL_GpuBuffer *source,
-    SDL_GpuBuffer *destination,
-    SDL_GpuBufferCopy *copyParams,
+    SDL_GpuBufferLocation *source,
+    SDL_GpuBufferLocation *destination,
+    Uint32 size,
     SDL_bool cycle)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
     D3D11Renderer *renderer = (D3D11Renderer *)d3d11CommandBuffer->renderer;
     D3D11BufferContainer *srcBufferContainer = (D3D11BufferContainer *)source;
     D3D11BufferContainer *dstBufferContainer = (D3D11BufferContainer *)destination;
-    D3D11_BOX srcBox = { copyParams->srcOffset, 0, 0, copyParams->srcOffset + copyParams->size, 1, 1 };
+    D3D11_BOX srcBox = { source->offset, 0, 0, source->offset + size, 1, 1 };
 
     D3D11Buffer *srcBuffer = srcBufferContainer->activeBuffer;
     D3D11Buffer *dstBuffer = D3D11_INTERNAL_PrepareBufferForWrite(
@@ -3135,7 +3131,7 @@ static void D3D11_CopyBufferToBuffer(
         d3d11CommandBuffer->context,
         (ID3D11Resource *)dstBuffer->handle,
         0,
-        copyParams->dstOffset,
+        destination->offset,
         0,
         0,
         (ID3D11Resource *)srcBuffer->handle,

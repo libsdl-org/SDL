@@ -410,7 +410,9 @@ init_render_state(void)
 {
     SDL_GpuCommandBuffer *cmd;
     SDL_GpuTransferBuffer *buf_transfer;
-    SDL_GpuBufferCopy copy_params;
+    SDL_GpuTransferBufferRegion buf_region;
+    SDL_GpuTransferBufferLocation buf_location;
+    SDL_GpuBufferRegion dst_region;
     SDL_GpuCopyPass *copy_pass;
     SDL_GpuGraphicsPipelineCreateInfo pipelinedesc;
     SDL_GpuColorAttachmentDescription color_attachment_desc;
@@ -461,14 +463,19 @@ init_render_state(void)
     CHECK_CREATE(buf_transfer, "Vertex transfer buffer")
 
     /* We just need to upload the static data once. */
-    copy_params.srcOffset = 0;
-    copy_params.dstOffset = 0;
-    copy_params.size = sizeof(vertex_data);
-    SDL_GpuSetTransferData(gpu_device, (void*) vertex_data, buf_transfer, &copy_params, SDL_FALSE);
+    buf_region.transferBuffer = buf_transfer;
+    buf_region.offset = 0;
+    buf_region.size = sizeof(vertex_data);
+    SDL_GpuSetTransferData(gpu_device, (void*) vertex_data, &buf_region, SDL_FALSE);
 
     cmd = SDL_GpuAcquireCommandBuffer(gpu_device);
     copy_pass = SDL_GpuBeginCopyPass(cmd);
-    SDL_GpuUploadToBuffer(copy_pass, buf_transfer, render_state.buf_vertex, &copy_params, SDL_FALSE);
+    buf_location.transferBuffer = buf_transfer;
+    buf_location.offset = 0;
+    dst_region.buffer = render_state.buf_vertex;
+    dst_region.offset = 0;
+    dst_region.size = sizeof(vertex_data);
+    SDL_GpuUploadToBuffer(copy_pass, &buf_location, &dst_region, SDL_FALSE);
     SDL_GpuEndCopyPass(copy_pass);
     SDL_GpuSubmit(cmd);
 
