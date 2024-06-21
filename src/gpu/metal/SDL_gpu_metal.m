@@ -935,7 +935,6 @@ static SDL_GpuGraphicsPipeline *METAL_CreateGraphicsPipeline(
 
     /* Depth Stencil */
 
-    /* FIXME: depth min/max? */
     if (pipelineCreateInfo->attachmentInfo.hasDepthStencilAttachment) {
         pipelineDescriptor.depthAttachmentPixelFormat = SDLToMetal_SurfaceFormat[pipelineCreateInfo->attachmentInfo.depthStencilFormat];
 

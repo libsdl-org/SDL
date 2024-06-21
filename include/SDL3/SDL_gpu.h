@@ -583,15 +583,12 @@ typedef struct SDL_GpuDepthStencilState
     SDL_bool depthTestEnable;
     SDL_bool depthWriteEnable;
     SDL_GpuCompareOp compareOp;
-    SDL_bool depthBoundsTestEnable;
     SDL_bool stencilTestEnable;
     SDL_GpuStencilOpState backStencilState;
     SDL_GpuStencilOpState frontStencilState;
     Uint32 compareMask;
     Uint32 writeMask;
     Uint32 reference;
-    float minDepthBounds;
-    float maxDepthBounds;
 } SDL_GpuDepthStencilState;
 
 typedef struct SDL_GpuColorAttachmentDescription

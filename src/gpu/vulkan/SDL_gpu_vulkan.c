@@ -6359,16 +6359,13 @@ static SDL_GpuGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     depthStencilStateCreateInfo.depthWriteEnable =
         pipelineCreateInfo->depthStencilState.depthWriteEnable;
     depthStencilStateCreateInfo.depthCompareOp = SDLToVK_CompareOp[pipelineCreateInfo->depthStencilState.compareOp];
-    depthStencilStateCreateInfo.depthBoundsTestEnable =
-        pipelineCreateInfo->depthStencilState.depthBoundsTestEnable;
+    depthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
     depthStencilStateCreateInfo.stencilTestEnable =
         pipelineCreateInfo->depthStencilState.stencilTestEnable;
     depthStencilStateCreateInfo.front = frontStencilState;
     depthStencilStateCreateInfo.back = backStencilState;
-    depthStencilStateCreateInfo.minDepthBounds =
-        pipelineCreateInfo->depthStencilState.minDepthBounds;
-    depthStencilStateCreateInfo.maxDepthBounds =
-        pipelineCreateInfo->depthStencilState.maxDepthBounds;
+    depthStencilStateCreateInfo.minDepthBounds = 0; /* unused */
+    depthStencilStateCreateInfo.maxDepthBounds = 0; /* unused */
 
     /* Color Blend */
 

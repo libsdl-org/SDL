@@ -1349,10 +1349,6 @@ static ID3D11DepthStencilState *D3D11_INTERNAL_FetchDepthStencilState(
     dsDesc.StencilReadMask = depthStencilState.compareMask;
     dsDesc.StencilWriteMask = depthStencilState.writeMask;
 
-    if (depthStencilState.depthBoundsTestEnable) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11 does not support Depth Bounds tests!");
-    }
-
     res = ID3D11Device_CreateDepthStencilState(
         renderer->device,
         &dsDesc,
