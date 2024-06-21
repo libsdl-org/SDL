@@ -50,32 +50,19 @@
 /* ! Timeout for single test case execution */
 static Uint32 SDLTest_TestCaseTimeout = 3600;
 
-/**
- * Generates a random run seed string for the harness. The generated seed
- * will contain alphanumeric characters (0-9A-Z).
- *
- * Note: The returned string needs to be deallocated by the caller.
- *
- * \param length The length of the seed string to generate
- *
- * \returns The generated seed string
- */
-char *SDLTest_GenerateRunSeed(const int length)
+char *SDLTest_GenerateRunSeed(char *buffer, int length)
 {
-    char *seed = NULL;
     Uint64 randomContext = SDL_GetPerformanceCounter();
     int counter;
+
+    if (!buffer) {
+        SDLTest_LogError("Input buffer must not be NULL.");
+        return NULL;
+    }
 
     /* Sanity check input */
     if (length <= 0) {
         SDLTest_LogError("The length of the harness seed must be >0.");
-        return NULL;
-    }
-
-    /* Allocate output buffer */
-    seed = (char *)SDL_malloc((length + 1) * sizeof(char));
-    if (!seed) {
-        SDLTest_LogError("SDL_malloc for run seed output buffer failed.");
         return NULL;
     }
 
@@ -88,11 +75,11 @@ char *SDLTest_GenerateRunSeed(const int length)
         } else {
             ch = (char)('A' + v - 10);
         }
-        seed[counter] = ch;
+        buffer[counter] = ch;
     }
-    seed[length] = '\0';
+    buffer[length] = '\0';
 
-    return seed;
+    return buffer;
 }
 
 /**
@@ -417,14 +404,11 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
     /* Generate run see if we don't have one already */
     if (!userRunSeed || userRunSeed[0] == '\0') {
-        char *tmp = SDLTest_GenerateRunSeed(16);
-        if (!tmp) {
+        runSeed = SDLTest_GenerateRunSeed(generatedSeed, 16);
+        if (!runSeed) {
             SDLTest_LogError("Generating a random seed failed");
             return 2;
         }
-        SDL_memcpy(generatedSeed, tmp, 16 + 1);
-        SDL_free(tmp);
-        runSeed = generatedSeed;
     } else {
         runSeed = userRunSeed;
     }
