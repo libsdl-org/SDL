@@ -753,10 +753,6 @@ void SDLTest_CommonLogUsage(SDLTest_CommonState *state, const char *argv0, const
     }
 }
 
-static char *common_usage_video = NULL;
-static char *common_usage_audio = NULL;
-static char *common_usage_videoaudio = NULL;
-
 SDL_bool SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv)
 {
     int i = 1;
@@ -2498,13 +2494,6 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
 void SDLTest_CommonQuit(SDLTest_CommonState *state)
 {
     int i;
-
-    SDL_free(common_usage_video);
-    SDL_free(common_usage_audio);
-    SDL_free(common_usage_videoaudio);
-    common_usage_video = NULL;
-    common_usage_audio = NULL;
-    common_usage_videoaudio = NULL;
 
     if (state->targets) {
         for (i = 0; i < state->num_windows; ++i) {
