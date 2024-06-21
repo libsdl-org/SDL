@@ -16,26 +16,30 @@
  */
 static int sdltest_generateRunSeed(void *arg)
 {
+    char buffer[32];
     char *result;
     size_t i, l;
     int j;
 
     for (i = 1; i <= 10; i += 3) {
-        result = SDLTest_GenerateRunSeed((int)i);
-        SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed()");
+        result = SDLTest_GenerateRunSeed(buffer, (int)i);
+        SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed(<buf>, %" SDL_PRIu64 ")", (Uint64)i);
         SDLTest_AssertCheck(result != NULL, "Verify returned value is not NULL");
         if (result != NULL) {
             l = SDL_strlen(result);
             SDLTest_AssertCheck(l == i, "Verify length of returned value is %d, got: %d", (int)i, (int)l);
-            SDL_free(result);
         }
     }
 
+    result = SDLTest_GenerateRunSeed(NULL, 10);
+    SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed(NULL, 10)");
+    SDLTest_AssertCheck(result == NULL, "Verify returned value is NULL");
+
     /* Negative cases */
     for (j = -2; j <= 0; j++) {
-        result = SDLTest_GenerateRunSeed(j);
-        SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed()");
-        SDLTest_AssertCheck(result == NULL, "Verify returned value is not NULL");
+        result = SDLTest_GenerateRunSeed(buffer, j);
+        SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed(<buf>, %d)", j);
+        SDLTest_AssertCheck(result == NULL, "Verify returned value is NULL");
     }
 
     return TEST_COMPLETED;

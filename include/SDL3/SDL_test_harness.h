@@ -101,15 +101,15 @@ typedef struct SDLTest_TestSuiteReference {
 
 
 /*
- * Generates a random run seed string for the harness. The generated seed will contain alphanumeric characters (0-9A-Z).
+ * Generates a random run seed string for the harness. The generated seed
+ * will contain alphanumeric characters (0-9A-Z).
  *
- * Note: The returned string needs to be deallocated by the caller.
+ * \param buffer Buffer in which to generate the random seed. Must have a capacity of at least length + 1 characters.
+ * \param length Number of alphanumeric characters to write to buffer, must be >0
  *
- * \param length The length of the seed string to generate
- *
- * \returns the generated seed string
+ * \returns A null-terminated seed string and equal to the in put buffer on success, NULL on failure
  */
-char *SDLTest_GenerateRunSeed(const int length);
+char *SDLTest_GenerateRunSeed(char *buffer, int length);
 
 /*
  * Execute a test suite using the given run seed and execution key.
