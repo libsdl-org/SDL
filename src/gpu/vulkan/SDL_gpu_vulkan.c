@@ -9414,10 +9414,10 @@ static SDL_bool VULKAN_SupportsSwapchainComposition(
     }
 
     if (VULKAN_INTERNAL_QuerySwapchainSupport(
-        renderer,
-        renderer->physicalDevice,
-        surface,
-        &supportDetails)) {
+            renderer,
+            renderer->physicalDevice,
+            surface,
+            &supportDetails)) {
         for (i = 0; i < supportDetails.formatsLength; i += 1) {
             if (supportDetails.formats[i].format == SwapchainCompositionToFormat[swapchainComposition] &&
                 supportDetails.formats[i].colorSpace == SwapchainCompositionToColorSpace[swapchainComposition]) {
@@ -9471,10 +9471,10 @@ static SDL_bool VULKAN_SupportsPresentMode(
     }
 
     if (VULKAN_INTERNAL_QuerySwapchainSupport(
-        renderer,
-        renderer->physicalDevice,
-        surface,
-        &supportDetails)) {
+            renderer,
+            renderer->physicalDevice,
+            surface,
+            &supportDetails)) {
 
         for (i = 0; i < supportDetails.presentModesLength; i += 1) {
             if (supportDetails.presentModes[i] == SDLToVK_PresentMode[presentMode]) {

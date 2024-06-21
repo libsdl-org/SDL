@@ -2744,8 +2744,7 @@ static void D3D11_GetTransferData(
     SDL_memcpy(
         destination,
         ((Uint8 *)container->activeBuffer->data) + source->offset,
-        source->size
-    );
+        source->size);
 }
 
 /* Copy Pass */
@@ -2815,8 +2814,7 @@ static void D3D11_UploadToTexture(
     stagingTexture = D3D11_INTERNAL_CreateTexture(
         renderer,
         &stagingTextureCreateInfo,
-        &initialData
-    );
+        &initialData);
 
     if (stagingTexture == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Staging texture creation failed");
@@ -2878,9 +2876,8 @@ static void D3D11_UploadToBuffer(
         renderer->device,
         &stagingBufferDesc,
         &stagingBufferData,
-        &stagingBuffer
-    );
-    ERROR_CHECK_RETURN("Could not create staging buffer",)
+        &stagingBuffer);
+    ERROR_CHECK_RETURN("Could not create staging buffer", )
 
     /* Copy from staging buffer to buffer */
     ID3D11DeviceContext1_CopySubresourceRegion1(
@@ -2925,8 +2922,7 @@ static void D3D11_DownloadFromTexture(
     D3D11_BOX srcBox = { source->x, source->y, source->z, source->x + source->w, source->y + source->h, 1 };
     HRESULT res;
 
-    if (d3d11TransferBuffer->textureDownloadCount >= d3d11TransferBuffer->textureDownloadCapacity)
-    {
+    if (d3d11TransferBuffer->textureDownloadCount >= d3d11TransferBuffer->textureDownloadCapacity) {
         d3d11TransferBuffer->textureDownloadCapacity += 1;
         d3d11TransferBuffer->textureDownloads = SDL_realloc(
             d3d11TransferBuffer->textureDownloads,
@@ -3019,8 +3015,7 @@ static void D3D11_DownloadFromBuffer(
     D3D11_BUFFER_DESC stagingBufferDesc;
     HRESULT res;
 
-    if (d3d11TransferBuffer->bufferDownloadCount >= d3d11TransferBuffer->bufferDownloadCapacity)
-    {
+    if (d3d11TransferBuffer->bufferDownloadCount >= d3d11TransferBuffer->bufferDownloadCapacity) {
         d3d11TransferBuffer->bufferDownloadCapacity += 1;
         d3d11TransferBuffer->bufferDownloads = SDL_realloc(
             d3d11TransferBuffer->bufferDownloads,
@@ -3041,9 +3036,8 @@ static void D3D11_DownloadFromBuffer(
         renderer->device,
         &stagingBufferDesc,
         NULL,
-        &bufferDownload->stagingBuffer
-    );
-    ERROR_CHECK_RETURN("Could not create staging buffer",)
+        &bufferDownload->stagingBuffer);
+    ERROR_CHECK_RETURN("Could not create staging buffer", )
 
     ID3D11DeviceContext1_CopySubresourceRegion1(
         d3d11CommandBuffer->context,
@@ -4685,21 +4679,18 @@ static void D3D11_INTERNAL_MapAndCopyBufferDownload(
         0,
         D3D11_MAP_READ,
         0,
-        &subres
-    );
+        &subres);
     ERROR_CHECK_RETURN("Failed to map staging buffer", )
 
     SDL_memcpy(
         ((Uint8 *)transferBuffer->data) + bufferDownload->dstOffset,
         ((Uint8 *)subres.pData),
-        bufferDownload->size
-    );
+        bufferDownload->size);
 
     ID3D11DeviceContext_Unmap(
         renderer->immediateContext,
         (ID3D11Resource *)bufferDownload->stagingBuffer,
-        0
-    );
+        0);
     SDL_UnlockMutex(renderer->contextLock);
 
     ID3D11Buffer_Release(bufferDownload->stagingBuffer);
@@ -4723,7 +4714,7 @@ static void D3D11_INTERNAL_MapAndCopyTextureDownload(
         D3D11_MAP_READ,
         0,
         &subres);
-    ERROR_CHECK_RETURN("Could not map staging textre",)
+    ERROR_CHECK_RETURN("Could not map staging textre", )
 
     for (depth = 0; depth < textureDownload->depth; depth += 1) {
         dataPtrOffset = textureDownload->bufferOffset + (depth * textureDownload->bytesPerDepthSlice);

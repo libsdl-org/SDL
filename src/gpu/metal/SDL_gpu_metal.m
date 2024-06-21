@@ -248,9 +248,9 @@ static MTLStencilOperation SDLToMetal_StencilOp[] = {
 };
 
 static MTLSamplerAddressMode SDLToMetal_SamplerAddressMode[] = {
-    MTLSamplerAddressModeRepeat,             /* REPEAT */
-    MTLSamplerAddressModeMirrorRepeat,       /* MIRRORED_REPEAT */
-    MTLSamplerAddressModeClampToEdge         /* CLAMP_TO_EDGE */
+    MTLSamplerAddressModeRepeat,       /* REPEAT */
+    MTLSamplerAddressModeMirrorRepeat, /* MIRRORED_REPEAT */
+    MTLSamplerAddressModeClampToEdge   /* CLAMP_TO_EDGE */
 };
 
 static MTLSamplerMinMagFilter SDLToMetal_MinMagFilter[] = {
