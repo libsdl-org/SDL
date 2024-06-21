@@ -53,6 +53,27 @@ typedef Uint32 SDLTest_VerboseFlags;
 #define VERBOSE_AUDIO   0x00000010
 #define VERBOSE_MOTION  0x00000020
 
+/* !< Function pointer parsing one argument at argv[index], returning the number of parsed arguments,
+ *    or a negative value when the argument is invalid */
+typedef int (*SDLTest_ParseArgumentsFp)(void *data, char **argv, int index);
+
+/* !< Finalize the argument parser. */
+typedef void (*SDLTest_FinalizeArgumentParserFp)(void *arg);
+
+typedef struct SDLTest_ArgumentParser
+{
+    /* !< Parse an argument. */
+    SDLTest_ParseArgumentsFp parse_arguments;
+    /* !< Finalize this argument parser. Called once before parsing the first argument. */
+    SDLTest_FinalizeArgumentParserFp finalize;
+    /* !< Null-terminated array of arguments. Printed when running with --help. */
+    const char **usage;
+    /* !< User data, passed to all callbacks. */
+    void *data;
+    /* !< Next argument parser. */
+    struct SDLTest_ArgumentParser *next;
+} SDLTest_ArgumentParser;
+
 typedef struct
 {
     /* SDL init flags */
@@ -134,6 +155,12 @@ typedef struct
     SDL_Rect confine;
     SDL_bool hide_cursor;
 
+    /* Options info */
+    SDLTest_ArgumentParser common_argparser;
+    SDLTest_ArgumentParser video_argparser;
+    SDLTest_ArgumentParser audio_argparser;
+
+    SDLTest_ArgumentParser *argparser;
 } SDLTest_CommonState;
 
 #include <SDL3/SDL_begin_code.h>
