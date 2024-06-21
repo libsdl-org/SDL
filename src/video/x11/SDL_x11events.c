@@ -884,11 +884,13 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     text[0] = '\0';
 
     if (SDL_TextInputActive()) {
+#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX)
         /* Save the original keycode for dead keys, which are filtered out by
            the XFilterEvent() call below.
         */
         int orig_event_type = xevent->type;
         KeyCode orig_keycode = xevent->xkey.keycode;
+#endif
 
         /* filter events catches XIM events and sends them to the correct handler */
         if (X11_XFilterEvent(xevent, None)) {
