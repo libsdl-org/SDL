@@ -252,28 +252,34 @@ static void loop(void)
             SDLTest_TextWindowAddText(textwin, "%s", event.text.text);
             break;
         case SDL_EVENT_FINGER_DOWN:
-            if (SDL_TextInputActive()) {
+        {
+            SDL_Window *window = SDL_GetWindowFromID(event.tfinger.windowID);
+            if (SDL_TextInputActive(window)) {
                 SDL_Log("Stopping text input\n");
-                SDL_StopTextInput();
+                SDL_StopTextInput(window);
             } else {
                 SDL_Log("Starting text input\n");
-                SDL_StartTextInput();
+                SDL_StartTextInput(window);
             }
             break;
+        }
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            SDL_Window *window = SDL_GetWindowFromID(event.button.windowID);
             /* Left button quits the app, other buttons toggles text input */
             if (event.button.button == SDL_BUTTON_LEFT) {
                 done = 1;
             } else {
-                if (SDL_TextInputActive()) {
+                if (SDL_TextInputActive(window)) {
                     SDL_Log("Stopping text input\n");
-                    SDL_StopTextInput();
+                    SDL_StopTextInput(window);
                 } else {
                     SDL_Log("Starting text input\n");
-                    SDL_StartTextInput();
+                    SDL_StartTextInput(window);
                 }
             }
             break;
+        }
         case SDL_EVENT_KEYMAP_CHANGED:
             SDL_Log("Keymap changed!\n");
             PrintKeymap();
@@ -356,9 +362,9 @@ int main(int argc, char *argv[])
     input_rect.y = h / 4;
     input_rect.w = w / 2;
     input_rect.h = h / 2;
-    SDL_SetTextInputRect(&input_rect);
+    SDL_SetTextInputRect(state->windows[0], &input_rect);
 
-    SDL_StartTextInput();
+    SDL_StartTextInput(state->windows[0]);
 
     /* Print initial state */
     SDL_PumpEvents();

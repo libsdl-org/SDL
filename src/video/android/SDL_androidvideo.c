@@ -143,9 +143,6 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     /* Screensaver */
     device->SuspendScreenSaver = Android_SuspendScreenSaver;
 
-    /* Text input */
-    device->SetTextInputRect = Android_SetTextInputRect;
-
     /* Screen keyboard */
     device->HasScreenKeyboardSupport = Android_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = Android_ShowScreenKeyboard;

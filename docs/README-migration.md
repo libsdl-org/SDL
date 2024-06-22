@@ -907,6 +907,8 @@ The following symbols have been removed:
 
 Text input is no longer automatically enabled when initializing video, you should call SDL_StartTextInput() when you want to receive text input and call SDL_StopTextInput() when you are done. Starting text input may shown an input method editor (IME) and cause key up/down events to be skipped, so should only be enabled when the application wants text input.
 
+The text input state hase been changed to be window-specific. SDL_StartTextInput(), SDL_StopTextInput(), SDL_TextInputActive(), and SDL_ClearComposition() all now take a window parameter.
+
 SDL_GetDefaultKeyFromScancode(), SDL_GetKeyFromScancode(), and SDL_GetScancodeFromKey() take an SDL_Keymod parameter and use that to provide the correct result based on keyboard modifier state.
 
 The following functions have been renamed:

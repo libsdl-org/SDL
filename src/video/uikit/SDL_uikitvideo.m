@@ -100,7 +100,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->ShowScreenKeyboard = UIKit_ShowScreenKeyboard;
         device->HideScreenKeyboard = UIKit_HideScreenKeyboard;
         device->IsScreenKeyboardShown = UIKit_IsScreenKeyboardShown;
-        device->SetTextInputRect = UIKit_SetTextInputRect;
+        device->UpdateTextInputRect = UIKit_UpdateTextInputRect;
 #endif
 
         device->SetClipboardText = UIKit_SetClipboardText;

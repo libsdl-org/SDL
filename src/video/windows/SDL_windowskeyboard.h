@@ -29,10 +29,10 @@ extern void WIN_QuitKeyboard(SDL_VideoDevice *_this);
 
 extern void WIN_ResetDeadKeys(void);
 
-extern void WIN_StartTextInput(SDL_VideoDevice *_this);
-extern void WIN_StopTextInput(SDL_VideoDevice *_this);
-extern int WIN_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
-extern void WIN_ClearComposition(SDL_VideoDevice *_this);
+extern int WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window);
+extern int WIN_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
+extern int WIN_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window);
+extern int WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, struct SDL_VideoData *videodata);
 

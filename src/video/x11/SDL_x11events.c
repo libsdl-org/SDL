@@ -883,7 +883,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
 
     text[0] = '\0';
 
-    if (SDL_TextInputActive()) {
+    if (SDL_TextInputActive(windowdata->window)) {
 #if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX)
         /* Save the original keycode for dead keys, which are filtered out by
            the XFilterEvent() call below.
@@ -1397,7 +1397,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
 
 #ifdef SDL_USE_IME
-                if (SDL_TextInputActive()) {
+                if (SDL_TextInputActive(data->window)) {
                     /* Update IME candidate list position */
                     SDL_IME_UpdateTextRect(NULL);
                 }
@@ -2014,7 +2014,7 @@ int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     X11_DispatchEvent(_this, &xevent);
 
 #ifdef SDL_USE_IME
-    if (SDL_TextInputActive()) {
+    if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -2074,7 +2074,7 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     }
 
 #ifdef SDL_USE_IME
-    if (SDL_TextInputActive()) {
+    if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {
         SDL_IME_PumpEvents();
     }
 #endif

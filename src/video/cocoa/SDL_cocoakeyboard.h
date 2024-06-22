@@ -27,9 +27,9 @@ extern void Cocoa_InitKeyboard(SDL_VideoDevice *_this);
 extern void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event);
 extern void Cocoa_QuitKeyboard(SDL_VideoDevice *_this);
 
-extern void Cocoa_StartTextInput(SDL_VideoDevice *_this);
-extern void Cocoa_StopTextInput(SDL_VideoDevice *_this);
-extern int Cocoa_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
+extern int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
+extern int Cocoa_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
 

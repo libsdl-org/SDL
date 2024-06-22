@@ -268,7 +268,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     device->StartTextInput = WIN_StartTextInput;
     device->StopTextInput = WIN_StopTextInput;
-    device->SetTextInputRect = WIN_SetTextInputRect;
+    device->UpdateTextInputRect = WIN_UpdateTextInputRect;
     device->ClearComposition = WIN_ClearComposition;
 
     device->SetClipboardData = WIN_SetClipboardData;

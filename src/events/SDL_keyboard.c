@@ -303,9 +303,9 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
 
         /* Ensures IME compositions are committed */
-        if (SDL_TextInputActive()) {
+        if (SDL_TextInputActive(keyboard->focus)) {
             if (video && video->StopTextInput) {
-                video->StopTextInput(video);
+                video->StopTextInput(video, keyboard->focus);
             }
         }
     }
@@ -315,9 +315,9 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
     if (keyboard->focus) {
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_GAINED, 0, 0);
 
-        if (SDL_TextInputActive()) {
+        if (SDL_TextInputActive(keyboard->focus)) {
             if (video && video->StartTextInput) {
-                video->StartTextInput(video);
+                video->StartTextInput(video, keyboard->focus);
             }
         }
     }
@@ -598,7 +598,7 @@ int SDL_SendKeyboardText(const char *text)
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
 
-    if (!SDL_TextInputActive()) {
+    if (!SDL_TextInputActive(keyboard->focus)) {
         return 0;
     }
 
@@ -632,7 +632,7 @@ int SDL_SendEditingText(const char *text, int start, int length)
     SDL_Keyboard *keyboard = &SDL_keyboard;
     int posted;
 
-    if (!SDL_TextInputActive()) {
+    if (!SDL_TextInputActive(keyboard->focus)) {
         return 0;
     }
 

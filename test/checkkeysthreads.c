@@ -186,20 +186,24 @@ static void loop(void)
             PrintText("INPUT", event.text.text);
             break;
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            SDL_Window *window = SDL_GetWindowFromID(event.button.windowID);
+
             /* Left button quits the app, other buttons toggles text input */
             SDL_Log("mouse button down button: %d (LEFT=%d)\n", event.button.button, SDL_BUTTON_LEFT);
             if (event.button.button == SDL_BUTTON_LEFT) {
                 done = 1;
             } else {
-                if (SDL_TextInputActive()) {
+                if (SDL_TextInputActive(window)) {
                     SDL_Log("Stopping text input\n");
-                    SDL_StopTextInput();
+                    SDL_StopTextInput(window);
                 } else {
                     SDL_Log("Starting text input\n");
-                    SDL_StartTextInput();
+                    SDL_StartTextInput(window);
                 }
             }
             break;
+        }
         case SDL_EVENT_QUIT:
             done = 1;
             break;
@@ -278,7 +282,7 @@ int main(int argc, char *argv[])
     SDL_GL_CreateContext(window);
 #endif
 
-    SDL_StartTextInput();
+    SDL_StartTextInput(window);
 
     /* Print initial modifier state */
     SDL_PumpEvents();

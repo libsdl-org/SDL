@@ -381,7 +381,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     WAYLAND_wl_display_flush(d->display);
 
 #ifdef SDL_USE_IME
-    if (!d->text_input_manager && SDL_TextInputActive()) {
+    if (!d->text_input_manager && SDL_TextInputActive(SDL_GetKeyboardFocus())) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -454,7 +454,7 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     int err;
 
 #ifdef SDL_USE_IME
-    if (!d->text_input_manager && SDL_TextInputActive()) {
+    if (!d->text_input_manager && SDL_TextInputActive(SDL_GetKeyboardFocus())) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -1649,7 +1649,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     Wayland_UpdateImplicitGrabSerial(input, serial);
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-        if (SDL_TextInputActive()) {
+        if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {
             has_text = keyboard_input_get_text(text, input, key, SDL_PRESSED, &handled_by_ime);
         }
     } else {

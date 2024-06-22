@@ -336,36 +336,38 @@ static int keyboard_getSetModState(void *arg)
  */
 static int keyboard_startStopTextInput(void *arg)
 {
+    SDL_Window *window = SDL_GetKeyboardFocus();
+
     /* Start-Stop */
-    SDL_StartTextInput();
+    SDL_StartTextInput(window);
     SDLTest_AssertPass("Call to SDL_StartTextInput()");
-    SDL_StopTextInput();
+    SDL_StopTextInput(window);
     SDLTest_AssertPass("Call to SDL_StopTextInput()");
 
     /* Stop-Start */
-    SDL_StartTextInput();
+    SDL_StartTextInput(window);
     SDLTest_AssertPass("Call to SDL_StartTextInput()");
 
     /* Start-Start */
-    SDL_StartTextInput();
+    SDL_StartTextInput(window);
     SDLTest_AssertPass("Call to SDL_StartTextInput()");
 
     /* Stop-Stop */
-    SDL_StopTextInput();
+    SDL_StopTextInput(window);
     SDLTest_AssertPass("Call to SDL_StopTextInput()");
-    SDL_StopTextInput();
+    SDL_StopTextInput(window);
     SDLTest_AssertPass("Call to SDL_StopTextInput()");
 
     return TEST_COMPLETED;
 }
 
 /* Internal function to test SDL_SetTextInputRect */
-static void testSetTextInputRect(SDL_Rect refRect)
+static void testSetTextInputRect(SDL_Window *window, SDL_Rect refRect)
 {
     SDL_Rect testRect;
 
     testRect = refRect;
-    SDL_SetTextInputRect(&testRect);
+    SDL_SetTextInputRect(window, &testRect);
     SDLTest_AssertPass("Call to SDL_SetTextInputRect with refRect(x:%d,y:%d,w:%d,h:%d)", refRect.x, refRect.y, refRect.w, refRect.h);
     SDLTest_AssertCheck(
         (refRect.x == testRect.x) && (refRect.y == testRect.y) && (refRect.w == testRect.w) && (refRect.h == testRect.h),
@@ -381,6 +383,7 @@ static void testSetTextInputRect(SDL_Rect refRect)
  */
 static int keyboard_setTextInputRect(void *arg)
 {
+    SDL_Window *window = SDL_GetKeyboardFocus();
     SDL_Rect refRect;
 
     /* Normal visible refRect, origin inside */
@@ -388,66 +391,66 @@ static int keyboard_setTextInputRect(void *arg)
     refRect.y = SDLTest_RandomIntegerInRange(1, 50);
     refRect.w = SDLTest_RandomIntegerInRange(10, 50);
     refRect.h = SDLTest_RandomIntegerInRange(10, 50);
-    testSetTextInputRect(refRect);
+    testSetTextInputRect(window, refRect);
 
     /* Normal visible refRect, origin 0,0 */
     refRect.x = 0;
     refRect.y = 0;
     refRect.w = SDLTest_RandomIntegerInRange(10, 50);
     refRect.h = SDLTest_RandomIntegerInRange(10, 50);
-    testSetTextInputRect(refRect);
+    testSetTextInputRect(window, refRect);
 
     /* 1Pixel refRect */
     refRect.x = SDLTest_RandomIntegerInRange(10, 50);
     refRect.y = SDLTest_RandomIntegerInRange(10, 50);
     refRect.w = 1;
     refRect.h = 1;
-    testSetTextInputRect(refRect);
+    testSetTextInputRect(window, refRect);
 
     /* 0pixel refRect */
     refRect.x = 1;
     refRect.y = 1;
     refRect.w = 1;
     refRect.h = 0;
-    testSetTextInputRect(refRect);
+    testSetTextInputRect(window, refRect);
 
     /* 0pixel refRect */
     refRect.x = 1;
     refRect.y = 1;
     refRect.w = 0;
     refRect.h = 1;
-    testSetTextInputRect(refRect);
+    testSetTextInputRect(window, refRect);
 
     /* 0pixel refRect */
     refRect.x = 1;
     refRect.y = 1;
     refRect.w = 0;
     refRect.h = 0;
-    testSetTextInputRect(refRect);
+    testSetTextInputRect(window, refRect);
 
     /* 0pixel refRect */
     refRect.x = 0;
     refRect.y = 0;
     refRect.w = 0;
     refRect.h = 0;
-    testSetTextInputRect(refRect);
+    testSetTextInputRect(window, refRect);
 
     /* negative refRect */
     refRect.x = SDLTest_RandomIntegerInRange(-200, -100);
     refRect.y = SDLTest_RandomIntegerInRange(-200, -100);
     refRect.w = 50;
     refRect.h = 50;
-    testSetTextInputRect(refRect);
+    testSetTextInputRect(window, refRect);
 
     /* oversized refRect */
     refRect.x = SDLTest_RandomIntegerInRange(1, 50);
     refRect.y = SDLTest_RandomIntegerInRange(1, 50);
     refRect.w = 5000;
     refRect.h = 5000;
-    testSetTextInputRect(refRect);
+    testSetTextInputRect(window, refRect);
 
     /* NULL refRect */
-    SDL_SetTextInputRect(NULL);
+    SDL_SetTextInputRect(window, NULL);
     SDLTest_AssertPass("Call to SDL_SetTextInputRect(NULL)");
 
     return TEST_COMPLETED;
@@ -470,7 +473,7 @@ static int keyboard_setTextInputRectNegative(void *arg)
 #endif
 
     /* NULL refRect */
-    SDL_SetTextInputRect(NULL);
+    SDL_SetTextInputRect(SDL_GetKeyboardFocus(), NULL);
     SDLTest_AssertPass("Call to SDL_SetTextInputRect(NULL)");
 
     /* Some platforms set also an error message; so check it */

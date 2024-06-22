@@ -1252,7 +1252,7 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(onNativeSoftReturnKey)(
     JNIEnv *env, jclass jcls)
 {
     if (SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
-        SDL_StopTextInput();
+        SDL_StopTextInput(Android_Window);
         return JNI_TRUE;
     }
     return JNI_FALSE;
@@ -1263,7 +1263,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost)(
     JNIEnv *env, jclass jcls)
 {
     /* Calling SDL_StopTextInput will take care of hiding the keyboard and cleaning up the DummyText widget */
-    SDL_StopTextInput();
+    SDL_StopTextInput(Android_Window);
 }
 
 /* Touch */
