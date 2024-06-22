@@ -2093,7 +2093,7 @@ static void WIN_UpdateClipCursorForWindows()
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
     Uint64 now = SDL_GetTicks();
-    const int CLIPCURSOR_UPDATE_INTERVAL_MS = SDL_GetMouse()->cursor_clip_interval;
+    const int CLIPCURSOR_UPDATE_INTERVAL_MS = SDL_GetMouse()->relative_mode_clip_interval;
 
     if (_this) {
         for (window = _this->windows; window; window = window->next) {
