@@ -292,8 +292,11 @@ class SDL_BLooper : public BLooper
 
     void _HandleKey(BMessage *msg)
     {
+        SDL_Window *win;
+        int32 winID;
         int32 scancode, state; /* scancode, pressed/released */
         if (
+            !_GetWinID(msg, &winID) ||
             msg->FindInt32("key-state", &state) != B_OK ||
             msg->FindInt32("key-scancode", &scancode) != B_OK) {
             return;
@@ -306,7 +309,8 @@ class SDL_BLooper : public BLooper
         HAIKU_SetKeyState(scancode, state);
         SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, scancode, HAIKU_GetScancodeFromBeKey(scancode), state);
 
-        if (state == SDL_PRESSED && SDL_TextInputActive()) {
+        win = GetSDLWindow(winID);
+        if (state == SDL_PRESSED && SDL_TextInputActive(win)) {
             const int8 *keyUtf8;
             ssize_t count;
             if (msg->FindData("key-utf8", B_INT8_TYPE, (const void **)&keyUtf8, &count) == B_OK) {

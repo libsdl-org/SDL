@@ -47,16 +47,6 @@ static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
     return (SDL_BWin *)(window->driverdata);
 }
 
-/* FIXME: Undefined functions */
-//    #define HAIKU_PumpEvents NULL
-    #define HAIKU_StartTextInput NULL
-    #define HAIKU_StopTextInput NULL
-    #define HAIKU_SetTextInputRect NULL
-
-//    #define HAIKU_DeleteDevice NULL
-
-/* End undefined functions */
-
 static SDL_VideoDevice * HAIKU_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -108,10 +98,6 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->GL_SwapWindow = HAIKU_GL_SwapWindow;
     device->GL_DeleteContext = HAIKU_GL_DeleteContext;
 #endif
-
-    device->StartTextInput = HAIKU_StartTextInput;
-    device->StopTextInput = HAIKU_StopTextInput;
-    device->SetTextInputRect = HAIKU_SetTextInputRect;
 
     device->SetClipboardText = HAIKU_SetClipboardText;
     device->GetClipboardText = HAIKU_GetClipboardText;

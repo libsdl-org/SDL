@@ -416,44 +416,41 @@ void X11_QuitKeyboard(SDL_VideoDevice *_this)
 #endif
 }
 
-static void X11_ResetXIM(SDL_VideoDevice *_this)
+static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef X_HAVE_UTF8_STRING
-    SDL_VideoData *videodata = _this->driverdata;
-    int i;
+    SDL_WindowData *data = window->driverdata;
 
-    if (videodata && videodata->windowlist) {
-        for (i = 0; i < videodata->numwindows; ++i) {
-            SDL_WindowData *data = videodata->windowlist[i];
-            if (data && data->ic) {
-                /* Clear any partially entered dead keys */
-                char *contents = X11_Xutf8ResetIC(data->ic);
-                if (contents) {
-                    X11_XFree(contents);
-                }
-            }
+    if (data && data->ic) {
+        /* Clear any partially entered dead keys */
+        char *contents = X11_Xutf8ResetIC(data->ic);
+        if (contents) {
+            X11_XFree(contents);
         }
     }
 #endif
 }
 
-void X11_StartTextInput(SDL_VideoDevice *_this)
+int X11_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    X11_ResetXIM(_this);
+    X11_ResetXIM(_this, window);
+
+    return X11_UpdateTextInputRect(_this, window);
 }
 
-void X11_StopTextInput(SDL_VideoDevice *_this)
+int X11_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    X11_ResetXIM(_this);
+    X11_ResetXIM(_this, window);
 #ifdef SDL_USE_IME
     SDL_IME_Reset();
 #endif
+    return 0;
 }
 
-int X11_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
+int X11_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef SDL_USE_IME
-    SDL_IME_UpdateTextRect(rect);
+    SDL_IME_UpdateTextRect(window);
 #endif
     return 0;
 }

@@ -48,7 +48,7 @@
 
 - (void)setInputRect:(const SDL_Rect *)rect
 {
-    _inputRect = *rect;
+    SDL_copyp(&_inputRect, rect);
 }
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
@@ -343,16 +343,12 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
     SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
 }
 
-void Cocoa_StartTextInput(SDL_VideoDevice *_this)
+int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         NSView *parentView;
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
-        SDL_Window *window = SDL_GetKeyboardFocus();
-        NSWindow *nswindow = nil;
-        if (window) {
-            nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
-        }
+        NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
 
         parentView = [nswindow contentView];
 
@@ -362,8 +358,7 @@ void Cocoa_StartTextInput(SDL_VideoDevice *_this)
          * text input, simply remove the field editor from its superview then add
          * it to the front most window's content view */
         if (!data.fieldEdit) {
-            data.fieldEdit =
-                [[SDLTranslatorResponder alloc] initWithFrame:NSMakeRect(0.0, 0.0, 0.0, 0.0)];
+            data.fieldEdit = [[SDLTranslatorResponder alloc] initWithFrame:NSMakeRect(0.0, 0.0, 0.0, 0.0)];
         }
 
         if (![[data.fieldEdit superview] isEqual:parentView]) {
@@ -373,9 +368,10 @@ void Cocoa_StartTextInput(SDL_VideoDevice *_this)
             [nswindow makeFirstResponder:data.fieldEdit];
         }
     }
+    return Cocoa_UpdateTextInputRect(_this, window);
 }
 
-void Cocoa_StopTextInput(SDL_VideoDevice *_this)
+int Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
@@ -385,12 +381,15 @@ void Cocoa_StopTextInput(SDL_VideoDevice *_this)
             data.fieldEdit = nil;
         }
     }
+    return 0;
 }
 
-int Cocoa_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
+int Cocoa_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
-    [data.fieldEdit setInputRect:rect];
+    if (data.fieldEdit) {
+        [data.fieldEdit setInputRect:&window->text_input_rect];
+    }
     return 0;
 }
 
@@ -433,7 +432,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
             SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
         }
 #endif
-        if (SDL_TextInputActive()) {
+        if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {
             /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
             [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
 #if 0

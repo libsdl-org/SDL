@@ -178,7 +178,7 @@ void GDK_EnsureHints(void)
     }
 }
 
-void GDK_StartTextInput(SDL_VideoDevice *_this)
+int GDK_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /*
      * Currently a stub, since all input is handled by the virtual keyboard,
@@ -191,14 +191,16 @@ void GDK_StartTextInput(SDL_VideoDevice *_this)
      * Right now this function isn't implemented on Desktop
      * and seems to be present only in the docs? So I didn't bother.
      */
+    return 0;
 }
 
-void GDK_StopTextInput(SDL_VideoDevice *_this)
+int GDK_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* See notice in GDK_StartTextInput */
+    return 0;
 }
 
-int GDK_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
+int GDK_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /*
      * XGameUiShowTextEntryAsync does not allow you to set
@@ -212,9 +214,10 @@ int GDK_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
     return 0;
 }
 
-void GDK_ClearComposition(SDL_VideoDevice *_this)
+int GDK_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* See notice in GDK_StartTextInput */
+    return 0;
 }
 
 SDL_bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this)

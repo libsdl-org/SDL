@@ -35,7 +35,6 @@ extern void Android_SetDarkMode(SDL_bool enabled);
 
 struct SDL_VideoData
 {
-    SDL_Rect textRect;
     int isPaused;
     int isPausing;
     int pauseAudio;

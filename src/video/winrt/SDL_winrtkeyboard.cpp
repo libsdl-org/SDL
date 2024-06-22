@@ -90,7 +90,7 @@ void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::
 
     SDL_WindowData *data = window->driverdata;
 
-    if (SDL_TextInputActive()) {
+    if (SDL_TextInputActive(window)) {
         /* Characters outside Unicode Basic Multilingual Plane (BMP)
          * are coded as so called "surrogate pair" in two separate UTF-16 character events.
          * Cache high surrogate until next character event. */

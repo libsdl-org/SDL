@@ -50,7 +50,7 @@ SDL_bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
-void N3DS_StartTextInput(SDL_VideoDevice *_this)
+int N3DS_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     char buffer[BUFFER_SIZE];
     SwkbdButton button_pressed;
@@ -58,11 +58,12 @@ void N3DS_StartTextInput(SDL_VideoDevice *_this)
     if (button_pressed == SWKBD_BUTTON_CONFIRM) {
         SDL_SendKeyboardText(buffer);
     }
+    return 0;
 }
 
-void N3DS_StopTextInput(SDL_VideoDevice *_this)
+int N3DS_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    return;
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_N3DS */

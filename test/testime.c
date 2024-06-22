@@ -440,12 +440,12 @@ static void InitInput(void)
     markedRect = textRect;
     markedText[0] = 0;
 
-    SDL_StartTextInput();
+    SDL_StartTextInput(state->windows[0]);
 }
 
 static void CleanupVideo(void)
 {
-    SDL_StopTextInput();
+    SDL_StopTextInput(state->windows[0]);
 #ifdef HAVE_SDL_TTF
     TTF_CloseFont(font);
     TTF_Quit();
@@ -507,10 +507,10 @@ static void _Redraw(int rendererID)
     markedRect.w = textRect.w - drawnTextRect.w;
     if (markedRect.w < 0) {
         /* Stop text input because we cannot hold any more characters */
-        SDL_StopTextInput();
+        SDL_StopTextInput(state->windows[0]);
         return;
     } else {
-        SDL_StartTextInput();
+        SDL_StartTextInput(state->windows[0]);
     }
 
     cursorRect = drawnTextRect;
@@ -602,7 +602,7 @@ static void _Redraw(int rendererID)
         inputrect.y = (int)markedRect.y;
         inputrect.w = (int)markedRect.w;
         inputrect.h = (int)markedRect.h;
-        SDL_SetTextInputRect(&inputrect);
+        SDL_SetTextInputRect(state->windows[0], &inputrect);
     }
 }
 

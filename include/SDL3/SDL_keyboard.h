@@ -353,58 +353,71 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetKeyName(SDL_Keycode key);
 extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
 
 /**
- * Start accepting Unicode text input events.
+ * Start accepting Unicode text input events in a window.
  *
- * This function will start accepting Unicode text input events in the focused
- * SDL window, and start emitting SDL_TextInputEvent (SDL_EVENT_TEXT_INPUT)
- * and SDL_TextEditingEvent (SDL_EVENT_TEXT_EDITING) events. Please use this
- * function in pair with SDL_StopTextInput().
+ * This function will enable text input (SDL_EVENT_TEXT_INPUT and SDL_EVENT_TEXT_EDITING events) in the specified window. Please use this function paired with SDL_StopTextInput().
  *
  * Text input events are not received by default.
  *
- * On some platforms using this function activates the screen keyboard.
+ * On some platforms using this function shows the screen keyboard.
+ *
+ * \param window the window to enable text input.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetTextInputRect
  * \sa SDL_StopTextInput
+ * \sa SDL_TextInputActive
  */
-extern SDL_DECLSPEC void SDLCALL SDL_StartTextInput(void);
+extern SDL_DECLSPEC int SDLCALL SDL_StartTextInput(SDL_Window *window);
 
 /**
- * Check whether or not Unicode text input events are enabled.
+ * Check whether or not Unicode text input events are enabled for a window.
  *
+ * \param window the window to check.
  * \returns SDL_TRUE if text input events are enabled else SDL_FALSE.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_StartTextInput
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TextInputActive(void);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TextInputActive(SDL_Window *window);
 
 /**
- * Stop receiving any text input events.
+ * Stop receiving any text input events in a window.
  *
- * Text input events are not received by default.
+ * If SDL_StartTextInput() showed the screen keyboard, this function will hide it.
+ *
+ * \param window the window to disable text input.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_StartTextInput
  */
-extern SDL_DECLSPEC void SDLCALL SDL_StopTextInput(void);
+extern SDL_DECLSPEC int SDLCALL SDL_StopTextInput(SDL_Window *window);
 
 /**
  * Dismiss the composition window/IME without disabling the subsystem.
+ *
+ * \param window the window to affect.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_StartTextInput
  * \sa SDL_StopTextInput
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ClearComposition(void);
+extern SDL_DECLSPEC int SDLCALL SDL_ClearComposition(SDL_Window *window);
 
 /**
  * Set the rectangle used to type Unicode text inputs.
+ *
+ * This is often set to the extents of a text field within the window.
  *
  * Native input methods will place a window with word suggestions near it,
  * without covering the text being inputted.
@@ -417,6 +430,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ClearComposition(void);
  * **SDL_HINT_IME_SHOW_UI** to **1**, otherwise this function won't give you
  * any feedback.
  *
+ * \param window the window for which to set the text input rectangle.
  * \param rect the SDL_Rect structure representing the rectangle to receive
  *             text (ignored if NULL).
  * \returns 0 on success or a negative error code on failure; call
@@ -426,7 +440,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ClearComposition(void);
  *
  * \sa SDL_StartTextInput
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetTextInputRect(const SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_SetTextInputRect(SDL_Window *window, const SDL_Rect *rect);
 
 /**
  * Check whether the platform has screen keyboard support.

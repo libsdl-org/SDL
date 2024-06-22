@@ -790,6 +790,7 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
 
 static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
+    SDL_WindowData *window_data = (SDL_WindowData *)userData;
     const SDL_Keycode keycode = Emscripten_MapKeyCode(keyEvent);
     SDL_Scancode scancode = Emscripten_MapScanCode(keyEvent->code);
     SDL_bool prevent_default = SDL_TRUE;
@@ -852,7 +853,7 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
         is_nav_key = SDL_TRUE;
     }
 
-    if ((eventType == EMSCRIPTEN_EVENT_KEYDOWN) && SDL_TextInputActive() && !is_nav_key) {
+    if ((eventType == EMSCRIPTEN_EVENT_KEYDOWN) && SDL_TextInputActive(window_data->window) && !is_nav_key) {
         prevent_default = SDL_FALSE;
     }
 
@@ -861,7 +862,9 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
 
 static EM_BOOL Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
-    if (SDL_TextInputActive()) {
+    SDL_WindowData *window_data = (SDL_WindowData *)userData;
+
+    if (SDL_TextInputActive(window_data->window)) {
         char text[5];
         if (Emscripten_ConvertUTF32toUTF8(keyEvent->charCode, text)) {
             SDL_SendKeyboardText(text);

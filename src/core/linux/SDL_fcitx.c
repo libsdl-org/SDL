@@ -211,7 +211,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
             SDL_SendEditingText("", 0, 0);
         }
 
-        SDL_Fcitx_UpdateTextRect(NULL);
+        SDL_Fcitx_UpdateTextRect(SDL_GetKeyboardFocus());
         return DBUS_HANDLER_RESULT_HANDLED;
     }
 
@@ -390,7 +390,7 @@ SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
                             DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mod_state, DBUS_TYPE_BOOLEAN, &is_release, DBUS_TYPE_UINT32, &event_time, DBUS_TYPE_INVALID,
                             DBUS_TYPE_BOOLEAN, &handled, DBUS_TYPE_INVALID)) {
         if (handled) {
-            SDL_Fcitx_UpdateTextRect(NULL);
+            SDL_Fcitx_UpdateTextRect(SDL_GetKeyboardFocus());
             return SDL_TRUE;
         }
     }
@@ -398,26 +398,22 @@ SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
     return SDL_FALSE;
 }
 
-void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
+void SDL_Fcitx_UpdateTextRect(SDL_Window *window)
 {
-    SDL_Window *focused_win = NULL;
     int x = 0, y = 0;
     SDL_Rect *cursor = &fcitx_client.cursor_rect;
 
-    if (rect) {
-        SDL_copyp(cursor, rect);
-    }
-
-    focused_win = SDL_GetKeyboardFocus();
-    if (!focused_win) {
+    if (!window) {
         return;
     }
 
-    SDL_GetWindowPosition(focused_win, &x, &y);
+    SDL_copyp(cursor, &window->text_input_rect);
+
+    SDL_GetWindowPosition(window, &x, &y);
 
 #ifdef SDL_VIDEO_DRIVER_X11
     {
-        SDL_PropertiesID props = SDL_GetWindowProperties(focused_win);
+        SDL_PropertiesID props = SDL_GetWindowProperties(window);
         Display *x_disp = (Display *)SDL_GetProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
         int x_screen = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, 0);
         Window x_win = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
@@ -431,7 +427,7 @@ void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
     if (cursor->x == -1 && cursor->y == -1 && cursor->w == 0 && cursor->h == 0) {
         /* move to bottom left */
         int w = 0, h = 0;
-        SDL_GetWindowSize(focused_win, &w, &h);
+        SDL_GetWindowSize(window, &w, &h);
         cursor->x = 0;
         cursor->y = h;
     }

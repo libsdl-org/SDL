@@ -29,7 +29,7 @@ typedef void (*SDL_IME_Quit_t)(void);
 typedef void (*SDL_IME_SetFocus_t)(SDL_bool);
 typedef void (*SDL_IME_Reset_t)(void);
 typedef SDL_bool (*SDL_IME_ProcessKeyEvent_t)(Uint32, Uint32, Uint8 state);
-typedef void (*SDL_IME_UpdateTextRect_t)(const SDL_Rect *);
+typedef void (*SDL_IME_UpdateTextRect_t)(SDL_Window *window);
 typedef void (*SDL_IME_PumpEvents_t)(void);
 
 static SDL_IME_Init_t SDL_IME_Init_Real = NULL;
@@ -135,10 +135,10 @@ SDL_bool SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
     return SDL_FALSE;
 }
 
-void SDL_IME_UpdateTextRect(const SDL_Rect *rect)
+void SDL_IME_UpdateTextRect(SDL_Window *window)
 {
     if (SDL_IME_UpdateTextRect_Real) {
-        SDL_IME_UpdateTextRect_Real(rect);
+        SDL_IME_UpdateTextRect_Real(window);
     }
 }
 

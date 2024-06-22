@@ -34,6 +34,7 @@
 static int IME_Init(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
+static void IME_SetTextInputRect(SDL_VideoData *videodata, const SDL_Rect *rect);
 static void IME_Quit(SDL_VideoData *videodata);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
@@ -190,9 +191,9 @@ void WIN_UpdateKeymap(SDL_bool send_event)
 
 void WIN_QuitKeyboard(SDL_VideoDevice *_this)
 {
+#ifndef SDL_DISABLE_WINDOWS_IME
     SDL_VideoData *data = _this->driverdata;
 
-#ifndef SDL_DISABLE_WINDOWS_IME
     IME_Quit(data);
 
     if (data->ime_composition) {
@@ -233,87 +234,53 @@ void WIN_ResetDeadKeys()
     }
 }
 
-void WIN_StartTextInput(SDL_VideoDevice *_this)
+int WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
-#ifndef SDL_DISABLE_WINDOWS_IME
-    SDL_Window *window;
-#endif
-
     WIN_ResetDeadKeys();
 
 #ifndef SDL_DISABLE_WINDOWS_IME
-    window = SDL_GetKeyboardFocus();
-    if (window) {
-        HWND hwnd = window->driverdata->hwnd;
-        SDL_VideoData *videodata = _this->driverdata;
-        SDL_GetWindowSize(window, &videodata->ime_winwidth, &videodata->ime_winheight);
-        IME_Init(videodata, hwnd);
-        IME_Enable(videodata, hwnd);
-    }
-#endif /* !SDL_DISABLE_WINDOWS_IME */
-}
-
-void WIN_StopTextInput(SDL_VideoDevice *_this)
-{
-#ifndef SDL_DISABLE_WINDOWS_IME
-    SDL_Window *window;
-#endif
-
-    WIN_ResetDeadKeys();
-
-#ifndef SDL_DISABLE_WINDOWS_IME
-    window = SDL_GetKeyboardFocus();
-    if (window) {
-        HWND hwnd = window->driverdata->hwnd;
-        SDL_VideoData *videodata = _this->driverdata;
-        IME_Init(videodata, hwnd);
-        IME_Disable(videodata, hwnd);
-    }
-#endif /* !SDL_DISABLE_WINDOWS_IME */
-}
-
-int WIN_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
-{
+    HWND hwnd = window->driverdata->hwnd;
     SDL_VideoData *videodata = _this->driverdata;
-    HIMC himc = 0;
+    SDL_GetWindowSize(window, &videodata->ime_winwidth, &videodata->ime_winheight);
+    IME_Init(videodata, hwnd);
+    IME_Enable(videodata, hwnd);
+
+    WIN_UpdateTextInputRect(_this, window);
+#endif /* !SDL_DISABLE_WINDOWS_IME */
+
+    return 0;
+}
+
+int WIN_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    WIN_ResetDeadKeys();
 
 #ifndef SDL_DISABLE_WINDOWS_IME
-    videodata->ime_rect = *rect;
-
-    himc = ImmGetContext(videodata->ime_hwnd_current);
-    if (himc) {
-        COMPOSITIONFORM cof;
-        CANDIDATEFORM caf;
-
-        cof.dwStyle = CFS_RECT;
-        cof.ptCurrentPos.x = videodata->ime_rect.x;
-        cof.ptCurrentPos.y = videodata->ime_rect.y;
-        cof.rcArea.left = videodata->ime_rect.x;
-        cof.rcArea.right = (LONG)videodata->ime_rect.x + videodata->ime_rect.w;
-        cof.rcArea.top = videodata->ime_rect.y;
-        cof.rcArea.bottom = (LONG)videodata->ime_rect.y + videodata->ime_rect.h;
-        ImmSetCompositionWindow(himc, &cof);
-
-        caf.dwIndex = 0;
-        caf.dwStyle = CFS_EXCLUDE;
-        caf.ptCurrentPos.x = videodata->ime_rect.x;
-        caf.ptCurrentPos.y = videodata->ime_rect.y;
-        caf.rcArea.left = videodata->ime_rect.x;
-        caf.rcArea.right = (LONG)videodata->ime_rect.x + videodata->ime_rect.w;
-        caf.rcArea.top = videodata->ime_rect.y;
-        caf.rcArea.bottom = (LONG)videodata->ime_rect.y + videodata->ime_rect.h;
-        ImmSetCandidateWindow(himc, &caf);
-
-        ImmReleaseContext(videodata->ime_hwnd_current, himc);
-    }
+    HWND hwnd = window->driverdata->hwnd;
+    SDL_VideoData *videodata = _this->driverdata;
+    IME_Init(videodata, hwnd);
+    IME_Disable(videodata, hwnd);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
+
+    return 0;
+}
+
+int WIN_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
+{
+#ifndef SDL_DISABLE_WINDOWS_IME
+    SDL_VideoData *data = _this->driverdata;
+
+    IME_SetTextInputRect(data, &window->text_input_rect);
+#endif /* !SDL_DISABLE_WINDOWS_IME */
+
     return 0;
 }
 
 #ifdef SDL_DISABLE_WINDOWS_IME
 
-void WIN_ClearComposition(SDL_VideoDevice *_this)
+int WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    return 0;
 }
 
 SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
@@ -757,6 +724,41 @@ static void IME_SetWindow(SDL_VideoData *videodata, HWND hwnd)
                 document_mgr->lpVtbl->Release(document_mgr);
             }
         }
+    }
+    IME_SetTextInputRect(videodata, &videodata->ime_rect);
+}
+
+static void IME_SetTextInputRect(SDL_VideoData *videodata, const SDL_Rect *rect)
+{
+    HIMC himc = 0;
+
+    videodata->ime_rect = *rect;
+
+    himc = ImmGetContext(videodata->ime_hwnd_current);
+    if (himc) {
+        COMPOSITIONFORM cof;
+        CANDIDATEFORM caf;
+
+        cof.dwStyle = CFS_RECT;
+        cof.ptCurrentPos.x = videodata->ime_rect.x;
+        cof.ptCurrentPos.y = videodata->ime_rect.y;
+        cof.rcArea.left = videodata->ime_rect.x;
+        cof.rcArea.right = (LONG)videodata->ime_rect.x + videodata->ime_rect.w;
+        cof.rcArea.top = videodata->ime_rect.y;
+        cof.rcArea.bottom = (LONG)videodata->ime_rect.y + videodata->ime_rect.h;
+        ImmSetCompositionWindow(himc, &cof);
+
+        caf.dwIndex = 0;
+        caf.dwStyle = CFS_EXCLUDE;
+        caf.ptCurrentPos.x = videodata->ime_rect.x;
+        caf.ptCurrentPos.y = videodata->ime_rect.y;
+        caf.rcArea.left = videodata->ime_rect.x;
+        caf.rcArea.right = (LONG)videodata->ime_rect.x + videodata->ime_rect.w;
+        caf.rcArea.top = videodata->ime_rect.y;
+        caf.rcArea.bottom = (LONG)videodata->ime_rect.y + videodata->ime_rect.h;
+        ImmSetCandidateWindow(himc, &caf);
+
+        ImmReleaseContext(videodata->ime_hwnd_current, himc);
     }
 }
 
@@ -1742,10 +1744,11 @@ void IME_Present(SDL_VideoData *videodata)
     /* FIXME: Need to show the IME bitmap */
 }
 
-void WIN_ClearComposition(SDL_VideoDevice *_this)
+int WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = _this->driverdata;
     IME_ClearComposition(videodata);
+    return 0;
 }
 
 #endif /* SDL_DISABLE_WINDOWS_IME */

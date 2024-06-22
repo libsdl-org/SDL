@@ -101,6 +101,9 @@ struct SDL_Window
     SDL_bool is_destroying;
     SDL_bool is_dropping; /* drag/drop in progress, expecting SDL_SendDropComplete(). */
 
+    SDL_bool text_input_active;
+    SDL_Rect text_input_rect;
+
     SDL_Rect mouse_rect;
 
     SDL_HitTest hit_test;
@@ -322,10 +325,10 @@ struct SDL_VideoDevice
     int (*SuspendScreenSaver)(SDL_VideoDevice *_this);
 
     /* Text input */
-    void (*StartTextInput)(SDL_VideoDevice *_this);
-    void (*StopTextInput)(SDL_VideoDevice *_this);
-    int (*SetTextInputRect)(SDL_VideoDevice *_this, const SDL_Rect *rect);
-    void (*ClearComposition)(SDL_VideoDevice *_this);
+    int (*StartTextInput)(SDL_VideoDevice *_this, SDL_Window *window);
+    int (*StopTextInput)(SDL_VideoDevice *_this, SDL_Window *window);
+    int (*UpdateTextInputRect)(SDL_VideoDevice *_this, SDL_Window *window);
+    int (*ClearComposition)(SDL_VideoDevice *_this, SDL_Window *window);
 
     /* Screen keyboard */
     SDL_bool (*HasScreenKeyboardSupport)(SDL_VideoDevice *_this);
@@ -382,7 +385,6 @@ struct SDL_VideoDevice
     SDL_bool setting_display_mode;
     Uint32 device_caps;
     SDL_SystemTheme system_theme;
-    SDL_bool text_input_active;
 
     /* * * */
     /* Data used by the GL drivers */

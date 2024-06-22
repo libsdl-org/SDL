@@ -4981,74 +4981,85 @@ void SDL_WM_SetIcon(SDL_Surface *icon, Uint8 *mask)
 }
 #endif
 
-void SDL_StartTextInput(void)
+int SDL_StartTextInput(SDL_Window *window)
 {
-    if (!_this) {
-        return;
-    }
+    CHECK_WINDOW_MAGIC(window, -1);
 
     /* Show the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
     if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, SDL_FALSE)) {
-        SDL_Window *window = SDL_GetKeyboardFocus();
-        if (window && _this->ShowScreenKeyboard) {
+        if (_this->ShowScreenKeyboard) {
             _this->ShowScreenKeyboard(_this, window);
         }
     }
 
     /* Finally start the text input system */
     if (_this->StartTextInput) {
-        _this->StartTextInput(_this);
+        if (_this->StartTextInput(_this, window) < 0) {
+            return -1;
+        }
     }
-    _this->text_input_active = SDL_TRUE;
+    window->text_input_active = SDL_TRUE;
+    return 0;
 }
 
-void SDL_ClearComposition(void)
+SDL_bool SDL_TextInputActive(SDL_Window *window)
 {
-    if (_this && _this->ClearComposition) {
-        _this->ClearComposition(_this);
-    }
+    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+
+    return window->text_input_active;
 }
 
-SDL_bool SDL_TextInputActive(void)
+int SDL_StopTextInput(SDL_Window *window)
 {
-    return _this && _this->text_input_active;
-}
-
-void SDL_StopTextInput(void)
-{
-    if (!_this) {
-        return;
-    }
+    CHECK_WINDOW_MAGIC(window, -1);
 
     /* Stop the text input system */
     if (_this->StopTextInput) {
-        _this->StopTextInput(_this);
+        _this->StopTextInput(_this, window);
     }
-    _this->text_input_active = SDL_FALSE;
+    window->text_input_active = SDL_FALSE;
 
     /* Hide the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
     if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, SDL_FALSE)) {
-        SDL_Window *window = SDL_GetKeyboardFocus();
-        if (window && _this->HideScreenKeyboard) {
+        if (_this->HideScreenKeyboard) {
             _this->HideScreenKeyboard(_this, window);
         }
     }
+    return 0;
 }
 
-int SDL_SetTextInputRect(const SDL_Rect *rect)
+int SDL_SetTextInputRect(SDL_Window *window, const SDL_Rect *rect)
 {
-    if (!rect) {
-        return SDL_InvalidParamError("rect");
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (rect) {
+        SDL_copyp(&window->text_input_rect, rect);
+    } else {
+        SDL_zero(window->text_input_rect);
     }
 
-    if (_this && _this->SetTextInputRect) {
-        return _this->SetTextInputRect(_this, rect);
+    if (_this && _this->UpdateTextInputRect) {
+        if (_this->UpdateTextInputRect(_this, window) < 0) {
+            return -1;
+        }
     }
-    return SDL_Unsupported();
+    return 0;
+}
+
+int SDL_ClearComposition(SDL_Window *window)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (_this->ClearComposition) {
+        if (_this->ClearComposition(_this, window) < 0) {
+            return -1;
+        }
+    }
+    return 0;
 }
 
 SDL_bool SDL_HasScreenKeyboardSupport(void)
