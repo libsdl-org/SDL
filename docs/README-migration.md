@@ -347,6 +347,21 @@ The SDL_EVENT_WINDOW_RESIZED event is always sent, even in response to SDL_SetWi
 
 The SDL_EVENT_WINDOW_SIZE_CHANGED event has been removed, and you can use SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED to detect window backbuffer size changes.
 
+The keysym field of key events has been removed to remove one level of indirection, and `sym` has been renamed `key`.
+
+Code that looked like this:
+```c
+    SDL_Event event;
+    SDL_Keycode key = event.key.keysym.sym;
+    SDL_Keymod mod = event.key.keysym.mod;
+```
+now looks like this:
+```c
+    SDL_Event event;
+    SDL_Keycode key = event.key.key;
+    SDL_Keymod mod = event.key.mod;
+```
+
 The gamepad event structures caxis, cbutton, cdevice, ctouchpad, and csensor have been renamed gaxis, gbutton, gdevice, gtouchpad, and gsensor.
 
 The mouseX and mouseY fields of SDL_MouseWheelEvent have been renamed mouse_x and mouse_y.
@@ -898,6 +913,9 @@ The following functions have been renamed:
 
 The following functions have been removed:
 * SDL_IsTextInputShown()
+
+The following structures have been removed:
+* SDL_Keysym
 
 ## SDL_keycode.h
 

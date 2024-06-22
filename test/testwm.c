@@ -189,15 +189,15 @@ static void loop(void)
         if (event.type == SDL_EVENT_KEY_UP) {
             SDL_bool updateCursor = SDL_FALSE;
 
-            if (event.key.keysym.sym == SDLK_a) {
+            if (event.key.key == SDLK_a) {
                 SDL_assert(!"Keyboard generated assert");
-            } else if (event.key.keysym.sym == SDLK_LEFT) {
+            } else if (event.key.key == SDLK_LEFT) {
                 --system_cursor;
                 if (system_cursor < 0) {
                     system_cursor = SDL_NUM_SYSTEM_CURSORS - 1;
                 }
                 updateCursor = SDL_TRUE;
-            } else if (event.key.keysym.sym == SDLK_RIGHT) {
+            } else if (event.key.key == SDLK_RIGHT) {
                 ++system_cursor;
                 if (system_cursor >= SDL_NUM_SYSTEM_CURSORS) {
                     system_cursor = 0;

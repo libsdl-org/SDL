@@ -391,7 +391,7 @@ static void HandleKeyboardKeyDown(SDL_KeyboardEvent *event)
             continue;
         }
         if (event->which == keyboard_state->instance_id) {
-            switch (event->keysym.sym) {
+            switch (event->key) {
             case SDLK_LEFT:
                 keyboard_state->position.x -= CURSOR_SIZE;
                 if (keyboard_state->position.x < 0.0f) {

@@ -507,11 +507,11 @@ int main(int argc, char **argv)
                     done = 1;
                 }
                 if (event.type == SDL_EVENT_KEY_DOWN) {
-                    if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    if (event.key.key == SDLK_ESCAPE) {
                         done = 1;
-                    } else if (event.key.keysym.sym == SDLK_LEFT) {
+                    } else if (event.key.key == SDLK_LEFT) {
                         --current;
-                    } else if (event.key.keysym.sym == SDLK_RIGHT) {
+                    } else if (event.key.key == SDLK_RIGHT) {
                         ++current;
                     }
                 }

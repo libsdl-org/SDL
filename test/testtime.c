@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                switch (event.key.keysym.sym) {
+                switch (event.key.key) {
                 case SDLK_UP:
                     if (++cal_month > 12) {
                         cal_month = 1;

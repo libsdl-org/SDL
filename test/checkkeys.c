@@ -159,7 +159,7 @@ static void PrintModifierState(void)
     SDL_Log("Initial state:%s\n", message);
 }
 
-static void PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
+static void PrintKey(SDL_KeyboardEvent *event)
 {
     char message[512];
     char *spot;
@@ -169,24 +169,24 @@ static void PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
     left = sizeof(message);
 
     /* Print the keycode, name and state */
-    if (sym->sym) {
+    if (event->key) {
         print_string(&spot, &left,
                      "Key %s:  raw 0x%.2x, scancode %d = %s, keycode 0x%08X = %s ",
-                     pressed ? "pressed " : "released",
-                     sym->raw,
-                     sym->scancode,
-                     sym->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(sym->scancode),
-                     sym->sym, SDL_GetKeyName(sym->sym));
+                     event->state ? "pressed " : "released",
+                     event->raw,
+                     event->scancode,
+                     event->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(event->scancode),
+                     event->key, SDL_GetKeyName(event->key));
     } else {
         print_string(&spot, &left,
                      "Unknown Key (raw 0x%.2x, scancode %d = %s) %s ",
-                     sym->raw,
-                     sym->scancode,
-                     sym->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(sym->scancode),
-                     pressed ? "pressed " : "released");
+                     event->raw,
+                     event->scancode,
+                     event->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(event->scancode),
+                     event->state ? "pressed " : "released");
     }
-    print_modifiers(&spot, &left, sym->mod);
-    if (repeat) {
+    print_modifiers(&spot, &left, event->mod);
+    if (event->repeat) {
         print_string(&spot, &left, " (repeat)");
     }
     SDL_Log("%s\n", message);
@@ -229,9 +229,9 @@ static void loop(void)
         switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
-            PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED), (event.key.repeat > 0));
+            PrintKey(&event.key);
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                switch (event.key.keysym.sym) {
+                switch (event.key.key) {
                 case SDLK_BACKSPACE:
                     SDLTest_TextWindowAddText(textwin, "\b");
                     break;

@@ -91,25 +91,25 @@ int main(int argc, char *argv[])
                     w1 = NULL;
                 }
             } else if (e.type == SDL_EVENT_KEY_DOWN) {
-                if ((e.key.keysym.sym == SDLK_m || e.key.keysym.sym == SDLK_n) && !w2) {
+                if ((e.key.key == SDLK_m || e.key.key == SDLK_n) && !w2) {
                     if (SDL_CreateWindowAndRenderer("Non-Modal Window", 320, 200, SDL_WINDOW_HIDDEN, &w2, &r2) < 0) {
                         SDL_Log("Failed to create modal window and/or renderer: %s\n", SDL_GetError());
                         exit_code = 1;
                         goto sdl_quit;
                     }
 
-                    if (e.key.keysym.sym == SDLK_m) {
+                    if (e.key.key == SDLK_m) {
                         if (!SDL_SetWindowModalFor(w2, w1)) {
                             SDL_SetWindowTitle(w2, "Modal Window");
                         }
                     }
                     SDL_ShowWindow(w2);
-                } else if (e.key.keysym.sym == SDLK_ESCAPE && w2) {
+                } else if (e.key.key == SDLK_ESCAPE && w2) {
                     SDL_DestroyWindow(w2);
                     r2 = NULL;
                     w2 = NULL;
-                } else if (e.key.keysym.sym == SDLK_h) {
-                    if (e.key.keysym.mod & SDL_KMOD_CTRL) {
+                } else if (e.key.key == SDLK_h) {
+                    if (e.key.mod & SDL_KMOD_CTRL) {
                         /* Hide the parent, which should hide the modal too. */
                         show_deadline = SDL_GetTicksNS() + SDL_SECONDS_TO_NS(3);
                         SDL_HideWindow(w1);
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
                             SDL_HideWindow(w2);
                         }
                     }
-                } else if (e.key.keysym.sym == SDLK_p && w2) {
+                } else if (e.key.key == SDLK_p && w2) {
                     if (SDL_GetWindowFlags(w2) & SDL_WINDOW_MODAL) {
                         /* Unparent the window */
                         if (!SDL_SetWindowModalFor(w2, NULL)) {

@@ -337,7 +337,7 @@ static void loop(void)
         switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
         {
-            const int sym = event.key.keysym.sym;
+            const int sym = event.key.key;
 
             if (sym == SDLK_TAB) {
                 SDL_Log("Tab");

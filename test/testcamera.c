@@ -198,7 +198,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     switch (event->type) {
         case SDL_EVENT_KEY_DOWN: {
-            const SDL_Keycode sym = event->key.keysym.sym;
+            const SDL_Keycode sym = event->key.key;
             if (sym == SDLK_ESCAPE || sym == SDLK_AC_BACK) {
                 SDL_Log("Key : Escape!");
                 return SDL_APP_SUCCESS;

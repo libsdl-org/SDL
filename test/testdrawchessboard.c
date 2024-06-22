@@ -85,7 +85,7 @@ static void loop(void)
             return;
         }
 
-        if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
+        if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.key == SDLK_ESCAPE)) {
             done = 1;
 #ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_cancel_main_loop();

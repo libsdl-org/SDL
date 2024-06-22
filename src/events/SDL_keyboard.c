@@ -399,12 +399,12 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
         SDL_Event event;
         event.type = type;
         event.common.timestamp = timestamp;
+        event.key.scancode = scancode;
+        event.key.key = keycode;
+        event.key.mod = keyboard->modstate;
+        event.key.raw = (Uint16)rawcode;
         event.key.state = state;
         event.key.repeat = repeat;
-        event.key.keysym.scancode = scancode;
-        event.key.keysym.sym = keycode;
-        event.key.keysym.mod = keyboard->modstate;
-        event.key.keysym.raw = (Uint16)rawcode;
         event.key.windowID = keyboard->focus ? keyboard->focus->id : 0;
         event.key.which = keyboardID;
         posted = (SDL_PushEvent(&event) > 0);

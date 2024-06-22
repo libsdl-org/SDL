@@ -52,25 +52,6 @@ extern "C" {
  */
 typedef Uint32 SDL_KeyboardID;
 
-/**
- * The SDL keysym structure, used in key events.
- *
- * If you are looking for translated character input, see the
- * SDL_EVENT_TEXT_INPUT event.
- *
- * \since This struct is available since SDL 3.0.0.
- *
- * \sa SDL_Scancode
- * \sa SDL_Keycode
- */
-typedef struct SDL_Keysym
-{
-    SDL_Scancode scancode;      /**< SDL physical key code - see SDL_Scancode for details */
-    SDL_Keycode sym;            /**< SDL virtual key code - see SDL_Keycode for details */
-    SDL_Keymod mod;             /**< current key modifiers */
-    Uint16 raw;                 /**< The platform dependent scancode for this event */
-} SDL_Keysym;
-
 /* Function prototypes */
 
 /**

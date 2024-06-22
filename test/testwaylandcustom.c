@@ -260,13 +260,13 @@ int main(int argc, char **argv)
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                switch (event.key.keysym.sym) {
+                switch (event.key.key) {
                 case SDLK_ESCAPE:
                     done = 1;
                     break;
                 case SDLK_EQUALS:
                     /* Ctrl+ enlarges the window */
-                    if (event.key.keysym.mod & SDL_KMOD_CTRL) {
+                    if (event.key.mod & SDL_KMOD_CTRL) {
                         int w, h;
                         SDL_GetWindowSize(window, &w, &h);
                         SDL_SetWindowSize(window, w * 2, h * 2);
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
                     break;
                 case SDLK_MINUS:
                     /* Ctrl- shrinks the window */
-                    if (event.key.keysym.mod & SDL_KMOD_CTRL) {
+                    if (event.key.mod & SDL_KMOD_CTRL) {
                         int w, h;
                         SDL_GetWindowSize(window, &w, &h);
                         SDL_SetWindowSize(window, w / 2, h / 2);

@@ -65,7 +65,7 @@ static void iteration(void)
         if (e.type == SDL_EVENT_QUIT) {
             done = 1;
         } else if (e.type == SDL_EVENT_KEY_UP) {
-            if (e.key.keysym.sym == SDLK_ESCAPE) {
+            if (e.key.key == SDLK_ESCAPE) {
                 done = 1;
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_ADDED) {
