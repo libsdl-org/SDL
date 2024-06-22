@@ -128,7 +128,7 @@ static void PrintKeymap(void)
     for (m = 0; m < SDL_arraysize(mods); ++m) {
         for (i = 0; i < SDL_NUM_SCANCODES; ++i) {
             SDL_Keycode key = SDL_GetKeyFromScancode((SDL_Scancode)i, mods[m]);
-			SDL_Keycode default_key = SDL_GetDefaultKeyFromScancode((SDL_Scancode)i, mods[m]);
+            SDL_Keycode default_key = SDL_GetDefaultKeyFromScancode((SDL_Scancode)i, mods[m]);
             if (key != default_key) {
                 char message[512];
                 char *spot;
@@ -307,6 +307,7 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int w, h;
+    SDL_Rect input_rect;
 
     SDL_SetHint(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1");
 
@@ -346,6 +347,16 @@ int main(int argc, char *argv[])
         }
     }
 #endif
+
+    /* Enable showing IME candidates */
+    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+
+    /* Set an input rectangle in the center of the window */
+    input_rect.x = w / 4;
+    input_rect.y = h / 4;
+    input_rect.w = w / 2;
+    input_rect.h = h / 2;
+    SDL_SetTextInputRect(&input_rect);
 
     SDL_StartTextInput();
 
