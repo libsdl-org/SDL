@@ -2198,6 +2198,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_O:
         case SDLK_o:
             if (withControl) {
                 /* Ctrl-O (or Ctrl-Shift-O) changes window opacity. */
@@ -2215,6 +2216,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_H:
         case SDLK_h:
             if (withControl) {
                 /* Ctrl-H changes cursor visibility. */
@@ -2225,6 +2227,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_C:
         case SDLK_c:
             if (withAlt) {
                 /* Alt-C copy awesome text to the primary selection! */
@@ -2250,6 +2253,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 break;
             }
             break;
+        case SDLK_V:
         case SDLK_v:
             if (withAlt) {
                 /* Alt-V paste awesome text from the primary selection! */
@@ -2277,6 +2281,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_F:
         case SDLK_f:
             if (withControl) {
                 /* Ctrl-F flash the window */
@@ -2286,6 +2291,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_G:
         case SDLK_g:
             if (withControl) {
                 /* Ctrl-G toggle mouse grab */
@@ -2295,6 +2301,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_K:
         case SDLK_k:
             if (withControl) {
                 /* Ctrl-K toggle keyboard grab */
@@ -2304,6 +2311,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_M:
         case SDLK_m:
             if (withControl) {
                 /* Ctrl-M maximize */
@@ -2326,12 +2334,14 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_R:
         case SDLK_r:
             if (withControl) {
                 /* Ctrl-R toggle mouse relative mode */
                 SDL_SetRelativeMouseMode(!SDL_GetRelativeMouseMode());
             }
             break;
+        case SDLK_T:
         case SDLK_t:
             if (withControl) {
                 /* Ctrl-T toggle topmost mode */
@@ -2346,6 +2356,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_Z:
         case SDLK_z:
             if (withControl) {
                 /* Ctrl-Z minimize */
@@ -2385,6 +2396,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
             }
 
             break;
+        case SDLK_B:
         case SDLK_b:
             if (withControl) {
                 /* Ctrl-B toggle window border */
@@ -2396,6 +2408,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
+        case SDLK_A:
         case SDLK_a:
             if (withControl) {
                 /* Ctrl-A toggle aspect ratio */
