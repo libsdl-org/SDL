@@ -521,6 +521,7 @@ int main(int argc, char *argv[])
             SDLTest_CommonQuit(state);
             return 1;
         }
+        i += consumed;
     }
 
     if (!SDLTest_CommonInit(state)) {
