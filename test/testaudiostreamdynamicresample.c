@@ -234,7 +234,7 @@ static void loop(void)
                 SDL_Log("Cleared audio stream");
             } else if (sym == SDLK_s) {
                 queue_audio();
-            } else if (sym == SDLK_d) {
+            } else if (sym == SDLK_d || sym == SDLK_D) {
                 float amount = 1.0f;
                 amount *= (e.key.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
                 amount *= (e.key.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;

@@ -30,15 +30,17 @@
 
 /* Global keyboard information */
 
-typedef enum
-{
-    KEYBOARD_HARDWARE = 0x01,
-    KEYBOARD_VIRTUAL = 0x02,
-    KEYBOARD_AUTORELEASE = 0x04,
-    KEYBOARD_IGNOREMODIFIERS = 0x08
-} SDL_KeyboardFlags;
+#define KEYBOARD_HARDWARE   0x01
+#define KEYBOARD_VIRTUAL    0x02
+#define KEYBOARD_AUTORELEASE    0x04
+#define KEYBOARD_IGNOREMODIFIERS    0x0
 
 #define KEYBOARD_SOURCE_MASK (KEYBOARD_HARDWARE | KEYBOARD_AUTORELEASE)
+
+#define KEYCODE_OPTION_APPLY_MODIFIERS  0x01
+#define KEYCODE_OPTION_FRENCH_NUMBERS   0x02
+#define KEYCODE_OPTION_LATIN_LETTERS    0x04
+#define DEFAULT_KEYCODE_OPTIONS (KEYCODE_OPTION_APPLY_MODIFIERS | KEYCODE_OPTION_FRENCH_NUMBERS)
 
 typedef struct SDL_KeyboardInstance
 {
@@ -54,6 +56,9 @@ typedef struct SDL_Keyboard
     Uint8 keysource[SDL_NUM_SCANCODES];
     Uint8 keystate[SDL_NUM_SCANCODES];
     SDL_Keymap *keymap;
+    SDL_bool french_numbers;
+    SDL_bool non_latin_letters;
+    Uint32 keycode_options;
     SDL_bool autorelease_pending;
     Uint64 hardware_timestamp;
 } SDL_Keyboard;
@@ -62,9 +67,33 @@ static SDL_Keyboard SDL_keyboard;
 static int SDL_keyboard_count;
 static SDL_KeyboardInstance *SDL_keyboards;
 
+static void SDLCALL SDL_KeycodeOptionsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Keyboard *keyboard = (SDL_Keyboard *)userdata;
+
+    if (hint && *hint) {
+        keyboard->keycode_options = 0;
+        if (SDL_strstr(hint, "unmodified")) {
+            keyboard->keycode_options &= ~KEYCODE_OPTION_APPLY_MODIFIERS;
+        } else if (SDL_strstr(hint, "modified")) {
+            keyboard->keycode_options |= KEYCODE_OPTION_APPLY_MODIFIERS;
+        }
+        if (SDL_strstr(hint, "french_numbers")) {
+            keyboard->keycode_options |= KEYCODE_OPTION_FRENCH_NUMBERS;
+        }
+        if (SDL_strstr(hint, "latin_letters")) {
+            keyboard->keycode_options |= KEYCODE_OPTION_LATIN_LETTERS;
+        }
+    } else {
+        keyboard->keycode_options = DEFAULT_KEYCODE_OPTIONS;
+    }
+}
+
 /* Public functions */
 int SDL_InitKeyboard(void)
 {
+    SDL_AddHintCallback(SDL_HINT_KEYCODE_OPTIONS,
+                        SDL_KeycodeOptionsChanged, &SDL_keyboard);
     return 0;
 }
 
@@ -205,6 +234,25 @@ void SDL_SetKeymap(SDL_Keymap *keymap, SDL_bool send_event)
 
     keyboard->keymap = keymap;
 
+    // Detect French number row (all symbols)
+    keyboard->french_numbers = SDL_TRUE;
+    for (int i = SDL_SCANCODE_1; i <= SDL_SCANCODE_0; ++i) {
+        if (SDL_isdigit(SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_NONE)) ||
+            !SDL_isdigit(SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_SHIFT))) {
+            keyboard->french_numbers = SDL_FALSE;
+            break;
+        }
+    }
+
+    // Detect non-Latin keymap
+    keyboard->non_latin_letters = SDL_TRUE;
+    for (int i = SDL_SCANCODE_A; i <= SDL_SCANCODE_D; ++i) {
+        if (SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_NONE) <= 0xFF) {
+            keyboard->non_latin_letters = SDL_FALSE;
+            break;
+        }
+    }
+
     if (send_event) {
         SDL_SendKeymapChangedEvent();
     }
@@ -276,6 +324,40 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
     return 0;
 }
 
+static SDL_Keycode SDL_GetEventKeycode(SDL_Keyboard *keyboard, SDL_Scancode scancode, SDL_Keymod modstate)
+{
+    SDL_Keycode keycode;
+
+    if (scancode >= SDL_SCANCODE_A && scancode <= SDL_SCANCODE_Z) {
+        if (keyboard->non_latin_letters && (keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS)) {
+            if (keyboard->keycode_options & KEYCODE_OPTION_APPLY_MODIFIERS) {
+                keycode = SDL_GetDefaultKeyFromScancode(scancode, modstate);
+            } else {
+                keycode = SDL_GetDefaultKeyFromScancode(scancode, SDL_KMOD_NONE);
+            }
+            return keycode;
+        }
+    }
+
+    if (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0) {
+        if (keyboard->french_numbers && (keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS)) {
+            // Invert the shift state to generate the correct keycode
+            if (modstate & SDL_KMOD_SHIFT) {
+                modstate &= ~SDL_KMOD_SHIFT;
+            } else {
+                modstate |= SDL_KMOD_SHIFT;
+            }
+        }
+    }
+
+    if (keyboard->keycode_options & KEYCODE_OPTION_APPLY_MODIFIERS) {
+        keycode = SDL_GetKeyFromScancode(scancode, modstate);
+    } else {
+        keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE);
+    }
+    return keycode;
+}
+
 static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, SDL_Keycode keycode, Uint8 state)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
@@ -325,7 +407,7 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
         keyboard->keystate[scancode] = state;
 
         if (keycode == SDLK_UNKNOWN) {
-            keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE);
+            keycode = SDL_GetEventKeycode(keyboard, scancode, keyboard->modstate);
         }
 
     } else if (keycode == SDLK_UNKNOWN && rawcode == 0) {
@@ -589,6 +671,9 @@ void SDL_QuitKeyboard(void)
         SDL_DestroyKeymap(SDL_keyboard.keymap);
         SDL_keyboard.keymap = NULL;
     }
+
+    SDL_DelHintCallback(SDL_HINT_KEYCODE_OPTIONS,
+                        SDL_KeycodeOptionsChanged, &SDL_keyboard);
 }
 
 const Uint8 *SDL_GetKeyboardState(int *numkeys)

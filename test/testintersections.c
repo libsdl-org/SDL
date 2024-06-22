@@ -226,27 +226,25 @@ static void loop(void *arg)
             break;
         case SDL_EVENT_KEY_DOWN:
             switch (event.key.key) {
-            case 'l':
-                if (event.key.mod & SDL_KMOD_SHIFT) {
-                    num_lines = 0;
-                } else {
-                    add_line(
-                        (float)SDL_rand_n(640),
-                        (float)SDL_rand_n(480),
-                        (float)SDL_rand_n(640),
-                        (float)SDL_rand_n(480));
-                }
+            case SDLK_L:
+                num_lines = 0;
                 break;
-            case 'r':
-                if (event.key.mod & SDL_KMOD_SHIFT) {
-                    num_rects = 0;
-                } else {
-                    add_rect(
-                        (float)SDL_rand_n(640),
-                        (float)SDL_rand_n(480),
-                        (float)SDL_rand_n(640),
-                        (float)SDL_rand_n(480));
-                }
+            case SDLK_l:
+                add_line(
+                    (float)SDL_rand_n(640),
+                    (float)SDL_rand_n(480),
+                    (float)SDL_rand_n(640),
+                    (float)SDL_rand_n(480));
+                break;
+            case SDLK_R:
+                num_rects = 0;
+                break;
+            case SDLK_r:
+                add_rect(
+                    (float)SDL_rand_n(640),
+                    (float)SDL_rand_n(480),
+                    (float)SDL_rand_n(640),
+                    (float)SDL_rand_n(480));
                 break;
             default:
                 break;
