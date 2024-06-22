@@ -507,6 +507,9 @@ int main(int argc, char *argv[])
     /* Log all events, including mouse motion */
     SDL_SetHint(SDL_HINT_EVENT_LOGGING, "2");
 
+    /* Support for multiple keyboards requires raw keyboard events on Windows */
+    SDL_SetHint(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1");
+
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
