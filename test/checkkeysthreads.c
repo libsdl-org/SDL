@@ -120,7 +120,7 @@ PrintModifierState(void)
 }
 
 static void
-PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
+PrintKey(SDL_KeyboardEvent *event)
 {
     char message[512];
     char *spot;
@@ -130,22 +130,22 @@ PrintKey(SDL_Keysym *sym, SDL_bool pressed, SDL_bool repeat)
     left = sizeof(message);
 
     /* Print the keycode, name and state */
-    if (sym->sym) {
+    if (event->key) {
         print_string(&spot, &left,
                      "Key %s:  scancode %d = %s, keycode 0x%08X = %s ",
-                     pressed ? "pressed " : "released",
-                     sym->scancode,
-                     SDL_GetScancodeName(sym->scancode),
-                     sym->sym, SDL_GetKeyName(sym->sym));
+                     event->state ? "pressed " : "released",
+                     event->scancode,
+                     SDL_GetScancodeName(event->scancode),
+                     event->key, SDL_GetKeyName(event->key));
     } else {
         print_string(&spot, &left,
                      "Unknown Key (scancode %d = %s) %s ",
-                     sym->scancode,
-                     SDL_GetScancodeName(sym->scancode),
-                     pressed ? "pressed " : "released");
+                     event->scancode,
+                     SDL_GetScancodeName(event->scancode),
+                     event->state ? "pressed " : "released");
     }
     print_modifiers(&spot, &left);
-    if (repeat) {
+    if (event->repeat) {
         print_string(&spot, &left, " (repeat)");
     }
     SDL_Log("%s\n", message);
@@ -177,7 +177,7 @@ static void loop(void)
         switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
-            PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED), (event.key.repeat > 0));
+            PrintKey(&event.key);
             break;
         case SDL_EVENT_TEXT_EDITING:
             PrintText("EDIT", event.text.text);
@@ -221,11 +221,11 @@ static int SDLCALL ping_thread(void *ptr)
 {
     int cnt;
     SDL_Event sdlevent;
-    SDL_memset(&sdlevent, 0, sizeof(SDL_Event));
+    SDL_zero(sdlevent);
     for (cnt = 0; cnt < 10; ++cnt) {
         SDL_Log("sending event (%d/%d) from thread.\n", cnt + 1, 10);
         sdlevent.type = SDL_EVENT_KEY_DOWN;
-        sdlevent.key.keysym.sym = SDLK_1;
+        sdlevent.key.key = SDLK_1;
         SDL_PushEvent(&sdlevent);
         SDL_Delay(1000 + SDL_rand() % 1000);
     }

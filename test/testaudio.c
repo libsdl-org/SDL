@@ -1185,8 +1185,8 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
 
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
-            ctrl_held = ((event->key.keysym.mod & SDL_KMOD_CTRL) != 0);
-            alt_held = ((event->key.keysym.mod & SDL_KMOD_ALT) != 0);
+            ctrl_held = ((event->key.mod & SDL_KMOD_CTRL) != 0);
+            alt_held = ((event->key.mod & SDL_KMOD_ALT) != 0);
             break;
 
         case SDL_EVENT_DROP_FILE:

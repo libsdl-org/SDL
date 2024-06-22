@@ -699,7 +699,7 @@ int main(int argc, char *argv[])
             SDLTest_CommonEvent(state, &event, &done);
             switch (event.type) {
             case SDL_EVENT_KEY_DOWN:
-                switch (event.key.keysym.sym) {
+                switch (event.key.key) {
                 case SDLK_RETURN:
                     text[0] = 0x00;
                     Redraw();
@@ -742,10 +742,10 @@ int main(int argc, char *argv[])
                 }
 
                 SDL_Log("Keyboard: scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s\n",
-                        event.key.keysym.scancode,
-                        SDL_GetScancodeName(event.key.keysym.scancode),
-                        SDL_static_cast(Uint32, event.key.keysym.sym),
-                        SDL_GetKeyName(event.key.keysym.sym));
+                        event.key.scancode,
+                        SDL_GetScancodeName(event.key.scancode),
+                        SDL_static_cast(Uint32, event.key.key),
+                        SDL_GetKeyName(event.key.key));
                 break;
 
             case SDL_EVENT_TEXT_INPUT:

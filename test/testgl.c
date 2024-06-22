@@ -391,10 +391,10 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                if (event.key.keysym.sym == SDLK_o) {
+                if (event.key.key == SDLK_o) {
                     swap_interval--;
                     update_swap_interval = SDL_TRUE;
-                } else if (event.key.keysym.sym == SDLK_p) {
+                } else if (event.key.key == SDLK_p) {
                     swap_interval++;
                     update_swap_interval = SDL_TRUE;
                 }

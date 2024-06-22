@@ -218,7 +218,7 @@ static void loop(void)
         }
 #endif
         if (e.type == SDL_EVENT_KEY_DOWN) {
-            SDL_Keycode sym = e.key.keysym.sym;
+            SDL_Keycode sym = e.key.key;
             if (sym == SDLK_q) {
                 if (SDL_AudioDevicePaused(state->audio_id)) {
                     SDL_ResumeAudioDevice(state->audio_id);
@@ -236,8 +236,8 @@ static void loop(void)
                 queue_audio();
             } else if (sym == SDLK_d) {
                 float amount = 1.0f;
-                amount *= (e.key.keysym.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
-                amount *= (e.key.keysym.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;
+                amount *= (e.key.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
+                amount *= (e.key.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;
                 skip_audio(amount);
             }
         }

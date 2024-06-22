@@ -532,10 +532,10 @@ int main(int argc, char **argv)
                     done = 1;
                 }
                 if (event.type == SDL_EVENT_KEY_DOWN) {
-                    if (event.key.keysym.sym == SDLK_SPACE) {
+                    if (event.key.key == SDLK_SPACE) {
                         current_shader = (current_shader + 1) % NUM_SHADERS;
                     }
-                    if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    if (event.key.key == SDLK_ESCAPE) {
                         done = 1;
                     }
                 }

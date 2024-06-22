@@ -1846,37 +1846,37 @@ static void loop(void *arg)
 
         case SDL_EVENT_KEY_DOWN:
             if (display_mode == CONTROLLER_MODE_TESTING) {
-                if (event.key.keysym.sym >= SDLK_0 && event.key.keysym.sym <= SDLK_9) {
+                if (event.key.key >= SDLK_0 && event.key.key <= SDLK_9) {
                     if (controller && controller->gamepad) {
-                        int player_index = (event.key.keysym.sym - SDLK_0);
+                        int player_index = (event.key.key - SDLK_0);
 
                         SDL_SetGamepadPlayerIndex(controller->gamepad, player_index);
                     }
                     break;
-                } else if (event.key.keysym.sym == SDLK_a) {
+                } else if (event.key.key == SDLK_a) {
                     OpenVirtualGamepad();
-                } else if (event.key.keysym.sym == SDLK_d) {
+                } else if (event.key.key == SDLK_d) {
                     CloseVirtualGamepad();
-                } else if (event.key.keysym.sym == SDLK_r && (event.key.keysym.mod & SDL_KMOD_CTRL)) {
+                } else if (event.key.key == SDLK_r && (event.key.mod & SDL_KMOD_CTRL)) {
                     SDL_ReloadGamepadMappings();
-                } else if (event.key.keysym.sym == SDLK_ESCAPE) {
+                } else if (event.key.key == SDLK_ESCAPE) {
                     done = SDL_TRUE;
                 }
             } else if (display_mode == CONTROLLER_MODE_BINDING) {
-                if (event.key.keysym.sym == SDLK_c && (event.key.keysym.mod & SDL_KMOD_CTRL)) {
+                if (event.key.key == SDLK_c && (event.key.mod & SDL_KMOD_CTRL)) {
                     if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
                         CopyControllerName();
                     } else {
                         CopyMapping();
                     }
-                } else if (event.key.keysym.sym == SDLK_v && (event.key.keysym.mod & SDL_KMOD_CTRL)) {
+                } else if (event.key.key == SDLK_v && (event.key.mod & SDL_KMOD_CTRL)) {
                     if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
                         ClearControllerName();
                         PasteControllerName();
                     } else {
                         PasteMapping();
                     }
-                } else if (event.key.keysym.sym == SDLK_x && (event.key.keysym.mod & SDL_KMOD_CTRL)) {
+                } else if (event.key.key == SDLK_x && (event.key.mod & SDL_KMOD_CTRL)) {
                     if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
                         CopyControllerName();
                         ClearControllerName();
@@ -1884,19 +1884,19 @@ static void loop(void *arg)
                         CopyMapping();
                         ClearMapping();
                     }
-                } else if (event.key.keysym.sym == SDLK_SPACE) {
+                } else if (event.key.key == SDLK_SPACE) {
                     if (binding_element != SDL_GAMEPAD_ELEMENT_NAME) {
                         ClearBinding();
                     }
-                } else if (event.key.keysym.sym == SDLK_BACKSPACE) {
+                } else if (event.key.key == SDLK_BACKSPACE) {
                     if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
                         BackspaceControllerName();
                     }
-                } else if (event.key.keysym.sym == SDLK_RETURN) {
+                } else if (event.key.key == SDLK_RETURN) {
                     if (binding_element == SDL_GAMEPAD_ELEMENT_NAME) {
                         StopBinding();
                     }
-                } else if (event.key.keysym.sym == SDLK_ESCAPE) {
+                } else if (event.key.key == SDLK_ESCAPE) {
                     if (binding_element != SDL_GAMEPAD_ELEMENT_INVALID) {
                         StopBinding();
                     } else {

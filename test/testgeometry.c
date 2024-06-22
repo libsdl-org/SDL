@@ -95,13 +95,13 @@ static void loop(void)
                 }
             }
         } else if (event.type == SDL_EVENT_KEY_DOWN) {
-            if (event.key.keysym.sym == SDLK_LEFT) {
+            if (event.key.key == SDLK_LEFT) {
                 translate_cx -= 1;
-            } else if (event.key.keysym.sym == SDLK_RIGHT) {
+            } else if (event.key.key == SDLK_RIGHT) {
                 translate_cx += 1;
-            } else if (event.key.keysym.sym == SDLK_UP) {
+            } else if (event.key.key == SDLK_UP) {
                 translate_cy -= 1;
-            } else if (event.key.keysym.sym == SDLK_DOWN) {
+            } else if (event.key.key == SDLK_DOWN) {
                 translate_cy += 1;
             } else {
                 SDLTest_CommonEvent(state, &event, &done);

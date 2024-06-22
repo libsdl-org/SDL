@@ -225,9 +225,9 @@ static void loop(void *arg)
             }
             break;
         case SDL_EVENT_KEY_DOWN:
-            switch (event.key.keysym.sym) {
+            switch (event.key.key) {
             case 'l':
-                if (event.key.keysym.mod & SDL_KMOD_SHIFT) {
+                if (event.key.mod & SDL_KMOD_SHIFT) {
                     num_lines = 0;
                 } else {
                     add_line(
@@ -238,7 +238,7 @@ static void loop(void *arg)
                 }
                 break;
             case 'r':
-                if (event.key.keysym.mod & SDL_KMOD_SHIFT) {
+                if (event.key.mod & SDL_KMOD_SHIFT) {
                     num_rects = 0;
                 } else {
                     add_rect(
