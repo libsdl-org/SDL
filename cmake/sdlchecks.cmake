@@ -371,7 +371,7 @@ macro(CheckX11)
         set(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1)
       endif()
 
-      check_symbol_exists(XkbKeycodeToKeysym "X11/Xlib.h;X11/XKBlib.h" SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM)
+      check_symbol_exists(XkbLookupKeySym "X11/Xlib.h;X11/XKBlib.h" SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM)
 
       if(SDL_X11_XCURSOR AND HAVE_XCURSOR_H AND XCURSOR_LIB)
         set(HAVE_X11_XCURSOR TRUE)

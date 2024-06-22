@@ -1131,6 +1131,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             printf("window %p: KeymapNotify!\n", data);
 #endif
             if (SDL_GetKeyboardFocus() != NULL) {
+                X11_UpdateKeymap(_this, SDL_TRUE);
                 X11_ReconcileKeyboardState(_this);
             }
         } else if (xevent->type == MappingNotify) {
