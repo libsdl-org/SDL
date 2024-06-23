@@ -1485,15 +1485,15 @@ int main(int argc, char *argv[])
     SDL_Rect viewport;
     SDL_GetRenderViewport(renderer, &viewport);
     for (i = 0; i < num_sprites; ++i) {
-        positions[i].x = (float)SDL_rand_n(viewport.w - sprite_w);
-        positions[i].y = (float)SDL_rand_n(viewport.h - sprite_h);
+        positions[i].x = (float)SDL_rand(viewport.w - sprite_w);
+        positions[i].y = (float)SDL_rand(viewport.h - sprite_h);
         positions[i].w = (float)sprite_w;
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
         while (velocities[i].x == 0.f || velocities[i].y == 0.f) {
-            velocities[i].x = (float)(SDL_rand_n(2 + 1) - 1);
-            velocities[i].y = (float)(SDL_rand_n(2 + 1) - 1);
+            velocities[i].x = (float)(SDL_rand(2 + 1) - 1);
+            velocities[i].y = (float)(SDL_rand(2 + 1) - 1);
         }
     }
 

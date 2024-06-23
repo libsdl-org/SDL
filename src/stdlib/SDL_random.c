@@ -34,10 +34,28 @@ void SDL_srand(Uint64 seed)
     SDL_rand_initialized = SDL_TRUE;
 }
 
-Uint32 SDL_rand_bits(void)
+Sint32 SDL_rand(Sint32 n)
 {
     if (!SDL_rand_initialized) {
         SDL_srand(0);
+    }
+
+    return SDL_rand_r(&SDL_rand_state, n);
+}
+
+float SDL_randf(void)
+{
+    if (!SDL_rand_initialized) {
+        SDL_srand(0);
+    }
+
+    return SDL_randf_r(&SDL_rand_state);
+}
+
+Uint32 SDL_rand_bits_r(Uint64 *state)
+{
+    if (!state) {
+        return 0;
     }
 
     // The C and A parameters of this LCG have been chosen based on hundreds
@@ -55,13 +73,13 @@ Uint32 SDL_rand_bits(void)
     // Softw Pract Exper. 2022;52(2):443-458. doi: 10.1002/spe.3030
     // https://arxiv.org/abs/2001.05304v2
 
-    SDL_rand_state = SDL_rand_state * 0xff1cd035ul + 0x05;
+    *state = *state * 0xff1cd035ul + 0x05;
 
     // Only return top 32 bits because they have a longer period
-    return (Uint32)(SDL_rand_state >> 32);
+    return (Uint32)(*state >> 32);
 }
 
-Sint32 SDL_rand_n(Sint32 n)
+Sint32 SDL_rand_r(Uint64 *state, Sint32 n)
 {
     // Algorithm: get 32 bits from SDL_rand_bits() and treat it as a 0.32 bit
     // fixed point number. Multiply by the 31.0 bit n to get a 31.32 bit
@@ -70,18 +88,19 @@ Sint32 SDL_rand_n(Sint32 n)
     if (n < 0) {
         // The algorithm looks like it works for numbers < 0 but it has an
         // infintesimal chance of returning a value out of range.
-        // Returning -SDL_rand_n(abs(n)) blows up at INT_MIN instead.
+        // Returning -SDL_rand(abs(n)) blows up at INT_MIN instead.
         // It's easier to just say no.
         return 0;
     }
 
     // On 32-bit arch, the compiler will optimize to a single 32-bit multiply
-    Uint64 val = (Uint64)SDL_rand_bits() * n;
+    Uint64 val = (Uint64)SDL_rand_bits_r(state) * n;
     return (Sint32)(val >> 32);
 }
 
-float SDL_rand_float(void)
+float SDL_randf_r(Uint64 *state)
 {
     // Note: its using 24 bits because float has 23 bits significand + 1 implicit bit
-    return (SDL_rand_bits() >> (32 - 24)) * 0x1p-24f;
+    return (SDL_rand_bits_r(state) >> (32 - 24)) * 0x1p-24f;
 }
+

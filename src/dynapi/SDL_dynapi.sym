@@ -961,9 +961,11 @@ SDL3_0.0.0 {
     SDL_powf;
     SDL_qsort;
     SDL_qsort_r;
-    SDL_rand_bits;
-    SDL_rand_float;
-    SDL_rand_n;  
+    SDL_rand;  
+    SDL_rand_bits_r;
+    SDL_rand_r;
+    SDL_randf;
+    SDL_randf_r;
     SDL_realloc;
     SDL_round;
     SDL_roundf;
