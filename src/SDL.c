@@ -47,6 +47,7 @@
 #include "haptic/SDL_haptic_c.h"
 #include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
+#include "render/SDL_sysrender.h"
 #include "sensor/SDL_sensor_c.h"
 #include "stdlib/SDL_getenv_c.h"
 #include "video/SDL_video_c.h"
@@ -474,6 +475,7 @@ void SDL_QuitSubSystem(Uint32 flags)
 #ifndef SDL_VIDEO_DISABLED
     if (flags & SDL_INIT_VIDEO) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_VIDEO)) {
+            SDL_QuitRender();
             SDL_VideoQuit();
             /* video implies events */
             SDL_QuitSubSystem(SDL_INIT_EVENTS);

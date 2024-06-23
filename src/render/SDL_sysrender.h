@@ -291,6 +291,8 @@ struct SDL_Renderer
     SDL_bool destroyed;   // already destroyed by SDL_DestroyWindow; just free this struct in SDL_DestroyRenderer.
 
     void *driverdata;
+
+    SDL_Renderer *next;
 };
 
 /* Define the SDL render driver structure */
@@ -313,6 +315,9 @@ extern SDL_RenderDriver PS2_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;
 extern SDL_RenderDriver SW_RenderDriver;
 extern SDL_RenderDriver VITA_GXM_RenderDriver;
+
+/* Clean up any renderers at shutdown */
+extern void SDL_QuitRender(void);
 
 /* Add a supported texture format to a renderer */
 extern int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormatEnum format);

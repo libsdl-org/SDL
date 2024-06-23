@@ -133,6 +133,14 @@ static const SDL_RenderDriver *render_drivers[] = {
 };
 #endif /* !SDL_RENDER_DISABLED */
 
+static SDL_Renderer *SDL_renderers;
+
+void SDL_QuitRender(void)
+{
+    while (SDL_renderers) {
+        SDL_DestroyRenderer(SDL_renderers);
+    }
+}
 
 int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormatEnum format)
 {
@@ -1104,6 +1112,9 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->name);
+
+    renderer->next = SDL_renderers;
+    SDL_renderers = renderer;
 
 #ifdef SDL_PLATFORM_ANDROID
     Android_ActivityMutex_Unlock();
@@ -4619,6 +4630,22 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
     if (!renderer->destroyed) {
         SDL_DestroyRendererWithoutFreeing(renderer);
     }
+
+    SDL_Renderer *curr = SDL_renderers;
+    SDL_Renderer *prev = NULL;
+    while (curr) {
+        if (curr == renderer) {
+            if (prev) {
+                prev->next = renderer->next;
+            } else {
+                SDL_renderers = renderer->next;
+            }
+            break;
+        }
+        prev = curr;
+        curr = curr->next;
+    }
+
     SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);  // It's no longer magical...
 
     SDL_free(renderer->texture_formats);
