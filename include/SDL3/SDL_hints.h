@@ -2334,6 +2334,10 @@ extern "C" {
  * Note that for systems without raw hardware inputs, relative mode is
  * implemented using warping, so the hardware cursor will visibly warp between
  * frames if this is enabled on those systems.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE  "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"
 
@@ -2347,6 +2351,10 @@ extern "C" {
  * The default value varies depending on the operating system, this variable
  * might not have any effects on inapplicable platforms such as those without
  * a cursor.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_MOUSE_RELATIVE_CLIP_INTERVAL  "SDL_MOUSE_RELATIVE_CLIP_INTERVAL"
 
