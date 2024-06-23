@@ -1273,46 +1273,19 @@ extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STR
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_rand_n
- * \sa SDL_rand_float
- * \sa SDL_rand_bits
+ * \sa SDL_rand
+ * \sa SDL_randf
  */
 extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
 
 /**
- * Generates 32 pseudo-random bits.
- *
- * You likely want to use SDL_rand_n() to get a psuedo-randum number instead.
- *
- * If you want reproducible output, be sure to initialize with SDL_srand()
- * first.
- *
- * There are no guarantees as to the quality of the random sequence produced,
- * and this should not be used for security (cryptography, passwords) or where
- * money is on the line (loot-boxes, casinos). There are many random number
- * libraries available with different characteristics and you should pick one
- * of those to meet any serious needs.
- *
- * \returns a random value in the range of [0-SDL_MAX_UINT32].
- *
- * \threadsafety All calls should be made from a single thread
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_srand
- * \sa SDL_rand_n
- * \sa SDL_rand_float
- */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);
-
-/**
- * Generates a pseudo-random number less than n for positive n
+ * Generate a pseudo-random number less than n for positive n
  *
  * The method used is faster and of better quality than `rand() % n`. Odds are
  * roughly 99.9% even for n = 1 million. Evenness is better for smaller n, and
  * much worse as n gets bigger.
  *
- * Example: to simulate a d6 use `SDL_rand_n(6) + 1` The +1 converts 0..5 to
+ * Example: to simulate a d6 use `SDL_rand(6) + 1` The +1 converts 0..5 to
  * 1..6
  *
  * If you want reproducible output, be sure to initialize with SDL_srand()
@@ -1332,12 +1305,12 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_srand
- * \sa SDL_rand_float
+ * \sa SDL_randf
  */
-extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand_n(Sint32 n);
+extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand(Sint32 n);
 
 /**
- * Generates a uniform pseudo-random floating point number less than 1.0
+ * Generate a uniform pseudo-random floating point number less than 1.0
  *
  * If you want reproducible output, be sure to initialize with SDL_srand()
  * first.
@@ -1355,9 +1328,88 @@ extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand_n(Sint32 n);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_srand
- * \sa SDL_rand_n
+ * \sa SDL_rand
  */
-extern SDL_DECLSPEC float SDLCALL SDL_rand_float(void);
+extern SDL_DECLSPEC float SDLCALL SDL_randf(void);
+
+/**
+ * Generate a pseudo-random number less than n for positive n
+ *
+ * The method used is faster and of better quality than `rand() % n`. Odds are
+ * roughly 99.9% even for n = 1 million. Evenness is better for smaller n, and
+ * much worse as n gets bigger.
+ *
+ * Example: to simulate a d6 use `SDL_rand_r(state, 6) + 1` The +1 converts 0..5 to
+ * 1..6
+ *
+ * There are no guarantees as to the quality of the random sequence produced,
+ * and this should not be used for security (cryptography, passwords) or where
+ * money is on the line (loot-boxes, casinos). There are many random number
+ * libraries available with different characteristics and you should pick one
+ * of those to meet any serious needs.
+ *
+ * \param state a pointer to the current random number state, this may not be NULL.
+ * \param n the number of possible outcomes. n must be positive.
+ * \returns a random value in the range of [0 .. n-1].
+ *
+ * \threadsafety This function is thread-safe, as long as the state pointer isn't shared between threads.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_rand
+ * \sa SDL_rand_bits_r
+ * \sa SDL_randf_r
+ */
+extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand_r(Uint64 *state, Sint32 n);
+
+/**
+ * Generate a uniform pseudo-random floating point number less than 1.0
+ *
+ * If you want reproducible output, be sure to initialize with SDL_srand()
+ * first.
+ *
+ * There are no guarantees as to the quality of the random sequence produced,
+ * and this should not be used for security (cryptography, passwords) or where
+ * money is on the line (loot-boxes, casinos). There are many random number
+ * libraries available with different characteristics and you should pick one
+ * of those to meet any serious needs.
+ *
+ * \param state a pointer to the current random number state, this may not be NULL.
+ * \returns a random value in the range of [0.0, 1.0).
+ *
+ * \threadsafety This function is thread-safe, as long as the state pointer isn't shared between threads.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_rand_bits_r
+ * \sa SDL_rand_r
+ * \sa SDL_randf
+ */
+extern SDL_DECLSPEC float SDLCALL SDL_randf_r(Uint64 *state);
+
+/**
+ * Generate 32 pseudo-random bits.
+ *
+ * You likely want to use SDL_rand_r() to get a psuedo-randum number instead.
+ *
+ * There are no guarantees as to the quality of the random sequence produced,
+ * and this should not be used for security (cryptography, passwords) or where
+ * money is on the line (loot-boxes, casinos). There are many random number
+ * libraries available with different characteristics and you should pick one
+ * of those to meet any serious needs.
+ *
+ * \param state a pointer to the current random number state, this may not be NULL.
+ * \returns a random value in the range of [0-SDL_MAX_UINT32].
+ *
+ * \threadsafety This function is thread-safe, as long as the state pointer isn't shared between threads.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_rand_r
+ * \sa SDL_randf_r
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits_r(Uint64 *state);
+
 
 #ifndef SDL_PI_D
 #define SDL_PI_D   3.141592653589793238462643383279502884       /**< pi (double) */
