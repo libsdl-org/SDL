@@ -727,6 +727,7 @@ ALSA_LIBS
 ALSA_CFLAGS
 ALLOCA
 CPP
+SDL2_CONFIG_INTERPRETER
 LIBTOOLLINKERTAG
 LINKER
 SORT
@@ -18335,6 +18336,18 @@ case "$host" in
         ;;
 esac
 
+
+
+case "$host" in
+    # On Solaris, jack must be linked deferred explicitly
+    # to prevent undefined symbol failures.
+    *-*-solaris*)
+        SDL2_CONFIG_INTERPRETER=/bin/bash
+        ;;
+    *)
+        SDL2_CONFIG_INTERPRETER=/bin/sh
+        ;;
+esac
 
 
 if test x$srcdir != x.; then

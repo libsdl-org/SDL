@@ -113,6 +113,18 @@ esac
 AC_SUBST(LINKER)
 AC_SUBST(LIBTOOLLINKERTAG)
 
+case "$host" in
+    # On Solaris, jack must be linked deferred explicitly
+    # to prevent undefined symbol failures.
+    *-*-solaris*)
+        SDL2_CONFIG_INTERPRETER=/bin/bash
+        ;;
+    *)
+        SDL2_CONFIG_INTERPRETER=/bin/sh
+        ;;
+esac
+AC_SUBST(SDL2_CONFIG_INTERPRETER)
+
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
 elif test -d .git; then

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!@SDL2_CONFIG_INTERPRETER@
 
 # Get the canonical path of the folder containing this script
 bindir=$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")
