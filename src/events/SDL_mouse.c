@@ -571,6 +571,22 @@ int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
     return SDL_PrivateSendMouseMotion(timestamp, window, mouseID, relative, x, y);
 }
 
+int SDL_SendRawMouseMotion(Uint64 timestamp, SDL_MouseID mouseID, Sint32 dx, Sint32 dy)
+{
+    int posted;
+    posted = 0;
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_MOTION)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_MOUSE_RAW_MOTION;
+        event.common.timestamp = timestamp;
+        event.rmotion.which = mouseID;
+        event.rmotion.dx = dx;
+        event.rmotion.dy = dy;
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+    return posted;
+}
+
 static float CalculateSystemScale(SDL_Mouse *mouse, SDL_Window *window, const float *x, const float *y)
 {
     int i;

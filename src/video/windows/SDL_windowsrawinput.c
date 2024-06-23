@@ -29,6 +29,7 @@
 #include "SDL_windowsevents.h"
 
 #include "../../joystick/usb_ids.h"
+#include "../../events/SDL_events_c.h"
 
 #define ENABLE_RAW_MOUSE_INPUT      0x01
 #define ENABLE_RAW_KEYBOARD_INPUT   0x02
@@ -183,7 +184,7 @@ static int WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->driverdata;
     Uint32 flags = 0;
-    if (data->raw_mouse_enabled) {
+    if (data->raw_mouse_enabled || SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_MOTION)) {
         flags |= ENABLE_RAW_MOUSE_INPUT;
     }
     if (data->raw_keyboard_enabled) {

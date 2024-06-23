@@ -159,6 +159,9 @@ extern int SDL_UpdateMouseCapture(SDL_bool force_release);
 /* You can set either a single scale, or a set of {speed, scale} values in sorted order */
 extern int SDL_SetMouseSystemScale(int num_values, const float *values);
 
+/* Send a raw relative mouse motion event */
+extern int SDL_SendRawMouseMotion(Uint64 timestamp, SDL_MouseID mouseID, Sint32 dx, Sint32 dy);
+
 /* Send a mouse motion event */
 extern int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, SDL_bool relative, float x, float y);
 

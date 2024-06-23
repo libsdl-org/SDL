@@ -218,6 +218,7 @@ static void SDL_LogEvent(const SDL_Event *event)
     /* sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded. */
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_EVENT_MOUSE_MOTION) ||
+         (event->type == SDL_EVENT_MOUSE_RAW_MOTION) ||
          (event->type == SDL_EVENT_FINGER_MOTION) ||
          (event->type == SDL_EVENT_PEN_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
@@ -1556,6 +1557,7 @@ int SDL_InitEvents(void)
         return -1;
     }
 
+    SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_MOTION, SDL_FALSE);
     SDL_InitQuit();
 
     return 0;
