@@ -2102,7 +2102,7 @@ static void WIN_UpdateClipCursorForWindows()
                 if (data->skip_update_clipcursor) {
                     data->skip_update_clipcursor = SDL_FALSE;
                     WIN_UpdateClipCursor(window);
-                } else if (CLIPCURSOR_UPDATE_INTERVAL_MS>0 && now >= (data->last_updated_clipcursor + CLIPCURSOR_UPDATE_INTERVAL_MS)) {
+                } else if (CLIPCURSOR_UPDATE_INTERVAL_MS > 0 && now >= (data->last_updated_clipcursor + CLIPCURSOR_UPDATE_INTERVAL_MS)) {
                     WIN_UpdateClipCursor(window);
                 }
             }
