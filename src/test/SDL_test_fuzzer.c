@@ -37,7 +37,7 @@ static int fuzzerInvocationCounter = 0;
 /**
  * Context for shared random number generator
  */
-static SDLTest_RandomContext rndContext;
+static Uint64 rndContext;
 
 /*
  * Note: doxygen documentation markup for functions is in the header file.
@@ -45,10 +45,7 @@ static SDLTest_RandomContext rndContext;
 
 void SDLTest_FuzzerInit(Uint64 execKey)
 {
-    Uint32 a = (execKey >> 32) & 0x00000000FFFFFFFF;
-    Uint32 b = execKey & 0x00000000FFFFFFFF;
-    SDL_memset((void *)&rndContext, 0, sizeof(SDLTest_RandomContext));
-    SDLTest_RandomInit(&rndContext, a, b);
+    rndContext = execKey;
     fuzzerInvocationCounter = 0;
 }
 
@@ -61,42 +58,42 @@ Uint8 SDLTest_RandomUint8(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Uint8)SDLTest_RandomInt(&rndContext) & 0x000000FF;
+    return (Uint8)SDL_rand_r(&rndContext, SDL_MAX_UINT8 + 1);
 }
 
 Sint8 SDLTest_RandomSint8(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Sint8)SDLTest_RandomInt(&rndContext) & 0x000000FF;
+    return (Sint8)SDL_rand_r(&rndContext, SDL_MAX_UINT8 + 1) ;
 }
 
 Uint16 SDLTest_RandomUint16(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Uint16)SDLTest_RandomInt(&rndContext) & 0x0000FFFF;
+    return (Uint16)SDL_rand_r(&rndContext, SDL_MAX_UINT16 + 1);
 }
 
 Sint16 SDLTest_RandomSint16(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Sint16)SDLTest_RandomInt(&rndContext) & 0x0000FFFF;
+    return (Sint16)SDL_rand_r(&rndContext, SDL_MAX_UINT16 + 1);
 }
 
 Sint32 SDLTest_RandomSint32(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Sint32)SDLTest_RandomInt(&rndContext);
+    return (Sint32)SDL_rand_bits_r(&rndContext);
 }
 
 Uint32 SDLTest_RandomUint32(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Uint32)SDLTest_RandomInt(&rndContext);
+    return (Uint32)SDL_rand_bits_r(&rndContext);
 }
 
 Uint64 SDLTest_RandomUint64(void)
@@ -110,8 +107,8 @@ Uint64 SDLTest_RandomUint64(void)
 
     fuzzerInvocationCounter++;
 
-    value.v32[0] = SDLTest_RandomSint32();
-    value.v32[1] = SDLTest_RandomSint32();
+    value.v32[0] = SDLTest_RandomUint32();
+    value.v32[1] = SDLTest_RandomUint32();
 
     return value.v64;
 }
@@ -127,8 +124,8 @@ Sint64 SDLTest_RandomSint64(void)
 
     fuzzerInvocationCounter++;
 
-    value.v32[0] = SDLTest_RandomSint32();
-    value.v32[1] = SDLTest_RandomSint32();
+    value.v32[0] = SDLTest_RandomUint32();
+    value.v32[1] = SDLTest_RandomUint32();
 
     return (Sint64)value.v64;
 }
@@ -432,7 +429,7 @@ SDLTest_RandomDouble(void)
     double s = 1.0;
     do {
         s /= UINT_MAX + 1.0;
-        r += (double)SDLTest_RandomInt(&rndContext) * s;
+        r += (double)SDLTest_RandomSint32() * s;
     } while (s > DBL_EPSILON);
 
     fuzzerInvocationCounter++;

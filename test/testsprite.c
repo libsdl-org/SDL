@@ -11,9 +11,6 @@
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdlib.h>
-#include <time.h>
-
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
@@ -558,7 +555,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         seed = (Uint64)iterations;
     } else {
         /* Pseudo-random seed generated from the time */
-        seed = (Uint64)time(NULL);
+        seed = SDL_GetPerformanceCounter();
     }
     SDLTest_FuzzerInit(seed);
     for (i = 0; i < num_sprites; ++i) {
