@@ -1131,7 +1131,20 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             printf("window %p: KeymapNotify!\n", data);
 #endif
             if (SDL_GetKeyboardFocus() != NULL) {
-                X11_UpdateKeymap(_this, SDL_TRUE);
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
+                if (videodata->xkb) {
+                    XkbStateRec state;
+                    X11_XkbGetUpdatedMap(videodata->display, XkbAllClientInfoMask, videodata->xkb);
+
+                    if (X11_XkbGetState(videodata->display, XkbUseCoreKbd, &state) == Success) {
+                        unsigned int group = state.group;
+                        if (group != videodata->xkb_group) {
+                            /* Only rebuild the keymap if the layout has changed. */
+                            X11_UpdateKeymap(_this, SDL_TRUE);
+                        }
+                    }
+                }
+#endif
                 X11_ReconcileKeyboardState(_this);
             }
         } else if (xevent->type == MappingNotify) {
