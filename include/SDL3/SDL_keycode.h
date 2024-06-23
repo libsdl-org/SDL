@@ -59,8 +59,8 @@ typedef Uint32 SDL_Keycode;
 #define SDLK_EXCLAIM                0x00000021u /* '!' */
 #define SDLK_DBLAPOSTROPHE          0x00000022u /* '"' */
 #define SDLK_HASH                   0x00000023u /* '#' */
-#define SDLK_PERCENT                0x00000025u /* '%' */
 #define SDLK_DOLLAR                 0x00000024u /* '$' */
+#define SDLK_PERCENT                0x00000025u /* '%' */
 #define SDLK_AMPERSAND              0x00000026u /* '&' */
 #define SDLK_APOSTROPHE             0x00000027u /* '\'' */
 #define SDLK_LEFTPAREN              0x00000028u /* '(' */
