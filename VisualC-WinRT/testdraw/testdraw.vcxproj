@@ -294,7 +294,6 @@
     <ClCompile Include="..\..\src\test\SDL_test_log.c" />
     <ClCompile Include="..\..\src\test\SDL_test_md5.c" />
     <ClCompile Include="..\..\src\test\SDL_test_memory.c" />
-    <ClCompile Include="..\..\src\test\SDL_test_random.c" />
     <ClCompile Include="..\..\test\main.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>

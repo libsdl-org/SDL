@@ -63,7 +63,7 @@ static Uint32 SDLTest_TestCaseTimeout = 3600;
 char *SDLTest_GenerateRunSeed(const int length)
 {
     char *seed = NULL;
-    SDLTest_RandomContext randomContext;
+    Uint64 randomContext = SDL_GetPerformanceCounter();
     int counter;
 
     /* Sanity check input */
@@ -80,10 +80,8 @@ char *SDLTest_GenerateRunSeed(const int length)
     }
 
     /* Generate a random string of alphanumeric characters */
-    SDLTest_RandomInitTime(&randomContext);
     for (counter = 0; counter < length; counter++) {
-        unsigned int number = SDLTest_Random(&randomContext);
-        char ch = (char)(number % (91 - 48)) + 48;
+        char ch = (char)(SDL_rand_r(&randomContext, (91 - 48) + 1) + 48);
         if (ch >= 58 && ch <= 64) {
             ch = 65;
         }

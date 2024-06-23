@@ -75,9 +75,6 @@
     <ClCompile Include="..\..\src\test\SDL_test_memory.c">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\test\SDL_test_random.c">
-      <Filter>Common</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\main\winrt\SDL3-WinRTResource_BlankCursor.cur" />

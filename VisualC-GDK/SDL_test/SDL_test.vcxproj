@@ -195,7 +195,6 @@
     <ClCompile Include="..\..\src\test\SDL_test_log.c" />
     <ClCompile Include="..\..\src\test\SDL_test_md5.c" />
     <ClCompile Include="..\..\src\test\SDL_test_memory.c" />
-    <ClCompile Include="..\..\src\test\SDL_test_random.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

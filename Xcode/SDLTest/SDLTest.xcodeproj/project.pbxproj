@@ -116,7 +116,6 @@
 		DB166D9916A1D1A500A1396C /* SDL_test_harness.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8A16A1D1A500A1396C /* SDL_test_harness.c */; };
 		DB166D9F16A1D1A500A1396C /* SDL_test_log.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9016A1D1A500A1396C /* SDL_test_log.c */; };
 		DB166DA016A1D1A500A1396C /* SDL_test_md5.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9116A1D1A500A1396C /* SDL_test_md5.c */; };
-		DB166DA116A1D1A500A1396C /* SDL_test_random.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9216A1D1A500A1396C /* SDL_test_random.c */; };
 		DB166DD716A1D37800A1396C /* testmessage.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CBD16A1C74100A1396C /* testmessage.c */; };
 		DB166DDB16A1D42F00A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
 		DB166DF016A1D52500A1396C /* testrelative.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CBF16A1C74100A1396C /* testrelative.c */; };
@@ -1315,7 +1314,6 @@
 		DB166D8A16A1D1A500A1396C /* SDL_test_harness.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_harness.c; sourceTree = "<group>"; };
 		DB166D9016A1D1A500A1396C /* SDL_test_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_log.c; sourceTree = "<group>"; };
 		DB166D9116A1D1A500A1396C /* SDL_test_md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_md5.c; sourceTree = "<group>"; };
-		DB166D9216A1D1A500A1396C /* SDL_test_random.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_test_random.c; sourceTree = "<group>"; };
 		DB166DD516A1D36A00A1396C /* testmessage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testmessage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166DEE16A1D50C00A1396C /* testrelative.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testrelative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166E0516A1D57C00A1396C /* testrendercopyex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testrendercopyex.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1935,7 +1933,6 @@
 				DB166D9016A1D1A500A1396C /* SDL_test_log.c */,
 				DB166D9116A1D1A500A1396C /* SDL_test_md5.c */,
 				AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */,
-				DB166D9216A1D1A500A1396C /* SDL_test_random.c */,
 			);
 			name = SDL_Test;
 			path = ../../src/test;
@@ -3308,7 +3305,6 @@
 				DB166D9F16A1D1A500A1396C /* SDL_test_log.c in Sources */,
 				DB166DA016A1D1A500A1396C /* SDL_test_md5.c in Sources */,
 				AAF02FFA1F90092700B9A9FB /* SDL_test_memory.c in Sources */,
-				DB166DA116A1D1A500A1396C /* SDL_test_random.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

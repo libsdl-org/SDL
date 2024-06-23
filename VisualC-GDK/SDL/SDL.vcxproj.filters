@@ -295,7 +295,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_log.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_md5.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_test_random.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_thread.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_timer.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_touch.h" />
