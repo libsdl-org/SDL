@@ -2339,7 +2339,7 @@ extern "C" {
 
 /**
  * Controls how often SDL issues cursor confinement commands to the operating
- * system while relative mode is active, in case the desired confinement state 
+ * system while relative mode is active, in case the desired confinement state
  * became out-of-sync due to interference from other running programs.
  *
  * The variable can be integers representing miliseconds between each refresh.
