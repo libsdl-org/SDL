@@ -154,8 +154,10 @@
 #cmakedefine HAVE_FMODF 1
 #cmakedefine HAVE_ISINF 1
 #cmakedefine HAVE_ISINFF 1
+#cmakedefine HAVE_ISINF_FLOAT_MACRO 1
 #cmakedefine HAVE_ISNAN 1
 #cmakedefine HAVE_ISNANF 1
+#cmakedefine HAVE_ISNAN_FLOAT_MACRO 1
 #cmakedefine HAVE_LOG 1
 #cmakedefine HAVE_LOGF 1
 #cmakedefine HAVE_LOG10 1
