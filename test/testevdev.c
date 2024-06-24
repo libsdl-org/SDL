@@ -247,7 +247,6 @@ static unsigned char steam_deck_oled_js_hid_report_descriptor[] =
 SDL_COMPILE_TIME_ASSERT (steam_deck_oled_js,
                          sizeof (steam_deck_oled_js_hid_report_descriptor) == 38);
 
-#if 0 /* unused for now */
 static unsigned char vrs_pedals_hid_report_descriptor[] =
 {
     /* Generic Desktop / Joystick */
@@ -265,7 +264,6 @@ static unsigned char vrs_pedals_hid_report_descriptor[] =
     0x09, 0x01, 0x81, 0x02, 0xc0, 0xc0,
 };
 SDL_COMPILE_TIME_ASSERT (vrs_pedals, sizeof (vrs_pedals_hid_report_descriptor) == 0136);
-#endif
 
 static unsigned char thinkpad_usb_keyboard_hid_report_descriptor[] =
 {
@@ -313,7 +311,6 @@ static unsigned char thinkpad_usb_trackpoint_hid_report_descriptor[] =
 };
 SDL_COMPILE_TIME_ASSERT (thinkpad_usb_trackpoint, sizeof (thinkpad_usb_trackpoint_hid_report_descriptor) == 185);
 
-#if 0 /* unused for now */
 static unsigned char heusinkveld_pedals_hid_report_descriptor[] =
 {
     /* Generic Desktop / Joystick */
@@ -327,7 +324,6 @@ static unsigned char heusinkveld_pedals_hid_report_descriptor[] =
     0x01, 0xc0,
 };
 SDL_COMPILE_TIME_ASSERT (heusinkveld_pedals, sizeof (heusinkveld_pedals_hid_report_descriptor) == 072);
-#endif
 
 static unsigned char fanatec_handbrake_hid_report_descriptor[] =
 {
