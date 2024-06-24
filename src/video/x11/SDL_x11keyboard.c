@@ -347,7 +347,6 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
     int i;
     SDL_Scancode scancode;
     SDL_Keymap *keymap;
-    unsigned char group = 0;
 
     keymap = SDL_CreateKeymap();
 
@@ -357,7 +356,7 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
         X11_XkbGetUpdatedMap(data->display, XkbAllClientInfoMask, data->xkb);
 
         if (X11_XkbGetState(data->display, XkbUseCoreKbd, &state) == Success) {
-            group = state.group;
+            data->xkb_group = state.group;
         }
     }
 #endif
@@ -372,7 +371,7 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
                 continue;
             }
 
-            KeySym keysym = X11_KeyCodeToSym(_this, i, group, keymod_masks[m].xkb_mask);
+            KeySym keysym = X11_KeyCodeToSym(_this, i, data->xkb_group, keymod_masks[m].xkb_mask);
 
             /* Note: The default SDL scancode table sets this to right alt instead of AltGr/Mode, so handle it separately. */
             if (keysym != XK_ISO_Level3_Shift) {
