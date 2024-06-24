@@ -80,8 +80,8 @@ typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  * message should continue to be processed, or SDL_FALSE to prevent further
  * processing.
  *
- * \param callback the SDL_WindowsMessageHook function to call.
- * \param userdata a pointer to pass to every iteration of `callback`.
+ * \param[in] callback the SDL_WindowsMessageHook function to call.
+ * \param[inout,opt] userdata a pointer to pass to every iteration of `callback`.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -120,8 +120,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displ
  * DX11 device and swap chain.
  *
  * \param displayID the instance of the display to query.
- * \param adapterIndex a pointer to be filled in with the adapter index.
- * \param outputIndex a pointer to be filled in with the output index.
+ * \param[out] adapterIndex a pointer to be filled in with the adapter index.
+ * \param[out] outputIndex a pointer to be filled in with the output index.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
@@ -145,8 +145,8 @@ typedef SDL_bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
  * should continue to be processed, or SDL_FALSE to prevent further
  * processing.
  *
- * \param callback the SDL_X11EventHook function to call.
- * \param userdata a pointer to pass to every iteration of `callback`.
+ * \param[in] callback the SDL_X11EventHook function to call.
+ * \param[inout,opt] userdata a pointer to pass to every iteration of `callback`.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -234,11 +234,11 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  *
  * https://wiki.libsdl.org/SDL3/README/main-functions
  *
- * \param window the window for which the animation callback should be set.
+ * \param[inout] window the window for which the animation callback should be set.
  * \param interval the number of frames after which **callback** will be
  *                 called.
- * \param callback the function to call for every frame.
- * \param callbackParam a pointer that is passed to `callback`.
+ * \param[in] callback the function to call for every frame.
+ * \param[inout,opt] callbackParam a pointer that is passed to `callback`.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -422,7 +422,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetInternalStoragePath(void);
  *
  * If external storage is currently unavailable, this will return 0.
  *
- * \param state filled with the current state of external storage. 0 if
+ * \param[out] state filled with the current state of external storage. 0 if
  *              external storage is currently unavailable.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -475,9 +475,9 @@ typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, con
  * like memory running out. Normally there will be a yes or no to the request
  * through the callback.
  *
- * \param permission the permission to request.
- * \param cb the callback to trigger when the request has a response.
- * \param userdata an app-controlled pointer that is passed to the callback.
+ * \param[in] permission the permission to request.
+ * \param[in] cb the callback to trigger when the request has a response.
+ * \param[inout,opt] userdata an app-controlled pointer that is passed to the callback.
  * \returns zero if the request was submitted, -1 if there was an error
  *          submitting. The result of the request is only ever reported
  *          through the callback, not this return value.
@@ -502,7 +502,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permiss
  *
  * https://developer.android.com/reference/android/view/Gravity
  *
- * \param message text message to be shown.
+ * \param[in] message text message to be shown.
  * \param duration 0=short, 1=long.
  * \param gravity where the notification should appear on the screen.
  * \param xoffset set this parameter only when gravity >=0.
@@ -770,7 +770,7 @@ typedef struct XUser *XUserHandle;
  * XTaskQueueCloseHandle to reduce the reference count to avoid a resource
  * leak.
  *
- * \param outTaskQueue a pointer to be filled in with task queue handle.
+ * \param[out] outTaskQueue a pointer to be filled in with task queue handle.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -784,7 +784,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQu
  * This is effectively a synchronous version of XUserAddAsync, which always
  * prefers the default user and allows a sign-in UI.
  *
- * \param outUserHandle a pointer to be filled in with the default user
+ * \param[out] outUserHandle a pointer to be filled in with the default user
  *                      handle.
  * \returns 0 if success, -1 if any error occurs.
  *

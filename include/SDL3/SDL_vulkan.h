@@ -93,7 +93,7 @@ struct VkAllocationCallbacks;
  * supported. Either do not link to the Vulkan loader or link to a dynamic
  * library version.
  *
- * \param path the platform dependent Vulkan loader library name or NULL.
+ * \param[in] path the platform dependent Vulkan loader library name or NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -147,7 +147,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *
  * You should not free the returned array; it is owned by SDL.
  *
- * \param count a pointer filled in with the number of extensions returned.
+ * \param[out] count a pointer filled in with the number of extensions returned.
  * \returns an array of extension name strings on success, NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
@@ -166,11 +166,11 @@ extern SDL_DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(
  * If `allocator` is NULL, Vulkan will use the system default allocator. This
  * argument is passed directly to Vulkan and isn't used by SDL itself.
  *
- * \param window the window to which to attach the Vulkan surface.
- * \param instance the Vulkan instance handle.
- * \param allocator a VkAllocationCallbacks struct, which lets the app set the
+ * \param[inout] window the window to which to attach the Vulkan surface.
+ * \param[inout] instance the Vulkan instance handle.
+ * \param[in,opt] allocator a VkAllocationCallbacks struct, which lets the app set the
  *                  allocator that creates the surface. Can be NULL.
- * \param surface a pointer to a VkSurfaceKHR handle to output the newly
+ * \param[inout] surface a pointer to a VkSurfaceKHR handle to output the newly
  *                created surface.
  * \returns SDL_TRUE on success, SDL_FALSE on error.
  *
@@ -197,9 +197,9 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window
  * If `allocator` is NULL, Vulkan will use the system default allocator. This
  * argument is passed directly to Vulkan and isn't used by SDL itself.
  *
- * \param instance the Vulkan instance handle.
- * \param surface vkSurfaceKHR handle to destroy.
- * \param allocator a VkAllocationCallbacks struct, which lets the app set the
+ * \param[inout] instance the Vulkan instance handle.
+ * \param[inout] surface vkSurfaceKHR handle to destroy.
+ * \param[in,opt] allocator a VkAllocationCallbacks struct, which lets the app set the
  *                  allocator that destroys the surface. Can be NULL.
  *
  * \since This function is available since SDL 3.0.0.

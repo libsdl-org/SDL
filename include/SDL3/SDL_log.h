@@ -161,7 +161,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
 /**
  * Log a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO.
  *
- * \param fmt a printf() style message format string.
+ * \param[in] fmt a printf() style message format string.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any.
  *
@@ -182,7 +182,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fm
  * Log a message with SDL_LOG_PRIORITY_VERBOSE.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param[in] fmt a printf() style message format string.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -203,7 +203,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogVerbose(int category, SDL_PRINTF_FORMAT_
  * Log a message with SDL_LOG_PRIORITY_DEBUG.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param[in] fmt a printf() style message format string.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -224,7 +224,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogDebug(int category, SDL_PRINTF_FORMAT_ST
  * Log a message with SDL_LOG_PRIORITY_INFO.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param[in] fmt a printf() style message format string.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -245,7 +245,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogInfo(int category, SDL_PRINTF_FORMAT_STR
  * Log a message with SDL_LOG_PRIORITY_WARN.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param[in] fmt a printf() style message format string.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -266,7 +266,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogWarn(int category, SDL_PRINTF_FORMAT_STR
  * Log a message with SDL_LOG_PRIORITY_ERROR.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param[in] fmt a printf() style message format string.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -287,7 +287,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogError(int category, SDL_PRINTF_FORMAT_ST
  * Log a message with SDL_LOG_PRIORITY_CRITICAL.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param[in] fmt a printf() style message format string.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -309,7 +309,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogCritical(int category, SDL_PRINTF_FORMAT
  *
  * \param category the category of the message.
  * \param priority the priority of the message.
- * \param fmt a printf() style message format string.
+ * \param[in] fmt a printf() style message format string.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -333,7 +333,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogMessage(int category,
  *
  * \param category the category of the message.
  * \param priority the priority of the message.
- * \param fmt a printf() style message format string.
+ * \param[in] fmt a printf() style message format string.
  * \param ap a variable argument list.
  *
  * \since This function is available since SDL 3.0.0.
@@ -369,9 +369,9 @@ typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_
 /**
  * Get the current log output function.
  *
- * \param callback an SDL_LogOutputFunction filled in with the current log
+ * \param[out] callback an SDL_LogOutputFunction filled in with the current log
  *                 callback.
- * \param userdata a pointer filled in with the pointer that is passed to
+ * \param[out] userdata a pointer filled in with the pointer that is passed to
  *                 `callback`.
  *
  * \since This function is available since SDL 3.0.0.
@@ -383,8 +383,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetLogOutputFunction(SDL_LogOutputFunction 
 /**
  * Replace the default log output function with one of your own.
  *
- * \param callback an SDL_LogOutputFunction to call instead of the default.
- * \param userdata a pointer that is passed to `callback`.
+ * \param[in] callback an SDL_LogOutputFunction to call instead of the default.
+ * \param[inout] userdata a pointer that is passed to `callback`.
  *
  * \since This function is available since SDL 3.0.0.
  *

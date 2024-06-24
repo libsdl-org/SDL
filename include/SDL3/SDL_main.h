@@ -508,9 +508,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
  *
  * \param argc the argc parameter from the application's main() function, or 0
  *             if the platform's main-equivalent has no argc.
- * \param argv the argv parameter from the application's main() function, or
+ * \param[in] argv the argv parameter from the application's main() function, or
  *             NULL if the platform's main-equivalent has no argv.
- * \param mainFunction your SDL app's C-style main(). NOT the function you're
+ * \param[in] mainFunction your SDL app's C-style main(). NOT the function you're
  *                     calling this from! Its name doesn't matter; it doesn't
  *                     literally have to be `main`.
  * \param reserved should be NULL (reserved for future use, will probably be
@@ -538,11 +538,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_RunApp(int argc, char* argv[], SDL_main_func
  * _really_ know what you're doing.
  *
  * \param argc standard Unix main argc.
- * \param argv standard Unix main argv.
- * \param appinit the application's SDL_AppInit function.
- * \param appiter the application's SDL_AppIterate function.
- * \param appevent the application's SDL_AppEvent function.
- * \param appquit the application's SDL_AppQuit function.
+ * \param[in] argv standard Unix main argv.
+ * \param[in] appinit the application's SDL_AppInit function.
+ * \param[in] appiter the application's SDL_AppIterate function.
+ * \param[in] appevent the application's SDL_AppEvent function.
+ * \param[in] appquit the application's SDL_AppQuit function.
  * \returns standard Unix main return value.
  *
  * \threadsafety It is not safe to call this anywhere except as the only

@@ -292,12 +292,12 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_Prop
 /**
  * The actual entry point for SDL_CreateThread.
  *
- * \param fn the SDL_ThreadFunction function to call in the new thread
- * \param name the name of the thread
- * \param data a pointer that is passed to `fn`
- * \param pfnBeginThread the C runtime's _beginthreadex (or whatnot). Can be NULL.
- * \param pfnEndThread the C runtime's _endthreadex (or whatnot). Can be NULL.
- * \returns an opaque pointer to the new thread object on success, NULL if the
+ * \param[in] fn the SDL_ThreadFunction function to call in the new thread
+ * \param[in] name the name of the thread
+ * \param[inout,opt] data a pointer that is passed to `fn`
+ * \param[in,opt] pfnBeginThread the C runtime's _beginthreadex (or whatnot). Can be NULL.
+ * \param[in,opt] pfnEndThread the C runtime's _endthreadex (or whatnot). Can be NULL.
+ * \returns[own] an opaque pointer to the new thread object on success, NULL if the
  *          new thread could not be created; call SDL_GetError() for more
  *          information.
  *
@@ -309,8 +309,8 @@ extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadRuntime(SDL_ThreadFuncti
  * The actual entry point for SDL_CreateThreadWithProperties.
  *
  * \param props the properties to use
- * \param pfnBeginThread the C runtime's _beginthreadex (or whatnot). Can be NULL.
- * \param pfnEndThread the C runtime's _endthreadex (or whatnot). Can be NULL.
+ * \param[in,opt] pfnBeginThread the C runtime's _beginthreadex (or whatnot). Can be NULL.
+ * \param[in,opt] pfnEndThread the C runtime's _endthreadex (or whatnot). Can be NULL.
  * \returns an opaque pointer to the new thread object on success, NULL if the
  *          new thread could not be created; call SDL_GetError() for more
  *          information.
@@ -333,7 +333,7 @@ extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadWithPropertiesRuntime(SD
  *
  * The returned string follows the SDL_GetStringRule.
  *
- * \param thread the thread to query.
+ * \param[inout] thread the thread to query.
  * \returns a pointer to a UTF-8 string that names the specified thread, or
  *          NULL if it doesn't have a name.
  *
@@ -366,7 +366,7 @@ extern SDL_DECLSPEC SDL_ThreadID SDLCALL SDL_GetCurrentThreadID(void);
  * If SDL is running on a platform that does not support threads the return
  * value will always be zero.
  *
- * \param thread the thread to query.
+ * \param[inout] thread the thread to query.
  * \returns the ID of the specified thread, or the ID of the current thread if
  *          `thread` is NULL.
  *
@@ -413,9 +413,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetThreadPriority(SDL_ThreadPriority priorit
  * Note that the thread pointer is freed by this function and is not valid
  * afterward.
  *
- * \param thread the SDL_Thread pointer that was returned from the
+ * \param[inout] thread the SDL_Thread pointer that was returned from the
  *               SDL_CreateThread() call that started this thread.
- * \param status pointer to an integer that will receive the value returned
+ * \param[out] status pointer to an integer that will receive the value returned
  *               from the thread function by its 'return', or NULL to not
  *               receive such value back.
  *
@@ -452,7 +452,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread * thread, int *status
  *
  * It is safe to pass NULL to this function; it is a no-op.
  *
- * \param thread the SDL_Thread pointer that was returned from the
+ * \param[inout] thread the SDL_Thread pointer that was returned from the
  *               SDL_CreateThread() call that started this thread.
  *
  * \since This function is available since SDL 3.0.0.
@@ -514,8 +514,8 @@ typedef void (SDLCALL *SDL_TLSDestructorCallback)(void *value);
  * cleaned up if so.
  *
  * \param id the thread local storage ID.
- * \param value the value to associate with the ID for the current thread.
- * \param destructor a function called when the thread exits, to free the
+ * \param[in] value the value to associate with the ID for the current thread.
+ * \param[in] destructor a function called when the thread exits, to free the
  *                   value. Can be NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.

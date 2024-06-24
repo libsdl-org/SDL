@@ -3824,8 +3824,8 @@ typedef enum SDL_HintPriority
  * value. Hints will replace existing hints of their priority and lower.
  * Environment variables are considered to have override priority.
  *
- * \param name the hint to set.
- * \param value the value of the hint variable.
+ * \param[in] name the hint to set.
+ * \param[in] value the value of the hint variable.
  * \param priority the SDL_HintPriority level for the hint.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
@@ -3846,8 +3846,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * variable that takes precedence. You can use SDL_SetHintWithPriority() to
  * set the hint with override priority instead.
  *
- * \param name the hint to set.
- * \param value the value of the hint variable.
+ * \param[in] name the hint to set.
+ * \param[in] value the value of the hint variable.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3866,7 +3866,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * the environment isn't set. Callbacks will be called normally with this
  * change.
  *
- * \param name the hint to set.
+ * \param[in] name the hint to set.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3894,7 +3894,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  *
  * The returned string follows the SDL_GetStringRule.
  *
- * \param name the hint to query.
+ * \param[in] name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3907,7 +3907,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 /**
  * Get the boolean value of a hint variable.
  *
- * \param name the name of the hint to get the boolean value from.
+ * \param[in] name the name of the hint to get the boolean value from.
  * \param default_value the value to return if the hint does not exist.
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.
@@ -3934,10 +3934,10 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
 /**
  * Add a function to watch a particular hint.
  *
- * \param name the hint to watch.
- * \param callback an SDL_HintCallback function that will be called when the
+ * \param[in] name the hint to watch.
+ * \param[in] callback an SDL_HintCallback function that will be called when the
  *                 hint value changes.
- * \param userdata a pointer to pass to the callback function.
+ * \param[inout,opt] userdata a pointer to pass to the callback function.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -3955,10 +3955,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddHintCallback(const char *name,
 /**
  * Remove a function watching a particular hint.
  *
- * \param name the hint being watched.
- * \param callback an SDL_HintCallback function that will be called when the
+ * \param[in] name the hint being watched.
+ * \param[in] callback an SDL_HintCallback function that will be called when the
  *                 hint value changes.
- * \param userdata a pointer being passed to the callback function.
+ * \param[inout,opt] userdata a pointer being passed to the callback function.
  *
  * \since This function is available since SDL 3.0.0.
  *

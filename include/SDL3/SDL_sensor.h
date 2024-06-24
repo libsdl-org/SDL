@@ -146,8 +146,8 @@ typedef enum SDL_SensorType
 /**
  * Get a list of currently connected sensors.
  *
- * \param count a pointer filled in with the number of sensors returned.
- * \returns a 0 terminated array of sensor instance IDs which should be freed
+ * \param[out] count a pointer filled in with the number of sensors returned.
+ * \returns[own] a 0 terminated array of sensor instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.
  *
@@ -193,7 +193,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorInstanceNonPortableType(SDL_SensorI
  * Open a sensor for use.
  *
  * \param instance_id the sensor instance ID.
- * \returns an SDL_Sensor sensor object, or NULL if an error occurred.
+ * \returns[own] an SDL_Sensor sensor object, or NULL if an error occurred.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -212,7 +212,7 @@ extern SDL_DECLSPEC SDL_Sensor *SDLCALL SDL_GetSensorFromInstanceID(SDL_SensorID
 /**
  * Get the properties associated with a sensor.
  *
- * \param sensor the SDL_Sensor object.
+ * \param[inout] sensor the SDL_Sensor object.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
@@ -228,7 +228,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor 
  *
  * The returned string follows the SDL_GetStringRule.
  *
- * \param sensor the SDL_Sensor object.
+ * \param[inout] sensor the SDL_Sensor object.
  * \returns the sensor name, or NULL if `sensor` is NULL.
  *
  * \since This function is available since SDL 3.0.0.
@@ -238,7 +238,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetSensorName(SDL_Sensor *sensor);
 /**
  * Get the type of a sensor.
  *
- * \param sensor the SDL_Sensor object to inspect.
+ * \param[inout] sensor the SDL_Sensor object to inspect.
  * \returns the SDL_SensorType type, or `SDL_SENSOR_INVALID` if `sensor` is
  *          NULL.
  *
@@ -249,7 +249,7 @@ extern SDL_DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorType(SDL_Sensor *sensor)
 /**
  * Get the platform dependent type of a sensor.
  *
- * \param sensor the SDL_Sensor object to inspect.
+ * \param[inout] sensor the SDL_Sensor object to inspect.
  * \returns the sensor platform dependent type, or -1 if `sensor` is NULL.
  *
  * \since This function is available since SDL 3.0.0.
@@ -259,7 +259,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
 /**
  * Get the instance ID of a sensor.
  *
- * \param sensor the SDL_Sensor object to inspect.
+ * \param[inout] sensor the SDL_Sensor object to inspect.
  * \returns the sensor instance ID, or 0 if `sensor` is NULL.
  *
  * \since This function is available since SDL 3.0.0.
@@ -271,8 +271,8 @@ extern SDL_DECLSPEC SDL_SensorID SDLCALL SDL_GetSensorInstanceID(SDL_Sensor *sen
  *
  * The number of values and interpretation of the data is sensor dependent.
  *
- * \param sensor the SDL_Sensor object to query.
- * \param data a pointer filled with the current sensor state.
+ * \param[inout] sensor the SDL_Sensor object to query.
+ * \param[out] data a pointer filled with the current sensor state.
  * \param num_values the number of values to write to data.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -284,7 +284,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorData(SDL_Sensor *sensor, float *dat
 /**
  * Close a sensor previously opened with SDL_OpenSensor().
  *
- * \param sensor the SDL_Sensor object to close.
+ * \param[inout] sensor the SDL_Sensor object to close.
  *
  * \since This function is available since SDL 3.0.0.
  */
