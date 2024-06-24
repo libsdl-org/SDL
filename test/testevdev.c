@@ -2003,6 +2003,8 @@ static const GuessTest guess_tests[] =
       .ev = { 0x09 },
       /* X, Y, Z */
       .abs = { 0x07 },
+      .hid_report_descriptor_length = sizeof (vrs_pedals_hid_report_descriptor),
+      .hid_report_descriptor = &vrs_pedals_hid_report_descriptor[0],
     },
     { /* https://github.com/ValveSoftware/Proton/issues/5126 */
       .name = "Heusinkveld Heusinkveld Sim Pedals Ultimate",
@@ -2019,6 +2021,8 @@ static const GuessTest guess_tests[] =
       .ev = { 0x09 },
       /* RX, RY, RZ */
       .abs = { 0x38 },
+      .hid_report_descriptor_length = sizeof (heusinkveld_pedals_hid_report_descriptor),
+      .hid_report_descriptor = &heusinkveld_pedals_hid_report_descriptor[0],
     },
     { /* https://github.com/ValveSoftware/Proton/issues/5126 */
       .name = "Vitaly [mega_mozg] Naidentsev ODDOR-handbrake",
