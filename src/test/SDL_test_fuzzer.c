@@ -58,28 +58,35 @@ Uint8 SDLTest_RandomUint8(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Uint8)SDL_rand_r(&rndContext, SDL_MAX_UINT8 + 1);
+    return (Uint8)(SDL_rand_bits_r(&rndContext) >> 24);
 }
 
 Sint8 SDLTest_RandomSint8(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Sint8)SDL_rand_r(&rndContext, SDL_MAX_UINT8 + 1) ;
+    return (Sint8)(SDL_rand_bits_r(&rndContext) >> 24);
 }
 
 Uint16 SDLTest_RandomUint16(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Uint16)SDL_rand_r(&rndContext, SDL_MAX_UINT16 + 1);
+    return (Uint16)(SDL_rand_bits_r(&rndContext) >> 16);
 }
 
 Sint16 SDLTest_RandomSint16(void)
 {
     fuzzerInvocationCounter++;
 
-    return (Sint16)SDL_rand_r(&rndContext, SDL_MAX_UINT16 + 1);
+    return (Sint16)(SDL_rand_bits_r(&rndContext) >> 16);
+}
+
+Uint32 SDLTest_RandomUint32(void)
+{
+    fuzzerInvocationCounter++;
+
+    return SDL_rand_bits_r(&rndContext);
 }
 
 Sint32 SDLTest_RandomSint32(void)
@@ -89,13 +96,6 @@ Sint32 SDLTest_RandomSint32(void)
     return (Sint32)SDL_rand_bits_r(&rndContext);
 }
 
-Uint32 SDLTest_RandomUint32(void)
-{
-    fuzzerInvocationCounter++;
-
-    return (Uint32)SDL_rand_bits_r(&rndContext);
-}
-
 Uint64 SDLTest_RandomUint64(void)
 {
     union
@@ -103,7 +103,6 @@ Uint64 SDLTest_RandomUint64(void)
         Uint64 v64;
         Uint32 v32[2];
     } value;
-    value.v64 = 0;
 
     fuzzerInvocationCounter++;
 
@@ -120,7 +119,6 @@ Sint64 SDLTest_RandomSint64(void)
         Uint64 v64;
         Uint32 v32[2];
     } value;
-    value.v64 = 0;
 
     fuzzerInvocationCounter++;
 
@@ -130,25 +128,23 @@ Sint64 SDLTest_RandomSint64(void)
     return (Sint64)value.v64;
 }
 
-Sint32 SDLTest_RandomIntegerInRange(Sint32 pMin, Sint32 pMax)
+Sint32 SDLTest_RandomIntegerInRange(Sint32 min, Sint32 max)
 {
-    Sint64 min = pMin;
-    Sint64 max = pMax;
-    Sint64 temp;
-    Sint64 number;
+    fuzzerInvocationCounter++;
 
-    if (pMin > pMax) {
-        temp = min;
-        min = max;
-        max = temp;
-    } else if (pMin == pMax) {
-        return (Sint32)min;
+    if (min == max) {
+        return min;
     }
 
-    number = SDLTest_RandomUint32();
-    /* invocation count increment in preceding call */
+    if (min > max) {
+        Sint32 temp = min;
+        min = max;
+        max = temp;
+    }
 
-    return (Sint32)((number % ((max + 1) - min)) + min);
+    Sint32 range = (max - min);
+    SDL_assert(range < SDL_MAX_SINT32);
+    return min + SDL_rand(range + 1);
 }
 
 /**
@@ -408,33 +404,42 @@ Sint64 SDLTest_RandomSint64BoundaryValue(Sint64 boundary1, Sint64 boundary2, SDL
 
 float SDLTest_RandomUnitFloat(void)
 {
-    return SDLTest_RandomUint32() / (float)UINT_MAX;
+    return SDL_randf();
 }
 
 float SDLTest_RandomFloat(void)
 {
-    return (float)(SDLTest_RandomUnitDouble() * 2.0 * (double)FLT_MAX - (double)(FLT_MAX));
-}
+    union
+    {
+        float f;
+        Uint32 v32;
+    } value;
 
-double
-SDLTest_RandomUnitDouble(void)
-{
-    return (double)(SDLTest_RandomUint64() >> 11) * (1.0 / 9007199254740992.0);
-}
-
-double
-SDLTest_RandomDouble(void)
-{
-    double r = 0.0;
-    double s = 1.0;
     do {
-        s /= UINT_MAX + 1.0;
-        r += (double)SDLTest_RandomSint32() * s;
-    } while (s > DBL_EPSILON);
+        value.v32 = SDLTest_RandomUint32();
+    } while (SDL_isnanf(value.f) || SDL_isinff(value.f));
 
-    fuzzerInvocationCounter++;
+    return value.f;
+}
 
-    return r;
+double SDLTest_RandomUnitDouble(void)
+{
+    return (double)(SDLTest_RandomUint64() >> (64-53)) * 0x1.0p-53;
+}
+
+double SDLTest_RandomDouble(void)
+{
+    union
+    {
+        double d;
+        Uint64 v64;
+    } value;
+
+    do {
+        value.v64 = SDLTest_RandomUint64();
+    } while (SDL_isnan(value.d) || SDL_isinf(value.d));
+
+    return value.d;
 }
 
 char *SDLTest_RandomAsciiString(void)

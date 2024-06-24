@@ -987,6 +987,7 @@
 #define SDL_qsort SDL_qsort_REAL
 #define SDL_qsort_r SDL_qsort_r_REAL
 #define SDL_rand SDL_rand_REAL
+#define SDL_rand_bits SDL_rand_bits_REAL
 #define SDL_rand_bits_r SDL_rand_bits_r_REAL
 #define SDL_rand_r SDL_rand_r_REAL
 #define SDL_randf SDL_randf_REAL

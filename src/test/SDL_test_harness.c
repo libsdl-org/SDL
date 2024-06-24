@@ -81,9 +81,12 @@ char *SDLTest_GenerateRunSeed(const int length)
 
     /* Generate a random string of alphanumeric characters */
     for (counter = 0; counter < length; counter++) {
-        char ch = (char)(SDL_rand_r(&randomContext, (91 - 48) + 1) + 48);
-        if (ch >= 58 && ch <= 64) {
-            ch = 65;
+        char ch;
+        int v = SDL_rand_r(&randomContext, 10 + 26);
+        if (v < 10) {
+            ch = (char)('0' + v);
+        } else {
+            ch = (char)('A' + v - 10);
         }
         seed[counter] = ch;
     }
