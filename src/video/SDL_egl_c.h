@@ -68,6 +68,7 @@ typedef struct SDL_EGL_VideoData
     EGLDisplay egl_display;
     EGLConfig egl_config;
     int egl_swapinterval;
+    int egl_swap_behavior_preserved_bit;
     int egl_surfacetype;
     int egl_version_major, egl_version_minor;
     EGLint egl_required_visual_id;

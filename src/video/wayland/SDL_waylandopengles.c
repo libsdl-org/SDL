@@ -41,6 +41,8 @@ int Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
     ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
 
+    _this->egl_data->egl_swap_behavior_preserved_bit = 1;
+
     Wayland_PumpEvents(_this);
     WAYLAND_wl_display_flush(data->display);
 

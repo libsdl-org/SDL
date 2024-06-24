@@ -816,6 +816,12 @@ static int SDL_EGL_PrivateChooseConfig(SDL_VideoDevice *_this, SDL_bool set_conf
         attribs[i++] = _this->egl_data->egl_surfacetype;
     }
 
+#ifdef EGL_SWAP_BEHAVIOR_PRESERVED_BIT
+    if (_this->egl_data->egl_swap_behavior_preserved_bit) {
+        attribs[i++] = EGL_SWAP_BEHAVIOR_PRESERVED_BIT;
+    }
+#endif
+
     attribs[i++] = EGL_NONE;
 
     SDL_assert(i < SDL_arraysize(attribs));
