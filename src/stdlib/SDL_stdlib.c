@@ -272,6 +272,46 @@ float SDL_fmodf(float x, float y)
 #endif
 }
 
+SDL_bool SDL_isinf(double x)
+{
+#ifdef HAVE_ISINF
+    return isinf(x);
+#else
+    return SDL_uclibc_isinf(x);
+#endif
+}
+
+SDL_bool SDL_isinff(float x)
+{
+#ifdef HAVE_ISINF_FLOAT_MACRO
+    return isinf(x);
+#elif defined(HAVE_ISINFF)
+    return isinff(x);
+#else
+    return SDL_uclibc_isinff(x);
+#endif
+}
+
+SDL_bool SDL_isnan(double x)
+{
+#ifdef HAVE_ISNAN
+    return isnan(x);
+#else
+    return SDL_uclibc_isnan(x);
+#endif
+}
+
+SDL_bool SDL_isnanf(float x)
+{
+#ifdef HAVE_ISNAN_FLOAT_MACRO
+    return isnan(x);
+#elif defined(HAVE_ISNANF)
+    return isnanf(x);
+#else
+    return SDL_uclibc_isnanf(x);
+#endif
+}
+
 double SDL_log(double x)
 {
 #ifdef HAVE_LOG

@@ -2067,6 +2067,62 @@ extern SDL_DECLSPEC double SDLCALL SDL_fmod(double x, double y);
 extern SDL_DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
 
 /**
+ * Return whether the value is infinity.
+ *
+ * \param x double-precision floating point value.
+ * \returns non-zero if the value is infinity, 0 otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_isinff
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_isinf(double x);
+
+/**
+ * Return whether the value is infinity.
+ *
+ * \param x floating point value.
+ * \returns non-zero if the value is infinity, 0 otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_isinf
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_isinff(float x);
+
+/**
+ * Return whether the value is NaN.
+ *
+ * \param x double-precision floating point value.
+ * \returns non-zero if the value is NaN, 0 otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_isnanf
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_isnan(double x);
+
+/**
+ * Return whether the value is NaN.
+ *
+ * \param x floating point value.
+ * \returns non-zero if the value is NaN, 0 otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_isnan
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_isnanf(float x);
+
+/**
  * Compute the natural logarithm of `x`.
  *
  * Domain: `0 < x <= INF`

@@ -930,7 +930,11 @@ SDL3_0.0.0 {
     SDL_iscntrl;
     SDL_isdigit;
     SDL_isgraph;
+    SDL_isinf;
+    SDL_isinff;
     SDL_islower;
+    SDL_isnan;
+    SDL_isnanf;
     SDL_isprint;
     SDL_ispunct;
     SDL_isspace;

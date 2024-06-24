@@ -955,7 +955,11 @@
 #define SDL_iscntrl SDL_iscntrl_REAL
 #define SDL_isdigit SDL_isdigit_REAL
 #define SDL_isgraph SDL_isgraph_REAL
+#define SDL_isinf SDL_isinf_REAL
+#define SDL_isinff SDL_isinff_REAL
 #define SDL_islower SDL_islower_REAL
+#define SDL_isnan SDL_isnan_REAL
+#define SDL_isnanf SDL_isnanf_REAL
 #define SDL_isprint SDL_isprint_REAL
 #define SDL_ispunct SDL_ispunct_REAL
 #define SDL_isspace SDL_isspace_REAL
