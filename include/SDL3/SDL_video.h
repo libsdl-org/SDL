@@ -384,7 +384,7 @@ extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
 /**
  * Get a list of currently connected displays.
  *
- * \param count a pointer filled in with the number of displays returned.
+ * \param count a pointer filled in with the number of displays returned, may be NULL.
  * \returns a 0 terminated array of display instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.
@@ -782,6 +782,18 @@ extern SDL_DECLSPEC void *SDLCALL SDL_GetWindowICCProfile(SDL_Window *window, si
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
+
+/**
+ * Get a list of valid windows.
+ *
+ * \param count a pointer filled in with the number of windows returned, may be NULL.
+ * \returns a 0 terminated array of window pointers which should be freed
+ *          with SDL_free(), or NULL on error; call SDL_GetError() for more
+ *          details.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC SDL_Window **SDLCALL SDL_GetWindows(int *count);
 
 /**
  * Create a window with the specified dimensions and flags.

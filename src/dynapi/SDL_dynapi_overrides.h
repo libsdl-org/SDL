@@ -505,6 +505,7 @@
 #define SDL_GetWindowSurface SDL_GetWindowSurface_REAL
 #define SDL_GetWindowSurfaceVSync SDL_GetWindowSurfaceVSync_REAL
 #define SDL_GetWindowTitle SDL_GetWindowTitle_REAL
+#define SDL_GetWindows SDL_GetWindows_REAL
 #define SDL_GlobDirectory SDL_GlobDirectory_REAL
 #define SDL_GlobStorageDirectory SDL_GlobStorageDirectory_REAL
 #define SDL_HapticEffectSupported SDL_HapticEffectSupported_REAL

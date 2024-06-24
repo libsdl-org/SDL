@@ -1999,6 +1999,44 @@ void SDL_ToggleDragAndDropSupport(void)
     }
 }
 
+SDL_Window **SDLCALL SDL_GetWindows(int *count)
+{
+    if (count) {
+        *count = 0;
+    }
+
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return NULL;
+    }
+
+    SDL_Window *window;
+    int num_added = 0;
+    int num_windows = 0;
+    for (window = _this->windows; window; window = window->next) {
+        ++num_windows;
+    }
+
+    SDL_Window **windows = SDL_malloc((num_windows + 1) * sizeof(*windows));
+    if (!windows) {
+        return NULL;
+    }
+
+    for (window = _this->windows; window; window = window->next) {
+        windows[num_added++] = window;
+        if (num_added == num_windows) {
+            // Race condition? Multi-threading not supported, ignore it
+            break;
+        }
+    }
+    windows[num_added] = NULL;
+
+    if (count) {
+        *count = num_added;
+    }
+    return windows;
+}
+
 static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)
 {
     if (!SDL_WINDOW_IS_POPUP(window)) {
@@ -3955,7 +3993,7 @@ SDL_bool SDL_ScreenSaverEnabled(void)
 int SDL_EnableScreenSaver(void)
 {
     if (!_this) {
-        return 0;
+        return SDL_UninitializedVideo();
     }
     if (!_this->suspend_screensaver) {
         return 0;
@@ -3971,7 +4009,7 @@ int SDL_EnableScreenSaver(void)
 int SDL_DisableScreenSaver(void)
 {
     if (!_this) {
-        return 0;
+        return SDL_UninitializedVideo();
     }
     if (_this->suspend_screensaver) {
         return 0;

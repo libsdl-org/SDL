@@ -480,6 +480,7 @@ SDL3_0.0.0 {
     SDL_GetWindowSurface;
     SDL_GetWindowSurfaceVSync;
     SDL_GetWindowTitle;
+    SDL_GetWindows;
     SDL_GlobDirectory;
     SDL_GlobStorageDirectory;
     SDL_HapticEffectSupported;
