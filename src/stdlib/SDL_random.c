@@ -52,6 +52,15 @@ float SDL_randf(void)
     return SDL_randf_r(&SDL_rand_state);
 }
 
+Uint32 SDL_rand_bits(void)
+{
+    if (!SDL_rand_initialized) {
+        SDL_srand(0);
+    }
+
+    return SDL_rand_bits_r(&SDL_rand_state);
+}
+
 Uint32 SDL_rand_bits_r(Uint64 *state)
 {
     if (!state) {

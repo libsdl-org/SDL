@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
         test_sort("reverse sorted", nums, arraylen);
 
         for (i = 0; i < arraylen; i++) {
-            nums[i] = SDL_rand_r(&seed, SDL_MAX_SINT32);
+            nums[i] = SDL_rand_r(&seed, 1000000);
         }
         test_sort("random sorted", nums, arraylen);
     }

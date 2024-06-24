@@ -1274,6 +1274,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STR
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_rand
+ * \sa SDL_rand_bits
  * \sa SDL_randf
  */
 extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
@@ -1287,6 +1288,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
  *
  * Example: to simulate a d6 use `SDL_rand(6) + 1` The +1 converts 0..5 to
  * 1..6
+ *
+ * If you want to generate a pseudo-random number in the full range of Sint32, you should use: (Sint32)SDL_rand_bits()
  *
  * If you want reproducible output, be sure to initialize with SDL_srand()
  * first.
@@ -1333,6 +1336,29 @@ extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand(Sint32 n);
 extern SDL_DECLSPEC float SDLCALL SDL_randf(void);
 
 /**
+ * Generate 32 pseudo-random bits.
+ *
+ * You likely want to use SDL_rand() to get a psuedo-random number instead.
+ *
+ * There are no guarantees as to the quality of the random sequence produced,
+ * and this should not be used for security (cryptography, passwords) or where
+ * money is on the line (loot-boxes, casinos). There are many random number
+ * libraries available with different characteristics and you should pick one
+ * of those to meet any serious needs.
+ *
+ * \returns a random value in the range of [0-SDL_MAX_UINT32].
+ *
+ * \threadsafety All calls should be made from a single thread
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_rand
+ * \sa SDL_randf
+ * \sa SDL_srand
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);
+
+/**
  * Generate a pseudo-random number less than n for positive n
  *
  * The method used is faster and of better quality than `rand() % n`. Odds are
@@ -1341,6 +1367,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf(void);
  *
  * Example: to simulate a d6 use `SDL_rand_r(state, 6) + 1` The +1 converts 0..5 to
  * 1..6
+ *
+ * If you want to generate a pseudo-random number in the full range of Sint32, you should use: (Sint32)SDL_rand_bits_r(state)
  *
  * There are no guarantees as to the quality of the random sequence produced,
  * and this should not be used for security (cryptography, passwords) or where
@@ -1390,7 +1418,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf_r(Uint64 *state);
 /**
  * Generate 32 pseudo-random bits.
  *
- * You likely want to use SDL_rand_r() to get a psuedo-randum number instead.
+ * You likely want to use SDL_rand_r() to get a psuedo-random number instead.
  *
  * There are no guarantees as to the quality of the random sequence produced,
  * and this should not be used for security (cryptography, passwords) or where
