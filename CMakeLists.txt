@@ -3176,10 +3176,6 @@ if(SDL_STATIC AND SDL_SHARED AND NOT sdl_static_libname STREQUAL "SDL2")
   message(STATUS "\"pkg-config --static --libs sdl2\" will return invalid information")
 endif()
 
-set(SDL2_CONFIG_INTERPRETER "/bin/sh")
-if(SOLARIS)
-  set(SDL2_CONFIG_INTERPRETER "/bin/bash")
-endif()
 # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
 # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
 
