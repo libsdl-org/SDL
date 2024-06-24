@@ -1289,7 +1289,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_srand(Uint64 seed);
  * Example: to simulate a d6 use `SDL_rand(6) + 1` The +1 converts 0..5 to
  * 1..6
  *
- * If you want to generate a pseudo-random number in the full range of Sint32, you should use: (Sint32)SDL_rand_bits()
+ * If you want to generate a pseudo-random number in the full range of Sint32,
+ * you should use: (Sint32)SDL_rand_bits()
  *
  * If you want reproducible output, be sure to initialize with SDL_srand()
  * first.
@@ -1365,10 +1366,11 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);
  * roughly 99.9% even for n = 1 million. Evenness is better for smaller n, and
  * much worse as n gets bigger.
  *
- * Example: to simulate a d6 use `SDL_rand_r(state, 6) + 1` The +1 converts 0..5 to
- * 1..6
+ * Example: to simulate a d6 use `SDL_rand_r(state, 6) + 1` The +1 converts
+ * 0..5 to 1..6
  *
- * If you want to generate a pseudo-random number in the full range of Sint32, you should use: (Sint32)SDL_rand_bits_r(state)
+ * If you want to generate a pseudo-random number in the full range of Sint32,
+ * you should use: (Sint32)SDL_rand_bits_r(state)
  *
  * There are no guarantees as to the quality of the random sequence produced,
  * and this should not be used for security (cryptography, passwords) or where
@@ -1376,11 +1378,13 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_rand_bits(void);
  * libraries available with different characteristics and you should pick one
  * of those to meet any serious needs.
  *
- * \param state a pointer to the current random number state, this may not be NULL.
+ * \param state a pointer to the current random number state, this may not be
+ *              NULL.
  * \param n the number of possible outcomes. n must be positive.
  * \returns a random value in the range of [0 .. n-1].
  *
- * \threadsafety This function is thread-safe, as long as the state pointer isn't shared between threads.
+ * \threadsafety This function is thread-safe, as long as the state pointer
+ *               isn't shared between threads.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1402,10 +1406,12 @@ extern SDL_DECLSPEC Sint32 SDLCALL SDL_rand_r(Uint64 *state, Sint32 n);
  * libraries available with different characteristics and you should pick one
  * of those to meet any serious needs.
  *
- * \param state a pointer to the current random number state, this may not be NULL.
+ * \param state a pointer to the current random number state, this may not be
+ *              NULL.
  * \returns a random value in the range of [0.0, 1.0).
  *
- * \threadsafety This function is thread-safe, as long as the state pointer isn't shared between threads.
+ * \threadsafety This function is thread-safe, as long as the state pointer
+ *               isn't shared between threads.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1426,10 +1432,12 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf_r(Uint64 *state);
  * libraries available with different characteristics and you should pick one
  * of those to meet any serious needs.
  *
- * \param state a pointer to the current random number state, this may not be NULL.
+ * \param state a pointer to the current random number state, this may not be
+ *              NULL.
  * \returns a random value in the range of [0-SDL_MAX_UINT32].
  *
- * \threadsafety This function is thread-safe, as long as the state pointer isn't shared between threads.
+ * \threadsafety This function is thread-safe, as long as the state pointer
+ *               isn't shared between threads.
  *
  * \since This function is available since SDL 3.0.0.
  *
