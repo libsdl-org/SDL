@@ -62,7 +62,7 @@ static void UpdateTextWindowInputRect(SDL_WindowID id)
 
             rect.x = (int)TEXT_WINDOW_OFFSET_X;
             if (current_line) {
-                rect.x += SDL_utf8strlen(current_line) * FONT_CHARACTER_SIZE;
+                rect.x += (int)SDL_utf8strlen(current_line) * FONT_CHARACTER_SIZE;
             }
             rect.y = (int)TEXT_WINDOW_OFFSET_Y + current * FONT_LINE_HEIGHT;
 #if 1
@@ -280,7 +280,7 @@ static void DrawCursor(int i)
     }
     rect.y = TEXT_WINDOW_OFFSET_Y + current * FONT_LINE_HEIGHT;
     rect.w = FONT_CHARACTER_SIZE * 0.75f;
-    rect.h = FONT_CHARACTER_SIZE;
+    rect.h = (float)FONT_CHARACTER_SIZE;
 
     SDL_SetRenderDrawColor(state->renderers[i], 0xAA, 0xAA, 0xAA, 255);
     SDL_RenderFillRect(state->renderers[i], &rect);
