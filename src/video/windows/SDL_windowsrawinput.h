@@ -25,5 +25,6 @@
 
 extern int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, SDL_bool enabled);
 extern int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, SDL_bool enabled);
+extern int WIN_RefreshRawInputEnabled(SDL_VideoDevice *_this);
 
 #endif /* SDL_windowsrawinput_h_ */

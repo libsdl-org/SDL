@@ -1999,6 +1999,13 @@ void SDL_ToggleDragAndDropSupport(void)
     }
 }
 
+void SDL_UpdateRawMouseMotionEnabled(void)
+{
+    if (_this && _this->RefreshRawInput) {
+        _this->RefreshRawInput(_this);
+    }
+}
+
 SDL_Window **SDLCALL SDL_GetWindows(int *count)
 {
     if (count) {

@@ -362,6 +362,9 @@ struct SDL_VideoDevice
     /* Display the system-level window menu */
     void (*ShowWindowSystemMenu)(SDL_Window *window, int x, int y);
 
+    /* Re-synchronize platform raw input subscription */
+    int (*RefreshRawInput)(SDL_VideoDevice *_this);
+
     /* * * */
     /* Data common to all drivers */
     SDL_ThreadID thread;
@@ -557,5 +560,6 @@ extern SDL_Window *SDL_GetToplevelForKeyboardFocus(void);
 extern SDL_bool SDL_ShouldAllowTopmost(void);
 
 extern void SDL_ToggleDragAndDropSupport(void);
+extern void SDL_UpdateRawMouseMotionEnabled(void);
 
 #endif /* SDL_sysvideo_h_ */

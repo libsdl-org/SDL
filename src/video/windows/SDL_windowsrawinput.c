@@ -214,6 +214,11 @@ int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
     return WIN_UpdateRawInputEnabled(_this);
 }
 
+int WIN_RefreshRawInputEnabled(SDL_VideoDevice *_this)
+{
+    return WIN_UpdateRawInputEnabled(_this);
+}
+
 #else
 
 int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
@@ -222,6 +227,11 @@ int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
 }
 
 int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
+int WIN_RefreshRawInputEnabled(SDL_VideoDevice *_this)
 {
     return SDL_Unsupported();
 }

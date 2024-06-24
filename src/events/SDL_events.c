@@ -1486,6 +1486,10 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
         if (type == SDL_EVENT_DROP_FILE || type == SDL_EVENT_DROP_TEXT) {
             SDL_ToggleDragAndDropSupport();
         }
+
+        if (type == SDL_EVENT_MOUSE_RAW_MOTION) {
+            SDL_UpdateRawMouseMotionEnabled();
+        }
     }
 }
 
