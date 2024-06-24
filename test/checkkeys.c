@@ -26,9 +26,13 @@
 #define TEXT_WINDOW_OFFSET_X    2.0f
 #define TEXT_WINDOW_OFFSET_Y    (2.0f + FONT_LINE_HEIGHT)
 
+#define CURSOR_BLINK_INTERVAL_MS    500
+
 static SDLTest_CommonState *state;
 static SDLTest_TextWindow **textwindows;
 static SDL_bool escape_pressed;
+static SDL_bool cursor_visible;
+static Uint64 last_cursor_change;
 static int done;
 
 static SDLTest_TextWindow *GetTextWindowForWindowID(SDL_WindowID id)
@@ -264,9 +268,28 @@ static void CountKeysDown(void)
     SDL_Log("Keys down: %d\n", count);
 }
 
+static void DrawCursor(int i)
+{
+    SDL_FRect rect;
+    int current = textwindows[i]->current;
+    const char *current_line = textwindows[i]->lines[current];
+
+    rect.x = TEXT_WINDOW_OFFSET_X;
+    if (current_line) {
+        rect.x += SDL_utf8strlen(current_line) * FONT_CHARACTER_SIZE;
+    }
+    rect.y = TEXT_WINDOW_OFFSET_Y + current * FONT_LINE_HEIGHT;
+    rect.w = FONT_CHARACTER_SIZE * 0.75f;
+    rect.h = FONT_CHARACTER_SIZE;
+
+    SDL_SetRenderDrawColor(state->renderers[i], 0xAA, 0xAA, 0xAA, 255);
+    SDL_RenderFillRect(state->renderers[i], &rect);
+}
+
 static void loop(void)
 {
     SDL_Event event;
+    Uint64 now;
     int i;
 
     while (SDL_PollEvent(&event)) {
@@ -344,15 +367,28 @@ static void loop(void)
         }
     }
 
+    now = SDL_GetTicks();
     for (i = 0; i < state->num_windows; i++) {
         char caption[1024];
 
+        /* Clear the window */
         SDL_SetRenderDrawColor(state->renderers[i], 0, 0, 0, 255);
         SDL_RenderClear(state->renderers[i]);
+
+        /* Draw the text */
         SDL_SetRenderDrawColor(state->renderers[i], 255, 255, 255, 255);
         SDL_snprintf(caption, sizeof(caption), "Text input %s (click mouse button to toggle)\n", SDL_TextInputActive(state->windows[i]) ? "enabled" : "disabled");
         SDLTest_DrawString(state->renderers[i], TEXT_WINDOW_OFFSET_X, TEXT_WINDOW_OFFSET_X, caption);
         SDLTest_TextWindowDisplay(textwindows[i], state->renderers[i]);
+
+        /* Draw the cursor */        
+        if ((now - last_cursor_change) >= CURSOR_BLINK_INTERVAL_MS) {
+            cursor_visible = !cursor_visible;
+            last_cursor_change = now;
+        }
+        if (cursor_visible) {
+            DrawCursor(i);
+        }
         SDL_RenderPresent(state->renderers[i]);
     }
 
