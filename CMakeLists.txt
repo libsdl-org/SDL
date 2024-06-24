@@ -1064,7 +1064,7 @@ if(SDL_LIBC)
     _Exit exp expf
     fabs fabsf floor floorf fmod fmodf fopen64 free fseeko fseeko64
     getenv
-    _i64toa index isinf isinff isnan isnanf itoa
+    _i64toa index itoa
     log log10 log10f logf lround lroundf _ltoa
     malloc memcmp memcpy memmove memset modf modff
     pow powf putenv
