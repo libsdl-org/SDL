@@ -125,7 +125,6 @@ struct SDL_VideoData
     XkbDescPtr xkb;
 #endif
     int xkb_event;
-    unsigned int xkb_group;
 
     KeyCode filter_code;
     Time filter_time;
