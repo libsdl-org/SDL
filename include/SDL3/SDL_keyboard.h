@@ -355,7 +355,9 @@ extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
 /**
  * Start accepting Unicode text input events in a window.
  *
- * This function will enable text input (SDL_EVENT_TEXT_INPUT and SDL_EVENT_TEXT_EDITING events) in the specified window. Please use this function paired with SDL_StopTextInput().
+ * This function will enable text input (SDL_EVENT_TEXT_INPUT and
+ * SDL_EVENT_TEXT_EDITING events) in the specified window. Please use this
+ * function paired with SDL_StopTextInput().
  *
  * Text input events are not received by default.
  *
@@ -388,7 +390,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_TextInputActive(SDL_Window *window);
 /**
  * Stop receiving any text input events in a window.
  *
- * If SDL_StartTextInput() showed the screen keyboard, this function will hide it.
+ * If SDL_StartTextInput() showed the screen keyboard, this function will hide
+ * it.
  *
  * \param window the window to disable text input.
  * \returns 0 on success or a negative error code on failure; call
