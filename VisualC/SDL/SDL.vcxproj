@@ -584,6 +584,10 @@
     <ClCompile Include="..\..\src\libm\s_cos.c" />
     <ClCompile Include="..\..\src\libm\s_fabs.c" />
     <ClCompile Include="..\..\src\libm\s_floor.c" />
+    <ClCompile Include="..\..\src\libm\s_isinf.c" />
+    <ClCompile Include="..\..\src\libm\s_isinff.c" />
+    <ClCompile Include="..\..\src\libm\s_isnan.c" />
+    <ClCompile Include="..\..\src\libm\s_isnanf.c" />
     <ClCompile Include="..\..\src\libm\s_modf.c" />
     <ClCompile Include="..\..\src\libm\s_scalbn.c" />
     <ClCompile Include="..\..\src\libm\s_sin.c" />

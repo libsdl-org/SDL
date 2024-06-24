@@ -1096,6 +1096,18 @@
     <ClCompile Include="..\..\src\libm\s_floor.c">
       <Filter>libm</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libm\s_isinf.c">
+      <Filter>libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libm\s_isinff.c">
+      <Filter>libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libm\s_isnan.c">
+      <Filter>libm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libm\s_isnanf.c">
+      <Filter>libm</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libm\s_modf.c">
       <Filter>libm</Filter>
     </ClCompile>
