@@ -23,9 +23,55 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#define TEXT_WINDOW_OFFSET_X    2.0f
+#define TEXT_WINDOW_OFFSET_Y    (2.0f + FONT_LINE_HEIGHT)
+
 static SDLTest_CommonState *state;
-static SDLTest_TextWindow *textwin;
+static SDLTest_TextWindow **textwindows;
+static SDL_bool escape_pressed;
 static int done;
+
+static SDLTest_TextWindow *GetTextWindowForWindowID(SDL_WindowID id)
+{
+    int i;
+
+    for (i = 0; i < state->num_windows; ++i) {
+        if (id == SDL_GetWindowID(state->windows[i])) {
+            return textwindows[i];
+        }
+    }
+    return NULL;
+}
+
+static void UpdateTextWindowInputRect(SDL_WindowID id)
+{
+    int i;
+
+    for (i = 0; i < state->num_windows; ++i) {
+        if (id == SDL_GetWindowID(state->windows[i])) {
+            int w, h;
+            SDL_Rect rect;
+            int current = textwindows[i]->current;
+            const char *current_line = textwindows[i]->lines[current];
+
+            SDL_GetWindowSize(state->windows[i], &w, &h);
+
+            rect.x = (int)TEXT_WINDOW_OFFSET_X;
+            if (current_line) {
+                rect.x += SDL_utf8strlen(current_line) * FONT_CHARACTER_SIZE;
+            }
+            rect.y = (int)TEXT_WINDOW_OFFSET_Y + current * FONT_LINE_HEIGHT;
+#if 1
+            rect.w = FONT_CHARACTER_SIZE;
+#else
+            rect.w = (int)(w - (2 * TEXT_WINDOW_OFFSET_X));
+#endif
+            rect.h = FONT_LINE_HEIGHT;
+            SDL_SetTextInputRect(state->windows[i], &rect);
+            return;
+        }
+    }
+}
 
 static void print_string(char **text, size_t *maxlen, const char *fmt, ...)
 {
@@ -222,8 +268,6 @@ static void loop(void)
 {
     SDL_Event event;
     int i;
-    /* Check for events */
-    /*SDL_WaitEvent(&event); emscripten does not like waiting*/
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -233,13 +277,25 @@ static void loop(void)
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 switch (event.key.key) {
                 case SDLK_BACKSPACE:
-                    SDLTest_TextWindowAddText(textwin, "\b");
+                    SDLTest_TextWindowAddText(GetTextWindowForWindowID(event.key.windowID), "\b");
+                    UpdateTextWindowInputRect(event.key.windowID);
                     break;
                 case SDLK_RETURN:
-                    SDLTest_TextWindowAddText(textwin, "\n");
+                    SDLTest_TextWindowAddText(GetTextWindowForWindowID(event.key.windowID), "\n");
+                    UpdateTextWindowInputRect(event.key.windowID);
                     break;
                 default:
                     break;
+                }
+                if (event.key.key == SDLK_ESCAPE) {
+                    /* Pressing escape twice will stop the application */
+                    if (escape_pressed) {
+                        done = 1;
+                    } else {
+                        escape_pressed = SDL_TRUE;
+                    }
+                } else {
+                    escape_pressed = SDL_TRUE;
                 }
             }
             CountKeysDown();
@@ -249,16 +305,17 @@ static void loop(void)
             break;
         case SDL_EVENT_TEXT_INPUT:
             PrintText("INPUT", event.text.text);
-            SDLTest_TextWindowAddText(textwin, "%s", event.text.text);
+            SDLTest_TextWindowAddText(GetTextWindowForWindowID(event.text.windowID), "%s", event.text.text);
+            UpdateTextWindowInputRect(event.text.windowID);
             break;
         case SDL_EVENT_FINGER_DOWN:
         {
             SDL_Window *window = SDL_GetWindowFromID(event.tfinger.windowID);
             if (SDL_TextInputActive(window)) {
-                SDL_Log("Stopping text input\n");
+                SDL_Log("Stopping text input for window %" SDL_PRIu32 "\n", event.tfinger.windowID);
                 SDL_StopTextInput(window);
             } else {
-                SDL_Log("Starting text input\n");
+                SDL_Log("Starting text input for window %" SDL_PRIu32 "\n", event.tfinger.windowID);
                 SDL_StartTextInput(window);
             }
             break;
@@ -266,17 +323,12 @@ static void loop(void)
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
         {
             SDL_Window *window = SDL_GetWindowFromID(event.button.windowID);
-            /* Left button quits the app, other buttons toggles text input */
-            if (event.button.button == SDL_BUTTON_LEFT) {
-                done = 1;
+            if (SDL_TextInputActive(window)) {
+                SDL_Log("Stopping text input for window %" SDL_PRIu32 "\n", event.button.windowID);
+                SDL_StopTextInput(window);
             } else {
-                if (SDL_TextInputActive(window)) {
-                    SDL_Log("Stopping text input\n");
-                    SDL_StopTextInput(window);
-                } else {
-                    SDL_Log("Starting text input\n");
-                    SDL_StartTextInput(window);
-                }
+                SDL_Log("Starting text input for window %" SDL_PRIu32 "\n", event.button.windowID);
+                SDL_StartTextInput(window);
             }
             break;
         }
@@ -293,10 +345,14 @@ static void loop(void)
     }
 
     for (i = 0; i < state->num_windows; i++) {
+        char caption[1024];
+
         SDL_SetRenderDrawColor(state->renderers[i], 0, 0, 0, 255);
         SDL_RenderClear(state->renderers[i]);
         SDL_SetRenderDrawColor(state->renderers[i], 255, 255, 255, 255);
-        SDLTest_TextWindowDisplay(textwin, state->renderers[i]);
+        SDL_snprintf(caption, sizeof(caption), "Text input %s (click mouse button to toggle)\n", SDL_TextInputActive(state->windows[i]) ? "enabled" : "disabled");
+        SDLTest_DrawString(state->renderers[i], TEXT_WINDOW_OFFSET_X, TEXT_WINDOW_OFFSET_X, caption);
+        SDLTest_TextWindowDisplay(textwindows[i], state->renderers[i]);
         SDL_RenderPresent(state->renderers[i]);
     }
 
@@ -312,8 +368,7 @@ static void loop(void)
 
 int main(int argc, char *argv[])
 {
-    int w, h;
-    SDL_Rect input_rect;
+    int i;
 
     SDL_SetHint(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1");
 
@@ -341,12 +396,26 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_GetWindowSize(state->windows[0], &w, &h);
-    textwin = SDLTest_TextWindowCreate(0.f, 0.f, (float)w, (float)h);
+    textwindows = (SDLTest_TextWindow **)SDL_malloc(state->num_windows * sizeof(*textwindows));
+    if (!textwindows) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't allocate text windows: %s\n", SDL_GetError());
+        goto done;
+    }
+
+    for (i = 0; i < state->num_windows; ++i) {
+        int w, h;
+        SDL_FRect rect;
+
+        SDL_GetWindowSize(state->windows[i], &w, &h);
+        rect.x = TEXT_WINDOW_OFFSET_X;
+        rect.y = TEXT_WINDOW_OFFSET_Y;
+        rect.w = w - (2 * TEXT_WINDOW_OFFSET_X);
+        rect.h = h - TEXT_WINDOW_OFFSET_Y;
+        textwindows[i] = SDLTest_TextWindowCreate(rect.x, rect.y, rect.w, rect.h);
+    }
 
 #ifdef SDL_PLATFORM_IOS
     {
-        int i;
         /* Creating the context creates the view, which we need to show keyboard */
         for (i = 0; i < state->num_windows; i++) {
             SDL_GL_CreateContext(state->windows[i]);
@@ -357,14 +426,11 @@ int main(int argc, char *argv[])
     /* Enable showing IME candidates */
     SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 
-    /* Set an input rectangle in the center of the window */
-    input_rect.x = w / 4;
-    input_rect.y = h / 4;
-    input_rect.w = w / 2;
-    input_rect.h = h / 2;
-    SDL_SetTextInputRect(state->windows[0], &input_rect);
+    for (i = 0; i < state->num_windows; ++i) {
+        UpdateTextWindowInputRect(SDL_GetWindowID(state->windows[i]));
 
-    SDL_StartTextInput(state->windows[0]);
+        SDL_StartTextInput(state->windows[i]);
+    }
 
     /* Print initial state */
     SDL_PumpEvents();
@@ -382,7 +448,11 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    SDLTest_TextWindowDestroy(textwin);
+done:
+    for (i = 0; i < state->num_windows; ++i) {
+        SDLTest_TextWindowDestroy(textwindows[i]);
+    }
+    SDL_free(textwindows);
     SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
     return 0;
