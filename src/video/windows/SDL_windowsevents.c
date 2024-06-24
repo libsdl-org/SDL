@@ -724,8 +724,11 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
         }
         code = windows_scancode_table[index];
     }
-    if (state && !SDL_GetKeyboardFocus()) {
-        return;
+    if (state) {
+        SDL_Window *focus = SDL_GetKeyboardFocus();
+        if (!focus || focus->text_input_active) {
+            return;
+        }
     }
 
     SDL_SendKeyboardKey(timestamp, keyboardID, rawcode, code, state);
@@ -1244,7 +1247,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
         }
 
-        if (virtual_key || !data->videodata->raw_keyboard_enabled) {
+        if (virtual_key || !data->videodata->raw_keyboard_enabled || data->window->text_input_active) {
             SDL_SendKeyboardKey(WIN_GetEventTimestamp(), SDL_GLOBAL_KEYBOARD_ID, rawcode, code, SDL_PRESSED);
         }
     }
@@ -1265,7 +1268,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam, &rawcode, &virtual_key);
         const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
-        if (virtual_key || !data->videodata->raw_keyboard_enabled) {
+        if (virtual_key || !data->videodata->raw_keyboard_enabled || data->window->text_input_active) {
             if (code == SDL_SCANCODE_PRINTSCREEN &&
                 keyboardState[code] == SDL_RELEASED) {
                 SDL_SendKeyboardKey(WIN_GetEventTimestamp(), SDL_GLOBAL_KEYBOARD_ID, rawcode, code, SDL_PRESSED);
