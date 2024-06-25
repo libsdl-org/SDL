@@ -105,14 +105,14 @@
 /* Drivers */
 
 static const SDL_GpuDriver *backends[] = {
+#if SDL_GPU_METAL
+    &MetalDriver,
+#endif
 #if SDL_GPU_VULKAN
     &VulkanDriver,
 #endif
 #if SDL_GPU_D3D11
     &D3D11Driver,
-#endif
-#if SDL_GPU_METAL
-    &MetalDriver,
 #endif
     NULL
 };
