@@ -346,17 +346,17 @@ static void loop(void)
             break;
         }
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        {
-            SDL_Window *window = SDL_GetWindowFromID(event.button.windowID);
-            if (SDL_TextInputActive(window)) {
-                SDL_Log("Stopping text input for window %" SDL_PRIu32 "\n", event.button.windowID);
-                SDL_StopTextInput(window);
-            } else {
-                SDL_Log("Starting text input for window %" SDL_PRIu32 "\n", event.button.windowID);
-                SDL_StartTextInput(window);
+            if (event.button.button == SDL_BUTTON_RIGHT) {
+                SDL_Window *window = SDL_GetWindowFromID(event.button.windowID);
+                if (SDL_TextInputActive(window)) {
+                    SDL_Log("Stopping text input for window %" SDL_PRIu32 "\n", event.button.windowID);
+                    SDL_StopTextInput(window);
+                } else {
+                    SDL_Log("Starting text input for window %" SDL_PRIu32 "\n", event.button.windowID);
+                    SDL_StartTextInput(window);
+                }
             }
             break;
-        }
         case SDL_EVENT_KEYMAP_CHANGED:
             SDL_Log("Keymap changed!\n");
             PrintKeymap();
@@ -379,7 +379,7 @@ static void loop(void)
 
         /* Draw the text */
         SDL_SetRenderDrawColor(state->renderers[i], 255, 255, 255, 255);
-        SDL_snprintf(caption, sizeof(caption), "Text input %s (click mouse button to toggle)\n", SDL_TextInputActive(state->windows[i]) ? "enabled" : "disabled");
+        SDL_snprintf(caption, sizeof(caption), "Text input %s (click right mouse button to toggle)\n", SDL_TextInputActive(state->windows[i]) ? "enabled" : "disabled");
         SDLTest_DrawString(state->renderers[i], TEXT_WINDOW_OFFSET_X, TEXT_WINDOW_OFFSET_X, caption);
         SDLTest_TextWindowDisplay(textwindows[i], state->renderers[i]);
 
