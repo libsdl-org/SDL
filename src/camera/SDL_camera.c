@@ -1006,22 +1006,27 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
 
         // okay, we have what we think is the best resolution, now we just need the best format that supports it...
         const SDL_PixelFormatEnum wantfmt = spec->format;
-        SDL_PixelFormatEnum bestfmt = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_PixelFormatEnum best_format = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_Colorspace best_colorspace = SDL_COLORSPACE_UNKNOWN;
         for (int i = 0; i < num_specs; i++) {
             const SDL_CameraSpec *thisspec = &device->all_specs[i];
             if ((thisspec->width == closest->width) && (thisspec->height == closest->height)) {
-                if (bestfmt == SDL_PIXELFORMAT_UNKNOWN) {
-                    bestfmt = thisspec->format;  // spec list is sorted by what we consider "best" format, so unless we find an exact match later, first size match is the one!
+                if (best_format == SDL_PIXELFORMAT_UNKNOWN) {
+                    best_format = thisspec->format;  // spec list is sorted by what we consider "best" format, so unless we find an exact match later, first size match is the one!
+                    best_colorspace = thisspec->colorspace;
                 }
                 if (thisspec->format == wantfmt) {
-                    bestfmt = thisspec->format;
+                    best_format = thisspec->format;
+                    best_colorspace = thisspec->colorspace;
                     break;  // exact match, stop looking.
                 }
             }
         }
 
-        SDL_assert(bestfmt != SDL_PIXELFORMAT_UNKNOWN);
-        closest->format = bestfmt;
+        SDL_assert(best_format != SDL_PIXELFORMAT_UNKNOWN);
+        SDL_assert(best_colorspace != SDL_COLORSPACE_UNKNOWN);
+        closest->format = best_format;
+        closest->colorspace = best_colorspace;
 
         // We have a resolution and a format, find the closest framerate...
         const float wantfps = spec->framerate_denominator ? ((float)spec->framerate_numerator / spec->framerate_denominator) : 0.0f;
