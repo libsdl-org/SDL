@@ -155,6 +155,7 @@ typedef enum SDL_EventType
     SDL_EVENT_MOUSE_ADDED,             /**< A new mouse has been inserted into the system */
     SDL_EVENT_MOUSE_REMOVED,           /**< A mouse has been removed */
     SDL_EVENT_MOUSE_RAW_MOTION,        /**< Mouse moved (raw motion deltas) */
+    SDL_EVENT_MOUSE_RAW_BUTTON,        /**< Mouse button signalled (raw button delta) */
 
     /* Joystick events */
     SDL_EVENT_JOYSTICK_AXIS_MOTION  = 0x600, /**< Joystick axis motion */
@@ -421,6 +422,21 @@ typedef struct SDL_MouseButtonEvent
     float x;            /**< X coordinate, relative to window */
     float y;            /**< Y coordinate, relative to window */
 } SDL_MouseButtonEvent;
+
+/**
+ * Mouse raw button event structure (event.rbutton.*)
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_MouseRawButtonEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_MOUSE_RAW_BUTTON */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID, or SDL_PEN_MOUSEID */
+    Uint8 button;       /**< The mouse button index */
+    Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
+} SDL_MouseRawButtonEvent;
 
 /**
  * Mouse wheel event structure (event.wheel.*)
@@ -846,6 +862,7 @@ typedef union SDL_Event
     SDL_MouseMotionEvent motion;            /**< Mouse motion event data */
     SDL_MouseRawMotionEvent rmotion;        /**< Mouse motion event data (raw motion deltas) */
     SDL_MouseButtonEvent button;            /**< Mouse button event data */
+    SDL_MouseRawButtonEvent rbutton;        /**< Mouse button event data (raw button deltas) */
     SDL_MouseWheelEvent wheel;              /**< Mouse wheel event data */
     SDL_JoyDeviceEvent jdevice;             /**< Joystick device change event data */
     SDL_JoyAxisEvent jaxis;                 /**< Joystick axis event data */

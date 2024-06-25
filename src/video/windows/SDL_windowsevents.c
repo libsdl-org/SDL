@@ -523,11 +523,28 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
     Sint32 xraw = (Sint32)rawmouse->lLastX;
     Sint32 yraw = (Sint32)rawmouse->lLastY;
     SDL_bool haveMotion = (xraw || yraw) ? SDL_TRUE : SDL_FALSE;
-    SDL_bool isRelative = ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) ? SDL_TRUE : SDL_FALSE;
+    SDL_bool haveButton = (rawmouse->usButtonFlags) ? SDL_TRUE : SDL_FALSE;
+    SDL_bool isAbsolute = (rawmouse->usFlags & MOUSE_MOVE_ABSOLUTE) ? SDL_TRUE : SDL_FALSE;
     SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)hDevice;
     
-    if (haveMotion && isRelative) {
-        SDL_SendRawMouseMotion(timestamp, mouseID, xraw, yraw);
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_MOTION)) {
+        if (haveMotion && !isAbsolute) {
+            SDL_SendRawMouseMotion(timestamp, mouseID, xraw, yraw);
+        }
+    }
+    
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON)) {
+        if (haveButton) {
+            USHORT flagBits = rawmouse->usButtonFlags;
+            for (Uint8 i = 0; i < 10; ++i) {
+                if (flagBits & 1) {
+                    Uint8 state = (i & 1) ^ 1;
+                    Uint8 button = (i >> 1) + 1;
+                    SDL_SendRawMouseButton(timestamp, mouseID, state, button);
+                }
+                flagBits = flagBits >> 1;
+            }
+        }
     }
 
     if (!data->raw_mouse_enabled) {
@@ -547,7 +564,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
     SDL_WindowData *windowdata = window->driverdata;
 
     if (haveMotion) {
-        if (isRelative) {
+        if (!isAbsolute) {
             SDL_SendMouseMotion(timestamp, window, mouseID, SDL_TRUE, (float)xraw, (float)yraw);
         } else {
             /* This is absolute motion, either using a tablet or mouse over RDP
@@ -623,7 +640,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         }
     }
 
-    if (rawmouse->usButtonFlags) {
+    if (haveButton) {
         static struct {
             USHORT usButtonFlags;
             Uint8 button;

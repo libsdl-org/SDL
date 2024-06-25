@@ -1999,7 +1999,7 @@ void SDL_ToggleDragAndDropSupport(void)
     }
 }
 
-void SDL_UpdateRawMouseMotionEnabled(void)
+void SDL_UpdateRawMouseDataEnabled(void)
 {
     if (_this && _this->RefreshRawInput) {
         _this->RefreshRawInput(_this);

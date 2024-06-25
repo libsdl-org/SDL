@@ -1487,8 +1487,8 @@ void SDL_SetEventEnabled(Uint32 type, SDL_bool enabled)
             SDL_ToggleDragAndDropSupport();
         }
 
-        if (type == SDL_EVENT_MOUSE_RAW_MOTION) {
-            SDL_UpdateRawMouseMotionEnabled();
+        if (type == SDL_EVENT_MOUSE_RAW_MOTION || type == SDL_EVENT_MOUSE_RAW_BUTTON) {
+            SDL_UpdateRawMouseDataEnabled();
         }
     }
 }
@@ -1562,6 +1562,7 @@ int SDL_InitEvents(void)
     }
 
     SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_MOTION, SDL_FALSE);
+    SDL_SetEventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON, SDL_FALSE);
     SDL_InitQuit();
 
     return 0;

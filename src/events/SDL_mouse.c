@@ -587,6 +587,22 @@ int SDL_SendRawMouseMotion(Uint64 timestamp, SDL_MouseID mouseID, Sint32 dx, Sin
     return posted;
 }
 
+int SDL_SendRawMouseButton(Uint64 timestamp, SDL_MouseID mouseID, Uint8 state, Uint8 button)
+{
+    int posted;
+    posted = 0;
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_BUTTON)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_MOUSE_RAW_BUTTON;
+        event.common.timestamp = timestamp;
+        event.rbutton.which = mouseID;
+        event.rbutton.button = button;
+        event.rbutton.state = state;
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+    return posted;
+}
+
 static float CalculateSystemScale(SDL_Mouse *mouse, SDL_Window *window, const float *x, const float *y)
 {
     int i;

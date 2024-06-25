@@ -560,6 +560,6 @@ extern SDL_Window *SDL_GetToplevelForKeyboardFocus(void);
 extern SDL_bool SDL_ShouldAllowTopmost(void);
 
 extern void SDL_ToggleDragAndDropSupport(void);
-extern void SDL_UpdateRawMouseMotionEnabled(void);
+extern void SDL_UpdateRawMouseDataEnabled(void);
 
 #endif /* SDL_sysvideo_h_ */
