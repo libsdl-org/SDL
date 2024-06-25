@@ -352,8 +352,9 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
 {
     SDL_VideoData *viddata = _this->driverdata;
     unsigned w, h;
-    int ret;
-    Uint32 stride, handle;
+    int ret, num_planes = 0;
+    Uint32 format, strides[4] = { 0 }, handles[4] = { 0 }, offsets[4] = { 0 }, flags = 0;
+    uint64_t modifiers[4] = { 0 };
 
     /* Check for an existing framebuffer */
     KMSDRM_FBInfo *fb_info = (KMSDRM_FBInfo *)KMSDRM_gbm_bo_get_user_data(bo);
@@ -372,20 +373,33 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
 
     fb_info->drm_fd = viddata->drm_fd;
 
-    /* Create framebuffer object for the buffer */
+    /* Create framebuffer object for the buffer using the modifiers requested by GBM.
+       Use of the modifiers is necessary on some platforms. */
     w = KMSDRM_gbm_bo_get_width(bo);
     h = KMSDRM_gbm_bo_get_height(bo);
-    stride = KMSDRM_gbm_bo_get_stride(bo);
-    handle = KMSDRM_gbm_bo_get_handle(bo).u32;
-    ret = KMSDRM_drmModeAddFB(viddata->drm_fd, w, h, 24, 32, stride, handle,
-                              &fb_info->fb_id);
+    format = KMSDRM_gbm_bo_get_format(bo);
+
+    modifiers[0] = KMSDRM_gbm_bo_get_modifier(bo);
+    num_planes = KMSDRM_gbm_bo_get_plane_count(bo);
+    for (int i = 0; i < num_planes; i++) {
+        strides[i] = KMSDRM_gbm_bo_get_stride_for_plane(bo, i);
+        handles[i] = KMSDRM_gbm_bo_get_handle(bo).u32;
+        offsets[i] = KMSDRM_gbm_bo_get_offset(bo, i);
+        modifiers[i] = modifiers[0];
+    }
+
+    if (modifiers[0]) {
+        flags = DRM_MODE_FB_MODIFIERS;
+    }
+
+    ret = KMSDRM_drmModeAddFB2WithModifiers(viddata->drm_fd, w, h, format, handles, strides, offsets, modifiers, &fb_info->fb_id, flags);
     if (ret) {
         SDL_free(fb_info);
         return NULL;
     }
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "New DRM FB (%u): %ux%u, stride %u from BO %p",
-                 fb_info->fb_id, w, h, stride, (void *)bo);
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "New DRM FB (%u): %ux%u, from BO %p",
+                 fb_info->fb_id, w, h, (void *)bo);
 
     /* Associate our DRM framebuffer with this buffer object */
     KMSDRM_gbm_bo_set_user_data(bo, fb_info, KMSDRM_FBDestroyCallback);
