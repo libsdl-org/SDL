@@ -317,6 +317,8 @@ typedef struct SDL_KeyboardEvent
 /**
  * Keyboard text editing event structure (event.edit.*)
  *
+ * The start cursor is the position, in UTF-8 characters, where new typing will be inserted into the editing text. The length is the number of UTF-8 characters that will be replaced by new typing.
+ *
  * The text string follows the SDL_GetStringRule.
  *
  * \since This struct is available since SDL 3.0.0.
@@ -328,8 +330,8 @@ typedef struct SDL_TextEditingEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with keyboard focus, if any */
     const char *text;   /**< The editing text */
-    Sint32 start;       /**< The start cursor of selected editing text */
-    Sint32 length;      /**< The length of selected editing text */
+    Sint32 start;       /**< The start cursor of selected editing text, or -1 if not set */
+    Sint32 length;      /**< The length of selected editing text, or -1 if not set */
 } SDL_TextEditingEvent;
 
 /**
