@@ -291,6 +291,7 @@ static void loop(void)
     SDL_Event event;
     Uint64 now;
     int i;
+    char line[1024];
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -324,7 +325,8 @@ static void loop(void)
             CountKeysDown();
             break;
         case SDL_EVENT_TEXT_EDITING:
-            PrintText("EDIT", event.edit.text);
+            SDL_snprintf(line, sizeof(line), "EDIT %" SDL_PRIs32 ":%" SDL_PRIs32, event.edit.start, event.edit.length);
+            PrintText(line, event.edit.text);
             break;
         case SDL_EVENT_TEXT_INPUT:
             PrintText("INPUT", event.text.text);
@@ -381,7 +383,7 @@ static void loop(void)
         SDLTest_DrawString(state->renderers[i], TEXT_WINDOW_OFFSET_X, TEXT_WINDOW_OFFSET_X, caption);
         SDLTest_TextWindowDisplay(textwindows[i], state->renderers[i]);
 
-        /* Draw the cursor */        
+        /* Draw the cursor */
         if ((now - last_cursor_change) >= CURSOR_BLINK_INTERVAL_MS) {
             cursor_visible = !cursor_visible;
             last_cursor_change = now;
