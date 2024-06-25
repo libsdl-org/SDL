@@ -839,6 +839,7 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
 
     videodata->ime_composition[length] = 0;
 
+#if 0 // At least with the Chinese IME, it's possible to move the cursor to the beginning of the selection, see https://github.com/libsdl-org/SDL/issues/9761 for details
     // Get the correct caret position if we've selected a candidate from the candidate window
     if (videodata->ime_cursor == 0 && length > 0) {
         Sint32 start = 0;
@@ -871,6 +872,7 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
 
         videodata->ime_cursor = end;
     }
+#endif // 0
 }
 
 static void IME_SendInputEvent(SDL_VideoData *videodata)
