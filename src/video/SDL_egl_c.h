@@ -69,7 +69,6 @@ typedef struct SDL_EGL_VideoData
     EGLConfig egl_config;
     int egl_swapinterval;
     int egl_swap_behavior_preserved_bit;
-    int egl_surfacetype;
     int egl_version_major, egl_version_minor;
     EGLint egl_required_visual_id;
     SDL_bool is_offscreen; /* whether EGL display was offscreen */

@@ -731,15 +731,18 @@ static int SDL_EGL_PrivateChooseConfig(SDL_VideoDevice *_this, SDL_bool set_conf
 {
     /* 64 seems nice. */
     EGLint attribs[64];
-    EGLint found_configs = 0, value;
+    EGLint found_configs = 0, surface_type_bits, value;
     /* 128 seems even nicer here */
     EGLConfig configs[128];
     SDL_bool has_matching_format = SDL_FALSE;
     int i, j, best_bitdiff = -1, best_truecolor_bitdiff = -1;
     int truecolor_config_idx = -1;
+    SDL_bool try_swap_preserve_bit = _this->egl_data->egl_swap_behavior_preserved_bit;
 
+again:
     /* Get a valid EGL configuration */
     i = 0;
+    surface_type_bits = 0;
     attribs[i++] = EGL_RED_SIZE;
     attribs[i++] = _this->gl_config.red_size;
     attribs[i++] = EGL_GREEN_SIZE;
@@ -788,8 +791,7 @@ static int SDL_EGL_PrivateChooseConfig(SDL_VideoDevice *_this, SDL_bool set_conf
     }
 
     if (_this->egl_data->is_offscreen) {
-        attribs[i++] = EGL_SURFACE_TYPE;
-        attribs[i++] = EGL_PBUFFER_BIT;
+        surface_type_bits |= EGL_PBUFFER_BIT;
     }
 
     attribs[i++] = EGL_RENDERABLE_TYPE;
@@ -811,16 +813,18 @@ static int SDL_EGL_PrivateChooseConfig(SDL_VideoDevice *_this, SDL_bool set_conf
         _this->egl_data->eglBindAPI(EGL_OPENGL_API);
     }
 
-    if (_this->egl_data->egl_surfacetype) {
-        attribs[i++] = EGL_SURFACE_TYPE;
-        attribs[i++] = _this->egl_data->egl_surfacetype;
-    }
-
 #ifdef EGL_SWAP_BEHAVIOR_PRESERVED_BIT
-    if (_this->egl_data->egl_swap_behavior_preserved_bit) {
-        attribs[i++] = EGL_SWAP_BEHAVIOR_PRESERVED_BIT;
+    /* Only available as of EGL 1.4; clear it otherwise */
+    if (try_swap_preserve_bit &&
+        (_this->egl_data->egl_version_major > 1 || (_this->egl_data->egl_version_major == 1 && _this->egl_data->egl_version_minor >= 4))) {
+        surface_type_bits |= EGL_SWAP_BEHAVIOR_PRESERVED_BIT;
     }
 #endif
+
+    if (surface_type_bits) {
+        attribs[i++] = EGL_SURFACE_TYPE;
+        attribs[i++] = surface_type_bits;
+    }
 
     attribs[i++] = EGL_NONE;
 
@@ -831,6 +835,13 @@ static int SDL_EGL_PrivateChooseConfig(SDL_VideoDevice *_this, SDL_bool set_conf
                                          configs, SDL_arraysize(configs),
                                          &found_configs) == EGL_FALSE ||
         found_configs == 0) {
+
+        if (try_swap_preserve_bit) {
+            /* No configs available with the preserve bit set; try again without it. */
+            try_swap_preserve_bit = SDL_FALSE;
+            goto again;
+        }
+
         return -1;
     }
 
