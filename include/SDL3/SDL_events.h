@@ -317,7 +317,9 @@ typedef struct SDL_KeyboardEvent
 /**
  * Keyboard text editing event structure (event.edit.*)
  *
- * The start cursor is the position, in UTF-8 characters, where new typing will be inserted into the editing text. The length is the number of UTF-8 characters that will be replaced by new typing.
+ * The start cursor is the position, in UTF-8 characters, where new typing
+ * will be inserted into the editing text. The length is the number of UTF-8
+ * characters that will be replaced by new typing.
  *
  * The text string follows the SDL_GetStringRule.
  *
