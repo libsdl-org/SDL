@@ -365,7 +365,7 @@ static void UILess_DisableUIUpdates(SDL_VideoData *videodata);
 
 static SDL_bool WIN_ShouldShowNativeUI()
 {
-    return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
+    return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_TRUE);
 }
 
 static int IME_Init(SDL_VideoData *videodata, HWND hwnd)

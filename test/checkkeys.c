@@ -540,9 +540,6 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    /* Enable showing IME candidates */
-    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
-
     for (i = 0; i < state->num_windows; ++i) {
         UpdateTextWindowInputRect(SDL_GetWindowID(state->windows[i]));
 
