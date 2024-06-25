@@ -248,12 +248,12 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         int toplevel_count = 0;
         SDL_Window *n;
         for (n = SDL_GetVideoDevice()->windows; n; n = n->next) {
-            if (!n->parent) {
+            if (!n->parent && !(n->flags & SDL_WINDOW_HIDDEN)) {
                 ++toplevel_count;
             }
         }
 
-        if (toplevel_count == 1) {
+        if (toplevel_count <= 1) {
             if (SDL_GetHintBoolean(SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE, SDL_TRUE)) {
                 SDL_SendQuit(); /* This is the last toplevel window in the list so send the SDL_EVENT_QUIT event */
             }

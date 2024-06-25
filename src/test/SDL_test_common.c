@@ -2095,6 +2095,14 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
             }
         }
         break;
+    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+    {
+        SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
+        if (window) {
+            SDL_HideWindow(window);
+        }
+        break;
+    }
     case SDL_EVENT_KEY_DOWN:
     {
         SDL_bool withControl = !!(event->key.mod & SDL_KMOD_CTRL);
