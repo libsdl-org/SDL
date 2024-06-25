@@ -23,7 +23,7 @@ Given a fullscreen window spanning a 3840x2160 monitor set to 2x display or 200%
 | `SDL_GetWindowDisplayScale()`  | 1.0             | 2.0        | 2.0                  |
 | `SDL_GetWindowPixelDensity()`  | 1.0             | 2.0        | 1.0                  |
 
-Note the fundamental differences between the approachws taken by MacOS and Win32:
+Observe the philosophical difference between the approaches taken by MacOS and Win32:
 - Win32 coordinate system always deals in physical device pixels, high DPI support is achieved by providing an advisory hint for the developer to enlarge drawn objects. Ignoring the advisory scale factor results in graphics appearing tiny. 
 - MacOS coordinate system always deals in physical content sizes, high DPI support is achieved by providing an optional flag for the developer to request finer granularity. Omitting the granularity request results in graphics appearing coarse.
 
