@@ -407,8 +407,11 @@ static void ConfigureWindowGeometry(SDL_Window *window)
      * need to be recalculated if the output size has changed.
      */
     if (window_size_changed) {
-        /* libdecor does this internally on frame commits, so it's only needed for xdg surfaces. */
-        if (data->shell_surface_type != WAYLAND_SURFACE_LIBDECOR && data->shell_surface.xdg.surface) {
+        /* XXX: This is a hack and only set on the xdg-toplevel path when viewports
+         *      aren't supported to avoid a potential protocol violation if a buffer
+         *      with an old size is committed.
+         */
+        if (!data->viewport && data->shell_surface_type == WAYLAND_SURFACE_XDG_TOPLEVEL && data->shell_surface.xdg.surface) {
             xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, data->current.logical_width, data->current.logical_height);
         }
 
@@ -1830,9 +1833,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                                                      &decoration_listener,
                                                      window);
         }
-
-        /* Set the geometry */
-        xdg_surface_set_window_geometry(data->shell_surface.xdg.surface, 0, 0, data->current.logical_width, data->current.logical_height);
     } else {
         /* Nothing to see here, just commit. */
         wl_surface_commit(data->surface);
