@@ -24,6 +24,7 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "../../core/unix/SDL_poll.h"
+#include "../../core/unix/SDL_uri_decode.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_scancode_tables_c.h"
 #include "../../core/linux/SDL_system_theme.h"
@@ -88,8 +89,6 @@ struct SDL_WaylandTouchPoint
 };
 
 static struct wl_list touch_points;
-
-static char *Wayland_URIToLocal(char *uri);
 
 static void touch_add(SDL_TouchID id, wl_fixed_t fx, wl_fixed_t fy, struct wl_surface *surface)
 {
@@ -2060,127 +2059,6 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
     }
 }
 
-/* Decodes URI escape sequences in string buf of len bytes
- * (excluding the terminating NULL byte) in-place. Since
- * URI-encoded characters take three times the space of
- * normal characters, this should not be an issue.
- *
- * Returns the number of decoded bytes that wound up in
- * the buffer, excluding the terminating NULL byte.
- *
- * The buffer is guaranteed to be NULL-terminated but
- * may contain embedded NULL bytes.
- *
- * On error, -1 is returned.
- *
- * FIXME: This was shamelessly copied from SDL_x11events.c
- */
-static int Wayland_URIDecode(char *buf, int len)
-{
-    int ri, wi, di;
-    char decode = '\0';
-    if (!buf || len < 0) {
-        errno = EINVAL;
-        return -1;
-    }
-    if (len == 0) {
-        len = SDL_strlen(buf);
-    }
-    for (ri = 0, wi = 0, di = 0; ri < len && wi < len; ri += 1) {
-        if (di == 0) {
-            /* start decoding */
-            if (buf[ri] == '%') {
-                decode = '\0';
-                di += 1;
-                continue;
-            }
-            /* normal write */
-            buf[wi] = buf[ri];
-            wi += 1;
-            continue;
-        } else if (di == 1 || di == 2) {
-            char off = '\0';
-            char isa = buf[ri] >= 'a' && buf[ri] <= 'f';
-            char isA = buf[ri] >= 'A' && buf[ri] <= 'F';
-            char isn = buf[ri] >= '0' && buf[ri] <= '9';
-            if (!(isa || isA || isn)) {
-                /* not a hexadecimal */
-                int sri;
-                for (sri = ri - di; sri <= ri; sri += 1) {
-                    buf[wi] = buf[sri];
-                    wi += 1;
-                }
-                di = 0;
-                continue;
-            }
-            /* itsy bitsy magicsy */
-            if (isn) {
-                off = 0 - '0';
-            } else if (isa) {
-                off = 10 - 'a';
-            } else if (isA) {
-                off = 10 - 'A';
-            }
-            decode |= (buf[ri] + off) << (2 - di) * 4;
-            if (di == 2) {
-                buf[wi] = decode;
-                wi += 1;
-                di = 0;
-            } else {
-                di += 1;
-            }
-            continue;
-        }
-    }
-    buf[wi] = '\0';
-    return wi;
-}
-
-/* Convert URI to local filename
- * return filename if possible, else NULL
- *
- *  FIXME: This was shamelessly copied from SDL_x11events.c
- */
-static char *Wayland_URIToLocal(char *uri)
-{
-    char *file = NULL;
-    SDL_bool local;
-
-    if (SDL_memcmp(uri, "file:/", 6) == 0) {
-        uri += 6; /* local file? */
-    } else if (SDL_strstr(uri, ":/") != NULL) {
-        return file; /* wrong scheme */
-    }
-
-    local = uri[0] != '/' || (uri[0] != '\0' && uri[1] == '/');
-
-    /* got a hostname? */
-    if (!local && uri[0] == '/' && uri[2] != '/') {
-        char *hostname_end = SDL_strchr(uri + 1, '/');
-        if (hostname_end) {
-            char hostname[257];
-            if (gethostname(hostname, 255) == 0) {
-                hostname[256] = '\0';
-                if (SDL_memcmp(uri + 1, hostname, hostname_end - (uri + 1)) == 0) {
-                    uri = hostname_end + 1;
-                    local = SDL_TRUE;
-                }
-            }
-        }
-    }
-    if (local) {
-        file = uri;
-        /* Convert URI escape sequences to real characters */
-        Wayland_URIDecode(file, 0);
-        if (uri[1] == '/') {
-            file++;
-        } else {
-            file--;
-        }
-    }
-    return file;
-}
-
 static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
 {
     SDL_WaylandDataDevice *data_device = data;
@@ -2226,9 +2104,8 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                 char *saveptr = NULL;
                 char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
                 while (token) {
-                    char *fn = Wayland_URIToLocal(token);
-                    if (fn) {
-                        SDL_SendDropFile(data_device->dnd_window, NULL, fn);
+                    if (SDL_URIToLocal(token, token) >= 0) {
+                        SDL_SendDropFile(data_device->dnd_window, NULL, token);
                     }
                     token = SDL_strtok_r(NULL, "\r\n", &saveptr);
                 }
