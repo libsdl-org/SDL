@@ -1951,6 +1951,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GpuSupportsPresentMode(
  * Claims a window, creating a swapchain structure for it.
  * This must be called before SDL_GpuAcquireSwapchainTexture is called using the window.
  *
+ * This function will fail if the requested present mode or swapchain composition
+ * are unsupported by the device. Check if the parameters are supported via
+ * SDL_GpuSupportsPresentMode / SDL_GpuSupportsSwapchainComposition prior to
+ * calling this function.
+ *
+ * SDL_GPU_PRESENTMODE_VSYNC and SDL_GPU_SWAPCHAINCOMPOSITION_SDR are
+ * always supported.
+ *
  * \param device a GPU context
  * \param window an SDL_Window
  * \param swapchainComposition the desired composition of the swapchain
@@ -1962,6 +1970,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GpuSupportsPresentMode(
  *
  * \sa SDL_GpuAcquireSwapchainTexture
  * \sa SDL_GpuUnclaimWindow
+ * \sa SDL_GpuSupportsPresentMode
+ * \sa SDL_GpuSupportsSwapchainComposition
  */
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GpuClaimWindow(
     SDL_GpuDevice *device,
@@ -1986,12 +1996,23 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuUnclaimWindow(
 /**
  * Changes the swapchain parameters for the given claimed window.
  *
+ * This function will fail if the requested present mode or swapchain composition
+ * are unsupported by the device. Check if the parameters are supported via
+ * SDL_GpuSupportsPresentMode / SDL_GpuSupportsSwapchainComposition prior to
+ * calling this function.
+ *
+ * SDL_GPU_PRESENTMODE_VSYNC and SDL_GPU_SWAPCHAINCOMPOSITION_SDR are
+ * always supported.
+ *
  * \param device a GPU context
  * \param window an SDL_Window that has been claimed
  * \param swapchainComposition the desired composition of the swapchain
  * \param presentMode the desired present mode for the swapchain
  *
  * \since This function is available since SDL 3.x.x
+ *
+ * \sa SDL_GpuSupportsPresentMode
+ * \sa SDL_GpuSupportsSwapchainComposition
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GpuSetSwapchainParameters(
     SDL_GpuDevice *device,
