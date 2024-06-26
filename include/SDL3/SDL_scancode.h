@@ -37,7 +37,7 @@
  * independent of language and keyboard mapping.
  *
  * Values of this type are used to represent keyboard keys, among other places
- * in the `keysym.scancode` field of the SDL_KeyboardEvent structure.
+ * in the `scancode` field of the SDL_KeyboardEvent structure.
  *
  * The values in this enumeration are based on the USB usage page standard:
  * https://usb.org/sites/default/files/hut1_5.pdf
