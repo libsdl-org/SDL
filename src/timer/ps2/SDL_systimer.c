@@ -34,6 +34,8 @@
 static uint64_t start;
 static SDL_bool ticks_started = SDL_FALSE;
 
+static Uint64 BUSCLK_MS = (kBUSCLK / 1000);
+
 void SDL_TicksInit(void)
 {
     if (ticks_started) {
@@ -58,7 +60,7 @@ Uint64 SDL_GetTicks64(void)
     }
 
     now = GetTimerSystemTime();
-    return (Uint64)((now - start) / (kBUSCLK / CLOCKS_PER_SEC));
+    return (Uint64)((now - start) / BUSCLK_MS);
 }
 
 Uint64 SDL_GetPerformanceCounter(void)
