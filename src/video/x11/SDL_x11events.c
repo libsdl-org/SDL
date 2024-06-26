@@ -2024,7 +2024,8 @@ int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     X11_DispatchEvent(_this, &xevent);
 
 #ifdef SDL_USE_IME
-    if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {
+    SDL_Window *keyboard_focus = SDL_GetKeyboardFocus();
+    if (keyboard_focus && SDL_TextInputActive(keyboard_focus)) {
         SDL_IME_PumpEvents();
     }
 #endif
@@ -2084,7 +2085,8 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     }
 
 #ifdef SDL_USE_IME
-    if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {
+    SDL_Window *keyboard_focus = SDL_GetKeyboardFocus();
+    if (keyboard_focus && SDL_TextInputActive(keyboard_focus)) {
         SDL_IME_PumpEvents();
     }
 #endif
