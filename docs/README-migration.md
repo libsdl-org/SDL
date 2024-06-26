@@ -148,13 +148,13 @@ Devices are not opened by an arbitrary string name anymore, but by device instan
 
 Many functions that would accept a device index and an `iscapture` parameter now just take an SDL_AudioDeviceID, as they are unique across all devices, instead of separate indices into playback and recording device lists.
 
-Rather than iterating over audio devices using a device index, there are new functions, SDL_GetAudioOutputDevices() and SDL_GetAudioCaptureDevices(), to get the current list of devices, and new functions to get information about devices from their instance ID:
+Rather than iterating over audio devices using a device index, there are new functions, SDL_GetAudioPlaybackDevices() and SDL_GetAudioRecordingDevices(), to get the current list of devices, and new functions to get information about devices from their instance ID:
 
 ```c
 {
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) == 0) {
         int i, num_devices;
-        SDL_AudioDeviceID *devices = SDL_GetAudioOutputDevices(&num_devices);
+        SDL_AudioDeviceID *devices = SDL_GetAudioPlaybackDevices(&num_devices);
         if (devices) {
             for (i = 0; i < num_devices; ++i) {
                 SDL_AudioDeviceID instance_id = devices[i];
