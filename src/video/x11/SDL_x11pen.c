@@ -376,7 +376,7 @@ static void xinput2_vendor_peninfo(SDL_VideoDevice *_this, const XIDeviceInfo *d
 
     default:
 #if DEBUG_PEN
-        printf("[pen] Pen %d is not from a known vendor\n", pident.deviceid);
+        SDL_Log("[pen] Pen %d is not from a known vendor\n", pident.deviceid);
 #endif
         break;
     }

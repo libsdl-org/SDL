@@ -1274,7 +1274,6 @@
 		4537749212091504002F0F45 /* testshape.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testshape.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		453774A4120915E3002F0F45 /* testshape.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testshape.c; sourceTree = "<group>"; };
 		66E88E8A203B778F0004D44E /* testyuv_cvt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testyuv_cvt.c; sourceTree = "<group>"; };
-		A1A859442BC72FC20045DD6C /* testautomation_pen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_pen.c; sourceTree = "<group>"; };
 		A1A859482BC72FC20045DD6C /* testautomation_properties.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_properties.c; sourceTree = "<group>"; };
 		A1A859492BC72FC20045DD6C /* testautomation_subsystems.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_subsystems.c; sourceTree = "<group>"; };
 		A1A8594A2BC72FC20045DD6C /* testautomation_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_log.c; sourceTree = "<group>"; };
@@ -1804,7 +1803,6 @@
 				F35E56B62983130A00A43A5F /* testautomation_main.c */,
 				F35E56BA2983130B00A43A5F /* testautomation_math.c */,
 				F35E56CD2983130F00A43A5F /* testautomation_mouse.c */,
-				A1A859442BC72FC20045DD6C /* testautomation_pen.c */,
 				F35E56C02983130C00A43A5F /* testautomation_pixels.c */,
 				F35E56C32983130D00A43A5F /* testautomation_platform.c */,
 				A1A859482BC72FC20045DD6C /* testautomation_properties.c */,

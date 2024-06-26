@@ -28,27 +28,18 @@
  * eraser) handling, e.g., for input and drawing tablets or suitably equipped
  * mobile / tablet devices.
  *
- * To get started with pens:
+ * To get started with pens, simply handle SDL_EVENT_PEN_* events. When a pen
+ * starts providing input, SDL will assign it a unique SDL_PenID, which will
+ * remain for the life of the process, as long as the pen stays connected.
  *
- * - Listen to SDL_PenMotionEvent and SDL_PenButtonEvent
- * - To avoid treating pen events as mouse events, ignore SDL_MouseMotionEvent
- *   and SDL_MouseButtonEvent whenever `which` == SDL_PEN_MOUSEID.
- *
- * We primarily identify pens by SDL_PenID. The implementation makes a best
- * effort to relate each SDL_PenID to the same physical device during a
- * session. Formerly valid SDL_PenID values remain valid even if a device
- * disappears.
- *
- * For identifying pens across sessions, the API provides a device-specific
- * SDL_GUID. This is a best-effort attempt to identify hardware across runs,
- * and is not perfect.
+ * Pens may provide more than simple touch input; they might have other axes,
+ * such as pressure, tilt, rotation, etc.
  */
 
 #ifndef SDL_pen_h_
 #define SDL_pen_h_
 
 #include <SDL3/SDL_error.h>
-#include <SDL3/SDL_guid.h>
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -60,27 +51,36 @@ extern "C" {
  *
  * Zero is used to signify an invalid/null device.
  *
+ * These show up in pen events when SDL sees input from them. They remain
+ * consistent as long as SDL can recognize a tool to be the same pen; but if
+ * a pen physically leaves the area and returns, it might get a new ID.
+ *
  * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint32 SDL_PenID;
 
-/**
- * Used as the device ID for mouse events simulated with pen input
- *
- * \since This macro is available since SDL 3.0.0.
- */
-#define SDL_PEN_MOUSEID ((SDL_MouseID)-2) /**< Device ID for mouse events triggered by pen events */
 
+/**
+ * Pen input flags, as reported by various pen events' `pen_state` field.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ */
+typedef Uint32 SDL_PenInputFlags;
+#define SDL_PEN_INPUT_DOWN       (1u << 0)  /**< & to see if pen is pressed down */
+#define SDL_PEN_INPUT_BUTTON_1   (1u << 1)  /**< & to see if button 1 is pressed */
+#define SDL_PEN_INPUT_BUTTON_2   (1u << 2)  /**< & to see if button 2 is pressed */
+#define SDL_PEN_INPUT_BUTTON_3   (1u << 3)  /**< & to see if button 3 is pressed */
+#define SDL_PEN_INPUT_BUTTON_4   (1u << 4)  /**< & to see if button 4 is pressed */
+#define SDL_PEN_INPUT_BUTTON_5   (1u << 5)  /**< & to see if button 5 is pressed */
+#define SDL_PEN_INPUT_ERASER_TIP (1u << 30) /**< & to see if eraser tip is used */
 
 /**
  * Pen axis indices.
  *
- * These are the valid indices to the `axis` array from SDL_PenMotionEvent and
- * SDL_PenButtonEvent. The axis indices form a contiguous range of ints from 0
- * to SDL_PEN_AXIS_LAST, inclusive. All "axis[]" entries are either normalised
- * to 0..1 or report a (positive or negative) angle in degrees, with 0.0
- * representing the centre. Not all pens/backends support all axes:
- * unsupported entries are always zero.
+ * These are the valid values for the `axis` field in SDL_PenAxisEvent.
+ * All axes are either normalised to 0..1 or report a (positive or negative) angle
+ * in degrees, with 0.0 representing the centre. Not all pens/backends support all
+ * axes: unsupported axes are always zero.
  *
  * To convert angles for tilt and rotation into vector representation, use
  * SDL_sinf on the XTILT, YTILT, or ROTATION component, for example:
@@ -101,180 +101,6 @@ typedef enum SDL_PenAxis
     SDL_PEN_AXIS_SLIDER,    /**< Pen finger wheel or slider (e.g., Airbrush Pen).  Unidirectional: 0 to 1.0 */
     SDL_PEN_NUM_AXES        /**< Total known pen axis types in this version of SDL. This number may grow in future releases! */
 } SDL_PenAxis;
-
-
-/**
- * Pen input flags, as reported by SDL_GetPenStatus and various events.
- *
- * The `SDL_PEN_INPUT_BUTTON_*` defines happen to match SDL_MouseButtonFlags.
- *
- * \since This datatype is available since SDL 3.0.0.
- */
-typedef Uint32 SDL_PenInputFlags;
-#define SDL_PEN_INPUT_BUTTON_1     1   /**< Bit index for pen button 1 is pressed */
-#define SDL_PEN_INPUT_BUTTON_2     2   /**< Bit index for pen button 2 is pressed */
-#define SDL_PEN_INPUT_BUTTON_3     3   /**< Bit index for pen button 3 is pressed */
-#define SDL_PEN_INPUT_BUTTON_4     4   /**< Bit index for pen button 4 is pressed */
-#define SDL_PEN_INPUT_BUTTON_5     5   /**< Bit index for pen button 5 is pressed */
-#define SDL_PEN_INPUT_ERASER_TIP  30   /**< Bit index for pen is using eraser tip, not regular drawing tip */
-#define SDL_PEN_INPUT_DOWN        29   /**< Bit index for pen is touching the surface */
-
-#define SDL_PEN_INPUT(X)              (1u << ((X)-1))
-#define SDL_PEN_INPUT_BUTTON_1_MASK   SDL_PEN_INPUT(SDL_PEN_INPUT_BUTTON_1)   /**< & to see if button 1 is pressed */
-#define SDL_PEN_INPUT_BUTTON_2_MASK   SDL_PEN_INPUT(SDL_PEN_INPUT_BUTTON_2)   /**< & to see if button 2 is pressed */
-#define SDL_PEN_INPUT_BUTTON_3_MASK   SDL_PEN_INPUT(SDL_PEN_INPUT_BUTTON_3)   /**< & to see if button 3 is pressed */
-#define SDL_PEN_INPUT_BUTTON_4_MASK   SDL_PEN_INPUT(SDL_PEN_INPUT_BUTTON_4)   /**< & to see if button 4 is pressed */
-#define SDL_PEN_INPUT_BUTTON_5_MASK   SDL_PEN_INPUT(SDL_PEN_INPUT_BUTTON_5)   /**< & to see if button 5 is pressed */
-#define SDL_PEN_INPUT_ERASER_TIP_MASK SDL_PEN_INPUT(SDL_PEN_INPUT_ERASER_TIP) /**< & to see if eraser tip is used */
-#define SDL_PEN_INPUT_DOWN_MASK       SDL_PEN_INPUT(SDL_PEN_INPUT_DOWN)       /**< & to see if pen is down */
-
-
-/**
- * SDL_PenInfo capability flags.
- *
- * \since This datatype is available since SDL 3.0.0.
- */
-typedef Uint32 SDL_PenCapabilityFlags;
-
-#define SDL_PEN_CAPABILITY_PRESSURE  0x00000001u  /**< Pen provides pressure information in axis SDL_PEN_AXIS_PRESSURE */
-#define SDL_PEN_CAPABILITY_XTILT     0x00000002u  /**< Pen provides horizontal tilt information in axis SDL_PEN_AXIS_XTILT */
-#define SDL_PEN_CAPABILITY_YTILT     0x00000004u  /**< Pen provides vertical tilt information in axis SDL_PEN_AXIS_YTILT */
-#define SDL_PEN_CAPABILITY_DISTANCE  0x00000008u  /**< Pen provides distance to drawing tablet in axis SDL_PEN_AXIS_DISTANCE */
-#define SDL_PEN_CAPABILITY_ROTATION  0x00000010u  /**< Pen provides barrel rotation info in axis SDL_PEN_AXIS_ROTATION */
-#define SDL_PEN_CAPABILITY_SLIDER    0x00000020u  /**< Pen provides slider/finger wheel/etc in axis SDL_PEN_AXIS_SLIDER */
-#define SDL_PEN_CAPABILITY_ERASER    0x00000040u  /**< Pen also has an eraser tip */
-
-#define SDL_PEN_CAPABILITY_BIDIRECTIONAL (SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT)  /**< for convenience */
-
-
-/**
- * Specific subtypes of pen devices.
- *
- * Some pens identify as a particular type of drawing device (for example,
- * an airbrush or a pencil).
- *
- * Note that pen subtypes do not dictate whether the pen tip is
- * _ink_ or an _eraser_; to determine whether a pen is being used in
- * eraser mode, check `SDL_PenInputFlags & SDL_PEN_INPUT_ERASER_TIP_MASK`,
- * in SDL_EVENT_PEN_DOWN events, or in the return value of SDL_GetPenStatus().
- *
- * \since This enum is available since SDL 3.0.0
- */
-typedef enum SDL_PenSubtype
-{
-    SDL_PEN_TYPE_UNKNOWN,   /**< Unknown pen device */
-    SDL_PEN_TYPE_ERASER,    /**< Eraser */
-    SDL_PEN_TYPE_PEN,       /**< Generic pen; this is the default. */
-    SDL_PEN_TYPE_PENCIL,    /**< Pencil */
-    SDL_PEN_TYPE_BRUSH,     /**< Brush-like device */
-    SDL_PEN_TYPE_AIRBRUSH   /**< Airbrush device that "sprays" ink */
-} SDL_PenSubtype;
-
-
-/**
- * Pen hardware information, as reported by SDL_GetPenInfo()
- *
- * \since This struct is available since SDL 3.0.0.
- *
- * \sa SDL_GetPenInfo
- */
-typedef struct SDL_PenInfo
-{
-    SDL_GUID guid;      /**< a (best-attempt) unique identifier for this hardware. */
-    SDL_PenCapabilityFlags capabilities;  /**< bitflags of device capabilities */
-    float max_tilt;    /**< Physical maximum tilt angle, for XTILT and YTILT, or -1.0f if unknown.  Pens cannot typically tilt all the way to 90 degrees, so this value is usually less than 90.0. */
-    Uint32 wacom_id;   /**< For Wacom devices: wacom tool type ID, otherwise 0 (useful e.g. with libwacom) */
-    int num_buttons; /**< Number of pen buttons (not counting the pen tip), or -1 if unknown. */
-    SDL_PenSubtype subtype;  /**< type of pen device */
-} SDL_PenInfo;
-
-
-/**
- * Retrieves all pens that are connected to the system.
- *
- * Yields an array of SDL_PenID values. These identify and track pens
- * throughout a session. To track pens across sessions (program restart), use
- * the SDL_GUID reported by SDL_GetPenInfo().
- *
- * \param count the number of pens in the array (number of array elements
- *              minus 1, i.e., not counting the terminator 0).
- * \returns a 0 terminated array of SDL_PenID values, or NULL on failure. The
- *          array must be freed with SDL_free(). On a NULL return,
- *          SDL_GetError() is set.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern SDL_DECLSPEC SDL_PenID * SDLCALL SDL_GetPens(int *count);
-
-/**
- * Retrieves a human-readable description for a SDL_PenID.
- *
- * \param instance_id the pen to query.
- * \returns a string that contains the name of the pen, intended for human
- *          consumption. The string might or might not be localised, depending
- *          on platform settings. The pointer is managed by the SDL pen
- *          subsystem and must not be deallocated. The pointer remains valid
- *          until SDL is shut down. Returns NULL on error (cf. SDL_GetError()).
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetPenName(SDL_PenID instance_id);
-
-/**
- * Retrieves hardware details for a given SDL_PenID.
- *
- * \param instance_id The pen to query.
- * \param info Filled in with information about pen details. Can be NULL.
- * \returns zero on success, -1 on error.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern SDL_DECLSPEC int SDLCALL SDL_GetPenInfo(SDL_PenID instance_id, SDL_PenInfo *info);
-
-/**
- * Retrieves the pen's current status.
- *
- * If the pen is not connected, this operation may return default values.
- *
- * If `num_axes` is larger than the number of axes known to SDL, it will
- * set the extra elements to 0.0f.
- *
- * \param x Out-mode parameter for pen x coordinate. May be NULL.
- * \param y Out-mode parameter for pen y coordinate. May be NULL.
- * \param axes Out-mode parameter for axis information. May be NULL. The axes
- *             are in the same order as SDL_PenAxis.
- * \param num_axes Maximum number of axes to write to "axes".
- * \returns a SDL_PenInputFlags bitmask of the current pen input states, or 0 on error.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern SDL_DECLSPEC SDL_PenInputFlags SDLCALL SDL_GetPenStatus(SDL_PenID instance_id, float *x, float *y, float *axes, size_t num_axes);
-
-/**
- * Retrieves an SDL_PenID for the given SDL_GUID.
- *
- * \param guid A pen GUID.
- * \returns A valid SDL_PenID, or 0 if there is no matching SDL_PenID.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetPenInfo
- */
-extern SDL_DECLSPEC SDL_PenID SDLCALL SDL_GetPenFromGUID(SDL_GUID guid);
-
-/**
- * Checks whether a pen is still attached.
- *
- * If a pen is detached, it will not show up for SDL_GetPens(). Other
- * operations may still be available but return default values.
- *
- * \param instance_id A pen ID.
- * \returns SDL_TRUE if `instance_id` is valid and the corresponding pen is
- *          attached, or SDL_FALSE otherwise.
- *
- * \since This function is available since SDL 3.0.0.
- */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
