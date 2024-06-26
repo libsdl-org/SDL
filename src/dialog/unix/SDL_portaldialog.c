@@ -22,6 +22,7 @@
 #include "../SDL_dialog_utils.h"
 
 #include "../../core/linux/SDL_dbus.h"
+#include "../../core/unix/SDL_uri_decode.h"
 
 #ifdef SDL_USE_LIBDBUS
 
@@ -226,8 +227,6 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
 
         while (dbus->message_iter_get_arg_type(&uri_entry) == DBUS_TYPE_STRING)
         {
-            const char *prefix = "file://";
-            const int prefix_len = 7;
             const char *uri = NULL;
 
             if (current >= length - 1) {
@@ -242,10 +241,12 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
             dbus->message_iter_get_basic(&uri_entry, &uri);
 
             /* https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.FileChooser.html */
-            /* Returned paths will always start with 'file://'; truncate it */
-            if (SDL_strncmp(uri, prefix, prefix_len) == 0) {
-                path[current] = uri + prefix_len;
-            } else if (SDL_strstr(uri, "://")) {
+            /* Returned paths will always start with 'file://'; SDL_URIToLocal() truncates it. */
+            char *decoded_uri = SDL_malloc(SDL_strlen(uri) + 1);
+            if (SDL_URIToLocal(uri, decoded_uri)) {
+                path[current] = decoded_uri;
+            } else {
+                SDL_free(decoded_uri);
                 SDL_SetError("Portal dialogs: Unsupported protocol: %s", uri);
                 signal_data->callback(signal_data->userdata, NULL, -1);
                 goto cleanup;
@@ -258,6 +259,12 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
         signal_data->callback(signal_data->userdata, path, -1); /* TODO: Fetch the index of the filter that was used */
 cleanup:
         dbus->connection_remove_filter(conn, &DBus_MessageFilter, signal_data);
+
+        if (path) {
+            for (size_t i = 0; i < length; ++i) {
+                SDL_free((char *)path[i]);
+            }
+        }
 
         SDL_free(path);
         SDL_free((void *)signal_data->path);
