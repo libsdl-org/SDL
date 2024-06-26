@@ -769,6 +769,11 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
     LONG length;
     DWORD dwLang = ((DWORD_PTR)videodata->ime_hkl & 0xffff);
 
+    videodata->ime_cursor = LOWORD(ImmGetCompositionStringW(himc, GCS_CURSORPOS, 0, 0));
+    videodata->ime_selected_start = 0;
+    videodata->ime_selected_length = 0;
+    SDL_DebugIMELog("Cursor = %d\n", videodata->ime_cursor);
+
     length = ImmGetCompositionStringW(himc, string, NULL, 0);
     if (length > 0 && videodata->ime_composition_length < length) {
         if (videodata->ime_composition) {
@@ -785,7 +790,6 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
     }
     length /= sizeof(WCHAR);
 
-    videodata->ime_cursor = LOWORD(ImmGetCompositionStringW(himc, GCS_CURSORPOS, 0, 0));
     if ((dwLang == LANG_CHT || dwLang == LANG_CHS) &&
         videodata->ime_cursor > 0 &&
         videodata->ime_cursor < (int)(videodata->ime_composition_length / sizeof(WCHAR)) &&
@@ -812,6 +816,10 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
                 length = 0;
             }
 
+            for (LONG i = 0; i < length; ++i) {
+                SDL_DebugIMELog("attrib[%d] = %d\n", i, attributes[i]);
+            }
+
             for (start = 0; start < length; ++start) {
                 if (attributes[start] == ATTR_TARGET_CONVERTED || attributes[start] == ATTR_TARGET_NOTCONVERTED) {
                     break;
@@ -827,18 +835,10 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
             if (end > start) {
                 videodata->ime_selected_start = start;
                 videodata->ime_selected_length = end - start;
-            } else {
-                videodata->ime_selected_start = 0;
-                videodata->ime_selected_length = 0;
             }
 
             SDL_free(attributes);
         }
-    }
-
-    // Get the correct caret position if we've selected a candidate from the candidate window
-    if (videodata->ime_cursor == 0 && !videodata->ime_candidates_open) {
-        videodata->ime_cursor = videodata->ime_selected_start + videodata->ime_selected_length;
     }
 }
 
@@ -883,10 +883,12 @@ static void IME_SendEditingEvent(SDL_VideoData *videodata)
 
     s = WIN_StringToUTF8W(buffer);
     if (s) {
-        if (videodata->ime_cursor > 0 || videodata->ime_readingstring[0]) {
+        if (videodata->ime_readingstring[0]) {
             SDL_SendEditingText(s, videodata->ime_cursor, (int)SDL_wcslen(videodata->ime_readingstring));
-        } else {
+        } else if (videodata->ime_cursor == videodata->ime_selected_start) {
             SDL_SendEditingText(s, videodata->ime_selected_start, videodata->ime_selected_length);
+        } else {
+            SDL_SendEditingText(s, videodata->ime_cursor, 0);
         }
         if (*s) {
             videodata->ime_needs_clear_composition = SDL_TRUE;
