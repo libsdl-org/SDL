@@ -33,6 +33,10 @@
 #include <gbm.h>
 #include <EGL/egl.h>
 
+#ifndef DRM_MODE_FB_MODIFIERS
+#define DRM_MODE_FB_MODIFIERS	2
+#endif
+
 #ifndef DRM_MODE_PAGE_FLIP_ASYNC
 #define DRM_MODE_PAGE_FLIP_ASYNC    2
 #endif
