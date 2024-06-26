@@ -360,6 +360,12 @@ static void SDL_LogEvent(const SDL_Event *event)
                            event->edit.text, (int)event->edit.start, (int)event->edit.length);
         break;
 
+        SDL_EVENT_CASE(SDL_EVENT_TEXT_EDITING_CANDIDATES)
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u num_candidates=%d selected_candidate=%d)",
+                           (uint)event->edit_candidates.timestamp, (uint)event->edit_candidates.windowID,
+                           (int)event->edit_candidates.num_candidates, (int)event->edit_candidates.selected_candidate);
+        break;
+
         SDL_EVENT_CASE(SDL_EVENT_TEXT_INPUT)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u text='%s')", (uint)event->text.timestamp, (uint)event->text.windowID, event->text.text);
         break;

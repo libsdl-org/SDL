@@ -659,6 +659,47 @@ int SDL_SendEditingText(const char *text, int start, int length)
     return posted;
 }
 
+int SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int selected_candidate, SDL_bool horizontal)
+{
+    SDL_Keyboard *keyboard = &SDL_keyboard;
+    int posted;
+
+    if (!SDL_TextInputActive(keyboard->focus)) {
+        return 0;
+    }
+
+    /* Post the event, if desired */
+    posted = 0;
+    if (SDL_EventEnabled(SDL_EVENT_TEXT_EDITING_CANDIDATES)) {
+        SDL_Event event;
+
+        event.type = SDL_EVENT_TEXT_EDITING_CANDIDATES;
+        event.common.timestamp = 0;
+        event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
+        if (num_candidates > 0) {
+            const char **event_candidates = (const char **)SDL_AllocateEventMemory((num_candidates + 1) * sizeof(*event_candidates));
+            if (!event_candidates) {
+                return 0;
+            }
+            for (int i = 0; i < num_candidates; ++i) {
+                event_candidates[i] = SDL_AllocateEventString(candidates[i]);
+            }
+            event_candidates[num_candidates] = NULL;
+            event.edit_candidates.candidates = event_candidates;
+            event.edit_candidates.num_candidates = num_candidates;
+            event.edit_candidates.selected_candidate = selected_candidate;
+            event.edit_candidates.horizontal = horizontal;
+        } else {
+            event.edit_candidates.candidates = NULL;
+            event.edit_candidates.num_candidates = 0;
+            event.edit_candidates.selected_candidate = -1;
+            event.edit_candidates.horizontal = SDL_FALSE;
+        }
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+    return posted;
+}
+
 void SDL_QuitKeyboard(void)
 {
     for (int i = SDL_keyboard_count; i--;) {

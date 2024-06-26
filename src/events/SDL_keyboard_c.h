@@ -78,6 +78,9 @@ extern int SDL_SendKeyboardText(const char *text);
 /* Send editing text for selected range from start to end */
 extern int SDL_SendEditingText(const char *text, int start, int length);
 
+/* Send editing text candidates, which will be copied into the event */
+int SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int selected_candidate, SDL_bool horizontal);
+
 /* Shutdown the keyboard subsystem */
 extern void SDL_QuitKeyboard(void);
 

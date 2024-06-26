@@ -163,6 +163,7 @@ typedef enum SDL_EventType
                                             input language or keyboard layout change. */
     SDL_EVENT_KEYBOARD_ADDED,          /**< A new keyboard has been inserted into the system */
     SDL_EVENT_KEYBOARD_REMOVED,        /**< A keyboard has been removed */
+    SDL_EVENT_TEXT_EDITING_CANDIDATES, /**< Keyboard text editing candidates */
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
@@ -344,14 +345,33 @@ typedef struct SDL_KeyboardEvent
  */
 typedef struct SDL_TextEditingEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_TEXT_EDITING */
+    SDL_EventType type;         /**< SDL_EVENT_TEXT_EDITING */
     Uint32 reserved;
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID; /**< The window with keyboard focus, if any */
-    const char *text;   /**< The editing text */
-    Sint32 start;       /**< The start cursor of selected editing text, or -1 if not set */
-    Sint32 length;      /**< The length of selected editing text, or -1 if not set */
+    Uint64 timestamp;           /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID;      /**< The window with keyboard focus, if any */
+    const char *text;           /**< The editing text */
+    Sint32 start;               /**< The start cursor of selected editing text, or -1 if not set */
+    Sint32 length;              /**< The length of selected editing text, or -1 if not set */
 } SDL_TextEditingEvent;
+
+/**
+ * Keyboard IME candidates event structure (event.edit_candidates.*)
+ *
+ * The candidates follow the SDL_GetStringRule.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_TextEditingCandidatesEvent
+{
+    SDL_EventType type;         /**< SDL_EVENT_TEXT_EDITING_CANDIDATES */
+    Uint32 reserved;
+    Uint64 timestamp;           /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID;      /**< The window with keyboard focus, if any */
+    const char * const *candidates;    /**< The list of candidates, or NULL if there are no candidates available */
+    Sint32 num_candidates;      /**< The number of strings in `candidates` */
+    Sint32 selected_candidate;  /**< The index of the selected candidate, or -1 if no candidate is selected */
+    SDL_bool horizontal;          /**< SDL_TRUE if the list is horizontal, SDL_FALSE if it's vertical */
+} SDL_TextEditingCandidatesEvent;
 
 /**
  * Keyboard text input event structure (event.text.*)
@@ -846,6 +866,7 @@ typedef union SDL_Event
     SDL_KeyboardDeviceEvent kdevice;        /**< Keyboard device change event data */
     SDL_KeyboardEvent key;                  /**< Keyboard event data */
     SDL_TextEditingEvent edit;              /**< Text editing event data */
+    SDL_TextEditingCandidatesEvent edit_candidates; /**< Text editing candidates event data */
     SDL_TextInputEvent text;                /**< Text input event data */
     SDL_MouseDeviceEvent mdevice;           /**< Mouse device change event data */
     SDL_MouseMotionEvent motion;            /**< Mouse motion event data */

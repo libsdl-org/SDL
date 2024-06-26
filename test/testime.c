@@ -53,6 +53,10 @@ static int cursor_length = 0;
 static SDL_bool cursor_visible;
 static Uint64 last_cursor_change;
 static SDL_BlendMode highlight_mode;
+static char **candidates;
+static int num_candidates;
+static int selected_candidate;
+static SDL_bool horizontal_candidates;
 #ifdef HAVE_SDL_TTF
 static TTF_Font *font;
 #else
@@ -319,7 +323,16 @@ static int unifont_load_texture(Uint32 textureID)
     return 0;
 }
 
-static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *dst)
+static int unifont_glyph_width(Uint32 codepoint)
+{
+    if (codepoint > UNIFONT_MAX_CODEPOINT ||
+        unifontGlyph[codepoint].width == 0) {
+        codepoint = UNIFONT_REPLACEMENT;
+    }
+    return unifontGlyph[codepoint].width;
+}
+
+static int unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *dst)
 {
     SDL_Texture *texture;
     Uint32 textureID;
@@ -456,9 +469,190 @@ static void InitInput(void)
     SDL_StartTextInput(state->windows[0]);
 }
 
+
+static void ClearCandidates(void)
+{
+    int i;
+
+    for (i = 0; i < num_candidates; ++i) {
+        SDL_free(candidates[i]);
+    }
+    SDL_free(candidates);
+    candidates = NULL;
+    num_candidates = 0;
+}
+
+static void SaveCandidates(SDL_Event *event)
+{
+    int i;
+
+    ClearCandidates();
+
+    num_candidates = event->edit_candidates.num_candidates;
+    if (num_candidates > 0) {
+        candidates = (char **)SDL_malloc(num_candidates * sizeof(*candidates));
+        if (!candidates) {
+            num_candidates = 0;
+            return;
+        }
+        for (i = 0; i < num_candidates; ++i) {
+            candidates[i] = SDL_strdup(event->edit_candidates.candidates[i]);
+        }
+        selected_candidate = event->edit_candidates.selected_candidate;
+        horizontal_candidates = event->edit_candidates.horizontal;
+    }
+}
+
+static void DrawCandidates(int rendererID, SDL_FRect *cursorRect)
+{
+    SDL_Renderer *renderer = state->renderers[rendererID];
+    int i;
+    int output_w = 0, output_h = 0;
+    float w = 0.0f, h = 0.0f;
+    SDL_FRect candidatesRect, dstRect, underlineRect;
+
+    if (num_candidates == 0) {
+        return;
+    }
+
+    /* Calculate the size of the candidate list */
+    for (i = 0; i < num_candidates; ++i) {
+        if (!candidates[i]) {
+            continue;
+        }
+
+#ifdef HAVE_SDL_TTF
+        /* FIXME */
+#else
+        if (horizontal_candidates) {
+            char *utext = candidates[i];
+            Uint32 codepoint;
+            size_t len;
+            float advance = 0.0f;
+
+            if (i > 0) {
+                advance += unifont_glyph_width(' ') * UNIFONT_DRAW_SCALE;
+            }
+            while ((codepoint = utf8_decode(utext, len = utf8_length(*utext))) != 0) {
+                advance += unifont_glyph_width(codepoint) * UNIFONT_DRAW_SCALE;
+                utext += len;
+            }
+            w += advance;
+            h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
+        } else {
+            char *utext = candidates[i];
+            Uint32 codepoint;
+            size_t len;
+            float advance = 0.0f;
+
+            while ((codepoint = utf8_decode(utext, len = utf8_length(*utext))) != 0) {
+                advance += unifont_glyph_width(codepoint) * UNIFONT_DRAW_SCALE;
+                utext += len;
+            }
+            w = SDL_max(w, advance);
+            if (i > 0) {
+                h += 2.0f;
+            }
+            h += UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
+        }
+#endif
+    }
+
+    /* Position the candidate window */
+    SDL_GetCurrentRenderOutputSize(renderer, &output_w, &output_h);
+    candidatesRect.x = cursorRect->x;
+    candidatesRect.y = cursorRect->y + cursorRect->h + 2.0f;
+    candidatesRect.w = 1.0f + 2.0f + w + 2.0f + 1.0f;
+    candidatesRect.h = 1.0f + 2.0f + h + 2.0f + 1.0f;
+    if ((candidatesRect.x + candidatesRect.w) > output_w) {
+        candidatesRect.x = (output_w - candidatesRect.w);
+        if (candidatesRect.x < 0.0f) {
+            candidatesRect.x = 0.0f;
+        }
+    }
+
+    /* Draw the candidate background */
+    SDL_SetRenderDrawColor(renderer, 0xAA, 0xAA, 0xAA, 0xFF);
+    SDL_RenderFillRect(renderer, &candidatesRect);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+    SDL_RenderRect(renderer, &candidatesRect);
+
+    /* Draw the candidates */
+    dstRect.x = candidatesRect.x + 3.0f;
+    dstRect.y = candidatesRect.y + 3.0f;
+    for (i = 0; i < num_candidates; ++i) {
+        if (!candidates[i]) {
+            continue;
+        }
+
+#ifdef HAVE_SDL_TTF
+        /* FIXME */
+#else
+        dstRect.w = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
+        dstRect.h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
+
+        if (horizontal_candidates) {
+            char *utext = candidates[i];
+            Uint32 codepoint;
+            size_t len;
+            float start;
+
+            if (i > 0) {
+                dstRect.x += unifont_draw_glyph(' ', rendererID, &dstRect) * UNIFONT_DRAW_SCALE;
+            }
+
+            start = dstRect.x + 2 * unifont_glyph_width(' ') * UNIFONT_DRAW_SCALE;
+            while ((codepoint = utf8_decode(utext, len = utf8_length(*utext))) != 0) {
+                dstRect.x += unifont_draw_glyph(codepoint, rendererID, &dstRect) * UNIFONT_DRAW_SCALE;
+                utext += len;
+            }
+
+            if (i == selected_candidate) {
+                underlineRect.x = start;
+                underlineRect.y = dstRect.y + dstRect.h - 2;
+                underlineRect.h = 2;
+                underlineRect.w = dstRect.x - start;
+
+                SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
+                SDL_RenderFillRect(renderer, &underlineRect);
+            }
+        } else {
+            char *utext = candidates[i];
+            Uint32 codepoint;
+            size_t len;
+            float start;
+
+            dstRect.x = candidatesRect.x + 3.0f;
+
+            start = dstRect.x + 2 * unifont_glyph_width(' ') * UNIFONT_DRAW_SCALE;
+            while ((codepoint = utf8_decode(utext, len = utf8_length(*utext))) != 0) {
+                dstRect.x += unifont_draw_glyph(codepoint, rendererID, &dstRect) * UNIFONT_DRAW_SCALE;
+                utext += len;
+            }
+
+            if (i == selected_candidate) {
+                underlineRect.x = start;
+                underlineRect.y = dstRect.y + dstRect.h - 2;
+                underlineRect.h = 2;
+                underlineRect.w = dstRect.x - start;
+
+                SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
+                SDL_RenderFillRect(renderer, &underlineRect);
+            }
+
+            if (i > 0) {
+                dstRect.y += 2.0f;
+            }
+            dstRect.y += dstRect.h;
+        }
+#endif
+    }
+}
+
 static void CleanupVideo(void)
 {
     SDL_StopTextInput(state->windows[0]);
+    ClearCandidates();
 #ifdef HAVE_SDL_TTF
     TTF_CloseFont(font);
     TTF_Quit();
@@ -630,6 +824,9 @@ static void RedrawWindow(int rendererID)
         SDL_RenderFillRect(renderer, &cursorRect);
     }
 
+    /* Draw the candidates */
+    DrawCandidates(rendererID, &cursorRect);
+
     {
         SDL_Rect inputrect;
 
@@ -681,13 +878,16 @@ int main(int argc, char *argv[])
 
         consumed = SDLTest_CommonArg(state, i);
         if (SDL_strcmp(argv[i], "--font") == 0) {
-            if (*argv[i+1]) {
-                fontname = argv[i+1];
+            if (*argv[i + 1]) {
+                fontname = argv[i + 1];
                 consumed = 2;
             }
+        } else if (SDL_strcmp(argv[i], "--disable-ui") == 0) {
+            SDL_SetHint(SDL_HINT_IME_SHOW_UI, "0");
+            consumed = 1;
         }
         if (consumed <= 0) {
-            static const char *options[] = { "[--font fontfile]", NULL };
+            static const char *options[] = { "[--font fontfile] [--disable-ui]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }
@@ -812,6 +1012,16 @@ int main(int argc, char *argv[])
                 SDL_strlcpy(markedText, event.edit.text, sizeof(markedText));
                 cursor = event.edit.start;
                 cursor_length = event.edit.length;
+                break;
+
+            case SDL_EVENT_TEXT_EDITING_CANDIDATES:
+                SDL_Log("text candidates:\n");
+                for (i = 0; i < event.edit_candidates.num_candidates; ++i) {
+                    SDL_Log("%c%s\n", i == event.edit_candidates.selected_candidate ? '>' : ' ', event.edit_candidates.candidates[i]);
+                }
+
+                ClearCandidates();
+                SaveCandidates(&event);
                 break;
 
             default:
