@@ -46,9 +46,26 @@
 extern "C" {
 #endif
 
-/* General keyboard/mouse state definitions */
+/* General keyboard/mouse/pen state definitions */
+
+/**
+ * A value that signifies a button is no longer pressed.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_PRESSED
+ */
 #define SDL_RELEASED    0
+
+/**
+ * A value that signifies a button has been pressed down.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_RELEASED
+ */
 #define SDL_PRESSED     1
+
 
 /**
  * The types of events that can be delivered.
