@@ -440,20 +440,14 @@ struct SDL_VideoData
     int ime_selected_length;
 
     SDL_bool ime_candidates_open;
-    SDL_bool ime_candlist;
-    WCHAR *ime_candidates;
-    DWORD ime_candcount;
+    char *ime_candidates[MAX_CANDLIST];
+    int ime_candcount;
     DWORD ime_candref;
     DWORD ime_candsel;
-    UINT ime_candpgsize;
     int ime_candlistindexbase;
-    SDL_bool ime_candvertical;
+    SDL_bool ime_horizontal_candidates;
 
-    SDL_bool ime_dirty;
     SDL_Rect ime_rect;
-    SDL_Rect ime_candlistrect;
-    int ime_winwidth;
-    int ime_winheight;
 
     HKL ime_hkl;
     void *ime_himm32;
@@ -474,7 +468,6 @@ struct SDL_VideoData
     DWORD ime_convmodesinkcookie;
     TSFSink *ime_uielemsink;
     TSFSink *ime_ippasink;
-    LONG ime_uicontext;
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
     BYTE pre_hook_key_state[256];
