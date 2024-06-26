@@ -417,6 +417,7 @@ void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick)
 void SDL_XINPUT_JoystickQuit(void)
 {
     if (s_bXInputEnabled) {
+        s_bXInputEnabled = SDL_FALSE;
         WIN_UnloadXInputDLL();
     }
 }
