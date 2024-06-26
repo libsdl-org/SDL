@@ -429,14 +429,17 @@ struct SDL_VideoData
     SDL_bool ime_available;
     HWND ime_hwnd_main;
     HWND ime_hwnd_current;
-    SDL_bool ime_suppress_endcomposition_event;
+    SDL_bool ime_needs_clear_composition;
     HIMC ime_himc;
 
     WCHAR *ime_composition;
     int ime_composition_length;
     WCHAR ime_readingstring[16];
     int ime_cursor;
+    int ime_selected_start;
+    int ime_selected_length;
 
+    SDL_bool ime_candidates_open;
     SDL_bool ime_candlist;
     WCHAR *ime_candidates;
     DWORD ime_candcount;
