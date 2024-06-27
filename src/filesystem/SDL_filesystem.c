@@ -185,7 +185,7 @@ static char *CaseFoldUtf8String(const char *fname)
     Uint32 codepoint;
     char *ptr = retval;
     size_t remaining = allocation;
-    while ((codepoint = SDL_StepUTF8(&fname, 4)) != 0) {
+    while ((codepoint = SDL_StepUTF8(&fname, NULL)) != 0) {
         Uint32 folded[3];
         const int num_folded = SDL_CaseFoldUnicode(codepoint, folded);
         SDL_assert(num_folded > 0);
