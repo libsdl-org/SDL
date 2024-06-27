@@ -25,8 +25,6 @@
 // most things you might need internally in here are public APIs, this is
 // just a few special pieces right now.
 
-Uint32 SDL_StepUTF8(const char **_str, const size_t slen);
-
 // this expects `from` to be a Unicode codepoint, and `to` to point to AT LEAST THREE Uint32s.
 int SDL_CaseFoldUnicode(const Uint32 from, Uint32 *to);
 
