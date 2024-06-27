@@ -55,7 +55,10 @@ static TTF_Font *font;
 #define UNIFONT_REPLACEMENT       0xFFFD
 /* Using 512x512 textures that are supported everywhere. */
 #define UNIFONT_TEXTURE_WIDTH     512
-#define UNIFONT_GLYPHS_IN_ROW     (UNIFONT_TEXTURE_WIDTH / 16)
+#define UNIFONT_GLYPH_SIZE        16
+#define UNIFONT_GLYPH_BORDER      1
+#define UNIFONT_GLYPH_AREA        (UNIFONT_GLYPH_BORDER + UNIFONT_GLYPH_SIZE + UNIFONT_GLYPH_BORDER)
+#define UNIFONT_GLYPHS_IN_ROW     (UNIFONT_TEXTURE_WIDTH / UNIFONT_GLYPH_AREA)
 #define UNIFONT_GLYPHS_IN_TEXTURE (UNIFONT_GLYPHS_IN_ROW * UNIFONT_GLYPHS_IN_ROW)
 #define UNIFONT_NUM_TEXTURES      ((UNIFONT_NUM_GLYPHS + UNIFONT_GLYPHS_IN_TEXTURE - 1) / UNIFONT_GLYPHS_IN_TEXTURE)
 #define UNIFONT_TEXTURE_SIZE      (UNIFONT_TEXTURE_WIDTH * UNIFONT_TEXTURE_WIDTH * 4)
@@ -281,7 +284,7 @@ static int unifont_load_texture(Uint32 textureID)
         Uint32 codepoint = UNIFONT_GLYPHS_IN_TEXTURE * textureID + i;
         if (unifontGlyph[codepoint].width > 0) {
             const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
-            const size_t offset = ((size_t)cInTex / UNIFONT_GLYPHS_IN_ROW) * UNIFONT_TEXTURE_PITCH * 16 + (cInTex % UNIFONT_GLYPHS_IN_ROW) * 16 * 4;
+            const size_t offset = ((size_t)cInTex / UNIFONT_GLYPHS_IN_ROW) * UNIFONT_TEXTURE_PITCH * UNIFONT_GLYPH_AREA + (cInTex % UNIFONT_GLYPHS_IN_ROW) * UNIFONT_GLYPH_AREA * 4;
             unifont_make_rgba(unifontGlyph[codepoint].data, textureRGBA + offset, unifontGlyph[codepoint].width);
         }
     }
@@ -315,7 +318,7 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *ds
     SDL_Texture *texture;
     Uint32 textureID;
     SDL_FRect srcrect;
-    srcrect.w = srcrect.h = 16.0f;
+    srcrect.w = srcrect.h = (float)UNIFONT_GLYPH_SIZE;
 
     if (codepoint > UNIFONT_MAX_CODEPOINT ||
         unifontGlyph[codepoint].width == 0) {
@@ -331,8 +334,8 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *ds
     texture = unifontTexture[UNIFONT_NUM_TEXTURES * rendererID + textureID];
     if (texture) {
         const Uint32 cInTex = codepoint % UNIFONT_GLYPHS_IN_TEXTURE;
-        srcrect.x = (float)(cInTex % UNIFONT_GLYPHS_IN_ROW * 16);
-        srcrect.y = (float)(cInTex / UNIFONT_GLYPHS_IN_ROW * 16);
+        srcrect.x = (float)(cInTex % UNIFONT_GLYPHS_IN_ROW * UNIFONT_GLYPH_AREA);
+        srcrect.y = (float)(cInTex / UNIFONT_GLYPHS_IN_ROW * UNIFONT_GLYPH_AREA);
         SDL_RenderTexture(state->renderers[rendererID], texture, &srcrect, dst);
     }
     return unifontGlyph[codepoint].width;
@@ -492,9 +495,9 @@ static void _Redraw(int rendererID)
         SDL_FRect dstrect;
 
         dstrect.x = textRect.x;
-        dstrect.y = textRect.y + (textRect.h - 16 * UNIFONT_DRAW_SCALE) / 2;
-        dstrect.w = 16 * UNIFONT_DRAW_SCALE;
-        dstrect.h = 16 * UNIFONT_DRAW_SCALE;
+        dstrect.y = textRect.y + (textRect.h - UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE) / 2;
+        dstrect.w = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
+        dstrect.h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
         drawnTextRect.y = dstrect.y;
         drawnTextRect.h = dstrect.h;
 
@@ -564,9 +567,9 @@ static void _Redraw(int rendererID)
         SDL_FRect dstrect;
 
         dstrect.x = drawnTextRect.x;
-        dstrect.y = textRect.y + (textRect.h - 16 * UNIFONT_DRAW_SCALE) / 2;
-        dstrect.w = 16 * UNIFONT_DRAW_SCALE;
-        dstrect.h = 16 * UNIFONT_DRAW_SCALE;
+        dstrect.y = textRect.y + (textRect.h - UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE) / 2;
+        dstrect.w = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
+        dstrect.h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
         drawnTextRect.y = dstrect.y;
         drawnTextRect.h = dstrect.h;
 
