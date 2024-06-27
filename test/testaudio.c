@@ -984,12 +984,9 @@ static Thing *CreatePhysicalDeviceThing(const SDL_AudioDeviceID which, const SDL
     thing = CreateThing(recording ? THING_PHYSDEV_RECORDING : THING_PHYSDEV, next_physdev_x, 170, 5, -1, -1, physdev_texture, NULL);
     if (thing) {
         const char *name = SDL_GetAudioDeviceName(which);
-        if (!name) {
-            name = "[Unnamed device]";
-        }
         thing->data.physdev.devid = which;
         thing->data.physdev.recording = recording;
-        thing->data.physdev.name = SDL_strdup(name);
+        thing->data.physdev.name = name ? SDL_strdup(name) : NULL;
         thing->ondrag = DeviceThing_ondrag;
         thing->ondrop = PhysicalDeviceThing_ondrop;
         thing->ontick = PhysicalDeviceThing_ontick;
