@@ -259,7 +259,7 @@ int SDL_AtomicGet(SDL_atomic_t *a)
 #elif defined(__MACOSX__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
     return sizeof(a->value) == sizeof(uint32_t) ? OSAtomicOr32Barrier(0, (volatile uint32_t *)&a->value) : OSAtomicAdd64Barrier(0, (volatile int64_t *)&a->value);
 #elif defined(__SOLARIS__)
-    return atomic_or_uint((volatile uint_t *)&a->value, 0);
+    return atomic_or_uint_nv((volatile uint_t *)&a->value, 0);
 #else
     int value;
     do {
