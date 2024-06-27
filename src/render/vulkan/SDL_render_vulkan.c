@@ -1761,7 +1761,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
     if (rendererData->surface) {
         rendererData->surface_external = SDL_TRUE;
     } else {
-        if (!device->Vulkan_CreateSurface || !device->Vulkan_CreateSurface(device, renderer->window, rendererData->instance, NULL, &rendererData->surface)) {
+        if (!device->Vulkan_CreateSurface || (device->Vulkan_CreateSurface(device, renderer->window, rendererData->instance, NULL, &rendererData->surface) < 0)) {
             VULKAN_DestroyAll(renderer);
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Vulkan_CreateSurface() failed.\n");
             return VK_ERROR_UNKNOWN;

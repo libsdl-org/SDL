@@ -120,11 +120,11 @@ char const* const* WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
     return extensionsForWin32;
 }
 
-SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                  SDL_Window *window,
-                                  VkInstance instance,
-                                  const struct VkAllocationCallbacks *allocator,
-                                  VkSurfaceKHR *surface)
+int WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+                             SDL_Window *window,
+                             VkInstance instance,
+                             const struct VkAllocationCallbacks *allocator,
+                             VkSurfaceKHR *surface)
 {
     SDL_WindowData *windowData = window->driverdata;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -137,14 +137,12 @@ SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     VkResult result;
 
     if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
+        return SDL_SetError("Vulkan is not loaded");
     }
 
     if (!vkCreateWin32SurfaceKHR) {
-        SDL_SetError(VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-                     " extension is not enabled in the Vulkan instance.");
-        return SDL_FALSE;
+        return SDL_SetError(VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+                            " extension is not enabled in the Vulkan instance.");
     }
     createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
@@ -153,11 +151,9 @@ SDL_bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     createInfo.hwnd = windowData->hwnd;
     result = vkCreateWin32SurfaceKHR(instance, &createInfo, allocator, surface);
     if (result != VK_SUCCESS) {
-        SDL_SetError("vkCreateWin32SurfaceKHR failed: %s",
-                     SDL_Vulkan_GetResultString(result));
-        return SDL_FALSE;
+        return SDL_SetError("vkCreateWin32SurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
     }
-    return SDL_TRUE;
+    return 0;
 }
 
 void WIN_Vulkan_DestroySurface(SDL_VideoDevice *_this,

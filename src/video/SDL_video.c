@@ -5462,7 +5462,7 @@ char const* const* SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
     return _this->Vulkan_GetInstanceExtensions(_this, count);
 }
 
-SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
+int SDL_Vulkan_CreateSurface(SDL_Window *window,
                                   VkInstance instance,
                                   const struct VkAllocationCallbacks *allocator,
                                   VkSurfaceKHR *surface)
@@ -5470,18 +5470,15 @@ SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
 
     if (!(window->flags & SDL_WINDOW_VULKAN)) {
-        SDL_SetError(NOT_A_VULKAN_WINDOW);
-        return SDL_FALSE;
+        return SDL_SetError(NOT_A_VULKAN_WINDOW);
     }
 
     if (!instance) {
-        SDL_InvalidParamError("instance");
-        return SDL_FALSE;
+        return SDL_InvalidParamError("instance");
     }
 
     if (!surface) {
-        SDL_InvalidParamError("surface");
-        return SDL_FALSE;
+        return SDL_InvalidParamError("surface");
     }
 
     return _this->Vulkan_CreateSurface(_this, window, instance, allocator, surface);

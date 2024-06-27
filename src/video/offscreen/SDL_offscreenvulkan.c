@@ -214,44 +214,38 @@ char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this
     return returnExtensions;
 }
 
-SDL_bool OFFSCREEN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                        SDL_Window *window,
-                                        VkInstance instance,
-                                        const struct VkAllocationCallbacks *allocator,
-                                        VkSurfaceKHR *surface)
+int OFFSCREEN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+                                   SDL_Window *window,
+                                   VkInstance instance,
+                                   const struct VkAllocationCallbacks *allocator,
+                                   VkSurfaceKHR *surface)
 {
     surface = NULL;
 
-    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
     if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
+        return SDL_SetError("Vulkan is not loaded");
     }
-    vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
-    {
-        PFN_vkCreateHeadlessSurfaceEXT vkCreateHeadlessSurfaceEXT =
-            (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(instance,
-                                                                  "vkCreateHeadlessSurfaceEXT");
-        VkHeadlessSurfaceCreateInfoEXT createInfo;
-        VkResult result;
-        if (!vkCreateHeadlessSurfaceEXT) {
-            /*This may be surprising to the consumer when HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD == 0
-                But this is the tradeoff for allowing offscreen rendering to a buffer to continue working without requiring the extension during driver load*/
-            SDL_SetError(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME
-                         " extension is not enabled in the Vulkan instance.");
-            return SDL_FALSE;
-        }
-        SDL_zero(createInfo);
-        createInfo.sType = VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT;
-        createInfo.pNext = NULL;
-        createInfo.flags = 0;
-        result = vkCreateHeadlessSurfaceEXT(instance, &createInfo, allocator, surface);
-        if (result != VK_SUCCESS) {
-            SDL_SetError("vkCreateHeadlessSurfaceEXT failed: %s", SDL_Vulkan_GetResultString(result));
-            return SDL_FALSE;
-        }
-        return SDL_TRUE;
+
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
+    PFN_vkCreateHeadlessSurfaceEXT vkCreateHeadlessSurfaceEXT =
+        (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(instance, "vkCreateHeadlessSurfaceEXT");
+    VkHeadlessSurfaceCreateInfoEXT createInfo;
+    VkResult result;
+    if (!vkCreateHeadlessSurfaceEXT) {
+        /* This may be surprising to the consumer when HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD == 0
+           But this is the tradeoff for allowing offscreen rendering to a buffer to continue working without requiring the extension during driver load */
+        return SDL_SetError(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME
+                            " extension is not enabled in the Vulkan instance.");
     }
+    SDL_zero(createInfo);
+    createInfo.sType = VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT;
+    createInfo.pNext = NULL;
+    createInfo.flags = 0;
+    result = vkCreateHeadlessSurfaceEXT(instance, &createInfo, allocator, surface);
+    if (result != VK_SUCCESS) {
+        return SDL_SetError("vkCreateHeadlessSurfaceEXT failed: %s", SDL_Vulkan_GetResultString(result));
+    }
+    return 0;
 }
 
 void OFFSCREEN_Vulkan_DestroySurface(SDL_VideoDevice *_this,
