@@ -5032,13 +5032,15 @@ int SDL_StartTextInput(SDL_Window *window)
         }
     }
 
-    /* Finally start the text input system */
-    if (_this->StartTextInput) {
-        if (_this->StartTextInput(_this, window) < 0) {
-            return -1;
+    if (!window->text_input_active) {
+        /* Finally start the text input system */
+        if (_this->StartTextInput) {
+            if (_this->StartTextInput(_this, window) < 0) {
+                return -1;
+            }
         }
+        window->text_input_active = SDL_TRUE;
     }
-    window->text_input_active = SDL_TRUE;
     return 0;
 }
 
@@ -5053,11 +5055,13 @@ int SDL_StopTextInput(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, -1);
 
-    /* Stop the text input system */
-    if (_this->StopTextInput) {
-        _this->StopTextInput(_this, window);
+    if (window->text_input_active) {
+        /* Stop the text input system */
+        if (_this->StopTextInput) {
+            _this->StopTextInput(_this, window);
+        }
+        window->text_input_active = SDL_FALSE;
     }
-    window->text_input_active = SDL_FALSE;
 
     /* Hide the on-screen keyboard, if desired */
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
