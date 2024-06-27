@@ -1703,8 +1703,8 @@ static void METAL_CopyBufferToBuffer(
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalRenderer *renderer = metalCommandBuffer->renderer;
-    MetalBufferContainer *srcContainer = (MetalBufferContainer *)source;
-    MetalBufferContainer *dstContainer = (MetalBufferContainer *)destination;
+    MetalBufferContainer *srcContainer = (MetalBufferContainer *)source->buffer;
+    MetalBufferContainer *dstContainer = (MetalBufferContainer *)destination->buffer;
 
     MetalBuffer *srcBuffer = srcContainer->activeBuffer;
     MetalBuffer *dstBuffer = METAL_INTERNAL_PrepareBufferForWrite(
