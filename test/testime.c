@@ -49,8 +49,10 @@ static SDL_Color backColor = { 255, 255, 255, 255 };
 static SDL_Color textColor = { 0, 0, 0, 255 };
 static char text[MAX_TEXT_LENGTH], markedText[MAX_TEXT_LENGTH];
 static int cursor = 0;
+static int cursor_length = 0;
 static SDL_bool cursor_visible;
 static Uint64 last_cursor_change;
+static SDL_BlendMode highlight_mode;
 #ifdef HAVE_SDL_TTF
 static TTF_Font *font;
 #else
@@ -67,7 +69,7 @@ static TTF_Font *font;
 #define UNIFONT_NUM_TEXTURES      ((UNIFONT_NUM_GLYPHS + UNIFONT_GLYPHS_IN_TEXTURE - 1) / UNIFONT_GLYPHS_IN_TEXTURE)
 #define UNIFONT_TEXTURE_SIZE      (UNIFONT_TEXTURE_WIDTH * UNIFONT_TEXTURE_WIDTH * 4)
 #define UNIFONT_TEXTURE_PITCH     (UNIFONT_TEXTURE_WIDTH * 4)
-#define UNIFONT_DRAW_SCALE        2
+#define UNIFONT_DRAW_SCALE        2.0f
 static struct UnifontGlyph
 {
     Uint8 width;
@@ -508,7 +510,7 @@ static void RedrawWindow(int rendererID)
         drawnTextRect.h = dstrect.h;
 
         while ((codepoint = utf8_decode(utext, len = utf8_length(*utext))) != 0) {
-            Sint32 advance = unifont_draw_glyph(codepoint, rendererID, &dstrect) * UNIFONT_DRAW_SCALE;
+            float advance = unifont_draw_glyph(codepoint, rendererID, &dstrect) * UNIFONT_DRAW_SCALE;
             dstrect.x += advance;
             drawnTextRect.w += advance;
             utext += len;
@@ -564,6 +566,11 @@ static void RedrawWindow(int rendererID)
 
         SDL_RenderTexture(renderer, texture, NULL, &drawnTextRect);
         SDL_DestroyTexture(texture);
+
+        if (cursor_length > 0) {
+            /* FIXME: Need to measure text extents */
+            cursorRect.w = cursor_length * UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
+        }
 #else
         int i = 0;
         char *utext = markedText;
@@ -579,7 +586,7 @@ static void RedrawWindow(int rendererID)
         drawnTextRect.h = dstrect.h;
 
         while ((codepoint = utf8_decode(utext, len = utf8_length(*utext))) != 0) {
-            Sint32 advance = unifont_draw_glyph(codepoint, rendererID, &dstrect) * UNIFONT_DRAW_SCALE;
+            float advance = unifont_draw_glyph(codepoint, rendererID, &dstrect) * UNIFONT_DRAW_SCALE;
             dstrect.x += advance;
             drawnTextRect.w += advance;
             if (i < cursor) {
@@ -587,6 +594,10 @@ static void RedrawWindow(int rendererID)
             }
             i++;
             utext += len;
+        }
+
+        if (cursor_length > 0) {
+            cursorRect.w = cursor_length * UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
         }
 #endif
 
@@ -608,7 +619,13 @@ static void RedrawWindow(int rendererID)
         cursor_visible = !cursor_visible;
         last_cursor_change = now;
     }
-    if (cursor_visible) {
+    if (cursor_length > 0) {
+        /* We'll show a highlight */
+        SDL_SetRenderDrawBlendMode(renderer, highlight_mode);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderFillRect(renderer, &cursorRect);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    } else if (cursor_visible) {
         SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
         SDL_RenderFillRect(renderer, &cursorRect);
     }
@@ -709,6 +726,12 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
         SDL_RenderClear(renderer);
     }
+    highlight_mode = SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR,
+                                                SDL_BLENDFACTOR_ZERO,
+                                                SDL_BLENDOPERATION_ADD,
+                                                SDL_BLENDFACTOR_ZERO,
+                                                SDL_BLENDFACTOR_ONE,
+                                                SDL_BLENDOPERATION_ADD);
 
     /* Main render loop */
     done = 0;
@@ -788,6 +811,7 @@ int main(int argc, char *argv[])
 
                 SDL_strlcpy(markedText, event.edit.text, sizeof(markedText));
                 cursor = event.edit.start;
+                cursor_length = event.edit.length;
                 break;
 
             default:
