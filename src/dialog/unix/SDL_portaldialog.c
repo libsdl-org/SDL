@@ -261,7 +261,7 @@ cleanup:
         dbus->connection_remove_filter(conn, &DBus_MessageFilter, signal_data);
 
         if (path) {
-            for (size_t i = 0; i < length; ++i) {
+            for (size_t i = 0; i < current; ++i) {
                 SDL_free((char *)path[i]);
             }
         }
