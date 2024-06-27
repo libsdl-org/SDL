@@ -141,39 +141,6 @@ int main(int argc, char *argv[])
         SDL_free(test[0]);
     }
     SDL_free(fdata);
-
-    #if 0
-    {
-        Uint32 *ucs4buf;
-        Uint32 *ucs4ptr;
-        char *utf8out;
-        Uint32 cp;
-        SDL_IOStream *io;
-
-        fdata = (Uint8 *) (fname ? SDL_LoadFile(fname, &fdatalen) : NULL);
-        if (!fdata) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load %s\n", fname);
-            return 1;
-        }
-
-        ucs4buf = (Uint32 *) SDL_malloc(fdatalen * 4);
-        ucs4ptr = ucs4buf;
-
-        fdataptr = fdata;
-        while ((cp = SDL_StepUTF8((const char **) &fdataptr, &fdatalen)) != 0) {
-            *(ucs4ptr++) = SDL_Swap32BE(cp);
-        }
-        *(ucs4ptr++) = 0;
-        utf8out = SDL_iconv_string("UTF-8", "UCS-4", (const char *) ucs4buf, (size_t) ((ucs4ptr - ucs4buf)) * 4);
-        io = SDL_IOFromFile("test_steputf8.txt", "wb");
-        SDL_WriteIO(io, utf8out, SDL_strlen(utf8out));
-        SDL_CloseIO(io);
-        SDL_free(ucs4buf);
-        SDL_free(utf8out);
-        SDL_free(fdata);
-    }
-    #endif
-
     SDL_free(fname);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Total errors: %d\n", errors);
