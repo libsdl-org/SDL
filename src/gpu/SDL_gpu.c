@@ -584,6 +584,81 @@ void SDL_GpuReleaseGraphicsPipeline(
         graphicsPipeline);
 }
 
+/* Command Buffer */
+
+SDL_GpuCommandBuffer *SDL_GpuAcquireCommandBuffer(
+    SDL_GpuDevice *device)
+{
+    SDL_GpuCommandBuffer *commandBuffer;
+    CommandBufferCommonHeader *commandBufferHeader;
+    NULL_ASSERT(device);
+
+    commandBuffer = device->AcquireCommandBuffer(
+        device->driverData);
+
+    if (commandBuffer == NULL) {
+        return NULL;
+    }
+
+    commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
+    commandBufferHeader->device = device;
+    commandBufferHeader->renderPass.commandBuffer = commandBuffer;
+    commandBufferHeader->renderPass.inProgress = SDL_FALSE;
+    commandBufferHeader->graphicsPipelineBound = SDL_FALSE;
+    commandBufferHeader->computePass.commandBuffer = commandBuffer;
+    commandBufferHeader->computePass.inProgress = SDL_FALSE;
+    commandBufferHeader->computePipelineBound = SDL_FALSE;
+    commandBufferHeader->copyPass.commandBuffer = commandBuffer;
+    commandBufferHeader->copyPass.inProgress = SDL_FALSE;
+    commandBufferHeader->submitted = SDL_FALSE;
+
+    return commandBuffer;
+}
+
+/* Uniforms */
+
+void SDL_GpuPushVertexUniformData(
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 slotIndex,
+    const void *data,
+    Uint32 dataLengthInBytes)
+{
+    CHECK_COMMAND_BUFFER
+    COMMAND_BUFFER_DEVICE->PushVertexUniformData(
+        commandBuffer,
+        slotIndex,
+        data,
+        dataLengthInBytes);
+}
+
+void SDL_GpuPushFragmentUniformData(
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 slotIndex,
+    const void *data,
+    Uint32 dataLengthInBytes)
+{
+    CHECK_COMMAND_BUFFER
+    COMMAND_BUFFER_DEVICE->PushFragmentUniformData(
+        commandBuffer,
+        slotIndex,
+        data,
+        dataLengthInBytes);
+}
+
+void SDL_GpuPushComputeUniformData(
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 slotIndex,
+    const void *data,
+    Uint32 dataLengthInBytes)
+{
+    CHECK_COMMAND_BUFFER
+    COMMAND_BUFFER_DEVICE->PushComputeUniformData(
+        commandBuffer,
+        slotIndex,
+        data,
+        dataLengthInBytes);
+}
+
 /* Render Pass */
 
 SDL_GpuRenderPass *SDL_GpuBeginRenderPass(
@@ -770,38 +845,6 @@ void SDL_GpuBindFragmentStorageBuffers(
         bindingCount);
 }
 
-void SDL_GpuPushVertexUniformData(
-    SDL_GpuRenderPass *renderPass,
-    Uint32 slotIndex,
-    const void *data,
-    Uint32 dataLengthInBytes)
-{
-    NULL_ASSERT(renderPass)
-    CHECK_RENDERPASS
-    CHECK_GRAPHICS_PIPELINE_BOUND
-    RENDERPASS_DEVICE->PushVertexUniformData(
-        RENDERPASS_COMMAND_BUFFER,
-        slotIndex,
-        data,
-        dataLengthInBytes);
-}
-
-void SDL_GpuPushFragmentUniformData(
-    SDL_GpuRenderPass *renderPass,
-    Uint32 slotIndex,
-    const void *data,
-    Uint32 dataLengthInBytes)
-{
-    NULL_ASSERT(renderPass)
-    CHECK_RENDERPASS
-    CHECK_GRAPHICS_PIPELINE_BOUND
-    RENDERPASS_DEVICE->PushFragmentUniformData(
-        RENDERPASS_COMMAND_BUFFER,
-        slotIndex,
-        data,
-        dataLengthInBytes);
-}
-
 void SDL_GpuDrawIndexedPrimitives(
     SDL_GpuRenderPass *renderPass,
     Uint32 baseVertex,
@@ -956,22 +999,6 @@ void SDL_GpuBindComputeStorageBuffers(
         firstSlot,
         storageBuffers,
         bindingCount);
-}
-
-void SDL_GpuPushComputeUniformData(
-    SDL_GpuComputePass *computePass,
-    Uint32 slotIndex,
-    const void *data,
-    Uint32 dataLengthInBytes)
-{
-    NULL_ASSERT(computePass)
-    CHECK_COMPUTEPASS
-    CHECK_COMPUTE_PIPELINE_BOUND
-    COMPUTEPASS_DEVICE->PushComputeUniformData(
-        COMPUTEPASS_COMMAND_BUFFER,
-        slotIndex,
-        data,
-        dataLengthInBytes);
 }
 
 void SDL_GpuDispatchCompute(
@@ -1282,35 +1309,6 @@ SDL_GpuTextureFormat SDL_GpuGetSwapchainTextureFormat(
     return device->GetSwapchainTextureFormat(
         device->driverData,
         window);
-}
-
-SDL_GpuCommandBuffer *SDL_GpuAcquireCommandBuffer(
-    SDL_GpuDevice *device)
-{
-    SDL_GpuCommandBuffer *commandBuffer;
-    CommandBufferCommonHeader *commandBufferHeader;
-    NULL_ASSERT(device);
-
-    commandBuffer = device->AcquireCommandBuffer(
-        device->driverData);
-
-    if (commandBuffer == NULL) {
-        return NULL;
-    }
-
-    commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
-    commandBufferHeader->device = device;
-    commandBufferHeader->renderPass.commandBuffer = commandBuffer;
-    commandBufferHeader->renderPass.inProgress = SDL_FALSE;
-    commandBufferHeader->graphicsPipelineBound = SDL_FALSE;
-    commandBufferHeader->computePass.commandBuffer = commandBuffer;
-    commandBufferHeader->computePass.inProgress = SDL_FALSE;
-    commandBufferHeader->computePipelineBound = SDL_FALSE;
-    commandBufferHeader->copyPass.commandBuffer = commandBuffer;
-    commandBufferHeader->copyPass.inProgress = SDL_FALSE;
-    commandBufferHeader->submitted = SDL_FALSE;
-
-    return commandBuffer;
 }
 
 SDL_GpuTexture *SDL_GpuAcquireSwapchainTexture(

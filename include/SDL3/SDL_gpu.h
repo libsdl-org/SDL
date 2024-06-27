@@ -1142,6 +1142,107 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuReleaseGraphicsPipeline(
     SDL_GpuGraphicsPipeline *graphicsPipeline);
 
 /*
+ * COMMAND BUFFERS
+ *
+ * Render state is managed via command buffers.
+ * When setting render state, that state is always local to the command buffer.
+ *
+ * Commands only begin execution on the GPU once Submit is called.
+ * Once the command buffer is submitted, it is no longer valid to use it.
+ *
+ * In multi-threading scenarios, you should acquire and submit a command buffer on the same thread.
+ * As long as you satisfy this requirement, all functionality related to command buffers is thread-safe.
+ */
+
+/**
+ * Acquire a command buffer.
+ * This command buffer is managed by the implementation and should not be freed by the user.
+ * The command buffer may only be used on the thread it was acquired on.
+ * The command buffer should be submitted on the thread it was acquired on.
+ *
+ * \param device a GPU context
+ * \returns a command buffer
+ *
+ * \since This function is available since SDL 3.x.x
+ *
+ * \sa SDL_GpuSubmit
+ * \sa SDL_GpuSubmitAndAcquireFence
+ */
+extern SDL_DECLSPEC SDL_GpuCommandBuffer *SDLCALL SDL_GpuAcquireCommandBuffer(
+    SDL_GpuDevice *device);
+
+/*
+ * UNIFORM DATA
+ *
+ * Uniforms are for passing data to shaders.
+ * The uniform data will be constant across all executions of the shader.
+ *
+ * There are 4 available uniform slots per shader stage (vertex, fragment, compute).
+ * Uniform data pushed to a slot on a stage keeps its value throughout the command buffer
+ * until you call the relevant Push function on that slot again.
+ *
+ * For example, you could write your vertex shaders to read a camera matrix from uniform binding slot 0,
+ * push the camera matrix at the start of the command buffer, and that data will be used for every
+ * subsequent draw call.
+ *
+ * It is valid to push uniform data during a render or compute pass.
+ *
+ * Uniforms are best for pushing small amounts of data.
+ * If you are pushing more than a matrix or two per call you should consider using a storage buffer instead.
+ */
+
+/**
+ * Pushes data to a vertex uniform slot on the command buffer.
+ * Subsequent draw calls will use this uniform data.
+ *
+ * \param commandBuffer a command buffer
+ * \param slotIndex the vertex uniform slot to push data to
+ * \param data client data to write
+ * \param dataLengthInBytes the length of the data to write
+ *
+ * \since This function is available since SDL 3.x.x
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_GpuPushVertexUniformData(
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 slotIndex,
+    const void *data,
+    Uint32 dataLengthInBytes);
+
+/**
+ * Pushes data to a fragment uniform slot on the command buffer.
+ * Subsequent draw calls will use this uniform data.
+ *
+ * \param commandBuffer a command buffer
+ * \param slotIndex the fragment uniform slot to push data to
+ * \param data client data to write
+ * \param dataLengthInBytes the length of the data to write
+ *
+ * \since This function is available since SDL 3.x.x
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_GpuPushFragmentUniformData(
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 slotIndex,
+    const void *data,
+    Uint32 dataLengthInBytes);
+
+/**
+ * Pushes data to a uniform slot on the command buffer.
+ * Subsequent draw calls will use this uniform data.
+ *
+ * \param commandBuffer a command buffer
+ * \param slotIndex the uniform slot to push data to
+ * \param data client data to write
+ * \param dataLengthInBytes the length of the data to write
+ *
+ * \since This function is available since SDL 3.x.x
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_GpuPushComputeUniformData(
+    SDL_GpuCommandBuffer *commandBuffer,
+    Uint32 slotIndex,
+    const void *data,
+    Uint32 dataLengthInBytes);
+
+/*
  * A NOTE ON CYCLING
  *
  * When using a command buffer, operations do not occur immediately -
@@ -1375,40 +1476,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuBindFragmentStorageBuffers(
     SDL_GpuBuffer **storageBuffers,
     Uint32 bindingCount);
 
-/**
- * Pushes data to a vertex uniform slot on the bound graphics pipeline.
- * Subsequent draw calls will use this uniform data.
- *
- * \param renderPass a render pass handle
- * \param slotIndex the vertex uniform slot to push data to
- * \param data client data to write
- * \param dataLengthInBytes the length of the data to write
- *
- * \since This function is available since SDL 3.x.x
- */
-extern SDL_DECLSPEC void SDLCALL SDL_GpuPushVertexUniformData(
-    SDL_GpuRenderPass *renderPass,
-    Uint32 slotIndex,
-    const void *data,
-    Uint32 dataLengthInBytes);
-
-/**
- * Pushes data to a fragment uniform slot on the bound graphics pipeline.
- * Subsequent draw calls will use this uniform data.
- *
- * \param renderPass a render pass handle
- * \param slotIndex the fragment uniform slot to push data to
- * \param data client data to write
- * \param dataLengthInBytes the length of the data to write
- *
- * \since This function is available since SDL 3.x.x
- */
-extern SDL_DECLSPEC void SDLCALL SDL_GpuPushFragmentUniformData(
-    SDL_GpuRenderPass *renderPass,
-    Uint32 slotIndex,
-    const void *data,
-    Uint32 dataLengthInBytes);
-
 /* Drawing */
 
 /**
@@ -1574,23 +1641,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuBindComputeStorageBuffers(
     Uint32 firstSlot,
     SDL_GpuBuffer **storageBuffers,
     Uint32 bindingCount);
-
-/**
- * Pushes data to a uniform slot on the bound compute pipeline.
- * Subsequent draw calls will use this uniform data.
- *
- * \param computePass a compute pass handle
- * \param slotIndex the uniform slot to push data to
- * \param data client data to write
- * \param dataLengthInBytes the length of the data to write
- *
- * \since This function is available since SDL 3.x.x
- */
-extern SDL_DECLSPEC void SDLCALL SDL_GpuPushComputeUniformData(
-    SDL_GpuComputePass *computePass,
-    Uint32 slotIndex,
-    const void *data,
-    Uint32 dataLengthInBytes);
 
 /**
  * Dispatches compute work.
@@ -1962,23 +2012,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_GpuSetSwapchainParameters(
 extern SDL_DECLSPEC SDL_GpuTextureFormat SDLCALL SDL_GpuGetSwapchainTextureFormat(
     SDL_GpuDevice *device,
     SDL_Window *window);
-
-/**
- * Acquire a command buffer.
- * This command buffer is managed by the implementation and should not be freed by the user.
- * The command buffer may only be used on the thread it was acquired on.
- * The command buffer should be submitted on the thread it was acquired on.
- *
- * \param device a GPU context
- * \returns a command buffer
- *
- * \since This function is available since SDL 3.x.x
- *
- * \sa SDL_GpuSubmit
- * \sa SDL_GpuSubmitAndAcquireFence
- */
-extern SDL_DECLSPEC SDL_GpuCommandBuffer *SDLCALL SDL_GpuAcquireCommandBuffer(
-    SDL_GpuDevice *device);
 
 /**
  * Acquire a texture to use in presentation.
