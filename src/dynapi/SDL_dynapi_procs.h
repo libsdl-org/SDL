@@ -862,7 +862,7 @@ SDL_DYNAPI_PROC(int,SDL_UpdateTexture,(SDL_Texture *a, const SDL_Rect *b, const 
 SDL_DYNAPI_PROC(int,SDL_UpdateWindowSurface,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_UpdateWindowSurfaceRects,(SDL_Window *a, const SDL_Rect *b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_UpdateYUVTexture,(SDL_Texture *a, const SDL_Rect *b, const Uint8 *c, int d, const Uint8 *e, int f, const Uint8 *g, int h),(a,b,c,d,e,f,g,h),return)
-SDL_DYNAPI_PROC(SDL_bool,SDL_Vulkan_CreateSurface,(SDL_Window *a, VkInstance b, const struct VkAllocationCallbacks *c, VkSurfaceKHR *d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_Vulkan_CreateSurface,(SDL_Window *a, VkInstance b, const struct VkAllocationCallbacks *c, VkSurfaceKHR *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_Vulkan_DestroySurface,(VkInstance a, VkSurfaceKHR b, const struct VkAllocationCallbacks *c),(a,b,c),)
 SDL_DYNAPI_PROC(char const* const*,SDL_Vulkan_GetInstanceExtensions,(Uint32 *a),(a),return)
 SDL_DYNAPI_PROC(SDL_FunctionPointer,SDL_Vulkan_GetVkGetInstanceProcAddr,(void),(),return)

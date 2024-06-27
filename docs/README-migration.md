@@ -2005,6 +2005,8 @@ SDL_Vulkan_GetInstanceExtensions() no longer takes a window parameter, and no lo
 
 SDL_Vulkan_GetVkGetInstanceProcAddr() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to PFN_vkGetInstanceProcAddr.
 
+SDL_Vulkan_CreateSurface() now returns an int (0=success, -1=error) instead of an SDL_bool (true=success, false=error).
+
 SDL_Vulkan_CreateSurface() now takes a VkAllocationCallbacks pointer as its third parameter. If you don't have an allocator to supply, pass a NULL here to use the system default allocator (SDL2 always used the system default allocator here).
 
 SDL_Vulkan_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.

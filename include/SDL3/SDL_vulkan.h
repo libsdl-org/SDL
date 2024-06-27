@@ -172,14 +172,14 @@ extern SDL_DECLSPEC char const* const* SDLCALL SDL_Vulkan_GetInstanceExtensions(
  *                  allocator that creates the surface. Can be NULL.
  * \param surface a pointer to a VkSurfaceKHR handle to output the newly
  *                created surface.
- * \returns SDL_TRUE on success, SDL_FALSE on error.
+ * \returns 0 on success, -1 on error (check SDL_GetError() for specifics).
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Vulkan_GetInstanceExtensions
  * \sa SDL_Vulkan_DestroySurface
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
+extern SDL_DECLSPEC int SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
                                                           VkInstance instance,
                                                           const struct VkAllocationCallbacks *allocator,
                                                           VkSurfaceKHR* surface);
