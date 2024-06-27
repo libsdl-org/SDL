@@ -40,6 +40,8 @@
 #endif
 #define MAX_TEXT_LENGTH 256
 
+#define CURSOR_BLINK_INTERVAL_MS    500
+
 static SDLTest_CommonState *state;
 static SDL_FRect textRect, markedRect;
 static SDL_Color lineColor = { 0, 0, 0, 255 };
@@ -47,6 +49,8 @@ static SDL_Color backColor = { 255, 255, 255, 255 };
 static SDL_Color textColor = { 0, 0, 0, 255 };
 static char text[MAX_TEXT_LENGTH], markedText[MAX_TEXT_LENGTH];
 static int cursor = 0;
+static SDL_bool cursor_visible;
+static Uint64 last_cursor_change;
 #ifdef HAVE_SDL_TTF
 static TTF_Font *font;
 #else
@@ -461,17 +465,19 @@ static void CleanupVideo(void)
 #endif
 }
 
-static void _Redraw(int rendererID)
+static void RedrawWindow(int rendererID)
 {
     SDL_Renderer *renderer = state->renderers[rendererID];
     SDL_FRect drawnTextRect, cursorRect, underlineRect;
-    drawnTextRect.x = textRect.x;
-    drawnTextRect.y = 0;
-    drawnTextRect.w = 0;
-    drawnTextRect.h = 0;
 
     SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
     SDL_RenderFillRect(renderer, &textRect);
+
+    /* Initialize the drawn text rectangle for the cursor */
+    drawnTextRect.x = textRect.x;
+    drawnTextRect.y = textRect.y + (textRect.h - UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE) / 2;
+    drawnTextRect.w = 0.0f;
+    drawnTextRect.h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
 
     if (*text) {
 #ifdef HAVE_SDL_TTF
@@ -510,6 +516,7 @@ static void _Redraw(int rendererID)
 #endif
     }
 
+    /* The marked text rectangle is the text area that hasn't been filled by committed text */
     markedRect.x = textRect.x + drawnTextRect.w;
     markedRect.w = textRect.w - drawnTextRect.w;
     if (markedRect.w < 0) {
@@ -520,16 +527,14 @@ static void _Redraw(int rendererID)
         SDL_StartTextInput(state->windows[0]);
     }
 
-    cursorRect = drawnTextRect;
-    cursorRect.x += cursorRect.w;
-    cursorRect.w = 2;
-    cursorRect.h = drawnTextRect.h;
-
+    /* Update the drawn text rectangle for composition text, after the committed text */
     drawnTextRect.x += drawnTextRect.w;
     drawnTextRect.w = 0;
 
-    SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
-    SDL_RenderFillRect(renderer, &markedRect);
+    /* Set the cursor to the new location, we'll update it as we go, below */
+    cursorRect = drawnTextRect;
+    cursorRect.w = 2;
+    cursorRect.h = drawnTextRect.h;
 
     if (markedText[0]) {
 #ifdef HAVE_SDL_TTF
@@ -585,10 +590,8 @@ static void _Redraw(int rendererID)
         }
 #endif
 
-        if (cursor > 0) {
-            cursorRect.y = drawnTextRect.y;
-            cursorRect.h = drawnTextRect.h;
-        }
+        cursorRect.y = drawnTextRect.y;
+        cursorRect.h = drawnTextRect.h;
 
         underlineRect = markedRect;
         underlineRect.y = drawnTextRect.y + drawnTextRect.h - 2;
@@ -599,16 +602,25 @@ static void _Redraw(int rendererID)
         SDL_RenderFillRect(renderer, &underlineRect);
     }
 
-    SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
-    SDL_RenderFillRect(renderer, &cursorRect);
+    /* Draw the cursor */
+    Uint64 now = SDL_GetTicks();
+    if ((now - last_cursor_change) >= CURSOR_BLINK_INTERVAL_MS) {
+        cursor_visible = !cursor_visible;
+        last_cursor_change = now;
+    }
+    if (cursor_visible) {
+        SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
+        SDL_RenderFillRect(renderer, &cursorRect);
+    }
 
     {
         SDL_Rect inputrect;
 
-        inputrect.x = (int)markedRect.x;
-        inputrect.y = (int)markedRect.y;
-        inputrect.w = (int)markedRect.w;
-        inputrect.h = (int)markedRect.h;
+        /* The input rect is a square at the cursor insertion point */
+        inputrect.x = (int)cursorRect.x;
+        inputrect.y = (int)cursorRect.y;
+        inputrect.w = (int)cursorRect.h;
+        inputrect.h = (int)cursorRect.h;
         SDL_SetTextInputRect(state->windows[0], &inputrect);
     }
 }
@@ -625,7 +637,7 @@ static void Redraw(void)
         SDL_RenderClear(renderer);
 
         /* Sending in the window id to let the font renderers know which one we're working with. */
-        _Redraw(i);
+        RedrawWindow(i);
 
         SDL_RenderPresent(renderer);
     }
@@ -697,7 +709,7 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
         SDL_RenderClear(renderer);
     }
-    Redraw();
+
     /* Main render loop */
     done = 0;
     while (!done) {
@@ -709,7 +721,6 @@ int main(int argc, char *argv[])
                 switch (event.key.key) {
                 case SDLK_RETURN:
                     text[0] = 0x00;
-                    Redraw();
                     break;
                 case SDLK_BACKSPACE:
                     /* Only delete text if not in editing mode. */
@@ -736,8 +747,6 @@ int main(int argc, char *argv[])
                                 break;
                             }
                         } while (1);
-
-                        Redraw();
                     }
                     break;
                 default:
@@ -771,7 +780,6 @@ int main(int argc, char *argv[])
                 /* After text inputted, we can clear up markedText because it */
                 /* is committed */
                 markedText[0] = 0;
-                Redraw();
                 break;
 
             case SDL_EVENT_TEXT_EDITING:
@@ -780,13 +788,14 @@ int main(int argc, char *argv[])
 
                 SDL_strlcpy(markedText, event.edit.text, sizeof(markedText));
                 cursor = event.edit.start;
-                Redraw();
                 break;
 
             default:
                 break;
             }
         }
+
+        Redraw();
     }
     SDL_free(fontname);
     CleanupVideo();
