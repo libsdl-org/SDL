@@ -155,7 +155,8 @@ typedef enum SDL_EventType
     SDL_EVENT_MOUSE_ADDED,             /**< A new mouse has been inserted into the system */
     SDL_EVENT_MOUSE_REMOVED,           /**< A mouse has been removed */
     SDL_EVENT_MOUSE_RAW_MOTION,        /**< Mouse moved (raw motion deltas) */
-    SDL_EVENT_MOUSE_RAW_BUTTON,        /**< Mouse button signalled (raw button delta) */
+    SDL_EVENT_MOUSE_RAW_BUTTON,        /**< Mouse click (raw button delta) */
+    SDL_EVENT_MOUSE_RAW_SCROLL,         /**< Mouse wheel (raw scroll deltas) */
 
     /* Joystick events */
     SDL_EVENT_JOYSTICK_AXIS_MOTION  = 0x600, /**< Joystick axis motion */
@@ -389,19 +390,19 @@ typedef struct SDL_MouseMotionEvent
 } SDL_MouseMotionEvent;
 
 /**
- * Mouse raw relative motion event structure (event.rmotion.*)
+ * Mouse raw motion and wheel event structure (event.maxis.*)
  *
  * \since This struct is available since SDL 3.0.0.
  */
-typedef struct SDL_MouseRawMotionEvent
+typedef struct SDL_MouseRawAxisEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_MOUSE_RAW_MOTION */
+    SDL_EventType type; /**< SDL_EVENT_MOUSE_RAW_MOTION or SDL_EVENT_MOUSE_RAW_SCROLL */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID, or SDL_PEN_MOUSEID */
-    Sint32 dx;         /**< The relative motion in the X direction */
-    Sint32 dy;         /**< The relative motion in the Y direction */
-} SDL_MouseRawMotionEvent;
+    Sint32 dx;         /**< The axis delta value in the X direction */
+    Sint32 dy;         /**< The axis delta value in the Y direction */
+} SDL_MouseRawAxisEvent;
 
 /**
  * Mouse button event structure (event.button.*)
@@ -424,7 +425,7 @@ typedef struct SDL_MouseButtonEvent
 } SDL_MouseButtonEvent;
 
 /**
- * Mouse raw button event structure (event.rbutton.*)
+ * Mouse raw button event structure (event.mbutton.*)
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -860,10 +861,10 @@ typedef union SDL_Event
     SDL_TextInputEvent text;                /**< Text input event data */
     SDL_MouseDeviceEvent mdevice;           /**< Mouse device change event data */
     SDL_MouseMotionEvent motion;            /**< Mouse motion event data */
-    SDL_MouseRawMotionEvent rmotion;        /**< Mouse motion event data (raw motion deltas) */
     SDL_MouseButtonEvent button;            /**< Mouse button event data */
-    SDL_MouseRawButtonEvent rbutton;        /**< Mouse button event data (raw button deltas) */
     SDL_MouseWheelEvent wheel;              /**< Mouse wheel event data */
+    SDL_MouseRawAxisEvent maxis;            /**< Mouse raw axis event data (motion or wheel deltas) */
+    SDL_MouseRawButtonEvent mbutton;        /**< Mouse raw button event data */
     SDL_JoyDeviceEvent jdevice;             /**< Joystick device change event data */
     SDL_JoyAxisEvent jaxis;                 /**< Joystick axis event data */
     SDL_JoyBallEvent jball;                 /**< Joystick ball event data */

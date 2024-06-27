@@ -529,7 +529,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
     
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_MOTION)) {
         if (haveMotion && !isAbsolute) {
-            SDL_SendRawMouseMotion(timestamp, mouseID, xraw, yraw);
+            SDL_SendRawMouseAxis(timestamp, mouseID, xraw, yraw, SDL_EVENT_MOUSE_RAW_MOTION);
         }
     }
     
@@ -543,6 +543,17 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                     SDL_SendRawMouseButton(timestamp, mouseID, state, button);
                 }
                 flagBits = flagBits >> 1;
+            }
+        }
+    }
+    
+    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_SCROLL)) {
+        if (haveButton) {
+            short amount = (short)rawmouse->usButtonData;
+            if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
+                SDL_SendRawMouseAxis(timestamp, mouseID, 0, (Sint32)amount, SDL_EVENT_MOUSE_RAW_SCROLL);
+            } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
+                SDL_SendRawMouseAxis(timestamp, mouseID, (Sint32)amount, 0, SDL_EVENT_MOUSE_RAW_SCROLL);
             }
         }
     }

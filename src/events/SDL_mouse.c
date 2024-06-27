@@ -571,17 +571,17 @@ int SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
     return SDL_PrivateSendMouseMotion(timestamp, window, mouseID, relative, x, y);
 }
 
-int SDL_SendRawMouseMotion(Uint64 timestamp, SDL_MouseID mouseID, Sint32 dx, Sint32 dy)
+int SDL_SendRawMouseAxis(Uint64 timestamp, SDL_MouseID mouseID, Sint32 dx, Sint32 dy, SDL_EventType type)
 {
     int posted;
     posted = 0;
-    if (SDL_EventEnabled(SDL_EVENT_MOUSE_RAW_MOTION)) {
+    if (SDL_EventEnabled(type)) {
         SDL_Event event;
-        event.type = SDL_EVENT_MOUSE_RAW_MOTION;
+        event.type = type;
         event.common.timestamp = timestamp;
-        event.rmotion.which = mouseID;
-        event.rmotion.dx = dx;
-        event.rmotion.dy = dy;
+        event.maxis.which = mouseID;
+        event.maxis.dx = dx;
+        event.maxis.dy = dy;
         posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;
@@ -595,9 +595,9 @@ int SDL_SendRawMouseButton(Uint64 timestamp, SDL_MouseID mouseID, Uint8 state, U
         SDL_Event event;
         event.type = SDL_EVENT_MOUSE_RAW_BUTTON;
         event.common.timestamp = timestamp;
-        event.rbutton.which = mouseID;
-        event.rbutton.button = button;
-        event.rbutton.state = state;
+        event.mbutton.which = mouseID;
+        event.mbutton.button = button;
+        event.mbutton.state = state;
         posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;
