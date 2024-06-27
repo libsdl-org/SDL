@@ -124,12 +124,15 @@ static SDL_INLINE int IntMax(int a, int b)
 /* Return width and height for a string. */
 static void GetTextWidthHeight(SDL_MessageBoxDataX11 *data, const char *str, int nbytes, int *pwidth, int *pheight)
 {
+#ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
         XRectangle overall_ink, overall_logical;
         X11_Xutf8TextExtents(data->font_set, str, nbytes, &overall_ink, &overall_logical);
         *pwidth = overall_logical.width;
         *pheight = overall_logical.height;
-    } else {
+    } else
+#endif
+    {
         XCharStruct text_structure;
         int font_direction, font_ascent, font_descent;
         X11_XTextExtents(data->font_struct, str, nbytes,
@@ -185,6 +188,7 @@ static int X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBoxD
         return SDL_SetError("Couldn't open X11 display");
     }
 
+#ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
         char **missing = NULL;
         int num_missing = 0;
@@ -196,7 +200,9 @@ static int X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBoxD
         if (!data->font_set) {
             return SDL_SetError("Couldn't load font %s", g_MessageBoxFont);
         }
-    } else {
+    } else
+#endif
+    {
         data->font_struct = X11_XLoadQueryFont(data->display, g_MessageBoxFontLatin1);
         if (!data->font_struct) {
             return SDL_SetError("Couldn't load font %s", g_MessageBoxFontLatin1);
@@ -534,11 +540,14 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx)
     for (i = 0; i < data->numlines; i++) {
         TextLineData *plinedata = &data->linedata[i];
 
+#ifdef X_HAVE_UTF8_STRING
         if (SDL_X11_HAVE_UTF8) {
             X11_Xutf8DrawString(display, window, data->font_set, ctx,
                                 data->xtext, data->ytext + i * data->text_height,
                                 plinedata->text, plinedata->length);
-        } else {
+        } else
+#endif
+        {
             X11_XDrawString(display, window, ctx,
                             data->xtext, data->ytext + i * data->text_height,
                             plinedata->text, plinedata->length);
@@ -563,12 +572,15 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx)
 
         X11_XSetForeground(display, ctx, (data->mouse_over_index == i) ? data->color[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] : data->color[SDL_MESSAGEBOX_COLOR_TEXT]);
 
+#ifdef X_HAVE_UTF8_STRING
         if (SDL_X11_HAVE_UTF8) {
             X11_Xutf8DrawString(display, window, data->font_set, ctx,
                                 buttondatax11->x + offset,
                                 buttondatax11->y + offset,
                                 buttondata->text, buttondatax11->length);
-        } else {
+        } else
+#endif
+        {
             X11_XDrawString(display, window, ctx,
                             buttondatax11->x + offset, buttondatax11->y + offset,
                             buttondata->text, buttondatax11->length);
@@ -602,12 +614,17 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
     SDL_bool has_focus = SDL_TRUE;
     KeySym last_key_pressed = XK_VoidSymbol;
     unsigned long gcflags = GCForeground | GCBackground;
+#ifdef X_HAVE_UTF8_STRING
+    const int have_utf8 = SDL_X11_HAVE_UTF8;
+#else
+    const int have_utf8 = 0;
+#endif
 
     SDL_zero(ctx_vals);
     ctx_vals.foreground = data->color[SDL_MESSAGEBOX_COLOR_BACKGROUND];
     ctx_vals.background = data->color[SDL_MESSAGEBOX_COLOR_BACKGROUND];
 
-    if (!SDL_X11_HAVE_UTF8) {
+    if (!have_utf8) {
         gcflags |= GCFont;
         ctx_vals.font = data->font_struct->fid;
     }
