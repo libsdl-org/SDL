@@ -2743,6 +2743,10 @@ CheckVulkan()
                   #endif
                 ]],[])], [],[enable_video_vulkan=no])
                 ;;
+            *-*-solaris*)
+dnl             Strictly speaking, what's missing here is libxcb. Even without Vulkan support at the OS level, it should still compile if we had that.
+                enable_video_vulkan=no
+                ;;
             *-*-darwin*)
                 save_CFLAGS="$CFLAGS"
 dnl             Work around that we don't have Objective-C support in autoconf
