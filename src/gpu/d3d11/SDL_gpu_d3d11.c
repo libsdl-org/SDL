@@ -3240,7 +3240,7 @@ static D3D11CommandBuffer *D3D11_INTERNAL_GetInactiveCommandBufferFromPool(
     return commandBuffer;
 }
 
-static Uint8 D3D11_INTERNAL_CreateFence(
+static SDL_bool D3D11_INTERNAL_CreateFence(
     D3D11Renderer *renderer)
 {
     D3D11_QUERY_DESC queryDesc;
@@ -3271,10 +3271,10 @@ static Uint8 D3D11_INTERNAL_CreateFence(
     renderer->availableFences[renderer->availableFenceCount] = fence;
     renderer->availableFenceCount += 1;
 
-    return 1;
+    return SDL_TRUE;
 }
 
-static Uint8 D3D11_INTERNAL_AcquireFence(
+static SDL_bool D3D11_INTERNAL_AcquireFence(
     D3D11CommandBuffer *commandBuffer)
 {
     D3D11CommandBuffer *d3d11CommandBuffer = (D3D11CommandBuffer *)commandBuffer;
@@ -3288,7 +3288,7 @@ static Uint8 D3D11_INTERNAL_AcquireFence(
         if (!D3D11_INTERNAL_CreateFence(renderer)) {
             SDL_UnlockMutex(renderer->fenceLock);
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create fence!");
-            return 0;
+            return SDL_FALSE;
         }
     }
 
@@ -3301,7 +3301,7 @@ static Uint8 D3D11_INTERNAL_AcquireFence(
     commandBuffer->fence = fence;
     (void)SDL_AtomicIncRef(&commandBuffer->fence->referenceCount);
 
-    return 1;
+    return SDL_TRUE;
 }
 
 static SDL_GpuCommandBuffer *D3D11_AcquireCommandBuffer(
@@ -4970,7 +4970,7 @@ static D3D11WindowData *D3D11_INTERNAL_FetchWindowData(
     return (D3D11WindowData *)SDL_GetProperty(properties, WINDOW_PROPERTY_DATA, NULL);
 }
 
-static Uint8 D3D11_INTERNAL_InitializeSwapchainTexture(
+static SDL_bool D3D11_INTERNAL_InitializeSwapchainTexture(
     D3D11Renderer *renderer,
     IDXGISwapChain *swapchain,
     DXGI_FORMAT swapchainFormat,
@@ -5012,7 +5012,7 @@ static Uint8 D3D11_INTERNAL_InitializeSwapchainTexture(
     if (FAILED(res)) {
         ID3D11Texture2D_Release(swapchainTexture);
         D3D11_INTERNAL_LogError(renderer->device, "Swapchain SRV creation failed", res);
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Create the RTV for the swapchain */
@@ -5029,7 +5029,7 @@ static Uint8 D3D11_INTERNAL_InitializeSwapchainTexture(
         ID3D11ShaderResourceView_Release(srv);
         ID3D11Texture2D_Release(swapchainTexture);
         D3D11_INTERNAL_LogError(renderer->device, "Swapchain RTV creation failed", res);
-        return 0;
+        return SDL_FALSE;
     }
 
     uavDesc.Format = swapchainFormat;
@@ -5046,7 +5046,7 @@ static Uint8 D3D11_INTERNAL_InitializeSwapchainTexture(
         ID3D11RenderTargetView_Release(rtv);
         ID3D11Texture2D_Release(swapchainTexture);
         D3D11_INTERNAL_LogError(renderer->device, "Swapchain UAV creation failed", res);
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Fill out the texture struct */
@@ -5077,10 +5077,10 @@ static Uint8 D3D11_INTERNAL_InitializeSwapchainTexture(
     /* Cleanup */
     ID3D11Texture2D_Release(swapchainTexture);
 
-    return 1;
+    return SDL_TRUE;
 }
 
-static Uint8 D3D11_INTERNAL_CreateSwapchain(
+static SDL_bool D3D11_INTERNAL_CreateSwapchain(
     D3D11Renderer *renderer,
     D3D11WindowData *windowData,
     SDL_GpuSwapchainComposition swapchainComposition,
@@ -5198,7 +5198,7 @@ static Uint8 D3D11_INTERNAL_CreateSwapchain(
 
         if (!(colorSpaceSupport & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Requested colorspace is unsupported!");
-            return 0;
+            return SDL_FALSE;
         }
 
         IDXGISwapChain3_SetColorSpace1(
@@ -5208,7 +5208,7 @@ static Uint8 D3D11_INTERNAL_CreateSwapchain(
         IDXGISwapChain3_Release(swapchain3);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DXGI 1.4 not supported, cannot use colorspace other than SDL_GPU_COLORSPACE_NONLINEAR_SRGB!");
-        return 0;
+        return SDL_FALSE;
     }
 
     /* If a you are using a FLIP model format you can't create the swapchain as DXGI_FORMAT_B8G8R8A8_UNORM_SRGB.
@@ -5221,17 +5221,17 @@ static Uint8 D3D11_INTERNAL_CreateSwapchain(
             (swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR) ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : windowData->swapchainFormat,
             &windowData->texture)) {
         IDXGISwapChain_Release(swapchain);
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Initialize dummy container */
     SDL_zerop(&windowData->textureContainer);
     windowData->textureContainer.textures = SDL_calloc(1, sizeof(D3D11Texture *));
 
-    return 1;
+    return SDL_TRUE;
 }
 
-static Uint8 D3D11_INTERNAL_ResizeSwapchain(
+static SDL_bool D3D11_INTERNAL_ResizeSwapchain(
     D3D11Renderer *renderer,
     D3D11WindowData *windowData,
     Sint32 width,
@@ -5334,15 +5334,15 @@ static SDL_bool D3D11_ClaimWindow(
 
             SDL_UnlockMutex(renderer->windowLock);
 
-            return 1;
+            return SDL_TRUE;
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create swapchain, failed to claim window!");
             SDL_free(windowData);
-            return 0;
+            return SDL_FALSE;
         }
     } else {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Window already claimed!");
-        return 0;
+        return SDL_FALSE;
     }
 }
 
@@ -5530,7 +5530,7 @@ static SDL_GpuTextureFormat D3D11_GetSwapchainTextureFormat(
     }
 }
 
-static void D3D11_SetSwapchainParameters(
+static SDL_bool D3D11_SetSwapchainParameters(
     SDL_GpuRenderer *driverData,
     SDL_Window *window,
     SDL_GpuSwapchainComposition swapchainComposition,
@@ -5538,6 +5538,21 @@ static void D3D11_SetSwapchainParameters(
 {
     D3D11Renderer *renderer = (D3D11Renderer *)driverData;
     D3D11WindowData *windowData = D3D11_INTERNAL_FetchWindowData(window);
+
+    if (windowData == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Cannot set swapchain parameters on unclaimed window!");
+        return SDL_FALSE;
+    }
+
+    if (!D3D11_SupportsSwapchainComposition(driverData, window, swapchainComposition)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Swapchain composition not supported!");
+        return SDL_FALSE;
+    }
+
+    if (!D3D11_SupportsPresentMode(driverData, window, presentMode)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Present mode not supported!");
+        return SDL_FALSE;
+    }
 
     if (
         swapchainComposition != windowData->swapchainComposition ||
@@ -5549,12 +5564,14 @@ static void D3D11_SetSwapchainParameters(
             renderer,
             windowData);
 
-        D3D11_INTERNAL_CreateSwapchain(
+        return D3D11_INTERNAL_CreateSwapchain(
             renderer,
             windowData,
             swapchainComposition,
             presentMode);
     }
+
+    return SDL_TRUE;
 }
 
 /* Submission */
@@ -5782,7 +5799,7 @@ static SDL_bool D3D11_IsTextureFormatSupported(
 
 /* Device Creation */
 
-static Uint8 D3D11_PrepareDriver(SDL_VideoDevice *_this)
+static SDL_bool D3D11_PrepareDriver(SDL_VideoDevice *_this)
 {
     void *d3d11_dll, *dxgi_dll, *d3dcompiler_dll;
     PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
@@ -5796,7 +5813,7 @@ static Uint8 D3D11_PrepareDriver(SDL_VideoDevice *_this)
     d3d11_dll = SDL_LoadObject(D3D11_DLL);
     if (d3d11_dll == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11: Could not find " D3D11_DLL);
-        return 0;
+        return SDL_FALSE;
     }
 
     D3D11CreateDeviceFunc = (PFN_D3D11_CREATE_DEVICE)SDL_LoadFunction(
@@ -5805,7 +5822,7 @@ static Uint8 D3D11_PrepareDriver(SDL_VideoDevice *_this)
     if (D3D11CreateDeviceFunc == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11: Could not find function " D3D11_CREATE_DEVICE_FUNC " in " D3D11_DLL);
         SDL_UnloadObject(d3d11_dll);
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Can we create a device? */
@@ -5826,7 +5843,7 @@ static Uint8 D3D11_PrepareDriver(SDL_VideoDevice *_this)
 
     if (FAILED(res)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11: Could not create D3D11Device with feature level 11_0");
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Can we load DXGI? */
@@ -5834,7 +5851,7 @@ static Uint8 D3D11_PrepareDriver(SDL_VideoDevice *_this)
     dxgi_dll = SDL_LoadObject(DXGI_DLL);
     if (dxgi_dll == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11: Could not find " DXGI_DLL);
-        return 0;
+        return SDL_FALSE;
     }
 
     CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY1)SDL_LoadFunction(
@@ -5843,7 +5860,7 @@ static Uint8 D3D11_PrepareDriver(SDL_VideoDevice *_this)
     SDL_UnloadObject(dxgi_dll); /* We're not going to call this function, so we can just unload now. */
     if (CreateDXGIFactoryFunc == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11: Could not find function " CREATE_DXGI_FACTORY1_FUNC " in " DXGI_DLL);
-        return 0;
+        return SDL_FALSE;
     }
 
     /* Can we load D3DCompiler? */
@@ -5851,7 +5868,7 @@ static Uint8 D3D11_PrepareDriver(SDL_VideoDevice *_this)
     d3dcompiler_dll = SDL_LoadObject(D3DCOMPILER_DLL);
     if (d3dcompiler_dll == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11: Could not find " D3DCOMPILER_DLL);
-        return 0;
+        return SDL_FALSE;
     }
 
     D3DCompileFunc = (PFN_D3DCOMPILE)SDL_LoadFunction(
@@ -5860,10 +5877,10 @@ static Uint8 D3D11_PrepareDriver(SDL_VideoDevice *_this)
     SDL_UnloadObject(d3dcompiler_dll); /* We're not going to call this function, so we can just unload now. */
     if (D3DCompileFunc == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11: Could not find function D3DCompile in " D3DCOMPILER_DLL);
-        return 0;
+        return SDL_FALSE;
     }
 
-    return 1;
+    return SDL_TRUE;
 }
 
 static void D3D11_INTERNAL_TryInitializeDXGIDebug(D3D11Renderer *renderer)

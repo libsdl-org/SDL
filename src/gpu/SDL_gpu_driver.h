@@ -538,7 +538,7 @@ struct SDL_GpuDevice
         SDL_GpuRenderer *driverData,
         SDL_Window *window);
 
-    void (*SetSwapchainParameters)(
+    SDL_bool (*SetSwapchainParameters)(
         SDL_GpuRenderer *driverData,
         SDL_Window *window,
         SDL_GpuSwapchainComposition swapchainComposition,
@@ -684,7 +684,7 @@ typedef struct SDL_GpuDriver
 {
     const char *Name;
     const SDL_GpuBackend backendflag;
-    Uint8 (*PrepareDriver)(SDL_VideoDevice *_this);
+    SDL_bool (*PrepareDriver)(SDL_VideoDevice *_this);
     SDL_GpuDevice *(*CreateDevice)(SDL_bool debugMode);
 } SDL_GpuDriver;
 

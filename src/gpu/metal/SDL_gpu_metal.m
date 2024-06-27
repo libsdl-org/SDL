@@ -3537,7 +3537,7 @@ static SDL_GpuTextureFormat METAL_GetSwapchainTextureFormat(
     return windowData->textureContainer.createInfo.format;
 }
 
-static void METAL_SetSwapchainParameters(
+static SDL_bool METAL_SetSwapchainParameters(
     SDL_GpuRenderer *driverData,
     SDL_Window *window,
     SDL_GpuSwapchainComposition swapchainComposition,
@@ -3548,7 +3548,17 @@ static void METAL_SetSwapchainParameters(
 
     if (windowData == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Cannot set swapchain parameters, window has not been claimed!");
-        return;
+        return SDL_FALSE;
+    }
+
+    if (!METAL_SupportsSwapchainComposition(driverData, window, swapchainComposition)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Swapchain composition not supported!");
+        return SDL_FALSE;
+    }
+
+    if (!METAL_SupportsPresentMode(driverData, window, presentMode)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Present mode not supported!");
+        return SDL_FALSE;
     }
 
     METAL_Wait(driverData);
@@ -3566,6 +3576,8 @@ static void METAL_SetSwapchainParameters(
     CGColorSpaceRelease(colorspace);
 
     windowData->textureContainer.createInfo.format = SwapchainCompositionToFormat[swapchainComposition];
+
+    return SDL_TRUE;
 }
 
 /* Submission */
@@ -3714,7 +3726,7 @@ static SDL_bool METAL_IsTextureFormatSupported(
 
 /* Device Creation */
 
-static Uint8 METAL_PrepareDriver(SDL_VideoDevice *_this)
+static SDL_bool METAL_PrepareDriver(SDL_VideoDevice *_this)
 {
     /* FIXME: Add a macOS / iOS version check! Maybe support >= 10.14? */
     return (_this->Metal_CreateView != NULL);

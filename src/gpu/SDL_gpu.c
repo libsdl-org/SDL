@@ -1285,14 +1285,14 @@ void SDL_GpuUnclaimWindow(
         window);
 }
 
-void SDL_GpuSetSwapchainParameters(
+SDL_bool SDL_GpuSetSwapchainParameters(
     SDL_GpuDevice *device,
     SDL_Window *window,
     SDL_GpuSwapchainComposition swapchainFormat,
     SDL_GpuPresentMode presentMode)
 {
     NULL_ASSERT(device);
-    device->SetSwapchainParameters(
+    return device->SetSwapchainParameters(
         device->driverData,
         window,
         swapchainFormat,
