@@ -52,6 +52,7 @@ static TTF_Font *font;
 #else
 #define UNIFONT_MAX_CODEPOINT     0x1ffff
 #define UNIFONT_NUM_GLYPHS        0x20000
+#define UNIFONT_REPLACEMENT       0xFFFD
 /* Using 512x512 textures that are supported everywhere. */
 #define UNIFONT_TEXTURE_WIDTH     512
 #define UNIFONT_GLYPHS_IN_ROW     (UNIFONT_TEXTURE_WIDTH / 16)
@@ -228,8 +229,7 @@ static int unifont_init(const char *fontname)
     return 0;
 }
 
-static void
-unifont_make_rgba(const Uint8 *src, Uint8 *dst, Uint8 width)
+static void unifont_make_rgba(const Uint8 *src, Uint8 *dst, Uint8 width)
 {
     int i, j;
     Uint8 *row = dst;
@@ -313,12 +313,16 @@ static int unifont_load_texture(Uint32 textureID)
 static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_FRect *dst)
 {
     SDL_Texture *texture;
-    const Uint32 textureID = codepoint / UNIFONT_GLYPHS_IN_TEXTURE;
+    Uint32 textureID;
     SDL_FRect srcrect;
     srcrect.w = srcrect.h = 16.0f;
-    if (codepoint > UNIFONT_MAX_CODEPOINT) {
-        return 0;
+
+    if (codepoint > UNIFONT_MAX_CODEPOINT ||
+        unifontGlyph[codepoint].width == 0) {
+        codepoint = UNIFONT_REPLACEMENT;
     }
+
+    textureID = codepoint / UNIFONT_GLYPHS_IN_TEXTURE;
     if (!unifontTextureLoaded[textureID]) {
         if (unifont_load_texture(textureID) < 0) {
             return 0;
