@@ -306,17 +306,25 @@ static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex);
 static void IME_SendEditingEvent(SDL_VideoData *videodata);
 static void IME_SendClearComposition(SDL_VideoData *videodata);
 
-static SDL_bool WIN_ShouldShowNativeUI()
-{
-    return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_TRUE);
-}
-
 static int IME_Init(SDL_VideoData *videodata, SDL_Window *window)
 {
     HWND hwnd = window->driverdata->hwnd;
 
     if (videodata->ime_initialized) {
         return 0;
+    }
+
+    const char *hint = SDL_GetHint(SDL_HINT_IME_NATIVE_UI);
+    if (!hint || !*hint || *hint == '1' || SDL_strstr(hint, "all")) {
+        videodata->ime_native_composition = SDL_TRUE;
+        videodata->ime_native_candidates = SDL_TRUE;
+    } else {
+        if (SDL_strstr(hint, "composition")) {
+            videodata->ime_native_composition = SDL_TRUE;
+        }
+        if (SDL_strstr(hint, "candidates")) {
+            videodata->ime_native_candidates = SDL_TRUE;
+        }
     }
 
     videodata->ime_hwnd_main = hwnd;
@@ -345,11 +353,6 @@ static int IME_Init(SDL_VideoData *videodata, SDL_Window *window)
     videodata->ime_available = SDL_TRUE;
     IME_UpdateInputLocale(videodata);
     IME_SetupAPI(videodata);
-    if (WIN_ShouldShowNativeUI()) {
-        videodata->ime_uiless = SDL_FALSE;
-    } else {
-        videodata->ime_uiless = SDL_TRUE;
-    }
     IME_UpdateInputLocale(videodata);
     IME_Disable(videodata, hwnd);
     return 0;
@@ -541,7 +544,8 @@ static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex)
 
     SDL_assert(uIndex == 0);
     dwLang = ((DWORD_PTR)hkl & 0xffff);
-    if (videodata->ime_uiless && dwLang == LANG_CHT) {
+    // FIXME: What does this do?
+    if (!videodata->ime_native_candidates && dwLang == LANG_CHT) {
         dwRet[0] = IMEID_CHT_VER_VISTA;
         dwRet[1] = 0;
         return dwRet[0];
@@ -972,9 +976,21 @@ SDL_bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam
 
     if (msg == WM_IME_SETCONTEXT) {
         SDL_DebugIMELog("WM_IME_SETCONTEXT\n");
-        if (videodata->ime_uiless) {
-            *lParam = 0;
+
+        LPARAM element_mask;
+        if (!videodata->ime_native_composition && !videodata->ime_native_candidates) {
+            element_mask = 0;
+        } else {
+            element_mask = ISC_SHOWUIALL;
+            if (!videodata->ime_native_composition) {
+                element_mask &= ~ISC_SHOWUICOMPOSITIONWINDOW;
+            }
+            if (!videodata->ime_native_candidates) {
+                element_mask &= ~ISC_SHOWUIALLCANDIDATEWINDOW;
+            }
         }
+        *lParam &= element_mask;
+
         return SDL_FALSE;
     }
 
@@ -997,34 +1013,41 @@ SDL_bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam
         break;
     case WM_IME_STARTCOMPOSITION:
         SDL_DebugIMELog("WM_IME_STARTCOMPOSITION\n");
-        trap = SDL_TRUE;
+        if (!videodata->ime_native_composition) {
+            trap = SDL_TRUE;
+        }
         break;
     case WM_IME_COMPOSITION:
         SDL_DebugIMELog("WM_IME_COMPOSITION %x\n", lParam);
-        trap = SDL_TRUE;
-        himc = ImmGetContext(hwnd);
-        if (*lParam & GCS_RESULTSTR) {
-            SDL_DebugIMELog("GCS_RESULTSTR\n");
-            IME_GetCompositionString(videodata, himc, GCS_RESULTSTR);
-            IME_SendClearComposition(videodata);
-            IME_SendInputEvent(videodata);
+        if (!videodata->ime_native_composition) {
+            trap = SDL_TRUE;
+            himc = ImmGetContext(hwnd);
+            if (*lParam & GCS_RESULTSTR) {
+                SDL_DebugIMELog("GCS_RESULTSTR\n");
+                IME_GetCompositionString(videodata, himc, GCS_RESULTSTR);
+                IME_SendClearComposition(videodata);
+                IME_SendInputEvent(videodata);
+            }
+            if (*lParam & GCS_COMPSTR) {
+                SDL_DebugIMELog("GCS_COMPSTR\n");
+                videodata->ime_readingstring[0] = 0;
+                IME_GetCompositionString(videodata, himc, GCS_COMPSTR);
+                IME_SendEditingEvent(videodata);
+            }
+            ImmReleaseContext(hwnd, himc);
         }
-        if (*lParam & GCS_COMPSTR) {
-            SDL_DebugIMELog("GCS_COMPSTR\n");
-            videodata->ime_readingstring[0] = 0;
-            IME_GetCompositionString(videodata, himc, GCS_COMPSTR);
-            IME_SendEditingEvent(videodata);
-        }
-        ImmReleaseContext(hwnd, himc);
         break;
     case WM_IME_ENDCOMPOSITION:
         SDL_DebugIMELog("WM_IME_ENDCOMPOSITION\n");
-        videodata->ime_composition[0] = 0;
-        videodata->ime_readingstring[0] = 0;
-        videodata->ime_cursor = 0;
-        videodata->ime_selected_start = 0;
-        videodata->ime_selected_length = 0;
-        IME_SendClearComposition(videodata);
+        if (!videodata->ime_native_composition) {
+            trap = SDL_TRUE;
+            videodata->ime_composition[0] = 0;
+            videodata->ime_readingstring[0] = 0;
+            videodata->ime_cursor = 0;
+            videodata->ime_selected_start = 0;
+            videodata->ime_selected_length = 0;
+            IME_SendClearComposition(videodata);
+        }
         break;
     case WM_IME_NOTIFY:
         SDL_DebugIMELog("WM_IME_NOTIFY %x\n", wParam);
@@ -1043,24 +1066,24 @@ SDL_bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam
         case IMN_OPENCANDIDATE:
         case IMN_CHANGECANDIDATE:
             SDL_DebugIMELog("%s\n", wParam == IMN_OPENCANDIDATE ? "IMN_OPENCANDIDATE" : "IMN_CHANGECANDIDATE");
-            if (videodata->ime_uiless) {
-                videodata->ime_update_candidates = SDL_TRUE;
+            if (!videodata->ime_native_candidates) {
                 trap = SDL_TRUE;
+                videodata->ime_update_candidates = SDL_TRUE;
             }
             break;
         case IMN_CLOSECANDIDATE:
             SDL_DebugIMELog("IMN_CLOSECANDIDATE\n");
-            if (videodata->ime_uiless) {
+            if (!videodata->ime_native_candidates) {
+                trap = SDL_TRUE;
                 videodata->ime_update_candidates = SDL_FALSE;
                 IME_CloseCandidateList(videodata);
-                trap = SDL_TRUE;
             }
             break;
         case IMN_PRIVATE:
         {
             DWORD dwId = IME_GetId(videodata, 0);
-            IME_GetReadingString(videodata, hwnd);
             SDL_DebugIMELog("IMN_PRIVATE %u\n", dwId);
+            IME_GetReadingString(videodata, hwnd);
             switch (dwId) {
             case IMEID_CHT_VER42:
             case IMEID_CHT_VER43:

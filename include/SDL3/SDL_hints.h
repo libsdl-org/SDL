@@ -943,37 +943,26 @@ extern "C" {
 #define SDL_HINT_HIDAPI_IGNORE_DEVICES "SDL_HIDAPI_IGNORE_DEVICES"
 
 /**
- * A variable to control whether certain IMEs should handle text editing
- * internally instead of sending SDL_EVENT_TEXT_EDITING events.
+ * A variable describing what IME elements the OS should render natively over the game.
  *
- * The variable can be set to the following values:
+ * By default IME UI is handled using native components by the OS, however this interferes with fullscreen games in some cases.
  *
- * - "0": SDL_EVENT_TEXT_EDITING events are sent, and it is the application's
- *   responsibility to render the text from these events and differentiate it
- *   somehow from committed text. (default)
- * - "1": If supported by the IME then SDL_EVENT_TEXT_EDITING events are not
- *   sent, and text that is being composed will be rendered in its own UI.
+ * The variable can be set to a comma separated list containing the following items:
  *
- * This hint can be set anytime.
+ * - "none" or "0": Native UI elements will not be displayed.
+ * - "composition": Native UI elements will be used for the IME composition string.
+ * - "candidates": Native UI elements will be used for the IME candidate list.
+ * - "all" or "1": Native UI elements will be used for all IME UI. (default)
  *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
-
-/**
- * A variable to control whether certain IMEs should show native UI components
- * (such as the Candidate List) instead of suppressing them.
+ * If native UI is used for the composition string, then SDL_EVENT_TEXT_EDITING will not be sent.
  *
- * The variable can be set to the following values:
- *
- * - "0": Native UI components are not display.
- * - "1": Native UI components are displayed. (default)
+ * If native UI is used for the candidates list, then SDL_EVENT_TEXT_EDITING_CANDIDATES will not be sent.
  *
  * This hint should be set before SDL is initialized.
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_IME_SHOW_UI "SDL_IME_SHOW_UI"
+#define SDL_HINT_IME_NATIVE_UI "SDL_IME_NATIVE_UI"
 
 /**
  * A variable controlling whether the home indicator bar on iPhone X should be
