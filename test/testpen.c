@@ -75,32 +75,32 @@ static void DrawScreen(SDL_Renderer *renderer)
 
     SDL_SetRenderDrawColor(renderer, 0xa0, 0xa0, 0xa0, 0xff);
     if (last_touching) {
-	SDL_FRect rect;
+        SDL_FRect rect;
 
         rect.x = 0;
         rect.y = 0;
         rect.w = 2.0f * X - 1.0f;
         rect.h = 2.0f * Y - 1.0f;
 
-	SDL_RenderRect(renderer, &rect);
+        SDL_RenderRect(renderer, &rect);
     } else {
-	/* Show where the pen is rotating when it isn't touching the surface.
-	   Otherwise we draw the rotation angle below together with pressure information. */
-	float rot_vecx =  SDL_sinf(last_rotation / 180.0f * SDL_PI_F);
-	float rot_vecy = -SDL_cosf(last_rotation / 180.0f * SDL_PI_F);
-	float px = X + rot_vecx * 100.0f;
-	float py = Y + rot_vecy * 100.0f;
-	float px2 = X + rot_vecx * 80.0f;
-	float py2 = Y + rot_vecy * 80.0f;
+        /* Show where the pen is rotating when it isn't touching the surface.
+           Otherwise we draw the rotation angle below together with pressure information. */
+        float rot_vecx =  SDL_sinf(last_rotation / 180.0f * SDL_PI_F);
+        float rot_vecy = -SDL_cosf(last_rotation / 180.0f * SDL_PI_F);
+        float px = X + rot_vecx * 100.0f;
+        float py = Y + rot_vecy * 100.0f;
+        float px2 = X + rot_vecx * 80.0f;
+        float py2 = Y + rot_vecy * 80.0f;
 
-	SDL_RenderLine(renderer,
-		       px, py,
-		       px2 + rot_vecy * 20.0f,
-		       py2 - rot_vecx * 20.0f);
-	SDL_RenderLine(renderer,
-		       px, py,
-		       px2 - rot_vecy * 20.0f,
-		       py2 + rot_vecx * 20.0f);
+        SDL_RenderLine(renderer,
+                       px, py,
+                       px2 + rot_vecy * 20.0f,
+                       py2 - rot_vecx * 20.0f);
+        SDL_RenderLine(renderer,
+                       px, py,
+                       px2 - rot_vecy * 20.0f,
+                       py2 + rot_vecx * 20.0f);
     }
 
     if (last_was_eraser) {
@@ -359,7 +359,7 @@ static void process_event(SDL_Event event)
         SDL_HideCursor();
         last_x = ev->x;
         last_y = ev->y;
-	update_axes(ev->axes);
+        update_axes(ev->axes);
         last_was_eraser = ev->pen_state & SDL_PEN_ERASER_MASK;
 #if VERBOSE
         SDL_Log("[%lu] pen motion: %s %u at (%.4f, %.4f); pressure=%.3f, tilt=%.3f/%.3f, dist=%.3f [buttons=%02x]\n",
@@ -375,7 +375,7 @@ static void process_event(SDL_Event event)
         SDL_PenTipEvent *ev = &event.ptip;
         last_x = ev->x;
         last_y = ev->y;
-	update_axes(ev->axes);
+        update_axes(ev->axes);
         last_was_eraser = ev->tip == SDL_PEN_TIP_ERASER;
         last_button = ev->pen_state & 0xf; /* button mask */
         last_touching = (event.type == SDL_EVENT_PEN_DOWN);
@@ -389,7 +389,7 @@ static void process_event(SDL_Event event)
         SDL_HideCursor();
         last_x = ev->x;
         last_y = ev->y;
-	update_axes(ev->axes);
+        update_axes(ev->axes);
         if (last_pressure > 0.0f && !last_touching) {
             SDL_LogWarn(SDL_LOG_CATEGORY_TEST,
                         "[%lu] : reported pressure %.5f even though pen is not touching surface",
