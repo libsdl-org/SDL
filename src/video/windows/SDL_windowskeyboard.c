@@ -40,6 +40,8 @@ static int IME_Init(SDL_VideoData *videodata, SDL_Window *window);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_SetTextInputArea(SDL_VideoData *videodata, const SDL_Rect *rect, int cursor);
+static void IME_ClearComposition(SDL_VideoData *videodata);
+static void IME_GetCandidateList(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
@@ -59,10 +61,6 @@ void WIN_InitKeyboard(SDL_VideoDevice *_this)
     data->ime_candlistindexbase = 1;
     data->ime_composition_length = 32 * sizeof(WCHAR);
     data->ime_composition = (WCHAR *)SDL_calloc(data->ime_composition_length, sizeof(WCHAR));
-    data->ime_uielemsinkcookie = TF_INVALID_COOKIE;
-    data->ime_alpnsinkcookie = TF_INVALID_COOKIE;
-    data->ime_openmodesinkcookie = TF_INVALID_COOKIE;
-    data->ime_convmodesinkcookie = TF_INVALID_COOKIE;
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
     WIN_UpdateKeymap(SDL_FALSE);
@@ -242,39 +240,29 @@ int WIN_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-#ifdef SDL_DISABLE_WINDOWS_IME
-
 int WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
 {
+#ifndef SDL_DISABLE_WINDOWS_IME
+    SDL_VideoData *videodata = _this->driverdata;
+
+    IME_ClearComposition(videodata);
+#endif
     return 0;
 }
 
-SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+#ifdef SDL_DISABLE_WINDOWS_IME
+
+SDL_bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
     return SDL_FALSE;
 }
 
-#else
+void WIN_UpdateIMECandidates(SDL_VideoDevice *_this)
+{
+    return;
+}
 
-#ifdef SDL_msctf_h_
-#define USE_INIT_GUID
-#elif defined(__GNUC__)
-#define USE_INIT_GUID
-#endif
-#ifdef USE_INIT_GUID
-#undef DEFINE_GUID
-#define DEFINE_GUID(n, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) static const GUID n = { l, w1, w2, { b1, b2, b3, b4, b5, b6, b7, b8 } }
-DEFINE_GUID(IID_ITfInputProcessorProfileActivationSink, 0x71C6E74E, 0x0F28, 0x11D8, 0xA8, 0x2A, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
-DEFINE_GUID(IID_ITfUIElementSink, 0xEA1EA136, 0x19DF, 0x11D7, 0xA6, 0xD2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
-DEFINE_GUID(GUID_TFCAT_TIP_KEYBOARD, 0x34745C63, 0xB2F0, 0x4784, 0x8B, 0x67, 0x5E, 0x12, 0xC8, 0x70, 0x1A, 0x31);
-DEFINE_GUID(IID_ITfSource, 0x4EA48A35, 0x60AE, 0x446F, 0x8F, 0xD6, 0xE6, 0xA8, 0xD8, 0x24, 0x59, 0xF7);
-DEFINE_GUID(IID_ITfUIElementMgr, 0xEA1EA135, 0x19DF, 0x11D7, 0xA6, 0xD2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
-DEFINE_GUID(IID_ITfCandidateListUIElement, 0xEA1EA138, 0x19DF, 0x11D7, 0xA6, 0xD2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
-DEFINE_GUID(IID_ITfReadingInformationUIElement, 0xEA1EA139, 0x19DF, 0x11D7, 0xA6, 0xD2, 0x00, 0x06, 0x5B, 0x84, 0x43, 0x5C);
-DEFINE_GUID(IID_ITfThreadMgr, 0xAA80E801, 0x2021, 0x11D2, 0x93, 0xE0, 0x00, 0x60, 0xB0, 0x67, 0xB8, 0x6E);
-DEFINE_GUID(CLSID_TF_ThreadMgr, 0x529A9E6B, 0x6587, 0x4F23, 0xAB, 0x9E, 0x9C, 0x7D, 0x68, 0x3E, 0x3C, 0x50);
-DEFINE_GUID(IID_ITfThreadMgrEx, 0x3E90ADE3, 0x7594, 0x4CB0, 0xBB, 0x58, 0x69, 0x62, 0x8F, 0x5F, 0x45, 0x8C);
-#endif
+#else
 
 #define LANG_CHT MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL)
 #define LANG_CHS MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED)
@@ -312,17 +300,11 @@ DEFINE_GUID(IID_ITfThreadMgrEx, 0x3E90ADE3, 0x7594, 0x4CB0, 0xBB, 0x58, 0x69, 0x
 #define SUBLANG()      SUBLANGID(LANG())
 
 static void IME_UpdateInputLocale(SDL_VideoData *videodata);
-static void IME_ClearComposition(SDL_VideoData *videodata);
 static void IME_SetWindow(SDL_VideoData *videodata, SDL_Window *window);
 static void IME_SetupAPI(SDL_VideoData *videodata);
 static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex);
 static void IME_SendEditingEvent(SDL_VideoData *videodata);
 static void IME_SendClearComposition(SDL_VideoData *videodata);
-
-static SDL_bool UILess_SetupSinks(SDL_VideoData *videodata);
-static void UILess_ReleaseSinks(SDL_VideoData *videodata);
-static void UILess_EnableUIUpdates(SDL_VideoData *videodata);
-static void UILess_DisableUIUpdates(SDL_VideoData *videodata);
 
 static SDL_bool WIN_ShouldShowNativeUI()
 {
@@ -332,21 +314,12 @@ static SDL_bool WIN_ShouldShowNativeUI()
 static int IME_Init(SDL_VideoData *videodata, SDL_Window *window)
 {
     HWND hwnd = window->driverdata->hwnd;
-    HRESULT hResult = S_OK;
 
     if (videodata->ime_initialized) {
         return 0;
     }
 
     videodata->ime_hwnd_main = hwnd;
-    if (SUCCEEDED(WIN_CoInitialize())) {
-        videodata->ime_com_initialized = SDL_TRUE;
-        hResult = CoCreateInstance(&CLSID_TF_ThreadMgr, NULL, CLSCTX_INPROC_SERVER, &IID_ITfThreadMgr, (LPVOID *)&videodata->ime_threadmgr);
-        if (hResult != S_OK) {
-            videodata->ime_available = SDL_FALSE;
-            return SDL_SetError("CoCreateInstance() failed, HRESULT is %08X", (unsigned int)hResult);
-        }
-    }
     videodata->ime_initialized = SDL_TRUE;
     videodata->ime_himm32 = SDL_LoadObject("imm32.dll");
     if (!videodata->ime_himm32) {
@@ -375,7 +348,7 @@ static int IME_Init(SDL_VideoData *videodata, SDL_Window *window)
     if (WIN_ShouldShowNativeUI()) {
         videodata->ime_uiless = SDL_FALSE;
     } else {
-        videodata->ime_uiless = UILess_SetupSinks(videodata);
+        videodata->ime_uiless = SDL_TRUE;
     }
     IME_UpdateInputLocale(videodata);
     IME_Disable(videodata, hwnd);
@@ -398,7 +371,6 @@ static void IME_Enable(SDL_VideoData *videodata, HWND hwnd)
 
     videodata->ime_enabled = SDL_TRUE;
     IME_UpdateInputLocale(videodata);
-    UILess_EnableUIUpdates(videodata);
 }
 
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd)
@@ -413,7 +385,6 @@ static void IME_Disable(SDL_VideoData *videodata, HWND hwnd)
     }
 
     videodata->ime_enabled = SDL_FALSE;
-    UILess_DisableUIUpdates(videodata);
 }
 
 static void IME_Quit(SDL_VideoData *videodata)
@@ -422,7 +393,6 @@ static void IME_Quit(SDL_VideoData *videodata)
         return;
     }
 
-    UILess_ReleaseSinks(videodata);
     if (videodata->ime_hwnd_main) {
         ImmAssociateContext(videodata->ime_hwnd_main, videodata->ime_himc);
     }
@@ -432,14 +402,6 @@ static void IME_Quit(SDL_VideoData *videodata)
     if (videodata->ime_himm32) {
         SDL_UnloadObject(videodata->ime_himm32);
         videodata->ime_himm32 = 0;
-    }
-    if (videodata->ime_threadmgr) {
-        videodata->ime_threadmgr->lpVtbl->Release(videodata->ime_threadmgr);
-        videodata->ime_threadmgr = 0;
-    }
-    if (videodata->ime_com_initialized) {
-        WIN_CoUninitialize();
-        videodata->ime_com_initialized = SDL_FALSE;
     }
     for (int i = 0; i < videodata->ime_candcount; ++i) {
         SDL_free(videodata->ime_candidates[i]);
@@ -458,10 +420,6 @@ static void IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
     INT err = 0;
     BOOL vertical = FALSE;
     UINT maxuilen = 0;
-
-    if (videodata->ime_uiless) {
-        return;
-    }
 
     videodata->ime_readingstring[0] = 0;
 
@@ -554,9 +512,6 @@ static void IME_InputLangChanged(SDL_VideoData *videodata)
 {
     UINT lang = PRIMLANG();
     IME_UpdateInputLocale(videodata);
-    if (!videodata->ime_uiless) {
-        videodata->ime_candlistindexbase = (videodata->ime_hkl == CHT_HKL_DAYI) ? 0 : 1;
-    }
 
     IME_SetupAPI(videodata);
     if (lang != PRIMLANG()) {
@@ -647,11 +602,8 @@ static void IME_SetupAPI(SDL_VideoData *videodata)
     char ime_file[MAX_PATH + 1];
     void *hime = 0;
     HKL hkl = 0;
-    videodata->GetReadingString = 0;
-    videodata->ShowReadingWindow = 0;
-    if (videodata->ime_uiless) {
-        return;
-    }
+    videodata->GetReadingString = NULL;
+    videodata->ShowReadingWindow = NULL;
 
     hkl = videodata->ime_hkl;
     if (!ImmGetIMEFileNameA(hkl, ime_file, sizeof(ime_file) - 1)) {
@@ -687,15 +639,6 @@ static void IME_SetWindow(SDL_VideoData *videodata, SDL_Window *window)
         videodata->ime_hwnd_current = hwnd;
         SDL_zero(videodata->ime_composition_area);
         SDL_zero(videodata->ime_candidate_area);
-    }
-
-    if (videodata->ime_threadmgr) {
-        struct ITfDocumentMgr *document_mgr = 0;
-        if (SUCCEEDED(videodata->ime_threadmgr->lpVtbl->AssociateFocus(videodata->ime_threadmgr, hwnd, NULL, &document_mgr))) {
-            if (document_mgr) {
-                document_mgr->lpVtbl->Release(document_mgr);
-            }
-        }
     }
 
     IME_SetTextInputArea(videodata, &window->text_input_rect, window->text_input_cursor);
@@ -751,6 +694,7 @@ static void IME_UpdateInputLocale(SDL_VideoData *videodata)
 
     videodata->ime_hkl = hklnext;
     videodata->ime_horizontal_candidates = (PRIMLANG() == LANG_KOREAN || LANG() == LANG_CHS);
+    videodata->ime_candlistindexbase = (videodata->ime_hkl == CHT_HKL_DAYI) ? 0 : 1;
 }
 
 static void IME_ClearComposition(SDL_VideoData *videodata)
@@ -766,9 +710,7 @@ static void IME_ClearComposition(SDL_VideoData *videodata)
     }
 
     ImmNotifyIME(himc, NI_COMPOSITIONSTR, CPS_CANCEL, 0);
-    if (videodata->ime_uiless) {
-        ImmSetCompositionString(himc, SCS_SETSTR, TEXT(""), sizeof(TCHAR), TEXT(""), sizeof(TCHAR));
-    }
+    ImmSetCompositionString(himc, SCS_SETSTR, TEXT(""), sizeof(TCHAR), TEXT(""), sizeof(TCHAR));
 
     ImmNotifyIME(himc, NI_CLOSECANDIDATE, 0, 0);
     ImmReleaseContext(videodata->ime_hwnd_current, himc);
@@ -924,7 +866,6 @@ static int IME_OpenCandidateList(SDL_VideoData *videodata)
     return 0;
 }
 
-
 static void IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate)
 {
     if (videodata->ime_candidates[i]) {
@@ -960,10 +901,83 @@ static void IME_CloseCandidateList(SDL_VideoData *videodata)
     }
 }
 
-SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+static void IME_GetCandidateList(SDL_VideoData *videodata, HWND hwnd)
+{
+    HIMC himc;
+    DWORD size;
+    LPCANDIDATELIST cand_list;
+    SDL_bool has_candidates = SDL_FALSE;
+
+    himc = ImmGetContext(hwnd);
+    if (himc) {
+        size = ImmGetCandidateListW(himc, 0, NULL, 0);
+        if (size != 0) {
+            cand_list = (LPCANDIDATELIST)SDL_malloc(size);
+            if (cand_list != NULL) {
+                size = ImmGetCandidateListW(himc, 0, cand_list, size);
+                if (size != 0) {
+                    if (IME_OpenCandidateList(videodata) == 0) {
+                        UINT i, j;
+                        UINT page_start = 0;
+                        UINT page_size = 0;
+
+                        videodata->ime_candsel = cand_list->dwSelection;
+
+                        if (LANG() == LANG_CHS && IME_GetId(videodata, 0)) {
+                            const UINT maxcandchar = 18;
+                            size_t cchars = 0;
+
+                            for (i = 0; i < cand_list->dwCount; ++i) {
+                                size_t len = SDL_wcslen((LPWSTR)((DWORD_PTR)cand_list + cand_list->dwOffset[i])) + 1;
+                                if (len + cchars > maxcandchar) {
+                                    if (i > cand_list->dwSelection) {
+                                        break;
+                                    }
+
+                                    page_start = i;
+                                    cchars = len;
+                                } else {
+                                    cchars += len;
+                                }
+                            }
+                            page_size = i - page_start;
+                        } else {
+                            page_size = SDL_min(cand_list->dwPageSize == 0 ? MAX_CANDLIST : cand_list->dwPageSize, MAX_CANDLIST);
+                            page_start = (cand_list->dwSelection / page_size) * page_size;
+                        }
+                        for (i = page_start, j = 0; (DWORD)i < cand_list->dwCount && j < page_size; i++, j++) {
+                            LPCWSTR candidate = (LPCWSTR)((DWORD_PTR)cand_list + cand_list->dwOffset[i]);
+                            IME_AddCandidate(videodata, j, candidate);
+                        }
+
+                        has_candidates = SDL_TRUE;
+                        IME_SendCandidateList(videodata);
+                    }
+                }
+                SDL_free(cand_list);
+            }
+        }
+        ImmReleaseContext(hwnd, himc);
+    }
+
+    if (!has_candidates) {
+        IME_CloseCandidateList(videodata);
+    }
+}
+
+SDL_bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
     SDL_bool trap = SDL_FALSE;
     HIMC himc = 0;
+
+    if (msg == WM_IME_SETCONTEXT) {
+        SDL_DebugIMELog("WM_IME_SETCONTEXT\n");
+        if (videodata->ime_uiless) {
+            *lParam = 0;
+        }
+        return SDL_FALSE;
+    }
+
     if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
         return SDL_FALSE;
     }
@@ -981,12 +995,6 @@ SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, S
         SDL_DebugIMELog("WM_INPUTLANGCHANGE\n");
         IME_InputLangChanged(videodata);
         break;
-    case WM_IME_SETCONTEXT:
-        SDL_DebugIMELog("WM_IME_SETCONTEXT\n");
-        if (videodata->ime_uiless) {
-            *lParam = 0;
-        }
-        break;
     case WM_IME_STARTCOMPOSITION:
         SDL_DebugIMELog("WM_IME_STARTCOMPOSITION\n");
         trap = SDL_TRUE;
@@ -1003,10 +1011,7 @@ SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, S
         }
         if (*lParam & GCS_COMPSTR) {
             SDL_DebugIMELog("GCS_COMPSTR\n");
-            if (!videodata->ime_uiless) {
-                videodata->ime_readingstring[0] = 0;
-            }
-
+            videodata->ime_readingstring[0] = 0;
             IME_GetCompositionString(videodata, himc, GCS_COMPSTR);
             IME_SendEditingEvent(videodata);
         }
@@ -1038,11 +1043,18 @@ SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, S
         case IMN_OPENCANDIDATE:
         case IMN_CHANGECANDIDATE:
             SDL_DebugIMELog("%s\n", wParam == IMN_OPENCANDIDATE ? "IMN_OPENCANDIDATE" : "IMN_CHANGECANDIDATE");
-            trap = SDL_TRUE;
+            if (videodata->ime_uiless) {
+                videodata->ime_update_candidates = SDL_TRUE;
+                trap = SDL_TRUE;
+            }
             break;
         case IMN_CLOSECANDIDATE:
             SDL_DebugIMELog("IMN_CLOSECANDIDATE\n");
-            trap = SDL_TRUE;
+            if (videodata->ime_uiless) {
+                videodata->ime_update_candidates = SDL_FALSE;
+                IME_CloseCandidateList(videodata);
+                trap = SDL_TRUE;
+            }
             break;
         case IMN_PRIVATE:
         {
@@ -1080,321 +1092,14 @@ SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, S
     return trap;
 }
 
-static void UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUIElement *pcandlist)
-{
-    UINT selection = 0;
-    UINT count = 0;
-    UINT page = 0;
-    UINT pgcount = 0;
-    DWORD pgstart = 0;
-    DWORD pgsize = 0;
-    UINT i, j;
-
-    if (IME_OpenCandidateList(videodata) < 0) {
-        return;
-    }
-
-    pcandlist->lpVtbl->GetSelection(pcandlist, &selection);
-    pcandlist->lpVtbl->GetCount(pcandlist, &count);
-    pcandlist->lpVtbl->GetCurrentPage(pcandlist, &page);
-
-    pcandlist->lpVtbl->GetPageIndex(pcandlist, NULL, 0, &pgcount);
-    if (pgcount > 0) {
-        UINT *idxlist = SDL_malloc(sizeof(UINT) * pgcount);
-        if (idxlist) {
-            pcandlist->lpVtbl->GetPageIndex(pcandlist, idxlist, pgcount, &pgcount);
-            pgstart = idxlist[page];
-            if (page < pgcount - 1) {
-                pgsize = SDL_min(count, idxlist[page + 1]) - pgstart;
-            } else {
-                pgsize = count - pgstart;
-            }
-
-            SDL_free(idxlist);
-        }
-    }
-    pgsize = SDL_min(pgsize, MAX_CANDLIST);
-    videodata->ime_candsel = selection - pgstart;
-    for (i = pgstart, j = 0; (DWORD)i < count && j < pgsize; i++, j++) {
-        BSTR bstr;
-        if (SUCCEEDED(pcandlist->lpVtbl->GetString(pcandlist, i, &bstr))) {
-            if (bstr) {
-                IME_AddCandidate(videodata, j, bstr);
-                SysFreeString(bstr);
-            }
-        }
-    }
-
-    IME_SendCandidateList(videodata);
-}
-
-STDMETHODIMP_(ULONG)
-TSFSink_AddRef(TSFSink *sink)
-{
-    return ++sink->refcount;
-}
-
-STDMETHODIMP_(ULONG)
-TSFSink_Release(TSFSink *sink)
-{
-    --sink->refcount;
-    if (sink->refcount == 0) {
-        SDL_free(sink);
-        return 0;
-    }
-    return sink->refcount;
-}
-
-STDMETHODIMP UIElementSink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
-{
-    if (!ppv) {
-        return E_INVALIDARG;
-    }
-
-    *ppv = 0;
-    if (WIN_IsEqualIID(riid, &IID_IUnknown)) {
-        *ppv = (IUnknown *)sink;
-    } else if (WIN_IsEqualIID(riid, &IID_ITfUIElementSink)) {
-        *ppv = (ITfUIElementSink *)sink;
-    }
-
-    if (*ppv) {
-        TSFSink_AddRef(sink);
-        return S_OK;
-    }
-    return E_NOINTERFACE;
-}
-
-ITfUIElement *UILess_GetUIElement(SDL_VideoData *videodata, DWORD dwUIElementId)
-{
-    ITfUIElementMgr *puiem = 0;
-    ITfUIElement *pelem = 0;
-    ITfThreadMgrEx *threadmgrex = videodata->ime_threadmgrex;
-
-    if (SUCCEEDED(threadmgrex->lpVtbl->QueryInterface(threadmgrex, &IID_ITfUIElementMgr, (LPVOID *)&puiem))) {
-        puiem->lpVtbl->GetUIElement(puiem, dwUIElementId, &pelem);
-        puiem->lpVtbl->Release(puiem);
-    }
-    return pelem;
-}
-
-STDMETHODIMP UIElementSink_BeginUIElement(TSFSink *sink, DWORD dwUIElementId, BOOL *pbShow)
-{
-    ITfUIElement *element = UILess_GetUIElement((SDL_VideoData *)sink->data, dwUIElementId);
-    ITfReadingInformationUIElement *preading = 0;
-    ITfCandidateListUIElement *pcandlist = 0;
-    SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (!element) {
-        return E_INVALIDARG;
-    }
-
-    *pbShow = FALSE;
-    if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfReadingInformationUIElement, (LPVOID *)&preading))) {
-        BSTR bstr;
-        if (SUCCEEDED(preading->lpVtbl->GetString(preading, &bstr)) && bstr) {
-            SysFreeString(bstr);
-        }
-        preading->lpVtbl->Release(preading);
-    } else if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfCandidateListUIElement, (LPVOID *)&pcandlist))) {
-        videodata->ime_candref++;
-        UILess_GetCandidateList(videodata, pcandlist);
-        pcandlist->lpVtbl->Release(pcandlist);
-    }
-    return S_OK;
-}
-
-STDMETHODIMP UIElementSink_UpdateUIElement(TSFSink *sink, DWORD dwUIElementId)
-{
-    ITfUIElement *element = UILess_GetUIElement((SDL_VideoData *)sink->data, dwUIElementId);
-    ITfReadingInformationUIElement *preading = 0;
-    ITfCandidateListUIElement *pcandlist = 0;
-    SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (!element) {
-        return E_INVALIDARG;
-    }
-
-    if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfReadingInformationUIElement, (LPVOID *)&preading))) {
-        BSTR bstr;
-        if (SUCCEEDED(preading->lpVtbl->GetString(preading, &bstr)) && bstr) {
-            WCHAR *s = (WCHAR *)bstr;
-            SDL_wcslcpy(videodata->ime_readingstring, s, SDL_arraysize(videodata->ime_readingstring));
-            IME_SendEditingEvent(videodata);
-            SysFreeString(bstr);
-        }
-        preading->lpVtbl->Release(preading);
-    } else if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfCandidateListUIElement, (LPVOID *)&pcandlist))) {
-        UILess_GetCandidateList(videodata, pcandlist);
-        pcandlist->lpVtbl->Release(pcandlist);
-    }
-    return S_OK;
-}
-
-STDMETHODIMP UIElementSink_EndUIElement(TSFSink *sink, DWORD dwUIElementId)
-{
-    ITfUIElement *element = UILess_GetUIElement((SDL_VideoData *)sink->data, dwUIElementId);
-    ITfReadingInformationUIElement *preading = 0;
-    ITfCandidateListUIElement *pcandlist = 0;
-    SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    if (!element) {
-        return E_INVALIDARG;
-    }
-
-    if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfReadingInformationUIElement, (LPVOID *)&preading))) {
-        videodata->ime_readingstring[0] = 0;
-        IME_SendEditingEvent(videodata);
-        preading->lpVtbl->Release(preading);
-    }
-    if (SUCCEEDED(element->lpVtbl->QueryInterface(element, &IID_ITfCandidateListUIElement, (LPVOID *)&pcandlist))) {
-        videodata->ime_candref--;
-        if (videodata->ime_candref == 0) {
-            IME_CloseCandidateList(videodata);
-        }
-
-        pcandlist->lpVtbl->Release(pcandlist);
-    }
-    return S_OK;
-}
-
-STDMETHODIMP IPPASink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
-{
-    if (!ppv) {
-        return E_INVALIDARG;
-    }
-
-    *ppv = 0;
-    if (WIN_IsEqualIID(riid, &IID_IUnknown)) {
-        *ppv = (IUnknown *)sink;
-    } else if (WIN_IsEqualIID(riid, &IID_ITfInputProcessorProfileActivationSink)) {
-        *ppv = (ITfInputProcessorProfileActivationSink *)sink;
-    }
-
-    if (*ppv) {
-        TSFSink_AddRef(sink);
-        return S_OK;
-    }
-    return E_NOINTERFACE;
-}
-
-STDMETHODIMP IPPASink_OnActivated(TSFSink *sink, DWORD dwProfileType, LANGID langid, REFCLSID clsid, REFGUID catid, REFGUID guidProfile, HKL hkl, DWORD dwFlags)
-{
-    static const GUID SDL_TF_PROFILE_DAYI = { 0x037B2C25, 0x480C, 0x4D7F, { 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A } };
-    SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    videodata->ime_candlistindexbase = WIN_IsEqualGUID(&SDL_TF_PROFILE_DAYI, guidProfile) ? 0 : 1;
-    if (WIN_IsEqualIID(catid, &GUID_TFCAT_TIP_KEYBOARD) && (dwFlags & TF_IPSINK_FLAG_ACTIVE)) {
-        IME_InputLangChanged((SDL_VideoData *)sink->data);
-    }
-
-    IME_CloseCandidateList(videodata);
-    return S_OK;
-}
-
-static void *vtUIElementSink[] = {
-    (void *)(UIElementSink_QueryInterface),
-    (void *)(TSFSink_AddRef),
-    (void *)(TSFSink_Release),
-    (void *)(UIElementSink_BeginUIElement),
-    (void *)(UIElementSink_UpdateUIElement),
-    (void *)(UIElementSink_EndUIElement)
-};
-
-static void *vtIPPASink[] = {
-    (void *)(IPPASink_QueryInterface),
-    (void *)(TSFSink_AddRef),
-    (void *)(TSFSink_Release),
-    (void *)(IPPASink_OnActivated)
-};
-
-static void UILess_EnableUIUpdates(SDL_VideoData *videodata)
-{
-    ITfSource *source = 0;
-    if (!videodata->ime_threadmgrex || videodata->ime_uielemsinkcookie != TF_INVALID_COOKIE) {
-        return;
-    }
-
-    if (SUCCEEDED(videodata->ime_threadmgrex->lpVtbl->QueryInterface(videodata->ime_threadmgrex, &IID_ITfSource, (LPVOID *)&source))) {
-        source->lpVtbl->AdviseSink(source, &IID_ITfUIElementSink, (IUnknown *)videodata->ime_uielemsink, &videodata->ime_uielemsinkcookie);
-        source->lpVtbl->Release(source);
-    }
-}
-
-static void UILess_DisableUIUpdates(SDL_VideoData *videodata)
-{
-    ITfSource *source = 0;
-    if (!videodata->ime_threadmgrex || videodata->ime_uielemsinkcookie == TF_INVALID_COOKIE) {
-        return;
-    }
-
-    if (SUCCEEDED(videodata->ime_threadmgrex->lpVtbl->QueryInterface(videodata->ime_threadmgrex, &IID_ITfSource, (LPVOID *)&source))) {
-        source->lpVtbl->UnadviseSink(source, videodata->ime_uielemsinkcookie);
-        videodata->ime_uielemsinkcookie = TF_INVALID_COOKIE;
-        source->lpVtbl->Release(source);
-    }
-}
-
-static SDL_bool UILess_SetupSinks(SDL_VideoData *videodata)
-{
-    TfClientId clientid = 0;
-    SDL_bool result = SDL_FALSE;
-    ITfSource *source = 0;
-    if (FAILED(CoCreateInstance(&CLSID_TF_ThreadMgr, NULL, CLSCTX_INPROC_SERVER, &IID_ITfThreadMgrEx, (LPVOID *)&videodata->ime_threadmgrex))) {
-        return SDL_FALSE;
-    }
-
-    if (FAILED(videodata->ime_threadmgrex->lpVtbl->ActivateEx(videodata->ime_threadmgrex, &clientid, TF_TMAE_UIELEMENTENABLEDONLY))) {
-        return SDL_FALSE;
-    }
-
-    videodata->ime_uielemsink = (TSFSink *)SDL_malloc(sizeof(TSFSink));
-    videodata->ime_ippasink = (TSFSink *)SDL_malloc(sizeof(TSFSink));
-
-    videodata->ime_uielemsink->lpVtbl = vtUIElementSink;
-    videodata->ime_uielemsink->refcount = 1;
-    videodata->ime_uielemsink->data = videodata;
-
-    videodata->ime_ippasink->lpVtbl = vtIPPASink;
-    videodata->ime_ippasink->refcount = 1;
-    videodata->ime_ippasink->data = videodata;
-
-    if (SUCCEEDED(videodata->ime_threadmgrex->lpVtbl->QueryInterface(videodata->ime_threadmgrex, &IID_ITfSource, (LPVOID *)&source))) {
-        if (SUCCEEDED(source->lpVtbl->AdviseSink(source, &IID_ITfUIElementSink, (IUnknown *)videodata->ime_uielemsink, &videodata->ime_uielemsinkcookie))) {
-            if (SUCCEEDED(source->lpVtbl->AdviseSink(source, &IID_ITfInputProcessorProfileActivationSink, (IUnknown *)videodata->ime_ippasink, &videodata->ime_alpnsinkcookie))) {
-                result = SDL_TRUE;
-            }
-        }
-        source->lpVtbl->Release(source);
-    }
-    return result;
-}
-
-#define SAFE_RELEASE(p)                \
-    {                                  \
-        if (p) {                       \
-            (p)->lpVtbl->Release((p)); \
-            (p) = 0;                   \
-        }                              \
-    }
-
-static void UILess_ReleaseSinks(SDL_VideoData *videodata)
-{
-    ITfSource *source = 0;
-    if (videodata->ime_threadmgrex && SUCCEEDED(videodata->ime_threadmgrex->lpVtbl->QueryInterface(videodata->ime_threadmgrex, &IID_ITfSource, (LPVOID *)&source))) {
-        source->lpVtbl->UnadviseSink(source, videodata->ime_uielemsinkcookie);
-        source->lpVtbl->UnadviseSink(source, videodata->ime_alpnsinkcookie);
-        SAFE_RELEASE(source);
-        videodata->ime_threadmgrex->lpVtbl->Deactivate(videodata->ime_threadmgrex);
-        SAFE_RELEASE(videodata->ime_threadmgrex);
-        TSFSink_Release(videodata->ime_uielemsink);
-        videodata->ime_uielemsink = 0;
-        TSFSink_Release(videodata->ime_ippasink);
-        videodata->ime_ippasink = 0;
-    }
-}
-
-int WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
+void WIN_UpdateIMECandidates(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->driverdata;
-    IME_ClearComposition(videodata);
-    return 0;
+
+    if (videodata->ime_update_candidates) {
+        IME_GetCandidateList(videodata, videodata->ime_hwnd_current);
+        videodata->ime_update_candidates = SDL_FALSE;
+    }
 }
 
 #endif /* SDL_DISABLE_WINDOWS_IME */

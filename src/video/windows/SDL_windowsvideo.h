@@ -423,7 +423,6 @@ struct SDL_VideoData
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_bool ime_com_initialized;
-    struct ITfThreadMgr *ime_threadmgr;
     SDL_bool ime_initialized;
     SDL_bool ime_enabled;
     SDL_bool ime_available;
@@ -440,6 +439,7 @@ struct SDL_VideoData
     int ime_selected_length;
 
     SDL_bool ime_candidates_open;
+    SDL_bool ime_update_candidates;
     char *ime_candidates[MAX_CANDLIST];
     int ime_candcount;
     DWORD ime_candref;
@@ -462,13 +462,6 @@ struct SDL_VideoData
     /* *INDENT-ON* */ /* clang-format on */
 
     SDL_bool ime_uiless;
-    struct ITfThreadMgrEx *ime_threadmgrex;
-    DWORD ime_uielemsinkcookie;
-    DWORD ime_alpnsinkcookie;
-    DWORD ime_openmodesinkcookie;
-    DWORD ime_convmodesinkcookie;
-    TSFSink *ime_uielemsink;
-    TSFSink *ime_ippasink;
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
     BYTE pre_hook_key_state[256];
