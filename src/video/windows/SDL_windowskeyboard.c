@@ -1109,9 +1109,6 @@ static void UILess_GetCandidateList(SDL_VideoData *videodata, ITfCandidateListUI
             }
         }
     }
-    // TODO: why was this necessary? check ime_horizontal_candidates instead?
-    // if (PRIMLANG() == LANG_KOREAN)
-    //    videodata->ime_candsel = -1;
 
     IME_SendCandidateList(videodata);
 }
