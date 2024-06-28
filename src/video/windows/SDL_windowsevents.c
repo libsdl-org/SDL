@@ -1051,7 +1051,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 #endif /* WMMSG_DEBUG */
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata)) {
+    if (WIN_HandleIMEMessage(hwnd, msg, wParam, &lParam, data->videodata)) {
         return 0;
     }
 #endif
@@ -2301,6 +2301,8 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     WIN_CheckKeyboardAndMouseHotplug(_this, SDL_FALSE);
 
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
+
+    WIN_UpdateIMECandidates(_this);
 
 #ifdef SDL_PLATFORM_GDK
     GDK_DispatchTaskQueue();
