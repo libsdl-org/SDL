@@ -73,23 +73,21 @@ static void UpdateTextWindowInputRect(SDL_WindowID id)
             SDLTest_TextWindow *textwindow = windowstates[i].textwindow;
             int w, h;
             SDL_Rect rect;
+            int cursor = 0;
             int current = textwindow->current;
             const char *current_line = textwindow->lines[current];
 
             SDL_GetWindowSize(state->windows[i], &w, &h);
 
-            rect.x = (int)TEXT_WINDOW_OFFSET_X;
             if (current_line) {
-                rect.x += (int)SDL_utf8strlen(current_line) * FONT_CHARACTER_SIZE;
+                cursor = (int)SDL_utf8strlen(current_line) * FONT_CHARACTER_SIZE;
             }
+
+            rect.x = (int)TEXT_WINDOW_OFFSET_X;
             rect.y = (int)TEXT_WINDOW_OFFSET_Y + current * FONT_LINE_HEIGHT;
-#if 1
-            rect.w = FONT_CHARACTER_SIZE;
-#else
             rect.w = (int)(w - (2 * TEXT_WINDOW_OFFSET_X));
-#endif
-            rect.h = FONT_LINE_HEIGHT;
-            SDL_SetTextInputRect(state->windows[i], &rect);
+            rect.h = FONT_CHARACTER_SIZE;
+            SDL_SetTextInputArea(state->windows[i], &rect, cursor);
             return;
         }
     }

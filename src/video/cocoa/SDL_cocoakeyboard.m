@@ -368,7 +368,7 @@ int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
             [nswindow makeFirstResponder:data.fieldEdit];
         }
     }
-    return Cocoa_UpdateTextInputRect(_this, window);
+    return Cocoa_UpdateTextInputArea(_this, window);
 }
 
 int Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
@@ -384,7 +384,7 @@ int Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-int Cocoa_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
+int Cocoa_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
     if (data.fieldEdit) {

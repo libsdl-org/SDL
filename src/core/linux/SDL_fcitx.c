@@ -211,7 +211,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
             SDL_SendEditingText("", 0, 0);
         }
 
-        SDL_Fcitx_UpdateTextRect(SDL_GetKeyboardFocus());
+        SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
         return DBUS_HANDLER_RESULT_HANDLED;
     }
 
@@ -390,7 +390,7 @@ SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
                             DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mod_state, DBUS_TYPE_BOOLEAN, &is_release, DBUS_TYPE_UINT32, &event_time, DBUS_TYPE_INVALID,
                             DBUS_TYPE_BOOLEAN, &handled, DBUS_TYPE_INVALID)) {
         if (handled) {
-            SDL_Fcitx_UpdateTextRect(SDL_GetKeyboardFocus());
+            SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
             return SDL_TRUE;
         }
     }
@@ -398,7 +398,7 @@ SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
     return SDL_FALSE;
 }
 
-void SDL_Fcitx_UpdateTextRect(SDL_Window *window)
+void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window)
 {
     int x = 0, y = 0;
     SDL_Rect *cursor = &fcitx_client.cursor_rect;
@@ -407,7 +407,11 @@ void SDL_Fcitx_UpdateTextRect(SDL_Window *window)
         return;
     }
 
-    SDL_copyp(cursor, &window->text_input_rect);
+    // We'll use a square at the text input cursor location for the cursor_rect
+    cursor->x = window->text_input_rect.x + window->text_input_cursor;
+    cursor->y = window->text_input_rect.x;
+    cursor->w = window->text_input_rect.h;
+    cursor->h = window->text_input_rect.h;
 
     SDL_GetWindowPosition(window, &x, &y);
 

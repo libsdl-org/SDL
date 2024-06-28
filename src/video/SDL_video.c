@@ -5074,20 +5074,35 @@ int SDL_StopTextInput(SDL_Window *window)
     return 0;
 }
 
-int SDL_SetTextInputRect(SDL_Window *window, const SDL_Rect *rect)
+int SDL_SetTextInputArea(SDL_Window *window, const SDL_Rect *rect, int cursor)
 {
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (rect) {
         SDL_copyp(&window->text_input_rect, rect);
+        window->text_input_cursor = cursor;
     } else {
         SDL_zero(window->text_input_rect);
+        window->text_input_cursor = 0;
     }
 
-    if (_this && _this->UpdateTextInputRect) {
-        if (_this->UpdateTextInputRect(_this, window) < 0) {
+    if (_this && _this->UpdateTextInputArea) {
+        if (_this->UpdateTextInputArea(_this, window) < 0) {
             return -1;
         }
+    }
+    return 0;
+}
+
+int SDL_GetTextInputArea(SDL_Window *window, SDL_Rect *rect, int *cursor)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (rect) {
+        SDL_copyp(rect, &window->text_input_rect);
+    }
+    if (cursor) {
+        *cursor = window->text_input_cursor;
     }
     return 0;
 }

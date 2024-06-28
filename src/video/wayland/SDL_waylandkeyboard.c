@@ -83,7 +83,7 @@ int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
         WAYLAND_xkb_compose_state_reset(input->xkb.compose_state);
     }
 
-    return Wayland_UpdateTextInputRect(_this, window);
+    return Wayland_UpdateTextInputArea(_this, window);
 }
 
 int Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
@@ -110,7 +110,7 @@ int Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-int Wayland_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
+int Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *driverdata = _this->driverdata;
     if (driverdata->text_input_manager) {
@@ -130,7 +130,7 @@ int Wayland_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
 
 #ifdef SDL_USE_IME
     else {
-        SDL_IME_UpdateTextRect(window);
+        SDL_IME_UpdateTextInputArea(window);
     }
 #endif
     return 0;

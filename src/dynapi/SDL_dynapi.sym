@@ -437,6 +437,7 @@ SDL3_0.0.0 {
     SDL_GetSystemRAM;
     SDL_GetSystemTheme;
     SDL_GetTLS;
+    SDL_GetTextInputArea;
     SDL_GetTextureAlphaMod;
     SDL_GetTextureAlphaModFloat;
     SDL_GetTextureBlendMode;
@@ -745,7 +746,7 @@ SDL3_0.0.0 {
     SDL_SetSurfacePalette;
     SDL_SetSurfaceRLE;
     SDL_SetTLS;
-    SDL_SetTextInputRect;
+    SDL_SetTextInputArea;
     SDL_SetTextureAlphaMod;
     SDL_SetTextureAlphaModFloat;
     SDL_SetTextureBlendMode;

@@ -103,6 +103,7 @@ struct SDL_Window
 
     SDL_bool text_input_active;
     SDL_Rect text_input_rect;
+    int text_input_cursor;
 
     SDL_Rect mouse_rect;
 
@@ -327,7 +328,7 @@ struct SDL_VideoDevice
     /* Text input */
     int (*StartTextInput)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*StopTextInput)(SDL_VideoDevice *_this, SDL_Window *window);
-    int (*UpdateTextInputRect)(SDL_VideoDevice *_this, SDL_Window *window);
+    int (*UpdateTextInputArea)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*ClearComposition)(SDL_VideoDevice *_this, SDL_Window *window);
 
     /* Screen keyboard */

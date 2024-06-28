@@ -447,7 +447,8 @@ struct SDL_VideoData
     int ime_candlistindexbase;
     SDL_bool ime_horizontal_candidates;
 
-    SDL_Rect ime_rect;
+    COMPOSITIONFORM ime_composition_area;
+    CANDIDATEFORM ime_candidate_area;
 
     HKL ime_hkl;
     void *ime_himm32;

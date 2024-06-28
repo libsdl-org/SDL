@@ -267,7 +267,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->HasPrimarySelectionText = X11_HasPrimarySelectionText;
     device->StartTextInput = X11_StartTextInput;
     device->StopTextInput = X11_StopTextInput;
-    device->UpdateTextInputRect = X11_UpdateTextInputRect;
+    device->UpdateTextInputArea = X11_UpdateTextInputArea;
     device->HasScreenKeyboardSupport = X11_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = X11_ShowScreenKeyboard;
     device->HideScreenKeyboard = X11_HideScreenKeyboard;
