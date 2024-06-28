@@ -98,7 +98,7 @@ jobs:
       with:
         if-no-files-found: ignore
         name: '${{ matrix.platform.artifact }}-minidumps'
-        path: build/minidumps/*
+        path: build/**/*.dmp
     - uses: actions/upload-artifact@v4
       if: ${{ always() && steps.build.outcome == 'success' }}
       with:
