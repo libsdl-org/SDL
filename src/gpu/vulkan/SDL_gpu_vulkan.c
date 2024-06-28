@@ -4183,12 +4183,12 @@ static SDL_bool VULKAN_INTERNAL_CreateSwapchain(
 
     /* Each swapchain must have its own surface. */
 
-    if (!_this->Vulkan_CreateSurface(
+    if (_this->Vulkan_CreateSurface(
             _this,
             windowData->window,
             renderer->instance,
             NULL, /* FIXME: VAllocationCallbacks */
-            &swapchainData->surface)) {
+            &swapchainData->surface) < 0) {
         SDL_free(swapchainData);
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
@@ -9425,12 +9425,12 @@ static SDL_bool VULKAN_SupportsSwapchainComposition(
         /* Create a dummy surface is the window is not claimed */
         destroySurface = SDL_TRUE;
         _this = SDL_GetVideoDevice();
-        if (!_this->Vulkan_CreateSurface(
+        if (_this->Vulkan_CreateSurface(
                 _this,
                 window,
                 renderer->instance,
                 NULL,
-                &surface)) {
+                &surface) < 0) {
             return SDL_FALSE;
         }
     } else {
@@ -9482,12 +9482,12 @@ static SDL_bool VULKAN_SupportsPresentMode(
         /* Create a dummy surface is the window is not claimed */
         destroySurface = SDL_TRUE;
         _this = SDL_GetVideoDevice();
-        if (!_this->Vulkan_CreateSurface(
+        if (_this->Vulkan_CreateSurface(
                 _this,
                 window,
                 renderer->instance,
                 NULL,
-                &surface)) {
+                &surface) < 0) {
             return SDL_FALSE;
         }
     } else {
@@ -11357,11 +11357,11 @@ static SDL_bool VULKAN_INTERNAL_PrepareVulkan(
         return SDL_FALSE;
     }
 
-    if (!SDL_Vulkan_CreateSurface(
+    if (SDL_Vulkan_CreateSurface(
             dummyWindowHandle,
             renderer->instance,
             NULL, /* FIXME: VAllocationCallbacks */
-            &surface)) {
+            &surface) < 0) {
         SDL_DestroyWindow(dummyWindowHandle);
         SDL_LogWarn(
             SDL_LOG_CATEGORY_APPLICATION,
