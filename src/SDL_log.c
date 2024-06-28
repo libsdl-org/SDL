@@ -517,9 +517,9 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         }
 #endif /* !defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK) */
 
-        length = SDL_strlen(SDL_priority_prefixes[priority]) + 2 + SDL_strlen(message) + 1 + 1 + 1;
+        length = SDL_strlen(message) + 1 + 1 + 1;
         output = SDL_small_alloc(char, length, &isstack);
-        (void)SDL_snprintf(output, length, "%s: %s\r\n", SDL_priority_prefixes[priority], message);
+        (void)SDL_snprintf(output, length, "%s\r\n", message);
         tstr = WIN_UTF8ToString(output);
 
         /* Output to debugger */
@@ -557,7 +557,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
      */
     extern void SDL_NSLog(const char *prefix, const char *text);
     {
-        SDL_NSLog(SDL_priority_prefixes[priority], message);
+        SDL_NSLog(NULL, message);
         return;
     }
 #elif defined(SDL_PLATFORM_PSP) || defined(SDL_PLATFORM_PS2)
@@ -565,7 +565,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         FILE *pFile;
         pFile = fopen("SDL_Log.txt", "a");
         if (pFile) {
-            (void)fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
+            (void)fprintf(pFile, "%s\n", message);
             (void)fclose(pFile);
         }
     }
@@ -574,7 +574,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         FILE *pFile;
         pFile = fopen("ux0:/data/SDL_Log.txt", "a");
         if (pFile) {
-            (void)fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
+            (void)fprintf(pFile, "%s\n", message);
             (void)fclose(pFile);
         }
     }
@@ -583,14 +583,14 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         FILE *pFile;
         pFile = fopen("sdmc:/3ds/SDL_Log.txt", "a");
         if (pFile) {
-            (void)fprintf(pFile, "%s: %s\n", SDL_priority_prefixes[priority], message);
+            (void)fprintf(pFile, "%s\n", message);
             (void)fclose(pFile);
         }
     }
 #endif
 #if defined(HAVE_STDIO_H) && \
     !(defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
-    (void)fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
+    (void)fprintf(stderr, "%s\n", message);
 #endif
 }
 
