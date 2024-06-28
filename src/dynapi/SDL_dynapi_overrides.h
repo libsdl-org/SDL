@@ -378,13 +378,6 @@
 #define SDL_GetNumberProperty SDL_GetNumberProperty_REAL
 #define SDL_GetOriginalMemoryFunctions SDL_GetOriginalMemoryFunctions_REAL
 #define SDL_GetPathInfo SDL_GetPathInfo_REAL
-#define SDL_GetPenCapabilities SDL_GetPenCapabilities_REAL
-#define SDL_GetPenFromGUID SDL_GetPenFromGUID_REAL
-#define SDL_GetPenGUID SDL_GetPenGUID_REAL
-#define SDL_GetPenName SDL_GetPenName_REAL
-#define SDL_GetPenStatus SDL_GetPenStatus_REAL
-#define SDL_GetPenType SDL_GetPenType_REAL
-#define SDL_GetPens SDL_GetPens_REAL
 #define SDL_GetPerformanceCounter SDL_GetPerformanceCounter_REAL
 #define SDL_GetPerformanceFrequency SDL_GetPerformanceFrequency_REAL
 #define SDL_GetPixelFormatEnumForMasks SDL_GetPixelFormatEnumForMasks_REAL
@@ -624,7 +617,6 @@
 #define SDL_PauseAudioStreamDevice SDL_PauseAudioStreamDevice_REAL
 #define SDL_PauseHaptic SDL_PauseHaptic_REAL
 #define SDL_PeepEvents SDL_PeepEvents_REAL
-#define SDL_PenConnected SDL_PenConnected_REAL
 #define SDL_PlayHapticRumble SDL_PlayHapticRumble_REAL
 #define SDL_PollEvent SDL_PollEvent_REAL
 #define SDL_PostSemaphore SDL_PostSemaphore_REAL

@@ -520,6 +520,7 @@ int SDL_VideoInit(const char *driver_name)
     SDL_bool init_keyboard = SDL_FALSE;
     SDL_bool init_mouse = SDL_FALSE;
     SDL_bool init_touch = SDL_FALSE;
+    SDL_bool init_pen = SDL_FALSE;
     int i = 0;
 
     /* Check to make sure we don't overwrite '_this' */
@@ -546,6 +547,10 @@ int SDL_VideoInit(const char *driver_name)
         goto pre_driver_error;
     }
     init_touch = SDL_TRUE;
+    if (SDL_InitPen() < 0) {
+        goto pre_driver_error;
+    }
+    init_pen = SDL_TRUE;
 
     /* Select the proper video driver */
     video = NULL;
@@ -631,6 +636,9 @@ int SDL_VideoInit(const char *driver_name)
 
 pre_driver_error:
     SDL_assert(_this == NULL);
+    if (init_pen) {
+        SDL_QuitPen();
+    }
     if (init_touch) {
         SDL_QuitTouch();
     }
@@ -4031,6 +4039,7 @@ void SDL_VideoQuit(void)
     }
 
     /* Halt event processing before doing anything else */
+    SDL_QuitPen();
     SDL_QuitTouch();
     SDL_QuitMouse();
     SDL_QuitKeyboard();

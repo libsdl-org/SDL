@@ -99,7 +99,7 @@ int X11_PenIDFromDeviceID(int deviceid)
             return pen_map.entries[i].pen_id;
         }
     }
-    return SDL_PEN_INVALID;
+    return 0;
 }
 
 static void pen_atoms_ensure_initialized(SDL_VideoDevice *_this)
@@ -351,16 +351,16 @@ static void xinput2_merge_deviceinfo(xinput2_pen *dest, xinput2_pen *src)
  *
  * Unsupported devices will keep the default settings.
  */
-static void xinput2_vendor_peninfo(SDL_VideoDevice *_this, const XIDeviceInfo *dev, SDL_Pen *pen, pen_identity pident, int *valuator_5, Uint32 *axes)
+static void xinput2_vendor_peninfo(SDL_VideoDevice *_this, const XIDeviceInfo *dev, SDL_Pen *pen, pen_identity pident, int *valuator_5, SDL_PenCapabilityFlags *axes)
 {
     switch (pident.vendor) {
     case SDL_PEN_VENDOR_WACOM:
     {
         if (SDL_PenModifyForWacomID(pen, pident.devicetype_id, axes)) {
-            if (*axes & SDL_PEN_AXIS_SLIDER_MASK) {
+            if (*axes & SDL_PEN_CAPABILITY_SLIDER) {
                 /* Air Brush Pen or eraser */
                 *valuator_5 = SDL_PEN_AXIS_SLIDER;
-            } else if (*axes & SDL_PEN_AXIS_ROTATION_MASK) {
+            } else if (*axes & SDL_PEN_CAPABILITY_ROTATION) {
                 /* Art Pen or eraser, or 6D Art Pen */
                 *valuator_5 = SDL_PEN_AXIS_ROTATION;
             }
@@ -376,7 +376,7 @@ static void xinput2_vendor_peninfo(SDL_VideoDevice *_this, const XIDeviceInfo *d
 
     default:
 #if DEBUG_PEN
-        printf("[pen] Pen %d is not from a known vendor\n", pident.deviceid);
+        SDL_Log("[pen] Pen %d is not from a known vendor\n", pident.deviceid);
 #endif
         break;
     }
@@ -461,7 +461,7 @@ void X11_InitPen(SDL_VideoDevice *_this)
         pident = xinput2_identify_pen(_this, dev->deviceid, dev->name);
 
         pen_id = SDL_GetPenFromGUID(pident.guid);
-        if (pen_id == SDL_PEN_INVALID) {
+        if (pen_id == 0) {
             /* We have never met this pen */
             pen_id = ++pen_map.num_pens_known; /* start at 1 */
         }
@@ -479,7 +479,7 @@ void X11_InitPen(SDL_VideoDevice *_this)
                 XIValuatorClassInfo *val_classinfo = (XIValuatorClassInfo *)classinfo;
                 Sint8 valuator_nr = val_classinfo->number;
                 Atom vname = val_classinfo->label;
-                int axis = -1;
+                SDL_PenAxis axis = (SDL_PenAxis) -1;
 
                 float min = (float)val_classinfo->min;
                 float max = (float)val_classinfo->max;
@@ -492,7 +492,7 @@ void X11_InitPen(SDL_VideoDevice *_this)
                     axis = SDL_PEN_AXIS_YTILT;
                 }
 
-                if (axis == -1 && valuator_nr == 5) {
+                if (axis == ((SDL_PenAxis)-1) && valuator_nr == 5) {
                     /* Wacom model-specific axis support */
                     /* The meaning of the various axes is highly underspecitied in Xinput2.
                      * As of 2023-08-26, Wacom seems to be the only vendor to support these axes, so the code below
@@ -521,9 +521,8 @@ void X11_InitPen(SDL_VideoDevice *_this)
                     }
                 }
 
-                if (axis >= 0) {
-                    capabilities |= SDL_PEN_AXIS_CAPABILITY(axis);
-
+                if (axis != ((SDL_PenAxis)-1)) {
+                    capabilities |= SDL_PenCapabilityFromAxis(axis);
                     pen_device.valuator_for_axis[axis] = valuator_nr;
                     pen_device.axis_min[axis] = min;
                     pen_device.axis_max[axis] = max;
@@ -536,7 +535,7 @@ void X11_InitPen(SDL_VideoDevice *_this)
         }
 
         /* We have a pen if and only if the device measures pressure */
-        if (capabilities & SDL_PEN_AXIS_PRESSURE_MASK) {
+        if (capabilities & SDL_PEN_CAPABILITY_PRESSURE) {
             xinput2_pen *xinput2_deviceinfo;
             Uint64 guid_a, guid_b;
 
