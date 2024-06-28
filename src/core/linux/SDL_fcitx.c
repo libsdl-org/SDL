@@ -229,7 +229,7 @@ static void FcitxClientICCallMethod(FcitxClient *client, const char *method)
 static void SDLCALL Fcitx_SetCapabilities(void *data,
                                           const char *name,
                                           const char *old_val,
-                                          const char *internal_editing)
+                                          const char *hint)
 {
     FcitxClient *client = (FcitxClient *)data;
     Uint64 caps = 0;
@@ -237,9 +237,16 @@ static void SDLCALL Fcitx_SetCapabilities(void *data,
         return;
     }
 
-    if (!(internal_editing && *internal_editing == '1')) {
-        caps |= (1 << 1); /* Preedit Flag */
-        caps |= (1 << 4); /* Formatted Preedit Flag */
+    if (!hint || !*hint || *hint == '1' || SDL_strstr(hint, "all")) {
+        // Let the OS handle IME UI
+    } else {
+        if (!SDL_strstr(hint, "composition")) {
+            caps |= (1 << 1); /* Preedit Flag */
+            caps |= (1 << 4); /* Formatted Preedit Flag */
+        }
+        if (!SDL_strstr(hint, "candidates")) {
+            // FIXME, turn off native candidate rendering
+        }
     }
 
     SDL_DBus_CallVoidMethod(FCITX_DBUS_SERVICE, client->ic_path, FCITX_IC_DBUS_INTERFACE, "SetCapability", DBUS_TYPE_UINT64, &caps, DBUS_TYPE_INVALID);
@@ -300,7 +307,7 @@ static SDL_bool FcitxClientCreateIC(FcitxClient *client)
                                     NULL);
         dbus->connection_flush(dbus->session_conn);
 
-        SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, Fcitx_SetCapabilities, client);
+        SDL_AddHintCallback(SDL_HINT_IME_NATIVE_UI, Fcitx_SetCapabilities, client);
         return SDL_TRUE;
     }
 

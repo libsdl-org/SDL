@@ -867,6 +867,8 @@ static void Redraw(void)
 
 int main(int argc, char *argv[])
 {
+    SDL_bool native_composition = SDL_TRUE;
+    SDL_bool native_candidates = SDL_TRUE;
     int i, done;
     SDL_Event event;
     char *fontname = NULL;
@@ -890,17 +892,30 @@ int main(int argc, char *argv[])
                 fontname = argv[i + 1];
                 consumed = 2;
             }
-        } else if (SDL_strcmp(argv[i], "--disable-ui") == 0) {
-            SDL_SetHint(SDL_HINT_IME_SHOW_UI, "0");
+        } else if (SDL_strcmp(argv[i], "--disable-native-composition") == 0) {
+            native_composition = SDL_FALSE;
+            consumed = 1;
+        } else if (SDL_strcmp(argv[i], "--disable-native-candidates") == 0) {
+            native_candidates = SDL_FALSE;
             consumed = 1;
         }
         if (consumed <= 0) {
-            static const char *options[] = { "[--font fontfile] [--disable-ui]", NULL };
+            static const char *options[] = { "[--font fontfile] [--disable-native-composition] [--disable-native-candidates]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }
 
         i += consumed;
+    }
+
+    if (native_composition && native_candidates) {
+        SDL_SetHint(SDL_HINT_IME_NATIVE_UI, "1");
+    } else if (native_composition) {
+        SDL_SetHint(SDL_HINT_IME_NATIVE_UI, "composition");
+    } else if (native_candidates) {
+        SDL_SetHint(SDL_HINT_IME_NATIVE_UI, "candidates");
+    } else {
+        SDL_SetHint(SDL_HINT_IME_NATIVE_UI, "0");
     }
 
     if (!SDLTest_CommonInit(state)) {

@@ -339,7 +339,6 @@ typedef struct
     void *data;
 } TSFSink;
 
-#ifndef SDL_DISABLE_WINDOWS_IME
 /* Definition from Win98DDK version of IMM.H */
 typedef struct tagINPUTCONTEXT2
 {
@@ -365,7 +364,6 @@ typedef struct tagINPUTCONTEXT2
     DWORD fdwInit;
     DWORD dwReserve[3];
 } INPUTCONTEXT2, *PINPUTCONTEXT2, NEAR *NPINPUTCONTEXT2, FAR *LPINPUTCONTEXT2;
-#endif /* !SDL_DISABLE_WINDOWS_IME */
 
 /* Private display data */
 
@@ -461,7 +459,8 @@ struct SDL_VideoData
     BOOL (WINAPI *ImmUnlockIMCC)(HIMCC himcc);
     /* *INDENT-ON* */ /* clang-format on */
 
-    SDL_bool ime_uiless;
+    SDL_bool ime_native_composition;
+    SDL_bool ime_native_candidates;
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
     BYTE pre_hook_key_state[256];
