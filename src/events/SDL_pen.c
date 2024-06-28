@@ -630,6 +630,11 @@ int SDL_SendPenTipEvent(Uint64 timestamp, SDL_PenID instance_id, Uint8 state)
         if (mouse_button == 0) {
             mouse_button = SDL_BUTTON_LEFT; /* No current button? Instead report left mouse button */
         }
+        /* A button may get released while drawing, but SDL_SendPenButton doesn't reset last_mouse_button
+           while touching the surface, so release and reset last_mouse_button on pen tip release */
+        if (pen->last.buttons == 0 && state == SDL_RELEASED) {
+            pen->last_mouse_button = 0;
+        }
     }
 
     switch (pen_mouse_emulation_mode) {
