@@ -462,6 +462,7 @@
 #define SDL_GetSystemRAM SDL_GetSystemRAM_REAL
 #define SDL_GetSystemTheme SDL_GetSystemTheme_REAL
 #define SDL_GetTLS SDL_GetTLS_REAL
+#define SDL_GetTextInputArea SDL_GetTextInputArea_REAL
 #define SDL_GetTextureAlphaMod SDL_GetTextureAlphaMod_REAL
 #define SDL_GetTextureAlphaModFloat SDL_GetTextureAlphaModFloat_REAL
 #define SDL_GetTextureBlendMode SDL_GetTextureBlendMode_REAL
@@ -770,7 +771,7 @@
 #define SDL_SetSurfacePalette SDL_SetSurfacePalette_REAL
 #define SDL_SetSurfaceRLE SDL_SetSurfaceRLE_REAL
 #define SDL_SetTLS SDL_SetTLS_REAL
-#define SDL_SetTextInputRect SDL_SetTextInputRect_REAL
+#define SDL_SetTextInputArea SDL_SetTextInputArea_REAL
 #define SDL_SetTextureAlphaMod SDL_SetTextureAlphaMod_REAL
 #define SDL_SetTextureAlphaModFloat SDL_SetTextureAlphaModFloat_REAL
 #define SDL_SetTextureBlendMode SDL_SetTextureBlendMode_REAL

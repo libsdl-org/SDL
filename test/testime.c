@@ -457,6 +457,8 @@ static Uint32 utf8_decode(char *p, size_t len)
 
 static void InitInput(void)
 {
+    int i;
+
     /* Prepare a rect for text input */
     textRect.x = textRect.y = 100.0f;
     textRect.w = DEFAULT_WINDOW_WIDTH - 2 * textRect.x;
@@ -466,7 +468,9 @@ static void InitInput(void)
     markedRect = textRect;
     markedText[0] = 0;
 
-    SDL_StartTextInput(state->windows[0]);
+    for (i = 0; i < state->num_windows; ++i) {
+        SDL_StartTextInput(state->windows[i]);
+    }
 }
 
 
@@ -649,6 +653,18 @@ static void DrawCandidates(int rendererID, SDL_FRect *cursorRect)
     }
 }
 
+static void UpdateTextInputArea(SDL_Window *window, const SDL_FRect *cursorRect)
+{
+    SDL_Rect rect;
+    int cursor_offset = (int)(cursorRect->x - textRect.x);
+
+    rect.x = (int)textRect.x;
+    rect.y = (int)textRect.y;
+    rect.w = (int)textRect.w;
+    rect.h = (int)textRect.h;
+    SDL_SetTextInputArea(window, &rect, cursor_offset);
+}
+
 static void CleanupVideo(void)
 {
     SDL_StopTextInput(state->windows[0]);
@@ -827,16 +843,8 @@ static void RedrawWindow(int rendererID)
     /* Draw the candidates */
     DrawCandidates(rendererID, &cursorRect);
 
-    {
-        SDL_Rect inputrect;
-
-        /* The input rect is a square at the cursor insertion point */
-        inputrect.x = (int)cursorRect.x;
-        inputrect.y = (int)cursorRect.y;
-        inputrect.w = (int)cursorRect.h;
-        inputrect.h = (int)cursorRect.h;
-        SDL_SetTextInputRect(state->windows[0], &inputrect);
-    }
+    /* Update the area used to draw composition UI */
+    UpdateTextInputArea(state->windows[0], &cursorRect);
 }
 
 static void Redraw(void)

@@ -917,6 +917,7 @@ The following functions have been renamed:
 
 The following functions have been removed:
 * SDL_IsTextInputShown()
+* SDL_SetTextInputRect() - replaced with SDL_SetTextInputArea()
 
 The following structures have been removed:
 * SDL_Keysym

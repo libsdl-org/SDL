@@ -261,7 +261,7 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
             }
         }
 
-        SDL_IBus_UpdateTextRect(SDL_GetKeyboardFocus());
+        SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
 
         return DBUS_HANDLER_RESULT_HANDLED;
     }
@@ -483,7 +483,7 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
     SDL_Window *window = SDL_GetKeyboardFocus();
     if (SDL_TextInputActive(window)) {
         SDL_IBus_SetFocus(SDL_TRUE);
-        SDL_IBus_UpdateTextRect(window);
+        SDL_IBus_UpdateTextInputArea(window);
     } else {
         SDL_IBus_SetFocus(SDL_FALSE);
     }
@@ -674,12 +674,12 @@ SDL_bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
         }
     }
 
-    SDL_IBus_UpdateTextRect(SDL_GetKeyboardFocus());
+    SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
 
     return (result != 0);
 }
 
-void SDL_IBus_UpdateTextRect(SDL_Window *window)
+void SDL_IBus_UpdateTextInputArea(SDL_Window *window)
 {
     int x = 0, y = 0;
     SDL_DBusContext *dbus;
@@ -688,7 +688,11 @@ void SDL_IBus_UpdateTextRect(SDL_Window *window)
         return;
     }
 
-    SDL_copyp(&ibus_cursor_rect, &window->text_input_rect);
+    // We'll use a square at the text input cursor location for the ibus_cursor
+    ibus_cursor_rect.x = window->text_input_rect.x + window->text_input_cursor;
+    ibus_cursor_rect.y = window->text_input_rect.x;
+    ibus_cursor_rect.w = window->text_input_rect.h;
+    ibus_cursor_rect.h = window->text_input_rect.h;
 
     SDL_GetWindowPosition(window, &x, &y);
 

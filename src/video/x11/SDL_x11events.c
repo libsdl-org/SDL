@@ -1293,7 +1293,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #ifdef SDL_USE_IME
                 if (SDL_TextInputActive(data->window)) {
                     /* Update IME candidate list position */
-                    SDL_IME_UpdateTextRect(NULL);
+                    SDL_IME_UpdateTextInputArea(NULL);
                 }
 #endif
                 for (w = data->window->first_child; w; w = w->next_sibling) {

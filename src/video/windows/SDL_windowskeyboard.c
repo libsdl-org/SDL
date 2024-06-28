@@ -36,10 +36,10 @@
 #else
 #define SDL_DebugIMELog(...)
 #endif
-static int IME_Init(SDL_VideoData *videodata, HWND hwnd);
+static int IME_Init(SDL_VideoData *videodata, SDL_Window *window);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
-static void IME_SetTextInputRect(SDL_VideoData *videodata, const SDL_Rect *rect);
+static void IME_SetTextInputArea(SDL_VideoData *videodata, const SDL_Rect *rect, int cursor);
 static void IME_Quit(SDL_VideoData *videodata);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
@@ -208,10 +208,10 @@ int WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 #ifndef SDL_DISABLE_WINDOWS_IME
     HWND hwnd = window->driverdata->hwnd;
     SDL_VideoData *videodata = _this->driverdata;
-    IME_Init(videodata, hwnd);
+    IME_Init(videodata, window);
     IME_Enable(videodata, hwnd);
 
-    WIN_UpdateTextInputRect(_this, window);
+    WIN_UpdateTextInputArea(_this, window);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
     return 0;
@@ -224,19 +224,19 @@ int WIN_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 #ifndef SDL_DISABLE_WINDOWS_IME
     HWND hwnd = window->driverdata->hwnd;
     SDL_VideoData *videodata = _this->driverdata;
-    IME_Init(videodata, hwnd);
+    IME_Init(videodata, window);
     IME_Disable(videodata, hwnd);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
     return 0;
 }
 
-int WIN_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
+int WIN_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_VideoData *data = _this->driverdata;
 
-    IME_SetTextInputRect(data, &window->text_input_rect);
+    IME_SetTextInputArea(data, &window->text_input_rect, window->text_input_cursor);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
     return 0;
@@ -313,7 +313,7 @@ DEFINE_GUID(IID_ITfThreadMgrEx, 0x3E90ADE3, 0x7594, 0x4CB0, 0xBB, 0x58, 0x69, 0x
 
 static void IME_UpdateInputLocale(SDL_VideoData *videodata);
 static void IME_ClearComposition(SDL_VideoData *videodata);
-static void IME_SetWindow(SDL_VideoData *videodata, HWND hwnd);
+static void IME_SetWindow(SDL_VideoData *videodata, SDL_Window *window);
 static void IME_SetupAPI(SDL_VideoData *videodata);
 static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex);
 static void IME_SendEditingEvent(SDL_VideoData *videodata);
@@ -329,8 +329,9 @@ static SDL_bool WIN_ShouldShowNativeUI()
     return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_TRUE);
 }
 
-static int IME_Init(SDL_VideoData *videodata, HWND hwnd)
+static int IME_Init(SDL_VideoData *videodata, SDL_Window *window)
 {
+    HWND hwnd = window->driverdata->hwnd;
     HRESULT hResult = S_OK;
 
     if (videodata->ime_initialized) {
@@ -360,7 +361,7 @@ static int IME_Init(SDL_VideoData *videodata, HWND hwnd)
     videodata->ImmUnlockIMCC = (BOOL (WINAPI *)(HIMCC))SDL_LoadFunction(videodata->ime_himm32, "ImmUnlockIMCC");
     /* *INDENT-ON* */ /* clang-format on */
 
-    IME_SetWindow(videodata, hwnd);
+    IME_SetWindow(videodata, window);
     videodata->ime_himc = ImmGetContext(hwnd);
     ImmReleaseContext(hwnd, videodata->ime_himc);
     if (!videodata->ime_himc) {
@@ -678,9 +679,16 @@ static void IME_SetupAPI(SDL_VideoData *videodata)
     }
 }
 
-static void IME_SetWindow(SDL_VideoData *videodata, HWND hwnd)
+static void IME_SetWindow(SDL_VideoData *videodata, SDL_Window *window)
 {
-    videodata->ime_hwnd_current = hwnd;
+    HWND hwnd = window->driverdata->hwnd;
+
+    if (hwnd != videodata->ime_hwnd_current) {
+        videodata->ime_hwnd_current = hwnd;
+        SDL_zero(videodata->ime_composition_area);
+        SDL_zero(videodata->ime_candidate_area);
+    }
+
     if (videodata->ime_threadmgr) {
         struct ITfDocumentMgr *document_mgr = 0;
         if (SUCCEEDED(videodata->ime_threadmgr->lpVtbl->AssociateFocus(videodata->ime_threadmgr, hwnd, NULL, &document_mgr))) {
@@ -689,42 +697,45 @@ static void IME_SetWindow(SDL_VideoData *videodata, HWND hwnd)
             }
         }
     }
-    IME_SetTextInputRect(videodata, &videodata->ime_rect);
+
+    IME_SetTextInputArea(videodata, &window->text_input_rect, window->text_input_cursor);
 }
 
-static void IME_SetTextInputRect(SDL_VideoData *videodata, const SDL_Rect *rect)
+static void IME_SetTextInputArea(SDL_VideoData *videodata, const SDL_Rect *rect, int cursor)
 {
-    HIMC himc = 0;
-
-    if (SDL_memcmp(rect, &videodata->ime_rect, sizeof(*rect)) == 0) {
-        return;
-    }
-
-    videodata->ime_rect = *rect;
+    HIMC himc;
 
     himc = ImmGetContext(videodata->ime_hwnd_current);
     if (himc) {
         COMPOSITIONFORM cof;
         CANDIDATEFORM caf;
 
+        SDL_zero(cof);
         cof.dwStyle = CFS_RECT;
-        cof.ptCurrentPos.x = videodata->ime_rect.x;
-        cof.ptCurrentPos.y = videodata->ime_rect.y;
-        cof.rcArea.left = videodata->ime_rect.x;
-        cof.rcArea.right = (LONG)videodata->ime_rect.x + videodata->ime_rect.w;
-        cof.rcArea.top = videodata->ime_rect.y;
-        cof.rcArea.bottom = (LONG)videodata->ime_rect.y + videodata->ime_rect.h;
-        ImmSetCompositionWindow(himc, &cof);
+        cof.ptCurrentPos.x = rect->x + cursor;
+        cof.ptCurrentPos.y = rect->y;
+        cof.rcArea.left = rect->x;
+        cof.rcArea.right = (LONG)rect->x + rect->w;
+        cof.rcArea.top = rect->y;
+        cof.rcArea.bottom = (LONG)rect->y + rect->h;
+        if (SDL_memcmp(&cof, &videodata->ime_composition_area, sizeof(cof)) != 0) {
+            SDL_copyp(&videodata->ime_composition_area, &cof);
+            ImmSetCompositionWindow(himc, &cof);
+        }
 
+        SDL_zero(caf);
         caf.dwIndex = 0;
         caf.dwStyle = CFS_EXCLUDE;
-        caf.ptCurrentPos.x = videodata->ime_rect.x;
-        caf.ptCurrentPos.y = videodata->ime_rect.y;
-        caf.rcArea.left = videodata->ime_rect.x;
-        caf.rcArea.right = (LONG)videodata->ime_rect.x + videodata->ime_rect.w;
-        caf.rcArea.top = videodata->ime_rect.y;
-        caf.rcArea.bottom = (LONG)videodata->ime_rect.y + videodata->ime_rect.h;
-        ImmSetCandidateWindow(himc, &caf);
+        caf.ptCurrentPos.x = rect->x + cursor;
+        caf.ptCurrentPos.y = rect->y;
+        caf.rcArea.left = rect->x;
+        caf.rcArea.right = (LONG)rect->x + rect->w;
+        caf.rcArea.top = rect->y;
+        caf.rcArea.bottom = (LONG)rect->y + rect->h;
+        if (SDL_memcmp(&caf, &videodata->ime_candidate_area, sizeof(caf)) != 0) {
+            SDL_copyp(&videodata->ime_candidate_area, &caf);
+            ImmSetCandidateWindow(himc, &caf);
+        }
 
         ImmReleaseContext(videodata->ime_hwnd_current, himc);
     }

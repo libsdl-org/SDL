@@ -200,7 +200,7 @@ int GDK_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-int GDK_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
+int GDK_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /*
      * XGameUiShowTextEntryAsync does not allow you to set

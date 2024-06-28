@@ -511,7 +511,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     device->HasClipboardData = Wayland_HasClipboardData;
     device->StartTextInput = Wayland_StartTextInput;
     device->StopTextInput = Wayland_StopTextInput;
-    device->UpdateTextInputRect = Wayland_UpdateTextInputRect;
+    device->UpdateTextInputArea = Wayland_UpdateTextInputArea;
 
 #ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Wayland_Vulkan_LoadLibrary;

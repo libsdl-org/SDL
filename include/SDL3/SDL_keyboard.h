@@ -369,7 +369,7 @@ extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_SetTextInputRect
+ * \sa SDL_SetTextInputArea
  * \sa SDL_StopTextInput
  * \sa SDL_TextInputActive
  */
@@ -418,32 +418,39 @@ extern SDL_DECLSPEC int SDLCALL SDL_StopTextInput(SDL_Window *window);
 extern SDL_DECLSPEC int SDLCALL SDL_ClearComposition(SDL_Window *window);
 
 /**
- * Set the rectangle used to type Unicode text inputs.
+ * Set the area used to type Unicode text input.
  *
- * This is often set to the extents of a text field within the window.
+ * Native input methods may place a window with word suggestions near the cursor, without covering the text being entered.
  *
- * Native input methods will place a window with word suggestions near it,
- * without covering the text being inputted.
- *
- * To start text input in a given location, this function is intended to be
- * called before SDL_StartTextInput, although some platforms support moving
- * the rectangle even while text input (and a composition) is active.
- *
- * Note: If you want to use the system native IME window, try setting hint
- * **SDL_HINT_IME_SHOW_UI** to **1**, otherwise this function won't give you
- * any feedback.
- *
- * \param window the window for which to set the text input rectangle.
- * \param rect the SDL_Rect structure representing the rectangle to receive
- *             text (ignored if NULL).
+ * \param window the window for which to set the text input area.
+ * \param rect the SDL_Rect representing the text input area, in window coordinates, or NULL to clear it.
+ * \param cursor the offset of the current cursor location relative to `rect->x`, in window coordinates.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetTextInputArea
  * \sa SDL_StartTextInput
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetTextInputRect(SDL_Window *window, const SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_SetTextInputArea(SDL_Window *window, const SDL_Rect *rect, int cursor);
+
+/**
+ * Get the area used to type Unicode text input.
+ *
+ * This returns the values previously set by SDL_SetTextInputArea().
+ *
+ * \param window the window for which to query the text input area.
+ * \param rect a pointer to an SDL_Rect filled in with the text input area, may be NULL.
+ * \param cursor a pointer to the offset of the current cursor location relative to `rect->x`, may be NULL.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetTextInputArea
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetTextInputArea(SDL_Window *window, SDL_Rect *rect, int *cursor);
 
 /**
  * Check whether the platform has screen keyboard support.

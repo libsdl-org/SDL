@@ -31,7 +31,7 @@ extern void WIN_ResetDeadKeys(void);
 
 extern int WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window);
 extern int WIN_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
-extern int WIN_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window);
+extern int WIN_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
 extern int WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, struct SDL_VideoData *videodata);

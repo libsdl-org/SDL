@@ -448,7 +448,7 @@ int X11_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     X11_ResetXIM(_this, window);
 
-    return X11_UpdateTextInputRect(_this, window);
+    return X11_UpdateTextInputArea(_this, window);
 }
 
 int X11_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
@@ -460,10 +460,10 @@ int X11_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-int X11_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window)
+int X11_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef SDL_USE_IME
-    SDL_IME_UpdateTextRect(window);
+    SDL_IME_UpdateTextInputArea(window);
 #endif
     return 0;
 }

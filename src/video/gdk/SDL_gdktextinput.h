@@ -34,7 +34,7 @@ void GDK_EnsureHints(void);
 
 int GDK_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window);
 int GDK_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
-int GDK_UpdateTextInputRect(SDL_VideoDevice *_this, SDL_Window *window);
+int GDK_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
 int GDK_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window);
 
 SDL_bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
