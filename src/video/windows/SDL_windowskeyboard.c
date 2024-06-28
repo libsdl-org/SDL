@@ -696,6 +696,10 @@ static void IME_SetTextInputRect(SDL_VideoData *videodata, const SDL_Rect *rect)
 {
     HIMC himc = 0;
 
+    if (SDL_memcmp(rect, &videodata->ime_rect, sizeof(*rect)) == 0) {
+        return;
+    }
+
     videodata->ime_rect = *rect;
 
     himc = ImmGetContext(videodata->ime_hwnd_current);
