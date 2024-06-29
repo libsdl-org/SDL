@@ -327,6 +327,26 @@ static int GLES_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         format = GL_RGBA;
         type = GL_UNSIGNED_BYTE;
         break;
+    case SDL_PIXELFORMAT_RGB24:
+        internalFormat = GL_RGB;
+        format = GL_RGB;
+        type = GL_UNSIGNED_BYTE;
+        break;
+    case SDL_PIXELFORMAT_RGB565:
+        internalFormat = GL_RGB;
+        format = GL_RGB;
+        type = GL_UNSIGNED_SHORT_5_6_5;
+        break;
+    case SDL_PIXELFORMAT_RGBA5551:
+        internalFormat = GL_RGBA;
+        format = GL_RGBA;
+        type = GL_UNSIGNED_SHORT_5_5_5_1;
+        break;
+    case SDL_PIXELFORMAT_RGBA4444:
+        internalFormat = GL_RGBA;
+        format = GL_RGBA;
+        type = GL_UNSIGNED_SHORT_4_4_4_4;
+        break;
     default:
         return SDL_SetError("Texture format not supported");
     }
@@ -900,7 +920,8 @@ static int GLES_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
                                  Uint32 pixel_format, void *pixels, int pitch)
 {
     GLES_RenderData *data = (GLES_RenderData *)renderer->driverdata;
-    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
+    /* GLES only supports RGBA32 or an implementation-defined format */
+    Uint32 temp_format = SDL_PIXELFORMAT_RGBA32;
     void *temp_pixels;
     int temp_pitch;
     Uint8 *src, *dst, *tmp;
@@ -1209,8 +1230,12 @@ SDL_RenderDriver GLES_RenderDriver = {
     GLES_CreateRenderer,
     { "opengles",
       (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC),
-      1,
-      { SDL_PIXELFORMAT_RGBA32 },
+      5,
+      { SDL_PIXELFORMAT_RGBA32,
+        SDL_PIXELFORMAT_RGB24,
+        SDL_PIXELFORMAT_RGB565,
+        SDL_PIXELFORMAT_RGBA5551,
+        SDL_PIXELFORMAT_RGBA4444 },
       0,
       0 }
 };
