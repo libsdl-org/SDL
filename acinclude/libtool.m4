@@ -1087,9 +1087,10 @@ _LT_EOF
         10.[[012]],*|,*powerpc*-darwin[[5-8]]*)
           _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
         *)
-          _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup'
           if test yes = "$lt_cv_support_no_fixup_chains"; then
-            _lt_dar_allow_undefined='$_lt_dar_allow_undefined $wl-no_fixup_chains'
+            _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup $wl-no_fixup_chains'
+          else
+            _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup'
           fi
         ;;
       esac
