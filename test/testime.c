@@ -867,8 +867,8 @@ static void Redraw(void)
 
 int main(int argc, char *argv[])
 {
-    SDL_bool native_composition = SDL_TRUE;
-    SDL_bool native_candidates = SDL_TRUE;
+    SDL_bool render_composition = SDL_FALSE;
+    SDL_bool render_candidates = SDL_FALSE;
     int i, done;
     SDL_Event event;
     char *fontname = NULL;
@@ -892,15 +892,15 @@ int main(int argc, char *argv[])
                 fontname = argv[i + 1];
                 consumed = 2;
             }
-        } else if (SDL_strcmp(argv[i], "--disable-native-composition") == 0) {
-            native_composition = SDL_FALSE;
+        } else if (SDL_strcmp(argv[i], "--render-composition") == 0) {
+            render_composition = SDL_TRUE;
             consumed = 1;
-        } else if (SDL_strcmp(argv[i], "--disable-native-candidates") == 0) {
-            native_candidates = SDL_FALSE;
+        } else if (SDL_strcmp(argv[i], "--render-candidates") == 0) {
+            render_candidates = SDL_TRUE;
             consumed = 1;
         }
         if (consumed <= 0) {
-            static const char *options[] = { "[--font fontfile] [--disable-native-composition] [--disable-native-candidates]", NULL };
+            static const char *options[] = { "[--font fontfile] [--render-composition] [--render-candidates]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }
@@ -908,14 +908,12 @@ int main(int argc, char *argv[])
         i += consumed;
     }
 
-    if (native_composition && native_candidates) {
-        SDL_SetHint(SDL_HINT_IME_NATIVE_UI, "1");
-    } else if (native_composition) {
-        SDL_SetHint(SDL_HINT_IME_NATIVE_UI, "composition");
-    } else if (native_candidates) {
-        SDL_SetHint(SDL_HINT_IME_NATIVE_UI, "candidates");
-    } else {
-        SDL_SetHint(SDL_HINT_IME_NATIVE_UI, "0");
+    if (render_composition && render_candidates) {
+        SDL_SetHint(SDL_HINT_IME_IMPLEMENTED_UI, "composition,candidates");
+    } else if (render_composition) {
+        SDL_SetHint(SDL_HINT_IME_IMPLEMENTED_UI, "composition");
+    } else if (render_candidates) {
+        SDL_SetHint(SDL_HINT_IME_IMPLEMENTED_UI, "candidates");
     }
 
     if (!SDLTest_CommonInit(state)) {

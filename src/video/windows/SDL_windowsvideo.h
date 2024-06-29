@@ -423,6 +423,8 @@ struct SDL_VideoData
     SDL_bool ime_initialized;
     SDL_bool ime_enabled;
     SDL_bool ime_available;
+    SDL_bool ime_internal_composition;
+    SDL_bool ime_internal_candidates;
     HWND ime_hwnd_main;
     HWND ime_hwnd_current;
     SDL_bool ime_needs_clear_composition;
@@ -460,8 +462,6 @@ struct SDL_VideoData
     BOOL (WINAPI *ImmUnlockIMCC)(HIMCC himcc);
     /* *INDENT-ON* */ /* clang-format on */
 
-    SDL_bool ime_native_composition;
-    SDL_bool ime_native_candidates;
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
     BYTE pre_hook_key_state[256];
