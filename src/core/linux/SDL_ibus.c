@@ -411,15 +411,11 @@ static void SDLCALL IBus_SetCapabilities(void *data, const char *name, const cha
     if (IBus_CheckConnection(dbus)) {
         Uint32 caps = IBUS_CAP_FOCUS;
 
-        if (!hint || !*hint || *hint == '1' || SDL_strstr(hint, "all")) {
-            // Let the OS handle IME UI
-        } else {
-            if (!SDL_strstr(hint, "composition")) {
-                caps |= IBUS_CAP_PREEDIT_TEXT;
-            }
-            if (!SDL_strstr(hint, "candidates")) {
-                // FIXME, turn off native candidate rendering
-            }
+        if (hint && SDL_strstr(hint, "composition")) {
+            caps |= IBUS_CAP_PREEDIT_TEXT;
+        }
+        if (hint && SDL_strstr(hint, "candidates")) {
+            // FIXME, turn off native candidate rendering
         }
 
         SDL_DBus_CallVoidMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, "SetCapabilities",
@@ -482,7 +478,7 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
         (void)SDL_snprintf(matchstr, sizeof(matchstr), "type='signal',interface='%s'", ibus_input_interface);
         SDL_free(input_ctx_path);
         input_ctx_path = SDL_strdup(path);
-        SDL_AddHintCallback(SDL_HINT_IME_NATIVE_UI, IBus_SetCapabilities, NULL);
+        SDL_AddHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, IBus_SetCapabilities, NULL);
         dbus->bus_add_match(ibus_conn, matchstr, NULL);
         dbus->connection_try_register_object_path(ibus_conn, input_ctx_path, &ibus_vtable, dbus, NULL);
         dbus->connection_flush(ibus_conn);
@@ -639,7 +635,7 @@ void SDL_IBus_Quit(void)
 
     /* !!! FIXME: should we close(inotify_fd) here? */
 
-    SDL_DelHintCallback(SDL_HINT_IME_NATIVE_UI, IBus_SetCapabilities, NULL);
+    SDL_DelHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, IBus_SetCapabilities, NULL);
 
     SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
 }

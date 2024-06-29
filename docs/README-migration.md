@@ -757,8 +757,8 @@ The following hints have been removed:
 * SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS - gamepad buttons are always positional
 * SDL_HINT_GRAB_KEYBOARD - use SDL_SetWindowKeyboardGrab() instead
 * SDL_HINT_IDLE_TIMER_DISABLED - use SDL_DisableScreenSaver() instead
-* SDL_HINT_IME_INTERNAL_EDITING - replaced with SDL_HINT_IME_NATIVE_UI
-* SDL_HINT_IME_SHOW_UI - replaced with SDL_HINT_IME_NATIVE_UI
+* SDL_HINT_IME_INTERNAL_EDITING - replaced with SDL_HINT_IME_IMPLEMENTED_UI
+* SDL_HINT_IME_SHOW_UI - replaced with SDL_HINT_IME_IMPLEMENTED_UI
 * SDL_HINT_IME_SUPPORT_EXTENDED_TEXT - the normal text editing event has extended text
 * SDL_HINT_MOUSE_RELATIVE_SCALING - mouse coordinates are no longer automatically scaled by the SDL renderer
 * SDL_HINT_PS2_DYNAMIC_VSYNC - use SDL_SetRenderVSync(renderer, -1) instead
