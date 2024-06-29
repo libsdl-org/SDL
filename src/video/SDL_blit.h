@@ -30,8 +30,8 @@
 #endif
 
 /* Table to do pixel byte expansion */
-extern Uint8 *SDL_expand_byte[9];
-extern Uint16 SDL_expand_byte10[];
+extern const Uint8 *SDL_expand_byte[9];
+extern const Uint16 SDL_expand_byte_10[];
 
 /* SDL blit copy flags */
 #define SDL_COPY_MODULATE_COLOR 0x00000001
@@ -387,12 +387,12 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         b = ((Pixel >> 2) & 0xFF);               \
         a = SDL_expand_byte[6][(Pixel >> 30)];   \
     }
-#define RGBAFLOAT_FROM_ARGB2101010(Pixel, r, g, b, a)          \
-    {                                                          \
-        r = (float)((Pixel >> 20) & 0x3FF) / 1023.0f;          \
-        g = (float)((Pixel >> 10) & 0x3FF) / 1023.0f;          \
-        b = (float)((Pixel >> 0) & 0x3FF) / 1023.0f;           \
-        a = (float)SDL_expand_byte[6][(Pixel >> 30)] / 255.0f; \
+#define RGBAFLOAT_FROM_ARGB2101010(Pixel, r, g, b, a)   \
+    {                                                   \
+        r = (float)((Pixel >> 20) & 0x3FF) / 1023.0f;   \
+        g = (float)((Pixel >> 10) & 0x3FF) / 1023.0f;   \
+        b = (float)((Pixel >> 0) & 0x3FF) / 1023.0f;    \
+        a = (float)(Pixel >> 30) / 3.0f;                \
     }
 #define RGBA_FROM_ABGR2101010(Pixel, r, g, b, a) \
     {                                            \
@@ -401,12 +401,12 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         b = ((Pixel >> 22) & 0xFF);              \
         a = SDL_expand_byte[6][(Pixel >> 30)];   \
     }
-#define RGBAFLOAT_FROM_ABGR2101010(Pixel, r, g, b, a)          \
-    {                                                          \
-        r = (float)((Pixel >> 0) & 0x3FF) / 1023.0f;           \
-        g = (float)((Pixel >> 10) & 0x3FF) / 1023.0f;          \
-        b = (float)((Pixel >> 20) & 0x3FF) / 1023.0f;          \
-        a = (float)SDL_expand_byte[6][(Pixel >> 30)] / 255.0f; \
+#define RGBAFLOAT_FROM_ABGR2101010(Pixel, r, g, b, a)   \
+    {                                                   \
+        r = (float)((Pixel >> 0) & 0x3FF) / 1023.0f;    \
+        g = (float)((Pixel >> 10) & 0x3FF) / 1023.0f;   \
+        b = (float)((Pixel >> 20) & 0x3FF) / 1023.0f;   \
+        a = (float)(Pixel >> 30) / 3.0f;                \
     }
 #define DISEMBLE_RGBA(buf, bpp, fmt, Pixel, r, g, b, a) \
     do {                                                \
