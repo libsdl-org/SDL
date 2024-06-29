@@ -2215,7 +2215,7 @@ static int video_getWindowSurface(void *arg)
 
     /* We shouldn't be able to create a renderer on a window with a surface */
     renderer = SDL_CreateRenderer(window, -1, renderer_flags);
-    SDLTest_AssertPass("Call to SDL_CreateRenderer(window, -1, 0x%x)", renderer_flags);
+    SDLTest_AssertPass("Call to SDL_CreateRenderer(window)");
     SDLTest_AssertCheck(renderer == NULL, "Validate that returned renderer is NULL");
 
     result = SDL_DestroyWindowSurface(window);
@@ -2225,7 +2225,7 @@ static int video_getWindowSurface(void *arg)
 
     /* We should be able to create a renderer on the window now */
     renderer = SDL_CreateRenderer(window, -1, renderer_flags);
-    SDLTest_AssertPass("Call to SDL_CreateRenderer(window, -1, 0x%x)", renderer_flags);
+    SDLTest_AssertPass("Call to SDL_CreateRenderer(window)");
     SDLTest_AssertCheck(renderer != NULL, "Validate that returned renderer is not NULL");
 
     /* We should not be able to create a window surface now, unless it was created by the renderer */
