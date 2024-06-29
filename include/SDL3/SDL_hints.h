@@ -945,14 +945,19 @@ extern "C" {
 /**
  * A variable describing what IME UI elements the application can display.
  *
- * By default IME UI is handled using native components by the OS where possible, however this can interfere with or not be visible when exclusive fullscreen mode is used.
+ * By default IME UI is handled using native components by the OS where
+ * possible, however this can interfere with or not be visible when exclusive
+ * fullscreen mode is used.
  *
  * The variable can be set to a comma separated list containing the following
  * items:
  *
- * - "none" or "0": The application can't render any IME elements, and native UI should be used. (default)
- * - "composition": The application handles SDL_EVENT_TEXT_EDITING events and can render the composition text.
- * - "candidates": The application handles SDL_EVENT_TEXT_EDITING_CANDIDATES and can render the candidate list.
+ * - "none" or "0": The application can't render any IME elements, and native
+ *   UI should be used. (default)
+ * - "composition": The application handles SDL_EVENT_TEXT_EDITING events and
+ *   can render the composition text.
+ * - "candidates": The application handles SDL_EVENT_TEXT_EDITING_CANDIDATES
+ *   and can render the candidate list.
  *
  * This hint should be set before SDL is initialized.
  *
