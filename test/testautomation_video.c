@@ -28,7 +28,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
 
     window = SDL_CreateWindow(title, w, h, flags);
     SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu64 ")", w, h, flags);
-    SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
+    SDLTest_AssertCheck(window != NULL, "Validate that returned window is not NULL");
 
     /* Check the window is available in the window list */
     windows = SDL_GetWindows(&count);
@@ -190,7 +190,7 @@ static int video_createWindowVariousSizes(void *arg)
 
             window = SDL_CreateWindow(title, w, h, 0);
             SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,SHOWN)", w, h);
-            SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
+            SDLTest_AssertCheck(window != NULL, "Validate that returned window is not NULL");
 
             /* Clean up */
             destroyVideoSuiteTestWindow(window);
@@ -265,7 +265,7 @@ static int video_createWindowVariousFlags(void *arg)
 
         window = SDL_CreateWindow(title, w, h, flags);
         SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu64 ")", w, h, flags);
-        SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
+        SDLTest_AssertCheck(window != NULL, "Validate that returned window is not NULL");
 
         /* Clean up */
         destroyVideoSuiteTestWindow(window);
@@ -1732,7 +1732,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 window = SDL_CreateWindowWithProperties(props);
                 SDL_DestroyProperties(props);
                 SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%d,%d,SHOWN)", x, y, w, h);
-                SDLTest_AssertCheck(window != NULL, "Validate that returned window struct is not NULL");
+                SDLTest_AssertCheck(window != NULL, "Validate that returned window is not NULL");
 
                 /* Wayland windows require that a frame be presented before they are fully mapped and visible onscreen. */
                 if (video_driver_is_wayland) {
@@ -2238,6 +2238,76 @@ minimize_test:
     return skipFlags != (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)  ? TEST_COMPLETED : TEST_SKIPPED;
 }
 
+/**
+ * Tests window surface functionality
+ */
+static int video_getWindowSurface(void *arg)
+{
+    const char *title = "video_getWindowSurface Test Window";
+    SDL_Window *window;
+    SDL_Surface *surface;
+    SDL_Renderer *renderer;
+    const char *renderer_name = NULL;
+    int result;
+
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0) {
+        renderer_name = SDL_SOFTWARE_RENDERER;
+    }
+
+    /* Make sure we're testing interaction with an accelerated renderer */
+    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "1");
+
+    window = SDL_CreateWindow(title, 320, 320, 0);
+    SDLTest_AssertPass("Call to SDL_CreateWindow('Title',320,320,0)");
+    SDLTest_AssertCheck(window != NULL, "Validate that returned window is not NULL");
+
+    surface = SDL_GetWindowSurface(window);
+    SDLTest_AssertPass("Call to SDL_GetWindowSurface(window)");
+    SDLTest_AssertCheck(surface != NULL, "Validate that returned surface is not NULL");
+    SDLTest_AssertCheck(SDL_WindowHasSurface(window), "Validate that window has a surface");
+
+    result = SDL_UpdateWindowSurface(window);
+    SDLTest_AssertPass("Call to SDL_UpdateWindowSurface(window)");
+    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+
+    /* We shouldn't be able to create a renderer on a window with a surface */
+    renderer = SDL_CreateRenderer(window, renderer_name);
+    SDLTest_AssertPass("Call to SDL_CreateRenderer(window, %s)", renderer_name);
+    SDLTest_AssertCheck(renderer == NULL, "Validate that returned renderer is NULL");
+
+    result = SDL_DestroyWindowSurface(window);
+    SDLTest_AssertPass("Call to SDL_DestroyWindowSurface(window)");
+    SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
+    SDLTest_AssertCheck(!SDL_WindowHasSurface(window), "Validate that window does not have a surface");
+
+    /* We should be able to create a renderer on the window now */
+    renderer = SDL_CreateRenderer(window, renderer_name);
+    SDLTest_AssertPass("Call to SDL_CreateRenderer(window, %s)", renderer_name);
+    SDLTest_AssertCheck(renderer != NULL, "Validate that returned renderer is not NULL");
+
+    /* We should not be able to create a window surface now, unless it was created by the renderer */
+    if (!SDL_WindowHasSurface(window)) {
+        surface = SDL_GetWindowSurface(window);
+        SDLTest_AssertPass("Call to SDL_GetWindowSurface(window)");
+        SDLTest_AssertCheck(surface == NULL, "Validate that returned surface is NULL");
+    }
+
+    SDL_DestroyRenderer(renderer);
+    SDLTest_AssertPass("Call to SDL_DestroyRenderer(renderer)");
+    SDLTest_AssertCheck(!SDL_WindowHasSurface(window), "Validate that window does not have a surface");
+
+    /* We should be able to create a window surface again */
+    surface = SDL_GetWindowSurface(window);
+    SDLTest_AssertPass("Call to SDL_GetWindowSurface(window)");
+    SDLTest_AssertCheck(surface != NULL, "Validate that returned surface is not NULL");
+    SDLTest_AssertCheck(SDL_WindowHasSurface(window), "Validate that window has a surface");
+
+    /* Clean up */
+    SDL_DestroyWindow(window);
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Video test cases */
@@ -2317,12 +2387,16 @@ static const SDLTest_TestCaseReference videoTest19 = {
     (SDLTest_TestCaseFp)video_getSetWindowState, "video_getSetWindowState", "Checks transitioning between windowed, minimized, maximized, and fullscreen states", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference videoTest20 = {
+    (SDLTest_TestCaseFp)video_getWindowSurface, "video_getWindowSurface", "Checks window surface functionality", TEST_ENABLED
+};
+
 /* Sequence of Video test cases */
 static const SDLTest_TestCaseReference *videoTests[] = {
     &videoTest1, &videoTest2, &videoTest3, &videoTest4, &videoTest5, &videoTest6,
     &videoTest7, &videoTest8, &videoTest9, &videoTest10, &videoTest11, &videoTest12,
     &videoTest13, &videoTest14, &videoTest15, &videoTest16, &videoTest17,
-    &videoTest18, &videoTest19, NULL
+    &videoTest18, &videoTest19, &videoTest20, NULL
 };
 
 /* Video test suite (global) */
