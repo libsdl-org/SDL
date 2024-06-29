@@ -656,11 +656,17 @@ static void IME_SetTextInputArea(SDL_VideoData *videodata, const SDL_Rect *rect,
     if (himc) {
         COMPOSITIONFORM cof;
         CANDIDATEFORM caf;
+        int font_height = rect->h;
+
+        LOGFONTW font;
+        if (ImmGetCompositionFontW(himc, &font)) {
+            font_height = font.lfHeight;
+        }
 
         SDL_zero(cof);
         cof.dwStyle = CFS_RECT;
         cof.ptCurrentPos.x = rect->x + cursor;
-        cof.ptCurrentPos.y = rect->y;
+        cof.ptCurrentPos.y = rect->y + (rect->h - font_height) / 2;
         cof.rcArea.left = rect->x;
         cof.rcArea.right = (LONG)rect->x + rect->w;
         cof.rcArea.top = rect->y;
@@ -1054,6 +1060,9 @@ SDL_bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam
         switch (wParam) {
         case IMN_SETCOMPOSITIONWINDOW:
             SDL_DebugIMELog("IMN_SETCOMPOSITIONWINDOW\n");
+            break;
+        case IMN_SETCOMPOSITIONFONT:
+            SDL_DebugIMELog("IMN_SETCOMPOSITIONFONT\n");
             break;
         case IMN_SETCANDIDATEPOS:
             SDL_DebugIMELog("IMN_SETCANDIDATEPOS\n");
