@@ -3849,7 +3849,7 @@ int SDL_RenderGeometry(SDL_Renderer *renderer,
         const float *uv = &vertices->tex_coord.x;
         int uv_stride = sizeof(SDL_Vertex);
         int size_indices = 4;
-        return SDL_RenderGeometryRawFloat(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);
+        return SDL_RenderGeometryRaw(renderer, texture, xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices, indices, num_indices, size_indices);
     } else {
         return SDL_InvalidParamError("vertices");
     }
@@ -4226,7 +4226,7 @@ end:
 }
 #endif /* SDL_VIDEO_RENDER_SW */
 
-int SDL_RenderGeometryRawFloat(SDL_Renderer *renderer,
+int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                           SDL_Texture *texture,
                           const float *xy, int xy_stride,
                           const SDL_FColor *color, int color_stride,
@@ -4336,40 +4336,6 @@ int SDL_RenderGeometryRawFloat(SDL_Renderer *renderer,
                               indices, num_indices, size_indices,
                               renderer->view->scale.x,
                               renderer->view->scale.y);
-}
-
-int SDL_RenderGeometryRaw(SDL_Renderer *renderer, SDL_Texture *texture, const float *xy, int xy_stride, const SDL_Color *color, int color_stride, const float *uv, int uv_stride, int num_vertices, const void *indices, int num_indices, int size_indices)
-{
-    int i, retval, isstack;
-    const Uint8 *color2 = (const Uint8 *)color;
-    SDL_FColor *color3;
-
-    if (num_vertices <= 0) {
-        return SDL_InvalidParamError("num_vertices");
-    }
-    if (!color) {
-        return SDL_InvalidParamError("color");
-    }
-
-    color3 = (SDL_FColor *)SDL_small_alloc(SDL_FColor, num_vertices, &isstack);
-    if (!color3) {
-        return -1;
-    }
-
-    for (i = 0; i < num_vertices; ++i) {
-        color3[i].r = color->r / 255.0f;
-        color3[i].g = color->g / 255.0f;
-        color3[i].b = color->b / 255.0f;
-        color3[i].a = color->a / 255.0f;
-        color2 += color_stride;
-        color = (const SDL_Color *)color2;
-    }
-
-    retval = SDL_RenderGeometryRawFloat(renderer, texture, xy, xy_stride, color3, sizeof(*color3), uv, uv_stride, num_vertices, indices, num_indices, size_indices);
-
-    SDL_small_free(color3, isstack);
-
-    return retval;
 }
 
 SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)

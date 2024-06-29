@@ -388,7 +388,7 @@ static void DrawGradient(float x, float y, float width, float height, float star
     color[2] = max_color;
     color[3] = min_color;
 
-    SDL_RenderGeometryRawFloat(renderer, NULL, xy, xy_stride, color, color_stride, NULL, 0, num_vertices, indices, num_indices, size_indices);
+    SDL_RenderGeometryRaw(renderer, NULL, xy, xy_stride, color, color_stride, NULL, 0, num_vertices, indices, num_indices, size_indices);
 }
 
 static void RenderGradientDrawing(void)
