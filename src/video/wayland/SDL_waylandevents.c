@@ -1558,7 +1558,6 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 
     wind->keyboard_device = NULL;
     window = wind->sdlwindow;
-    window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
 
     /* Stop key repeat before clearing keyboard focus */
     keyboard_repeat_clear(&input->keyboard_repeat);
