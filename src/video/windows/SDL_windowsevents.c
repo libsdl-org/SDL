@@ -43,7 +43,9 @@
 #include <tpcshrd.h>
 #endif /* HAVE_TPCSHRD_H */
 
-/* #define WMMSG_DEBUG */
+#if 0
+#define WMMSG_DEBUG
+#endif
 #ifdef WMMSG_DEBUG
 #include <stdio.h>
 #include "wmmsg.h"
