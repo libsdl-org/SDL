@@ -920,6 +920,10 @@ static int render_testLogicalSize(void *arg)
     SDL_Rect viewport;
     SDL_FRect rect;
     int w, h;
+    int set_w, set_h;
+    SDL_RendererLogicalPresentation set_presentation_mode;
+    SDL_ScaleMode set_scale_mode;
+    SDL_FRect set_rect;
     const int factor = 2;
 
     viewport.x = ((TESTRENDER_SCREEN_W / 4) / factor) * factor;
@@ -940,6 +944,20 @@ static int render_testLogicalSize(void *arg)
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, w / factor, h / factor,
                                            SDL_LOGICAL_PRESENTATION_LETTERBOX,
                                            SDL_SCALEMODE_NEAREST))
+    CHECK_FUNC(SDL_GetRenderLogicalPresentation, (renderer, &set_w, &set_h, &set_presentation_mode, &set_scale_mode))
+    SDLTest_AssertCheck(
+        set_w == (w / factor) &&
+        set_h == (h / factor) &&
+        set_presentation_mode == SDL_LOGICAL_PRESENTATION_LETTERBOX &&
+        set_scale_mode == SDL_SCALEMODE_NEAREST,
+        "Validate result from SDL_GetRenderLogicalPresentation, got %d, %d, %d, %d", set_w, set_h, set_presentation_mode, set_scale_mode);
+    CHECK_FUNC(SDL_GetRenderLogicalPresentationRect, (renderer, &set_rect))
+    SDLTest_AssertCheck(
+        set_rect.x == 0.0f &&
+        set_rect.y == 0.0f &&
+        set_rect.w == 320.0f &&
+        set_rect.h == 240.0f,
+        "Validate result from SDL_GetRenderLogicalPresentationRect, got {%g, %g, %gx%g}", set_rect.x, set_rect.y, set_rect.w, set_rect.h);
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
     rect.x = (float)viewport.x / factor;
     rect.y = (float)viewport.y / factor;
@@ -949,6 +967,20 @@ static int render_testLogicalSize(void *arg)
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
                                            SDL_SCALEMODE_NEAREST))
+    CHECK_FUNC(SDL_GetRenderLogicalPresentation, (renderer, &set_w, &set_h, &set_presentation_mode, &set_scale_mode))
+    SDLTest_AssertCheck(
+        set_w == 0 &&
+        set_h == 0 &&
+        set_presentation_mode == SDL_LOGICAL_PRESENTATION_DISABLED &&
+        set_scale_mode == SDL_SCALEMODE_NEAREST,
+        "Validate result from SDL_GetRenderLogicalPresentation, got %d, %d, %d, %d", set_w, set_h, set_presentation_mode, set_scale_mode);
+    CHECK_FUNC(SDL_GetRenderLogicalPresentationRect, (renderer, &set_rect))
+    SDLTest_AssertCheck(
+        set_rect.x == 0.0f &&
+        set_rect.y == 0.0f &&
+        set_rect.w == 320.0f &&
+        set_rect.h == 240.0f,
+        "Validate result from SDL_GetRenderLogicalPresentationRect, got {%g, %g, %gx%g}", set_rect.x, set_rect.y, set_rect.w, set_rect.h);
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
@@ -999,11 +1031,39 @@ static int render_testLogicalSize(void *arg)
                                            h,
                                            SDL_LOGICAL_PRESENTATION_LETTERBOX,
                                            SDL_SCALEMODE_LINEAR))
+    CHECK_FUNC(SDL_GetRenderLogicalPresentation, (renderer, &set_w, &set_h, &set_presentation_mode, &set_scale_mode))
+    SDLTest_AssertCheck(
+        set_w == w - 2 * (TESTRENDER_SCREEN_W / 4) &&
+        set_h == h &&
+        set_presentation_mode == SDL_LOGICAL_PRESENTATION_LETTERBOX &&
+        set_scale_mode == SDL_SCALEMODE_LINEAR,
+        "Validate result from SDL_GetRenderLogicalPresentation, got %d, %d, %d, %d", set_w, set_h, set_presentation_mode, set_scale_mode);
+    CHECK_FUNC(SDL_GetRenderLogicalPresentationRect, (renderer, &set_rect))
+    SDLTest_AssertCheck(
+        set_rect.x == 20.0f &&
+        set_rect.y == 0.0f &&
+        set_rect.w == 280.0f &&
+        set_rect.h == 240.0f,
+        "Validate result from SDL_GetRenderLogicalPresentationRect, got {%g, %g, %gx%g}", set_rect.x, set_rect.y, set_rect.w, set_rect.h);
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, 0, 0,
                                            SDL_LOGICAL_PRESENTATION_DISABLED,
                                            SDL_SCALEMODE_NEAREST))
+    CHECK_FUNC(SDL_GetRenderLogicalPresentation, (renderer, &set_w, &set_h, &set_presentation_mode, &set_scale_mode))
+    SDLTest_AssertCheck(
+        set_w == 0 &&
+        set_h == 0 &&
+        set_presentation_mode == SDL_LOGICAL_PRESENTATION_DISABLED &&
+        set_scale_mode == SDL_SCALEMODE_NEAREST,
+        "Validate result from SDL_GetRenderLogicalPresentation, got %d, %d, %d, %d", set_w, set_h, set_presentation_mode, set_scale_mode);
+    CHECK_FUNC(SDL_GetRenderLogicalPresentationRect, (renderer, &set_rect))
+    SDLTest_AssertCheck(
+        set_rect.x == 0.0f &&
+        set_rect.y == 0.0f &&
+        set_rect.w == 320.0f &&
+        set_rect.h == 240.0f,
+        "Validate result from SDL_GetRenderLogicalPresentationRect, got {%g, %g, %gx%g}", set_rect.x, set_rect.y, set_rect.w, set_rect.h);
 
     /* Check to see if final image matches. */
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);

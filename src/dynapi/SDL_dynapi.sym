@@ -393,6 +393,7 @@ SDL3_0.0.0 {
     SDL_GetRenderDrawColorFloat;
     SDL_GetRenderDriver;
     SDL_GetRenderLogicalPresentation;
+    SDL_GetRenderLogicalPresentationRect;
     SDL_GetRenderMetalCommandEncoder;
     SDL_GetRenderMetalLayer;
     SDL_GetRenderOutputSize;

@@ -438,6 +438,7 @@ SDL_DYNAPI_PROC(int,SDL_GetRenderDrawColor,(SDL_Renderer *a, Uint8 *b, Uint8 *c,
 SDL_DYNAPI_PROC(int,SDL_GetRenderDrawColorFloat,(SDL_Renderer *a, float *b, float *c, float *d, float *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetRenderDriver,(int a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderLogicalPresentation,(SDL_Renderer *a, int *b, int *c, SDL_RendererLogicalPresentation *d, SDL_ScaleMode *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(int,SDL_GetRenderLogicalPresentationRect,(SDL_Renderer *a, SDL_FRect *b),(a,b),return)
 SDL_DYNAPI_PROC(void*,SDL_GetRenderMetalCommandEncoder,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(void*,SDL_GetRenderMetalLayer,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderOutputSize,(SDL_Renderer *a, int *b, int *c),(a,b,c),return)
