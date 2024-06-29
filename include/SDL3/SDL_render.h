@@ -1324,10 +1324,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *r
 /**
  * Get the final presentation rectangle for rendering.
  *
- * This function returns the calculated rectangle used for logical presentation, based on the presentation mode and output size. If logical presentation is disabled, it will fill the rectangle with the output size, in pixels.
+ * This function returns the calculated rectangle used for logical
+ * presentation, based on the presentation mode and output size. If logical
+ * presentation is disabled, it will fill the rectangle with the output size,
+ * in pixels.
  *
  * \param renderer the rendering context.
- * \param rect a pointer filled in with the final presentation rectangle, may be NULL.
+ * \param rect a pointer filled in with the final presentation rectangle, may
+ *             be NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
