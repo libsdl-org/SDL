@@ -714,7 +714,7 @@ SDL_Keymod SDL_GetModState(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    return (SDL_Keymod)keyboard->modstate;
+    return keyboard->modstate;
 }
 
 void SDL_SetModState(SDL_Keymod modstate)
