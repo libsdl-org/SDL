@@ -2607,6 +2607,33 @@ int SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL
     return 0;
 }
 
+int SDL_GetRenderLogicalPresentationRect(SDL_Renderer *renderer, SDL_FRect *rect)
+{
+    if (rect) {
+        SDL_zerop(rect);
+    }
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (rect) {
+        if (renderer->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_DISABLED) {
+            int output_w = 0, output_h = 0;
+
+            if (SDL_GetRenderOutputSize(renderer, &output_w, &output_h) < 0) {
+                return -1;
+            }
+
+            rect->x = 0.0f;
+            rect->y = 0.0f;
+            rect->w = (float)output_w;
+            rect->h = (float)output_h;
+        } else {
+            SDL_copyp(rect, &renderer->logical_dst_rect);
+        }
+    }
+    return 0;
+}
+
 static void SDL_RenderLogicalBorders(SDL_Renderer *renderer)
 {
     const SDL_FRect *dst = &renderer->logical_dst_rect;
