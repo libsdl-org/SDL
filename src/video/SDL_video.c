@@ -297,23 +297,37 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
 
     if (!data) {
         SDL_Renderer *renderer = NULL;
-        const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
-        const SDL_bool specific_accelerated_renderer = (hint && *hint != '0' && *hint != '1' &&
-                                                        SDL_strcasecmp(hint, "true") != 0 &&
-                                                        SDL_strcasecmp(hint, "false") != 0 &&
-                                                        SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) != 0);
+        const char *render_driver = NULL;
+        const char *hint;
+
+        /* See if there's a render driver being requested */
+        hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
+        if (hint && *hint != '0' && *hint != '1' &&
+            SDL_strcasecmp(hint, "true") != 0 &&
+            SDL_strcasecmp(hint, "false") != 0 &&
+            SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) != 0) {
+            render_driver = hint;
+        }
+
+        if (!render_driver) {
+            hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
+            if (hint && *hint && SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) != 0) {
+                render_driver = hint;
+            }
+        }
 
         /* Check to see if there's a specific driver requested */
-        if (specific_accelerated_renderer) {
-            renderer = SDL_CreateRenderer(window, hint);
+        if (render_driver) {
+            renderer = SDL_CreateRenderer(window, render_driver);
             if (!renderer) {
-                return SDL_SetError("Requested renderer for " SDL_HINT_FRAMEBUFFER_ACCELERATION " is not available");
+                /* The error for this specific renderer has already been set */
+                return -1;
             }
         } else {
             const int total = SDL_GetNumRenderDrivers();
             for (i = 0; i < total; ++i) {
                 const char *name = SDL_GetRenderDriver(i);
-                if (name && (SDL_strcmp(name, SDL_SOFTWARE_RENDERER) != 0)) {
+                if (name && SDL_strcmp(name, SDL_SOFTWARE_RENDERER) != 0) {
                     renderer = SDL_CreateRenderer(window, name);
                     if (renderer) {
                         break; /* this will work. */
@@ -3231,6 +3245,55 @@ int SDL_SyncWindow(SDL_Window *window)
     return 0;
 }
 
+static SDL_bool ShouldAttemptTextureFramebuffer(void)
+{
+    const char *hint;
+    SDL_bool attempt_texture_framebuffer = SDL_TRUE;
+
+    /* The dummy driver never has GPU support, of course. */
+    if (_this->is_dummy) {
+        return SDL_FALSE;
+    }
+
+    /* See if there's a hint override */
+    hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
+    if (hint && *hint) {
+        if (*hint == '0' || SDL_strcasecmp(hint, "false") == 0 || SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) == 0) {
+            attempt_texture_framebuffer = SDL_FALSE;
+        } else {
+            attempt_texture_framebuffer = SDL_TRUE;
+        }
+    } else {
+        /* Check for platform specific defaults */
+#ifdef SDL_PLATFORM_LINUX
+        /* On WSL, direct X11 is faster than using OpenGL for window framebuffers, so try to detect WSL and avoid texture framebuffer. */
+        if ((_this->CreateWindowFramebuffer) && (SDL_strcmp(_this->name, "x11") == 0)) {
+            struct stat sb;
+            if ((stat("/proc/sys/fs/binfmt_misc/WSLInterop", &sb) == 0) || (stat("/run/WSL", &sb) == 0)) { /* if either of these exist, we're on WSL. */
+                attempt_texture_framebuffer = SDL_FALSE;
+            }
+        }
+#endif
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
+        if (_this->CreateWindowFramebuffer && (SDL_strcmp(_this->name, "windows") == 0)) {
+            attempt_texture_framebuffer = SDL_FALSE;
+        }
+#endif
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+        attempt_texture_framebuffer = SDL_FALSE;
+#endif
+    }
+
+    if (attempt_texture_framebuffer) {
+        /* Using a software renderer will try to display on a window surface, so avoid recursion here */
+        hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
+        if (hint && SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) == 0) {
+            attempt_texture_framebuffer = SDL_FALSE;
+        }
+    }
+    return attempt_texture_framebuffer;
+}
+
 static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
 {
     SDL_PixelFormatEnum format = SDL_PIXELFORMAT_UNKNOWN;
@@ -3245,59 +3308,23 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
        using a GPU texture through the 2D render API, if we think this would
        be more efficient. This only checks once, on demand. */
     if (!_this->checked_texture_framebuffer) {
-        SDL_bool attempt_texture_framebuffer;
-
-        if (_this->is_dummy) { /* dummy driver never has GPU support, of course. */
-            attempt_texture_framebuffer = SDL_FALSE;
-        } else {
-            /* See if the user or application wants to specifically disable the framebuffer */
-            const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
-            if (hint && *hint) {
-                if ((*hint == '0') || (SDL_strcasecmp(hint, "false") == 0) || (SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) == 0)) {
-                    attempt_texture_framebuffer = SDL_FALSE;
-                } else {
-                    attempt_texture_framebuffer = SDL_TRUE;
-                }
+        if (ShouldAttemptTextureFramebuffer()) {
+            if (SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch) < 0) {
+                /* !!! FIXME: if this failed halfway (made renderer, failed to make texture, etc),
+                   !!! FIXME:  we probably need to clean this up so it doesn't interfere with
+                   !!! FIXME:  a software fallback at the system level (can we blit to an
+                   !!! FIXME:  OpenGL window? etc). */
             } else {
-                attempt_texture_framebuffer = SDL_TRUE;
-
-#ifdef SDL_PLATFORM_LINUX
-                /* On WSL, direct X11 is faster than using OpenGL for window framebuffers, so try to detect WSL and avoid texture framebuffer. */
-                if ((_this->CreateWindowFramebuffer) && (SDL_strcmp(_this->name, "x11") == 0)) {
-                    struct stat sb;
-                    if ((stat("/proc/sys/fs/binfmt_misc/WSLInterop", &sb) == 0) || (stat("/run/WSL", &sb) == 0)) { /* if either of these exist, we're on WSL. */
-                        attempt_texture_framebuffer = SDL_FALSE;
-                    }
-                }
-#endif
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
-                if (_this->CreateWindowFramebuffer && (SDL_strcmp(_this->name, "windows") == 0)) {
-                    attempt_texture_framebuffer = SDL_FALSE;
-                }
-#endif
-#ifdef SDL_PLATFORM_EMSCRIPTEN
-                attempt_texture_framebuffer = SDL_FALSE;
-#endif
-            }
-
-            if (attempt_texture_framebuffer) {
-                if (SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch) < 0) {
-                    /* !!! FIXME: if this failed halfway (made renderer, failed to make texture, etc),
-                       !!! FIXME:  we probably need to clean this up so it doesn't interfere with
-                       !!! FIXME:  a software fallback at the system level (can we blit to an
-                       !!! FIXME:  OpenGL window? etc). */
-                } else {
-                    /* future attempts will just try to use a texture framebuffer. */
-                    /* !!! FIXME:  maybe we shouldn't override these but check if we used a texture
-                       !!! FIXME:  framebuffer at the right places; is it feasible we could have an
-                       !!! FIXME:  accelerated OpenGL window and a second ends up in software? */
-                    _this->CreateWindowFramebuffer = SDL_CreateWindowTexture;
-                    _this->SetWindowFramebufferVSync = SDL_SetWindowTextureVSync;
-                    _this->GetWindowFramebufferVSync = SDL_GetWindowTextureVSync;
-                    _this->UpdateWindowFramebuffer = SDL_UpdateWindowTexture;
-                    _this->DestroyWindowFramebuffer = SDL_DestroyWindowTexture;
-                    created_framebuffer = SDL_TRUE;
-                }
+                /* future attempts will just try to use a texture framebuffer. */
+                /* !!! FIXME:  maybe we shouldn't override these but check if we used a texture
+                   !!! FIXME:  framebuffer at the right places; is it feasible we could have an
+                   !!! FIXME:  accelerated OpenGL window and a second ends up in software? */
+                _this->CreateWindowFramebuffer = SDL_CreateWindowTexture;
+                _this->SetWindowFramebufferVSync = SDL_SetWindowTextureVSync;
+                _this->GetWindowFramebufferVSync = SDL_GetWindowTextureVSync;
+                _this->UpdateWindowFramebuffer = SDL_UpdateWindowTexture;
+                _this->DestroyWindowFramebuffer = SDL_DestroyWindowTexture;
+                created_framebuffer = SDL_TRUE;
             }
         }
 
