@@ -283,23 +283,6 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
 
     /* See if the current window has lost focus */
     if (keyboard->focus && keyboard->focus != window) {
-
-        /* new window shouldn't think it has mouse captured. */
-        SDL_assert(window == NULL || !(window->flags & SDL_WINDOW_MOUSE_CAPTURE));
-
-        /* old window must lose an existing mouse capture. */
-        if (keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE) {
-            SDL_Mouse *mouse = SDL_GetMouse();
-
-            if (mouse->CaptureMouse) {
-                SDL_CaptureMouse(SDL_FALSE); /* drop the capture. */
-                SDL_UpdateMouseCapture(SDL_TRUE);
-                SDL_assert(!(keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE));
-            } else {
-                keyboard->focus->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
-            }
-        }
-
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
 
         /* Ensures IME compositions are committed */

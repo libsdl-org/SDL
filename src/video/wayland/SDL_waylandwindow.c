@@ -1530,7 +1530,6 @@ static const struct frog_color_managed_surface_listener frog_surface_listener = 
 
 static void SetKeyboardFocus(SDL_Window *window)
 {
-    SDL_Window *kb_focus = SDL_GetKeyboardFocus();
     SDL_Window *topmost = window;
 
     /* Find the topmost parent */
@@ -1540,11 +1539,6 @@ static void SetKeyboardFocus(SDL_Window *window)
 
     topmost->driverdata->keyboard_focus = window;
 
-    /* Clear the mouse capture flags before changing keyboard focus */
-    if (kb_focus) {
-        kb_focus->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
-    }
-    window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
     SDL_SetKeyboardFocus(window);
 }
 
