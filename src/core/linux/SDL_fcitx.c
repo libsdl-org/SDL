@@ -455,6 +455,5 @@ void SDL_Fcitx_PumpEvents(void)
 
     while (dbus->connection_dispatch(conn) == DBUS_DISPATCH_DATA_REMAINS) {
         /* Do nothing, actual work happens in DBus_MessageFilter */
-        usleep(10);
     }
 }
