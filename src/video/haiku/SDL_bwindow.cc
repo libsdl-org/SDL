@@ -188,21 +188,22 @@ bool HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window * window, bool 
     return SDL_Unsupported();
 }
 
-bool HAIKU_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
+bool HAIKU_SetWindowParent(SDL_VideoDevice *_this, SDL_Window * window, SDL_Window *parent)
 {
-    if (modal_window->parent && modal_window->parent != parent_window) {
-        // Remove from the subset of a previous parent.
-        _ToBeWin(modal_window)->RemoveFromSubset(_ToBeWin(modal_window->parent));
-    }
+    return true;
+}
 
-    if (parent_window) {
-        _ToBeWin(modal_window)->SetLook(B_MODAL_WINDOW_LOOK);
-        _ToBeWin(modal_window)->SetFeel(B_MODAL_SUBSET_WINDOW_FEEL);
-        _ToBeWin(modal_window)->AddToSubset(_ToBeWin(parent_window));
+bool HAIKU_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
+{
+    if (modal) {
+        _ToBeWin(window)->SetLook(B_MODAL_WINDOW_LOOK);
+        _ToBeWin(window)->SetFeel(B_MODAL_SUBSET_WINDOW_FEEL);
+        _ToBeWin(window)->AddToSubset(_ToBeWin(window->parent));
     } else {
-        window_look look = (modal_window->flags & SDL_WINDOW_BORDERLESS) ? B_NO_BORDER_WINDOW_LOOK : B_TITLED_WINDOW_LOOK;
-        _ToBeWin(modal_window)->SetLook(look);
-        _ToBeWin(modal_window)->SetFeel(B_NORMAL_WINDOW_FEEL);
+        window_look look = (window->flags & SDL_WINDOW_BORDERLESS) ? B_NO_BORDER_WINDOW_LOOK : B_TITLED_WINDOW_LOOK;
+        _ToBeWin(window)->RemoveFromSubset(_ToBeWin(window->parent));
+        _ToBeWin(window)->SetLook(look);
+        _ToBeWin(window)->SetFeel(B_NORMAL_WINDOW_FEEL);
     }
 
     return true;

@@ -792,6 +792,11 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     }
     windowdata = window->internal;
 
+    // Set the parent if this is a non-popup window.
+    if (!SDL_WINDOW_IS_POPUP(window) && window->parent) {
+        X11_XSetTransientForHint(display, w, window->parent->internal->xwindow);
+    }
+
     // Set the flag if the borders were forced on when creating a fullscreen window for later removal.
     windowdata->fullscreen_borders_forced_on = !!(window->pending_flags & SDL_WINDOW_FULLSCREEN) &&
                                                !!(window->flags & SDL_WINDOW_BORDERLESS);
@@ -1235,26 +1240,40 @@ bool X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opac
     return true;
 }
 
-bool X11_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
+bool X11_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent)
 {
-    SDL_WindowData *data = modal_window->internal;
-    SDL_WindowData *parent_data = parent_window ? parent_window->internal : NULL;
+    SDL_WindowData *data = window->internal;
+    SDL_WindowData *parent_data = parent ? parent->internal : NULL;
     SDL_VideoData *video_data = _this->internal;
-    SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(modal_window);
     Display *display = video_data->display;
-    Uint32 flags = modal_window->flags;
+
+    if (parent_data) {
+        X11_XSetTransientForHint(display, data->xwindow, parent_data->xwindow);
+    } else {
+        X11_XDeleteProperty(display, data->xwindow, video_data->WM_TRANSIENT_FOR);
+    }
+
+    return true;
+}
+
+bool X11_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
+{
+    SDL_WindowData *data = window->internal;
+    SDL_VideoData *video_data = _this->internal;
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
+    Display *display = video_data->display;
+    Uint32 flags = window->flags;
     Atom _NET_WM_STATE = data->videodata->_NET_WM_STATE;
     Atom _NET_WM_STATE_MODAL = data->videodata->_NET_WM_STATE_MODAL;
 
-    if (parent_data) {
+    if (modal) {
         flags |= SDL_WINDOW_MODAL;
-        X11_XSetTransientForHint(display, data->xwindow, parent_data->xwindow);
     } else {
         flags &= ~SDL_WINDOW_MODAL;
         X11_XDeleteProperty(display, data->xwindow, video_data->WM_TRANSIENT_FOR);
     }
 
-    if (X11_IsWindowMapped(_this, modal_window)) {
+    if (X11_IsWindowMapped(_this, window)) {
         XEvent e;
 
         SDL_zero(e);
@@ -1262,8 +1281,7 @@ bool X11_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL
         e.xclient.message_type = _NET_WM_STATE;
         e.xclient.format = 32;
         e.xclient.window = data->xwindow;
-        e.xclient.data.l[0] =
-            parent_data ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+        e.xclient.data.l[0] = modal ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
         e.xclient.data.l[1] = _NET_WM_STATE_MODAL;
         e.xclient.data.l[3] = 0l;
 

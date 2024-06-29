@@ -137,7 +137,8 @@ extern void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
 extern bool WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type);
 extern bool WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi);
-extern bool WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
+extern bool WIN_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent);
+extern bool WIN_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

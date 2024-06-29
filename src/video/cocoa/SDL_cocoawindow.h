@@ -183,7 +183,8 @@ extern bool Cocoa_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern void Cocoa_AcceptDragAndDrop(SDL_Window *window, bool accept);
 extern bool Cocoa_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
 extern bool Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
-extern bool Cocoa_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
+extern bool Cocoa_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal);
+extern bool Cocoa_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent);
 extern bool Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif // SDL_cocoawindow_h_

@@ -2223,24 +2223,47 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetWindowOpacity(SDL_Window *window, fl
  */
 extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
 
-/**
- * Set the window as a modal to a parent window.
+ /**
+ * Set the window as a child of a parent window.
  *
- * If the window is already modal to an existing window, it will be reparented
- * to the new owner. Setting the parent window to null unparents the modal
- * window and removes modal status.
+ * If the window is already the child of an existing window, it will be reparented
+ * to the new owner. Setting the parent window to null unparents the window and
+ * removes child window status.
  *
- * Setting a window as modal to a parent that is a descendent of the modal
+ * Attempting to set the parent of a window that is currently in the modal state will fail.
+ * Use SDL_SetWindowModalFor() to cancel the modal status before attempting to change
+ * the parent.
+ *
+ * Setting a parent window that is currently the sibling or descendent of the child
  * window results in undefined behavior.
  *
- * \param modal_window the window that should be set modal.
- * \param parent_window the parent window for the modal window.
+ * \param window the window that should become the child of a parent.
+ * \param parent the new parent window for the child window.
+ * \returns SDL_TRUE on success or SDL_FALSE on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetWindowModal
+ */
+ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetWindowParent(SDL_Window *window, SDL_Window *parent);
+
+/**
+ * Toggle the state of the window as modal.
+ *
+ * To enable modal status on a window, the window must currently be the child window of a parent,
+ * or toggling modal status on will fail.
+ *
+ * \param window the window on which to set the modal state.
+ * \param modal SDL_TRUE to toggle modal status on, SDL_FALSE to toggle it off.
  * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
  *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetWindowParent
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetWindowModal(SDL_Window *window, SDL_bool modal);
 
 /**
  * Set whether the window may have input focus.

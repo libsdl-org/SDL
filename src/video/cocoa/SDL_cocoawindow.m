@@ -2075,22 +2075,9 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow
             window->flags &= ~SDL_WINDOW_MINIMIZED;
         }
 
-        if (!SDL_WINDOW_IS_POPUP(window)) {
-            if ([nswindow isKeyWindow]) {
-                window->flags |= SDL_WINDOW_INPUT_FOCUS;
-                Cocoa_SetKeyboardFocus(data.window);
-            }
-        } else {
+        if (window->parent) {
             NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->internal).nswindow;
             [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
-
-            if (window->flags & SDL_WINDOW_TOOLTIP) {
-                [nswindow setIgnoresMouseEvents:YES];
-            } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
-                if (window->parent == SDL_GetKeyboardFocus()) {
-                    Cocoa_SetKeyboardFocus(window);
-                }
-            }
 
             /* FIXME: Should not need to call addChildWindow then orderOut.
                Attaching a hidden child window to a hidden parent window will cause the child window
@@ -2100,6 +2087,21 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow
                then immediately ordering out (removing) the window does work. */
             if (window->flags & SDL_WINDOW_HIDDEN) {
                 [nswindow orderOut:nil];
+            }
+        }
+
+        if (!SDL_WINDOW_IS_POPUP(window)) {
+            if ([nswindow isKeyWindow]) {
+                window->flags |= SDL_WINDOW_INPUT_FOCUS;
+                Cocoa_SetKeyboardFocus(data.window);
+            }
+        } else {
+            if (window->flags & SDL_WINDOW_TOOLTIP) {
+                [nswindow setIgnoresMouseEvents:YES];
+            } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
+                if (window->parent == SDL_GetKeyboardFocus()) {
+                    Cocoa_SetKeyboardFocus(window);
+                }
             }
         }
 
@@ -2465,14 +2467,15 @@ void Cocoa_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         if (![nswindow isMiniaturized]) {
             [windowData.listener pauseVisibleObservation];
-            if (SDL_WINDOW_IS_POPUP(window)) {
+            if (window->parent) {
                 NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->internal).nswindow;
                 [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
-            } else {
-                if ((window->flags & SDL_WINDOW_MODAL) && window->parent) {
-                    Cocoa_SetWindowModalFor(_this, window, window->parent);
-                }
 
+                if (window->flags & SDL_WINDOW_MODAL) {
+                    Cocoa_SetWindowModal(_this, window, true);
+                }
+            }
+            if (!SDL_WINDOW_IS_POPUP(window)) {
                 if (bActivate) {
                     [nswindow makeKeyAndOrderFront:nil];
                 } else {
@@ -2482,9 +2485,9 @@ void Cocoa_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                     }
                 }
             }
-            [nswindow setIsVisible:YES];
-            [windowData.listener resumeVisibleObservation];
         }
+        [nswindow setIsVisible:YES];
+        [windowData.listener resumeVisibleObservation];
     }
 }
 
@@ -2492,6 +2495,7 @@ void Cocoa_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)window->internal).nswindow;
+        const BOOL waskey = [nswindow isKeyWindow];
 
         /* orderOut has no effect on miniaturized windows, so close must be used to remove
          * the window from the desktop and window list in this case.
@@ -2509,9 +2513,9 @@ void Cocoa_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         /* If this window is the source of a modal session, end it when
          * hidden, or other windows will be prevented from closing.
          */
-        Cocoa_SetWindowModalFor(_this, window, NULL);
+        Cocoa_SetWindowModal(_this, window, false);
 
-        // Transfer keyboard focus back to the parent
+        // Transfer keyboard focus back to the parent when closing a popup menu
         if (window->flags & SDL_WINDOW_POPUP_MENU) {
             if (window == SDL_GetKeyboardFocus()) {
                 SDL_Window *new_focus = window->parent;
@@ -2522,6 +2526,20 @@ void Cocoa_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 }
 
                 Cocoa_SetKeyboardFocus(new_focus);
+            }
+        } else if (window->parent && waskey) {
+            /* Key status is not automatically set on the parent when a child is hidden. Check if the
+             * child window was key, and set the first visible parent to be key if so.
+             */
+            SDL_Window *new_focus = window->parent;
+
+            while (new_focus->parent != NULL && (new_focus->is_hiding || new_focus->is_destroying)) {
+                new_focus = new_focus->parent;
+            }
+
+            if (new_focus) {
+                NSWindow *newkey = ((__bridge SDL_CocoaWindowData *)window->internal).nswindow;
+                [newkey makeKeyAndOrderFront:nil];
             }
         }
     }
@@ -2539,18 +2557,20 @@ void Cocoa_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
          */
         [windowData.listener pauseVisibleObservation];
         if (![nswindow isMiniaturized] && [nswindow isVisible]) {
-            if (SDL_WINDOW_IS_POPUP(window)) {
+            if (window->parent) {
                 NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->internal).nswindow;
                 [nsparent addChildWindow:nswindow ordered:NSWindowAbove];
-                if (bActivate) {
-                    [nswindow makeKeyWindow];
-                }
-            } else {
+            }
+            if (!SDL_WINDOW_IS_POPUP(window)) {
                 if (bActivate) {
                     [NSApp activateIgnoringOtherApps:YES];
                     [nswindow makeKeyAndOrderFront:nil];
                 } else {
                     [nswindow orderFront:nil];
+                }
+            } else {
+                if (bActivate) {
+                    [nswindow makeKeyWindow];
                 }
             }
         }
@@ -2943,7 +2963,7 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
              */
             if (topmost_data.keyboard_focus == window) {
                 SDL_Window *new_focus = window;
-                while(new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
+                while (new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
                     new_focus = new_focus->parent;
                 }
 
@@ -3054,18 +3074,38 @@ void Cocoa_AcceptDragAndDrop(SDL_Window *window, bool accept)
     }
 }
 
-bool Cocoa_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
+bool Cocoa_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent)
 {
     @autoreleasepool {
-        SDL_CocoaWindowData *modal_data = (__bridge SDL_CocoaWindowData *)modal_window->internal;
+        SDL_CocoaWindowData *child_data = (__bridge SDL_CocoaWindowData *)window->internal;
 
-        if (modal_data.modal_session) {
-            [NSApp endModalSession:modal_data.modal_session];
-            modal_data.modal_session = nil;
+        // Remove an existing parent.
+        if (child_data.nswindow.parentWindow) {
+            NSWindow *nsparent = ((__bridge SDL_CocoaWindowData *)window->parent->internal).nswindow;
+            [nsparent removeChildWindow:child_data.nswindow];
         }
 
-        if (parent_window) {
-            modal_data.modal_session = [NSApp beginModalSessionForWindow:modal_data.nswindow];
+        if (parent) {
+            SDL_CocoaWindowData *parent_data = (__bridge SDL_CocoaWindowData *)parent->internal;
+            [parent_data.nswindow addChildWindow:child_data.nswindow ordered:NSWindowAbove];
+        }
+    }
+
+    return true;
+}
+
+bool Cocoa_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
+{
+    @autoreleasepool {
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+
+        if (data.modal_session) {
+            [NSApp endModalSession:data.modal_session];
+            data.modal_session = nil;
+        }
+
+        if (modal) {
+            data.modal_session = [NSApp beginModalSessionForWindow:data.nswindow];
         }
     }
 
