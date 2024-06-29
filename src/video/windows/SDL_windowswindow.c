@@ -693,10 +693,10 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         int x, y;
         int w, h;
 
-        if (SDL_WINDOW_IS_POPUP(window)) {
-            parent = window->parent->internal->hwnd;
-        } else if (window->flags & SDL_WINDOW_UTILITY) {
+        if (window->flags & SDL_WINDOW_UTILITY) {
             parent = CreateWindow(SDL_Appname, TEXT(""), STYLE_BASIC, 0, 0, 32, 32, NULL, NULL, SDL_Instance, NULL);
+        } else if (window->parent) {
+            parent = window->parent->internal->hwnd;
         }
 
         style |= GetWindowStyle(window);
@@ -1017,12 +1017,6 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WIN_SetWindowPosition(_this, window);
     }
 
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    if (window->flags & SDL_WINDOW_MODAL) {
-        EnableWindow(window->parent->internal->hwnd, FALSE);
-    }
-#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-
     hwnd = window->internal->hwnd;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
@@ -1040,17 +1034,18 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             WIN_SetKeyboardFocus(window);
         }
     }
+    if (window->flags & SDL_WINDOW_MODAL) {
+        WIN_SetWindowModal(_this, window, true);
+    }
 }
 
 void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     HWND hwnd = window->internal->hwnd;
 
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (window->flags & SDL_WINDOW_MODAL) {
-        EnableWindow(window->parent->internal->hwnd, TRUE);
+        WIN_SetWindowModal(_this, window, false);
     }
-#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
     ShowWindow(hwnd, SW_HIDE);
 
@@ -2240,22 +2235,12 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
     }
 }
 
-bool WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
+bool WIN_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_WindowData *modal_data = modal_window->internal;
-    const LONG_PTR parent_hwnd = (LONG_PTR)(parent_window ? parent_window->internal->hwnd : NULL);
-    const LONG_PTR old_ptr = GetWindowLongPtr(modal_data->hwnd, GWLP_HWNDPARENT);
-    const DWORD style = GetWindowLong(modal_data->hwnd, GWL_STYLE);
-
-    if (old_ptr == parent_hwnd) {
-        return true;
-    }
-
-    // Reenable the old parent window.
-    if (old_ptr) {
-        EnableWindow((HWND)old_ptr, TRUE);
-    }
+    SDL_WindowData *child_data = window->internal;
+    const LONG_PTR parent_hwnd = (LONG_PTR)(parent ? parent->internal->hwnd : NULL);
+    const DWORD style = GetWindowLong(child_data->hwnd, GWL_STYLE);
 
     if (!(style & WS_CHILD)) {
         /* Despite the name, this changes the *owner* of a toplevel window, not
@@ -2263,14 +2248,26 @@ bool WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL
          *
          * https://devblogs.microsoft.com/oldnewthing/20100315-00/?p=14613
          */
-        SetWindowLongPtr(modal_data->hwnd, GWLP_HWNDPARENT, parent_hwnd);
+        SetWindowLongPtr(child_data->hwnd, GWLP_HWNDPARENT, parent_hwnd);
     } else {
-        SetParent(modal_data->hwnd, (HWND)parent_hwnd);
+        SetParent(child_data->hwnd, (HWND)parent_hwnd);
     }
+#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
-    // Disable the new parent window if the modal window is visible.
-    if (!(modal_window->flags & SDL_WINDOW_HIDDEN) && parent_hwnd) {
-        EnableWindow((HWND)parent_hwnd, FALSE);
+    return true;
+}
+
+bool WIN_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
+{
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    const HWND parent_hwnd = window->parent->internal->hwnd;
+
+    if (modal) {
+        // Disable the parent window.
+        EnableWindow(parent_hwnd, FALSE);
+    } else if (!(window->flags & SDL_WINDOW_HIDDEN)) {
+        // Re-enable the parent window
+        EnableWindow(parent_hwnd, TRUE);
     }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 

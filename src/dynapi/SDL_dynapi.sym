@@ -854,10 +854,11 @@ SDL3_0.0.0 {
     SDL_SetWindowKeyboardGrab;
     SDL_SetWindowMaximumSize;
     SDL_SetWindowMinimumSize;
-    SDL_SetWindowModalFor;
+    SDL_SetWindowModal;
     SDL_SetWindowMouseGrab;
     SDL_SetWindowMouseRect;
     SDL_SetWindowOpacity;
+    SDL_SetWindowParent;
     SDL_SetWindowPosition;
     SDL_SetWindowRelativeMouseMode;
     SDL_SetWindowResizable;

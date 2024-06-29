@@ -66,8 +66,10 @@ int main(int argc, char *argv[])
         goto sdl_quit;
     }
 
-    if (!SDL_SetWindowModalFor(w2, w1)) {
-        SDL_SetWindowTitle(w2, "Modal Window");
+    if (SDL_SetWindowParent(w2, w1)) {
+        if (SDL_SetWindowModal(w2, true)) {
+            SDL_SetWindowTitle(w2, "Modal Window");
+        }
     }
 
     while (1) {
@@ -98,8 +100,10 @@ int main(int argc, char *argv[])
                     }
 
                     if (e.key.key == SDLK_M) {
-                        if (!SDL_SetWindowModalFor(w2, w1)) {
-                            SDL_SetWindowTitle(w2, "Modal Window");
+                        if (SDL_SetWindowParent(w2, w2)) {
+                            if (SDL_SetWindowModal(w2, true)) {
+                                SDL_SetWindowTitle(w2, "Modal Window");
+                            }
                         }
                     }
                     SDL_ShowWindow(w2);
@@ -123,13 +127,17 @@ int main(int argc, char *argv[])
                 } else if (e.key.key == SDLK_P && w2) {
                     if (SDL_GetWindowFlags(w2) & SDL_WINDOW_MODAL) {
                         /* Unparent the window */
-                        if (!SDL_SetWindowModalFor(w2, NULL)) {
-                            SDL_SetWindowTitle(w2, "Non-Modal Window");
+                        if (SDL_SetWindowModal(w2, false)) {
+                            if (SDL_SetWindowParent(w2, NULL)) {
+                                SDL_SetWindowTitle(w2, "Non-Modal Window");
+                            }
                         }
                     } else {
                         /* Reparent the window */
-                        if (!SDL_SetWindowModalFor(w2, w1)) {
-                            SDL_SetWindowTitle(w2, "Modal Window");
+                        if (SDL_SetWindowParent(w2, w1)) {
+                            if (SDL_SetWindowModal(w2, true)) {
+                                SDL_SetWindowTitle(w2, "Modal Window");
+                            }
                         }
                     }
                 }
