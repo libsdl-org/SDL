@@ -670,7 +670,6 @@
 #define SDL_RenderFillRects SDL_RenderFillRects_REAL
 #define SDL_RenderGeometry SDL_RenderGeometry_REAL
 #define SDL_RenderGeometryRaw SDL_RenderGeometryRaw_REAL
-#define SDL_RenderGeometryRawFloat SDL_RenderGeometryRawFloat_REAL
 #define SDL_RenderLine SDL_RenderLine_REAL
 #define SDL_RenderLines SDL_RenderLines_REAL
 #define SDL_RenderPoint SDL_RenderPoint_REAL

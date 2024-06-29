@@ -645,7 +645,6 @@ SDL3_0.0.0 {
     SDL_RenderFillRects;
     SDL_RenderGeometry;
     SDL_RenderGeometryRaw;
-    SDL_RenderGeometryRawFloat;
     SDL_RenderLine;
     SDL_RenderLines;
     SDL_RenderPoint;
