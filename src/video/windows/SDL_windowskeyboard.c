@@ -39,10 +39,12 @@
 static int IME_Init(SDL_VideoData *videodata, SDL_Window *window);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
-static void IME_SetTextInputArea(SDL_VideoData *videodata, const SDL_Rect *rect, int cursor);
+static void IME_SetTextInputArea(SDL_VideoData *videodata, HWND hwnd, const SDL_Rect *rect, int cursor);
 static void IME_ClearComposition(SDL_VideoData *videodata);
 static void IME_GetCandidateList(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
+#else
+static void IME_SetTextInputArea(SDL_VideoData *videodata, HWND hwnd, const SDL_Rect *rect, int cursor);
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 
 #ifndef MAPVK_VK_TO_VSC
@@ -231,12 +233,10 @@ int WIN_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 
 int WIN_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
-#ifndef SDL_DISABLE_WINDOWS_IME
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *videodata = _this->driverdata;
+    SDL_WindowData *data = window->driverdata;
 
-    IME_SetTextInputArea(data, &window->text_input_rect, window->text_input_cursor);
-#endif /* !SDL_DISABLE_WINDOWS_IME */
-
+    IME_SetTextInputArea(videodata, data->hwnd, &window->text_input_rect, window->text_input_cursor);
     return 0;
 }
 
@@ -645,14 +645,16 @@ static void IME_SetWindow(SDL_VideoData *videodata, SDL_Window *window)
         SDL_zero(videodata->ime_candidate_area);
     }
 
-    IME_SetTextInputArea(videodata, &window->text_input_rect, window->text_input_cursor);
+    IME_SetTextInputArea(videodata, hwnd, &window->text_input_rect, window->text_input_cursor);
 }
 
-static void IME_SetTextInputArea(SDL_VideoData *videodata, const SDL_Rect *rect, int cursor)
+#endif
+
+static void IME_SetTextInputArea(SDL_VideoData *videodata, HWND hwnd, const SDL_Rect *rect, int cursor)
 {
     HIMC himc;
 
-    himc = ImmGetContext(videodata->ime_hwnd_current);
+    himc = ImmGetContext(hwnd);
     if (himc) {
         COMPOSITIONFORM cof;
         CANDIDATEFORM caf;
@@ -690,9 +692,11 @@ static void IME_SetTextInputArea(SDL_VideoData *videodata, const SDL_Rect *rect,
             ImmSetCandidateWindow(himc, &caf);
         }
 
-        ImmReleaseContext(videodata->ime_hwnd_current, himc);
+        ImmReleaseContext(hwnd, himc);
     }
 }
+
+#ifndef SDL_DISABLE_WINDOWS_IME
 
 static void IME_UpdateInputLocale(SDL_VideoData *videodata)
 {
