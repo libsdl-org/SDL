@@ -420,7 +420,6 @@ struct SDL_VideoData
     Uint32 raw_input_enabled;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
-    SDL_bool ime_com_initialized;
     SDL_bool ime_initialized;
     SDL_bool ime_enabled;
     SDL_bool ime_available;
@@ -444,10 +443,12 @@ struct SDL_VideoData
     DWORD ime_candsel;
     int ime_candlistindexbase;
     SDL_bool ime_horizontal_candidates;
+#endif
 
     COMPOSITIONFORM ime_composition_area;
     CANDIDATEFORM ime_candidate_area;
 
+#ifndef SDL_DISABLE_WINDOWS_IME
     HKL ime_hkl;
     void *ime_himm32;
     /* *INDENT-OFF* */ /* clang-format off */
