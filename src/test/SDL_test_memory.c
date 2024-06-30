@@ -29,19 +29,12 @@
 #include <windows.h>
 #include <dbghelp.h>
 
-static void *s_dbghelp;
-
-typedef BOOL (__stdcall *dbghelp_SymInitialize_fn)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
-
-typedef BOOL (__stdcall *dbghelp_SymFromAddr_fn)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
-static dbghelp_SymFromAddr_fn dbghelp_SymFromAddr;
-
-#ifdef _WIN64
-typedef BOOL (__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
-#else
-typedef BOOL (__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE Line);
-#endif
-static dbghelp_SymGetLineFromAddr_fn dbghelp_SymGetLineFromAddr;
+static struct {
+    HMODULE module;
+    BOOL (WINAPI *pSymInitialize)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
+    BOOL (WINAPI *pSymFromAddr)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
+    BOOL (WINAPI *pSymGetLineFromAddr64)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
+} dyn_dbghelp;
 
 /* older SDKs might not have this: */
 __declspec(dllimport) USHORT WINAPI RtlCaptureStackBackTrace(ULONG FramesToSkip, ULONG FramesToCapture, PVOID* BackTrace, PULONG BackTraceHash);
@@ -169,16 +162,16 @@ static void SDL_TrackAllocation(void *mem, size_t size)
             DWORD lineColumn = 0;
             pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
             pSymbol->MaxNameLen = MAX_SYM_NAME;
-            IMAGEHLP_LINE line;
+            IMAGEHLP_LINE64 line;
             line.SizeOfStruct = sizeof(line);
 
             entry->stack[i] = (Uint64)(uintptr_t)frames[i];
-            if (s_dbghelp) {
-                if (!dbghelp_SymFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)frames[i], &dwDisplacement, pSymbol)) {
+            if (dyn_dbghelp.module) {
+                if (!dyn_dbghelp.pSymFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)frames[i], &dwDisplacement, pSymbol)) {
                     SDL_strlcpy(pSymbol->Name, "???", MAX_SYM_NAME);
                     dwDisplacement = 0;
                 }
-                if (!dbghelp_SymGetLineFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)frames[i], &lineColumn, &line)) {
+                if (!dyn_dbghelp.pSymGetLineFromAddr64(GetCurrentProcess(), (DWORD64)(uintptr_t)frames[i], &lineColumn, &line)) {
                     line.FileName = "";
                     line.LineNumber = 0;
                 }
@@ -296,28 +289,27 @@ void SDLTest_TrackAllocations(void)
         SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
     }
 #ifdef SDL_PLATFORM_WIN32
-    {
-        s_dbghelp = SDL_LoadObject("dbghelp.dll");
-        if (s_dbghelp) {
-            dbghelp_SymInitialize_fn dbghelp_SymInitialize;
-            dbghelp_SymInitialize = (dbghelp_SymInitialize_fn)SDL_LoadFunction(s_dbghelp, "SymInitialize");
-            dbghelp_SymFromAddr = (dbghelp_SymFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymFromAddr");
-#ifdef _WIN64
-            dbghelp_SymGetLineFromAddr = (dbghelp_SymGetLineFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymGetLineFromAddr64");
-#else
-            dbghelp_SymGetLineFromAddr = (dbghelp_SymGetLineFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymGetLineFromAddr");
-#endif
-            if (!dbghelp_SymInitialize || !dbghelp_SymFromAddr || !dbghelp_SymGetLineFromAddr) {
-                SDL_UnloadObject(s_dbghelp);
-                s_dbghelp = NULL;
-            } else {
-                if (!dbghelp_SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
-                    SDL_UnloadObject(s_dbghelp);
-                    s_dbghelp = NULL;
-                }
-            }
+    do {
+        dyn_dbghelp.module = SDL_LoadObject("dbghelp.dll");
+        if (!dyn_dbghelp.module) {
+            goto dbghelp_failed;
         }
-    }
+        dyn_dbghelp.pSymInitialize = (void *)SDL_LoadFunction(dyn_dbghelp.module, "SymInitialize");
+        dyn_dbghelp.pSymFromAddr = (void *)SDL_LoadFunction(dyn_dbghelp.module, "SymFromAddr");
+        dyn_dbghelp.pSymGetLineFromAddr64 = (void *)SDL_LoadFunction(dyn_dbghelp.module, "SymGetLineFromAddr64");
+        if (!dyn_dbghelp.pSymInitialize || !dyn_dbghelp.pSymFromAddr || !dyn_dbghelp.pSymGetLineFromAddr64) {
+            goto dbghelp_failed;
+        }
+        if (!dyn_dbghelp.pSymInitialize(GetCurrentProcess(), NULL, TRUE)) {
+            goto dbghelp_failed;
+        }
+        break;
+dbghelp_failed:
+        if (dyn_dbghelp.module) {
+            SDL_UnloadObject(dyn_dbghelp.module);
+            dyn_dbghelp.module = NULL;
+        }
+    } while (0);
 #endif
 
     SDL_GetMemoryFunctions(&SDL_malloc_orig,
