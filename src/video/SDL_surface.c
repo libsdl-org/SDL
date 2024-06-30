@@ -1504,7 +1504,7 @@ end:
 
     /* Enable alpha blending by default if the new surface has an
      * alpha channel or alpha modulation */
-    if ((surface->format->Amask && format->Amask) ||
+    if ((convert->format->Amask && format->Amask) ||
         (palette_has_alpha && format->Amask) ||
         (copy_flags & SDL_COPY_MODULATE_ALPHA)) {
         SDL_SetSurfaceBlendMode(convert, SDL_BLENDMODE_BLEND);
