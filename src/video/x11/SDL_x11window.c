@@ -1856,10 +1856,11 @@ int X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool 
         }
 
         /* If XInput2 is enabled, it will grab the pointer on button presses,
-         * which results in XGrabPointer returning AlreadyGrabbed. Clear any
-         * existing grabs before attempting the confinement grab.
+         * which results in XGrabPointer returning AlreadyGrabbed. If buttons
+         * are currently pressed, clear any existing grabs before attempting
+         * the confinement grab.
          */
-        if (data->xinput2_mouse_enabled) {
+        if (data->xinput2_mouse_enabled && SDL_GetMouseState(NULL, NULL)) {
             X11_XUngrabPointer(display, CurrentTime);
         }
 
