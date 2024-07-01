@@ -218,23 +218,23 @@ static void loop(void)
         }
 #endif
         if (e.type == SDL_EVENT_KEY_DOWN) {
-            SDL_Keycode sym = e.key.key;
-            if (sym == SDLK_q) {
+            SDL_Keycode key = e.key.key;
+            if (key == SDLK_q) {
                 if (SDL_AudioDevicePaused(state->audio_id)) {
                     SDL_ResumeAudioDevice(state->audio_id);
                 } else {
                     SDL_PauseAudioDevice(state->audio_id);
                 }
-            } else if (sym == SDLK_w) {
+            } else if (key == SDLK_w) {
                 auto_loop = !auto_loop;
-            } else if (sym == SDLK_e) {
+            } else if (key == SDLK_e) {
                 auto_flush = !auto_flush;
-            } else if (sym == SDLK_a) {
+            } else if (key == SDLK_a) {
                 SDL_ClearAudioStream(stream);
                 SDL_Log("Cleared audio stream");
-            } else if (sym == SDLK_s) {
+            } else if (key == SDLK_s) {
                 queue_audio();
-            } else if (sym == SDLK_d || sym == SDLK_D) {
+            } else if (key == SDLK_d) {
                 float amount = 1.0f;
                 amount *= (e.key.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
                 amount *= (e.key.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;

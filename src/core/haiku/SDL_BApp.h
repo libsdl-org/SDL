@@ -302,11 +302,6 @@ class SDL_BLooper : public BLooper
             return;
         }
 
-        /* Make sure this isn't a repeated event (key pressed and held) */
-        if (state == SDL_PRESSED && HAIKU_GetKeyState(scancode) == SDL_PRESSED) {
-            return;
-        }
-        HAIKU_SetKeyState(scancode, state);
         SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, scancode, HAIKU_GetScancodeFromBeKey(scancode), state);
 
         win = GetSDLWindow(winID);

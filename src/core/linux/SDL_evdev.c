@@ -314,7 +314,7 @@ void SDL_EVDEV_Poll(void)
     struct input_event events[32];
     int i, j, len;
     SDL_evdevlist_item *item;
-    SDL_Scancode scan_code;
+    SDL_Scancode scancode;
     int mouse_button;
     SDL_Mouse *mouse;
     float norm_x, norm_y, norm_pressure;
@@ -372,11 +372,11 @@ void SDL_EVDEV_Poll(void)
                     }
 
                     /* Probably keyboard */
-                    scan_code = SDL_EVDEV_translate_keycode(event->code);
+                    scancode = SDL_EVDEV_translate_keycode(event->code);
                     if (event->value == 0) {
-                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scan_code, SDL_RELEASED);
+                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, SDL_RELEASED);
                     } else if (event->value == 1 || event->value == 2 /* key repeated */) {
-                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scan_code, SDL_PRESSED);
+                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, SDL_PRESSED);
                     }
                     SDL_EVDEV_kbd_keycode(_this->kbd, event->code, event->value);
                     break;
