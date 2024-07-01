@@ -39,6 +39,9 @@ SDL_iconv_t SDL_iconv_open(const char *tocode, const char *fromcode)
 
 int SDL_iconv_close(SDL_iconv_t cd)
 {
+    if ((size_t)cd == SDL_ICONV_ERROR) {
+        return -1;
+    }
     return iconv_close((iconv_t)((uintptr_t)cd));
 }
 
@@ -46,6 +49,9 @@ size_t SDL_iconv(SDL_iconv_t cd,
           const char **inbuf, size_t *inbytesleft,
           char **outbuf, size_t *outbytesleft)
 {
+    if ((size_t)cd == SDL_ICONV_ERROR) {
+        return SDL_ICONV_ERROR;
+    }
     /* iconv's second parameter may or may not be `const char const *` depending on the
        C runtime's whims. Casting to void * seems to make everyone happy, though. */
     const size_t retCode = iconv((iconv_t)((uintptr_t)cd), (void *)inbuf, inbytesleft, outbuf, outbytesleft);
@@ -236,6 +242,9 @@ size_t SDL_iconv(SDL_iconv_t cd,
     Uint32 ch = 0;
     size_t total;
 
+    if ((size_t)cd == SDL_ICONV_ERROR) {
+        return SDL_ICONV_ERROR;
+    }
     if (!inbuf || !*inbuf) {
         /* Reset the context */
         return 0;
@@ -769,9 +778,10 @@ size_t SDL_iconv(SDL_iconv_t cd,
 
 int SDL_iconv_close(SDL_iconv_t cd)
 {
-    if (cd != (SDL_iconv_t)-1) {
-        SDL_free(cd);
+    if (cd == (SDL_iconv_t)-1) {
+        return -1;
     }
+    SDL_free(cd);
     return 0;
 }
 
