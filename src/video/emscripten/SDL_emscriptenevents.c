@@ -34,237 +34,6 @@
 #include "SDL_emscriptenvideo.h"
 
 /*
-.keyCode to SDL keycode
-https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
-https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
-*/
-static const SDL_Keycode emscripten_keycode_table[] = {
-    /*   0, 0x00 */ SDLK_UNKNOWN,
-    /*   1, 0x01 */ SDLK_UNKNOWN,
-    /*   2, 0x02 */ SDLK_UNKNOWN,
-    /*   3, 0x03 */ SDLK_CANCEL,
-    /*   4, 0x04 */ SDLK_UNKNOWN,
-    /*   5, 0x05 */ SDLK_UNKNOWN,
-    /*   6, 0x06 */ SDLK_HELP,
-    /*   7, 0x07 */ SDLK_UNKNOWN,
-    /*   8, 0x08 */ SDLK_BACKSPACE,
-    /*   9, 0x09 */ SDLK_TAB,
-    /*  10, 0x0a */ SDLK_UNKNOWN,
-    /*  11, 0x0b */ SDLK_UNKNOWN,
-    /*  12, 0x0c */ SDLK_KP_EQUALS,
-    /*  13, 0x0d */ SDLK_RETURN,
-    /*  14, 0x0e */ SDLK_UNKNOWN,
-    /*  15, 0x0f */ SDLK_UNKNOWN,
-    /*  16, 0x10 */ SDLK_LSHIFT,
-    /*  17, 0x11 */ SDLK_LCTRL,
-    /*  18, 0x12 */ SDLK_LALT,
-    /*  19, 0x13 */ SDLK_PAUSE,
-    /*  20, 0x14 */ SDLK_CAPSLOCK,
-    /*  21, 0x15 */ SDLK_UNKNOWN,
-    /*  22, 0x16 */ SDLK_UNKNOWN,
-    /*  23, 0x17 */ SDLK_UNKNOWN,
-    /*  24, 0x18 */ SDLK_UNKNOWN,
-    /*  25, 0x19 */ SDLK_UNKNOWN,
-    /*  26, 0x1a */ SDLK_UNKNOWN,
-    /*  27, 0x1b */ SDLK_ESCAPE,
-    /*  28, 0x1c */ SDLK_UNKNOWN,
-    /*  29, 0x1d */ SDLK_UNKNOWN,
-    /*  30, 0x1e */ SDLK_UNKNOWN,
-    /*  31, 0x1f */ SDLK_UNKNOWN,
-    /*  32, 0x20 */ SDLK_SPACE,
-    /*  33, 0x21 */ SDLK_PAGEUP,
-    /*  34, 0x22 */ SDLK_PAGEDOWN,
-    /*  35, 0x23 */ SDLK_END,
-    /*  36, 0x24 */ SDLK_HOME,
-    /*  37, 0x25 */ SDLK_LEFT,
-    /*  38, 0x26 */ SDLK_UP,
-    /*  39, 0x27 */ SDLK_RIGHT,
-    /*  40, 0x28 */ SDLK_DOWN,
-    /*  41, 0x29 */ SDLK_UNKNOWN,
-    /*  42, 0x2a */ SDLK_UNKNOWN,
-    /*  43, 0x2b */ SDLK_UNKNOWN,
-    /*  44, 0x2c */ SDLK_UNKNOWN,
-    /*  45, 0x2d */ SDLK_INSERT,
-    /*  46, 0x2e */ SDLK_DELETE,
-    /*  47, 0x2f */ SDLK_UNKNOWN,
-    /*  48, 0x30 */ SDLK_0,
-    /*  49, 0x31 */ SDLK_1,
-    /*  50, 0x32 */ SDLK_2,
-    /*  51, 0x33 */ SDLK_3,
-    /*  52, 0x34 */ SDLK_4,
-    /*  53, 0x35 */ SDLK_5,
-    /*  54, 0x36 */ SDLK_6,
-    /*  55, 0x37 */ SDLK_7,
-    /*  56, 0x38 */ SDLK_8,
-    /*  57, 0x39 */ SDLK_9,
-    /*  58, 0x3a */ SDLK_UNKNOWN,
-    /*  59, 0x3b */ SDLK_SEMICOLON,
-    /*  60, 0x3c */ SDLK_BACKSLASH /*SDL_SCANCODE_NONUSBACKSLASH*/,
-    /*  61, 0x3d */ SDLK_EQUALS,
-    /*  62, 0x3e */ SDLK_UNKNOWN,
-    /*  63, 0x3f */ SDLK_MINUS,
-    /*  64, 0x40 */ SDLK_UNKNOWN,
-    /*  65, 0x41 */ SDLK_A,
-    /*  66, 0x42 */ SDLK_B,
-    /*  67, 0x43 */ SDLK_C,
-    /*  68, 0x44 */ SDLK_D,
-    /*  69, 0x45 */ SDLK_E,
-    /*  70, 0x46 */ SDLK_F,
-    /*  71, 0x47 */ SDLK_G,
-    /*  72, 0x48 */ SDLK_H,
-    /*  73, 0x49 */ SDLK_I,
-    /*  74, 0x4a */ SDLK_J,
-    /*  75, 0x4b */ SDLK_K,
-    /*  76, 0x4c */ SDLK_L,
-    /*  77, 0x4d */ SDLK_M,
-    /*  78, 0x4e */ SDLK_N,
-    /*  79, 0x4f */ SDLK_O,
-    /*  80, 0x50 */ SDLK_P,
-    /*  81, 0x51 */ SDLK_Q,
-    /*  82, 0x52 */ SDLK_R,
-    /*  83, 0x53 */ SDLK_S,
-    /*  84, 0x54 */ SDLK_T,
-    /*  85, 0x55 */ SDLK_U,
-    /*  86, 0x56 */ SDLK_V,
-    /*  87, 0x57 */ SDLK_W,
-    /*  88, 0x58 */ SDLK_X,
-    /*  89, 0x59 */ SDLK_Y,
-    /*  90, 0x5a */ SDLK_Z,
-    /*  91, 0x5b */ SDLK_LGUI,
-    /*  92, 0x5c */ SDLK_UNKNOWN,
-    /*  93, 0x5d */ SDLK_APPLICATION,
-    /*  94, 0x5e */ SDLK_UNKNOWN,
-    /*  95, 0x5f */ SDLK_UNKNOWN,
-    /*  96, 0x60 */ SDLK_0,         /* SDLK_KP_0 */
-    /*  97, 0x61 */ SDLK_1,         /* SDLK_KP_1 */
-    /*  98, 0x62 */ SDLK_2,         /* SDLK_KP_2 */
-    /*  99, 0x63 */ SDLK_3,         /* SDLK_KP_3 */
-    /* 100, 0x64 */ SDLK_4,         /* SDLK_KP_4 */
-    /* 101, 0x65 */ SDLK_5,         /* SDLK_KP_5 */
-    /* 102, 0x66 */ SDLK_6,         /* SDLK_KP_6 */
-    /* 103, 0x67 */ SDLK_7,         /* SDLK_KP_7 */
-    /* 104, 0x68 */ SDLK_8,         /* SDLK_KP_8 */
-    /* 105, 0x69 */ SDLK_9,         /* SDLK_KP_9 */
-    /* 106, 0x6a */ SDLK_KP_MULTIPLY,
-    /* 107, 0x6b */ SDLK_KP_PLUS,
-    /* 108, 0x6c */ SDLK_UNKNOWN,
-    /* 109, 0x6d */ SDLK_KP_MINUS,
-    /* 110, 0x6e */ SDLK_PERIOD,    /* SDLK_KP_PERIOD */
-    /* 111, 0x6f */ SDLK_KP_DIVIDE,
-    /* 112, 0x70 */ SDLK_F1,
-    /* 113, 0x71 */ SDLK_F2,
-    /* 114, 0x72 */ SDLK_F3,
-    /* 115, 0x73 */ SDLK_F4,
-    /* 116, 0x74 */ SDLK_F5,
-    /* 117, 0x75 */ SDLK_F6,
-    /* 118, 0x76 */ SDLK_F7,
-    /* 119, 0x77 */ SDLK_F8,
-    /* 120, 0x78 */ SDLK_F9,
-    /* 121, 0x79 */ SDLK_F10,
-    /* 122, 0x7a */ SDLK_F11,
-    /* 123, 0x7b */ SDLK_F12,
-    /* 124, 0x7c */ SDLK_F13,
-    /* 125, 0x7d */ SDLK_F14,
-    /* 126, 0x7e */ SDLK_F15,
-    /* 127, 0x7f */ SDLK_F16,
-    /* 128, 0x80 */ SDLK_F17,
-    /* 129, 0x81 */ SDLK_F18,
-    /* 130, 0x82 */ SDLK_F19,
-    /* 131, 0x83 */ SDLK_F20,
-    /* 132, 0x84 */ SDLK_F21,
-    /* 133, 0x85 */ SDLK_F22,
-    /* 134, 0x86 */ SDLK_F23,
-    /* 135, 0x87 */ SDLK_F24,
-    /* 136, 0x88 */ SDLK_UNKNOWN,
-    /* 137, 0x89 */ SDLK_UNKNOWN,
-    /* 138, 0x8a */ SDLK_UNKNOWN,
-    /* 139, 0x8b */ SDLK_UNKNOWN,
-    /* 140, 0x8c */ SDLK_UNKNOWN,
-    /* 141, 0x8d */ SDLK_UNKNOWN,
-    /* 142, 0x8e */ SDLK_UNKNOWN,
-    /* 143, 0x8f */ SDLK_UNKNOWN,
-    /* 144, 0x90 */ SDLK_NUMLOCKCLEAR,
-    /* 145, 0x91 */ SDLK_SCROLLLOCK,
-    /* 146, 0x92 */ SDLK_UNKNOWN,
-    /* 147, 0x93 */ SDLK_UNKNOWN,
-    /* 148, 0x94 */ SDLK_UNKNOWN,
-    /* 149, 0x95 */ SDLK_UNKNOWN,
-    /* 150, 0x96 */ SDLK_UNKNOWN,
-    /* 151, 0x97 */ SDLK_UNKNOWN,
-    /* 152, 0x98 */ SDLK_UNKNOWN,
-    /* 153, 0x99 */ SDLK_UNKNOWN,
-    /* 154, 0x9a */ SDLK_UNKNOWN,
-    /* 155, 0x9b */ SDLK_UNKNOWN,
-    /* 156, 0x9c */ SDLK_UNKNOWN,
-    /* 157, 0x9d */ SDLK_UNKNOWN,
-    /* 158, 0x9e */ SDLK_UNKNOWN,
-    /* 159, 0x9f */ SDLK_UNKNOWN,
-    /* 160, 0xa0 */ SDLK_GRAVE,
-    /* 161, 0xa1 */ SDLK_UNKNOWN,
-    /* 162, 0xa2 */ SDLK_UNKNOWN,
-    /* 163, 0xa3 */ SDLK_KP_HASH, /*KaiOS phone keypad*/
-    /* 164, 0xa4 */ SDLK_UNKNOWN,
-    /* 165, 0xa5 */ SDLK_UNKNOWN,
-    /* 166, 0xa6 */ SDLK_UNKNOWN,
-    /* 167, 0xa7 */ SDLK_UNKNOWN,
-    /* 168, 0xa8 */ SDLK_UNKNOWN,
-    /* 169, 0xa9 */ SDLK_UNKNOWN,
-    /* 170, 0xaa */ SDLK_KP_MULTIPLY, /*KaiOS phone keypad*/
-    /* 171, 0xab */ SDLK_RIGHTBRACKET,
-    /* 172, 0xac */ SDLK_UNKNOWN,
-    /* 173, 0xad */ SDLK_MINUS,      /*FX*/
-    /* 174, 0xae */ SDLK_VOLUMEDOWN, /*IE, Chrome*/
-    /* 175, 0xaf */ SDLK_VOLUMEUP,   /*IE, Chrome*/
-    /* 176, 0xb0 */ SDLK_MEDIA_NEXT_TRACK,  /*IE, Chrome*/
-    /* 177, 0xb1 */ SDLK_MEDIA_PREVIOUS_TRACK,  /*IE, Chrome*/
-    /* 178, 0xb2 */ SDLK_UNKNOWN,
-    /* 179, 0xb3 */ SDLK_MEDIA_PLAY, /*IE, Chrome*/
-    /* 180, 0xb4 */ SDLK_UNKNOWN,
-    /* 181, 0xb5 */ SDLK_UNKNOWN,
-    /* 182, 0xb6 */ SDLK_VOLUMEDOWN, /*FX*/
-    /* 183, 0xb7 */ SDLK_VOLUMEUP,   /*FX*/
-    /* 184, 0xb8 */ SDLK_UNKNOWN,
-    /* 185, 0xb9 */ SDLK_UNKNOWN,
-    /* 186, 0xba */ SDLK_SEMICOLON, /*IE, Chrome, D3E legacy*/
-    /* 187, 0xbb */ SDLK_EQUALS,    /*IE, Chrome, D3E legacy*/
-    /* 188, 0xbc */ SDLK_COMMA,
-    /* 189, 0xbd */ SDLK_MINUS, /*IE, Chrome, D3E legacy*/
-    /* 190, 0xbe */ SDLK_PERIOD,
-    /* 191, 0xbf */ SDLK_SLASH,
-    /* 192, 0xc0 */ SDLK_GRAVE, /*FX, D3E legacy (SDLK_APOSTROPHE in IE/Chrome)*/
-    /* 193, 0xc1 */ SDLK_UNKNOWN,
-    /* 194, 0xc2 */ SDLK_UNKNOWN,
-    /* 195, 0xc3 */ SDLK_UNKNOWN,
-    /* 196, 0xc4 */ SDLK_UNKNOWN,
-    /* 197, 0xc5 */ SDLK_UNKNOWN,
-    /* 198, 0xc6 */ SDLK_UNKNOWN,
-    /* 199, 0xc7 */ SDLK_UNKNOWN,
-    /* 200, 0xc8 */ SDLK_UNKNOWN,
-    /* 201, 0xc9 */ SDLK_UNKNOWN,
-    /* 202, 0xca */ SDLK_UNKNOWN,
-    /* 203, 0xcb */ SDLK_UNKNOWN,
-    /* 204, 0xcc */ SDLK_UNKNOWN,
-    /* 205, 0xcd */ SDLK_UNKNOWN,
-    /* 206, 0xce */ SDLK_UNKNOWN,
-    /* 207, 0xcf */ SDLK_UNKNOWN,
-    /* 208, 0xd0 */ SDLK_UNKNOWN,
-    /* 209, 0xd1 */ SDLK_UNKNOWN,
-    /* 210, 0xd2 */ SDLK_UNKNOWN,
-    /* 211, 0xd3 */ SDLK_UNKNOWN,
-    /* 212, 0xd4 */ SDLK_UNKNOWN,
-    /* 213, 0xd5 */ SDLK_UNKNOWN,
-    /* 214, 0xd6 */ SDLK_UNKNOWN,
-    /* 215, 0xd7 */ SDLK_UNKNOWN,
-    /* 216, 0xd8 */ SDLK_UNKNOWN,
-    /* 217, 0xd9 */ SDLK_UNKNOWN,
-    /* 218, 0xda */ SDLK_UNKNOWN,
-    /* 219, 0xdb */ SDLK_LEFTBRACKET,
-    /* 220, 0xdc */ SDLK_BACKSLASH,
-    /* 221, 0xdd */ SDLK_RIGHTBRACKET,
-    /* 222, 0xde */ SDLK_APOSTROPHE, /*FX, D3E legacy*/
-};
-
-/*
 Emscripten PK code to scancode
 https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
 https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
@@ -490,63 +259,6 @@ static SDL_Scancode Emscripten_MapScanCode(const char *code)
     return SDL_SCANCODE_UNKNOWN;
 }
 
-static SDL_Keycode Emscripten_MapKeyCode(const EmscriptenKeyboardEvent *keyEvent)
-{
-    SDL_Keycode keycode = SDLK_UNKNOWN;
-    if (keyEvent->keyCode < SDL_arraysize(emscripten_keycode_table)) {
-        keycode = emscripten_keycode_table[keyEvent->keyCode];
-        if (keycode != SDLK_UNKNOWN) {
-            if (keyEvent->location == DOM_KEY_LOCATION_RIGHT) {
-                switch (keycode) {
-                case SDLK_LSHIFT:
-                    keycode = SDLK_RSHIFT;
-                    break;
-                case SDLK_LCTRL:
-                    keycode = SDLK_RCTRL;
-                    break;
-                case SDLK_LALT:
-                    keycode = SDLK_RALT;
-                    break;
-                case SDLK_LGUI:
-                    keycode = SDLK_RGUI;
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-    }
-
-    return keycode;
-}
-
-/* "borrowed" from SDL_windowsevents.c */
-static int Emscripten_ConvertUTF32toUTF8(Uint32 codepoint, char *text)
-{
-    if (codepoint <= 0x7F) {
-        text[0] = (char)codepoint;
-        text[1] = '\0';
-    } else if (codepoint <= 0x7FF) {
-        text[0] = 0xC0 | (char)((codepoint >> 6) & 0x1F);
-        text[1] = 0x80 | (char)(codepoint & 0x3F);
-        text[2] = '\0';
-    } else if (codepoint <= 0xFFFF) {
-        text[0] = 0xE0 | (char)((codepoint >> 12) & 0x0F);
-        text[1] = 0x80 | (char)((codepoint >> 6) & 0x3F);
-        text[2] = 0x80 | (char)(codepoint & 0x3F);
-        text[3] = '\0';
-    } else if (codepoint <= 0x10FFFF) {
-        text[0] = 0xF0 | (char)((codepoint >> 18) & 0x0F);
-        text[1] = 0x80 | (char)((codepoint >> 12) & 0x3F);
-        text[2] = 0x80 | (char)((codepoint >> 6) & 0x3F);
-        text[3] = 0x80 | (char)(codepoint & 0x3F);
-        text[4] = '\0';
-    } else {
-        return SDL_FALSE;
-    }
-    return SDL_TRUE;
-}
-
 static EM_BOOL Emscripten_HandlePointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent *changeEvent, void *userData)
 {
     SDL_WindowData *window_data = (SDL_WindowData *)userData;
@@ -738,11 +450,14 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
     return preventDefault;
 }
 
+/* This is a great tool to see web keyboard events live:
+ * https://w3c.github.io/uievents/tools/key-event-viewer.html
+ */
 static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     SDL_WindowData *window_data = (SDL_WindowData *)userData;
-    const SDL_Keycode keycode = Emscripten_MapKeyCode(keyEvent);
     SDL_Scancode scancode = Emscripten_MapScanCode(keyEvent->code);
+    SDL_Keycode keycode = SDLK_UNKNOWN;
     SDL_bool prevent_default = SDL_TRUE;
     SDL_bool is_nav_key = SDL_FALSE;
 
@@ -787,7 +502,19 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
         }
     }
 
-    SDL_SendKeyboardKeyAndKeycode(0, SDL_DEFAULT_KEYBOARD_ID, 0, scancode, keycode, eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED);
+    if (SDL_utf8strlen(keyEvent->key) == 1) {
+        const char *key = keyEvent->key;
+        keycode = SDL_StepUTF8(&key, NULL);
+        if (keycode == SDL_INVALID_UNICODE_CODEPOINT) {
+            keycode = SDLK_UNKNOWN;
+        }
+    }
+
+    if (keycode != SDLK_UNKNOWN) {
+        SDL_SendKeyboardKeyAndKeycode(0, SDL_DEFAULT_KEYBOARD_ID, 0, scancode, keycode, eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED);
+    } else {
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, scancode, eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED);
+    }
 
     /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress
      * we need to ALWAYS prevent backspace and tab otherwise chrome takes action and does bad navigation UX
@@ -816,7 +543,7 @@ static EM_BOOL Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboard
 
     if (SDL_TextInputActive(window_data->window)) {
         char text[5];
-        if (Emscripten_ConvertUTF32toUTF8(keyEvent->charCode, text)) {
+        if (SDL_UCS4ToUTF8(keyEvent->charCode, text)) {
             SDL_SendKeyboardText(text);
         }
         return EM_TRUE;
