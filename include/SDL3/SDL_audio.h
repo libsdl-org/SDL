@@ -719,6 +719,62 @@ extern SDL_DECLSPEC int SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID dev);
 
 /**
+ * Get the gain of an audio device.
+ *
+ * The gain of a device is its volume; a larger gain means a louder output,
+ * with a gain of zero being silence.
+ *
+ * Audio devices default to a gain of 1.0f (no change in output).
+ *
+ * Physical devices may not have their gain changed, only logical devices,
+ * and this function will always return -1.0f when used on physical devices.
+ *
+ * \param devid the audio device to query.
+ * \returns the gain of the device, or -1.0f on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetAudioDeviceGain
+ */
+extern SDL_DECLSPEC float SDLCALL SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid);
+
+/**
+ * Change the gain of an audio device.
+ *
+ * The gain of a device is its volume; a larger gain means a louder output,
+ * with a gain of zero being silence.
+ *
+ * Audio devices default to a gain of 1.0f (no change in output).
+ *
+ * Physical devices may not have their gain changed, only logical devices,
+ * and this function will always return -1 when used on physical devices. While
+ * it might seem attractive to adjust several logical devices at once in this
+ * way, it would allow an app or library to interfere with another portion of
+ * the program's otherwise-isolated devices.
+ *
+ * This is applied, along with any per-audiostream gain, during playback to
+ * the hardware, and can be continuously changed to create various effects.
+ * On recording devices, this will adjust the gain before passing the data
+ * into an audiostream; that recording audiostream can then adjust its gain
+ * further when outputting the data elsewhere, if it likes, but that second
+ * gain is not applied until the data leaves the audiostream again.
+ *
+ * \param devid the audio device on which to change gain.
+ * \param gain the gain. 1.0f is no change, 0.0f is silence.
+ * \returns 0 on success, or -1 on error.
+ *
+ * \threadsafety It is safe to call this function from any thread, as it holds
+ *               a stream-specific mutex while running.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetAudioDeviceGain
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain);
+
+/**
  * Close a previously-opened audio device.
  *
  * The application should close open audio devices once they are no longer
@@ -980,6 +1036,51 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetAudioStreamFrequencyRatio(SDL_AudioStre
  * \sa SDL_SetAudioStreamFormat
  */
 extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *stream, float ratio);
+
+/**
+ * Get the gain of an audio stream.
+ *
+ * The gain of a stream is its volume; a larger gain means a louder output,
+ * with a gain of zero being silence.
+ *
+ * Audio streams default to a gain of 1.0f (no change in output).
+ *
+ * \param stream the SDL_AudioStream to query.
+ * \returns the gain of the stream, or -1.0f on error.
+ *
+ * \threadsafety It is safe to call this function from any thread, as it holds
+ *               a stream-specific mutex while running.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetAudioStreamGain
+ */
+extern SDL_DECLSPEC float SDLCALL SDL_GetAudioStreamGain(SDL_AudioStream *stream);
+
+/**
+ * Change the gain of an audio stream.
+ *
+ * The gain of a stream is its volume; a larger gain means a louder output,
+ * with a gain of zero being silence.
+ *
+ * Audio streams default to a gain of 1.0f (no change in output).
+ *
+ * This is applied during SDL_GetAudioStreamData, and can be continuously
+ * changed to create various effects.
+ *
+ * \param stream the stream on which the gain is being changed.
+ * \param gain the gain. 1.0f is no change, 0.0f is silence.
+ * \returns 0 on success, or -1 on error.
+ *
+ * \threadsafety It is safe to call this function from any thread, as it holds
+ *               a stream-specific mutex while running.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetAudioStreamGain
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamGain(SDL_AudioStream *stream, float gain);
+
 
 /**
  * Add data to the stream.
@@ -1464,6 +1565,10 @@ extern SDL_DECLSPEC SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_Audio
  * specified in `spec`, which can change between callbacks if the audio device
  * changed. However, this only covers frequency and channel count; data is
  * always provided here in SDL_AUDIO_F32 format.
+ *
+ * The postmix callback runs _after_ logical device gain and audiostream gain
+ * have been applied, which is to say you can make the output data louder
+ * at this point than the gain settings would suggest.
  *
  * \param userdata a pointer provided by the app through
  *                 SDL_SetAudioPostmixCallback, for its own use.
