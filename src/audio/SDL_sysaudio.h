@@ -115,11 +115,14 @@ extern void ConvertAudioSwapEndian(void* dst, const void* src, int num_samples, 
 
 // this gets used from the audio device threads. It has rules, don't use this if you don't know how to use it!
 extern void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
-                         void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch);
+                         void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch, float gain);
 
 // Special case to let something in SDL_audiocvt.c access something in SDL_audio.c. Don't use this.
 extern void OnAudioStreamCreated(SDL_AudioStream *stream);
 extern void OnAudioStreamDestroy(SDL_AudioStream *stream);
+
+// This just lets audio playback apply logical device gain at the same time as audiostream gain, so it's one multiplication instead of thousands.
+extern int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidbuf, int len, float extra_gain);
 
 typedef struct SDL_AudioDriverImpl
 {
@@ -188,6 +191,7 @@ struct SDL_AudioStream
     SDL_AudioSpec src_spec;
     SDL_AudioSpec dst_spec;
     float freq_ratio;
+    float gain;
 
     struct SDL_AudioQueue* queue;
 
@@ -221,6 +225,9 @@ struct SDL_LogicalAudioDevice
 
     // If whole logical device is paused (process no streams bound to this device).
     SDL_AtomicInt paused;
+
+    // Volume of the device output.
+    float gain;
 
     // double-linked list of all audio streams currently bound to this opened device.
     SDL_AudioStream *bound_streams;

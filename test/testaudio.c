@@ -94,6 +94,7 @@ struct Thing
     float z;
     Uint8 r, g, b, a;
     float progress;
+    float meter;
     float scale;
     Uint64 createticks;
     Texture *texture;
@@ -103,6 +104,7 @@ struct Thing
     void (*ondrag)(Thing *thing, int button, float x, float y);
     void (*ondrop)(Thing *thing, int button, float x, float y);
     void (*ondraw)(Thing *thing, SDL_Renderer *renderer);
+    void (*onmousewheel)(Thing *thing, float y);
 
     Thing *prev;
     Thing *next;
@@ -355,6 +357,16 @@ static void DrawOneThing(SDL_Renderer *renderer, Thing *thing)
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
         SDL_RenderFillRect(renderer, &r);
     }
+
+    if (thing->meter > 0.0f) {
+        SDL_FRect r;
+        r.w = 10.0f;
+        r.h = thing->rect.h * ((thing->meter > 1.0f) ? 1.0f : thing->meter);
+        r.x = thing->rect.x + thing->rect.w + 2.0f;
+        r.y = (thing->rect.y + thing->rect.h) - r.h;
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+        SDL_RenderFillRect(renderer, &r);
+    }
 }
 
 static void DrawThings(SDL_Renderer *renderer)
@@ -581,6 +593,13 @@ static void StreamThing_ondrop(Thing *thing, int button, float x, float y)
     }
 }
 
+static void StreamThing_onmousewheel(Thing *thing, float y)
+{
+    thing->meter += y * 0.01f;
+    thing->meter = SDL_clamp(thing->meter, 0.0f, 1.0f);
+    SDL_SetAudioStreamGain(thing->data.stream.stream, thing->meter);
+}
+
 static void StreamThing_ondraw(Thing *thing, SDL_Renderer *renderer)
 {
     if (thing->line_connected_to) {  /* are we playing? Update progress bar, and bounce the levels a little. */
@@ -618,7 +637,9 @@ static Thing *CreateStreamThing(const SDL_AudioSpec *spec, const Uint8 *buf, con
         thing->ondrag = StreamThing_ondrag;
         thing->ondrop = StreamThing_ondrop;
         thing->ondraw = StreamThing_ondraw;
+        thing->onmousewheel = StreamThing_onmousewheel;
         thing->can_be_dropped_onto = can_be_dropped_onto;
+        thing->meter = 1.0f;  /* gain. */
     }
     return thing;
 }
@@ -898,6 +919,13 @@ static void LogicalDeviceThing_ondraw(Thing *thing, SDL_Renderer *renderer)
     }
 }
 
+static void LogicalDeviceThing_onmousewheel(Thing *thing, float y)
+{
+    thing->meter += y * 0.01f;
+    thing->meter = SDL_clamp(thing->meter, 0.0f, 1.0f);
+    SDL_SetAudioDeviceGain(thing->data.logdev.devid, thing->meter);
+}
+
 static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID which, const float x, const float y)
 {
     static const ThingType can_be_dropped_onto[] = { THING_TRASHCAN, THING_NULL };
@@ -917,10 +945,12 @@ static Thing *CreateLogicalDeviceThing(Thing *parent, const SDL_AudioDeviceID wh
             SDL_SetTextureBlendMode(thing->data.logdev.visualizer, SDL_BLENDMODE_BLEND);
         }
         thing->line_connected_to = physthing;
+        thing->meter = 1.0f;
         thing->ontick = LogicalDeviceThing_ontick;
         thing->ondrag = DeviceThing_ondrag;
         thing->ondrop = LogicalDeviceThing_ondrop;
         thing->ondraw = LogicalDeviceThing_ondraw;
+        thing->onmousewheel = LogicalDeviceThing_onmousewheel;
         thing->can_be_dropped_onto = can_be_dropped_onto;
 
         SetLogicalDeviceTitlebar(thing);
@@ -1181,7 +1211,10 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             break;
 
         case SDL_EVENT_MOUSE_WHEEL:
-            UpdateMouseOver(event->wheel.mouse_x, event->wheel.mouse_y);
+            thing = UpdateMouseOver(event->wheel.mouse_x, event->wheel.mouse_y);
+            if (thing && thing->onmousewheel) {
+                thing->onmousewheel(thing, event->wheel.y * ((event->wheel.direction == SDL_MOUSEWHEEL_FLIPPED) ? -1.0f : 1.0f));
+            }
             break;
 
         case SDL_EVENT_KEY_DOWN:

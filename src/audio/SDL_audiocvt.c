@@ -164,8 +164,12 @@ static SDL_bool SDL_IsSupportedChannelCount(const int channels)
 //
 // The scratch buffer must be able to store `num_frames * CalculateMaxSampleFrameSize(src_format, src_channels, dst_format, dst_channels)` bytes.
 // If the scratch buffer is NULL, this restriction applies to the output buffer instead.
+//
+// Since this is a convenient point that audio goes through even if it doesn't need format conversion,
+// we also handle gain adjustment here, so we don't have to make another pass over the data later.
+// Strictly speaking, this is also a "conversion".  :)
 void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, int src_channels,
-                  void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch)
+                  void *dst, SDL_AudioFormat dst_format, int dst_channels, void* scratch, float gain)
 {
     SDL_assert(src != NULL);
     SDL_assert(dst != NULL);
@@ -202,7 +206,7 @@ void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, i
        it was a bloat on SDL compile times and final library size. */
 
     // see if we can skip float conversion entirely.
-    if (src_channels == dst_channels) {
+    if ((src_channels == dst_channels) && (gain == 1.0f)) {
         if (src_format == dst_format) {
             // nothing to do, we're already in the right format, just copy it over if necessary.
             if (src != dst) {
@@ -230,6 +234,16 @@ void ConvertAudio(int num_frames, const void *src, SDL_AudioFormat src_format, i
     if (srcconvert) {
         void* buf = (channelconvert || dstconvert) ? scratch : dst;
         ConvertAudioToFloat((float *) buf, src, num_frames * src_channels, src_format);
+        src = buf;
+    }
+
+    // Gain adjustment
+    if (gain != 1.0f) {
+        float *buf = (float *) (dstconvert ? scratch : dst);
+        const int total_samples = num_frames * src_channels;
+        for (int i = 0; i < total_samples; i++) {
+            buf[i] *= gain;
+        }
         src = buf;
     }
 
@@ -328,6 +342,7 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
     }
 
     retval->freq_ratio = 1.0f;
+    retval->gain = 1.0f;
     retval->queue = SDL_CreateAudioQueue(8192);
 
     if (!retval->queue) {
@@ -524,6 +539,33 @@ int SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *stream, float freq_ratio)
 
     SDL_LockMutex(stream->lock);
     stream->freq_ratio = freq_ratio;
+    SDL_UnlockMutex(stream->lock);
+
+    return 0;
+}
+
+float SDL_GetAudioStreamGain(SDL_AudioStream *stream)
+{
+    if (!stream) {
+        SDL_InvalidParamError("stream");
+        return -1.0f;
+    }
+
+    SDL_LockMutex(stream->lock);
+    const float gain = stream->gain;
+    SDL_UnlockMutex(stream->lock);
+
+    return gain;
+}
+
+int SDL_SetAudioStreamGain(SDL_AudioStream *stream, float gain)
+{
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    }
+
+    SDL_LockMutex(stream->lock);
+    stream->gain = gain;
     SDL_UnlockMutex(stream->lock);
 
     return 0;
@@ -756,7 +798,7 @@ static Sint64 GetAudioStreamHead(SDL_AudioStream* stream, SDL_AudioSpec* out_spe
 
 // You must hold stream->lock and validate your parameters before calling this!
 // Enough input data MUST be available!
-static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int output_frames)
+static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int output_frames, float gain)
 {
     const SDL_AudioSpec* src_spec = &stream->input_spec;
     const SDL_AudioSpec* dst_spec = &stream->dst_spec;
@@ -789,7 +831,7 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
             }
         }
 
-        if (SDL_ReadFromAudioQueue(stream->queue, buf, dst_format, dst_channels, 0, output_frames, 0, work_buffer) != buf) {
+        if (SDL_ReadFromAudioQueue(stream->queue, buf, dst_format, dst_channels, 0, output_frames, 0, work_buffer, gain) != buf) {
             return SDL_SetError("Not enough data in queue");
         }
 
@@ -854,9 +896,14 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
         return -1;
     }
 
+    // adjust gain either before resampling or after, depending on which point has less
+    // samples to process.
+    const float preresample_gain = (input_frames > output_frames) ? 1.0f : gain;
+    const float postresample_gain = (input_frames > output_frames) ? gain : 1.0f;
+
     const Uint8* input_buffer = SDL_ReadFromAudioQueue(stream->queue,
         NULL, resample_format, resample_channels,
-        padding_frames, input_frames, padding_frames, work_buffer);
+        padding_frames, input_frames, padding_frames, work_buffer, preresample_gain);
 
     if (!input_buffer) {
         return SDL_SetError("Not enough data in queue (resample)");
@@ -873,13 +920,13 @@ static int GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int ou
                   resample_rate, &stream->resample_offset);
 
     // Convert to the final format, if necessary
-    ConvertAudio(output_frames, resample_buffer, resample_format, resample_channels, buf, dst_format, dst_channels, work_buffer);
+    ConvertAudio(output_frames, resample_buffer, resample_format, resample_channels, buf, dst_format, dst_channels, work_buffer, postresample_gain);
 
     return 0;
 }
 
 // get converted/resampled data from the stream
-int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
+int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidbuf, int len, float extra_gain)
 {
     Uint8 *buf = (Uint8 *) voidbuf;
 
@@ -904,6 +951,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
         return -1;
     }
 
+    const float gain = stream->gain * extra_gain;
     const int dst_frame_size = SDL_AUDIO_FRAMESIZE(stream->dst_spec);
 
     len -= len % dst_frame_size;  // chop off any fractional sample frame.
@@ -963,7 +1011,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
         output_frames = SDL_min(output_frames, chunk_size);
         output_frames = (int) SDL_min(output_frames, available_frames);
 
-        if (GetAudioStreamDataInternal(stream, &buf[total], output_frames) != 0) {
+        if (GetAudioStreamDataInternal(stream, &buf[total], output_frames, gain) != 0) {
             total = total ? total : -1;
             break;
         }
@@ -978,6 +1026,11 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
 #endif
 
     return total;
+}
+
+int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
+{
+    return SDL_GetAudioStreamDataAdjustGain(stream, voidbuf, len, 1.0f);
 }
 
 // number of converted/resampled bytes available for output

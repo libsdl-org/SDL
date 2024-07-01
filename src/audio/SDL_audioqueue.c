@@ -516,7 +516,7 @@ static const Uint8 *PeekIntoAudioQueueFuture(SDL_AudioQueue *queue, Uint8 *data,
 const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
                                     Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels,
                                     int past_frames, int present_frames, int future_frames,
-                                    Uint8 *scratch)
+                                    Uint8 *scratch, float gain)
 {
     SDL_AudioTrack *track = queue->head;
 
@@ -553,7 +553,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
         // Do we still need to copy/convert the data?
         if (dst) {
             ConvertAudio(past_frames + present_frames + future_frames, ptr,
-                         src_format, src_channels, dst, dst_format, dst_channels, scratch);
+                         src_format, src_channels, dst, dst_format, dst_channels, scratch, gain);
             ptr = dst;
         }
 
@@ -571,19 +571,19 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
     Uint8 *ptr = dst;
 
     if (src_past_bytes) {
-        ConvertAudio(past_frames, PeekIntoAudioQueuePast(queue, scratch, src_past_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch);
+        ConvertAudio(past_frames, PeekIntoAudioQueuePast(queue, scratch, src_past_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch, gain);
         dst += dst_past_bytes;
         scratch += dst_past_bytes;
     }
 
     if (src_present_bytes) {
-        ConvertAudio(present_frames, ReadFromAudioQueue(queue, scratch, src_present_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch);
+        ConvertAudio(present_frames, ReadFromAudioQueue(queue, scratch, src_present_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch, gain);
         dst += dst_present_bytes;
         scratch += dst_present_bytes;
     }
 
     if (src_future_bytes) {
-        ConvertAudio(future_frames, PeekIntoAudioQueueFuture(queue, scratch, src_future_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch);
+        ConvertAudio(future_frames, PeekIntoAudioQueueFuture(queue, scratch, src_future_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch, gain);
         dst += dst_future_bytes;
         scratch += dst_future_bytes;
     }
