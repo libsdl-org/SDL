@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
     /* Draw a blue screen for the window until ESC is pressed or the window is no longer visible. */
     while (!done) {
         while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_EVENT_KEY_DOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+            if (e.type == SDL_EVENT_KEY_DOWN && e.key.key == SDLK_ESCAPE) {
                 done = 1;
             }
         }
