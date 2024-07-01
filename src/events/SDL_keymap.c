@@ -69,11 +69,18 @@ void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod mo
         return;
     }
 
-    if (keycode == SDL_GetDefaultKeyFromScancode(scancode, modstate)) {
+    if (keycode == SDL_GetKeymapKeycode(keymap, scancode, modstate)) {
         return;
     }
 
     Uint32 key = ((Uint32)NormalizeModifierStateForKeymap(modstate) << 16) | scancode;
+    const void *value;
+    if (SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
+        // Changing the mapping, need to remove the existing entry from the keymap
+        SDL_RemoveFromHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key);
+        SDL_RemoveFromHashTable(keymap->keycode_to_scancode, value);
+    }
+
     SDL_InsertIntoHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, (void *)(uintptr_t)keycode);
     SDL_InsertIntoHashTable(keymap->keycode_to_scancode, (void *)(uintptr_t)keycode, (void *)(uintptr_t)key);
 }
@@ -254,11 +261,11 @@ SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate
         return (SDL_Scancode)(SDL_SCANCODE_A + key - SDLK_a);
     }
 
-    if (key >= SDLK_Z && key <= SDLK_Z) {
+    if (key >= 'A' && key <= 'Z') {
         if (modstate) {
             *modstate = SDL_KMOD_SHIFT;
         }
-        return (SDL_Scancode)(SDL_SCANCODE_A + key - SDLK_Z);
+        return (SDL_Scancode)(SDL_SCANCODE_A + key - 'Z');
     }
 
     for (int i = 0; i < SDL_arraysize(normal_default_symbols); ++i) {

@@ -37,16 +37,11 @@ extern "C" {
 
 
 static SDL_Scancode keymap[KEYMAP_SIZE];
-static int8 keystate[KEYMAP_SIZE];
 
 void HAIKU_InitOSKeymap(void)
 {
         for ( uint i = 0; i < SDL_arraysize(keymap); ++i ) {
             keymap[i] = SDL_SCANCODE_UNKNOWN;
-        }
-
-        for ( uint i = 0; i < KEYMAP_SIZE; ++i ) {
-            keystate[i] = SDL_RELEASED;
         }
 
         keymap[0x01]        = SDL_SCANCODE_ESCAPE;
@@ -163,20 +158,6 @@ SDL_Scancode HAIKU_GetScancodeFromBeKey(int32 bkey) {
         return keymap[bkey];
     } else {
         return SDL_SCANCODE_UNKNOWN;
-    }
-}
-
-int8 HAIKU_GetKeyState(int32 bkey) {
-    if (bkey > 0 && bkey < KEYMAP_SIZE) {
-        return keystate[bkey];
-    } else {
-        return SDL_RELEASED;
-    }
-}
-
-void HAIKU_SetKeyState(int32 bkey, int8 state) {
-    if (bkey > 0 && bkey < KEYMAP_SIZE) {
-        keystate[bkey] = state;
     }
 }
 

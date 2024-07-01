@@ -415,6 +415,8 @@ typedef enum SDL_Scancode
 
     /* Add any other keys here. */
 
+    SDL_SCANCODE_RESERVED = 400,    /**< 400-500 reserved for dynamic keycodes */
+
     SDL_NUM_SCANCODES = 512 /**< not a key, just marks the number of scancodes
                                  for array bounds */
 } SDL_Scancode;
