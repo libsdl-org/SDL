@@ -118,16 +118,18 @@ extern SDL_bool SDL_ChannelMapIsBogus(const Uint8 *map, int channels);
 extern void ConvertAudio(int num_frames,
                          const void *src, SDL_AudioFormat src_format, int src_channels, const Uint8 *src_map,
                          void *dst, SDL_AudioFormat dst_format, int dst_channels, const Uint8 *dst_map,
-                         void* scratch);
+                         void* scratch, float gain);
 
 // Compare two SDL_AudioSpecs, return SDL_TRUE if they match exactly.
 // Using SDL_memcmp directly isn't safe, since potential padding (and unused parts of the channel map) might not be initialized.
 extern SDL_bool SDL_AudioSpecsEqual(const SDL_AudioSpec *a, const SDL_AudioSpec *b);
 
-
 // Special case to let something in SDL_audiocvt.c access something in SDL_audio.c. Don't use this.
 extern void OnAudioStreamCreated(SDL_AudioStream *stream);
 extern void OnAudioStreamDestroy(SDL_AudioStream *stream);
+
+// This just lets audio playback apply logical device gain at the same time as audiostream gain, so it's one multiplication instead of thousands.
+extern int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidbuf, int len, float extra_gain);
 
 typedef struct SDL_AudioDriverImpl
 {
@@ -196,6 +198,7 @@ struct SDL_AudioStream
     SDL_AudioSpec src_spec;
     SDL_AudioSpec dst_spec;
     float freq_ratio;
+    float gain;
 
     struct SDL_AudioQueue* queue;
 
@@ -229,6 +232,9 @@ struct SDL_LogicalAudioDevice
 
     // If whole logical device is paused (process no streams bound to this device).
     SDL_AtomicInt paused;
+
+    // Volume of the device output.
+    float gain;
 
     // double-linked list of all audio streams currently bound to this opened device.
     SDL_AudioStream *bound_streams;

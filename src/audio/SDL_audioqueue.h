@@ -69,7 +69,7 @@ size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_Audi
 const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
                                     Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels, const Uint8 *dst_map,
                                     int past_frames, int present_frames, int future_frames,
-                                    Uint8 *scratch);
+                                    Uint8 *scratch, float gain);
 
 // Get the total number of bytes currently queued
 size_t SDL_GetAudioQueueQueued(SDL_AudioQueue *queue);
