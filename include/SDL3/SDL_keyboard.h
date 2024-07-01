@@ -321,7 +321,8 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
 /**
  * Get a human-readable name for a key.
  *
- * Both lowercase and uppercase alphabetic keycodes have uppercase names, e.g. SDL_Keycode 'a' and 'A' both have the name "A".
+ * Both lowercase and uppercase alphabetic keycodes have uppercase names, e.g.
+ * SDL_Keycode 'a' and 'A' both have the name "A".
  *
  * The returned string follows the SDL_GetStringRule.
  *
