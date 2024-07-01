@@ -382,30 +382,7 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
 
             if (!keycode) {
                 SDL_Scancode keyScancode = SDL_GetScancodeFromKeySym(keysym, (KeyCode)i);
-
-                switch (keyScancode) {
-                case SDL_SCANCODE_UNKNOWN:
-                    keycode = SDLK_UNKNOWN;
-                    break;
-                case SDL_SCANCODE_RETURN:
-                    keycode = SDLK_RETURN;
-                    break;
-                case SDL_SCANCODE_ESCAPE:
-                    keycode = SDLK_ESCAPE;
-                    break;
-                case SDL_SCANCODE_BACKSPACE:
-                    keycode = SDLK_BACKSPACE;
-                    break;
-                case SDL_SCANCODE_TAB:
-                    keycode = SDLK_TAB;
-                    break;
-                case SDL_SCANCODE_DELETE:
-                    keycode = SDLK_DELETE;
-                    break;
-                default:
-                    keycode = SDL_SCANCODE_TO_KEYCODE(keyScancode);
-                    break;
-                }
+                keycode = SDL_GetDefaultKeyFromScancode(keyScancode, keymod_masks[m].sdl_mask);
             }
             SDL_SetKeymapEntry(keymap, scancode, keymod_masks[m].sdl_mask, keycode);
         }

@@ -106,13 +106,7 @@ void WIN_UpdateKeymap(SDL_bool send_event)
             /* Make sure this scancode is a valid character scancode */
             scancode = windows_scancode_table[i];
             if (scancode == SDL_SCANCODE_UNKNOWN ||
-                (SDL_GetDefaultKeyFromScancode(scancode, SDL_KMOD_NONE) & SDLK_SCANCODE_MASK)) {
-                continue;
-            }
-
-            /* If this key is one of the non-mappable keys, ignore it */
-            /* Uncomment the second part to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
-            if (scancode == SDL_SCANCODE_DELETE /*|| scancode == SDL_SCANCODE_GRAVE*/) {
+                scancode >= SDL_SCANCODE_CAPSLOCK) {
                 continue;
             }
 
