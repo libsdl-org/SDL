@@ -199,10 +199,6 @@ SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod mods
         return SDLK_UNKNOWN;
     }
 
-    if (modstate & SDL_KMOD_MODE) {
-        return SDLK_UNKNOWN;
-    }
-
     if (scancode < SDL_SCANCODE_A) {
         return SDLK_UNKNOWN;
     }
@@ -219,6 +215,9 @@ SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod mods
             shifted = !shifted;
         }
 #endif
+        if (modstate & SDL_KMOD_MODE) {
+            return SDLK_UNKNOWN;
+        }
         if (!shifted) {
             return (SDL_Keycode)('a' + scancode - SDL_SCANCODE_A);
         } else {
@@ -229,6 +228,9 @@ SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod mods
     if (scancode < SDL_SCANCODE_CAPSLOCK) {
         SDL_bool shifted = (modstate & SDL_KMOD_SHIFT) ? SDL_TRUE : SDL_FALSE;
 
+        if (modstate & SDL_KMOD_MODE) {
+            return SDLK_UNKNOWN;
+        }
         if (!shifted) {
             return normal_default_symbols[scancode - SDL_SCANCODE_1];
         } else {
