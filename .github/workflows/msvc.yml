@@ -61,6 +61,7 @@ jobs:
         -DSDL_DISABLE_INSTALL_CPACK=OFF `
         -DSDL_DISABLE_INSTALL_DOCS=OFF `
         -DSDLTEST_PROCDUMP=ON `
+        -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${{ github.workspace}}/build `
         ${{ matrix.platform.flags }} `
         -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build (CMake)
