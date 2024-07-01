@@ -61,7 +61,7 @@ static int keyboard_getKeyFromName(void *arg)
     /* Case where Key is known, 1 character input */
     result = SDL_GetKeyFromName("A");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(known/single)");
-    SDLTest_AssertCheck(result == SDLK_a, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_a, result);
+    SDLTest_AssertCheck(result == SDLK_A, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_A, result);
 
     /* Case where Key is known, 2 character input */
     result = SDL_GetKeyFromName("F1");
@@ -126,7 +126,7 @@ static int keyboard_getKeyFromScancode(void *arg)
     /* Case where input is valid */
     result = SDL_GetKeyFromScancode(SDL_SCANCODE_A, SDL_KMOD_NONE);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(valid)");
-    SDLTest_AssertCheck(result == SDLK_a, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_a, result);
+    SDLTest_AssertCheck(result == SDLK_A, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_A, result);
 
     /* Case where input is zero */
     result = SDL_GetKeyFromScancode(SDL_SCANCODE_UNKNOWN, SDL_KMOD_NONE);

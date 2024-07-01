@@ -189,7 +189,7 @@ static void loop(void)
         if (event.type == SDL_EVENT_KEY_UP) {
             SDL_bool updateCursor = SDL_FALSE;
 
-            if (event.key.key == SDLK_a) {
+            if (event.key.key == SDLK_A) {
                 SDL_assert(!"Keyboard generated assert");
             } else if (event.key.key == SDLK_LEFT) {
                 --system_cursor;

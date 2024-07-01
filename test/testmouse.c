@@ -211,7 +211,7 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_KEY_DOWN:
-            if (event.key.key == SDLK_c) {
+            if (event.key.key == SDLK_C) {
                 int x, y, w, h;
                 SDL_GetWindowPosition(window, &x, &y);
                 SDL_GetWindowSize(window, &w, &h);

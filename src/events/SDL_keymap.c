@@ -257,8 +257,8 @@ SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate
         return (SDL_Scancode)(key & ~SDLK_SCANCODE_MASK);
     }
 
-    if (key >= SDLK_a && key <= SDLK_z) {
-        return (SDL_Scancode)(SDL_SCANCODE_A + key - SDLK_a);
+    if (key >= SDLK_A && key <= SDLK_Z) {
+        return (SDL_Scancode)(SDL_SCANCODE_A + key - SDLK_A);
     }
 
     if (key >= 'A' && key <= 'Z') {
