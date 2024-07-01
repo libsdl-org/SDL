@@ -1755,6 +1755,10 @@ float SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid)
 
 int SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain)
 {
+    if (gain < 0.0f) {
+        return SDL_InvalidParamError("gain");
+    }
+
     SDL_AudioDevice *device = NULL;
     SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
     int retval = -1;

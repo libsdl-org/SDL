@@ -562,6 +562,8 @@ int SDL_SetAudioStreamGain(SDL_AudioStream *stream, float gain)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
+    } else if (gain < 0.0f) {
+        return SDL_InvalidParamError("gain");
     }
 
     SDL_LockMutex(stream->lock);
