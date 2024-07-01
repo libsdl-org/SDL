@@ -3384,3 +3384,107 @@ typedef SDL_Colour, SDL_Color;
 @@
 - SDLK_MEDIASELECT
 + SDLK_MEDIA_SELECT
+@@
+@@
+- SDLK_a
++ SDLK_A
+@@
+@@
+- SDLK_b
++ SDLK_B
+@@
+@@
+- SDLK_c
++ SDLK_C
+@@
+@@
+- SDLK_d
++ SDLK_D
+@@
+@@
+- SDLK_e
++ SDLK_E
+@@
+@@
+- SDLK_f
++ SDLK_F
+@@
+@@
+- SDLK_g
++ SDLK_G
+@@
+@@
+- SDLK_h
++ SDLK_H
+@@
+@@
+- SDLK_i
++ SDLK_I
+@@
+@@
+- SDLK_j
++ SDLK_J
+@@
+@@
+- SDLK_k
++ SDLK_K
+@@
+@@
+- SDLK_l
++ SDLK_L
+@@
+@@
+- SDLK_m
++ SDLK_M
+@@
+@@
+- SDLK_n
++ SDLK_N
+@@
+@@
+- SDLK_o
++ SDLK_O
+@@
+@@
+- SDLK_p
++ SDLK_P
+@@
+@@
+- SDLK_q
++ SDLK_Q
+@@
+@@
+- SDLK_r
++ SDLK_R
+@@
+@@
+- SDLK_s
++ SDLK_S
+@@
+@@
+- SDLK_t
++ SDLK_T
+@@
+@@
+- SDLK_u
++ SDLK_U
+@@
+@@
+- SDLK_v
++ SDLK_V
+@@
+@@
+- SDLK_w
++ SDLK_W
+@@
+@@
+- SDLK_x
++ SDLK_X
+@@
+@@
+- SDLK_y
++ SDLK_Y
+@@
+@@
+- SDLK_z
++ SDLK_Z

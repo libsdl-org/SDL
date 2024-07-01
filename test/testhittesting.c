@@ -139,7 +139,7 @@ int main(int argc, char **argv)
             case SDL_EVENT_KEY_DOWN:
                 if (e.key.key == SDLK_ESCAPE) {
                     done = 1;
-                } else if (e.key.key == SDLK_x) {
+                } else if (e.key.key == SDLK_X) {
                     if (!areas) {
                         areas = drag_areas;
                         numareas = SDL_arraysize(drag_areas);

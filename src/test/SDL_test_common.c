@@ -2206,7 +2206,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_o:
+        case SDLK_O:
             if (withControl) {
                 /* Ctrl-O (or Ctrl-Shift-O) changes window opacity. */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
@@ -2223,7 +2223,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_h:
+        case SDLK_H:
             if (withControl) {
                 /* Ctrl-H changes cursor visibility. */
                 if (SDL_CursorVisible()) {
@@ -2233,7 +2233,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_c:
+        case SDLK_C:
             if (withAlt) {
                 /* Alt-C copy awesome text to the primary selection! */
                 SDL_SetPrimarySelectionText("SDL rocks!\nYou know it!");
@@ -2258,7 +2258,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 break;
             }
             break;
-        case SDLK_v:
+        case SDLK_V:
             if (withAlt) {
                 /* Alt-V paste awesome text from the primary selection! */
                 char *text = SDL_GetPrimarySelectionText();
@@ -2285,7 +2285,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_f:
+        case SDLK_F:
             if (withControl) {
                 /* Ctrl-F flash the window */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
@@ -2294,7 +2294,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_g:
+        case SDLK_G:
             if (withControl) {
                 /* Ctrl-G toggle mouse grab */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
@@ -2303,7 +2303,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_k:
+        case SDLK_K:
             if (withControl) {
                 /* Ctrl-K toggle keyboard grab */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
@@ -2312,7 +2312,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_m:
+        case SDLK_M:
             if (withControl) {
                 /* Ctrl-M maximize */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
@@ -2334,13 +2334,13 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_r:
+        case SDLK_R:
             if (withControl) {
                 /* Ctrl-R toggle mouse relative mode */
                 SDL_SetRelativeMouseMode(!SDL_GetRelativeMouseMode());
             }
             break;
-        case SDLK_t:
+        case SDLK_T:
             if (withControl) {
                 /* Ctrl-T toggle topmost mode */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
@@ -2354,7 +2354,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_z:
+        case SDLK_Z:
             if (withControl) {
                 /* Ctrl-Z minimize */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
@@ -2393,7 +2393,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
             }
 
             break;
-        case SDLK_b:
+        case SDLK_B:
             if (withControl) {
                 /* Ctrl-B toggle window border */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
@@ -2404,7 +2404,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             break;
-        case SDLK_a:
+        case SDLK_A:
             if (withControl) {
                 /* Ctrl-A toggle aspect ratio */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);

@@ -226,7 +226,7 @@ static void loop(void *arg)
             break;
         case SDL_EVENT_KEY_DOWN:
             switch (event.key.key) {
-            case SDLK_l:
+            case SDLK_L:
                 if (event.key.mod & SDL_KMOD_SHIFT) {
                     num_lines = 0;
                 } else {
@@ -237,7 +237,7 @@ static void loop(void *arg)
                         (float)SDL_rand(480));
                 }
                 break;
-            case SDLK_r:
+            case SDLK_R:
                 if (event.key.mod & SDL_KMOD_SHIFT) {
                     num_rects = 0;
                 } else {
