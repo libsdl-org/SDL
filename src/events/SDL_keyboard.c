@@ -334,8 +334,8 @@ static SDL_Keycode SDL_GetEventKeycode(SDL_Keyboard *keyboard, SDL_Scancode scan
 {
     SDL_bool shifted = (modstate & SDL_KMOD_SHIFT) != 0;
 
-    // We won't be applying any modifiers by default
-    modstate = SDL_KMOD_NONE;
+    // We won't be applying any modifiers except numlock by default
+    modstate &= SDL_KMOD_NUM;
 
     if (scancode >= SDL_SCANCODE_A && scancode <= SDL_SCANCODE_Z) {
         if (keyboard->non_latin_letters && (keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS)) {

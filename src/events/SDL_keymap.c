@@ -236,11 +236,94 @@ SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod mods
         }
     }
 
-    if (scancode == SDL_SCANCODE_DELETE) {
+    switch (scancode) {
+    case SDL_SCANCODE_DELETE:
         return SDLK_DELETE;
+    case SDL_SCANCODE_KP_DIVIDE:
+        return SDLK_SLASH;
+    case SDL_SCANCODE_KP_MULTIPLY:
+        return SDLK_ASTERISK;
+    case SDL_SCANCODE_KP_MINUS:
+        return SDLK_MINUS;
+    case SDL_SCANCODE_KP_PLUS:
+        return SDLK_PLUS;
+    case SDL_SCANCODE_KP_ENTER:
+        return SDLK_RETURN;
+    case SDL_SCANCODE_KP_1:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_1 : SDLK_END;
+    case SDL_SCANCODE_KP_2:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_2 : SDLK_DOWN;
+    case SDL_SCANCODE_KP_3:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_3 : SDLK_PAGEDOWN;
+    case SDL_SCANCODE_KP_4:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_4 : SDLK_LEFT;
+    case SDL_SCANCODE_KP_5:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_5 : SDLK_CLEAR;
+    case SDL_SCANCODE_KP_6:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_6 : SDLK_RIGHT;
+    case SDL_SCANCODE_KP_7:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_7 : SDLK_HOME;
+    case SDL_SCANCODE_KP_8:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_8 : SDLK_UP;
+    case SDL_SCANCODE_KP_9:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_9 : SDLK_PAGEUP;
+    case SDL_SCANCODE_KP_0:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_0 : SDLK_INSERT;
+    case SDL_SCANCODE_KP_PERIOD:
+        return (modstate & SDL_KMOD_NUM) ? SDLK_PERIOD : SDLK_DELETE;
+    case SDL_SCANCODE_KP_EQUALS:
+        return SDLK_EQUALS;
+    case SDL_SCANCODE_KP_COMMA:
+        return SDLK_COMMA;
+    case SDL_SCANCODE_KP_EQUALSAS400:
+        return SDLK_EQUALS;
+    case SDL_SCANCODE_KP_LEFTPAREN:
+        return SDLK_LEFTPAREN;
+    case SDL_SCANCODE_KP_RIGHTPAREN:
+        return SDLK_RIGHTPAREN;
+    case SDL_SCANCODE_KP_LEFTBRACE:
+        return SDLK_LEFTBRACE;
+    case SDL_SCANCODE_KP_RIGHTBRACE:
+        return SDLK_RIGHTBRACE;
+    case SDL_SCANCODE_KP_TAB:
+        return SDLK_TAB;
+    case SDL_SCANCODE_KP_BACKSPACE:
+        return SDLK_BACKSPACE;
+    case SDL_SCANCODE_KP_A:
+        return SDLK_A;
+    case SDL_SCANCODE_KP_B:
+        return SDLK_B;
+    case SDL_SCANCODE_KP_C:
+        return SDLK_C;
+    case SDL_SCANCODE_KP_D:
+        return SDLK_D;
+    case SDL_SCANCODE_KP_E:
+        return SDLK_E;
+    case SDL_SCANCODE_KP_F:
+        return SDLK_F;
+    case SDL_SCANCODE_KP_PERCENT:
+        return SDLK_PERCENT;
+    case SDL_SCANCODE_KP_LESS:
+        return SDLK_LESS;
+    case SDL_SCANCODE_KP_GREATER:
+        return SDLK_GREATER;
+    case SDL_SCANCODE_KP_AMPERSAND:
+        return SDLK_AMPERSAND;
+    case SDL_SCANCODE_KP_COLON:
+        return SDLK_COLON;
+    case SDL_SCANCODE_KP_HASH:
+        return SDLK_HASH;
+    case SDL_SCANCODE_KP_SPACE:
+        return SDLK_SPACE;
+    case SDL_SCANCODE_KP_AT:
+        return SDLK_AT;
+    case SDL_SCANCODE_KP_EXCLAM:
+        return SDLK_EXCLAIM;
+    case SDL_SCANCODE_KP_PLUSMINUS:
+        return SDLK_PLUSMINUS;
+    default:
+        return SDL_SCANCODE_TO_KEYCODE(scancode);
     }
-
-    return SDL_SCANCODE_TO_KEYCODE(scancode);
 }
 
 SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate)
