@@ -3401,7 +3401,6 @@ static void D3D11_INTERNAL_PushUniformData(
 {
     D3D11Renderer *renderer = d3d11CommandBuffer->renderer;
     D3D11UniformBuffer *d3d11UniformBuffer;
-    SDL_bool firstPush = SDL_FALSE;
     D3D11_MAPPED_SUBRESOURCE subres;
     HRESULT res;
 
@@ -3409,21 +3408,18 @@ static void D3D11_INTERNAL_PushUniformData(
         if (d3d11CommandBuffer->vertexUniformBuffers[slotIndex] == NULL) {
             d3d11CommandBuffer->vertexUniformBuffers[slotIndex] = D3D11_INTERNAL_AcquireUniformBufferFromPool(
                 d3d11CommandBuffer->renderer);
-            firstPush = SDL_TRUE;
         }
         d3d11UniformBuffer = d3d11CommandBuffer->vertexUniformBuffers[slotIndex];
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_FRAGMENT) {
         if (d3d11CommandBuffer->fragmentUniformBuffers[slotIndex] == NULL) {
             d3d11CommandBuffer->fragmentUniformBuffers[slotIndex] = D3D11_INTERNAL_AcquireUniformBufferFromPool(
                 d3d11CommandBuffer->renderer);
-            firstPush = SDL_TRUE;
         }
         d3d11UniformBuffer = d3d11CommandBuffer->fragmentUniformBuffers[slotIndex];
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_COMPUTE) {
         if (d3d11CommandBuffer->computeUniformBuffers[slotIndex] == NULL) {
             d3d11CommandBuffer->computeUniformBuffers[slotIndex] = D3D11_INTERNAL_AcquireUniformBufferFromPool(
                 d3d11CommandBuffer->renderer);
-            firstPush = SDL_TRUE;
         }
         d3d11UniformBuffer = d3d11CommandBuffer->computeUniformBuffers[slotIndex];
     } else {
@@ -3452,7 +3448,6 @@ static void D3D11_INTERNAL_PushUniformData(
 
         d3d11UniformBuffer->drawOffset = 0;
         d3d11UniformBuffer->writeOffset = 0;
-        firstPush = SDL_TRUE;
 
         if (shaderStage == SDL_GPU_SHADERSTAGE_VERTEX) {
             d3d11CommandBuffer->vertexUniformBuffers[slotIndex] = d3d11UniformBuffer;
@@ -3466,7 +3461,7 @@ static void D3D11_INTERNAL_PushUniformData(
     }
 
     /* Map the uniform data on first push */
-    if (firstPush) {
+    if (d3d11UniformBuffer->writeOffset == 0) {
         res = ID3D11DeviceContext_Map(
             d3d11CommandBuffer->context,
             (ID3D11Resource *)d3d11UniformBuffer->buffer,
