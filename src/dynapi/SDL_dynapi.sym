@@ -167,6 +167,7 @@ SDL3_0.0.0 {
     SDL_GetAssertionHandler;
     SDL_GetAssertionReport;
     SDL_GetAudioDeviceFormat;
+    SDL_GetAudioDeviceGain;
     SDL_GetAudioDeviceName;
     SDL_GetAudioDriver;
     SDL_GetAudioPlaybackDevices;
@@ -176,6 +177,7 @@ SDL3_0.0.0 {
     SDL_GetAudioStreamDevice;
     SDL_GetAudioStreamFormat;
     SDL_GetAudioStreamFrequencyRatio;
+    SDL_GetAudioStreamGain;
     SDL_GetAudioStreamProperties;
     SDL_GetAudioStreamQueued;
     SDL_GetBasePath;
@@ -682,9 +684,11 @@ SDL3_0.0.0 {
     SDL_SendJoystickEffect;
     SDL_SendJoystickVirtualSensorData;
     SDL_SetAssertionHandler;
+    SDL_SetAudioDeviceGain;
     SDL_SetAudioPostmixCallback;
     SDL_SetAudioStreamFormat;
     SDL_SetAudioStreamFrequencyRatio;
+    SDL_SetAudioStreamGain;
     SDL_SetAudioStreamGetCallback;
     SDL_SetAudioStreamPutCallback;
     SDL_SetBooleanProperty;
