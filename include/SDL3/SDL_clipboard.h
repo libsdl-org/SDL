@@ -31,8 +31,8 @@
 #ifndef SDL_clipboard_h_
 #define SDL_clipboard_h_
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -45,7 +45,7 @@ extern "C" {
 /**
  * Put UTF-8 text into the clipboard.
  *
- * \param[in] text the text to store in the clipboard.
+ * \param text the text to store in the clipboard.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -54,7 +54,7 @@ extern "C" {
  * \sa SDL_GetClipboardText
  * \sa SDL_HasClipboardText
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
+extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText([[in]] const char *text);
 
 /**
  * Get UTF-8 text from the clipboard, which must be freed with SDL_free().
@@ -62,7 +62,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
  * This functions returns empty string if there was not enough memory left for
  * a copy of the clipboard's content.
  *
- * \returns[own] the clipboard text on success or an empty string on failure; call
+ * \returns the clipboard text on success or an empty string on failure; call
  *          SDL_GetError() for more information. Caller must call SDL_free()
  *          on the returned pointer when done with it (even if there was an
  *          error).
@@ -72,7 +72,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
  * \sa SDL_HasClipboardText
  * \sa SDL_SetClipboardText
  */
-extern SDL_DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
+[[free(SDL_free)]]
+extern SDL_DECLSPEC char *SDLCALL SDL_GetClipboardText(void);
 
 /**
  * Query whether the clipboard exists and contains a non-empty text string.
@@ -89,7 +90,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
 /**
  * Put UTF-8 text into the primary selection.
  *
- * \param[in] text the text to store in the primary selection.
+ * \param text the text to store in the primary selection.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -98,7 +99,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_HasPrimarySelectionText
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
+extern SDL_DECLSPEC int SDLCALL SDL_SetPrimarySelectionText([[in]] const char *text);
 
 /**
  * Get UTF-8 text from the primary selection, which must be freed with
@@ -107,7 +108,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
  * This functions returns empty string if there was not enough memory left for
  * a copy of the primary selection's content.
  *
- * \returns[own] the primary selection text on success or an empty string on
+ * \returns the primary selection text on success or an empty string on
  *          failure; call SDL_GetError() for more information. Caller must
  *          call SDL_free() on the returned pointer when done with it (even if
  *          there was an error).
@@ -117,7 +118,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
  * \sa SDL_HasPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
  */
-extern SDL_DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
+[[free(SDL_free)]]
+extern SDL_DECLSPEC char *SDLCALL SDL_GetPrimarySelectionText(void);
 
 /**
  * Query whether the primary selection exists and contains a non-empty text
@@ -167,7 +169,7 @@ typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const c
  *
  * \sa SDL_SetClipboardData
  */
-typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
+typedef void(SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
 
 /**
  * Offer clipboard data to the OS.
@@ -181,13 +183,13 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * not need to be null terminated (e.g. you can directly copy a portion of a
  * document)
  *
- * \param[in] callback a function pointer to the function that provides the
+ * \param callback a function pointer to the function that provides the
  *                 clipboard data.
- * \param[in] cleanup a function pointer to the function that cleans up the
+ * \param cleanup a function pointer to the function that cleans up the
  *                clipboard data.
- * \param[inout,opt] userdata an opaque pointer that will be forwarded to the callbacks.
- * \param[in] mime_types a list of mime-types that are being offered.
- * \param[in] num_mime_types the number of mime-types in the mime_types list.
+ * \param userdata an opaque pointer that will be forwarded to the callbacks.
+ * \param mime_types a list of mime-types that are being offered.
+ * \param num_mime_types the number of mime-types in the mime_types list.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -197,7 +199,11 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * \sa SDL_GetClipboardData
  * \sa SDL_HasClipboardData
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types);
+extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardData(
+    [[in]] SDL_ClipboardDataCallback callback,
+    [[in]] SDL_ClipboardCleanupCallback cleanup, [[inout, opt]] void *userdata,
+    [[in, array(num_mime_types)]] const char **mime_types,
+    size_t num_mime_types);
 
 /**
  * Clear the clipboard data.
@@ -217,9 +223,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
  * The size of text data does not include the terminator, but the text is
  * guaranteed to be null terminated.
  *
- * \param[in] mime_type the mime type to read from the clipboard.
- * \param[out] size a pointer filled in with the length of the returned data.
- * \returns[own] the retrieved data buffer or NULL on failure; call SDL_GetError()
+ * \param mime_type the mime type to read from the clipboard.
+ * \param size a pointer filled in with the length of the returned data.
+ * \returns the retrieved data buffer or NULL on failure; call SDL_GetError()
  *          for more information. Caller must call SDL_free() on the returned
  *          pointer when done with it.
  *
@@ -228,12 +234,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
  * \sa SDL_HasClipboardData
  * \sa SDL_SetClipboardData
  */
-extern SDL_DECLSPEC void *SDLCALL SDL_GetClipboardData(const char *mime_type, size_t *size);
+[[free(SDL_free)]]
+extern SDL_DECLSPEC void *SDLCALL SDL_GetClipboardData(
+    [[in]] const char *mime_type, [[out]] size_t *size);
 
 /**
  * Query whether there is data in the clipboard for the provided mime type.
  *
- * \param[in] mime_type the mime type to check for data for.
+ * \param mime_type the mime type to check for data for.
  * \returns SDL_TRUE if there exists data in clipboard for the provided mime
  *          type, SDL_FALSE if it does not.
  *
@@ -242,7 +250,7 @@ extern SDL_DECLSPEC void *SDLCALL SDL_GetClipboardData(const char *mime_type, si
  * \sa SDL_SetClipboardData
  * \sa SDL_GetClipboardData
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasClipboardData(const char *mime_type);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasClipboardData([[in]] const char *mime_type);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

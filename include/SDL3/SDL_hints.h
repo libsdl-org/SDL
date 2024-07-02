@@ -39,8 +39,8 @@
 #ifndef SDL_hints_h_
 #define SDL_hints_h_
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -189,7 +189,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_APP_ID      "SDL_APP_ID"
+#define SDL_HINT_APP_ID "SDL_APP_ID"
 
 /**
  * Specify an application name.
@@ -267,7 +267,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_AUDIO_CATEGORY   "SDL_AUDIO_CATEGORY"
+#define SDL_HINT_AUDIO_CATEGORY "SDL_AUDIO_CATEGORY"
 
 /**
  * Specify an application name for an audio device.
@@ -440,7 +440,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_AUTO_UPDATE_JOYSTICKS  "SDL_AUTO_UPDATE_JOYSTICKS"
+#define SDL_HINT_AUTO_UPDATE_JOYSTICKS "SDL_AUTO_UPDATE_JOYSTICKS"
 
 /**
  * A variable controlling whether SDL updates sensor state when getting input
@@ -455,7 +455,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_AUTO_UPDATE_SENSORS    "SDL_AUTO_UPDATE_SENSORS"
+#define SDL_HINT_AUTO_UPDATE_SENSORS "SDL_AUTO_UPDATE_SENSORS"
 
 /**
  * Prevent SDL from using version 4 of the bitmap header when saving BMPs.
@@ -609,7 +609,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_EMSCRIPTEN_ASYNCIFY   "SDL_EMSCRIPTEN_ASYNCIFY"
+#define SDL_HINT_EMSCRIPTEN_ASYNCIFY "SDL_EMSCRIPTEN_ASYNCIFY"
 
 /**
  * Specify the CSS selector used for the "default" window/canvas.
@@ -642,7 +642,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT   "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
+#define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
 
 /**
  * A variable that controls whether the on-screen keyboard should be shown
@@ -683,7 +683,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_EVENT_LOGGING   "SDL_EVENT_LOGGING"
+#define SDL_HINT_EVENT_LOGGING "SDL_EVENT_LOGGING"
 
 /**
  * A variable controlling whether raising the window should be done more
@@ -703,7 +703,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_FORCE_RAISEWINDOW    "SDL_FORCE_RAISEWINDOW"
+#define SDL_HINT_FORCE_RAISEWINDOW "SDL_FORCE_RAISEWINDOW"
 
 /**
  * A variable controlling how 3D acceleration is used to accelerate the SDL
@@ -724,7 +724,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_FRAMEBUFFER_ACCELERATION   "SDL_FRAMEBUFFER_ACCELERATION"
+#define SDL_HINT_FRAMEBUFFER_ACCELERATION "SDL_FRAMEBUFFER_ACCELERATION"
 
 /**
  * A variable that lets you manually hint extra gamecontroller db entries.
@@ -850,7 +850,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT  "SDL_GDK_TEXTINPUT_DEFAULT_TEXT"
+#define SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT "SDL_GDK_TEXTINPUT_DEFAULT_TEXT"
 
 /**
  * This variable sets the description of the TextInput window on GDK
@@ -1651,7 +1651,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_JOYSTICK_HIDAPI_XBOX   "SDL_JOYSTICK_HIDAPI_XBOX"
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX "SDL_JOYSTICK_HIDAPI_XBOX"
 
 /**
  * A variable controlling whether the HIDAPI driver for XBox 360 controllers
@@ -1668,7 +1668,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360   "SDL_JOYSTICK_HIDAPI_XBOX_360"
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360 "SDL_JOYSTICK_HIDAPI_XBOX_360"
 
 /**
  * A variable controlling whether the player LEDs should be lit to indicate
@@ -1700,7 +1700,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS   "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"
 
 /**
  * A variable controlling whether the HIDAPI driver for XBox One controllers
@@ -1717,7 +1717,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE   "SDL_JOYSTICK_HIDAPI_XBOX_ONE"
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE "SDL_JOYSTICK_HIDAPI_XBOX_ONE"
 
 /**
  * A variable controlling whether the Home button LED should be turned on when
@@ -1862,7 +1862,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT   "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"
+#define SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"
 
 /**
  * A variable controlling whether the ROG Chakram mice should show up as
@@ -2043,7 +2043,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER      "SDL_KMSDRM_REQUIRE_DRM_MASTER"
+#define SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER "SDL_KMSDRM_REQUIRE_DRM_MASTER"
 
 /**
  * A variable controlling the default SDL log levels.
@@ -2069,7 +2069,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_LOGGING   "SDL_LOGGING"
+#define SDL_HINT_LOGGING "SDL_LOGGING"
 
 /**
  * A variable controlling whether to force the application to become the
@@ -2085,7 +2085,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MAC_BACKGROUND_APP    "SDL_MAC_BACKGROUND_APP"
+#define SDL_HINT_MAC_BACKGROUND_APP "SDL_MAC_BACKGROUND_APP"
 
 /**
  * A variable that determines whether Ctrl+Click should generate a right-click
@@ -2161,7 +2161,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_AUTO_CAPTURE    "SDL_MOUSE_AUTO_CAPTURE"
+#define SDL_HINT_MOUSE_AUTO_CAPTURE "SDL_MOUSE_AUTO_CAPTURE"
 
 /**
  * A variable setting the double click radius, in pixels.
@@ -2170,7 +2170,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS    "SDL_MOUSE_DOUBLE_CLICK_RADIUS"
+#define SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS "SDL_MOUSE_DOUBLE_CLICK_RADIUS"
 
 /**
  * A variable setting the double click time, in milliseconds.
@@ -2179,7 +2179,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_DOUBLE_CLICK_TIME    "SDL_MOUSE_DOUBLE_CLICK_TIME"
+#define SDL_HINT_MOUSE_DOUBLE_CLICK_TIME "SDL_MOUSE_DOUBLE_CLICK_TIME"
 
 /**
  * Allow mouse click events when clicking to focus an SDL window.
@@ -2203,7 +2203,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_NORMAL_SPEED_SCALE    "SDL_MOUSE_NORMAL_SPEED_SCALE"
+#define SDL_HINT_MOUSE_NORMAL_SPEED_SCALE "SDL_MOUSE_NORMAL_SPEED_SCALE"
 
 /**
  * A variable controlling whether relative mouse mode constrains the mouse to
@@ -2224,7 +2224,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_RELATIVE_MODE_CENTER    "SDL_MOUSE_RELATIVE_MODE_CENTER"
+#define SDL_HINT_MOUSE_RELATIVE_MODE_CENTER "SDL_MOUSE_RELATIVE_MODE_CENTER"
 
 /**
  * A variable controlling whether relative mouse mode is implemented using
@@ -2239,7 +2239,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_RELATIVE_MODE_WARP    "SDL_MOUSE_RELATIVE_MODE_WARP"
+#define SDL_HINT_MOUSE_RELATIVE_MODE_WARP "SDL_MOUSE_RELATIVE_MODE_WARP"
 
 /**
  * A variable setting the scale for mouse motion, in floating point, when the
@@ -2249,7 +2249,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE    "SDL_MOUSE_RELATIVE_SPEED_SCALE"
+#define SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE "SDL_MOUSE_RELATIVE_SPEED_SCALE"
 
 /**
  * A variable controlling whether the system mouse acceleration curve is used
@@ -2268,7 +2268,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE    "SDL_MOUSE_RELATIVE_SYSTEM_SCALE"
+#define SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE "SDL_MOUSE_RELATIVE_SYSTEM_SCALE"
 
 /**
  * A variable controlling whether a motion event should be generated for mouse
@@ -2287,7 +2287,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_RELATIVE_WARP_MOTION  "SDL_MOUSE_RELATIVE_WARP_MOTION"
+#define SDL_HINT_MOUSE_RELATIVE_WARP_MOTION "SDL_MOUSE_RELATIVE_WARP_MOTION"
 
 /**
  * A variable controlling whether the hardware cursor stays visible when
@@ -2301,7 +2301,7 @@ extern "C" {
  * implemented using warping, so the hardware cursor will visibly warp between
  * frames if this is enabled on those systems.
  */
-#define SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE  "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"
+#define SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"
 
 /**
  * A variable controlling whether mouse events should generate synthetic touch
@@ -2318,7 +2318,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_MOUSE_TOUCH_EVENTS    "SDL_MOUSE_TOUCH_EVENTS"
+#define SDL_HINT_MOUSE_TOUCH_EVENTS "SDL_MOUSE_TOUCH_EVENTS"
 
 /**
  * Tell SDL not to catch the SIGINT or SIGTERM signals on POSIX platforms.
@@ -2333,7 +2333,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_NO_SIGNAL_HANDLERS   "SDL_NO_SIGNAL_HANDLERS"
+#define SDL_HINT_NO_SIGNAL_HANDLERS "SDL_NO_SIGNAL_HANDLERS"
 
 /**
  * A variable controlling what driver to use for OpenGL ES contexts.
@@ -2367,7 +2367,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_OPENGL_ES_DRIVER   "SDL_OPENGL_ES_DRIVER"
+#define SDL_HINT_OPENGL_ES_DRIVER "SDL_OPENGL_ES_DRIVER"
 
 /**
  * A variable controlling which orientations are allowed on iOS/Android.
@@ -2407,7 +2407,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_PEN_DELAY_MOUSE_BUTTON    "SDL_PEN_DELAY_MOUSE_BUTTON"
+#define SDL_HINT_PEN_DELAY_MOUSE_BUTTON "SDL_PEN_DELAY_MOUSE_BUTTON"
 
 /**
  * A variable controlling whether to treat pen movement as separate from mouse
@@ -2434,7 +2434,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_PEN_NOT_MOUSE    "SDL_PEN_NOT_MOUSE"
+#define SDL_HINT_PEN_NOT_MOUSE "SDL_PEN_NOT_MOUSE"
 
 /**
  * A variable controlling the use of a sentinel event when polling the event
@@ -2522,7 +2522,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_RENDER_DIRECT3D11_DEBUG    "SDL_RENDER_DIRECT3D11_DEBUG"
+#define SDL_HINT_RENDER_DIRECT3D11_DEBUG "SDL_RENDER_DIRECT3D11_DEBUG"
 
 /**
  * A variable controlling whether to enable Vulkan Validation Layers.
@@ -2536,7 +2536,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_RENDER_VULKAN_DEBUG    "SDL_RENDER_VULKAN_DEBUG"
+#define SDL_HINT_RENDER_VULKAN_DEBUG "SDL_RENDER_VULKAN_DEBUG"
 
 /**
  * A variable specifying which render driver to use.
@@ -2564,7 +2564,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_RENDER_DRIVER              "SDL_RENDER_DRIVER"
+#define SDL_HINT_RENDER_DRIVER "SDL_RENDER_DRIVER"
 
 /**
  * A variable controlling how the 2D render API renders lines.
@@ -2614,7 +2614,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_RENDER_VSYNC               "SDL_RENDER_VSYNC"
+#define SDL_HINT_RENDER_VSYNC "SDL_RENDER_VSYNC"
 
 /**
  * A variable to control whether the return key on the soft keyboard should
@@ -2680,7 +2680,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_RPI_VIDEO_LAYER           "SDL_RPI_VIDEO_LAYER"
+#define SDL_HINT_RPI_VIDEO_LAYER "SDL_RPI_VIDEO_LAYER"
 
 /**
  * Specify an "activity name" for screensaver inhibition.
@@ -2801,7 +2801,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_THREAD_PRIORITY_POLICY         "SDL_THREAD_PRIORITY_POLICY"
+#define SDL_HINT_THREAD_PRIORITY_POLICY "SDL_THREAD_PRIORITY_POLICY"
 
 /**
  * A variable that controls the timer resolution, in milliseconds.
@@ -2836,7 +2836,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_TOUCH_MOUSE_EVENTS    "SDL_TOUCH_MOUSE_EVENTS"
+#define SDL_HINT_TOUCH_MOUSE_EVENTS "SDL_TOUCH_MOUSE_EVENTS"
 
 /**
  * A variable controlling whether trackpads should be treated as touch
@@ -2886,7 +2886,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VIDEO_ALLOW_SCREENSAVER    "SDL_VIDEO_ALLOW_SCREENSAVER"
+#define SDL_HINT_VIDEO_ALLOW_SCREENSAVER "SDL_VIDEO_ALLOW_SCREENSAVER"
 
 /**
  * Tell the video driver that we only want a double buffer.
@@ -2908,7 +2908,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VIDEO_DOUBLE_BUFFER      "SDL_VIDEO_DOUBLE_BUFFER"
+#define SDL_HINT_VIDEO_DOUBLE_BUFFER "SDL_VIDEO_DOUBLE_BUFFER"
 
 /**
  * A variable that specifies a video backend to use.
@@ -2970,7 +2970,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES    "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
+#define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
 
 /**
  * A variable controlling whether fullscreen windows are minimized when they
@@ -2986,7 +2986,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
+#define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
 
 /**
  * A variable controlling whether all window operations will block until
@@ -3179,7 +3179,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VIDEO_WIN_D3DCOMPILER              "SDL_VIDEO_WIN_D3DCOMPILER"
+#define SDL_HINT_VIDEO_WIN_D3DCOMPILER "SDL_VIDEO_WIN_D3DCOMPILER"
 
 /**
  * A variable controlling whether the X11 _NET_WM_BYPASS_COMPOSITOR hint
@@ -3213,7 +3213,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VIDEO_X11_NET_WM_PING      "SDL_VIDEO_X11_NET_WM_PING"
+#define SDL_HINT_VIDEO_X11_NET_WM_PING "SDL_VIDEO_X11_NET_WM_PING"
 
 /**
  * A variable forcing the content scaling factor for X11 displays.
@@ -3224,7 +3224,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VIDEO_X11_SCALING_FACTOR      "SDL_VIDEO_X11_SCALING_FACTOR"
+#define SDL_HINT_VIDEO_X11_SCALING_FACTOR "SDL_VIDEO_X11_SCALING_FACTOR"
 
 /**
  * A variable forcing the visual ID chosen for new X11 windows.
@@ -3233,7 +3233,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VIDEO_X11_WINDOW_VISUALID      "SDL_VIDEO_X11_WINDOW_VISUALID"
+#define SDL_HINT_VIDEO_X11_WINDOW_VISUALID "SDL_VIDEO_X11_WINDOW_VISUALID"
 
 /**
  * A variable controlling whether the X11 XRandR extension should be used.
@@ -3247,7 +3247,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
+#define SDL_HINT_VIDEO_X11_XRANDR "SDL_VIDEO_X11_XRANDR"
 
 /**
  * A variable controlling which touchpad should generate synthetic mouse
@@ -3263,7 +3263,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_VITA_TOUCH_MOUSE_DEVICE    "SDL_VITA_TOUCH_MOUSE_DEVICE"
+#define SDL_HINT_VITA_TOUCH_MOUSE_DEVICE "SDL_VITA_TOUCH_MOUSE_DEVICE"
 
 /**
  * A variable controlling how the fact chunk affects the loading of a WAVE
@@ -3295,7 +3295,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
+#define SDL_HINT_WAVE_FACT_CHUNK "SDL_WAVE_FACT_CHUNK"
 
 /**
  * A variable controlling how the size of the RIFF chunk affects the loading
@@ -3323,7 +3323,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_WAVE_RIFF_CHUNK_SIZE   "SDL_WAVE_RIFF_CHUNK_SIZE"
+#define SDL_HINT_WAVE_RIFF_CHUNK_SIZE "SDL_WAVE_RIFF_CHUNK_SIZE"
 
 /**
  * A variable controlling how a truncated WAVE file is handled.
@@ -3343,7 +3343,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_WAVE_TRUNCATION   "SDL_WAVE_TRUNCATION"
+#define SDL_HINT_WAVE_TRUNCATION "SDL_WAVE_TRUNCATION"
 
 /**
  * A variable controlling whether the window is activated when the
@@ -3360,7 +3360,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED    "SDL_WINDOW_ACTIVATE_WHEN_RAISED"
+#define SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED "SDL_WINDOW_ACTIVATE_WHEN_RAISED"
 
 /**
  * A variable controlling whether the window is activated when the
@@ -3377,7 +3377,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN    "SDL_WINDOW_ACTIVATE_WHEN_SHOWN"
+#define SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN "SDL_WINDOW_ACTIVATE_WHEN_SHOWN"
 
 /**
  * If set to "0" then never set the top-most flag on an SDL Window even if the
@@ -3411,7 +3411,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
+#define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
 
 /**
  * A variable controlling whether SDL generates window-close events for Alt+F4
@@ -3485,7 +3485,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.0.0.
  */
-#define SDL_HINT_WINDOWS_RAW_KEYBOARD   "SDL_WINDOWS_RAW_KEYBOARD"
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD "SDL_WINDOWS_RAW_KEYBOARD"
 
 /**
  * A variable controlling whether SDL uses Critical Sections for mutexes on
@@ -3761,7 +3761,6 @@ typedef enum SDL_HintPriority
     SDL_HINT_OVERRIDE
 } SDL_HintPriority;
 
-
 /**
  * Set a hint with a specific priority.
  *
@@ -3769,8 +3768,8 @@ typedef enum SDL_HintPriority
  * value. Hints will replace existing hints of their priority and lower.
  * Environment variables are considered to have override priority.
  *
- * \param[in] name the hint to set.
- * \param[in] value the value of the hint variable.
+ * \param name the hint to set.
+ * \param value the value of the hint variable.
  * \param priority the SDL_HintPriority level for the hint.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
@@ -3780,9 +3779,9 @@ typedef enum SDL_HintPriority
  * \sa SDL_ResetHint
  * \sa SDL_SetHint
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
-                                                         const char *value,
-                                                         SDL_HintPriority priority);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority([[in]] const char *name,
+                                                             [[in]] const char *value,
+                                                             SDL_HintPriority priority);
 
 /**
  * Set a hint with normal priority.
@@ -3791,8 +3790,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * variable that takes precedence. You can use SDL_SetHintWithPriority() to
  * set the hint with override priority instead.
  *
- * \param[in] name the hint to set.
- * \param[in] value the value of the hint variable.
+ * \param name the hint to set.
+ * \param value the value of the hint variable.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3801,8 +3800,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \sa SDL_ResetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
-                                             const char *value);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint([[in]] const char *name,
+                                                 [[in]] const char *value);
 
 /**
  * Reset a hint to the default value.
@@ -3811,7 +3810,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * the environment isn't set. Callbacks will be called normally with this
  * change.
  *
- * \param[in] name the hint to set.
+ * \param name the hint to set.
  * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3819,7 +3818,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * \sa SDL_SetHint
  * \sa SDL_ResetHints
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ResetHint([[in]] const char *name);
 
 /**
  * Reset all hints to the default values.
@@ -3839,7 +3838,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  *
  * The returned string follows the SDL_GetStringRule.
  *
- * \param[in] name the hint to query.
+ * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
  * \since This function is available since SDL 3.0.0.
@@ -3847,12 +3846,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetHint([[in]] const char *name);
 
 /**
  * Get the boolean value of a hint variable.
  *
- * \param[in] name the name of the hint to get the boolean value from.
+ * \param name the name of the hint to get the boolean value from.
  * \param default_value the value to return if the hint does not exist.
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.
@@ -3862,7 +3861,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
  * \sa SDL_GetHint
  * \sa SDL_SetHint
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean([[in]] const char *name, SDL_bool default_value);
 
 /**
  * Type definition of the hint callback function.
@@ -3874,15 +3873,15 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bo
  *
  * \since This datatype is available since SDL 3.0.0.
  */
-typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const char *oldValue, const char *newValue);
+typedef void(SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const char *oldValue, const char *newValue);
 
 /**
  * Add a function to watch a particular hint.
  *
- * \param[in] name the hint to watch.
- * \param[in] callback an SDL_HintCallback function that will be called when the
+ * \param name the hint to watch.
+ * \param callback an SDL_HintCallback function that will be called when the
  *                 hint value changes.
- * \param[inout,opt] userdata a pointer to pass to the callback function.
+ * \param userdata a pointer to pass to the callback function.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -3893,25 +3892,25 @@ typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const
  *
  * \sa SDL_DelHintCallback
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AddHintCallback(const char *name,
-                                                SDL_HintCallback callback,
-                                                void *userdata);
+extern SDL_DECLSPEC int SDLCALL SDL_AddHintCallback(
+    [[in]] const char *name,
+    [[in]] SDL_HintCallback callback, [[inout, opt]] void *userdata);
 
 /**
  * Remove a function watching a particular hint.
  *
- * \param[in] name the hint being watched.
- * \param[in] callback an SDL_HintCallback function that will be called when the
+ * \param name the hint being watched.
+ * \param callback an SDL_HintCallback function that will be called when the
  *                 hint value changes.
- * \param[inout,opt] userdata a pointer being passed to the callback function.
+ * \param userdata a pointer being passed to the callback function.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddHintCallback
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
-                                                 SDL_HintCallback callback,
-                                                 void *userdata);
+extern SDL_DECLSPEC void SDLCALL SDL_DelHintCallback(
+    [[in]] const char *name,
+    [[in]] SDL_HintCallback callback, [[inout, opt]] void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

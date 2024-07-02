@@ -28,9 +28,9 @@
 #ifndef SDL_messagebox_h_
 #define SDL_messagebox_h_
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
-#include <SDL3/SDL_video.h>      /* For SDL_Window */
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_video.h> /* For SDL_Window */
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -47,11 +47,11 @@ extern "C" {
  */
 typedef Uint32 SDL_MessageBoxFlags;
 
-#define SDL_MESSAGEBOX_ERROR                    0x00000010u /**< error dialog */
-#define SDL_MESSAGEBOX_WARNING                  0x00000020u /**< warning dialog */
-#define SDL_MESSAGEBOX_INFORMATION              0x00000040u /**< informational dialog */
-#define SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT    0x00000080u /**< buttons placed left to right */
-#define SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT    0x00000100u /**< buttons placed right to left */
+#define SDL_MESSAGEBOX_ERROR                 0x00000010u /**< error dialog */
+#define SDL_MESSAGEBOX_WARNING               0x00000020u /**< warning dialog */
+#define SDL_MESSAGEBOX_INFORMATION           0x00000040u /**< informational dialog */
+#define SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT 0x00000080u /**< buttons placed left to right */
+#define SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT 0x00000100u /**< buttons placed right to left */
 
 /**
  * SDL_MessageBoxButtonData flags.
@@ -71,8 +71,8 @@ typedef Uint32 SDL_MessageBoxButtonFlags;
 typedef struct SDL_MessageBoxButtonData
 {
     SDL_MessageBoxButtonFlags flags;
-    int buttonID;       /**< User defined button id (value returned via SDL_ShowMessageBox) */
-    const char *text;   /**< The UTF-8 button text */
+    int buttonID;     /**< User defined button id (value returned via SDL_ShowMessageBox) */
+    const char *text; /**< The UTF-8 button text */
 } SDL_MessageBoxButtonData;
 
 /**
@@ -96,7 +96,7 @@ typedef enum SDL_MessageBoxColorType
     SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
     SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
     SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
-    SDL_MESSAGEBOX_COLOR_MAX                    /**< Size of the colors array of SDL_MessageBoxColorScheme. */
+    SDL_MESSAGEBOX_COLOR_MAX /**< Size of the colors array of SDL_MessageBoxColorScheme. */
 } SDL_MessageBoxColorType;
 
 /**
@@ -117,14 +117,14 @@ typedef struct SDL_MessageBoxColorScheme
 typedef struct SDL_MessageBoxData
 {
     SDL_MessageBoxFlags flags;
-    SDL_Window *window;                 /**< Parent window, can be NULL */
-    const char *title;                  /**< UTF-8 title */
-    const char *message;                /**< UTF-8 message text */
+    SDL_Window *window;  /**< Parent window, can be NULL */
+    const char *title;   /**< UTF-8 title */
+    const char *message; /**< UTF-8 message text */
 
     int numbuttons;
     const SDL_MessageBoxButtonData *buttons;
 
-    const SDL_MessageBoxColorScheme *colorScheme;   /**< SDL_MessageBoxColorScheme, can be NULL to use system settings */
+    const SDL_MessageBoxColorScheme *colorScheme; /**< SDL_MessageBoxColorScheme, can be NULL to use system settings */
 } SDL_MessageBoxData;
 
 /**
@@ -150,9 +150,9 @@ typedef struct SDL_MessageBoxData
  * concern, check the return value from this function and fall back to writing
  * to stderr if you can.
  *
- * \param[in] messageboxdata the SDL_MessageBoxData structure with title, text and
+ * \param messageboxdata the SDL_MessageBoxData structure with title, text and
  *                       other options.
- * \param[out] buttonid the pointer to which user id of hit button should be
+ * \param buttonid the pointer to which user id of hit button should be
  *                 copied.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -161,7 +161,9 @@ typedef struct SDL_MessageBoxData
  *
  * \sa SDL_ShowSimpleMessageBox
  */
-extern SDL_DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+extern SDL_DECLSPEC int SDLCALL SDL_ShowMessageBox(
+    [[in]] const SDL_MessageBoxData *messageboxdata,
+    [[out]] int *buttonid);
 
 /**
  * Display a simple modal message box.
@@ -193,9 +195,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *mes
  * to stderr if you can.
  *
  * \param flags an SDL_MessageBoxFlags value.
- * \param[in] title uTF-8 title text.
- * \param[in] message uTF-8 message text.
- * \param[inout,opt] window the parent window, or NULL for no parent.
+ * \param title uTF-8 title text.
+ * \param message uTF-8 message text.
+ * \param window the parent window, or NULL for no parent.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -203,8 +205,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *mes
  *
  * \sa SDL_ShowMessageBox
  */
-extern SDL_DECLSPEC int SDLCALL SDL_ShowSimpleMessageBox(SDL_MessageBoxFlags flags, const char *title, const char *message, SDL_Window *window);
-
+extern SDL_DECLSPEC int SDLCALL SDL_ShowSimpleMessageBox(
+    SDL_MessageBoxFlags flags,
+    [[in]] const char *title,
+    [[in]] const char *message,
+    [[inout, opt]] SDL_Window *window);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

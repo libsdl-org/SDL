@@ -28,8 +28,8 @@
 #ifndef SDL_mouse_h_
 #define SDL_mouse_h_
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -40,7 +40,7 @@ extern "C" {
 
 typedef Uint32 SDL_MouseID;
 
-typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
+typedef struct SDL_Cursor SDL_Cursor; /**< Implementation dependent */
 
 /**
  * Cursor types for SDL_CreateSystemCursor().
@@ -49,26 +49,26 @@ typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
  */
 typedef enum SDL_SystemCursor
 {
-    SDL_SYSTEM_CURSOR_DEFAULT,      /**< Default cursor. Usually an arrow */
-    SDL_SYSTEM_CURSOR_TEXT,         /**< Text selection. Usually an I-beam */
-    SDL_SYSTEM_CURSOR_WAIT,         /**< Wait. Usually an hourglass or watch or spinning ball. */
-    SDL_SYSTEM_CURSOR_CROSSHAIR,    /**< Crosshair. */
-    SDL_SYSTEM_CURSOR_PROGRESS,     /**< Program is busy but still interactive. Usually it's WAIT with an arrow. */
-    SDL_SYSTEM_CURSOR_NWSE_RESIZE,  /**< Double arrow pointing northwest and southeast. */
-    SDL_SYSTEM_CURSOR_NESW_RESIZE,  /**< Double arrow pointing northeast and southwest. */
-    SDL_SYSTEM_CURSOR_EW_RESIZE,    /**< Double arrow pointing west and east. */
-    SDL_SYSTEM_CURSOR_NS_RESIZE,    /**< Double arrow pointing north and south. */
-    SDL_SYSTEM_CURSOR_MOVE,         /**< Four pointed arrow pointing north, south, east, and west. */
-    SDL_SYSTEM_CURSOR_NOT_ALLOWED,  /**< Not permitted. Usually a slashed circle or crossbones. */
-    SDL_SYSTEM_CURSOR_POINTER,      /**< Pointer that indicates a link. Usually a pointing hand. */
-    SDL_SYSTEM_CURSOR_NW_RESIZE,    /**< Window resize top-left (or SIZENWSE) */
-    SDL_SYSTEM_CURSOR_N_RESIZE,     /**< Window resize top (or SIZENS) */
-    SDL_SYSTEM_CURSOR_NE_RESIZE,    /**< Window resize top-right (or SIZENESW) */
-    SDL_SYSTEM_CURSOR_E_RESIZE,     /**< Window resize right (or SIZEWE) */
-    SDL_SYSTEM_CURSOR_SE_RESIZE,    /**< Window resize bottom-right (or SIZENWSE) */
-    SDL_SYSTEM_CURSOR_S_RESIZE,     /**< Window resize bottom (or SIZENS) */
-    SDL_SYSTEM_CURSOR_SW_RESIZE,    /**< Window resize bottom-left (or SIZENESW) */
-    SDL_SYSTEM_CURSOR_W_RESIZE,     /**< Window resize left (or SIZEWE) */
+    SDL_SYSTEM_CURSOR_DEFAULT,     /**< Default cursor. Usually an arrow */
+    SDL_SYSTEM_CURSOR_TEXT,        /**< Text selection. Usually an I-beam */
+    SDL_SYSTEM_CURSOR_WAIT,        /**< Wait. Usually an hourglass or watch or spinning ball. */
+    SDL_SYSTEM_CURSOR_CROSSHAIR,   /**< Crosshair. */
+    SDL_SYSTEM_CURSOR_PROGRESS,    /**< Program is busy but still interactive. Usually it's WAIT with an arrow. */
+    SDL_SYSTEM_CURSOR_NWSE_RESIZE, /**< Double arrow pointing northwest and southeast. */
+    SDL_SYSTEM_CURSOR_NESW_RESIZE, /**< Double arrow pointing northeast and southwest. */
+    SDL_SYSTEM_CURSOR_EW_RESIZE,   /**< Double arrow pointing west and east. */
+    SDL_SYSTEM_CURSOR_NS_RESIZE,   /**< Double arrow pointing north and south. */
+    SDL_SYSTEM_CURSOR_MOVE,        /**< Four pointed arrow pointing north, south, east, and west. */
+    SDL_SYSTEM_CURSOR_NOT_ALLOWED, /**< Not permitted. Usually a slashed circle or crossbones. */
+    SDL_SYSTEM_CURSOR_POINTER,     /**< Pointer that indicates a link. Usually a pointing hand. */
+    SDL_SYSTEM_CURSOR_NW_RESIZE,   /**< Window resize top-left (or SIZENWSE) */
+    SDL_SYSTEM_CURSOR_N_RESIZE,    /**< Window resize top (or SIZENS) */
+    SDL_SYSTEM_CURSOR_NE_RESIZE,   /**< Window resize top-right (or SIZENESW) */
+    SDL_SYSTEM_CURSOR_E_RESIZE,    /**< Window resize right (or SIZEWE) */
+    SDL_SYSTEM_CURSOR_SE_RESIZE,   /**< Window resize bottom-right (or SIZENWSE) */
+    SDL_SYSTEM_CURSOR_S_RESIZE,    /**< Window resize bottom (or SIZENS) */
+    SDL_SYSTEM_CURSOR_SW_RESIZE,   /**< Window resize bottom-left (or SIZENESW) */
+    SDL_SYSTEM_CURSOR_W_RESIZE,    /**< Window resize left (or SIZEWE) */
     SDL_NUM_SYSTEM_CURSORS
 } SDL_SystemCursor;
 
@@ -79,8 +79,8 @@ typedef enum SDL_SystemCursor
  */
 typedef enum SDL_MouseWheelDirection
 {
-    SDL_MOUSEWHEEL_NORMAL,    /**< The scroll direction is normal */
-    SDL_MOUSEWHEEL_FLIPPED    /**< The scroll direction is flipped / natural */
+    SDL_MOUSEWHEEL_NORMAL, /**< The scroll direction is normal */
+    SDL_MOUSEWHEEL_FLIPPED /**< The scroll direction is flipped / natural */
 } SDL_MouseWheelDirection;
 
 /**
@@ -100,19 +100,18 @@ typedef enum SDL_MouseWheelDirection
  */
 typedef Uint32 SDL_MouseButtonFlags;
 
-#define SDL_BUTTON_LEFT     1
-#define SDL_BUTTON_MIDDLE   2
-#define SDL_BUTTON_RIGHT    3
-#define SDL_BUTTON_X1       4
-#define SDL_BUTTON_X2       5
+#define SDL_BUTTON_LEFT   1
+#define SDL_BUTTON_MIDDLE 2
+#define SDL_BUTTON_RIGHT  3
+#define SDL_BUTTON_X1     4
+#define SDL_BUTTON_X2     5
 
-#define SDL_BUTTON(X)       (1u << ((X)-1))
-#define SDL_BUTTON_LMASK    SDL_BUTTON(SDL_BUTTON_LEFT)
-#define SDL_BUTTON_MMASK    SDL_BUTTON(SDL_BUTTON_MIDDLE)
-#define SDL_BUTTON_RMASK    SDL_BUTTON(SDL_BUTTON_RIGHT)
-#define SDL_BUTTON_X1MASK   SDL_BUTTON(SDL_BUTTON_X1)
-#define SDL_BUTTON_X2MASK   SDL_BUTTON(SDL_BUTTON_X2)
-
+#define SDL_BUTTON(X)     (1u << ((X) - 1))
+#define SDL_BUTTON_LMASK  SDL_BUTTON(SDL_BUTTON_LEFT)
+#define SDL_BUTTON_MMASK  SDL_BUTTON(SDL_BUTTON_MIDDLE)
+#define SDL_BUTTON_RMASK  SDL_BUTTON(SDL_BUTTON_RIGHT)
+#define SDL_BUTTON_X1MASK SDL_BUTTON(SDL_BUTTON_X1)
+#define SDL_BUTTON_X2MASK SDL_BUTTON(SDL_BUTTON_X2)
 
 /* Function prototypes */
 
@@ -135,8 +134,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * You should wait for input from a device before you consider it actively in
  * use.
  *
- * \param[out] count a pointer filled in with the number of mice returned.
- * \returns[own] a 0 terminated array of mouse instance IDs which should be freed
+ * \param count a pointer filled in with the number of mice returned.
+ * \returns a 0 terminated array of mouse instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.
  *
@@ -145,7 +144,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * \sa SDL_GetMouseInstanceName
  * \sa SDL_HasMouse
  */
-extern SDL_DECLSPEC SDL_MouseID *SDLCALL SDL_GetMice(int *count);
+[[array(_), free(SDL_free)]]
+extern SDL_DECLSPEC SDL_MouseID *SDLCALL SDL_GetMice([[out]] int *count);
 
 /**
  * Get the name of a mouse.
@@ -171,7 +171,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetMouseInstanceName(SDL_MouseID ins
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
+extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetMouseFocus(void);
 
 /**
  * Retrieve the current state of the mouse.
@@ -182,9 +182,9 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * mouse cursor position relative to the focus window. You can pass NULL for
  * either `x` or `y`.
  *
- * \param[out] x the x coordinate of the mouse cursor position relative to the
+ * \param x the x coordinate of the mouse cursor position relative to the
  *          focus window.
- * \param[out] y the y coordinate of the mouse cursor position relative to the
+ * \param y the y coordinate of the mouse cursor position relative to the
  *          focus window.
  * \returns a 32-bit button bitmask of the current button state.
  *
@@ -193,7 +193,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  * \sa SDL_GetGlobalMouseState
  * \sa SDL_GetRelativeMouseState
  */
-extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(
+    [[out]] float *x, [[out]] float *y);
 
 /**
  * Get the current state of the mouse in relation to the desktop.
@@ -211,9 +212,9 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, flo
  * efficient function. Unless you know what you're doing and have a good
  * reason to use this function, you probably want SDL_GetMouseState() instead.
  *
- * \param[out] x filled in with the current X coord relative to the desktop; can be
+ * \param x filled in with the current X coord relative to the desktop; can be
  *          NULL.
- * \param[out] y filled in with the current Y coord relative to the desktop; can be
+ * \param y filled in with the current Y coord relative to the desktop; can be
  *          NULL.
  * \returns the current button state as a bitmask which can be tested using
  *          the SDL_BUTTON(X) macros.
@@ -223,7 +224,8 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, flo
  * \sa SDL_CaptureMouse
  * \sa SDL_GetMouseState
  */
-extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *x, float *y);
+extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(
+    [[out]] float *x, [[out]] float *y);
 
 /**
  * Retrieve the relative state of the mouse.
@@ -234,15 +236,16 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *
  * mouse deltas since the last call to SDL_GetRelativeMouseState() or since
  * event initialization. You can pass NULL for either `x` or `y`.
  *
- * \param[out] x a pointer filled with the last recorded x coordinate of the mouse.
- * \param[out] y a pointer filled with the last recorded y coordinate of the mouse.
+ * \param x a pointer filled with the last recorded x coordinate of the mouse.
+ * \param y a pointer filled with the last recorded y coordinate of the mouse.
  * \returns a 32-bit button bitmask of the relative button state.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetMouseState
  */
-extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float *x, float *y);
+extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(
+    [[out]] float *x, [[out]] float *y);
 
 /**
  * Move the mouse cursor to the given position within the window.
@@ -254,7 +257,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float
  * Note that this function will appear to succeed, but not actually move the
  * mouse when used over Microsoft Remote Desktop.
  *
- * \param[inout] window the window to move the mouse into, or NULL for the current
+ * \param window the window to move the mouse into, or NULL for the current
  *               mouse focus.
  * \param x the x coordinate within the window.
  * \param y the y coordinate within the window.
@@ -263,8 +266,8 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float
  *
  * \sa SDL_WarpMouseGlobal
  */
-extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
-                                                   float x, float y);
+extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow([[inout]] SDL_Window *window,
+                                                       float x, float y);
 
 /**
  * Move the mouse to the given position in global screen space.
@@ -388,15 +391,15 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  * Also, SDL_CreateSystemCursor() is available, which provides several
  * readily-available system cursors to pick from.
  *
- * \param[in] data the color value for each pixel of the cursor.
- * \param[in] mask the mask value for each pixel of the cursor.
+ * \param data the color value for each pixel of the cursor.
+ * \param mask the mask value for each pixel of the cursor.
  * \param w the width of the cursor.
  * \param h the height of the cursor.
  * \param hot_x the x-axis offset from the left of the cursor image to the
  *              mouse x position, in the range of 0 to `w` - 1.
  * \param hot_y the y-axis offset from the top of the cursor image to the
  *              mouse y position, in the range of 0 to `h` - 1.
- * \returns[own] a new cursor with the specified parameters on success or NULL on
+ * \returns a new cursor with the specified parameters on success or NULL on
  *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -406,18 +409,19 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode(void);
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
-                                                     const Uint8 * mask,
-                                                     int w, int h, int hot_x,
-                                                     int hot_y);
+[[free(SDL_DestroyCursor)]]
+extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor([[in]] const Uint8 *data,
+                                                         [[in]] const Uint8 *mask,
+                                                         int w, int h,
+                                                         int hot_x, int hot_y);
 
 /**
  * Create a color cursor.
  *
- * \param[inout] surface an SDL_Surface structure representing the cursor image.
+ * \param surface an SDL_Surface structure representing the cursor image.
  * \param hot_x the x position of the cursor hot spot.
  * \param hot_y the y position of the cursor hot spot.
- * \returns[own] the new cursor on success or NULL on failure; call SDL_GetError()
+ * \returns the new cursor on success or NULL on failure; call SDL_GetError()
  *          for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -427,21 +431,22 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateColorCursor(SDL_Surface *surface,
-                                                          int hot_x,
-                                                          int hot_y);
+[[free(SDL_DestroyCursor)]]
+extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateColorCursor([[inout]] SDL_Surface *surface,
+                                                              int hot_x, int hot_y);
 
 /**
  * Create a system cursor.
  *
  * \param id an SDL_SystemCursor enum value.
- * \returns[own] a cursor on success or NULL on failure; call SDL_GetError() for
+ * \returns a cursor on success or NULL on failure; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroyCursor
  */
+[[free(SDL_DestroyCursor)]]
 extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
 
 /**
@@ -452,7 +457,7 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor 
  * the display. SDL_SetCursor(NULL) can be used to force cursor redraw, if
  * this is desired for any reason.
  *
- * \param[inout] cursor a cursor to make active.
+ * \param cursor a cursor to make active.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -460,7 +465,7 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor 
  *
  * \sa SDL_GetCursor
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetCursor(SDL_Cursor * cursor);
+extern SDL_DECLSPEC int SDLCALL SDL_SetCursor([[self]] SDL_Cursor *cursor);
 
 /**
  * Get the active cursor.
@@ -494,7 +499,7 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_GetDefaultCursor(void);
  * Use this function to free cursor resources created with SDL_CreateCursor(),
  * SDL_CreateColorCursor() or SDL_CreateSystemCursor().
  *
- * \param[inout] cursor the cursor to free.
+ * \param cursor the cursor to free.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -502,7 +507,7 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_GetDefaultCursor(void);
  * \sa SDL_CreateCursor
  * \sa SDL_CreateSystemCursor
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DestroyCursor(SDL_Cursor * cursor);
+extern SDL_DECLSPEC void SDLCALL SDL_DestroyCursor([[self]] SDL_Cursor *cursor);
 
 /**
  * Show the cursor.

@@ -43,8 +43,8 @@
 #ifndef SDL_loadso_h_
 #define SDL_loadso_h_
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -55,8 +55,8 @@ extern "C" {
 /**
  * Dynamically load a shared object.
  *
- * \param[in] sofile a system-dependent name of the object file.
- * \returns[own] an opaque pointer to the object handle or NULL if there was an
+ * \param sofile a system-dependent name of the object file.
+ * \returns an opaque pointer to the object handle or NULL if there was an
  *          error; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -64,7 +64,8 @@ extern "C" {
  * \sa SDL_LoadFunction
  * \sa SDL_UnloadObject
  */
-extern SDL_DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
+[[free(SDL_UnloadObject)]]
+extern SDL_DECLSPEC void *SDLCALL SDL_LoadObject([[in]] const char *sofile);
 
 /**
  * Look up the address of the named function in a shared object.
@@ -81,8 +82,8 @@ extern SDL_DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
  *
  * If the requested function doesn't exist, NULL is returned.
  *
- * \param[inout] handle a valid shared object handle returned by SDL_LoadObject().
- * \param[in] name the name of the function to look up.
+ * \param handle a valid shared object handle returned by SDL_LoadObject().
+ * \param name the name of the function to look up.
  * \returns a pointer to the function or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
@@ -90,18 +91,19 @@ extern SDL_DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
  *
  * \sa SDL_LoadObject
  */
-extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(void *handle, const char *name);
+extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(
+    [[inout]] void *handle, [[in]] const char *name);
 
 /**
  * Unload a shared object from memory.
  *
- * \param[inout] handle a valid shared object handle returned by SDL_LoadObject().
+ * \param handle a valid shared object handle returned by SDL_LoadObject().
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_LoadObject
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnloadObject(void *handle);
+extern SDL_DECLSPEC void SDLCALL SDL_UnloadObject([[inout]] void *handle);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

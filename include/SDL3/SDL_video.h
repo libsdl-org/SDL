@@ -28,11 +28,11 @@
 #ifndef SDL_video_h_
 #define SDL_video_h_
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -40,7 +40,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 typedef Uint32 SDL_DisplayID;
 typedef Uint32 SDL_WindowID;
@@ -69,9 +68,9 @@ typedef Uint32 SDL_WindowID;
  */
 typedef enum SDL_SystemTheme
 {
-    SDL_SYSTEM_THEME_UNKNOWN,   /**< Unknown system theme */
-    SDL_SYSTEM_THEME_LIGHT,     /**< Light colored system theme */
-    SDL_SYSTEM_THEME_DARK       /**< Dark colored system theme */
+    SDL_SYSTEM_THEME_UNKNOWN, /**< Unknown system theme */
+    SDL_SYSTEM_THEME_LIGHT,   /**< Light colored system theme */
+    SDL_SYSTEM_THEME_DARK     /**< Dark colored system theme */
 } SDL_SystemTheme;
 
 /**
@@ -103,11 +102,11 @@ typedef struct SDL_DisplayMode
  */
 typedef enum SDL_DisplayOrientation
 {
-    SDL_ORIENTATION_UNKNOWN,            /**< The display orientation can't be determined */
-    SDL_ORIENTATION_LANDSCAPE,          /**< The display is in landscape mode, with the right side up, relative to portrait mode */
-    SDL_ORIENTATION_LANDSCAPE_FLIPPED,  /**< The display is in landscape mode, with the left side up, relative to portrait mode */
-    SDL_ORIENTATION_PORTRAIT,           /**< The display is in portrait mode */
-    SDL_ORIENTATION_PORTRAIT_FLIPPED    /**< The display is in portrait mode, upside down */
+    SDL_ORIENTATION_UNKNOWN,           /**< The display orientation can't be determined */
+    SDL_ORIENTATION_LANDSCAPE,         /**< The display is in landscape mode, with the right side up, relative to portrait mode */
+    SDL_ORIENTATION_LANDSCAPE_FLIPPED, /**< The display is in landscape mode, with the left side up, relative to portrait mode */
+    SDL_ORIENTATION_PORTRAIT,          /**< The display is in portrait mode */
+    SDL_ORIENTATION_PORTRAIT_FLIPPED   /**< The display is in portrait mode, upside down */
 } SDL_DisplayOrientation;
 
 /**
@@ -133,53 +132,52 @@ typedef struct SDL_Window SDL_Window;
  */
 typedef Uint64 SDL_WindowFlags;
 
-#define SDL_WINDOW_FULLSCREEN           SDL_UINT64_C(0x0000000000000001)    /**< window is in fullscreen mode */
-#define SDL_WINDOW_OPENGL               SDL_UINT64_C(0x0000000000000002)    /**< window usable with OpenGL context */
-#define SDL_WINDOW_OCCLUDED             SDL_UINT64_C(0x0000000000000004)    /**< window is occluded */
-#define SDL_WINDOW_HIDDEN               SDL_UINT64_C(0x0000000000000008)    /**< window is neither mapped onto the desktop nor shown in the taskbar/dock/window list; SDL_ShowWindow() is required for it to become visible */
-#define SDL_WINDOW_BORDERLESS           SDL_UINT64_C(0x0000000000000010)    /**< no window decoration */
-#define SDL_WINDOW_RESIZABLE            SDL_UINT64_C(0x0000000000000020)    /**< window can be resized */
-#define SDL_WINDOW_MINIMIZED            SDL_UINT64_C(0x0000000000000040)    /**< window is minimized */
-#define SDL_WINDOW_MAXIMIZED            SDL_UINT64_C(0x0000000000000080)    /**< window is maximized */
-#define SDL_WINDOW_MOUSE_GRABBED        SDL_UINT64_C(0x0000000000000100)    /**< window has grabbed mouse input */
-#define SDL_WINDOW_INPUT_FOCUS          SDL_UINT64_C(0x0000000000000200)    /**< window has input focus */
-#define SDL_WINDOW_MOUSE_FOCUS          SDL_UINT64_C(0x0000000000000400)    /**< window has mouse focus */
-#define SDL_WINDOW_EXTERNAL             SDL_UINT64_C(0x0000000000000800)    /**< window not created by SDL */
-#define SDL_WINDOW_MODAL                SDL_UINT64_C(0x0000000000001000)    /**< window is modal */
-#define SDL_WINDOW_HIGH_PIXEL_DENSITY   SDL_UINT64_C(0x0000000000002000)    /**< window uses high pixel density back buffer if possible */
-#define SDL_WINDOW_MOUSE_CAPTURE        SDL_UINT64_C(0x0000000000004000)    /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
-#define SDL_WINDOW_ALWAYS_ON_TOP        SDL_UINT64_C(0x0000000000008000)    /**< window should always be above others */
-#define SDL_WINDOW_UTILITY              SDL_UINT64_C(0x0000000000020000)    /**< window should be treated as a utility window, not showing in the task bar and window list */
-#define SDL_WINDOW_TOOLTIP              SDL_UINT64_C(0x0000000000040000)    /**< window should be treated as a tooltip and does not get mouse or keyboard focus, requires a parent window */
-#define SDL_WINDOW_POPUP_MENU           SDL_UINT64_C(0x0000000000080000)    /**< window should be treated as a popup menu, requires a parent window */
-#define SDL_WINDOW_KEYBOARD_GRABBED     SDL_UINT64_C(0x0000000000100000)    /**< window has grabbed keyboard input */
-#define SDL_WINDOW_VULKAN               SDL_UINT64_C(0x0000000010000000)    /**< window usable for Vulkan surface */
-#define SDL_WINDOW_METAL                SDL_UINT64_C(0x0000000020000000)    /**< window usable for Metal view */
-#define SDL_WINDOW_TRANSPARENT          SDL_UINT64_C(0x0000000040000000)    /**< window with transparent buffer */
-#define SDL_WINDOW_NOT_FOCUSABLE        SDL_UINT64_C(0x0000000080000000)    /**< window should not be focusable */
-
+#define SDL_WINDOW_FULLSCREEN         SDL_UINT64_C(0x0000000000000001) /**< window is in fullscreen mode */
+#define SDL_WINDOW_OPENGL             SDL_UINT64_C(0x0000000000000002) /**< window usable with OpenGL context */
+#define SDL_WINDOW_OCCLUDED           SDL_UINT64_C(0x0000000000000004) /**< window is occluded */
+#define SDL_WINDOW_HIDDEN             SDL_UINT64_C(0x0000000000000008) /**< window is neither mapped onto the desktop nor shown in the taskbar/dock/window list; SDL_ShowWindow() is required for it to become visible */
+#define SDL_WINDOW_BORDERLESS         SDL_UINT64_C(0x0000000000000010) /**< no window decoration */
+#define SDL_WINDOW_RESIZABLE          SDL_UINT64_C(0x0000000000000020) /**< window can be resized */
+#define SDL_WINDOW_MINIMIZED          SDL_UINT64_C(0x0000000000000040) /**< window is minimized */
+#define SDL_WINDOW_MAXIMIZED          SDL_UINT64_C(0x0000000000000080) /**< window is maximized */
+#define SDL_WINDOW_MOUSE_GRABBED      SDL_UINT64_C(0x0000000000000100) /**< window has grabbed mouse input */
+#define SDL_WINDOW_INPUT_FOCUS        SDL_UINT64_C(0x0000000000000200) /**< window has input focus */
+#define SDL_WINDOW_MOUSE_FOCUS        SDL_UINT64_C(0x0000000000000400) /**< window has mouse focus */
+#define SDL_WINDOW_EXTERNAL           SDL_UINT64_C(0x0000000000000800) /**< window not created by SDL */
+#define SDL_WINDOW_MODAL              SDL_UINT64_C(0x0000000000001000) /**< window is modal */
+#define SDL_WINDOW_HIGH_PIXEL_DENSITY SDL_UINT64_C(0x0000000000002000) /**< window uses high pixel density back buffer if possible */
+#define SDL_WINDOW_MOUSE_CAPTURE      SDL_UINT64_C(0x0000000000004000) /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
+#define SDL_WINDOW_ALWAYS_ON_TOP      SDL_UINT64_C(0x0000000000008000) /**< window should always be above others */
+#define SDL_WINDOW_UTILITY            SDL_UINT64_C(0x0000000000020000) /**< window should be treated as a utility window, not showing in the task bar and window list */
+#define SDL_WINDOW_TOOLTIP            SDL_UINT64_C(0x0000000000040000) /**< window should be treated as a tooltip and does not get mouse or keyboard focus, requires a parent window */
+#define SDL_WINDOW_POPUP_MENU         SDL_UINT64_C(0x0000000000080000) /**< window should be treated as a popup menu, requires a parent window */
+#define SDL_WINDOW_KEYBOARD_GRABBED   SDL_UINT64_C(0x0000000000100000) /**< window has grabbed keyboard input */
+#define SDL_WINDOW_VULKAN             SDL_UINT64_C(0x0000000010000000) /**< window usable for Vulkan surface */
+#define SDL_WINDOW_METAL              SDL_UINT64_C(0x0000000020000000) /**< window usable for Metal view */
+#define SDL_WINDOW_TRANSPARENT        SDL_UINT64_C(0x0000000040000000) /**< window with transparent buffer */
+#define SDL_WINDOW_NOT_FOCUSABLE      SDL_UINT64_C(0x0000000080000000) /**< window should not be focusable */
 
 /**
  * Used to indicate that you don't care what the window position is.
  *
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
-#define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
-#define SDL_WINDOWPOS_UNDEFINED         SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
-#define SDL_WINDOWPOS_ISUNDEFINED(X)    \
-            (((X)&0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)
+#define SDL_WINDOWPOS_UNDEFINED_MASK       0x1FFF0000u
+#define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X) (SDL_WINDOWPOS_UNDEFINED_MASK | (X))
+#define SDL_WINDOWPOS_UNDEFINED            SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
+#define SDL_WINDOWPOS_ISUNDEFINED(X) \
+    (((X) & 0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)
 
 /**
  * Used to indicate that the window position should be centered.
  *
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000u
-#define SDL_WINDOWPOS_CENTERED_DISPLAY(X)  (SDL_WINDOWPOS_CENTERED_MASK|(X))
-#define SDL_WINDOWPOS_CENTERED         SDL_WINDOWPOS_CENTERED_DISPLAY(0)
-#define SDL_WINDOWPOS_ISCENTERED(X)    \
-            (((X)&0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
+#define SDL_WINDOWPOS_CENTERED_MASK       0x2FFF0000u
+#define SDL_WINDOWPOS_CENTERED_DISPLAY(X) (SDL_WINDOWPOS_CENTERED_MASK | (X))
+#define SDL_WINDOWPOS_CENTERED            SDL_WINDOWPOS_CENTERED_DISPLAY(0)
+#define SDL_WINDOWPOS_ISCENTERED(X) \
+    (((X) & 0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
 
 /**
  * Window flash operation.
@@ -188,9 +186,9 @@ typedef Uint64 SDL_WindowFlags;
  */
 typedef enum SDL_FlashOperation
 {
-    SDL_FLASH_CANCEL,                   /**< Cancel any window flash state */
-    SDL_FLASH_BRIEFLY,                  /**< Flash the window briefly to get attention */
-    SDL_FLASH_UNTIL_FOCUSED             /**< Flash the window until it gets focus */
+    SDL_FLASH_CANCEL,       /**< Cancel any window flash state */
+    SDL_FLASH_BRIEFLY,      /**< Flash the window briefly to get attention */
+    SDL_FLASH_UNTIL_FOCUSED /**< Flash the window until it gets focus */
 } SDL_FlashOperation;
 
 /**
@@ -277,9 +275,9 @@ typedef enum SDL_GLattr
  */
 typedef enum SDL_GLprofile
 {
-    SDL_GL_CONTEXT_PROFILE_CORE           = 0x0001,
-    SDL_GL_CONTEXT_PROFILE_COMPATIBILITY  = 0x0002,
-    SDL_GL_CONTEXT_PROFILE_ES             = 0x0004 /**< GLX_CONTEXT_ES2_PROFILE_BIT_EXT */
+    SDL_GL_CONTEXT_PROFILE_CORE = 0x0001,
+    SDL_GL_CONTEXT_PROFILE_COMPATIBILITY = 0x0002,
+    SDL_GL_CONTEXT_PROFILE_ES = 0x0004 /**< GLX_CONTEXT_ES2_PROFILE_BIT_EXT */
 } SDL_GLprofile;
 
 /**
@@ -289,10 +287,10 @@ typedef enum SDL_GLprofile
  */
 typedef enum SDL_GLcontextFlag
 {
-    SDL_GL_CONTEXT_DEBUG_FLAG              = 0x0001,
+    SDL_GL_CONTEXT_DEBUG_FLAG = 0x0001,
     SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG = 0x0002,
-    SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG      = 0x0004,
-    SDL_GL_CONTEXT_RESET_ISOLATION_FLAG    = 0x0008
+    SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG = 0x0004,
+    SDL_GL_CONTEXT_RESET_ISOLATION_FLAG = 0x0008
 } SDL_GLcontextFlag;
 
 /**
@@ -303,8 +301,8 @@ typedef enum SDL_GLcontextFlag
  */
 typedef enum SDL_GLcontextReleaseFlag
 {
-    SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE   = 0x0000,
-    SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH  = 0x0001
+    SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE = 0x0000,
+    SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH = 0x0001
 } SDL_GLcontextReleaseFlag;
 
 /**
@@ -315,7 +313,7 @@ typedef enum SDL_GLcontextReleaseFlag
 typedef enum SDL_GLContextResetNotification
 {
     SDL_GL_CONTEXT_RESET_NO_NOTIFICATION = 0x0000,
-    SDL_GL_CONTEXT_RESET_LOSE_CONTEXT    = 0x0001
+    SDL_GL_CONTEXT_RESET_LOSE_CONTEXT = 0x0001
 } SDL_GLContextResetNotification;
 
 /* Function prototypes */
@@ -384,14 +382,15 @@ extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
 /**
  * Get a list of currently connected displays.
  *
- * \param[out] count a pointer filled in with the number of displays returned.
- * \returns[own] a 0 terminated array of display instance IDs which should be freed
+ * \param count a pointer filled in with the number of displays returned.
+ * \returns a 0 terminated array of display instance IDs which should be freed
  *          with SDL_free(), or NULL on error; call SDL_GetError() for more
  *          details.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_DisplayID *SDLCALL SDL_GetDisplays(int *count);
+[[array(_), free(SDL_free)]]
+extern SDL_DECLSPEC SDL_DisplayID *SDLCALL SDL_GetDisplays([[out]] int *count);
 
 /**
  * Return the primary display.
@@ -468,7 +467,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetDisplayName(SDL_DisplayID display
  * The primary display is always located at (0,0).
  *
  * \param displayID the instance ID of the display to query.
- * \param[out] rect the SDL_Rect structure filled in with the display bounds.
+ * \param rect the SDL_Rect structure filled in with the display bounds.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -477,7 +476,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetDisplayName(SDL_DisplayID display
  * \sa SDL_GetDisplayUsableBounds
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_GetDisplayBounds(SDL_DisplayID displayID, [[out]] SDL_Rect *rect);
 
 /**
  * Get the usable desktop area represented by a display, in screen
@@ -492,7 +491,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDisplayBounds(SDL_DisplayID displayID, SD
  * non-fullscreen window.
  *
  * \param displayID the instance ID of the display to query.
- * \param[out] rect the SDL_Rect structure filled in with the display bounds.
+ * \param rect the SDL_Rect structure filled in with the display bounds.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -501,7 +500,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDisplayBounds(SDL_DisplayID displayID, SD
  * \sa SDL_GetDisplayBounds
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, [[out]] SDL_Rect *rect);
 
 /**
  * Get the orientation of a display when it is unrotated.
@@ -560,8 +559,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displ
  * - pixel density -> lowest to highest
  *
  * \param displayID the instance ID of the display to query.
- * \param[out] count a pointer filled in with the number of display modes returned.
- * \returns[own] a NULL terminated array of display mode pointers which should be
+ * \param count a pointer filled in with the number of display modes returned.
+ * \returns a NULL terminated array of display mode pointers which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
  *
@@ -569,7 +568,10 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displ
  *
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC const SDL_DisplayMode **SDLCALL SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *count);
+[[array(_), free(SDL_free)]]
+extern SDL_DECLSPEC const SDL_DisplayMode **SDLCALL SDL_GetFullscreenDisplayModes(
+    SDL_DisplayID displayID,
+    [[out]] int *count);
 
 /**
  * Get the closest match to the requested display mode.
@@ -640,7 +642,7 @@ extern SDL_DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetCurrentDisplayMode(SDL
 /**
  * Get the display containing a point.
  *
- * \param[in] point the point to query.
+ * \param point the point to query.
  * \returns the instance ID of the display containing the point or 0 on
  *          failure; call SDL_GetError() for more information.
  *
@@ -649,12 +651,12 @@ extern SDL_DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetCurrentDisplayMode(SDL
  * \sa SDL_GetDisplayBounds
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForPoint(const SDL_Point *point);
+extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForPoint([[in]] const SDL_Point *point);
 
 /**
  * Get the display primarily containing a rect.
  *
- * \param[in] rect the rect to query.
+ * \param rect the rect to query.
  * \returns the instance ID of the display entirely containing the rect or
  *          closest to the center of the rect on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -664,12 +666,12 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForPoint(const SDL_Point
  * \sa SDL_GetDisplayBounds
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForRect(const SDL_Rect *rect);
+extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForRect([[in]] const SDL_Rect *rect);
 
 /**
  * Get the display associated with a window.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns the instance ID of the display containing the center of the window
  *          on success or 0 on failure; call SDL_GetError() for more
  *          information.
@@ -679,7 +681,7 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForRect(const SDL_Rect *
  * \sa SDL_GetDisplayBounds
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow(SDL_Window *window);
+extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow([[self]] SDL_Window *window);
 
 /**
  * Get the pixel density of a window.
@@ -688,7 +690,7 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow(SDL_Window *wi
  * 1920x1080 and it has a high density back buffer of 3840x2160 pixels, it
  * would have a pixel density of 2.0.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns the pixel density or 0.0f on failure; call SDL_GetError() for more
  *          information.
  *
@@ -696,7 +698,7 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForWindow(SDL_Window *wi
  *
  * \sa SDL_GetWindowDisplayScale
  */
-extern SDL_DECLSPEC float SDLCALL SDL_GetWindowPixelDensity(SDL_Window *window);
+extern SDL_DECLSPEC float SDLCALL SDL_GetWindowPixelDensity([[self]] SDL_Window *window);
 
 /**
  * Get the content display scale relative to a window's pixel size.
@@ -712,13 +714,13 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowPixelDensity(SDL_Window *window);
  * updated when that setting is changed, or the window moves to a display with
  * a different scale setting.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns the display scale, or 0.0f on failure; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC float SDLCALL SDL_GetWindowDisplayScale(SDL_Window *window);
+extern SDL_DECLSPEC float SDLCALL SDL_GetWindowDisplayScale([[self]] SDL_Window *window);
 
 /**
  * Set the display mode to use when a window is visible and fullscreen.
@@ -737,8 +739,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowDisplayScale(SDL_Window *window);
  * SDL_EVENT_WINDOOW_PIXEL_SIZE_CHANGED event will be emitted with the new
  * mode dimensions.
  *
- * \param[inout] window the window to affect.
- * \param[in,opt] mode a pointer to the display mode to use, which can be NULL for
+ * \param window the window to affect.
+ * \param mode a pointer to the display mode to use, which can be NULL for
  *             borderless fullscreen desktop mode, or one of the fullscreen
  *             modes returned by SDL_GetFullscreenDisplayModes() to set an
  *             exclusive fullscreen mode.
@@ -751,12 +753,12 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowDisplayScale(SDL_Window *window);
  * \sa SDL_SetWindowFullscreen
  * \sa SDL_SyncWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFullscreenMode(SDL_Window *window, const SDL_DisplayMode *mode);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFullscreenMode([[self]] SDL_Window *window, [[in, opt]] const SDL_DisplayMode *mode);
 
 /**
  * Query the display mode to use when a window is visible at fullscreen.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns a pointer to the exclusive fullscreen mode to use or NULL for
  *          borderless fullscreen desktop mode.
  *
@@ -765,33 +767,35 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFullscreenMode(SDL_Window *window, 
  * \sa SDL_SetWindowFullscreenMode
  * \sa SDL_SetWindowFullscreen
  */
-extern SDL_DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetWindowFullscreenMode(SDL_Window *window);
+extern SDL_DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetWindowFullscreenMode([[self]] SDL_Window *window);
 
 /**
  * Get the raw ICC profile data for the screen the window is currently on.
  *
  * Data returned should be freed with SDL_free.
  *
- * \param[inout] window the window to query.
- * \param[out] size the size of the ICC profile.
+ * \param window the window to query.
+ * \param size the size of the ICC profile.
  * \returns the raw ICC profile data on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void *SDLCALL SDL_GetWindowICCProfile(SDL_Window *window, size_t *size);
+extern SDL_DECLSPEC void *SDLCALL SDL_GetWindowICCProfile(
+    [[self]] SDL_Window *window,
+    [[out]] size_t *size);
 
 /**
  * Get the pixel format associated with the window.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns the pixel format of the window on success or
  *          SDL_PIXELFORMAT_UNKNOWN on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat([[self]] SDL_Window *window);
 
 /**
  * Create a window with the specified dimensions and flags.
@@ -841,11 +845,11 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * loader or link to a dynamic library version. This limitation may be removed
  * in a future version of SDL.
  *
- * \param[in] title the title of the window, in UTF-8 encoding.
+ * \param title the title of the window, in UTF-8 encoding.
  * \param w the width of the window.
  * \param h the height of the window.
  * \param flags 0, or one or more SDL_WindowFlags OR'd together.
- * \returns[own] the window that was created or NULL on failure; call
+ * \returns the window that was created or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -854,7 +858,11 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window *window);
  * \sa SDL_CreateWindowWithProperties
  * \sa SDL_DestroyWindow
  */
-extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags flags);
+[[free(SDL_DestroyWindow)]]
+extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(
+    [[in]] const char *title,
+    int w, int h,
+    SDL_WindowFlags flags);
 
 /**
  * Create a child popup window of the specified parent window.
@@ -890,7 +898,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int 
  * If the parent window is destroyed, any child popup windows will be
  * recursively destroyed as well.
  *
- * \param[inout] parent the parent of the window, must not be NULL.
+ * \param parent the parent of the window, must not be NULL.
  * \param offset_x the x position of the popup window relative to the origin
  *                 of the parent.
  * \param offset_y the y position of the popup window relative to the origin
@@ -899,7 +907,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int 
  * \param h the height of the window.
  * \param flags SDL_WINDOW_TOOLTIP or SDL_WINDOW_POPUP_MENU, and zero or more
  *              additional SDL_WindowFlags OR'd together.
- * \returns[own] the window that was created or NULL on failure; call
+ * \returns the window that was created or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -909,6 +917,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindow(const char *title, int 
  * \sa SDL_DestroyWindow
  * \sa SDL_GetWindowParent
  */
+[[free(SDL_DestroyWindow)]]
 extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y, int w, int h, SDL_WindowFlags flags);
 
 /**
@@ -1016,7 +1025,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent
  * SDL_ShowWindow().
  *
  * \param props the properties to use.
- * \returns[own] the window that was created or NULL on failure; call
+ * \returns the window that was created or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1025,6 +1034,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreatePopupWindow(SDL_Window *parent
  * \sa SDL_CreateWindow
  * \sa SDL_DestroyWindow
  */
+[[free(SDL_DestroyWindow)]]
 extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_PropertiesID props);
 
 #define SDL_PROP_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN               "always_on_top"
@@ -1067,7 +1077,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_Prope
  * The numeric ID is what SDL_WindowEvent references, and is necessary to map
  * these events to specific SDL_Window objects.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns the ID of the window on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1075,7 +1085,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_CreateWindowWithProperties(SDL_Prope
  *
  * \sa SDL_GetWindowFromID
  */
-extern SDL_DECLSPEC SDL_WindowID SDLCALL SDL_GetWindowID(SDL_Window *window);
+extern SDL_DECLSPEC SDL_WindowID SDLCALL SDL_GetWindowID([[self]] SDL_Window *window);
 
 /**
  * Get a window from a stored ID.
@@ -1096,7 +1106,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetWindowFromID(SDL_WindowID id);
 /**
  * Get parent of a window.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns the parent of the window on success or NULL if the window has no
  *          parent.
  *
@@ -1104,7 +1114,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetWindowFromID(SDL_WindowID id);
  *
  * \sa SDL_CreatePopupWindow
  */
-extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
+extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent([[self]] SDL_Window *window);
 
 /**
  * Get the properties associated with a window.
@@ -1204,7 +1214,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * - `SDL_PROP_WINDOW_X11_WINDOW_NUMBER`: the X11 Window associated with the
  *   window
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1213,44 +1223,44 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetWindowParent(SDL_Window *window);
  * \sa SDL_GetProperty
  * \sa SDL_GetNumberProperty
  */
-extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window *window);
+extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties([[self]] SDL_Window *window);
 
-#define SDL_PROP_WINDOW_SHAPE_POINTER                               "SDL.window.shape"
-#define SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER                      "SDL.window.android.window"
-#define SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER                     "SDL.window.android.surface"
-#define SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER                        "SDL.window.uikit.window"
-#define SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER                 "SDL.window.uikit.metal_view_tag"
-#define SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER             "SDL.window.uikit.opengl.framebuffer"
-#define SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER            "SDL.window.uikit.opengl.renderbuffer"
-#define SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER     "SDL.window.uikit.opengl.resolve_framebuffer"
-#define SDL_PROP_WINDOW_KMSDRM_DEVICE_INDEX_NUMBER                  "SDL.window.kmsdrm.dev_index"
-#define SDL_PROP_WINDOW_KMSDRM_DRM_FD_NUMBER                        "SDL.window.kmsdrm.drm_fd"
-#define SDL_PROP_WINDOW_KMSDRM_GBM_DEVICE_POINTER                   "SDL.window.kmsdrm.gbm_dev"
-#define SDL_PROP_WINDOW_COCOA_WINDOW_POINTER                        "SDL.window.cocoa.window"
-#define SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER                 "SDL.window.cocoa.metal_view_tag"
-#define SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER                     "SDL.window.vivante.display"
-#define SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER                      "SDL.window.vivante.window"
-#define SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER                     "SDL.window.vivante.surface"
-#define SDL_PROP_WINDOW_WINRT_WINDOW_POINTER                        "SDL.window.winrt.window"
-#define SDL_PROP_WINDOW_WIN32_HWND_POINTER                          "SDL.window.win32.hwnd"
-#define SDL_PROP_WINDOW_WIN32_HDC_POINTER                           "SDL.window.win32.hdc"
-#define SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER                      "SDL.window.win32.instance"
-#define SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER                     "SDL.window.wayland.display"
-#define SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER                     "SDL.window.wayland.surface"
-#define SDL_PROP_WINDOW_WAYLAND_EGL_WINDOW_POINTER                  "SDL.window.wayland.egl_window"
-#define SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER                 "SDL.window.wayland.xdg_surface"
-#define SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER                "SDL.window.wayland.xdg_toplevel"
-#define SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING   "SDL.window.wayland.xdg_toplevel_export_handle"
-#define SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER                   "SDL.window.wayland.xdg_popup"
-#define SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER              "SDL.window.wayland.xdg_positioner"
-#define SDL_PROP_WINDOW_X11_DISPLAY_POINTER                         "SDL.window.x11.display"
-#define SDL_PROP_WINDOW_X11_SCREEN_NUMBER                           "SDL.window.x11.screen"
-#define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"
+#define SDL_PROP_WINDOW_SHAPE_POINTER                             "SDL.window.shape"
+#define SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER                    "SDL.window.android.window"
+#define SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER                   "SDL.window.android.surface"
+#define SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER                      "SDL.window.uikit.window"
+#define SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER               "SDL.window.uikit.metal_view_tag"
+#define SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER           "SDL.window.uikit.opengl.framebuffer"
+#define SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER          "SDL.window.uikit.opengl.renderbuffer"
+#define SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER   "SDL.window.uikit.opengl.resolve_framebuffer"
+#define SDL_PROP_WINDOW_KMSDRM_DEVICE_INDEX_NUMBER                "SDL.window.kmsdrm.dev_index"
+#define SDL_PROP_WINDOW_KMSDRM_DRM_FD_NUMBER                      "SDL.window.kmsdrm.drm_fd"
+#define SDL_PROP_WINDOW_KMSDRM_GBM_DEVICE_POINTER                 "SDL.window.kmsdrm.gbm_dev"
+#define SDL_PROP_WINDOW_COCOA_WINDOW_POINTER                      "SDL.window.cocoa.window"
+#define SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER               "SDL.window.cocoa.metal_view_tag"
+#define SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER                   "SDL.window.vivante.display"
+#define SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER                    "SDL.window.vivante.window"
+#define SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER                   "SDL.window.vivante.surface"
+#define SDL_PROP_WINDOW_WINRT_WINDOW_POINTER                      "SDL.window.winrt.window"
+#define SDL_PROP_WINDOW_WIN32_HWND_POINTER                        "SDL.window.win32.hwnd"
+#define SDL_PROP_WINDOW_WIN32_HDC_POINTER                         "SDL.window.win32.hdc"
+#define SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER                    "SDL.window.win32.instance"
+#define SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER                   "SDL.window.wayland.display"
+#define SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER                   "SDL.window.wayland.surface"
+#define SDL_PROP_WINDOW_WAYLAND_EGL_WINDOW_POINTER                "SDL.window.wayland.egl_window"
+#define SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER               "SDL.window.wayland.xdg_surface"
+#define SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER              "SDL.window.wayland.xdg_toplevel"
+#define SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING "SDL.window.wayland.xdg_toplevel_export_handle"
+#define SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER                 "SDL.window.wayland.xdg_popup"
+#define SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER            "SDL.window.wayland.xdg_positioner"
+#define SDL_PROP_WINDOW_X11_DISPLAY_POINTER                       "SDL.window.x11.display"
+#define SDL_PROP_WINDOW_X11_SCREEN_NUMBER                         "SDL.window.x11.screen"
+#define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                         "SDL.window.x11.window"
 
 /**
  * Get the window flags.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns a mask of the SDL_WindowFlags associated with `window`.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1263,15 +1273,15 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
  * \sa SDL_SetWindowMouseGrab
  * \sa SDL_ShowWindow
  */
-extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *window);
+extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags([[self]] SDL_Window *window);
 
 /**
  * Set the title of a window.
  *
  * This string is expected to be in UTF-8 encoding.
  *
- * \param[inout] window the window to change.
- * \param[in] title the desired window title in UTF-8 format.
+ * \param window the window to change.
+ * \param title the desired window title in UTF-8 format.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1279,14 +1289,14 @@ extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *windo
  *
  * \sa SDL_GetWindowTitle
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowTitle(SDL_Window *window, const char *title);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowTitle([[self]] SDL_Window *window, [[in]] const char *title);
 
 /**
  * Get the title of a window.
  *
  * The returned string follows the SDL_GetStringRule.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns the title of the window in UTF-8 format or "" if there is no
  *          title.
  *
@@ -1294,19 +1304,19 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowTitle(SDL_Window *window, const cha
  *
  * \sa SDL_SetWindowTitle
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetWindowTitle(SDL_Window *window);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetWindowTitle([[self]] SDL_Window *window);
 
 /**
  * Set the icon for a window.
  *
- * \param[inout] window the window to change.
- * \param[inout] icon an SDL_Surface structure containing the icon for the window.
+ * \param window the window to change.
+ * \param icon an SDL_Surface structure containing the icon for the window.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowIcon([[self]] SDL_Window *window, [[inout]] SDL_Surface *icon);
 
 /**
  * Request that the window's position be set.
@@ -1333,7 +1343,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surfac
  * Additionally, as this is just a request, it can be denied by the windowing
  * system.
  *
- * \param[inout] window the window to reposition.
+ * \param window the window to reposition.
  * \param x the x coordinate of the window, or `SDL_WINDOWPOS_CENTERED` or
  *          `SDL_WINDOWPOS_UNDEFINED`.
  * \param y the y coordinate of the window, or `SDL_WINDOWPOS_CENTERED` or
@@ -1346,7 +1356,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surfac
  * \sa SDL_GetWindowPosition
  * \sa SDL_SyncWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x, int y);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowPosition([[self]] SDL_Window *window, int x, int y);
 
 /**
  * Get the position of a window.
@@ -1357,10 +1367,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x,
  * If you do not need the value for one of the positions a NULL may be passed
  * in the `x` or `y` parameter.
  *
- * \param[inout] window the window to query.
- * \param[out] x a pointer filled in with the x position of the window, may be
+ * \param window the window to query.
+ * \param x a pointer filled in with the x position of the window, may be
  *          NULL.
- * \param[out] y a pointer filled in with the y position of the window, may be
+ * \param y a pointer filled in with the y position of the window, may be
  *          NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1369,7 +1379,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x,
  *
  * \sa SDL_SetWindowPosition
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x, int *y);
+extern SDL_DECLSPEC int SDLCALL SDL_GetWindowPosition(
+    [[self]] SDL_Window *window,
+    [[out]] int *x, [[out]] int *y);
 
 /**
  * Request that the size of a window's client area be set.
@@ -1393,7 +1405,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x
  * content area to remain within the usable desktop bounds). Additionally, as
  * this is just a request, it can be denied by the windowing system.
  *
- * \param[inout] window the window to change.
+ * \param window the window to change.
  * \param w the width of the window, must be > 0.
  * \param h the height of the window, must be > 0.
  * \returns 0 on success or a negative error code on failure; call
@@ -1405,7 +1417,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowPosition(SDL_Window *window, int *x
  * \sa SDL_SetWindowFullscreenMode
  * \sa SDL_SyncWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int h);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSize([[self]] SDL_Window *window, int w, int h);
 
 /**
  * Get the size of a window's client area.
@@ -1414,9 +1426,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int
  * window is on a high pixel density display. Use SDL_GetWindowSizeInPixels()
  * or SDL_GetRenderOutputSize() to get the real client area size in pixels.
  *
- * \param[inout] window the window to query the width and height from.
- * \param[out] w a pointer filled in with the width of the window, may be NULL.
- * \param[out] h a pointer filled in with the height of the window, may be NULL.
+ * \param window the window to query the width and height from.
+ * \param w a pointer filled in with the width of the window, may be NULL.
+ * \param h a pointer filled in with the height of the window, may be NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1426,7 +1438,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, int
  * \sa SDL_GetWindowSizeInPixels
  * \sa SDL_SetWindowSize
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, int *h);
+extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSize(
+    [[self]] SDL_Window *window,
+    [[out]] int *w, [[out]] int *h);
 
 /**
  * Request that the aspect ratio of a window's client area be set.
@@ -1465,7 +1479,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, in
  * \sa SDL_GetWindowAspectRatio
  * \sa SDL_SyncWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowAspectRatio(SDL_Window *window, float min_aspect, float max_aspect);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowAspectRatio([[self]] SDL_Window *window, float min_aspect, float max_aspect);
 
 /**
  * Get the size of a window's client area.
@@ -1482,7 +1496,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowAspectRatio(SDL_Window *window, flo
  *
  * \sa SDL_SetWindowAspectRatio
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowAspectRatio(SDL_Window *window, float *min_aspect, float *max_aspect);
+extern SDL_DECLSPEC int SDLCALL SDL_GetWindowAspectRatio([[self]] SDL_Window *window, float *min_aspect, float *max_aspect);
 
 /**
  * Get the size of a window's borders (decorations) around the client area.
@@ -1499,15 +1513,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowAspectRatio(SDL_Window *window, flo
  *
  * This function also returns -1 if getting the information is not supported.
  *
- * \param[inout] window the window to query the size values of the border
+ * \param window the window to query the size values of the border
  *               (decorations) from.
- * \param[out] top pointer to variable for storing the size of the top border; NULL
+ * \param top pointer to variable for storing the size of the top border; NULL
  *            is permitted.
- * \param[out] left pointer to variable for storing the size of the left border;
+ * \param left pointer to variable for storing the size of the left border;
  *             NULL is permitted.
- * \param[out] bottom pointer to variable for storing the size of the bottom
+ * \param bottom pointer to variable for storing the size of the bottom
  *               border; NULL is permitted.
- * \param[out] right pointer to variable for storing the size of the right border;
+ * \param right pointer to variable for storing the size of the right border;
  *              NULL is permitted.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1516,15 +1530,20 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowAspectRatio(SDL_Window *window, flo
  *
  * \sa SDL_GetWindowSize
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window *window, int *top, int *left, int *bottom, int *right);
+extern SDL_DECLSPEC int SDLCALL SDL_GetWindowBordersSize(
+    [[self]] SDL_Window *window,
+    [[out]] int *top,
+    [[out]] int *left,
+    [[out]] int *bottom,
+    [[out]] int *right);
 
 /**
  * Get the size of a window's client area, in pixels.
  *
- * \param[inout] window the window from which the drawable size should be queried.
- * \param[out] w a pointer to variable for storing the width in pixels, may be
+ * \param window the window from which the drawable size should be queried.
+ * \param w a pointer to variable for storing the width in pixels, may be
  *          NULL.
- * \param[out] h a pointer to variable for storing the height in pixels, may be
+ * \param h a pointer to variable for storing the height in pixels, may be
  *          NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1534,12 +1553,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window *window, int
  * \sa SDL_CreateWindow
  * \sa SDL_GetWindowSize
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h);
+extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSizeInPixels(
+    [[self]] SDL_Window *window,
+    [[out]] int *w, [[out]] int *h);
 
 /**
  * Set the minimum size of a window's client area.
  *
- * \param[inout] window the window to change.
+ * \param window the window to change.
  * \param min_w the minimum width of the window, or 0 for no limit.
  * \param min_h the minimum height of the window, or 0 for no limit.
  * \returns 0 on success or a negative error code on failure; call
@@ -1550,15 +1571,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSizeInPixels(SDL_Window *window, in
  * \sa SDL_GetWindowMinimumSize
  * \sa SDL_SetWindowMaximumSize
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMinimumSize([[self]] SDL_Window *window, int min_w, int min_h);
 
 /**
  * Get the minimum size of a window's client area.
  *
- * \param[inout] window the window to query.
- * \param[out] w a pointer filled in with the minimum width of the window, may be
+ * \param window the window to query.
+ * \param w a pointer filled in with the minimum width of the window, may be
  *          NULL.
- * \param[out] h a pointer filled in with the minimum height of the window, may be
+ * \param h a pointer filled in with the minimum height of the window, may be
  *          NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1568,12 +1589,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMinimumSize(SDL_Window *window, int
  * \sa SDL_GetWindowMaximumSize
  * \sa SDL_SetWindowMinimumSize
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowMinimumSize(SDL_Window *window, int *w, int *h);
+extern SDL_DECLSPEC int SDLCALL SDL_GetWindowMinimumSize(
+    [[self]] SDL_Window *window,
+    [[out]] int *w, [[out]] int *h);
 
 /**
  * Set the maximum size of a window's client area.
  *
- * \param[inout] window the window to change.
+ * \param window the window to change.
  * \param max_w the maximum width of the window, or 0 for no limit.
  * \param max_h the maximum height of the window, or 0 for no limit.
  * \returns 0 on success or a negative error code on failure; call
@@ -1584,15 +1607,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowMinimumSize(SDL_Window *window, int
  * \sa SDL_GetWindowMaximumSize
  * \sa SDL_SetWindowMinimumSize
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMaximumSize([[self]] SDL_Window *window, int max_w, int max_h);
 
 /**
  * Get the maximum size of a window's client area.
  *
- * \param[inout] window the window to query.
- * \param[out] w a pointer filled in with the maximum width of the window, may be
+ * \param window the window to query.
+ * \param w a pointer filled in with the maximum width of the window, may be
  *          NULL.
- * \param[out] h a pointer filled in with the maximum height of the window, may be
+ * \param h a pointer filled in with the maximum height of the window, may be
  *          NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1602,7 +1625,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMaximumSize(SDL_Window *window, int
  * \sa SDL_GetWindowMinimumSize
  * \sa SDL_SetWindowMaximumSize
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowMaximumSize(SDL_Window *window, int *w, int *h);
+extern SDL_DECLSPEC int SDLCALL SDL_GetWindowMaximumSize(
+    [[self]] SDL_Window *window,
+    [[out]] int *w, [[out]] int *h);
 
 /**
  * Set the border state of a window.
@@ -1613,7 +1638,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowMaximumSize(SDL_Window *window, int
  *
  * You can't change the border state of a fullscreen window.
  *
- * \param[inout] window the window of which to change the border state.
+ * \param window the window of which to change the border state.
  * \param bordered SDL_FALSE to remove border, SDL_TRUE to add border.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1622,7 +1647,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowMaximumSize(SDL_Window *window, int
  *
  * \sa SDL_GetWindowFlags
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowBordered(SDL_Window *window, SDL_bool bordered);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowBordered([[self]] SDL_Window *window, SDL_bool bordered);
 
 /**
  * Set the user-resizable state of a window.
@@ -1633,7 +1658,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowBordered(SDL_Window *window, SDL_bo
  *
  * You can't change the resizable state of a fullscreen window.
  *
- * \param[inout] window the window of which to change the resizable state.
+ * \param window the window of which to change the resizable state.
  * \param resizable SDL_TRUE to allow resizing, SDL_FALSE to disallow.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1642,7 +1667,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowBordered(SDL_Window *window, SDL_bo
  *
  * \sa SDL_GetWindowFlags
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowResizable([[self]] SDL_Window *window, SDL_bool resizable);
 
 /**
  * Set the window to always be above the others.
@@ -1650,7 +1675,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowResizable(SDL_Window *window, SDL_b
  * This will add or remove the window's `SDL_WINDOW_ALWAYS_ON_TOP` flag. This
  * will bring the window to the front and keep the window above the rest.
  *
- * \param[inout] window the window of which to change the always on top state.
+ * \param window the window of which to change the always on top state.
  * \param on_top SDL_TRUE to set the window always on top, SDL_FALSE to
  *               disable.
  * \returns 0 on success or a negative error code on failure; call
@@ -1660,12 +1685,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowResizable(SDL_Window *window, SDL_b
  *
  * \sa SDL_GetWindowFlags
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL_bool on_top);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowAlwaysOnTop([[self]] SDL_Window *window, SDL_bool on_top);
 
 /**
  * Show a window.
  *
- * \param[inout] window the window to show.
+ * \param window the window to show.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1674,12 +1699,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowAlwaysOnTop(SDL_Window *window, SDL
  * \sa SDL_HideWindow
  * \sa SDL_RaiseWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_ShowWindow(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_ShowWindow([[self]] SDL_Window *window);
 
 /**
  * Hide a window.
  *
- * \param[inout] window the window to hide.
+ * \param window the window to hide.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1687,18 +1712,18 @@ extern SDL_DECLSPEC int SDLCALL SDL_ShowWindow(SDL_Window *window);
  *
  * \sa SDL_ShowWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_HideWindow(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_HideWindow([[self]] SDL_Window *window);
 
 /**
  * Raise a window above other windows and set the input focus.
  *
- * \param[inout] window the window to raise.
+ * \param window the window to raise.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_RaiseWindow(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_RaiseWindow([[self]] SDL_Window *window);
 
 /**
  * Request that the window be made as large as possible.
@@ -1720,7 +1745,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RaiseWindow(SDL_Window *window);
  * manager. Win32 and macOS enforce the constraints when maximizing, while X11
  * and Wayland window managers may vary.
  *
- * \param[inout] window the window to maximize.
+ * \param window the window to maximize.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1730,7 +1755,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RaiseWindow(SDL_Window *window);
  * \sa SDL_RestoreWindow
  * \sa SDL_SyncWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_MaximizeWindow(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_MaximizeWindow([[self]] SDL_Window *window);
 
 /**
  * Request that the window be minimized to an iconic representation.
@@ -1744,7 +1769,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_MaximizeWindow(SDL_Window *window);
  * emitted. Note that, as this is just a request, the windowing system can
  * deny the state change.
  *
- * \param[inout] window the window to minimize.
+ * \param window the window to minimize.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1754,7 +1779,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_MaximizeWindow(SDL_Window *window);
  * \sa SDL_RestoreWindow
  * \sa SDL_SyncWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_MinimizeWindow(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_MinimizeWindow([[self]] SDL_Window *window);
 
 /**
  * Request that the size and position of a minimized or maximized window be
@@ -1769,7 +1794,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_MinimizeWindow(SDL_Window *window);
  * emitted. Note that, as this is just a request, the windowing system can
  * deny the state change.
  *
- * \param[inout] window the window to restore.
+ * \param window the window to restore.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1779,7 +1804,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_MinimizeWindow(SDL_Window *window);
  * \sa SDL_MinimizeWindow
  * \sa SDL_SyncWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_RestoreWindow(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_RestoreWindow([[self]] SDL_Window *window);
 
 /**
  * Request that the window's fullscreen state be changed.
@@ -1797,7 +1822,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RestoreWindow(SDL_Window *window);
  * SDL_EVENT_WINDOW_LEAVE_FULLSCREEN event will be emitted. Note that, as this
  * is just a request, it can be denied by the windowing system.
  *
- * \param[inout] window the window to change.
+ * \param window the window to change.
  * \param fullscreen SDL_TRUE for fullscreen mode, SDL_FALSE for windowed
  *                   mode.
  * \returns 0 on success or a negative error code on failure; call
@@ -1809,7 +1834,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RestoreWindow(SDL_Window *window);
  * \sa SDL_SetWindowFullscreenMode
  * \sa SDL_SyncWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, SDL_bool fullscreen);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFullscreen([[self]] SDL_Window *window, SDL_bool fullscreen);
 
 /**
  * Block until any pending window state is finalized.
@@ -1823,7 +1848,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, SDL_
  *
  * On windowing systems where changes are immediate, this does nothing.
  *
- * \param[inout] window the window for which to wait for the pending state to be
+ * \param window the window for which to wait for the pending state to be
  *               applied.
  * \returns 0 on success, a positive value if the operation timed out before
  *          the window was in the requested state, or a negative error code on
@@ -1839,12 +1864,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_Window *window, SDL_
  * \sa SDL_RestoreWindow
  * \sa SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SyncWindow(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_SyncWindow([[self]] SDL_Window *window);
 
 /**
  * Return whether the window has a surface associated with it.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns SDL_TRUE if there is a surface associated with the window, or
  *          SDL_FALSE otherwise.
  *
@@ -1852,7 +1877,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SyncWindow(SDL_Window *window);
  *
  * \sa SDL_GetWindowSurface
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WindowHasSurface(SDL_Window *window);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WindowHasSurface([[self]] SDL_Window *window);
 
 /**
  * Get the SDL surface associated with the window.
@@ -1868,7 +1893,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WindowHasSurface(SDL_Window *window);
  *
  * This function is affected by `SDL_HINT_FRAMEBUFFER_ACCELERATION`.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns the surface associated with the window, or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1879,7 +1904,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_WindowHasSurface(SDL_Window *window);
  * \sa SDL_UpdateWindowSurface
  * \sa SDL_UpdateWindowSurfaceRects
  */
-extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_GetWindowSurface(SDL_Window *window);
+extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_GetWindowSurface([[self]] SDL_Window *window);
 
 /**
  * Toggle VSync for the window surface.
@@ -1903,7 +1928,7 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_GetWindowSurface(SDL_Window *window
  *
  * \sa SDL_GetWindowSurfaceVSync
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSurfaceVSync(SDL_Window *window, int vsync);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSurfaceVSync([[self]] SDL_Window *window, int vsync);
 
 #define SDL_WINDOW_SURFACE_VSYNC_DISABLED 0
 #define SDL_WINDOW_SURFACE_VSYNC_ADAPTIVE (-1)
@@ -1911,8 +1936,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSurfaceVSync(SDL_Window *window, in
 /**
  * Get VSync for the window surface.
  *
- * \param[inout] window the window to query.
- * \param[out] vsync an int filled with the current vertical refresh sync interval.
+ * \param window the window to query.
+ * \param vsync an int filled with the current vertical refresh sync interval.
  *              See SDL_SetWindowSurfaceVSync() for the meaning of the value.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1921,7 +1946,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowSurfaceVSync(SDL_Window *window, in
  *
  * \sa SDL_SetWindowSurfaceVSync
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSurfaceVSync(SDL_Window *window, int *vsync);
+extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSurfaceVSync([[self]] SDL_Window *window, [[out]] int *vsync);
 
 /**
  * Copy the window surface to the screen.
@@ -1931,7 +1956,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSurfaceVSync(SDL_Window *window, in
  *
  * This function is equivalent to the SDL 1.2 API SDL_Flip().
  *
- * \param[inout] window the window to update.
+ * \param window the window to update.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1940,7 +1965,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSurfaceVSync(SDL_Window *window, in
  * \sa SDL_GetWindowSurface
  * \sa SDL_UpdateWindowSurfaceRects
  */
-extern SDL_DECLSPEC int SDLCALL SDL_UpdateWindowSurface(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_UpdateWindowSurface([[self]] SDL_Window *window);
 
 /**
  * Copy areas of the window surface to the screen.
@@ -1955,8 +1980,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_UpdateWindowSurface(SDL_Window *window);
  * update more of the screen (or all of the screen!), depending on what method
  * SDL uses to send pixels to the system.
  *
- * \param[inout] window the window to update.
- * \param[in] rects an array of SDL_Rect structures representing areas of the
+ * \param window the window to update.
+ * \param rects an array of SDL_Rect structures representing areas of the
  *              surface to copy, in pixels.
  * \param numrects the number of rectangles.
  * \returns 0 on success or a negative error code on failure; call
@@ -1967,12 +1992,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_UpdateWindowSurface(SDL_Window *window);
  * \sa SDL_GetWindowSurface
  * \sa SDL_UpdateWindowSurface
  */
-extern SDL_DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(SDL_Window *window, const SDL_Rect *rects, int numrects);
+extern SDL_DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(
+    [[self]] SDL_Window *window,
+    [[in, array(numrects)]] const SDL_Rect *rects, int numrects);
 
 /**
  * Destroy the surface associated with the window.
  *
- * \param[inout] window the window to update.
+ * \param window the window to update.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1981,7 +2008,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(SDL_Window *window,
  * \sa SDL_GetWindowSurface
  * \sa SDL_WindowHasSurface
  */
-extern SDL_DECLSPEC int SDLCALL SDL_DestroyWindowSurface(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_DestroyWindowSurface([[self]] SDL_Window *window);
 
 /**
  * Set a window's keyboard grab mode.
@@ -2002,7 +2029,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_DestroyWindowSurface(SDL_Window *window);
  * If the caller enables a grab while another window is currently grabbed, the
  * other window loses its grab in favor of the caller's window.
  *
- * \param[inout] window the window for which the keyboard grab mode should be set.
+ * \param window the window for which the keyboard grab mode should be set.
  * \param grabbed this is SDL_TRUE to grab keyboard, and SDL_FALSE to release.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -2012,14 +2039,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_DestroyWindowSurface(SDL_Window *window);
  * \sa SDL_GetWindowKeyboardGrab
  * \sa SDL_SetWindowMouseGrab
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window *window, SDL_bool grabbed);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowKeyboardGrab([[self]] SDL_Window *window, SDL_bool grabbed);
 
 /**
  * Set a window's mouse grab mode.
  *
  * Mouse grab confines the mouse cursor to the window.
  *
- * \param[inout] window the window for which the mouse grab mode should be set.
+ * \param window the window for which the mouse grab mode should be set.
  * \param grabbed this is SDL_TRUE to grab mouse, and SDL_FALSE to release.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -2029,31 +2056,31 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window *window, SD
  * \sa SDL_GetWindowMouseGrab
  * \sa SDL_SetWindowKeyboardGrab
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMouseGrab(SDL_Window *window, SDL_bool grabbed);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMouseGrab([[self]] SDL_Window *window, SDL_bool grabbed);
 
 /**
  * Get a window's keyboard grab mode.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns SDL_TRUE if keyboard is grabbed, and SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetWindowKeyboardGrab
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetWindowKeyboardGrab(SDL_Window *window);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetWindowKeyboardGrab([[self]] SDL_Window *window);
 
 /**
  * Get a window's mouse grab mode.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns SDL_TRUE if mouse is grabbed, and SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetWindowKeyboardGrab
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetWindowMouseGrab(SDL_Window *window);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetWindowMouseGrab([[self]] SDL_Window *window);
 
 /**
  * Get the window that currently has an input grab enabled.
@@ -2073,8 +2100,8 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetGrabbedWindow(void);
  * Note that this does NOT grab the cursor, it only defines the area a cursor
  * is restricted to when the window has mouse focus.
  *
- * \param[inout] window the window that will be associated with the barrier.
- * \param[in,opt] rect a rectangle area in window-relative coordinates. If NULL the
+ * \param window the window that will be associated with the barrier.
+ * \param rect a rectangle area in window-relative coordinates. If NULL the
  *             barrier for the specified window will be destroyed.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -2084,12 +2111,12 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetGrabbedWindow(void);
  * \sa SDL_GetWindowMouseRect
  * \sa SDL_SetWindowMouseGrab
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window *window, const SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMouseRect([[self]] SDL_Window *window, [[in, opt]] const SDL_Rect *rect);
 
 /**
  * Get the mouse confinement rectangle of a window.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns a pointer to the mouse confinement rectangle of a window, or NULL
  *          if there isn't one.
  *
@@ -2097,7 +2124,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowMouseRect(SDL_Window *window, const
  *
  * \sa SDL_SetWindowMouseRect
  */
-extern SDL_DECLSPEC const SDL_Rect *SDLCALL SDL_GetWindowMouseRect(SDL_Window *window);
+extern SDL_DECLSPEC const SDL_Rect *SDLCALL SDL_GetWindowMouseRect([[self]] SDL_Window *window);
 
 /**
  * Set the opacity for a window.
@@ -2107,7 +2134,7 @@ extern SDL_DECLSPEC const SDL_Rect *SDLCALL SDL_GetWindowMouseRect(SDL_Window *w
  *
  * This function also returns -1 if setting the opacity isn't supported.
  *
- * \param[inout] window the window which will be made transparent or opaque.
+ * \param window the window which will be made transparent or opaque.
  * \param opacity the opacity value (0.0f - transparent, 1.0f - opaque).
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -2116,7 +2143,7 @@ extern SDL_DECLSPEC const SDL_Rect *SDLCALL SDL_GetWindowMouseRect(SDL_Window *w
  *
  * \sa SDL_GetWindowOpacity
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window *window, float opacity);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowOpacity([[self]] SDL_Window *window, float opacity);
 
 /**
  * Get the opacity of a window.
@@ -2128,8 +2155,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window *window, float o
  *
  * This function also returns -1 if an invalid window was provided.
  *
- * \param[inout] window the window to get the current opacity value from.
- * \param[out] out_opacity the float filled in (0.0f - transparent, 1.0f - opaque).
+ * \param window the window to get the current opacity value from.
+ * \param out_opacity the float filled in (0.0f - transparent, 1.0f - opaque).
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -2137,7 +2164,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window *window, float o
  *
  * \sa SDL_SetWindowOpacity
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window *window, float *out_opacity);
+extern SDL_DECLSPEC int SDLCALL SDL_GetWindowOpacity([[self]] SDL_Window *window, [[out]] float *out_opacity);
 
 /**
  * Set the window as a modal to a parent window.
@@ -2149,14 +2176,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window *window, float *
  * Setting a window as modal to a parent that is a descendent of the modal
  * window results in undefined behavior.
  *
- * \param[inout] modal_window the window that should be set modal.
- * \param[inout,opt] parent_window the parent window for the modal window.
+ * \param modal_window the window that should be set modal.
+ * \param parent_window the parent window for the modal window.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowModalFor([[self]] SDL_Window *modal_window, [[inout]] SDL_Window *parent_window);
 
 /**
  * Explicitly set input focus to the window.
@@ -2165,7 +2192,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window *modal_window, 
  * this with caution, as you might give focus to a window that is completely
  * obscured by other windows.
  *
- * \param[inout] window the window that should get the input focus.
+ * \param window the window that should get the input focus.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -2173,12 +2200,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window *modal_window, 
  *
  * \sa SDL_RaiseWindow
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowInputFocus([[self]] SDL_Window *window);
 
 /**
  * Set whether the window may have input focus.
  *
- * \param[inout] window the window to set focusable state.
+ * \param window the window to set focusable state.
  * \param focusable SDL_TRUE to allow input focus, SDL_FALSE to not allow
  *                  input focus.
  * \returns 0 on success or a negative error code on failure; call
@@ -2186,8 +2213,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window *window);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFocusable(SDL_Window *window, SDL_bool focusable);
-
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFocusable([[self]] SDL_Window *window, SDL_bool focusable);
 
 /**
  * Display the system-level window menu.
@@ -2200,7 +2226,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFocusable(SDL_Window *window, SDL_b
  * On platforms or desktops where this is unsupported, this function does
  * nothing.
  *
- * \param[inout] window the window for which the menu will be displayed.
+ * \param window the window for which the menu will be displayed.
  * \param x the x coordinate of the menu, relative to the origin (top-left) of
  *          the client area.
  * \param y the y coordinate of the menu, relative to the origin (top-left) of
@@ -2210,7 +2236,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFocusable(SDL_Window *window, SDL_b
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
+extern SDL_DECLSPEC int SDLCALL SDL_ShowWindowSystemMenu([[self]] SDL_Window *window, int x, int y);
 
 /**
  * Possible return values from the SDL_HitTest callback.
@@ -2243,9 +2269,9 @@ typedef enum SDL_HitTestResult
  *
  * \sa SDL_SetWindowHitTest
  */
-typedef SDL_HitTestResult (SDLCALL *SDL_HitTest)(SDL_Window *win,
-                                                 const SDL_Point *area,
-                                                 void *data);
+typedef SDL_HitTestResult(SDLCALL *SDL_HitTest)(SDL_Window *win,
+                                                const SDL_Point *area,
+                                                void *data);
 
 /**
  * Provide a callback that decides if a window region has special properties.
@@ -2279,15 +2305,17 @@ typedef SDL_HitTestResult (SDLCALL *SDL_HitTest)(SDL_Window *win,
  * can fire at any time, you should try to keep your callback efficient,
  * devoid of allocations, etc.
  *
- * \param[inout] window the window to set hit-testing on.
- * \param[in] callback the function to call when doing a hit-test.
- * \param[inout,opt] callback_data an app-defined void pointer passed to **callback**.
+ * \param window the window to set hit-testing on.
+ * \param callback the function to call when doing a hit-test.
+ * \param callback_data an app-defined void pointer passed to **callback**.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window *window, SDL_HitTest callback, void *callback_data);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowHitTest(
+    [[self]] SDL_Window *window,
+    [[in]] SDL_HitTest callback, [[inout, opt]] void *callback_data);
 
 /**
  * Set the shape of a transparent window.
@@ -2303,27 +2331,27 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window *window, SDL_Hit
  *
  * The window must have been created with the SDL_WINDOW_TRANSPARENT flag.
  *
- * \param[inout] window the window.
- * \param[inout,opt] shape the surface representing the shape of the window, or NULL to
+ * \param window the window.
+ * \param shape the surface representing the shape of the window, or NULL to
  *              remove any current shape.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowShape(SDL_Window *window, SDL_Surface *shape);
+extern SDL_DECLSPEC int SDLCALL SDL_SetWindowShape([[self]] SDL_Window *window, [[inout, opt]] SDL_Surface *shape);
 
 /**
  * Request a window to demand attention from the user.
  *
- * \param[inout] window the window to be flashed.
+ * \param window the window to be flashed.
  * \param operation the operation to perform.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOperation operation);
+extern SDL_DECLSPEC int SDLCALL SDL_FlashWindow([[self]] SDL_Window *window, SDL_FlashOperation operation);
 
 /**
  * Destroy a window.
@@ -2334,7 +2362,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOpe
  * If `window` is NULL, this function will return immediately after setting
  * the SDL error message to "Invalid window". See SDL_GetError().
  *
- * \param[inout] window the window to destroy.
+ * \param window the window to destroy.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2342,8 +2370,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOpe
  * \sa SDL_CreateWindow
  * \sa SDL_CreateWindowWithProperties
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window *window);
-
+extern SDL_DECLSPEC void SDLCALL SDL_DestroyWindow([[self]] SDL_Window *window);
 
 /**
  * Check whether the screensaver is currently enabled.
@@ -2394,7 +2421,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_EnableScreenSaver(void);
  */
 extern SDL_DECLSPEC int SDLCALL SDL_DisableScreenSaver(void);
 
-
 /**
  *  \name OpenGL support functions
  */
@@ -2410,7 +2436,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_DisableScreenSaver(void);
  * If you do this, you need to retrieve all of the GL functions used in your
  * program from the dynamic library using SDL_GL_GetProcAddress().
  *
- * \param[in,opt] path the platform dependent OpenGL library name, or NULL to open the
+ * \param path the platform dependent OpenGL library name, or NULL to open the
  *             default OpenGL library.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -2420,7 +2446,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_DisableScreenSaver(void);
  * \sa SDL_GL_GetProcAddress
  * \sa SDL_GL_UnloadLibrary
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
+extern SDL_DECLSPEC int SDLCALL SDL_GL_LoadLibrary([[in, opt]] const char *path);
 
 /**
  * Get an OpenGL function by name.
@@ -2463,7 +2489,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
  *   code. This will ensure the proper calling convention is followed on
  *   platforms where this matters (Win32) thereby avoiding stack corruption.
  *
- * \param[in] proc the name of an OpenGL function.
+ * \param proc the name of an OpenGL function.
  * \returns a pointer to the named OpenGL function. The returned pointer
  *          should be cast to the appropriate function signature.
  *
@@ -2473,7 +2499,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
  * \sa SDL_GL_LoadLibrary
  * \sa SDL_GL_UnloadLibrary
  */
-extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress(const char *proc);
+extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress([[in]] const char *proc);
 
 /**
  * Get an EGL library function by name.
@@ -2482,7 +2508,7 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress(const char
  * points for EGL functions. This is useful to provide to an EGL API and
  * extension loader.
  *
- * \param[in] proc the name of an EGL function.
+ * \param proc the name of an EGL function.
  * \returns a pointer to the named EGL function. The returned pointer should
  *          be cast to the appropriate function signature.
  *
@@ -2490,7 +2516,7 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress(const char
  *
  * \sa SDL_GL_GetCurrentEGLDisplay
  */
-extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_EGL_GetProcAddress(const char *proc);
+extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_EGL_GetProcAddress([[in]] const char *proc);
 
 /**
  * Unload the OpenGL library previously loaded by SDL_GL_LoadLibrary().
@@ -2515,12 +2541,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_UnloadLibrary(void);
  * context and save that information somewhere instead of calling the function
  * every time you need to know.
  *
- * \param[in] extension the name of the extension to check.
+ * \param extension the name of the extension to check.
  * \returns SDL_TRUE if the extension is supported, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GL_ExtensionSupported(const char *extension);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GL_ExtensionSupported([[in]] const char *extension);
 
 /**
  * Reset all previously set OpenGL context attributes to their default values.
@@ -2558,7 +2584,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_SetAttribute(SDL_GLattr attr, int value);
  *
  * \param attr an SDL_GLattr enum value specifying the OpenGL attribute to
  *             get.
- * \param[out] value a pointer filled in with the current value of `attr`.
+ * \param value a pointer filled in with the current value of `attr`.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -2567,7 +2593,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_SetAttribute(SDL_GLattr attr, int value);
  * \sa SDL_GL_ResetAttributes
  * \sa SDL_GL_SetAttribute
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value);
+extern SDL_DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, [[out]] int *value);
 
 /**
  * Create an OpenGL context for an OpenGL window, and make it current.
@@ -2580,7 +2606,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
  *
  * SDL_GLContext is opaque to the application.
  *
- * \param[inout] window the window to associate with the context.
+ * \param window the window to associate with the context.
  * \returns the OpenGL context associated with `window` or NULL on error; call
  *          SDL_GetError() for more details.
  *
@@ -2589,15 +2615,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
  * \sa SDL_GL_DeleteContext
  * \sa SDL_GL_MakeCurrent
  */
-extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *window);
+extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext([[self]] SDL_Window *window);
 
 /**
  * Set up an OpenGL context for rendering into an OpenGL window.
  *
  * The context must have been created with a compatible window.
  *
- * \param[inout] window the window to associate with the context.
- * \param[out] context the OpenGL context to associate with the window.
+ * \param window the window to associate with the context.
+ * \param context the OpenGL context to associate with the window.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -2605,7 +2631,7 @@ extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *windo
  *
  * \sa SDL_GL_CreateContext
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLContext context);
+extern SDL_DECLSPEC int SDLCALL SDL_GL_MakeCurrent([[self]] SDL_Window *window, [[out]] SDL_GLContext context);
 
 /**
  * Get the currently active OpenGL window.
@@ -2652,13 +2678,13 @@ extern SDL_DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentEGLConfig(void);
 /**
  * Get the EGL surface associated with the window.
  *
- * \param[inout] window the window to query.
+ * \param window the window to query.
  * \returns the EGLSurface pointer associated with the window, or NULL on
  *          failure.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowEGLSurface(SDL_Window *window);
+extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowEGLSurface([[self]] SDL_Window *window);
 
 /**
  * Sets the callbacks for defining custom EGLAttrib arrays for EGL
@@ -2673,18 +2699,18 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowEGLSurface(SDL_Windo
  *
  * NOTE: These callback pointers will be reset after SDL_GL_ResetAttributes.
  *
- * \param[in] platformAttribCallback callback for attributes to pass to
+ * \param platformAttribCallback callback for attributes to pass to
  *                               eglGetPlatformDisplay.
- * \param[in] surfaceAttribCallback callback for attributes to pass to
+ * \param surfaceAttribCallback callback for attributes to pass to
  *                              eglCreateSurface.
- * \param[in] contextAttribCallback callback for attributes to pass to
+ * \param contextAttribCallback callback for attributes to pass to
  *                              eglCreateContext.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
-                                                              SDL_EGLIntArrayCallback surfaceAttribCallback,
-                                                              SDL_EGLIntArrayCallback contextAttribCallback);
+extern SDL_DECLSPEC void SDLCALL SDL_EGL_SetEGLAttributeCallbacks([[in]] SDL_EGLAttribArrayCallback platformAttribCallback,
+                                                                  [[in]] SDL_EGLIntArrayCallback surfaceAttribCallback,
+                                                                  [[in]] SDL_EGLIntArrayCallback contextAttribCallback);
 
 /**
  * Set the swap interval for the current OpenGL context.
@@ -2721,7 +2747,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_SetSwapInterval(int interval);
  * If the system can't determine the swap interval, or there isn't a valid
  * current context, this function will set *interval to 0 as a safe default.
  *
- * \param[out] interval output interval value. 0 if there is no vertical retrace
+ * \param interval output interval value. 0 if there is no vertical retrace
  *                 synchronization, 1 if the buffer swap is synchronized with
  *                 the vertical retrace, and -1 if late swaps happen
  *                 immediately instead of waiting for the next retrace.
@@ -2732,7 +2758,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_SetSwapInterval(int interval);
  *
  * \sa SDL_GL_SetSwapInterval
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GL_GetSwapInterval(int *interval);
+extern SDL_DECLSPEC int SDLCALL SDL_GL_GetSwapInterval([[out]] int *interval);
 
 /**
  * Update a window with OpenGL rendering.
@@ -2744,18 +2770,18 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_GetSwapInterval(int *interval);
  * glBindFramebuffer(), this is the default and you won't have to do anything
  * extra.
  *
- * \param[inout] window the window to change.
+ * \param window the window to change.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GL_SwapWindow(SDL_Window *window);
+extern SDL_DECLSPEC int SDLCALL SDL_GL_SwapWindow([[self]] SDL_Window *window);
 
 /**
  * Delete an OpenGL context.
  *
- * \param[inout] context the OpenGL context to be deleted.
+ * \param context the OpenGL context to be deleted.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -2763,10 +2789,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_SwapWindow(SDL_Window *window);
  *
  * \sa SDL_GL_CreateContext
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GL_DeleteContext(SDL_GLContext context);
+extern SDL_DECLSPEC int SDLCALL SDL_GL_DeleteContext([[inout]] SDL_GLContext context);
 
-/* @} *//* OpenGL support functions */
-
+/* @} */ /* OpenGL support functions */
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

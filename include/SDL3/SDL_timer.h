@@ -28,8 +28,8 @@
  * SDL time management routines.
  */
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -38,17 +38,17 @@ extern "C" {
 #endif
 
 /* SDL time constants */
-#define SDL_MS_PER_SECOND   1000
-#define SDL_US_PER_SECOND   1000000
-#define SDL_NS_PER_SECOND   1000000000LL
-#define SDL_NS_PER_MS       1000000
-#define SDL_NS_PER_US       1000
-#define SDL_SECONDS_TO_NS(S)    (((Uint64)(S)) * SDL_NS_PER_SECOND)
-#define SDL_NS_TO_SECONDS(NS)   ((NS) / SDL_NS_PER_SECOND)
-#define SDL_MS_TO_NS(MS)        (((Uint64)(MS)) * SDL_NS_PER_MS)
-#define SDL_NS_TO_MS(NS)        ((NS) / SDL_NS_PER_MS)
-#define SDL_US_TO_NS(US)        (((Uint64)(US)) * SDL_NS_PER_US)
-#define SDL_NS_TO_US(NS)        ((NS) / SDL_NS_PER_US)
+#define SDL_MS_PER_SECOND     1000
+#define SDL_US_PER_SECOND     1000000
+#define SDL_NS_PER_SECOND     1000000000LL
+#define SDL_NS_PER_MS         1000000
+#define SDL_NS_PER_US         1000
+#define SDL_SECONDS_TO_NS(S)  (((Uint64)(S)) * SDL_NS_PER_SECOND)
+#define SDL_NS_TO_SECONDS(NS) ((NS) / SDL_NS_PER_SECOND)
+#define SDL_MS_TO_NS(MS)      (((Uint64)(MS)) * SDL_NS_PER_MS)
+#define SDL_NS_TO_MS(NS)      ((NS) / SDL_NS_PER_MS)
+#define SDL_US_TO_NS(US)      (((Uint64)(US)) * SDL_NS_PER_US)
+#define SDL_NS_TO_US(NS)      ((NS) / SDL_NS_PER_US)
 
 /**
  * Get the number of milliseconds since SDL library initialization.
@@ -154,7 +154,7 @@ typedef Uint32 SDL_TimerID;
  *
  * \sa SDL_AddTimer
  */
-typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID, Uint32 interval);
+typedef Uint32(SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID, Uint32 interval);
 
 /**
  * Call a callback function at a future time.
@@ -179,9 +179,9 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID,
  * callback needs to adjust for variances.
  *
  * \param interval the timer delay, in milliseconds, passed to `callback`.
- * \param[in] callback the SDL_TimerCallback function to call when the specified
+ * \param callback the SDL_TimerCallback function to call when the specified
  *                 `interval` elapses.
- * \param[inout,opt] userdata a pointer that is passed to `callback`.
+ * \param userdata a pointer that is passed to `callback`.
  * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
  *          information.
  *
@@ -192,7 +192,9 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID,
  * \sa SDL_AddTimerNS
  * \sa SDL_RemoveTimer
  */
-extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *userdata);
+extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(
+    Uint32 interval,
+    [[in]] SDL_TimerCallback callback, [[inout, opt]] void *userdata);
 
 /**
  * Function prototype for the nanosecond timer callback function.
@@ -217,7 +219,7 @@ extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerC
  *
  * \sa SDL_AddTimerNS
  */
-typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerID, Uint64 interval);
+typedef Uint64(SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerID, Uint64 interval);
 
 /**
  * Call a callback function at a future time.
@@ -242,9 +244,9 @@ typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerI
  * callback needs to adjust for variances.
  *
  * \param interval the timer delay, in nanoseconds, passed to `callback`.
- * \param[in] callback the SDL_TimerCallback function to call when the specified
+ * \param callback the SDL_TimerCallback function to call when the specified
  *                 `interval` elapses.
- * \param[inout,opt] userdata a pointer that is passed to `callback`.
+ * \param userdata a pointer that is passed to `callback`.
  * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
  *          information.
  *
@@ -255,7 +257,9 @@ typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerI
  * \sa SDL_AddTimer
  * \sa SDL_RemoveTimer
  */
-extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerNS(Uint64 interval, SDL_NSTimerCallback callback, void *userdata);
+extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerNS(
+    Uint64 interval,
+    [[in]] SDL_NSTimerCallback callback, [[inout, opt]] void *userdata);
 
 /**
  * Remove a timer created with SDL_AddTimer().
@@ -269,7 +273,6 @@ extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimerNS(Uint64 interval, SDL_NSTi
  * \sa SDL_AddTimer
  */
 extern SDL_DECLSPEC int SDLCALL SDL_RemoveTimer(SDL_TimerID id);
-
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

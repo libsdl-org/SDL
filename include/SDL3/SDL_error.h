@@ -53,7 +53,7 @@ extern "C" {
  * }
  * ```
  *
- * \param[in] fmt a printf()-style message format string.
+ * \param fmt a printf()-style message format string.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any.
  * \returns always -1.

@@ -28,9 +28,9 @@
 #ifndef SDL_keyboard_h_
 #define SDL_keyboard_h_
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 
 #include <SDL3/SDL_begin_code.h>
@@ -65,9 +65,9 @@ typedef Uint32 SDL_KeyboardID;
  */
 typedef struct SDL_Keysym
 {
-    SDL_Scancode scancode;      /**< SDL physical key code - see SDL_Scancode for details */
-    SDL_Keycode sym;            /**< SDL virtual key code - see SDL_Keycode for details */
-    SDL_Keymod mod;             /**< current key modifiers */
+    SDL_Scancode scancode; /**< SDL physical key code - see SDL_Scancode for details */
+    SDL_Keycode sym;       /**< SDL virtual key code - see SDL_Keycode for details */
+    SDL_Keymod mod;        /**< current key modifiers */
     Uint16 unused;
 } SDL_Keysym;
 
@@ -92,8 +92,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * power buttons, etc. You should wait for input from a device before you
  * consider it actively in use.
  *
- * \param[out] count a pointer filled in with the number of keyboards returned.
- * \returns[own] a 0 terminated array of keyboards instance IDs which should be
+ * \param count a pointer filled in with the number of keyboards returned.
+ * \returns a 0 terminated array of keyboards instance IDs which should be
  *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
  *          more details.
  *
@@ -102,7 +102,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * \sa SDL_GetKeyboardInstanceName
  * \sa SDL_HasKeyboard
  */
-extern SDL_DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
+[[array(_), free(SDL_free)]]
+extern SDL_DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards([[out]] int *count);
 
 /**
  * Get the name of a keyboard.
@@ -128,7 +129,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetKeyboardInstanceName(SDL_Keyboard
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
+extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetKeyboardFocus(void);
 
 /**
  * Get a snapshot of the current state of the keyboard.
@@ -151,7 +152,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * Note: This function doesn't take into account whether shift has been
  * pressed or not.
  *
- * \param[out] numkeys if non-NULL, receives the length of the returned array.
+ * \param numkeys if non-NULL, receives the length of the returned array.
  * \returns a pointer to an array of key states.
  *
  * \since This function is available since SDL 3.0.0.
@@ -159,7 +160,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * \sa SDL_PumpEvents
  * \sa SDL_ResetKeyboard
  */
-extern SDL_DECLSPEC const Uint8 *SDLCALL SDL_GetKeyboardState(int *numkeys);
+extern SDL_DECLSPEC const Uint8 *SDLCALL SDL_GetKeyboardState([[out]] int *numkeys);
 
 /**
  * Clear the state of the keyboard.
@@ -282,7 +283,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetScancodeName(SDL_Scancode scancod
 /**
  * Get a scancode from a human-readable name.
  *
- * \param[in] name the human-readable scancode name.
+ * \param name the human-readable scancode name.
  * \returns the SDL_Scancode, or `SDL_SCANCODE_UNKNOWN` if the name wasn't
  *          recognized; call SDL_GetError() for more information.
  *
@@ -292,7 +293,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetScancodeName(SDL_Scancode scancod
  * \sa SDL_GetScancodeFromKey
  * \sa SDL_GetScancodeName
  */
-extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *name);
+extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName([[in]] const char *name);
 
 /**
  * Get a human-readable name for a key.
@@ -318,7 +319,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetKeyName(SDL_Keycode key);
 /**
  * Get a key code from a human-readable name.
  *
- * \param[in] name the human-readable key name.
+ * \param name the human-readable key name.
  * \returns key code, or `SDLK_UNKNOWN` if the name wasn't recognized; call
  *          SDL_GetError() for more information.
  *
@@ -328,7 +329,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetKeyName(SDL_Keycode key);
  * \sa SDL_GetKeyName
  * \sa SDL_GetScancodeFromName
  */
-extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
+extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName([[in]] const char *name);
 
 /**
  * Start accepting Unicode text input events.
@@ -395,7 +396,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ClearComposition(void);
  * **SDL_HINT_IME_SHOW_UI** to **1**, otherwise this function won't give you
  * any feedback.
  *
- * \param[in,opt] rect the SDL_Rect structure representing the rectangle to receive
+ * \param rect the SDL_Rect structure representing the rectangle to receive
  *             text (ignored if NULL).
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -404,7 +405,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ClearComposition(void);
  *
  * \sa SDL_StartTextInput
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetTextInputRect(const SDL_Rect *rect);
+extern SDL_DECLSPEC int SDLCALL SDL_SetTextInputRect([[in, opt]] const SDL_Rect *rect);
 
 /**
  * Check whether the platform has screen keyboard support.
@@ -422,14 +423,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasScreenKeyboardSupport(void);
 /**
  * Check whether the screen keyboard is shown for given window.
  *
- * \param[inout] window the window for which screen keyboard should be queried.
+ * \param window the window for which screen keyboard should be queried.
  * \returns SDL_TRUE if screen keyboard is shown or SDL_FALSE if not.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasScreenKeyboardSupport
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ScreenKeyboardShown(SDL_Window *window);
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ScreenKeyboardShown([[inout]] SDL_Window *window);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

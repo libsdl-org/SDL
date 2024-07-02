@@ -28,8 +28,8 @@
 #ifndef SDL_filesystem_h_
 #define SDL_filesystem_h_
 
-#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include <SDL3/SDL_begin_code.h>
 
@@ -71,7 +71,7 @@ extern "C" {
  * The pointer returned is owned by the caller. Please call SDL_free() on the
  * pointer when done with it.
  *
- * \returns[own] an absolute path in UTF-8 encoding to the application data
+ * \returns an absolute path in UTF-8 encoding to the application data
  *          directory. NULL will be returned on error or when the platform
  *          doesn't implement this functionality, call SDL_GetError() for more
  *          information.
@@ -80,6 +80,7 @@ extern "C" {
  *
  * \sa SDL_GetPrefPath
  */
+[[free(SDL_free)]]
 extern SDL_DECLSPEC char *SDLCALL SDL_GetBasePath(void);
 
 /**
@@ -127,9 +128,9 @@ extern SDL_DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  * The pointer returned is owned by the caller. Please call SDL_free() on the
  * pointer when done with it.
  *
- * \param[in] org the name of your organization.
- * \param[in] app the name of your application.
- * \returns[own] a UTF-8 string of the user directory in platform-dependent
+ * \param org the name of your organization.
+ * \param app the name of your application.
+ * \returns a UTF-8 string of the user directory in platform-dependent
  *          notation. NULL if there's a problem (creating directory failed,
  *          etc.).
  *
@@ -137,7 +138,10 @@ extern SDL_DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  *
  * \sa SDL_GetBasePath
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
+[[free(SDL_free)]]
+extern SDL_DECLSPEC char *SDLCALL SDL_GetPrefPath(
+    [[in]] const char *org,
+    [[in]] const char *app);
 
 /**
  * The type of the OS-provided default folder for a specific purpose.
@@ -233,15 +237,15 @@ typedef enum SDL_Folder
  * If NULL is returned, the error may be obtained with SDL_GetError().
  *
  * \param folder the type of folder to find.
- * \returns[own] either a null-terminated C string containing the full path to the
+ * \returns either a null-terminated C string containing the full path to the
  *          folder, or NULL if an error happened.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_Folder
  */
+[[free(SDL_free)]]
 extern SDL_DECLSPEC char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
-
 
 /* Abstract filesystem interface */
 
@@ -255,11 +259,11 @@ typedef enum SDL_PathType
 
 typedef struct SDL_PathInfo
 {
-    SDL_PathType type;          /* the path type */
-    Uint64 size;                /* the file size in bytes */
-    SDL_Time create_time;   /* the time when the path was created */
-    SDL_Time modify_time;   /* the last time the path was modified */
-    SDL_Time access_time;   /* the last time the path was read */
+    SDL_PathType type;    /* the path type */
+    Uint64 size;          /* the file size in bytes */
+    SDL_Time create_time; /* the time when the path was created */
+    SDL_Time modify_time; /* the last time the path was modified */
+    SDL_Time access_time; /* the last time the path was read */
 } SDL_PathInfo;
 
 /**
@@ -277,19 +281,19 @@ typedef Uint32 SDL_GlobFlags;
 /**
  * Create a directory.
  *
- * \param[in] path the path of the directory to create.
+ * \param path the path of the directory to create.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_CreateDirectory(const char *path);
+extern SDL_DECLSPEC int SDLCALL SDL_CreateDirectory([[in]] const char *path);
 
 /* Callback for directory enumeration. Return 1 to keep enumerating,
    0 to stop enumerating (no error), -1 to stop enumerating and
    report an error. `dirname` is the directory being enumerated,
    `fname` is the enumerated entry. */
-typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char *dirname, const char *fname);
+typedef int(SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char *dirname, const char *fname);
 
 /**
  * Enumerate a directory through a callback function.
@@ -298,51 +302,58 @@ typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char
  * callback, called once for each directory entry, until all results have been
  * provided or the callback returns <= 0.
  *
- * \param[in] path the path of the directory to enumerate.
- * \param[in] callback a function that is called for each entry in the directory.
- * \param[inout,opt] userdata a pointer that is passed to `callback`.
+ * \param path the path of the directory to enumerate.
+ * \param callback a function that is called for each entry in the directory.
+ * \param userdata a pointer that is passed to `callback`.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback callback, void *userdata);
+extern SDL_DECLSPEC int SDLCALL SDL_EnumerateDirectory(
+    [[in]] const char *path,
+    [[in]] SDL_EnumerateDirectoryCallback callback,
+    [[inout, opt]] void *userdata);
 
 /**
  * Remove a file or an empty directory.
  *
- * \param[in] path the path of the directory to enumerate.
+ * \param path the path of the directory to enumerate.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_RemovePath(const char *path);
+extern SDL_DECLSPEC int SDLCALL SDL_RemovePath([[in]] const char *path);
 
 /**
  * Rename a file or directory.
  *
- * \param[in] oldpath the old path.
- * \param[in] newpath the new path.
+ * \param oldpath the old path.
+ * \param newpath the new path.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_RenamePath(const char *oldpath, const char *newpath);
+extern SDL_DECLSPEC int SDLCALL SDL_RenamePath(
+    [[in]] const char *oldpath,
+    [[in]] const char *newpath);
 
 /**
  * Get information about a filesystem path.
  *
- * \param[in] path the path to query.
- * \param[out] info a pointer filled in with information about the path, or NULL to
+ * \param path the path to query.
+ * \param info a pointer filled in with information about the path, or NULL to
  *             check for the existence of a file.
  * \returns 0 on success or a negative error code if the file doesn't exist,
  *          or another failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *info);
+extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(
+    [[in]] const char *path,
+    [[out]] SDL_PathInfo *info);
 
 /**
  * Enumerate a directory tree, filtered by pattern, and return a list.
@@ -363,13 +374,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  *
  * You must free the returned pointer with SDL_free() when done with it.
  *
- * \param[in] path the path of the directory to enumerate.
- * \param[in,opt] pattern the pattern that files in the directory must match. Can be
+ * \param path the path of the directory to enumerate.
+ * \param pattern the pattern that files in the directory must match. Can be
  *                NULL.
  * \param flags `SDL_GLOB_*` bitflags that affect this search.
- * \param[out] count on return, will be set to the number of items in the returned
+ * \param count on return, will be set to the number of items in the returned
  *              array. Can be NULL.
- * \returns[own] an array of strings on success or NULL on failure; call
+ * \returns an array of strings on success or NULL on failure; call
  *          SDL_GetError() for more information. The caller should pass the
  *          returned pointer to SDL_free when done with it.
  *
@@ -377,7 +388,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
+[[array(_), free(SDL_free)]]
+extern SDL_DECLSPEC char **SDLCALL SDL_GlobDirectory(
+    [[in]] const char *path,
+    [[in, opt]] const char *pattern,
+    SDL_GlobFlags flags,
+    [[out]] int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

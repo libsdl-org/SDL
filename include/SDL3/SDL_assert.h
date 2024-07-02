@@ -234,17 +234,19 @@ typedef struct SDL_AssertData
  *
  * Use the SDL_assert* macros instead.
  *
- * \param[inout] data assert data structure.
- * \param[in] func function name.
- * \param[in] file file name.
+ * \param data assert data structure.
+ * \param func function name.
+ * \param file file name.
  * \param line line number.
  * \returns assert state.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *data,
-                                                            const char *func,
-                                                            const char *file, int line) SDL_ANALYZER_NORETURN;
+extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(
+    [[inout]] SDL_AssertData *data,
+    [[in]] const char *func,
+    [[in]] const char *file,
+    int line) SDL_ANALYZER_NORETURN;
 
 /* Define the trigger breakpoint call used in asserts */
 #ifndef SDL_AssertBreakpoint
@@ -448,17 +450,17 @@ typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
  *
  * This callback is NOT reset to SDL's internal handler upon SDL_Quit()!
  *
- * \param[in,opt] handler the SDL_AssertionHandler function to call when an assertion
+ * \param handler the SDL_AssertionHandler function to call when an assertion
  *                fails or NULL for the default handler.
- * \param[inout,opt] userdata a pointer that is passed to `handler`.
+ * \param userdata a pointer that is passed to `handler`.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetAssertionHandler
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetAssertionHandler(
-                                            SDL_AssertionHandler handler,
-                                            void *userdata);
+                                            [[in, opt]] SDL_AssertionHandler handler,
+                                            [[inout, opt]] void *userdata);
 
 /**
  * Get the default assertion handler.
@@ -490,7 +492,7 @@ extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(
  * will always be NULL for the default handler. If you don't care about this
  * data, it is safe to pass a NULL pointer to this function to ignore it.
  *
- * \param[out] puserdata pointer which is filled with the "userdata" pointer that
+ * \param puserdata pointer which is filled with the "userdata" pointer that
  *                  was passed to SDL_SetAssertionHandler().
  * \returns the SDL_AssertionHandler that is called when an assert triggers.
  *
@@ -498,7 +500,7 @@ extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(
  *
  * \sa SDL_SetAssertionHandler
  */
-extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puserdata);
+extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler([[out]] void **puserdata);
 
 /**
  * Get a list of all assertion failures.

@@ -45,15 +45,15 @@ extern "C" {
  */
 typedef struct SDL_DateTime
 {
-    int year;                  /**< Year */
-    int month;                 /**< Month [01-12] */
-    int day;                   /**< Day of the month [01-31] */
-    int hour;                  /**< Hour [0-23] */
-    int minute;                /**< Minute [0-59] */
-    int second;                /**< Seconds [0-60] */
-    int nanosecond;            /**< Nanoseconds [0-999999999] */
-    int day_of_week;           /**< Day of the week [0-6] (0 being Sunday) */
-    int utc_offset;            /**< Seconds east of UTC */
+    int year;        /**< Year */
+    int month;       /**< Month [01-12] */
+    int day;         /**< Day of the month [01-31] */
+    int hour;        /**< Hour [0-23] */
+    int minute;      /**< Minute [0-59] */
+    int second;      /**< Seconds [0-60] */
+    int nanosecond;  /**< Nanoseconds [0-999999999] */
+    int day_of_week; /**< Day of the week [0-6] (0 being Sunday) */
+    int utc_offset;  /**< Seconds east of UTC */
 } SDL_DateTime;
 
 /**
@@ -91,35 +91,37 @@ typedef enum SDL_TimeFormat
  * formats can change, usually because the user has changed a system
  * preference outside of your program.
  *
- * \param[out] dateFormat a pointer to the SDL_DateFormat to hold the returned date
+ * \param dateFormat a pointer to the SDL_DateFormat to hold the returned date
  *                   format, may be NULL.
- * \param[out] timeFormat a pointer to the SDL_TimeFormat to hold the returned time
+ * \param timeFormat a pointer to the SDL_TimeFormat to hold the returned time
  *                   format, may be NULL.
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat);
+extern SDL_DECLSPEC int SDLCALL SDL_GetDateTimeLocalePreferences(
+    [[out]] SDL_DateFormat *dateFormat,
+    [[out]] SDL_TimeFormat *timeFormat);
 
 /**
  * Gets the current value of the system realtime clock in nanoseconds since
  * Jan 1, 1970 in Universal Coordinated Time (UTC).
  *
- * \param[out] ticks the SDL_Time to hold the returned tick count.
+ * \param ticks the SDL_Time to hold the returned tick count.
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
+extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentTime([[out]] SDL_Time *ticks);
 
 /**
  * Converts an SDL_Time in nanoseconds since the epoch to a calendar time in
  * the SDL_DateTime format.
  *
  * \param ticks the SDL_Time to be converted.
- * \param[out] dt the resulting SDL_DateTime.
+ * \param dt the resulting SDL_DateTime.
  * \param localTime the resulting SDL_DateTime will be expressed in local time
  *                  if true, otherwise it will be in Universal Coordinated
  *                  Time (UTC).
@@ -128,7 +130,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime);
+extern SDL_DECLSPEC int SDLCALL SDL_TimeToDateTime(
+    SDL_Time ticks,
+    [[out]] SDL_DateTime *dt,
+    SDL_bool localTime);
 
 /**
  * Converts a calendar time to an SDL_Time in nanoseconds since the epoch.
@@ -136,14 +141,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime 
  * This function ignores the day_of_week member of the SDL_DateTime struct, so
  * it may remain unset.
  *
- * \param[in] dt the source SDL_DateTime.
- * \param[out] ticks the resulting SDL_Time.
+ * \param dt the source SDL_DateTime.
+ * \param ticks the resulting SDL_Time.
  * \returns 0 on success or -1 on error; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks);
+extern SDL_DECLSPEC int SDLCALL SDL_DateTimeToTime([[in]] const SDL_DateTime *dt, [[out]] SDL_Time *ticks);
 
 /**
  * Converts an SDL time into a Windows FILETIME (100-nanosecond intervals
@@ -152,14 +157,17 @@ extern SDL_DECLSPEC int SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_T
  * This function fills in the two 32-bit values of the FILETIME structure.
  *
  * \param ticks the time to convert.
- * \param[out] dwLowDateTime a pointer filled in with the low portion of the
+ * \param dwLowDateTime a pointer filled in with the low portion of the
  *                      Windows FILETIME value.
- * \param[out] dwHighDateTime a pointer filled in with the high portion of the
+ * \param dwHighDateTime a pointer filled in with the high portion of the
  *                       Windows FILETIME value.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime);
+extern SDL_DECLSPEC void SDLCALL SDL_TimeToWindows(
+    SDL_Time ticks,
+    [[out]] Uint32 *dwLowDateTime,
+    [[out]] Uint32 *dwHighDateTime);
 
 /**
  * Converts a Windows FILETIME (100-nanosecond intervals since January 1,

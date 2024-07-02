@@ -154,15 +154,16 @@ typedef enum SDL_PenSubtype
  * throughout a session. To track pens across sessions (program restart), use
  * SDL_GUID .
  *
- * \param[out] count the number of pens in the array (number of array elements
+ * \param count the number of pens in the array (number of array elements
  *              minus 1, i.e., not counting the terminator 0).
- * \returns[own] a 0 terminated array of SDL_PenID values, or NULL on error. The
+ * \returns a 0 terminated array of SDL_PenID values, or NULL on error. The
  *          array must be freed with SDL_free(). On a NULL return,
  *          SDL_GetError() is set.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
+[[array(_), free(SDL_free)]]
+extern SDL_DECLSPEC SDL_PenID *SDLCALL SDL_GetPens([[out]] int *count);
 
 /**
  * Retrieves the pen's current status.
@@ -171,9 +172,9 @@ extern SDL_DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
  * default values.
  *
  * \param instance_id the pen to query.
- * \param[out] x out-mode parameter for pen x coordinate. May be NULL.
- * \param[out] y out-mode parameter for pen y coordinate. May be NULL.
- * \param[out] axes out-mode parameter for axis information. May be null. The axes
+ * \param x out-mode parameter for pen x coordinate. May be NULL.
+ * \param y out-mode parameter for pen y coordinate. May be NULL.
+ * \param axes out-mode parameter for axis information. May be null. The axes
  *             are in the same order as SDL_PenAxis.
  * \param num_axes maximum number of axes to write to "axes".
  * \returns a bit mask with the current pen button states (SDL_BUTTON_LMASK
@@ -183,7 +184,12 @@ extern SDL_DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetPenStatus(SDL_PenID instance_id, float *x, float *y, float *axes, size_t num_axes);
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetPenStatus(
+    SDL_PenID instance_id,
+    [[out]] float *x,
+    [[out]] float *y,
+    [[out, array(num_axes)]] float *axes,
+    size_t num_axes);
 
 /**
  * Retrieves an SDL_PenID for the given SDL_GUID.
@@ -255,13 +261,15 @@ typedef struct SDL_PenCapabilityInfo
  * Retrieves capability flags for a given SDL_PenID.
  *
  * \param instance_id the pen to query.
- * \param[out] capabilities detail information about pen capabilities, such as the
+ * \param capabilities detail information about pen capabilities, such as the
  *                     number of buttons.
  * \returns a set of capability flags, cf. SDL_PEN_CAPABILITIES.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_PenCapabilityFlags SDLCALL SDL_GetPenCapabilities(SDL_PenID instance_id, SDL_PenCapabilityInfo *capabilities);
+extern SDL_DECLSPEC SDL_PenCapabilityFlags SDLCALL SDL_GetPenCapabilities(
+    SDL_PenID instance_id,
+    [[out]] SDL_PenCapabilityInfo *capabilities);
 
 /**
  * Retrieves the pen type for a given SDL_PenID.
