@@ -1084,24 +1084,23 @@ static SDL_bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
     LOADSYM(mfreadwrite, MFCreateSourceReaderFromMediaSource);
     #undef LOADSYM
 
+    if (okay) {
+        const HRESULT ret = pMFStartup(MF_VERSION, MFSTARTUP_LITE);
+        if (FAILED(ret)) {
+            okay = SDL_FALSE;
+        }
+    }
+
     if (!okay) {
         FreeLibrary(mfreadwrite);
         FreeLibrary(mfplat);
         FreeLibrary(mf);
+        return SDL_FALSE;
     }
 
     libmf = mf;
     libmfplat = mfplat;
     libmfreadwrite = mfreadwrite;
-
-    const HRESULT ret = pMFStartup(MF_VERSION, MFSTARTUP_LITE);
-    if (FAILED(ret)) {
-        FreeLibrary(libmfplat);
-        libmfplat = NULL;
-        FreeLibrary(libmf);
-        libmf = NULL;
-        return SDL_FALSE;
-    }
 
     impl->DetectDevices = MEDIAFOUNDATION_DetectDevices;
     impl->OpenDevice = MEDIAFOUNDATION_OpenDevice;
