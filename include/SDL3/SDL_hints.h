@@ -907,6 +907,20 @@ extern "C" {
 #define SDL_HINT_GDK_TEXTINPUT_TITLE "SDL_GDK_TEXTINPUT_TITLE"
 
 /**
+ * A variable that specifies a GPU backend to use.
+ *
+ * By default, SDL will try all available GPU backends in a reasonable order
+ * until it finds one that can work, but this hint allows the app or user to
+ * force a specific target, such as "d3d11" if, say, your hardware supports
+ * D3D12 but want to try using D3D11 instead.
+ *
+ * This hint should be set before SDL_GpuSelectBackend() is called.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_GPU_BACKEND "SDL_GPU_BACKEND"
+
+/**
  * A variable to control whether SDL_hid_enumerate() enumerates all HID
  * devices or only controllers.
  *
