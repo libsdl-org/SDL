@@ -324,13 +324,12 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
  * Both lowercase and uppercase alphabetic keycodes have uppercase names, e.g.
  * SDL_Keycode 'a' and 'A' both have the name "A".
  *
+ * If the key doesn't have a name, this function returns an empty string ("").
+ *
  * The returned string follows the SDL_GetStringRule.
  *
  * \param key the desired SDL_Keycode to query.
- * \returns a pointer to a UTF-8 string that stays valid at least until the
- *          next call to this function. If you need it around any longer, you
- *          must copy it. If the key doesn't have a name, this function
- *          returns an empty string ("").
+ * \returns a UTF-8 encoded string of the key name.
  *
  * \since This function is available since SDL 3.0.0.
  *
