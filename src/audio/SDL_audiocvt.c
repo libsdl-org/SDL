@@ -162,6 +162,7 @@ static void SwizzleAudio(const int num_frames, void *dst, const void *src, int c
             } \
         } else { \
             Uint##bits tmp[SDL_MAX_CHANNEL_MAP_SIZE]; \
+            SDL_zeroa(tmp); \
             SDL_assert(SDL_arraysize(tmp) >= channels); \
             for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
                 for (int ch = 0; ch < channels; ch++) { \
