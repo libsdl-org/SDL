@@ -2000,6 +2000,7 @@ extern "C" {
  * in events:
  *
  * - "none": Keycode options are cleared, this overrides other options.
+ * - "hide_numpad": The numpad keysyms will be translated into their non-numpad versions based on the current NumLock state. For example, SDLK_KP_4 would become SDLK_4 if SDL_KMOD_NUM is set in the event modifiers, and SDLK_LEFT if it is unset.
  * - "french_numbers": The number row on French keyboards is inverted, so
  *   pressing the 1 key would yield the keycode SDLK_1, or '1', instead of
  *   SDLK_AMPERSAND, or '&'

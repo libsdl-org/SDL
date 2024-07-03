@@ -37,8 +37,9 @@
 
 #define KEYBOARD_SOURCE_MASK (KEYBOARD_HARDWARE | KEYBOARD_AUTORELEASE)
 
-#define KEYCODE_OPTION_FRENCH_NUMBERS   0x01
-#define KEYCODE_OPTION_LATIN_LETTERS    0x02
+#define KEYCODE_OPTION_HIDE_NUMPAD      0x01
+#define KEYCODE_OPTION_FRENCH_NUMBERS   0x02
+#define KEYCODE_OPTION_LATIN_LETTERS    0x04
 #define DEFAULT_KEYCODE_OPTIONS (KEYCODE_OPTION_FRENCH_NUMBERS)
 
 typedef struct SDL_KeyboardInstance
@@ -74,6 +75,9 @@ static void SDLCALL SDL_KeycodeOptionsChanged(void *userdata, const char *name, 
     if (hint && *hint) {
         keyboard->keycode_options = 0;
         if (!SDL_strstr(hint, "none")) {
+            if (SDL_strstr(hint, "hide_numpad")) {
+                keyboard->keycode_options |= KEYCODE_OPTION_HIDE_NUMPAD;
+            }
             if (SDL_strstr(hint, "french_numbers")) {
                 keyboard->keycode_options |= KEYCODE_OPTION_FRENCH_NUMBERS;
             }
@@ -330,31 +334,129 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
     return 0;
 }
 
+static SDL_Keycode SDL_ConvertNumpadKeycode(SDL_Keycode keycode, SDL_bool numlock)
+{
+    switch (keycode) {
+    case SDLK_KP_DIVIDE:
+        return SDLK_SLASH;
+    case SDLK_KP_MULTIPLY:
+        return SDLK_ASTERISK;
+    case SDLK_KP_MINUS:
+        return SDLK_MINUS;
+    case SDLK_KP_PLUS:
+        return SDLK_PLUS;
+    case SDLK_KP_ENTER:
+        return SDLK_RETURN;
+    case SDLK_KP_1:
+        return numlock ? SDLK_1 : SDLK_END;
+    case SDLK_KP_2:
+        return numlock ? SDLK_2 : SDLK_DOWN;
+    case SDLK_KP_3:
+        return numlock ? SDLK_3 : SDLK_PAGEDOWN;
+    case SDLK_KP_4:
+        return numlock ? SDLK_4 : SDLK_LEFT;
+    case SDLK_KP_5:
+        return numlock ? SDLK_5 : SDLK_CLEAR;
+    case SDLK_KP_6:
+        return numlock ? SDLK_6 : SDLK_RIGHT;
+    case SDLK_KP_7:
+        return numlock ? SDLK_7 : SDLK_HOME;
+    case SDLK_KP_8:
+        return numlock ? SDLK_8 : SDLK_UP;
+    case SDLK_KP_9:
+        return numlock ? SDLK_9 : SDLK_PAGEUP;
+    case SDLK_KP_0:
+        return numlock ? SDLK_0 : SDLK_INSERT;
+    case SDLK_KP_PERIOD:
+        return numlock ? SDLK_PERIOD : SDLK_DELETE;
+    case SDLK_KP_EQUALS:
+        return SDLK_EQUALS;
+    case SDLK_KP_COMMA:
+        return SDLK_COMMA;
+    case SDLK_KP_EQUALSAS400:
+        return SDLK_EQUALS;
+    case SDLK_KP_LEFTPAREN:
+        return SDLK_LEFTPAREN;
+    case SDLK_KP_RIGHTPAREN:
+        return SDLK_RIGHTPAREN;
+    case SDLK_KP_LEFTBRACE:
+        return SDLK_LEFTBRACE;
+    case SDLK_KP_RIGHTBRACE:
+        return SDLK_RIGHTBRACE;
+    case SDLK_KP_TAB:
+        return SDLK_TAB;
+    case SDLK_KP_BACKSPACE:
+        return SDLK_BACKSPACE;
+    case SDLK_KP_A:
+        return SDLK_A;
+    case SDLK_KP_B:
+        return SDLK_B;
+    case SDLK_KP_C:
+        return SDLK_C;
+    case SDLK_KP_D:
+        return SDLK_D;
+    case SDLK_KP_E:
+        return SDLK_E;
+    case SDLK_KP_F:
+        return SDLK_F;
+    case SDLK_KP_PERCENT:
+        return SDLK_PERCENT;
+    case SDLK_KP_LESS:
+        return SDLK_LESS;
+    case SDLK_KP_GREATER:
+        return SDLK_GREATER;
+    case SDLK_KP_AMPERSAND:
+        return SDLK_AMPERSAND;
+    case SDLK_KP_COLON:
+        return SDLK_COLON;
+    case SDLK_KP_HASH:
+        return SDLK_HASH;
+    case SDLK_KP_SPACE:
+        return SDLK_SPACE;
+    case SDLK_KP_AT:
+        return SDLK_AT;
+    case SDLK_KP_EXCLAM:
+        return SDLK_EXCLAIM;
+    case SDLK_KP_PLUSMINUS:
+        return SDLK_PLUSMINUS;
+    default:
+        return keycode;
+    }
+}
+
 static SDL_Keycode SDL_GetEventKeycode(SDL_Keyboard *keyboard, SDL_Scancode scancode, SDL_Keymod modstate)
 {
     SDL_bool shifted = (modstate & SDL_KMOD_SHIFT) != 0;
+    SDL_bool numlock = (modstate & SDL_KMOD_NUM) != 0;
+    SDL_Keycode keycode;
 
-    // We won't be applying any modifiers except numlock by default
-    modstate &= SDL_KMOD_NUM;
+    // We won't be applying any modifiers by default
+    modstate = SDL_KMOD_NONE;
 
-    if (scancode >= SDL_SCANCODE_A && scancode <= SDL_SCANCODE_Z) {
-        if (keyboard->non_latin_letters && (keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS)) {
-            return SDL_GetDefaultKeyFromScancode(scancode, modstate);
-        }
-    }
-
-    if (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0) {
-        if (keyboard->french_numbers && (keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS)) {
-            // Invert the shift state to generate the correct keycode
+    if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
+         keyboard->non_latin_letters &&
+        scancode >= SDL_SCANCODE_A && scancode <= SDL_SCANCODE_Z) {
+        keycode = SDL_GetDefaultKeyFromScancode(scancode, modstate);
+    } else {
+        if ((keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS) &&
+            keyboard->french_numbers &&
+            (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
+            // Invert the shift state to generate the expected keycode
             if (shifted) {
                 modstate &= ~SDL_KMOD_SHIFT;
             } else {
                 modstate |= SDL_KMOD_SHIFT;
             }
         }
+
+        keycode = SDL_GetKeyFromScancode(scancode, modstate);
     }
 
-    return SDL_GetKeyFromScancode(scancode, modstate);
+    if (keyboard->keycode_options & KEYCODE_OPTION_HIDE_NUMPAD) {
+        keycode = SDL_ConvertNumpadKeycode(keycode, numlock);
+    }
+
+    return keycode;
 }
 
 static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, Uint8 state)
