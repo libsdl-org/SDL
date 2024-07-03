@@ -114,7 +114,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create audio stream: %s\n", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
+    SDL_ResumeAudioStreamDevice(stream);
 
     return SDL_APP_CONTINUE;
 }
