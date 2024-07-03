@@ -58,17 +58,17 @@
  * - BC = back center speaker
  * - LFE = low-frequency speaker
  *
- * These are listed in the order they are laid out in
- * memory, so "FL, FR" means "the front left speaker is
- * laid out in memory first, then the front right, then
- * it repeats for the next audio frame".
+ * These are listed in the order they are laid out in memory, so "FL, FR"
+ * means "the front left speaker is laid out in memory first, then the front
+ * right, then it repeats for the next audio frame".
  *
  * - 1 channel (mono) layout: FRONT
  * - 2 channels (stereo) layout: FL, FR
  * - 3 channels (2.1) layout: FL, FR, LFE
  * - 4 channels (quad) layout: FL, FR, BL, BR
  * - 5 channels (4.1) layout: FL, FR, LFE, BL, BR
- * - 6 channels (5.1) layout: FL, FR, FC, LFE, BL, BR  (last two can also be BL, BR)
+ * - 6 channels (5.1) layout: FL, FR, FC, LFE, BL, BR (last two can also be
+ *   BL, BR)
  * - 7 channels (6.1) layout: FL, FR, FC, LFE, BC, SL, SR
  * - 8 channels (7.1) layout: FL, FR, FC, LFE, BL, BR, SL, SR
  *
@@ -304,8 +304,8 @@ typedef Uint32 SDL_AudioDeviceID;
 /**
  * Maximum channels that an SDL_AudioSpec channel map can handle.
  *
- * This is (currently) double the number of channels that SDL supports,
- * to allow for future expansion while maintaining binary compatibility.
+ * This is (currently) double the number of channels that SDL supports, to
+ * allow for future expansion while maintaining binary compatibility.
  *
  * \since This macro is available since SDL 3.0.0.
  *
