@@ -1425,15 +1425,6 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
             break;
-        } else if ((xevent->xclient.message_type == videodata->WM_PROTOCOLS) &&
-                   (xevent->xclient.format == 32) &&
-                   (xevent->xclient.data.l[0] == videodata->WM_TAKE_FOCUS)) {
-
-#ifdef DEBUG_XEVENTS
-            printf("window %p: WM_TAKE_FOCUS\n", data);
-#endif
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_TAKE_FOCUS, 0, 0);
-            break;
         }
     } break;
 
