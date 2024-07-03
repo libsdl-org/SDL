@@ -317,7 +317,7 @@ The _easiest_ (but not the best) way to get at your data files is to embed
 them in the app itself. Emscripten's linker has support for automating this.
 
 ```bash
-emcc -o index.html loopwave.c --embed-file=../test/sample.wav@/sounds/sample.wav
+emcc -o index.html loopwave.c --embed-file ../test/sample.wav@/sounds/sample.wav
 ```
 
 This will pack ../test/sample.wav in your app, and make it available at
