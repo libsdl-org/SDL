@@ -28,7 +28,7 @@ LIBFILE = $(LIBHOME)/$(LIBNAME).lib
 LNKFILE = $(LIBNAME).lnk
 
 INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
-INCPATH+= -Iinclude
+INCPATH+= -Iinclude/SDL2 -Iinclude-pregen
 
 LIBM = SDL2libm.lib
 TLIB = SDL2test.lib

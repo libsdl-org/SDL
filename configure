@@ -3498,7 +3498,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-ac_config_headers="$ac_config_headers include/SDL_config.h"
+ac_config_headers="$ac_config_headers include/SDL_config.h:src/SDL_config.h.in"
 
 
 
@@ -18306,7 +18306,7 @@ case "$host" in
         ;;
 esac
 
-INCLUDE="-I$srcdir/include"
+INCLUDE="-I$srcdir/include/SDL2 -Iinclude"
 
 case "$host" in
     *-*-nto-qnx*)
@@ -18330,7 +18330,7 @@ esac
 
 
 if test x$srcdir != x.; then
-    INCLUDE="-Iinclude $INCLUDE"
+    INCLUDE="-Iinclude/SDL2 $INCLUDE"
 elif test -d .git; then
     as_fn_error $? "
 *** When building from a git clone you should configure and build in a
@@ -31252,7 +31252,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
-    "include/SDL_config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/SDL_config.h" ;;
+    "include/SDL_config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/SDL_config.h:src/SDL_config.h.in" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile:Makefile.in:Makefile.rules" ;;
     "sdl2-config") CONFIG_FILES="$CONFIG_FILES sdl2-config" ;;
@@ -32723,5 +32723,3 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 printf "%s\n" "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
-

@@ -20,7 +20,7 @@
 */
 #include "../SDL_internal.h"
 
-#include "../../include/SDL_scancode.h"
+#include "SDL_scancode.h"
 
 typedef enum
 {

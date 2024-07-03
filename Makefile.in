@@ -131,7 +131,7 @@ HDRS = \
 	begin_code.h \
 	close_code.h
 
-SDLTEST_HDRS = $(shell ls $(srcdir)/include | $(FGREP) SDL_test)
+SDLTEST_HDRS = $(shell ls $(srcdir)/include/SDL2 | $(FGREP) SDL_test)
 
 LT_AGE      = @LT_AGE@
 LT_CURRENT  = @LT_CURRENT@
@@ -177,7 +177,7 @@ endif
 install-hdrs: update-revision
 	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(includedir)/SDL2
 	for file in $(HDRS) $(SDLTEST_HDRS); do \
-	    $(INSTALL) -m 644 $(srcdir)/include/$$file $(DESTDIR)$(includedir)/SDL2/$$file; \
+	    $(INSTALL) -m 644 $(srcdir)/include/SDL2/$$file $(DESTDIR)$(includedir)/SDL2/$$file; \
 	done
 	$(INSTALL) -m 644 include/SDL_config.h $(DESTDIR)$(includedir)/SDL2/SDL_config.h
 	if test -f include/SDL_revision.h; then \

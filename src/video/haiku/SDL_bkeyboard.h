@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-#include "../../../include/SDL_keyboard.h"
+#include "SDL_keyboard.h"
 
 extern void HAIKU_InitOSKeymap(void);
 extern SDL_Scancode HAIKU_GetScancodeFromBeKey(int32 bkey);

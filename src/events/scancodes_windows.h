@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../include/SDL_scancode.h"
+#include "SDL_scancode.h"
 
 /* Windows scancode to SDL scancode mapping table */
 /* derived from Microsoft scan code document, http://download.microsoft.com/download/1/6/1/161ba512-40e2-4cc9-843a-923143f3456c/scancode.doc */

@@ -1,4 +1,4 @@
-INCPATH+= -I"../include"
+INCPATH+= -I"../include/SDL2" -I"../include-pregen"
 LIBPATH = ..
 LIBS    = SDL2.lib SDL2test.lib testutils.lib
 

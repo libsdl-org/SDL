@@ -35,62 +35,62 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\begin_code.h" />
-    <ClInclude Include="..\include\close_code.h" />
-    <ClInclude Include="..\include\SDL.h" />
-    <ClInclude Include="..\include\SDL_assert.h" />
-    <ClInclude Include="..\include\SDL_atomic.h" />
-    <ClInclude Include="..\include\SDL_audio.h" />
-    <ClInclude Include="..\include\SDL_blendmode.h" />
-    <ClInclude Include="..\include\SDL_clipboard.h" />
-    <ClInclude Include="..\include\SDL_config.h" />
-    <ClInclude Include="..\include\SDL_config_minimal.h" />
-    <ClInclude Include="..\include\SDL_config_winrt.h" />
-    <ClInclude Include="..\include\SDL_copying.h" />
-    <ClInclude Include="..\include\SDL_cpuinfo.h" />
-    <ClInclude Include="..\include\SDL_egl.h" />
-    <ClInclude Include="..\include\SDL_endian.h" />
-    <ClInclude Include="..\include\SDL_error.h" />
-    <ClInclude Include="..\include\SDL_events.h" />
-    <ClInclude Include="..\include\SDL_filesystem.h" />
-    <ClInclude Include="..\include\SDL_guid.h" />
-    <ClInclude Include="..\include\SDL_haptic.h" />
-    <ClInclude Include="..\include\SDL_hints.h" />
-    <ClInclude Include="..\include\SDL_hidapi.h" />
-    <ClInclude Include="..\include\SDL_input.h" />
-    <ClInclude Include="..\include\SDL_joystick.h" />
-    <ClInclude Include="..\include\SDL_keyboard.h" />
-    <ClInclude Include="..\include\SDL_keycode.h" />
-    <ClInclude Include="..\include\SDL_loadso.h" />
-    <ClInclude Include="..\include\SDL_locale.h" />
-    <ClInclude Include="..\include\SDL_log.h" />
-    <ClInclude Include="..\include\SDL_main.h" />
-    <ClInclude Include="..\include\SDL_misc.h" />
-    <ClInclude Include="..\include\SDL_mouse.h" />
-    <ClInclude Include="..\include\SDL_mutex.h" />
-    <ClInclude Include="..\include\SDL_name.h" />
-    <ClInclude Include="..\include\SDL_opengles2.h" />
-    <ClInclude Include="..\include\SDL_pixels.h" />
-    <ClInclude Include="..\include\SDL_platform.h" />
-    <ClInclude Include="..\include\SDL_power.h" />
-    <ClInclude Include="..\include\SDL_quit.h" />
-    <ClInclude Include="..\include\SDL_rect.h" />
-    <ClInclude Include="..\include\SDL_render.h" />
-    <ClInclude Include="..\include\SDL_revision.h" />
-    <ClInclude Include="..\include\SDL_rwops.h" />
-    <ClInclude Include="..\include\SDL_scancode.h" />
-    <ClInclude Include="..\include\SDL_sensor.h" />
-    <ClInclude Include="..\include\SDL_shape.h" />
-    <ClInclude Include="..\include\SDL_stdinc.h" />
-    <ClInclude Include="..\include\SDL_surface.h" />
-    <ClInclude Include="..\include\SDL_system.h" />
-    <ClInclude Include="..\include\SDL_syswm.h" />
-    <ClInclude Include="..\include\SDL_thread.h" />
-    <ClInclude Include="..\include\SDL_timer.h" />
-    <ClInclude Include="..\include\SDL_touch.h" />
-    <ClInclude Include="..\include\SDL_types.h" />
-    <ClInclude Include="..\include\SDL_version.h" />
-    <ClInclude Include="..\include\SDL_video.h" />
+    <ClInclude Include="..\include\SDL2\begin_code.h" />
+    <ClInclude Include="..\include\SDL2\close_code.h" />
+    <ClInclude Include="..\include\SDL2\SDL.h" />
+    <ClInclude Include="..\include\SDL2\SDL_assert.h" />
+    <ClInclude Include="..\include\SDL2\SDL_atomic.h" />
+    <ClInclude Include="..\include\SDL2\SDL_audio.h" />
+    <ClInclude Include="..\include\SDL2\SDL_blendmode.h" />
+    <ClInclude Include="..\include\SDL2\SDL_clipboard.h" />
+    <ClInclude Include="..\include-pregen\SDL_config.h" />
+    <ClInclude Include="..\include\SDL2\SDL_config_minimal.h" />
+    <ClInclude Include="..\include\SDL2\SDL_config_winrt.h" />
+    <ClInclude Include="..\include\SDL2\SDL_copying.h" />
+    <ClInclude Include="..\include\SDL2\SDL_cpuinfo.h" />
+    <ClInclude Include="..\include\SDL2\SDL_egl.h" />
+    <ClInclude Include="..\include\SDL2\SDL_endian.h" />
+    <ClInclude Include="..\include\SDL2\SDL_error.h" />
+    <ClInclude Include="..\include\SDL2\SDL_events.h" />
+    <ClInclude Include="..\include\SDL2\SDL_filesystem.h" />
+    <ClInclude Include="..\include\SDL2\SDL_guid.h" />
+    <ClInclude Include="..\include\SDL2\SDL_haptic.h" />
+    <ClInclude Include="..\include\SDL2\SDL_hints.h" />
+    <ClInclude Include="..\include\SDL2\SDL_hidapi.h" />
+    <ClInclude Include="..\include\SDL2\SDL_input.h" />
+    <ClInclude Include="..\include\SDL2\SDL_joystick.h" />
+    <ClInclude Include="..\include\SDL2\SDL_keyboard.h" />
+    <ClInclude Include="..\include\SDL2\SDL_keycode.h" />
+    <ClInclude Include="..\include\SDL2\SDL_loadso.h" />
+    <ClInclude Include="..\include\SDL2\SDL_locale.h" />
+    <ClInclude Include="..\include\SDL2\SDL_log.h" />
+    <ClInclude Include="..\include\SDL2\SDL_main.h" />
+    <ClInclude Include="..\include\SDL2\SDL_misc.h" />
+    <ClInclude Include="..\include\SDL2\SDL_mouse.h" />
+    <ClInclude Include="..\include\SDL2\SDL_mutex.h" />
+    <ClInclude Include="..\include\SDL2\SDL_name.h" />
+    <ClInclude Include="..\include\SDL2\SDL_opengles2.h" />
+    <ClInclude Include="..\include\SDL2\SDL_pixels.h" />
+    <ClInclude Include="..\include\SDL2\SDL_platform.h" />
+    <ClInclude Include="..\include\SDL2\SDL_power.h" />
+    <ClInclude Include="..\include\SDL2\SDL_quit.h" />
+    <ClInclude Include="..\include\SDL2\SDL_rect.h" />
+    <ClInclude Include="..\include\SDL2\SDL_render.h" />
+    <ClInclude Include="..\include-pregen\SDL_revision.h" />
+    <ClInclude Include="..\include\SDL2\SDL_rwops.h" />
+    <ClInclude Include="..\include\SDL2\SDL_scancode.h" />
+    <ClInclude Include="..\include\SDL2\SDL_sensor.h" />
+    <ClInclude Include="..\include\SDL2\SDL_shape.h" />
+    <ClInclude Include="..\include\SDL2\SDL_stdinc.h" />
+    <ClInclude Include="..\include\SDL2\SDL_surface.h" />
+    <ClInclude Include="..\include\SDL2\SDL_system.h" />
+    <ClInclude Include="..\include\SDL2\SDL_syswm.h" />
+    <ClInclude Include="..\include\SDL2\SDL_thread.h" />
+    <ClInclude Include="..\include\SDL2\SDL_timer.h" />
+    <ClInclude Include="..\include\SDL2\SDL_touch.h" />
+    <ClInclude Include="..\include\SDL2\SDL_types.h" />
+    <ClInclude Include="..\include\SDL2\SDL_version.h" />
+    <ClInclude Include="..\include\SDL2\SDL_video.h" />
     <ClInclude Include="..\src\audio\disk\SDL_diskaudio.h" />
     <ClInclude Include="..\src\audio\dummy\SDL_dummyaudio.h" />
     <ClInclude Include="..\src\audio\SDL_audiodev_c.h" />
@@ -492,7 +492,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\SDL2;..\include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_CRT_SECURE_NO_WARNINGS;SDL_BUILDING_WINRT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -506,7 +506,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\SDL2;..\include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_CRT_SECURE_NO_WARNINGS;SDL_BUILDING_WINRT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -520,7 +520,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\SDL2;..\include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_CRT_SECURE_NO_WARNINGS;SDL_BUILDING_WINRT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -534,7 +534,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\SDL2;..\include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_CRT_SECURE_NO_WARNINGS;SDL_BUILDING_WINRT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -548,7 +548,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\SDL2;..\include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_CRT_SECURE_NO_WARNINGS;SDL_BUILDING_WINRT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -562,7 +562,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\SDL2;..\include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_CRT_SECURE_NO_WARNINGS;SDL_BUILDING_WINRT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -576,7 +576,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\SDL2;..\include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_CRT_SECURE_NO_WARNINGS;SDL_BUILDING_WINRT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -590,7 +590,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\include\SDL2;..\include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_CRT_SECURE_NO_WARNINGS;SDL_BUILDING_WINRT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

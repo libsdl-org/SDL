@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.65])
 AC_INIT
 AC_CONFIG_SRCDIR([src/SDL.c])
-AC_CONFIG_HEADERS([include/SDL_config.h])
+AC_CONFIG_HEADERS([include/SDL_config.h:src/SDL_config.h.in])
 AC_CONFIG_AUX_DIR([build-scripts])
 AC_CONFIG_MACRO_DIR([acinclude])
 
@@ -88,7 +88,7 @@ case "$host" in
 esac
 
 dnl Set up the compiler and linker flags
-INCLUDE="-I$srcdir/include"
+INCLUDE="-I$srcdir/include/SDL2 -Iinclude"
 
 dnl Don't use our khronos headers on QNX.
 case "$host" in
@@ -114,7 +114,7 @@ AC_SUBST(LINKER)
 AC_SUBST(LIBTOOLLINKERTAG)
 
 if test x$srcdir != x.; then
-    INCLUDE="-Iinclude $INCLUDE"
+    INCLUDE="-Iinclude/SDL2 $INCLUDE"
 elif test -d .git; then
     AC_MSG_ERROR([
 *** When building from a git clone you should configure and build in a

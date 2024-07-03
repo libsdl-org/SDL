@@ -16,7 +16,7 @@ EXPFILE = $(LIBHOME)/$(LIBNAME).exp
 LNKFILE = $(LIBNAME).lnk
 
 INCPATH = -I"$(%WATCOM)/h/nt" -I"$(%WATCOM)/h/nt/directx" -I"$(%WATCOM)/h"
-INCPATH+= -Iinclude
+INCPATH+= -Iinclude/SDL2 -Iinclude-pregen
 INCPATH+= -I"src/video/khronos"
 
 LIBM = SDL2libm.lib

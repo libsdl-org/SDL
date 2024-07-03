@@ -150,7 +150,7 @@ jobs:
               --x-includes=/usr/include \
               --x-libraries="/usr/lib/${multiarch}" \
               --prefix=${{ github.workspace }}/autotools_prefix \
-              SDL_CFLAGS="-I${curdir}/include" \
+              SDL_CFLAGS="-I${curdir}/include/SDL2 -I${curdir}/include-pregen" \
               SDL_LIBS="-L${curdir}/build-autotools/build/.libs -lSDL2" \
               ac_cv_lib_SDL2_ttf_TTF_Init=no \
               ${NULL+}

@@ -8,7 +8,7 @@ STRIP = arm-none-linux-gnueabi-strip
 
 CFLAGS  = -O3 -march=armv7-a -mcpu=cortex-a8 -mtune=cortex-a8 -mfloat-abi=softfp \
 	-mfpu=neon -ftree-vectorize -ffast-math -fomit-frame-pointer -fno-strict-aliasing -fsingle-precision-constant \
-	-I./include -I$(PNDSDK)/usr/include
+	-I./include/SDL2 -I$(PNDSDK)/usr/include
 
 TARGET  = libSDL2.a
 

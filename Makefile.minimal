@@ -1,6 +1,6 @@
 # Makefile to build the SDL library
 
-CPPFLAGS = -I./include
+CPPFLAGS = -I./include/SDL2
 CFLAGS  = -g -O2
 AR	= ar
 RANLIB	= ranlib

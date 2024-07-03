@@ -268,7 +268,7 @@ To build one of the tests:
 
 ```bash
 cd test/
-emcc -O2 --js-opts 0 -g4 testdraw2.c -I../include ../build/.libs/libSDL2.a ../build/libSDL2_test.a -o a.html
+emcc -O2 --js-opts 0 -g4 testdraw2.c -I../include/SDL2 ../build/.libs/libSDL2.a ../build/libSDL2_test.a -o a.html
 ```
 
 ## Building your app

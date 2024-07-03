@@ -99,7 +99,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)/../../include/SDL2;$(ProjectDir)/../../include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -129,7 +129,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)/../../include/SDL2;$(ProjectDir)/../../include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -162,7 +162,7 @@
       <TypeLibraryName>.\Release/SDL.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)/../../include/SDL2;$(ProjectDir)/../../include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -193,7 +193,7 @@
       <TypeLibraryName>.\Release/SDL.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)/../../include/SDL2;$(ProjectDir)/../../include-pregen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>DLL_EXPORT;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -215,86 +215,84 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\begin_code.h" />
-    <ClInclude Include="..\..\include\close_code.h" />
-    <ClInclude Include="..\..\include\SDL.h" />
-    <ClInclude Include="..\..\include\SDL_assert.h" />
-    <ClInclude Include="..\..\include\SDL_atomic.h" />
-    <ClInclude Include="..\..\include\SDL_audio.h" />
-    <ClInclude Include="..\..\include\SDL_bits.h" />
-    <ClInclude Include="..\..\include\SDL_blendmode.h" />
-    <ClInclude Include="..\..\include\SDL_clipboard.h" />
-    <ClInclude Include="..\..\include\SDL_config.h" />
-    <ClInclude Include="..\..\include\SDL_config_windows.h" />
-    <ClInclude Include="..\..\include\SDL_copying.h" />
-    <ClInclude Include="..\..\include\SDL_cpuinfo.h" />
-    <ClInclude Include="..\..\include\SDL_egl.h" />
-    <ClInclude Include="..\..\include\SDL_endian.h" />
-    <ClInclude Include="..\..\include\SDL_error.h" />
-    <ClInclude Include="..\..\include\SDL_events.h" />
-    <ClInclude Include="..\..\include\SDL_filesystem.h" />
-    <ClInclude Include="..\..\include\SDL_gamecontroller.h" />
-    <ClInclude Include="..\..\include\SDL_gesture.h" />
-    <ClInclude Include="..\..\include\SDL_guid.h" />
-    <ClInclude Include="..\..\include\SDL_haptic.h" />
-    <ClInclude Include="..\..\include\SDL_hints.h" />
-    <ClInclude Include="..\..\include\SDL_hidapi.h" />
-    <ClInclude Include="..\..\include\SDL_joystick.h" />
-    <ClInclude Include="..\..\include\SDL_keyboard.h" />
-    <ClInclude Include="..\..\include\SDL_keycode.h" />
-    <ClInclude Include="..\..\include\SDL_loadso.h" />
-    <ClInclude Include="..\..\include\SDL_locale.h" />
-    <ClInclude Include="..\..\include\SDL_log.h" />
-    <ClInclude Include="..\..\include\SDL_main.h" />
-    <ClInclude Include="..\..\include\SDL_messagebox.h" />
-    <ClInclude Include="..\..\include\SDL_metal.h" />
-    <ClInclude Include="..\..\include\SDL_misc.h" />
-    <ClInclude Include="..\..\include\SDL_mouse.h" />
-    <ClInclude Include="..\..\include\SDL_mutex.h" />
-    <ClInclude Include="..\..\include\SDL_name.h" />
-    <ClInclude Include="..\..\include\SDL_opengl.h" />
-    <ClInclude Include="..\..\include\SDL_opengl_glext.h" />
-    <ClInclude Include="..\..\include\SDL_opengles.h" />
-    <ClInclude Include="..\..\include\SDL_opengles2.h" />
-    <ClInclude Include="..\..\include\SDL_opengles2_gl2.h" />
-    <ClInclude Include="..\..\include\SDL_opengles2_gl2ext.h" />
-    <ClInclude Include="..\..\include\SDL_opengles2_gl2platform.h" />
-    <ClInclude Include="..\..\include\SDL_opengles2_khrplatform.h" />
-    <ClInclude Include="..\..\include\SDL_pixels.h" />
-    <ClInclude Include="..\..\include\SDL_platform.h" />
-    <ClInclude Include="..\..\include\SDL_power.h" />
-    <ClInclude Include="..\..\include\SDL_quit.h" />
-    <ClInclude Include="..\..\include\SDL_rect.h" />
-    <ClInclude Include="..\..\include\SDL_render.h" />
-    <ClInclude Include="..\..\include\SDL_revision.h" />
-    <ClInclude Include="..\..\include\SDL_rwops.h" />
-    <ClInclude Include="..\..\include\SDL_scancode.h" />
-    <ClInclude Include="..\..\include\SDL_sensor.h" />
-    <ClInclude Include="..\..\include\SDL_shape.h" />
-    <ClInclude Include="..\..\include\SDL_stdinc.h" />
-    <ClInclude Include="..\..\include\SDL_surface.h" />
-    <ClInclude Include="..\..\include\SDL_system.h" />
-    <ClInclude Include="..\..\include\SDL_syswm.h" />
-    <ClInclude Include="..\..\include\SDL_test.h" />
-    <ClInclude Include="..\..\include\SDL_test_assert.h" />
-    <ClInclude Include="..\..\include\SDL_test_common.h" />
-    <ClInclude Include="..\..\include\SDL_test_compare.h" />
-    <ClInclude Include="..\..\include\SDL_test_crc32.h" />
-    <ClInclude Include="..\..\include\SDL_test_font.h" />
-    <ClInclude Include="..\..\include\SDL_test_fuzzer.h" />
-    <ClInclude Include="..\..\include\SDL_test_harness.h" />
-    <ClInclude Include="..\..\include\SDL_test_images.h" />
-    <ClInclude Include="..\..\include\SDL_test_log.h" />
-    <ClInclude Include="..\..\include\SDL_test_md5.h" />
-    <ClInclude Include="..\..\include\SDL_test_memory.h" />
-    <ClInclude Include="..\..\include\SDL_test_random.h" />
-    <ClInclude Include="..\..\include\SDL_thread.h" />
-    <ClInclude Include="..\..\include\SDL_timer.h" />
-    <ClInclude Include="..\..\include\SDL_touch.h" />
-    <ClInclude Include="..\..\include\SDL_types.h" />
-    <ClInclude Include="..\..\include\SDL_version.h" />
-    <ClInclude Include="..\..\include\SDL_video.h" />
-    <ClInclude Include="..\..\include\SDL_vulkan.h" />
+    <ClInclude Include="..\..\include\SDL2\begin_code.h" />
+    <ClInclude Include="..\..\include\SDL2\close_code.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_assert.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_atomic.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_audio.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_bits.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_blendmode.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_clipboard.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_config_windows.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_copying.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_cpuinfo.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_egl.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_endian.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_error.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_events.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_filesystem.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_gamecontroller.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_gesture.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_guid.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_haptic.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_hints.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_hidapi.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_joystick.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_keyboard.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_keycode.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_loadso.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_locale.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_log.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_main.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_messagebox.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_metal.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_misc.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_mouse.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_mutex.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_name.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_opengl.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_opengl_glext.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_opengles.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_opengles2.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_opengles2_gl2.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_opengles2_gl2ext.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_opengles2_gl2platform.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_opengles2_khrplatform.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_pixels.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_platform.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_power.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_quit.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_rect.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_render.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_rwops.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_scancode.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_sensor.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_shape.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_stdinc.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_surface.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_system.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_syswm.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_assert.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_common.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_compare.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_crc32.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_font.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_fuzzer.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_harness.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_images.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_log.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_md5.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_memory.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_test_random.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_thread.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_timer.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_touch.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_types.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_version.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_video.h" />
+    <ClInclude Include="..\..\include\SDL2\SDL_vulkan.h" />
     <ClInclude Include="..\..\src\audio\directsound\SDL_directsound.h" />
     <ClInclude Include="..\..\src\audio\disk\SDL_diskaudio.h" />
     <ClInclude Include="..\..\src\audio\dummy\SDL_dummyaudio.h" />

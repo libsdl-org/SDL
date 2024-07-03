@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../include/SDL_scancode.h"
+#include "SDL_scancode.h"
 
 /* Linux virtual key code to SDL_Keycode mapping table
    Sources:

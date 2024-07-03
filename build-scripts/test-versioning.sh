@@ -6,9 +6,9 @@ set -eu
 
 cd `dirname $0`/..
 
-ref_major=$(sed -ne 's/^#define SDL_MAJOR_VERSION  *//p' include/SDL_version.h)
-ref_minor=$(sed -ne 's/^#define SDL_MINOR_VERSION  *//p' include/SDL_version.h)
-ref_micro=$(sed -ne 's/^#define SDL_PATCHLEVEL  *//p' include/SDL_version.h)
+ref_major=$(sed -ne 's/^#define SDL_MAJOR_VERSION  *//p' include/SDL2/SDL_version.h)
+ref_minor=$(sed -ne 's/^#define SDL_MINOR_VERSION  *//p' include/SDL2/SDL_version.h)
+ref_micro=$(sed -ne 's/^#define SDL_PATCHLEVEL  *//p' include/SDL2/SDL_version.h)
 ref_version="${ref_major}.${ref_minor}.${ref_micro}"
 
 tests=0
