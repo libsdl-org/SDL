@@ -252,7 +252,6 @@ struct SDL_VideoDevice
     void (*GetWindowSizeInPixels)(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
     int (*SetWindowOpacity)(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
     int (*SetWindowModalFor)(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
-    int (*SetWindowInputFocus)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*ShowWindow)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*HideWindow)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*RaiseWindow)(SDL_VideoDevice *_this, SDL_Window *window);

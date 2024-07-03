@@ -2178,23 +2178,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window *window, float *
 extern SDL_DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window);
 
 /**
- * Explicitly set input focus to the window.
- *
- * You almost certainly want SDL_RaiseWindow() instead of this function. Use
- * this with caution, as you might give focus to a window that is completely
- * obscured by other windows.
- *
- * \param window the window that should get the input focus.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_RaiseWindow
- */
-extern SDL_DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window *window);
-
-/**
  * Set whether the window may have input focus.
  *
  * \param window the window to set focusable state.
