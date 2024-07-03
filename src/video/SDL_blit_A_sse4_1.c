@@ -4,73 +4,19 @@
 
 #ifdef SDL_SSE4_1_INTRINSICS
 
-#define SDL_blit_A_sse4_1_c
-
 #include "SDL_blit.h"
-#include "SDL_blit_A_sse4_1.h"
 
-/**
- * A helper function to create an alpha splat mask for use with MixRGBA_SSE4_1 based on pixel format
- */
-__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaSplatMask_SSE4_1(const SDL_PixelFormat* dstfmt) {
-    const Uint8 index = dstfmt->Ashift / 8;
-    return _mm_set_epi8(
-            index + 12, index + 12, index + 12, index + 12,
-            index + 8, index + 8, index + 8, index + 8,
-            index + 4, index + 4, index + 4, index + 4,
-            index, index, index, index);
-}
-
-/**
- * A helper function to create an alpha saturate mask for use with MixRGBA_SSE4_1 based on pixel format
- */
-__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatAlphaSaturateMask_SSE4_1(const SDL_PixelFormat* dstfmt) {
-    const Uint8 bin = dstfmt->Ashift / 8;
-    return _mm_set_epi8(
-            bin == 3 ? 0xFF : 0, bin == 2 ? 0xFF : 0, bin == 1 ? 0xFF : 0, bin == 0 ? 0xFF : 0,
-            bin == 3 ? 0xFF : 0, bin == 2 ? 0xFF : 0, bin == 1 ? 0xFF : 0, bin == 0 ? 0xFF : 0,
-            bin == 3 ? 0xFF : 0, bin == 2 ? 0xFF : 0, bin == 1 ? 0xFF : 0, bin == 0 ? 0xFF : 0,
-            bin == 3 ? 0xFF : 0, bin == 2 ? 0xFF : 0, bin == 1 ? 0xFF : 0, bin == 0 ? 0xFF : 0);
-}
-
-/**
- * This helper function converts arbitrary pixel formats into a shuffle mask for _mm_shuffle_epi8
- */
-__m128i SDL_TARGETING("sse4.1") GetSDL_PixelFormatShuffleMask_SSE4_1(const SDL_PixelFormat* srcfmt,
-                                                                     const SDL_PixelFormat* dstfmt) {
-    /* Calculate shuffle indices based on the source and destination SDL_PixelFormat */
-    Uint8 shuffleIndices[16];
-    Uint8 dstAshift = dstfmt->Ashift / 8;
-    Uint8 dstRshift = dstfmt->Rshift / 8;
-    Uint8 dstGshift = dstfmt->Gshift / 8;
-    Uint8 dstBshift = dstfmt->Bshift / 8;
-    for (int i = 0; i < 4; ++i) {
-        shuffleIndices[dstAshift + i * 4] = srcfmt->Ashift / 8 + i * 4;
-        shuffleIndices[dstRshift + i * 4] = srcfmt->Rshift / 8 + i * 4;
-        shuffleIndices[dstGshift + i * 4] = srcfmt->Gshift / 8 + i * 4;
-        shuffleIndices[dstBshift + i * 4] = srcfmt->Bshift / 8 + i * 4;
-    }
-
-    /* Create shuffle mask based on the calculated indices */
-    return _mm_set_epi8(
-            shuffleIndices[15], shuffleIndices[14], shuffleIndices[13], shuffleIndices[12],
-            shuffleIndices[11], shuffleIndices[10], shuffleIndices[9], shuffleIndices[8],
-            shuffleIndices[7], shuffleIndices[6], shuffleIndices[5], shuffleIndices[4],
-            shuffleIndices[3], shuffleIndices[2], shuffleIndices[1], shuffleIndices[0]
-    );
-}
-
-/**
- * Using the SSE4.1 instruction set, blit eight pixels into four with alpha blending
- */
-__m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(__m128i src, __m128i dst,
-                                               const __m128i alpha_splat, const __m128i alpha_saturate) {
+// Using the SSE4.1 instruction set, blit eight pixels into four with alpha blending
+SDL_FORCE_INLINE __m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(
+    __m128i src, __m128i dst,
+    const __m128i alpha_shuffle, const __m128i alpha_saturate)
+{
     // SIMD implementation of blend_mul2.
     // dstRGB                            = (srcRGB * srcA) + (dstRGB * (1-srcA))
     // dstA   = srcA + (dstA * (1-srcA)) = (1      * srcA) + (dstA   * (1-srcA))
 
     // Splat the alpha into all channels for each pixel
-    __m128i srca = _mm_shuffle_epi8(src, alpha_splat);
+    __m128i srca = _mm_shuffle_epi8(src, alpha_shuffle);
 
     // Set the alpha channels of src to 255
     src = _mm_or_si128(src, alpha_saturate);
@@ -94,7 +40,7 @@ __m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(__m128i src, __m128i dst,
     dst_lo = _mm_add_epi16(dst_lo, _mm_set1_epi16(1));
     dst_hi = _mm_add_epi16(dst_hi, _mm_set1_epi16(1));
 
-    // dst += dst >> 8;
+    // dst += dst >> 8
     dst_lo = _mm_srli_epi16(_mm_add_epi16(dst_lo, _mm_srli_epi16(dst_lo, 8)), 8);
     dst_hi = _mm_srli_epi16(_mm_add_epi16(dst_hi, _mm_srli_epi16(dst_hi, 8)), 8);
 
@@ -102,20 +48,8 @@ __m128i SDL_TARGETING("sse4.1") MixRGBA_SSE4_1(__m128i src, __m128i dst,
     return dst;
 }
 
-Uint32 AlignPixelToSDL_PixelFormat(Uint32 color, const SDL_PixelFormat* srcfmt, const SDL_PixelFormat* dstfmt) {
-    Uint8 a = (color >> srcfmt->Ashift) & 0xFF;
-    Uint8 r = (color >> srcfmt->Rshift) & 0xFF;
-    Uint8 g = (color >> srcfmt->Gshift) & 0xFF;
-    Uint8 b = (color >> srcfmt->Bshift) & 0xFF;
-
-    return (a << dstfmt->Ashift) |
-           (r << dstfmt->Rshift) |
-           (g << dstfmt->Gshift) |
-           (b << dstfmt->Bshift);
-}
-
-
-void SDL_TARGETING("sse4.1") BlitNtoNPixelAlpha_SSE4_1(SDL_BlitInfo* info) {
+void SDL_TARGETING("sse4.1") BlitNtoNPixelAlpha_SSE4_1(SDL_BlitInfo *info)
+{
     int width = info->dst_w;
     int height = info->dst_h;
     Uint8 *src = info->src;
@@ -125,71 +59,56 @@ void SDL_TARGETING("sse4.1") BlitNtoNPixelAlpha_SSE4_1(SDL_BlitInfo* info) {
     SDL_PixelFormat *srcfmt = info->src_fmt;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
 
-    const int chunks = width / 4;
-    SDL_bool free_format = SDL_FALSE;
-    /* Handle case when passed invalid format, assume ARGB destination */
-    if (dstfmt->Ashift == 0 && dstfmt->Ashift == dstfmt->Bshift) {
-        dstfmt = SDL_CreatePixelFormat(SDL_PIXELFORMAT_ARGB8888);
-        free_format = SDL_TRUE;
-    }
-    const __m128i shift_mask = GetSDL_PixelFormatShuffleMask_SSE4_1(srcfmt, dstfmt);
-    const __m128i splat_mask = GetSDL_PixelFormatAlphaSplatMask_SSE4_1(dstfmt);
-    const __m128i saturate_mask = GetSDL_PixelFormatAlphaSaturateMask_SSE4_1(dstfmt);
+    const __m128i mask_offsets = _mm_set_epi8(
+        12, 12, 12, 12, 8, 8, 8, 8, 4, 4, 4, 4, 0, 0, 0, 0);
+
+    const __m128i shift_mask = _mm_add_epi32(
+        _mm_set1_epi32(
+            ((srcfmt->Rshift >> 3) << dstfmt->Rshift) |
+            ((srcfmt->Gshift >> 3) << dstfmt->Gshift) |
+            ((srcfmt->Bshift >> 3) << dstfmt->Bshift) |
+            ((srcfmt->Ashift >> 3) << dstfmt->Ashift)),
+        mask_offsets);
+
+    const __m128i splat_mask = _mm_add_epi8(_mm_set1_epi8(dstfmt->Ashift >> 3), mask_offsets);
+    const __m128i saturate_mask = _mm_set1_epi32((int)dstfmt->Amask);
 
     while (height--) {
-        for (int i = 0; i < chunks; i += 1) {
-            __m128i colors = _mm_loadu_si128((__m128i*)(src + i * 16));
-            colors = _mm_shuffle_epi8(colors, shift_mask);
-            colors = MixRGBA_SSE4_1(colors, _mm_loadu_si128((__m128i*)(dst + i * 16)),
-                                    splat_mask, saturate_mask);
-            _mm_storeu_si128((__m128i*)(dst + i * 16), colors);
+        int i = 0;
+
+        for (; i + 4 <= width; i += 4) {
+            // Load 4 src pixels and shuffle into the dst format
+            __m128i c_src = _mm_shuffle_epi8(_mm_loadu_si128((__m128i *)src), shift_mask);
+
+            // Load 4 dst pixels
+            __m128i c_dst = _mm_loadu_si128((__m128i *)dst);
+
+            // Blend the pixels together and save the result
+            _mm_storeu_si128((__m128i *)dst, MixRGBA_SSE4_1(c_src, c_dst, splat_mask, saturate_mask));
+
+            src += 16;
+            dst += 16;
         }
 
-        /* Handle remaining pixels when width is not a multiple of 4 */
-        if (width % 4 != 0) {
-            int remaining_pixels = width % 4;
-            int offset = width - remaining_pixels;
-            if (remaining_pixels >= 2) {
-                Uint32 *src_ptr = ((Uint32*)(src + (offset * 4)));
-                Uint32 *dst_ptr = ((Uint32*)(dst + (offset * 4)));
-                __m128i c_src = _mm_loadu_si64(src_ptr);
-                c_src = _mm_shuffle_epi8(c_src, shift_mask);
-                __m128i c_dst = _mm_loadu_si64(dst_ptr);
-                __m128i c_mix = MixRGBA_SSE4_1(c_src, c_dst, splat_mask, saturate_mask);
-                _mm_storeu_si64(dst_ptr, c_mix);
-                remaining_pixels -= 2;
-                offset += 2;
-            }
-            if (remaining_pixels == 1) {
-                Uint32 *src_ptr = ((Uint32*)(src + (offset * 4)));
-                Uint32 *dst_ptr = ((Uint32*)(dst + (offset * 4)));
-                Uint32 pixel = AlignPixelToSDL_PixelFormat(*src_ptr, srcfmt, dstfmt);
-                /* Old GCC has bad or no _mm_loadu_si32 */
-                #if defined(__GNUC__) && (__GNUC__ < 11)
-                __m128i c_src = _mm_set_epi32(0, 0, 0, pixel);
-                __m128i c_dst = _mm_set_epi32(0, 0, 0, *dst_ptr);
-                #else
-                __m128i c_src = _mm_loadu_si32(&pixel);
-                __m128i c_dst = _mm_loadu_si32(dst_ptr);
-                #endif
-                __m128i mixed_pixel = MixRGBA_SSE4_1(c_src, c_dst, splat_mask, saturate_mask);
-                /* Old GCC has bad or no _mm_storeu_si32 */
-                #if defined(__GNUC__) && (__GNUC__ < 11)
-                *dst_ptr = _mm_extract_epi32(mixed_pixel, 0);
-                #else
-                _mm_storeu_si32(dst_ptr, mixed_pixel);
-                #endif
-            }
-        }
+        for (; i < width; ++i) {
+            Uint32 src32 = *(Uint32 *)src;
+            Uint32 dst32 = *(Uint32 *)dst;
 
-        src += 4 * width;
-        dst += 4 * width;
+            src32 = (((src32 >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) |
+                    (((src32 >> srcfmt->Gshift) & 0xFF) << dstfmt->Gshift) |
+                    (((src32 >> srcfmt->Bshift) & 0xFF) << dstfmt->Bshift) |
+                    (((src32 >> srcfmt->Ashift) & 0xFF) << dstfmt->Ashift);
+
+            ALPHA_BLEND_RGBA_4(src32, dst32, dstfmt->Ashift);
+
+            *(Uint32 *)dst = dst32;
+
+            src += 4;
+            dst += 4;
+        }
 
         src += srcskip;
         dst += dstskip;
-    }
-    if (free_format) {
-        SDL_DestroyPixelFormat(dstfmt);
     }
 }
 

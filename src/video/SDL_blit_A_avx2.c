@@ -4,13 +4,9 @@
 
 #ifdef SDL_AVX2_INTRINSICS
 
-#define SDL_blit_A_avx2_c
-
 #include "SDL_blit.h"
 
-/**
- * Using the AVX2 instruction set, blit sixteen pixels into eight with alpha blending
- */
+// Using the AVX2 instruction set, blit sixteen pixels into eight with alpha blending
 SDL_FORCE_INLINE __m256i SDL_TARGETING("avx2") MixRGBA_AVX2(
     __m256i src, __m256i dst,
     const __m256i alpha_shuffle, const __m256i alpha_saturate)
