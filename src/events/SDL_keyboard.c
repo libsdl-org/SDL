@@ -426,7 +426,6 @@ static SDL_Keycode SDL_ConvertNumpadKeycode(SDL_Keycode keycode, SDL_bool numloc
 
 static SDL_Keycode SDL_GetEventKeycode(SDL_Keyboard *keyboard, SDL_Scancode scancode, SDL_Keymod modstate)
 {
-    SDL_bool shifted = (modstate & SDL_KMOD_SHIFT) != 0;
     SDL_bool numlock = (modstate & SDL_KMOD_NUM) != 0;
     SDL_Keycode keycode;
 
@@ -441,12 +440,8 @@ static SDL_Keycode SDL_GetEventKeycode(SDL_Keyboard *keyboard, SDL_Scancode scan
         if ((keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS) &&
             keyboard->french_numbers &&
             (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
-            // Invert the shift state to generate the expected keycode
-            if (shifted) {
-                modstate &= ~SDL_KMOD_SHIFT;
-            } else {
-                modstate |= SDL_KMOD_SHIFT;
-            }
+            // Add the shift state to generate a numeric keycode
+            modstate |= SDL_KMOD_SHIFT;
         }
 
         keycode = SDL_GetKeyFromScancode(scancode, modstate);
