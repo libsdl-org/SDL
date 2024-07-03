@@ -67,7 +67,7 @@ void *SDL_BeginAudioQueueIter(SDL_AudioQueue *queue);
 size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_AudioSpec *out_spec, SDL_bool *out_flushed);
 
 const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
-                                    Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels,
+                                    Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels, const Uint8 *dst_map,
                                     int past_frames, int present_frames, int future_frames,
                                     Uint8 *scratch);
 

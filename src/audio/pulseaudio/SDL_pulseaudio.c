@@ -789,6 +789,7 @@ static SDL_AudioFormat PulseFormatToSDLFormat(pa_sample_format_t format)
 static void AddPulseAudioDevice(const SDL_bool recording, const char *description, const char *name, const uint32_t index, const pa_sample_spec *sample_spec)
 {
     SDL_AudioSpec spec;
+    SDL_zero(spec);
     spec.format = PulseFormatToSDLFormat(sample_spec->format);
     spec.channels = sample_spec->channels;
     spec.freq = sample_spec->rate;
