@@ -513,6 +513,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 #define MULT_DIV_255(sC, dC, out) \
     do {                          \
         Uint16 x = sC * dC;       \
+        x += 0x1U;                \
         x += x >> 8;              \
         out = x >> 8;             \
     } while (0)
