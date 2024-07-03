@@ -1676,9 +1676,6 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForNameAndGUID(const char *
     }
 #endif /* SDL_PLATFORM_LINUX */
 
-    if (!mapping) {
-        mapping = s_pDefaultMapping;
-    }
     return mapping;
 }
 
@@ -1793,6 +1790,9 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id
         }
     }
 
+    if (!mapping) {
+        mapping = s_pDefaultMapping;
+    }
     return mapping;
 }
 
@@ -2546,7 +2546,7 @@ SDL_bool SDL_IsGamepadNameAndGUID(const char *name, SDL_JoystickGUID guid)
 
     SDL_LockJoysticks();
     {
-        if (SDL_PrivateGetGamepadMappingForNameAndGUID(name, guid) != NULL) {
+        if (s_pDefaultMapping || SDL_PrivateGetGamepadMappingForNameAndGUID(name, guid) != NULL) {
             retval = SDL_TRUE;
         } else {
             retval = SDL_FALSE;
