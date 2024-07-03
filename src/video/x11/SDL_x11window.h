@@ -119,7 +119,6 @@ extern void X11_SetWindowAspectRatio(SDL_VideoDevice *_this, SDL_Window *window)
 extern int X11_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);
 extern int X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
 extern int X11_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window);
-extern int X11_SetWindowInputFocus(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);

@@ -3511,18 +3511,6 @@ int SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
     return ret;
 }
 
-int SDL_SetWindowInputFocus(SDL_Window *window)
-{
-    CHECK_WINDOW_MAGIC(window, -1);
-    CHECK_WINDOW_NOT_POPUP(window, -1);
-
-    if (!_this->SetWindowInputFocus) {
-        return SDL_Unsupported();
-    }
-
-    return _this->SetWindowInputFocus(_this, window);
-}
-
 int SDL_SetWindowFocusable(SDL_Window *window, SDL_bool focusable)
 {
     CHECK_WINDOW_MAGIC(window, -1);

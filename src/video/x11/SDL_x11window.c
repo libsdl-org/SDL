@@ -1267,18 +1267,6 @@ int X11_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_
     return 0;
 }
 
-int X11_SetWindowInputFocus(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    if (X11_IsWindowMapped(_this, window)) {
-        SDL_WindowData *data = window->driverdata;
-        Display *display = data->videodata->display;
-        X11_XSetInputFocus(display, data->xwindow, RevertToNone, CurrentTime);
-        X11_XFlush(display);
-        return 0;
-    }
-    return -1;
-}
-
 void X11_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered)
 {
     const SDL_bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS) ? SDL_TRUE : SDL_FALSE;

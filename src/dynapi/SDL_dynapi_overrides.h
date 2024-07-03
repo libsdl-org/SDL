@@ -787,7 +787,6 @@
 #define SDL_SetWindowFullscreenMode SDL_SetWindowFullscreenMode_REAL
 #define SDL_SetWindowHitTest SDL_SetWindowHitTest_REAL
 #define SDL_SetWindowIcon SDL_SetWindowIcon_REAL
-#define SDL_SetWindowInputFocus SDL_SetWindowInputFocus_REAL
 #define SDL_SetWindowKeyboardGrab SDL_SetWindowKeyboardGrab_REAL
 #define SDL_SetWindowMaximumSize SDL_SetWindowMaximumSize_REAL
 #define SDL_SetWindowMinimumSize SDL_SetWindowMinimumSize_REAL

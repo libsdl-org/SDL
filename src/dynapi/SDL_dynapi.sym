@@ -762,7 +762,6 @@ SDL3_0.0.0 {
     SDL_SetWindowFullscreenMode;
     SDL_SetWindowHitTest;
     SDL_SetWindowIcon;
-    SDL_SetWindowInputFocus;
     SDL_SetWindowKeyboardGrab;
     SDL_SetWindowMaximumSize;
     SDL_SetWindowMinimumSize;

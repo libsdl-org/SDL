@@ -797,7 +797,6 @@ SDL_DYNAPI_PROC(int,SDL_SetWindowFullscreen,(SDL_Window *a, SDL_bool b),(a,b),re
 SDL_DYNAPI_PROC(int,SDL_SetWindowFullscreenMode,(SDL_Window *a, const SDL_DisplayMode *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowHitTest,(SDL_Window *a, SDL_HitTest b, void *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowIcon,(SDL_Window *a, SDL_Surface *b),(a,b),return)
-SDL_DYNAPI_PROC(int,SDL_SetWindowInputFocus,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowKeyboardGrab,(SDL_Window *a, SDL_bool b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowMaximumSize,(SDL_Window *a, int b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowMinimumSize,(SDL_Window *a, int b, int c),(a,b,c),return)
