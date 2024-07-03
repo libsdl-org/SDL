@@ -726,8 +726,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID dev
  *
  * Audio devices default to a gain of 1.0f (no change in output).
  *
- * Physical devices may not have their gain changed, only logical devices,
- * and this function will always return -1.0f when used on physical devices.
+ * Physical devices may not have their gain changed, only logical devices, and
+ * this function will always return -1.0f when used on physical devices.
  *
  * \param devid the audio device to query.
  * \returns the gain of the device, or -1.0f on error.
@@ -748,18 +748,18 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid
  *
  * Audio devices default to a gain of 1.0f (no change in output).
  *
- * Physical devices may not have their gain changed, only logical devices,
- * and this function will always return -1 when used on physical devices. While
- * it might seem attractive to adjust several logical devices at once in this
+ * Physical devices may not have their gain changed, only logical devices, and
+ * this function will always return -1 when used on physical devices. While it
+ * might seem attractive to adjust several logical devices at once in this
  * way, it would allow an app or library to interfere with another portion of
  * the program's otherwise-isolated devices.
  *
  * This is applied, along with any per-audiostream gain, during playback to
- * the hardware, and can be continuously changed to create various effects.
- * On recording devices, this will adjust the gain before passing the data
- * into an audiostream; that recording audiostream can then adjust its gain
- * further when outputting the data elsewhere, if it likes, but that second
- * gain is not applied until the data leaves the audiostream again.
+ * the hardware, and can be continuously changed to create various effects. On
+ * recording devices, this will adjust the gain before passing the data into
+ * an audiostream; that recording audiostream can then adjust its gain further
+ * when outputting the data elsewhere, if it likes, but that second gain is
+ * not applied until the data leaves the audiostream again.
  *
  * \param devid the audio device on which to change gain.
  * \param gain the gain. 1.0f is no change, 0.0f is silence.
@@ -1567,8 +1567,8 @@ extern SDL_DECLSPEC SDL_AudioStream *SDLCALL SDL_OpenAudioDeviceStream(SDL_Audio
  * always provided here in SDL_AUDIO_F32 format.
  *
  * The postmix callback runs _after_ logical device gain and audiostream gain
- * have been applied, which is to say you can make the output data louder
- * at this point than the gain settings would suggest.
+ * have been applied, which is to say you can make the output data louder at
+ * this point than the gain settings would suggest.
  *
  * \param userdata a pointer provided by the app through
  *                 SDL_SetAudioPostmixCallback, for its own use.
