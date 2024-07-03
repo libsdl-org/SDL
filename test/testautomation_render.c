@@ -18,7 +18,7 @@
 #define RENDER_COLOR_GREEN  0xFF00FF00
 
 #define ALLOWABLE_ERROR_OPAQUE  0
-#define ALLOWABLE_ERROR_BLENDED 64
+#define ALLOWABLE_ERROR_BLENDED 0
 
 #define CHECK_FUNC(FUNC, PARAMS)    \
 {                                   \
