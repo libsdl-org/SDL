@@ -502,7 +502,7 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
         }
     }
 
-    if (SDL_utf8strlen(keyEvent->key) == 1) {
+    if (keyEvent->location == 0 && SDL_utf8strlen(keyEvent->key) == 1) {
         const char *key = keyEvent->key;
         keycode = SDL_StepUTF8(&key, NULL);
         if (keycode == SDL_INVALID_UNICODE_CODEPOINT) {
