@@ -1171,7 +1171,7 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
             {
             PIXEL_TO_ARGB_PIXEL(*(Uint32 *) src, srcfmt, Pixel);
             Uint32 blended = *(Uint32 *) dst;
-            ALPHA_BLEND_ARGB_PIXELS(Pixel, blended);
+            ALPHA_BLEND_RGBA_4(Pixel, blended);
             *(Uint32*)dst = blended;
             src += srcbpp;
             dst += dstbpp;

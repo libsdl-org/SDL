@@ -501,6 +501,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         dst = a << 24 | r << 16 | g << 8 | b;     \
     } while (0)
 /* Blend a single color channel or alpha value */
+/* dC = ((sC * sA) + (dC * (255 - sA))) / 255 */
 #define ALPHA_BLEND_CHANNEL(sC, dC, sA)                  \
     do {                                                 \
         Uint16 x;                                        \
@@ -510,6 +511,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         dC = x >> 8;                                     \
     } while (0)
 /* Perform a division by 255 after a multiplication of two 8-bit color channels */
+/* out = (sC * dC) / 255 */
 #define MULT_DIV_255(sC, dC, out) \
     do {                          \
         Uint16 x = sC * dC;       \
@@ -524,11 +526,11 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         ALPHA_BLEND_CHANNEL(sG, dG, A);                       \
         ALPHA_BLEND_CHANNEL(sB, dB, A);                       \
     } while (0)
-/* Blend the ARGB values of two 32-bit pixels */
-#define ALPHA_BLEND_ARGB_PIXELS(src, dst)                               \
+/* Blend two 32-bit pixels with the same format */
+#define ALPHA_BLEND_RGBA_4(src, dst, ashift)                            \
     do {                                                                \
-        Uint32 srcA = src >> 24;                                        \
-        src |= 0xFF000000;                                              \
+        Uint32 srcA = (src >> ashift) & 0xFF;                           \
+        src |= ((Uint32)0xFF) << ashift;                                \
                                                                         \
         Uint32 srcRB = src & 0x00FF00FF;                                \
         Uint32 dstRB = dst & 0x00FF00FF;                                \
