@@ -28,6 +28,7 @@
 #define USB_VENDOR_AMAZON       0x1949
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_ASTRO        0x9886
+#define USB_VENDOR_ASUS         0x0b05
 #define USB_VENDOR_BACKBONE     0x358a
 #define USB_VENDOR_GAMESIR      0x3537
 #define USB_VENDOR_DRAGONRISE   0x0079
@@ -107,6 +108,7 @@
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_PS5_WIRELESS   0x100c
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_XBOX_WIRED     0x1010
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_XBOX_WIRELESS  0x1011
+#define USB_PRODUCT_ROG_RAIKIRI                           0x1a38
 #define USB_PRODUCT_SAITEK_CYBORG_V3                      0xf622
 #define USB_PRODUCT_SHANWAN_DS3                           0x0523
 #define USB_PRODUCT_SONY_DS3                              0x0268

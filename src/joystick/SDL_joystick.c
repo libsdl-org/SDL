@@ -2991,6 +2991,11 @@ SDL_bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
             return SDL_TRUE;
         }
     }
+    if (vendor_id == USB_VENDOR_ASUS) {
+        if (product_id == USB_PRODUCT_ROG_RAIKIRI) {
+            return SDL_TRUE;
+        }
+    }
     return SDL_FALSE;
 }
 
