@@ -23,8 +23,6 @@
 #include "SDL_audioqueue.h"
 #include "SDL_sysaudio.h"
 
-#define AUDIO_SPECS_EQUAL(x, y) (((x).format == (y).format) && ((x).channels == (y).channels) && ((x).freq == (y).freq))
-
 typedef struct SDL_MemoryPool SDL_MemoryPool;
 
 struct SDL_MemoryPool
@@ -285,7 +283,7 @@ void SDL_AddTrackToAudioQueue(SDL_AudioQueue *queue, SDL_AudioTrack *track)
 
     if (tail) {
         // If the spec has changed, make sure to flush the previous track
-        if (!AUDIO_SPECS_EQUAL(tail->spec, track->spec)) {
+        if (!SDL_AudioSpecsEqual(&tail->spec, &track->spec)) {
             FlushAudioTrack(tail);
         }
 
@@ -319,7 +317,7 @@ int SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, cons
     SDL_AudioTrack *track = queue->tail;
 
     if (track) {
-        if (!AUDIO_SPECS_EQUAL(track->spec, *spec)) {
+        if (!SDL_AudioSpecsEqual(&track->spec, spec)) {
             FlushAudioTrack(track);
         }
     } else {
@@ -514,7 +512,7 @@ static const Uint8 *PeekIntoAudioQueueFuture(SDL_AudioQueue *queue, Uint8 *data,
 }
 
 const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
-                                    Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels,
+                                    Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels, const Uint8 *dst_map,
                                     int past_frames, int present_frames, int future_frames,
                                     Uint8 *scratch)
 {
@@ -526,6 +524,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
 
     SDL_AudioFormat src_format = track->spec.format;
     int src_channels = track->spec.channels;
+    const Uint8 *src_map = track->spec.use_channel_map ? track->spec.channel_map : NULL;
 
     size_t src_frame_size = SDL_AUDIO_BYTESIZE(src_format) * src_channels;
     size_t dst_frame_size = SDL_AUDIO_BYTESIZE(dst_format) * dst_channels;
@@ -553,7 +552,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
         // Do we still need to copy/convert the data?
         if (dst) {
             ConvertAudio(past_frames + present_frames + future_frames, ptr,
-                         src_format, src_channels, dst, dst_format, dst_channels, scratch);
+                         src_format, src_channels, src_map, dst, dst_format, dst_channels, dst_map, scratch);
             ptr = dst;
         }
 
@@ -571,19 +570,19 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
     Uint8 *ptr = dst;
 
     if (src_past_bytes) {
-        ConvertAudio(past_frames, PeekIntoAudioQueuePast(queue, scratch, src_past_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch);
+        ConvertAudio(past_frames, PeekIntoAudioQueuePast(queue, scratch, src_past_bytes), src_format, src_channels, src_map, dst, dst_format, dst_channels, dst_map, scratch);
         dst += dst_past_bytes;
         scratch += dst_past_bytes;
     }
 
     if (src_present_bytes) {
-        ConvertAudio(present_frames, ReadFromAudioQueue(queue, scratch, src_present_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch);
+        ConvertAudio(present_frames, ReadFromAudioQueue(queue, scratch, src_present_bytes), src_format, src_channels, src_map, dst, dst_format, dst_channels, dst_map, scratch);
         dst += dst_present_bytes;
         scratch += dst_present_bytes;
     }
 
     if (src_future_bytes) {
-        ConvertAudio(future_frames, PeekIntoAudioQueueFuture(queue, scratch, src_future_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch);
+        ConvertAudio(future_frames, PeekIntoAudioQueueFuture(queue, scratch, src_future_bytes), src_format, src_channels, src_map, dst, dst_format, dst_channels, dst_map, scratch);
         dst += dst_future_bytes;
         scratch += dst_future_bytes;
     }

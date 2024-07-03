@@ -1167,7 +1167,7 @@ static AVCodecContext *OpenAudioStream(AVFormatContext *ic, int stream, const AV
         return NULL;
     }
 
-    SDL_AudioSpec spec = { SDL_AUDIO_F32, codecpar->ch_layout.nb_channels, codecpar->sample_rate };
+    SDL_AudioSpec spec = { SDL_AUDIO_F32, codecpar->ch_layout.nb_channels, codecpar->sample_rate, SDL_FALSE };
     audio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
     if (audio) {
         SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audio));
@@ -1240,7 +1240,7 @@ static void InterleaveAudio(AVFrame *frame, const SDL_AudioSpec *spec)
 static void HandleAudioFrame(AVFrame *frame)
 {
     if (audio) {
-        SDL_AudioSpec spec = { GetAudioFormat(frame->format), frame->ch_layout.nb_channels, frame->sample_rate };
+        SDL_AudioSpec spec = { GetAudioFormat(frame->format), frame->ch_layout.nb_channels, frame->sample_rate, SDL_FALSE };
         SDL_SetAudioStreamFormat(audio, &spec, NULL);
 
         if (frame->ch_layout.nb_channels > 1 && IsPlanarAudioFormat(frame->format)) {

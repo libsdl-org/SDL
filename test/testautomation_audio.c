@@ -181,7 +181,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
             SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
 
             /* Set spec */
-            SDL_memset(&desired, 0, sizeof(desired));
+            SDL_zero(desired);
             switch (j) {
             case 0:
                 /* Set standard desired spec */
@@ -272,7 +272,7 @@ static int audio_pauseUnpauseAudio(void *arg)
             SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
 
             /* Set spec */
-            SDL_memset(&desired, 0, sizeof(desired));
+            SDL_zero(desired);
             switch (j) {
             case 0:
                 /* Set standard desired spec */
@@ -496,6 +496,9 @@ static int audio_buildAudioStream(void *arg)
     SDL_AudioSpec spec2;
     int i, ii, j, jj, k, kk;
 
+    SDL_zero(spec1);
+    SDL_zero(spec2);
+
     /* Call Quit */
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
     SDLTest_AssertPass("Call to SDL_QuitSubSystem(SDL_INIT_AUDIO)");
@@ -566,6 +569,9 @@ static int audio_buildAudioStreamNegative(void *arg)
     SDL_AudioSpec spec2;
     int i;
     char message[256];
+
+    SDL_zero(spec1);
+    SDL_zero(spec2);
 
     /* Valid format */
     spec1.format = SDL_AUDIO_S8;
@@ -677,6 +683,9 @@ static int audio_convertAudio(void *arg)
     int c;
     char message[128];
     int i, ii, j, jj, k, kk;
+
+    SDL_zero(spec1);
+    SDL_zero(spec2);
 
     /* Iterate over bitmask that determines which parameters are modified in the conversion */
     for (c = 1; c < 8; c++) {
@@ -995,6 +1004,9 @@ static int audio_resampleLoss(void *arg)
     double sum_squared_value = 0;
     double signal_to_noise = 0;
 
+    SDL_zero(tmpspec1);
+    SDL_zero(tmpspec2);
+
     SDLTest_AssertPass("Test resampling of %i s %i Hz %f phase sine wave from sampling rate of %i Hz to %i Hz",
                        spec->time, spec->freq, spec->phase, spec->rate_in, spec->rate_out);
 
@@ -1147,6 +1159,9 @@ static int audio_convertAccuracy(void *arg)
         int tmp_len, dst_len;
         int ret;
 
+        SDL_zero(src_spec);
+        SDL_zero(tmp_spec);
+
         SDL_AudioFormat format = formats[i];
         const char* format_name = format_names[i];
 
@@ -1237,6 +1252,10 @@ static int audio_formatChange(void *arg)
     double target_max_error = 0.02;
     double target_signal_to_noise = 75.0;
     int sine_freq = 500;
+
+    SDL_zero(spec1);
+    SDL_zero(spec2);
+    SDL_zero(spec3);
 
     spec1.format = SDL_AUDIO_F32;
     spec1.channels = 1;

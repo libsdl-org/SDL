@@ -242,108 +242,22 @@ static const char *get_audio_device(void *handle, const int channels)
     return dev->name;
 }
 
-// !!! FIXME: is there a channel swizzler in alsalib instead?
+// Swizzle channels to match SDL defaults.
+// These are swizzles _from_ SDL's layouts to what ALSA wants.
 
+// 5.1 swizzle:
 // https://bugzilla.libsdl.org/show_bug.cgi?id=110
 //  "For Linux ALSA, this is FL-FR-RL-RR-C-LFE
 //  and for Windows DirectX [and CoreAudio], this is FL-FR-C-LFE-RL-RR"
-#define SWIZ6(T)                                                                  \
-    static void swizzle_alsa_channels_6_##T(void *buffer, const Uint32 bufferlen) \
-    {                                                                             \
-        T *ptr = (T *)buffer;                                                     \
-        Uint32 i;                                                                 \
-        for (i = 0; i < bufferlen; i++, ptr += 6) {                               \
-            T tmp;                                                                \
-            tmp = ptr[2];                                                         \
-            ptr[2] = ptr[4];                                                      \
-            ptr[4] = tmp;                                                         \
-            tmp = ptr[3];                                                         \
-            ptr[3] = ptr[5];                                                      \
-            ptr[5] = tmp;                                                         \
-        }                                                                         \
-    }
+static const Uint8 swizzle_alsa_channels_6[6] = { 0, 1, 4, 5, 2, 3 };
 
-
-// !!! FIXME: is there a channel swizzler in alsalib instead?
-// !!! FIXME: this screams for a SIMD shuffle operation.
-
+// 7.1 swizzle:
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/audio/mapping-stream-formats-to-speaker-configurations
 //  For Linux ALSA, this appears to be FL-FR-RL-RR-C-LFE-SL-SR
 //  and for Windows DirectX [and CoreAudio], this is FL-FR-C-LFE-SL-SR-RL-RR"
-#define SWIZ8(T)                                                                  \
-    static void swizzle_alsa_channels_8_##T(void *buffer, const Uint32 bufferlen) \
-    {                                                                             \
-        T *ptr = (T *)buffer;                                                     \
-        Uint32 i;                                                                 \
-        for (i = 0; i < bufferlen; i++, ptr += 6) {                               \
-            const T center = ptr[2];                                              \
-            const T subwoofer = ptr[3];                                           \
-            const T side_left = ptr[4];                                           \
-            const T side_right = ptr[5];                                          \
-            const T rear_left = ptr[6];                                           \
-            const T rear_right = ptr[7];                                          \
-            ptr[2] = rear_left;                                                   \
-            ptr[3] = rear_right;                                                  \
-            ptr[4] = center;                                                      \
-            ptr[5] = subwoofer;                                                   \
-            ptr[6] = side_left;                                                   \
-            ptr[7] = side_right;                                                  \
-        }                                                                         \
-    }
+static const Uint8 swizzle_alsa_channels_8[8] = { 0, 1, 6, 7, 2, 3, 4, 5 };
 
-#define CHANNEL_SWIZZLE(x) \
-    x(Uint64)              \
-        x(Uint32)          \
-            x(Uint16)      \
-                x(Uint8)
 
-CHANNEL_SWIZZLE(SWIZ6)
-CHANNEL_SWIZZLE(SWIZ8)
-
-#undef CHANNEL_SWIZZLE
-#undef SWIZ6
-#undef SWIZ8
-
-// Called right before feeding device->hidden->mixbuf to the hardware. Swizzle
-//  channels from Windows/Mac order to the format alsalib will want.
-static void swizzle_alsa_channels(SDL_AudioDevice *device, void *buffer, Uint32 bufferlen)
-{
-    switch (device->spec.channels) {
-#define CHANSWIZ(chans)                                                \
-    case chans:                                                        \
-        switch ((device->spec.format & (0xFF))) {                        \
-        case 8:                                                        \
-            swizzle_alsa_channels_##chans##_Uint8(buffer, bufferlen);  \
-            break;                                                     \
-        case 16:                                                       \
-            swizzle_alsa_channels_##chans##_Uint16(buffer, bufferlen); \
-            break;                                                     \
-        case 32:                                                       \
-            swizzle_alsa_channels_##chans##_Uint32(buffer, bufferlen); \
-            break;                                                     \
-        case 64:                                                       \
-            swizzle_alsa_channels_##chans##_Uint64(buffer, bufferlen); \
-            break;                                                     \
-        default:                                                       \
-            SDL_assert(!"unhandled bitsize");                          \
-            break;                                                     \
-        }                                                              \
-        return;
-
-        CHANSWIZ(6);
-        CHANSWIZ(8);
-#undef CHANSWIZ
-    default:
-        break;
-    }
-}
-
-#ifdef SND_CHMAP_API_VERSION
-// Some devices have the right channel map, no swizzling necessary
-static void no_swizzle(SDL_AudioDevice *device, void *buffer, Uint32 bufferlen)
-{
-}
-#endif // SND_CHMAP_API_VERSION
 
 // This function waits until it is possible to write a full sound buffer
 static int ALSA_WaitDevice(SDL_AudioDevice *device)
@@ -379,8 +293,6 @@ static int ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buf
     Uint8 *sample_buf = (Uint8 *) buffer;  // !!! FIXME: deal with this without casting away constness
     const int frame_size = SDL_AUDIO_FRAMESIZE(device->spec);
     snd_pcm_uframes_t frames_left = (snd_pcm_uframes_t) (buflen / frame_size);
-
-    device->hidden->swizzle_func(device, sample_buf, frames_left);
 
     while ((frames_left > 0) && !SDL_AtomicGet(&device->shutdown)) {
         const int rc = ALSA_snd_pcm_writei(device->hidden->pcm_handle, sample_buf, frames_left);
@@ -447,8 +359,6 @@ static int ALSA_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
             return -1;
         }
         return 0;  // go back to WaitDevice and try again.
-    } else if (rc > 0) {
-        device->hidden->swizzle_func(device, buffer, total_frames - rc);
     }
 
     //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: recorded %d bytes", rc * frame_size);
@@ -611,23 +521,6 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
     }
     device->spec.format = test_format;
 
-    // Validate number of channels and determine if swizzling is necessary.
-    //  Assume original swizzling, until proven otherwise.
-    device->hidden->swizzle_func = swizzle_alsa_channels;
-#ifdef SND_CHMAP_API_VERSION
-    snd_pcm_chmap_t *chmap = ALSA_snd_pcm_get_chmap(pcm_handle);
-    if (chmap) {
-        char chmap_str[64];
-        if (ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str) > 0) {
-            if (SDL_strcmp("FL FR FC LFE RL RR", chmap_str) == 0 ||
-                SDL_strcmp("FL FR FC LFE SL SR", chmap_str) == 0) {
-                device->hidden->swizzle_func = no_swizzle;
-            }
-        }
-        free(chmap); // This should NOT be SDL_free()
-    }
-#endif // SND_CHMAP_API_VERSION
-
     // Set the number of channels
     status = ALSA_snd_pcm_hw_params_set_channels(pcm_handle, hwparams,
                                                  device->spec.channels);
@@ -639,6 +532,33 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
         }
         device->spec.channels = channels;
     }
+
+    // Validate number of channels and determine if swizzling is necessary.
+    //  Assume original swizzling, until proven otherwise.
+    if (channels == 6) {
+        device->spec.use_channel_map = SDL_TRUE;
+        SDL_memcpy(device->spec.channel_map, swizzle_alsa_channels_6, sizeof (device->spec.channel_map[0]) * channels);
+    } else if (channels == 8) {
+        device->spec.use_channel_map = SDL_TRUE;
+        SDL_memcpy(device->spec.channel_map, swizzle_alsa_channels_8, sizeof (device->spec.channel_map[0]) * channels);
+    }
+
+#ifdef SND_CHMAP_API_VERSION
+    snd_pcm_chmap_t *chmap = ALSA_snd_pcm_get_chmap(pcm_handle);
+    if (chmap) {
+        char chmap_str[64];
+        if (ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str) > 0) {
+            if ( (channels == 6) &&
+                 ((SDL_strcmp("FL FR FC LFE RL RR", chmap_str) == 0) ||
+                  (SDL_strcmp("FL FR FC LFE SL SR", chmap_str) == 0)) ) {
+                device->spec.use_channel_map = SDL_FALSE;
+            } else if ((channels == 8) && (SDL_strcmp("FL FR FC LFE SL SR RL RR", chmap_str) == 0)) {
+                device->spec.use_channel_map = SDL_FALSE;
+            }
+        }
+        free(chmap); // This should NOT be SDL_free()
+    }
+#endif // SND_CHMAP_API_VERSION
 
     // Set the audio rate
     unsigned int rate = device->spec.freq;

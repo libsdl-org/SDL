@@ -109,6 +109,7 @@ static void queue_audio()
     int retval = 0;
     SDL_AudioSpec new_spec;
 
+    SDL_zero(new_spec);
     new_spec.format = spec.format;
     new_spec.channels = (int) sliders[2].value;
     new_spec.freq = (int) sliders[1].value;

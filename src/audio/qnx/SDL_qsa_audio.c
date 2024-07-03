@@ -363,6 +363,7 @@ static void QSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevic
 
                 if (status == EOK) {
                     SDL_AudioSpec spec;
+                    SDL_zero(spec);
                     SDL_AudioSpec *pspec = &spec;
                     snd_pcm_channel_setup_t csetup;
                     SDL_zero(csetup);
