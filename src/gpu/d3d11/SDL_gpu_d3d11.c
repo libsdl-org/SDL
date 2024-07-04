@@ -5836,7 +5836,7 @@ static SDL_bool D3D11_PrepareDriver(SDL_VideoDevice *_this)
     SDL_UnloadObject(d3d11_dll);
 
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11: Could not create D3D11Device with feature level 11_0");
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "D3D11: Could not create D3D11Device with feature level 11_1");
         return SDL_FALSE;
     }
 
