@@ -40,19 +40,19 @@ src/core/android/SDL_android.c
 Building an app
 ================================================================================
 
-For simple projects you can use the script located at build-scripts/androidbuild.sh
+For simple projects you can use the script located at build-scripts/create-android-project.py
 
 There's two ways of using it:
 
-    androidbuild.sh com.yourcompany.yourapp < sources.list
-    androidbuild.sh com.yourcompany.yourapp source1.c source2.c ...sourceN.c
+    ./create-android-project.py com.yourcompany.yourapp < sources.list
+    ./create-android-project.py com.yourcompany.yourapp source1.c source2.c ...sourceN.c
 
 sources.list should be a text file with a source file name in each line
 Filenames should be specified relative to the current directory, for example if
 you are in the build-scripts directory and want to create the testgles.c test, you'll
 run:
 
-    ./androidbuild.sh org.libsdl.testgles ../test/testgles.c
+    ./create-android-project.py org.libsdl.testgles ../test/testgles.c
 
 One limitation of this script is that all sources provided will be aggregated into
 a single directory, thus all your source files should have a unique name.
@@ -61,7 +61,7 @@ Once the project is complete the script will tell you where the debug APK is loc
 If you want to create a signed release APK, you can use the project created by this
 utility to generate it.
 
-Finally, a word of caution: re running androidbuild.sh wipes any changes you may have
+Finally, a word of caution: re running create-android-project.py wipes any changes you may have
 done in the build directory for the app!
 
 

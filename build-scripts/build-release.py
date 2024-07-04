@@ -694,7 +694,7 @@ class Releaser:
                     zip_object.write(test_library, arcname=f"prefab/modules/{self.project}_test/libs/android.{android_abi}/lib{self.project}_test.a")
                     zip_object.writestr(f"prefab/modules/{self.project}_test/libs/android.{android_abi}/abi.json", self.get_prefab_abi_json_text(abi=android_abi, cpp=False, shared=False))
 
-        self.artifacts[f"android-prefab-aar"] = aar_path
+        self.artifacts[f"android-aar"] = aar_path
 
     @classmethod
     def extract_sdl_version(cls, root: Path, project: str):

@@ -40,7 +40,11 @@ jobs:
       - name: Create Gradle project
         if: ${{ matrix.platform.gradle }}
         run: |
-          build-scripts/androidbuild.sh org.libsdl.testspriteminimal test/testspriteminimal.c test/icon.h
+          python build-scripts/create-android-project.py \
+            --output "build" \
+            --variant copy \
+            org.libsdl.testspriteminimal \
+            test/testspriteminimal.c test/icon.h
           echo ""
           echo "Project contents:"
           echo ""

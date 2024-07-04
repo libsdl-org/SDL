@@ -461,7 +461,6 @@ jobs:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Setup Android NDK'
         uses: nttld/setup-ndk@v1
-        id: setup_ndk
         with:
           local-cache: true
           ndk-version: r21e
@@ -500,3 +499,71 @@ jobs:
         with:
           name: android
           path: '${{ github.workspace }}/dist'
+
+  android-verify:
+    needs: [android, src]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Set up Python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: 'Setup Android NDK'
+        uses: nttld/setup-ndk@v1
+        with:
+          local-cache: true
+          ndk-version: r21e
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: 'Download source archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: sources
+          path: '${{ github.workspace }}'
+      - name: 'Download Android .aar archive'
+        uses: actions/download-artifact@v4
+        with:
+          name: android
+          path: '${{ github.workspace }}'
+      - name: 'Untar ${{ needs.src.outputs.src-tar-gz }}'
+        id: src
+        run: |
+          mkdir -p /tmp/tardir
+          tar -C /tmp/tardir -v -x -f "${{ github.workspace }}/${{ needs.src.outputs.src-tar-gz }}"
+          echo "path=/tmp/tardir/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$GITHUB_OUTPUT
+      - name: 'Create gradle project'
+        id: create-gradle-project
+        run: |
+          python ${{ steps.src.outputs.path }}/build-scripts/create-android-project.py \
+            org.libsdl.testspriteminimal \
+            ${{ steps.src.outputs.path }}/test/testspriteminimal.c \
+            ${{ steps.src.outputs.path }}/test/icon.h \
+            --variant aar \
+            --output "/tmp/projects"
+          echo "path=/tmp/projects/org.libsdl.testspriteminimal" >>$GITHUB_OUTPUT
+
+          echo ""
+          echo "Project contents:"
+          echo ""
+          find "/tmp/projects/org.libsdl.testspriteminimal"
+      - name: 'Remove SDL sources to make sure they are not used'
+        run: |
+          rm -rf "${{ steps.src.outputs.path }}"
+      - name: 'Copy SDL3 aar into Gradle project'
+        run: |
+          cp "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" "${{ steps.create-gradle-project.outputs.path }}/app/libs"
+
+          echo ""
+          echo "Project contents:"
+          echo ""
+          find "${{ steps.create-gradle-project.outputs.path }}"
+      - name: 'Build app (Gradle & ndk-build)'
+        run: |
+          cd "${{ steps.create-gradle-project.outputs.path }}"
+          ./gradlew -i assembleRelease -PBUILD_WITH_CMAKE=1
+      - name: 'Build app (Gradle & CMake)'
+        run: |
+          cd "${{ steps.create-gradle-project.outputs.path }}"
+          ./gradlew -i assembleRelease
