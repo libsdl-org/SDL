@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "SDL_fcitx.h"
+#include "../../video/SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "SDL_dbus.h"
 
