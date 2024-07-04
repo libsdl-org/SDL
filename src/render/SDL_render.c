@@ -4392,7 +4392,6 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     if (renderer->window) {
         SDL_SetWindowData(renderer->window, SDL_WINDOWRENDERDATA, NULL);
-        renderer->window = NULL;
     }
 
     /* Free the target mutex */
