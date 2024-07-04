@@ -1447,7 +1447,6 @@ static void D3D_DestroyRenderer(SDL_Renderer *renderer)
         }
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 static int D3D_Reset(SDL_Renderer *renderer)
@@ -1547,9 +1546,8 @@ static int D3D_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
+int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
 {
-    SDL_Renderer *renderer;
     D3D_RenderData *data;
     SDL_SysWMinfo windowinfo;
     HRESULT result;
@@ -1562,24 +1560,14 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     SDL_DisplayMode fullscreen_mode;
     int displayIndex;
 
-    renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-
     data = (D3D_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        SDL_free(renderer);
-        SDL_OutOfMemory();
-        return NULL;
+        return SDL_OutOfMemory();
     }
 
     if (!D3D_LoadDLL(&data->d3dDLL, &data->d3d)) {
-        SDL_free(renderer);
         SDL_free(data);
-        SDL_SetError("Unable to create Direct3D interface");
-        return NULL;
+        return SDL_SetError("Unable to create Direct3D interface");
     }
 
     renderer->WindowEvent = D3D_WindowEvent;
@@ -1662,23 +1650,20 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
                                      &pparams, &data->device);
     if (FAILED(result)) {
         D3D_DestroyRenderer(renderer);
-        D3D_SetError("CreateDevice()", result);
-        return NULL;
+        return D3D_SetError("CreateDevice()", result);
     }
 
     /* Get presentation parameters to fill info */
     result = IDirect3DDevice9_GetSwapChain(data->device, 0, &chain);
     if (FAILED(result)) {
         D3D_DestroyRenderer(renderer);
-        D3D_SetError("GetSwapChain()", result);
-        return NULL;
+        return D3D_SetError("GetSwapChain()", result);
     }
     result = IDirect3DSwapChain9_GetPresentParameters(chain, &pparams);
     if (FAILED(result)) {
         IDirect3DSwapChain9_Release(chain);
         D3D_DestroyRenderer(renderer);
-        D3D_SetError("GetPresentParameters()", result);
-        return NULL;
+        return D3D_SetError("GetPresentParameters()", result);
     }
     IDirect3DSwapChain9_Release(chain);
     if (pparams.PresentationInterval == D3DPRESENT_INTERVAL_ONE) {
@@ -1720,7 +1705,7 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
     data->drawstate.blend = SDL_BLENDMODE_INVALID;
 
-    return renderer;
+    return 0;
 }
 
 SDL_RenderDriver D3D_RenderDriver = {

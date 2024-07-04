@@ -1555,7 +1555,6 @@ static void GL_DestroyRenderer(SDL_Renderer *renderer)
         }
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 static int GL_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *texw, float *texh)
@@ -1700,9 +1699,8 @@ static SDL_bool GL_IsProbablyAccelerated(const GL_RenderData *data)
     return SDL_TRUE;
 }
 
-static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
+static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
 {
-    SDL_Renderer *renderer;
     GL_RenderData *data;
     GLint value;
     Uint32 window_flags;
@@ -1731,15 +1729,8 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 #endif
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        SDL_OutOfMemory();
-        goto error;
-    }
-
     data = (GL_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        SDL_free(renderer);
         SDL_OutOfMemory();
         goto error;
     }
@@ -1777,20 +1768,17 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
-        SDL_free(renderer);
         SDL_free(data);
         goto error;
     }
     if (SDL_GL_MakeCurrent(window, data->context) < 0) {
         SDL_GL_DeleteContext(data->context);
-        SDL_free(renderer);
         SDL_free(data);
         goto error;
     }
 
     if (GL_LoadFunctions(data) < 0) {
         SDL_GL_DeleteContext(data->context);
-        SDL_free(renderer);
         SDL_free(data);
         goto error;
     }
@@ -1944,7 +1932,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window *window, Uint32 flags)
     data->drawstate.color = 0xFFFFFFFF;
     data->drawstate.clear_color = 0xFFFFFFFF;
 
-    return renderer;
+    return 0;
 
 error:
     if (changed_window) {
@@ -1954,7 +1942,7 @@ error:
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
         SDL_RecreateWindow(window, window_flags);
     }
-    return NULL;
+    return -1;
 }
 
 SDL_RenderDriver GL_RenderDriver = {

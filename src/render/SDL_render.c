@@ -954,6 +954,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
     int n = SDL_GetNumRenderDrivers();
     SDL_bool batching = SDL_TRUE;
     const char *hint;
+    int rc = -1;
 
 #if defined(__ANDROID__)
     Android_ActivityMutex_Lock_Running();
@@ -974,6 +975,14 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
         goto error;
     }
 
+    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        goto error;
+    }
+
+    renderer->magic = &renderer_magic;
+
     hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
     if (hint && *hint) {
         if (SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE)) {
@@ -991,30 +1000,36 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
 
                 if (SDL_strcasecmp(hint, driver->info.name) == 0) {
                     /* Create a new renderer instance */
-                    renderer = driver->CreateRenderer(window, flags);
-                    if (renderer) {
+                    rc = driver->CreateRenderer(renderer, window, flags);
+                    if (rc == 0) {
                         batching = SDL_FALSE;
+                    } else {
+                        SDL_zerop(renderer);  /* make sure we don't leave function pointers from a previous CreateRenderer() in this struct. */
+                        renderer->magic = &renderer_magic;
                     }
                     break;
                 }
             }
         }
 
-        if (!renderer) {
+        if (rc == -1) {
             for (index = 0; index < n; ++index) {
                 const SDL_RenderDriver *driver = render_drivers[index];
 
                 if ((driver->info.flags & flags) == flags) {
                     /* Create a new renderer instance */
-                    renderer = driver->CreateRenderer(window, flags);
-                    if (renderer) {
+                    rc = driver->CreateRenderer(renderer, window, flags);
+                    if (rc == 0) {
                         /* Yay, we got one! */
                         break;
+                    } else {
+                        SDL_zerop(renderer);  /* make sure we don't leave function pointers from a previous CreateRenderer() in this struct. */
+                        renderer->magic = &renderer_magic;
                     }
                 }
             }
         }
-        if (!renderer) {
+        if (rc == -1) {
             SDL_SetError("Couldn't find matching render driver");
             goto error;
         }
@@ -1025,9 +1040,9 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
             goto error;
         }
         /* Create a new renderer instance */
-        renderer = render_drivers[index]->CreateRenderer(window, flags);
+        rc = render_drivers[index]->CreateRenderer(renderer, window, flags);
         batching = SDL_FALSE;
-        if (!renderer) {
+        if (rc == -1) {
             goto error;
         }
     }
@@ -1108,6 +1123,7 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
     return renderer;
 
 error:
+    SDL_free(renderer);
 
 #if defined(__ANDROID__)
     Android_ActivityMutex_Unlock();
@@ -1124,12 +1140,23 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 {
 #if SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
+    int rc;
 
-    renderer = SW_CreateRendererForSurface(surface);
+    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
 
-    if (renderer) {
+    renderer->magic = &renderer_magic;
+
+    rc = SW_CreateRendererForSurface(renderer, surface);
+
+    if (rc == -1) {
+        SDL_free(renderer);
+        renderer = NULL;
+    } else {
         VerifyDrawQueueFunctions(renderer);
-        renderer->magic = &renderer_magic;
         renderer->target_mutex = SDL_CreateMutex();
         renderer->scale.x = 1.0f;
         renderer->scale.y = 1.0f;
@@ -4366,6 +4393,7 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
 
     /* Free the renderer instance */
     renderer->DestroyRenderer(renderer);
+    SDL_free(renderer);
 }
 
 int SDL_GL_BindTexture(SDL_Texture *texture, float *texw, float *texh)

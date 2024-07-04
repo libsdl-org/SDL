@@ -1299,7 +1299,6 @@ static void PSP_DestroyRenderer(SDL_Renderer *renderer)
         data->displayListAvail = SDL_FALSE;
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
@@ -1309,25 +1308,16 @@ static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
+int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
 {
-
-    SDL_Renderer *renderer;
     PSP_RenderData *data;
     int pixelformat;
     void *doublebuffer = NULL;
 
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-
     data = (PSP_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         PSP_DestroyRenderer(renderer);
-        SDL_OutOfMemory();
-        return NULL;
+        return SDL_OutOfMemory();
     }
 
     renderer->WindowEvent = PSP_WindowEvent;
@@ -1419,7 +1409,7 @@ SDL_Renderer *PSP_CreateRenderer(SDL_Window *window, Uint32 flags)
     sceKernelRegisterSubIntrHandler(PSP_VBLANK_INT, 0, psp_on_vblank, data);
     sceKernelEnableSubIntr(PSP_VBLANK_INT, 0);
 
-    return renderer;
+    return 0;
 }
 
 SDL_RenderDriver PSP_RenderDriver = {

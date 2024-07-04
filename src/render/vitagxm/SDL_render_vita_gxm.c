@@ -211,22 +211,13 @@ static int VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
+int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
 {
-    SDL_Renderer *renderer;
     VITA_GXM_RenderData *data;
-
-    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
 
     data = (VITA_GXM_RenderData *)SDL_calloc(1, sizeof(VITA_GXM_RenderData));
     if (!data) {
-        SDL_free(renderer);
-        SDL_OutOfMemory();
-        return NULL;
+        return SDL_OutOfMemory();
     }
 
     renderer->WindowEvent = VITA_GXM_WindowEvent;
@@ -277,7 +268,7 @@ SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
         return NULL;
     }
 
-    return renderer;
+    return 0;
 }
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
@@ -1222,7 +1213,6 @@ static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
         data->drawing = SDL_FALSE;
         SDL_free(data);
     }
-    SDL_free(renderer);
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */

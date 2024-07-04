@@ -1513,8 +1513,6 @@ static void METAL_DestroyRenderer(SDL_Renderer * renderer)
         /* SDL_Metal_DestroyView(data.mtlview); */
         CFBridgingRelease(data.mtlview);
     }
-
-    SDL_free(renderer);
 }}
 
 static void *METAL_GetMetalLayer(SDL_Renderer * renderer)
@@ -1580,9 +1578,8 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
     return nil;
 }
 
-static SDL_Renderer *METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
+static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window * window, Uint32 flags)
 { @autoreleasepool {
-    SDL_Renderer *renderer = NULL;
     METAL_RenderData *data = NULL;
     id<MTLDevice> mtldevice = nil;
     SDL_MetalView view = NULL;
@@ -1641,17 +1638,11 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     SDL_VERSION(&syswm.version);
     if (!SDL_GetWindowWMInfo(window, &syswm)) {
-        return NULL;
+        return -1;
     }
 
     if (IsMetalAvailable(&syswm) == -1) {
-        return NULL;
-    }
-
-    renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        SDL_OutOfMemory();
-        return NULL;
+        return -1;
     }
 
 #ifdef __MACOSX__
@@ -1672,9 +1663,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     if (mtldevice == nil) {
-        SDL_free(renderer);
-        SDL_SetError("Failed to obtain Metal device");
-        return NULL;
+        return SDL_SetError("Failed to obtain Metal device");
     }
 
     view = GetWindowView(window);
@@ -1683,8 +1672,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     if (view == NULL) {
-        SDL_free(renderer);
-        return NULL;
+        return -1;
     }
 
     // !!! FIXME: error checking on all of this.
@@ -1696,8 +1684,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
          */
         /* SDL_Metal_DestroyView(view); */
         CFBridgingRelease(view);
-        SDL_free(renderer);
-        return NULL;
+        return -1;
     }
 
     renderer->driverdata = (void*)CFBridgingRetain(data);
@@ -1875,7 +1862,7 @@ static SDL_Renderer *METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->info.max_texture_width = maxtexsize;
     renderer->info.max_texture_height = maxtexsize;
 
-    return renderer;
+    return 0;
 }}
 
 SDL_RenderDriver METAL_RenderDriver = {

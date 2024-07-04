@@ -288,7 +288,7 @@ struct SDL_Renderer
 /* Define the SDL render driver structure */
 struct SDL_RenderDriver
 {
-    SDL_Renderer *(*CreateRenderer)(SDL_Window *window, Uint32 flags);
+    int (*CreateRenderer)(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags);
 
     /* Info about the renderer capabilities */
     SDL_RendererInfo info;
