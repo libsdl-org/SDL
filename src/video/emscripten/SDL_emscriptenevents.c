@@ -543,9 +543,9 @@ static EM_BOOL Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboard
 
     if (SDL_TextInputActive(window_data->window)) {
         char text[5];
-        if (SDL_UCS4ToUTF8(keyEvent->charCode, text)) {
-            SDL_SendKeyboardText(text);
-        }
+        char *end = SDL_UCS4ToUTF8(keyEvent->charCode, text);
+        *end = '\0';
+        SDL_SendKeyboardText(text);
         return EM_TRUE;
     }
     return EM_FALSE;

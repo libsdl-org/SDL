@@ -811,6 +811,7 @@ SDL3_0.0.0 {
     SDL_TryLockRWLockForWriting;
     SDL_TryLockSpinlock;
     SDL_TryWaitSemaphore;
+    SDL_UCS4ToUTF8;
     SDL_UnbindAudioStream;
     SDL_UnbindAudioStreams;
     SDL_UnloadObject;

@@ -1309,6 +1309,35 @@ extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *st
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_StepUTF8(const char **pstr, size_t *pslen);
 
+/**
+ * Convert a single Unicode codepoint to UTF-8.
+ *
+ * The buffer pointed to by `dst` must be at least 4 bytes long, as this
+ * function may generate between 1 and 4 bytes of output.
+ *
+ * This function returns the first byte _after_ the newly-written UTF-8
+ * sequence, which is useful for encoding multiple codepoints in a loop, or
+ * knowing where to write a NULL-terminator character to end the string (in
+ * either case, plan to have a buffer of _more_ than 4 bytes!).
+ *
+ * If `codepoint` is an invalid value (outside the Unicode range, or a UTF-16
+ * surrogate value, etc), this will use U+FFFD (REPLACEMENT CHARACTER) for
+ * the codepoint instead, and not set an error.
+ *
+ * If `dst` is NULL, this returns NULL immediately without writing to the
+ * pointer and without setting an error.
+ *
+ * \param codepoint a Unicode codepoint to convert to UTF-8.
+ * \param dst the location to write the encoded UTF-8. Must point to at least 4 bytes!
+ * \returns the first byte past the newly-written UTF-8 sequence.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC char * SDLCALL SDL_UCS4ToUTF8(Uint32 codepoint, char *dst);
+
+
 extern SDL_DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, ...) SDL_SCANF_VARARG_FUNC(2);
 extern SDL_DECLSPEC int SDLCALL SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_list ap) SDL_SCANF_VARARG_FUNCV(2);
 extern SDL_DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ... ) SDL_PRINTF_VARARG_FUNC(3);

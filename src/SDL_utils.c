@@ -101,31 +101,6 @@ SDL_bool SDL_endswith(const char *string, const char *suffix)
     return SDL_FALSE;
 }
 
-char *SDL_UCS4ToUTF8(Uint32 ch, char *dst)
-{
-    Uint8 *p = (Uint8 *)dst;
-    if (ch <= 0x7F) {
-        *p = (Uint8)ch;
-        ++dst;
-    } else if (ch <= 0x7FF) {
-        p[0] = 0xC0 | (Uint8)((ch >> 6) & 0x1F);
-        p[1] = 0x80 | (Uint8)(ch & 0x3F);
-        dst += 2;
-    } else if (ch <= 0xFFFF) {
-        p[0] = 0xE0 | (Uint8)((ch >> 12) & 0x0F);
-        p[1] = 0x80 | (Uint8)((ch >> 6) & 0x3F);
-        p[2] = 0x80 | (Uint8)(ch & 0x3F);
-        dst += 3;
-    } else {
-        p[0] = 0xF0 | (Uint8)((ch >> 18) & 0x07);
-        p[1] = 0x80 | (Uint8)((ch >> 12) & 0x3F);
-        p[2] = 0x80 | (Uint8)((ch >> 6) & 0x3F);
-        p[3] = 0x80 | (Uint8)(ch & 0x3F);
-        dst += 4;
-    }
-    return dst;
-}
-
 /* Assume we can wrap SDL_AtomicInt values and cast to Uint32 */
 SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
 

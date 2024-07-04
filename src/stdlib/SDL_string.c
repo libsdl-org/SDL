@@ -42,6 +42,42 @@
 SDL_COMPILE_TIME_ASSERT(sizeof_wchar_t, sizeof(wchar_t) == SDL_SIZEOF_WCHAR_T);
 
 
+char *SDL_UCS4ToUTF8(Uint32 codepoint, char *dst)
+{
+    if (!dst) {
+        return NULL;  // I guess...?
+    } else if (codepoint > 0x10FFFF) {  // Outside the range of Unicode codepoints (also, larger than can be encoded in 4 bytes of UTF-8!).
+        codepoint = SDL_INVALID_UNICODE_CODEPOINT;
+    } else if ((codepoint >= 0xD800) && (codepoint <= 0xDFFF)) {  // UTF-16 surrogate values are illegal in UTF-8.
+        codepoint = SDL_INVALID_UNICODE_CODEPOINT;
+    }
+
+    Uint8 *p = (Uint8 *)dst;
+    if (codepoint <= 0x7F) {
+        *p = (Uint8)codepoint;
+        ++dst;
+    } else if (codepoint <= 0x7FF) {
+        p[0] = 0xC0 | (Uint8)((codepoint >> 6) & 0x1F);
+        p[1] = 0x80 | (Uint8)(codepoint & 0x3F);
+        dst += 2;
+    } else if (codepoint <= 0xFFFF) {
+        p[0] = 0xE0 | (Uint8)((codepoint >> 12) & 0x0F);
+        p[1] = 0x80 | (Uint8)((codepoint >> 6) & 0x3F);
+        p[2] = 0x80 | (Uint8)(codepoint & 0x3F);
+        dst += 3;
+    } else {
+        SDL_assert(codepoint <= 0x10FFFF);
+        p[0] = 0xF0 | (Uint8)((codepoint >> 18) & 0x07);
+        p[1] = 0x80 | (Uint8)((codepoint >> 12) & 0x3F);
+        p[2] = 0x80 | (Uint8)((codepoint >> 6) & 0x3F);
+        p[3] = 0x80 | (Uint8)(codepoint & 0x3F);
+        dst += 4;
+    }
+
+    return dst;
+}
+
+
 // this expects `from` and `to` to be UTF-32 encoding!
 int SDL_CaseFoldUnicode(const Uint32 from, Uint32 *to)
 {
