@@ -94,6 +94,16 @@
         /* We need to export SDL_main so it can be launched from Java */
         #define SDLMAIN_DECLSPEC    SDL_DECLSPEC
 
+    #elif defined(SDL_PLATFORM_EMSCRIPTEN)
+        /* On Emscripten, SDL provides a main function that converts URL
+           parameters that start with "SDL_" to environment variables, so
+           they can be used as SDL hints, etc.
+
+           This is 100% optional, so if you don't want this to happen, you may
+           define SDL_MAIN_HANDLED
+         */
+        #define SDL_MAIN_AVAILABLE
+
     #elif defined(SDL_PLATFORM_PSP)
         /* On PSP SDL provides a main function that sets the module info,
            activates the GPU and starts the thread required to be able to exit
