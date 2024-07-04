@@ -1286,9 +1286,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         } else {
             if (SDL_TextInputActive(data->window)) {
                 char text[5];
-                if (SDL_UCS4ToUTF8((Uint32)wParam, text) != text) {
-                    SDL_SendKeyboardText(text);
-                }
+                char *end = SDL_UCS4ToUTF8((Uint32)wParam, text);
+                *end = '\0';
+                SDL_SendKeyboardText(text);
             }
             returnCode = 0;
         }

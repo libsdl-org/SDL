@@ -32,8 +32,6 @@ extern void SDL_CalculateFraction(float x, int *numerator, int *denominator);
 
 extern SDL_bool SDL_endswith(const char *string, const char *suffix);
 
-extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);
-
 typedef enum
 {
     SDL_OBJECT_TYPE_UNKNOWN,

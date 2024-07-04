@@ -836,6 +836,7 @@
 #define SDL_TryLockRWLockForWriting SDL_TryLockRWLockForWriting_REAL
 #define SDL_TryLockSpinlock SDL_TryLockSpinlock_REAL
 #define SDL_TryWaitSemaphore SDL_TryWaitSemaphore_REAL
+#define SDL_UCS4ToUTF8 SDL_UCS4ToUTF8_REAL
 #define SDL_UnbindAudioStream SDL_UnbindAudioStream_REAL
 #define SDL_UnbindAudioStreams SDL_UnbindAudioStreams_REAL
 #define SDL_UnloadObject SDL_UnloadObject_REAL
