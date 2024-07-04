@@ -143,7 +143,7 @@ const char *SDL_AllocateEventString(const char *string)
     return NULL;
 }
 
-static void SDL_FlushEventMemory(Uint32 eventID)
+void SDL_FlushEventMemory(Uint32 eventID)
 {
     SDL_LockMutex(SDL_event_memory_lock);
     {
