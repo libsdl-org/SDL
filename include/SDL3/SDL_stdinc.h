@@ -1321,14 +1321,15 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_StepUTF8(const char **pstr, size_t *pslen
  * either case, plan to have a buffer of _more_ than 4 bytes!).
  *
  * If `codepoint` is an invalid value (outside the Unicode range, or a UTF-16
- * surrogate value, etc), this will use U+FFFD (REPLACEMENT CHARACTER) for
- * the codepoint instead, and not set an error.
+ * surrogate value, etc), this will use U+FFFD (REPLACEMENT CHARACTER) for the
+ * codepoint instead, and not set an error.
  *
  * If `dst` is NULL, this returns NULL immediately without writing to the
  * pointer and without setting an error.
  *
  * \param codepoint a Unicode codepoint to convert to UTF-8.
- * \param dst the location to write the encoded UTF-8. Must point to at least 4 bytes!
+ * \param dst the location to write the encoded UTF-8. Must point to at least
+ *            4 bytes!
  * \returns the first byte past the newly-written UTF-8 sequence.
  *
  * \threadsafety It is safe to call this function from any thread.
