@@ -687,7 +687,7 @@ typedef struct SDL_GpuDriver
     const char *Name;
     const SDL_GpuBackend backendflag;
     SDL_bool (*PrepareDriver)(SDL_VideoDevice *_this);
-    SDL_GpuDevice *(*CreateDevice)(SDL_bool debugMode);
+    SDL_GpuDevice *(*CreateDevice)(SDL_bool debugMode, SDL_bool preferLowPower);
 } SDL_GpuDriver;
 
 extern SDL_GpuDriver VulkanDriver;

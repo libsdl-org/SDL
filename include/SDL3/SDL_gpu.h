@@ -790,6 +790,7 @@ typedef struct SDL_GpuStorageTextureReadWriteBinding
  *
  * \param preferredBackends a bitflag containing the renderers most recognized by the application
  * \param debugMode enable debug mode properties and validations
+ * \param preferLowPower set this to SDL_TRUE if your app prefers energy efficiency over maximum GPU performance
  * \returns a GPU context on success or NULL on failure
  *
  * \since This function is available since SDL 3.x.x
@@ -799,7 +800,8 @@ typedef struct SDL_GpuStorageTextureReadWriteBinding
  */
 extern SDL_DECLSPEC SDL_GpuDevice *SDLCALL SDL_GpuCreateDevice(
     SDL_GpuBackend preferredBackends,
-    SDL_bool debugMode);
+    SDL_bool debugMode,
+    SDL_bool preferLowPower);
 
 /**
  * Destroys a GPU context previously returned by SDL_GpuCreateDevice.

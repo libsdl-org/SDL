@@ -3839,7 +3839,7 @@ static void METAL_INTERNAL_DestroyBlitResources(
     SDL_free(renderer->blitPipelines);
 }
 
-static SDL_GpuDevice *METAL_CreateDevice(SDL_bool debugMode)
+static SDL_GpuDevice *METAL_CreateDevice(SDL_bool debugMode, SDL_bool preferLowPower)
 {
     MetalRenderer *renderer;
 
@@ -3847,7 +3847,20 @@ static SDL_GpuDevice *METAL_CreateDevice(SDL_bool debugMode)
     renderer = (MetalRenderer *)SDL_calloc(1, sizeof(MetalRenderer));
 
     /* Create the Metal device and command queue */
-    renderer->device = MTLCreateSystemDefaultDevice();
+#ifdef SDL_PLATFORM_MACOS
+    if (preferLowPower) {
+        NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
+        for (id<MTLDevice> device in devices) {
+            if (device.isLowPower) {
+                renderer->device = device;
+                break;
+            }
+        }
+    }
+#endif
+    if (renderer->device == NULL) {
+        renderer->device = MTLCreateSystemDefaultDevice();
+    }
     renderer->queue = [renderer->device newCommandQueue];
 
     /* Print driver info */

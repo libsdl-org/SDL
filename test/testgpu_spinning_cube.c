@@ -424,7 +424,7 @@ init_render_state(void)
     SDL_GpuShader *fragment_shader;
     int i;
 
-    gpu_device = SDL_GpuCreateDevice(SDL_GPU_BACKEND_ALL, 1);
+    gpu_device = SDL_GpuCreateDevice(SDL_GPU_BACKEND_ALL, 1, 0);
     CHECK_CREATE(gpu_device, "GPU device");
 
     /* Claim the windows */

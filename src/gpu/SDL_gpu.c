@@ -159,7 +159,8 @@ static SDL_GpuBackend SDL_GpuSelectBackend(SDL_VideoDevice *_this, SDL_GpuBacken
 
 SDL_GpuDevice *SDL_GpuCreateDevice(
     SDL_GpuBackend preferredBackends,
-    SDL_bool debugMode)
+    SDL_bool debugMode,
+    SDL_bool preferLowPower)
 {
     int i;
     SDL_GpuDevice *result = NULL;
@@ -175,7 +176,7 @@ SDL_GpuDevice *SDL_GpuCreateDevice(
     if (selectedBackend != SDL_GPU_BACKEND_INVALID) {
         for (i = 0; backends[i]; i += 1) {
             if (backends[i]->backendflag == selectedBackend) {
-                result = backends[i]->CreateDevice(debugMode);
+                result = backends[i]->CreateDevice(debugMode, preferLowPower);
                 if (result != NULL) {
                     result->backend = backends[i]->backendflag;
                     break;

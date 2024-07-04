@@ -6071,7 +6071,7 @@ static void D3D11_INTERNAL_DestroyBlitPipelines(
     D3D11_ReleaseGraphicsPipeline(driverData, renderer->blitFrom2DArrayPipeline);
 }
 
-static SDL_GpuDevice *D3D11_CreateDevice(SDL_bool debugMode)
+static SDL_GpuDevice *D3D11_CreateDevice(SDL_bool debugMode, SDL_bool preferLowPower)
 {
     D3D11Renderer *renderer;
     PFN_CREATE_DXGI_FACTORY1 CreateDXGIFactoryFunc;
@@ -6159,7 +6159,9 @@ static SDL_GpuDevice *D3D11_CreateDevice(SDL_bool debugMode)
         IDXGIFactory6_EnumAdapterByGpuPreference(
             factory6,
             0,
-            DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+            preferLowPower ?
+                DXGI_GPU_PREFERENCE_MINIMUM_POWER :
+                DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
             &D3D_IID_IDXGIAdapter1,
             (void **)&renderer->adapter);
         IDXGIFactory6_Release(factory6);

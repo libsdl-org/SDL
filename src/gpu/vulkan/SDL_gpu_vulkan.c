@@ -118,10 +118,18 @@ typedef struct VulkanExtensions
 
 /* Conversions */
 
-static const Uint8 DEVICE_PRIORITY[] = {
+static const Uint8 DEVICE_PRIORITY_HIGHPERFORMANCE[] = {
     0, /* VK_PHYSICAL_DEVICE_TYPE_OTHER */
     3, /* VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU */
     4, /* VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU */
+    2, /* VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU */
+    1  /* VK_PHYSICAL_DEVICE_TYPE_CPU */
+};
+
+static const Uint8 DEVICE_PRIORITY_LOWPOWER[] = {
+    0, /* VK_PHYSICAL_DEVICE_TYPE_OTHER */
+    4, /* VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU */
+    3, /* VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU */
     2, /* VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU */
     1  /* VK_PHYSICAL_DEVICE_TYPE_CPU */
 };
@@ -1277,6 +1285,7 @@ struct VulkanRenderer
     Uint8 outofBARMemoryWarning;
 
     SDL_bool debugMode;
+    SDL_bool preferLowPower;
     VulkanExtensions supports;
     SDL_bool supportsDebugUtils;
     SDL_bool supportsColorspace;
@@ -10978,6 +10987,10 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     VkPhysicalDeviceProperties deviceProperties;
     Uint32 i;
 
+    const Uint8 *devicePriority = renderer->preferLowPower ?
+        DEVICE_PRIORITY_LOWPOWER :
+        DEVICE_PRIORITY_HIGHPERFORMANCE;
+
     /* Get the device rank before doing any checks, in case one fails.
      * Note: If no dedicated device exists, one that supports our features
      * would be fine
@@ -10985,14 +10998,14 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     renderer->vkGetPhysicalDeviceProperties(
         physicalDevice,
         &deviceProperties);
-    if (*deviceRank < DEVICE_PRIORITY[deviceProperties.deviceType]) {
+    if (*deviceRank < devicePriority[deviceProperties.deviceType]) {
         /* This device outranks the best device we've found so far!
          * This includes a dedicated GPU that has less features than an
          * integrated GPU, because this is a freak case that is almost
          * never intentionally desired by the end user
          */
-        *deviceRank = DEVICE_PRIORITY[deviceProperties.deviceType];
-    } else if (*deviceRank > DEVICE_PRIORITY[deviceProperties.deviceType]) {
+        *deviceRank = devicePriority[deviceProperties.deviceType];
+    } else if (*deviceRank > devicePriority[deviceProperties.deviceType]) {
         /* Device is outranked by a previous device, don't even try to
          * run a query and reset the rank to avoid overwrites
          */
@@ -11457,7 +11470,7 @@ static SDL_bool VULKAN_PrepareDriver(SDL_VideoDevice *_this)
     return result;
 }
 
-static SDL_GpuDevice *VULKAN_CreateDevice(SDL_bool debugMode)
+static SDL_GpuDevice *VULKAN_CreateDevice(SDL_bool debugMode, SDL_bool preferLowPower)
 {
     VulkanRenderer *renderer;
 
@@ -11479,6 +11492,7 @@ static SDL_GpuDevice *VULKAN_CreateDevice(SDL_bool debugMode)
     renderer = (VulkanRenderer *)SDL_malloc(sizeof(VulkanRenderer));
     SDL_memset(renderer, '\0', sizeof(VulkanRenderer));
     renderer->debugMode = debugMode;
+    renderer->preferLowPower = preferLowPower;
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize Vulkan!");
