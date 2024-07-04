@@ -135,11 +135,10 @@ static VkPresentModeKHR SDLToVK_PresentMode[] = {
 static VkFormat SDLToVK_SurfaceFormat[] = {
     VK_FORMAT_R8G8B8A8_UNORM,           /* R8G8B8A8 */
     VK_FORMAT_B8G8R8A8_UNORM,           /* B8G8R8A8 */
-    VK_FORMAT_R5G6B5_UNORM_PACK16,      /* R5G6B5 */
-    VK_FORMAT_A1R5G5B5_UNORM_PACK16,    /* A1R5G5B5 */
+    VK_FORMAT_R5G6B5_UNORM_PACK16,      /* B5G6R5 */
+    VK_FORMAT_A1R5G5B5_UNORM_PACK16,    /* B5G5R5A1 */
     VK_FORMAT_B4G4R4A4_UNORM_PACK16,    /* B4G4R4A4 */
-    VK_FORMAT_A2R10G10B10_UNORM_PACK32, /* A2R10G10B10 */
-    VK_FORMAT_A2B10G10R10_UNORM_PACK32, /* A2R10G10B10 */
+    VK_FORMAT_A2B10G10R10_UNORM_PACK32, /* R10G10B10A2 */
     VK_FORMAT_R16G16_UNORM,             /* R16G16 */
     VK_FORMAT_R16G16B16A16_UNORM,       /* R16G16B16A16 */
     VK_FORMAT_R8_UNORM,                 /* R8 */
@@ -173,12 +172,72 @@ static VkFormat SDLToVK_SurfaceFormat[] = {
     VK_FORMAT_D32_SFLOAT_S8_UINT,       /* D32_SFLOAT_S8_UINT */
 };
 
+static VkComponentMapping SDLToVK_SurfaceSwizzle[] = {
+    IDENTITY_SWIZZLE, /* R8G8B8A8 */
+    IDENTITY_SWIZZLE, /* B8G8R8A8 */
+    {                 /* B5G6R5 */
+        VK_COMPONENT_SWIZZLE_B,
+        VK_COMPONENT_SWIZZLE_G,
+        VK_COMPONENT_SWIZZLE_R,
+        VK_COMPONENT_SWIZZLE_ONE,
+    },
+    {                 /* B5G5R5A1 */
+        VK_COMPONENT_SWIZZLE_B,
+        VK_COMPONENT_SWIZZLE_G,
+        VK_COMPONENT_SWIZZLE_R,
+        VK_COMPONENT_SWIZZLE_A,
+    },
+    IDENTITY_SWIZZLE, /* B4G4R4A4 */
+    {                 /* R10G10B10A2 */
+        VK_COMPONENT_SWIZZLE_R,
+        VK_COMPONENT_SWIZZLE_G,
+        VK_COMPONENT_SWIZZLE_B,
+        VK_COMPONENT_SWIZZLE_A,
+    },
+    IDENTITY_SWIZZLE, /* R16G16 */
+    IDENTITY_SWIZZLE, /* R16G16B16A16 */
+    IDENTITY_SWIZZLE, /* R8 */
+    {                 /* A8 */
+        VK_COMPONENT_SWIZZLE_ZERO,
+        VK_COMPONENT_SWIZZLE_ZERO,
+        VK_COMPONENT_SWIZZLE_ZERO,
+        VK_COMPONENT_SWIZZLE_R,
+    },
+    IDENTITY_SWIZZLE, /* BC1 */
+    IDENTITY_SWIZZLE, /* BC2 */
+    IDENTITY_SWIZZLE, /* BC3 */
+    IDENTITY_SWIZZLE, /* BC7 */
+    IDENTITY_SWIZZLE, /* R8G8_SNORM */
+    IDENTITY_SWIZZLE, /* R8G8B8A8_SNORM */
+    IDENTITY_SWIZZLE, /* R16_SFLOAT */
+    IDENTITY_SWIZZLE, /* R16G16_SFLOAT */
+    IDENTITY_SWIZZLE, /* R16G16B16A16_SFLOAT */
+    IDENTITY_SWIZZLE, /* R32_SFLOAT */
+    IDENTITY_SWIZZLE, /* R32G32_SFLOAT */
+    IDENTITY_SWIZZLE, /* R32G32B32A32_SFLOAT */
+    IDENTITY_SWIZZLE, /* R8_UINT */
+    IDENTITY_SWIZZLE, /* R8G8_UINT */
+    IDENTITY_SWIZZLE, /* R8G8B8A8_UINT */
+    IDENTITY_SWIZZLE, /* R16_UINT */
+    IDENTITY_SWIZZLE, /* R16G16_UINT */
+    IDENTITY_SWIZZLE, /* R16G16B16A16_UINT */
+    IDENTITY_SWIZZLE, /* R8G8B8A8_SRGB */
+    IDENTITY_SWIZZLE, /* B8G8R8A8_SRGB */
+    IDENTITY_SWIZZLE, /* BC3_SRGB */
+    IDENTITY_SWIZZLE, /* BC7_SRGB */
+    IDENTITY_SWIZZLE, /* D16_UNORM */
+    IDENTITY_SWIZZLE, /* D24_UNORM */
+    IDENTITY_SWIZZLE, /* D32_SFLOAT */
+    IDENTITY_SWIZZLE, /* D24_UNORM_S8_UINT */
+    IDENTITY_SWIZZLE, /* D32_SFLOAT_S8_UINT */
+};
+
 /* from SWAPCHAINCOMPOSITION */
 static VkFormat SwapchainCompositionToFormat[] = {
     VK_FORMAT_B8G8R8A8_UNORM,          /* SDR */
     VK_FORMAT_B8G8R8A8_SRGB,           /* SDR_SRGB */
     VK_FORMAT_R16G16B16A16_SFLOAT,     /* HDR */
-    VK_FORMAT_A2B10G10R10_UNORM_PACK32 /* HDR_ADVANCED*/
+    VK_FORMAT_A2B10G10R10_UNORM_PACK32 /* HDR_ADVANCED */
 };
 
 /* from SWAPCHAINCOMPOSITION */
@@ -187,6 +246,18 @@ static VkColorSpaceKHR SwapchainCompositionToColorSpace[] = {
     VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
     VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT,
     VK_COLOR_SPACE_HDR10_ST2084_EXT
+};
+
+static VkComponentMapping SwapchainCompositionSwizzle[] = {
+    IDENTITY_SWIZZLE, /* SDR */
+    IDENTITY_SWIZZLE, /* SDR_SRGB */
+    IDENTITY_SWIZZLE, /* HDR */
+    {                 /* HDR_ADVANCED */
+        VK_COMPONENT_SWIZZLE_R,
+        VK_COMPONENT_SWIZZLE_G,
+        VK_COMPONENT_SWIZZLE_B,
+        VK_COMPONENT_SWIZZLE_A,
+    }
 };
 
 static VkFormat SDLToVK_VertexFormat[] = {
@@ -1392,30 +1463,6 @@ static inline VkSampleCountFlagBits VULKAN_INTERNAL_GetMaxMultiSampleCount(
     }
 
     return SDL_min(multiSampleCount, maxSupported);
-}
-
-static inline SDL_bool BGRToRGBSwapchainFormat(
-    VkFormat format,
-    VkFormat *outputFormat)
-{
-    switch (format) {
-    case VK_FORMAT_B8G8R8A8_UNORM:
-        *outputFormat = VK_FORMAT_R8G8B8A8_UNORM;
-        return SDL_TRUE;
-
-    case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-        *outputFormat = VK_FORMAT_A2R10G10B10_UNORM_PACK32;
-        return SDL_TRUE;
-
-    case VK_FORMAT_B8G8R8A8_SRGB:
-        *outputFormat = VK_FORMAT_R8G8B8A8_SRGB;
-        return SDL_TRUE;
-
-    default:
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No valid fallback equivalent for this format exists!");
-        *outputFormat = VK_FORMAT_R8G8B8A8_UNORM;
-        return SDL_FALSE;
-    }
 }
 
 /* Memory Management */
@@ -4235,42 +4282,27 @@ static SDL_bool VULKAN_INTERNAL_CreateSwapchain(
 
     swapchainData->format = SwapchainCompositionToFormat[windowData->swapchainComposition];
     swapchainData->colorSpace = SwapchainCompositionToColorSpace[windowData->swapchainComposition];
-    swapchainData->swapchainSwizzle.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    swapchainData->swapchainSwizzle.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    swapchainData->swapchainSwizzle.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    swapchainData->swapchainSwizzle.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    swapchainData->swapchainSwizzle = SwapchainCompositionSwizzle[windowData->swapchainComposition];
 
     if (!VULKAN_INTERNAL_VerifySwapSurfaceFormat(
             swapchainData->format,
             swapchainData->colorSpace,
             swapchainSupportDetails.formats,
             swapchainSupportDetails.formatsLength)) {
-        if (!BGRToRGBSwapchainFormat(
-                swapchainData->format,
-                &swapchainData->format)) {
-            renderer->vkDestroySurfaceKHR(
-                renderer->instance,
-                swapchainData->surface,
-                NULL);
 
-            if (swapchainSupportDetails.formatsLength > 0) {
-                SDL_free(swapchainSupportDetails.formats);
-            }
-
-            if (swapchainSupportDetails.presentModesLength > 0) {
-                SDL_free(swapchainSupportDetails.presentModes);
-            }
-
-            SDL_free(swapchainData);
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Device does not support requested colorspace!");
-            return SDL_FALSE;
+        /* Try an RGB format instead? */
+        VkFormat oldFormat = swapchainData->format;
+        if (oldFormat == VK_FORMAT_B8G8R8A8_UNORM) {
+            swapchainData->format = VK_FORMAT_R8G8B8A8_UNORM;
+        } else if (oldFormat == VK_FORMAT_B8G8R8A8_SRGB) {
+            swapchainData->format = VK_FORMAT_R8G8B8A8_SRGB;
         }
 
-        if (!VULKAN_INTERNAL_VerifySwapSurfaceFormat(
-                swapchainData->format,
-                swapchainData->colorSpace,
-                swapchainSupportDetails.formats,
-                swapchainSupportDetails.formatsLength)) {
+        if (oldFormat == swapchainData->format || !VULKAN_INTERNAL_VerifySwapSurfaceFormat(
+                                                      swapchainData->format,
+                                                      swapchainData->colorSpace,
+                                                      swapchainSupportDetails.formats,
+                                                      swapchainSupportDetails.formatsLength)) {
             renderer->vkDestroySurfaceKHR(
                 renderer->instance,
                 swapchainData->surface,
@@ -6685,23 +6717,16 @@ static SDL_GpuTexture *VULKAN_CreateTexture(
     VkImageAspectFlags imageAspectFlags;
     Uint8 isDepthFormat = IsDepthFormat(textureCreateInfo->format);
     VkFormat format;
+    VkComponentMapping swizzle;
     VulkanTextureContainer *container;
     VulkanTextureHandle *textureHandle;
-    VkComponentMapping swizzle = IDENTITY_SWIZZLE;
     SDL_GpuSampleCount actualSampleCount = VULKAN_GetBestSampleCount(
         driverData,
         textureCreateInfo->format,
         textureCreateInfo->sampleCount);
 
     format = SDLToVK_SurfaceFormat[textureCreateInfo->format];
-
-    /* FIXME: We probably need a swizzle table like FNA3D Vulkan does */
-    if (textureCreateInfo->format == SDL_GPU_TEXTUREFORMAT_A8) {
-        swizzle.r = VK_COMPONENT_SWIZZLE_ZERO;
-        swizzle.g = VK_COMPONENT_SWIZZLE_ZERO;
-        swizzle.b = VK_COMPONENT_SWIZZLE_ZERO;
-        swizzle.a = VK_COMPONENT_SWIZZLE_R;
-    }
+    swizzle = SDLToVK_SurfaceSwizzle[textureCreateInfo->format];
 
     if (isDepthFormat) {
         imageAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -9827,11 +9852,8 @@ static SDL_GpuTextureFormat VULKAN_GetSwapchainTextureFormat(
     case VK_FORMAT_R16G16B16A16_SFLOAT:
         return SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SFLOAT;
 
-    case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-        return SDL_GPU_TEXTUREFORMAT_A2R10G10B10;
-
     case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-        return SDL_GPU_TEXTUREFORMAT_A2B10G10R10;
+        return SDL_GPU_TEXTUREFORMAT_R10G10B10A2;
 
     default:
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unrecognized swapchain format!");

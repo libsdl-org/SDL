@@ -223,11 +223,10 @@ static DXGI_COLOR_SPACE_TYPE SwapchainCompositionToColorSpace[] = {
 static DXGI_FORMAT SDLToD3D11_TextureFormat[] = {
     DXGI_FORMAT_R8G8B8A8_UNORM,                /* R8G8B8A8 */
     DXGI_FORMAT_B8G8R8A8_UNORM,                /* B8G8R8A8 */
-    DXGI_FORMAT_B5G6R5_UNORM, /* R5G6B5 */     /* FIXME: Swizzle? */
-    DXGI_FORMAT_B5G5R5A1_UNORM, /* A1R5G5B5 */ /* FIXME: Swizzle? */
+    DXGI_FORMAT_B5G6R5_UNORM,                  /* B5G6R5 */
+    DXGI_FORMAT_B5G5R5A1_UNORM,                /* B5G5R5A1 */
     DXGI_FORMAT_B4G4R4A4_UNORM,                /* B4G4R4A4 */
-    DXGI_FORMAT_R10G10B10A2_UNORM,             /* A2R10G10B10 */
-    DXGI_FORMAT_UNKNOWN, /* A2B10G10R10 */     /* UNSUPPORTED BY D3D11 */
+    DXGI_FORMAT_R10G10B10A2_UNORM,             /* R10G10B10A2 */
     DXGI_FORMAT_R16G16_UNORM,                  /* R16G16 */
     DXGI_FORMAT_R16G16B16A16_UNORM,            /* R16G16B16A16 */
     DXGI_FORMAT_R8_UNORM,                      /* R8 */
@@ -5517,7 +5516,7 @@ static SDL_GpuTextureFormat D3D11_GetSwapchainTextureFormat(
         return SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SFLOAT;
 
     case DXGI_FORMAT_R10G10B10A2_UNORM:
-        return SDL_GPU_TEXTUREFORMAT_A2R10G10B10;
+        return SDL_GPU_TEXTUREFORMAT_R10G10B10A2;
 
     default:
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unrecognized swapchain format!");
