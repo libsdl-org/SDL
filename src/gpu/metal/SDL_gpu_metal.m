@@ -95,16 +95,16 @@ static void METAL_INTERNAL_DestroyBlitResources(SDL_GpuRenderer *driverData);
 /* Conversions */
 
 static MTLPixelFormat SDLToMetal_SurfaceFormat[] = {
-    MTLPixelFormatRGBA8Unorm,                 /* R8G8B8A8 */
-    MTLPixelFormatBGRA8Unorm,                 /* B8G8R8A8 */
-    MTLPixelFormatB5G6R5Unorm,                /* B5G6R5 */
-    MTLPixelFormatBGR5A1Unorm,                /* B5G5R5A1 */
-    MTLPixelFormatABGR4Unorm,                 /* B4G4R4A4 */
-    MTLPixelFormatRGB10A2Unorm,               /* A2R10G10B10 */
-    MTLPixelFormatRG16Unorm,                  /* R16G16 */
-    MTLPixelFormatRGBA16Unorm,                /* R16G16B16A16 */
-    MTLPixelFormatR8Unorm,                    /* R8 */
-    MTLPixelFormatA8Unorm,                    /* A8 */
+    MTLPixelFormatRGBA8Unorm,   /* R8G8B8A8 */
+    MTLPixelFormatBGRA8Unorm,   /* B8G8R8A8 */
+    MTLPixelFormatB5G6R5Unorm,  /* B5G6R5 */
+    MTLPixelFormatBGR5A1Unorm,  /* B5G5R5A1 */
+    MTLPixelFormatABGR4Unorm,   /* B4G4R4A4 */
+    MTLPixelFormatRGB10A2Unorm, /* A2R10G10B10 */
+    MTLPixelFormatRG16Unorm,    /* R16G16 */
+    MTLPixelFormatRGBA16Unorm,  /* R16G16B16A16 */
+    MTLPixelFormatR8Unorm,      /* R8 */
+    MTLPixelFormatA8Unorm,      /* A8 */
 #ifdef SDL_PLATFORM_MACOS
     MTLPixelFormatBC1_RGBA,      /* BC1 */
     MTLPixelFormatBC2_RGBA,      /* BC2 */
@@ -1272,10 +1272,10 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
     /* This format isn't natively supported so let's swizzle! */
     if (textureCreateInfo->format == SDL_GPU_TEXTUREFORMAT_B4G4R4A4) {
         textureDescriptor.swizzle = MTLTextureSwizzleChannelsMake(
-                MTLTextureSwizzleBlue,
-                MTLTextureSwizzleGreen,
-                MTLTextureSwizzleRed,
-                MTLTextureSwizzleAlpha);
+            MTLTextureSwizzleBlue,
+            MTLTextureSwizzleGreen,
+            MTLTextureSwizzleRed,
+            MTLTextureSwizzleAlpha);
     }
 
     textureDescriptor.usage = 0;

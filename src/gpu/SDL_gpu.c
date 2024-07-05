@@ -192,7 +192,7 @@ SDL_GpuDevice *SDL_GpuCreateDevice(
 
 void SDL_GpuDestroyDevice(SDL_GpuDevice *device)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
 
     device->DestroyDevice(device);
 }
@@ -491,7 +491,7 @@ void SDL_GpuSetBufferName(
     SDL_GpuBuffer *buffer,
     const char *text)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (buffer == NULL) {
         SDL_InvalidParamError("buffer");
         return;
@@ -511,7 +511,7 @@ void SDL_GpuSetTextureName(
     SDL_GpuTexture *texture,
     const char *text)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (texture == NULL) {
         SDL_InvalidParamError("texture");
         return;
@@ -583,7 +583,7 @@ void SDL_GpuReleaseTexture(
     SDL_GpuDevice *device,
     SDL_GpuTexture *texture)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (texture == NULL) {
         return;
     }
@@ -597,7 +597,7 @@ void SDL_GpuReleaseSampler(
     SDL_GpuDevice *device,
     SDL_GpuSampler *sampler)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (sampler == NULL) {
         return;
     }
@@ -611,7 +611,7 @@ void SDL_GpuReleaseBuffer(
     SDL_GpuDevice *device,
     SDL_GpuBuffer *buffer)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (buffer == NULL) {
         return;
     }
@@ -625,7 +625,7 @@ void SDL_GpuReleaseTransferBuffer(
     SDL_GpuDevice *device,
     SDL_GpuTransferBuffer *transferBuffer)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (transferBuffer == NULL) {
         return;
     }
@@ -639,7 +639,7 @@ void SDL_GpuReleaseShader(
     SDL_GpuDevice *device,
     SDL_GpuShader *shader)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (shader == NULL) {
         return;
     }
@@ -653,7 +653,7 @@ void SDL_GpuReleaseComputePipeline(
     SDL_GpuDevice *device,
     SDL_GpuComputePipeline *computePipeline)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (computePipeline == NULL) {
         return;
     }
@@ -667,7 +667,7 @@ void SDL_GpuReleaseGraphicsPipeline(
     SDL_GpuDevice *device,
     SDL_GpuGraphicsPipeline *graphicsPipeline)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (graphicsPipeline == NULL) {
         return;
     }
@@ -1336,7 +1336,7 @@ void SDL_GpuMapTransferBuffer(
     SDL_bool cycle,
     void **ppData)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (transferBuffer == NULL) {
         SDL_InvalidParamError("transferBuffer");
         return;
@@ -1357,7 +1357,7 @@ void SDL_GpuUnmapTransferBuffer(
     SDL_GpuDevice *device,
     SDL_GpuTransferBuffer *transferBuffer)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (transferBuffer == NULL) {
         SDL_InvalidParamError("transferBuffer");
         return;
@@ -1374,7 +1374,7 @@ void SDL_GpuSetTransferData(
     SDL_GpuTransferBufferRegion *destination,
     SDL_bool cycle)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (source == NULL) {
         SDL_InvalidParamError("source");
         return;
@@ -1396,7 +1396,7 @@ void SDL_GpuGetTransferData(
     SDL_GpuTransferBufferRegion *source,
     void *destination)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (source == NULL) {
         SDL_InvalidParamError("source");
         return;
@@ -1716,7 +1716,7 @@ void SDL_GpuUnclaimWindow(
     SDL_GpuDevice *device,
     SDL_Window *window)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (window == NULL) {
         SDL_InvalidParamError("window");
         return;
@@ -1839,7 +1839,7 @@ SDL_GpuFence *SDL_GpuSubmitAndAcquireFence(
 void SDL_GpuWait(
     SDL_GpuDevice *device)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
 
     device->Wait(
         device->driverData);
@@ -1851,7 +1851,7 @@ void SDL_GpuWaitForFences(
     SDL_GpuFence **pFences,
     Uint32 fenceCount)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (pFences == NULL && fenceCount > 0) {
         SDL_InvalidParamError("pFences");
         return;
@@ -1883,7 +1883,7 @@ void SDL_GpuReleaseFence(
     SDL_GpuDevice *device,
     SDL_GpuFence *fence)
 {
-    CHECK_DEVICE_MAGIC(device,);
+    CHECK_DEVICE_MAGIC(device, );
     if (fence == NULL) {
         return;
     }

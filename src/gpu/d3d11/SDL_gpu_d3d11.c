@@ -221,43 +221,43 @@ static DXGI_COLOR_SPACE_TYPE SwapchainCompositionToColorSpace[] = {
 };
 
 static DXGI_FORMAT SDLToD3D11_TextureFormat[] = {
-    DXGI_FORMAT_R8G8B8A8_UNORM,                /* R8G8B8A8 */
-    DXGI_FORMAT_B8G8R8A8_UNORM,                /* B8G8R8A8 */
-    DXGI_FORMAT_B5G6R5_UNORM,                  /* B5G6R5 */
-    DXGI_FORMAT_B5G5R5A1_UNORM,                /* B5G5R5A1 */
-    DXGI_FORMAT_B4G4R4A4_UNORM,                /* B4G4R4A4 */
-    DXGI_FORMAT_R10G10B10A2_UNORM,             /* R10G10B10A2 */
-    DXGI_FORMAT_R16G16_UNORM,                  /* R16G16 */
-    DXGI_FORMAT_R16G16B16A16_UNORM,            /* R16G16B16A16 */
-    DXGI_FORMAT_R8_UNORM,                      /* R8 */
-    DXGI_FORMAT_A8_UNORM,                      /* A8 */
-    DXGI_FORMAT_BC1_UNORM,                     /* BC1 */
-    DXGI_FORMAT_BC2_UNORM,                     /* BC2 */
-    DXGI_FORMAT_BC3_UNORM,                     /* BC3 */
-    DXGI_FORMAT_BC7_UNORM,                     /* BC7 */
-    DXGI_FORMAT_R8G8_SNORM,                    /* R8G8_SNORM */
-    DXGI_FORMAT_R8G8B8A8_SNORM,                /* R8G8B8A8_SNORM */
-    DXGI_FORMAT_R16_FLOAT,                     /* R16_SFLOAT */
-    DXGI_FORMAT_R16G16_FLOAT,                  /* R16G16_SFLOAT */
-    DXGI_FORMAT_R16G16B16A16_FLOAT,            /* R16G16B16A16_SFLOAT */
-    DXGI_FORMAT_R32_FLOAT,                     /* R32_SFLOAT */
-    DXGI_FORMAT_R32G32_FLOAT,                  /* R32G32_SFLOAT */
-    DXGI_FORMAT_R32G32B32A32_FLOAT,            /* R32G32B32A32_SFLOAT */
-    DXGI_FORMAT_R8_UINT,                       /* R8_UINT */
-    DXGI_FORMAT_R8G8_UINT,                     /* R8G8_UINT */
-    DXGI_FORMAT_R8G8B8A8_UINT,                 /* R8G8B8A8_UINT */
-    DXGI_FORMAT_R16_UINT,                      /* R16_UINT */
-    DXGI_FORMAT_R16G16_UINT,                   /* R16G16_UINT */
-    DXGI_FORMAT_R16G16B16A16_UINT,             /* R16G16B16A16_UINT */
-    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,           /* R8G8B8A8_SRGB */
-    DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,           /* B8G8R8A8_SRGB */
-    DXGI_FORMAT_BC3_UNORM_SRGB,                /* BC3_SRGB */
-    DXGI_FORMAT_BC7_UNORM_SRGB,                /* BC7_SRGB */
-    DXGI_FORMAT_D16_UNORM,                     /* D16_UNORM */
-    DXGI_FORMAT_D24_UNORM_S8_UINT,             /* D24_UNORM */
-    DXGI_FORMAT_D32_FLOAT,                     /* D32_SFLOAT */
-    DXGI_FORMAT_D24_UNORM_S8_UINT,             /* D24_UNORM_S8_UINT */
-    DXGI_FORMAT_D32_FLOAT_S8X24_UINT,          /* D32_SFLOAT_S8_UINT */
+    DXGI_FORMAT_R8G8B8A8_UNORM,       /* R8G8B8A8 */
+    DXGI_FORMAT_B8G8R8A8_UNORM,       /* B8G8R8A8 */
+    DXGI_FORMAT_B5G6R5_UNORM,         /* B5G6R5 */
+    DXGI_FORMAT_B5G5R5A1_UNORM,       /* B5G5R5A1 */
+    DXGI_FORMAT_B4G4R4A4_UNORM,       /* B4G4R4A4 */
+    DXGI_FORMAT_R10G10B10A2_UNORM,    /* R10G10B10A2 */
+    DXGI_FORMAT_R16G16_UNORM,         /* R16G16 */
+    DXGI_FORMAT_R16G16B16A16_UNORM,   /* R16G16B16A16 */
+    DXGI_FORMAT_R8_UNORM,             /* R8 */
+    DXGI_FORMAT_A8_UNORM,             /* A8 */
+    DXGI_FORMAT_BC1_UNORM,            /* BC1 */
+    DXGI_FORMAT_BC2_UNORM,            /* BC2 */
+    DXGI_FORMAT_BC3_UNORM,            /* BC3 */
+    DXGI_FORMAT_BC7_UNORM,            /* BC7 */
+    DXGI_FORMAT_R8G8_SNORM,           /* R8G8_SNORM */
+    DXGI_FORMAT_R8G8B8A8_SNORM,       /* R8G8B8A8_SNORM */
+    DXGI_FORMAT_R16_FLOAT,            /* R16_SFLOAT */
+    DXGI_FORMAT_R16G16_FLOAT,         /* R16G16_SFLOAT */
+    DXGI_FORMAT_R16G16B16A16_FLOAT,   /* R16G16B16A16_SFLOAT */
+    DXGI_FORMAT_R32_FLOAT,            /* R32_SFLOAT */
+    DXGI_FORMAT_R32G32_FLOAT,         /* R32G32_SFLOAT */
+    DXGI_FORMAT_R32G32B32A32_FLOAT,   /* R32G32B32A32_SFLOAT */
+    DXGI_FORMAT_R8_UINT,              /* R8_UINT */
+    DXGI_FORMAT_R8G8_UINT,            /* R8G8_UINT */
+    DXGI_FORMAT_R8G8B8A8_UINT,        /* R8G8B8A8_UINT */
+    DXGI_FORMAT_R16_UINT,             /* R16_UINT */
+    DXGI_FORMAT_R16G16_UINT,          /* R16G16_UINT */
+    DXGI_FORMAT_R16G16B16A16_UINT,    /* R16G16B16A16_UINT */
+    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,  /* R8G8B8A8_SRGB */
+    DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,  /* B8G8R8A8_SRGB */
+    DXGI_FORMAT_BC3_UNORM_SRGB,       /* BC3_SRGB */
+    DXGI_FORMAT_BC7_UNORM_SRGB,       /* BC7_SRGB */
+    DXGI_FORMAT_D16_UNORM,            /* D16_UNORM */
+    DXGI_FORMAT_D24_UNORM_S8_UINT,    /* D24_UNORM */
+    DXGI_FORMAT_D32_FLOAT,            /* D32_SFLOAT */
+    DXGI_FORMAT_D24_UNORM_S8_UINT,    /* D24_UNORM_S8_UINT */
+    DXGI_FORMAT_D32_FLOAT_S8X24_UINT, /* D32_SFLOAT_S8_UINT */
 };
 
 static DXGI_FORMAT SDLToD3D11_VertexFormat[] = {
@@ -6159,9 +6159,7 @@ static SDL_GpuDevice *D3D11_CreateDevice(SDL_bool debugMode, SDL_bool preferLowP
         IDXGIFactory6_EnumAdapterByGpuPreference(
             factory6,
             0,
-            preferLowPower ?
-                DXGI_GPU_PREFERENCE_MINIMUM_POWER :
-                DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+            preferLowPower ? DXGI_GPU_PREFERENCE_MINIMUM_POWER : DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
             &D3D_IID_IDXGIAdapter1,
             (void **)&renderer->adapter);
         IDXGIFactory6_Release(factory6);

@@ -183,20 +183,23 @@ static VkFormat SDLToVK_SurfaceFormat[] = {
 static VkComponentMapping SDLToVK_SurfaceSwizzle[] = {
     IDENTITY_SWIZZLE, /* R8G8B8A8 */
     IDENTITY_SWIZZLE, /* B8G8R8A8 */
-    {                 /* B5G6R5 */
+    {
+        /* B5G6R5 */
         VK_COMPONENT_SWIZZLE_B,
         VK_COMPONENT_SWIZZLE_G,
         VK_COMPONENT_SWIZZLE_R,
         VK_COMPONENT_SWIZZLE_ONE,
     },
-    {                 /* B5G5R5A1 */
+    {
+        /* B5G5R5A1 */
         VK_COMPONENT_SWIZZLE_B,
         VK_COMPONENT_SWIZZLE_G,
         VK_COMPONENT_SWIZZLE_R,
         VK_COMPONENT_SWIZZLE_A,
     },
     IDENTITY_SWIZZLE, /* B4G4R4A4 */
-    {                 /* R10G10B10A2 */
+    {
+        /* R10G10B10A2 */
         VK_COMPONENT_SWIZZLE_R,
         VK_COMPONENT_SWIZZLE_G,
         VK_COMPONENT_SWIZZLE_B,
@@ -205,7 +208,8 @@ static VkComponentMapping SDLToVK_SurfaceSwizzle[] = {
     IDENTITY_SWIZZLE, /* R16G16 */
     IDENTITY_SWIZZLE, /* R16G16B16A16 */
     IDENTITY_SWIZZLE, /* R8 */
-    {                 /* A8 */
+    {
+        /* A8 */
         VK_COMPONENT_SWIZZLE_ZERO,
         VK_COMPONENT_SWIZZLE_ZERO,
         VK_COMPONENT_SWIZZLE_ZERO,
@@ -260,7 +264,8 @@ static VkComponentMapping SwapchainCompositionSwizzle[] = {
     IDENTITY_SWIZZLE, /* SDR */
     IDENTITY_SWIZZLE, /* SDR_SRGB */
     IDENTITY_SWIZZLE, /* HDR */
-    {                 /* HDR_ADVANCED */
+    {
+        /* HDR_ADVANCED */
         VK_COMPONENT_SWIZZLE_R,
         VK_COMPONENT_SWIZZLE_G,
         VK_COMPONENT_SWIZZLE_B,
@@ -10987,9 +10992,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     VkPhysicalDeviceProperties deviceProperties;
     Uint32 i;
 
-    const Uint8 *devicePriority = renderer->preferLowPower ?
-        DEVICE_PRIORITY_LOWPOWER :
-        DEVICE_PRIORITY_HIGHPERFORMANCE;
+    const Uint8 *devicePriority = renderer->preferLowPower ? DEVICE_PRIORITY_LOWPOWER : DEVICE_PRIORITY_HIGHPERFORMANCE;
 
     /* Get the device rank before doing any checks, in case one fails.
      * Note: If no dedicated device exists, one that supports our features
