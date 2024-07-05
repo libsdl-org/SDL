@@ -1145,6 +1145,7 @@
 				00008B5A0CB83D2069E80000 /* ios */,
 				00009366FB9FBBD54C390000 /* SDL_main_callbacks.c */,
 				00003260407E1002EAC10000 /* SDL_main_callbacks.h */,
+				F36C7AD0294BA009004D61C3 /* SDL_runapp.c */,
 			);
 			path = main;
 			sourceTree = "<group>";
@@ -2255,7 +2256,6 @@
 			isa = PBXGroup;
 			children = (
 				E4F798192AD8D84800669F54 /* SDL_core_unsupported.c */,
-				F36C7AD0294BA009004D61C3 /* SDL_runapp.c */,
 			);
 			path = core;
 			sourceTree = "<group>";

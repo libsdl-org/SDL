@@ -1480,8 +1480,6 @@ elseif(EMSCRIPTEN)
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
   sdl_compile_options(PRIVATE "-Wno-warn-absolute-paths")
 
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/emscripten/*.c")
-
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/emscripten/*.c")
   set(HAVE_SDL_MAIN_CALLBACKS TRUE)
 
@@ -1866,12 +1864,14 @@ elseif(WINDOWS)
     int main(int argc, char **argv) { return 0; }" HAVE_WIN32_CC)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/windows/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/windows/*.c")
 
   if(WINDOWS_STORE)
     enable_language(CXX)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/core/winrt/*.c"
       "${SDL3_SOURCE_DIR}/src/core/winrt/*.cpp"
+      "${SDL3_SOURCE_DIR}/src/main/winrt/*.cpp"
     )
   endif()
 
@@ -2727,7 +2727,7 @@ elseif(VITA)
   sdl_compile_definitions(PRIVATE "__VITA__")
 
 elseif(PSP)
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/psp/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/psp/*.c")
 
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_PSP 1)
@@ -2796,7 +2796,7 @@ elseif(PS2)
   sdl_compile_definitions(PRIVATE "PS2" "__PS2__")
   sdl_include_directories(PRIVATE SYSTEM "$ENV{PS2SDK}/ports/include" "$ENV{PS2DEV}/gsKit/include")
 
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ps2/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ps2/*.c")
 
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_PS2 1)
@@ -2853,7 +2853,7 @@ elseif(PS2)
       ps2_drivers
   )
 elseif(N3DS)
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/n3ds/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/n3ds/*.c")
 
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_N3DS 1)

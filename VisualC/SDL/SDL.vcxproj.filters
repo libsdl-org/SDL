@@ -202,6 +202,9 @@
     <Filter Include="video\offscreen">
       <UniqueIdentifier>{748cf015-00b8-4e71-ac48-02e947e4d93d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="main\windows">
+      <UniqueIdentifier>{00009d5ded166cc6c6680ec771a30000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
@@ -919,6 +922,12 @@
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c">
       <Filter>main</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\main\SDL_runapp.c">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\main\windows\SDL_sysmain_runapp.c">
+      <Filter>main\windows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\SDL.c" />
     <ClCompile Include="..\..\src\SDL_assert.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
@@ -959,9 +968,6 @@
       <Filter>atomic</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\SDL_runapp.c">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c">

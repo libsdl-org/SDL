@@ -18,6 +18,8 @@
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12_xboxseries.cpp" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
+    <ClCompile Include="..\..\src\main\gdk\SDL_sysmain_runapp.cpp" />
+    <ClCompile Include="..\..\src\main\SDL_runapp.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c" />
     <ClCompile Include="..\..\src\atomic\SDL_spinlock.c" />
@@ -35,7 +37,6 @@
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
-    <ClCompile Include="..\..\src\core\SDL_runapp.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
