@@ -2688,14 +2688,6 @@ static SDL_bool ShouldAttemptTextureFramebuffer(void)
         attempt_texture_framebuffer = SDL_FALSE;
 #endif
     }
-
-    if (attempt_texture_framebuffer) {
-        /* Using a software renderer will try to display on a window surface, so avoid recursion here */
-        hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-        if (hint && SDL_strcasecmp(hint, "software") == 0) {
-            attempt_texture_framebuffer = SDL_FALSE;
-        }
-    }
     return attempt_texture_framebuffer;
 }
 
