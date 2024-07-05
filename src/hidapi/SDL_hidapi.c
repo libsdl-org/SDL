@@ -906,9 +906,9 @@ IsInWhitelist(Uint16 vendor, Uint16 product)
 }
 
 #if defined(HAVE_PLATFORM_BACKEND) || HAVE_DRIVER_BACKEND
-static const SDL_bool use_libusb_whitelist_default = SDL_TRUE;
+ #define use_libusb_whitelist_default  SDL_TRUE
 #else
-static const SDL_bool use_libusb_whitelist_default = SDL_FALSE;
+ #define use_libusb_whitelist_default SDL_FALSE
 #endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND */
 static SDL_bool use_libusb_whitelist = use_libusb_whitelist_default;
 
