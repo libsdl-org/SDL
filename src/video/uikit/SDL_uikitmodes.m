@@ -92,7 +92,7 @@
 + (void)screenDisconnected:(NSNotification *)notification
 {
     UIScreen *uiscreen = [notification object];
-    UIKit_DelDisplay(uiscreen);
+    UIKit_DelDisplay(uiscreen, SDL_TRUE);
 }
 
 @end
@@ -308,7 +308,7 @@ int UIKit_AddDisplay(SDL_bool send_event){
 
 #ifndef SDL_PLATFORM_VISIONOS
 
-void UIKit_DelDisplay(UIScreen *uiscreen)
+void UIKit_DelDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
     SDL_DisplayID *displays;
     int i;
@@ -321,7 +321,8 @@ void UIKit_DelDisplay(UIScreen *uiscreen)
 
             if (data && data.uiscreen == uiscreen) {
                 CFRelease(display->driverdata);
-                SDL_DelVideoDisplay(displays[i], SDL_FALSE);
+                display->driverdata = NULL;
+                SDL_DelVideoDisplay(displays[i], send_event);
                 break;
             }
         }

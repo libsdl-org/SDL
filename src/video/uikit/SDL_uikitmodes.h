@@ -48,7 +48,7 @@ extern SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen);
 extern int UIKit_InitModes(SDL_VideoDevice *_this);
 #ifndef SDL_PLATFORM_VISIONOS
 extern int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event);
-extern void UIKit_DelDisplay(UIScreen *uiscreen);
+extern void UIKit_DelDisplay(UIScreen *uiscreen, SDL_bool send_event);
 #endif
 extern int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 extern int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
