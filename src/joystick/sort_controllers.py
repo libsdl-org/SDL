@@ -22,7 +22,7 @@ standard_guid_pattern = re.compile(r'^([0-9a-fA-F]{4})([0-9a-fA-F]{2})([0-9a-fA-
 invalid_controllers = (
     ('0079', '0006', '0000'), # DragonRise Inc. Generic USB Joystick
     ('0079', '0006', '6120'), # DragonRise Inc. Generic USB Joystick
-    ('04b4', '2412', 'c529'), # Flydigi Vader 2, Vader 2 Pro, Apex 2, Apex 3
+    ('04b4', '2412', 'c529'), # Flydigi Vader 2, Vader 2 Pro, Apex 2, Apex 3, Apex 4
     ('16c0', '05e1', '0000'), # Xinmotek Controller
 )
 
