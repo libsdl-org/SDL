@@ -1159,6 +1159,7 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 
 	if (!surface) {
         SDL_InvalidParamError("surface");
+		return NULL;
 	}
 
     SDL_PropertiesID props = SDL_CreateProperties();
