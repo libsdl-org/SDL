@@ -831,6 +831,26 @@ extern SDL_DECLSPEC SDL_GpuBackend SDLCALL SDL_GpuGetBackend(SDL_GpuDevice *devi
 /**
  * Creates a pipeline object to be used in a compute workflow.
  *
+ * Shader resource bindings must be authored to follow a particular order.
+ * For SPIR-V shaders, use the following resource sets:
+ *  0: Read-only storage textures, followed by read-only storage buffers
+ *  1: Read-write storage textures, followed by read-write storage buffers
+ *  2: Uniform buffers
+ *
+ * For HLSL/DXBC/DXIL, use the following order:
+ *  For t registers:
+ *   Read-only storage textures, followed by read-only storage buffers
+ *  For b registers:
+ *   Uniform buffers
+ *  For u registers:
+ *   Read-write storage textures, followed by read-write storage buffers
+ *
+ * For MSL/metallib, use the following order:
+ *  For [[buffer]]:
+ *   Uniform buffers, followed by read-only storage buffers, followed by read-write storage buffers
+ *  For [[texture]]:
+ *   Read-only storage textures, followed by read-write storage textures
+ *
  * \param device a GPU Context
  * \param computePipelineCreateInfo a struct describing the state of the requested compute pipeline
  * \returns a compute pipeline object on success, or NULL on failure
@@ -880,6 +900,34 @@ extern SDL_DECLSPEC SDL_GpuSampler *SDLCALL SDL_GpuCreateSampler(
 
 /**
  * Creates a shader to be used when creating a graphics pipeline.
+ *
+ * Shader resource bindings must be authored to follow a particular order.
+ * For SPIR-V shaders, use the following resource sets:
+ *  For vertex shaders:
+ *   0: Sampled textures, followed by storage textures, followed by storage buffers
+ *   1: Uniform buffers
+ *  For fragment shaders:
+ *   2: Sampled textures, followed by storage textures, followed by storage buffers
+ *   3: Uniform buffers
+ *
+ * For HLSL/DXBC/DXIL, use the following order:
+ *  For t registers:
+ *   Sampled textures, followed by storage textures, followed by storage buffers
+ *  For s registers:
+ *   Samplers with indices corresponding to the sampled textures
+ *  For b registers:
+ *   Uniform buffers
+ *
+ * For MSL/metallib, use the following order:
+ *  For [[texture]]:
+ *   Sampled textures, followed by storage textures
+ *  For [[sampler]]:
+ *   Samplers with indices corresponding to the sampled textures
+ *  For [[buffer]]:
+ *   Uniform buffers, followed by storage buffers.
+ *   Vertex buffer 0 is bound at [[buffer(30)]], vertex buffer 1 at [[buffer(29)]], and so on.
+ *    Rather than manually authoring vertex buffer indices, use the [[stage_in]] attribute
+ *    which will automatically use the vertex input information from the SDL_GpuPipeline.
  *
  * \param device a GPU Context
  * \param shaderCreateInfo a struct describing the state of the desired shader
