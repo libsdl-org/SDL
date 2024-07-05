@@ -264,8 +264,7 @@ int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 f
 
     if (gxm_init(renderer) != 0) {
         SDL_free(data);
-        SDL_free(renderer);
-        return NULL;
+        return -1;
     }
 
     return 0;
