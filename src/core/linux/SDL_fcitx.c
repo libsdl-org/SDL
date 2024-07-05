@@ -413,7 +413,7 @@ void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window)
 
     // We'll use a square at the text input cursor location for the cursor_rect
     cursor->x = window->text_input_rect.x + window->text_input_cursor;
-    cursor->y = window->text_input_rect.x;
+    cursor->y = window->text_input_rect.y;
     cursor->w = window->text_input_rect.h;
     cursor->h = window->text_input_rect.h;
 

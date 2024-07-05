@@ -694,7 +694,7 @@ void SDL_IBus_UpdateTextInputArea(SDL_Window *window)
 
     // We'll use a square at the text input cursor location for the ibus_cursor
     ibus_cursor_rect.x = window->text_input_rect.x + window->text_input_cursor;
-    ibus_cursor_rect.y = window->text_input_rect.x;
+    ibus_cursor_rect.y = window->text_input_rect.y;
     ibus_cursor_rect.w = window->text_input_rect.h;
     ibus_cursor_rect.h = window->text_input_rect.h;
 
