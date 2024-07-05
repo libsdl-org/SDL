@@ -181,10 +181,11 @@ static const char *get_simple_basename(const char *path) {
     return path;
 }
 
-static void write_minidump(const char *child_file_path, const LPPROCESS_INFORMATION process_information, DWORD dwThreadId) {
+static void write_minidump(const char *child_file_path, const LPPROCESS_INFORMATION process_information, DWORD dwThreadId, PEXCEPTION_RECORD exception_record, PCONTEXT context) {
     BOOL success;
     char dump_file_path[MAX_PATH];
     char child_file_name[64];
+    EXCEPTION_POINTERS exception_pointers;
     HANDLE hFile = INVALID_HANDLE_VALUE;
     HMODULE dbghelp_module = NULL;
     MINIDUMP_EXCEPTION_INFORMATION minidump_exception_information;
@@ -221,8 +222,11 @@ static void write_minidump(const char *child_file_path, const LPPROCESS_INFORMAT
         printf_windows_message("Failed to open file for minidump");
         goto post_dump;
     }
+    memset(&exception_pointers, 0, sizeof(exception_pointers));
+    exception_pointers.ContextRecord = context;
+    exception_pointers.ExceptionRecord = exception_record;
     minidump_exception_information.ClientPointers = FALSE;
-    minidump_exception_information.ExceptionPointers = FALSE;
+    minidump_exception_information.ExceptionPointers = &exception_pointers;
     minidump_exception_information.ThreadId = dwThreadId;
     success = dyn_dbghelp.pMiniDumpWriteDump(
         process_information->hProcess,      /* HANDLE                            hProcess */
@@ -244,11 +248,13 @@ post_dump:
     }
 }
 
-static void print_stacktrace(const LPPROCESS_INFORMATION process_information, LPVOID address) {
+static void print_stacktrace(const LPPROCESS_INFORMATION process_information, PCONTEXT context, LPVOID address) {
     STACKFRAME64 stack_frame;
-    CONTEXT context;
-    HANDLE thread_handle = NULL;
 
+    if (!context) {
+        printf_message("Cannot create a stacktrace without a context");
+        return;
+    }
     if (!dyn_dbghelp.pStackWalk64) {
         printf_message("Cannot find StackWalk64 in dbghelp.dll: no stacktrace");
         return;
@@ -274,19 +280,6 @@ static void print_stacktrace(const LPPROCESS_INFORMATION process_information, LP
         return;
     }
 
-    thread_handle = OpenThread(THREAD_ALL_ACCESS, FALSE, process_information->dwThreadId);
-    if (!thread_handle) {
-        printf_windows_message("OpenThread failed: no stacktrace");
-        goto cleanup;
-    }
-
-    memset(&context, 0, sizeof(context));
-    context.ContextFlags = CONTEXT_ALL;
-    if (!GetThreadContext(thread_handle, &context)) {
-        printf_windows_message("GetThreadContext failed: no stacktrace");
-        goto cleanup;
-    }
-
     if (!dyn_dbghelp.pSymRefreshModuleList || !dyn_dbghelp.pSymRefreshModuleList(process_information->hProcess)) {
         printf_windows_message("SymRefreshModuleList failed: maybe no stacktrace");
     }
@@ -299,24 +292,24 @@ static void print_stacktrace(const LPPROCESS_INFORMATION process_information, LP
 
 #if defined(SDLPROCDUMP_CPU_X86)
     DWORD machine_type = IMAGE_FILE_MACHINE_I386;
-    stack_frame.AddrFrame.Offset = context.Ebp;
-    stack_frame.AddrStack.Offset = context.Esp;
-    stack_frame.AddrPC.Offset = context.Eip;
+    stack_frame.AddrFrame.Offset = context->Ebp;
+    stack_frame.AddrStack.Offset = context->Esp;
+    stack_frame.AddrPC.Offset = context->Eip;
 #elif defined(SDLPROCDUMP_CPU_X64)
     DWORD machine_type = IMAGE_FILE_MACHINE_AMD64;
-    stack_frame.AddrFrame.Offset = context.Rbp;
-    stack_frame.AddrStack.Offset = context.Rsp;
-    stack_frame.AddrPC.Offset = context.Rip;
+    stack_frame.AddrFrame.Offset = context->Rbp;
+    stack_frame.AddrStack.Offset = context->Rsp;
+    stack_frame.AddrPC.Offset = context->Rip;
 #elif defined(SDLPROCDUMP_CPU_ARM32)
     DWORD machine_type = IMAGE_FILE_MACHINE_ARM;
-    stack_frame.AddrFrame.Offset = context.Lr;
-    stack_frame.AddrStack.Offset = context.Sp;
-    stack_frame.AddrPC.Offset = context.Pc;
+    stack_frame.AddrFrame.Offset = context->Lr;
+    stack_frame.AddrStack.Offset = context->Sp;
+    stack_frame.AddrPC.Offset = context->Pc;
 #elif defined(SDLPROCDUMP_CPU_ARM64)
     DWORD machine_type = IMAGE_FILE_MACHINE_ARM64;
-    stack_frame.AddrFrame.Offset = context.Fp;
-    stack_frame.AddrStack.Offset = context.Sp;
-    stack_frame.AddrPC.Offset = context.Pc;
+    stack_frame.AddrFrame.Offset = context->Fp;
+    stack_frame.AddrStack.Offset = context->Sp;
+    stack_frame.AddrPC.Offset = context->Pc;
 #endif
     while (dyn_dbghelp.pStackWalk64(machine_type,                          /* DWORD                            MachineType */
                                     process_information->hProcess,         /* HANDLE                           hProcess */
@@ -374,12 +367,26 @@ static void print_stacktrace(const LPPROCESS_INFORMATION process_information, LP
         }
         printf_message("%s!%s+0x%x %s %s", image_file_name, symbol_name, dwDisplacement, file_name, line_number);
     }
+}
 
-cleanup:
-    if (thread_handle) {
-        CloseHandle(thread_handle);
+static PCONTEXT FillInThreadContext(LPPROCESS_INFORMATION process_information, PCONTEXT context_buffer) {
+    HANDLE thread_handle = NULL;
+
+    thread_handle = OpenThread(THREAD_ALL_ACCESS, FALSE, process_information->dwThreadId);
+    if (!thread_handle) {
+        printf_windows_message("OpenThread failed: no stacktrace");
+        return NULL;
     }
-    return;
+
+    memset(context_buffer, 0, sizeof(*context_buffer));
+    context_buffer->ContextFlags = CONTEXT_ALL;
+    if (!GetThreadContext(thread_handle, context_buffer)) {
+        printf_windows_message("GetThreadContext failed: no stacktrace");
+        CloseHandle(thread_handle);
+        return NULL;
+    }
+    CloseHandle(thread_handle);
+    return context_buffer;
 }
 
 int main(int argc, char *argv[]) {
@@ -454,6 +461,9 @@ int main(int argc, char *argv[]) {
             switch (event.dwDebugEventCode) {
             case EXCEPTION_DEBUG_EVENT:
                 if (IsFatalExceptionCode(event.u.Exception.ExceptionRecord.ExceptionCode) || (event.u.Exception.ExceptionRecord.ExceptionFlags & EXCEPTION_NONCONTINUABLE)) {
+                    CONTEXT context_buffer;
+                    PCONTEXT context;
+
                     printf_message("EXCEPTION_DEBUG_EVENT");
                     printf_message("       ExceptionCode: 0x%08lx (%s)",
                         event.u.Exception.ExceptionRecord.ExceptionCode,
@@ -463,10 +473,12 @@ int main(int argc, char *argv[]) {
                     printf_message("    ExceptionAddress: 0x%08lx",
                         event.u.Exception.ExceptionRecord.ExceptionAddress);
                     printf_message("    (Non-continuable exception debug event)");
-                    write_minidump(argv[1], &process_information, event.dwThreadId);
+
+                    context = FillInThreadContext(&process_information, &context_buffer);
+                    write_minidump(argv[1], &process_information, event.dwThreadId, &event.u.Exception.ExceptionRecord, context);
                     printf_message("");
 #ifdef SDLPROCDUMP_PRINTSTACK
-                    print_stacktrace(&process_information, event.u.Exception.ExceptionRecord.ExceptionAddress);
+                    print_stacktrace(&process_information, event.u.Exception.ExceptionRecord.ExceptionAddress, context);
 #else
                     printf_message("No support for printing stacktrack for current architecture");
 #endif
