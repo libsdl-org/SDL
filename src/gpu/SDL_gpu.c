@@ -24,19 +24,22 @@
 
 #define NULL_ASSERT(name) SDL_assert(name != NULL);
 
+/* FIXME: This could probably use SDL_ObjectValid */
+#define CHECK_DEVICE_MAGIC(device, retval)  \
+    if (device == NULL) {                   \
+        SDL_SetError("Invalid GPU device"); \
+        return retval;                      \
+    }
+
+/* FIXME DEBUGMODE */
+
 #define CHECK_COMMAND_BUFFER                                                             \
-    if (commandBuffer == NULL) {                                                         \
-        return;                                                                          \
-    }                                                                                    \
     if (((CommandBufferCommonHeader *)commandBuffer)->submitted) {                       \
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Command buffer already submitted!"); \
         return;                                                                          \
     }
 
 #define CHECK_COMMAND_BUFFER_RETURN_NULL                                                 \
-    if (commandBuffer == NULL) {                                                         \
-        return NULL;                                                                     \
-    }                                                                                    \
     if (((CommandBufferCommonHeader *)commandBuffer)->submitted) {                       \
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Command buffer already submitted!"); \
         return NULL;                                                                     \
@@ -189,15 +192,15 @@ SDL_GpuDevice *SDL_GpuCreateDevice(
 
 void SDL_GpuDestroyDevice(SDL_GpuDevice *device)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+
     device->DestroyDevice(device);
 }
 
 SDL_GpuBackend SDL_GpuGetBackend(SDL_GpuDevice *device)
 {
-    if (device == NULL) {
-        return SDL_GPU_BACKEND_INVALID;
-    }
+    CHECK_DEVICE_MAGIC(device, SDL_GPU_BACKEND_INVALID);
+
     return device->backend;
 }
 
@@ -244,6 +247,7 @@ Uint32 SDL_GpuTextureFormatTexelBlockSize(
     case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_SFLOAT:
         return 16;
     default:
+        /* FIXME DEBUGMODE */
         SDL_LogError(
             SDL_LOG_CATEGORY_APPLICATION,
             "Unrecognized TextureFormat!");
@@ -257,9 +261,8 @@ SDL_bool SDL_GpuIsTextureFormatSupported(
     SDL_GpuTextureType type,
     SDL_GpuTextureUsageFlags usage)
 {
-    if (device == NULL) {
-        return SDL_FALSE;
-    }
+    CHECK_DEVICE_MAGIC(device, SDL_FALSE);
+
     return device->IsTextureFormatSupported(
         device->driverData,
         format,
@@ -272,9 +275,8 @@ SDL_GpuSampleCount SDL_GpuGetBestSampleCount(
     SDL_GpuTextureFormat format,
     SDL_GpuSampleCount desiredSampleCount)
 {
-    if (device == NULL) {
-        return 0;
-    }
+    CHECK_DEVICE_MAGIC(device, 0);
+
     return device->GetBestSampleCount(
         device->driverData,
         format,
@@ -287,13 +289,20 @@ SDL_GpuComputePipeline *SDL_GpuCreateComputePipeline(
     SDL_GpuDevice *device,
     SDL_GpuComputePipelineCreateInfo *computePipelineCreateInfo)
 {
-    NULL_ASSERT(device)
+    CHECK_DEVICE_MAGIC(device, NULL);
+    if (computePipelineCreateInfo == NULL) {
+        SDL_InvalidParamError("computePipelineCreateInfo");
+        return NULL;
+    }
+
+    /* FIXME DEBUGMODE */
     if (computePipelineCreateInfo->threadCountX == 0 ||
         computePipelineCreateInfo->threadCountY == 0 ||
         computePipelineCreateInfo->threadCountZ == 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "All ComputePipeline threadCount dimensions must be at least 1!");
         return NULL;
     }
+
     if (computePipelineCreateInfo->format == SDL_GPU_SHADERFORMAT_SPIRV &&
         device->backend != SDL_GPU_BACKEND_VULKAN) {
         return SDL_CompileFromSPIRV(device, computePipelineCreateInfo, SDL_TRUE);
@@ -309,7 +318,11 @@ SDL_GpuGraphicsPipeline *SDL_GpuCreateGraphicsPipeline(
 {
     SDL_GpuTextureFormat newFormat;
 
-    NULL_ASSERT(device)
+    CHECK_DEVICE_MAGIC(device, NULL);
+    if (graphicsPipelineCreateInfo == NULL) {
+        SDL_InvalidParamError("graphicsPipelineCreateInfo");
+        return NULL;
+    }
 
     /* Automatically swap out the depth format if it's unsupported.
      * See SDL_GpuCreateTexture.
@@ -357,7 +370,12 @@ SDL_GpuSampler *SDL_GpuCreateSampler(
     SDL_GpuDevice *device,
     SDL_GpuSamplerCreateInfo *samplerCreateInfo)
 {
-    NULL_ASSERT(device)
+    CHECK_DEVICE_MAGIC(device, NULL);
+    if (samplerCreateInfo == NULL) {
+        SDL_InvalidParamError("samplerCreateInfo");
+        return NULL;
+    }
+
     return device->CreateSampler(
         device->driverData,
         samplerCreateInfo);
@@ -367,7 +385,12 @@ SDL_GpuShader *SDL_GpuCreateShader(
     SDL_GpuDevice *device,
     SDL_GpuShaderCreateInfo *shaderCreateInfo)
 {
-    NULL_ASSERT(device)
+    CHECK_DEVICE_MAGIC(device, NULL);
+    if (shaderCreateInfo == NULL) {
+        SDL_InvalidParamError("shaderCreateInfo");
+        return NULL;
+    }
+
     if (shaderCreateInfo->format == SDL_GPU_SHADERFORMAT_SPIRV &&
         device->backend != SDL_GPU_BACKEND_VULKAN) {
         return SDL_CompileFromSPIRV(device, shaderCreateInfo, SDL_FALSE);
@@ -383,7 +406,11 @@ SDL_GpuTexture *SDL_GpuCreateTexture(
 {
     SDL_GpuTextureFormat newFormat;
 
-    NULL_ASSERT(device)
+    CHECK_DEVICE_MAGIC(device, NULL);
+    if (textureCreateInfo == NULL) {
+        SDL_InvalidParamError("textureCreateInfo");
+        return NULL;
+    }
 
     /* Automatically swap out the depth format if it's unsupported.
      * All backends have universal support for D16.
@@ -436,7 +463,8 @@ SDL_GpuBuffer *SDL_GpuCreateBuffer(
     SDL_GpuBufferUsageFlags usageFlags,
     Uint32 sizeInBytes)
 {
-    NULL_ASSERT(device)
+    CHECK_DEVICE_MAGIC(device, NULL);
+
     return device->CreateBuffer(
         device->driverData,
         usageFlags,
@@ -448,7 +476,8 @@ SDL_GpuTransferBuffer *SDL_GpuCreateTransferBuffer(
     SDL_GpuTransferBufferUsage usage,
     Uint32 sizeInBytes)
 {
-    NULL_ASSERT(device)
+    CHECK_DEVICE_MAGIC(device, NULL);
+
     return device->CreateTransferBuffer(
         device->driverData,
         usage,
@@ -462,8 +491,14 @@ void SDL_GpuSetBufferName(
     SDL_GpuBuffer *buffer,
     const char *text)
 {
-    NULL_ASSERT(device)
-    NULL_ASSERT(buffer)
+    CHECK_DEVICE_MAGIC(device,);
+    if (buffer == NULL) {
+        SDL_InvalidParamError("buffer");
+        return;
+    }
+    if (text == NULL) {
+        SDL_InvalidParamError("text");
+    }
 
     device->SetBufferName(
         device->driverData,
@@ -476,8 +511,14 @@ void SDL_GpuSetTextureName(
     SDL_GpuTexture *texture,
     const char *text)
 {
-    NULL_ASSERT(device)
-    NULL_ASSERT(texture)
+    CHECK_DEVICE_MAGIC(device,);
+    if (texture == NULL) {
+        SDL_InvalidParamError("texture");
+        return;
+    }
+    if (text == NULL) {
+        SDL_InvalidParamError("text");
+    }
 
     device->SetTextureName(
         device->driverData,
@@ -489,6 +530,15 @@ void SDL_GpuInsertDebugLabel(
     SDL_GpuCommandBuffer *commandBuffer,
     const char *text)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return;
+    }
+    if (text == NULL) {
+        SDL_InvalidParamError("text");
+        return;
+    }
+
     CHECK_COMMAND_BUFFER
     COMMAND_BUFFER_DEVICE->InsertDebugLabel(
         commandBuffer,
@@ -499,6 +549,15 @@ void SDL_GpuPushDebugGroup(
     SDL_GpuCommandBuffer *commandBuffer,
     const char *name)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return;
+    }
+    if (name == NULL) {
+        SDL_InvalidParamError("name");
+        return;
+    }
+
     CHECK_COMMAND_BUFFER
     COMMAND_BUFFER_DEVICE->PushDebugGroup(
         commandBuffer,
@@ -508,6 +567,11 @@ void SDL_GpuPushDebugGroup(
 void SDL_GpuPopDebugGroup(
     SDL_GpuCommandBuffer *commandBuffer)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return;
+    }
+
     CHECK_COMMAND_BUFFER
     COMMAND_BUFFER_DEVICE->PopDebugGroup(
         commandBuffer);
@@ -519,7 +583,11 @@ void SDL_GpuReleaseTexture(
     SDL_GpuDevice *device,
     SDL_GpuTexture *texture)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (texture == NULL) {
+        return;
+    }
+
     device->ReleaseTexture(
         device->driverData,
         texture);
@@ -529,7 +597,11 @@ void SDL_GpuReleaseSampler(
     SDL_GpuDevice *device,
     SDL_GpuSampler *sampler)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (sampler == NULL) {
+        return;
+    }
+
     device->ReleaseSampler(
         device->driverData,
         sampler);
@@ -539,7 +611,11 @@ void SDL_GpuReleaseBuffer(
     SDL_GpuDevice *device,
     SDL_GpuBuffer *buffer)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (buffer == NULL) {
+        return;
+    }
+
     device->ReleaseBuffer(
         device->driverData,
         buffer);
@@ -549,7 +625,11 @@ void SDL_GpuReleaseTransferBuffer(
     SDL_GpuDevice *device,
     SDL_GpuTransferBuffer *transferBuffer)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (transferBuffer == NULL) {
+        return;
+    }
+
     device->ReleaseTransferBuffer(
         device->driverData,
         transferBuffer);
@@ -559,7 +639,11 @@ void SDL_GpuReleaseShader(
     SDL_GpuDevice *device,
     SDL_GpuShader *shader)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (shader == NULL) {
+        return;
+    }
+
     device->ReleaseShader(
         device->driverData,
         shader);
@@ -569,7 +653,11 @@ void SDL_GpuReleaseComputePipeline(
     SDL_GpuDevice *device,
     SDL_GpuComputePipeline *computePipeline)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (computePipeline == NULL) {
+        return;
+    }
+
     device->ReleaseComputePipeline(
         device->driverData,
         computePipeline);
@@ -579,7 +667,11 @@ void SDL_GpuReleaseGraphicsPipeline(
     SDL_GpuDevice *device,
     SDL_GpuGraphicsPipeline *graphicsPipeline)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (graphicsPipeline == NULL) {
+        return;
+    }
+
     device->ReleaseGraphicsPipeline(
         device->driverData,
         graphicsPipeline);
@@ -592,7 +684,8 @@ SDL_GpuCommandBuffer *SDL_GpuAcquireCommandBuffer(
 {
     SDL_GpuCommandBuffer *commandBuffer;
     CommandBufferCommonHeader *commandBufferHeader;
-    NULL_ASSERT(device);
+
+    CHECK_DEVICE_MAGIC(device, NULL);
 
     commandBuffer = device->AcquireCommandBuffer(
         device->driverData);
@@ -624,6 +717,15 @@ void SDL_GpuPushVertexUniformData(
     const void *data,
     Uint32 dataLengthInBytes)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return;
+    }
+    if (data == NULL) {
+        SDL_InvalidParamError("data");
+        return;
+    }
+
     CHECK_COMMAND_BUFFER
     COMMAND_BUFFER_DEVICE->PushVertexUniformData(
         commandBuffer,
@@ -638,6 +740,15 @@ void SDL_GpuPushFragmentUniformData(
     const void *data,
     Uint32 dataLengthInBytes)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return;
+    }
+    if (data == NULL) {
+        SDL_InvalidParamError("data");
+        return;
+    }
+
     CHECK_COMMAND_BUFFER
     COMMAND_BUFFER_DEVICE->PushFragmentUniformData(
         commandBuffer,
@@ -652,6 +763,15 @@ void SDL_GpuPushComputeUniformData(
     const void *data,
     Uint32 dataLengthInBytes)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return;
+    }
+    if (data == NULL) {
+        SDL_InvalidParamError("data");
+        return;
+    }
+
     CHECK_COMMAND_BUFFER
     COMMAND_BUFFER_DEVICE->PushComputeUniformData(
         commandBuffer,
@@ -670,8 +790,22 @@ SDL_GpuRenderPass *SDL_GpuBeginRenderPass(
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return NULL;
+    }
+    if (colorAttachmentInfos == NULL && colorAttachmentCount > 0) {
+        SDL_InvalidParamError("colorAttachmentInfos");
+        return NULL;
+    }
+    if (depthStencilAttachmentInfo == NULL) {
+        SDL_InvalidParamError("depthStencilAttachmentInfo");
+        return NULL;
+    }
+
     CHECK_COMMAND_BUFFER_RETURN_NULL
     CHECK_ANY_PASS_IN_PROGRESS
+
     COMMAND_BUFFER_DEVICE->BeginRenderPass(
         commandBuffer,
         colorAttachmentInfos,
@@ -689,7 +823,15 @@ void SDL_GpuBindGraphicsPipeline(
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (graphicsPipeline == NULL) {
+        SDL_InvalidParamError("graphicsPipeline");
+        return;
+    }
+
     RENDERPASS_DEVICE->BindGraphicsPipeline(
         RENDERPASS_COMMAND_BUFFER,
         graphicsPipeline);
@@ -702,7 +844,15 @@ void SDL_GpuSetViewport(
     SDL_GpuRenderPass *renderPass,
     SDL_GpuViewport *viewport)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (viewport == NULL) {
+        SDL_InvalidParamError("viewport");
+        return;
+    }
+
     CHECK_RENDERPASS
     RENDERPASS_DEVICE->SetViewport(
         RENDERPASS_COMMAND_BUFFER,
@@ -713,7 +863,15 @@ void SDL_GpuSetScissor(
     SDL_GpuRenderPass *renderPass,
     SDL_GpuRect *scissor)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (scissor == NULL) {
+        SDL_InvalidParamError("scissor");
+        return;
+    }
+
     CHECK_RENDERPASS
     RENDERPASS_DEVICE->SetScissor(
         RENDERPASS_COMMAND_BUFFER,
@@ -726,7 +884,15 @@ void SDL_GpuBindVertexBuffers(
     SDL_GpuBufferBinding *pBindings,
     Uint32 bindingCount)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (pBindings == NULL && bindingCount > 0) {
+        SDL_InvalidParamError("pBindings");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->BindVertexBuffers(
@@ -741,7 +907,15 @@ void SDL_GpuBindIndexBuffer(
     SDL_GpuBufferBinding *pBinding,
     SDL_GpuIndexElementSize indexElementSize)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (pBinding == NULL) {
+        SDL_InvalidParamError("pBinding");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->BindIndexBuffer(
@@ -756,7 +930,15 @@ void SDL_GpuBindVertexSamplers(
     SDL_GpuTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (textureSamplerBindings == NULL && bindingCount > 0) {
+        SDL_InvalidParamError("textureSamplerBindings");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->BindVertexSamplers(
@@ -772,7 +954,15 @@ void SDL_GpuBindVertexStorageTextures(
     SDL_GpuTextureSlice *storageTextureSlices,
     Uint32 bindingCount)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (storageTextureSlices == NULL && bindingCount > 0) {
+        SDL_InvalidParamError("storageTextureSlices");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->BindVertexStorageTextures(
@@ -788,7 +978,15 @@ void SDL_GpuBindVertexStorageBuffers(
     SDL_GpuBuffer **storageBuffers,
     Uint32 bindingCount)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (storageBuffers == NULL && bindingCount > 0) {
+        SDL_InvalidParamError("storageBuffers");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->BindVertexStorageBuffers(
@@ -804,7 +1002,15 @@ void SDL_GpuBindFragmentSamplers(
     SDL_GpuTextureSamplerBinding *textureSamplerBindings,
     Uint32 bindingCount)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (textureSamplerBindings == NULL && bindingCount > 0) {
+        SDL_InvalidParamError("textureSamplerBindings");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->BindFragmentSamplers(
@@ -820,7 +1026,15 @@ void SDL_GpuBindFragmentStorageTextures(
     SDL_GpuTextureSlice *storageTextureSlices,
     Uint32 bindingCount)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (storageTextureSlices == NULL && bindingCount > 0) {
+        SDL_InvalidParamError("storageTextureSlices");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->BindFragmentStorageTextures(
@@ -836,7 +1050,15 @@ void SDL_GpuBindFragmentStorageBuffers(
     SDL_GpuBuffer **storageBuffers,
     Uint32 bindingCount)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (storageBuffers == NULL && bindingCount > 0) {
+        SDL_InvalidParamError("storageBuffers");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->BindFragmentStorageBuffers(
@@ -853,7 +1075,11 @@ void SDL_GpuDrawIndexedPrimitives(
     Uint32 primitiveCount,
     Uint32 instanceCount)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->DrawIndexedPrimitives(
@@ -869,7 +1095,11 @@ void SDL_GpuDrawPrimitives(
     Uint32 vertexStart,
     Uint32 primitiveCount)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->DrawPrimitives(
@@ -885,7 +1115,15 @@ void SDL_GpuDrawPrimitivesIndirect(
     Uint32 drawCount,
     Uint32 stride)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (buffer == NULL) {
+        SDL_InvalidParamError("buffer");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->DrawPrimitivesIndirect(
@@ -903,7 +1141,15 @@ void SDL_GpuDrawIndexedPrimitivesIndirect(
     Uint32 drawCount,
     Uint32 stride)
 {
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+    if (buffer == NULL) {
+        SDL_InvalidParamError("buffer");
+        return;
+    }
+
     CHECK_RENDERPASS
     CHECK_GRAPHICS_PIPELINE_BOUND
     RENDERPASS_DEVICE->DrawIndexedPrimitivesIndirect(
@@ -919,7 +1165,11 @@ void SDL_GpuEndRenderPass(
 {
     CommandBufferCommonHeader *commandBufferCommonHeader;
 
-    NULL_ASSERT(renderPass)
+    if (renderPass == NULL) {
+        SDL_InvalidParamError("renderPass");
+        return;
+    }
+
     CHECK_RENDERPASS
     RENDERPASS_DEVICE->EndRenderPass(
         RENDERPASS_COMMAND_BUFFER);
@@ -939,6 +1189,19 @@ SDL_GpuComputePass *SDL_GpuBeginComputePass(
     Uint32 storageBufferBindingCount)
 {
     CommandBufferCommonHeader *commandBufferHeader;
+
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return NULL;
+    }
+    if (storageTextureBindings == NULL && storageTextureBindingCount > 0) {
+        SDL_InvalidParamError("storageTextureBindings");
+        return NULL;
+    }
+    if (storageBufferBindings == NULL && storageBufferBindingCount > 0) {
+        SDL_InvalidParamError("storageBufferBindings");
+        return NULL;
+    }
 
     CHECK_COMMAND_BUFFER_RETURN_NULL
     CHECK_ANY_PASS_IN_PROGRESS
@@ -960,7 +1223,15 @@ void SDL_GpuBindComputePipeline(
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
-    NULL_ASSERT(computePass)
+    if (computePass == NULL) {
+        SDL_InvalidParamError("computePass");
+        return;
+    }
+    if (computePipeline == NULL) {
+        SDL_InvalidParamError("computePipeline");
+        return;
+    }
+
     CHECK_COMPUTEPASS
     COMPUTEPASS_DEVICE->BindComputePipeline(
         COMPUTEPASS_COMMAND_BUFFER,
@@ -976,7 +1247,15 @@ void SDL_GpuBindComputeStorageTextures(
     SDL_GpuTextureSlice *storageTextureSlices,
     Uint32 bindingCount)
 {
-    NULL_ASSERT(computePass)
+    if (computePass == NULL) {
+        SDL_InvalidParamError("computePass");
+        return;
+    }
+    if (storageTextureSlices == NULL && bindingCount > 0) {
+        SDL_InvalidParamError("storageTextureSlices");
+        return;
+    }
+
     CHECK_COMPUTEPASS
     CHECK_COMPUTE_PIPELINE_BOUND
     COMPUTEPASS_DEVICE->BindComputeStorageTextures(
@@ -992,7 +1271,15 @@ void SDL_GpuBindComputeStorageBuffers(
     SDL_GpuBuffer **storageBuffers,
     Uint32 bindingCount)
 {
-    NULL_ASSERT(computePass)
+    if (computePass == NULL) {
+        SDL_InvalidParamError("computePass");
+        return;
+    }
+    if (storageBuffers == NULL && bindingCount > 0) {
+        SDL_InvalidParamError("storageBuffers");
+        return;
+    }
+
     CHECK_COMPUTEPASS
     CHECK_COMPUTE_PIPELINE_BOUND
     COMPUTEPASS_DEVICE->BindComputeStorageBuffers(
@@ -1008,7 +1295,11 @@ void SDL_GpuDispatchCompute(
     Uint32 groupCountY,
     Uint32 groupCountZ)
 {
-    NULL_ASSERT(computePass)
+    if (computePass == NULL) {
+        SDL_InvalidParamError("computePass");
+        return;
+    }
+
     CHECK_COMPUTEPASS
     CHECK_COMPUTE_PIPELINE_BOUND
     COMPUTEPASS_DEVICE->DispatchCompute(
@@ -1023,7 +1314,11 @@ void SDL_GpuEndComputePass(
 {
     CommandBufferCommonHeader *commandBufferCommonHeader;
 
-    NULL_ASSERT(computePass)
+    if (computePass == NULL) {
+        SDL_InvalidParamError("computePass");
+        return;
+    }
+
     CHECK_COMPUTEPASS
     COMPUTEPASS_DEVICE->EndComputePass(
         COMPUTEPASS_COMMAND_BUFFER);
@@ -1041,8 +1336,16 @@ void SDL_GpuMapTransferBuffer(
     SDL_bool cycle,
     void **ppData)
 {
-    NULL_ASSERT(device)
-    NULL_ASSERT(transferBuffer)
+    CHECK_DEVICE_MAGIC(device,);
+    if (transferBuffer == NULL) {
+        SDL_InvalidParamError("transferBuffer");
+        return;
+    }
+    if (ppData == NULL) {
+        SDL_InvalidParamError("ppData");
+        return;
+    }
+
     device->MapTransferBuffer(
         device->driverData,
         transferBuffer,
@@ -1054,8 +1357,12 @@ void SDL_GpuUnmapTransferBuffer(
     SDL_GpuDevice *device,
     SDL_GpuTransferBuffer *transferBuffer)
 {
-    NULL_ASSERT(device)
-    NULL_ASSERT(transferBuffer)
+    CHECK_DEVICE_MAGIC(device,);
+    if (transferBuffer == NULL) {
+        SDL_InvalidParamError("transferBuffer");
+        return;
+    }
+
     device->UnmapTransferBuffer(
         device->driverData,
         transferBuffer);
@@ -1067,7 +1374,16 @@ void SDL_GpuSetTransferData(
     SDL_GpuTransferBufferRegion *destination,
     SDL_bool cycle)
 {
-    NULL_ASSERT(device)
+    CHECK_DEVICE_MAGIC(device,);
+    if (source == NULL) {
+        SDL_InvalidParamError("source");
+        return;
+    }
+    if (destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
     device->SetTransferData(
         device->driverData,
         source,
@@ -1080,7 +1396,16 @@ void SDL_GpuGetTransferData(
     SDL_GpuTransferBufferRegion *source,
     void *destination)
 {
-    NULL_ASSERT(device)
+    CHECK_DEVICE_MAGIC(device,);
+    if (source == NULL) {
+        SDL_InvalidParamError("source");
+        return;
+    }
+    if (destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
     device->GetTransferData(
         device->driverData,
         source,
@@ -1093,6 +1418,11 @@ SDL_GpuCopyPass *SDL_GpuBeginCopyPass(
     SDL_GpuCommandBuffer *commandBuffer)
 {
     CommandBufferCommonHeader *commandBufferHeader;
+
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return NULL;
+    }
 
     CHECK_COMMAND_BUFFER_RETURN_NULL
     CHECK_ANY_PASS_IN_PROGRESS
@@ -1110,7 +1440,19 @@ void SDL_GpuUploadToTexture(
     SDL_GpuTextureRegion *destination,
     SDL_bool cycle)
 {
-    NULL_ASSERT(copyPass)
+    if (copyPass == NULL) {
+        SDL_InvalidParamError("copyPass");
+        return;
+    }
+    if (source == NULL) {
+        SDL_InvalidParamError("source");
+        return;
+    }
+    if (destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
     CHECK_COPYPASS
     COPYPASS_DEVICE->UploadToTexture(
         COPYPASS_COMMAND_BUFFER,
@@ -1125,7 +1467,19 @@ void SDL_GpuUploadToBuffer(
     SDL_GpuBufferRegion *destination,
     SDL_bool cycle)
 {
-    NULL_ASSERT(copyPass)
+    if (copyPass == NULL) {
+        SDL_InvalidParamError("copyPass");
+        return;
+    }
+    if (source == NULL) {
+        SDL_InvalidParamError("source");
+        return;
+    }
+    if (destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
     COPYPASS_DEVICE->UploadToBuffer(
         COPYPASS_COMMAND_BUFFER,
         source,
@@ -1142,7 +1496,19 @@ void SDL_GpuCopyTextureToTexture(
     Uint32 d,
     SDL_bool cycle)
 {
-    NULL_ASSERT(copyPass)
+    if (copyPass == NULL) {
+        SDL_InvalidParamError("copyPass");
+        return;
+    }
+    if (source == NULL) {
+        SDL_InvalidParamError("source");
+        return;
+    }
+    if (destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
     COPYPASS_DEVICE->CopyTextureToTexture(
         COPYPASS_COMMAND_BUFFER,
         source,
@@ -1160,7 +1526,19 @@ void SDL_GpuCopyBufferToBuffer(
     Uint32 size,
     SDL_bool cycle)
 {
-    NULL_ASSERT(copyPass)
+    if (copyPass == NULL) {
+        SDL_InvalidParamError("copyPass");
+        return;
+    }
+    if (source == NULL) {
+        SDL_InvalidParamError("source");
+        return;
+    }
+    if (destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
     COPYPASS_DEVICE->CopyBufferToBuffer(
         COPYPASS_COMMAND_BUFFER,
         source,
@@ -1173,7 +1551,15 @@ void SDL_GpuGenerateMipmaps(
     SDL_GpuCopyPass *copyPass,
     SDL_GpuTexture *texture)
 {
-    NULL_ASSERT(copyPass)
+    if (copyPass == NULL) {
+        SDL_InvalidParamError("copyPass");
+        return;
+    }
+    if (texture == NULL) {
+        SDL_InvalidParamError("texture");
+        return;
+    }
+
     COPYPASS_DEVICE->GenerateMipmaps(
         COPYPASS_COMMAND_BUFFER,
         texture);
@@ -1184,7 +1570,19 @@ void SDL_GpuDownloadFromTexture(
     SDL_GpuTextureRegion *source,
     SDL_GpuTextureTransferInfo *destination)
 {
-    NULL_ASSERT(copyPass);
+    if (copyPass == NULL) {
+        SDL_InvalidParamError("copyPass");
+        return;
+    }
+    if (source == NULL) {
+        SDL_InvalidParamError("source");
+        return;
+    }
+    if (destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
     COPYPASS_DEVICE->DownloadFromTexture(
         COPYPASS_COMMAND_BUFFER,
         source,
@@ -1196,7 +1594,19 @@ void SDL_GpuDownloadFromBuffer(
     SDL_GpuBufferRegion *source,
     SDL_GpuTransferBufferLocation *destination)
 {
-    NULL_ASSERT(copyPass);
+    if (copyPass == NULL) {
+        SDL_InvalidParamError("copyPass");
+        return;
+    }
+    if (source == NULL) {
+        SDL_InvalidParamError("source");
+        return;
+    }
+    if (destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
     COPYPASS_DEVICE->DownloadFromBuffer(
         COPYPASS_COMMAND_BUFFER,
         source,
@@ -1206,7 +1616,11 @@ void SDL_GpuDownloadFromBuffer(
 void SDL_GpuEndCopyPass(
     SDL_GpuCopyPass *copyPass)
 {
-    NULL_ASSERT(copyPass)
+    if (copyPass == NULL) {
+        SDL_InvalidParamError("copyPass");
+        return;
+    }
+
     CHECK_COPYPASS
     COPYPASS_DEVICE->EndCopyPass(
         COPYPASS_COMMAND_BUFFER);
@@ -1221,6 +1635,19 @@ void SDL_GpuBlit(
     SDL_GpuFilter filterMode,
     SDL_bool cycle)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return;
+    }
+    if (source == NULL) {
+        SDL_InvalidParamError("source");
+        return;
+    }
+    if (destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
     CHECK_COMMAND_BUFFER
     COMMAND_BUFFER_DEVICE->Blit(
         commandBuffer,
@@ -1237,9 +1664,12 @@ SDL_bool SDL_GpuSupportsSwapchainComposition(
     SDL_Window *window,
     SDL_GpuSwapchainComposition swapchainFormat)
 {
-    if (device == NULL) {
-        return 0;
+    CHECK_DEVICE_MAGIC(device, SDL_FALSE);
+    if (window == NULL) {
+        SDL_InvalidParamError("window");
+        return SDL_FALSE;
     }
+
     return device->SupportsSwapchainComposition(
         device->driverData,
         window,
@@ -1251,9 +1681,12 @@ SDL_bool SDL_GpuSupportsPresentMode(
     SDL_Window *window,
     SDL_GpuPresentMode presentMode)
 {
-    if (device == NULL) {
-        return 0;
+    CHECK_DEVICE_MAGIC(device, SDL_FALSE);
+    if (window == NULL) {
+        SDL_InvalidParamError("window");
+        return SDL_FALSE;
     }
+
     return device->SupportsPresentMode(
         device->driverData,
         window,
@@ -1266,9 +1699,12 @@ SDL_bool SDL_GpuClaimWindow(
     SDL_GpuSwapchainComposition swapchainFormat,
     SDL_GpuPresentMode presentMode)
 {
-    if (device == NULL) {
-        return 0;
+    CHECK_DEVICE_MAGIC(device, SDL_FALSE);
+    if (window == NULL) {
+        SDL_InvalidParamError("window");
+        return SDL_FALSE;
     }
+
     return device->ClaimWindow(
         device->driverData,
         window,
@@ -1280,7 +1716,12 @@ void SDL_GpuUnclaimWindow(
     SDL_GpuDevice *device,
     SDL_Window *window)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (window == NULL) {
+        SDL_InvalidParamError("window");
+        return;
+    }
+
     device->UnclaimWindow(
         device->driverData,
         window);
@@ -1292,7 +1733,12 @@ SDL_bool SDL_GpuSetSwapchainParameters(
     SDL_GpuSwapchainComposition swapchainFormat,
     SDL_GpuPresentMode presentMode)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device, SDL_FALSE);
+    if (window == NULL) {
+        SDL_InvalidParamError("window");
+        return SDL_FALSE;
+    }
+
     return device->SetSwapchainParameters(
         device->driverData,
         window,
@@ -1304,9 +1750,12 @@ SDL_GpuTextureFormat SDL_GpuGetSwapchainTextureFormat(
     SDL_GpuDevice *device,
     SDL_Window *window)
 {
-    if (device == NULL) {
-        return 0;
+    CHECK_DEVICE_MAGIC(device, SDL_GPU_TEXTUREFORMAT_INVALID);
+    if (window == NULL) {
+        SDL_InvalidParamError("window");
+        return SDL_GPU_TEXTUREFORMAT_INVALID;
     }
+
     return device->GetSwapchainTextureFormat(
         device->driverData,
         window);
@@ -1318,6 +1767,15 @@ SDL_GpuTexture *SDL_GpuAcquireSwapchainTexture(
     Uint32 *pWidth,
     Uint32 *pHeight)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return NULL;
+    }
+    if (window == NULL) {
+        SDL_InvalidParamError("window");
+        return NULL;
+    }
+
     CHECK_COMMAND_BUFFER_RETURN_NULL
     return COMMAND_BUFFER_DEVICE->AcquireSwapchainTexture(
         commandBuffer,
@@ -1329,9 +1787,15 @@ SDL_GpuTexture *SDL_GpuAcquireSwapchainTexture(
 void SDL_GpuSubmit(
     SDL_GpuCommandBuffer *commandBuffer)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return;
+    }
+
     CHECK_COMMAND_BUFFER
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
 
+    /* FIXME DEBUGMODE */
     if (
         commandBufferHeader->renderPass.inProgress ||
         commandBufferHeader->computePass.inProgress ||
@@ -1349,9 +1813,15 @@ void SDL_GpuSubmit(
 SDL_GpuFence *SDL_GpuSubmitAndAcquireFence(
     SDL_GpuCommandBuffer *commandBuffer)
 {
+    if (commandBuffer == NULL) {
+        SDL_InvalidParamError("commandBuffer");
+        return NULL;
+    }
+
     CHECK_COMMAND_BUFFER_RETURN_NULL
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)commandBuffer;
 
+    /* FIXME DEBUGMODE */
     if (
         commandBufferHeader->renderPass.inProgress ||
         commandBufferHeader->computePass.inProgress ||
@@ -1369,7 +1839,8 @@ SDL_GpuFence *SDL_GpuSubmitAndAcquireFence(
 void SDL_GpuWait(
     SDL_GpuDevice *device)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+
     device->Wait(
         device->driverData);
 }
@@ -1380,7 +1851,12 @@ void SDL_GpuWaitForFences(
     SDL_GpuFence **pFences,
     Uint32 fenceCount)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (pFences == NULL && fenceCount > 0) {
+        SDL_InvalidParamError("pFences");
+        return;
+    }
+
     device->WaitForFences(
         device->driverData,
         waitAll,
@@ -1392,8 +1868,10 @@ SDL_bool SDL_GpuQueryFence(
     SDL_GpuDevice *device,
     SDL_GpuFence *fence)
 {
-    if (device == NULL) {
-        return 0;
+    CHECK_DEVICE_MAGIC(device, SDL_FALSE);
+    if (fence == NULL) {
+        SDL_InvalidParamError("fence");
+        return SDL_FALSE;
     }
 
     return device->QueryFence(
@@ -1405,7 +1883,11 @@ void SDL_GpuReleaseFence(
     SDL_GpuDevice *device,
     SDL_GpuFence *fence)
 {
-    NULL_ASSERT(device);
+    CHECK_DEVICE_MAGIC(device,);
+    if (fence == NULL) {
+        return;
+    }
+
     device->ReleaseFence(
         device->driverData,
         fence);

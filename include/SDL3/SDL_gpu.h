@@ -80,6 +80,8 @@ typedef enum SDL_GpuIndexElementSize
 
 typedef enum SDL_GpuTextureFormat
 {
+    SDL_GPU_TEXTUREFORMAT_INVALID = -1,
+
     /* Unsigned Normalized Float Color Formats */
     SDL_GPU_TEXTUREFORMAT_R8G8B8A8,
     SDL_GPU_TEXTUREFORMAT_B8G8R8A8,
