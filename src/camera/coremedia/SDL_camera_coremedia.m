@@ -268,12 +268,14 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
         }
 
         const CMVideoDimensions dim = CMVideoFormatDescriptionGetDimensions(formatDescription);
-        if ( ((int) dim.width != w) || (((int) dim.height) != h) ) {
+        if ((int)dim.width != w || (int)dim.height != h) {
             continue;
         }
 
+        const float FRAMERATE_EPSILON = 0.01f;
         for (AVFrameRateRange *framerate in format.videoSupportedFrameRateRanges) {
-            if (rate >= framerate.minFrameRate && rate <= framerate.maxFrameRate) {
+            if (rate > (framerate.minFrameRate - FRAMERATE_EPSILON) &&
+                rate < (framerate.maxFrameRate + FRAMERATE_EPSILON)) {
                 spec_format = format;
                 break;
             }
@@ -393,12 +395,15 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
         const int w = (int) dims.width;
         const int h = (int) dims.height;
         for (AVFrameRateRange *framerate in fmt.videoSupportedFrameRateRanges) {
-            int numerator = 0, denominator = 1;
+            int min_numerator = 0, min_denominator = 1;
+            int max_numerator = 0, max_denominator = 1;
 
-            SDL_CalculateFraction(framerate.minFrameRate, &numerator, &denominator);
-            SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, numerator, denominator);
-            SDL_CalculateFraction(framerate.maxFrameRate, &numerator, &denominator);
-            SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, numerator, denominator);
+            SDL_CalculateFraction(framerate.minFrameRate, &min_numerator, &min_denominator);
+            SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, min_numerator, min_denominator);
+            SDL_CalculateFraction(framerate.maxFrameRate, &max_numerator, &max_denominator);
+            if (max_numerator != min_numerator || max_denominator != min_denominator) {
+                SDL_AddCameraFormat(add_data, device_format, device_colorspace, w, h, max_numerator, max_denominator);
+            }
         }
     }
 }
