@@ -1156,6 +1156,11 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 {
 #if SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
+
+	if (!surface) {
+        SDL_InvalidParamError("surface");
+	}
+
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_SURFACE_POINTER, surface);
     renderer = SDL_CreateRendererWithProperties(props);
