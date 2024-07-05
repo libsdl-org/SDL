@@ -2080,6 +2080,16 @@ int SDL_LoadWAV_IO(SDL_IOStream *src, SDL_bool closeio, SDL_AudioSpec *spec, Uin
     int result = -1;
     WaveFile file;
 
+    if (spec) {
+        SDL_zerop(spec);
+    }
+    if (audio_buf) {
+        *audio_buf = NULL;
+    }
+    if (audio_len) {
+        *audio_len = 0;
+    }
+
     /* Make sure we are passed a valid data source */
     if (!src) {
         goto done;  /* Error may come from SDL_IOStream. */
@@ -2093,9 +2103,6 @@ int SDL_LoadWAV_IO(SDL_IOStream *src, SDL_bool closeio, SDL_AudioSpec *spec, Uin
         SDL_InvalidParamError("audio_len");
         goto done;
     }
-
-    *audio_buf = NULL;
-    *audio_len = 0;
 
     SDL_zero(file);
     file.riffhint = WaveGetRiffSizeHint();
