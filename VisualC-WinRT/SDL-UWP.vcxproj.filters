@@ -34,6 +34,9 @@
     <Filter Include="dialog">
       <UniqueIdentifier>{0000c99bfadbbcb05a474a8472910000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="main\winrt">
+      <UniqueIdentifier>{00006680a11742e2b280c6453be80000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h">
@@ -549,9 +552,6 @@
     <ClCompile Include="..\src\core\SDL_core_unsupported.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\core\SDL_runapp.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\core\windows\SDL_windows.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -659,6 +659,12 @@
     </ClCompile>
     <ClCompile Include="..\src\main\SDL_main_callbacks.c">
       <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\SDL_runapp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\winrt\SDL_sysmain_runapp.cpp">
+      <Filter>main\winrt</Filter>
     </ClCompile>
     <ClCompile Include="..\src\power\SDL_power.c">
       <Filter>Source Files</Filter>
