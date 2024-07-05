@@ -2333,9 +2333,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOpe
  * Any popups or modal windows owned by the window will be recursively
  * destroyed as well.
  *
- * If `window` is NULL, this function will return immediately after setting
- * the SDL error message to "Invalid window". See SDL_GetError().
- *
  * \param window the window to destroy.
  *
  * \since This function is available since SDL 3.0.0.
