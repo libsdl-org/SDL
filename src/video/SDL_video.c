@@ -759,7 +759,7 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
     _this->displays[_this->num_displays++] = new_display;
 
     id = SDL_GetNextObjectID();
-    SDL_memcpy(new_display, display, sizeof(*new_display));
+    SDL_copyp(new_display, display);
     new_display->id = id;
     new_display->device = _this;
     if (display->name) {
@@ -789,6 +789,10 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
     SDL_SetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, new_display->HDR.HDR_headroom > 1.0f);
 
     SDL_UpdateDesktopBounds();
+
+    if (send_event) {
+        SDL_SendDisplayEvent(new_display, SDL_EVENT_DISPLAY_ADDED, 0);
+    }
 
     return id;
 }
