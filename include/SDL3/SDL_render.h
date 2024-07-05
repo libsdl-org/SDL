@@ -2007,7 +2007,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderPresent(SDL_Renderer *renderer);
 extern SDL_DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_Texture *texture);
 
 /**
- * Destroy the rendering context for a window and free all associated textures.
+ * Destroy the rendering context for a window and free all associated
+ * textures.
  *
  * This should be called before destroying the associated window.
  *
