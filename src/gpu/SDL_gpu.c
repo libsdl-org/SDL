@@ -22,8 +22,6 @@
 #include "SDL_gpu_driver.h"
 #include "SDL_gpu_spirv_c.h"
 
-#define NULL_ASSERT(name) SDL_assert(name != NULL);
-
 /* FIXME: This could probably use SDL_ObjectValid */
 #define CHECK_DEVICE_MAGIC(device, retval)  \
     if (device == NULL) {                   \
