@@ -232,7 +232,8 @@ int SDL_CalculateBlit(SDL_Surface *surface)
     if (!blit) {
         if (map->identity && !(map->info.flags & ~SDL_COPY_RLE_DESIRED)) {
             blit = SDL_BlitCopy;
-        } else if (surface->format->Rloss > 8 || dst->format->Rloss > 8) {
+        } else if (SDL_ISPIXELFORMAT_10BIT(surface->format->format) ||
+                   SDL_ISPIXELFORMAT_10BIT(dst->format->format)) {
             blit = SDL_Blit_Slow;
         }
 #if SDL_HAVE_BLIT_0

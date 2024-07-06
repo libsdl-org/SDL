@@ -175,6 +175,11 @@ static int pixels_allocFreeFormat(void *arg)
                 if (!SDL_ISPIXELFORMAT_INDEXED(format)) {
                     masks = result->Rmask | result->Gmask | result->Bmask | result->Amask;
                     SDLTest_AssertCheck(masks > 0, "Verify value of result.[RGBA]mask combined; expected: >0, got %" SDL_PRIu32, masks);
+                    if (SDL_ISPIXELFORMAT_10BIT(format)) {
+                        SDLTest_AssertCheck(result->Rbits == 10 && result->Gbits == 10 && result->Bbits == 10, "Verify value of result.[RGB]bits; expected: 10, got %d/%d/%d", result->Rbits, result->Gbits, result->Bbits);
+                    } else if (SDL_BITSPERPIXEL(format) == 32) {
+                        SDLTest_AssertCheck(result->Rbits == 8 && result->Gbits == 8 && result->Bbits == 8, "Verify value of result.[RGB]bits; expected: 8, got %d/%d/%d", result->Rbits, result->Gbits, result->Bbits);
+                    }
                 }
             }
 
