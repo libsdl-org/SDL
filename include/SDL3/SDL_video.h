@@ -1709,7 +1709,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_ShowWindow(SDL_Window *window);
 extern SDL_DECLSPEC int SDLCALL SDL_HideWindow(SDL_Window *window);
 
 /**
- * Raise a window above other windows and set the input focus.
+ * Request that a window be raised above other windows and gain the input focus.
+ *
+ * The result of this request is subject to desktop window manager policy,
+ * particularly if raising the requested window would result in stealing focus
+ * from another application. If the window is successfully raised and gains input
+ * focus, an SDL_EVENT_WINDOW_FOCUS_GAINED event will be emitted, and the window
+ * will have the SDL_WINDOW_INPUT_FOCUS flag set.
  *
  * \param window the window to raise.
  * \returns 0 on success or a negative error code on failure; call
