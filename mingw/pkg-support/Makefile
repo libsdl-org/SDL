@@ -1,26 +1,37 @@
 #
 # Makefile for installing the mingw32 version of the SDL library
 
-CROSS_PATH := /usr/local
+DESTDIR = /usr/local
 ARCHITECTURES := i686-w64-mingw32 x86_64-w64-mingw32
 
-all install:
-	@echo "Type \"make native\" to install 32-bit to /usr"
-	@echo "Type \"make cross\" to install 32-bit and 64-bit to $(CROSS_PATH)"
+default:
+	@echo "Run \"make install-i686\" to install 32-bit"
+	@echo "Run \"make install-x86_64\" to install 64-bit"
+	@echo "Run \"make install-all\" to install both"
+	@echo "Add DESTDIR=/custom/path to change the destination folder"
 
-native:
-	make install-package arch=i686-w64-mingw32 prefix=/usr
-
-cross:
-	for arch in $(ARCHITECTURES); do \
-	    make install-package arch=$$arch prefix=$(CROSS_PATH)/$$arch; \
-	done
-
-install-package:
-	@if test -d $(arch) && test -d $(prefix); then \
-	    (cd $(arch) && cp -rv bin include lib share $(prefix)/); \
-	    sed "s|^prefix=.*|prefix=$(prefix)|" <$(arch)/lib/pkgconfig/sdl3.pc >$(prefix)/lib/pkgconfig/sdl3.pc; \
+install:
+	@if test -d $(ARCH) && test -d $(DESTDIR); then \
+		(cd $(ARCH) && cp -rv bin include lib share $(DESTDIR)/); \
 	else \
-	    echo "*** ERROR: $(arch) or $(prefix) does not exist!"; \
-	    exit 1; \
+		echo "*** ERROR: $(ARCH) or $(DESTDIR) does not exist!"; \
+		exit 1; \
 	fi
+
+install-i686:
+	$(MAKE) install ARCH=i686-w64-mingw32
+
+install-x86_64:
+	$(MAKE) install ARCH=x86_64-w64-mingw32
+
+install-all:
+	@if test -d $(DESTDIR); then \
+		for arch in $(ARCHITECTURES); do \
+			$(MAKE) install ARCH=$$arch DESTDIR=$(DESTDIR)/$$arch; \
+		done \
+	else \
+		echo "*** ERROR: $(DESTDIR) does not exist!"; \
+		exit 1; \
+	fi
+
+.PHONY: default install install-i686 install-x86_64 install-all
