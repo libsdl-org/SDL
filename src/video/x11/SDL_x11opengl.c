@@ -571,6 +571,7 @@ static int X11_GL_GetAttributes(SDL_VideoDevice *_this, Display *display, int sc
     }
 
     if (_this->gl_config.floatbuffers) {
+        attribs[i++] = GLX_RENDER_TYPE;
         attribs[i++] = GLX_RGBA_FLOAT_TYPE_ARB;
     }
 

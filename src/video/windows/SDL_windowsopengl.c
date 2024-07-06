@@ -641,6 +641,7 @@ static int WIN_GL_SetupWindowInternal(SDL_VideoDevice *_this, SDL_Window *window
     }
 
     if (_this->gl_config.floatbuffers) {
+        *iAttr++ = WGL_PIXEL_TYPE_ARB;
         *iAttr++ = WGL_TYPE_RGBA_FLOAT_ARB;
     }
 
