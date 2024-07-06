@@ -39,14 +39,22 @@ extern "C" {
 #endif
 
 /**
- *  \name Transparency definitions
+ * A fully opaque 8-bit alpha value.
  *
- *  These define alpha as the opacity of a surface.
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_ALPHA_TRANSPARENT
  */
-/* @{ */
 #define SDL_ALPHA_OPAQUE 255
+
+/**
+ * A fully transparent 8-bit alpha value.
+ *
+ * \since This macro is available since SDL 3.0.0.
+ *
+ * \sa SDL_ALPHA_OPAQUE
+ */
 #define SDL_ALPHA_TRANSPARENT 0
-/* @} */
 
 /** Pixel type. */
 typedef enum SDL_PixelType
