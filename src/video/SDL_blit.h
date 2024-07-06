@@ -526,27 +526,65 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         ALPHA_BLEND_CHANNEL(sG, dG, A);                       \
         ALPHA_BLEND_CHANNEL(sB, dB, A);                       \
     } while (0)
-/* Blend two 32-bit pixels with the same format */
-#define ALPHA_BLEND_RGBA_4(src, dst, ashift)                            \
-    do {                                                                \
-        Uint32 srcA = (src >> ashift) & 0xFF;                           \
-        src |= ((Uint32)0xFF) << ashift;                                \
-                                                                        \
-        Uint32 srcRB = src & 0x00FF00FF;                                \
-        Uint32 dstRB = dst & 0x00FF00FF;                                \
-                                                                        \
-        Uint32 srcGA = (src >> 8) & 0x00FF00FF;                         \
-        Uint32 dstGA = (dst >> 8) & 0x00FF00FF;                         \
-                                                                        \
-        Uint32 resRB = ((srcRB - dstRB) * srcA) + (dstRB << 8) - dstRB; \
-        resRB += 0x00010001;                                            \
-        resRB += (resRB >> 8) & 0x00FF00FF;                             \
-        resRB = (resRB >> 8) & 0x00FF00FF;                              \
-        Uint32 resGA = ((srcGA - dstGA) * srcA) + (dstGA << 8) - dstGA; \
-        resGA += 0x00010001;                                            \
-        resGA += (resGA >> 8) & 0x00FF00FF;                             \
-        resGA &= 0xFF00FF00;                                            \
-        dst = resRB | resGA;                                            \
+
+/* Blend two 8888 pixels with the same format */
+/* Calculates dst = ((src * factor) + (dst * (255 - factor))) / 255 */
+/* FIXME: SDL_SIZE_MAX might not be an integer literal */
+#if defined(SIZE_MAX) && (SIZE_MAX == 0xffffffffffffffff)
+#define FACTOR_BLEND_8888(src, dst, factor)                        \
+    do {                                                           \
+        Uint64 src64 = src;                                        \
+        src64 = (src64 | (src64 << 24)) & 0x00FF00FF00FF00FF;      \
+                                                                   \
+        Uint64 dst64 = dst;                                        \
+        dst64 = (dst64 | (dst64 << 24)) & 0x00FF00FF00FF00FF;      \
+                                                                   \
+        dst64 = ((src64 - dst64) * factor) + (dst64 << 8) - dst64; \
+        dst64 += 0x0001000100010001;                               \
+        dst64 += (dst64 >> 8) & 0x00FF00FF00FF00FF;                \
+        dst64 &= 0xFF00FF00FF00FF00;                               \
+                                                                   \
+        dst = (Uint32)((dst64 >> 8) | (dst64 >> 32));              \
+    } while (0)
+#else
+#define FACTOR_BLEND_8888(src, dst, factor)                               \
+    do {                                                                  \
+        Uint32 src02 = src & 0x00FF00FF;                                  \
+        Uint32 dst02 = dst & 0x00FF00FF;                                  \
+                                                                          \
+        Uint32 src13 = (src >> 8) & 0x00FF00FF;                           \
+        Uint32 dst13 = (dst >> 8) & 0x00FF00FF;                           \
+                                                                          \
+        Uint32 res02 = ((src02 - dst02) * factor) + (dst02 << 8) - dst02; \
+        res02 += 0x00010001;                                              \
+        res02 += (res02 >> 8) & 0x00FF00FF;                               \
+        res02 = (res02 >> 8) & 0x00FF00FF;                                \
+                                                                          \
+        Uint32 res13 = ((src13 - dst13) * factor) + (dst13 << 8) - dst13; \
+        res13 += 0x00010001;                                              \
+        res13 += (res13 >> 8) & 0x00FF00FF;                               \
+        res13 &= 0xFF00FF00;                                              \
+        dst = res02 | res13;                                              \
+    } while (0)
+#endif
+
+/* Alpha blend two 8888 pixels with the same formats. */
+#define ALPHA_BLEND_8888(src, dst, fmt)            \
+    do {                                           \
+        Uint32 srcA = (src >> fmt->Ashift) & 0xFF; \
+        Uint32 tmp = src | fmt->Amask;             \
+        FACTOR_BLEND_8888(tmp, dst, srcA);         \
+    } while (0)
+
+/* Alpha blend two 8888 pixels with differing formats. */
+#define ALPHA_BLEND_SWIZZLE_8888(src, dst, srcfmt, dstfmt)                  \
+    do {                                                                    \
+        Uint32 srcA = (src >> srcfmt->Ashift) & 0xFF;                       \
+        Uint32 tmp = (((src >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) | \
+                     (((src >> srcfmt->Gshift) & 0xFF) << dstfmt->Gshift) | \
+                     (((src >> srcfmt->Bshift) & 0xFF) << dstfmt->Bshift) | \
+                     dstfmt->Amask;                                         \
+        FACTOR_BLEND_8888(tmp, dst, srcA);                                  \
     } while (0)
 /* Blend the RGBA values of two pixels */
 #define ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA) \
