@@ -35,9 +35,53 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     SDL_Rect full_src;
     SDL_Rect full_dst;
 
+    if (!src) {
+        return SDL_InvalidParamError("src");
+    }
+    if (!dst) {
+        return SDL_InvalidParamError("dst");
+    }
 
     if (src->format->format != dst->format->format) {
-        return SDL_SetError("Only works with same format surfaces");
+        // Slow!
+        SDL_Surface *src_tmp = SDL_ConvertSurfaceFormat(src, dst->format->format);
+        if (!src_tmp) {
+            return -1;
+        }
+        ret = SDL_SoftStretch(src_tmp, srcrect, dst, dstrect, scaleMode);
+        SDL_DestroySurface(src_tmp);
+        return ret;
+    }
+
+    if (SDL_ISPIXELFORMAT_FOURCC(src->format->format)) {
+        // Slow!
+        if (!dstrect) {
+            full_dst.x = 0;
+            full_dst.y = 0;
+            full_dst.w = dst->w;
+            full_dst.h = dst->h;
+            dstrect = &full_dst;
+        }
+
+        SDL_Surface *src_tmp = SDL_ConvertSurfaceFormat(src, SDL_PIXELFORMAT_XRGB8888);
+        SDL_Surface *dst_tmp = SDL_CreateSurface(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
+        if (src_tmp && dst_tmp) {
+            ret = SDL_SoftStretch(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
+            if (ret == 0) {
+                SDL_Colorspace dst_colorspace = SDL_COLORSPACE_UNKNOWN;
+                SDL_GetSurfaceColorspace(dst, &dst_colorspace);
+                SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
+                    dst_tmp->format->format, SDL_COLORSPACE_SRGB, 0,
+                    dst_tmp->pixels, dst_tmp->pitch,
+                    dst->format->format, dst_colorspace, SDL_GetSurfaceProperties(dst),
+                    (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * dst->format->bytes_per_pixel, dst->pitch);
+            }
+        } else {
+            ret = -1;
+        }
+        SDL_DestroySurface(src_tmp);
+        SDL_DestroySurface(dst_tmp);
+        return ret;
     }
 
     if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
