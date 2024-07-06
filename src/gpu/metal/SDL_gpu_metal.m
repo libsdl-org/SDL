@@ -2780,15 +2780,8 @@ static void METAL_PushVertexUniformData(
     const void *data,
     Uint32 dataLengthInBytes)
 {
-    MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-
-    if (slotIndex >= metalCommandBuffer->graphicsPipeline->vertexUniformBufferCount) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No vertex uniforms exist on slot %i for this pipeline", slotIndex);
-        return;
-    }
-
     METAL_INTERNAL_PushUniformData(
-        metalCommandBuffer,
+        (MetalCommandBuffer *)commandBuffer,
         SDL_GPU_SHADERSTAGE_VERTEX,
         slotIndex,
         data,
@@ -2801,15 +2794,8 @@ static void METAL_PushFragmentUniformData(
     const void *data,
     Uint32 dataLengthInBytes)
 {
-    MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-
-    if (slotIndex >= metalCommandBuffer->graphicsPipeline->fragmentUniformBufferCount) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No fragment uniforms exist on slot %i for this pipeline", slotIndex);
-        return;
-    }
-
     METAL_INTERNAL_PushUniformData(
-        metalCommandBuffer,
+        (MetalCommandBuffer *)commandBuffer,
         SDL_GPU_SHADERSTAGE_FRAGMENT,
         slotIndex,
         data,
@@ -3097,15 +3083,8 @@ static void METAL_PushComputeUniformData(
     const void *data,
     Uint32 dataLengthInBytes)
 {
-    MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-
-    if (slotIndex >= metalCommandBuffer->computePipeline->uniformBufferCount) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No compute uniforms exist on slot %i for this pipeline", slotIndex);
-        return;
-    }
-
     METAL_INTERNAL_PushUniformData(
-        metalCommandBuffer,
+        (MetalCommandBuffer *)commandBuffer,
         SDL_GPU_SHADERSTAGE_COMPUTE,
         slotIndex,
         data,
