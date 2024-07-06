@@ -796,10 +796,6 @@ SDL_GpuRenderPass *SDL_GpuBeginRenderPass(
         SDL_InvalidParamError("colorAttachmentInfos");
         return NULL;
     }
-    if (depthStencilAttachmentInfo == NULL) {
-        SDL_InvalidParamError("depthStencilAttachmentInfo");
-        return NULL;
-    }
 
     CHECK_COMMAND_BUFFER_RETURN_NULL
     CHECK_ANY_PASS_IN_PROGRESS
