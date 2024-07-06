@@ -575,6 +575,7 @@ static int X11_GL_GetAttributes(_THIS, Display *display, int screen, int *attrib
     }
 
     if (_this->gl_config.floatbuffers) {
+        attribs[i++] = GLX_RENDER_TYPE;
         attribs[i++] = GLX_RGBA_FLOAT_TYPE_ARB;
     }
 
