@@ -13,7 +13,12 @@ native:
 
 cross:
 	for arch in $(ARCHITECTURES); do \
-	    make install-package arch=$$arch prefix=$(CROSS_PATH)/$$arch; \
+		if [ "$$arch" = "i686-w64-mingw32" ]; then \
+			CROSS_PATH="/mingw32"; \
+		elif [ "$$arch" = "x86_64-w64-mingw32" ]; then \
+			CROSS_PATH="/mingw64"; \
+		fi; \
+		make install-package arch=$$arch prefix=$$CROSS_PATH/$$arch; \
 	done
 
 install-package:
