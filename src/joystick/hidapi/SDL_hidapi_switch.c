@@ -337,12 +337,28 @@ typedef struct
 
 static int ReadInput(SDL_DriverSwitch_Context *ctx)
 {
+    int result;
+
     /* Make sure we don't try to read at the same time a write is happening */
     if (SDL_AtomicGet(&ctx->device->rumble_pending) > 0) {
         return 0;
     }
 
-    return SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+    result = SDL_hid_read_timeout(ctx->device->dev, ctx->m_rgucReadBuffer, sizeof(ctx->m_rgucReadBuffer), 0);
+
+    /* See if we can guess the initial input mode */
+    if (result > 0 && !ctx->m_bInputOnly && !ctx->m_nInitialInputMode) {
+        switch (ctx->m_rgucReadBuffer[0]) {
+        case k_eSwitchInputReportIDs_FullControllerState:
+        case k_eSwitchInputReportIDs_FullControllerAndMcuState:
+        case k_eSwitchInputReportIDs_SimpleControllerState:
+            ctx->m_nInitialInputMode = ctx->m_rgucReadBuffer[0];
+            break;
+        default:
+            break;
+        }
+    }
+    return result;
 }
 
 static int WriteOutput(SDL_DriverSwitch_Context *ctx, const Uint8 *data, int size)
@@ -738,14 +754,12 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
     }
 }
 
-static Uint8 GetInitialInputMode(SDL_DriverSwitch_Context *ctx)
+static void GetInitialInputMode(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 input_mode = 0;
-
-    if (ReadInput(ctx) > 0) {
-        input_mode = ctx->m_rgucReadBuffer[0];
+    if (!ctx->m_nInitialInputMode) {
+        /* This will set the initial input mode if it can */
+        ReadInput(ctx);
     }
-    return input_mode;
 }
 
 static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
@@ -1391,7 +1405,7 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
     ctx->m_bSyncWrite = SDL_TRUE;
 
     if (!ctx->m_bInputOnly) {
-        ctx->m_nInitialInputMode = GetInitialInputMode(ctx);
+        GetInitialInputMode(ctx);
         ctx->m_nCurrentInputMode = ctx->m_nInitialInputMode;
 
         /* Initialize rumble data */
