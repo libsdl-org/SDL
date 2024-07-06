@@ -157,11 +157,15 @@ int UIKit_VideoInit(SDL_VideoDevice *_this)
     SDL_InitGCKeyboard();
     SDL_InitGCMouse();
 
+    UIKit_InitClipboard(_this);
+
     return 0;
 }
 
 void UIKit_VideoQuit(SDL_VideoDevice *_this)
 {
+    UIKit_QuitClipboard(_this);
+
     SDL_QuitGCKeyboard();
     SDL_QuitGCMouse();
 
