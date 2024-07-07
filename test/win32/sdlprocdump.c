@@ -37,6 +37,8 @@ static void printf_message(const char *format, ...) {
 static void printf_windows_message(const char *format, ...) {
     va_list ap;
     char win_msg[512];
+    size_t win_msg_len;
+
     FormatMessageA(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL,
@@ -44,7 +46,7 @@ static void printf_windows_message(const char *format, ...) {
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         win_msg, sizeof(win_msg)/sizeof(*win_msg),
         NULL);
-    size_t win_msg_len = strlen(win_msg);
+    win_msg_len = strlen(win_msg);
     while (win_msg[win_msg_len-1] == '\r' || win_msg[win_msg_len-1] == '\n' || win_msg[win_msg_len-1] == ' ') {
         win_msg[win_msg_len-1] = '\0';
         win_msg_len--;
@@ -250,6 +252,7 @@ post_dump:
 
 static void print_stacktrace(const LPPROCESS_INFORMATION process_information, PCONTEXT context, LPVOID address) {
     STACKFRAME64 stack_frame;
+    DWORD machine_type;
 
     if (!context) {
         printf_message("Cannot create a stacktrace without a context");
@@ -291,22 +294,22 @@ static void print_stacktrace(const LPPROCESS_INFORMATION process_information, PC
     stack_frame.AddrStack.Mode = AddrModeFlat;
 
 #if defined(SDLPROCDUMP_CPU_X86)
-    DWORD machine_type = IMAGE_FILE_MACHINE_I386;
+    machine_type = IMAGE_FILE_MACHINE_I386;
     stack_frame.AddrFrame.Offset = context->Ebp;
     stack_frame.AddrStack.Offset = context->Esp;
     stack_frame.AddrPC.Offset = context->Eip;
 #elif defined(SDLPROCDUMP_CPU_X64)
-    DWORD machine_type = IMAGE_FILE_MACHINE_AMD64;
+    machine_type = IMAGE_FILE_MACHINE_AMD64;
     stack_frame.AddrFrame.Offset = context->Rbp;
     stack_frame.AddrStack.Offset = context->Rsp;
     stack_frame.AddrPC.Offset = context->Rip;
 #elif defined(SDLPROCDUMP_CPU_ARM32)
-    DWORD machine_type = IMAGE_FILE_MACHINE_ARM;
+    machine_type = IMAGE_FILE_MACHINE_ARM;
     stack_frame.AddrFrame.Offset = context->Lr;
     stack_frame.AddrStack.Offset = context->Sp;
     stack_frame.AddrPC.Offset = context->Pc;
 #elif defined(SDLPROCDUMP_CPU_ARM64)
-    DWORD machine_type = IMAGE_FILE_MACHINE_ARM64;
+    machine_type = IMAGE_FILE_MACHINE_ARM64;
     stack_frame.AddrFrame.Offset = context->Fp;
     stack_frame.AddrStack.Offset = context->Sp;
     stack_frame.AddrPC.Offset = context->Pc;
