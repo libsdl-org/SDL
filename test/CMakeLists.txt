@@ -9,6 +9,16 @@ set(SDL_TEST_EXECUTABLES)
 set(SDL_TESTS_NONINTERACTIVE)
 set(SDL_TESTS_NEEDS_RESOURCES)
 
+if(WIN32 AND NOT WINDOWS_STORE)
+    option(SDLTEST_PROCDUMP "Run tests using sdlprocdump for minidump generation" OFF)
+    add_executable(sdlprocdump win32/sdlprocdump.c)
+    if(SDLTEST_PROCDUMP)
+        set(CMAKE_TEST_LAUNCHER "$<TARGET_FILE:sdlprocdump>")
+    else()
+        set_property(TARGET sdlprocdump PROPERTY EXCLUDE_FROM_ALL "1")
+    endif()
+endif()
+
 set(SDLTEST_TARGETS )
 
 macro(sdltest_link_librararies)
