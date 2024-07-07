@@ -2754,7 +2754,7 @@ extern "C" {
  *
  * This is useful as a debug tool to validate memory leaks, but shouldn't ever
  * be set in production applications, as other libraries used by the
- * application might use dbus under the hood and this cause cause crashes if
+ * application might use dbus under the hood and this can cause crashes if
  * they continue after SDL_Quit().
  *
  * The variable can be set to the following values:
