@@ -2064,6 +2064,7 @@ elseif(WINDOWS)
     endif()
   endif()
 
+  enable_language(RC)
   file(GLOB VERSION_SOURCES ${SDL2_SOURCE_DIR}/src/main/windows/*.rc)
   file(GLOB SDLMAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/windows/*.c)
   if(MINGW OR CYGWIN)

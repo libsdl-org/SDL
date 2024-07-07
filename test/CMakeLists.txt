@@ -9,8 +9,23 @@ set(SDL_TEST_EXECUTABLES)
 set(SDL_TESTS_NONINTERACTIVE)
 set(SDL_TESTS_NEEDS_RESOURCES)
 
+set(SDLTEST_TARGETS )
+
+macro(sdltest_link_librararies)
+    foreach(TARGET ${SDLTEST_TARGETS})
+        target_link_libraries(${TARGET} PRIVATE ${ARGN})
+    endforeach()
+endmacro()
+
+macro(sdltest_add_definitions)
+    foreach(TARGET ${SDLTEST_TARGETS})
+        target_compile_definitions(${TARGET} PRIVATE ${ARGN})
+    endforeach()
+endmacro()
+
 macro(add_sdl_test_executable TARGET)
     cmake_parse_arguments(AST "NONINTERACTIVE;NEEDS_RESOURCES" "" "" ${ARGN})
+    list(APPEND SDLTEST_TARGETS ${TARGET})
     if(ANDROID)
         add_library(${TARGET} SHARED ${AST_UNPARSED_ARGUMENTS})
     else()
@@ -67,57 +82,6 @@ enable_testing()
 
 if(SDL_INSTALL_TESTS)
     include(GNUInstallDirs)
-endif()
-
-if(N3DS)
-    link_libraries(SDL2::SDL2main)
-endif()
-
-if(PSP)
-    link_libraries(
-        SDL2::SDL2main
-        SDL2::SDL2test
-        SDL2::SDL2-static
-        GL
-        pspvram
-        pspvfpu
-        pspdisplay
-        pspgu
-        pspge
-        pspaudio
-        pspctrl
-        psphprm
-        psppower
-    )
-elseif(PS2)
-    link_libraries(
-        SDL2main
-        SDL2_test
-        SDL2-static
-        patches
-        gskit
-        dmakit
-        ps2_drivers
-    )
-else()
-    link_libraries(SDL2::SDL2test SDL2::SDL2-static)
-endif()
-
-if(WINDOWS)
-    # mingw32 must come before SDL2main to link successfully
-    if(MINGW OR CYGWIN)
-        link_libraries(mingw32)
-    endif()
-
-    # CET support was added in VS 16.7
-    if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
-        link_libraries(-CETCOMPAT)
-    endif()
-
-    # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
-    # but we need them for VS as well.
-    link_libraries(SDL2main)
-    add_definitions(-Dmain=SDL_main)
 endif()
 
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
@@ -196,7 +160,7 @@ elseif(WINDOWS)
     add_sdl_test_executable(testnative NEEDS_RESOURCES testnative.c testnativew32.c testutils.c)
 elseif(HAVE_X11)
     add_sdl_test_executable(testnative NEEDS_RESOURCES testnative.c testnativex11.c testutils.c)
-    target_link_libraries(testnative X11)
+    target_link_libraries(testnative PRIVATE X11)
 elseif(OS2)
     add_sdl_test_executable(testnative NEEDS_RESOURCES testnative.c testnativeos2.c testutils.c)
 endif()
@@ -234,6 +198,57 @@ add_sdl_test_executable(controllermap NEEDS_RESOURCES controllermap.c testutils.
 add_sdl_test_executable(testvulkan testvulkan.c)
 add_sdl_test_executable(testoffscreen testoffscreen.c)
 
+if(N3DS)
+    sdltest_link_librararies(SDL2::SDL2main)
+endif()
+
+if(PSP)
+    sdltest_link_librararies(
+        SDL2::SDL2main
+        SDL2::SDL2test
+        SDL2::SDL2-static
+        GL
+        pspvram
+        pspvfpu
+        pspdisplay
+        pspgu
+        pspge
+        pspaudio
+        pspctrl
+        psphprm
+        psppower
+    )
+elseif(PS2)
+    sdltest_link_librararies(
+        SDL2main
+        SDL2_test
+        SDL2-static
+        patches
+        gskit
+        dmakit
+        ps2_drivers
+    )
+else()
+    sdltest_link_librararies(SDL2::SDL2test SDL2::SDL2-static)
+endif()
+
+if(WINDOWS)
+    # mingw32 must come before SDL2main to link successfully
+    if(MINGW OR CYGWIN)
+        sdltest_link_librararies(mingw32)
+    endif()
+
+    # CET support was added in VS 16.7
+    if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
+        sdltest_link_librararies(-CETCOMPAT)
+    endif()
+
+    # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
+    # but we need them for VS as well.
+    sdltest_link_librararies(SDL2main)
+    sdltest_add_definitions(-Dmain=SDL_main)
+endif()
+
 cmake_push_check_state(RESET)
 
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
@@ -270,19 +285,19 @@ endif()
 
 if(OPENGL_FOUND)
     if(TARGET OpenGL::GL)
-        target_link_libraries(testshader OpenGL::GL)
-        target_link_libraries(testgl2 OpenGL::GL)
+        target_link_libraries(testshader PRIVATE OpenGL::GL)
+        target_link_libraries(testgl2 PRIVATE OpenGL::GL)
     else()
         if(EMSCRIPTEN AND OPENGL_gl_LIBRARY STREQUAL "nul")
             set(OPENGL_gl_LIBRARY GL)
         endif()
         # emscripten's FindOpenGL.cmake does not create OpenGL::GL
-        target_link_libraries(testshader ${OPENGL_gl_LIBRARY})
-        target_link_libraries(testgl2 ${OPENGL_gl_LIBRARY})
+        target_link_libraries(testshader PRIVATE ${OPENGL_gl_LIBRARY})
+        target_link_libraries(testgl2 PRIVATE ${OPENGL_gl_LIBRARY})
     endif()
 endif()
 if(EMSCRIPTEN)
-    target_link_libraries(testshader -sLEGACY_GL_EMULATION)
+    target_link_libraries(testshader PRIVATE -sLEGACY_GL_EMULATION)
 endif()
 
 file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
