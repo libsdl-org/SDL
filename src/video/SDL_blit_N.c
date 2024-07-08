@@ -2066,7 +2066,7 @@ static void Blit_RGB555_ARGB1555(SDL_BlitInfo *info)
     int dstskip = info->dst_skip;
     SDL_PixelFormat *dstfmt = info->dst_fmt;
 
-    Uint16 mask = ((Uint32)info->a >> (8 - dstfmt->Abits)) << dstfmt->Ashift;
+    Uint16 mask = ((Uint32)info->a >> dstfmt->Aloss) << dstfmt->Ashift;
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
@@ -2188,7 +2188,7 @@ static void Blit4to4MaskAlpha(SDL_BlitInfo *info)
 
     if (dstfmt->Amask) {
         /* RGB->RGBA, SET_ALPHA */
-        Uint32 mask = ((Uint32)info->a >> (8 - dstfmt->Abits)) << dstfmt->Ashift;
+        Uint32 mask = ((Uint32)info->a >> dstfmt->Aloss) << dstfmt->Ashift;
 
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */

@@ -38,10 +38,10 @@ LogErrorFormat(const char *name, const SDL_PixelFormat *format)
 {
   SDLTest_LogError("%s: %08d %s, %u bits/%u bytes per pixel", name, format->format, SDL_GetPixelFormatName(format->format),
                    format->bits_per_pixel, format->bytes_per_pixel);
-  SDLTest_LogError("%s: R mask %08" SDL_PRIx32 ", bits %u, shift %u", name, format->Rmask, format->Rbits, format->Rshift);
-  SDLTest_LogError("%s: G mask %08" SDL_PRIx32 ", bits %u, shift %u", name, format->Gmask, format->Gbits, format->Gshift);
-  SDLTest_LogError("%s: B mask %08" SDL_PRIx32 ", bits %u, shift %u", name, format->Bmask, format->Bbits, format->Bshift);
-  SDLTest_LogError("%s: A mask %08" SDL_PRIx32 ", bits %u, shift %u", name, format->Amask, format->Abits, format->Ashift);
+  SDLTest_LogError("%s: R mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Rmask, format->Rloss, format->Rshift);
+  SDLTest_LogError("%s: G mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Gmask, format->Gloss, format->Gshift);
+  SDLTest_LogError("%s: B mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Bmask, format->Bloss, format->Bshift);
+  SDLTest_LogError("%s: A mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Amask, format->Aloss, format->Ashift);
 }
 
 /* Compare surfaces */

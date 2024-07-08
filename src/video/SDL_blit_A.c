@@ -1360,7 +1360,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         case 4:
             if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->bytes_per_pixel == 4) {
 #ifdef SDL_MMX_INTRINSICS
-                if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && sf->Ashift % 8 == 0 && sf->Abits == 8) {
+                if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && sf->Ashift % 8 == 0 && sf->Aloss == 0) {
                     if (SDL_HasMMX()) {
                         return BlitRGBtoRGBPixelAlphaMMX;
                     }

@@ -751,10 +751,10 @@ typedef struct SDL_PixelFormat
     Uint32 Gmask;
     Uint32 Bmask;
     Uint32 Amask;
-    Uint8 Rbits;
-    Uint8 Gbits;
-    Uint8 Bbits;
-    Uint8 Abits;
+    Uint8 Rloss;
+    Uint8 Gloss;
+    Uint8 Bloss;
+    Uint8 Aloss;
     Uint8 Rshift;
     Uint8 Gshift;
     Uint8 Bshift;

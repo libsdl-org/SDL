@@ -373,12 +373,12 @@
  * Set a pixel value using the given format, except that the alpha value is
  * placed in the top byte. This is the format used for RLE with alpha.
  */
-#define RLEPIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a)          \
-    {                                                       \
-        Pixel = ((r >> (8 - fmt->Rbits)) << fmt->Rshift) |  \
-                ((g >> (8 - fmt->Gbits)) << fmt->Gshift) |  \
-                ((b >> (8 - fmt->Bbits)) << fmt->Bshift) |  \
-                (a << 24);                                  \
+#define RLEPIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a)   \
+    {                                                \
+        Pixel = ((r >> fmt->Rloss) << fmt->Rshift) | \
+                ((g >> fmt->Gloss) << fmt->Gshift) | \
+                ((b >> fmt->Bloss) << fmt->Bshift) | \
+                (a << 24);                           \
     }
 
 /*
@@ -614,10 +614,10 @@ typedef struct
     Uint32 Gmask;
     Uint32 Bmask;
     Uint32 Amask;
-    Uint8 Rbits;
-    Uint8 Gbits;
-    Uint8 Bbits;
-    Uint8 Abits;
+    Uint8 Rloss;
+    Uint8 Gloss;
+    Uint8 Bloss;
+    Uint8 Aloss;
     Uint8 Rshift;
     Uint8 Gshift;
     Uint8 Bshift;
@@ -1091,10 +1091,10 @@ static int RLEAlphaSurface(SDL_Surface *surface)
         r->Gmask = df->Gmask;
         r->Bmask = df->Bmask;
         r->Amask = df->Amask;
-        r->Rbits = df->Rbits;
-        r->Gbits = df->Gbits;
-        r->Bbits = df->Bbits;
-        r->Abits = df->Abits;
+        r->Rloss = df->Rloss;
+        r->Gloss = df->Gloss;
+        r->Bloss = df->Bloss;
+        r->Aloss = df->Aloss;
         r->Rshift = df->Rshift;
         r->Gshift = df->Gshift;
         r->Bshift = df->Bshift;
