@@ -1613,7 +1613,8 @@ SDL_Renderer *D3D_CreateRenderer(SDL_Window *window, Uint32 flags)
     if (!SDL_GetWindowWMInfo(window, &windowinfo) ||
         windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
         SDL_free(data);
-        return SDL_SetError("Couldn't get window handle");
+        SDL_SetError("Couldn't get window handle");
+        return NULL;
     }
 
     window_flags = SDL_GetWindowFlags(window);
