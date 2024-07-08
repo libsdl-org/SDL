@@ -25,6 +25,10 @@
 #pragma message("Unsupported architecture: don't know how to StackWalk")
 #endif
 
+#ifndef EXCEPTION_SOFTWARE_ORIGINATE
+#define EXCEPTION_SOFTWARE_ORIGINATE 0x80
+#endif
+
 static void printf_message(const char *format, ...) {
     va_list ap;
     fprintf(stderr, "[" APPNAME "] ");
@@ -142,6 +146,16 @@ static void unload_dbghelp(void) {
     X(EXCEPTION_INVALID_HANDLE) \
     X(STATUS_HEAP_CORRUPTION)
 
+#define FOREACH_EXCEPTION_FLAGS(X) \
+    X(EXCEPTION_NONCONTINUABLE) \
+    X(EXCEPTION_UNWINDING) \
+    X(EXCEPTION_EXIT_UNWIND) \
+    X(EXCEPTION_STACK_INVALID) \
+    X(EXCEPTION_NESTED_CALL) \
+    X(EXCEPTION_TARGET_UNWIND) \
+    X(EXCEPTION_COLLIDED_UNWIND) \
+    X(EXCEPTION_SOFTWARE_ORIGINATE)
+
 static const char *exceptionCode_to_string(DWORD dwCode) {
 #define SWITCH_CODE_STR(V) case V: return #V;
     switch (dwCode) {
@@ -152,6 +166,21 @@ static const char *exceptionCode_to_string(DWORD dwCode) {
     }
     }
 #undef SWITCH_CODE_STR
+}
+
+static const char *exceptionFlags_to_string(DWORD dwFlags, char *buffer, size_t buffer_length) {
+    buffer[0] = '\0';
+
+#define APPEND_OR_STR(CODE)                       \
+    if (dwFlags & (CODE)) {                       \
+        if (buffer[0]) {                          \
+            strcat_s(buffer, buffer_length, "|"); \
+        }                                         \
+        strcat_s(buffer, buffer_length, #CODE);   \
+    }
+
+    FOREACH_EXCEPTION_FLAGS(APPEND_OR_STR)
+    return buffer;
 }
 
 static BOOL IsCXXException(DWORD dwCode) {
@@ -509,21 +538,29 @@ int main(int argc, char *argv[]) {
             }
             switch (event.dwDebugEventCode) {
             case EXCEPTION_DEBUG_EVENT:
-                printf_message("EXCEPTION_DEBUG_EVENT");
-                printf_message("       ExceptionCode: 0x%08lx (%s)",
-                               event.u.Exception.ExceptionRecord.ExceptionCode,
-                               exceptionCode_to_string(event.u.Exception.ExceptionRecord.ExceptionCode));
-                printf_message("      ExceptionFlags: 0x%08lx",
-                               event.u.Exception.ExceptionRecord.ExceptionFlags);
-                printf_message("         FirstChance: %ld", event.u.Exception.dwFirstChance);
-                printf_message("    ExceptionAddress: 0x%08lx",
-                               event.u.Exception.ExceptionRecord.ExceptionAddress);
-                if (IsCXXException(event.u.Exception.ExceptionRecord.ExceptionCode)) {
+            {
+                const BOOL cxx_exception = IsCXXException(event.u.Exception.ExceptionRecord.ExceptionCode);
+                const BOOL is_fatal = !cxx_exception && (IsFatalExceptionCode(event.u.Exception.ExceptionRecord.ExceptionCode) || (event.u.Exception.ExceptionRecord.ExceptionFlags & EXCEPTION_NONCONTINUABLE));
+                if (cxx_exception || is_fatal) {
+                    char flag_buffer[256];
+                    printf_message("EXCEPTION_DEBUG_EVENT");
+                    printf_message("       ExceptionCode: 0x%08lx (%s)",
+                                   event.u.Exception.ExceptionRecord.ExceptionCode,
+                                   exceptionCode_to_string(event.u.Exception.ExceptionRecord.ExceptionCode));
+                    printf_message("      ExceptionFlags: 0x%08lx (%s)",
+                                   event.u.Exception.ExceptionRecord.ExceptionFlags,
+                                    exceptionFlags_to_string(event.u.Exception.ExceptionRecord.ExceptionFlags, flag_buffer, sizeof(flag_buffer)));
+
+                    printf_message("         FirstChance: %ld", event.u.Exception.dwFirstChance);
+                    printf_message("    ExceptionAddress: 0x%08lx",
+                                   event.u.Exception.ExceptionRecord.ExceptionAddress);
+                }
+                if (cxx_exception) {
                     char exception_name[256];
                     GetMSCExceptionName(process_information.hProcess, event.u.Exception.ExceptionRecord.ExceptionInformation, event.u.Exception.ExceptionRecord.NumberParameters,
                                         exception_name, sizeof(exception_name));
                     printf_message("      Exception name: %s", exception_name);
-                } else if (IsFatalExceptionCode(event.u.Exception.ExceptionRecord.ExceptionCode) || (event.u.Exception.ExceptionRecord.ExceptionFlags & EXCEPTION_NONCONTINUABLE)) {
+                } else if (is_fatal) {
                     CONTEXT context_buffer;
                     PCONTEXT context;
 
@@ -537,10 +574,10 @@ int main(int argc, char *argv[]) {
                     printf_message("No support for printing stacktrack for current architecture");
 #endif
                     DebugActiveProcessStop(event.dwProcessId);
-                    process_alive = 0;
                 }
-                continue_status = DBG_EXCEPTION_HANDLED;
+                continue_status = DBG_EXCEPTION_NOT_HANDLED;
                 break;
+            }
             case CREATE_PROCESS_DEBUG_EVENT:
                 load_dbghelp();
                 if (!dyn_dbghelp.pSymInitialize) {
