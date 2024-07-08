@@ -1595,6 +1595,7 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
 {
     D3D_RenderData *data;
     HRESULT result;
+    HWND hwnd;
     D3DPRESENT_PARAMETERS pparams;
     IDirect3DSwapChain9 *chain;
     D3DCAPS9 caps;
@@ -1602,6 +1603,11 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
     int w, h;
     SDL_DisplayID displayID;
     const SDL_DisplayMode *fullscreen_mode = NULL;
+
+    hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    if (!hwnd) {
+        return SDL_SetError("Couldn't get window handle");
+    }
 
     SDL_SetupRendererColorspace(renderer, create_props);
 
@@ -1654,7 +1660,7 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
     }
 
     SDL_zero(pparams);
-    pparams.hDeviceWindow = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    pparams.hDeviceWindow = hwnd;
     pparams.BackBufferWidth = w;
     pparams.BackBufferHeight = h;
     pparams.BackBufferCount = 1;

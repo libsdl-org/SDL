@@ -1311,6 +1311,11 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                           DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;                  /* To support presenting with allow tearing on */
 
     HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    if (!hwnd) {
+        SDL_SetError("Couldn't get window handle");
+        result = E_FAIL;
+        goto done;
+    }
 
     result = D3D_CALL(data->dxgiFactory, CreateSwapChainForHwnd,
                       (IUnknown *)data->commandQueue,

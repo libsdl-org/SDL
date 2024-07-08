@@ -58,10 +58,6 @@ static void InitCreateRenderer(void *arg)
         return;
     }
 
-    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0) {
-        renderer_name = SDL_SOFTWARE_RENDERER;
-    }
-
     renderer = SDL_CreateRenderer(window, renderer_name);
     SDLTest_AssertPass("SDL_CreateRenderer()");
     SDLTest_AssertCheck(renderer != NULL, "Check SDL_CreateRenderer result: %s", renderer != NULL ? "success" : SDL_GetError());
