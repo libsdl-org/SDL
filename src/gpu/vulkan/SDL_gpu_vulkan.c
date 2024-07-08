@@ -9004,6 +9004,11 @@ static void VULKAN_Blit(
     VulkanTextureContainer *sourceTextureContainer = (VulkanTextureContainer *)source->textureSlice.texture;
     VkImageBlit region;
 
+    if ((sourceTextureContainer->activeTextureHandle->vulkanTexture->usageFlags & SDL_GPU_TEXTUREUSAGE_SAMPLER_BIT) == 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Blit source texture must be created with SAMPLER bit!");
+        return;
+    }
+
     VulkanTextureSlice *srcTextureSlice = VULKAN_INTERNAL_FetchTextureSlice(
         sourceTextureContainer->activeTextureHandle->vulkanTexture,
         source->textureSlice.layer,
