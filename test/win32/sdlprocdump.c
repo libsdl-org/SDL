@@ -145,6 +145,7 @@ static void unload_dbghelp(void) {
 static const char *exceptionCode_to_string(DWORD dwCode) {
 #define SWITCH_CODE_STR(V) case V: return #V;
     switch (dwCode) {
+    case 0xe06d7363: return "MS Visual C++ Exception";
         FOREACH_EXCEPTION_CODES(SWITCH_CODE_STR)
     default: {
         return "unknown";
@@ -153,7 +154,12 @@ static const char *exceptionCode_to_string(DWORD dwCode) {
 #undef SWITCH_CODE_STR
 }
 
-static int IsFatalExceptionCode(DWORD dwCode) {
+static BOOL IsCXXException(DWORD dwCode) {
+    /* https://devblogs.microsoft.com/oldnewthing/20100730-00/?p=13273 */
+    return dwCode == 0xe06d7363; /* FOURCC(0xe0, 'm', 's', 'c') */
+}
+
+static BOOL IsFatalExceptionCode(DWORD dwCode) {
     switch (dwCode) {
     case EXCEPTION_ACCESS_VIOLATION:
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
@@ -165,9 +171,9 @@ static int IsFatalExceptionCode(DWORD dwCode) {
     case STATUS_STACK_BUFFER_OVERRUN:
     case EXCEPTION_GUARD_PAGE:
     case EXCEPTION_INVALID_HANDLE:
-        return 1;
+        return TRUE;
     default:
-        return 0;
+        return FALSE;
     }
 }
 
@@ -392,6 +398,46 @@ static PCONTEXT FillInThreadContext(LPPROCESS_INFORMATION process_information, P
     return context_buffer;
 }
 
+static void GetMSCExceptionName(HANDLE hProcess, ULONG_PTR *parameters, DWORD count_parameters, char *buffer, size_t buffer_size) {
+
+#define FIXUP_DWORD_POINTER(ADDR) ((sizeof(void *) == 8) ? (parameters[3] + (ADDR)) : (ADDR))
+#define CHECKED_ReadProcessMemory(PROCESS, ADDRESS, BUFFER, COUNT, WHAT) \
+    do {                                                                                                \
+        SIZE_T actual_count;                                                                            \
+        BOOL res = ReadProcessMemory((PROCESS), (ADDRESS), (BUFFER), (COUNT), &actual_count);           \
+        if (!res) {                                                                                     \
+            printf_windows_message(WHAT ": ReadProcessMemory failed");                                  \
+            strncpy_s(buffer, buffer_size, "<error>", buffer_size);                                     \
+            return;                                                                                     \
+        }                                                                                               \
+        if ((COUNT) != (actual_count)) {                                                                \
+            printf_message(WHAT ": ReadProcessMemory did not read enough data actual=%lu expected=%lu", \
+                           (unsigned long) (actual_count), (unsigned long) (COUNT));                    \
+            strncpy_s(buffer, buffer_size, "<error>", buffer_size);                                     \
+            return;                                                                                     \
+        }                                                                                               \
+    } while (0)
+
+    DWORD depth0;
+    char *ptr_depth0;
+    DWORD depth1;
+    char *ptr_depth1;
+    DWORD depth2;
+    char *ptr_depth2;
+
+    CHECKED_ReadProcessMemory(hProcess, (void *)(parameters[2] + 3 * sizeof(DWORD)), &depth0, sizeof(depth0), "depth 0");
+    ptr_depth0 = (char *)FIXUP_DWORD_POINTER(depth0);
+    CHECKED_ReadProcessMemory(hProcess, ptr_depth0 + 1 * sizeof(DWORD), &depth1, sizeof(depth1), "depth 1");
+    ptr_depth1 = (char *)FIXUP_DWORD_POINTER(depth1);
+    CHECKED_ReadProcessMemory(hProcess, ptr_depth1 + 1 * sizeof(DWORD), &depth2, sizeof(depth2), "depth 2");
+    ptr_depth2 = (char *)FIXUP_DWORD_POINTER(depth2);
+    CHECKED_ReadProcessMemory(hProcess, ptr_depth2 + 2 * sizeof(void*), buffer, buffer_size, "data");
+    buffer[buffer_size - 1] = '\0';
+
+#undef FIXUP_DWORD_POINTER
+#undef CHECKED_ReadProcessMemory
+}
+
 int main(int argc, char *argv[]) {
     int i;
     size_t command_line_len = 0;
@@ -409,7 +455,7 @@ int main(int argc, char *argv[]) {
     }
 
     for (i = 1; i < argc; i++) {
-        command_line_len += strlen(argv[1]) + 1;
+        command_line_len += strlen(argv[i]) + 1;
     }
     command_line = malloc(command_line_len + 1);
     if (!command_line) {
@@ -463,20 +509,25 @@ int main(int argc, char *argv[]) {
             }
             switch (event.dwDebugEventCode) {
             case EXCEPTION_DEBUG_EVENT:
-                if (IsFatalExceptionCode(event.u.Exception.ExceptionRecord.ExceptionCode) || (event.u.Exception.ExceptionRecord.ExceptionFlags & EXCEPTION_NONCONTINUABLE)) {
+                printf_message("EXCEPTION_DEBUG_EVENT");
+                printf_message("       ExceptionCode: 0x%08lx (%s)",
+                               event.u.Exception.ExceptionRecord.ExceptionCode,
+                               exceptionCode_to_string(event.u.Exception.ExceptionRecord.ExceptionCode));
+                printf_message("      ExceptionFlags: 0x%08lx",
+                               event.u.Exception.ExceptionRecord.ExceptionFlags);
+                printf_message("         FirstChance: %ld", event.u.Exception.dwFirstChance);
+                printf_message("    ExceptionAddress: 0x%08lx",
+                               event.u.Exception.ExceptionRecord.ExceptionAddress);
+                if (IsCXXException(event.u.Exception.ExceptionRecord.ExceptionCode)) {
+                    char exception_name[256];
+                    GetMSCExceptionName(process_information.hProcess, event.u.Exception.ExceptionRecord.ExceptionInformation, event.u.Exception.ExceptionRecord.NumberParameters,
+                                        exception_name, sizeof(exception_name));
+                    printf_message("      Exception name: %s", exception_name);
+                } else if (IsFatalExceptionCode(event.u.Exception.ExceptionRecord.ExceptionCode) || (event.u.Exception.ExceptionRecord.ExceptionFlags & EXCEPTION_NONCONTINUABLE)) {
                     CONTEXT context_buffer;
                     PCONTEXT context;
 
-                    printf_message("EXCEPTION_DEBUG_EVENT");
-                    printf_message("       ExceptionCode: 0x%08lx (%s)",
-                        event.u.Exception.ExceptionRecord.ExceptionCode,
-                        exceptionCode_to_string(event.u.Exception.ExceptionRecord.ExceptionCode));
-                    printf_message("      ExceptionFlags: 0x%08lx",
-                        event.u.Exception.ExceptionRecord.ExceptionFlags);
-                    printf_message("    ExceptionAddress: 0x%08lx",
-                        event.u.Exception.ExceptionRecord.ExceptionAddress);
                     printf_message("    (Non-continuable exception debug event)");
-
                     context = FillInThreadContext(&process_information, &context_buffer);
                     write_minidump(argv[1], &process_information, event.dwThreadId, &event.u.Exception.ExceptionRecord, context);
                     printf_message("");
