@@ -364,18 +364,10 @@ static void BlitRGBtoRGBSurfaceAlpha(SDL_BlitInfo *info)
             DUFFS_LOOP4({
                 s = *srcp;
                 d = *dstp;
-                Uint8 sR = (s >> 16) & 0xFF;
-                Uint8 sG = (s >> 8) & 0xFF;
-                Uint8 sB = s & 0xFF;
-                Uint8 dR = (d >> 16) & 0xFF;
-                Uint8 dG = (d >> 8) & 0xFF;
-                Uint8 dB = d & 0xFF;
 
-                ALPHA_BLEND_CHANNEL(sR, dR, alpha);
-                ALPHA_BLEND_CHANNEL(sG, dG, alpha);
-                ALPHA_BLEND_CHANNEL(sB, dB, alpha);
+                FACTOR_BLEND_8888(s, d, alpha);
 
-                *dstp = (dR << 16) | (dG << 8) | dB | 0xFF000000;
+                *dstp = d | 0xff000000;
                 ++srcp;
                 ++dstp;
             }, width);
