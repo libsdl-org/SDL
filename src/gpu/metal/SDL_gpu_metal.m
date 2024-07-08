@@ -2062,8 +2062,9 @@ static SDL_GpuCommandBuffer *METAL_AcquireCommandBuffer(
 }
 
 static MetalUniformBuffer *METAL_INTERNAL_AcquireUniformBufferFromPool(
-    MetalRenderer *renderer)
+    MetalCommandBuffer *commandBuffer)
 {
+    MetalRenderer *renderer = commandBuffer->renderer;
     MetalUniformBuffer *uniformBuffer;
 
     SDL_LockMutex(renderer->acquireUniformBufferLock);
@@ -2078,6 +2079,8 @@ static MetalUniformBuffer *METAL_INTERNAL_AcquireUniformBufferFromPool(
     }
 
     SDL_UnlockMutex(renderer->acquireUniformBufferLock);
+
+    METAL_INTERNAL_TrackUniformBuffer(commandBuffer, uniformBuffer);
 
     return uniformBuffer;
 }
@@ -2268,14 +2271,14 @@ static void METAL_BindGraphicsPipeline(
     for (Uint32 i = 0; i < metalGraphicsPipeline->vertexUniformBufferCount; i += 1) {
         if (metalCommandBuffer->vertexUniformBuffers[i] == NULL) {
             metalCommandBuffer->vertexUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
-                metalCommandBuffer->renderer);
+                metalCommandBuffer);
         }
     }
 
     for (Uint32 i = 0; i < metalGraphicsPipeline->fragmentUniformBufferCount; i += 1) {
         if (metalCommandBuffer->fragmentUniformBuffers[i] == NULL) {
             metalCommandBuffer->fragmentUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
-                metalCommandBuffer->renderer);
+                metalCommandBuffer);
         }
     }
 
@@ -2541,10 +2544,6 @@ static void METAL_INTERNAL_BindGraphicsResources(
                 setVertexBuffer:commandBuffer->vertexUniformBuffers[i]->handle
                          offset:commandBuffer->vertexUniformBuffers[i]->drawOffset
                         atIndex:i];
-
-            METAL_INTERNAL_TrackUniformBuffer(
-                commandBuffer,
-                commandBuffer->vertexUniformBuffers[i]);
         }
 
         commandBuffer->needVertexUniformBind = SDL_FALSE;
@@ -2586,10 +2585,6 @@ static void METAL_INTERNAL_BindGraphicsResources(
                 setFragmentBuffer:commandBuffer->fragmentUniformBuffers[i]->handle
                            offset:commandBuffer->fragmentUniformBuffers[i]->drawOffset
                           atIndex:i];
-
-            METAL_INTERNAL_TrackUniformBuffer(
-                commandBuffer,
-                commandBuffer->fragmentUniformBuffers[i]);
         }
 
         commandBuffer->needFragmentUniformBind = SDL_FALSE;
@@ -2646,10 +2641,6 @@ static void METAL_INTERNAL_BindComputeResources(
                 setBuffer:commandBuffer->computeUniformBuffers[i]->handle
                    offset:commandBuffer->computeUniformBuffers[i]->drawOffset
                   atIndex:i];
-
-            METAL_INTERNAL_TrackUniformBuffer(
-                commandBuffer,
-                commandBuffer->computeUniformBuffers[i]);
         }
 
         commandBuffer->needComputeUniformBind = SDL_FALSE;
@@ -2769,19 +2760,19 @@ static void METAL_INTERNAL_PushUniformData(
     if (shaderStage == SDL_GPU_SHADERSTAGE_VERTEX) {
         if (metalCommandBuffer->vertexUniformBuffers[slotIndex] == NULL) {
             metalCommandBuffer->vertexUniformBuffers[slotIndex] = METAL_INTERNAL_AcquireUniformBufferFromPool(
-                metalCommandBuffer->renderer);
+                metalCommandBuffer);
         }
         metalUniformBuffer = metalCommandBuffer->vertexUniformBuffers[slotIndex];
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_FRAGMENT) {
         if (metalCommandBuffer->fragmentUniformBuffers[slotIndex] == NULL) {
             metalCommandBuffer->fragmentUniformBuffers[slotIndex] = METAL_INTERNAL_AcquireUniformBufferFromPool(
-                metalCommandBuffer->renderer);
+                metalCommandBuffer);
         }
         metalUniformBuffer = metalCommandBuffer->fragmentUniformBuffers[slotIndex];
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_COMPUTE) {
         if (metalCommandBuffer->computeUniformBuffers[slotIndex] == NULL) {
             metalCommandBuffer->computeUniformBuffers[slotIndex] = METAL_INTERNAL_AcquireUniformBufferFromPool(
-                metalCommandBuffer->renderer);
+                metalCommandBuffer);
         }
         metalUniformBuffer = metalCommandBuffer->computeUniformBuffers[slotIndex];
     } else {
@@ -2794,12 +2785,8 @@ static void METAL_INTERNAL_PushUniformData(
         256);
 
     if (metalUniformBuffer->writeOffset + alignedDataLength >= UNIFORM_BUFFER_SIZE) {
-        METAL_INTERNAL_TrackUniformBuffer(
-            metalCommandBuffer,
-            metalUniformBuffer);
-
         metalUniformBuffer = METAL_INTERNAL_AcquireUniformBufferFromPool(
-            metalCommandBuffer->renderer);
+            metalCommandBuffer);
 
         metalUniformBuffer->writeOffset = 0;
         metalUniformBuffer->drawOffset = 0;
@@ -3087,7 +3074,7 @@ static void METAL_BindComputePipeline(
     for (Uint32 i = 0; i < pipeline->uniformBufferCount; i += 1) {
         if (metalCommandBuffer->computeUniformBuffers[i] == NULL) {
             metalCommandBuffer->computeUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
-                metalCommandBuffer->renderer);
+                metalCommandBuffer);
         }
     }
 

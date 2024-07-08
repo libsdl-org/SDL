@@ -3352,8 +3352,10 @@ static SDL_GpuCommandBuffer *D3D11_AcquireCommandBuffer(
     return (SDL_GpuCommandBuffer *)commandBuffer;
 }
 
-static D3D11UniformBuffer *D3D11_INTERNAL_AcquireUniformBufferFromPool(D3D11Renderer *renderer)
+static D3D11UniformBuffer *D3D11_INTERNAL_AcquireUniformBufferFromPool(
+    D3D11CommandBuffer *commandBuffer)
 {
+    D3D11Renderer *renderer = commandBuffer->renderer;
     D3D11UniformBuffer *uniformBuffer;
 
     SDL_LockMutex(renderer->acquireUniformBufferLock);
@@ -3368,6 +3370,8 @@ static D3D11UniformBuffer *D3D11_INTERNAL_AcquireUniformBufferFromPool(D3D11Rend
     }
 
     SDL_UnlockMutex(renderer->acquireUniformBufferLock);
+
+    D3D11_INTERNAL_TrackUniformBuffer(commandBuffer, uniformBuffer);
 
     return uniformBuffer;
 }
@@ -3406,19 +3410,19 @@ static void D3D11_INTERNAL_PushUniformData(
     if (shaderStage == SDL_GPU_SHADERSTAGE_VERTEX) {
         if (d3d11CommandBuffer->vertexUniformBuffers[slotIndex] == NULL) {
             d3d11CommandBuffer->vertexUniformBuffers[slotIndex] = D3D11_INTERNAL_AcquireUniformBufferFromPool(
-                d3d11CommandBuffer->renderer);
+                d3d11CommandBuffer);
         }
         d3d11UniformBuffer = d3d11CommandBuffer->vertexUniformBuffers[slotIndex];
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_FRAGMENT) {
         if (d3d11CommandBuffer->fragmentUniformBuffers[slotIndex] == NULL) {
             d3d11CommandBuffer->fragmentUniformBuffers[slotIndex] = D3D11_INTERNAL_AcquireUniformBufferFromPool(
-                d3d11CommandBuffer->renderer);
+                d3d11CommandBuffer);
         }
         d3d11UniformBuffer = d3d11CommandBuffer->fragmentUniformBuffers[slotIndex];
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_COMPUTE) {
         if (d3d11CommandBuffer->computeUniformBuffers[slotIndex] == NULL) {
             d3d11CommandBuffer->computeUniformBuffers[slotIndex] = D3D11_INTERNAL_AcquireUniformBufferFromPool(
-                d3d11CommandBuffer->renderer);
+                d3d11CommandBuffer);
         }
         d3d11UniformBuffer = d3d11CommandBuffer->computeUniformBuffers[slotIndex];
     } else {
@@ -3439,11 +3443,7 @@ static void D3D11_INTERNAL_PushUniformData(
             0);
         d3d11UniformBuffer->mappedData = NULL;
 
-        D3D11_INTERNAL_TrackUniformBuffer(
-            d3d11CommandBuffer,
-            d3d11UniformBuffer);
-
-        d3d11UniformBuffer = D3D11_INTERNAL_AcquireUniformBufferFromPool(d3d11CommandBuffer->renderer);
+        d3d11UniformBuffer = D3D11_INTERNAL_AcquireUniformBufferFromPool(d3d11CommandBuffer);
 
         d3d11UniformBuffer->drawOffset = 0;
         d3d11UniformBuffer->writeOffset = 0;
@@ -3705,14 +3705,14 @@ static void D3D11_BindGraphicsPipeline(
     for (Uint32 i = 0; i < pipeline->vertexUniformBufferCount; i += 1) {
         if (d3d11CommandBuffer->vertexUniformBuffers[i] == NULL) {
             d3d11CommandBuffer->vertexUniformBuffers[i] = D3D11_INTERNAL_AcquireUniformBufferFromPool(
-                d3d11CommandBuffer->renderer);
+                d3d11CommandBuffer);
         }
     }
 
     for (Uint32 i = 0; i < pipeline->fragmentUniformBufferCount; i += 1) {
         if (d3d11CommandBuffer->fragmentUniformBuffers[i] == NULL) {
             d3d11CommandBuffer->fragmentUniformBuffers[i] = D3D11_INTERNAL_AcquireUniformBufferFromPool(
-                d3d11CommandBuffer->renderer);
+                d3d11CommandBuffer);
         }
     }
 
@@ -4033,10 +4033,6 @@ static void D3D11_INTERNAL_BindGraphicsResources(
                 &commandBuffer->vertexUniformBuffers[i]->buffer,
                 &offsetInConstants,
                 &blockSizeInConstants);
-
-            D3D11_INTERNAL_TrackUniformBuffer(
-                commandBuffer,
-                commandBuffer->vertexUniformBuffers[i]);
         }
 
         commandBuffer->needVertexUniformBufferBind = SDL_FALSE;
@@ -4087,10 +4083,6 @@ static void D3D11_INTERNAL_BindGraphicsResources(
                 &commandBuffer->fragmentUniformBuffers[i]->buffer,
                 &offsetInConstants,
                 &blockSizeInConstants);
-
-            D3D11_INTERNAL_TrackUniformBuffer(
-                commandBuffer,
-                commandBuffer->fragmentUniformBuffers[i]);
         }
 
         commandBuffer->needFragmentUniformBufferBind = SDL_FALSE;
@@ -4415,7 +4407,7 @@ static void D3D11_BindComputePipeline(
     for (Uint32 i = 0; i < pipeline->uniformBufferCount; i += 1) {
         if (d3d11CommandBuffer->computeUniformBuffers[i] == NULL) {
             d3d11CommandBuffer->computeUniformBuffers[i] = D3D11_INTERNAL_AcquireUniformBufferFromPool(
-                d3d11CommandBuffer->renderer);
+                d3d11CommandBuffer);
         }
     }
 
@@ -4547,10 +4539,6 @@ static void D3D11_INTERNAL_BindComputeResources(
                 &commandBuffer->computeUniformBuffers[i]->buffer,
                 &offsetInConstants,
                 &blockSizeInConstants);
-
-            D3D11_INTERNAL_TrackUniformBuffer(
-                commandBuffer,
-                commandBuffer->computeUniformBuffers[i]);
         }
         commandBuffer->needComputeUniformBufferBind = SDL_FALSE;
     }

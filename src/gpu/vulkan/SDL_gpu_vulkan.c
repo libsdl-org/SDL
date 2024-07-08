@@ -4976,10 +4976,6 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
             currentWriteDescriptorSet->pBufferInfo = &bufferInfos[bufferInfoCount];
 
             bufferInfoCount += 1;
-
-            VULKAN_INTERNAL_TrackUniformBuffer(
-                commandBuffer,
-                commandBuffer->vertexUniformBuffers[i]);
         }
 
         renderer->vkUpdateDescriptorSets(
@@ -5150,10 +5146,6 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
             currentWriteDescriptorSet->pBufferInfo = &bufferInfos[bufferInfoCount];
 
             bufferInfoCount += 1;
-
-            VULKAN_INTERNAL_TrackUniformBuffer(
-                commandBuffer,
-                commandBuffer->fragmentUniformBuffers[i]);
         }
 
         renderer->vkUpdateDescriptorSets(
@@ -7455,8 +7447,9 @@ static void VULKAN_BindFragmentStorageBuffers(
 }
 
 static VulkanUniformBuffer *VULKAN_INTERNAL_AcquireUniformBufferFromPool(
-    VulkanRenderer *renderer)
+    VulkanCommandBuffer *commandBuffer)
 {
+    VulkanRenderer *renderer = commandBuffer->renderer;
     VulkanUniformBuffer *uniformBuffer;
 
     SDL_LockMutex(renderer->acquireUniformBufferLock);
@@ -7471,6 +7464,8 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_AcquireUniformBufferFromPool(
     }
 
     SDL_UnlockMutex(renderer->acquireUniformBufferLock);
+
+    VULKAN_INTERNAL_TrackUniformBuffer(commandBuffer, uniformBuffer);
 
     return uniformBuffer;
 }
@@ -7510,19 +7505,19 @@ static void VULKAN_INTERNAL_PushUniformData(
     if (uniformBufferStage == VULKAN_UNIFORM_BUFFER_STAGE_VERTEX) {
         if (commandBuffer->vertexUniformBuffers[slotIndex] == NULL) {
             commandBuffer->vertexUniformBuffers[slotIndex] = VULKAN_INTERNAL_AcquireUniformBufferFromPool(
-                commandBuffer->renderer);
+                commandBuffer);
         }
         uniformBuffer = commandBuffer->vertexUniformBuffers[slotIndex];
     } else if (uniformBufferStage == VULKAN_UNIFORM_BUFFER_STAGE_FRAGMENT) {
         if (commandBuffer->fragmentUniformBuffers[slotIndex] == NULL) {
             commandBuffer->fragmentUniformBuffers[slotIndex] = VULKAN_INTERNAL_AcquireUniformBufferFromPool(
-                commandBuffer->renderer);
+                commandBuffer);
         }
         uniformBuffer = commandBuffer->fragmentUniformBuffers[slotIndex];
     } else if (uniformBufferStage == VULKAN_UNIFORM_BUFFER_STAGE_COMPUTE) {
         if (commandBuffer->computeUniformBuffers[slotIndex] == NULL) {
             commandBuffer->computeUniformBuffers[slotIndex] = VULKAN_INTERNAL_AcquireUniformBufferFromPool(
-                commandBuffer->renderer);
+                commandBuffer);
         }
         uniformBuffer = commandBuffer->computeUniformBuffers[slotIndex];
     } else {
@@ -7532,11 +7527,7 @@ static void VULKAN_INTERNAL_PushUniformData(
 
     /* If there is no more room, acquire a new uniform buffer */
     if (uniformBuffer->writeOffset + blockSize + MAX_UBO_SECTION_SIZE >= uniformBuffer->bufferHandle->vulkanBuffer->size) {
-        VULKAN_INTERNAL_TrackUniformBuffer(
-            commandBuffer,
-            uniformBuffer);
-
-        uniformBuffer = VULKAN_INTERNAL_AcquireUniformBufferFromPool(commandBuffer->renderer);
+        uniformBuffer = VULKAN_INTERNAL_AcquireUniformBufferFromPool(commandBuffer);
 
         uniformBuffer->drawOffset = 0;
         uniformBuffer->writeOffset = 0;
@@ -7843,14 +7834,14 @@ static void VULKAN_BindGraphicsPipeline(
     for (Uint32 i = 0; i < pipeline->resourceLayout.vertexUniformBufferCount; i += 1) {
         if (vulkanCommandBuffer->vertexUniformBuffers[i] == NULL) {
             vulkanCommandBuffer->vertexUniformBuffers[i] = VULKAN_INTERNAL_AcquireUniformBufferFromPool(
-                vulkanCommandBuffer->renderer);
+                vulkanCommandBuffer);
         }
     }
 
     for (Uint32 i = 0; i < pipeline->resourceLayout.fragmentUniformBufferCount; i += 1) {
         if (vulkanCommandBuffer->fragmentUniformBuffers[i] == NULL) {
             vulkanCommandBuffer->fragmentUniformBuffers[i] = VULKAN_INTERNAL_AcquireUniformBufferFromPool(
-                vulkanCommandBuffer->renderer);
+                vulkanCommandBuffer);
         }
     }
 
@@ -8051,7 +8042,7 @@ static void VULKAN_BindComputePipeline(
     for (Uint32 i = 0; i < vulkanComputePipeline->resourceLayout.uniformBufferCount; i += 1) {
         if (vulkanCommandBuffer->computeUniformBuffers[i] == NULL) {
             vulkanCommandBuffer->computeUniformBuffers[i] = VULKAN_INTERNAL_AcquireUniformBufferFromPool(
-                vulkanCommandBuffer->renderer);
+                vulkanCommandBuffer);
         }
     }
 
@@ -8369,10 +8360,6 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
             currentWriteDescriptorSet->pBufferInfo = &bufferInfos[bufferInfoCount];
 
             bufferInfoCount += 1;
-
-            VULKAN_INTERNAL_TrackUniformBuffer(
-                commandBuffer,
-                commandBuffer->computeUniformBuffers[i]);
         }
 
         renderer->vkUpdateDescriptorSets(
