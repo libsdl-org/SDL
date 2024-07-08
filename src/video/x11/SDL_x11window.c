@@ -967,7 +967,7 @@ int X11_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
         long *dst;
 
         /* Set the _NET_WM_ICON property */
-        SDL_assert(icon->format->format == SDL_PIXELFORMAT_ARGB8888);
+        SDL_assert(icon->format == SDL_PIXELFORMAT_ARGB8888);
         propsize = 2 + (icon->w * icon->h);
         propdata = SDL_malloc(propsize * sizeof(long));
 

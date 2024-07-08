@@ -58,8 +58,7 @@ SDL3_0.0.0 {
     SDL_ConvertPixels;
     SDL_ConvertPixelsAndColorspace;
     SDL_ConvertSurface;
-    SDL_ConvertSurfaceFormat;
-    SDL_ConvertSurfaceFormatAndColorspace;
+    SDL_ConvertSurfaceAndColorspace;
     SDL_CopyProperties;
     SDL_CreateAudioStream;
     SDL_CreateColorCursor;
@@ -330,7 +329,7 @@ SDL3_0.0.0 {
     SDL_GetKeyboards;
     SDL_GetLogOutputFunction;
     SDL_GetLogPriority;
-    SDL_GetMasksForPixelFormatEnum;
+    SDL_GetMasksForPixelFormat;
     SDL_GetMaxHapticEffects;
     SDL_GetMaxHapticEffectsPlaying;
     SDL_GetMemoryFunctions;
@@ -364,7 +363,8 @@ SDL3_0.0.0 {
     SDL_GetPens;
     SDL_GetPerformanceCounter;
     SDL_GetPerformanceFrequency;
-    SDL_GetPixelFormatEnumForMasks;
+    SDL_GetPixelFormatDetails;
+    SDL_GetPixelFormatForMasks;
     SDL_GetPixelFormatName;
     SDL_GetPlatform;
     SDL_GetPowerInfo;
@@ -436,6 +436,7 @@ SDL3_0.0.0 {
     SDL_GetSurfaceColorKey;
     SDL_GetSurfaceColorMod;
     SDL_GetSurfaceColorspace;
+    SDL_GetSurfacePalette;
     SDL_GetSurfaceProperties;
     SDL_GetSystemRAM;
     SDL_GetSystemTheme;
@@ -568,6 +569,8 @@ SDL3_0.0.0 {
     SDL_LogWarn;
     SDL_MapRGB;
     SDL_MapRGBA;
+    SDL_MapSurfaceRGB;
+    SDL_MapSurfaceRGBA;
     SDL_MaximizeWindow;
     SDL_MemoryBarrierAcquireFunction;
     SDL_MemoryBarrierReleaseFunction;
@@ -724,7 +727,6 @@ SDL3_0.0.0 {
     SDL_SetModState;
     SDL_SetNumberProperty;
     SDL_SetPaletteColors;
-    SDL_SetPixelFormatPalette;
     SDL_SetPrimarySelectionText;
     SDL_SetProperty;
     SDL_SetPropertyWithCleanup;

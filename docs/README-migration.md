@@ -1092,19 +1092,22 @@ The following symbols have been renamed:
 
 ## SDL_pixels.h
 
+SDL_PixelFormat has been renamed SDL_PixelFormatDetails and just describes the pixel format, it does not include a palette for indexed pixel types.
+
+SDL_PixelFormatEnum has been renamed SDL_PixelFormat and is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
+
+SDL_MapRGB(), SDL_MapRGBA(), SDL_GetRGB(), and SDL_GetRGBA() take an optional palette parameter for indexed color lookups.
+
+SDL_GetMasksForPixelFormat() now returns the standard int error code.
+
 SDL_CalculateGammaRamp has been removed, because SDL_SetWindowGammaRamp has been removed as well due to poor support in modern operating systems (see [SDL_video.h](#sdl_videoh)).
 
-The BitsPerPixel and BytesPerPixel fields of SDL_PixelFormat have been renamed bits_per_pixel and bytes_per_pixel.
-
-SDL_PixelFormatEnum is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
-
 The following functions have been renamed:
-* SDL_AllocFormat() => SDL_CreatePixelFormat()
+* SDL_AllocFormat() => SDL_GetPixelFormatDetails()
 * SDL_AllocPalette() => SDL_CreatePalette()
-* SDL_FreeFormat() => SDL_DestroyPixelFormat()
 * SDL_FreePalette() => SDL_DestroyPalette()
-* SDL_MasksToPixelFormatEnum() => SDL_GetPixelFormatEnumForMasks()
-* SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormatEnum()
+* SDL_MasksToPixelFormatEnum() => SDL_GetPixelFormatForMasks()
+* SDL_PixelFormatEnumToMasks() => SDL_GetMasksForPixelFormat()
 
 The following symbols have been renamed:
 * SDL_PIXELFORMAT_BGR444 => SDL_PIXELFORMAT_XBGR4444
@@ -1114,8 +1117,15 @@ The following symbols have been renamed:
 * SDL_PIXELFORMAT_RGB555 => SDL_PIXELFORMAT_XRGB1555
 * SDL_PIXELFORMAT_RGB888 => SDL_PIXELFORMAT_XRGB8888
 
+The following functions have been removed:
+* SDL_FreeFormat()
+* SDL_SetPixelFormatPalette()
+
 The following macros have been removed:
 * SDL_Colour - use SDL_Color instead
+
+The following structures have been renamed:
+* SDL_PixelFormat => SDL_PixelFormatDetails
 
 ## SDL_platform.h
 
@@ -1598,19 +1608,23 @@ The following functions have been removed:
 
 ## SDL_surface.h
 
+SDL_Surface has been simplified and internal details are no longer in the public structure.
+
+The `format` member of SDL_Surface is now an enumerated pixel format value. You can get the full details of the pixel format by calling `SDL_GetPixelFormatDetails(surface->format)`. You can get the palette associated with the surface by calling SDL_GetSurfacePalette(). You can get the clip rectangle by calling SDL_GetSurfaceClipRect().
+
 The userdata member of SDL_Surface has been replaced with a more general properties interface, which can be queried with SDL_GetSurfaceProperties()
 
-Removed unused 'flags' parameter from SDL_ConvertSurface and SDL_ConvertSurfaceFormat.
+Removed the unused 'flags' parameter from SDL_ConvertSurface.
 
 SDL_CreateRGBSurface() and SDL_CreateRGBSurfaceWithFormat() have been combined into a new function SDL_CreateSurface().
-SDL_CreateRGBSurfaceFrom() and SDL_CreateRGBSurfaceWithFormatFrom() have been combined into a new function SDL_CreateSurfaceFrom().
+SDL_CreateRGBSurfaceFrom() and SDL_CreateRGBSurfaceWithFormatFrom() have been combined into a new function SDL_CreateSurfaceFrom(), and the parameter order has changed for consistency with SDL_CreateSurface().
 
 You can implement the old functions in your own code easily:
 ```c
 SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
 {
     return SDL_CreateSurface(width, height,
-            SDL_GetPixelFormatEnumForMasks(depth, Rmask, Gmask, Bmask, Amask));
+            SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask));
 }
 
 SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth, Uint32 format)
@@ -1620,13 +1634,14 @@ SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height,
 
 SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
 {
-    return SDL_CreateSurfaceFrom(pixels, width, height, pitch,
-            SDL_GetPixelFormatEnumForMasks(depth, Rmask, Gmask, Bmask, Amask));
+    return SDL_CreateSurfaceFrom(width, height,
+                                 SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask),
+                                 pixels, pitch);
 }
 
 SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)
 {
-    return SDL_CreateSurfaceFrom(pixels, width, height, pitch, format);
+    return SDL_CreateSurfaceFrom(width, height, format, pixels, pitch);
 }
 
 ```
@@ -1645,10 +1660,15 @@ SDL_BlitSurfaceScaled() and SDL_BlitSurfaceUncheckedScaled() now take a scale pa
 
 SDL_SoftStretch() now takes a scale paramater.
 
-SDL_PixelFormatEnum is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
+SDL_PixelFormat is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
+
+SDL_SetSurfaceColorKey() takes an SDL_bool to enable and disable colorkey. RLE acceleration isn't controlled by the parameter, you should use SDL_SetSurfaceRLE() to change that separately.
+
+SDL_SetSurfaceRLE() takes an SDL_bool to enable and disable RLE acceleration.
 
 The following functions have been renamed:
 * SDL_BlitScaled() => SDL_BlitSurfaceScaled()
+* SDL_ConvertSurfaceFormat() => SDL_ConvertSurface()
 * SDL_FillRect() => SDL_FillSurfaceRect()
 * SDL_FillRects() => SDL_FillSurfaceRects()
 * SDL_FreeSurface() => SDL_DestroySurface()
@@ -1669,10 +1689,15 @@ The following symbols have been removed:
 * SDL_SWSURFACE
 
 The following functions have been removed:
+* SDL_FreeFormat()
 * SDL_GetYUVConversionMode()
 * SDL_GetYUVConversionModeForResolution()
 * SDL_SetYUVConversionMode() - use SDL_SetSurfaceColorspace() to set the surface colorspace and SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER with SDL_CreateTextureWithProperties() to set the texture colorspace. The default colorspace for YUV pixel formats is SDL_COLORSPACE_JPEG.
 * SDL_SoftStretchLinear() - use SDL_SoftStretch() with SDL_SCALEMODE_LINEAR
+
+The following symbols have been renamed:
+* SDL_PREALLOC => SDL_SURFACE_PREALLOCATED
+* SDL_SIMD_ALIGNED => SDL_SURFACE_SIMD_ALIGNED
 
 ## SDL_system.h
 
@@ -1835,7 +1860,7 @@ The callback passed to SDL_AddTimer() has changed parameters to:
 Uint32 SDLCALL TimerCallback(void *userdata, SDL_TimerID timerID, Uint32 interval);
 ````
 
-The return value of SDL_RemoveTimer() has changed to the standard int error code.
+SDL_RemoveTimer() now returns the standard int error code.
 
 ## SDL_touch.h
 

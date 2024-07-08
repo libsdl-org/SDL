@@ -27,7 +27,7 @@
 #include "SDL_yuv_sw_c.h"
 #include "../video/SDL_yuv_c.h"
 
-SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormatEnum format, int w, int h)
+SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, int w, int h)
 {
     SDL_SW_YUVTexture *swdata;
 
@@ -336,7 +336,7 @@ void SDL_SW_UnlockYUVTexture(SDL_SW_YUVTexture *swdata)
 }
 
 int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
-                        SDL_PixelFormatEnum target_format, int w, int h, void *pixels,
+                        SDL_PixelFormat target_format, int w, int h, void *pixels,
                         int pitch)
 {
     int stretch;
@@ -365,7 +365,7 @@ int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
             swdata->display->pixels = pixels;
             swdata->display->pitch = pitch;
         } else {
-            swdata->display = SDL_CreateSurfaceFrom(pixels, w, h, pitch, target_format);
+            swdata->display = SDL_CreateSurfaceFrom(w, h, target_format, pixels, pitch);
             if (!swdata->display) {
                 return -1;
             }

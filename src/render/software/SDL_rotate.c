@@ -36,10 +36,9 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 #include "../../core/windows/SDL_windows.h"
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "SDL_rotate.h"
+
+#include "../../video/SDL_blit.h"
 
 /* ---- Internally used structures */
 
@@ -491,14 +490,13 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
 {
     SDL_Surface *rz_dst;
     int is8bit, angle90;
-    int i;
     SDL_BlendMode blendmode;
     Uint32 colorkey = 0;
     int colorKeyAvailable = SDL_FALSE;
     double sangleinv, cangleinv;
 
     /* Sanity check */
-    if (!src) {
+    if (!SDL_SurfaceValid(src)) {
         return NULL;
     }
 
@@ -508,8 +506,8 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
         }
     }
     /* This function requires a 32-bit surface or 8-bit surface with a colorkey */
-    is8bit = src->format->bits_per_pixel == 8 && colorKeyAvailable;
-    if (!(is8bit || (src->format->bits_per_pixel == 32 && src->format->Amask))) {
+    is8bit = src->internal->format->bits_per_pixel == 8 && colorKeyAvailable;
+    if (!(is8bit || (src->internal->format->bits_per_pixel == 32 && SDL_ISPIXELFORMAT_ALPHA(src->format)))) {
         return NULL;
     }
 
@@ -521,18 +519,13 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     rz_dst = NULL;
     if (is8bit) {
         /* Target surface is 8 bit */
-        rz_dst = SDL_CreateSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format->format);
+        rz_dst = SDL_CreateSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format);
         if (rz_dst) {
-            if (src->format->palette) {
-                for (i = 0; i < src->format->palette->ncolors; i++) {
-                    rz_dst->format->palette->colors[i] = src->format->palette->colors[i];
-                }
-                rz_dst->format->palette->ncolors = src->format->palette->ncolors;
-            }
+            SDL_SetSurfacePalette(rz_dst, src->internal->palette);
         }
     } else {
         /* Target surface is 32 bit with source RGBA ordering */
-        rz_dst = SDL_CreateSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format->format);
+        rz_dst = SDL_CreateSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format);
     }
 
     /* Check target */
@@ -555,7 +548,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
         /* Without a colorkey, the target texture has to be white for the MOD and MUL blend mode so
          * that the pixels outside the rotated area don't affect the destination surface.
          */
-        colorkey = SDL_MapRGBA(rz_dst->format, 255, 255, 255, 0);
+        colorkey = SDL_MapSurfaceRGBA(rz_dst, 255, 255, 255, 0);
         SDL_FillSurfaceRect(rz_dst, NULL, colorkey);
         /* Setting a white colorkey for the destination surface makes the final blit discard
          * all pixels outside of the rotated area. This doesn't interfere with anything because

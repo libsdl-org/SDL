@@ -209,7 +209,7 @@ static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
     }
 }
 
-static SDL_PixelFormatEnum D3DFMTToPixelFormat(D3DFORMAT format)
+static SDL_PixelFormat D3DFMTToPixelFormat(D3DFORMAT format)
 {
     switch (format) {
     case D3DFMT_R5G6B5:

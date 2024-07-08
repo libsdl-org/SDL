@@ -427,10 +427,10 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
 
     /* Create a compatible surface, note that the colors are RGB ordered */
     {
-        SDL_PixelFormatEnum format;
+        SDL_PixelFormat format;
 
         /* Get the pixel format */
-        format = SDL_GetPixelFormatEnumForMasks(biBitCount, Rmask, Gmask, Bmask, Amask);
+        format = SDL_GetPixelFormatForMasks(biBitCount, Rmask, Gmask, Bmask, Amask);
         surface = SDL_CreateSurface(biWidth, biHeight, format);
 
         if (!surface) {
@@ -439,7 +439,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
     }
 
     /* Load the palette, if any */
-    palette = (surface->format)->palette;
+    palette = SDL_GetSurfacePalette(surface);
     if (palette) {
         if (SDL_SeekIO(src, fp_offset + 14 + biSize, SDL_IO_SEEK_SET) < 0) {
             SDL_SetError("Error seeking in datastream");
@@ -632,42 +632,42 @@ int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
     /* Make sure we have somewhere to save */
     intermediate_surface = NULL;
     if (dst) {
-        if (!surface) {
+        if (!SDL_SurfaceValid(surface)) {
             SDL_InvalidParamError("surface");
             goto done;
         }
 
 #ifdef SAVE_32BIT_BMP
         /* We can save alpha information in a 32-bit BMP */
-        if (surface->format->bits_per_pixel >= 8 &&
-            (surface->format->Amask != 0 ||
-             surface->map->info.flags & SDL_COPY_COLORKEY)) {
+        if (SDL_BITSPERPIXEL(surface->format) >= 8 &&
+            (SDL_ISPIXELFORMAT_ALPHA(surface->format) ||
+             surface->internal->map.info.flags & SDL_COPY_COLORKEY)) {
             save32bit = SDL_TRUE;
         }
 #endif /* SAVE_32BIT_BMP */
 
-        if (surface->format->palette && !save32bit) {
-            if (surface->format->bits_per_pixel == 8) {
+        if (surface->internal->palette && !save32bit) {
+            if (SDL_BITSPERPIXEL(surface->format) == 8) {
                 intermediate_surface = surface;
             } else {
                 SDL_SetError("%u bpp BMP files not supported",
-                             surface->format->bits_per_pixel);
+                             SDL_BITSPERPIXEL(surface->format));
                 goto done;
             }
-        } else if ((surface->format->bits_per_pixel == 24) && !save32bit &&
+        } else if ((SDL_BITSPERPIXEL(surface->format) == 24) && !save32bit &&
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                   (surface->format->Rmask == 0x00FF0000) &&
-                   (surface->format->Gmask == 0x0000FF00) &&
-                   (surface->format->Bmask == 0x000000FF)
+                   (surface->internal->format->Rmask == 0x00FF0000) &&
+                   (surface->internal->format->Gmask == 0x0000FF00) &&
+                   (surface->internal->format->Bmask == 0x000000FF)
 #else
-                   (surface->format->Rmask == 0x000000FF) &&
-                   (surface->format->Gmask == 0x0000FF00) &&
-                   (surface->format->Bmask == 0x00FF0000)
+                   (surface->internal->format->Rmask == 0x000000FF) &&
+                   (surface->internal->format->Gmask == 0x0000FF00) &&
+                   (surface->internal->format->Bmask == 0x00FF0000)
 #endif
         ) {
             intermediate_surface = surface;
         } else {
-            SDL_PixelFormatEnum pixel_format;
+            SDL_PixelFormat pixel_format;
 
             /* If the surface has a colorkey or alpha channel we'll save a
                32-bit BMP with alpha channel, otherwise save a 24-bit BMP. */
@@ -676,7 +676,7 @@ int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
             } else {
                 pixel_format = SDL_PIXELFORMAT_BGR24;
             }
-            intermediate_surface = SDL_ConvertSurfaceFormat(surface, pixel_format);
+            intermediate_surface = SDL_ConvertSurface(surface, pixel_format);
             if (!intermediate_surface) {
                 SDL_SetError("Couldn't convert image to %d bpp",
                              (int)SDL_BITSPERPIXEL(pixel_format));
@@ -694,7 +694,7 @@ int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
     }
 
     if (SDL_LockSurface(intermediate_surface) == 0) {
-        const size_t bw = intermediate_surface->w * intermediate_surface->format->bytes_per_pixel;
+        const size_t bw = intermediate_surface->w * intermediate_surface->internal->format->bytes_per_pixel;
 
         /* Set the BMP file header values */
         bfSize = 0; /* We'll write this when we're done */
@@ -720,13 +720,13 @@ int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
         biWidth = intermediate_surface->w;
         biHeight = intermediate_surface->h;
         biPlanes = 1;
-        biBitCount = intermediate_surface->format->bits_per_pixel;
+        biBitCount = intermediate_surface->internal->format->bits_per_pixel;
         biCompression = BI_RGB;
         biSizeImage = intermediate_surface->h * intermediate_surface->pitch;
         biXPelsPerMeter = 0;
         biYPelsPerMeter = 0;
-        if (intermediate_surface->format->palette) {
-            biClrUsed = intermediate_surface->format->palette->ncolors;
+        if (intermediate_surface->internal->palette) {
+            biClrUsed = intermediate_surface->internal->palette->ncolors;
         } else {
             biClrUsed = 0;
         }
@@ -784,12 +784,12 @@ int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
         }
 
         /* Write the palette (in BGR color order) */
-        if (intermediate_surface->format->palette) {
+        if (intermediate_surface->internal->palette) {
             SDL_Color *colors;
             int ncolors;
 
-            colors = intermediate_surface->format->palette->colors;
-            ncolors = intermediate_surface->format->palette->ncolors;
+            colors = intermediate_surface->internal->palette->colors;
+            ncolors = intermediate_surface->internal->palette->ncolors;
             for (i = 0; i < ncolors; ++i) {
                 if (!SDL_WriteU8(dst, colors[i].b) ||
                     !SDL_WriteU8(dst, colors[i].g) ||

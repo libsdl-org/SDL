@@ -32,13 +32,13 @@ typedef enum
     SlowBlitPixelAccess_Large,
 } SlowBlitPixelAccess;
 
-static SlowBlitPixelAccess GetPixelAccessMethod(SDL_PixelFormat *pf)
+static SlowBlitPixelAccess GetPixelAccessMethod(SDL_PixelFormat format)
 {
-    if (pf->bytes_per_pixel > 4) {
+    if (SDL_BYTESPERPIXEL(format) > 4) {
         return SlowBlitPixelAccess_Large;
-    } else if (SDL_ISPIXELFORMAT_10BIT(pf->format)) {
+    } else if (SDL_ISPIXELFORMAT_10BIT(format)) {
         return SlowBlitPixelAccess_10Bit;
-    } else if (pf->Amask) {
+    } else if (SDL_ISPIXELFORMAT_ALPHA(format)) {
         return SlowBlitPixelAccess_RGBA;
     } else {
         return SlowBlitPixelAccess_RGB;
@@ -62,8 +62,8 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
     Uint64 srcy, srcx;
     Uint64 posy, posx;
     Uint64 incy, incx;
-    SDL_PixelFormat *src_fmt = info->src_fmt;
-    SDL_PixelFormat *dst_fmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *src_fmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dst_fmt = info->dst_fmt;
     int srcbpp = src_fmt->bytes_per_pixel;
     int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
@@ -71,8 +71,8 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
 
-    src_access = GetPixelAccessMethod(src_fmt);
-    dst_access = GetPixelAccessMethod(dst_fmt);
+    src_access = GetPixelAccessMethod(src_fmt->format);
+    dst_access = GetPixelAccessMethod(dst_fmt->format);
 
     incy = ((Uint64)info->src_h << 16) / info->dst_h;
     incx = ((Uint64)info->src_w << 16) / info->dst_w;
@@ -370,7 +370,7 @@ static Uint16 float_to_half(float a)
     return ir;
 }
 
-static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelFormat *fmt, SDL_Colorspace colorspace, float SDR_white_point,
+static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_PixelFormatDetails *fmt, SDL_Colorspace colorspace, float SDR_white_point,
                            float *outR, float *outG, float *outB, float *outA)
 {
     Uint32 pixel;
@@ -525,7 +525,7 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelF
     *outA = fA;
 }
 
-static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, SDL_PixelFormat *fmt, SDL_Colorspace colorspace, float SDR_white_point,
+static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_PixelFormatDetails *fmt, SDL_Colorspace colorspace, float SDR_white_point,
                             float fR, float fG, float fB, float fA)
 {
     Uint32 R, G, B, A;
@@ -755,8 +755,8 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     Uint64 srcy, srcx;
     Uint64 posy, posx;
     Uint64 incy, incx;
-    SDL_PixelFormat *src_fmt = info->src_fmt;
-    SDL_PixelFormat *dst_fmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *src_fmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dst_fmt = info->dst_fmt;
     int srcbpp = src_fmt->bytes_per_pixel;
     int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
@@ -772,8 +772,10 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     float src_headroom;
     SDL_TonemapContext tonemap;
 
-    if (SDL_GetSurfaceColorspace(info->src_surface, &src_colorspace) < 0 ||
-        SDL_GetSurfaceColorspace(info->dst_surface, &dst_colorspace) < 0) {
+    src_colorspace = SDL_GetSurfaceColorspace(info->src_surface);
+    dst_colorspace = SDL_GetSurfaceColorspace(info->dst_surface);
+    if (src_colorspace == SDL_COLORSPACE_UNKNOWN ||
+        dst_colorspace == SDL_COLORSPACE_UNKNOWN) {
         return;
     }
     src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
@@ -821,8 +823,8 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
         color_primaries_matrix = SDL_GetColorPrimariesConversionMatrix(src_primaries, dst_primaries);
     }
 
-    src_access = GetPixelAccessMethod(src_fmt);
-    dst_access = GetPixelAccessMethod(dst_fmt);
+    src_access = GetPixelAccessMethod(src_fmt->format);
+    dst_access = GetPixelAccessMethod(dst_fmt->format);
 
     incy = ((Uint64)info->src_h << 16) / info->dst_h;
     incx = ((Uint64)info->src_w << 16) / info->dst_w;

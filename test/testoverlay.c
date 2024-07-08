@@ -499,7 +499,7 @@ int main(int argc, char **argv)
         }
 
         /* Convert to YUV SDL_Surface */
-        MooseYUVSurfaces[i] = SDL_ConvertSurfaceFormat(mooseRGBSurface, yuv_format);
+        MooseYUVSurfaces[i] = SDL_ConvertSurface(mooseRGBSurface, yuv_format);
         if (MooseYUVSurfaces[i] == NULL) {
             quit(7);
         }

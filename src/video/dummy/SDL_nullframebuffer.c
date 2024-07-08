@@ -29,10 +29,10 @@
 #define DUMMY_SURFACE "SDL.internal.window.surface"
 
 
-int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
+int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
-    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_XRGB8888;
+    const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XRGB8888;
     int w, h;
 
     /* Create a new framebuffer */

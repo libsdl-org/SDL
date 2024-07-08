@@ -72,7 +72,7 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
     const char *cursor_url = NULL;
     SDL_Surface *conv_surf;
 
-    conv_surf = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888);
+    conv_surf = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ABGR8888);
 
     if (!conv_surf) {
         return NULL;

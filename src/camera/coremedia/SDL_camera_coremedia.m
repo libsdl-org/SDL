@@ -41,7 +41,7 @@
  * <key>com.apple.security.device.camera</key> <true/>
  */
 
-static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormatEnum *pixel_format, SDL_Colorspace *colorspace)
+static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormat *pixel_format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
         #define CASE(x, y, z) case x: *pixel_format = y; *colorspace = z; return
@@ -260,7 +260,7 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     NSArray<AVCaptureDeviceFormat *> *formats = [avdevice formats];
     for (AVCaptureDeviceFormat *format in formats) {
         CMFormatDescriptionRef formatDescription = [format formatDescription];
-        SDL_PixelFormatEnum device_format = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_PixelFormat device_format = SDL_PIXELFORMAT_UNKNOWN;
         SDL_Colorspace device_colorspace = SDL_COLORSPACE_UNKNOWN;
         CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(formatDescription), &device_format, &device_colorspace);
         if (device_format != spec->format || device_colorspace != spec->colorspace) {
@@ -384,7 +384,7 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
         }
 
 //NSLog(@"Available camera format: %@\n", fmt);
-        SDL_PixelFormatEnum device_format = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_PixelFormat device_format = SDL_PIXELFORMAT_UNKNOWN;
         SDL_Colorspace device_colorspace = SDL_COLORSPACE_UNKNOWN;
         CoreMediaFormatToSDL(CMFormatDescriptionGetMediaSubType(fmt.formatDescription), &device_format, &device_colorspace);
         if (device_format == SDL_PIXELFORMAT_UNKNOWN) {

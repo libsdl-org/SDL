@@ -77,7 +77,7 @@ static SDL_bool verify_yuv_data(Uint32 format, SDL_Colorspace colorspace, const 
         return SDL_FALSE;
     }
 
-    if (SDL_ConvertPixelsAndColorspace(surface->w, surface->h, format, colorspace, 0, yuv, yuv_pitch, surface->format->format, SDL_COLORSPACE_SRGB, 0, rgb, surface->pitch) == 0) {
+    if (SDL_ConvertPixelsAndColorspace(surface->w, surface->h, format, colorspace, 0, yuv, yuv_pitch, surface->format, SDL_COLORSPACE_SRGB, 0, rgb, surface->pitch) == 0) {
         int x, y;
         result = SDL_TRUE;
         for (y = 0; y < surface->h; ++y) {
@@ -97,7 +97,7 @@ static SDL_bool verify_yuv_data(Uint32 format, SDL_Colorspace colorspace, const 
             }
         }
     } else {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(format), SDL_GetPixelFormatName(surface->format->format), SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(format), SDL_GetPixelFormatName(surface->format), SDL_GetError());
     }
     SDL_free(rgb);
 
@@ -151,8 +151,8 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
     /* Verify conversion to YUV formats */
     for (i = 0; i < SDL_arraysize(formats); ++i) {
         yuv1_pitch = CalculateYUVPitch(formats[i], pattern->w) + extra_pitch;
-        if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, formats[i], colorspace, 0, yuv1, yuv1_pitch) < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format->format), SDL_GetPixelFormatName(formats[i]), SDL_GetError());
+        if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, formats[i], colorspace, 0, yuv1, yuv1_pitch) < 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format), SDL_GetPixelFormatName(formats[i]), SDL_GetError());
             goto done;
         }
         if (!verify_yuv_data(formats[i], colorspace, yuv1, yuv1_pitch, pattern, tight_tolerance)) {
@@ -166,8 +166,8 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
         for (j = 0; j < SDL_arraysize(formats); ++j) {
             yuv1_pitch = CalculateYUVPitch(formats[i], pattern->w) + extra_pitch;
             yuv2_pitch = CalculateYUVPitch(formats[j], pattern->w) + extra_pitch;
-            if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, formats[i], colorspace, 0, yuv1, yuv1_pitch) < 0) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format->format), SDL_GetPixelFormatName(formats[i]), SDL_GetError());
+            if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, formats[i], colorspace, 0, yuv1, yuv1_pitch) < 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format), SDL_GetPixelFormatName(formats[i]), SDL_GetError());
                 goto done;
             }
             if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, formats[i], colorspace, 0, yuv1, yuv1_pitch, formats[j], colorspace, 0, yuv2, yuv2_pitch) < 0) {
@@ -191,8 +191,8 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
 
             yuv1_pitch = CalculateYUVPitch(formats[i], pattern->w) + extra_pitch;
             yuv2_pitch = CalculateYUVPitch(formats[j], pattern->w) + extra_pitch;
-            if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, formats[i], colorspace, 0, yuv1, yuv1_pitch) < 0) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format->format), SDL_GetPixelFormatName(formats[i]), SDL_GetError());
+            if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, formats[i], colorspace, 0, yuv1, yuv1_pitch) < 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format), SDL_GetPixelFormatName(formats[i]), SDL_GetError());
                 goto done;
             }
             if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, formats[i], colorspace, 0, yuv1, yuv1_pitch, formats[j], colorspace, 0, yuv1, yuv2_pitch) < 0) {
@@ -220,8 +220,8 @@ static int run_automated_tests(int pattern_size, int extra_pitch)
 
     /* The pitch needs to be Uint16 aligned for P010 pixels */
     yuv1_pitch = CalculateYUVPitch(SDL_PIXELFORMAT_P010, pattern->w) + ((extra_pitch + 1) & ~1);
-    if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, SDL_PIXELFORMAT_P010, colorspace, 0, yuv1, yuv1_pitch) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format->format), SDL_GetPixelFormatName(SDL_PIXELFORMAT_P010), SDL_GetError());
+    if (SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, SDL_PIXELFORMAT_P010, colorspace, 0, yuv1, yuv1_pitch) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't convert %s to %s: %s\n", SDL_GetPixelFormatName(pattern->format), SDL_GetPixelFormatName(SDL_PIXELFORMAT_P010), SDL_GetError());
         goto done;
     }
     /* Going through XRGB2101010 format during P010 conversion is slightly lossy, so use looser tolerance here */
@@ -418,7 +418,7 @@ int main(int argc, char **argv)
 
     filename = GetResourceFilename(filename, "testyuv.bmp");
     bmp = SDL_LoadBMP(filename);
-    original = SDL_ConvertSurfaceFormat(bmp, SDL_PIXELFORMAT_RGB24);
+    original = SDL_ConvertSurface(bmp, SDL_PIXELFORMAT_RGB24);
     SDL_DestroySurface(bmp);
     if (!original) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());

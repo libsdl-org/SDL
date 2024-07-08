@@ -252,7 +252,7 @@ static void DestroyCameraManager(void)
     }
 }
 
-static void format_android_to_sdl(Uint32 fmt, SDL_PixelFormatEnum *format, SDL_Colorspace *colorspace)
+static void format_android_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
         #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
@@ -274,7 +274,7 @@ static void format_android_to_sdl(Uint32 fmt, SDL_PixelFormatEnum *format, SDL_C
     *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
-static Uint32 format_sdl_to_android(SDL_PixelFormatEnum fmt)
+static Uint32 format_sdl_to_android(SDL_PixelFormat fmt)
 {
     switch (fmt) {
         #define CASE(x, y)  case y: return x
@@ -632,7 +632,7 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
         const int w = (int) i32ptr[1];
         const int h = (int) i32ptr[2];
         const int32_t type = i32ptr[3];
-        SDL_PixelFormatEnum sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_PixelFormat sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
         SDL_Colorspace colorspace = SDL_COLORSPACE_UNKNOWN;
 
         if (type == ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS_INPUT) {

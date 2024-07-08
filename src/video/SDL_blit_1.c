@@ -431,8 +431,8 @@ static void Blit1toNAlpha(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
-    const SDL_Color *srcpal = info->src_fmt->palette->colors;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    const SDL_Color *srcpal = info->src_pal->colors;
     int dstbpp;
     Uint32 pixel;
     unsigned sR, sG, sB, sA;
@@ -471,8 +471,8 @@ static void Blit1toNAlphaKey(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
-    const SDL_Color *srcpal = info->src_fmt->palette->colors;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    const SDL_Color *srcpal = info->src_pal->colors;
     Uint32 ckey = info->colorkey;
     int dstbpp;
     Uint32 pixel;
@@ -517,15 +517,14 @@ static const SDL_BlitFunc one_blitkey[] = {
 SDL_BlitFunc SDL_CalculateBlit1(SDL_Surface *surface)
 {
     int which;
-    SDL_PixelFormat *dstfmt;
 
-    dstfmt = surface->map->dst->format;
-    if (dstfmt->bits_per_pixel < 8) {
+    if (SDL_BITSPERPIXEL(surface->internal->map.dst->format) < 8) {
         which = 0;
     } else {
-        which = dstfmt->bytes_per_pixel;
+        which = SDL_BYTESPERPIXEL(surface->internal->map.dst->format);
     }
-    switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+
+    switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
     case 0:
         return one_blit[which];
 
@@ -533,7 +532,7 @@ SDL_BlitFunc SDL_CalculateBlit1(SDL_Surface *surface)
         return one_blitkey[which];
 
     case SDL_COPY_COLORKEY | SDL_COPY_BLEND:  /* this is not super-robust but handles a specific case we found sdl12-compat. */
-        return (surface->map->info.a == 255) ? one_blitkey[which] :
+        return (surface->internal->map.info.a == 255) ? one_blitkey[which] :
                 which >= 2 ? Blit1toNAlphaKey : (SDL_BlitFunc)NULL;
 
     case SDL_COPY_BLEND:

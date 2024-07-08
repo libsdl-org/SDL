@@ -44,7 +44,7 @@ static SDL_INLINE SDL_BLooper *_GetBeLooper() {
 }
 
 int HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
-                                       SDL_PixelFormatEnum * format,
+                                       SDL_PixelFormat * format,
                                        void ** pixels, int *pitch) {
     SDL_BWin *bwin = _ToBeWin(window);
     BScreen bscreen;

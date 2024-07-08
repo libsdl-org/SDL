@@ -78,7 +78,7 @@ typedef struct SDL_Camera SDL_Camera;
  */
 typedef struct SDL_CameraSpec
 {
-    SDL_PixelFormatEnum format; /**< Frame format */
+    SDL_PixelFormat format;     /**< Frame format */
     SDL_Colorspace colorspace;  /**< Frame colorspace */
     int width;                  /**< Frame width */
     int height;                 /**< Frame height */

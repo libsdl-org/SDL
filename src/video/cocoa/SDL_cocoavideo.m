@@ -256,7 +256,7 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
     int i;
     NSImage *img;
 
-    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32);
+    converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
     if (!converted) {
         return nil;
     }
@@ -270,7 +270,7 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
                                                        isPlanar:NO
                                                  colorSpaceName:NSDeviceRGBColorSpace
                                                     bytesPerRow:converted->pitch
-                                                   bitsPerPixel:converted->format->bits_per_pixel];
+                                                   bitsPerPixel:SDL_BITSPERPIXEL(converted->format)];
     if (imgrep == nil) {
         SDL_DestroySurface(converted);
         return nil;

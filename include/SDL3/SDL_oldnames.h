@@ -453,19 +453,18 @@
 #define SDL_sem SDL_Semaphore
 
 /* ##SDL_pixels.h */
-#define SDL_AllocFormat SDL_CreatePixelFormat
+#define SDL_AllocFormat SDL_GetPixelFormatDetails
 #define SDL_AllocPalette SDL_CreatePalette
 #define SDL_Colour SDL_Color
-#define SDL_FreeFormat SDL_DestroyPixelFormat
 #define SDL_FreePalette SDL_DestroyPalette
-#define SDL_MasksToPixelFormatEnum SDL_GetPixelFormatEnumForMasks
+#define SDL_MasksToPixelFormatEnum SDL_GetPixelFormatForMasks
 #define SDL_PIXELFORMAT_BGR444 SDL_PIXELFORMAT_XBGR4444
 #define SDL_PIXELFORMAT_BGR555 SDL_PIXELFORMAT_XBGR1555
 #define SDL_PIXELFORMAT_BGR888 SDL_PIXELFORMAT_XBGR8888
 #define SDL_PIXELFORMAT_RGB444 SDL_PIXELFORMAT_XRGB4444
 #define SDL_PIXELFORMAT_RGB555 SDL_PIXELFORMAT_XRGB1555
 #define SDL_PIXELFORMAT_RGB888 SDL_PIXELFORMAT_XRGB8888
-#define SDL_PixelFormatEnumToMasks SDL_GetMasksForPixelFormatEnum
+#define SDL_PixelFormatEnumToMasks SDL_GetMasksForPixelFormat
 
 /* ##SDL_rect.h */
 #define SDL_EncloseFPoints SDL_GetRectEnclosingPointsFloat
@@ -580,6 +579,7 @@
 
 /* ##SDL_surface.h */
 #define SDL_BlitScaled SDL_BlitSurfaceScaled
+#define SDL_ConvertSurfaceFormat SDL_ConvertSurface
 #define SDL_FillRect SDL_FillSurfaceRect
 #define SDL_FillRects SDL_FillSurfaceRects
 #define SDL_FreeSurface SDL_DestroySurface
@@ -590,6 +590,8 @@
 #define SDL_LoadBMP_RW SDL_LoadBMP_IO
 #define SDL_LowerBlit SDL_BlitSurfaceUnchecked
 #define SDL_LowerBlitScaled SDL_BlitSurfaceUncheckedScaled
+#define SDL_PREALLOC SDL_SURFACE_PREALLOCATED
+#define SDL_SIMD_ALIGNED SDL_SURFACE_SIMD_ALIGNED
 #define SDL_SaveBMP_RW SDL_SaveBMP_IO
 #define SDL_SetClipRect SDL_SetSurfaceClipRect
 #define SDL_SetColorKey SDL_SetSurfaceColorKey
@@ -1048,19 +1050,18 @@
 #define SDL_sem SDL_sem_renamed_SDL_Semaphore
 
 /* ##SDL_pixels.h */
-#define SDL_AllocFormat SDL_AllocFormat_renamed_SDL_CreatePixelFormat
+#define SDL_AllocFormat SDL_AllocFormat_renamed_SDL_GetPixelFormatDetails
 #define SDL_AllocPalette SDL_AllocPalette_renamed_SDL_CreatePalette
 #define SDL_Colour SDL_Colour_renamed_SDL_Color
-#define SDL_FreeFormat SDL_FreeFormat_renamed_SDL_DestroyPixelFormat
 #define SDL_FreePalette SDL_FreePalette_renamed_SDL_DestroyPalette
-#define SDL_MasksToPixelFormatEnum SDL_MasksToPixelFormatEnum_renamed_SDL_GetPixelFormatEnumForMasks
+#define SDL_MasksToPixelFormatEnum SDL_MasksToPixelFormatEnum_renamed_SDL_GetPixelFormatForMasks
 #define SDL_PIXELFORMAT_BGR444 SDL_PIXELFORMAT_BGR444_renamed_SDL_PIXELFORMAT_XBGR4444
 #define SDL_PIXELFORMAT_BGR555 SDL_PIXELFORMAT_BGR555_renamed_SDL_PIXELFORMAT_XBGR1555
 #define SDL_PIXELFORMAT_BGR888 SDL_PIXELFORMAT_BGR888_renamed_SDL_PIXELFORMAT_XBGR8888
 #define SDL_PIXELFORMAT_RGB444 SDL_PIXELFORMAT_RGB444_renamed_SDL_PIXELFORMAT_XRGB4444
 #define SDL_PIXELFORMAT_RGB555 SDL_PIXELFORMAT_RGB555_renamed_SDL_PIXELFORMAT_XRGB1555
 #define SDL_PIXELFORMAT_RGB888 SDL_PIXELFORMAT_RGB888_renamed_SDL_PIXELFORMAT_XRGB8888
-#define SDL_PixelFormatEnumToMasks SDL_PixelFormatEnumToMasks_renamed_SDL_GetMasksForPixelFormatEnum
+#define SDL_PixelFormatEnumToMasks SDL_PixelFormatEnumToMasks_renamed_SDL_GetMasksForPixelFormat
 
 /* ##SDL_rect.h */
 #define SDL_EncloseFPoints SDL_EncloseFPoints_renamed_SDL_GetRectEnclosingPointsFloat
@@ -1175,6 +1176,7 @@
 
 /* ##SDL_surface.h */
 #define SDL_BlitScaled SDL_BlitScaled_renamed_SDL_BlitSurfaceScaled
+#define SDL_ConvertSurfaceFormat SDL_ConvertSurfaceFormat_renamed_SDL_ConvertSurface
 #define SDL_FillRect SDL_FillRect_renamed_SDL_FillSurfaceRect
 #define SDL_FillRects SDL_FillRects_renamed_SDL_FillSurfaceRects
 #define SDL_FreeSurface SDL_FreeSurface_renamed_SDL_DestroySurface
@@ -1185,6 +1187,8 @@
 #define SDL_LoadBMP_RW SDL_LoadBMP_RW_renamed_SDL_LoadBMP_IO
 #define SDL_LowerBlit SDL_LowerBlit_renamed_SDL_BlitSurfaceUnchecked
 #define SDL_LowerBlitScaled SDL_LowerBlitScaled_renamed_SDL_BlitSurfaceUncheckedScaled
+#define SDL_PREALLOC SDL_PREALLOC_renamed_SDL_SURFACE_PREALLOCATED
+#define SDL_SIMD_ALIGNED SDL_SIMD_ALIGNED_renamed_SDL_SURFACE_SIMD_ALIGNED
 #define SDL_SaveBMP_RW SDL_SaveBMP_RW_renamed_SDL_SaveBMP_IO
 #define SDL_SetClipRect SDL_SetClipRect_renamed_SDL_SetSurfaceClipRect
 #define SDL_SetColorKey SDL_SetColorKey_renamed_SDL_SetSurfaceColorKey

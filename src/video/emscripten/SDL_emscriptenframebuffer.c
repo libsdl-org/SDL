@@ -27,10 +27,10 @@
 
 #include <emscripten/threading.h>
 
-int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
+int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
-    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_XBGR8888;
+    const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XBGR8888;
     int w, h;
 
     /* Free the old framebuffer surface */

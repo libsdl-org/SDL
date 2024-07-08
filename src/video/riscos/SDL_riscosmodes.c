@@ -45,7 +45,7 @@ enum
 
 static const struct
 {
-    SDL_PixelFormatEnum pixel_format;
+    SDL_PixelFormat pixel_format;
     int modeflags, ncolour, log2bpp;
 } mode_to_pixelformat[] = {
     /* { SDL_PIXELFORMAT_INDEX1LSB, 0, 1, 0 }, */
@@ -70,7 +70,7 @@ static const struct
     { SDL_PIXELFORMAT_ARGB8888, MODE_FLAG_ARGB, -1, 5 }
 };
 
-static SDL_PixelFormatEnum RISCOS_ModeToPixelFormat(int ncolour, int modeflags, int log2bpp)
+static SDL_PixelFormat RISCOS_ModeToPixelFormat(int ncolour, int modeflags, int log2bpp)
 {
     int i;
 
