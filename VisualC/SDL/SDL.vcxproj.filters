@@ -615,6 +615,9 @@
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h">
       <Filter>video</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\video\SDL_surface_c.h">
+      <Filter>video</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\video\SDL_blit.h">
       <Filter>video</Filter>
     </ClInclude>

@@ -42,7 +42,7 @@ static int GetSourceOffset(int x, int y, int source_width);
 static void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen);
 
 
-int SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
+int SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_Surface *framebuffer;
     const SDL_DisplayMode *mode;
@@ -82,10 +82,10 @@ int SDL_N3DS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
     framebuffer = gfxGetFramebuffer(drv_data->screen, GFX_LEFT, &width, &height);
     bufsize = width * height * 4;
 
-    if (surface->format->bytes_per_pixel == 2)
+    if (SDL_BYTESPERPIXEL(surface->format) == 2)
         CopyFramebuffertoN3DS_16(framebuffer, (Dimensions){ width, height },
                                  surface->pixels, (Dimensions){ surface->w, surface->h });
-    else if (surface->format->bytes_per_pixel == 3)
+    else if (SDL_BYTESPERPIXEL(surface->format) == 3)
         CopyFramebuffertoN3DS_24(framebuffer, (Dimensions){ width, height },
                                  surface->pixels, (Dimensions){ surface->w, surface->h });
     else

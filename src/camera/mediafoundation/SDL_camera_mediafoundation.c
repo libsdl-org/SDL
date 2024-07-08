@@ -85,7 +85,7 @@ SDL_DEFINE_MEDIATYPE_GUID(MFVideoFormat_NV21, FCC('NV21'));
 static const struct
 {
     const GUID *guid;
-    SDL_PixelFormatEnum format;
+    SDL_PixelFormat format;
     SDL_Colorspace colorspace;
 } fmtmappings[] = {
     // This is not every possible format, just popular ones that SDL can reasonably handle.
@@ -281,7 +281,7 @@ static SDL_Colorspace GetMediaTypeColorspace(IMFMediaType *mediatype, SDL_Colors
     return colorspace;
 }
 
-static void MediaTypeToSDLFmt(IMFMediaType *mediatype, SDL_PixelFormatEnum *format, SDL_Colorspace *colorspace)
+static void MediaTypeToSDLFmt(IMFMediaType *mediatype, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
 {
     HRESULT ret;
     GUID type;
@@ -300,7 +300,7 @@ static void MediaTypeToSDLFmt(IMFMediaType *mediatype, SDL_PixelFormatEnum *form
     *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
-static const GUID *SDLFmtToMFVidFmtGuid(SDL_PixelFormatEnum format)
+static const GUID *SDLFmtToMFVidFmtGuid(SDL_PixelFormat format)
 {
     for (size_t i = 0; i < SDL_arraysize(fmtmappings); i++) {
         if (fmtmappings[i].format == format) {
@@ -930,7 +930,7 @@ static void GatherCameraSpecs(IMFMediaSource *source, CameraFormatAddData *add_d
                         GUID type;
                         ret = IMFMediaType_GetGUID(mediatype, &SDL_MF_MT_MAJOR_TYPE, &type);
                         if (SUCCEEDED(ret) && WIN_IsEqualGUID(&type, &SDL_MFMediaType_Video)) {
-                            SDL_PixelFormatEnum sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
+                            SDL_PixelFormat sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
                             SDL_Colorspace colorspace = SDL_COLORSPACE_UNKNOWN;
                             MediaTypeToSDLFmt(mediatype, &sdlfmt, &colorspace);
                             if (sdlfmt != SDL_PIXELFORMAT_UNKNOWN) {

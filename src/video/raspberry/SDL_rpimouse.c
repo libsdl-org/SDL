@@ -61,7 +61,7 @@ static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     VC_RECT_T dst_rect;
     Uint32 dummy;
 
-    SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
+    SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
     SDL_assert(surface->pitch == surface->w * 4);
 
     cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));

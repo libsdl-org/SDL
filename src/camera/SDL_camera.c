@@ -84,7 +84,7 @@ char *SDL_GetCameraThreadName(SDL_CameraDevice *device, char *buf, size_t buflen
     return buf;
 }
 
-int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormatEnum format, SDL_Colorspace colorspace, int w, int h, int framerate_numerator, int framerate_denominator)
+int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_Colorspace colorspace, int w, int h, int framerate_numerator, int framerate_denominator)
 {
     SDL_assert(data != NULL);
     if (data->allocated_specs <= data->num_specs) {
@@ -130,7 +130,7 @@ static size_t GetFrameBufLen(const SDL_CameraSpec *spec)
     const size_t w = (const size_t) spec->width;
     const size_t h = (const size_t) spec->height;
     const size_t wxh = w * h;
-    const SDL_PixelFormatEnum fmt = spec->format;
+    const SDL_PixelFormat fmt = spec->format;
 
     switch (fmt) {
         // Some YUV formats have a larger Y plane than their U or V planes.
@@ -367,8 +367,8 @@ static int SDLCALL CameraSpecCmp(const void *vpa, const void *vpb)
     SDL_assert(b->width > 0);
     SDL_assert(b->height > 0);
 
-    const SDL_PixelFormatEnum afmt = a->format;
-    const SDL_PixelFormatEnum bfmt = b->format;
+    const SDL_PixelFormat afmt = a->format;
+    const SDL_PixelFormat bfmt = b->format;
     if (SDL_ISPIXELFORMAT_FOURCC(afmt) && !SDL_ISPIXELFORMAT_FOURCC(bfmt)) {
         return -1;
     } else if (!SDL_ISPIXELFORMAT_FOURCC(afmt) && SDL_ISPIXELFORMAT_FOURCC(bfmt)) {
@@ -879,8 +879,8 @@ SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device)
             if (device->needs_conversion) {
                 SDL_Surface *dstsurf = (device->needs_scaling == 1) ? device->conversion_surface : output_surface;
                 SDL_ConvertPixels(srcsurf->w, srcsurf->h,
-                                  srcsurf->format->format, srcsurf->pixels, srcsurf->pitch,
-                                  dstsurf->format->format, dstsurf->pixels, dstsurf->pitch);
+                                  srcsurf->format, srcsurf->pixels, srcsurf->pitch,
+                                  dstsurf->format, dstsurf->pixels, dstsurf->pitch);
                 srcsurf = dstsurf;
             }
             if (device->needs_scaling == 1) {  // upscaling? Do it last.  -1: downscale, 0: no scaling, 1: upscale
@@ -1005,8 +1005,8 @@ static void ChooseBestCameraSpec(SDL_CameraDevice *device, const SDL_CameraSpec 
         SDL_assert(closest->height > 0);
 
         // okay, we have what we think is the best resolution, now we just need the best format that supports it...
-        const SDL_PixelFormatEnum wantfmt = spec->format;
-        SDL_PixelFormatEnum best_format = SDL_PIXELFORMAT_UNKNOWN;
+        const SDL_PixelFormat wantfmt = spec->format;
+        SDL_PixelFormat best_format = SDL_PIXELFORMAT_UNKNOWN;
         SDL_Colorspace best_colorspace = SDL_COLORSPACE_UNKNOWN;
         for (int i = 0; i < num_specs; i++) {
             const SDL_CameraSpec *thisspec = &device->all_specs[i];
@@ -1124,7 +1124,7 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
 
     device->needs_conversion = (closest.format != device->spec.format);
 
-    device->acquire_surface = SDL_CreateSurfaceFrom(NULL, closest.width, closest.height, 0, closest.format);
+    device->acquire_surface = SDL_CreateSurfaceFrom(closest.width, closest.height, closest.format, NULL, 0);
     if (!device->acquire_surface) {
         ClosePhysicalCameraDevice(device);
         ReleaseCameraDevice(device);
@@ -1136,7 +1136,7 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
     if (device->needs_scaling && device->needs_conversion) {
         const SDL_bool downsampling_first = (device->needs_scaling < 0);
         const SDL_CameraSpec *s = downsampling_first ? &device->spec : &closest;
-        const SDL_PixelFormatEnum fmt = downsampling_first ? closest.format : device->spec.format;
+        const SDL_PixelFormat fmt = downsampling_first ? closest.format : device->spec.format;
         device->conversion_surface = SDL_CreateSurface(s->width, s->height, fmt);
         if (!device->conversion_surface) {
             ClosePhysicalCameraDevice(device);
@@ -1160,7 +1160,7 @@ SDL_Camera *SDL_OpenCameraDevice(SDL_CameraDeviceID instance_id, const SDL_Camer
         if (device->needs_scaling || device->needs_conversion) {
             surf = SDL_CreateSurface(device->spec.width, device->spec.height, device->spec.format);
         } else {
-            surf = SDL_CreateSurfaceFrom(NULL, device->spec.width, device->spec.height, 0, device->spec.format);
+            surf = SDL_CreateSurfaceFrom(device->spec.width, device->spec.height, device->spec.format, NULL, 0);
         }
         if (!surf) {
             ClosePhysicalCameraDevice(device);

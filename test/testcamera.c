@@ -274,12 +274,11 @@ int SDL_AppIterate(void *appstate)
                 SDL_DestroyTexture(texture);
             }
 
-            SDL_Colorspace colorspace = SDL_COLORSPACE_UNKNOWN;
-            SDL_GetSurfaceColorspace(frame_current, &colorspace);
+            SDL_Colorspace colorspace = SDL_GetSurfaceColorspace(frame_current);
 
             /* Create texture with appropriate format */
             SDL_PropertiesID props = SDL_CreateProperties();
-            SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, frame_current->format->format);
+            SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, frame_current->format);
             SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, colorspace);
             SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STREAMING);
             SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, frame_current->w);

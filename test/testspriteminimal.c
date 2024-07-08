@@ -42,7 +42,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
         surface = SDL_LoadBMP_IO(src, SDL_TRUE);
         if (surface) {
             /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 255, 255, 255));
+            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapSurfaceRGB(surface, 255, 255, 255));
 
             texture = SDL_CreateTextureFromSurface(r, surface);
             *w = surface->w;

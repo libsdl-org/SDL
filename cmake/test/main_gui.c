@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     screenSurface = SDL_GetWindowSurface(window);
-    SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xff, 0xff, 0xff));
+    SDL_FillSurfaceRect(screenSurface, NULL, SDL_MapSurfaceRGB(screenSurface, 0xff, 0xff, 0xff));
     SDL_UpdateWindowSurface(window);
     SDL_Delay(100);
     SDL_DestroyWindow(window);

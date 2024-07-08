@@ -436,6 +436,7 @@
     <ClInclude Include="..\..\src\video\SDL_pixels_c.h" />
     <ClInclude Include="..\..\src\video\SDL_rect_c.h" />
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h" />
+    <ClInclude Include="..\..\src\video\SDL_surface_c.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h" />
     <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />

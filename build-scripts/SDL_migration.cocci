@@ -1566,17 +1566,12 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 @@
 @@
 - SDL_AllocFormat
-+ SDL_CreatePixelFormat
++ SDL_GetPixelFormatDetails
   (...)
 @@
 @@
 - SDL_AllocPalette
 + SDL_CreatePalette
-  (...)
-@@
-@@
-- SDL_FreeFormat
-+ SDL_DestroyPixelFormat
   (...)
 @@
 @@
@@ -1586,12 +1581,12 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 @@
 @@
 - SDL_MasksToPixelFormatEnum
-+ SDL_GetPixelFormatEnumForMasks
++ SDL_GetPixelFormatForMasks
   (...)
 @@
 @@
 - SDL_PixelFormatEnumToMasks
-+ SDL_GetMasksForPixelFormatEnum
++ SDL_GetMasksForPixelFormat
   (...)
 @@
 @@
@@ -3488,3 +3483,21 @@ typedef SDL_Colour, SDL_Color;
 @@
 - SDLK_z
 + SDLK_Z
+@@
+typedef SDL_PixelFormat, SDL_PackedPixelDetails;
+@@
+- SDL_PixelFormat
++ SDL_PixelFormatDetails
+@@
+@@
+- SDL_ConvertSurfaceFormat
++ SDL_ConvertSurface
+  (...)
+@@
+@@
+- SDL_PREALLOC
++ SDL_SURFACE_PREALLOCATED
+@@
+@@
+- SDL_SIMD_ALIGNED
++ SDL_SURFACE_SIMD_ALIGNED

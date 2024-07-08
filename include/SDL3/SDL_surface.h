@@ -45,34 +45,23 @@ extern "C" {
 /**
  * The flags on an SDL_Surface.
  *
- * These are generally meant to be considered read-only.
+ * These are generally considered read-only.
  *
  * \since This datatype is available since SDL 3.0.0.
  */
 typedef Uint32 SDL_SurfaceFlags;
 
-#define SDL_PREALLOC                0x00000001u /**< Surface uses preallocated memory */
-#define SDL_RLEACCEL                0x00000002u /**< Surface is RLE encoded */
-#define SDL_DONTFREE                0x00000004u /**< Surface is referenced internally */
-#define SDL_SIMD_ALIGNED            0x00000008u /**< Surface uses aligned memory */
-#define SDL_SURFACE_USES_PROPERTIES 0x00000010u /**< Surface uses properties */
+#define SDL_SURFACE_PREALLOCATED    0x00000001u /**< Surface uses preallocated pixel memory */
+#define SDL_SURFACE_LOCK_NEEDED     0x00000002u /**< Surface needs to be locked to access pixels */
+#define SDL_SURFACE_LOCKED          0x00000004u /**< Surface is currently locked */
+#define SDL_SURFACE_SIMD_ALIGNED    0x00000008u /**< Surface uses pixel memory allocated with SDL_aligned_alloc() */
 
 /**
  * Evaluates to true if the surface needs to be locked before access.
  *
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_MUSTLOCK(S) (((S)->flags & SDL_RLEACCEL) != 0)
-
-/**
- * An opaque type used in SDL_Surface.
- *
- * This is used by SDL to keep track of how blit operations should work
- * internally; it is not for use directly by applications.
- *
- * \since This struct is available since SDL 3.0.0.
- */
-typedef struct SDL_BlitMap SDL_BlitMap;
+#define SDL_MUSTLOCK(S) (((S)->flags & (SDL_SURFACE_LOCK_NEEDED | SDL_SURFACE_LOCKED)) == SDL_SURFACE_LOCK_NEEDED)
 
 /**
  * The scaling mode.
@@ -98,6 +87,9 @@ typedef enum SDL_FlipMode
     SDL_FLIP_VERTICAL       /**< flip vertically */
 } SDL_FlipMode;
 
+/* Internal surface data */
+typedef struct SDL_SurfaceData SDL_SurfaceData;
+
 /**
  * A collection of pixels used in software blitting.
  *
@@ -118,36 +110,24 @@ typedef enum SDL_FlipMode
 typedef struct SDL_Surface
 {
     SDL_SurfaceFlags flags;     /**< Read-only */
-    SDL_PixelFormat *format;    /**< Read-only */
+    SDL_PixelFormat format;     /**< Read-only */
     int w, h;                   /**< Read-only */
     int pitch;                  /**< Read-only */
-    void *pixels;               /**< Read-write */
+    void *pixels;               /**< Read-only pointer, writable pixels if non-NULL */
 
-    void *reserved;             /**< Private */
+    int refcount;               /**< Application reference count, used when freeing surface */
 
-    /** information needed for surfaces requiring locks */
-    int locked;                 /**< Read-only */
+    SDL_SurfaceData *internal;  /**< Private */
 
-    /** list of BlitMap that hold a reference to this surface */
-    void *list_blitmap;         /**< Private */
-
-    /** clipping information */
-    SDL_Rect clip_rect;         /**< Read-only */
-
-    /** info for fast blit mapping to other surfaces */
-    SDL_BlitMap *map;           /**< Private */
-
-    /** Reference count -- used when freeing surface */
-    int refcount;               /**< Read-mostly */
 } SDL_Surface;
 
 
 /**
- * Allocate a new RGB surface with a specific pixel format.
+ * Allocate a new surface with a specific pixel format.
  *
  * \param width the width of the surface.
  * \param height the height of the surface.
- * \param format the SDL_PixelFormatEnum for the new surface's pixel format.
+ * \param format the SDL_PixelFormat for the new surface's pixel format.
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
@@ -156,11 +136,10 @@ typedef struct SDL_Surface
  * \sa SDL_CreateSurfaceFrom
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormatEnum format);
+extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormat format);
 
 /**
- * Allocate a new RGB surface with a specific pixel format and existing pixel
- * data.
+ * Allocate a new surface with a specific pixel format and existing pixel data.
  *
  * No copy is made of the pixel data. Pixel data is not managed automatically;
  * you must free the surface before you free the pixel data.
@@ -171,11 +150,11 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height
  * You may pass NULL for pixels and 0 for pitch to create a surface that you
  * will fill in with valid values later.
  *
- * \param pixels a pointer to existing pixel data.
  * \param width the width of the surface.
  * \param height the height of the surface.
+ * \param format the SDL_PixelFormat for the new surface's pixel format.
+ * \param pixels a pointer to existing pixel data.
  * \param pitch the number of bytes between each row, including padding.
- * \param format the SDL_PixelFormatEnum for the new surface's pixel format.
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
@@ -184,10 +163,10 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height
  * \sa SDL_CreateSurface
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom(void *pixels, int width, int height, int pitch, SDL_PixelFormatEnum format);
+extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format, void *pixels, int pitch);
 
 /**
- * Free an RGB surface.
+ * Free a surface.
  *
  * It is safe to pass NULL to this function.
  *
@@ -195,6 +174,7 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurfaceFrom(void *pixels, int
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_CreateStackSurface
  * \sa SDL_CreateSurface
  * \sa SDL_CreateSurfaceFrom
  */
@@ -254,6 +234,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surfac
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetSurfaceColorspace
  */
 extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace colorspace);
 
@@ -265,14 +247,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceColorspace(SDL_Surface *surface, S
  * other RGB surfaces and SDL_COLORSPACE_BT709_FULL for YUV textures.
  *
  * \param surface the SDL_Surface structure to query.
- * \param colorspace a pointer filled in with an SDL_ColorSpace value
- *                   describing the surface colorspace.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns the colorspace used by the surface, or SDL_COLORSPACE_UNKNOWN if the surface is NULL.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetSurfaceColorspace
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace *colorspace);
+extern SDL_DECLSPEC SDL_Colorspace SDLCALL SDL_GetSurfaceColorspace(SDL_Surface *surface);
 
 /**
  * Set the palette used by a surface.
@@ -285,8 +266,23 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSurfaceColorspace(SDL_Surface *surface, S
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreatePalette
+ * \sa SDL_GetSurfacePalette
  */
 extern SDL_DECLSPEC int SDLCALL SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette);
+
+/**
+ * Get the palette used by a surface.
+ *
+ * \param surface the SDL_Surface structure to query.
+ * \returns a pointer to the palette used by the surface, or NULL if there is no palette used.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetSurfacePalette
+ */
+extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_GetSurfacePalette(SDL_Surface *surface);
 
 /**
  * Set up a surface for directly accessing the pixels.
@@ -411,7 +407,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *fi
  * the surface must be locked before directly accessing the pixels.
  *
  * \param surface the SDL_Surface structure to optimize.
- * \param flag 0 to disable, non-zero to enable RLE acceleration.
+ * \param enabled SDL_TRUE to enable RLE acceleration, SDL_FALSE to disable it.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -421,7 +417,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *fi
  * \sa SDL_LockSurface
  * \sa SDL_UnlockSurface
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface *surface, int flag);
+extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceRLE(SDL_Surface *surface, SDL_bool enabled);
 
 /**
  * Returns whether the surface is RLE enabled.
@@ -447,11 +443,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);
  * It is a pixel of the format used by the surface, as generated by
  * SDL_MapRGB().
  *
- * RLE acceleration can substantially speed up blitting of images with large
- * horizontal runs of transparent pixels. See SDL_SetSurfaceRLE() for details.
- *
  * \param surface the SDL_Surface structure to update.
- * \param flag SDL_TRUE to enable color key, SDL_FALSE to disable color key.
+ * \param enabled SDL_TRUE to enable color key, SDL_FALSE to disable color key.
  * \param key the transparent pixel.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -459,9 +452,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetSurfaceColorKey
+ * \sa SDL_SetSurfaceRLE
  * \sa SDL_SurfaceHasColorKey
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface, int flag, Uint32 key);
+extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceColorKey(SDL_Surface *surface, SDL_bool enabled, Uint32 key);
 
 /**
  * Returns whether the surface has a color key.
@@ -681,41 +675,19 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface *surfa
  * surface. The new, optimized surface can then be used as the source for
  * future blits, making them faster.
  *
+ * If you are converting to an indexed surface and want to map colors to a palette, you can use SDL_ConvertSurfaceAndColorspace() instead.
+ *
  * \param surface the existing SDL_Surface structure to convert.
- * \param format the SDL_PixelFormat structure that the new surface is
- *               optimized for.
+ * \param format the new pixel format.
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_ConvertSurfaceFormat
- * \sa SDL_ConvertSurfaceFormatAndColorspace
- * \sa SDL_CreatePixelFormat
+ * \sa SDL_ConvertSurfaceAndColorspace
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format);
-
-/**
- * Copy an existing surface to a new surface of the specified format.
- *
- * This function operates just like SDL_ConvertSurface(), but accepts an
- * SDL_PixelFormatEnum value instead of an SDL_PixelFormat structure. As such,
- * it might be easier to call but it doesn't have access to palette
- * information for the destination surface, in case that would be important.
- *
- * \param surface the existing SDL_Surface structure to convert.
- * \param pixel_format the new pixel format.
- * \returns the new SDL_Surface structure that is created or NULL if it fails;
- *          call SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_ConvertSurface
- * \sa SDL_ConvertSurfaceFormatAndColorspace
- * \sa SDL_DestroySurface
- */
-extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat(SDL_Surface *surface, SDL_PixelFormatEnum pixel_format);
+extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface, SDL_PixelFormat format);
 
 /**
  * Copy an existing surface to a new surface of the specified format and
@@ -726,7 +698,8 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat(SDL_Surface *s
  * colorspace conversion needed.
  *
  * \param surface the existing SDL_Surface structure to convert.
- * \param pixel_format the new pixel format.
+ * \param format the new pixel format.
+ * \param palette an optional palette to use for indexed formats, may be NULL.
  * \param colorspace the new colorspace.
  * \param props an SDL_PropertiesID with additional color properties, or 0.
  * \returns the new SDL_Surface structure that is created or NULL if it fails;
@@ -735,20 +708,20 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormat(SDL_Surface *s
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ConvertSurface
- * \sa SDL_ConvertSurfaceFormat
+ * \sa SDL_ConvertSurface
  * \sa SDL_DestroySurface
  */
-extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormatAndColorspace(SDL_Surface *surface, SDL_PixelFormatEnum pixel_format, SDL_Colorspace colorspace, SDL_PropertiesID props);
+extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, const SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props);
 
 /**
  * Copy a block of pixels of one format to another format.
  *
  * \param width the width of the block to copy, in pixels.
  * \param height the height of the block to copy, in pixels.
- * \param src_format an SDL_PixelFormatEnum value of the `src` pixels format.
+ * \param src_format an SDL_PixelFormat value of the `src` pixels format.
  * \param src a pointer to the source pixels.
  * \param src_pitch the pitch of the source pixels, in bytes.
- * \param dst_format an SDL_PixelFormatEnum value of the `dst` pixels format.
+ * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
  * \param dst a pointer to be filled in with new pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
  * \returns 0 on success or a negative error code on failure; call
@@ -758,7 +731,7 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurfaceFormatAndColorspace(S
  *
  * \sa SDL_ConvertPixelsAndColorspace
  */
-extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height, SDL_PixelFormatEnum src_format, const void *src, int src_pitch, SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch);
+extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch);
 
 /**
  * Copy a block of pixels of one format and colorspace to another format and
@@ -766,14 +739,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height, SDL_Pix
  *
  * \param width the width of the block to copy, in pixels.
  * \param height the height of the block to copy, in pixels.
- * \param src_format an SDL_PixelFormatEnum value of the `src` pixels format.
+ * \param src_format an SDL_PixelFormat value of the `src` pixels format.
  * \param src_colorspace an SDL_ColorSpace value describing the colorspace of
  *                       the `src` pixels.
  * \param src_properties an SDL_PropertiesID with additional source color
  *                       properties, or 0.
  * \param src a pointer to the source pixels.
  * \param src_pitch the pitch of the source pixels, in bytes.
- * \param dst_format an SDL_PixelFormatEnum value of the `dst` pixels format.
+ * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
  * \param dst_colorspace an SDL_ColorSpace value describing the colorspace of
  *                       the `dst` pixels.
  * \param dst_properties an SDL_PropertiesID with additional destination color
@@ -787,7 +760,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixels(int width, int height, SDL_Pix
  *
  * \sa SDL_ConvertPixels
  */
-extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixelsAndColorspace(int width, int height, SDL_PixelFormatEnum src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch, SDL_PixelFormatEnum dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch);
+extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixelsAndColorspace(int width, int height, SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch, SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch);
 
 /**
  * Premultiply the alpha on a block of pixels.
@@ -798,10 +771,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixelsAndColorspace(int width, int he
  *
  * \param width the width of the block to convert, in pixels.
  * \param height the height of the block to convert, in pixels.
- * \param src_format an SDL_PixelFormatEnum value of the `src` pixels format.
+ * \param src_format an SDL_PixelFormat value of the `src` pixels format.
  * \param src a pointer to the source pixels.
  * \param src_pitch the pitch of the source pixels, in bytes.
- * \param dst_format an SDL_PixelFormatEnum value of the `dst` pixels format.
+ * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
  * \param dst a pointer to be filled in with premultiplied pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
  * \returns 0 on success or a negative error code on failure; call
@@ -809,7 +782,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixelsAndColorspace(int width, int he
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_PixelFormatEnum src_format, const void *src, int src_pitch, SDL_PixelFormatEnum dst_format, void *dst, int dst_pitch);
+extern SDL_DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch);
 
 /**
  * Perform a fast fill of a rectangle with a specific color.
@@ -1032,6 +1005,67 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const SD
  * \sa SDL_BlitSurfaceScaled
  */
 extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
+
+/**
+ * Map an RGB triple to an opaque pixel value for a surface.
+ *
+ * This function maps the RGB color value to the specified pixel format and
+ * returns the pixel value best approximating the given RGB color value for
+ * the given pixel format.
+ *
+ * If the surface has a palette, the index of the closest matching color
+ * in the palette will be returned.
+ *
+ * If the surface pixel format has an alpha component it will be returned as
+ * all 1 bits (fully opaque).
+ *
+ * If the pixel format bpp (color depth) is less than 32-bpp then the unused
+ * upper bits of the return value can safely be ignored (e.g., with a 16-bpp
+ * format the return value can be assigned to a Uint16, and similarly a Uint8
+ * for an 8-bpp format).
+ *
+ * \param surface the surface to use for the pixel format and palette.
+ * \param r the red component of the pixel in the range 0-255.
+ * \param g the green component of the pixel in the range 0-255.
+ * \param b the blue component of the pixel in the range 0-255.
+ * \returns a pixel value.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_MapSurfaceRGBA
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b);
+
+/**
+ * Map an RGBA quadruple to a pixel value for a surface.
+ *
+ * This function maps the RGBA color value to the specified pixel format and
+ * returns the pixel value best approximating the given RGBA color value for
+ * the given pixel format.
+ *
+ * If the surface pixel format has no alpha component the alpha value will
+ * be ignored (as it will be in formats with a palette).
+ *
+ * If the surface has a palette, the index of the closest matching color
+ * in the palette will be returned.
+ *
+ * If the pixel format bpp (color depth) is less than 32-bpp then the unused
+ * upper bits of the return value can safely be ignored (e.g., with a 16-bpp
+ * format the return value can be assigned to a Uint16, and similarly a Uint8
+ * for an 8-bpp format).
+ *
+ * \param surface the surface to use for the pixel format and palette.
+ * \param r the red component of the pixel in the range 0-255.
+ * \param g the green component of the pixel in the range 0-255.
+ * \param b the blue component of the pixel in the range 0-255.
+ * \param a the alpha component of the pixel in the range 0-255.
+ * \returns a pixel value.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_MapSurfaceRGB
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 /**
  * Retrieves a single pixel from a surface.

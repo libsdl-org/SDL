@@ -268,7 +268,7 @@ struct SDL_VideoDevice
     int (*SetWindowMouseGrab)(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
     int (*SetWindowKeyboardGrab)(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
     void (*DestroyWindow)(SDL_VideoDevice *_this, SDL_Window *window);
-    int (*CreateWindowFramebuffer)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch);
+    int (*CreateWindowFramebuffer)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch);
     int (*SetWindowFramebufferVSync)(SDL_VideoDevice *_this, SDL_Window *window, int vsync);
     int (*GetWindowFramebufferVSync)(SDL_VideoDevice *_this, SDL_Window *window, int *vsync);
     int (*UpdateWindowFramebuffer)(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);

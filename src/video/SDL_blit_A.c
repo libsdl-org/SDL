@@ -36,8 +36,8 @@ static void BlitNto1SurfaceAlpha(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     Uint8 *palmap = info->table;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_Color *dstpal = info->dst_pal->colors;
     int srcbpp = srcfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB;
@@ -49,9 +49,9 @@ static void BlitNto1SurfaceAlpha(SDL_BlitInfo *info)
         DUFFS_LOOP4(
         {
         DISEMBLE_RGB(src, srcbpp, srcfmt, Pixel, sR, sG, sB);
-        dR = dstfmt->palette->colors[*dst].r;
-        dG = dstfmt->palette->colors[*dst].g;
-        dB = dstfmt->palette->colors[*dst].b;
+        dR = dstpal[*dst].r;
+        dG = dstpal[*dst].g;
+        dB = dstpal[*dst].b;
         ALPHA_BLEND_RGB(sR, sG, sB, A, dR, dG, dB);
         dR &= 0xff;
         dG &= 0xff;
@@ -82,8 +82,8 @@ static void BlitNto1PixelAlpha(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     Uint8 *palmap = info->table;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_Color *dstpal = info->dst_pal->colors;
     int srcbpp = srcfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB, sA;
@@ -94,9 +94,9 @@ static void BlitNto1PixelAlpha(SDL_BlitInfo *info)
         DUFFS_LOOP4(
         {
         DISEMBLE_RGBA(src,srcbpp,srcfmt,Pixel,sR,sG,sB,sA);
-        dR = dstfmt->palette->colors[*dst].r;
-        dG = dstfmt->palette->colors[*dst].g;
-        dB = dstfmt->palette->colors[*dst].b;
+        dR = dstpal[*dst].r;
+        dG = dstpal[*dst].g;
+        dB = dstpal[*dst].b;
         ALPHA_BLEND_RGB(sR, sG, sB, sA, dR, dG, dB);
         dR &= 0xff;
         dG &= 0xff;
@@ -127,8 +127,8 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     Uint8 *palmap = info->table;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_Color *dstpal = info->dst_pal->colors;
     int srcbpp = srcfmt->bytes_per_pixel;
     Uint32 ckey = info->colorkey;
     Uint32 Pixel;
@@ -142,9 +142,9 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
         {
         DISEMBLE_RGB(src, srcbpp, srcfmt, Pixel, sR, sG, sB);
         if ( Pixel != ckey ) {
-            dR = dstfmt->palette->colors[*dst].r;
-            dG = dstfmt->palette->colors[*dst].g;
-            dB = dstfmt->palette->colors[*dst].b;
+            dR = dstpal[*dst].r;
+            dG = dstpal[*dst].g;
+            dB = dstpal[*dst].b;
             ALPHA_BLEND_RGB(sR, sG, sB, A, dR, dG, dB);
             dR &= 0xff;
             dG &= 0xff;
@@ -864,8 +864,8 @@ static void BlitNtoNSurfaceAlpha(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int srcbpp = srcfmt->bytes_per_pixel;
     int dstbpp = dstfmt->bytes_per_pixel;
     Uint32 Pixel;
@@ -902,8 +902,8 @@ static void BlitNtoNSurfaceAlphaKey(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     Uint32 ckey = info->colorkey;
     int srcbpp = srcfmt->bytes_per_pixel;
     int dstbpp = dstfmt->bytes_per_pixel;
@@ -942,7 +942,7 @@ static void Blit8888to8888PixelAlpha(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
 
     while (height--) {
         int i = 0;
@@ -970,8 +970,8 @@ static void Blit8888to8888PixelAlphaSwizzle(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
 
     while (height--) {
         int i = 0;
@@ -1000,8 +1000,8 @@ static void SDL_TARGETING("sse4.1") Blit8888to8888PixelAlphaSwizzleSSE41(SDL_Bli
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
 
     // The byte offsets for the start of each pixel
     const __m128i mask_offsets = _mm_set_epi8(
@@ -1092,8 +1092,8 @@ static void SDL_TARGETING("avx2") Blit8888to8888PixelAlphaSwizzleAVX2(SDL_BlitIn
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
 
     // The byte offsets for the start of each pixel
     const __m256i mask_offsets = _mm256_set_epi8(
@@ -1183,8 +1183,8 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int srcbpp;
     int dstbpp;
     Uint32 Pixel;
@@ -1216,15 +1216,15 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
 
 SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 {
-    SDL_PixelFormat *sf = surface->format;
-    SDL_PixelFormat *df = surface->map->dst->format;
+    const SDL_PixelFormatDetails *sf = surface->internal->format;
+    const SDL_PixelFormatDetails *df = surface->internal->map.dst->internal->format;
 
-    switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+    switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
     case SDL_COPY_BLEND:
         /* Per-pixel alpha blits */
         switch (df->bytes_per_pixel) {
         case 1:
-            if (df->palette) {
+            if (surface->internal->map.info.dst_pal) {
                 return BlitNto1PixelAlpha;
             } else {
                 /* RGB332 has no palette ! */
@@ -1273,7 +1273,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             /* Per-surface alpha blits */
             switch (df->bytes_per_pixel) {
             case 1:
-                if (df->palette) {
+                if (surface->internal->map.info.dst_pal) {
                     return BlitNto1SurfaceAlpha;
                 } else {
                     /* RGB332 has no palette ! */
@@ -1281,7 +1281,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                 }
 
             case 2:
-                if (surface->map->identity) {
+                if (surface->internal->map.identity) {
                     if (df->Gmask == 0x7e0) {
 #ifdef SDL_MMX_INTRINSICS
                         if (SDL_HasMMX()) {
@@ -1328,7 +1328,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         if (sf->Amask == 0) {
             if (df->bytes_per_pixel == 1) {
 
-                if (df->palette) {
+                if (surface->internal->map.info.dst_pal) {
                     return BlitNto1SurfaceAlphaKey;
                 } else {
                     /* RGB332 has no palette ! */

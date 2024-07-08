@@ -312,3 +312,8 @@ SDL_bool SDL_KeyMatchID(const void *a, const void *b, void *unused)
     }
     return SDL_FALSE;
 }
+
+void SDL_NukeFreeValue(const void *key, const void *value, void *unused)
+{
+    SDL_free((void *)value);
+}

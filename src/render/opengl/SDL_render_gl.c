@@ -1450,7 +1450,7 @@ static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
 static SDL_Surface *GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
-    SDL_PixelFormatEnum format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ARGB8888;
+    SDL_PixelFormat format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ARGB8888;
     GLint internalFormat;
     GLenum targetFormat, type;
     int w, h;

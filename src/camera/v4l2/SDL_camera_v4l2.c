@@ -391,7 +391,7 @@ static int AllocBufferUserPtr(SDL_CameraDevice *device, size_t buffer_size)
     return 0;
 }
 
-static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormatEnum *format, SDL_Colorspace *colorspace)
+static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
     #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
@@ -407,7 +407,7 @@ static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormatEnum *format, SDL_Colo
     *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
-static Uint32 format_sdl_to_v4l2(SDL_PixelFormatEnum fmt)
+static Uint32 format_sdl_to_v4l2(SDL_PixelFormat fmt)
 {
     switch (fmt) {
         #define CASE(y, x)  case x: return y
@@ -645,7 +645,7 @@ static SDL_bool FindV4L2CameraDeviceByBusInfoCallback(SDL_CameraDevice *device, 
     return (SDL_strcmp(handle->bus_info, (const char *) userdata) == 0);
 }
 
-static int AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFormatEnum sdlfmt, SDL_Colorspace colorspace, Uint32 v4l2fmt, int w, int h)
+static int AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFormat sdlfmt, SDL_Colorspace colorspace, Uint32 v4l2fmt, int w, int h)
 {
     struct v4l2_frmivalenum frmivalenum;
     SDL_zero(frmivalenum);
@@ -729,7 +729,7 @@ static void MaybeAddDevice(const char *path)
     SDL_zero(fmtdesc);
     fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     while (ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
-        SDL_PixelFormatEnum sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_PixelFormat sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
         SDL_Colorspace colorspace = SDL_COLORSPACE_UNKNOWN;
         format_v4l2_to_sdl(fmtdesc.pixelformat, &sdlfmt, &colorspace);
 

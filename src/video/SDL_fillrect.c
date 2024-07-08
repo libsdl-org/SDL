@@ -231,13 +231,13 @@ static void SDL_FillSurfaceRect4(Uint8 *pixels, int pitch, Uint32 color, int w, 
  */
 int SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 {
-    if (!dst) {
+    if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRect(): dst");
     }
 
     /* If 'rect' == NULL, then fill the whole surface */
     if (!rect) {
-        rect = &dst->clip_rect;
+        rect = &dst->internal->clip_rect;
         /* Don't attempt to fill if the surface's clip_rect is empty */
         if (SDL_RectEmpty(rect)) {
             return 0;
@@ -256,7 +256,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     void (*fill_function)(Uint8 * pixels, int pitch, Uint32 color, int w, int h) = NULL;
     int i;
 
-    if (!dst) {
+    if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): dst");
     }
 
@@ -277,11 +277,11 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     /* This function doesn't usually work on surfaces < 8 bpp
      * Except: support for 4bits, when filling full size.
      */
-    if (dst->format->bits_per_pixel < 8) {
+    if (SDL_BITSPERPIXEL(dst->format) < 8) {
         if (count == 1) {
             const SDL_Rect *r = &rects[0];
             if (r->x == 0 && r->y == 0 && r->w == dst->w && r->h == dst->h) {
-                if (dst->format->bits_per_pixel == 4) {
+                if (SDL_BITSPERPIXEL(dst->format) == 4) {
                     Uint8 b = (((Uint8)color << 4) | (Uint8)color);
                     SDL_memset(dst->pixels, b, (size_t)dst->h * dst->pitch);
                     return 1;
@@ -292,7 +292,7 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 
     if (fill_function == NULL) {
-        switch (dst->format->bytes_per_pixel) {
+        switch (SDL_BYTESPERPIXEL(dst->format)) {
         case 1:
         {
             color |= (color << 8);
@@ -347,13 +347,13 @@ int SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     for (i = 0; i < count; ++i) {
         rect = &rects[i];
         /* Perform clipping */
-        if (!SDL_GetRectIntersection(rect, &dst->clip_rect, &clipped)) {
+        if (!SDL_GetRectIntersection(rect, &dst->internal->clip_rect, &clipped)) {
             continue;
         }
         rect = &clipped;
 
         pixels = (Uint8 *)dst->pixels + rect->y * dst->pitch +
-                 rect->x * dst->format->bytes_per_pixel;
+                 rect->x * SDL_BYTESPERPIXEL(dst->format);
 
         fill_function(pixels, dst->pitch, color, rect->w, rect->h);
     }

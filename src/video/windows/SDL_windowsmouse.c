@@ -49,7 +49,7 @@ static SDL_bool IsMonochromeSurface(SDL_Surface *surface)
     int x, y;
     Uint8 r, g, b, a;
 
-    SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
+    SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
 
     for (y = 0; y < surface->h; y++) {
         for (x = 0; x < surface->w; x++) {
@@ -76,7 +76,7 @@ static HBITMAP CreateColorBitmap(SDL_Surface *surface)
     BITMAPINFO bi;
     void *pixels;
 
-    SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
+    SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
 
     SDL_zero(bi);
     bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -114,7 +114,7 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, SDL_bool is_monochrome)
     const int size = pitch * surface->h;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 
-    SDL_assert(surface->format->format == SDL_PIXELFORMAT_ARGB8888);
+    SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
 
     pixels = SDL_small_alloc(Uint8, size * (is_monochrome ? 2 : 1), &isstack);
     if (!pixels) {

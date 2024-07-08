@@ -357,7 +357,7 @@ static void param_update(struct spa_list *param_list, struct spa_list *pending_l
 }
 
 static struct sdl_video_format {
-    SDL_PixelFormatEnum format;
+    SDL_PixelFormat format;
     SDL_Colorspace colorspace;
     uint32_t id;
 } sdl_video_formats[] = {
@@ -389,7 +389,7 @@ static struct sdl_video_format {
 #endif
 };
 
-static uint32_t sdl_format_to_id(SDL_PixelFormatEnum format)
+static uint32_t sdl_format_to_id(SDL_PixelFormat format)
 {
     struct sdl_video_format *f;
     SPA_FOR_EACH_ELEMENT(sdl_video_formats, f) {
@@ -399,7 +399,7 @@ static uint32_t sdl_format_to_id(SDL_PixelFormatEnum format)
     return SPA_VIDEO_FORMAT_UNKNOWN;
 }
 
-static void id_to_sdl_format(uint32_t id, SDL_PixelFormatEnum *format, SDL_Colorspace *colorspace)
+static void id_to_sdl_format(uint32_t id, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
 {
     struct sdl_video_format *f;
     SPA_FOR_EACH_ELEMENT(sdl_video_formats, f) {
@@ -603,7 +603,7 @@ static void PIPEWIRECAMERA_ReleaseFrame(SDL_CameraDevice *device, SDL_Surface *f
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 }
 
-static void collect_rates(CameraFormatAddData *data, struct param *p, SDL_PixelFormatEnum sdlfmt, SDL_Colorspace colorspace, const struct spa_rectangle *size)
+static void collect_rates(CameraFormatAddData *data, struct param *p, SDL_PixelFormat sdlfmt, SDL_Colorspace colorspace, const struct spa_rectangle *size)
 {
     const struct spa_pod_prop *prop;
     struct spa_pod * values;
@@ -636,7 +636,7 @@ static void collect_rates(CameraFormatAddData *data, struct param *p, SDL_PixelF
     }
 }
 
-static void collect_size(CameraFormatAddData *data, struct param *p, SDL_PixelFormatEnum sdlfmt, SDL_Colorspace colorspace)
+static void collect_size(CameraFormatAddData *data, struct param *p, SDL_PixelFormat sdlfmt, SDL_Colorspace colorspace)
 {
     const struct spa_pod_prop *prop;
     struct spa_pod * values;
@@ -670,7 +670,7 @@ static void collect_size(CameraFormatAddData *data, struct param *p, SDL_PixelFo
 static void collect_format(CameraFormatAddData *data, struct param *p)
 {
     const struct spa_pod_prop *prop;
-    SDL_PixelFormatEnum sdlfmt;
+    SDL_PixelFormat sdlfmt;
     SDL_Colorspace colorspace;
     struct spa_pod * values;
     uint32_t i, n_vals, choice, *ids;

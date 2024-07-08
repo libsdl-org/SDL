@@ -117,7 +117,7 @@ static size_t GetL3CacheSize(void)
                               : vec_add(vec_lvsl(8, src), vec_splat_u8(8)))
 
 /* Calculate the permute vector used for 32->32 swizzling */
-static vector unsigned char calc_swizzle32(const SDL_PixelFormat *srcfmt, const SDL_PixelFormat *dstfmt)
+static vector unsigned char calc_swizzle32(const SDL_PixelFormatDetails *srcfmt, const SDL_PixelFormatDetails *dstfmt)
 {
     /*
      * We have to assume that the bits that aren't used by other
@@ -125,8 +125,8 @@ static vector unsigned char calc_swizzle32(const SDL_PixelFormat *srcfmt, const 
      *  leave alpha with a zero mask, but we should still swizzle the bits.
      */
     /* ARGB */
-    static const struct SDL_PixelFormat default_pixel_format = {
-        0, NULL, 0, 0, { 0, 0 }, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, 0, 0, 0, 0, 16, 8, 0, 24, 0, NULL
+    static const SDL_PixelFormatDetails default_pixel_format = {
+        SDL_PIXELFORMAT_ARGB8888, 0, 0, { 0, 0 }, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000, 8, 8, 8, 8, 16, 8, 0, 24
     };
     const vector unsigned char plus = VECUINT8_LITERAL(0x00, 0x00, 0x00, 0x00,
                                                        0x04, 0x04, 0x04, 0x04,
@@ -201,7 +201,7 @@ static void Blit_XRGB8888_RGB565Altivec(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = (Uint8 *)info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     vector unsigned char valpha = vec_splat_u8(0);
     vector unsigned char vpermute = calc_swizzle32(srcfmt, NULL);
     vector unsigned char vgmerge = VECUINT8_LITERAL(0x00, 0x02, 0x00, 0x06,
@@ -302,8 +302,8 @@ static void Blit_RGB565_32Altivec(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = (Uint8 *)info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     unsigned alpha;
     vector unsigned char valpha;
     vector unsigned char vpermute;
@@ -440,8 +440,8 @@ static void Blit_RGB555_32Altivec(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = (Uint8 *)info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     unsigned alpha;
     vector unsigned char valpha;
     vector unsigned char vpermute;
@@ -580,9 +580,9 @@ static void Blit32to32KeyAltivec(SDL_BlitInfo *info)
     int srcskip = info->src_skip / 4;
     Uint32 *dstp = (Uint32 *)info->dst;
     int dstskip = info->dst_skip / 4;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     int srcbpp = srcfmt->bytes_per_pixel;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int dstbpp = dstfmt->bytes_per_pixel;
     int copy_alpha = (srcfmt->Amask && dstfmt->Amask);
     unsigned alpha = dstfmt->Amask ? info->a : 0;
@@ -702,8 +702,8 @@ static void ConvertAltivec32to32_noprefetch(SDL_BlitInfo *info)
     int srcskip = info->src_skip / 4;
     Uint32 *dst = (Uint32 *)info->dst;
     int dstskip = info->dst_skip / 4;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     vector unsigned int vzero = vec_splat_u32(0);
     vector unsigned char vpermute = calc_swizzle32(srcfmt, dstfmt);
     if (dstfmt->Amask && !srcfmt->Amask) {
@@ -788,8 +788,8 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
     int srcskip = info->src_skip / 4;
     Uint32 *dst = (Uint32 *)info->dst;
     int dstskip = info->dst_skip / 4;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     vector unsigned int vzero = vec_splat_u32(0);
     vector unsigned char vpermute = calc_swizzle32(srcfmt, dstfmt);
     if (dstfmt->Amask && !srcfmt->Amask) {
@@ -2064,9 +2064,9 @@ static void Blit_RGB555_ARGB1555(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint16 *dst = (Uint16 *)info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
 
-    Uint16 mask = ((Uint32)info->a >> dstfmt->Aloss) << dstfmt->Ashift;
+    Uint16 mask = ((Uint32)info->a >> (8 - dstfmt->Abits)) << dstfmt->Ashift;
 
     while (height--) {
         /* *INDENT-OFF* */ /* clang-format off */
@@ -2096,7 +2096,7 @@ static void BlitNto1(SDL_BlitInfo *info)
     int srcbpp;
     Uint32 Pixel;
     int sR, sG, sB;
-    SDL_PixelFormat *srcfmt;
+    const SDL_PixelFormatDetails *srcfmt;
 
     /* Set up some basic variables */
     width = info->dst_w;
@@ -2183,12 +2183,12 @@ static void Blit4to4MaskAlpha(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint32 *dst = (Uint32 *)info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
 
     if (dstfmt->Amask) {
         /* RGB->RGBA, SET_ALPHA */
-        Uint32 mask = ((Uint32)info->a >> dstfmt->Aloss) << dstfmt->Ashift;
+        Uint32 mask = ((Uint32)info->a >> (8 - dstfmt->Abits)) << dstfmt->Ashift;
 
         while (height--) {
             /* *INDENT-OFF* */ /* clang-format off */
@@ -2224,7 +2224,7 @@ static void Blit4to4MaskAlpha(SDL_BlitInfo *info)
 }
 
 /* permutation for mapping srcfmt to dstfmt, overloading or not the alpha channel */
-static void get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
+static void get_permutation(const SDL_PixelFormatDetails *srcfmt, const SDL_PixelFormatDetails *dstfmt,
                             int *_p0, int *_p1, int *_p2, int *_p3, int *_alpha_channel)
 {
     int alpha_channel = 0, p0, p1, p2, p3;
@@ -2318,9 +2318,9 @@ static void BlitNtoN(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     int srcbpp = srcfmt->bytes_per_pixel;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int dstbpp = dstfmt->bytes_per_pixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
 
@@ -2436,9 +2436,9 @@ static void BlitNtoNCopyAlpha(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     int srcbpp = srcfmt->bytes_per_pixel;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int dstbpp = dstfmt->bytes_per_pixel;
     int c;
 
@@ -2493,7 +2493,7 @@ static void BlitNto1Key(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const Uint8 *palmap = info->table;
     Uint32 ckey = info->colorkey;
     Uint32 rgbmask = ~srcfmt->Amask;
@@ -2592,8 +2592,8 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     Uint32 ckey = info->colorkey;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int srcbpp = srcfmt->bytes_per_pixel;
     int dstbpp = dstfmt->bytes_per_pixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
@@ -2863,8 +2863,8 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     Uint32 ckey = info->colorkey;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     Uint32 rgbmask = ~srcfmt->Amask;
 
     Uint8 srcbpp;
@@ -2965,7 +2965,7 @@ static void Blit2101010toN(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int dstbpp = dstfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB, sA;
@@ -2996,7 +2996,7 @@ static void BlitNto2101010(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     int srcbpp = srcfmt->bytes_per_pixel;
     Uint32 Pixel;
     unsigned sR, sG, sB, sA;
@@ -3027,9 +3027,9 @@ static void Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     int srcbpp = srcfmt->bytes_per_pixel;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int dstbpp = dstfmt->bytes_per_pixel;
 
     if (dstfmt->Amask) {
@@ -3100,9 +3100,9 @@ static void Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo *info)
     int srcskip = info->src_skip;
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     int srcbpp = srcfmt->bytes_per_pixel;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int dstbpp = dstfmt->bytes_per_pixel;
 
     if (dstfmt->Amask) {
@@ -3336,22 +3336,22 @@ static const struct blit_table *const normal_blit[] = {
 
 SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
 {
-    SDL_PixelFormat *srcfmt;
-    SDL_PixelFormat *dstfmt;
+    const SDL_PixelFormatDetails *srcfmt;
+    const SDL_PixelFormatDetails *dstfmt;
     const struct blit_table *table;
     int which;
     SDL_BlitFunc blitfun;
 
     /* Set up data for choosing the blit */
-    srcfmt = surface->format;
-    dstfmt = surface->map->dst->format;
+    srcfmt = surface->internal->format;
+    dstfmt = surface->internal->map.dst->internal->format;
 
     /* We don't support destinations less than 8-bits */
     if (dstfmt->bits_per_pixel < 8) {
         return NULL;
     }
 
-    switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+    switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
     case 0:
         blitfun = NULL;
         if (dstfmt->bits_per_pixel == 8) {
@@ -3427,7 +3427,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
            because RLE is the preferred fast way to deal with this.
            If a particular case turns out to be useful we'll add it. */
 
-        if (srcfmt->bytes_per_pixel == 2 && surface->map->identity != 0) {
+        if (srcfmt->bytes_per_pixel == 2 && surface->internal->map.identity != 0) {
             return Blit2to2Key;
         } else if (dstfmt->bytes_per_pixel == 1) {
             return BlitNto1Key;

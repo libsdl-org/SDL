@@ -1038,14 +1038,14 @@ static void SDLTest_PrintRenderer(SDL_Renderer *renderer)
     int i;
     char text[1024];
     int max_texture_size;
-    const SDL_PixelFormatEnum *texture_formats;
+    const SDL_PixelFormat *texture_formats;
 
     name = SDL_GetRendererName(renderer);
 
     SDL_Log("  Renderer %s:\n", name);
     SDL_Log("    VSync: %d\n", (int)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VSYNC_NUMBER, 0));
 
-    texture_formats = (const SDL_PixelFormatEnum *)SDL_GetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, NULL);
+    texture_formats = (const SDL_PixelFormat *)SDL_GetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, NULL);
     if (texture_formats) {
         (void)SDL_snprintf(text, sizeof(text), "    Texture formats: ");
         for (i = 0; texture_formats[i]; ++i) {
@@ -1074,7 +1074,7 @@ static SDL_Surface *SDLTest_LoadIcon(const char *file)
         return NULL;
     }
 
-    if (icon->format->palette) {
+    if (icon->format == SDL_PIXELFORMAT_INDEX8) {
         /* Set the colorkey */
         SDL_SetSurfaceColorKey(icon, 1, *((Uint8 *)icon->pixels));
     }
@@ -1218,7 +1218,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("Usable bounds: %dx%d at %d,%d\n", usablebounds.w, usablebounds.h, usablebounds.x, usablebounds.y);
 
                 mode = SDL_GetDesktopDisplayMode(displayID);
-                SDL_GetMasksForPixelFormatEnum(mode->format, &bpp, &Rmask, &Gmask,
+                SDL_GetMasksForPixelFormat(mode->format, &bpp, &Rmask, &Gmask,
                                            &Bmask, &Amask);
                 SDL_Log("  Desktop mode: %dx%d@%gx %gHz, %d bits-per-pixel (%s)\n",
                         mode->w, mode->h, mode->pixel_density, mode->refresh_rate, bpp,
@@ -1240,7 +1240,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                     SDL_Log("  Fullscreen video modes:\n");
                     for (j = 0; j < m; ++j) {
                         mode = modes[j];
-                        SDL_GetMasksForPixelFormatEnum(mode->format, &bpp, &Rmask,
+                        SDL_GetMasksForPixelFormat(mode->format, &bpp, &Rmask,
                                                    &Gmask, &Bmask, &Amask);
                         SDL_Log("    Mode %d: %dx%d@%gx %gHz, %d bits-per-pixel (%s)\n",
                                 j, mode->w, mode->h, mode->pixel_density, mode->refresh_rate, bpp,

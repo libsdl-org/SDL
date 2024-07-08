@@ -53,7 +53,7 @@ struct SDL_DisplayModeData
 
 static const struct
 {
-    SDL_PixelFormatEnum pixfmt;
+    SDL_PixelFormat pixfmt;
     GSPGPU_FramebufferFormat gspfmt;
 } format_map[] = {
     { SDL_PIXELFORMAT_RGBA8888, GSP_RGBA8_OES },

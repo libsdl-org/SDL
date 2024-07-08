@@ -1966,7 +1966,7 @@ static void GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 static SDL_Surface *GLES2_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
-    SDL_PixelFormatEnum format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
+    SDL_PixelFormat format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
     int w, h;
     SDL_Surface *surface;
 

@@ -851,7 +851,7 @@ int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
     bmi->biClrImportant = SDL_Swap32LE(0);
 
     /* Write the pixels upside down into the bitmap buffer */
-    SDL_assert(icon->format->format == SDL_PIXELFORMAT_ARGB8888);
+    SDL_assert(icon->format == SDL_PIXELFORMAT_ARGB8888);
     dst = &icon_bmp[sizeof(BITMAPINFOHEADER)];
     row_len = icon->w * sizeof(Uint32);
     y = icon->h;

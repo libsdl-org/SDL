@@ -1335,10 +1335,10 @@ compare(SDL_Surface *referenceSurface, int allowable_error)
         return;
     }
 
-    testSurface = SDL_ConvertSurfaceFormat(surface, RENDER_COMPARE_FORMAT);
+    testSurface = SDL_ConvertSurface(surface, RENDER_COMPARE_FORMAT);
     SDL_DestroySurface(surface);
     if (!testSurface) {
-        SDLTest_AssertCheck(testSurface != NULL, "Validate result from SDL_ConvertSurfaceFormat, got NULL, %s", SDL_GetError());
+        SDLTest_AssertCheck(testSurface != NULL, "Validate result from SDL_ConvertSurface, got NULL, %s", SDL_GetError());
         return;
     }
 

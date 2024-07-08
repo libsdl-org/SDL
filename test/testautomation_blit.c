@@ -58,14 +58,14 @@ Uint32 *getNextRandomBuffer(const int width, const int height) {
 /*
  * Generates a small 15 x 15px surface of PRNG pixel data
  */
-SDL_Surface* getRandomBlitChunk(Uint32 *pixels, SDL_PixelFormatEnum format) {
-    return SDL_CreateSurfaceFrom(pixels, 15, 15, 15 * 4, format);
+SDL_Surface* getRandomBlitChunk(Uint32 *pixels, SDL_PixelFormat format) {
+    return SDL_CreateSurfaceFrom(15, 15, format, pixels, 15 * 4);
 }
 /*
  * Generates a 800 x 600 surface of PRNG pixel data
  */
-SDL_Surface* getRandomSVGASurface(Uint32 *pixels, SDL_PixelFormatEnum format) {
-    return SDL_CreateSurfaceFrom(pixels, 800, 600, 800 * 4, format);
+SDL_Surface* getRandomSVGASurface(Uint32 *pixels, SDL_PixelFormat format) {
+    return SDL_CreateSurfaceFrom(800, 600, format, pixels, 800 * 4);
 }
 /*
  * Calculates the FNV-1a hash of input pixel data

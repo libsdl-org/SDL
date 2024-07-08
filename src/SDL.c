@@ -50,6 +50,7 @@
 #include "render/SDL_sysrender.h"
 #include "sensor/SDL_sensor_c.h"
 #include "stdlib/SDL_getenv_c.h"
+#include "video/SDL_pixels_c.h"
 #include "video/SDL_video_c.h"
 
 #define SDL_INIT_EVERYTHING ~0U
@@ -548,6 +549,8 @@ void SDL_Quit(void)
     SDL_SetObjectsInvalid();
     SDL_ClearHints();
     SDL_AssertionsQuit();
+
+    SDL_QuitPixelFormatDetails();
 
     SDL_QuitCPUInfo();
 

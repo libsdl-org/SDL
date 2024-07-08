@@ -28,8 +28,8 @@
 
 struct SDL_SW_YUVTexture
 {
-    SDL_PixelFormatEnum format;
-    SDL_PixelFormatEnum target_format;
+    SDL_PixelFormat format;
+    SDL_PixelFormat target_format;
     int w, h;
     Uint8 *pixels;
 
@@ -44,7 +44,7 @@ struct SDL_SW_YUVTexture
 
 typedef struct SDL_SW_YUVTexture SDL_SW_YUVTexture;
 
-SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormatEnum format, int w, int h);
+SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, int w, int h);
 int SDL_SW_QueryYUVTexturePixels(SDL_SW_YUVTexture *swdata, void **pixels,
                                  int *pitch);
 int SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
@@ -60,7 +60,7 @@ int SDL_SW_LockYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
                           void **pixels, int *pitch);
 void SDL_SW_UnlockYUVTexture(SDL_SW_YUVTexture *swdata);
 int SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect,
-                        SDL_PixelFormatEnum target_format, int w, int h, void *pixels,
+                        SDL_PixelFormat target_format, int w, int h, void *pixels,
                         int pitch);
 void SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture *swdata);
 

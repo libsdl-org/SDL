@@ -236,7 +236,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
         surface = SDL_LoadBMP_IO(src, SDL_TRUE);
         if (surface) {
             /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 255, 255, 255));
+            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapSurfaceRGB(surface, 255, 255, 255));
 
             texture = SDL_CreateTextureFromSurface(r, surface);
             *w = surface->w;
@@ -279,7 +279,7 @@ static void MoveSprite(void)
     }
 }
 
-static SDL_PixelFormatEnum GetTextureFormat(enum AVPixelFormat format)
+static SDL_PixelFormat GetTextureFormat(enum AVPixelFormat format)
 {
     switch (format) {
     case AV_PIX_FMT_RGB8:
@@ -511,7 +511,7 @@ static SDL_Colorspace GetFrameColorspace(AVFrame *frame)
     return colorspace;
 }
 
-static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, SDL_PixelFormatEnum format, int access)
+static SDL_PropertiesID CreateVideoTextureProperties(AVFrame *frame, SDL_PixelFormat format, int access)
 {
     AVFrameSideData *pSideData;
     SDL_PropertiesID props;
@@ -571,12 +571,12 @@ static void SDLCALL FreeSwsContextContainer(void *userdata, void *value)
 static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
 {
     int texture_width = 0, texture_height = 0;
-    SDL_PixelFormatEnum texture_format = SDL_PIXELFORMAT_UNKNOWN;
-    SDL_PixelFormatEnum frame_format = GetTextureFormat(frame->format);
+    SDL_PixelFormat texture_format = SDL_PIXELFORMAT_UNKNOWN;
+    SDL_PixelFormat frame_format = GetTextureFormat(frame->format);
 
     if (*texture) {
         SDL_PropertiesID props = SDL_GetTextureProperties(*texture);
-        texture_format = (SDL_PixelFormatEnum)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_FORMAT_NUMBER, SDL_PIXELFORMAT_UNKNOWN);
+        texture_format = (SDL_PixelFormat)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_FORMAT_NUMBER, SDL_PIXELFORMAT_UNKNOWN);
         texture_width = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, 0);
         texture_height = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, 0);
     }

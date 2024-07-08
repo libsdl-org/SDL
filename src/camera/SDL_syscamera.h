@@ -64,7 +64,7 @@ typedef struct CameraFormatAddData
     int allocated_specs;
 } CameraFormatAddData;
 
-int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormatEnum format, SDL_Colorspace colorspace, int w, int h, int framerate_numerator, int framerate_denominator);
+int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_Colorspace colorspace, int w, int h, int framerate_numerator, int framerate_denominator);
 
 typedef struct SurfaceList
 {

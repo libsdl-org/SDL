@@ -533,10 +533,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlit = {
 SDL_Surface *SDLTest_ImageBlit(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imageBlit.pixel_data,
         SDLTest_imageBlit.width,
         SDLTest_imageBlit.height,
-        SDLTest_imageBlit.width * SDLTest_imageBlit.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imageBlit.pixel_data,
+        SDLTest_imageBlit.width * SDLTest_imageBlit.bytes_per_pixel);
     return surface;
 }
 
@@ -1005,10 +1006,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitColor = {
 SDL_Surface *SDLTest_ImageBlitColor(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imageBlitColor.pixel_data,
         SDLTest_imageBlitColor.width,
         SDLTest_imageBlitColor.height,
-        SDLTest_imageBlitColor.width * SDLTest_imageBlitColor.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imageBlitColor.pixel_data,
+        SDLTest_imageBlitColor.width * SDLTest_imageBlitColor.bytes_per_pixel);
     return surface;
 }
 
@@ -1640,10 +1642,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitAlpha = {
 SDL_Surface *SDLTest_ImageBlitAlpha(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imageBlitAlpha.pixel_data,
         SDLTest_imageBlitAlpha.width,
         SDLTest_imageBlitAlpha.height,
-        SDLTest_imageBlitAlpha.width * SDLTest_imageBlitAlpha.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imageBlitAlpha.pixel_data,
+        SDLTest_imageBlitAlpha.width * SDLTest_imageBlitAlpha.bytes_per_pixel);
     return surface;
 }
 
@@ -2208,10 +2211,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAdd = {
 SDL_Surface *SDLTest_ImageBlitBlendAdd(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imageBlitBlendAdd.pixel_data,
         SDLTest_imageBlitBlendAdd.width,
         SDLTest_imageBlitBlendAdd.height,
-        SDLTest_imageBlitBlendAdd.width * SDLTest_imageBlitBlendAdd.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imageBlitBlendAdd.pixel_data,
+        SDLTest_imageBlitBlendAdd.width * SDLTest_imageBlitBlendAdd.bytes_per_pixel);
     return surface;
 }
 
@@ -2797,10 +2801,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlend = {
 SDL_Surface *SDLTest_ImageBlitBlend(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imageBlitBlend.pixel_data,
         SDLTest_imageBlitBlend.width,
         SDLTest_imageBlitBlend.height,
-        SDLTest_imageBlitBlend.width * SDLTest_imageBlitBlend.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imageBlitBlend.pixel_data,
+        SDLTest_imageBlitBlend.width * SDLTest_imageBlitBlend.bytes_per_pixel);
     return surface;
 }
 
@@ -3216,10 +3221,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendMod = {
 SDL_Surface *SDLTest_ImageBlitBlendMod(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imageBlitBlendMod.pixel_data,
         SDLTest_imageBlitBlendMod.width,
         SDLTest_imageBlitBlendMod.height,
-        SDLTest_imageBlitBlendMod.width * SDLTest_imageBlitBlendMod.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imageBlitBlendMod.pixel_data,
+        SDLTest_imageBlitBlendMod.width * SDLTest_imageBlitBlendMod.bytes_per_pixel);
     return surface;
 }
 
@@ -4018,10 +4024,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendNone = {
 SDL_Surface *SDLTest_ImageBlitBlendNone(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imageBlitBlendNone.pixel_data,
         SDLTest_imageBlitBlendNone.width,
         SDLTest_imageBlitBlendNone.height,
-        SDLTest_imageBlitBlendNone.width * SDLTest_imageBlitBlendNone.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imageBlitBlendNone.pixel_data,
+        SDLTest_imageBlitBlendNone.width * SDLTest_imageBlitBlendNone.bytes_per_pixel);
     return surface;
 }
 
@@ -4552,10 +4559,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAll = {
 SDL_Surface *SDLTest_ImageBlitBlendAll(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imageBlitBlendAll.pixel_data,
         SDLTest_imageBlitBlendAll.width,
         SDLTest_imageBlitBlendAll.height,
-        SDLTest_imageBlitBlendAll.width * SDLTest_imageBlitBlendAll.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imageBlitBlendAll.pixel_data,
+        SDLTest_imageBlitBlendAll.width * SDLTest_imageBlitBlendAll.bytes_per_pixel);
     return surface;
 }
 
@@ -4763,11 +4771,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageFace = {
 SDL_Surface *SDLTest_ImageFace(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imageFace.pixel_data,
         SDLTest_imageFace.width,
         SDLTest_imageFace.height,
-        SDLTest_imageFace.width * SDLTest_imageFace.bytes_per_pixel,
-        SDL_PIXELFORMAT_RGBA32);
+        SDL_PIXELFORMAT_RGBA32,
+        (void *)SDLTest_imageFace.pixel_data,
+        SDLTest_imageFace.width * SDLTest_imageFace.bytes_per_pixel);
     return surface;
 }
 
@@ -5256,10 +5264,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imagePrimitives = {
 SDL_Surface *SDLTest_ImagePrimitives(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imagePrimitives.pixel_data,
         SDLTest_imagePrimitives.width,
         SDLTest_imagePrimitives.height,
-        SDLTest_imagePrimitives.width * SDLTest_imagePrimitives.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imagePrimitives.pixel_data,
+        SDLTest_imagePrimitives.width * SDLTest_imagePrimitives.bytes_per_pixel);
     return surface;
 }
 
@@ -5921,10 +5930,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imagePrimitivesBlend = {
 SDL_Surface *SDLTest_ImagePrimitivesBlend(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-        (void *)SDLTest_imagePrimitivesBlend.pixel_data,
         SDLTest_imagePrimitivesBlend.width,
         SDLTest_imagePrimitivesBlend.height,
-        SDLTest_imagePrimitivesBlend.width * SDLTest_imagePrimitivesBlend.bytes_per_pixel, SDL_PIXELFORMAT_RGB24);
+        SDL_PIXELFORMAT_RGB24,
+        (void *)SDLTest_imagePrimitivesBlend.pixel_data,
+        SDLTest_imagePrimitivesBlend.width * SDLTest_imagePrimitivesBlend.bytes_per_pixel);
     return surface;
 }
 
@@ -6094,11 +6104,11 @@ static const SDLTest_SurfaceImage_t SDLTest_imageRainbowBackground = {
 SDL_Surface *SDLTest_ImageBlendingBackground(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-            (void *)SDLTest_imageRainbowBackground.pixel_data,
             SDLTest_imageRainbowBackground.width,
             SDLTest_imageRainbowBackground.height,
-            SDLTest_imageRainbowBackground.width * SDLTest_imageRainbowBackground.bytes_per_pixel,
-            SDL_PIXELFORMAT_ARGB8888);
+            SDL_PIXELFORMAT_ARGB8888,
+            (void *)SDLTest_imageRainbowBackground.pixel_data,
+            SDLTest_imageRainbowBackground.width * SDLTest_imageRainbowBackground.bytes_per_pixel);
     return surface;
 }
 
@@ -6268,10 +6278,10 @@ static const SDLTest_SurfaceImage_t SDLTest_imageTransparentSprite = {
 SDL_Surface *SDLTest_ImageBlendingSprite(void)
 {
     SDL_Surface *surface = SDL_CreateSurfaceFrom(
-            (void *)SDLTest_imageTransparentSprite.pixel_data,
             SDLTest_imageTransparentSprite.width,
             SDLTest_imageTransparentSprite.height,
-            SDLTest_imageTransparentSprite.width * SDLTest_imageTransparentSprite.bytes_per_pixel,
-            SDL_PIXELFORMAT_ARGB8888);
+            SDL_PIXELFORMAT_ARGB8888,
+            (void *)SDLTest_imageTransparentSprite.pixel_data,
+            SDLTest_imageTransparentSprite.width * SDLTest_imageTransparentSprite.bytes_per_pixel);
     return surface;
 }

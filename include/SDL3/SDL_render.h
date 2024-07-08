@@ -350,8 +350,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetRendererName(SDL_Renderer *render
  * - `SDL_PROP_RENDERER_VSYNC_NUMBER`: the current vsync setting
  * - `SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER`: the maximum texture width
  *   and height
- * - `SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER`: a (const SDL_PixelFormatEnum
- *   *) array of pixel formats, terminated with SDL_PIXELFORMAT_UNKNOWN,
+ * - `SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER`: a (const SDL_PixelFormat *) array of pixel formats, terminated with SDL_PIXELFORMAT_UNKNOWN,
  *   representing the available texture formats for this renderer.
  * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_ColorSpace value
  *   describing the colorspace for output to the display, defaults to
@@ -485,7 +484,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *ren
  * Create a texture for a rendering context.
  *
  * \param renderer the rendering context.
- * \param format one of the enumerated values in SDL_PixelFormatEnum.
+ * \param format one of the enumerated values in SDL_PixelFormat.
  * \param access one of the enumerated values in SDL_TextureAccess.
  * \param w the width of the texture in pixels.
  * \param h the height of the texture in pixels.
@@ -501,7 +500,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *ren
  * \sa SDL_GetTextureSize
  * \sa SDL_UpdateTexture
  */
-extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormatEnum format, int access, int w, int h);
+extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormat format, int access, int w, int h);
 
 /**
  * Create a texture from an existing surface.
@@ -540,7 +539,7 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureFromSurface(SDL_Render
  *   SDL_COLORSPACE_SRGB for other RGB textures and SDL_COLORSPACE_JPEG for
  *   YUV textures.
  * - `SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER`: one of the enumerated values in
- *   SDL_PixelFormatEnum, defaults to the best RGBA format for the renderer
+ *   SDL_PixelFormat, defaults to the best RGBA format for the renderer
  * - `SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER`: one of the enumerated values in
  *   SDL_TextureAccess, defaults to SDL_TEXTUREACCESS_STATIC
  * - `SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER`: the width of the texture in
@@ -672,7 +671,7 @@ extern SDL_DECLSPEC SDL_Texture *SDLCALL SDL_CreateTextureWithProperties(SDL_Ren
  * - `SDL_PROP_TEXTURE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing
  *   the texture colorspace.
  * - `SDL_PROP_TEXTURE_FORMAT_NUMBER`: one of the enumerated values in
- *   SDL_PixelFormatEnum.
+ *   SDL_PixelFormat.
  * - `SDL_PROP_TEXTURE_ACCESS_NUMBER`: one of the enumerated values in
  *   SDL_TextureAccess.
  * - `SDL_PROP_TEXTURE_WIDTH_NUMBER`: the width of the texture in pixels.

@@ -65,7 +65,7 @@ struct SDL_Texture
     SDL_Colorspace colorspace;  /**< The colorspace of the texture */
     float SDR_white_point;      /**< The SDR white point for this content */
     float HDR_headroom;         /**< The HDR headroom needed by this content */
-    SDL_PixelFormatEnum format; /**< The pixel format of the texture */
+    SDL_PixelFormat format;     /**< The pixel format of the texture */
     int access;                 /**< SDL_TextureAccess */
     int w;                      /**< The width of the texture */
     int h;                      /**< The height of the texture */
@@ -217,7 +217,7 @@ struct SDL_Renderer
 
     /* The current renderer info */
     const char *name;
-    SDL_PixelFormatEnum *texture_formats;
+    SDL_PixelFormat *texture_formats;
     int num_texture_formats;
     SDL_bool software;
 
@@ -320,7 +320,7 @@ extern SDL_RenderDriver VITA_GXM_RenderDriver;
 extern void SDL_QuitRender(void);
 
 /* Add a supported texture format to a renderer */
-extern int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormatEnum format);
+extern int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormat format);
 
 /* Setup colorspace conversion */
 extern void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props);

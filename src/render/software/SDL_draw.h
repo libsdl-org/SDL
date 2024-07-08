@@ -364,7 +364,7 @@
 #define HLINE(type, op, draw_end)                              \
     {                                                          \
         int length;                                            \
-        int pitch = (dst->pitch / dst->format->bytes_per_pixel); \
+        int pitch = (dst->pitch / dst->internal->format->bytes_per_pixel); \
         type *pixel;                                           \
         if (x1 <= x2) {                                        \
             pixel = (type *)dst->pixels + y1 * pitch + x1;     \
@@ -386,7 +386,7 @@
 #define VLINE(type, op, draw_end)                              \
     {                                                          \
         int length;                                            \
-        int pitch = (dst->pitch / dst->format->bytes_per_pixel); \
+        int pitch = (dst->pitch / dst->internal->format->bytes_per_pixel); \
         type *pixel;                                           \
         if (y1 <= y2) {                                        \
             pixel = (type *)dst->pixels + y1 * pitch + x1;     \
@@ -408,7 +408,7 @@
 #define DLINE(type, op, draw_end)                              \
     {                                                          \
         int length;                                            \
-        int pitch = (dst->pitch / dst->format->bytes_per_pixel); \
+        int pitch = (dst->pitch / dst->internal->format->bytes_per_pixel); \
         type *pixel;                                           \
         if (y1 <= y2) {                                        \
             pixel = (type *)dst->pixels + y1 * pitch + x1;     \
@@ -628,7 +628,7 @@
     do {                                                               \
         int width = rect->w;                                           \
         int height = rect->h;                                          \
-        int pitch = (dst->pitch / dst->format->bytes_per_pixel);         \
+        int pitch = (dst->pitch / dst->internal->format->bytes_per_pixel); \
         int skip = pitch - width;                                      \
         type *pixel = (type *)dst->pixels + rect->y * pitch + rect->x; \
         while (height--) {                                             \

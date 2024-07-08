@@ -132,7 +132,7 @@ void _SpoutModeData(display_mode *bmode) {
 
 
 
-SDL_PixelFormatEnum HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
+SDL_PixelFormat HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
 {
     switch (colorspace) {
     case B_CMAP8:

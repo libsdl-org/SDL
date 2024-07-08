@@ -246,7 +246,7 @@ int WINRT_VideoInit(SDL_VideoDevice *_this)
     return 0;
 }
 
-extern "C" SDL_PixelFormatEnum D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat);
+extern "C" SDL_PixelFormat D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat);
 
 static void WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC *dxgiMode, SDL_DisplayMode *sdlMode)
 {
