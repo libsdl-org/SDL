@@ -405,6 +405,7 @@ add_sdl_test_executable(testshader NEEDS_RESOURCES TESTUTILS SOURCES testshader.
 add_sdl_test_executable(testshape NEEDS_RESOURCES SOURCES testshape.c ${glass_bmp_header})
 add_sdl_test_executable(testsprite MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c)
 add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_bmp_header})
+add_sdl_test_executable(testspritesurface SOURCES testspritesurface.c ${icon_bmp_header})
 add_sdl_test_executable(teststreaming NEEDS_RESOURCES TESTUTILS SOURCES teststreaming.c)
 add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)
 add_sdl_test_executable(testurl SOURCES testurl.c)
