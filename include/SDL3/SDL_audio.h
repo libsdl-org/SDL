@@ -45,10 +45,10 @@
  *
  * ## Channel layouts
  *
- * Audio data passing through SDL is uncompressed PCM data, interleaved.
- * One can provide their own decompression through an MP3, etc, decoder, but
- * SDL does not provide this directly. Each interleaved channel of data is
- * meant to be in a specific order.
+ * Audio data passing through SDL is uncompressed PCM data, interleaved. One
+ * can provide their own decompression through an MP3, etc, decoder, but SDL
+ * does not provide this directly. Each interleaved channel of data is meant
+ * to be in a specific order.
  *
  * Abbreviations:
  *
@@ -565,7 +565,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid
  *
  * \param devid the instance ID of the device to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
- * \returns an array of the current channel mapping, with as many elements as the current output spec's channels, or NULL if default.
+ * \returns an array of the current channel mapping, with as many elements as
+ *          the current output spec's channels, or NULL if default.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1109,7 +1110,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamGain(SDL_AudioStream *stream, 
  *
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
- * \returns an array of the current channel mapping, with as many elements as the current output spec's channels, or NULL if default.
+ * \returns an array of the current channel mapping, with as many elements as
+ *          the current output spec's channels, or NULL if default.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running.
@@ -1134,7 +1136,8 @@ extern SDL_DECLSPEC const int * SDLCALL SDL_GetAudioStreamInputChannelMap(SDL_Au
  *
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
- * \returns an array of the current channel mapping, with as many elements as the current output spec's channels, or NULL if default.
+ * \returns an array of the current channel mapping, with as many elements as
+ *          the current output spec's channels, or NULL if default.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running.
@@ -1152,8 +1155,8 @@ extern SDL_DECLSPEC const int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_A
  * data in the [order that SDL expects](CategoryAudio#channel-layouts).
  *
  * The input channel map reorders data that is added to a stream via
- * SDL_PutAudioStreamData. Future calls to SDL_PutAudioStreamData
- * must provide data in the new channel order.
+ * SDL_PutAudioStreamData. Future calls to SDL_PutAudioStreamData must provide
+ * data in the new channel order.
  *
  * Each item in the array represents an input channel, and its value is the
  * channel that it should be remapped to. To reverse a stereo signal's left
@@ -1175,9 +1178,9 @@ extern SDL_DECLSPEC const int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_A
  * after this call.
  *
  * If `count` is not equal to the current number of channels in the audio
- * stream's format, this will fail. This is a safety measure to make sure a
- * a race condition hasn't changed the format while you this call is setting
- * the channel map.
+ * stream's format, this will fail. This is a safety measure to make sure a a
+ * race condition hasn't changed the format while you this call is setting the
+ * channel map.
  *
  * \param stream the SDL_AudioStream to change.
  * \param chmap the new channel map, NULL to reset to default.
@@ -1221,9 +1224,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStrea
  * after this call.
  *
  * If `count` is not equal to the current number of channels in the audio
- * stream's format, this will fail. This is a safety measure to make sure a
- * a race condition hasn't changed the format while you this call is setting
- * the channel map.
+ * stream's format, this will fail. This is a safety measure to make sure a a
+ * race condition hasn't changed the format while you this call is setting the
+ * channel map.
  *
  * \param stream the SDL_AudioStream to change.
  * \param chmap the new channel map, NULL to reset to default.
