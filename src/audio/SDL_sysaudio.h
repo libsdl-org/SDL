@@ -48,6 +48,8 @@
 #define DEFAULT_AUDIO_RECORDING_CHANNELS 1
 #define DEFAULT_AUDIO_RECORDING_FREQUENCY 44100
 
+#define SDL_MAX_CHANNELMAP_CHANNELS 8  // !!! FIXME: if SDL ever supports more channels, clean this out and make those parts dynamic.
+
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 typedef struct SDL_LogicalAudioDevice SDL_LogicalAudioDevice;
 
@@ -111,18 +113,22 @@ extern void ConvertAudioToFloat(float *dst, const void *src, int num_samples, SD
 extern void ConvertAudioFromFloat(void *dst, const float *src, int num_samples, SDL_AudioFormat dst_fmt);
 extern void ConvertAudioSwapEndian(void* dst, const void* src, int num_samples, int bitsize);
 
-extern SDL_bool SDL_ChannelMapIsDefault(const Uint8 *map, int channels);
-extern SDL_bool SDL_ChannelMapIsBogus(const Uint8 *map, int channels);
+extern SDL_bool SDL_ChannelMapIsDefault(const int *map, int channels);
+extern SDL_bool SDL_ChannelMapIsBogus(const int *map, int channels);
 
 // this gets used from the audio device threads. It has rules, don't use this if you don't know how to use it!
 extern void ConvertAudio(int num_frames,
-                         const void *src, SDL_AudioFormat src_format, int src_channels, const Uint8 *src_map,
-                         void *dst, SDL_AudioFormat dst_format, int dst_channels, const Uint8 *dst_map,
+                         const void *src, SDL_AudioFormat src_format, int src_channels, const int *src_map,
+                         void *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
                          void* scratch, float gain);
 
 // Compare two SDL_AudioSpecs, return SDL_TRUE if they match exactly.
-// Using SDL_memcmp directly isn't safe, since potential padding (and unused parts of the channel map) might not be initialized.
-extern SDL_bool SDL_AudioSpecsEqual(const SDL_AudioSpec *a, const SDL_AudioSpec *b);
+// Using SDL_memcmp directly isn't safe, since potential padding might not be initialized.
+// either channel maps can be NULL for the default (and both should be if you don't care about them).
+extern SDL_bool SDL_AudioSpecsEqual(const SDL_AudioSpec *a, const SDL_AudioSpec *b, const int *channel_map_a, const int *channel_map_b);
+
+// allocate+copy a channel map.
+extern int *SDL_ChannelMapDup(const int *origchmap, int channels);
 
 // Special case to let something in SDL_audiocvt.c access something in SDL_audio.c. Don't use this.
 extern void OnAudioStreamCreated(SDL_AudioStream *stream);
@@ -197,12 +203,16 @@ struct SDL_AudioStream
 
     SDL_AudioSpec src_spec;
     SDL_AudioSpec dst_spec;
+    int *src_chmap;
+    int *dst_chmap;
     float freq_ratio;
     float gain;
 
     struct SDL_AudioQueue* queue;
 
     SDL_AudioSpec input_spec; // The spec of input data currently being processed
+    int *input_chmap;
+    int input_chmap_storage[SDL_MAX_CHANNELMAP_CHANNELS];  // !!! FIXME: this needs to grow if SDL ever supports more channels. But if it grows, we should probably be more clever about allocations.
     Sint64 resample_offset;
 
     Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
@@ -287,6 +297,8 @@ struct SDL_AudioDevice
     // The device's current audio specification
     SDL_AudioSpec spec;
     int buffer_size;
+
+    int *chmap;
 
     // The device's default audio specification
     SDL_AudioSpec default_spec;

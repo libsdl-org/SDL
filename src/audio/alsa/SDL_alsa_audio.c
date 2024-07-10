@@ -249,13 +249,13 @@ static const char *get_audio_device(void *handle, const int channels)
 // https://bugzilla.libsdl.org/show_bug.cgi?id=110
 //  "For Linux ALSA, this is FL-FR-RL-RR-C-LFE
 //  and for Windows DirectX [and CoreAudio], this is FL-FR-C-LFE-RL-RR"
-static const Uint8 swizzle_alsa_channels_6[6] = { 0, 1, 4, 5, 2, 3 };
+static const int swizzle_alsa_channels_6[6] = { 0, 1, 4, 5, 2, 3 };
 
 // 7.1 swizzle:
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/audio/mapping-stream-formats-to-speaker-configurations
 //  For Linux ALSA, this appears to be FL-FR-RL-RR-C-LFE-SL-SR
 //  and for Windows DirectX [and CoreAudio], this is FL-FR-C-LFE-SL-SR-RL-RR"
-static const Uint8 swizzle_alsa_channels_8[8] = { 0, 1, 6, 7, 2, 3, 4, 5 };
+static const int swizzle_alsa_channels_8[8] = { 0, 1, 6, 7, 2, 3, 4, 5 };
 
 
 
@@ -533,32 +533,40 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
         device->spec.channels = channels;
     }
 
-    // Validate number of channels and determine if swizzling is necessary.
-    //  Assume original swizzling, until proven otherwise.
+    const int *swizmap = NULL;
     if (channels == 6) {
-        device->spec.use_channel_map = SDL_TRUE;
-        SDL_memcpy(device->spec.channel_map, swizzle_alsa_channels_6, sizeof (device->spec.channel_map[0]) * channels);
+        swizmap = swizzle_alsa_channels_6;
     } else if (channels == 8) {
-        device->spec.use_channel_map = SDL_TRUE;
-        SDL_memcpy(device->spec.channel_map, swizzle_alsa_channels_8, sizeof (device->spec.channel_map[0]) * channels);
+        swizmap = swizzle_alsa_channels_8;
     }
 
 #ifdef SND_CHMAP_API_VERSION
-    snd_pcm_chmap_t *chmap = ALSA_snd_pcm_get_chmap(pcm_handle);
-    if (chmap) {
-        char chmap_str[64];
-        if (ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str) > 0) {
-            if ( (channels == 6) &&
-                 ((SDL_strcmp("FL FR FC LFE RL RR", chmap_str) == 0) ||
-                  (SDL_strcmp("FL FR FC LFE SL SR", chmap_str) == 0)) ) {
-                device->spec.use_channel_map = SDL_FALSE;
-            } else if ((channels == 8) && (SDL_strcmp("FL FR FC LFE SL SR RL RR", chmap_str) == 0)) {
-                device->spec.use_channel_map = SDL_FALSE;
+    if (swizmap) {
+        snd_pcm_chmap_t *chmap = ALSA_snd_pcm_get_chmap(pcm_handle);
+        if (chmap) {
+            char chmap_str[64];
+            if (ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str) > 0) {
+                if ( (channels == 6) &&
+                     ((SDL_strcmp("FL FR FC LFE RL RR", chmap_str) == 0) ||
+                      (SDL_strcmp("FL FR FC LFE SL SR", chmap_str) == 0)) ) {
+                    swizmap = NULL;
+                } else if ((channels == 8) && (SDL_strcmp("FL FR FC LFE SL SR RL RR", chmap_str) == 0)) {
+                    swizmap = NULL;
+                }
             }
+            free(chmap); // This should NOT be SDL_free()
         }
-        free(chmap); // This should NOT be SDL_free()
     }
 #endif // SND_CHMAP_API_VERSION
+
+    // Validate number of channels and determine if swizzling is necessary.
+    //  Assume original swizzling, until proven otherwise.
+    if (swizmap) {
+        device->chmap = SDL_ChannelMapDup(swizmap, channels);
+        if (!device->chmap) {
+            return -1;
+        }
+    }
 
     // Set the audio rate
     unsigned int rate = device->spec.freq;
