@@ -129,6 +129,7 @@ SDL_KMSDRM_SYM(uint64_t,gbm_bo_get_modifier,(struct gbm_bo *bo))
 SDL_KMSDRM_SYM(int,gbm_bo_get_plane_count,(struct gbm_bo *bo))
 SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_offset,(struct gbm_bo *bo, int plane))
 SDL_KMSDRM_SYM(uint32_t,gbm_bo_get_stride_for_plane,(struct gbm_bo *bo, int plane))
+SDL_KMSDRM_SYM(union gbm_bo_handle,gbm_bo_get_handle_for_plane,(struct gbm_bo *bo, int plane);)
 
 #undef SDL_KMSDRM_MODULE
 #undef SDL_KMSDRM_SYM
