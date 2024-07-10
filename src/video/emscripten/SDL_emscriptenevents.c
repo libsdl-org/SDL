@@ -794,7 +794,7 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
 {
     const SDL_Keycode keycode = Emscripten_MapKeyCode(keyEvent);
     SDL_Scancode scancode = Emscripten_MapScanCode(keyEvent->code);
-    SDL_bool prevent_default = SDL_TRUE;
+    SDL_bool prevent_default = SDL_GetEventState(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_KEYDOWN : SDL_KEYUP) == SDL_ENABLE;
     SDL_bool is_nav_key = SDL_FALSE;
 
     if (scancode == SDL_SCANCODE_UNKNOWN) {
