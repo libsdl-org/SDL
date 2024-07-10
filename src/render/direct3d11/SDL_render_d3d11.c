@@ -2783,6 +2783,11 @@ static int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
 {
     D3D11_RenderData *data;
 
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    if (!hwnd) {
+        return SDL_SetError("Couldn't get window handle");
+    }
+
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&

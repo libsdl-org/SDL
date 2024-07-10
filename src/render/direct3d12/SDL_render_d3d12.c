@@ -960,7 +960,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
                       D3D_GUID(SDL_IID_IDXGIAdapter4),
                       (void **)&data->dxgiAdapter);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D12CreateDevice"), result);
+        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGIFactory6::EnumAdapterByGpuPreference"), result);
         goto done;
     }
 
@@ -3231,6 +3231,11 @@ static int D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
 int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     D3D12_RenderData *data;
+
+    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    if (!hwnd) {
+        return SDL_SetError("Couldn't get window handle");
+    }
 
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_TRANSPARENT) {
 		/* D3D12 removed the swap effect needed to support transparent windows, use D3D11 instead */
