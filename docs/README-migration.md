@@ -349,13 +349,13 @@ The SDL_EVENT_WINDOW_SIZE_CHANGED event has been removed, and you can use SDL_EV
 
 The keysym field of key events has been removed to remove one level of indirection, and `sym` has been renamed `key`.
 
-Code that looked like this:
+Code that used to look like this:
 ```c
     SDL_Event event;
     SDL_Keycode key = event.key.keysym.sym;
     SDL_Keymod mod = event.key.keysym.mod;
 ```
-now looks like this:
+should be changed to:
 ```c
     SDL_Event event;
     SDL_Keycode key = event.key.key;
@@ -1097,6 +1097,24 @@ SDL_PixelFormat has been renamed SDL_PixelFormatDetails and just describes the p
 SDL_PixelFormatEnum has been renamed SDL_PixelFormat and is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
 
 SDL_MapRGB(), SDL_MapRGBA(), SDL_GetRGB(), and SDL_GetRGBA() take an optional palette parameter for indexed color lookups.
+
+Code that used to look like this:
+```c
+    SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
+```
+should be changed to:
+```c
+    SDL_GetRGBA(pixel, SDL_GetPixelFormatDetails(surface->format), SDL_GetSurfacePalette(surface), &r, &g, &b, &a);
+```
+
+Code that used to look like this:
+```c
+    pixel = SDL_MapRGBA(surface->format, r, g, b, a);
+```
+should be changed to:
+```c
+    pixel = SDL_MapSurfaceRGBA(surface, r, g, b, a);
+```
 
 SDL_GetMasksForPixelFormat() now returns the standard int error code.
 
