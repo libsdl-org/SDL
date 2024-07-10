@@ -165,6 +165,7 @@ SDL3_0.0.0 {
     SDL_GetAndroidSDKVersion;
     SDL_GetAssertionHandler;
     SDL_GetAssertionReport;
+    SDL_GetAudioDeviceChannelMap;
     SDL_GetAudioDeviceFormat;
     SDL_GetAudioDeviceGain;
     SDL_GetAudioDeviceName;
@@ -177,6 +178,8 @@ SDL3_0.0.0 {
     SDL_GetAudioStreamFormat;
     SDL_GetAudioStreamFrequencyRatio;
     SDL_GetAudioStreamGain;
+    SDL_GetAudioStreamInputChannelMap;
+    SDL_GetAudioStreamOutputChannelMap;
     SDL_GetAudioStreamProperties;
     SDL_GetAudioStreamQueued;
     SDL_GetBasePath;
@@ -693,6 +696,8 @@ SDL3_0.0.0 {
     SDL_SetAudioStreamFrequencyRatio;
     SDL_SetAudioStreamGain;
     SDL_SetAudioStreamGetCallback;
+    SDL_SetAudioStreamInputChannelMap;
+    SDL_SetAudioStreamOutputChannelMap;
     SDL_SetAudioStreamPutCallback;
     SDL_SetBooleanProperty;
     SDL_SetClipboardData;
