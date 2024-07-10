@@ -15,8 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows (x64),          flags: -A x64,   project: VisualC/SDL.sln, projectflags: '/p:Platform=x64', artifact: 'SDL-VC-x64' }
-        - { name: Windows (x86),          flags: -A Win32, project: VisualC/SDL.sln, projectflags: '/p:Platform=Win32', artifact: 'SDL-VC-x86' }
+        - { name: Windows (x64),          flags: -A x64,   project: VisualC/SDL.sln, projectflags: '/p:Platform=x64',   libusb-arch: 'x64', artifact: 'SDL-VC-x64' }
+        - { name: Windows (x86),          flags: -A Win32, project: VisualC/SDL.sln, projectflags: '/p:Platform=Win32', libusb-arch: 'x86', artifact: 'SDL-VC-x86' }
         - { name: Windows (clang-cl x64), flags: -T ClangCL -A x64, artifact: 'SDL-clang-cl-x64' }
         - { name: Windows (clang-cl x86), flags: -T ClangCL -A Win32, artifact: 'SDL-clang-cl-x86' }
         - { name: Windows (ARM),          flags: -A ARM, artifact: 'SDL-VC-arm32', notests: true }
@@ -26,6 +26,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Set up libusb
+      uses: ./.github/actions/setup-msvc-libusb-action
+      if: ${{ matrix.platform.libusb-arch != '' }}
+      id: libusb
+      with:
+        arch: ${{ matrix.platform.libusb-arch }}
     - name: Create CMake project using SDL as a subproject
       shell: python
       run: |
@@ -71,6 +77,7 @@ jobs:
         -DSDL_DISABLE_INSTALL_CPACK=OFF `
         -DSDL_DISABLE_INSTALL_DOCS=OFF `
         -DSDLTEST_PROCDUMP=ON `
+        -DLibUSB_ROOT="${{ steps.libusb.outputs.root }}" `
         ${{ matrix.platform.flags }} `
         -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build (CMake)

@@ -1,0 +1,70 @@
+name: 'Setup libusb for MSBC'
+description: 'Greet someone'
+inputs:
+  version:
+    description: 'libusb version'
+    required: true
+    default: '1.0.27'
+  arch:
+    description: "libusb architecture (x86 or x64)"
+    rqeuired: true
+outputs:
+  root:
+    description: "libusb root directory"
+    value: ${{ steps.final.outputs.root }}
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Restore cached libusb-${{ inputs.version }}.7z'
+      id: cache-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: 'C:\temp\libusb-${{ inputs.version }}.7z'
+        key: libusb-msvc-${{ inputs.version }}
+    - name: 'Download libusb ${{ inputs.version }}'
+      if: ${{ !steps.cache-restore.outputs.cache-hit }}
+      shell: pwsh
+      run: |
+        Invoke-WebRequest "https://github.com/libusb/libusb/releases/download/v${{ inputs.version }}/libusb-${{ inputs.version }}.7z" -OutFile "C:\temp\libusb-${{ inputs.version }}.7z"
+    - name: 'Cache libusb-${{ inputs.version }}.7z'
+      if: ${{ !steps.cache-restore.outputs.cache-hit }}
+      uses: actions/cache/save@v4
+      with:
+        path: 'C:\temp\libusb-${{ inputs.version }}.7z'
+        key: libusb-msvc-${{ inputs.version }}
+    - name: 'Extract libusb'
+      shell: pwsh
+      run: |
+        7z "-oC:\temp\libusb-${{ inputs.version }}" x "C:\temp\libusb-${{ inputs.version }}.7z"
+    - name: 'Set output vars'
+      id: final
+      shell: pwsh
+      run: |
+        if ('${{ inputs.arch }}' -eq 'x86') {
+          $archdir = "MS32";
+        } elseif ('${{ inputs.arch }}' -eq 'x64') {
+          $archdir = "MS64";
+        } else {
+          write-host "Invalid arch=${{ inputs.arch }}"
+          exit 1
+        }
+        $libusb_incdir = "C:\temp\libusb-${{ inputs.version }}\include";
+        $libusb_libdir = "C:\temp\libusb-${{ inputs.version }}\VS2022\${archdir}\dll";
+        
+        $libusb_header = "${libusb_incdir}\libusb.h";
+        $libusb_implib = "${libusb_libdir}\libusb-1.0.lib";
+        $libusb_dll = "${libusb_libdir}\libusb-1.0.dll";
+        
+        if (!(Test-Path "${libusb_header}")) {
+          write-host "${libusb_header} does not exist!"
+          exit 1
+        }
+        if (!(Test-Path "${libusb_implib}")){
+          write-host "${libusb_implib} does not exist!"
+          exit 1
+        }
+        if (!(Test-Path "${libusb_dll}")) {
+          write-host "${libusb_dll} does not exist!"
+          exit 1
+        }
+        echo "root=${libusb_incdir};${libusb_libdir}" >> $env:GITHUB_OUTPUT
