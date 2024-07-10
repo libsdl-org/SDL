@@ -33,6 +33,10 @@
 #include <gbm.h>
 #include <EGL/egl.h>
 
+#ifndef DRM_FORMAT_MOD_INVALID
+#define DRM_FORMAT_MOD_INVALID 0x00ffffffffffffffULL
+#endif
+
 #ifndef DRM_MODE_FB_MODIFIERS
 #define DRM_MODE_FB_MODIFIERS	2
 #endif
