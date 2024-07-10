@@ -803,8 +803,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat forma
  * \param Gmask the green mask for the format.
  * \param Bmask the blue mask for the format.
  * \param Amask the alpha mask for the format.
- * \returns the SDL_PixelFormat value corresponding to the format masks,
- *          or SDL_PIXELFORMAT_UNKNOWN if there isn't a match.
+ * \returns the SDL_PixelFormat value corresponding to the format masks, or
+ *          SDL_PIXELFORMAT_UNKNOWN if there isn't a match.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -822,8 +822,8 @@ extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetPixelFormatForMasks(int bpp, 
  * errors such as `Blit combination not supported` may occur.
  *
  * \param format one of the SDL_PixelFormat values.
- * \returns a pointer to a SDL_PixelFormatDetails structure or NULL on failure; call
- *          SDL_GetError() for more information.
+ * \returns a pointer to a SDL_PixelFormatDetails structure or NULL on
+ *          failure; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -861,7 +861,8 @@ extern SDL_DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety It is safe to call this function from any thread, as long as the palette is not modified or destroyed in another thread.
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified or destroyed in another thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -872,7 +873,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette *palette, const
  *
  * \param palette the SDL_Palette structure to be freed.
  *
- * \threadsafety It is safe to call this function from any thread, as long as the palette is not modified or destroyed in another thread.
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified or destroyed in another thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -898,14 +900,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette *palette);
  * format the return value can be assigned to a Uint16, and similarly a Uint8
  * for an 8-bpp format).
  *
- * \param format a pointer to SDL_PixelFormatDetails describing the pixel format.
+ * \param format a pointer to SDL_PixelFormatDetails describing the pixel
+ *               format.
  * \param palette an optional palette for indexed formats, may be NULL.
  * \param r the red component of the pixel in the range 0-255.
  * \param g the green component of the pixel in the range 0-255.
  * \param b the blue component of the pixel in the range 0-255.
  * \returns a pixel value.
  *
- * \threadsafety It is safe to call this function from any thread, as long as the palette is not modified.
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -933,7 +937,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *form
  * format the return value can be assigned to a Uint16, and similarly a Uint8
  * for an 8-bpp format).
  *
- * \param format a pointer to SDL_PixelFormatDetails describing the pixel format.
+ * \param format a pointer to SDL_PixelFormatDetails describing the pixel
+ *               format.
  * \param palette an optional palette for indexed formats, may be NULL.
  * \param r the red component of the pixel in the range 0-255.
  * \param g the green component of the pixel in the range 0-255.
@@ -941,7 +946,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *form
  * \param a the alpha component of the pixel in the range 0-255.
  * \returns a pixel value.
  *
- * \threadsafety It is safe to call this function from any thread, as long as the palette is not modified.
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -960,13 +966,15 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *for
  * 0xff, 0xff] not [0xf8, 0xfc, 0xf8]).
  *
  * \param pixel a pixel value.
- * \param format a pointer to SDL_PixelFormatDetails describing the pixel format.
+ * \param format a pointer to SDL_PixelFormatDetails describing the pixel
+ *               format.
  * \param palette an optional palette for indexed formats, may be NULL.
  * \param r a pointer filled in with the red component, may be NULL.
  * \param g a pointer filled in with the green component, may be NULL.
  * \param b a pointer filled in with the blue component, may be NULL.
  *
- * \threadsafety It is safe to call this function from any thread, as long as the palette is not modified.
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -988,14 +996,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatD
  * (100% opaque).
  *
  * \param pixel a pixel value.
- * \param format a pointer to SDL_PixelFormatDetails describing the pixel format.
+ * \param format a pointer to SDL_PixelFormatDetails describing the pixel
+ *               format.
  * \param palette an optional palette for indexed formats, may be NULL.
  * \param r a pointer filled in with the red component, may be NULL.
  * \param g a pointer filled in with the green component, may be NULL.
  * \param b a pointer filled in with the blue component, may be NULL.
  * \param a a pointer filled in with the alpha component, may be NULL.
  *
- * \threadsafety It is safe to call this function from any thread, as long as the palette is not modified.
+ * \threadsafety It is safe to call this function from any thread, as long as
+ *               the palette is not modified.
  *
  * \since This function is available since SDL 3.0.0.
  *

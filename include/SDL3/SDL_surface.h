@@ -139,7 +139,8 @@ typedef struct SDL_Surface
 extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormat format);
 
 /**
- * Allocate a new surface with a specific pixel format and existing pixel data.
+ * Allocate a new surface with a specific pixel format and existing pixel
+ * data.
  *
  * No copy is made of the pixel data. Pixel data is not managed automatically;
  * you must free the surface before you free the pixel data.
@@ -247,7 +248,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceColorspace(SDL_Surface *surface, S
  * other RGB surfaces and SDL_COLORSPACE_BT709_FULL for YUV textures.
  *
  * \param surface the SDL_Surface structure to query.
- * \returns the colorspace used by the surface, or SDL_COLORSPACE_UNKNOWN if the surface is NULL.
+ * \returns the colorspace used by the surface, or SDL_COLORSPACE_UNKNOWN if
+ *          the surface is NULL.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -276,7 +278,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetSurfacePalette(SDL_Surface *surface, SDL_
  * Get the palette used by a surface.
  *
  * \param surface the SDL_Surface structure to query.
- * \returns a pointer to the palette used by the surface, or NULL if there is no palette used.
+ * \returns a pointer to the palette used by the surface, or NULL if there is
+ *          no palette used.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -407,7 +410,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *fi
  * the surface must be locked before directly accessing the pixels.
  *
  * \param surface the SDL_Surface structure to optimize.
- * \param enabled SDL_TRUE to enable RLE acceleration, SDL_FALSE to disable it.
+ * \param enabled SDL_TRUE to enable RLE acceleration, SDL_FALSE to disable
+ *                it.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -444,7 +448,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasRLE(SDL_Surface *surface);
  * SDL_MapRGB().
  *
  * \param surface the SDL_Surface structure to update.
- * \param enabled SDL_TRUE to enable color key, SDL_FALSE to disable color key.
+ * \param enabled SDL_TRUE to enable color key, SDL_FALSE to disable color
+ *                key.
  * \param key the transparent pixel.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -675,7 +680,8 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface *surfa
  * surface. The new, optimized surface can then be used as the source for
  * future blits, making them faster.
  *
- * If you are converting to an indexed surface and want to map colors to a palette, you can use SDL_ConvertSurfaceAndColorspace() instead.
+ * If you are converting to an indexed surface and want to map colors to a
+ * palette, you can use SDL_ConvertSurfaceAndColorspace() instead.
  *
  * \param surface the existing SDL_Surface structure to convert.
  * \param format the new pixel format.
@@ -1013,8 +1019,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src,
  * returns the pixel value best approximating the given RGB color value for
  * the given pixel format.
  *
- * If the surface has a palette, the index of the closest matching color
- * in the palette will be returned.
+ * If the surface has a palette, the index of the closest matching color in
+ * the palette will be returned.
  *
  * If the surface pixel format has an alpha component it will be returned as
  * all 1 bits (fully opaque).
@@ -1043,11 +1049,11 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8
  * returns the pixel value best approximating the given RGBA color value for
  * the given pixel format.
  *
- * If the surface pixel format has no alpha component the alpha value will
- * be ignored (as it will be in formats with a palette).
+ * If the surface pixel format has no alpha component the alpha value will be
+ * ignored (as it will be in formats with a palette).
  *
- * If the surface has a palette, the index of the closest matching color
- * in the palette will be returned.
+ * If the surface has a palette, the index of the closest matching color in
+ * the palette will be returned.
  *
  * If the pixel format bpp (color depth) is less than 32-bpp then the unused
  * upper bits of the return value can safely be ignored (e.g., with a 16-bpp
