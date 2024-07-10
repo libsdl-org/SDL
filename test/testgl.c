@@ -63,7 +63,7 @@ static void quit(int rc)
 {
     if (context) {
         /* SDL_GL_MakeCurrent(0, NULL); */ /* doesn't do anything */
-        SDL_GL_DeleteContext(context);
+        SDL_GL_DestroyContext(context);
     }
     SDLTest_CommonQuit(state);
     /* Let 'main()' return normally */

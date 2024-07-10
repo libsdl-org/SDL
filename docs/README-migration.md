@@ -1977,6 +1977,8 @@ SDL_GL_GetProcAddress() and SDL_EGL_GetProcAddress() now return `SDL_FunctionPoi
 
 SDL_GL_SwapWindow() returns 0 if the function succeeds or a negative error code if there was an error.
 
+SDL_GL_DeleteContext() has been renamed to SDL_GL_DestroyContext to match SDL naming conventions (and glX!). It also now returns 0 if the function succeeds or a negative error code if there was an error (it returned void in SDL2).
+
 SDL_GL_GetSwapInterval() takes the interval as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
 SDL_GL_GetDrawableSize() has been removed. SDL_GetWindowSizeInPixels() can be used in its place.
@@ -1987,6 +1989,7 @@ The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported 
 SDL_WindowFlags is used instead of Uint32 for API functions that refer to window flags, and has been extended to 64 bits.
 
 The following functions have been renamed:
+* SDL_GL_DeleteContext() => SDL_GL_DestroyContext()
 * SDL_GetClosestDisplayMode() => SDL_GetClosestFullscreenDisplayMode()
 * SDL_GetDisplayOrientation() => SDL_GetCurrentDisplayOrientation()
 * SDL_GetPointDisplayIndex() => SDL_GetDisplayForPoint()

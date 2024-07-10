@@ -2592,7 +2592,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GL_DeleteContext
+ * \sa SDL_GL_DestroyContext
  * \sa SDL_GL_MakeCurrent
  */
 extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *window);
@@ -2769,7 +2769,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_SwapWindow(SDL_Window *window);
  *
  * \sa SDL_GL_CreateContext
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GL_DeleteContext(SDL_GLContext context);
+extern SDL_DECLSPEC int SDLCALL SDL_GL_DestroyContext(SDL_GLContext context);
 
 /* @} *//* OpenGL support functions */
 

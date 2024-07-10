@@ -103,7 +103,7 @@ quit(int rc)
     if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
-                SDL_GL_DeleteContext(context[i]);
+                SDL_GL_DestroyContext(context[i]);
             }
         }
 

@@ -60,7 +60,7 @@ SDL_FunctionPointer UIKit_GL_GetProcAddress(SDL_VideoDevice *_this, const char *
 }
 
 /*
-  note that SDL_GL_DeleteContext makes it current without passing the window
+  note that SDL_GL_DestroyContext makes it current without passing the window
 */
 int UIKit_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
