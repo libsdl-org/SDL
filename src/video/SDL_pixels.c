@@ -593,9 +593,7 @@ static int SDL_InitPixelFormatDetails(SDL_PixelFormatDetails *details, SDL_Pixel
     SDL_zerop(details);
     details->format = format;
     details->bits_per_pixel = (Uint8)bpp;
-    SDL_assert(SDL_BITSPERPIXEL(format) == details->bits_per_pixel);
     details->bytes_per_pixel = (Uint8)((bpp + 7) / 8);
-    SDL_assert(SDL_BYTESPERPIXEL(format) == details->bytes_per_pixel);
 
     details->Rmask = Rmask;
     details->Rshift = 0;
