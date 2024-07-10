@@ -164,7 +164,7 @@
 #define SDL_GDKGetTaskQueue SDL_GDKGetTaskQueue_REAL
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GL_CreateContext SDL_GL_CreateContext_REAL
-#define SDL_GL_DeleteContext SDL_GL_DeleteContext_REAL
+#define SDL_GL_DestroyContext SDL_GL_DestroyContext_REAL
 #define SDL_GL_ExtensionSupported SDL_GL_ExtensionSupported_REAL
 #define SDL_GL_GetAttribute SDL_GL_GetAttribute_REAL
 #define SDL_GL_GetCurrentContext SDL_GL_GetCurrentContext_REAL

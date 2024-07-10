@@ -618,6 +618,7 @@
 #define SDL_PATCHLEVEL SDL_MICRO_VERSION
 
 /* ##SDL_video.h */
+#define SDL_GL_DeleteContext SDL_GL_DestroyContext
 #define SDL_GetClosestDisplayMode SDL_GetClosestFullscreenDisplayMode
 #define SDL_GetDisplayOrientation SDL_GetCurrentDisplayOrientation
 #define SDL_GetPointDisplayIndex SDL_GetDisplayForPoint
@@ -1215,6 +1216,7 @@
 #define SDL_PATCHLEVEL SDL_PATCHLEVEL_renamed_SDL_MICRO_VERSION
 
 /* ##SDL_video.h */
+#define SDL_GL_DeleteContext SDL_GL_DeleteContext_renamed_SDL_GL_DestroyContext
 #define SDL_GetClosestDisplayMode SDL_GetClosestDisplayMode_renamed_SDL_GetClosestFullscreenDisplayMode
 #define SDL_GetDisplayOrientation SDL_GetDisplayOrientation_renamed_SDL_GetCurrentDisplayOrientation
 #define SDL_GetPointDisplayIndex SDL_GetPointDisplayIndex_renamed_SDL_GetDisplayForPoint

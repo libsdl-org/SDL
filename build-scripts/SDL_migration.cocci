@@ -3501,3 +3501,8 @@ typedef SDL_PixelFormat, SDL_PackedPixelDetails;
 @@
 - SDL_SIMD_ALIGNED
 + SDL_SURFACE_SIMD_ALIGNED
+@@
+@@
+- SDL_GL_DeleteContext
++ SDL_GL_DestroyContext
+  (...)

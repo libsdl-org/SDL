@@ -4920,7 +4920,7 @@ int SDL_GL_SwapWindow(SDL_Window *window)
     return _this->GL_SwapWindow(_this, window);
 }
 
-int SDL_GL_DeleteContext(SDL_GLContext context)
+int SDL_GL_DestroyContext(SDL_GLContext context)
 {
     if (!_this) {
         return SDL_UninitializedVideo();                                       \

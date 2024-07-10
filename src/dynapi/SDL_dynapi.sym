@@ -140,7 +140,7 @@ SDL3_0.0.0 {
     SDL_GDKGetTaskQueue;
     SDL_GDKSuspendComplete;
     SDL_GL_CreateContext;
-    SDL_GL_DeleteContext;
+    SDL_GL_DestroyContext;
     SDL_GL_ExtensionSupported;
     SDL_GL_GetAttribute;
     SDL_GL_GetCurrentContext;
