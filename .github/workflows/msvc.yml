@@ -35,13 +35,23 @@ jobs:
         builddir = f"{ srcdir }/build"
         os.makedirs(builddir)
         cmakelists_txt = textwrap.dedent(f"""\
-          # Always build .PDB symbol file
+          # MSVC debug information format flags are selected by an abstraction
           set(CMAKE_POLICY_DEFAULT_CMP0141 "NEW" CACHE STRING "MSVC debug information format flags are selected by an abstraction")
+          # MSVC runtime library flags are selected by an abstraction
+          set(CMAKE_POLICY_DEFAULT_CMP0091 "NEW" CACHE STRING "MSVC runtime library flags are selected by an abstraction")
+          cmake_minimum_required(VERSION 3.0...3.25)
+          project(sdl_user)
+          # Always build .PDB symbol file
           set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "ProgramDatabase" CACHE STRING "MSVC debug information format")
           set(CMAKE_EXE_LINKER_FLAGS "-DEBUG" CACHE STRING "Linker flags for executables")
           set(CMAKE_SHARED_LINKER_FLAGS "-DEBUG" CACHE STRING "Linker flag for shared libraries")
-          cmake_minimum_required(VERSION 3.0...3.25)
-          project(sdl_user)
+          if(WINDOWS_STORE) # WINDOWS_STORE is available AFTER project()
+            # UWP only supports dynamic runtime
+            set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL" CACHE STRING "MSVC runtime libary")
+          else()
+            # Use static runtime library
+            set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "MSVC runtime libary")
+          endif()
           enable_testing()
           add_subdirectory("{ srcdir }" SDL)
         """)

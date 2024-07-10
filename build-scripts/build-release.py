@@ -471,6 +471,10 @@ class Releaser:
                 "-DCMAKE_EXE_LINKER_FLAGS=-DEBUG",
                 # Linker flag for shared libraries
                 "-DCMAKE_SHARED_LINKER_FLAGS=-INCREMENTAL:NO -DEBUG -OPT:REF -OPT:ICF",
+                # MSVC runtime library flags are selected by an abstraction
+                "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW",
+                # Use statically linked runtime (-MT) (ideally, should be "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+                "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
             ])
 
         with self.section_printer.group(f"Build VC CMake project for {arch}"):
