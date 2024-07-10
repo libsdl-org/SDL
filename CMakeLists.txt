@@ -159,20 +159,6 @@ if(WINDOWS OR MACOS OR IOS OR TVOS OR VISIONOS OR WATCHOS)
 endif()
 
 if(MSVC)
-  dep_option(SDL_STATIC_VCRT "Use /MT for static VC runtimes" ON "NOT WINDOWS_STORE" OFF)
-  if(SDL_STATIC_VCRT)
-    if(NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
-      set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    endif()
-    foreach(flag_var
-        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-      if(${flag_var} MATCHES "/MD")
-        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-      endif()
-    endforeach()
-  endif()
-
   if(NOT SDL_LIBC)
     # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
     foreach(flag_var
