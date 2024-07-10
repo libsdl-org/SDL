@@ -15,12 +15,12 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - { name: FreeBSD,  os: freebsd,  os-version: 13.2, os-arch: x86-64,  artifact: SDL-freebsd-x64,
+          - { name: FreeBSD,  os: freebsd,  os-version: '13.3', os-arch: x86-64,  artifact: SDL-freebsd-x64,
               sdl-cmake-configure-arguments: '-DSDL_CHECK_REQUIRED_INCLUDES="/usr/local/include" -DSDL_CHECK_REQUIRED_LINK_OPTIONS="-L/usr/local/lib"',
               setup-cmd: 'sudo pkg update',
               install-cmd: 'sudo pkg install -y cmake ninja pkgconf libXcursor libXext libXinerama libXi libXfixes libXrandr libXScrnSaver libXxf86vm wayland wayland-protocols libxkbcommon mesa-libs libglvnd evdev-proto libinotify alsa-lib jackit pipewire pulseaudio sndio dbus zh-fcitx ibus libudev-devd',
             }
-          - { name: NetBSD,   os: netbsd,   os-version: 9.3,  os-arch: x86-64,  artifact: SDL-netbsd-x64,
+          - { name: NetBSD,   os: netbsd,   os-version: '10.0',  os-arch: x86-64,  artifact: SDL-netbsd-x64,
               sdl-cmake-configure-arguments: '',
               setup-cmd: 'export PATH="/usr/pkg/sbin:/usr/pkg/bin:/sbin:$PATH";export PKG_CONFIG_PATH="/usr/pkg/lib/pkgconfig";export PKG_PATH="https://cdn.netBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r|cut -f "1 2" -d.)/All/";echo "PKG_PATH=$PKG_PATH";echo "uname -a -> \"$(uname -a)\"";sudo -E sysctl -w security.pax.aslr.enabled=0;sudo -E sysctl -w security.pax.aslr.global=0;sudo -E pkgin clean;sudo -E pkgin update',
               install-cmd: 'sudo -E pkgin -y install cmake dbus pkgconf ninja-build pulseaudio libxkbcommon wayland wayland-protocols libinotify libusb1',
@@ -28,7 +28,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      uses: cross-platform-actions/action@v0.23.0
+      uses: cross-platform-actions/action@v0.24.0
       with:
         operating_system: ${{ matrix.platform.os }}
         architecture: ${{ matrix.platform.os-arch }}
