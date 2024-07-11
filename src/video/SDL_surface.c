@@ -158,25 +158,6 @@ static SDL_Surface *SDL_InitializeSurface(SDL_InternalSurface *mem, int width, i
     surface->internal->map.info.b = 0xFF;
     surface->internal->map.info.a = 0xFF;
 
-    if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
-        SDL_Palette *palette = SDL_CreatePalette((1 << SDL_BITSPERPIXEL(surface->format)));
-        if (!palette) {
-            SDL_DestroySurface(surface);
-            return NULL;
-        }
-        if (palette->ncolors == 2) {
-            /* Create a black and white bitmap palette */
-            palette->colors[0].r = 0xFF;
-            palette->colors[0].g = 0xFF;
-            palette->colors[0].b = 0xFF;
-            palette->colors[1].r = 0x00;
-            palette->colors[1].g = 0x00;
-            palette->colors[1].b = 0x00;
-        }
-        SDL_SetSurfacePalette(surface, palette);
-        SDL_DestroyPalette(palette);
-    }
-
     if (colorspace != SDL_COLORSPACE_UNKNOWN &&
         colorspace != SDL_GetDefaultColorspaceForFormat(format)) {
         SDL_SetSurfaceColorspace(surface, colorspace);

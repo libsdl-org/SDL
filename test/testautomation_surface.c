@@ -854,37 +854,54 @@ static int surface_testFlip(void *arg)
 
 static int surface_testPalette(void *arg)
 {
-    SDL_Surface *surface, *output;
+    SDL_Surface *source, *surface, *output;
     SDL_Palette *palette;
     Uint8 *pixels;
-    int offset;
+
+    palette = SDL_CreatePalette(2);
+    SDLTest_AssertCheck(palette != NULL, "SDL_CreatePalette()");
+
+    source = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(source != NULL, "SDL_CreateSurface()");
 
     surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
 
+    pixels = (Uint8 *)surface->pixels;
+    SDLTest_AssertCheck(*pixels == 0, "Expected *pixels == 0 got %u", *pixels);
+
+    /* Identity copy between indexed surfaces without a palette */
+    *(Uint8 *)source->pixels = 1;
+    SDL_BlitSurface(source, NULL, surface, NULL);
+    SDLTest_AssertCheck(*pixels == 1, "Expected *pixels == 1 got %u", *pixels);
+
+    /* Identity copy between indexed surfaces where the destination has a palette */
+    palette->colors[0].r = 0;
+    palette->colors[0].g = 0;
+    palette->colors[0].b = 0;
+    palette->colors[1].r = 0xFF;
+    palette->colors[1].g = 0;
+    palette->colors[1].b = 0;
+    SDL_SetSurfacePalette(surface, palette);
+    *pixels = 0;
+    SDL_BlitSurface(source, NULL, surface, NULL);
+    SDLTest_AssertCheck(*pixels == 1, "Expected *pixels == 1 got %u", *pixels);
+
     output = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
     SDLTest_AssertCheck(output != NULL, "SDL_CreateSurface()");
 
-    *(Uint8 *)surface->pixels = 255;
-
     pixels = (Uint8 *)output->pixels;
-    offset = 0;
-
     SDL_BlitSurface(surface, NULL, output, NULL);
-    SDLTest_AssertCheck(pixels[offset] == 0xFF,
-                        "Expected pixels[%d] == 0xFF got 0x%.2X", offset, pixels[offset]);
+    SDLTest_AssertCheck(*pixels == 0xFF, "Expected *pixels == 0xFF got 0x%.2X", *pixels);
 
     /* Set the palette color and blit again */
-    palette = SDL_GetSurfacePalette(surface);
-    SDLTest_AssertCheck(palette != NULL, "Expected palette != NULL, got %p", palette);
-    if (palette) {
-        palette->colors[255].r = 0xAA;
-    }
+    palette->colors[1].r = 0xAA;
     SDL_SetSurfacePalette(surface, palette);
     SDL_BlitSurface(surface, NULL, output, NULL);
-    SDLTest_AssertCheck(pixels[offset] == 0xAA,
-                        "Expected pixels[%d] == 0xAA got 0x%.2X", offset, pixels[offset]);
+    SDLTest_AssertCheck(*pixels == 0xAA, "Expected *pixels == 0xAA got 0x%.2X", *pixels);
 
+    SDL_DestroyPalette(palette);
+    SDL_DestroySurface(source);
     SDL_DestroySurface(surface);
     SDL_DestroySurface(output);
 
