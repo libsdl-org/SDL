@@ -117,21 +117,6 @@ static int StartBeLooper()
         } while ((!be_app) || be_app->IsLaunching());
     }
 
-     /* Change working directory to that of executable */
-    app_info info;
-    if (B_OK == be_app->GetAppInfo(&info)) {
-        entry_ref ref = info.ref;
-        BEntry entry;
-        if (B_OK == entry.SetTo(&ref)) {
-            BPath path;
-            if (B_OK == path.SetTo(&entry)) {
-                if (B_OK == path.GetParent(&path)) {
-                    chdir(path.Path());
-                }
-            }
-        }
-    }
-
     SDL_Looper = new SDL_BLooper("SDLLooper");
     SDL_Looper->Run();
     return (0);

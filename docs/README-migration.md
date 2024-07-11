@@ -798,6 +798,18 @@ The following functions have been removed:
 
 ## SDL_init.h
 
+On Haiku OS, SDL no longer sets the current working directory to the executable's path during SDL_Init(). If you need this functionality, the fastest solution is to add this code directly after the call to SDL_Init:
+
+```c
+{
+    char *path = SDL_GetBasePath();
+    if (path) {
+        chdir(path);
+        SDL_free(path);
+    }
+}
+```
+
 The following symbols have been renamed:
 * SDL_INIT_GAMECONTROLLER => SDL_INIT_GAMEPAD
 
