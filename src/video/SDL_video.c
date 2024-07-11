@@ -5530,18 +5530,30 @@ SDL_bool SDL_Vulkan_GetPresentationSupport(VkInstance instance,
                                            VkPhysicalDevice physicalDevice,
                                            Uint32 queueFamilyIndex)
 {
-    if (_this && instance && physicalDevice) {
-        if (_this->Vulkan_GetPresentationSupport) {
-            return _this->Vulkan_GetPresentationSupport(_this, instance, physicalDevice, queueFamilyIndex);
-        }
-
-        /* If the backend does not have this function then it does not have a
-         * WSI function to query it; in other words it's not necessary to check
-         * as it is always supported.
-         */
-        return SDL_TRUE;
+    if (!_this) {
+        SDL_UninitializedVideo();
+        return SDL_FALSE;
     }
-    return SDL_FALSE;
+
+    if (!instance) {
+        SDL_InvalidParamError("instance");
+        return SDL_FALSE;
+    }
+
+    if (!physicalDevice) {
+        SDL_InvalidParamError("physicalDevice");
+        return SDL_FALSE;
+    }
+
+    if (_this->Vulkan_GetPresentationSupport) {
+        return _this->Vulkan_GetPresentationSupport(_this, instance, physicalDevice, queueFamilyIndex);
+    }
+
+    /* If the backend does not have this function then it does not have a
+     * WSI function to query it; in other words it's not necessary to check
+     * as it is always supported.
+     */
+    return SDL_TRUE;
 }
 
 SDL_MetalView SDL_Metal_CreateView(SDL_Window *window)
