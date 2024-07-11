@@ -143,14 +143,27 @@ SDL_SYS_DetachThread(SDL_Thread *thread)
     }
 }
 
-extern "C" SDL_TLSData *
-SDL_SYS_GetTLSData(void)
+static thread_local SDL_TLSData *thread_local_storage;
+
+extern "C"
+void SDL_SYS_InitTLSData(void)
 {
-    return SDL_Generic_GetTLSData();
 }
 
-extern "C" int
-SDL_SYS_SetTLSData(SDL_TLSData *data)
+extern "C"
+SDL_TLSData * SDL_SYS_GetTLSData(void)
 {
-    return SDL_Generic_SetTLSData(data);
+    return thread_local_storage;
+}
+
+extern "C"
+int SDL_SYS_SetTLSData(SDL_TLSData *data)
+{
+    thread_local_storage = data;
+    return 0;
+}
+
+extern "C"
+void SDL_SYS_QuitTLSData(void)
+{
 }
