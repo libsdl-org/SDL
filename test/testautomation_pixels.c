@@ -145,9 +145,6 @@ static int pixels_getPixelFormatDetails(void *arg)
                             result->bytes_per_pixel);
         masks = result->Rmask | result->Gmask | result->Bmask | result->Amask;
         SDLTest_AssertCheck(masks == 0, "Verify value of result.[RGBA]mask combined; expected: 0, got %" SDL_PRIu32, masks);
-
-        /* Deallocate again */
-        SDLTest_AssertPass("Call to SDL_DestroyPixelFormat()");
     }
 
     /* RGB formats */
@@ -189,7 +186,7 @@ static int pixels_getPixelFormatDetails(void *arg)
         SDLTest_AssertPass("Call to SDL_ClearError()");
         format = g_invalidPixelFormats[i];
         result = SDL_GetPixelFormatDetails(format);
-        SDLTest_AssertPass("Call to SDL_CreatePixelFormat(%d)", format);
+        SDLTest_AssertPass("Call to SDL_GetPixelFormatDetails(%d)", format);
         SDLTest_AssertCheck(result == NULL, "Verify result is NULL");
         error = SDL_GetError();
         SDLTest_AssertPass("Call to SDL_GetError()");
@@ -359,7 +356,7 @@ static int pixels_allocFreePalette(void *arg)
 
 /* Pixels test cases */
 static const SDLTest_TestCaseReference pixelsTest1 = {
-    (SDLTest_TestCaseFp)pixels_getPixelFormatDetails, "pixels_allocFreeFormat", "Call to SDL_CreatePixelFormat and SDL_DestroyPixelFormat", TEST_ENABLED
+    (SDLTest_TestCaseFp)pixels_getPixelFormatDetails, "pixels_allocFreeFormat", "Call to SDL_GetPixelFormatDetails", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference pixelsTest2 = {

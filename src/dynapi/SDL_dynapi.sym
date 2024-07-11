@@ -68,7 +68,6 @@ SDL3_0.0.0 {
     SDL_CreateHapticEffect;
     SDL_CreateMutex;
     SDL_CreatePalette;
-    SDL_CreatePixelFormat;
     SDL_CreatePopupWindow;
     SDL_CreateProperties;
     SDL_CreateRWLock;
@@ -102,7 +101,6 @@ SDL3_0.0.0 {
     SDL_DestroyHapticEffect;
     SDL_DestroyMutex;
     SDL_DestroyPalette;
-    SDL_DestroyPixelFormat;
     SDL_DestroyProperties;
     SDL_DestroyRWLock;
     SDL_DestroyRenderer;
