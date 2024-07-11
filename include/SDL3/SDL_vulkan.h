@@ -51,6 +51,7 @@ extern "C" {
 #endif
 
 VK_DEFINE_HANDLE(VkInstance)
+VK_DEFINE_HANDLE(VkPhysicalDevice)
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkSurfaceKHR)
 struct VkAllocationCallbacks;
 
@@ -210,6 +211,25 @@ extern SDL_DECLSPEC int SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
 extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(VkInstance instance,
                                                        VkSurfaceKHR surface,
                                                        const struct VkAllocationCallbacks *allocator);
+
+/**
+ * Query support for presentation via a given physical device and queue family.
+ *
+ * The `instance` must have been created with extensions returned by
+ * SDL_Vulkan_GetInstanceExtensions() enabled.
+ *
+ * \param instance the Vulkan instance handle.
+ * \param physicalDevice a valid Vulkan physical device handle.
+ * \param queueFamilyIndex a valid queue family index for the given physical device.
+ * \returns SDL_TRUE if supported, SDL_FALSE if unsupported or an error occurred.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_Vulkan_GetInstanceExtensions
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetPresentationSupport(VkInstance instance,
+                                                                       VkPhysicalDevice physicalDevice,
+                                                                       Uint32 queueFamilyIndex);
 
 /* @} *//* Vulkan support functions */
 

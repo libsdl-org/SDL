@@ -5526,6 +5526,24 @@ void SDL_Vulkan_DestroySurface(VkInstance instance,
     }
 }
 
+SDL_bool SDL_Vulkan_GetPresentationSupport(VkInstance instance,
+                                           VkPhysicalDevice physicalDevice,
+                                           Uint32 queueFamilyIndex)
+{
+    if (_this && instance && physicalDevice) {
+        if (_this->Vulkan_GetPresentationSupport) {
+            return _this->Vulkan_GetPresentationSupport(_this, instance, physicalDevice, queueFamilyIndex);
+        }
+
+        /* If the backend does not have this function then it does not have a
+         * WSI function to query it; in other words it's not necessary to check
+         * as it is always supported.
+         */
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 SDL_MetalView SDL_Metal_CreateView(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, NULL);

@@ -166,4 +166,31 @@ void WIN_Vulkan_DestroySurface(SDL_VideoDevice *_this,
     }
 }
 
+SDL_bool WIN_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
+                                           VkInstance instance,
+                                           VkPhysicalDevice physicalDevice,
+                                           Uint32 queueFamilyIndex)
+{
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+        (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
+    PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR vkGetPhysicalDeviceWin32PresentationSupportKHR =
+        (PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)vkGetInstanceProcAddr(
+            instance,
+            "vkGetPhysicalDeviceWin32PresentationSupportKHR");
+
+    if (!_this->vulkan_config.loader_handle) {
+        SDL_SetError("Vulkan is not loaded");
+        return SDL_FALSE;
+    }
+
+    if (!vkGetPhysicalDeviceWin32PresentationSupportKHR) {
+        SDL_SetError(VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+                     " extension is not enabled in the Vulkan instance.");
+        return SDL_FALSE;
+    }
+
+    return vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice,
+                                                          queueFamilyIndex);
+}
+
 #endif
