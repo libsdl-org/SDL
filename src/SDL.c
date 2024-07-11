@@ -52,6 +52,7 @@
 #include "haptic/SDL_haptic_c.h"
 #include "joystick/SDL_joystick_c.h"
 #include "sensor/SDL_sensor_c.h"
+#include "thread/SDL_thread_c.h"
 
 /* Initialization/Cleanup routines */
 #ifndef SDL_TIMERS_DISABLED
@@ -189,6 +190,7 @@ int SDL_InitSubSystem(Uint32 flags)
         return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
     }
 
+    SDL_InitTLSData();
     SDL_LogInit();
 
     /* Clear the error message */
@@ -522,7 +524,7 @@ void SDL_Quit(void)
      */
     SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
 
-    SDL_TLSCleanup();
+    SDL_QuitTLSData();
 
     SDL_bInMainQuit = SDL_FALSE;
 }

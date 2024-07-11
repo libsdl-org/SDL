@@ -28,6 +28,15 @@
 #include "SDL_hints.h"
 #include "../SDL_error_c.h"
 
+/* The storage is local to the thread, but the IDs are global for the process */
+
+static SDL_atomic_t SDL_tls_allocated;
+
+void SDL_InitTLSData(void)
+{
+    SDL_SYS_InitTLSData();
+}
+
 SDL_TLSID SDL_TLSCreate(void)
 {
     static SDL_atomic_t SDL_tls_id;
@@ -53,6 +62,13 @@ int SDL_TLSSet(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
         return SDL_InvalidParamError("id");
     }
 
+    /* Make sure TLS is initialized.
+     * There's a race condition here if you are calling this from non-SDL threads
+     * and haven't called SDL_Init() on your main thread, but such is life.
+     */
+    SDL_InitTLSData();
+
+    /* Get the storage for the current thread */
     storage = SDL_SYS_GetTLSData();
     if (!storage || (id > storage->limit)) {
         unsigned int i, oldlimit, newlimit;
@@ -69,8 +85,10 @@ int SDL_TLSSet(SDL_TLSID id, const void *value, void(SDLCALL *destructor)(void *
             storage->array[i].destructor = NULL;
         }
         if (SDL_SYS_SetTLSData(storage) != 0) {
+            SDL_free(storage);
             return -1;
         }
+        SDL_AtomicIncRef(&SDL_tls_allocated);
     }
 
     storage->array[id - 1].data = SDL_const_cast(void *, value);
@@ -82,6 +100,7 @@ void SDL_TLSCleanup(void)
 {
     SDL_TLSData *storage;
 
+    /* Cleanup the storage for the current thread */
     storage = SDL_SYS_GetTLSData();
     if (storage) {
         unsigned int i;
@@ -92,6 +111,18 @@ void SDL_TLSCleanup(void)
         }
         SDL_SYS_SetTLSData(NULL);
         SDL_free(storage);
+        (void)SDL_AtomicDecRef(&SDL_tls_allocated);
+    }
+}
+
+void SDL_QuitTLSData(void)
+{
+    SDL_TLSCleanup();
+
+    if (SDL_AtomicGet(&SDL_tls_allocated) == 0) {
+        SDL_SYS_QuitTLSData();
+    } else {
+        /* Some thread hasn't called SDL_CleanupTLS() */
     }
 }
 
@@ -113,40 +144,27 @@ typedef struct SDL_TLSEntry
 static SDL_mutex *SDL_generic_TLS_mutex;
 static SDL_TLSEntry *SDL_generic_TLS;
 
+void SDL_Generic_InitTLSData(void)
+{
+    if (!SDL_generic_TLS_mutex) {
+        SDL_generic_TLS_mutex = SDL_CreateMutex();
+    }
+}
+
 SDL_TLSData *SDL_Generic_GetTLSData(void)
 {
     SDL_threadID thread = SDL_ThreadID();
     SDL_TLSEntry *entry;
     SDL_TLSData *storage = NULL;
 
-#ifndef SDL_THREADS_DISABLED
-    if (!SDL_generic_TLS_mutex) {
-        static SDL_SpinLock tls_lock;
-        SDL_AtomicLock(&tls_lock);
-        if (!SDL_generic_TLS_mutex) {
-            SDL_mutex *mutex = SDL_CreateMutex();
-            SDL_MemoryBarrierRelease();
-            SDL_generic_TLS_mutex = mutex;
-            if (!SDL_generic_TLS_mutex) {
-                SDL_AtomicUnlock(&tls_lock);
-                return NULL;
-            }
-        }
-        SDL_AtomicUnlock(&tls_lock);
-    }
-    SDL_MemoryBarrierAcquire();
     SDL_LockMutex(SDL_generic_TLS_mutex);
-#endif /* SDL_THREADS_DISABLED */
-
     for (entry = SDL_generic_TLS; entry; entry = entry->next) {
         if (entry->thread == thread) {
             storage = entry->storage;
             break;
         }
     }
-#ifndef SDL_THREADS_DISABLED
     SDL_UnlockMutex(SDL_generic_TLS_mutex);
-#endif
 
     return storage;
 }
@@ -155,8 +173,8 @@ int SDL_Generic_SetTLSData(SDL_TLSData *data)
 {
     SDL_threadID thread = SDL_ThreadID();
     SDL_TLSEntry *prev, *entry;
+    int retval = 0;
 
-    /* SDL_Generic_GetTLSData() is always called first, so we can assume SDL_generic_TLS_mutex */
     SDL_LockMutex(SDL_generic_TLS_mutex);
     prev = NULL;
     for (entry = SDL_generic_TLS; entry; entry = entry->next) {
@@ -175,21 +193,44 @@ int SDL_Generic_SetTLSData(SDL_TLSData *data)
         }
         prev = entry;
     }
-    if (!entry) {
+    if (!entry && data) {
         entry = (SDL_TLSEntry *)SDL_malloc(sizeof(*entry));
         if (entry) {
             entry->thread = thread;
             entry->storage = data;
             entry->next = SDL_generic_TLS;
             SDL_generic_TLS = entry;
+        } else {
+            retval = SDL_OutOfMemory();
         }
     }
     SDL_UnlockMutex(SDL_generic_TLS_mutex);
 
-    if (!entry) {
-        return SDL_OutOfMemory();
+    return retval;
+}
+
+void SDL_Generic_QuitTLSData(void)
+{
+    SDL_TLSEntry *entry;
+
+    /* This should have been cleaned up by the time we get here */
+    SDL_assert(!SDL_generic_TLS);
+    if (SDL_generic_TLS) {
+        SDL_LockMutex(SDL_generic_TLS_mutex);
+        for (entry = SDL_generic_TLS; entry; ) {
+            SDL_TLSEntry *next = entry->next;
+            SDL_free(entry->storage);
+            SDL_free(entry);
+            entry = next;
+        }
+        SDL_generic_TLS = NULL;
+        SDL_UnlockMutex(SDL_generic_TLS_mutex);
     }
-    return 0;
+
+    if (SDL_generic_TLS_mutex) {
+        SDL_DestroyMutex(SDL_generic_TLS_mutex);
+        SDL_generic_TLS_mutex = NULL;
+    }
 }
 
 /* Non-thread-safe global error variable */
@@ -327,6 +368,8 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
 {
     SDL_Thread *thread;
     int ret;
+
+    SDL_InitTLSData();
 
     /* Allocate memory for the thread info structure */
     thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
