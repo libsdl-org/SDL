@@ -368,11 +368,15 @@ void UIKit_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int
         CGSize size = view.bounds.size;
         CGFloat scale = 1.0;
 
-#ifndef SDL_PLATFORM_VISIONOS
+
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+#ifndef SDL_PLATFORM_VISIONOS
             scale = windata.uiwindow.screen.nativeScale;
-        }
+#else
+            scale = 2.0;
 #endif
+        }
+
 
         /* Integer truncation of fractional values matches SDL_uikitmetalview and
          * SDL_uikitopenglview. */
