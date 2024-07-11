@@ -866,6 +866,7 @@
 #define SDL_Vulkan_CreateSurface SDL_Vulkan_CreateSurface_REAL
 #define SDL_Vulkan_DestroySurface SDL_Vulkan_DestroySurface_REAL
 #define SDL_Vulkan_GetInstanceExtensions SDL_Vulkan_GetInstanceExtensions_REAL
+#define SDL_Vulkan_GetPresentationSupport SDL_Vulkan_GetPresentationSupport_REAL
 #define SDL_Vulkan_GetVkGetInstanceProcAddr SDL_Vulkan_GetVkGetInstanceProcAddr_REAL
 #define SDL_Vulkan_LoadLibrary SDL_Vulkan_LoadLibrary_REAL
 #define SDL_Vulkan_UnloadLibrary SDL_Vulkan_UnloadLibrary_REAL
@@ -1070,4 +1071,3 @@
 #define SDL_wcsnstr SDL_wcsnstr_REAL
 #define SDL_wcsstr SDL_wcsstr_REAL
 #define SDL_wcstol SDL_wcstol_REAL
-#define SDL_Vulkan_GetPresentationSupport SDL_Vulkan_GetPresentationSupport_REAL
