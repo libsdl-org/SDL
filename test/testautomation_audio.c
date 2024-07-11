@@ -108,7 +108,7 @@ static int audio_initQuitAudio(void *arg)
         }
 
         /* Call Init */
-        SDL_SetHint("SDL_AUDIO_DRIVER", audioDriver);
+        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
         result = SDL_InitSubSystem(SDL_INIT_AUDIO);
         SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO) with driver='%s'", audioDriver);
         SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
@@ -122,7 +122,7 @@ static int audio_initQuitAudio(void *arg)
     audioDriver = NULL;
 
     /* Call Init */
-    SDL_SetHint("SDL_AUDIO_DRIVER", audioDriver);
+    SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
     result = SDL_InitSubSystem(SDL_INIT_AUDIO);
     SDLTest_AssertPass("Call to SDL_AudioInit(NULL)");
     SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
@@ -175,7 +175,7 @@ static int audio_initOpenCloseQuitAudio(void *arg)
         for (j = 0; j < 2; j++) {
 
             /* Call Init */
-            SDL_SetHint("SDL_AUDIO_DRIVER", audioDriver);
+            SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
             result = SDL_InitSubSystem(SDL_INIT_AUDIO);
             SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO) with driver='%s'", audioDriver);
             SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
@@ -266,7 +266,7 @@ static int audio_pauseUnpauseAudio(void *arg)
         for (j = 0; j < 2; j++) {
 
             /* Call Init */
-            SDL_SetHint("SDL_AUDIO_DRIVER", audioDriver);
+            SDL_SetHint(SDL_HINT_AUDIO_DRIVER, audioDriver);
             result = SDL_InitSubSystem(SDL_INIT_AUDIO);
             SDLTest_AssertPass("Call to SDL_InitSubSystem(SDL_INIT_AUDIO) with driver='%s'", audioDriver);
             SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0 got: %d", result);
