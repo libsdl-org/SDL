@@ -27,12 +27,4 @@
 
 extern SDL_TLSData **ppSDLTLSData;
 
-/* SDL_OS2TLSAlloc() called from SDL_InitSubSystem() */
-void SDL_OS2TLSAlloc(void);
-
-/* SDL_OS2TLSFree() called from SDL_QuitSubSystem() */
-void SDL_OS2TLSFree(void);
-
 #endif /* SDL_THREAD_OS2 */
-
-/* vi: set ts=4 sw=4 expandtab: */
