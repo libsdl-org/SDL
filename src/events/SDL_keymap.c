@@ -394,7 +394,7 @@ static const char *SDL_scancode_names[SDL_NUM_SCANCODES] =
     /* 97 */ "Keypad 9",
     /* 98 */ "Keypad 0",
     /* 99 */ "Keypad .",
-    /* 100 */ NULL,
+    /* 100 */ "\\",
     /* 101 */ "Application",
     /* 102 */ "Power",
     /* 103 */ "Keypad =",
