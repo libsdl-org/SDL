@@ -213,15 +213,18 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_DestroySurface(VkInstance instance,
                                                        const struct VkAllocationCallbacks *allocator);
 
 /**
- * Query support for presentation via a given physical device and queue family.
+ * Query support for presentation via a given physical device and queue
+ * family.
  *
  * The `instance` must have been created with extensions returned by
  * SDL_Vulkan_GetInstanceExtensions() enabled.
  *
  * \param instance the Vulkan instance handle.
  * \param physicalDevice a valid Vulkan physical device handle.
- * \param queueFamilyIndex a valid queue family index for the given physical device.
- * \returns SDL_TRUE if supported, SDL_FALSE if unsupported or an error occurred.
+ * \param queueFamilyIndex a valid queue family index for the given physical
+ *                         device.
+ * \returns SDL_TRUE if supported, SDL_FALSE if unsupported or an error
+ *          occurred.
  *
  * \since This function is available since SDL 3.0.0.
  *
