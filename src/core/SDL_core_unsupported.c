@@ -127,6 +127,14 @@ void *SDL_AndroidGetActivity()
     return NULL;
 }
 
+SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetCachePath(void);
+const char* SDL_AndroidGetCachePath()
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+
 SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetExternalStoragePath(void);
 const char* SDL_AndroidGetExternalStoragePath()
 {

@@ -59,6 +59,7 @@ SDL_DYNAPI_PROC(int,SDL_AddVulkanRenderSemaphores,(SDL_Renderer *a, Uint32 b, Si
 SDL_DYNAPI_PROC(void*,SDL_AllocateEventMemory,(size_t a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_AndroidBackButton,(void),(),)
 SDL_DYNAPI_PROC(void*,SDL_AndroidGetActivity,(void),(),return)
+SDL_DYNAPI_PROC(const char*,SDL_AndroidGetCachePath,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_AndroidGetExternalStoragePath,(void),(),return)
 SDL_DYNAPI_PROC(int,SDL_AndroidGetExternalStorageState,(Uint32 *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_AndroidGetInternalStoragePath,(void),(),return)

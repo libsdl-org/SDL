@@ -395,13 +395,17 @@ extern SDL_DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
 #define SDL_ANDROID_EXTERNAL_STORAGE_WRITE  0x02
 
 /**
- * Get the path used for internal storage for this application.
+ * Get the path used for internal storage for this Android application.
  *
  * This path is unique to your application and cannot be written to by other
  * applications.
  *
  * Your internal storage path is typically:
  * `/data/data/your.app.package/files`.
+ *
+ * This is a C wrapper over `android.content.Context.getFilesDir()`:
+ *
+ * https://developer.android.com/reference/android/content/Context#getFilesDir()
  *
  * The returned string follows the SDL_GetStringRule.
  *
@@ -415,7 +419,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
 extern SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetInternalStoragePath(void);
 
 /**
- * Get the current state of external storage.
+ * Get the current state of external storage for this Android application.
  *
  * The current state of external storage, a bitmask of these values:
  * `SDL_ANDROID_EXTERNAL_STORAGE_READ`, `SDL_ANDROID_EXTERNAL_STORAGE_WRITE`.
@@ -434,13 +438,17 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetInternalStoragePath(void);
 extern SDL_DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(Uint32 *state);
 
 /**
- * Get the path used for external storage for this application.
+ * Get the path used for external storage for this Android application.
  *
  * This path is unique to your application, but is public and can be written
  * to by other applications.
  *
  * Your external storage path is typically:
  * `/storage/sdcard0/Android/data/your.app.package/files`.
+ *
+ * This is a C wrapper over `android.content.Context.getExternalFilesDir()`:
+ *
+ * https://developer.android.com/reference/android/content/Context#getExternalFilesDir()
  *
  * The returned string follows the SDL_GetStringRule.
  *
@@ -452,6 +460,28 @@ extern SDL_DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(Uint32 *state
  * \sa SDL_AndroidGetExternalStorageState
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
+
+/**
+ * Get the path used for caching data for this Android application.
+ *
+ * This path is unique to your application, but is public and can be written
+ * to by other applications.
+ *
+ * Your cache path is typically:
+ * `/data/data/your.app.package/cache/`.
+ *
+ * This is a C wrapper over `android.content.Context.getCacheDir()`:
+ *
+ * https://developer.android.com/reference/android/content/Context#getCacheDir()
+ *
+ * The returned string follows the SDL_GetStringRule.
+ *
+ * \returns the path used for caches for this application on success
+ *          or NULL on failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_AndroidGetCachePath(void);
 
 
 typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
