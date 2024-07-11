@@ -50,6 +50,7 @@
 #include "render/SDL_sysrender.h"
 #include "sensor/SDL_sensor_c.h"
 #include "stdlib/SDL_getenv_c.h"
+#include "thread/SDL_thread_c.h"
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_video_c.h"
 
@@ -189,6 +190,7 @@ int SDL_InitSubSystem(Uint32 flags)
         return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
     }
 
+    SDL_InitTLSData();
     SDL_InitLog();
     SDL_InitProperties();
     SDL_GetGlobalProperties();
@@ -563,10 +565,8 @@ void SDL_Quit(void)
     SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
 
     SDL_FlushEventMemory(0);
-
-    SDL_CleanupTLS();
-
     SDL_FreeEnvironmentMemory();
+    SDL_QuitTLSData();
 
     SDL_bInMainQuit = SDL_FALSE;
 }

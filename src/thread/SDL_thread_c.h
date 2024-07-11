@@ -89,16 +89,16 @@ typedef struct
 /* This is how many TLS entries we allocate at once */
 #define TLS_ALLOC_CHUNKSIZE 4
 
-/* Get cross-platform, slow, thread local storage for this thread.
-   This is only intended as a fallback if getting real thread-local
-   storage fails or isn't supported on this platform.
- */
-extern SDL_TLSData *SDL_Generic_GetTLSData(void);
+extern void SDL_InitTLSData(void);
+extern void SDL_QuitTLSData(void);
 
-/* Set cross-platform, slow, thread local storage for this thread.
+/* Generic TLS support.
    This is only intended as a fallback if getting real thread-local
    storage fails or isn't supported on this platform.
  */
+extern void SDL_Generic_InitTLSData(void);
+extern SDL_TLSData *SDL_Generic_GetTLSData(void);
 extern int SDL_Generic_SetTLSData(SDL_TLSData *data);
+extern void SDL_Generic_QuitTLSData(void);
 
 #endif /* SDL_thread_c_h_ */
