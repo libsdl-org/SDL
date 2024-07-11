@@ -396,18 +396,16 @@ int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
         return SDL_SetError("SDL_SetSurfacePalette() passed a palette that doesn't match the surface format");
     }
 
-    if (palette == surface->internal->palette) {
-        return 0;
-    }
+    if (palette != surface->internal->palette) {
+        if (surface->internal->palette) {
+            SDL_DestroyPalette(surface->internal->palette);
+        }
 
-    if (surface->internal->palette) {
-        SDL_DestroyPalette(surface->internal->palette);
-    }
+        surface->internal->palette = palette;
 
-    surface->internal->palette = palette;
-
-    if (surface->internal->palette) {
-        ++surface->internal->palette->refcount;
+        if (surface->internal->palette) {
+            ++surface->internal->palette->refcount;
+        }
     }
 
     SDL_InvalidateMap(&surface->internal->map);

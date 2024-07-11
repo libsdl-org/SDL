@@ -852,6 +852,45 @@ static int surface_testFlip(void *arg)
     return TEST_COMPLETED;
 }
 
+static int surface_testPalette(void *arg)
+{
+    SDL_Surface *surface, *output;
+    SDL_Palette *palette;
+    Uint8 *pixels;
+    int offset;
+
+    surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+
+    output = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
+    SDLTest_AssertCheck(output != NULL, "SDL_CreateSurface()");
+
+    *(Uint8 *)surface->pixels = 255;
+
+    pixels = (Uint8 *)output->pixels;
+    offset = 0;
+
+    SDL_BlitSurface(surface, NULL, output, NULL);
+    SDLTest_AssertCheck(pixels[offset] == 0xFF,
+                        "Expected pixels[%d] == 0xFF got 0x%.2X", offset, pixels[offset]);
+
+    /* Set the palette color and blit again */
+    palette = SDL_GetSurfacePalette(surface);
+    SDLTest_AssertCheck(palette != NULL, "Expected palette != NULL, got %p", palette);
+    if (palette) {
+        palette->colors[255].r = 0xAA;
+    }
+    SDL_SetSurfacePalette(surface, palette);
+    SDL_BlitSurface(surface, NULL, output, NULL);
+    SDLTest_AssertCheck(pixels[offset] == 0xAA,
+                        "Expected pixels[%d] == 0xAA got 0x%.2X", offset, pixels[offset]);
+
+    SDL_DestroySurface(surface);
+    SDL_DestroySurface(output);
+
+    return TEST_COMPLETED;
+}
+
 
 /* ================= Test References ================== */
 
@@ -915,11 +954,16 @@ static const SDLTest_TestCaseReference surfaceTestFlip = {
     surface_testFlip, "surface_testFlip", "Test surface flipping.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestPalette = {
+    surface_testPalette, "surface_testPalette", "Test surface palette operations.", TEST_ENABLED
+};
+
 /* Sequence of Surface test cases */
 static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTest1, &surfaceTest2, &surfaceTest3, &surfaceTest4, &surfaceTest5,
     &surfaceTest6, &surfaceTest7, &surfaceTest8, &surfaceTest9, &surfaceTest10,
-    &surfaceTest11, &surfaceTest12, &surfaceTestOverflow, &surfaceTestFlip, NULL
+    &surfaceTest11, &surfaceTest12, &surfaceTestOverflow, &surfaceTestFlip,
+    &surfaceTestPalette, NULL
 };
 
 /* Surface test suite (global) */
