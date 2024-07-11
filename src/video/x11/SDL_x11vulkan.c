@@ -232,4 +232,59 @@ void X11_Vulkan_DestroySurface(SDL_VideoDevice *_this,
     }
 }
 
+SDL_bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
+                                           VkInstance instance,
+                                           VkPhysicalDevice physicalDevice,
+                                           Uint32 queueFamilyIndex)
+{
+    SDL_VideoData *videoData = _this->driverdata;
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
+    const char *forced_visual_id;
+    VisualID visualid;
+
+    if (!_this->vulkan_config.loader_handle) {
+        return SDL_SetError("Vulkan is not loaded");
+    }
+    vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
+
+    forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
+    if (forced_visual_id) {
+        visualid = SDL_strtol(forced_visual_id, NULL, 0);
+    } else {
+        visualid = X11_XVisualIDFromVisual(DefaultVisual(videoData->display, DefaultScreen(videoData->display)));
+    }
+
+    if (videoData->vulkan_xlib_xcb_library) {
+        PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR vkGetPhysicalDeviceXcbPresentationSupportKHR =
+            (PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR)vkGetInstanceProcAddr(
+                instance,
+                "vkGetPhysicalDeviceXcbPresentationSupportKHR");
+
+        if (!vkGetPhysicalDeviceXcbPresentationSupportKHR) {
+            SDL_SetError(VK_KHR_XCB_SURFACE_EXTENSION_NAME " extension is not enabled in the Vulkan instance.");
+            return SDL_FALSE;
+        }
+
+        return vkGetPhysicalDeviceXcbPresentationSupportKHR(physicalDevice,
+                                                            queueFamilyIndex,
+                                                            videoData->vulkan_XGetXCBConnection(videoData->display),
+                                                            visualid);
+    } else {
+        PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR vkGetPhysicalDeviceXlibPresentationSupportKHR =
+            (PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR)vkGetInstanceProcAddr(
+                instance,
+                "vkGetPhysicalDeviceXlibPresentationSupportKHR");
+
+        if (!vkGetPhysicalDeviceXlibPresentationSupportKHR) {
+            SDL_SetError(VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension is not enabled in the Vulkan instance.");
+            return SDL_FALSE;
+        }
+
+        return vkGetPhysicalDeviceXlibPresentationSupportKHR(physicalDevice,
+                                                             queueFamilyIndex,
+                                                             videoData->display,
+                                                             visualid);
+    }
+}
+
 #endif
