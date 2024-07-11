@@ -172,6 +172,7 @@ useful paths for saving and loading data:
 * SDL_AndroidGetInternalStoragePath()
 * SDL_AndroidGetExternalStorageState()
 * SDL_AndroidGetExternalStoragePath()
+* SDL_AndroidGetCachePath()
 
 See SDL_system.h for more details on these functions.
 

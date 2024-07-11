@@ -2598,6 +2598,53 @@ const char *SDL_AndroidGetExternalStoragePath(void)
     return s_AndroidExternalFilesPath;
 }
 
+// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
+const char *SDL_AndroidGetCachePath(void)
+{
+    // !!! FIXME: lots of duplication with SDL_AndroidGetExternalStoragePath and SDL_AndroidGetInternalStoragePath; consolidate these functions!
+    static char *s_AndroidCachePath = NULL;
+
+    if (!s_AndroidCachePath) {
+        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+        jmethodID mid;
+        jobject context;
+        jobject fileObject;
+        jstring pathString;
+        const char *path;
+
+        JNIEnv *env = Android_JNI_GetEnv();
+        if (!LocalReferenceHolder_Init(&refs, env)) {
+            LocalReferenceHolder_Cleanup(&refs);
+            return NULL;
+        }
+
+        /* context = SDLActivity.getContext(); */
+        context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+
+        /* fileObj = context.getExternalFilesDir(); */
+        mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
+                                  "getCacheDir", "(Ljava/lang/String;)Ljava/io/File;");
+        fileObject = (*env)->CallObjectMethod(env, context, mid, NULL);
+        if (!fileObject) {
+            SDL_SetError("Couldn't get cache directory");
+            LocalReferenceHolder_Cleanup(&refs);
+            return NULL;
+        }
+
+        /* path = fileObject.getAbsolutePath(); */
+        mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, fileObject),
+                                  "getAbsolutePath", "()Ljava/lang/String;");
+        pathString = (jstring)(*env)->CallObjectMethod(env, fileObject, mid);
+
+        path = (*env)->GetStringUTFChars(env, pathString, NULL);
+        s_AndroidCachePath = SDL_strdup(path);
+        (*env)->ReleaseStringUTFChars(env, pathString, path);
+
+        LocalReferenceHolder_Cleanup(&refs);
+    }
+    return s_AndroidCachePath;
+}
+
 int SDL_AndroidShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
 {
     return Android_JNI_ShowToast(message, duration, gravity, xOffset, yOffset);

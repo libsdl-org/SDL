@@ -14,6 +14,7 @@ SDL3_0.0.0 {
     SDL_AllocateEventMemory;
     SDL_AndroidBackButton;
     SDL_AndroidGetActivity;
+    SDL_AndroidGetCachePath;
     SDL_AndroidGetExternalStoragePath;
     SDL_AndroidGetExternalStorageState;
     SDL_AndroidGetInternalStoragePath;
