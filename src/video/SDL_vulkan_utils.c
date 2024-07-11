@@ -174,10 +174,10 @@ static const VkDisplayPlaneAlphaFlagBitsKHR alphaModes[4] = {
     VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR,
 };
 
-SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
-                                          VkInstance instance,
-                                          const struct VkAllocationCallbacks *allocator,
-                                          VkSurfaceKHR *surface)
+int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
+                                     VkInstance instance,
+                                     const struct VkAllocationCallbacks *allocator,
+                                     VkSurfaceKHR *surface)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)vkGetInstanceProcAddr_;
@@ -447,7 +447,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
 
     if (physicalDeviceIndex == physicalDeviceCount) {
         SDL_SetError("No usable displays found or requested display out of range");
-        return SDL_FALSE;
+        goto error;
     }
 
     createInfo.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
@@ -457,14 +457,14 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
     result = vkCreateDisplayPlaneSurfaceKHR(instance, &createInfo, allocator, surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateDisplayPlaneSurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
-        return SDL_FALSE;
+        goto error;
     }
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Created surface");
-    return SDL_TRUE;
+    return 0;
 
 error:
     SDL_free(physicalDevices);
-    return SDL_FALSE;
+    return -1;
 }
 
 void SDL_Vulkan_DestroySurface_Internal(void *vkGetInstanceProcAddr_,
