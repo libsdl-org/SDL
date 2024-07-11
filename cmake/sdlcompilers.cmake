@@ -29,6 +29,8 @@ endfunction()
 function(SDL_AddCommonCompilerFlags TARGET)
   option(SDL_WERROR "Enable -Werror" OFF)
 
+  get_property(TARGET_TYPE TARGET "${TARGET}" PROPERTY TYPE)
+
   if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
     if(MINGW)
       # See if GCC's -gdwarf-4 is supported
@@ -127,6 +129,13 @@ function(SDL_AddCommonCompilerFlags TARGET)
       check_c_compiler_flag(-Werror HAVE_WERROR)
       if(HAVE_WERROR)
         sdl_target_compile_option_all_languages(${TARGET} "-Werror")
+      endif()
+
+      if(TARGET_TYPE STREQUAL "SHARED_LIBRARY")
+        check_linker_flag(C "-Wl,--no-undefined-version" LINKER_SUPPORTS_NO_UNDEFINED_VERSION)
+        if(LINKER_SUPPORTS_NO_UNDEFINED_VERSION)
+          target_link_options(${TARGET} PRIVATE "-Wl,--no-undefined-version")
+        endif()
       endif()
     endif()
   endif()
