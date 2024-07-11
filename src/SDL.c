@@ -29,9 +29,6 @@
 #endif
 #if defined(__OS2__)
 #include "core/os2/SDL_os2.h"
-#ifdef SDL_THREAD_OS2
-#include "thread/os2/SDL_systls_c.h"
-#endif
 #endif
 
 /* this checks for HAVE_DBUS_DBUS_H internally. */
@@ -198,10 +195,6 @@ int SDL_InitSubSystem(Uint32 flags)
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Init();
-#endif
-
-#ifdef SDL_THREAD_OS2
-    SDL_OS2TLSAlloc(); /* thread/os2/SDL_systls.c */
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
@@ -380,9 +373,6 @@ int SDL_Init(Uint32 flags)
 void SDL_QuitSubSystem(Uint32 flags)
 {
 #if defined(__OS2__)
-#ifdef SDL_THREAD_OS2
-    SDL_OS2TLSFree(); /* thread/os2/SDL_systls.c */
-#endif
     SDL_OS2Quit();
 #endif
 
