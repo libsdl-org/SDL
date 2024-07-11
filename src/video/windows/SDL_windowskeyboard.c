@@ -106,7 +106,8 @@ void WIN_UpdateKeymap(SDL_bool send_event)
             /* Make sure this scancode is a valid character scancode */
             scancode = windows_scancode_table[i];
             if (scancode == SDL_SCANCODE_UNKNOWN ||
-                scancode >= SDL_SCANCODE_CAPSLOCK) {
+                scancode == SDL_SCANCODE_DELETE ||
+                (SDL_GetDefaultKeyFromScancode(scancode, SDL_KMOD_NONE) & SDLK_SCANCODE_MASK)) {
                 continue;
             }
 
