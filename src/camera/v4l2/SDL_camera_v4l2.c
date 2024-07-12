@@ -546,8 +546,8 @@ static int V4L2_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
             if ( (setfps.parm.capture.timeperframe.denominator != spec->framerate_numerator) ||
                  (setfps.parm.capture.timeperframe.numerator = spec->framerate_denominator) ) {
                 setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                setfps.parm.capture.timeperframe.numerator = spec->framerate_numerator;
-                setfps.parm.capture.timeperframe.denominator = spec->framerate_denominator;
+                setfps.parm.capture.timeperframe.numerator = spec->framerate_denominator;
+                setfps.parm.capture.timeperframe.denominator = spec->framerate_numerator;
                 if (xioctl(fd, VIDIOC_S_PARM, &setfps) == -1) {
                     return SDL_SetError("Error VIDIOC_S_PARM");
                 }
