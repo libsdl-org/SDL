@@ -1045,7 +1045,7 @@ static void SDLTest_PrintRenderer(SDL_Renderer *renderer)
     SDL_Log("  Renderer %s:\n", name);
     SDL_Log("    VSync: %d\n", (int)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VSYNC_NUMBER, 0));
 
-    texture_formats = (const SDL_PixelFormat *)SDL_GetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, NULL);
+    texture_formats = (const SDL_PixelFormat *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, NULL);
     if (texture_formats) {
         (void)SDL_snprintf(text, sizeof(text), "    Texture formats: ");
         for (i = 0; texture_formats[i]; ++i) {

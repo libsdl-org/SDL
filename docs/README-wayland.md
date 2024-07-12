@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
     }
 
     /* Set SDL to use the existing wl_display object from Qt and initialize. */
-    SDL_SetProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
+    SDL_SetPointerProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
     /* Create a basic, frameless QWindow */
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
      * Qt objects should not be flagged as DPI-aware or protocol violations will result.
      */
     props = SDL_CreateProperties();
-    SDL_SetProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, surface);
+    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, surface);
     SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 640);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 480);

@@ -479,8 +479,8 @@ static void loop(void)
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
-        SDL_Texture *arrow_cursor = (SDL_Texture *)SDL_GetProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, NULL);
-        SDL_Texture *cross_cursor = (SDL_Texture *)SDL_GetProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, NULL);
+        SDL_Texture *arrow_cursor = (SDL_Texture *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, NULL);
+        SDL_Texture *cross_cursor = (SDL_Texture *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, NULL);
 
         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
         SDL_RenderClear(renderer);
@@ -538,8 +538,8 @@ int main(int argc, char *argv[])
         SDL_Texture *cursor_arrow = CreateTexture(arrow, renderer);
         SDL_Texture *cursor_cross = CreateTexture(cross, renderer);
 
-        SDL_SetProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, cursor_arrow);
-        SDL_SetProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, cursor_cross);
+        SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, cursor_arrow);
+        SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, cursor_cross);
     }
 
     /* We only get mouse motion for distinct devices when relative mode is enabled */

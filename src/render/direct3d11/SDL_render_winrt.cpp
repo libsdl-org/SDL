@@ -44,7 +44,7 @@ using namespace Windows::Graphics::Display;
 extern "C" void *
 D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer *renderer)
 {
-    IInspectable *window = (IInspectable *)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), SDL_PROP_WINDOW_WINRT_WINDOW_POINTER, NULL);
+    IInspectable *window = (IInspectable *)SDL_GetPointerProperty(SDL_GetWindowProperties(renderer->window), SDL_PROP_WINDOW_WINRT_WINDOW_POINTER, NULL);
     ABI::Windows::UI::Core::ICoreWindow *coreWindow = NULL;
     if (!window || FAILED(window->QueryInterface(&coreWindow))) {
         return NULL;

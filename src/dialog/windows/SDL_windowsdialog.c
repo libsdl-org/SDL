@@ -101,7 +101,7 @@ void windows_ShowFileDialog(void *ptr)
     HWND window = NULL;
 
     if (parent) {
-        window = (HWND) SDL_GetProperty(SDL_GetWindowProperties(parent), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+        window = (HWND) SDL_GetPointerProperty(SDL_GetWindowProperties(parent), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     }
 
     wchar_t *filebuffer; /* lpstrFile */
@@ -391,7 +391,7 @@ void windows_ShowFolderDialog(void* ptr)
     HWND parent = NULL;
 
     if (window) {
-        parent = (HWND) SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+        parent = (HWND) SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     }
 
     wchar_t buffer[MAX_PATH];

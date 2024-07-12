@@ -703,7 +703,7 @@ void SDL_IBus_UpdateTextInputArea(SDL_Window *window)
 #ifdef SDL_VIDEO_DRIVER_X11
     {
         SDL_PropertiesID props = SDL_GetWindowProperties(window);
-        Display *x_disp = (Display *)SDL_GetProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        Display *x_disp = (Display *)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
         int x_screen = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, 0);
         Window x_win = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
         Window unused;

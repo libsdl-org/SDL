@@ -336,7 +336,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     return result;
 }
 
-int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata)
+int SDL_SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata)
 {
     SDL_Property *property;
 
@@ -362,7 +362,7 @@ int SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *v
     return SDL_PrivateSetProperty(props, name, property);
 }
 
-int SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value)
+int SDL_SetPointerProperty(SDL_PropertiesID props, const char *name, void *value)
 {
     SDL_Property *property;
 
@@ -386,7 +386,7 @@ static void SDLCALL CleanupFreeableProperty(void *userdata, void *value)
 
 int SDL_SetFreeableProperty(SDL_PropertiesID props, const char *name, void *value)
 {
-    return SDL_SetPropertyWithCleanup(props, name, value, CleanupFreeableProperty, NULL);
+    return SDL_SetPointerPropertyWithCleanup(props, name, value, CleanupFreeableProperty, NULL);
 }
 
 static void SDLCALL CleanupSurface(void *userdata, void *value)
@@ -398,7 +398,7 @@ static void SDLCALL CleanupSurface(void *userdata, void *value)
 
 int SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surface *surface)
 {
-    return SDL_SetPropertyWithCleanup(props, name, surface, CleanupSurface, NULL);
+    return SDL_SetPointerPropertyWithCleanup(props, name, surface, CleanupSurface, NULL);
 }
 
 int SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char *value)
@@ -492,7 +492,7 @@ SDL_PropertyType SDL_GetPropertyType(SDL_PropertiesID props, const char *name)
     return type;
 }
 
-void *SDL_GetProperty(SDL_PropertiesID props, const char *name, void *default_value)
+void *SDL_GetPointerProperty(SDL_PropertiesID props, const char *name, void *default_value)
 {
     SDL_Properties *properties = NULL;
     void *value = default_value;
@@ -775,7 +775,7 @@ static void SDLCALL SDL_DumpPropertiesCallback(void *userdata, SDL_PropertiesID 
 {
     switch (SDL_GetPropertyType(props, name)) {
     case SDL_PROPERTY_TYPE_POINTER:
-        SDL_Log("%s: %p\n", name, SDL_GetProperty(props, name, NULL));
+        SDL_Log("%s: %p\n", name, SDL_GetPointerProperty(props, name, NULL));
         break;
     case SDL_PROPERTY_TYPE_STRING:
         SDL_Log("%s: \"%s\"\n", name, SDL_GetStringProperty(props, name, ""));

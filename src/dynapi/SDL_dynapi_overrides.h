@@ -393,12 +393,12 @@
 #define SDL_GetPixelFormatForMasks SDL_GetPixelFormatForMasks_REAL
 #define SDL_GetPixelFormatName SDL_GetPixelFormatName_REAL
 #define SDL_GetPlatform SDL_GetPlatform_REAL
+#define SDL_GetPointerProperty SDL_GetPointerProperty_REAL
 #define SDL_GetPowerInfo SDL_GetPowerInfo_REAL
 #define SDL_GetPrefPath SDL_GetPrefPath_REAL
 #define SDL_GetPreferredLocales SDL_GetPreferredLocales_REAL
 #define SDL_GetPrimaryDisplay SDL_GetPrimaryDisplay_REAL
 #define SDL_GetPrimarySelectionText SDL_GetPrimarySelectionText_REAL
-#define SDL_GetProperty SDL_GetProperty_REAL
 #define SDL_GetPropertyType SDL_GetPropertyType_REAL
 #define SDL_GetRGB SDL_GetRGB_REAL
 #define SDL_GetRGBA SDL_GetRGBA_REAL
@@ -755,9 +755,9 @@
 #define SDL_SetModState SDL_SetModState_REAL
 #define SDL_SetNumberProperty SDL_SetNumberProperty_REAL
 #define SDL_SetPaletteColors SDL_SetPaletteColors_REAL
+#define SDL_SetPointerProperty SDL_SetPointerProperty_REAL
+#define SDL_SetPointerPropertyWithCleanup SDL_SetPointerPropertyWithCleanup_REAL
 #define SDL_SetPrimarySelectionText SDL_SetPrimarySelectionText_REAL
-#define SDL_SetProperty SDL_SetProperty_REAL
-#define SDL_SetPropertyWithCleanup SDL_SetPropertyWithCleanup_REAL
 #define SDL_SetRelativeMouseMode SDL_SetRelativeMouseMode_REAL
 #define SDL_SetRenderClipRect SDL_SetRenderClipRect_REAL
 #define SDL_SetRenderColorScale SDL_SetRenderColorScale_REAL

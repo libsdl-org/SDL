@@ -431,7 +431,7 @@ static SDL_IOStream *SDL_IOFromFP(FILE *fp, SDL_bool autoclose)
     } else {
         const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
         if (props) {
-            SDL_SetProperty(props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, fp);
+            SDL_SetPointerProperty(props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, fp);
         }
     }
 
@@ -615,7 +615,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     } else {
         const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
         if (props) {
-            SDL_SetProperty(props, SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER, iodata);
+            SDL_SetPointerProperty(props, SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER, iodata);
         }
     }
 
@@ -644,7 +644,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     } else {
         const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
         if (props) {
-            SDL_SetProperty(props, SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER, iodata->h);
+            SDL_SetPointerProperty(props, SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER, iodata->h);
         }
     }
 
@@ -793,7 +793,7 @@ static int dynamic_mem_realloc(IOStreamDynamicMemData *iodata, size_t size)
     iodata->data.here = base + here_offset;
     iodata->data.stop = base + stop_offset;
     iodata->end = base + length;
-    return SDL_SetProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, base);
+    return SDL_SetPointerProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, base);
 }
 
 static size_t SDLCALL dynamic_mem_write(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status)
@@ -813,7 +813,7 @@ static size_t SDLCALL dynamic_mem_write(void *userdata, const void *ptr, size_t 
 static int SDLCALL dynamic_mem_close(void *userdata)
 {
     const IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
-    void *mem = SDL_GetProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
+    void *mem = SDL_GetPointerProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
     if (mem) {
         SDL_free(mem);
     }
