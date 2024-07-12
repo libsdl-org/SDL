@@ -478,7 +478,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const 
 typedef void (SDLCALL *SDL_EnumeratePropertiesCallback)(void *userdata, SDL_PropertiesID props, const char *name);
 
 /**
- * Enumerate the properties on a set of properties.
+ * Enumerate the properties contained in a property set.
  *
  * The callback function is called for each property on the set of properties.
  * The properties are locked during enumeration.
