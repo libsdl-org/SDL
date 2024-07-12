@@ -187,8 +187,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
 typedef void (SDLCALL *SDL_CleanupPropertyCallback)(void *userdata, void *value);
 
 /**
- * Set a pointer property in a group of properties with a cleanup function that is
- * called when the property is deleted.
+ * Set a pointer property in a group of properties with a cleanup function
+ * that is called when the property is deleted.
  *
  * The cleanup function is also called if setting the property fails for any
  * reason.
