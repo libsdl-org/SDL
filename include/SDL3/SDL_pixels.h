@@ -764,7 +764,7 @@ typedef struct SDL_PixelFormatDetails
  *
  * \param format the pixel format to query.
  * \returns the human readable name of the specified pixel format or
- *          `SDL_PIXELFORMAT_UNKNOWN` if the format isn't recognized.
+ *          "SDL_PIXELFORMAT_UNKNOWN" if the format isn't recognized.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
