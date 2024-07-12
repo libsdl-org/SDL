@@ -791,7 +791,7 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, SDL_bool send
     SDL_UpdateDesktopBounds();
 
     if (send_event) {
-        SDL_SendDisplayEvent(new_display, SDL_EVENT_DISPLAY_ADDED, 0);
+        SDL_SendDisplayEvent(new_display, SDL_EVENT_DISPLAY_ADDED, 0, 0);
     }
 
     return id;
@@ -823,7 +823,7 @@ void SDL_DelVideoDisplay(SDL_DisplayID displayID, SDL_bool send_event)
     display = _this->displays[display_index];
 
     if (send_event) {
-        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_REMOVED, 0);
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_REMOVED, 0, 0);
     }
 
     SDL_DestroyProperties(display->props);
@@ -1044,7 +1044,7 @@ void SDL_SetDisplayContentScale(SDL_VideoDisplay *display, float scale)
         SDL_Window *window;
 
         display->content_scale = scale;
-        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED, 0);
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED, 0, 0);
 
         /* Check the windows on this display */
         for (window = _this->windows; window; window = window->next) {
@@ -1310,14 +1310,34 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
     return closest;
 }
 
+static SDL_bool DisplayModeChanged(const SDL_DisplayMode *old, const SDL_DisplayMode *new)
+{
+    return ((old->displayID && old->displayID != new->displayID) ||
+            (old->format && old->format != new->format) ||
+            (old->w && old->h && (old->w != new->w ||old->h != new->h)) ||
+            (old->pixel_density != 0.0f && old->pixel_density != new->pixel_density) ||
+            (old->refresh_rate != 0.0f && old->refresh_rate != new->refresh_rate));
+}
+
 void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
+    SDL_DisplayMode last_mode;
+
+    SDL_copyp(&last_mode, &display->desktop_mode);
+
     if (display->desktop_mode.driverdata) {
         SDL_free(display->desktop_mode.driverdata);
     }
-    SDL_memcpy(&display->desktop_mode, mode, sizeof(*mode));
+    SDL_copyp(&display->desktop_mode, mode);
     display->desktop_mode.displayID = display->id;
     SDL_FinalizeDisplayMode(&display->desktop_mode);
+
+    if (DisplayModeChanged(&last_mode, &display->desktop_mode)) {
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED, mode->w, mode->h);
+        if (display->current_mode == &display->desktop_mode) {
+            SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED, mode->w, mode->h);
+        }
+    }
 }
 
 const SDL_DisplayMode *SDL_GetDesktopDisplayMode(SDL_DisplayID displayID)
@@ -1331,7 +1351,19 @@ const SDL_DisplayMode *SDL_GetDesktopDisplayMode(SDL_DisplayID displayID)
 
 void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
 {
+    SDL_DisplayMode last_mode;
+
+    if (display->current_mode) {
+        SDL_copyp(&last_mode, display->current_mode);
+    } else {
+        SDL_zero(last_mode);
+    }
+
     display->current_mode = mode;
+
+    if (DisplayModeChanged(&last_mode, mode)) {
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED, mode->w, mode->h);
+    }
 }
 
 const SDL_DisplayMode *SDL_GetCurrentDisplayMode(SDL_DisplayID displayID)

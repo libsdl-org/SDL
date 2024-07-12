@@ -1563,7 +1563,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
 {
     switch (event->type) {
     case SDL_EVENT_SYSTEM_THEME_CHANGED:
-        SDL_Log("SDL EVENT: System theme changed to %s\n", SystemThemeName());
+        SDL_Log("SDL EVENT: System theme changed to %s", SystemThemeName());
         break;
     case SDL_EVENT_DISPLAY_ADDED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " attached",
@@ -1575,6 +1575,14 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
             SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed content scale to %d%%",
                     event->display.displayID, (int)(scale * 100.0f));
         }
+        break;
+    case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " desktop mode changed to %" SDL_PRIs32 "x%" SDL_PRIs32,
+                event->display.displayID, event->display.data1, event->display.data2);
+        break;
+    case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " current mode changed to %" SDL_PRIs32 "x%" SDL_PRIs32,
+                event->display.displayID, event->display.data1, event->display.data2);
         break;
     case SDL_EVENT_DISPLAY_MOVED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed position",

@@ -23,6 +23,6 @@
 #ifndef SDL_displayevents_c_h_
 #define SDL_displayevents_c_h_
 
-extern int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1);
+extern int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1, int data2);
 
 #endif /* SDL_displayevents_c_h_ */

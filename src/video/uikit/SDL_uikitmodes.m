@@ -534,7 +534,7 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
         default:
             break;
         }
-        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation, 0);
     }
 }
 #endif /* !SDL_PLATFORM_TVOS */

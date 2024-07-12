@@ -285,13 +285,15 @@ static void SDL_LogEvent(const SDL_Event *event)
 #define SDL_DISPLAYEVENT_CASE(x)               \
     case x:                                    \
         SDL_strlcpy(name, #x, sizeof(name));   \
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u display=%u event=%s data1=%d)", \
-                           (uint)event->display.timestamp, (uint)event->display.displayID, name, (int)event->display.data1); \
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u display=%u event=%s data1=%d, data2=%d)", \
+                           (uint)event->display.timestamp, (uint)event->display.displayID, name, (int)event->display.data1, (int)event->display.data2); \
         break
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_ORIENTATION);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_ADDED);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_REMOVED);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_MOVED);
+        SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED);
+        SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED);
 #undef SDL_DISPLAYEVENT_CASE
 

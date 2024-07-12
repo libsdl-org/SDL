@@ -905,7 +905,7 @@ static void display_handle_done(void *data,
             SDL_zero(driverdata->placeholder);
         }
     } else {
-        SDL_SendDisplayEvent(dpy, SDL_EVENT_DISPLAY_ORIENTATION, driverdata->orientation);
+        SDL_SendDisplayEvent(dpy, SDL_EVENT_DISPLAY_ORIENTATION, driverdata->orientation, 0);
     }
 }
 
