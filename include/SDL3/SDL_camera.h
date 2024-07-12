@@ -62,7 +62,6 @@ typedef Uint32 SDL_CameraDeviceID;
  *
  * \since This struct is available since SDL 3.0.0.
  */
-struct SDL_Camera;
 typedef struct SDL_Camera SDL_Camera;
 
 /**
