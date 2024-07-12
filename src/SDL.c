@@ -113,6 +113,7 @@ static SDL_bool SDL_MainIsReady = SDL_FALSE;
 #else
 static SDL_bool SDL_MainIsReady = SDL_TRUE;
 #endif
+static SDL_bool SDL_main_thread_initialized = SDL_FALSE;
 static SDL_bool SDL_bInMainQuit = SDL_FALSE;
 static Uint8 SDL_SubsystemRefCount[32];
 
@@ -182,6 +183,36 @@ void SDL_SetMainReady(void)
     SDL_MainIsReady = SDL_TRUE;
 }
 
+/* Initialize all the subsystems that require initialization before threads start */
+void SDL_InitMainThread(void)
+{
+    if (SDL_main_thread_initialized) {
+        return;
+    }
+
+    SDL_InitTLSData();
+    SDL_InitTicks();
+    SDL_InitLog();
+    SDL_InitProperties();
+    SDL_GetGlobalProperties();
+
+    SDL_main_thread_initialized = SDL_TRUE;
+}
+
+static void SDL_QuitMainThread(void)
+{
+    if (!SDL_main_thread_initialized) {
+        return;
+    }
+
+    SDL_QuitProperties();
+    SDL_QuitLog();
+    SDL_QuitTicks();
+    SDL_QuitTLSData();
+
+    SDL_main_thread_initialized = SDL_FALSE;
+}
+
 int SDL_InitSubSystem(Uint32 flags)
 {
     Uint32 flags_initialized = 0;
@@ -190,13 +221,7 @@ int SDL_InitSubSystem(Uint32 flags)
         return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
     }
 
-    SDL_InitTLSData();
-    SDL_InitLog();
-    SDL_InitProperties();
-    SDL_GetGlobalProperties();
-
-    /* Clear the error message */
-    SDL_ClearError();
+    SDL_InitMainThread();
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Init();
@@ -209,8 +234,6 @@ int SDL_InitSubSystem(Uint32 flags)
         }
     }
 #endif
-
-    SDL_InitTicks();
 
     /* Initialize the event subsystem */
     if (flags & SDL_INIT_EVENTS) {
@@ -542,8 +565,6 @@ void SDL_Quit(void)
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
-    SDL_QuitTicks();
-
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
@@ -556,9 +577,6 @@ void SDL_Quit(void)
 
     SDL_QuitCPUInfo();
 
-    SDL_QuitProperties();
-    SDL_QuitLog();
-
     /* Now that every subsystem has been quit, we reset the subsystem refcount
      * and the list of initialized subsystems.
      */
@@ -566,7 +584,8 @@ void SDL_Quit(void)
 
     SDL_FlushEventMemory(0);
     SDL_FreeEnvironmentMemory();
-    SDL_QuitTLSData();
+
+    SDL_QuitMainThread();
 
     SDL_bInMainQuit = SDL_FALSE;
 }

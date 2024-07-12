@@ -289,6 +289,9 @@
 extern "C" {
 #endif
 
+/* Do any initialization that needs to happen before threads are started */
+extern void SDL_InitMainThread(void);
+
 extern int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
 extern int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
 extern SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
