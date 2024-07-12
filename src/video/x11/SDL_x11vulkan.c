@@ -243,7 +243,8 @@ SDL_bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
     VisualID visualid;
 
     if (!_this->vulkan_config.loader_handle) {
-        return SDL_SetError("Vulkan is not loaded");
+        SDL_SetError("Vulkan is not loaded");
+        return SDL_FALSE;
     }
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
 
