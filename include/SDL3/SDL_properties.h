@@ -168,8 +168,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
  * This should release any resources associated with `value` that are no
  * longer needed.
  *
- * This callback is set per-property. Different properties in the same group can
- * have different cleanup callbacks.
+ * This callback is set per-property. Different properties in the same group
+ * can have different cleanup callbacks.
  *
  * This callback will be called _during_ SDL_SetPointerPropertyWithCleanup if
  * the function fails for any reason.
@@ -498,8 +498,8 @@ typedef void (SDLCALL *SDL_EnumeratePropertiesCallback)(void *userdata, SDL_Prop
 /**
  * Enumerate the properties contained in a group of properties.
  *
- * The callback function is called for each property in the group of properties.
- * The properties are locked during enumeration.
+ * The callback function is called for each property in the group of
+ * properties. The properties are locked during enumeration.
  *
  * \param props the properties to query.
  * \param callback the function to call for each property.
