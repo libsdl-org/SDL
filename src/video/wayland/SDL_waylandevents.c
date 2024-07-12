@@ -78,6 +78,9 @@
 #define WAYLAND_DEFAULT_KEYBOARD_NAME "Virtual core keyboard"
 #define WAYLAND_DEFAULT_POINTER_NAME "Virtual core pointer"
 
+/* Focus clickthrough timeout */
+#define WAYLAND_FOCUS_CLICK_TIMEOUT_NS SDL_MS_TO_NS(10)
+
 struct SDL_WaylandTouchPoint
 {
     SDL_TouchID id;
@@ -695,6 +698,7 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_button_state state = state_w;
     uint32_t sdl_button;
+    SDL_bool ignore_click = SDL_FALSE;
 
     if (window) {
         SDL_VideoData *viddata = window->waylandData;
@@ -721,11 +725,21 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
             return;
         }
 
-        /* Wayland won't let you "capture" the mouse, but it will
-           automatically track the mouse outside the window if you
-           drag outside of it, until you let go of all buttons (even
-           if you add or remove presses outside the window, as long
-           as any button is still down, the capture remains) */
+        /* Possibly ignore this click if it was to gain focus. */
+        if (window->last_focus_event_time_ns) {
+            if (state == WL_POINTER_BUTTON_STATE_PRESSED &&
+                (SDL_GetTicksNS() - window->last_focus_event_time_ns) < WAYLAND_FOCUS_CLICK_TIMEOUT_NS) {
+                ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
+            }
+
+            window->last_focus_event_time_ns = 0;
+        }
+
+        /* Wayland won't let you "capture" the mouse, but it will automatically track
+         * the mouse outside the window if you drag outside of it, until you let go
+         * of all buttons (even if you add or remove presses outside the window, as
+         * long as any button is still down, the capture remains).
+         */
         if (state) { /* update our mask of currently-pressed buttons */
             input->buttons_pressed |= SDL_BUTTON(sdl_button);
         } else {
@@ -745,8 +759,10 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
             Wayland_UpdateImplicitGrabSerial(input, serial);
         }
 
-        SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, input->pointer_id,
-                            state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
+        if (!ignore_click) {
+            SDL_SendMouseButton(Wayland_GetPointerTimestamp(input, time), window->sdlwindow, input->pointer_id,
+                                state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
+        }
     }
 }
 
@@ -1516,6 +1532,8 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         SDL_IME_SetFocus(SDL_TRUE);
     }
 #endif
+
+    window->last_focus_event_time_ns = SDL_GetTicksNS();
 
     wl_array_for_each (key, keys) {
         const SDL_Scancode scancode = Wayland_get_scancode_from_key(input, *key + 8);
