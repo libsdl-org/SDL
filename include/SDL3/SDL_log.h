@@ -22,9 +22,14 @@
 /**
  * # CategoryLog
  *
- * Simple log messages with categories and priorities.
+ * Simple log messages with priorities and categories. A message’s
+ * SDL_LogPriority signifies how important the message is. A message's
+ * SDL_LogCategory signifies from what domain it belongs to. Every category
+ * has a minimum priority specified: when a message belongs to that category,
+ * it will only be sent out if it has that minimum priority or higher.
  *
- * By default logs are quiet, but if you're debugging SDL you might want:
+ * SDL's own logs are sent below the default priority threshold, so they are
+ * quiet by default. If you're debugging SDL you might want:
  *
  * SDL_SetLogPriorities(SDL_LOG_PRIORITY_WARN);
  *
