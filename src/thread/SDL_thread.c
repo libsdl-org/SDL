@@ -27,7 +27,6 @@
 #include "SDL_systhread.h"
 #include "SDL_hints.h"
 #include "../SDL_error_c.h"
-#include "../timer/SDL_timer_c.h"
 
 /* The storage is local to the thread, but the IDs are global for the process */
 
@@ -370,11 +369,7 @@ SDL_Thread *SDL_CreateThreadWithStackSize(int(SDLCALL *fn)(void *),
     SDL_Thread *thread;
     int ret;
 
-    SDL_InitTLSData();
-
-#ifndef SDL_TIMERS_DISABLED
-    SDL_TicksInit();
-#endif
+    SDL_InitMainThread();
 
     /* Allocate memory for the thread info structure */
     thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
