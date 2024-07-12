@@ -632,7 +632,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         CVPixelBufferRef pixelbuffer = nil;
         IOSurfaceRef surface = nil;
 
-        pixelbuffer = SDL_GetProperty(create_props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, nil);
+        pixelbuffer = SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, nil);
         if (pixelbuffer) {
             surface = CVPixelBufferGetIOSurface(pixelbuffer);
             if (!surface) {
@@ -1861,7 +1861,7 @@ static int METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
 static SDL_MetalView GetWindowView(SDL_Window *window)
 {
 #ifdef SDL_VIDEO_DRIVER_COCOA
-    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+    NSWindow *nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
     NSInteger tag = (NSInteger)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER, 0);
     if (nswindow && tag) {
         NSView *view = nswindow.contentView;
@@ -1875,7 +1875,7 @@ static SDL_MetalView GetWindowView(SDL_Window *window)
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
-    UIWindow *uiwindow = (__bridge UIWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
+    UIWindow *uiwindow = (__bridge UIWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
     NSInteger tag = (NSInteger)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, 0);
     if (uiwindow && tag) {
         UIView *view = uiwindow.rootViewController.view;

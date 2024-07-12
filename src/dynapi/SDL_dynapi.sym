@@ -368,12 +368,12 @@ SDL3_0.0.0 {
     SDL_GetPixelFormatForMasks;
     SDL_GetPixelFormatName;
     SDL_GetPlatform;
+    SDL_GetPointerProperty;
     SDL_GetPowerInfo;
     SDL_GetPrefPath;
     SDL_GetPreferredLocales;
     SDL_GetPrimaryDisplay;
     SDL_GetPrimarySelectionText;
-    SDL_GetProperty;
     SDL_GetPropertyType;
     SDL_GetRGB;
     SDL_GetRGBA;
@@ -730,9 +730,9 @@ SDL3_0.0.0 {
     SDL_SetModState;
     SDL_SetNumberProperty;
     SDL_SetPaletteColors;
+    SDL_SetPointerProperty;
+    SDL_SetPointerPropertyWithCleanup;
     SDL_SetPrimarySelectionText;
-    SDL_SetProperty;
-    SDL_SetPropertyWithCleanup;
     SDL_SetRelativeMouseMode;
     SDL_SetRenderClipRect;
     SDL_SetRenderColorScale;

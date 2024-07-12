@@ -846,7 +846,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 - (void)updateIgnoreMouseState:(NSEvent *)theEvent
 {
     SDL_Window *window = _data.window;
-    SDL_Surface *shape = (SDL_Surface *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_SHAPE_POINTER, NULL);
+    SDL_Surface *shape = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_SHAPE_POINTER, NULL);
     BOOL ignoresMouseEvents = NO;
 
     if (shape) {
@@ -2054,7 +2054,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
         }
 
         SDL_PropertiesID props = SDL_GetWindowProperties(window);
-        SDL_SetProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, (__bridge void *)data.nswindow);
+        SDL_SetPointerProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, (__bridge void *)data.nswindow);
         SDL_SetNumberProperty(props, SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
         /* All done! */
@@ -2067,7 +2067,7 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
 {
     @autoreleasepool {
         SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->driverdata;
-        const void *data = SDL_GetProperty(create_props, "sdl2-compat.external_window", NULL);
+        const void *data = SDL_GetPointerProperty(create_props, "sdl2-compat.external_window", NULL);
         NSWindow *nswindow = nil;
         NSView *nsview = nil;
 
@@ -2080,8 +2080,8 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
                 SDL_assert(false);
             }
         } else {
-            nswindow = (__bridge NSWindow *)SDL_GetProperty(create_props, SDL_PROP_WINDOW_CREATE_COCOA_WINDOW_POINTER, NULL);
-            nsview = (__bridge NSView *)SDL_GetProperty(create_props, SDL_PROP_WINDOW_CREATE_COCOA_VIEW_POINTER, NULL);
+            nswindow = (__bridge NSWindow *)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_COCOA_WINDOW_POINTER, NULL);
+            nsview = (__bridge NSView *)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_COCOA_VIEW_POINTER, NULL);
         }
         if (nswindow && !nsview) {
             nsview = [nswindow contentView];

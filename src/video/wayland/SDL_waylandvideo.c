@@ -377,7 +377,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     SDL_VideoDevice *device;
     SDL_VideoData *data;
     struct SDL_WaylandInput *input;
-    struct wl_display *display = SDL_GetProperty(SDL_GetGlobalProperties(),
+    struct wl_display *display = SDL_GetPointerProperty(SDL_GetGlobalProperties(),
                                                  SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
     SDL_bool display_is_external = !!display;
 
@@ -441,7 +441,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(void)
     }
 
     if (!display_is_external) {
-        SDL_SetProperty(SDL_GetGlobalProperties(),
+        SDL_SetPointerProperty(SDL_GetGlobalProperties(),
                         SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
     }
 

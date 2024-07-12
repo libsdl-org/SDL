@@ -468,7 +468,7 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *f
             } else {
                 frame->pixels = pixels;
                 frame->pitch = (int) pitch;
-                if (SDL_SetPropertyWithCleanup(surfprops, PROP_SURFACE_IMFOBJS_POINTER, objs, CleanupIMF2DBuffer2, NULL) == -1) {
+                if (SDL_SetPointerPropertyWithCleanup(surfprops, PROP_SURFACE_IMFOBJS_POINTER, objs, CleanupIMF2DBuffer2, NULL) == -1) {
                     retval = -1;
                 }
             }
@@ -480,7 +480,7 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *f
             } else {
                 frame->pixels = pixels;
                 frame->pitch = (int) pitch;
-                if (SDL_SetPropertyWithCleanup(surfprops, PROP_SURFACE_IMFOBJS_POINTER, objs, CleanupIMF2DBuffer, NULL) == -1) {
+                if (SDL_SetPointerPropertyWithCleanup(surfprops, PROP_SURFACE_IMFOBJS_POINTER, objs, CleanupIMF2DBuffer, NULL) == -1) {
                     retval = -1;
                 }
             }
@@ -497,7 +497,7 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *f
                 }
                 frame->pixels = pixels;
                 frame->pitch = (int) pitch;
-                if (SDL_SetPropertyWithCleanup(surfprops, PROP_SURFACE_IMFOBJS_POINTER, objs, CleanupIMFMediaBuffer, NULL) == -1) {
+                if (SDL_SetPointerPropertyWithCleanup(surfprops, PROP_SURFACE_IMFOBJS_POINTER, objs, CleanupIMFMediaBuffer, NULL) == -1) {
                     retval = -1;
                 }
             }

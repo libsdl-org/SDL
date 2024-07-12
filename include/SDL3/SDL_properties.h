@@ -32,7 +32,7 @@
  * Properties can be added to and retrieved from a property set through the
  * following functions:
  *
- * - SDL_SetProperty and SDL_GetProperty operate on `void*` pointer types.
+ * - SDL_SetPointerProperty and SDL_GetPointerProperty operate on `void*` pointer types.
  * - SDL_SetStringProperty and SDL_GetStringProperty operate on string types.
  * - SDL_SetNumberProperty and SDL_GetNumberProperty operate on signed 64-bit
  *   integer types.
@@ -86,9 +86,6 @@ typedef enum SDL_PropertyType
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetProperty
- * \sa SDL_SetProperty
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGlobalProperties(void);
 
@@ -113,7 +110,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_CreateProperties(void);
  *
  * Copy all the properties from one set of properties to another, with the
  * exception of properties requiring cleanup (set using
- * SDL_SetPropertyWithCleanup()), which will not be copied. Any property that
+ * SDL_SetPointerPropertyWithCleanup()), which will not be copied. Any property that
  * already exists on `dst` will be overwritten.
  *
  * \param src the properties to copy.
@@ -173,7 +170,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
  * This callback is set per-property. Different properties in the same set can
  * have different cleanup callbacks.
  *
- * This callback will be called _during_ SDL_SetPropertyWithCleanup if the
+ * This callback will be called _during_ SDL_SetPointerPropertyWithCleanup if the
  * function fails for any reason.
  *
  * \param userdata an app-defined pointer passed to the callback.
@@ -184,7 +181,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
  *
  * \since This datatype is available since SDL 3.0.0.
  *
- * \sa SDL_SetPropertyWithCleanup
+ * \sa SDL_SetPointerPropertyWithCleanup
  */
 typedef void (SDLCALL *SDL_CleanupPropertyCallback)(void *userdata, void *value);
 
@@ -213,11 +210,11 @@ typedef void (SDLCALL *SDL_CleanupPropertyCallback)(void *userdata, void *value)
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetProperty
- * \sa SDL_SetProperty
+ * \sa SDL_GetPointerProperty
+ * \sa SDL_SetPointerProperty
  * \sa SDL_CleanupPropertyCallback
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata);
+extern SDL_DECLSPEC int SDLCALL SDL_SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata);
 
 /**
  * Set a property on a set of properties.
@@ -232,15 +229,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPropertyWithCleanup(SDL_PropertiesID prop
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetProperty
+ * \sa SDL_GetPointerProperty
  * \sa SDL_HasProperty
  * \sa SDL_SetBooleanProperty
  * \sa SDL_SetFloatProperty
  * \sa SDL_SetNumberProperty
- * \sa SDL_SetPropertyWithCleanup
+ * \sa SDL_SetPointerPropertyWithCleanup
  * \sa SDL_SetStringProperty
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetProperty(SDL_PropertiesID props, const char *name, void *value);
+extern SDL_DECLSPEC int SDLCALL SDL_SetPointerProperty(SDL_PropertiesID props, const char *name, void *value);
 
 /**
  * Set a string property on a set of properties.
@@ -360,7 +357,7 @@ extern SDL_DECLSPEC SDL_PropertyType SDLCALL SDL_GetPropertyType(SDL_PropertiesI
  *
  * \threadsafety It is safe to call this function from any thread, although
  *               the data returned is not protected and could potentially be
- *               freed if you call SDL_SetProperty() or SDL_ClearProperty() on
+ *               freed if you call SDL_SetPointerProperty() or SDL_ClearProperty() on
  *               these properties from another thread. If you need to avoid
  *               this, use SDL_LockProperties() and SDL_UnlockProperties().
  *
@@ -372,9 +369,9 @@ extern SDL_DECLSPEC SDL_PropertyType SDLCALL SDL_GetPropertyType(SDL_PropertiesI
  * \sa SDL_GetPropertyType
  * \sa SDL_GetStringProperty
  * \sa SDL_HasProperty
- * \sa SDL_SetProperty
+ * \sa SDL_SetPointerProperty
  */
-extern SDL_DECLSPEC void *SDLCALL SDL_GetProperty(SDL_PropertiesID props, const char *name, void *default_value);
+extern SDL_DECLSPEC void *SDLCALL SDL_GetPointerProperty(SDL_PropertiesID props, const char *name, void *default_value);
 
 /**
  * Get a string property on a set of properties.

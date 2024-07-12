@@ -130,7 +130,7 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
     NSWindow *w = NULL;
 
     if (window) {
-        w = (__bridge NSWindow *)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+        w = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
     }
 
     if (w) {

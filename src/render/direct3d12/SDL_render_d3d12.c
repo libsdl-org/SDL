@@ -446,8 +446,8 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
     SDL_Texture *texture = NULL;
 
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
-    SDL_SetProperty(props, SDL_PROP_RENDERER_D3D12_DEVICE_POINTER, NULL);
-    SDL_SetProperty(props, SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER, NULL);
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_DEVICE_POINTER, NULL);
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER, NULL);
 
     /* Release all textures */
     for (texture = renderer->textures; texture; texture = texture->next) {
@@ -1192,8 +1192,8 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     data->srvPoolHead = &data->srvPoolNodes[0];
 
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
-    SDL_SetProperty(props, SDL_PROP_RENDERER_D3D12_DEVICE_POINTER, data->d3dDevice);
-    SDL_SetProperty(props, SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER, data->commandQueue);
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_DEVICE_POINTER, data->d3dDevice);
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER, data->commandQueue);
 
 done:
     SAFE_RELEASE(d3dDevice);
@@ -1310,7 +1310,7 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT | /* To support SetMaximumFrameLatency */
                           DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;                  /* To support presenting with allow tearing on */
 
-    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(renderer->window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(renderer->window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     if (!hwnd) {
         SDL_SetError("Couldn't get window handle");
         result = E_FAIL;
@@ -1376,7 +1376,7 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         result = DXGI_ERROR_UNSUPPORTED;
     }
 
-    SDL_SetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, data->swapChain);
+    SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, data->swapChain);
 
 done:
     SAFE_RELEASE(swapChain);
@@ -1600,7 +1600,7 @@ static void D3D12_FreeSRVIndex(SDL_Renderer *renderer, SIZE_T index)
 
 static int GetTextureProperty(SDL_PropertiesID props, const char *name, ID3D12Resource **texture)
 {
-    IUnknown *unknown = (IUnknown*)SDL_GetProperty(props, name, NULL);
+    IUnknown *unknown = (IUnknown*)SDL_GetPointerProperty(props, name, NULL);
     if (unknown) {
         HRESULT result = D3D_CALL(unknown, QueryInterface, D3D_GUID(SDL_IID_ID3D12Resource), (void **)texture);
         if (FAILED(result)) {
@@ -1685,7 +1685,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
     }
     textureData->mainResourceState = D3D12_RESOURCE_STATE_COPY_DEST;
-    SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_POINTER, textureData->mainTexture);
+    SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_POINTER, textureData->mainTexture);
 #if SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
@@ -1711,7 +1711,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             }
         }
         textureData->mainResourceStateU = D3D12_RESOURCE_STATE_COPY_DEST;
-        SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_U_POINTER, textureData->mainTextureU);
+        SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_U_POINTER, textureData->mainTextureU);
 
         if (GetTextureProperty(create_props, "d3d12.texture_v", &textureData->mainTextureV) < 0) {
             return -1;
@@ -1730,7 +1730,7 @@ static int D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             }
         }
         textureData->mainResourceStateV = D3D12_RESOURCE_STATE_COPY_DEST;
-        SDL_SetProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_V_POINTER, textureData->mainTextureV);
+        SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_V_POINTER, textureData->mainTextureV);
 
         textureData->YCbCr_matrix = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
         if (!textureData->YCbCr_matrix) {
@@ -3232,7 +3232,7 @@ int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propert
 {
     D3D12_RenderData *data;
 
-    HWND hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     if (!hwnd) {
         return SDL_SetError("Couldn't get window handle");
     }

@@ -55,7 +55,7 @@ int SDL_DUMMY_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     static int frame_number;
     SDL_Surface *surface;
 
-    surface = (SDL_Surface *)SDL_GetProperty(SDL_GetWindowProperties(window), DUMMY_SURFACE, NULL);
+    surface = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), DUMMY_SURFACE, NULL);
     if (!surface) {
         return SDL_SetError("Couldn't find dummy surface for window");
     }

@@ -116,7 +116,7 @@ static void *CreateWindowWayland(int w, int h)
     /* Export the display object from SDL and use it to create a registry object,
      * which will enumerate the wl_compositor and xdg_wm_base protocols.
      */
-    state.wl_display = SDL_GetProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
+    state.wl_display = SDL_GetPointerProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
 
     if (!state.wl_display) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Invalid 'wl_display' object!");

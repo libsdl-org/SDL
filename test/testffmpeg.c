@@ -151,7 +151,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
 
     props = SDL_CreateProperties();
     SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, driver);
-    SDL_SetProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
     if (useVulkan) {
         SetupVulkanRenderProperties(vulkan_context, props);
     }
@@ -217,7 +217,7 @@ static SDL_bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char
 #endif /* HAVE_EGL */
 
 #ifdef SDL_PLATFORM_WIN32
-    d3d11_device = (ID3D11Device *)SDL_GetProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D11_DEVICE_POINTER, NULL);
+    d3d11_device = (ID3D11Device *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D11_DEVICE_POINTER, NULL);
     if (d3d11_device) {
         ID3D11Device_AddRef(d3d11_device);
         ID3D11Device_GetImmediateContext(d3d11_device, &d3d11_context);
@@ -611,13 +611,13 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
     case SDL_PIXELFORMAT_UNKNOWN:
     {
         SDL_PropertiesID props = SDL_GetTextureProperties(*texture);
-        struct SwsContextContainer *sws_container = (struct SwsContextContainer *)SDL_GetProperty(props, SWS_CONTEXT_CONTAINER_PROPERTY, NULL);
+        struct SwsContextContainer *sws_container = (struct SwsContextContainer *)SDL_GetPointerProperty(props, SWS_CONTEXT_CONTAINER_PROPERTY, NULL);
         if (!sws_container) {
             sws_container = (struct SwsContextContainer *)SDL_calloc(1, sizeof(*sws_container));
             if (!sws_container) {
                 return SDL_FALSE;
             }
-            SDL_SetPropertyWithCleanup(props, SWS_CONTEXT_CONTAINER_PROPERTY, sws_container, FreeSwsContextContainer, NULL);
+            SDL_SetPointerPropertyWithCleanup(props, SWS_CONTEXT_CONTAINER_PROPERTY, sws_container, FreeSwsContextContainer, NULL);
         }
         sws_container->context = sws_getCachedContext(sws_container->context, frame->width, frame->height, frame->format, frame->width, frame->height, AV_PIX_FMT_BGRA, SWS_POINT, NULL, NULL, NULL);
         if (sws_container->context) {
@@ -993,7 +993,7 @@ static SDL_bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
         }
     }
 
-    ID3D11Resource *dx11_resource = SDL_GetProperty(SDL_GetTextureProperties(*texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_POINTER, NULL);
+    ID3D11Resource *dx11_resource = SDL_GetPointerProperty(SDL_GetTextureProperties(*texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_POINTER, NULL);
     if (!dx11_resource) {
         SDL_SetError("Couldn't get texture ID3D11Resource interface");
         return SDL_FALSE;
@@ -1019,7 +1019,7 @@ static SDL_bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **tex
     }
 
     props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
-    SDL_SetProperty(props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, pPixelBuffer);
+    SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, pPixelBuffer);
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
