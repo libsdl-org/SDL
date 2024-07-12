@@ -32,7 +32,8 @@
  * Properties can be added to and retrieved from a property set through the
  * following functions:
  *
- * - SDL_SetPointerProperty and SDL_GetPointerProperty operate on `void*` pointer types.
+ * - SDL_SetPointerProperty and SDL_GetPointerProperty operate on `void*`
+ *   pointer types.
  * - SDL_SetStringProperty and SDL_GetStringProperty operate on string types.
  * - SDL_SetNumberProperty and SDL_GetNumberProperty operate on signed 64-bit
  *   integer types.
@@ -110,8 +111,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_CreateProperties(void);
  *
  * Copy all the properties from one set of properties to another, with the
  * exception of properties requiring cleanup (set using
- * SDL_SetPointerPropertyWithCleanup()), which will not be copied. Any property that
- * already exists on `dst` will be overwritten.
+ * SDL_SetPointerPropertyWithCleanup()), which will not be copied. Any
+ * property that already exists on `dst` will be overwritten.
  *
  * \param src the properties to copy.
  * \param dst the destination properties.
@@ -170,8 +171,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockProperties(SDL_PropertiesID props);
  * This callback is set per-property. Different properties in the same set can
  * have different cleanup callbacks.
  *
- * This callback will be called _during_ SDL_SetPointerPropertyWithCleanup if the
- * function fails for any reason.
+ * This callback will be called _during_ SDL_SetPointerPropertyWithCleanup if
+ * the function fails for any reason.
  *
  * \param userdata an app-defined pointer passed to the callback.
  * \param value the pointer assigned to the property to clean up.
@@ -357,9 +358,10 @@ extern SDL_DECLSPEC SDL_PropertyType SDLCALL SDL_GetPropertyType(SDL_PropertiesI
  *
  * \threadsafety It is safe to call this function from any thread, although
  *               the data returned is not protected and could potentially be
- *               freed if you call SDL_SetPointerProperty() or SDL_ClearProperty() on
- *               these properties from another thread. If you need to avoid
- *               this, use SDL_LockProperties() and SDL_UnlockProperties().
+ *               freed if you call SDL_SetPointerProperty() or
+ *               SDL_ClearProperty() on these properties from another thread.
+ *               If you need to avoid this, use SDL_LockProperties() and
+ *               SDL_UnlockProperties().
  *
  * \since This function is available since SDL 3.0.0.
  *
