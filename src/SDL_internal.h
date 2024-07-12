@@ -208,6 +208,8 @@
 #include "SDL_assert.h"
 #include "SDL_log.h"
 
+extern void SDL_InitMainThread(void);
+
 #endif /* SDL_internal_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
