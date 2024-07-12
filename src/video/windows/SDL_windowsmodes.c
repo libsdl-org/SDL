@@ -538,9 +538,9 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
                     SDL_copyp(&driverdata->bounds, &bounds);
                 }
                 if (moved || changed_bounds) {
-                    SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_MOVED, 0);
+                    SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_MOVED, 0, 0);
                 }
-                SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_ORIENTATION, current_orientation);
+                SDL_SendDisplayEvent(existing_display, SDL_EVENT_DISPLAY_ORIENTATION, current_orientation, 0);
                 SDL_SetDisplayContentScale(existing_display, content_scale);
 #ifdef HAVE_DXGI1_6_H
                 SDL_HDROutputProperties HDR;
@@ -832,7 +832,7 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
         SDL_VideoDisplay *display = _this->displays[i];
         SDL_DisplayData *driverdata = display->driverdata;
         if (driverdata->state == DisplayAdded) {
-            SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ADDED, 0);
+            SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ADDED, 0, 0);
         }
     }
 }
