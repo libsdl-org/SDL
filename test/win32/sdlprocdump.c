@@ -180,6 +180,7 @@ static const char *exceptionFlags_to_string(DWORD dwFlags, char *buffer, size_t 
     }
 
     FOREACH_EXCEPTION_FLAGS(APPEND_OR_STR)
+#undef APPEND_OR_STR
     return buffer;
 }
 
@@ -224,7 +225,6 @@ static void write_minidump(const char *child_file_path, const LPPROCESS_INFORMAT
     char child_file_name[64];
     EXCEPTION_POINTERS exception_pointers;
     HANDLE hFile = INVALID_HANDLE_VALUE;
-    HMODULE dbghelp_module = NULL;
     MINIDUMP_EXCEPTION_INFORMATION minidump_exception_information;
     SYSTEMTIME system_time;
 
@@ -279,9 +279,6 @@ static void write_minidump(const char *child_file_path, const LPPROCESS_INFORMAT
 post_dump:
     if (hFile != INVALID_HANDLE_VALUE) {
         CloseHandle(hFile);
-    }
-    if (dbghelp_module != NULL) {
-        FreeLibrary(dbghelp_module);
     }
 }
 
@@ -533,7 +530,7 @@ int main(int argc, char *argv[]) {
             DWORD continue_status = DBG_CONTINUE;
             success = WaitForDebugEvent(&event, INFINITE);
             if (!success) {
-                printf_message("Failed to get a debug event");
+                printf_windows_message("Failed to get a debug event");
                 return 1;
             }
             switch (event.dwDebugEventCode) {
@@ -591,7 +588,6 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case EXIT_PROCESS_DEBUG_EVENT:
-                exit_code = event.u.ExitProcess.dwExitCode;
                 if (event.dwProcessId == process_information.dwProcessId) {
                     process_alive = 0;
                     DebugActiveProcessStop(event.dwProcessId);
