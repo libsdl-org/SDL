@@ -371,7 +371,7 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
         return NULL;
     }
 
-    SDL_InitTLSData();
+    SDL_InitMainThread();
 
     SDL_Thread *thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
     if (!thread) {
