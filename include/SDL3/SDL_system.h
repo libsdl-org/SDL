@@ -467,8 +467,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void)
  * This path is unique to your application, but is public and can be written
  * to by other applications.
  *
- * Your cache path is typically:
- * `/data/data/your.app.package/cache/`.
+ * Your cache path is typically: `/data/data/your.app.package/cache/`.
  *
  * This is a C wrapper over `android.content.Context.getCacheDir()`:
  *
@@ -476,8 +475,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void)
  *
  * The returned string follows the SDL_GetStringRule.
  *
- * \returns the path used for caches for this application on success
- *          or NULL on failure; call SDL_GetError() for more information.
+ * \returns the path used for caches for this application on success or NULL
+ *          on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
