@@ -118,6 +118,9 @@ typedef struct
     PFNGLBINDFRAMEBUFFEREXTPROC glBindFramebufferEXT;
     PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC glCheckFramebufferStatusEXT;
 
+    /* glGenerateMipmap support */
+    PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
+
     /* Shader support */
     GL_ShaderContext *shaders;
 
@@ -841,6 +844,24 @@ static void GL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         (void *)((Uint8 *)data->pixels + rect->y * data->pitch +
                  rect->x * SDL_BYTESPERPIXEL(texture->format));
     GL_UpdateTexture(renderer, texture, rect, pixels, data->pitch);
+}
+
+static int GL_GenMipmaps(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+    GL_RenderData *renderdata = (GL_RenderData *)renderer->driverdata;
+    SDL_assert(renderdata->glGenerateMipmap != NULL);  // should have been set up at CreateRenderer time and we shouldn't be here if it isn't!
+
+    if (texture != renderdata->drawstate.texture) {
+        if (renderdata->GL_ARB_multitexture_supported) {
+            renderdata->glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
+        const GL_TextureData *texturedata = (GL_TextureData *)texture->driverdata;
+        renderdata->glBindTexture(renderdata->textype, texturedata->texture);
+        renderdata->drawstate.texture = texture;
+    }
+
+    renderdata->glGenerateMipmap(renderdata->textype);
+    return 0;  // GL does not report failure here.
 }
 
 static void GL_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
@@ -1719,23 +1740,21 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
         data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     }
 
+    int glmajorver = 1;
+    const char *glverstr = (const char *)data->glGetString(GL_VERSION);
+    if (glverstr) {
+        char verbuf[16];
+        SDL_strlcpy(verbuf, glverstr, sizeof(verbuf));
+        char *ptr = SDL_strchr(verbuf, '.');
+        if (ptr) {
+            *ptr = '\0';
+            glmajorver = SDL_atoi(verbuf);
+        }
+    }
+
     hint = SDL_getenv("GL_ARB_texture_non_power_of_two");
     if (!hint || *hint != '0') {
-        SDL_bool isGL2 = SDL_FALSE;
-        const char *verstr = (const char *)data->glGetString(GL_VERSION);
-        if (verstr) {
-            char verbuf[16];
-            char *ptr;
-            SDL_strlcpy(verbuf, verstr, sizeof(verbuf));
-            ptr = SDL_strchr(verbuf, '.');
-            if (ptr) {
-                *ptr = '\0';
-                if (SDL_atoi(verbuf) >= 2) {
-                    isGL2 = SDL_TRUE;
-                }
-            }
-        }
-        if (isGL2 || SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+        if ((glmajorver >= 2) || SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
             non_power_of_two_supported = SDL_TRUE;
         }
     }
@@ -1763,6 +1782,11 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
             data->GL_ARB_multitexture_supported = SDL_TRUE;
             data->glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &data->num_texture_units);
         }
+    }
+
+    if (glmajorver >= 3) {
+        data->glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)SDL_GL_GetProcAddress("glGenerateMipmap");
+        renderer->GenMipmaps = (data->glGenerateMipmap != NULL) ? GL_GenMipmaps : NULL;
     }
 
     /* Check for shader support */
