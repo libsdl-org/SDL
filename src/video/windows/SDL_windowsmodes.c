@@ -161,16 +161,20 @@ static SDL_DisplayOrientation WIN_GetDisplayOrientation(DEVMODE *mode)
     }
 }
 
-static float WIN_GetRefreshRate(DEVMODE *mode)
+static void WIN_GetRefreshRate(DEVMODE *mode, int *numerator, int *denominator)
 {
     /* We're not currently using DXGI to query display modes, so fake NTSC timings */
     switch (mode->dmDisplayFrequency) {
     case 119:
     case 59:
     case 29:
-        return ((100 * (mode->dmDisplayFrequency + 1) * 1000) / 1001) / 100.0f;
+        *numerator = (mode->dmDisplayFrequency + 1) * 1000;
+        *denominator = 1001;
+        break;
     default:
-        return (float)mode->dmDisplayFrequency;
+        *numerator = mode->dmDisplayFrequency;
+        *denominator = 1;
+        break;
     }
 }
 
@@ -223,7 +227,7 @@ static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LP
     mode->format = SDL_PIXELFORMAT_UNKNOWN;
     mode->w = data->DeviceMode.dmPelsWidth;
     mode->h = data->DeviceMode.dmPelsHeight;
-    mode->refresh_rate = WIN_GetRefreshRate(&data->DeviceMode);
+    WIN_GetRefreshRate(&data->DeviceMode, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
 
     /* Fill in the mode information */
     WIN_UpdateDisplayMode(_this, deviceName, index, mode);

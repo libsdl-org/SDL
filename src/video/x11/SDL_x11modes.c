@@ -414,9 +414,9 @@ static SDL_bool CheckXRandR(Display *display, int *major, int *minor)
 #define XRANDR_ROTATION_LEFT  (1 << 1)
 #define XRANDR_ROTATION_RIGHT (1 << 3)
 
-static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
+static void CalculateXRandRRefreshRate(const XRRModeInfo *info, int *numerator, int *denominator)
 {
-    float vTotal = info->vTotal;
+    unsigned int vTotal = info->vTotal;
 
     if (info->modeFlags & RR_DoubleScan) {
         /* doublescan doubles the number of lines */
@@ -429,10 +429,13 @@ static float CalculateXRandRRefreshRate(const XRRModeInfo *info)
         vTotal /= 2;
     }
 
-    if (info->hTotal && vTotal != 0.f) {
-        return ((100 * (Sint64)info->dotClock) / (info->hTotal * vTotal)) / 100.0f;
+    if (info->hTotal && vTotal) {
+        *numerator = info->dotClock;
+        *denominator = (info->hTotal * vTotal);
+    } else {
+        *numerator = 0;
+        *denominator = 0;
     }
-    return 0.0f;
 }
 
 static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,
@@ -465,11 +468,11 @@ static SDL_bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRC
                 mode->w = (info->width * scale_w + 0xffff) >> 16;
                 mode->h = (info->height * scale_h + 0xffff) >> 16;
             }
-            mode->refresh_rate = CalculateXRandRRefreshRate(info);
+            CalculateXRandRRefreshRate(info, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
             ((SDL_DisplayModeData *)mode->driverdata)->xrandr_mode = modeID;
 #ifdef X11MODES_DEBUG
-            printf("XRandR mode %d: %dx%d@%gHz\n", (int)modeID,
-                   mode->screen_w, mode->screen_h, mode->refresh_rate);
+            printf("XRandR mode %d: %dx%d@%d/%dHz\n", (int)modeID,
+                   mode->screen_w, mode->screen_h, mode->refresh_rate_numerator, mode->refresh_rate_denominator);
 #endif
             return SDL_TRUE;
         }

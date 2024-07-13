@@ -87,13 +87,15 @@ typedef enum SDL_SystemTheme
  */
 typedef struct SDL_DisplayMode
 {
-    SDL_DisplayID displayID;    /**< the display this mode is associated with */
-    SDL_PixelFormat format;     /**< pixel format */
-    int w;                      /**< width */
-    int h;                      /**< height */
-    float pixel_density;        /**< scale converting size to pixels (e.g. a 1920x1080 mode with 2.0 scale would have 3840x2160 pixels) */
-    float refresh_rate;         /**< refresh rate (or zero for unspecified) */
-    void *driverdata;           /**< driver-specific data, initialize to 0 */
+    SDL_DisplayID displayID;        /**< the display this mode is associated with */
+    SDL_PixelFormat format;         /**< pixel format */
+    int w;                          /**< width */
+    int h;                          /**< height */
+    float pixel_density;            /**< scale converting size to pixels (e.g. a 1920x1080 mode with 2.0 scale would have 3840x2160 pixels) */
+    float refresh_rate;             /**< refresh rate (or 0.0f for unspecified) */
+    int refresh_rate_numerator;     /**< precise refresh rate numerator (or 0 for unspecified) */
+    int refresh_rate_denominator;   /**< precise refresh rate denominator */
+    void *driverdata;               /**< driver-specific data, initialize to 0 */
 } SDL_DisplayMode;
 
 /**

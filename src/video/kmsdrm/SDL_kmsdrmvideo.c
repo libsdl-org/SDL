@@ -170,26 +170,22 @@ static int get_driindex(void)
     return available;
 }
 
-static float CalculateRefreshRate(drmModeModeInfo *mode)
+static void CalculateRefreshRate(drmModeModeInfo *mode, int *numerator, int *denominator)
 {
-    unsigned int num, den;
-
-    num = mode->clock * 1000;
-    den = mode->htotal * mode->vtotal;
+    *numerator = mode->clock * 1000;
+    *denominator = mode->htotal * mode->vtotal;
 
     if (mode->flags & DRM_MODE_FLAG_INTERLACE) {
-        num *= 2;
+        *numerator *= 2;
     }
 
     if (mode->flags & DRM_MODE_FLAG_DBLSCAN) {
-        den *= 2;
+        *denominator *= 2;
     }
 
     if (mode->vscan > 1) {
-        den *= mode->vscan;
+        *denominator *= mode->vscan;
     }
-
-    return ((100 * (Sint64)num) / den) / 100.0f;
 }
 
 static int KMSDRM_Available(void)
@@ -964,7 +960,7 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *connecto
     display.driverdata = dispdata;
     display.desktop_mode.w = dispdata->mode.hdisplay;
     display.desktop_mode.h = dispdata->mode.vdisplay;
-    display.desktop_mode.refresh_rate = CalculateRefreshRate(&dispdata->mode);
+    CalculateRefreshRate(&dispdata->mode, &display.desktop_mode.refresh_rate_numerator, &display.desktop_mode.refresh_rate_denominator);
     display.desktop_mode.format = SDL_PIXELFORMAT_ARGB8888;
     display.desktop_mode.driverdata = modedata;
 
@@ -1279,15 +1275,6 @@ int KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window)
      */
     KMSDRM_GetModeToSet(window, &dispdata->mode);
 
-    /*
-    SDL_zero(current_mode);
-    current_mode.w = dispdata->mode.hdisplay;
-    current_mode.h = dispdata->mode.vdisplay;
-    current_mode.refresh_rate = CalculateRefreshRate(&dispdata->mode);
-    current_mode.format = SDL_PIXELFORMAT_ARGB8888;
-    SDL_SetCurrentDisplayMode(display, &current_mode);
-    */
-
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
                                             dispdata->mode.hdisplay, dispdata->mode.vdisplay,
                                             surface_fmt, surface_flags);
@@ -1433,7 +1420,7 @@ int KMSDRM_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
         SDL_zero(mode);
         mode.w = conn->modes[i].hdisplay;
         mode.h = conn->modes[i].vdisplay;
-        mode.refresh_rate = CalculateRefreshRate(&conn->modes[i]);
+        CalculateRefreshRate(&conn->modes[i], &mode.refresh_rate_numerator, &mode.refresh_rate_denominator);
         mode.format = SDL_PIXELFORMAT_ARGB8888;
         mode.driverdata = modedata;
 

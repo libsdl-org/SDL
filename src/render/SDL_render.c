@@ -918,21 +918,20 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 {
     SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
     const SDL_DisplayMode *mode;
-    float refresh_rate;
     int num, den;
 
     if (displayID == 0) {
         displayID = SDL_GetPrimaryDisplay();
     }
     mode = SDL_GetDesktopDisplayMode(displayID);
-    if (mode && mode->refresh_rate > 0.0f) {
-        refresh_rate = mode->refresh_rate;
+    if (mode && mode->refresh_rate_numerator > 0) {
+        num = mode->refresh_rate_numerator;
+        den = mode->refresh_rate_denominator;
     } else {
         /* Pick a good default refresh rate */
-        refresh_rate = 60.0f;
+        num = 60;
+        den = 1;
     }
-    num = 100;
-    den = (int)(100 * refresh_rate);
     renderer->simulate_vsync_interval_ns = (SDL_NS_PER_SECOND * num) / den;
 }
 
