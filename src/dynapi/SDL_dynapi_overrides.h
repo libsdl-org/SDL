@@ -104,6 +104,7 @@
 #define SDL_CreateStorageDirectory SDL_CreateStorageDirectory_REAL
 #define SDL_CreateSurface SDL_CreateSurface_REAL
 #define SDL_CreateSurfaceFrom SDL_CreateSurfaceFrom_REAL
+#define SDL_CreateSurfacePalette SDL_CreateSurfacePalette_REAL
 #define SDL_CreateSystemCursor SDL_CreateSystemCursor_REAL
 #define SDL_CreateTLS SDL_CreateTLS_REAL
 #define SDL_CreateTexture SDL_CreateTexture_REAL

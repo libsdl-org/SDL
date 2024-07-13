@@ -863,9 +863,11 @@ static int surface_testPalette(void *arg)
 
     source = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(source != NULL, "SDL_CreateSurface()");
+    SDLTest_AssertCheck(SDL_GetSurfacePalette(source) == NULL, "SDL_GetSurfacePalette(source)");
 
     surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
     SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+    SDLTest_AssertCheck(SDL_GetSurfacePalette(surface) == NULL, "SDL_GetSurfacePalette(surface)");
 
     pixels = (Uint8 *)surface->pixels;
     SDLTest_AssertCheck(*pixels == 0, "Expected *pixels == 0 got %u", *pixels);

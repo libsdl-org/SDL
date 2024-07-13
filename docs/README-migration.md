@@ -1644,7 +1644,20 @@ The `format` member of SDL_Surface is now an enumerated pixel format value. You 
 
 The userdata member of SDL_Surface has been replaced with a more general properties interface, which can be queried with SDL_GetSurfaceProperties()
 
-Indexed format surfaces no longer have a palette by default. Surfaces without a palette will copy the pixels untranslated between surfaces. You should use SDL_CreatePalette() to create a palette and call SDL_SetSurfacePalette() to associate it with the final indexed surface before copying it to color pixels.
+Indexed format surfaces no longer have a palette by default. Surfaces without a palette will copy the pixels untranslated between surfaces.
+
+Code that used to look like this:
+```c
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 8, SDL_PIXELFORMAT_INDEX8);
+    SDL_Palette *palette = surface->format->palette;
+    ...
+```
+should be changed to:
+```c
+    SDL_Surface *surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_INDEX8);
+    SDL_Palette *palette = SDL_CreateSurfacePalette(surface);
+    ...
+```
 
 Removed the unused 'flags' parameter from SDL_ConvertSurface.
 

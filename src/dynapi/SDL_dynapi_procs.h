@@ -124,6 +124,7 @@ SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateSoftwareRenderer,(SDL_Surface *a),(a),re
 SDL_DYNAPI_PROC(int,SDL_CreateStorageDirectory,(SDL_Storage *a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_CreateSurface,(int a, int b, SDL_PixelFormat c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_CreateSurfaceFrom,(int a, int b, SDL_PixelFormat c, void *d, int e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(SDL_Palette*,SDL_CreateSurfacePalette,(SDL_Surface *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Cursor*,SDL_CreateSystemCursor,(SDL_SystemCursor a),(a),return)
 SDL_DYNAPI_PROC(SDL_TLSID,SDL_CreateTLS,(void),(),return)
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_CreateTexture,(SDL_Renderer *a, SDL_PixelFormat b, int c, int d, int e),(a,b,c,d,e),return)
