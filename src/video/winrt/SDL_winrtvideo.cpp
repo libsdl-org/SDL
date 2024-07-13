@@ -253,7 +253,8 @@ static void WINRT_DXGIModeToSDLDisplayMode(const DXGI_MODE_DESC *dxgiMode, SDL_D
     SDL_zerop(sdlMode);
     sdlMode->w = dxgiMode->Width;
     sdlMode->h = dxgiMode->Height;
-    sdlMode->refresh_rate = (((100 * dxgiMode->RefreshRate.Numerator) / dxgiMode->RefreshRate.Denominator) / 100.0f);
+    sdlMode->refresh_rate_numerator = dxgiMode->RefreshRate.Numerator;
+    sdlMode->refresh_rate_denominator = dxgiMode->RefreshRate.Denominator;
     sdlMode->format = D3D11_DXGIFormatToSDLPixelFormat(dxgiMode->Format);
 }
 
@@ -314,9 +315,6 @@ static int WINRT_AddDisplaysForOutput(SDL_VideoDevice *_this, IDXGIAdapter1 *dxg
 
         hr = dxgiOutput->GetDisplayModeList(DXGI_FORMAT_B8G8R8A8_UNORM, 0, &numModes, NULL);
         if (FAILED(hr)) {
-            if (hr == DXGI_ERROR_NOT_CURRENTLY_AVAILABLE) {
-                // TODO, WinRT: make sure display mode(s) are added when using Terminal Services / Windows Simulator
-            }
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIOutput::GetDisplayModeList [get mode list size] failed", hr);
             goto done;
         }

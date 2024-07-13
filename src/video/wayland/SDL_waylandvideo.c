@@ -666,7 +666,8 @@ static void AddEmulatedModes(SDL_DisplayData *dispdata, int native_width, int na
     for (i = 0; i < SDL_arraysize(mode_list); ++i) {
         SDL_zero(mode);
         mode.format = dpy->desktop_mode.format;
-        mode.refresh_rate = dpy->desktop_mode.refresh_rate;
+        mode.refresh_rate_numerator = dpy->desktop_mode.refresh_rate_numerator;
+        mode.refresh_rate_denominator = dpy->desktop_mode.refresh_rate_denominator;
 
         if (rot_90) {
             mode.w = mode_list[i].h;
@@ -809,7 +810,8 @@ static void display_handle_done(void *data,
         native_mode.w = driverdata->pixel_width;
         native_mode.h = driverdata->pixel_height;
     }
-    native_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
+    native_mode.refresh_rate_numerator = driverdata->refresh;
+    native_mode.refresh_rate_denominator = 1000;
 
     if (driverdata->has_logical_size) { /* If xdg-output is present... */
         if (native_mode.w != driverdata->screen_width || native_mode.h != driverdata->screen_height) {
@@ -851,7 +853,8 @@ static void display_handle_done(void *data,
         desktop_mode.pixel_density = 1.0f;
     }
 
-    desktop_mode.refresh_rate = ((100 * driverdata->refresh) / 1000) / 100.0f; /* mHz to Hz */
+    desktop_mode.refresh_rate_numerator = driverdata->refresh;
+    desktop_mode.refresh_rate_denominator = 1000;
 
     if (driverdata->display > 0) {
         dpy = SDL_GetVideoDisplay(driverdata->display);

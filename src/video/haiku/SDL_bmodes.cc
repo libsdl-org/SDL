@@ -65,9 +65,10 @@ static SDL_INLINE display_mode * _ExtractBMode(SDL_DisplayMode *mode) {
 }
 
 /* Copied from haiku/trunk/src/preferences/screen/ScreenMode.cpp */
-static float get_refresh_rate(display_mode &mode) {
-    return float(mode.timing.pixel_clock * 1000)
-        / float(mode.timing.h_total * mode.timing.v_total);
+static void get_refresh_rate(display_mode &mode, int *numerator, int *denominator)
+{
+    *numerator = (mode.timing.pixel_clock * 1000);
+    *denominator = (mode.timing.h_total * mode.timing.v_total);
 }
 
 
@@ -169,7 +170,7 @@ static void _BDisplayModeToSdlDisplayMode(display_mode *bmode, SDL_DisplayMode *
     SDL_zerop(mode);
     mode->w = bmode->virtual_width;
     mode->h = bmode->virtual_height;
-    mode->refresh_rate = get_refresh_rate(*bmode);
+    get_refresh_rate(*bmode, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
 
 #if WRAP_BMODE
     SDL_DisplayModeData *data = (SDL_DisplayModeData*)SDL_calloc(1,

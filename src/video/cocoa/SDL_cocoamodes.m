@@ -99,17 +99,17 @@ static NSScreen *GetNSScreenForDisplayID(CGDirectDisplayID displayID)
 
 static float GetDisplayModeRefreshRate(CGDisplayModeRef vidmode, CVDisplayLinkRef link)
 {
-    double refreshRate = CGDisplayModeGetRefreshRate(vidmode);
+    float refreshRate = (float)CGDisplayModeGetRefreshRate(vidmode);
 
     /* CGDisplayModeGetRefreshRate can return 0 (eg for built-in displays). */
     if (refreshRate == 0 && link != NULL) {
         CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
         if ((time.flags & kCVTimeIsIndefinite) == 0 && time.timeValue != 0) {
-            refreshRate = (double)time.timeScale / time.timeValue;
+            refreshRate = (float)time.timeScale / time.timeValue;
         }
     }
 
-    return (int)(refreshRate * 100) / 100.0f;
+    return refreshRate;
 }
 
 static SDL_bool HasValidDisplayModeFlags(CGDisplayModeRef vidmode)

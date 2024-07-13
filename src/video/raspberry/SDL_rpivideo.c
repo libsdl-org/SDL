@@ -51,7 +51,7 @@ static void RPI_Destroy(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static float RPI_GetRefreshRate()
+static void RPI_GetRefreshRate(int *numerator, int *denominator)
 {
     TV_DISPLAY_STATE_T tvstate;
     if (vc_tv_get_display_state(&tvstate) == 0) {
@@ -61,12 +61,18 @@ static float RPI_GetRefreshRate()
         property.property = HDMI_PROPERTY_PIXEL_CLOCK_TYPE;
         vc_tv_hdmi_get_property(&property);
         if (property.param1 == HDMI_PIXEL_CLOCK_TYPE_NTSC) {
-            return ((100 * tvstate.display.hdmi.frame_rate * 1000) / 1001) / 100.0f;
+            *numerator = tvstate.display.hdmi.frame_rate * 1000;
+            *denominator = 1001;
         } else {
-            return (float)tvstate.display.hdmi.frame_rate;
+            *numerator = tvstate.display.hdmi.frame_rate;
+            *denominator = 1;
         }
+        return;
     }
-    return 60.0f; /* Failed to get display state, default to 60 */
+
+    /* Failed to get display state, default to 60 */
+    *numerator = 60;
+    *denominator = 1;
 }
 
 static SDL_VideoDevice *RPI_Create()
@@ -158,7 +164,7 @@ static void AddDispManXDisplay(const int display_id)
     SDL_zero(mode);
     mode.w = modeinfo.width;
     mode.h = modeinfo.height;
-    mode.refresh_rate = RPI_GetRefreshRate();
+    RPI_GetRefreshRate(&mode.refresh_rate_numerator, &mode.refresh_rate_denominator);
 
     /* 32 bpp for default */
     mode.format = SDL_PIXELFORMAT_ABGR8888;

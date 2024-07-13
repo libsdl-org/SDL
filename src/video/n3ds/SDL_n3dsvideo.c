@@ -194,7 +194,7 @@ static int N3DS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *displa
         SDL_zero(mode);
         mode.w = (displaydata->screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
         mode.h = GSP_SCREEN_WIDTH;
-        mode.refresh_rate = 60;
+        mode.refresh_rate = 60.0f;
         mode.format = format_map[i].pixfmt;
         mode.driverdata = modedata;
         modedata->fmt = format_map[i].gspfmt;

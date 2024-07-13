@@ -725,6 +725,16 @@ static void SDL_FinalizeDisplayMode(SDL_DisplayMode *mode)
     if (mode->pixel_density <= 0.0f) {
         mode->pixel_density = 1.0f;
     }
+
+    if (mode->refresh_rate_numerator > 0) {
+        if (mode->refresh_rate_denominator <= 0) {
+            mode->refresh_rate_denominator = 1;
+        }
+        mode->refresh_rate = ((100 * (Sint64)mode->refresh_rate_numerator) / mode->refresh_rate_denominator) / 100.0f;
+    } else {
+        SDL_CalculateFraction(mode->refresh_rate, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
+        mode->refresh_rate = (int)(mode->refresh_rate * 100) / 100.0f;
+    }
 }
 
 SDL_DisplayID SDL_AddBasicVideoDisplay(const SDL_DisplayMode *desktop_mode)
