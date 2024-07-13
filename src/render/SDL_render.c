@@ -918,21 +918,22 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 {
     SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
     const SDL_DisplayMode *mode;
-    int num, den;
+    int refresh_num, refresh_den;
 
     if (displayID == 0) {
         displayID = SDL_GetPrimaryDisplay();
     }
     mode = SDL_GetDesktopDisplayMode(displayID);
-    if (mode && mode->refresh_rate_numerator > 0) {
-        num = mode->refresh_rate_numerator;
-        den = mode->refresh_rate_denominator;
+    if (mode && mode->refresh_rate_numerator > 0 && mode->refresh_rate_denominator > 0) {
+        refresh_num = mode->refresh_rate_numerator;
+        refresh_den = mode->refresh_rate_denominator;
     } else {
         /* Pick a good default refresh rate */
-        num = 60;
-        den = 1;
+        refresh_num = 60;
+        refresh_den = 1;
     }
-    renderer->simulate_vsync_interval_ns = (SDL_NS_PER_SECOND * num) / den;
+    /* Flip numerator and denominator to change from framerate to interval */
+    renderer->simulate_vsync_interval_ns = (SDL_NS_PER_SECOND * refresh_den) / refresh_num;
 }
 
 #endif /* !SDL_RENDER_DISABLED */
@@ -1156,10 +1157,10 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 #if SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
 
-	if (!surface) {
+    if (!surface) {
         SDL_InvalidParamError("surface");
-		return NULL;
-	}
+        return NULL;
+    }
 
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_SURFACE_POINTER, surface);
