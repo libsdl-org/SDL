@@ -4770,7 +4770,11 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
 #if SDL_VIDEO_RENDER_SW
     if (renderer->software) {
         if (!renderer->window) {
-            return SDL_Unsupported();
+            if (!vsync) {
+                return 0;
+            } else {
+                return SDL_Unsupported();
+            }
         }
         if (SDL_SetWindowTextureVSync(NULL, renderer->window, vsync) == 0) {
             renderer->simulate_vsync = SDL_FALSE;
