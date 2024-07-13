@@ -41,8 +41,8 @@ extern "C" {
 /**
  * Get the directory where the application was run from.
  *
- * This is not necessarily a fast call, so you should call this once near
- * startup and save the string if you need it.
+ * SDL caches the result of this call internally, but the first call to this
+ * function is not necessarily fast, so plan accordingly.
  *
  * **macOS and iOS Specific Functionality**: If the application is in a ".app"
  * bundle, this function returns the Resource directory (e.g.
@@ -68,8 +68,7 @@ extern "C" {
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
- * The pointer returned is owned by the caller. Please call SDL_free() on the
- * pointer when done with it.
+ * The returned string follows the SDL_GetStringRule.
  *
  * \returns an absolute path in UTF-8 encoding to the application data
  *          directory. NULL will be returned on error or when the platform
@@ -80,7 +79,7 @@ extern "C" {
  *
  * \sa SDL_GetPrefPath
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetBasePath(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetBasePath(void);
 
 /**
  * Get the user-and-app-specific path where files can be written.

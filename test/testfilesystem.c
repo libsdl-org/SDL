@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 {
     SDLTest_CommonState *state;
     char *pref_path;
-    char *base_path;
+    const char *base_path;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -144,8 +144,6 @@ int main(int argc, char *argv[])
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('testfilesystem-test') failed: %s", SDL_GetError());
         }
     }
-
-    SDL_free(base_path);
 
     SDL_Quit();
     SDLTest_CommonDestroyState(state);

@@ -32,7 +32,7 @@
 static char *MakePrefPath(const char *app);
 static int CreatePrefPathDir(const char *pref);
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
     char *base_path = SDL_strdup("romfs:/");
     return base_path;

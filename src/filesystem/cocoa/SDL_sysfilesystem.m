@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
     @autoreleasepool {
         NSBundle *bundle = [NSBundle mainBundle];

@@ -27,7 +27,7 @@
 
 #include <unistd.h>
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
     /* The current working directory is / on Android */
     SDL_Unsupported();
