@@ -661,6 +661,7 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
     }
 
     if (SDL_FindInHashTable(SDL_format_details, (const void *)(uintptr_t)format, (const void **)&details)) {
+        SDL_UnlockMutex(SDL_format_details_lock);
         return details;
     }
 
