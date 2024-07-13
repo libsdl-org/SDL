@@ -104,6 +104,14 @@ static void WIN_DeleteDevice(SDL_VideoDevice *device)
         SDL_UnloadObject(data->shcoreDLL);
     }
 #endif
+#ifndef HAVE_DXGI_H
+    if (data->pDXGIFactory) {
+        IDXGIFactory_Release(pDXGIFactory);
+    }
+    if (data->dxgiDLL) {
+        SDL_UnloadObject(pDXGIDLL);
+    }
+#endif
     if (device->wakeup_lock) {
         SDL_DestroyMutex(device->wakeup_lock);
     }
@@ -169,6 +177,22 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
         SDL_ClearError();
     }
 #endif /* #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
+
+#ifdef HAVE_DXGI_H
+    data->dxgiDLL = SDL_LoadObject("DXGI.DLL");
+    if (data->dxgiDLL) {
+        /* *INDENT-OFF* */ /* clang-format off */
+        typedef HRESULT (WINAPI *CreateDXGI_t)(REFIID riid, void **ppFactory);
+        /* *INDENT-ON* */ /* clang-format on */
+        CreateDXGI_t CreateDXGI;
+
+        CreateDXGI = (CreateDXGI_t)SDL_LoadFunction(data->dxgiDLL, "CreateDXGIFactory");
+        if (CreateDXGI) {
+            GUID dxgiGUID = { 0x7b7166ec, 0x21c7, 0x44ae, { 0xb2, 0x1a, 0xc9, 0xae, 0x32, 0x1a, 0xe3, 0x69 } };
+            CreateDXGI(&dxgiGUID, (void **)&data->pDXGIFactory);
+        }
+    }
+#endif
 
     /* Set the function pointers */
     device->VideoInit = WIN_VideoInit;
@@ -605,41 +629,6 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 }
 #endif /* !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
 
-#ifdef HAVE_DXGI_H
-#define CINTERFACE
-#define COBJMACROS
-#include <dxgi.h>
-
-static SDL_bool DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
-{
-    *pDXGIDLL = SDL_LoadObject("DXGI.DLL");
-    if (*pDXGIDLL) {
-        /* *INDENT-OFF* */ /* clang-format off */
-        typedef HRESULT (WINAPI *CreateDXGI_t)(REFIID riid, void **ppFactory);
-        /* *INDENT-ON* */ /* clang-format on */
-        CreateDXGI_t CreateDXGI;
-
-        CreateDXGI = (CreateDXGI_t)SDL_LoadFunction(*pDXGIDLL, "CreateDXGIFactory");
-        if (CreateDXGI) {
-            GUID dxgiGUID = { 0x7b7166ec, 0x21c7, 0x44ae, { 0xb2, 0x1a, 0xc9, 0xae, 0x32, 0x1a, 0xe3, 0x69 } };
-            if (!SUCCEEDED(CreateDXGI(&dxgiGUID, (void **)pDXGIFactory))) {
-                *pDXGIFactory = NULL;
-            }
-        }
-        if (!*pDXGIFactory) {
-            SDL_UnloadObject(*pDXGIDLL);
-            *pDXGIDLL = NULL;
-            return SDL_FALSE;
-        }
-
-        return SDL_TRUE;
-    } else {
-        *pDXGIFactory = NULL;
-        return SDL_FALSE;
-    }
-}
-#endif
-
 SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
 #ifndef HAVE_DXGI_H
@@ -652,11 +641,10 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
     SDL_SetError("SDL was compiled without DXGI support due to missing dxgi.h header");
     return SDL_FALSE;
 #else
+    const SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
+    const SDL_VideoData *videodata = videodevice ? videodevice->driverdata : NULL;
     SDL_DisplayData *pData = SDL_GetDisplayDriverData(displayID);
-    void *pDXGIDLL;
-    char *displayName;
     int nAdapter, nOutput;
-    IDXGIFactory *pDXGIFactory = NULL;
     IDXGIAdapter *pDXGIAdapter;
     IDXGIOutput *pDXGIOutput;
 
@@ -678,24 +666,21 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
         return SDL_FALSE;
     }
 
-    if (!DXGI_LoadDLL(&pDXGIDLL, &pDXGIFactory)) {
+    if (!videodata || !videodata->pDXGIFactory) {
         SDL_SetError("Unable to create DXGI interface");
         return SDL_FALSE;
     }
 
-    displayName = WIN_StringToUTF8W(pData->DeviceName);
     nAdapter = 0;
-    while (*adapterIndex == -1 && SUCCEEDED(IDXGIFactory_EnumAdapters(pDXGIFactory, nAdapter, &pDXGIAdapter))) {
+    while (*adapterIndex == -1 && SUCCEEDED(IDXGIFactory_EnumAdapters(videodata->pDXGIFactory, nAdapter, &pDXGIAdapter))) {
         nOutput = 0;
         while (*adapterIndex == -1 && SUCCEEDED(IDXGIAdapter_EnumOutputs(pDXGIAdapter, nOutput, &pDXGIOutput))) {
             DXGI_OUTPUT_DESC outputDesc;
             if (SUCCEEDED(IDXGIOutput_GetDesc(pDXGIOutput, &outputDesc))) {
-                char *outputName = WIN_StringToUTF8W(outputDesc.DeviceName);
-                if (SDL_strcmp(outputName, displayName) == 0) {
+                if (SDL_wcscmp(outputDesc.DeviceName, pData->DeviceName) == 0) {
                     *adapterIndex = nAdapter;
                     *outputIndex = nOutput;
                 }
-                SDL_free(outputName);
             }
             IDXGIOutput_Release(pDXGIOutput);
             nOutput++;
@@ -703,11 +688,6 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
         IDXGIAdapter_Release(pDXGIAdapter);
         nAdapter++;
     }
-    SDL_free(displayName);
-
-    /* free up the DXGI factory */
-    IDXGIFactory_Release(pDXGIFactory);
-    SDL_UnloadObject(pDXGIDLL);
 
     if (*adapterIndex == -1) {
         return SDL_FALSE;

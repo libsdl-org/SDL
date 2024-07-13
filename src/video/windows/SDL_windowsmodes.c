@@ -111,6 +111,53 @@ static void WIN_UpdateDisplayMode(SDL_VideoDevice *_this, LPCWSTR deviceName, DW
     }
 }
 
+static void *WIN_GetDXGIOutput(SDL_VideoDevice *_this, const WCHAR *DeviceName)
+{
+    void *retval = NULL;
+
+#ifdef HAVE_DXGI_H
+    const SDL_VideoData *videodata = (const SDL_VideoData *)_this->driverdata;
+    int nAdapter, nOutput;
+    IDXGIAdapter *pDXGIAdapter;
+    IDXGIOutput *pDXGIOutput;
+
+    if (!videodata->pDXGIFactory) {
+        return NULL;
+    }
+
+    nAdapter = 0;
+    while (!retval && SUCCEEDED(IDXGIFactory_EnumAdapters(videodata->pDXGIFactory, nAdapter, &pDXGIAdapter))) {
+        nOutput = 0;
+        while (!retval && SUCCEEDED(IDXGIAdapter_EnumOutputs(pDXGIAdapter, nOutput, &pDXGIOutput))) {
+            DXGI_OUTPUT_DESC outputDesc;
+            if (SUCCEEDED(IDXGIOutput_GetDesc(pDXGIOutput, &outputDesc))) {
+                if (SDL_wcscmp(outputDesc.DeviceName, DeviceName) == 0) {
+                    retval = pDXGIOutput;
+                }
+            }
+            if (pDXGIOutput != retval) {
+                IDXGIOutput_Release(pDXGIOutput);
+            }
+            nOutput++;
+        }
+        IDXGIAdapter_Release(pDXGIAdapter);
+        nAdapter++;
+    }
+#endif
+    return retval;
+}
+
+static void WIN_ReleaseDXGIOutput(void *dxgi_output)
+{
+#ifdef HAVE_DXGI_H
+    IDXGIOutput *pDXGIOutput = (IDXGIOutput *)dxgi_output;
+
+    if (pDXGIOutput) {
+        IDXGIOutput_Release(pDXGIOutput);
+    }
+#endif
+}
+
 static SDL_DisplayOrientation WIN_GetNaturalOrientation(DEVMODE *mode)
 {
     int width = mode->dmPelsWidth;
@@ -161,7 +208,7 @@ static SDL_DisplayOrientation WIN_GetDisplayOrientation(DEVMODE *mode)
     }
 }
 
-static void WIN_GetRefreshRate(DEVMODE *mode, int *numerator, int *denominator)
+static void WIN_GetRefreshRate(void *dxgi_output, DEVMODE *mode, int *numerator, int *denominator)
 {
     /* We're not currently using DXGI to query display modes, so fake NTSC timings */
     switch (mode->dmDisplayFrequency) {
@@ -176,6 +223,26 @@ static void WIN_GetRefreshRate(DEVMODE *mode, int *numerator, int *denominator)
         *denominator = 1;
         break;
     }
+
+#ifdef HAVE_DXGI_H
+    if (dxgi_output) {
+        IDXGIOutput *pDXGIOutput = (IDXGIOutput *)dxgi_output;
+        DXGI_MODE_DESC modeToMatch;
+        DXGI_MODE_DESC closestMatch;
+
+        SDL_zero(modeToMatch);
+        modeToMatch.Width = mode->dmPelsWidth;
+        modeToMatch.Height = mode->dmPelsHeight;
+        modeToMatch.RefreshRate.Numerator = *numerator;
+        modeToMatch.RefreshRate.Denominator = *denominator;
+        modeToMatch.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+        if (SUCCEEDED(IDXGIOutput_FindClosestMatchingMode(pDXGIOutput, &modeToMatch, &closestMatch, NULL))) {
+            *numerator = closestMatch.RefreshRate.Numerator;
+            *denominator = closestMatch.RefreshRate.Denominator;
+        }
+    }
+#endif // HAVE_DXGI_H
 }
 
 static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
@@ -204,7 +271,7 @@ static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
     return dpi / (float)USER_DEFAULT_SCREEN_DPI;
 }
 
-static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *natural_orientation, SDL_DisplayOrientation *current_orientation)
+static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, void *dxgi_output, HMONITOR hMonitor, LPCWSTR deviceName, DWORD index, SDL_DisplayMode *mode, SDL_DisplayOrientation *natural_orientation, SDL_DisplayOrientation *current_orientation)
 {
     SDL_DisplayModeData *data;
     DEVMODE devmode;
@@ -227,7 +294,7 @@ static SDL_bool WIN_GetDisplayMode(SDL_VideoDevice *_this, HMONITOR hMonitor, LP
     mode->format = SDL_PIXELFORMAT_UNKNOWN;
     mode->w = data->DeviceMode.dmPelsWidth;
     mode->h = data->DeviceMode.dmPelsHeight;
-    WIN_GetRefreshRate(&data->DeviceMode, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
+    WIN_GetRefreshRate(dxgi_output, &data->DeviceMode, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
 
     /* Fill in the mode information */
     WIN_UpdateDisplayMode(_this, deviceName, index, mode);
@@ -486,6 +553,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     int i, index = *display_index;
     SDL_VideoDisplay display;
     SDL_DisplayData *displaydata;
+    void *dxgi_output = NULL;
     SDL_DisplayMode mode;
     SDL_DisplayOrientation natural_orientation;
     SDL_DisplayOrientation current_orientation;
@@ -495,7 +563,10 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     SDL_Log("Display: %s\n", WIN_StringToUTF8W(info->szDevice));
 #endif
 
-    if (!WIN_GetDisplayMode(_this, hMonitor, info->szDevice, ENUM_CURRENT_SETTINGS, &mode, &natural_orientation, &current_orientation)) {
+    dxgi_output = WIN_GetDXGIOutput(_this, info->szDevice);
+    SDL_bool found = WIN_GetDisplayMode(_this, dxgi_output, hMonitor, info->szDevice, ENUM_CURRENT_SETTINGS, &mode, &natural_orientation, &current_orientation);
+    WIN_ReleaseDXGIOutput(dxgi_output);
+    if (!found) {
         return;
     }
 
@@ -692,11 +763,14 @@ int WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display
 int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayData *data = display->driverdata;
+    void *dxgi_output;
     DWORD i;
     SDL_DisplayMode mode;
 
+    dxgi_output = WIN_GetDXGIOutput(_this, data->DeviceName);
+
     for (i = 0;; ++i) {
-        if (!WIN_GetDisplayMode(_this, data->MonitorHandle, data->DeviceName, i, &mode, NULL, NULL)) {
+        if (!WIN_GetDisplayMode(_this, dxgi_output, data->MonitorHandle, data->DeviceName, i, &mode, NULL, NULL)) {
             break;
         }
         if (SDL_ISPIXELFORMAT_INDEXED(mode.format)) {
@@ -712,6 +786,9 @@ int WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
             SDL_free(mode.driverdata);
         }
     }
+
+    WIN_ReleaseDXGIOutput(dxgi_output);
+
     return 0;
 }
 
