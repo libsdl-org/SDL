@@ -157,7 +157,7 @@ static SDL_Texture *CreateTexture(const char *image[], SDL_Renderer *renderer)
         SDL_memcpy((Uint8 *)surface->pixels + row * surface->pitch, image[4 + row], surface->w);
     }
 
-    palette = SDL_CreatePalette(256);
+    palette = SDL_CreateSurfacePalette(surface);
     if (!palette) {
         SDL_DestroySurface(surface);
         return NULL;
@@ -171,8 +171,6 @@ static SDL_Texture *CreateTexture(const char *image[], SDL_Renderer *renderer)
     palette->colors['X'].r = 0x00;
     palette->colors['X'].g = 0x00;
     palette->colors['X'].b = 0x00;
-    SDL_SetSurfacePalette(surface, palette);
-    SDL_DestroyPalette(palette);
 
     SDL_SetSurfaceColorKey(surface, SDL_TRUE, ' ');
 

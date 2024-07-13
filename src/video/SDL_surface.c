@@ -367,6 +367,46 @@ float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colorspace)
     return 1.0f;
 }
 
+SDL_Palette *SDL_CreateSurfacePalette(SDL_Surface *surface)
+{
+    SDL_Palette *palette;
+
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    if (!SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+        SDL_SetError("The surface is not indexed format");
+        return NULL;
+    }
+
+    palette = SDL_CreatePalette((1 << SDL_BITSPERPIXEL(surface->format)));
+    if (!palette) {
+        return NULL;
+    }
+
+    if (palette->ncolors == 2) {
+        /* Create a black and white bitmap palette */
+        palette->colors[0].r = 0xFF;
+        palette->colors[0].g = 0xFF;
+        palette->colors[0].b = 0xFF;
+        palette->colors[1].r = 0x00;
+        palette->colors[1].g = 0x00;
+        palette->colors[1].b = 0x00;
+    }
+
+    if (SDL_SetSurfacePalette(surface, palette) < 0) {
+        SDL_DestroyPalette(palette);
+        return NULL;
+    }
+
+    /* The surface has retained the palette, we can remove the reference here */
+    SDL_assert(palette->refcount == 2);
+    SDL_DestroyPalette(palette);
+    return palette;
+}
+
 int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
 {
     if (!SDL_SurfaceValid(surface)) {

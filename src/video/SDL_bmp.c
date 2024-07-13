@@ -439,8 +439,10 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
 
     /* Load the palette, if any */
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
-        int max_colors = (1 << SDL_BITSPERPIXEL(surface->format));
-        SDL_Palette *palette;
+        SDL_Palette *palette = SDL_CreateSurfacePalette(surface);
+        if (!palette) {
+            goto done;
+        }
 
         if (SDL_SeekIO(src, fp_offset + 14 + biSize, SDL_IO_SEEK_SET) < 0) {
             SDL_SetError("Error seeking in datastream");
@@ -456,21 +458,17 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
             biClrUsed = 1 << biBitCount;
         }
 
-        if (biClrUsed > (Uint32)max_colors) {
+        if (biClrUsed > (Uint32)palette->ncolors) {
             biClrUsed = 1 << biBitCount; /* try forcing it? */
-            if (biClrUsed > (Uint32)max_colors) {
+            if (biClrUsed > (Uint32)palette->ncolors) {
                 SDL_SetError("Unsupported or incorrect biClrUsed field");
                 goto done;
             }
         }
-
-        palette = SDL_CreatePalette(biClrUsed);
-        if (!palette) {
-            goto done;
-        }
+        palette->ncolors = biClrUsed;
 
         if (biSize == 12) {
-            for (i = 0; i < (int)biClrUsed; ++i) {
+            for (i = 0; i < palette->ncolors; ++i) {
                 if (!SDL_ReadU8(src, &palette->colors[i].b) ||
                     !SDL_ReadU8(src, &palette->colors[i].g) ||
                     !SDL_ReadU8(src, &palette->colors[i].r)) {
@@ -479,7 +477,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
                 palette->colors[i].a = SDL_ALPHA_OPAQUE;
             }
         } else {
-            for (i = 0; i < (int)biClrUsed; ++i) {
+            for (i = 0; i < palette->ncolors; ++i) {
                 if (!SDL_ReadU8(src, &palette->colors[i].b) ||
                     !SDL_ReadU8(src, &palette->colors[i].g) ||
                     !SDL_ReadU8(src, &palette->colors[i].r) ||
@@ -494,9 +492,6 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
                 palette->colors[i].a = SDL_ALPHA_OPAQUE;
             }
         }
-
-        SDL_SetSurfacePalette(surface, palette);
-        SDL_DestroyPalette(palette);
     }
 
     /* Read the surface pixels.  Note that the bmp image is upside down */
