@@ -3292,13 +3292,16 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
 static VkDescriptorPool VULKAN_AllocateDescriptorPool(VULKAN_RenderData *rendererData)
 {
     VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-    VkDescriptorPoolSize descriptorPoolSizes[2];
+    VkDescriptorPoolSize descriptorPoolSizes[3];
     VkResult result;
     descriptorPoolSizes[0].descriptorCount = SDL_VULKAN_MAX_DESCRIPTOR_SETS;
     descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_SAMPLER;
 
     descriptorPoolSizes[1].descriptorCount = SDL_VULKAN_MAX_DESCRIPTOR_SETS;
     descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+    descriptorPoolSizes[2].descriptorCount = SDL_VULKAN_MAX_DESCRIPTOR_SETS;
+    descriptorPoolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
     VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = { 0 };
     descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
