@@ -193,6 +193,9 @@
 #define SDL_VIDEO_VULKAN 0
 #else
 #define SDL_VIDEO_VULKAN 1
+#ifndef SDL_VIDEO_RENDER_VULKAN
+#define SDL_VIDEO_RENDER_VULKAN    1
+#endif
 #endif
 
 /* Enable system power support */
