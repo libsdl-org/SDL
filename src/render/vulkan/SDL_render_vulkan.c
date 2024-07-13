@@ -4030,7 +4030,7 @@ static int VULKAN_RenderPresent(SDL_Renderer *renderer)
         VULKAN_AcquireNextSwapchainImage(renderer);
     }
 
-    return (result == VK_SUCCESS);
+    return 0;
 }
 
 static int VULKAN_SetVSync(SDL_Renderer *renderer, const int vsync)
