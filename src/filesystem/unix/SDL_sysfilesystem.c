@@ -119,7 +119,7 @@ static char *search_path_for_binary(const char *bin)
 }
 #endif
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
     char *retval = NULL;
 

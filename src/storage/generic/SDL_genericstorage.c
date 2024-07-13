@@ -181,22 +181,25 @@ static const SDL_StorageInterface GENERIC_title_iface = {
 
 static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID props)
 {
-    SDL_Storage *result;
+    SDL_Storage *result = NULL;
 
-    char *basepath;
+    char *basepath = NULL;
     if (override != NULL) {
         basepath = SDL_strdup(override);
     } else {
-        basepath = SDL_GetBasePath();
-    }
-    if (basepath == NULL) {
-        return NULL;
+        const char *sdlbasepath = SDL_GetBasePath();
+        if (sdlbasepath) {
+            basepath = SDL_strdup(sdlbasepath);
+        }
     }
 
-    result = SDL_OpenStorage(&GENERIC_title_iface, basepath);
-    if (result == NULL) {
-        SDL_free(basepath);
+    if (basepath != NULL) {
+        result = SDL_OpenStorage(&GENERIC_title_iface, basepath);
+        if (result == NULL) {
+            SDL_free(basepath);  // otherwise CloseStorage will free it.
+        }
     }
+
     return result;
 }
 

@@ -802,10 +802,9 @@ On Haiku OS, SDL no longer sets the current working directory to the executable'
 
 ```c
 {
-    char *path = SDL_GetBasePath();
+    const char *path = SDL_GetBasePath();
     if (path) {
         chdir(path);
-        SDL_free(path);
     }
 }
 ```

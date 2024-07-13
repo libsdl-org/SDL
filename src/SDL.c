@@ -53,6 +53,7 @@
 #include "thread/SDL_thread_c.h"
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_video_c.h"
+#include "filesystem/SDL_filesystem_c.h"
 
 #define SDL_INIT_EVERYTHING ~0U
 
@@ -192,6 +193,7 @@ void SDL_InitMainThread(void)
 
     SDL_InitTLSData();
     SDL_InitTicks();
+    SDL_InitFilesystem();
     SDL_InitLog();
     SDL_InitProperties();
     SDL_GetGlobalProperties();
@@ -207,6 +209,7 @@ static void SDL_QuitMainThread(void)
 
     SDL_QuitProperties();
     SDL_QuitLog();
+    SDL_QuitFilesystem();
     SDL_QuitTicks();
     SDL_QuitTLSData();
 

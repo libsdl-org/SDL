@@ -29,10 +29,9 @@
 
 #include <emscripten/emscripten.h>
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
-    char *retval = "/";
-    return SDL_strdup(retval);
+    return SDL_strdup("/");
 }
 
 char *SDL_GetPrefPath(const char *org, const char *app)

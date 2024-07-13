@@ -23,10 +23,8 @@
 char *
 GetNearbyFilename(const char *file)
 {
-    char *base;
+    const char *base = SDL_GetBasePath();
     char *path;
-
-    base = SDL_GetBasePath();
 
     if (base) {
         SDL_IOStream *rw;
@@ -35,12 +33,10 @@ GetNearbyFilename(const char *file)
         path = SDL_malloc(len);
 
         if (!path) {
-            SDL_free(base);
             return NULL;
         }
 
         (void)SDL_snprintf(path, len, "%s%s", base, file);
-        SDL_free(base);
 
         rw = SDL_IOFromFile(path, "rb");
         if (rw) {

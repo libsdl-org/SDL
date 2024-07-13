@@ -219,7 +219,7 @@ SDL_DYNAPI_PROC(const int*,SDL_GetAudioStreamInputChannelMap,(SDL_AudioStream *a
 SDL_DYNAPI_PROC(const int*,SDL_GetAudioStreamOutputChannelMap,(SDL_AudioStream *a, int *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetAudioStreamProperties,(SDL_AudioStream *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetAudioStreamQueued,(SDL_AudioStream *a),(a),return)
-SDL_DYNAPI_PROC(char*,SDL_GetBasePath,(void),(),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetBasePath,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GetBooleanProperty,(SDL_PropertiesID a, const char *b, SDL_bool c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_GetCPUCacheLineSize,(void),(),return)
 SDL_DYNAPI_PROC(int,SDL_GetCPUCount,(void),(),return)

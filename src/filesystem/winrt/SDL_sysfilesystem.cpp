@@ -27,6 +27,7 @@
 
 extern "C" {
 #include "../../core/windows/SDL_windows.h"
+#include "../SDL_sysfilesystem.h"
 }
 
 #include <string>
@@ -115,7 +116,7 @@ extern "C" const char *SDL_GetWinRTFSPath(SDL_WinRT_Path pathType)
     return utf8Paths[pathType].c_str();
 }
 
-extern "C" char *SDL_GetBasePath(void)
+extern "C" char *SDL_SYS_GetBasePath(void)
 {
     const char *srcPath = SDL_GetWinRTFSPath(SDL_WINRT_PATH_INSTALLED_LOCATION);
     size_t destPathLen;

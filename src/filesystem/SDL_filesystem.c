@@ -400,3 +400,25 @@ char **SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags fl
     return SDL_InternalGlobDirectory(path, pattern, flags, count, GlobDirectoryEnumerator, GlobDirectoryGetPathInfo, NULL);
 }
 
+
+static char *CachedBasePath = NULL;
+
+const char *SDL_GetBasePath(void)
+{
+    if (!CachedBasePath) {
+        CachedBasePath = SDL_SYS_GetBasePath();
+    }
+    return CachedBasePath;
+}
+
+void SDL_InitFilesystem(void)
+{
+    CachedBasePath = NULL;  // just in case.
+}
+
+void SDL_QuitFilesystem(void)
+{
+    SDL_free(CachedBasePath);
+    CachedBasePath = NULL;
+}
+

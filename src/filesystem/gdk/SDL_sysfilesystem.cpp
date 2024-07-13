@@ -31,7 +31,7 @@
 #include <XGameSaveFiles.h>
 
 char *
-SDL_GetBasePath(void)
+SDL_SYS_GetBasePath(void)
 {
     /* NOTE: This function is a UTF8 version of the Win32 SDL_GetBasePath()!
      * The GDK actually _recommends_ the 'A' functions over the 'W' functions :o

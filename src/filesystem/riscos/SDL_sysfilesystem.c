@@ -123,7 +123,7 @@ static _kernel_oserror *createDirectoryRecursive(char *path)
     return _kernel_swi(OS_File, &regs, &regs);
 }
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
     _kernel_swi_regs regs;
     _kernel_oserror *error;

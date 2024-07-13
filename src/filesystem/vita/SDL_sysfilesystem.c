@@ -34,11 +34,9 @@
 #include <limits.h>
 #include <fcntl.h>
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
-    const char *basepath = "app0:/";
-    char *retval = SDL_strdup(basepath);
-    return retval;
+    return SDL_strdup("app0:/");
 }
 
 char *SDL_GetPrefPath(const char *org, const char *app)
