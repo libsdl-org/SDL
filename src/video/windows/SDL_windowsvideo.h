@@ -27,6 +27,12 @@
 
 #include "../SDL_sysvideo.h"
 
+#ifdef HAVE_DXGI_H
+#define CINTERFACE
+#define COBJMACROS
+#include <dxgi.h>
+#endif
+
 #if defined(_MSC_VER) && (_MSC_VER >= 1500) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 #include <msctf.h>
 #else
@@ -405,6 +411,11 @@ struct SDL_VideoData
     HRESULT (WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness);
     /* *INDENT-ON* */ /* clang-format on */
 #endif                /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
+
+#ifdef HAVE_DXGI_H
+    void *dxgiDLL;
+    IDXGIFactory *pDXGIFactory;
+#endif
 
     SDL_bool cleared;
 
