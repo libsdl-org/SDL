@@ -2939,7 +2939,7 @@ static int VULKAN_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
      * then return:
      */
     *pixels = textureData->stagingBuffer.mappedBufferPtr;
-    *pitch = length;
+    *pitch = (int)length;
     return 0;
 
 }
@@ -3892,7 +3892,7 @@ static SDL_Surface* VULKAN_RenderReadPixels(SDL_Renderer *renderer, const SDL_Re
         VULKAN_VkFormatToSDLPixelFormat(vkFormat),
         renderer->target ? renderer->target->colorspace : renderer->output_colorspace,
         readbackBuffer.mappedBufferPtr,
-        length);
+        (int)length);
 
     VULKAN_DestroyBuffer(rendererData, &readbackBuffer);
 
