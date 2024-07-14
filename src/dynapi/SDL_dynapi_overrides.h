@@ -352,7 +352,7 @@
 #define SDL_GetKeyFromScancode SDL_GetKeyFromScancode_REAL
 #define SDL_GetKeyName SDL_GetKeyName_REAL
 #define SDL_GetKeyboardFocus SDL_GetKeyboardFocus_REAL
-#define SDL_GetKeyboardInstanceName SDL_GetKeyboardInstanceName_REAL
+#define SDL_GetKeyboardNameFromID SDL_GetKeyboardNameFromID_REAL
 #define SDL_GetKeyboardState SDL_GetKeyboardState_REAL
 #define SDL_GetKeyboards SDL_GetKeyboards_REAL
 #define SDL_GetLogOutputFunction SDL_GetLogOutputFunction_REAL
@@ -364,7 +364,7 @@
 #define SDL_GetMice SDL_GetMice_REAL
 #define SDL_GetModState SDL_GetModState_REAL
 #define SDL_GetMouseFocus SDL_GetMouseFocus_REAL
-#define SDL_GetMouseInstanceName SDL_GetMouseInstanceName_REAL
+#define SDL_GetMouseNameFromID SDL_GetMouseNameFromID_REAL
 #define SDL_GetMouseState SDL_GetMouseState_REAL
 #define SDL_GetNaturalDisplayOrientation SDL_GetNaturalDisplayOrientation_REAL
 #define SDL_GetNumAllocations SDL_GetNumAllocations_REAL
