@@ -137,6 +137,7 @@ void *alloca(size_t);
      (SDL_static_cast(Uint32, SDL_static_cast(Uint8, (D))) << 24))
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * Append the 64 bit integer suffix to a signed integer literal.
  *
