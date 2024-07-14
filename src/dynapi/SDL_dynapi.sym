@@ -186,13 +186,13 @@ SDL3_0.0.0 {
     SDL_GetBooleanProperty;
     SDL_GetCPUCacheLineSize;
     SDL_GetCPUCount;
-    SDL_GetCameraDeviceName;
-    SDL_GetCameraDevicePosition;
-    SDL_GetCameraDeviceSupportedFormats;
-    SDL_GetCameraDevices;
+    SDL_GetCameraName;
+    SDL_GetCameraPosition;
+    SDL_GetCameraSupportedFormats;
+    SDL_GetCameras;
     SDL_GetCameraDriver;
     SDL_GetCameraFormat;
-    SDL_GetCameraInstanceID;
+    SDL_GetCameraID;
     SDL_GetCameraPermissionState;
     SDL_GetCameraProperties;
     SDL_GetClipboardData;
@@ -591,7 +591,7 @@ SDL3_0.0.0 {
     SDL_OnApplicationWillTerminate;
     SDL_OpenAudioDevice;
     SDL_OpenAudioDeviceStream;
-    SDL_OpenCameraDevice;
+    SDL_OpenCamera;
     SDL_OpenFileStorage;
     SDL_OpenGamepad;
     SDL_OpenHaptic;

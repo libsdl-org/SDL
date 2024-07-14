@@ -83,16 +83,16 @@ static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormat *pixel_format
 @end
 
 
-static SDL_bool CheckCameraPermissions(SDL_CameraDevice *device)
+static SDL_bool CheckCameraPermissions(SDL_Camera *device)
 {
     if (device->permission == 0) {  // still expecting a permission result.
         if (@available(macOS 14, *)) {
             const AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
             if (status != AVAuthorizationStatusNotDetermined) {   // NotDetermined == still waiting for an answer from the user.
-                SDL_CameraDevicePermissionOutcome(device, (status == AVAuthorizationStatusAuthorized) ? SDL_TRUE : SDL_FALSE);
+                SDL_CameraPermissionOutcome(device, (status == AVAuthorizationStatusAuthorized) ? SDL_TRUE : SDL_FALSE);
             }
         } else {
-            SDL_CameraDevicePermissionOutcome(device, SDL_TRUE);  // always allowed (or just unqueryable...?) on older macOS.
+            SDL_CameraPermissionOutcome(device, SDL_TRUE);  // always allowed (or just unqueryable...?) on older macOS.
         }
     }
 
@@ -102,14 +102,14 @@ static SDL_bool CheckCameraPermissions(SDL_CameraDevice *device)
 // this delegate just receives new video frames on a Grand Central Dispatch queue, and fires off the
 // main device thread iterate function directly to consume it.
 @interface SDLCaptureVideoDataOutputSampleBufferDelegate : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate>
-    @property SDL_CameraDevice *device;
-    -(id) init:(SDL_CameraDevice *) dev;
+    @property SDL_Camera *device;
+    -(id) init:(SDL_Camera *) dev;
     -(void) captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection;
 @end
 
 @implementation SDLCaptureVideoDataOutputSampleBufferDelegate
 
-    -(id) init:(SDL_CameraDevice *) dev {
+    -(id) init:(SDL_Camera *) dev {
         if ( self = [super init] ) {
             _device = dev;
         }
@@ -118,7 +118,7 @@ static SDL_bool CheckCameraPermissions(SDL_CameraDevice *device)
 
     - (void) captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
     {
-        SDL_CameraDevice *device = self.device;
+        SDL_Camera *device = self.device;
         if (!device || !device->hidden) {
             return;  // oh well.
         }
@@ -141,12 +141,12 @@ static SDL_bool CheckCameraPermissions(SDL_CameraDevice *device)
     }
 @end
 
-static int COREMEDIA_WaitDevice(SDL_CameraDevice *device)
+static int COREMEDIA_WaitDevice(SDL_Camera *device)
 {
     return 0;  // this isn't used atm, since we run our own thread out of Grand Central Dispatch.
 }
 
-static int COREMEDIA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS)
+static int COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
     int retval = 1;
     SDLPrivateCameraData *hidden = (__bridge SDLPrivateCameraData *) device->hidden;
@@ -222,13 +222,13 @@ static int COREMEDIA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, 
     return retval;
 }
 
-static void COREMEDIA_ReleaseFrame(SDL_CameraDevice *device, SDL_Surface *frame)
+static void COREMEDIA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 {
     // !!! FIXME: this currently copies the data to the surface, but in theory we could just keep this locked until ReleaseFrame...
     SDL_aligned_free(frame->pixels);
 }
 
-static void COREMEDIA_CloseDevice(SDL_CameraDevice *device)
+static void COREMEDIA_CloseDevice(SDL_Camera *device)
 {
     if (device && device->hidden) {
         SDLPrivateCameraData *hidden = (SDLPrivateCameraData *) CFBridgingRelease(device->hidden);
@@ -248,7 +248,7 @@ static void COREMEDIA_CloseDevice(SDL_CameraDevice *device)
     }
 }
 
-static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
+static int COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
     AVCaptureDevice *avdevice = (__bridge AVCaptureDevice *) device->handle;
 
@@ -367,7 +367,7 @@ static int COREMEDIA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *
     return 0;
 }
 
-static void COREMEDIA_FreeDeviceHandle(SDL_CameraDevice *device)
+static void COREMEDIA_FreeDeviceHandle(SDL_Camera *device)
 {
     if (device && device->handle) {
         CFBridgingRelease(device->handle);
@@ -408,7 +408,7 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
     }
 }
 
-static SDL_bool FindCoreMediaCameraDeviceByUniqueID(SDL_CameraDevice *device, void *userdata)
+static SDL_bool FindCoreMediaCameraByUniqueID(SDL_Camera *device, void *userdata)
 {
     NSString *uniqueid = (__bridge NSString *) userdata;
     AVCaptureDevice *avdev = (__bridge AVCaptureDevice *) device->handle;
@@ -421,7 +421,7 @@ static void MaybeAddDevice(AVCaptureDevice *avdevice)
         return;  // not connected.
     } else if (![avdevice hasMediaType:AVMediaTypeVideo]) {
         return;  // not a camera.
-    } else if (SDL_FindPhysicalCameraDeviceByCallback(FindCoreMediaCameraDeviceByUniqueID, (__bridge void *) avdevice.uniqueID)) {
+    } else if (SDL_FindPhysicalCameraByCallback(FindCoreMediaCameraByUniqueID, (__bridge void *) avdevice.uniqueID)) {
         return;  // already have this one.
     }
 
@@ -434,7 +434,7 @@ static void MaybeAddDevice(AVCaptureDevice *avdevice)
         } else if (avdevice.position == AVCaptureDevicePositionBack) {
             position = SDL_CAMERA_POSITION_BACK_FACING;
         }
-        SDL_AddCameraDevice(avdevice.localizedName.UTF8String, position, add_data.num_specs, add_data.specs, (void *) CFBridgingRetain(avdevice));
+        SDL_AddCamera(avdevice.localizedName.UTF8String, position, add_data.num_specs, add_data.specs, (void *) CFBridgingRetain(avdevice));
     }
 
     SDL_free(add_data.specs);

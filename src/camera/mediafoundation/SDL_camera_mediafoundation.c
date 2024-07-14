@@ -347,7 +347,7 @@ typedef struct SDL_PrivateCameraData
     int pitch;
 } SDL_PrivateCameraData;
 
-static int MEDIAFOUNDATION_WaitDevice(SDL_CameraDevice *device)
+static int MEDIAFOUNDATION_WaitDevice(SDL_Camera *device)
 {
     SDL_assert(device->hidden->current_sample == NULL);
 
@@ -421,7 +421,7 @@ static void SDLCALL CleanupIMFMediaBuffer(void *userdata, void *value)
     SDL_free(objs);
 }
 
-static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS)
+static int MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
     SDL_assert(device->hidden->current_sample != NULL);
 
@@ -511,7 +511,7 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *f
     return retval;
 }
 
-static void MEDIAFOUNDATION_ReleaseFrame(SDL_CameraDevice *device, SDL_Surface *frame)
+static void MEDIAFOUNDATION_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 {
     const SDL_PropertiesID surfprops = SDL_GetSurfaceProperties(frame);
     if (surfprops) {
@@ -522,7 +522,7 @@ static void MEDIAFOUNDATION_ReleaseFrame(SDL_CameraDevice *device, SDL_Surface *
 
 #else
 
-static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS)
+static int MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
     SDL_assert(device->hidden->current_sample != NULL);
 
@@ -627,14 +627,14 @@ static int MEDIAFOUNDATION_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *f
     return retval;
 }
 
-static void MEDIAFOUNDATION_ReleaseFrame(SDL_CameraDevice *device, SDL_Surface *frame)
+static void MEDIAFOUNDATION_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 {
     SDL_aligned_free(frame->pixels);
 }
 
 #endif
 
-static void MEDIAFOUNDATION_CloseDevice(SDL_CameraDevice *device)
+static void MEDIAFOUNDATION_CloseDevice(SDL_Camera *device)
 {
     if (device && device->hidden) {
         if (device->hidden->srcreader) {
@@ -695,7 +695,7 @@ done:
 }
 
 
-static int MEDIAFOUNDATION_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
+static int MEDIAFOUNDATION_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
     const char *utf8symlink = (const char *) device->handle;
     IMFAttributes *attrs = NULL;
@@ -821,7 +821,7 @@ static int MEDIAFOUNDATION_OpenDevice(SDL_CameraDevice *device, const SDL_Camera
     IMFMediaSource_Release(source);  // srcreader is holding a reference to this.
 
     // There is no user permission prompt for camera access (I think?)
-    SDL_CameraDevicePermissionOutcome(device, SDL_TRUE);
+    SDL_CameraPermissionOutcome(device, SDL_TRUE);
 
     #undef CHECK_HRESULT
 
@@ -864,7 +864,7 @@ failed:
     return -1;
 }
 
-static void MEDIAFOUNDATION_FreeDeviceHandle(SDL_CameraDevice *device)
+static void MEDIAFOUNDATION_FreeDeviceHandle(SDL_Camera *device)
 {
     if (device) {
         SDL_free(device->handle);  // the device's symlink string.
@@ -962,7 +962,7 @@ static void GatherCameraSpecs(IMFMediaSource *source, CameraFormatAddData *add_d
     IMFPresentationDescriptor_Release(presentdesc);
 }
 
-static SDL_bool FindMediaFoundationCameraDeviceBySymlink(SDL_CameraDevice *device, void *userdata)
+static SDL_bool FindMediaFoundationCameraBySymlink(SDL_Camera *device, void *userdata)
 {
     return (SDL_strcmp((const char *) device->handle, (const char *) userdata) == 0);
 }
@@ -971,7 +971,7 @@ static void MaybeAddDevice(IMFActivate *activation)
 {
     char *symlink = QueryActivationObjectString(activation, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK);
 
-    if (SDL_FindPhysicalCameraDeviceByCallback(FindMediaFoundationCameraDeviceBySymlink, symlink)) {
+    if (SDL_FindPhysicalCameraByCallback(FindMediaFoundationCameraBySymlink, symlink)) {
         SDL_free(symlink);
         return;  // already have this one.
     }
@@ -985,7 +985,7 @@ static void MaybeAddDevice(IMFActivate *activation)
             CameraFormatAddData add_data;
             GatherCameraSpecs(source, &add_data);
             if (add_data.num_specs > 0) {
-                SDL_AddCameraDevice(name, SDL_CAMERA_POSITION_UNKNOWN, add_data.num_specs, add_data.specs, symlink);
+                SDL_AddCamera(name, SDL_CAMERA_POSITION_UNKNOWN, add_data.num_specs, add_data.specs, symlink);
             }
             SDL_free(add_data.specs);
             IMFActivate_ShutdownObject(activation);
