@@ -141,7 +141,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 #endif
 
     /* Wrap the second if needed */
-    if (ts_timeout.tv_nsec > 1000000000) {
+    if (ts_timeout.tv_nsec >= 1000000000) {
         ts_timeout.tv_sec += 1;
         ts_timeout.tv_nsec -= 1000000000;
     }
