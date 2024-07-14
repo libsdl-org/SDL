@@ -540,7 +540,9 @@ typedef enum SDL_ChromaLocation
 /**
  * Colorspace definitions.
  *
- * Since similar colorspaces may vary in their details (matrix, transfer function, etc.), this is not an exhaustive list, but rather a representative sample of the kinds of colorspaces supported in SDL.
+ * Since similar colorspaces may vary in their details (matrix, transfer
+ * function, etc.), this is not an exhaustive list, but rather a
+ * representative sample of the kinds of colorspaces supported in SDL.
  *
  * \since This enum is available since SDL 3.0.0.
  */
