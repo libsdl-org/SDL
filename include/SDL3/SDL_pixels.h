@@ -187,7 +187,7 @@ typedef enum SDL_PackedLayout
 /* Note: If you modify this enum, update SDL_GetPixelFormatName() */
 
 /**
- * All pixel formats known to SDL.
+ * Pixel format.
  *
  * SDL's pixel formats have the following naming convention:
  *
@@ -401,7 +401,7 @@ typedef enum SDL_PixelFormat
  */
 
 /**
- * The color type
+ * Colorspace color type.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -413,7 +413,7 @@ typedef enum SDL_ColorType
 } SDL_ColorType;
 
 /**
- * The color range, as described by
+ * Colorspace color range, as described by
  * https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en
  *
  * \since This enum is available since SDL 3.0.0.
@@ -426,7 +426,7 @@ typedef enum SDL_ColorRange
 } SDL_ColorRange;
 
 /**
- * The color primaries, as described by
+ * Colorspace color primaries, as described by
  * https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
  * \since This enum is available since SDL 3.0.0.
@@ -450,7 +450,7 @@ typedef enum SDL_ColorPrimaries
 } SDL_ColorPrimaries;
 
 /**
- * The color transfer characteristics.
+ * Colorspace transfer characteristics.
  *
  * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
@@ -480,7 +480,7 @@ typedef enum SDL_TransferCharacteristics
 } SDL_TransferCharacteristics;
 
 /**
- * The matrix coefficients.
+ * Colorspace matrix coefficients.
  *
  * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
@@ -506,7 +506,7 @@ typedef enum SDL_MatrixCoefficients
 } SDL_MatrixCoefficients;
 
 /**
- * The chroma sample location.
+ * Colorspace chroma sample location.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -537,6 +537,13 @@ typedef enum SDL_ChromaLocation
 #define SDL_ISCOLORSPACE_LIMITED_RANGE(X)       (SDL_COLORSPACERANGE(X) != SDL_COLOR_RANGE_FULL)
 #define SDL_ISCOLORSPACE_FULL_RANGE(X)          (SDL_COLORSPACERANGE(X) == SDL_COLOR_RANGE_FULL)
 
+/**
+ * Colorspace definitions.
+ *
+ * Since similar colorspaces may vary in their details (matrix, transfer function, etc.), this is not an exhaustive list, but rather a representative sample of the kinds of colorspaces supported in SDL.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
 typedef enum SDL_Colorspace
 {
     SDL_COLORSPACE_UNKNOWN = 0,
