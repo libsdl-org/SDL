@@ -1963,6 +1963,12 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_RenderReadPixels(SDL_Renderer *ren
  * starting each new frame's drawing, even if you plan to overwrite every
  * pixel.
  *
+ * Please note, that in case of rendering to a texture - there is **no need**
+ * to call `SDL_RenderPresent` after drawing needed objects to a texture, you
+ * are only required to change back the rendering target to default via
+ * `SDL_SetRenderTarget(renderer, NULL)` afterwards, as textures by themselves
+ * do not have a concept of backbuffers.
+ *
  * \param renderer the rendering context.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
