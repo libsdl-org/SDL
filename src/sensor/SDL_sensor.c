@@ -238,7 +238,7 @@ static SDL_bool SDL_GetDriverAndSensorIndex(SDL_SensorID instance_id, SDL_Sensor
 /*
  * Get the implementation dependent name of a sensor
  */
-const char *SDL_GetSensorNameFromID(SDL_SensorID instance_id)
+const char *SDL_GetSensorNameForID(SDL_SensorID instance_id)
 {
     SDL_SensorDriver *driver;
     int device_index;
@@ -253,7 +253,7 @@ const char *SDL_GetSensorNameFromID(SDL_SensorID instance_id)
     return name ? SDL_FreeLater(SDL_strdup(name)) : NULL;
 }
 
-SDL_SensorType SDL_GetSensorTypeFromID(SDL_SensorID instance_id)
+SDL_SensorType SDL_GetSensorTypeForID(SDL_SensorID instance_id)
 {
     SDL_SensorDriver *driver;
     int device_index;
@@ -268,7 +268,7 @@ SDL_SensorType SDL_GetSensorTypeFromID(SDL_SensorID instance_id)
     return type;
 }
 
-int SDL_GetSensorNonPortableTypeFromID(SDL_SensorID instance_id)
+int SDL_GetSensorNonPortableTypeForID(SDL_SensorID instance_id)
 {
     SDL_SensorDriver *driver;
     int device_index;

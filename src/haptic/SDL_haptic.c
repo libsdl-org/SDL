@@ -92,7 +92,7 @@ SDL_HapticID *SDL_GetHaptics(int *count)
     return haptics;
 }
 
-const char *SDL_GetHapticNameFromID(SDL_HapticID instance_id)
+const char *SDL_GetHapticNameForID(SDL_HapticID instance_id)
 {
     int device_index;
     const char *name = NULL;

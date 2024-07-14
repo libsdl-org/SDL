@@ -754,7 +754,7 @@ SDL_JoystickID *SDL_GetJoysticks(int *count)
     return joysticks;
 }
 
-const SDL_SteamVirtualGamepadInfo *SDL_GetJoystickVirtualGamepadInfoFromID(SDL_JoystickID instance_id)
+const SDL_SteamVirtualGamepadInfo *SDL_GetJoystickVirtualGamepadInfoForID(SDL_JoystickID instance_id)
 {
     SDL_JoystickDriver *driver;
     int device_index;
@@ -770,7 +770,7 @@ const SDL_SteamVirtualGamepadInfo *SDL_GetJoystickVirtualGamepadInfoFromID(SDL_J
 /*
  * Get the implementation dependent name of a joystick
  */
-const char *SDL_GetJoystickNameFromID(SDL_JoystickID instance_id)
+const char *SDL_GetJoystickNameForID(SDL_JoystickID instance_id)
 {
     SDL_JoystickDriver *driver;
     int device_index;
@@ -778,7 +778,7 @@ const char *SDL_GetJoystickNameFromID(SDL_JoystickID instance_id)
     const SDL_SteamVirtualGamepadInfo *info;
 
     SDL_LockJoysticks();
-    info = SDL_GetJoystickVirtualGamepadInfoFromID(instance_id);
+    info = SDL_GetJoystickVirtualGamepadInfoForID(instance_id);
     if (info) {
         name = info->name;
     } else if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
@@ -792,7 +792,7 @@ const char *SDL_GetJoystickNameFromID(SDL_JoystickID instance_id)
 /*
  * Get the implementation dependent path of a joystick
  */
-const char *SDL_GetJoystickPathFromID(SDL_JoystickID instance_id)
+const char *SDL_GetJoystickPathForID(SDL_JoystickID instance_id)
 {
     SDL_JoystickDriver *driver;
     int device_index;
@@ -813,7 +813,7 @@ const char *SDL_GetJoystickPathFromID(SDL_JoystickID instance_id)
 /*
  *  Get the player index of a joystick, or -1 if it's not available
  */
-int SDL_GetJoystickPlayerIndexFromID(SDL_JoystickID instance_id)
+int SDL_GetJoystickPlayerIndexForID(SDL_JoystickID instance_id)
 {
     int player_index;
 
@@ -864,14 +864,14 @@ static SDL_bool IsROGAlly(SDL_Joystick *joystick)
                 for (i = 0; sensors[i]; ++i) {
                     SDL_SensorID sensor = sensors[i];
 
-                    if (!has_ally_accel && SDL_GetSensorTypeFromID(sensor) == SDL_SENSOR_ACCEL) {
-                        const char *sensor_name = SDL_GetSensorNameFromID(sensor);
+                    if (!has_ally_accel && SDL_GetSensorTypeForID(sensor) == SDL_SENSOR_ACCEL) {
+                        const char *sensor_name = SDL_GetSensorNameForID(sensor);
                         if (sensor_name && SDL_strcmp(sensor_name, "Sensor BMI320 Acc") == 0) {
                             has_ally_accel = SDL_TRUE;
                         }
                     }
-                    if (!has_ally_gyro && SDL_GetSensorTypeFromID(sensor) == SDL_SENSOR_GYRO) {
-                        const char *sensor_name = SDL_GetSensorNameFromID(sensor);
+                    if (!has_ally_gyro && SDL_GetSensorTypeForID(sensor) == SDL_SENSOR_GYRO) {
+                        const char *sensor_name = SDL_GetSensorNameForID(sensor);
                         if (sensor_name && SDL_strcmp(sensor_name, "Sensor BMI320 Gyr") == 0) {
                             has_ally_gyro = SDL_TRUE;
                         }
@@ -966,14 +966,14 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, SDL_bool invert_sensors)
         for (i = 0; sensors[i]; ++i) {
             SDL_SensorID sensor = sensors[i];
 
-            if (!joystick->accel_sensor && SDL_GetSensorTypeFromID(sensor) == SDL_SENSOR_ACCEL) {
+            if (!joystick->accel_sensor && SDL_GetSensorTypeForID(sensor) == SDL_SENSOR_ACCEL) {
                 /* Increment the sensor subsystem reference count */
                 SDL_InitSubSystem(SDL_INIT_SENSOR);
 
                 joystick->accel_sensor = sensor;
                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
             }
-            if (!joystick->gyro_sensor && SDL_GetSensorTypeFromID(sensor) == SDL_SENSOR_GYRO) {
+            if (!joystick->gyro_sensor && SDL_GetSensorTypeForID(sensor) == SDL_SENSOR_GYRO) {
                 /* Increment the sensor subsystem reference count */
                 SDL_InitSubSystem(SDL_INIT_SENSOR);
 
@@ -1151,7 +1151,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     }
 
     /* Get the Steam Input API handle */
-    info = SDL_GetJoystickVirtualGamepadInfoFromID(instance_id);
+    info = SDL_GetJoystickVirtualGamepadInfoForID(instance_id);
     if (info) {
         joystick->steam_handle = info->handle;
     }
@@ -1651,7 +1651,7 @@ const char *SDL_GetJoystickName(SDL_Joystick *joystick)
     {
         CHECK_JOYSTICK_MAGIC(joystick, NULL);
 
-        info = SDL_GetJoystickVirtualGamepadInfoFromID(joystick->instance_id);
+        info = SDL_GetJoystickVirtualGamepadInfoForID(joystick->instance_id);
         if (info) {
             retval = info->name;
         } else {
@@ -2362,7 +2362,7 @@ static void SendSteamHandleUpdateEvents(void)
             continue;
         }
 
-        info = SDL_GetJoystickVirtualGamepadInfoFromID(joystick->instance_id);
+        info = SDL_GetJoystickVirtualGamepadInfoForID(joystick->instance_id);
         if (info) {
             if (joystick->steam_handle != info->handle) {
                 joystick->steam_handle = info->handle;
@@ -3258,7 +3258,7 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
 }
 
 /* return the guid for this index */
-SDL_JoystickGUID SDL_GetJoystickGUIDFromID(SDL_JoystickID instance_id)
+SDL_JoystickGUID SDL_GetJoystickGUIDForID(SDL_JoystickID instance_id)
 {
     SDL_JoystickDriver *driver;
     int device_index;
@@ -3275,17 +3275,17 @@ SDL_JoystickGUID SDL_GetJoystickGUIDFromID(SDL_JoystickID instance_id)
     return guid;
 }
 
-Uint16 SDL_GetJoystickVendorFromID(SDL_JoystickID instance_id)
+Uint16 SDL_GetJoystickVendorForID(SDL_JoystickID instance_id)
 {
     Uint16 vendor;
     const SDL_SteamVirtualGamepadInfo *info;
 
     SDL_LockJoysticks();
-    info = SDL_GetJoystickVirtualGamepadInfoFromID(instance_id);
+    info = SDL_GetJoystickVirtualGamepadInfoForID(instance_id);
     if (info) {
         vendor = info->vendor_id;
     } else {
-        SDL_JoystickGUID guid = SDL_GetJoystickGUIDFromID(instance_id);
+        SDL_JoystickGUID guid = SDL_GetJoystickGUIDForID(instance_id);
 
         SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL, NULL);
     }
@@ -3294,17 +3294,17 @@ Uint16 SDL_GetJoystickVendorFromID(SDL_JoystickID instance_id)
     return vendor;
 }
 
-Uint16 SDL_GetJoystickProductFromID(SDL_JoystickID instance_id)
+Uint16 SDL_GetJoystickProductForID(SDL_JoystickID instance_id)
 {
     Uint16 product;
     const SDL_SteamVirtualGamepadInfo *info;
 
     SDL_LockJoysticks();
-    info = SDL_GetJoystickVirtualGamepadInfoFromID(instance_id);
+    info = SDL_GetJoystickVirtualGamepadInfoForID(instance_id);
     if (info) {
         product = info->product_id;
     } else {
-        SDL_JoystickGUID guid = SDL_GetJoystickGUIDFromID(instance_id);
+        SDL_JoystickGUID guid = SDL_GetJoystickGUIDForID(instance_id);
 
         SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL, NULL);
     }
@@ -3313,19 +3313,19 @@ Uint16 SDL_GetJoystickProductFromID(SDL_JoystickID instance_id)
     return product;
 }
 
-Uint16 SDL_GetJoystickProductVersionFromID(SDL_JoystickID instance_id)
+Uint16 SDL_GetJoystickProductVersionForID(SDL_JoystickID instance_id)
 {
     Uint16 version;
-    SDL_JoystickGUID guid = SDL_GetJoystickGUIDFromID(instance_id);
+    SDL_JoystickGUID guid = SDL_GetJoystickGUIDForID(instance_id);
 
     SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version, NULL);
     return version;
 }
 
-SDL_JoystickType SDL_GetJoystickTypeFromID(SDL_JoystickID instance_id)
+SDL_JoystickType SDL_GetJoystickTypeForID(SDL_JoystickID instance_id)
 {
     SDL_JoystickType type;
-    SDL_JoystickGUID guid = SDL_GetJoystickGUIDFromID(instance_id);
+    SDL_JoystickGUID guid = SDL_GetJoystickGUIDForID(instance_id);
 
     type = SDL_GetJoystickGUIDType(guid);
     if (type == SDL_JOYSTICK_TYPE_UNKNOWN) {
@@ -3362,7 +3362,7 @@ Uint16 SDL_GetJoystickVendor(SDL_Joystick *joystick)
     {
         CHECK_JOYSTICK_MAGIC(joystick, 0);
 
-        info = SDL_GetJoystickVirtualGamepadInfoFromID(joystick->instance_id);
+        info = SDL_GetJoystickVirtualGamepadInfoForID(joystick->instance_id);
         if (info) {
             vendor = info->vendor_id;
         } else {
@@ -3385,7 +3385,7 @@ Uint16 SDL_GetJoystickProduct(SDL_Joystick *joystick)
     {
         CHECK_JOYSTICK_MAGIC(joystick, 0);
 
-        info = SDL_GetJoystickVirtualGamepadInfoFromID(joystick->instance_id);
+        info = SDL_GetJoystickVirtualGamepadInfoForID(joystick->instance_id);
         if (info) {
             product = info->product_id;
         } else {

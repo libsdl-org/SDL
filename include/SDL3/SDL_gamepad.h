@@ -412,7 +412,7 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GetGamepadMappings(int *count);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetJoystickGUIDFromID
+ * \sa SDL_GetJoystickGUIDForID
  * \sa SDL_GetJoystickGUID
  */
 extern SDL_DECLSPEC char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID guid);
@@ -431,7 +431,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddGamepadMapping
- * \sa SDL_GetGamepadMappingFromID
+ * \sa SDL_GetGamepadMappingForID
  * \sa SDL_GetGamepadMappingForGUID
  * \sa SDL_SetGamepadMapping
  */
@@ -511,7 +511,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsGamepad(SDL_JoystickID instance_id);
  * \sa SDL_GetGamepadName
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadNameFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadNameForID(SDL_JoystickID instance_id);
 
 /**
  * Get the implementation dependent path of a gamepad.
@@ -529,7 +529,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadNameFromID(SDL_JoystickID 
  * \sa SDL_GetGamepadPath
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadPathFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadPathForID(SDL_JoystickID instance_id);
 
 /**
  * Get the player index of a gamepad.
@@ -544,7 +544,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadPathFromID(SDL_JoystickID 
  * \sa SDL_GetGamepadPlayerIndex
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetGamepadPlayerIndexFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC int SDLCALL SDL_GetGamepadPlayerIndexForID(SDL_JoystickID instance_id);
 
 /**
  * Get the implementation-dependent GUID of a gamepad.
@@ -561,7 +561,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetGamepadPlayerIndexFromID(SDL_JoystickID i
  * \sa SDL_GetGamepadGUIDString
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetGamepadGUIDFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetGamepadGUIDForID(SDL_JoystickID instance_id);
 
 /**
  * Get the USB vendor ID of a gamepad, if available.
@@ -578,7 +578,7 @@ extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetGamepadGUIDFromID(SDL_Joysti
  * \sa SDL_GetGamepadVendor
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendorFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendorForID(SDL_JoystickID instance_id);
 
 /**
  * Get the USB product ID of a gamepad, if available.
@@ -595,7 +595,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendorFromID(SDL_JoystickID ins
  * \sa SDL_GetGamepadProduct
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductForID(SDL_JoystickID instance_id);
 
 /**
  * Get the product version of a gamepad, if available.
@@ -612,7 +612,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductFromID(SDL_JoystickID in
  * \sa SDL_GetGamepadProductVersion
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductVersionFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductVersionForID(SDL_JoystickID instance_id);
 
 /**
  * Get the type of a gamepad.
@@ -626,9 +626,9 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductVersionFromID(SDL_Joysti
  *
  * \sa SDL_GetGamepadType
  * \sa SDL_GetGamepads
- * \sa SDL_GetRealGamepadTypeFromID
+ * \sa SDL_GetRealGamepadTypeForID
  */
-extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadTypeFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadTypeForID(SDL_JoystickID instance_id);
 
 /**
  * Get the type of a gamepad, ignoring any mapping override.
@@ -640,11 +640,11 @@ extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadTypeFromID(SDL_Joystic
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadTypeFromID
+ * \sa SDL_GetGamepadTypeForID
  * \sa SDL_GetGamepads
  * \sa SDL_GetRealGamepadType
  */
-extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetRealGamepadTypeFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetRealGamepadTypeForID(SDL_JoystickID instance_id);
 
 /**
  * Get the mapping of a gamepad.
@@ -660,7 +660,7 @@ extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetRealGamepadTypeFromID(SDL_Joy
  * \sa SDL_GetGamepads
  * \sa SDL_GetGamepadMapping
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetGamepadMappingFromID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC char *SDLCALL SDL_GetGamepadMappingForID(SDL_JoystickID instance_id);
 
 /**
  * Open a gamepad for use.
@@ -758,7 +758,7 @@ extern SDL_DECLSPEC SDL_JoystickID SDLCALL SDL_GetGamepadID(SDL_Gamepad *gamepad
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadNameFromID
+ * \sa SDL_GetGamepadNameForID
  */
 extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadName(SDL_Gamepad *gamepad);
 
@@ -774,7 +774,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadName(SDL_Gamepad *gamepad)
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadPathFromID
+ * \sa SDL_GetGamepadPathForID
  */
 extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadPath(SDL_Gamepad *gamepad);
 
@@ -787,7 +787,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadPath(SDL_Gamepad *gamepad)
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadTypeFromID
+ * \sa SDL_GetGamepadTypeForID
  */
 extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadType(SDL_Gamepad *gamepad);
 
@@ -800,7 +800,7 @@ extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadType(SDL_Gamepad *game
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetRealGamepadTypeFromID
+ * \sa SDL_GetRealGamepadTypeForID
  */
 extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetRealGamepadType(SDL_Gamepad *gamepad);
 
@@ -843,7 +843,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetGamepadPlayerIndex(SDL_Gamepad *gamepad, 
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadVendorFromID
+ * \sa SDL_GetGamepadVendorForID
  */
 extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendor(SDL_Gamepad *gamepad);
 
@@ -857,7 +857,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadVendor(SDL_Gamepad *gamepad);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadProductFromID
+ * \sa SDL_GetGamepadProductForID
  */
 extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProduct(SDL_Gamepad *gamepad);
 
@@ -871,7 +871,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProduct(SDL_Gamepad *gamepad);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadProductVersionFromID
+ * \sa SDL_GetGamepadProductVersionForID
  */
 extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetGamepadProductVersion(SDL_Gamepad *gamepad);
 

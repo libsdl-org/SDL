@@ -91,11 +91,11 @@ int main(int argc, char **argv)
         for (i = 0; i < num_sensors; ++i) {
             SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %s, platform type %d\n",
                     sensors[i],
-                    SDL_GetSensorNameFromID(sensors[i]),
-                    GetSensorTypeString(SDL_GetSensorTypeFromID(sensors[i])),
-                    SDL_GetSensorNonPortableTypeFromID(sensors[i]));
+                    SDL_GetSensorNameForID(sensors[i]),
+                    GetSensorTypeString(SDL_GetSensorTypeForID(sensors[i])),
+                    SDL_GetSensorNonPortableTypeForID(sensors[i]));
 
-            if (SDL_GetSensorTypeFromID(sensors[i]) != SDL_SENSOR_UNKNOWN) {
+            if (SDL_GetSensorTypeForID(sensors[i]) != SDL_SENSOR_UNKNOWN) {
                 SDL_Sensor *sensor = SDL_OpenSensor(sensors[i]);
                 if (!sensor) {
                     SDL_Log("Couldn't open sensor %" SDL_PRIu32 ": %s\n", sensors[i], SDL_GetError());
