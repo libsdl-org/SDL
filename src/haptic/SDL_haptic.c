@@ -92,7 +92,7 @@ SDL_HapticID *SDL_GetHaptics(int *count)
     return haptics;
 }
 
-const char *SDL_GetHapticInstanceName(SDL_HapticID instance_id)
+const char *SDL_GetHapticNameFromID(SDL_HapticID instance_id)
 {
     int device_index;
     const char *name = NULL;
@@ -178,7 +178,7 @@ SDL_Haptic *SDL_GetHapticFromInstanceID(SDL_HapticID instance_id)
     return haptic;
 }
 
-SDL_HapticID SDL_GetHapticInstanceID(SDL_Haptic *haptic)
+SDL_HapticID SDL_GetHapticID(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, 0);
 
@@ -222,7 +222,7 @@ SDL_bool SDL_IsJoystickHaptic(SDL_Joystick *joystick)
     {
         /* Must be a valid joystick */
         if (SDL_IsJoystickValid(joystick) &&
-            !SDL_IsGamepad(SDL_GetJoystickInstanceID(joystick))) {
+            !SDL_IsGamepad(SDL_GetJoystickID(joystick))) {
             result = SDL_SYS_JoystickIsHaptic(joystick);
         }
     }
@@ -246,7 +246,7 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
         }
 
         /* Joystick must be haptic */
-        if (SDL_IsGamepad(SDL_GetJoystickInstanceID(joystick)) ||
+        if (SDL_IsGamepad(SDL_GetJoystickID(joystick)) ||
             SDL_SYS_JoystickIsHaptic(joystick) <= 0) {
             SDL_SetError("Haptic: Joystick isn't a haptic device.");
             SDL_UnlockJoysticks();
