@@ -103,13 +103,13 @@ int main(int argc, char *argv[])
                 keepGoing = SDL_FALSE;
                 break;
             case SDL_EVENT_KEYBOARD_ADDED:
-                SDL_Log("Keyboard '%s' added  : %" SDL_PRIu32 "\n", SDL_GetKeyboardInstanceName(event.kdevice.which), event.kdevice.which);
+                SDL_Log("Keyboard '%s' added  : %" SDL_PRIu32 "\n", SDL_GetKeyboardNameFromID(event.kdevice.which), event.kdevice.which);
                 break;
             case SDL_EVENT_KEYBOARD_REMOVED:
                 SDL_Log("Keyboard removed: %" SDL_PRIu32 "\n", event.kdevice.which);
                 break;
             case SDL_EVENT_MOUSE_ADDED:
-                SDL_Log("Mouse '%s' added  : %" SDL_PRIu32 "\n", SDL_GetMouseInstanceName(event.mdevice.which), event.mdevice.which);
+                SDL_Log("Mouse '%s' added  : %" SDL_PRIu32 "\n", SDL_GetMouseNameFromID(event.mdevice.which), event.mdevice.which);
                 break;
             case SDL_EVENT_MOUSE_REMOVED:
                 SDL_Log("Mouse removed: %" SDL_PRIu32 "\n", event.mdevice.which);

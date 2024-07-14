@@ -327,7 +327,7 @@ SDL3_0.0.0 {
     SDL_GetKeyFromScancode;
     SDL_GetKeyName;
     SDL_GetKeyboardFocus;
-    SDL_GetKeyboardInstanceName;
+    SDL_GetKeyboardNameFromID;
     SDL_GetKeyboardState;
     SDL_GetKeyboards;
     SDL_GetLogOutputFunction;
@@ -339,7 +339,7 @@ SDL3_0.0.0 {
     SDL_GetMice;
     SDL_GetModState;
     SDL_GetMouseFocus;
-    SDL_GetMouseInstanceName;
+    SDL_GetMouseNameFromID;
     SDL_GetMouseState;
     SDL_GetNaturalDisplayOrientation;
     SDL_GetNumAllocations;

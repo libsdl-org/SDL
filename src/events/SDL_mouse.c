@@ -312,7 +312,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, SDL_bool send_event)
         return;
     }
 
-    SDL_FreeLater(SDL_mice[mouse_index].name);  // SDL_GetMouseInstanceName returns this pointer.
+    SDL_FreeLater(SDL_mice[mouse_index].name);  // SDL_GetMouseNameFromID returns this pointer.
 
     if (mouse_index != SDL_mouse_count - 1) {
         SDL_memcpy(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
@@ -370,7 +370,7 @@ SDL_MouseID *SDL_GetMice(int *count)
     return mice;
 }
 
-const char *SDL_GetMouseInstanceName(SDL_MouseID instance_id)
+const char *SDL_GetMouseNameFromID(SDL_MouseID instance_id)
 {
     int mouse_index = SDL_GetMouseIndex(instance_id);
     if (mouse_index < 0) {
