@@ -961,7 +961,7 @@ extern SDL_DECLSPEC SDL_HapticID *SDLCALL SDL_GetHaptics(int *count);
  * \sa SDL_GetHapticName
  * \sa SDL_OpenHaptic
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetHapticInstanceName(SDL_HapticID instance_id);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetHapticNameFromID(SDL_HapticID instance_id);
 
 /**
  * Open a haptic device for use.
@@ -1009,7 +1009,7 @@ extern SDL_DECLSPEC SDL_Haptic *SDLCALL SDL_GetHapticFromInstanceID(SDL_HapticID
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticInstanceID(SDL_Haptic *haptic);
+extern SDL_DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticID(SDL_Haptic *haptic);
 
 /**
  * Get the implementation dependent name of a haptic device.
@@ -1023,7 +1023,7 @@ extern SDL_DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticInstanceID(SDL_Haptic *hap
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetHapticInstanceName
+ * \sa SDL_GetHapticNameFromID
  */
 extern SDL_DECLSPEC const char *SDLCALL SDL_GetHapticName(SDL_Haptic *haptic);
 

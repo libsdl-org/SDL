@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     haptics = SDL_GetHaptics(&num_haptics);
     SDL_Log("%d Haptic devices detected.\n", num_haptics);
     for (i = 0; i < num_haptics; ++i) {
-        SDL_Log("    %s\n", SDL_GetHapticInstanceName(haptics[i]));
+        SDL_Log("    %s\n", SDL_GetHapticNameFromID(haptics[i]));
     }
     if (haptics) {
         if (num_haptics == 0) {
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
         /* Try to find matching device */
         else {
             for (i = 0; i < num_haptics; i++) {
-                if (SDL_strstr(SDL_GetHapticInstanceName(haptics[i]), name) != NULL) {
+                if (SDL_strstr(SDL_GetHapticNameFromID(haptics[i]), name) != NULL) {
                     break;
                 }
             }

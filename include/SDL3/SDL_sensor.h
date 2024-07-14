@@ -158,6 +158,8 @@ extern SDL_DECLSPEC SDL_SensorID *SDLCALL SDL_GetSensors(int *count);
 /**
  * Get the implementation dependent name of a sensor.
  *
+ * This can be called before any sensors are opened.
+ *
  * The returned string follows the SDL_GetStringRule.
  *
  * \param instance_id the sensor instance ID.
@@ -165,10 +167,12 @@ extern SDL_DECLSPEC SDL_SensorID *SDLCALL SDL_GetSensors(int *count);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetSensorInstanceName(SDL_SensorID instance_id);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetSensorNameFromID(SDL_SensorID instance_id);
 
 /**
  * Get the type of a sensor.
+ *
+ * This can be called before any sensors are opened.
  *
  * \param instance_id the sensor instance ID.
  * \returns the SDL_SensorType, or `SDL_SENSOR_INVALID` if `instance_id` is
@@ -176,10 +180,12 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetSensorInstanceName(SDL_SensorID i
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorInstanceType(SDL_SensorID instance_id);
+extern SDL_DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorTypeFromID(SDL_SensorID instance_id);
 
 /**
  * Get the platform dependent type of a sensor.
+ *
+ * This can be called before any sensors are opened.
  *
  * \param instance_id the sensor instance ID.
  * \returns the sensor platform dependent type, or -1 if `instance_id` is not
@@ -187,7 +193,7 @@ extern SDL_DECLSPEC SDL_SensorType SDLCALL SDL_GetSensorInstanceType(SDL_SensorI
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetSensorInstanceNonPortableType(SDL_SensorID instance_id);
+extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableTypeFromID(SDL_SensorID instance_id);
 
 /**
  * Open a sensor for use.
@@ -261,7 +267,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_SensorID SDLCALL SDL_GetSensorInstanceID(SDL_Sensor *sensor);
+extern SDL_DECLSPEC SDL_SensorID SDLCALL SDL_GetSensorID(SDL_Sensor *sensor);
 
 /**
  * Get the current state of an opened sensor.
