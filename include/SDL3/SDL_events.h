@@ -695,7 +695,7 @@ typedef struct SDL_CameraDeviceEvent
     SDL_EventType type; /**< SDL_EVENT_CAMERA_DEVICE_ADDED, SDL_EVENT_CAMERA_DEVICE_REMOVED, SDL_EVENT_CAMERA_DEVICE_APPROVED, SDL_EVENT_CAMERA_DEVICE_DENIED */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_CameraDeviceID which;       /**< SDL_CameraDeviceID for the device being added or removed or changing */
+    SDL_CameraID which;       /**< SDL_CameraID for the device being added or removed or changing */
 } SDL_CameraDeviceEvent;
 
 /**
