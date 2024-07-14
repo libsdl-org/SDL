@@ -1371,7 +1371,7 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
     }
 
     if (controller->joystick) {
-        SDL_snprintf(text, sizeof(text), "(%" SDL_PRIu32 ")", SDL_GetJoystickInstanceID(controller->joystick));
+        SDL_snprintf(text, sizeof(text), "(%" SDL_PRIu32 ")", SDL_GetJoystickDeviceID(controller->joystick));
         x = SCREEN_WIDTH - (FONT_CHARACTER_SIZE * SDL_strlen(text)) - 8.0f;
         y = 8.0f;
         SDLTest_DrawString(renderer, x, y, text);

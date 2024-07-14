@@ -234,7 +234,7 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     SceCtrlData *pad = NULL;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
+    int index = (int)SDL_GetJoystickDeviceID(joystick) - 1;
 
     if (index == 0)
         pad = &pad0;
@@ -327,7 +327,7 @@ static SDL_JoystickGUID VITA_JoystickGetDeviceGUID(int device_index)
 
 static int VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
+    int index = (int)SDL_GetJoystickDeviceID(joystick) - 1;
     SceCtrlActuator act;
 
     if (index < 0 || index > 3) {
@@ -349,7 +349,7 @@ static int VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint
 
 static int VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    int index = (int)SDL_GetJoystickInstanceID(joystick) - 1;
+    int index = (int)SDL_GetJoystickDeviceID(joystick) - 1;
     if (index < 0 || index > 3) {
         return -1;
     }

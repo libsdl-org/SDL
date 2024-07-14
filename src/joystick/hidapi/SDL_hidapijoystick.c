@@ -617,7 +617,7 @@ static int HIDAPI_JoystickInit(void)
     return 0;
 }
 
-static SDL_bool HIDAPI_AddJoystickInstanceToDevice(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
+static SDL_bool HIDAPI_AddJoystickDeviceToDevice(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
 {
     SDL_JoystickID *joysticks = (SDL_JoystickID *)SDL_realloc(device->joysticks, (device->num_joysticks + 1) * sizeof(*device->joysticks));
     if (!joysticks) {
@@ -629,7 +629,7 @@ static SDL_bool HIDAPI_AddJoystickInstanceToDevice(SDL_HIDAPI_Device *device, SD
     return SDL_TRUE;
 }
 
-static SDL_bool HIDAPI_DelJoystickInstanceFromDevice(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
+static SDL_bool HIDAPI_DelJoystickDeviceFromDevice(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
 {
     int i, size;
 
@@ -648,7 +648,7 @@ static SDL_bool HIDAPI_DelJoystickInstanceFromDevice(SDL_HIDAPI_Device *device, 
     return SDL_FALSE;
 }
 
-static SDL_bool HIDAPI_JoystickInstanceIsUnique(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
+static SDL_bool HIDAPI_JoystickDeviceIsUnique(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID)
 {
     if (device->parent && device->num_joysticks == 1 && device->parent->num_joysticks == 1 &&
         device->joysticks[0] == device->parent->joysticks[0]) {
@@ -804,11 +804,11 @@ SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJo
     }
 
     joystickID = SDL_GetNextObjectID();
-    HIDAPI_AddJoystickInstanceToDevice(device, joystickID);
+    HIDAPI_AddJoystickDeviceToDevice(device, joystickID);
 
     for (i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
-        HIDAPI_AddJoystickInstanceToDevice(child, joystickID);
+        HIDAPI_AddJoystickDeviceToDevice(child, joystickID);
     }
 
     ++SDL_HIDAPI_numjoysticks;
@@ -827,7 +827,7 @@ void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joyst
 
     SDL_LockJoysticks();
 
-    if (!HIDAPI_JoystickInstanceIsUnique(device, joystickID)) {
+    if (!HIDAPI_JoystickDeviceIsUnique(device, joystickID)) {
         /* Disconnecting a child always disconnects the parent */
         device = device->parent;
     }
@@ -839,11 +839,11 @@ void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joyst
                 HIDAPI_JoystickClose(joystick);
             }
 
-            HIDAPI_DelJoystickInstanceFromDevice(device, joystickID);
+            HIDAPI_DelJoystickDeviceFromDevice(device, joystickID);
 
             for (j = 0; j < device->num_children; ++j) {
                 SDL_HIDAPI_Device *child = device->children[j];
-                HIDAPI_DelJoystickInstanceFromDevice(child, joystickID);
+                HIDAPI_DelJoystickDeviceFromDevice(child, joystickID);
             }
 
             --SDL_HIDAPI_numjoysticks;

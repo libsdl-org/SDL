@@ -117,56 +117,56 @@ expression e;
 @@
 - SDL_JoystickGetDevicePlayerIndex(e)
 + /* FIXME MIGRATION: check for valid instance */
-+ SDL_GetJoystickInstancePlayerIndex(GetJoystickInstanceFromIndex(e))
++ SDL_GetJoystickDevicePlayerIndex(GetJoystickDeviceFromIndex(e))
 
 @@
 expression e;
 @@
 - SDL_JoystickIsVirtual(e)
 + /* FIXME MIGRATION: check for valid instance */
-+ SDL_IsJoystickVirtual(GetJoystickInstanceFromIndex(e))
++ SDL_IsJoystickVirtual(GetJoystickDeviceFromIndex(e))
 
 @@
 expression e;
 @@
 - SDL_JoystickPathForIndex(e)
 + /* FIXME MIGRATION: check for valid instance */
-+ SDL_GetJoystickInstancePath(GetJoystickInstanceFromIndex(e))
++ SDL_GetJoystickDevicePath(GetJoystickDeviceFromIndex(e))
 
 @@
 expression e;
 @@
 - SDL_IsGameController(e)
 + /* FIXME MIGRATION: check for valid instance */
-+ SDL_IsGamepad(GetJoystickInstanceFromIndex(e))
++ SDL_IsGamepad(GetJoystickDeviceFromIndex(e))
 
 @@
 expression e;
 @@
 - SDL_GameControllerMappingForDeviceIndex(e)
 + /* FIXME MIGRATION: check for valid instance */
-+ SDL_GetGamepadInstanceMapping(GetJoystickInstanceFromIndex(e))
++ SDL_GetGamepadDeviceMapping(GetJoystickDeviceFromIndex(e))
 
 @@
 expression e;
 @@
 - SDL_GameControllerNameForIndex(e)
 + /* FIXME MIGRATION: check for valid instance */
-+ SDL_GetGamepadInstanceName(GetJoystickInstanceFromIndex(e))
++ SDL_GetGamepadDeviceName(GetJoystickDeviceFromIndex(e))
 
 @@
 expression e;
 @@
 - SDL_GameControllerPathForIndex(e)
 + /* FIXME MIGRATION: check for valid instance */
-+ SDL_GetGamepadInstancePath(GetJoystickInstanceFromIndex(e))
++ SDL_GetGamepadDevicePath(GetJoystickDeviceFromIndex(e))
 
 @@
 expression e;
 @@
 - SDL_GameControllerTypeForIndex(e)
 + /* FIXME MIGRATION: check for valid instance */
-+ SDL_GetGamepadInstanceType(GetJoystickInstanceFromIndex(e))
++ SDL_GetGamepadDeviceType(GetJoystickDeviceFromIndex(e))
 
 
 // SDL_Has3DNow() has been removed; there is no replacement.
@@ -1397,8 +1397,8 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
   (...)
 @@
 @@
-- SDL_JoystickInstanceID
-+ SDL_GetJoystickInstanceID
+- SDL_JoystickDeviceID
++ SDL_GetJoystickDeviceID
   (...)
 @@
 @@
@@ -1817,7 +1817,7 @@ expression e2;
 @@
 @@
 - SDL_SensorGetInstanceID
-+ SDL_GetSensorInstanceID
++ SDL_GetSensorDeviceID
   (...)
 @@
 @@
