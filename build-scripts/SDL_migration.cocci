@@ -3484,11 +3484,6 @@ typedef SDL_Colour, SDL_Color;
 - SDLK_z
 + SDLK_Z
 @@
-typedef SDL_PixelFormat, SDL_PackedPixelDetails;
-@@
-- SDL_PixelFormat
-+ SDL_PixelFormatDetails
-@@
 @@
 - SDL_ConvertSurfaceFormat
 + SDL_ConvertSurface
