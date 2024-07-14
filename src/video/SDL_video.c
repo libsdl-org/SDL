@@ -2012,7 +2012,7 @@ void *SDL_GetWindowICCProfile(SDL_Window *window, size_t *size)
     return _this->GetWindowICCProfile(_this, window, size);
 }
 
-Uint32 SDL_GetWindowPixelFormat(SDL_Window *window)
+SDL_PixelFormat SDL_GetWindowPixelFormat(SDL_Window *window)
 {
     SDL_DisplayID displayID;
     const SDL_DisplayMode *mode;
