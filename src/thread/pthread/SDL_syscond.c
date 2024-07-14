@@ -120,7 +120,7 @@ int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 tim
     abstime.tv_sec = delta.tv_sec + (timeoutNS / SDL_NS_PER_SECOND);
     abstime.tv_nsec = SDL_US_TO_NS(delta.tv_usec) + (timeoutNS % SDL_NS_PER_SECOND);
 #endif
-    while (abstime.tv_nsec > 1000000000) {
+    while (abstime.tv_nsec >= 1000000000) {
         abstime.tv_sec += 1;
         abstime.tv_nsec -= 1000000000;
     }

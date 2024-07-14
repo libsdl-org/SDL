@@ -115,7 +115,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 #endif
 
     /* Wrap the second if needed */
-    while (ts_timeout.tv_nsec > 1000000000) {
+    while (ts_timeout.tv_nsec >= 1000000000) {
         ts_timeout.tv_sec += 1;
         ts_timeout.tv_nsec -= 1000000000;
     }
