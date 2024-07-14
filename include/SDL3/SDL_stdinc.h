@@ -143,13 +143,13 @@ void *alloca(size_t);
 #define SDL_SINT64_C(c)  INT64_C(c)
 #define SDL_UINT64_C(c)  UINT64_C(c)
 #elif defined(_MSC_VER)
-#define SDL_INT64_C(c)   c ## i64
+#define SDL_SINT64_C(c)  c ## i64
 #define SDL_UINT64_C(c)  c ## ui64
 #elif defined(__LP64__) || defined(_LP64)
-#define SDL_INT64_C(c)   c ## L
+#define SDL_SINT64_C(c)  c ## L
 #define SDL_UINT64_C(c)  c ## UL
 #else
-#define SDL_INT64_C(c)   c ## LL
+#define SDL_SINT64_C(c)  c ## LL
 #define SDL_UINT64_C(c)  c ## ULL
 #endif
 
