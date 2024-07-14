@@ -63,11 +63,11 @@ extern "C" {
 #endif
 
 /**
- * A handle representing an open HID device
+ * An opaque handle representing an open HID device.
  *
  * \since This struct is available since SDL 3.0.0.
  */
-typedef struct SDL_hid_device SDL_hid_device; /**< opaque hidapi structure */
+typedef struct SDL_hid_device SDL_hid_device;
 
 /**
  * HID underlying bus types.
