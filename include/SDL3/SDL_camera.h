@@ -192,10 +192,10 @@ extern SDL_DECLSPEC SDL_CameraID *SDLCALL SDL_GetCameras(int *count);
  * and sizes and so want to find the optimal spec that doesn't require
  * conversion.
  *
- * This function isn't strictly required; if you call SDL_OpenCamera
- * with a NULL spec, SDL will choose a native format for you, and if you
- * instead specify a desired format, it will transparently convert to the
- * requested format on your behalf.
+ * This function isn't strictly required; if you call SDL_OpenCamera with a
+ * NULL spec, SDL will choose a native format for you, and if you instead
+ * specify a desired format, it will transparently convert to the requested
+ * format on your behalf.
  *
  * If `count` is not NULL, it will be filled with the number of elements in
  * the returned array. Additionally, the last element of the array has all
