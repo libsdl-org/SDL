@@ -265,7 +265,7 @@
 #define SDL_GetGamepadButtonLabelForType SDL_GetGamepadButtonLabelForType_REAL
 #define SDL_GetGamepadConnectionState SDL_GetGamepadConnectionState_REAL
 #define SDL_GetGamepadFirmwareVersion SDL_GetGamepadFirmwareVersion_REAL
-#define SDL_GetGamepadFromInstanceID SDL_GetGamepadFromInstanceID_REAL
+#define SDL_GetGamepadFromID SDL_GetGamepadFromID_REAL
 #define SDL_GetGamepadFromPlayerIndex SDL_GetGamepadFromPlayerIndex_REAL
 #define SDL_GetGamepadGUIDFromID SDL_GetGamepadGUIDFromID_REAL
 #define SDL_GetGamepadID SDL_GetGamepadID_REAL
@@ -305,7 +305,7 @@
 #define SDL_GetGrabbedWindow SDL_GetGrabbedWindow_REAL
 #define SDL_GetHapticEffectStatus SDL_GetHapticEffectStatus_REAL
 #define SDL_GetHapticFeatures SDL_GetHapticFeatures_REAL
-#define SDL_GetHapticFromInstanceID SDL_GetHapticFromInstanceID_REAL
+#define SDL_GetHapticFromID SDL_GetHapticFromID_REAL
 #define SDL_GetHapticID SDL_GetHapticID_REAL
 #define SDL_GetHapticName SDL_GetHapticName_REAL
 #define SDL_GetHapticNameFromID SDL_GetHapticNameFromID_REAL
@@ -321,7 +321,7 @@
 #define SDL_GetJoystickButton SDL_GetJoystickButton_REAL
 #define SDL_GetJoystickConnectionState SDL_GetJoystickConnectionState_REAL
 #define SDL_GetJoystickFirmwareVersion SDL_GetJoystickFirmwareVersion_REAL
-#define SDL_GetJoystickFromInstanceID SDL_GetJoystickFromInstanceID_REAL
+#define SDL_GetJoystickFromID SDL_GetJoystickFromID_REAL
 #define SDL_GetJoystickFromPlayerIndex SDL_GetJoystickFromPlayerIndex_REAL
 #define SDL_GetJoystickGUID SDL_GetJoystickGUID_REAL
 #define SDL_GetJoystickGUIDFromID SDL_GetJoystickGUIDFromID_REAL
@@ -404,7 +404,7 @@
 #define SDL_GetPropertyType SDL_GetPropertyType_REAL
 #define SDL_GetRGB SDL_GetRGB_REAL
 #define SDL_GetRGBA SDL_GetRGBA_REAL
-#define SDL_GetRealGamepadInstanceType SDL_GetRealGamepadInstanceType_REAL
+#define SDL_GetRealGamepadTypeFromID SDL_GetRealGamepadTypeFromID_REAL
 #define SDL_GetRealGamepadType SDL_GetRealGamepadType_REAL
 #define SDL_GetRectAndLineIntersection SDL_GetRectAndLineIntersection_REAL
 #define SDL_GetRectAndLineIntersectionFloat SDL_GetRectAndLineIntersectionFloat_REAL
@@ -443,7 +443,7 @@
 #define SDL_GetScancodeName SDL_GetScancodeName_REAL
 #define SDL_GetSemaphoreValue SDL_GetSemaphoreValue_REAL
 #define SDL_GetSensorData SDL_GetSensorData_REAL
-#define SDL_GetSensorFromInstanceID SDL_GetSensorFromInstanceID_REAL
+#define SDL_GetSensorFromID SDL_GetSensorFromID_REAL
 #define SDL_GetSensorID SDL_GetSensorID_REAL
 #define SDL_GetSensorName SDL_GetSensorName_REAL
 #define SDL_GetSensorNameFromID SDL_GetSensorNameFromID_REAL

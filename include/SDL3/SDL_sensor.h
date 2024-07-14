@@ -213,7 +213,7 @@ extern SDL_DECLSPEC SDL_Sensor *SDLCALL SDL_OpenSensor(SDL_SensorID instance_id)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Sensor *SDLCALL SDL_GetSensorFromInstanceID(SDL_SensorID instance_id);
+extern SDL_DECLSPEC SDL_Sensor *SDLCALL SDL_GetSensorFromID(SDL_SensorID instance_id);
 
 /**
  * Get the properties associated with a sensor.

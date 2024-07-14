@@ -361,7 +361,7 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
 /*
  * Find the SDL_Sensor that owns this instance id
  */
-SDL_Sensor *SDL_GetSensorFromInstanceID(SDL_SensorID instance_id)
+SDL_Sensor *SDL_GetSensorFromID(SDL_SensorID instance_id)
 {
     SDL_Sensor *sensor;
 

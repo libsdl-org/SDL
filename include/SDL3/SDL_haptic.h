@@ -998,7 +998,7 @@ extern SDL_DECLSPEC SDL_Haptic *SDLCALL SDL_OpenHaptic(SDL_HapticID instance_id)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Haptic *SDLCALL SDL_GetHapticFromInstanceID(SDL_HapticID instance_id);
+extern SDL_DECLSPEC SDL_Haptic *SDLCALL SDL_GetHapticFromID(SDL_HapticID instance_id);
 
 /**
  * Get the instance ID of an opened haptic device.

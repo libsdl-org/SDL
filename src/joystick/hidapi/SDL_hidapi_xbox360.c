@@ -337,7 +337,7 @@ static SDL_bool HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
     int size = 0;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
         return SDL_FALSE;
     }

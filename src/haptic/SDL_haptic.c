@@ -166,7 +166,7 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
     return haptic;
 }
 
-SDL_Haptic *SDL_GetHapticFromInstanceID(SDL_HapticID instance_id)
+SDL_Haptic *SDL_GetHapticFromID(SDL_HapticID instance_id)
 {
     SDL_Haptic *haptic;
 

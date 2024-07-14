@@ -37,7 +37,7 @@ static const char *GetSensorTypeString(SDL_SensorType type)
 
 static void HandleSensorEvent(SDL_SensorEvent *event)
 {
-    SDL_Sensor *sensor = SDL_GetSensorFromInstanceID(event->which);
+    SDL_Sensor *sensor = SDL_GetSensorFromID(event->which);
     if (!sensor) {
         SDL_Log("Couldn't get sensor for sensor event\n");
         return;

@@ -558,7 +558,7 @@ static void PopMappingChangeTracking(void)
         for (i = 0; tracker->joysticks[i]; ++i) {
             /* Looking up the new mapping might create one and associate it with the gamepad (and generate events) */
             SDL_JoystickID joystick = tracker->joysticks[i];
-            SDL_Gamepad *gamepad = SDL_GetGamepadFromInstanceID(joystick);
+            SDL_Gamepad *gamepad = SDL_GetGamepadFromID(joystick);
             GamepadMapping_t *new_mapping = SDL_PrivateGetGamepadMapping(joystick, SDL_FALSE);
             GamepadMapping_t *old_mapping = gamepad ? gamepad->mapping : tracker->joystick_mappings[i];
 
@@ -1324,7 +1324,7 @@ static void SDL_UpdateGamepadType(SDL_Gamepad *gamepad)
         }
     }
     if (gamepad->type == SDL_GAMEPAD_TYPE_UNKNOWN) {
-        gamepad->type = SDL_GetRealGamepadInstanceType(gamepad->joystick->instance_id);
+        gamepad->type = SDL_GetRealGamepadTypeFromID(gamepad->joystick->instance_id);
     }
 }
 
@@ -2497,10 +2497,10 @@ SDL_GamepadType SDL_GetGamepadTypeFromID(SDL_JoystickID instance_id)
     if (type != SDL_GAMEPAD_TYPE_UNKNOWN) {
         return type;
     }
-    return SDL_GetRealGamepadInstanceType(instance_id);
+    return SDL_GetRealGamepadTypeFromID(instance_id);
 }
 
-SDL_GamepadType SDL_GetRealGamepadInstanceType(SDL_JoystickID instance_id)
+SDL_GamepadType SDL_GetRealGamepadTypeFromID(SDL_JoystickID instance_id)
 {
     SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
     const SDL_SteamVirtualGamepadInfo *info;
@@ -3506,7 +3506,7 @@ SDL_Joystick *SDL_GetGamepadJoystick(SDL_Gamepad *gamepad)
 /*
  * Return the SDL_Gamepad associated with an instance id.
  */
-SDL_Gamepad *SDL_GetGamepadFromInstanceID(SDL_JoystickID joyid)
+SDL_Gamepad *SDL_GetGamepadFromID(SDL_JoystickID joyid)
 {
     SDL_Gamepad *gamepad;
 
@@ -3534,7 +3534,7 @@ SDL_Gamepad *SDL_GetGamepadFromPlayerIndex(int player_index)
     {
         SDL_Joystick *joystick = SDL_GetJoystickFromPlayerIndex(player_index);
         if (joystick) {
-            retval = SDL_GetGamepadFromInstanceID(joystick->instance_id);
+            retval = SDL_GetGamepadFromID(joystick->instance_id);
         }
     }
     SDL_UnlockJoysticks();
