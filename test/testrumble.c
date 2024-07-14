@@ -109,7 +109,7 @@ int main(int argc, char **argv)
         /* Try to find matching device */
         else {
             for (i = 0; i < num_haptics; i++) {
-                if (SDL_strstr(SDL_GetHapticNameFromID(haptics[i]), name) != NULL) {
+                if (SDL_strstr(SDL_GetHapticNameForID(haptics[i]), name) != NULL) {
                     break;
                 }
             }

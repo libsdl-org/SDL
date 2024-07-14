@@ -201,7 +201,7 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
     return keyboards;
 }
 
-const char *SDL_GetKeyboardNameFromID(SDL_KeyboardID instance_id)
+const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
 {
     int keyboard_index = SDL_GetKeyboardIndex(instance_id);
     if (keyboard_index < 0) {
