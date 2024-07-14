@@ -471,7 +471,7 @@ static SDL_bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
     ShieldCommandReport_t *cmd_resp_report;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
         return SDL_FALSE;
     }

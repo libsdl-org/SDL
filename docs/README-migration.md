@@ -574,7 +574,7 @@ The following functions have been renamed:
 * SDL_GameControllerAddMappingsFromFile() => SDL_AddGamepadMappingsFromFile()
 * SDL_GameControllerAddMappingsFromRW() => SDL_AddGamepadMappingsFromIO()
 * SDL_GameControllerClose() => SDL_CloseGamepad()
-* SDL_GameControllerFromInstanceID() => SDL_GetGamepadFromInstanceID()
+* SDL_GameControllerFromInstanceID() => SDL_GetGamepadFromID()
 * SDL_GameControllerFromPlayerIndex() => SDL_GetGamepadFromPlayerIndex()
 * SDL_GameControllerGetAppleSFSymbolsNameForAxis() => SDL_GetGamepadAppleSFSymbolsNameForAxis()
 * SDL_GameControllerGetAppleSFSymbolsNameForButton() => SDL_GetGamepadAppleSFSymbolsNameForButton()
@@ -743,7 +743,7 @@ The following functions have been renamed:
 The following functions have been removed:
 * SDL_HapticIndex() - replaced with SDL_GetHapticID()
 * SDL_HapticName() - replaced with SDL_GetHapticNameFromID()
-* SDL_HapticOpened() - replaced with SDL_GetHapticFromInstanceID()
+* SDL_HapticOpened() - replaced with SDL_GetHapticFromID()
 * SDL_NumHaptics() - replaced with SDL_GetHaptics()
 
 ## SDL_hints.h
@@ -855,7 +855,7 @@ The following functions have been renamed:
 * SDL_JoystickAttachVirtualEx() => SDL_AttachVirtualJoystick()
 * SDL_JoystickClose() => SDL_CloseJoystick()
 * SDL_JoystickDetachVirtual() => SDL_DetachVirtualJoystick()
-* SDL_JoystickFromInstanceID() => SDL_GetJoystickFromInstanceID()
+* SDL_JoystickFromInstanceID() => SDL_GetJoystickFromID()
 * SDL_JoystickFromPlayerIndex() => SDL_GetJoystickFromPlayerIndex()
 * SDL_JoystickGetAttached() => SDL_JoystickConnected()
 * SDL_JoystickGetAxis() => SDL_GetJoystickAxis()
@@ -1587,7 +1587,7 @@ Removed SDL_SensorGetDataWithTimestamp(), if you want timestamps for the sensor 
 
 The following functions have been renamed:
 * SDL_SensorClose() => SDL_CloseSensor()
-* SDL_SensorFromInstanceID() => SDL_GetSensorFromInstanceID()
+* SDL_SensorFromInstanceID() => SDL_GetSensorFromID()
 * SDL_SensorGetData() => SDL_GetSensorData()
 * SDL_SensorGetInstanceID() => SDL_GetSensorID()
 * SDL_SensorGetName() => SDL_GetSensorName()

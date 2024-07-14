@@ -2562,7 +2562,7 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint64 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     }
 
     while ((size = ReadInput(ctx)) > 0) {

@@ -679,7 +679,7 @@ static void HIDAPI_UpdateJoystickSerial(SDL_HIDAPI_Device *device)
     SDL_AssertJoysticksLocked();
 
     for (i = 0; i < device->num_joysticks; ++i) {
-        SDL_Joystick *joystick = SDL_GetJoystickFromInstanceID(device->joysticks[i]);
+        SDL_Joystick *joystick = SDL_GetJoystickFromID(device->joysticks[i]);
         if (joystick && device->serial) {
             SDL_free(joystick->serial);
             joystick->serial = SDL_strdup(device->serial);
@@ -834,7 +834,7 @@ void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joyst
 
     for (i = 0; i < device->num_joysticks; ++i) {
         if (device->joysticks[i] == joystickID) {
-            SDL_Joystick *joystick = SDL_GetJoystickFromInstanceID(joystickID);
+            SDL_Joystick *joystick = SDL_GetJoystickFromID(joystickID);
             if (joystick) {
                 HIDAPI_JoystickClose(joystick);
             }
@@ -899,7 +899,7 @@ void HIDAPI_UpdateDeviceProperties(SDL_HIDAPI_Device *device)
     SDL_LockJoysticks();
 
     for (i = 0; i < device->num_joysticks; ++i) {
-        SDL_Joystick *joystick = SDL_GetJoystickFromInstanceID(device->joysticks[i]);
+        SDL_Joystick *joystick = SDL_GetJoystickFromID(device->joysticks[i]);
         if (joystick) {
             HIDAPI_UpdateJoystickProperties(device, joystick);
         }

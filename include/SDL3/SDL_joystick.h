@@ -382,7 +382,7 @@ extern SDL_DECLSPEC SDL_Joystick *SDLCALL SDL_OpenJoystick(SDL_JoystickID instan
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromInstanceID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_Joystick *SDLCALL SDL_GetJoystickFromID(SDL_JoystickID instance_id);
 
 /**
  * Get the SDL_Joystick associated with a player index.

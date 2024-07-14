@@ -1585,7 +1585,7 @@ SDL_JoystickID SDL_GetJoystickID(SDL_Joystick *joystick)
 /*
  * Return the SDL_Joystick associated with an instance id.
  */
-SDL_Joystick *SDL_GetJoystickFromInstanceID(SDL_JoystickID instance_id)
+SDL_Joystick *SDL_GetJoystickFromID(SDL_JoystickID instance_id)
 {
     SDL_Joystick *joystick;
 

@@ -240,7 +240,7 @@ SDL3_0.0.0 {
     SDL_GetGamepadButtonLabelForType;
     SDL_GetGamepadConnectionState;
     SDL_GetGamepadFirmwareVersion;
-    SDL_GetGamepadFromInstanceID;
+    SDL_GetGamepadFromID;
     SDL_GetGamepadFromPlayerIndex;
     SDL_GetGamepadGUIDFromID;
     SDL_GetGamepadID;
@@ -280,7 +280,7 @@ SDL3_0.0.0 {
     SDL_GetGrabbedWindow;
     SDL_GetHapticEffectStatus;
     SDL_GetHapticFeatures;
-    SDL_GetHapticFromInstanceID;
+    SDL_GetHapticFromID;
     SDL_GetHapticID;
     SDL_GetHapticName;
     SDL_GetHapticNameFromID;
@@ -296,7 +296,7 @@ SDL3_0.0.0 {
     SDL_GetJoystickButton;
     SDL_GetJoystickConnectionState;
     SDL_GetJoystickFirmwareVersion;
-    SDL_GetJoystickFromInstanceID;
+    SDL_GetJoystickFromID;
     SDL_GetJoystickFromPlayerIndex;
     SDL_GetJoystickGUID;
     SDL_GetJoystickGUIDFromID;
@@ -379,7 +379,7 @@ SDL3_0.0.0 {
     SDL_GetPropertyType;
     SDL_GetRGB;
     SDL_GetRGBA;
-    SDL_GetRealGamepadInstanceType;
+    SDL_GetRealGamepadTypeFromID;
     SDL_GetRealGamepadType;
     SDL_GetRectAndLineIntersection;
     SDL_GetRectAndLineIntersectionFloat;
@@ -418,7 +418,7 @@ SDL3_0.0.0 {
     SDL_GetScancodeName;
     SDL_GetSemaphoreValue;
     SDL_GetSensorData;
-    SDL_GetSensorFromInstanceID;
+    SDL_GetSensorFromID;
     SDL_GetSensorID;
     SDL_GetSensorName;
     SDL_GetSensorNameFromID;

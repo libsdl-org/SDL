@@ -317,7 +317,7 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
     ValveInReport_t *pInReport = (ValveInReport_t *)data;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
         if (joystick == NULL) {
             return SDL_FALSE;
         }
