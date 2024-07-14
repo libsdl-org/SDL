@@ -102,27 +102,19 @@
 extern "C" {
 #endif
 
+/* masks for different parts of SDL_AudioFormat. */
+#define SDL_AUDIO_MASK_BITSIZE       (0xFFu)
+#define SDL_AUDIO_MASK_FLOAT         (1u<<8)
+#define SDL_AUDIO_MASK_BIG_ENDIAN    (1u<<12)
+#define SDL_AUDIO_MASK_SIGNED        (1u<<15)
+
+#define SDL_DEFINE_AUDIO_FORMAT(signed, bigendian, float, size) \
+    (((Uint16)(signed) << 15) | ((Uint16)(bigendian) << 12) | ((Uint16)(float) << 8) | ((size) & SDL_AUDIO_MASK_BITSIZE))
+
 /**
- * Audio format flags.
+ * Audio format.
  *
- * These are what the 16 bits in SDL_AudioFormat currently mean...
- * (Unspecified bits are always zero).
- *
- * ```
- * ++-----------------------sample is signed if set
- * ||
- * ||       ++-----------sample is bigendian if set
- * ||       ||
- * ||       ||          ++---sample is float if set
- * ||       ||          ||
- * ||       ||          || +=--sample bit size--++
- * ||       ||          || ||                   ||
- * 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
- * ```
- *
- * There are macros to query these bits.
- *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.0.0.
  *
  * \sa SDL_AUDIO_BITSIZE
  * \sa SDL_AUDIO_BYTESIZE
@@ -133,16 +125,25 @@ extern "C" {
  * \sa SDL_AUDIO_ISSIGNED
  * \sa SDL_AUDIO_ISUNSIGNED
  */
-typedef Uint16 SDL_AudioFormat;
-
-#define SDL_AUDIO_U8        0x0008u /**< Unsigned 8-bit samples */
-#define SDL_AUDIO_S8        0x8008u /**< Signed 8-bit samples */
-#define SDL_AUDIO_S16LE     0x8010u /**< Signed 16-bit samples */
-#define SDL_AUDIO_S16BE     0x9010u /**< As above, but big-endian byte order */
-#define SDL_AUDIO_S32LE     0x8020u /**< 32-bit integer samples */
-#define SDL_AUDIO_S32BE     0x9020u /**< As above, but big-endian byte order */
-#define SDL_AUDIO_F32LE     0x8120u /**< 32-bit floating point samples */
-#define SDL_AUDIO_F32BE     0x9120u /**< As above, but big-endian byte order */
+typedef enum SDL_AudioFormat
+{
+    SDL_AUDIO_U8        = 0x0008u,  /**< Unsigned 8-bit samples */
+        /* SDL_DEFINE_AUDIO_FORMAT(0, 0, 0, 8), */
+    SDL_AUDIO_S8        = 0x8008u,  /**< Signed 8-bit samples */
+        /* SDL_DEFINE_AUDIO_FORMAT(1, 0, 0, 8), */
+    SDL_AUDIO_S16LE     = 0x8010u,  /**< Signed 16-bit samples */
+        /* SDL_DEFINE_AUDIO_FORMAT(1, 0, 0, 16), */
+    SDL_AUDIO_S16BE     = 0x9010u,  /**< As above, but big-endian byte order */
+        /* SDL_DEFINE_AUDIO_FORMAT(1, 1, 0, 16), */
+    SDL_AUDIO_S32LE     = 0x8020u,  /**< 32-bit integer samples */
+        /* SDL_DEFINE_AUDIO_FORMAT(1, 0, 0, 32), */
+    SDL_AUDIO_S32BE     = 0x9020u,  /**< As above, but big-endian byte order */
+        /* SDL_DEFINE_AUDIO_FORMAT(1, 1, 0, 32), */
+    SDL_AUDIO_F32LE     = 0x8120u,  /**< 32-bit floating point samples */
+        /* SDL_DEFINE_AUDIO_FORMAT(1, 0, 1, 32), */
+    SDL_AUDIO_F32BE     = 0x9120u,  /**< As above, but big-endian byte order */
+        /* SDL_DEFINE_AUDIO_FORMAT(1, 1, 1, 32), */
+} SDL_AudioFormat;
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define SDL_AUDIO_S16    SDL_AUDIO_S16LE
@@ -153,13 +154,6 @@ typedef Uint16 SDL_AudioFormat;
 #define SDL_AUDIO_S32    SDL_AUDIO_S32BE
 #define SDL_AUDIO_F32    SDL_AUDIO_F32BE
 #endif
-
-
-/* masks for different parts of SDL_AudioFormat. */
-#define SDL_AUDIO_MASK_BITSIZE       (0xFFu)
-#define SDL_AUDIO_MASK_FLOAT         (1u<<8)
-#define SDL_AUDIO_MASK_BIG_ENDIAN    (1u<<12)
-#define SDL_AUDIO_MASK_SIGNED        (1u<<15)
 
 
 /**
