@@ -742,7 +742,7 @@ static int video_getWindowPixelFormat(void *arg)
     /* Get format */
     format = SDL_GetWindowPixelFormat(window);
     SDLTest_AssertPass("Call to SDL_GetWindowPixelFormat()");
-    SDLTest_AssertCheck(format != SDL_PIXELFORMAT_UNKNOWN, "Verify that returned format is valid; expected: != %d, got: %" SDL_PRIu32, SDL_PIXELFORMAT_UNKNOWN, format);
+    SDLTest_AssertCheck(format != SDL_PIXELFORMAT_UNKNOWN, "Verify that returned format is valid; expected: != SDL_PIXELFORMAT_UNKNOWN, got: SDL_PIXELFORMAT_UNKNOWN");
 
     /* Clean up */
     destroyVideoSuiteTestWindow(window);
