@@ -67,7 +67,6 @@ extern "C" {
  *
  * \since This struct is available since SDL 3.0.0.
  */
-struct SDL_hid_device;
 typedef struct SDL_hid_device SDL_hid_device; /**< opaque hidapi structure */
 
 /**
