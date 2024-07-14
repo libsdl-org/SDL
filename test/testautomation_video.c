@@ -731,7 +731,7 @@ static int video_getWindowPixelFormat(void *arg)
 {
     const char *title = "video_getWindowPixelFormat Test Window";
     SDL_Window *window;
-    Uint32 format;
+    SDL_PixelFormat format;
 
     /* Call against new test window */
     window = createVideoSuiteTestWindow(title);

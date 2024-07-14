@@ -192,7 +192,7 @@ static void psp_on_vblank(u32 sub, PSP_RenderData *data)
     }
 }
 
-static int PixelFormatToPSPFMT(Uint32 format)
+static int PixelFormatToPSPFMT(SDL_PixelFormat format)
 {
     switch (format) {
     case SDL_PIXELFORMAT_BGR565:
