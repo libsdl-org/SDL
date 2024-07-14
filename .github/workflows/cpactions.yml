@@ -28,7 +28,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      uses: cross-platform-actions/action@v0.24.0
+      uses: cross-platform-actions/action@v0.25.0
       with:
         operating_system: ${{ matrix.platform.os }}
         architecture: ${{ matrix.platform.os-arch }}
