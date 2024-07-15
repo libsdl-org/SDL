@@ -58,7 +58,7 @@ typedef Uint32 SDL_BlendMode;
 #define SDL_BLENDMODE_ADD_PREMULTIPLIED     0x00000020u /**< pre-multiplied additive blending: dstRGB = srcRGB + dstRGB, dstA = dstA */
 #define SDL_BLENDMODE_MOD                   0x00000004u /**< color modulate: dstRGB = srcRGB * dstRGB, dstA = dstA */
 #define SDL_BLENDMODE_MUL                   0x00000008u /**< color multiply: dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA)), dstA = dstA */
-#define SDL_BLENDMODE_INVALID   0x7FFFFFFFu
+#define SDL_BLENDMODE_INVALID               0x7FFFFFFFu
 
 /**
  * The blend operation used when combining source and destination pixel
