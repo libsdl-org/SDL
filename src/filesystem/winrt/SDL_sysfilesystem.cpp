@@ -35,7 +35,7 @@ extern "C" {
 using namespace std;
 using namespace Windows::Storage;
 
-static const wchar_t *SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
+static const wchar_t *SDL_GetWinRTFSPathUNICODE(SDL_WinRT_Path pathType)
 {
     switch (pathType) {
     case SDL_WINRT_PATH_INSTALLED_LOCATION:
@@ -94,7 +94,7 @@ static const wchar_t *SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
 }
 
 // this caches a string until the process ends, so there's no need to use SDL_FreeLater.
-extern "C" const char *SDL_WinRTGetFSPath(SDL_WinRT_Path pathType)
+extern "C" const char *SDL_GetWinRTFSPath(SDL_WinRT_Path pathType)
 {
     typedef unordered_map<SDL_WinRT_Path, string> UTF8PathMap;
     static UTF8PathMap utf8Paths;
@@ -104,7 +104,7 @@ extern "C" const char *SDL_WinRTGetFSPath(SDL_WinRT_Path pathType)
         return searchResult->second.c_str();
     }
 
-    const wchar_t *ucs2Path = SDL_WinRTGetFSPathUNICODE(pathType);
+    const wchar_t *ucs2Path = SDL_GetWinRTFSPathUNICODE(pathType);
     if (!ucs2Path) {
         return NULL;
     }
@@ -117,7 +117,7 @@ extern "C" const char *SDL_WinRTGetFSPath(SDL_WinRT_Path pathType)
 
 extern "C" char *SDL_GetBasePath(void)
 {
-    const char *srcPath = SDL_WinRTGetFSPath(SDL_WINRT_PATH_INSTALLED_LOCATION);
+    const char *srcPath = SDL_GetWinRTFSPath(SDL_WINRT_PATH_INSTALLED_LOCATION);
     size_t destPathLen;
     char *destPath = NULL;
 
@@ -160,7 +160,7 @@ extern "C" char *SDL_GetPrefPath(const char *org, const char *app)
         org = "";
     }
 
-    srcPath = SDL_WinRTGetFSPathUNICODE(SDL_WINRT_PATH_LOCAL_FOLDER);
+    srcPath = SDL_GetWinRTFSPathUNICODE(SDL_WINRT_PATH_LOCAL_FOLDER);
     if (!srcPath) {
         SDL_SetError("Unable to find a source path");
         return NULL;

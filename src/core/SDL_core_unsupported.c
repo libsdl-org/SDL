@@ -31,16 +31,16 @@ void SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata)
 
 #ifndef SDL_PLATFORM_LINUX
 
-SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int priority);
-int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
+SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
+int SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
 {
     (void)threadID;
     (void)priority;
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
-int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
+SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
+int SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
     (void)threadID;
     (void)sdlPriority;
@@ -58,8 +58,8 @@ void SDL_GDKSuspendComplete(void)
     SDL_Unsupported();
 }
 
-SDL_DECLSPEC int SDLCALL SDL_GDKGetDefaultUser(void *outUserHandle); /* XUserHandle *outUserHandle */
-int SDL_GDKGetDefaultUser(void *outUserHandle)
+SDL_DECLSPEC int SDLCALL SDL_GetGDKDefaultUser(void *outUserHandle); /* XUserHandle *outUserHandle */
+int SDL_GetGDKDefaultUser(void *outUserHandle)
 {
     return SDL_Unsupported();
 }
@@ -96,15 +96,15 @@ void SDL_UnregisterApp(void)
 #ifndef SDL_PLATFORM_WINRT
 
 /* Returns SDL_WinRT_DeviceFamily enum */
-SDL_DECLSPEC int SDLCALL SDL_WinRTGetDeviceFamily(void);
-int SDL_WinRTGetDeviceFamily()
+SDL_DECLSPEC int SDLCALL SDL_GetWinRTDeviceFamily(void);
+int SDL_GetWinRTDeviceFamily()
 {
     SDL_Unsupported();
     return 0; /* SDL_WINRT_DEVICEFAMILY_UNKNOWN */
 }
 
-SDL_DECLSPEC const char *SDLCALL SDL_WinRTGetFSPath(int pathType); /* SDL_WinRT_Path pathType */
-const char *SDL_WinRTGetFSPath(int pathType)
+SDL_DECLSPEC const char *SDLCALL SDL_GetWinRTFSPath(int pathType); /* SDL_WinRT_Path pathType */
+const char *SDL_GetWinRTFSPath(int pathType)
 {
     (void)pathType;
     SDL_Unsupported();
@@ -120,43 +120,43 @@ void SDL_AndroidBackButton()
     SDL_Unsupported();
 }
 
-SDL_DECLSPEC void *SDLCALL SDL_AndroidGetActivity(void);
-void *SDL_AndroidGetActivity()
+SDL_DECLSPEC void *SDLCALL SDL_GetAndroidActivity(void);
+void *SDL_GetAndroidActivity()
 {
     SDL_Unsupported();
     return NULL;
 }
 
-SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetCachePath(void);
-const char* SDL_AndroidGetCachePath()
+SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidCachePath(void);
+const char* SDL_GetAndroidCachePath()
 {
     SDL_Unsupported();
     return NULL;
 }
 
 
-SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetExternalStoragePath(void);
-const char* SDL_AndroidGetExternalStoragePath()
+SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidExternalStoragePath(void);
+const char* SDL_GetAndroidExternalStoragePath()
 {
     SDL_Unsupported();
     return NULL;
 }
 
-SDL_DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(Uint32 *state);
-int SDL_AndroidGetExternalStorageState(Uint32 *state)
+SDL_DECLSPEC int SDLCALL SDL_GetAndroidExternalStorageState(Uint32 *state);
+int SDL_GetAndroidExternalStorageState(Uint32 *state)
 {
     (void)state;
     return SDL_Unsupported();
 }
-SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetInternalStoragePath(void);
-const char *SDL_AndroidGetInternalStoragePath(void)
+SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidInternalStoragePath(void);
+const char *SDL_GetAndroidInternalStoragePath(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-SDL_DECLSPEC void *SDLCALL SDL_AndroidGetJNIEnv(void);
-void *SDL_AndroidGetJNIEnv()
+SDL_DECLSPEC void *SDLCALL SDL_GetAndroidJNIEnv(void);
+void *SDL_GetAndroidJNIEnv()
 {
     SDL_Unsupported();
     return NULL;

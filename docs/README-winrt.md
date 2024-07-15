@@ -129,7 +129,7 @@ SDL_GetPrefPath(), starting with SDL 2.0.4, addresses these by:
    (and which require less work to use safely, in terms of data integrity).
 
 Apps that wish to get their Roaming folder's path can do so either by using
-SDL_WinRTGetFSPath(), or directly through the WinRT class,
+SDL_GetWinRTFSPath(), or directly through the WinRT class,
 Windows.Storage.ApplicationData.
 
 

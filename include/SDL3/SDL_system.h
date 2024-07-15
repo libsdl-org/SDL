@@ -106,7 +106,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHoo
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
+extern SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID);
 
 #endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
@@ -166,7 +166,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int priority);
+extern SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
 
 /**
  * Sets the priority (not nice level) and scheduling policy for a thread.
@@ -182,7 +182,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int 
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
+extern SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
 
 #endif /* SDL_PLATFORM_LINUX */
 
@@ -197,15 +197,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threa
  * This datatype is only useful on Apple iOS.
  *
  * After passing a function pointer of this type to
- * SDL_iOSSetAnimationCallback, the system will call that function pointer at
+ * SDL_SetiOSAnimationCallback, the system will call that function pointer at
  * a regular interval.
  *
  * \param userdata what was passed as `callbackParam` to
- *                 SDL_iOSSetAnimationCallback as `callbackParam`.
+ *                 SDL_SetiOSAnimationCallback as `callbackParam`.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
- * \sa SDL_iOSSetAnimationCallback
+ * \sa SDL_SetiOSAnimationCallback
  */
 typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
 
@@ -219,7 +219,7 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  * ```
  *
  * Where its parameter, `callbackParam`, is what was passed as `callbackParam`
- * to SDL_iOSSetAnimationCallback().
+ * to SDL_SetiOSAnimationCallback().
  *
  * This function is only available on Apple iOS.
  *
@@ -244,9 +244,9 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_iOSSetEventPump
+ * \sa SDL_SetiOSEventPump
  */
-extern SDL_DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window * window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
+extern SDL_DECLSPEC int SDLCALL SDL_SetiOSAnimationCallback(SDL_Window * window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
 
 /**
  * Use this function to enable or disable the SDL event pump on Apple iOS.
@@ -257,9 +257,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window * window,
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_iOSSetAnimationCallback
+ * \sa SDL_SetiOSAnimationCallback
  */
-extern SDL_DECLSPEC void SDLCALL SDL_iOSSetEventPump(SDL_bool enabled);
+extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(SDL_bool enabled);
 
 #endif /* SDL_PLATFORM_IOS */
 
@@ -286,9 +286,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_iOSSetEventPump(SDL_bool enabled);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetActivity
+ * \sa SDL_GetAndroidActivity
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);
 
 /**
  * Retrieve the Java instance of the Android activity class.
@@ -310,9 +310,9 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetJNIEnv
+ * \sa SDL_GetAndroidJNIEnv
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
 
 /**
  * Query Android API level of the current device.
@@ -414,9 +414,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetExternalStorageState
+ * \sa SDL_GetAndroidExternalStorageState
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetInternalStoragePath(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidInternalStoragePath(void);
 
 /**
  * Get the current state of external storage for this Android application.
@@ -433,9 +433,9 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_AndroidGetInternalStoragePath(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetExternalStoragePath
+ * \sa SDL_GetAndroidExternalStoragePath
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(Uint32 *state);
+extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidExternalStorageState(Uint32 *state);
 
 /**
  * Get the path used for external storage for this Android application.
@@ -457,9 +457,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(Uint32 *state
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_AndroidGetExternalStorageState
+ * \sa SDL_GetAndroidExternalStorageState
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
 
 /**
  * Get the path used for caching data for this Android application.
@@ -480,7 +480,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void)
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_AndroidGetCachePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
 
 
 typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
@@ -636,7 +636,7 @@ typedef enum SDL_WinRT_DeviceFamily
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_WinRTGetFSPath(SDL_WinRT_Path pathType);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetWinRTFSPath(SDL_WinRT_Path pathType);
 
 /**
  * Detects the device family of WinRT platform at runtime.
@@ -645,7 +645,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_WinRTGetFSPath(SDL_WinRT_Path pathT
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
+extern SDL_DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_GetWinRTDeviceFamily();
 
 #endif /* SDL_PLATFORM_WINRT */
 
@@ -805,7 +805,7 @@ typedef struct XUser *XUserHandle;
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQueue);
+extern SDL_DECLSPEC int SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle * outTaskQueue);
 
 /**
  * Gets a reference to the default user handle for GDK.
@@ -819,7 +819,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(XTaskQueueHandle * outTaskQu
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GDKGetDefaultUser(XUserHandle * outUserHandle);
+extern SDL_DECLSPEC int SDLCALL SDL_GetGDKDefaultUser(XUserHandle * outUserHandle);
 
 #endif
 

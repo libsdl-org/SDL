@@ -225,7 +225,7 @@ Game Center
 
 Game Center integration might require that you break up your main loop in order to yield control back to the system. In other words, instead of running an endless main loop, you run each frame in a callback function, using:
 
-    int SDL_iOSSetAnimationCallback(SDL_Window * window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
+    int SDL_SetiOSAnimationCallback(SDL_Window * window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
 
 This will set up the given function to be called back on the animation callback, and then you have to return from main() to let the Cocoa event loop run.
 
@@ -247,7 +247,7 @@ e.g.
 
         // Set up the game to run in the window animation callback on iOS
         // so that Game Center and so forth works correctly.
-        SDL_iOSSetAnimationCallback(window, 1, ShowFrame, NULL);
+        SDL_SetiOSAnimationCallback(window, 1, ShowFrame, NULL);
     #else
         while ( running ) {
             ShowFrame(0);
@@ -258,7 +258,7 @@ e.g.
     }
 
 
-Note that if you are using main callbacks instead of a standard C main() function, your SDL_AppIterate() callback is already doing this and you don't need to use SDL_iOSSetAnimationCallback.
+Note that if you are using main callbacks instead of a standard C main() function, your SDL_AppIterate() callback is already doing this and you don't need to use SDL_SetiOSAnimationCallback.
 
 
 Deploying to older versions of iOS

@@ -35,7 +35,7 @@ PAPPCONSTRAIN_REGISTRATION hCPLM = {};
 HANDLE plmSuspendComplete = nullptr;
 
 extern "C"
-int SDL_GDKGetTaskQueue(XTaskQueueHandle *outTaskQueue)
+int SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue)
 {
     /* If this is the first call, first create the global task queue. */
     if (!GDK_GlobalTaskQueue) {
@@ -82,7 +82,7 @@ void SDL_GDKSuspendComplete()
 }
 
 extern "C"
-int SDL_GDKGetDefaultUser(XUserHandle *outUserHandle)
+int SDL_GetGDKDefaultUser(XUserHandle *outUserHandle)
 {
     XAsyncBlock block = { 0 };
     HRESULT result;

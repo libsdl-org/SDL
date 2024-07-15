@@ -578,7 +578,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     } else {
         /* Try opening it from internal storage if it's a relative path */
         char *path = NULL;
-        SDL_asprintf(&path, "%s/%s", SDL_AndroidGetInternalStoragePath(), file);
+        SDL_asprintf(&path, "%s/%s", SDL_GetAndroidInternalStoragePath(), file);
         if (path) {
             FILE *fp = fopen(path, mode);
             SDL_free(path);

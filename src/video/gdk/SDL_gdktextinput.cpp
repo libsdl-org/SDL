@@ -100,7 +100,7 @@ static void SDLCALL GDK_InternalHintCallback(
 static int GDK_InternalEnsureTaskQueue(void)
 {
     if (!g_TextTaskQueue) {
-        if (SDL_GDKGetTaskQueue(&g_TextTaskQueue) < 0) {
+        if (SDL_GetGDKTaskQueue(&g_TextTaskQueue) < 0) {
             /* SetError will be done for us. */
             return -1;
         }

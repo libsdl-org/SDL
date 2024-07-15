@@ -99,7 +99,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         return SDL_strdup("T:\\");
     }
 
-    if (SDL_GDKGetDefaultUser(&user) < 0) {
+    if (SDL_GetGDKDefaultUser(&user) < 0) {
         /* Error already set, just return */
         return NULL;
     }

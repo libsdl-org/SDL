@@ -13,12 +13,6 @@ SDL3_0.0.0 {
     SDL_AddVulkanRenderSemaphores;
     SDL_AllocateEventMemory;
     SDL_AndroidBackButton;
-    SDL_AndroidGetActivity;
-    SDL_AndroidGetCachePath;
-    SDL_AndroidGetExternalStoragePath;
-    SDL_AndroidGetExternalStorageState;
-    SDL_AndroidGetInternalStoragePath;
-    SDL_AndroidGetJNIEnv;
     SDL_AndroidRequestPermission;
     SDL_AndroidSendMessage;
     SDL_AndroidShowToast;
@@ -113,7 +107,6 @@ SDL3_0.0.0 {
     SDL_DestroyWindowSurface;
     SDL_DetachThread;
     SDL_DetachVirtualJoystick;
-    SDL_Direct3D9GetAdapterIndex;
     SDL_DisableScreenSaver;
     SDL_DuplicateSurface;
     SDL_EGL_GetCurrentEGLConfig;
@@ -136,8 +129,6 @@ SDL3_0.0.0 {
     SDL_FlushEvent;
     SDL_FlushEvents;
     SDL_FlushRenderer;
-    SDL_GDKGetDefaultUser;
-    SDL_GDKGetTaskQueue;
     SDL_GDKSuspendComplete;
     SDL_GL_CreateContext;
     SDL_GL_DestroyContext;
@@ -162,6 +153,12 @@ SDL3_0.0.0 {
     SDL_GamepadHasButton;
     SDL_GamepadHasSensor;
     SDL_GamepadSensorEnabled;
+    SDL_GetAndroidActivity;
+    SDL_GetAndroidCachePath;
+    SDL_GetAndroidExternalStoragePath;
+    SDL_GetAndroidExternalStorageState;
+    SDL_GetAndroidInternalStoragePath;
+    SDL_GetAndroidJNIEnv;
     SDL_GetAndroidSDKVersion;
     SDL_GetAssertionHandler;
     SDL_GetAssertionReport;
@@ -216,6 +213,7 @@ SDL3_0.0.0 {
     SDL_GetDefaultKeyFromScancode;
     SDL_GetDefaultScancodeFromKey;
     SDL_GetDesktopDisplayMode;
+    SDL_GetDirect3D9AdapterIndex;
     SDL_GetDisplayBounds;
     SDL_GetDisplayContentScale;
     SDL_GetDisplayForPoint;
@@ -229,6 +227,8 @@ SDL3_0.0.0 {
     SDL_GetEventFilter;
     SDL_GetFloatProperty;
     SDL_GetFullscreenDisplayModes;
+    SDL_GetGDKDefaultUser;
+    SDL_GetGDKTaskQueue;
     SDL_GetGamepadAppleSFSymbolsNameForAxis;
     SDL_GetGamepadAppleSFSymbolsNameForButton;
     SDL_GetGamepadAxis;
@@ -464,6 +464,8 @@ SDL3_0.0.0 {
     SDL_GetUserFolder;
     SDL_GetVersion;
     SDL_GetVideoDriver;
+    SDL_GetWinRTDeviceFamily;
+    SDL_GetWinRTFSPath;
     SDL_GetWindowAspectRatio;
     SDL_GetWindowBordersSize;
     SDL_GetWindowDisplayScale;
@@ -541,8 +543,6 @@ SDL3_0.0.0 {
     SDL_IsTablet;
     SDL_JoystickConnected;
     SDL_JoystickEventsEnabled;
-    SDL_LinuxSetThreadPriority;
-    SDL_LinuxSetThreadPriorityAndPolicy;
     SDL_LoadBMP;
     SDL_LoadBMP_IO;
     SDL_LoadFile;
@@ -724,6 +724,8 @@ SDL3_0.0.0 {
     SDL_SetJoystickVirtualButton;
     SDL_SetJoystickVirtualHat;
     SDL_SetJoystickVirtualTouchpad;
+    SDL_SetLinuxThreadPriority;
+    SDL_SetLinuxThreadPriorityAndPolicy;
     SDL_SetLogOutputFunction;
     SDL_SetLogPriorities;
     SDL_SetLogPriority;
@@ -788,6 +790,8 @@ SDL3_0.0.0 {
     SDL_SetWindowTitle;
     SDL_SetWindowsMessageHook;
     SDL_SetX11EventHook;
+    SDL_SetiOSAnimationCallback;
+    SDL_SetiOSEventPump;
     SDL_ShowCursor;
     SDL_ShowMessageBox;
     SDL_ShowOpenFileDialog;
@@ -857,8 +861,6 @@ SDL3_0.0.0 {
     SDL_WarpMouseGlobal;
     SDL_WarpMouseInWindow;
     SDL_WasInit;
-    SDL_WinRTGetDeviceFamily;
-    SDL_WinRTGetFSPath;
     SDL_WindowHasSurface;
     SDL_WriteIO;
     SDL_WriteS16BE;
@@ -933,8 +935,6 @@ SDL3_0.0.0 {
     SDL_hid_send_feature_report;
     SDL_hid_set_nonblocking;
     SDL_hid_write;
-    SDL_iOSSetAnimationCallback;
-    SDL_iOSSetEventPump;
     SDL_iconv;
     SDL_iconv_close;
     SDL_iconv_open;

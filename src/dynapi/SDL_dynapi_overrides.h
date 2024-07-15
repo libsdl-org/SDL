@@ -38,12 +38,6 @@
 #define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
 #define SDL_AllocateEventMemory SDL_AllocateEventMemory_REAL
 #define SDL_AndroidBackButton SDL_AndroidBackButton_REAL
-#define SDL_AndroidGetActivity SDL_AndroidGetActivity_REAL
-#define SDL_AndroidGetCachePath SDL_AndroidGetCachePath_REAL
-#define SDL_AndroidGetExternalStoragePath SDL_AndroidGetExternalStoragePath_REAL
-#define SDL_AndroidGetExternalStorageState SDL_AndroidGetExternalStorageState_REAL
-#define SDL_AndroidGetInternalStoragePath SDL_AndroidGetInternalStoragePath_REAL
-#define SDL_AndroidGetJNIEnv SDL_AndroidGetJNIEnv_REAL
 #define SDL_AndroidRequestPermission SDL_AndroidRequestPermission_REAL
 #define SDL_AndroidSendMessage SDL_AndroidSendMessage_REAL
 #define SDL_AndroidShowToast SDL_AndroidShowToast_REAL
@@ -138,7 +132,6 @@
 #define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
 #define SDL_DetachThread SDL_DetachThread_REAL
 #define SDL_DetachVirtualJoystick SDL_DetachVirtualJoystick_REAL
-#define SDL_Direct3D9GetAdapterIndex SDL_Direct3D9GetAdapterIndex_REAL
 #define SDL_DisableScreenSaver SDL_DisableScreenSaver_REAL
 #define SDL_DuplicateSurface SDL_DuplicateSurface_REAL
 #define SDL_EGL_GetCurrentEGLConfig SDL_EGL_GetCurrentEGLConfig_REAL
@@ -161,8 +154,6 @@
 #define SDL_FlushEvent SDL_FlushEvent_REAL
 #define SDL_FlushEvents SDL_FlushEvents_REAL
 #define SDL_FlushRenderer SDL_FlushRenderer_REAL
-#define SDL_GDKGetDefaultUser SDL_GDKGetDefaultUser_REAL
-#define SDL_GDKGetTaskQueue SDL_GDKGetTaskQueue_REAL
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GL_CreateContext SDL_GL_CreateContext_REAL
 #define SDL_GL_DestroyContext SDL_GL_DestroyContext_REAL
@@ -187,6 +178,12 @@
 #define SDL_GamepadHasButton SDL_GamepadHasButton_REAL
 #define SDL_GamepadHasSensor SDL_GamepadHasSensor_REAL
 #define SDL_GamepadSensorEnabled SDL_GamepadSensorEnabled_REAL
+#define SDL_GetAndroidActivity SDL_GetAndroidActivity_REAL
+#define SDL_GetAndroidCachePath SDL_GetAndroidCachePath_REAL
+#define SDL_GetAndroidExternalStoragePath SDL_GetAndroidExternalStoragePath_REAL
+#define SDL_GetAndroidExternalStorageState SDL_GetAndroidExternalStorageState_REAL
+#define SDL_GetAndroidInternalStoragePath SDL_GetAndroidInternalStoragePath_REAL
+#define SDL_GetAndroidJNIEnv SDL_GetAndroidJNIEnv_REAL
 #define SDL_GetAndroidSDKVersion SDL_GetAndroidSDKVersion_REAL
 #define SDL_GetAssertionHandler SDL_GetAssertionHandler_REAL
 #define SDL_GetAssertionReport SDL_GetAssertionReport_REAL
@@ -241,6 +238,7 @@
 #define SDL_GetDefaultKeyFromScancode SDL_GetDefaultKeyFromScancode_REAL
 #define SDL_GetDefaultScancodeFromKey SDL_GetDefaultScancodeFromKey_REAL
 #define SDL_GetDesktopDisplayMode SDL_GetDesktopDisplayMode_REAL
+#define SDL_GetDirect3D9AdapterIndex SDL_GetDirect3D9AdapterIndex_REAL
 #define SDL_GetDisplayBounds SDL_GetDisplayBounds_REAL
 #define SDL_GetDisplayContentScale SDL_GetDisplayContentScale_REAL
 #define SDL_GetDisplayForPoint SDL_GetDisplayForPoint_REAL
@@ -254,6 +252,8 @@
 #define SDL_GetEventFilter SDL_GetEventFilter_REAL
 #define SDL_GetFloatProperty SDL_GetFloatProperty_REAL
 #define SDL_GetFullscreenDisplayModes SDL_GetFullscreenDisplayModes_REAL
+#define SDL_GetGDKDefaultUser SDL_GetGDKDefaultUser_REAL
+#define SDL_GetGDKTaskQueue SDL_GetGDKTaskQueue_REAL
 #define SDL_GetGamepadAppleSFSymbolsNameForAxis SDL_GetGamepadAppleSFSymbolsNameForAxis_REAL
 #define SDL_GetGamepadAppleSFSymbolsNameForButton SDL_GetGamepadAppleSFSymbolsNameForButton_REAL
 #define SDL_GetGamepadAxis SDL_GetGamepadAxis_REAL
@@ -489,6 +489,8 @@
 #define SDL_GetUserFolder SDL_GetUserFolder_REAL
 #define SDL_GetVersion SDL_GetVersion_REAL
 #define SDL_GetVideoDriver SDL_GetVideoDriver_REAL
+#define SDL_GetWinRTDeviceFamily SDL_GetWinRTDeviceFamily_REAL
+#define SDL_GetWinRTFSPath SDL_GetWinRTFSPath_REAL
 #define SDL_GetWindowAspectRatio SDL_GetWindowAspectRatio_REAL
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
 #define SDL_GetWindowDisplayScale SDL_GetWindowDisplayScale_REAL
@@ -566,8 +568,6 @@
 #define SDL_IsTablet SDL_IsTablet_REAL
 #define SDL_JoystickConnected SDL_JoystickConnected_REAL
 #define SDL_JoystickEventsEnabled SDL_JoystickEventsEnabled_REAL
-#define SDL_LinuxSetThreadPriority SDL_LinuxSetThreadPriority_REAL
-#define SDL_LinuxSetThreadPriorityAndPolicy SDL_LinuxSetThreadPriorityAndPolicy_REAL
 #define SDL_LoadBMP SDL_LoadBMP_REAL
 #define SDL_LoadBMP_IO SDL_LoadBMP_IO_REAL
 #define SDL_LoadFile SDL_LoadFile_REAL
@@ -749,6 +749,8 @@
 #define SDL_SetJoystickVirtualButton SDL_SetJoystickVirtualButton_REAL
 #define SDL_SetJoystickVirtualHat SDL_SetJoystickVirtualHat_REAL
 #define SDL_SetJoystickVirtualTouchpad SDL_SetJoystickVirtualTouchpad_REAL
+#define SDL_SetLinuxThreadPriority SDL_SetLinuxThreadPriority_REAL
+#define SDL_SetLinuxThreadPriorityAndPolicy SDL_SetLinuxThreadPriorityAndPolicy_REAL
 #define SDL_SetLogOutputFunction SDL_SetLogOutputFunction_REAL
 #define SDL_SetLogPriorities SDL_SetLogPriorities_REAL
 #define SDL_SetLogPriority SDL_SetLogPriority_REAL
@@ -813,6 +815,8 @@
 #define SDL_SetWindowTitle SDL_SetWindowTitle_REAL
 #define SDL_SetWindowsMessageHook SDL_SetWindowsMessageHook_REAL
 #define SDL_SetX11EventHook SDL_SetX11EventHook_REAL
+#define SDL_SetiOSAnimationCallback SDL_SetiOSAnimationCallback_REAL
+#define SDL_SetiOSEventPump SDL_SetiOSEventPump_REAL
 #define SDL_ShowCursor SDL_ShowCursor_REAL
 #define SDL_ShowMessageBox SDL_ShowMessageBox_REAL
 #define SDL_ShowOpenFileDialog SDL_ShowOpenFileDialog_REAL
@@ -882,8 +886,6 @@
 #define SDL_WarpMouseGlobal SDL_WarpMouseGlobal_REAL
 #define SDL_WarpMouseInWindow SDL_WarpMouseInWindow_REAL
 #define SDL_WasInit SDL_WasInit_REAL
-#define SDL_WinRTGetDeviceFamily SDL_WinRTGetDeviceFamily_REAL
-#define SDL_WinRTGetFSPath SDL_WinRTGetFSPath_REAL
 #define SDL_WindowHasSurface SDL_WindowHasSurface_REAL
 #define SDL_WriteIO SDL_WriteIO_REAL
 #define SDL_WriteS16BE SDL_WriteS16BE_REAL
@@ -958,8 +960,6 @@
 #define SDL_hid_send_feature_report SDL_hid_send_feature_report_REAL
 #define SDL_hid_set_nonblocking SDL_hid_set_nonblocking_REAL
 #define SDL_hid_write SDL_hid_write_REAL
-#define SDL_iOSSetAnimationCallback SDL_iOSSetAnimationCallback_REAL
-#define SDL_iOSSetEventPump SDL_iOSSetEventPump_REAL
 #define SDL_iconv SDL_iconv_REAL
 #define SDL_iconv_close SDL_iconv_close_REAL
 #define SDL_iconv_open SDL_iconv_open_REAL

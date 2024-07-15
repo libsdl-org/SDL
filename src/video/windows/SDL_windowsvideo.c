@@ -590,7 +590,7 @@ SDL_bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
     return SDL_FALSE;
 }
 
-int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
+int SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID)
 {
     void *pD3DDLL;
     IDirect3D9 *pD3D;

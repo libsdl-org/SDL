@@ -1679,7 +1679,7 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
 
     /* Get the adapter for the display that the window is on */
     displayID = SDL_GetDisplayForWindow(window);
-    data->adapter = SDL_Direct3D9GetAdapterIndex(displayID);
+    data->adapter = SDL_GetDirect3D9AdapterIndex(displayID);
 
     result = IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
     if (FAILED(result)) {
