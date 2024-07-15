@@ -28,7 +28,7 @@ function(sdl_sources)
   set_property(TARGET SDL3-collector APPEND PROPERTY INTERFACE_SOURCES ${ARGS_SHARED} ${ARGS_STATIC} ${ARGS_UNPARSED_ARGUMENTS})
 endfunction()
 
-# Use sdl_generic_link_dependency to describe a private depency of SDL3. All options are optional.
+# Use sdl_generic_link_dependency to describe a private dependency of SDL3. All options are optional.
 # Users should use sdl_link_dependency and sdl_test_link_dependency instead
 # - SHARED_TARGETS: shared targets to add this dependency to
 # - STATIC_TARGETS: static targets to add this dependency to
@@ -133,7 +133,7 @@ function(sdl_compile_options)
   endif()
 endfunction()
 
-# Use sdl_link_dependency to add incude directories to the SDL3 libraries.
+# Use sdl_link_dependency to add include directories to the SDL3 libraries.
 function(sdl_include_directories)
   cmake_parse_arguments(ARGS "SYSTEM;BEFORE;AFTER;PRIVATE;PUBLIC;INTERFACE;NO_EXPORT" "" "" ${ARGN})
   set(system "")
