@@ -2264,13 +2264,12 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
         case SDLK_V:
             if (withAlt) {
                 /* Alt-V paste awesome text from the primary selection! */
-                char *text = SDL_GetPrimarySelectionText();
+                const char *text = SDL_GetPrimarySelectionText();
                 if (*text) {
                     SDL_Log("Primary selection: %s\n", text);
                 } else {
                     SDL_Log("Primary selection is empty\n");
                 }
-                SDL_free(text);
 
             } else if (withControl) {
                 if (withShift) {

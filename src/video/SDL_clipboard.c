@@ -349,7 +349,7 @@ int SDL_SetPrimarySelectionText(const char *text)
             return -1;
         }
     } else {
-        SDL_free(_this->primary_selection_text);
+        SDL_FreeLater(_this->primary_selection_text);  // this pointer might be given to the app by SDL_GetPrimarySelectionText.
         _this->primary_selection_text = SDL_strdup(text);
     }
 
@@ -357,7 +357,7 @@ int SDL_SetPrimarySelectionText(const char *text)
     return 0;
 }
 
-char *SDL_GetPrimarySelectionText(void)
+const char *SDL_GetPrimarySelectionText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -367,13 +367,13 @@ char *SDL_GetPrimarySelectionText(void)
     }
 
     if (_this->GetPrimarySelectionText) {
-        return _this->GetPrimarySelectionText(_this);
+        return SDL_FreeLater(_this->GetPrimarySelectionText(_this));  // returned pointer follows the SDL_GetStringRule
     } else {
         const char *text = _this->primary_selection_text;
         if (!text) {
             text = "";
         }
-        return SDL_strdup(text);
+        return text;
     }
 }
 
