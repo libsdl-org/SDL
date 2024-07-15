@@ -416,8 +416,22 @@ static void PS2_SetBlendMode(PS2_RenderData *data, int blendMode)
         data->gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
         break;
     }
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+    {
+        /* FIXME: What are the settings for this? */
+        gsKit_set_primalpha(data->gsGlobal, GS_SETREG_ALPHA(A_COLOR_SOURCE, A_COLOR_DEST, A_ALPHA_SOURCE, A_COLOR_DEST, 0), 0);
+        data->gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+        break;
+    }
     case SDL_BLENDMODE_ADD:
     {
+        gsKit_set_primalpha(data->gsGlobal, GS_SETREG_ALPHA(A_COLOR_SOURCE, A_COLOR_NULL, A_ALPHA_FIX, A_COLOR_DEST, 0x80), 0);
+        data->gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+        break;
+    }
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
+    {
+        /* FIXME: What are the settings for this? */
         gsKit_set_primalpha(data->gsGlobal, GS_SETREG_ALPHA(A_COLOR_SOURCE, A_COLOR_NULL, A_ALPHA_FIX, A_COLOR_DEST, 0x80), 0);
         data->gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
         break;

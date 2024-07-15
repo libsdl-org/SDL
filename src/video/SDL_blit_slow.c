@@ -134,7 +134,7 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                     continue;
                 }
             }
-            if ((flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL))) {
+            if ((flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL))) {
                 switch (dst_access) {
                 case SlowBlitPixelAccess_RGB:
                     DISEMBLE_RGB(dst, dstbpp, dst_fmt, dstpixel, dstR, dstG, dstB);
@@ -181,14 +181,13 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                 srcA = (srcA * modulateA) / 255;
             }
             if (flags & (SDL_COPY_BLEND | SDL_COPY_ADD)) {
-                /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
                     srcR = (srcR * srcA) / 255;
                     srcG = (srcG * srcA) / 255;
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL)) {
+            switch (flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL)) {
             case 0:
                 dstR = srcR;
                 dstG = srcG;
@@ -201,7 +200,26 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                 dstB = srcB + ((255 - srcA) * dstB) / 255;
                 dstA = srcA + ((255 - srcA) * dstA) / 255;
                 break;
+            case SDL_COPY_BLEND_PREMULTIPLIED:
+                dstR = srcR + ((255 - srcA) * dstR) / 255;
+                if (dstR > 255) {
+                    dstR = 255;
+                }
+                dstG = srcG + ((255 - srcA) * dstG) / 255;
+                if (dstG > 255) {
+                    dstG = 255;
+                }
+                dstB = srcB + ((255 - srcA) * dstB) / 255;
+                if (dstB > 255) {
+                    dstB = 255;
+                }
+                dstA = srcA + ((255 - srcA) * dstA) / 255;
+                if (dstA > 255) {
+                    dstA = 255;
+                }
+                break;
             case SDL_COPY_ADD:
+            case SDL_COPY_ADD_PREMULTIPLIED:
                 dstR = srcR + dstR;
                 if (dstR > 255) {
                     dstR = 255;
@@ -869,7 +887,6 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
                 srcA = (srcA * modulateA) / 255;
             }
             if (flags & (SDL_COPY_BLEND | SDL_COPY_ADD)) {
-                /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 1.0f) {
                     srcR = (srcR * srcA);
                     srcG = (srcG * srcA);

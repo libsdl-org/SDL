@@ -28,18 +28,20 @@ extern const Uint8 *SDL_expand_byte[9];
 extern const Uint16 SDL_expand_byte_10[];
 
 /* SDL blit copy flags */
-#define SDL_COPY_MODULATE_COLOR 0x00000001
-#define SDL_COPY_MODULATE_ALPHA 0x00000002
-#define SDL_COPY_BLEND          0x00000010
-#define SDL_COPY_ADD            0x00000020
-#define SDL_COPY_MOD            0x00000040
-#define SDL_COPY_MUL            0x00000080
-#define SDL_COPY_COLORKEY       0x00000100
-#define SDL_COPY_NEAREST        0x00000200
-#define SDL_COPY_RLE_DESIRED    0x00001000
-#define SDL_COPY_RLE_COLORKEY   0x00002000
-#define SDL_COPY_RLE_ALPHAKEY   0x00004000
-#define SDL_COPY_RLE_MASK       (SDL_COPY_RLE_DESIRED | SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY)
+#define SDL_COPY_MODULATE_COLOR         0x00000001
+#define SDL_COPY_MODULATE_ALPHA         0x00000002
+#define SDL_COPY_BLEND                  0x00000010
+#define SDL_COPY_BLEND_PREMULTIPLIED    0x00000020
+#define SDL_COPY_ADD                    0x00000040
+#define SDL_COPY_ADD_PREMULTIPLIED      0x00000080
+#define SDL_COPY_MOD                    0x00000100
+#define SDL_COPY_MUL                    0x00000200
+#define SDL_COPY_COLORKEY               0x00000400
+#define SDL_COPY_NEAREST                0x00000800
+#define SDL_COPY_RLE_DESIRED            0x00001000
+#define SDL_COPY_RLE_COLORKEY           0x00002000
+#define SDL_COPY_RLE_ALPHAKEY           0x00004000
+#define SDL_COPY_RLE_MASK               (SDL_COPY_RLE_DESIRED | SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY)
 
 /* SDL blit CPU flags */
 #define SDL_CPU_ANY                0x00000000

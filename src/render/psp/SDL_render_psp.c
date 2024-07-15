@@ -990,9 +990,19 @@ static void PSP_SetBlendState(PSP_RenderData *data, PSP_BlendState *state)
             sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
             sceGuEnable(GU_BLEND);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            sceGuTexFunc(GU_TFX_MODULATE , GU_TCC_RGBA);
+            sceGuBlendFunc(GU_ADD, GU_FIX, GU_ONE_MINUS_SRC_ALPHA, 0x00FFFFFF, 0 );
+            sceGuEnable(GU_BLEND);
+            break;
         case SDL_BLENDMODE_ADD:
             sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
             sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_FIX, 0, 0x00FFFFFF);
+            sceGuEnable(GU_BLEND);
+            break;
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
+            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+            sceGuBlendFunc(GU_ADD, GU_FIX, GU_FIX, 0, 0x00FFFFFF);
             sceGuEnable(GU_BLEND);
             break;
         case SDL_BLENDMODE_MOD:
