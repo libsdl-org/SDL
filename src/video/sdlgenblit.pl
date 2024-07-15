@@ -38,6 +38,7 @@ my @dst_formats = (
     "XRGB8888",
     "XBGR8888",
     "ARGB8888",
+    "ABGR8888",
 );
 
 my %format_size = (
@@ -327,7 +328,6 @@ __EOF__
         if (!$A_is_const_FF) {
             print FILE <<__EOF__;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
-                /* This goes away if we ever use premultiplied alpha */
                 if (${s}A < 255) {
                     MULT_DIV_255(${s}R, ${s}A, ${s}R);
                     MULT_DIV_255(${s}G, ${s}A, ${s}G);
@@ -337,7 +337,7 @@ __EOF__
 __EOF__
         }
         print FILE <<__EOF__;
-            switch (flags & (SDL_COPY_BLEND|SDL_COPY_ADD|SDL_COPY_MOD|SDL_COPY_MUL)) {
+            switch (flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL)) {
             case SDL_COPY_BLEND:
 __EOF__
         if ($A_is_const_FF) {
@@ -371,7 +371,45 @@ __EOF__
 
         print FILE <<__EOF__;
                 break;
+            case SDL_COPY_BLEND_PREMULTIPLIED:
+__EOF__
+        if ($A_is_const_FF) {
+            print FILE <<__EOF__;
+                ${d}R = ${s}R;
+                ${d}G = ${s}G;
+                ${d}B = ${s}B;
+__EOF__
+        } else {
+            print FILE <<__EOF__;
+                MULT_DIV_255((255 - ${s}A), ${d}R, ${d}R);
+                ${d}R += ${s}R;
+                if (${d}R > 255) ${d}R = 255;
+                MULT_DIV_255((255 - ${s}A), ${d}G, ${d}G);
+                ${d}G += ${s}G;
+                if (${d}G > 255) ${d}G = 255;
+                MULT_DIV_255((255 - ${s}A), ${d}B, ${d}B);
+                ${d}B += ${s}B;
+                if (${d}B > 255) ${d}B = 255;
+__EOF__
+        }
+        if ( $dst_has_alpha ) {
+            if ($A_is_const_FF) {
+                print FILE <<__EOF__;
+                ${d}A = 0xFF;
+__EOF__
+            } else {
+                print FILE <<__EOF__;
+                MULT_DIV_255((255 - ${s}A), ${d}A, ${d}A);
+                ${d}A += ${s}A;
+                if (${d}A > 255) ${d}A = 255;
+__EOF__
+            }
+        }
+
+        print FILE <<__EOF__;
+                break;
             case SDL_COPY_ADD:
+            case SDL_COPY_ADD_PREMULTIPLIED:
                 ${d}R = ${s}R + ${d}R; if (${d}R > 255) ${d}R = 255;
                 ${d}G = ${s}G + ${d}G; if (${d}G > 255) ${d}G = 255;
                 ${d}B = ${s}B + ${d}B; if (${d}B > 255) ${d}B = 255;
@@ -391,15 +429,19 @@ __EOF__
 __EOF__
         } else {
             print FILE <<__EOF__;
-                MULT_DIV_255(${d}R, (255 - ${s}A), ${d}R);
-                ${d}R += (${s}R * ${d}R);
-                if (${d}R > 255) ${d}R = 255;
-                MULT_DIV_255(${d}B, (255 - ${s}A), ${d}B);
-                ${d}B += (${s}B * ${d}B);
-                if (${d}B > 255) ${d}B = 255;
-                MULT_DIV_255(${d}G, (255 - ${s}A), ${d}G);
-                ${d}G += (${s}G * ${d}G);
-                if (${d}G > 255) ${d}G = 255;
+                {
+                    Uint32 tmp1, tmp2;
+
+                    MULT_DIV_255(${s}R, ${d}R, tmp1);
+                    MULT_DIV_255(${d}R, (255 - ${s}A), tmp2);
+                    ${d}R = tmp1 + tmp2; if (${d}R > 255) ${d}R = 255;
+                    MULT_DIV_255(${s}G, ${d}G, tmp1);
+                    MULT_DIV_255(${d}G, (255 - ${s}A), tmp2);
+                    ${d}G = tmp1 + tmp2; if (${d}G > 255) ${d}G = 255;
+                    MULT_DIV_255(${s}B, ${d}B, tmp1);
+                    MULT_DIV_255(${d}B, (255 - ${s}A), tmp2);
+                    ${d}B = tmp1 + tmp2; if (${d}B > 255) ${d}B = 255;
+                }
 __EOF__
         }
 
@@ -624,7 +666,7 @@ __EOF__
                                 }
                             }
                             if ( $blend ) {
-                                $flag = "SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL";
+                                $flag = "SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL";
                                 if ( $flags eq "" ) {
                                     $flags = $flag;
                                 } else {

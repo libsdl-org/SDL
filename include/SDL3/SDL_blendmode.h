@@ -41,8 +41,9 @@ extern "C" {
 /**
  * A set of blend modes used in drawing operations.
  *
- * Note that additional values may be obtained from
- * SDL_ComposeCustomBlendMode.
+ * These predefined blend modes are supported everywhere.
+ *
+ * Additional values may be obtained from SDL_ComposeCustomBlendMode.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
@@ -50,20 +51,25 @@ extern "C" {
  */
 typedef Uint32 SDL_BlendMode;
 
-#define SDL_BLENDMODE_NONE      0x00000000u /**< no blending
-                                                 dstRGBA = srcRGBA */
-#define SDL_BLENDMODE_BLEND     0x00000001u /**< alpha blending
-                                                 dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
-                                                 dstA = srcA + (dstA * (1-srcA)) */
-#define SDL_BLENDMODE_ADD       0x00000002u /**< additive blending
-                                                 dstRGB = (srcRGB * srcA) + dstRGB
-                                                 dstA = dstA */
-#define SDL_BLENDMODE_MOD       0x00000004u /**< color modulate
-                                                 dstRGB = srcRGB * dstRGB
-                                                 dstA = dstA */
-#define SDL_BLENDMODE_MUL       0x00000008u /**< color multiply
-                                                 dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA))
-                                                 dstA = dstA */
+#define SDL_BLENDMODE_NONE                  0x00000000u /**< no blending
+                                                             dstRGBA = srcRGBA */
+#define SDL_BLENDMODE_BLEND                 0x00000001u /**< alpha blending
+                                                             dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
+                                                             dstA = srcA + (dstA * (1-srcA)) */
+#define SDL_BLENDMODE_BLEND_PREMULTIPLIED   0x00000010u /**< pre-multiplied alpha blending
+                                                             dstRGBA = srcRGBA + (dstRGBA * (1-srcA)) */
+#define SDL_BLENDMODE_ADD                   0x00000002u /**< additive blending
+                                                             dstRGB = (srcRGB * srcA) + dstRGB
+                                                             dstA = dstA */
+#define SDL_BLENDMODE_ADD_PREMULTIPLIED     0x00000020u /**< pre-multiplied additive blending
+                                                             dstRGB = srcRGB + dstRGB
+                                                             dstA = dstA */
+#define SDL_BLENDMODE_MOD                   0x00000004u /**< color modulate
+                                                             dstRGB = srcRGB * dstRGB
+                                                             dstA = dstA */
+#define SDL_BLENDMODE_MUL                   0x00000008u /**< color multiply
+                                                             dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA))
+                                                             dstA = dstA */
 #define SDL_BLENDMODE_INVALID   0x7FFFFFFFu
 
 /**
@@ -75,10 +81,10 @@ typedef Uint32 SDL_BlendMode;
 typedef enum SDL_BlendOperation
 {
     SDL_BLENDOPERATION_ADD              = 0x1,  /**< dst + src: supported by all renderers */
-    SDL_BLENDOPERATION_SUBTRACT         = 0x2,  /**< src - dst : supported by D3D9, D3D11, OpenGL, OpenGLES */
-    SDL_BLENDOPERATION_REV_SUBTRACT     = 0x3,  /**< dst - src : supported by D3D9, D3D11, OpenGL, OpenGLES */
-    SDL_BLENDOPERATION_MINIMUM          = 0x4,  /**< min(dst, src) : supported by D3D9, D3D11 */
-    SDL_BLENDOPERATION_MAXIMUM          = 0x5   /**< max(dst, src) : supported by D3D9, D3D11 */
+    SDL_BLENDOPERATION_SUBTRACT         = 0x2,  /**< src - dst : supported by D3D, OpenGL, OpenGLES, and Vulkan */
+    SDL_BLENDOPERATION_REV_SUBTRACT     = 0x3,  /**< dst - src : supported by D3D, OpenGL, OpenGLES, and Vulkan */
+    SDL_BLENDOPERATION_MINIMUM          = 0x4,  /**< min(dst, src) : supported by D3D, OpenGL, OpenGLES, and Vulkan */
+    SDL_BLENDOPERATION_MAXIMUM          = 0x5   /**< max(dst, src) : supported by D3D, OpenGL, OpenGLES, and Vulkan */
 } SDL_BlendOperation;
 
 /**

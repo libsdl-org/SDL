@@ -524,6 +524,28 @@ static int surface_testBlitBlendBlend(void *arg)
 }
 
 /**
+ * @brief Tests some more blitting routines.
+ */
+static int surface_testBlitBlendPremultiplied(void *arg)
+{
+   int ret;
+   SDL_Surface *compareSurface;
+
+   /* Blend premultiplied blitting */
+   testBlitBlendMode(SDL_BLENDMODE_BLEND_PREMULTIPLIED);
+
+   /* Verify result by comparing surfaces */
+   compareSurface = SDLTest_ImageBlitBlendPremultiplied();
+   ret = SDLTest_CompareSurfaces( testSurface, compareSurface, 0 );
+   SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+
+   /* Clean up. */
+   SDL_DestroySurface(compareSurface);
+
+   return TEST_COMPLETED;
+}
+
+/**
  * Tests some more blitting routines.
  */
 static int surface_testBlitBlendAdd(void *arg)
@@ -536,6 +558,28 @@ static int surface_testBlitBlendAdd(void *arg)
 
     /* Verify result by comparing surfaces */
     compareSurface = SDLTest_ImageBlitBlendAdd();
+    ret = SDLTest_CompareSurfaces(testSurface, compareSurface, 0);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+
+    /* Clean up. */
+    SDL_DestroySurface(compareSurface);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * Tests some more blitting routines.
+ */
+static int surface_testBlitBlendAddPremultiplied(void *arg)
+{
+    int ret;
+    SDL_Surface *compareSurface;
+
+    /* Add blitting */
+    testBlitBlendMode(SDL_BLENDMODE_ADD_PREMULTIPLIED);
+
+    /* Verify result by comparing surfaces */
+    compareSurface = SDLTest_ImageBlitBlendAddPremultiplied();
     ret = SDLTest_CompareSurfaces(testSurface, compareSurface, 0);
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
@@ -958,10 +1002,20 @@ static const SDLTest_TestCaseReference surfaceTest10 = {
 
 /* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
 static const SDLTest_TestCaseReference surfaceTest11 = {
+    (SDLTest_TestCaseFp)surface_testBlitBlendPremultiplied, "surface_testBlitBlendPremultiplied", "Tests blitting routines with premultiplied blending mode.", TEST_DISABLED
+};
+
+/* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
+static const SDLTest_TestCaseReference surfaceTest12 = {
     (SDLTest_TestCaseFp)surface_testBlitBlendAdd, "surface_testBlitBlendAdd", "Tests blitting routines with add blending mode.", TEST_DISABLED
 };
 
-static const SDLTest_TestCaseReference surfaceTest12 = {
+/* TODO: rewrite test case, define new test data and re-enable; current implementation fails */
+static const SDLTest_TestCaseReference surfaceTest13 = {
+    (SDLTest_TestCaseFp)surface_testBlitBlendAddPremultiplied, "surface_testBlitBlendAddPremultiplied", "Tests blitting routines with premultiplied add blending mode.", TEST_DISABLED
+};
+
+static const SDLTest_TestCaseReference surfaceTest14 = {
     (SDLTest_TestCaseFp)surface_testBlitBlendMod, "surface_testBlitBlendMod", "Tests blitting routines with mod blending mode.", TEST_ENABLED
 };
 
@@ -981,8 +1035,8 @@ static const SDLTest_TestCaseReference surfaceTestPalette = {
 static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTest1, &surfaceTest2, &surfaceTest3, &surfaceTest4, &surfaceTest5,
     &surfaceTest6, &surfaceTest7, &surfaceTest8, &surfaceTest9, &surfaceTest10,
-    &surfaceTest11, &surfaceTest12, &surfaceTestOverflow, &surfaceTestFlip,
-    &surfaceTestPalette, NULL
+    &surfaceTest11, &surfaceTest12, &surfaceTest13, &surfaceTest14,
+    &surfaceTestOverflow, &surfaceTestFlip, &surfaceTestPalette, NULL
 };
 
 /* Surface test suite (global) */

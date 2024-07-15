@@ -51,7 +51,11 @@ static void SDL_BlendLine_RGB2(SDL_Surface *dst, int x1, int y1, int x2, int y2,
         case SDL_BLENDMODE_BLEND:
             HLINE(Uint16, DRAW_SETPIXEL_BLEND_RGB, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            HLINE(Uint16, DRAW_SETPIXEL_BLEND_CLAMPED_RGB, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             HLINE(Uint16, DRAW_SETPIXEL_ADD_RGB, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -69,7 +73,11 @@ static void SDL_BlendLine_RGB2(SDL_Surface *dst, int x1, int y1, int x2, int y2,
         case SDL_BLENDMODE_BLEND:
             VLINE(Uint16, DRAW_SETPIXEL_BLEND_RGB, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            VLINE(Uint16, DRAW_SETPIXEL_BLEND_CLAMPED_RGB, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             VLINE(Uint16, DRAW_SETPIXEL_ADD_RGB, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -87,7 +95,11 @@ static void SDL_BlendLine_RGB2(SDL_Surface *dst, int x1, int y1, int x2, int y2,
         case SDL_BLENDMODE_BLEND:
             DLINE(Uint16, DRAW_SETPIXEL_BLEND_RGB, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DLINE(Uint16, DRAW_SETPIXEL_BLEND_CLAMPED_RGB, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DLINE(Uint16, DRAW_SETPIXEL_ADD_RGB, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -107,7 +119,13 @@ static void SDL_BlendLine_RGB2(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                    DRAW_SETPIXELXY2_BLEND_RGB, DRAW_SETPIXELXY2_BLEND_RGB,
                    draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            AALINE(x1, y1, x2, y2,
+                   DRAW_SETPIXELXY2_BLEND_CLAMPED_RGB, DRAW_SETPIXELXY2_BLEND_CLAMPED_RGB,
+                   draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             AALINE(x1, y1, x2, y2,
                    DRAW_SETPIXELXY2_ADD_RGB, DRAW_SETPIXELXY2_ADD_RGB,
                    draw_end);
@@ -155,7 +173,11 @@ static void SDL_BlendLine_RGB555(SDL_Surface *dst, int x1, int y1, int x2, int y
         case SDL_BLENDMODE_BLEND:
             HLINE(Uint16, DRAW_SETPIXEL_BLEND_RGB555, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            HLINE(Uint16, DRAW_SETPIXEL_BLEND_CLAMPED_RGB555, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             HLINE(Uint16, DRAW_SETPIXEL_ADD_RGB555, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -173,7 +195,11 @@ static void SDL_BlendLine_RGB555(SDL_Surface *dst, int x1, int y1, int x2, int y
         case SDL_BLENDMODE_BLEND:
             VLINE(Uint16, DRAW_SETPIXEL_BLEND_RGB555, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            VLINE(Uint16, DRAW_SETPIXEL_BLEND_CLAMPED_RGB555, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             VLINE(Uint16, DRAW_SETPIXEL_ADD_RGB555, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -191,7 +217,11 @@ static void SDL_BlendLine_RGB555(SDL_Surface *dst, int x1, int y1, int x2, int y
         case SDL_BLENDMODE_BLEND:
             DLINE(Uint16, DRAW_SETPIXEL_BLEND_RGB555, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DLINE(Uint16, DRAW_SETPIXEL_BLEND_CLAMPED_RGB555, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DLINE(Uint16, DRAW_SETPIXEL_ADD_RGB555, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -211,7 +241,13 @@ static void SDL_BlendLine_RGB555(SDL_Surface *dst, int x1, int y1, int x2, int y
                    DRAW_SETPIXELXY_BLEND_RGB555, DRAW_SETPIXELXY_BLEND_RGB555,
                    draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            AALINE(x1, y1, x2, y2,
+                   DRAW_SETPIXELXY_BLEND_CLAMPED_RGB555, DRAW_SETPIXELXY_BLEND_CLAMPED_RGB555,
+                   draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             AALINE(x1, y1, x2, y2,
                    DRAW_SETPIXELXY_ADD_RGB555, DRAW_SETPIXELXY_ADD_RGB555,
                    draw_end);
@@ -259,7 +295,11 @@ static void SDL_BlendLine_RGB565(SDL_Surface *dst, int x1, int y1, int x2, int y
         case SDL_BLENDMODE_BLEND:
             HLINE(Uint16, DRAW_SETPIXEL_BLEND_RGB565, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            HLINE(Uint16, DRAW_SETPIXEL_BLEND_CLAMPED_RGB565, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             HLINE(Uint16, DRAW_SETPIXEL_ADD_RGB565, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -277,7 +317,11 @@ static void SDL_BlendLine_RGB565(SDL_Surface *dst, int x1, int y1, int x2, int y
         case SDL_BLENDMODE_BLEND:
             VLINE(Uint16, DRAW_SETPIXEL_BLEND_RGB565, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            VLINE(Uint16, DRAW_SETPIXEL_BLEND_CLAMPED_RGB565, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             VLINE(Uint16, DRAW_SETPIXEL_ADD_RGB565, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -295,7 +339,11 @@ static void SDL_BlendLine_RGB565(SDL_Surface *dst, int x1, int y1, int x2, int y
         case SDL_BLENDMODE_BLEND:
             DLINE(Uint16, DRAW_SETPIXEL_BLEND_RGB565, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DLINE(Uint16, DRAW_SETPIXEL_BLEND_CLAMPED_RGB565, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DLINE(Uint16, DRAW_SETPIXEL_ADD_RGB565, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -315,7 +363,13 @@ static void SDL_BlendLine_RGB565(SDL_Surface *dst, int x1, int y1, int x2, int y
                    DRAW_SETPIXELXY_BLEND_RGB565, DRAW_SETPIXELXY_BLEND_RGB565,
                    draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            AALINE(x1, y1, x2, y2,
+                   DRAW_SETPIXELXY_BLEND_CLAMPED_RGB565, DRAW_SETPIXELXY_BLEND_CLAMPED_RGB565,
+                   draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             AALINE(x1, y1, x2, y2,
                    DRAW_SETPIXELXY_ADD_RGB565, DRAW_SETPIXELXY_ADD_RGB565,
                    draw_end);
@@ -364,7 +418,11 @@ static void SDL_BlendLine_RGB4(SDL_Surface *dst, int x1, int y1, int x2, int y2,
         case SDL_BLENDMODE_BLEND:
             HLINE(Uint32, DRAW_SETPIXEL_BLEND_RGB, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            HLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_RGB, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             HLINE(Uint32, DRAW_SETPIXEL_ADD_RGB, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -382,7 +440,11 @@ static void SDL_BlendLine_RGB4(SDL_Surface *dst, int x1, int y1, int x2, int y2,
         case SDL_BLENDMODE_BLEND:
             VLINE(Uint32, DRAW_SETPIXEL_BLEND_RGB, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            VLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_RGB, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             VLINE(Uint32, DRAW_SETPIXEL_ADD_RGB, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -400,7 +462,11 @@ static void SDL_BlendLine_RGB4(SDL_Surface *dst, int x1, int y1, int x2, int y2,
         case SDL_BLENDMODE_BLEND:
             DLINE(Uint32, DRAW_SETPIXEL_BLEND_RGB, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_RGB, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DLINE(Uint32, DRAW_SETPIXEL_ADD_RGB, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -420,7 +486,13 @@ static void SDL_BlendLine_RGB4(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                    DRAW_SETPIXELXY4_BLEND_RGB, DRAW_SETPIXELXY4_BLEND_RGB,
                    draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            AALINE(x1, y1, x2, y2,
+                   DRAW_SETPIXELXY4_BLEND_CLAMPED_RGB, DRAW_SETPIXELXY4_BLEND_CLAMPED_RGB,
+                   draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             AALINE(x1, y1, x2, y2,
                    DRAW_SETPIXELXY4_ADD_RGB, DRAW_SETPIXELXY4_ADD_RGB,
                    draw_end);
@@ -469,7 +541,11 @@ static void SDL_BlendLine_RGBA4(SDL_Surface *dst, int x1, int y1, int x2, int y2
         case SDL_BLENDMODE_BLEND:
             HLINE(Uint32, DRAW_SETPIXEL_BLEND_RGBA, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            HLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_RGBA, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             HLINE(Uint32, DRAW_SETPIXEL_ADD_RGBA, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -487,7 +563,11 @@ static void SDL_BlendLine_RGBA4(SDL_Surface *dst, int x1, int y1, int x2, int y2
         case SDL_BLENDMODE_BLEND:
             VLINE(Uint32, DRAW_SETPIXEL_BLEND_RGBA, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            VLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_RGBA, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             VLINE(Uint32, DRAW_SETPIXEL_ADD_RGBA, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -505,7 +585,11 @@ static void SDL_BlendLine_RGBA4(SDL_Surface *dst, int x1, int y1, int x2, int y2
         case SDL_BLENDMODE_BLEND:
             DLINE(Uint32, DRAW_SETPIXEL_BLEND_RGBA, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_RGBA, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DLINE(Uint32, DRAW_SETPIXEL_ADD_RGBA, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -525,7 +609,13 @@ static void SDL_BlendLine_RGBA4(SDL_Surface *dst, int x1, int y1, int x2, int y2
                    DRAW_SETPIXELXY4_BLEND_RGBA, DRAW_SETPIXELXY4_BLEND_RGBA,
                    draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            AALINE(x1, y1, x2, y2,
+                   DRAW_SETPIXELXY4_BLEND_CLAMPED_RGBA, DRAW_SETPIXELXY4_BLEND_CLAMPED_RGBA,
+                   draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             AALINE(x1, y1, x2, y2,
                    DRAW_SETPIXELXY4_ADD_RGBA, DRAW_SETPIXELXY4_ADD_RGBA,
                    draw_end);
@@ -573,7 +663,11 @@ static void SDL_BlendLine_XRGB8888(SDL_Surface *dst, int x1, int y1, int x2, int
         case SDL_BLENDMODE_BLEND:
             HLINE(Uint32, DRAW_SETPIXEL_BLEND_XRGB8888, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            HLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_XRGB8888, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             HLINE(Uint32, DRAW_SETPIXEL_ADD_XRGB8888, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -591,7 +685,11 @@ static void SDL_BlendLine_XRGB8888(SDL_Surface *dst, int x1, int y1, int x2, int
         case SDL_BLENDMODE_BLEND:
             VLINE(Uint32, DRAW_SETPIXEL_BLEND_XRGB8888, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            VLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_XRGB8888, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             VLINE(Uint32, DRAW_SETPIXEL_ADD_XRGB8888, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -609,7 +707,11 @@ static void SDL_BlendLine_XRGB8888(SDL_Surface *dst, int x1, int y1, int x2, int
         case SDL_BLENDMODE_BLEND:
             DLINE(Uint32, DRAW_SETPIXEL_BLEND_XRGB8888, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_XRGB8888, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DLINE(Uint32, DRAW_SETPIXEL_ADD_XRGB8888, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -629,7 +731,13 @@ static void SDL_BlendLine_XRGB8888(SDL_Surface *dst, int x1, int y1, int x2, int
                    DRAW_SETPIXELXY_BLEND_XRGB8888, DRAW_SETPIXELXY_BLEND_XRGB8888,
                    draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            AALINE(x1, y1, x2, y2,
+                   DRAW_SETPIXELXY_BLEND_CLAMPED_XRGB8888, DRAW_SETPIXELXY_BLEND_CLAMPED_XRGB8888,
+                   draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             AALINE(x1, y1, x2, y2,
                    DRAW_SETPIXELXY_ADD_XRGB8888, DRAW_SETPIXELXY_ADD_XRGB8888,
                    draw_end);
@@ -677,7 +785,11 @@ static void SDL_BlendLine_ARGB8888(SDL_Surface *dst, int x1, int y1, int x2, int
         case SDL_BLENDMODE_BLEND:
             HLINE(Uint32, DRAW_SETPIXEL_BLEND_ARGB8888, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            HLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_ARGB8888, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             HLINE(Uint32, DRAW_SETPIXEL_ADD_ARGB8888, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -695,7 +807,11 @@ static void SDL_BlendLine_ARGB8888(SDL_Surface *dst, int x1, int y1, int x2, int
         case SDL_BLENDMODE_BLEND:
             VLINE(Uint32, DRAW_SETPIXEL_BLEND_ARGB8888, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            VLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_ARGB8888, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             VLINE(Uint32, DRAW_SETPIXEL_ADD_ARGB8888, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -713,7 +829,11 @@ static void SDL_BlendLine_ARGB8888(SDL_Surface *dst, int x1, int y1, int x2, int
         case SDL_BLENDMODE_BLEND:
             DLINE(Uint32, DRAW_SETPIXEL_BLEND_ARGB8888, draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DLINE(Uint32, DRAW_SETPIXEL_BLEND_CLAMPED_ARGB8888, draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DLINE(Uint32, DRAW_SETPIXEL_ADD_ARGB8888, draw_end);
             break;
         case SDL_BLENDMODE_MOD:
@@ -733,7 +853,13 @@ static void SDL_BlendLine_ARGB8888(SDL_Surface *dst, int x1, int y1, int x2, int
                    DRAW_SETPIXELXY_BLEND_ARGB8888, DRAW_SETPIXELXY_BLEND_ARGB8888,
                    draw_end);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            AALINE(x1, y1, x2, y2,
+                   DRAW_SETPIXELXY_BLEND_CLAMPED_ARGB8888, DRAW_SETPIXELXY_BLEND_CLAMPED_ARGB8888,
+                   draw_end);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             AALINE(x1, y1, x2, y2,
                    DRAW_SETPIXELXY_ADD_ARGB8888, DRAW_SETPIXELXY_ADD_ARGB8888,
                    draw_end);

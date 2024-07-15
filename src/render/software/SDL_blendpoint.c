@@ -34,7 +34,11 @@ static int SDL_BlendPoint_RGB555(SDL_Surface *dst, int x, int y, SDL_BlendMode b
     case SDL_BLENDMODE_BLEND:
         DRAW_SETPIXELXY_BLEND_RGB555(x, y);
         break;
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+        DRAW_SETPIXELXY_BLEND_CLAMPED_RGB555(x, y);
+        break;
     case SDL_BLENDMODE_ADD:
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
         DRAW_SETPIXELXY_ADD_RGB555(x, y);
         break;
     case SDL_BLENDMODE_MOD:
@@ -59,7 +63,11 @@ static int SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode b
     case SDL_BLENDMODE_BLEND:
         DRAW_SETPIXELXY_BLEND_RGB565(x, y);
         break;
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+        DRAW_SETPIXELXY_BLEND_CLAMPED_RGB565(x, y);
+        break;
     case SDL_BLENDMODE_ADD:
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
         DRAW_SETPIXELXY_ADD_RGB565(x, y);
         break;
     case SDL_BLENDMODE_MOD:
@@ -84,7 +92,11 @@ static int SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode
     case SDL_BLENDMODE_BLEND:
         DRAW_SETPIXELXY_BLEND_XRGB8888(x, y);
         break;
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+        DRAW_SETPIXELXY_BLEND_CLAMPED_XRGB8888(x, y);
+        break;
     case SDL_BLENDMODE_ADD:
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
         DRAW_SETPIXELXY_ADD_XRGB8888(x, y);
         break;
     case SDL_BLENDMODE_MOD:
@@ -109,7 +121,11 @@ static int SDL_BlendPoint_ARGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode
     case SDL_BLENDMODE_BLEND:
         DRAW_SETPIXELXY_BLEND_ARGB8888(x, y);
         break;
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+        DRAW_SETPIXELXY_BLEND_CLAMPED_ARGB8888(x, y);
+        break;
     case SDL_BLENDMODE_ADD:
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
         DRAW_SETPIXELXY_ADD_ARGB8888(x, y);
         break;
     case SDL_BLENDMODE_MOD:
@@ -137,7 +153,11 @@ static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blen
         case SDL_BLENDMODE_BLEND:
             DRAW_SETPIXELXY2_BLEND_RGB(x, y);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DRAW_SETPIXELXY2_BLEND_CLAMPED_RGB(x, y);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DRAW_SETPIXELXY2_ADD_RGB(x, y);
             break;
         case SDL_BLENDMODE_MOD:
@@ -156,7 +176,11 @@ static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blen
         case SDL_BLENDMODE_BLEND:
             DRAW_SETPIXELXY4_BLEND_RGB(x, y);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DRAW_SETPIXELXY4_BLEND_CLAMPED_RGB(x, y);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DRAW_SETPIXELXY4_ADD_RGB(x, y);
             break;
         case SDL_BLENDMODE_MOD:
@@ -187,7 +211,11 @@ static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode ble
         case SDL_BLENDMODE_BLEND:
             DRAW_SETPIXELXY4_BLEND_RGBA(x, y);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DRAW_SETPIXELXY4_BLEND_CLAMPED_RGBA(x, y);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DRAW_SETPIXELXY4_ADD_RGBA(x, y);
             break;
         case SDL_BLENDMODE_MOD:

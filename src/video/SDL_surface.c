@@ -708,15 +708,21 @@ int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
 
     status = 0;
     flags = surface->internal->map.info.flags;
-    surface->internal->map.info.flags &= ~(SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL);
+    surface->internal->map.info.flags &= ~(SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL);
     switch (blendMode) {
     case SDL_BLENDMODE_NONE:
         break;
     case SDL_BLENDMODE_BLEND:
         surface->internal->map.info.flags |= SDL_COPY_BLEND;
         break;
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+        surface->internal->map.info.flags |= SDL_COPY_BLEND_PREMULTIPLIED;
+        break;
     case SDL_BLENDMODE_ADD:
         surface->internal->map.info.flags |= SDL_COPY_ADD;
+        break;
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
+        surface->internal->map.info.flags |= SDL_COPY_ADD_PREMULTIPLIED;
         break;
     case SDL_BLENDMODE_MOD:
         surface->internal->map.info.flags |= SDL_COPY_MOD;
@@ -746,12 +752,18 @@ int SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
         return 0;
     }
 
-    switch (surface->internal->map.info.flags & (SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL)) {
+    switch (surface->internal->map.info.flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL)) {
     case SDL_COPY_BLEND:
         *blendMode = SDL_BLENDMODE_BLEND;
         break;
+    case SDL_COPY_BLEND_PREMULTIPLIED:
+        *blendMode = SDL_BLENDMODE_BLEND_PREMULTIPLIED;
+        break;
     case SDL_COPY_ADD:
         *blendMode = SDL_BLENDMODE_ADD;
+        break;
+    case SDL_COPY_ADD_PREMULTIPLIED:
+        *blendMode = SDL_BLENDMODE_ADD_PREMULTIPLIED;
         break;
     case SDL_COPY_MOD:
         *blendMode = SDL_BLENDMODE_MOD;
@@ -1088,7 +1100,7 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                                    SDL_ScaleMode scaleMode)
 {
     static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
-                                              SDL_COPY_BLEND | SDL_COPY_ADD | SDL_COPY_MOD | SDL_COPY_MUL |
+                                              SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL |
                                               SDL_COPY_COLORKEY);
 
     if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {

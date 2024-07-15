@@ -702,9 +702,31 @@ static int render_testBlitBlend(void *arg)
     SDL_DestroySurface(referenceSurface);
     referenceSurface = NULL;
 
+    /* Test Blend Premultiplied. */
+    testBlitBlendMode(tface, SDL_BLENDMODE_BLEND_PREMULTIPLIED);
+    referenceSurface = SDLTest_ImageBlitBlendPremultiplied();
+
+    /* Compare, then Present */
+    compare(referenceSurface, ALLOWABLE_ERROR_BLENDED);
+    SDL_RenderPresent(renderer);
+
+    SDL_DestroySurface(referenceSurface);
+    referenceSurface = NULL;
+
     /* Test Add. */
     testBlitBlendMode(tface, SDL_BLENDMODE_ADD);
     referenceSurface = SDLTest_ImageBlitBlendAdd();
+
+    /* Compare, then Present */
+    compare(referenceSurface, ALLOWABLE_ERROR_BLENDED);
+    SDL_RenderPresent(renderer);
+
+    SDL_DestroySurface(referenceSurface);
+    referenceSurface = NULL;
+
+    /* Test Add Premultiplied. */
+    testBlitBlendMode(tface, SDL_BLENDMODE_ADD_PREMULTIPLIED);
+    referenceSurface = SDLTest_ImageBlitBlendAddPremultiplied();
 
     /* Compare, then Present */
     compare(referenceSurface, ALLOWABLE_ERROR_BLENDED);
@@ -1154,6 +1176,15 @@ hasBlendModes(void)
     if (!isSupported(ret)) {
         fail = 1;
     }
+   ret = SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND_PREMULTIPLIED );
+   if (!isSupported(ret))
+      fail = 1;
+   ret = SDL_GetRenderDrawBlendMode(renderer, &mode );
+   if (!isSupported(ret))
+      fail = 1;
+   ret = (mode != SDL_BLENDMODE_BLEND_PREMULTIPLIED);
+   if (!isSupported(ret))
+      fail = 1;
     ret = SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
     if (!isSupported(ret)) {
         fail = 1;
@@ -1163,6 +1194,18 @@ hasBlendModes(void)
         fail = 1;
     }
     ret = (mode != SDL_BLENDMODE_ADD);
+    if (!isSupported(ret)) {
+        fail = 1;
+    }
+    ret = SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD_PREMULTIPLIED);
+    if (!isSupported(ret)) {
+        fail = 1;
+    }
+    ret = SDL_GetRenderDrawBlendMode(renderer, &mode);
+    if (!isSupported(ret)) {
+        fail = 1;
+    }
+    ret = (mode != SDL_BLENDMODE_ADD_PREMULTIPLIED);
     if (!isSupported(ret)) {
         fail = 1;
     }
