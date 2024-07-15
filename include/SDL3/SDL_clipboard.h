@@ -57,22 +57,22 @@ extern "C" {
 extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
 
 /**
- * Get UTF-8 text from the clipboard, which must be freed with SDL_free().
+ * Get UTF-8 text from the clipboard.
  *
  * This functions returns empty string if there was not enough memory left for
  * a copy of the clipboard's content.
  *
+ * The returned string follows the SDL_GetStringRule.
+ *
  * \returns the clipboard text on success or an empty string on failure; call
- *          SDL_GetError() for more information. Caller must call SDL_free()
- *          on the returned pointer when done with it (even if there was an
- *          error).
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasClipboardText
  * \sa SDL_SetClipboardText
  */
-extern SDL_DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetClipboardText(void);
 
 /**
  * Query whether the clipboard exists and contains a non-empty text string.

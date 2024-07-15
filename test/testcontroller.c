@@ -680,14 +680,13 @@ static void CopyMapping(void)
 static void PasteMapping(void)
 {
     if (controller) {
-        char *mapping = SDL_GetClipboardText();
+        const char *mapping = SDL_GetClipboardText();
         if (MappingHasBindings(mapping)) {
             StopBinding();
-            SetAndFreeGamepadMapping(mapping);
+            SDL_SetGamepadMapping(controller->id, mapping);
             RefreshControllerName();
         } else {
             /* Not a valid mapping, ignore it */
-            SDL_free(mapping);
         }
     }
 }
@@ -743,7 +742,7 @@ static void CopyControllerName(void)
 static void PasteControllerName(void)
 {
     SDL_free(controller_name);
-    controller_name = SDL_GetClipboardText();
+    controller_name = SDL_strdup(SDL_GetClipboardText());
     CommitControllerName();
 }
 
