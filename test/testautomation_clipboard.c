@@ -163,12 +163,11 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         clipboard_cleanup_count - last_clipboard_cleanup_count);
 
     expected_text = "TEST";
-    text = SDL_GetClipboardText();
+    text = (char *) SDL_GetClipboardText();
     SDLTest_AssertCheck(
         text && SDL_strcmp(text, expected_text) == 0,
         "Verify clipboard text, expected \"%s\", got \"%s\"",
         expected_text, text);
-    SDL_free(text);
 
     boolResult = SDL_HasClipboardData(test_mime_types[TEST_MIME_TYPE_TEXT]);
     SDLTest_AssertCheck(
@@ -265,12 +264,11 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         clipboard_cleanup_count - last_clipboard_cleanup_count);
 
     expected_text = "TEST";
-    text = SDL_GetClipboardText();
+    text = (char *) SDL_GetClipboardText();
     SDLTest_AssertCheck(
         text && SDL_strcmp(text, expected_text) == 0,
         "Verify clipboard text, expected \"%s\", got \"%s\"",
         expected_text, text);
-    SDL_free(text);
 
     boolResult = SDL_HasClipboardData(test_mime_types[TEST_MIME_TYPE_TEXT]);
     SDLTest_AssertCheck(
@@ -386,7 +384,7 @@ static int clipboard_testClipboardTextFunctions(void *arg)
     char *text = SDL_strdup(textRef);
     SDL_bool boolResult;
     int intResult;
-    char *charResult;
+    const char *charResult;
     int last_clipboard_update_count;
 
     SDL_AddEventWatch(ClipboardEventWatch, NULL);
@@ -403,7 +401,6 @@ static int clipboard_testClipboardTextFunctions(void *arg)
         charResult && SDL_strcmp(charResult, "") == 0,
         "Verify SDL_GetClipboardText returned \"\", got %s",
         charResult);
-    SDL_free(charResult);
     boolResult = SDL_HasClipboardText();
     SDLTest_AssertCheck(
         boolResult == SDL_FALSE,
@@ -436,7 +433,6 @@ static int clipboard_testClipboardTextFunctions(void *arg)
         charResult && SDL_strcmp(textRef, charResult) == 0,
         "Verify SDL_GetClipboardText returned correct string, expected '%s', got '%s'",
         textRef, charResult);
-    SDL_free(charResult);
     SDLTest_AssertCheck(
         clipboard_update_count == last_clipboard_update_count + 1,
         "Verify clipboard update count incremented by 1, got %d",

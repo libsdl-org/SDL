@@ -2278,13 +2278,12 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                     SDLTest_PasteScreenShot();
                 } else {
                     /* Ctrl-V paste awesome text! */
-                    char *text = SDL_GetClipboardText();
+                    const char *text = SDL_GetClipboardText();
                     if (*text) {
                         SDL_Log("Clipboard: %s\n", text);
                     } else {
                         SDL_Log("Clipboard is empty\n");
                     }
-                    SDL_free(text);
                 }
             }
             break;

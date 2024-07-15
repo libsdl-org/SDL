@@ -282,29 +282,31 @@ int SDL_SetClipboardText(const char *text)
     return SDL_ClearClipboardData();
 }
 
-char *SDL_GetClipboardText(void)
+const char *SDL_GetClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t i, num_mime_types;
     const char **text_mime_types;
     size_t length;
-    char *text = NULL;
+    const char *text = NULL;
 
     if (!_this) {
         SDL_SetError("Video subsystem must be initialized to get clipboard text");
-        return SDL_strdup("");
+        return "";
     }
 
     text_mime_types = SDL_GetTextMimeTypes(_this, &num_mime_types);
     for (i = 0; i < num_mime_types; ++i) {
-        text = (char *)SDL_GetClipboardData(text_mime_types[i], &length);
-        if (text) {
+        void *clipdata = SDL_GetClipboardData(text_mime_types[i], &length);
+        if (clipdata) {
+            text = (const char *) clipdata;
+            SDL_FreeLater(clipdata);  // returned string follows the SDL_GetStringRule.
             break;
         }
     }
 
     if (!text) {
-        text = SDL_strdup("");
+        text = "";
     }
     return text;
 }
