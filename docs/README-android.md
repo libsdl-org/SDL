@@ -169,10 +169,10 @@ them using the standard functions in SDL_iostream.h.
 
 There are also a few Android specific functions that allow you to get other
 useful paths for saving and loading data:
-* SDL_AndroidGetInternalStoragePath()
-* SDL_AndroidGetExternalStorageState()
-* SDL_AndroidGetExternalStoragePath()
-* SDL_AndroidGetCachePath()
+* SDL_GetAndroidInternalStoragePath()
+* SDL_GetAndroidExternalStorageState()
+* SDL_GetAndroidExternalStoragePath()
+* SDL_GetAndroidCachePath()
 
 See SDL_system.h for more details on these functions.
 

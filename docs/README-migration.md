@@ -1748,23 +1748,36 @@ The following symbols have been renamed:
 
 SDL_WindowsMessageHook has changed signatures so the message may be modified and it can block further message processing.
 
-SDL_AndroidGetExternalStorageState() takes the state as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
+SDL_GetAndroidExternalStorageState() takes the state as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
 SDL_AndroidRequestPermission is no longer a blocking call; the caller now provides a callback function that fires when a response is available.
 
-SDL_iPhoneSetAnimationCallback() and SDL_iPhoneSetEventPump() have been renamed to SDL_iOSSetAnimationCallback() and SDL_iOSSetEventPump(), respectively. SDL2 has had macros to provide this new name with the old symbol since the introduction of the iPad, but now the correctly-named symbol is the only option.
+SDL_iPhoneSetAnimationCallback() and SDL_iPhoneSetEventPump() have been renamed to SDL_SetiOSAnimationCallback() and SDL_SetiOSEventPump(), respectively. SDL2 has had macros to provide this new name with the old symbol since the introduction of the iPad, but now the correctly-named symbol is the only option.
 
 
 The following functions have been removed:
 * SDL_RenderGetD3D11Device() - replaced with the "SDL.renderer.d3d11.device" property
 * SDL_RenderGetD3D12Device() - replaced with the "SDL.renderer.d3d12.device" property
 * SDL_RenderGetD3D9Device() - replaced with the "SDL.renderer.d3d9.device" property
-* SDL_WinRTGetFSPathUNICODE() - Use SDL_WinRTGetFSPath() and SDL_iconv_string to convert from UTF-8 to UTF-16.
+* SDL_GetWinRTFSPathUNICODE() - Use SDL_GetWinRTFSPath() and SDL_iconv_string to convert from UTF-8 to UTF-16.
 
 The following functions have been renamed:
-* SDL_WinRTGetFSPathUTF8() => SDL_WinRTGetFSPath()
-* SDL_iPhoneSetAnimationCallback() => SDL_iOSSetAnimationCallback()
-* SDL_iPhoneSetEventPump() => SDL_iOSSetEventPump()
+* SDL_AndroidGetActivity() => SDL_GetAndroidActivity()
+* SDL_AndroidGetExternalStoragePath() => SDL_GetAndroidExternalStoragePath()
+* SDL_AndroidGetExternalStorageState() => SDL_GetAndroidExternalStorageState()
+* SDL_AndroidGetInternalStoragePath() => SDL_GetAndroidInternalStoragePath()
+* SDL_AndroidGetJNIEnv() => SDL_GetAndroidJNIEnv()
+* SDL_Direct3D9GetAdapterIndex() => SDL_GetDirect3D9AdapterIndex()
+* SDL_GDKGetDefaultUser() => SDL_GetGDKDefaultUser()
+* SDL_GDKGetTaskQueue() => SDL_GetGDKTaskQueue()
+* SDL_LinuxSetThreadPriority() => SDL_SetLinuxThreadPriority()
+* SDL_LinuxSetThreadPriorityAndPolicy() => SDL_SetLinuxThreadPriorityAndPolicy()
+* SDL_WinRTGetDeviceFamily() => SDL_GetWinRTDeviceFamily()
+* SDL_GetWinRTFSPathUTF8() => SDL_GetWinRTFSPath()
+* SDL_iOSSetAnimationCallback() => SDL_SetiOSAnimationCallback()
+* SDL_iOSSetEventPump() => SDL_SetiOSEventPump()
+* SDL_iPhoneSetAnimationCallback() => SDL_SetiOSAnimationCallback()
+* SDL_iPhoneSetEventPump() => SDL_SetiOSEventPump()
 
 ## SDL_syswm.h
 

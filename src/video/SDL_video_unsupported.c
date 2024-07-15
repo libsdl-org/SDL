@@ -52,8 +52,8 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
     return SDL_FALSE;
 }
 
-SDL_DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
-int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
+SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID);
+int SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID)
 {
     (void)displayID;
     return SDL_Unsupported();
@@ -61,8 +61,8 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 
 #elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 
-SDL_DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID);
-int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
+SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID);
+int SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID)
 {
     (void)displayID;
     return SDL_Unsupported();
@@ -72,8 +72,8 @@ int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
 
 #ifndef SDL_PLATFORM_GDK
 
-SDL_DECLSPEC int SDLCALL SDL_GDKGetTaskQueue(void *outTaskQueue);
-int SDL_GDKGetTaskQueue(void *outTaskQueue)
+SDL_DECLSPEC int SDLCALL SDL_GetGDKTaskQueue(void *outTaskQueue);
+int SDL_GetGDKTaskQueue(void *outTaskQueue)
 {
     (void)outTaskQueue;
     return SDL_Unsupported();
@@ -94,8 +94,8 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
 #ifndef SDL_VIDEO_DRIVER_UIKIT
 
 typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
-SDL_DECLSPEC int SDLCALL SDL_iOSSetAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
-int SDL_iOSSetAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam)
+SDL_DECLSPEC int SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
+int SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam)
 {
     (void)window;
     (void)interval;
@@ -104,8 +104,8 @@ int SDL_iOSSetAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimati
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC void SDLCALL SDL_iOSSetEventPump(SDL_bool enabled);
-void SDL_iOSSetEventPump(SDL_bool enabled)
+SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(SDL_bool enabled);
+void SDL_SetiOSEventPump(SDL_bool enabled)
 {
     (void)enabled;
     SDL_Unsupported();

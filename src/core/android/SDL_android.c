@@ -2392,12 +2392,12 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
 //////////////////////////////////////////////////////////////////////////////
 */
 
-void *SDL_AndroidGetJNIEnv(void)
+void *SDL_GetAndroidJNIEnv(void)
 {
     return Android_JNI_GetEnv();
 }
 
-void *SDL_AndroidGetActivity(void)
+void *SDL_GetAndroidActivity(void)
 {
     /* See SDL_system.h for caveats on using this function. */
 
@@ -2453,7 +2453,7 @@ void SDL_AndroidBackButton(void)
 }
 
 // this caches a string until the process ends, so there's no need to use SDL_FreeLater.
-const char *SDL_AndroidGetInternalStoragePath(void)
+const char *SDL_GetAndroidInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
 
@@ -2507,7 +2507,7 @@ const char *SDL_AndroidGetInternalStoragePath(void)
     return s_AndroidInternalFilesPath;
 }
 
-int SDL_AndroidGetExternalStorageState(Uint32 *state)
+int SDL_GetAndroidExternalStorageState(Uint32 *state)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
     jmethodID mid;
@@ -2553,7 +2553,7 @@ int SDL_AndroidGetExternalStorageState(Uint32 *state)
 }
 
 // this caches a string until the process ends, so there's no need to use SDL_FreeLater.
-const char *SDL_AndroidGetExternalStoragePath(void)
+const char *SDL_GetAndroidExternalStoragePath(void)
 {
     static char *s_AndroidExternalFilesPath = NULL;
 
@@ -2599,9 +2599,9 @@ const char *SDL_AndroidGetExternalStoragePath(void)
 }
 
 // this caches a string until the process ends, so there's no need to use SDL_FreeLater.
-const char *SDL_AndroidGetCachePath(void)
+const char *SDL_GetAndroidCachePath(void)
 {
-    // !!! FIXME: lots of duplication with SDL_AndroidGetExternalStoragePath and SDL_AndroidGetInternalStoragePath; consolidate these functions!
+    // !!! FIXME: lots of duplication with SDL_GetAndroidExternalStoragePath and SDL_GetAndroidInternalStoragePath; consolidate these functions!
     static char *s_AndroidCachePath = NULL;
 
     if (!s_AndroidCachePath) {

@@ -2313,7 +2313,7 @@ static SDL_bool SDL_GetGamepadMappingFilePath(char *path, size_t size)
     }
 
 #ifdef SDL_PLATFORM_ANDROID
-    return SDL_snprintf(path, size, "%s/gamepad_map.txt", SDL_AndroidGetInternalStoragePath()) < size;
+    return SDL_snprintf(path, size, "%s/gamepad_map.txt", SDL_GetAndroidInternalStoragePath()) < size;
 #else
     return SDL_FALSE;
 #endif

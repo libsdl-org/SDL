@@ -126,7 +126,7 @@ Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp)
     return timestamp;
 }
 
-void SDL_iOSSetEventPump(SDL_bool enabled)
+void SDL_SetiOSEventPump(SDL_bool enabled)
 {
     UIKit_EventPumpEnabled = enabled;
 

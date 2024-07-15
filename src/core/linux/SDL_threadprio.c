@@ -249,7 +249,7 @@ static SDL_bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
 #endif /* threads */
 
 /* this is a public symbol, so it has to exist even if threads are disabled. */
-int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
+int SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
 {
 #ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();
@@ -281,7 +281,7 @@ int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 }
 
 /* this is a public symbol, so it has to exist even if threads are disabled. */
-int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
+int SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
 #ifdef SDL_THREADS_DISABLED
     return SDL_Unsupported();

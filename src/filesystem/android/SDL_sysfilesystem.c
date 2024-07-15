@@ -36,7 +36,7 @@ char *SDL_GetBasePath(void)
 
 char *SDL_GetPrefPath(const char *org, const char *app)
 {
-    const char *path = SDL_AndroidGetInternalStoragePath();
+    const char *path = SDL_GetAndroidInternalStoragePath();
     if (path) {
         size_t pathlen = SDL_strlen(path) + 2;
         char *fullpath = (char *)SDL_malloc(pathlen);

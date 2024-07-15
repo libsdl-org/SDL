@@ -28,10 +28,10 @@ The Windows GDK port supports the full set of Win32 APIs, renderers, controllers
 
   * An implementation on `WinMain` that performs the above GDK setup that you can use by #include'ing SDL_main.h in the source file that includes your standard main() function. If you are unable to do this, you can instead manually call `SDL_RunApp` from your entry point, passing in your `SDL_main` function and `NULL` as the parameters. To use `SDL_RunApp`, `#define SDL_MAIN_HANDLED` before `#include <SDL3/SDL_main.h>`.
   * Global task queue callbacks are dispatched during `SDL_PumpEvents` (which is also called internally if using `SDL_PollEvent`).
-  * You can get the handle of the global task queue through `SDL_GDKGetTaskQueue`, if needed. When done with the queue, be sure to use `XTaskQueueCloseHandle` to decrement the reference count (otherwise it will cause a resource leak).
+  * You can get the handle of the global task queue through `SDL_GetGDKTaskQueue`, if needed. When done with the queue, be sure to use `XTaskQueueCloseHandle` to decrement the reference count (otherwise it will cause a resource leak).
 
 * Single-player games have some additional features available:
-  * Call `SDL_GDKGetDefaultUser` to get the default XUserHandle pointer.
+  * Call `SDL_GetGDKDefaultUser` to get the default XUserHandle pointer.
   * `SDL_GetPrefPath` still works, but only for single-player titles.
 
   These functions mostly wrap around async APIs, and thus should be treated as synchronous alternatives. Also note that the single-player functions return on any OS errors, so be sure to validate the return values!
