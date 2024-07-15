@@ -466,7 +466,7 @@ static int clipboard_testPrimarySelectionTextFunctions(void *arg)
     char *text = SDL_strdup(textRef);
     SDL_bool boolResult;
     int intResult;
-    char *charResult;
+    const char *charResult;
     int last_clipboard_update_count;
 
     SDL_AddEventWatch(ClipboardEventWatch, NULL);
@@ -483,7 +483,6 @@ static int clipboard_testPrimarySelectionTextFunctions(void *arg)
         charResult && SDL_strcmp(charResult, "") == 0,
         "Verify SDL_GetPrimarySelectionText returned \"\", got %s",
         charResult);
-    SDL_free(charResult);
     boolResult = SDL_HasPrimarySelectionText();
     SDLTest_AssertCheck(
         boolResult == SDL_FALSE,
@@ -515,7 +514,6 @@ static int clipboard_testPrimarySelectionTextFunctions(void *arg)
         charResult && SDL_strcmp(textRef, charResult) == 0,
         "Verify SDL_GetPrimarySelectionText returned correct string, expected '%s', got '%s'",
         textRef, charResult);
-    SDL_free(charResult);
     SDLTest_AssertCheck(
         clipboard_update_count == last_clipboard_update_count + 1,
         "Verify clipboard update count incremented by 1, got %d",
