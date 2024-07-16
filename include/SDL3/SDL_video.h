@@ -2147,8 +2147,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window *window, float o
  * as 1.0f without error.
  *
  * \param window the window to get the current opacity value from.
- * \returns the opacity, (0.0f - transparent, 1.0f - opaque), or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns the opacity, (0.0f - transparent, 1.0f - opaque), or a negative
+ *          error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
