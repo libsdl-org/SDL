@@ -105,14 +105,14 @@ static SDL_VideoDevice *NGAGE_CreateDevice(void)
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
-        return 0;
+        return NULL;
     }
 
     /* Initialize internal N-Gage specific data */
     phdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!phdata) {
         SDL_free(device);
-        return 0;
+        return NULL;
     }
 
     /* General video */
