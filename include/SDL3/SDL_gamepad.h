@@ -393,7 +393,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_ReloadGamepadMappings(void);
  *
  * \param count a pointer filled in with the number of mappings returned, can
  *              be NULL.
- * \returns an array of the mapping strings, NULL-terminated. Returns NULL on error.
+ * \returns an array of the mapping strings, NULL-terminated. Returns NULL on
+ *          error.
  *
  * \since This function is available since SDL 3.0.0.
  */
