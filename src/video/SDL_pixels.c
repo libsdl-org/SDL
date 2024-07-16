@@ -1379,15 +1379,15 @@ static Uint8 *Map1toN(const SDL_Palette *pal, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod
     int i;
     int bpp;
 
+    if (!pal) {
+        SDL_SetError("src does not have a palette set");
+        return NULL;
+    }
+
     bpp = ((SDL_BYTESPERPIXEL(dst->format) == 3) ? 4 : SDL_BYTESPERPIXEL(dst->format));
     map = (Uint8 *)SDL_calloc(256, bpp);
     if (!map) {
         return NULL;
-    }
-
-    /* An all-zero map for surfaces without a palette. */
-    if (!pal) {
-        return map;
     }
 
     /* We memory copy to the pixel map so the endianness is preserved */
@@ -1410,7 +1410,7 @@ static Uint8 *MapNto1(const SDL_PixelFormatDetails *src, const SDL_Palette *pal,
     SDL_Color colors[256];
 
     if (!pal) {
-        *identical = 1;
+        SDL_SetError("dst does not have a palette set");
         return NULL;
     }
 
