@@ -2143,23 +2143,18 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window *window, float o
 /**
  * Get the opacity of a window.
  *
- * If transparency isn't supported on this platform, opacity will be reported
+ * If transparency isn't supported on this platform, opacity will be returned
  * as 1.0f without error.
  *
- * The parameter `opacity` is ignored if it is NULL.
- *
- * This function also returns -1 if an invalid window was provided.
- *
  * \param window the window to get the current opacity value from.
- * \param out_opacity the float filled in (0.0f - transparent, 1.0f - opaque).
- * \returns 0 on success or a negative error code on failure; call
+ * \returns the opacity, (0.0f - transparent, 1.0f - opaque), or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetWindowOpacity
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window *window, float *out_opacity);
+extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
 
 /**
  * Set the window as a modal to a parent window.

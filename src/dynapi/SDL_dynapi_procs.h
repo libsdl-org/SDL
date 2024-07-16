@@ -520,7 +520,7 @@ SDL_DYNAPI_PROC(int,SDL_GetWindowMaximumSize,(SDL_Window *a, int *b, int *c),(a,
 SDL_DYNAPI_PROC(int,SDL_GetWindowMinimumSize,(SDL_Window *a, int *b, int *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GetWindowMouseGrab,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(const SDL_Rect*,SDL_GetWindowMouseRect,(SDL_Window *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_GetWindowOpacity,(SDL_Window *a, float *b),(a,b),return)
+SDL_DYNAPI_PROC(float,SDL_GetWindowOpacity,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_GetWindowParent,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_GetWindowPixelDensity,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(SDL_PixelFormat,SDL_GetWindowPixelFormat,(SDL_Window *a),(a),return)
