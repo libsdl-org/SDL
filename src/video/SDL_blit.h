@@ -226,6 +226,10 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 ((b >> (8 - fmt->Bbits)) << fmt->Bshift) |  \
                 fmt->Amask;                                 \
     }
+#define RGB332_FROM_RGB(Pixel, r, g, b)                        \
+    {                                                          \
+        Pixel = (Uint8)(((r >> 5) << 5) | ((g >> 5) << 2) | (b >> 6)); \
+    }
 #define RGB565_FROM_RGB(Pixel, r, g, b)                        \
     {                                                          \
         Pixel = (Uint16)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)); \

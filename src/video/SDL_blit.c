@@ -279,9 +279,11 @@ int SDL_CalculateBlit(SDL_Surface *surface)
         SDL_PixelFormat src_format = surface->format;
         SDL_PixelFormat dst_format = dst->format;
 
-        if (!SDL_ISPIXELFORMAT_INDEXED(src_format) &&
+        if ((!SDL_ISPIXELFORMAT_INDEXED(src_format) ||
+             (src_format == SDL_PIXELFORMAT_INDEX8 && surface->internal->palette)) &&
             !SDL_ISPIXELFORMAT_FOURCC(src_format) &&
-            !SDL_ISPIXELFORMAT_INDEXED(dst_format) &&
+            (!SDL_ISPIXELFORMAT_INDEXED(dst_format) ||
+             (dst_format == SDL_PIXELFORMAT_INDEX8 && dst->internal->palette)) &&
             !SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
             blit = SDL_Blit_Slow;
         }
