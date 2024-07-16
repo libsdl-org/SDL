@@ -36,14 +36,11 @@ HANDLE SDL_GetWaitableTimer()
     static SDL_TLSID TLS_timer_handle;
     HANDLE timer;
 
-    if (!TLS_timer_handle) {
-        TLS_timer_handle = SDL_CreateTLS();
-    }
-    timer = SDL_GetTLS(TLS_timer_handle);
+    timer = SDL_GetTLS(&TLS_timer_handle);
     if (!timer) {
         timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
         if (timer) {
-            SDL_SetTLS(TLS_timer_handle, timer, SDL_CleanupWaitableTimer);
+            SDL_SetTLS(&TLS_timer_handle, timer, SDL_CleanupWaitableTimer);
         }
     }
     return timer;

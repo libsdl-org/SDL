@@ -2630,11 +2630,6 @@ typedef SDL_cond, SDL_Condition;
 + SDL_WINDOW_HIGH_PIXEL_DENSITY
 @@
 @@
-- SDL_TLSCreate
-+ SDL_CreateTLS
-  (...)
-@@
-@@
 - SDL_TLSGet
 + SDL_GetTLS
   (...)

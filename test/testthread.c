@@ -58,9 +58,9 @@ ThreadFunc(void *data)
 {
     SDL_ThreadPriority prio = SDL_THREAD_PRIORITY_NORMAL;
 
-    SDL_SetTLS(tls, "baby thread", NULL);
+    SDL_SetTLS(&tls, "baby thread", NULL);
     SDL_Log("Started thread %s: My thread id is %" SDL_PRIu64 ", thread data = %s\n",
-            (char *)data, SDL_GetCurrentThreadID(), (const char *)SDL_GetTLS(tls));
+            (char *)data, SDL_GetCurrentThreadID(), (const char *)SDL_GetTLS(&tls));
     while (alive) {
         SDL_Log("Thread '%s' is alive!\n", (char *)data);
 
@@ -132,10 +132,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    tls = SDL_CreateTLS();
-    SDL_assert(tls);
-    SDL_SetTLS(tls, "main thread", NULL);
-    SDL_Log("Main thread data initially: %s\n", (const char *)SDL_GetTLS(tls));
+    SDL_SetTLS(&tls, "main thread", NULL);
+    SDL_Log("Main thread data initially: %s\n", (const char *)SDL_GetTLS(&tls));
 
     alive = 1;
     thread = SDL_CreateThread(ThreadFunc, "One", "#1");
@@ -148,7 +146,7 @@ int main(int argc, char *argv[])
     alive = 0;
     SDL_WaitThread(thread, NULL);
 
-    SDL_Log("Main thread data finally: %s\n", (const char *)SDL_GetTLS(tls));
+    SDL_Log("Main thread data finally: %s\n", (const char *)SDL_GetTLS(&tls));
 
     alive = 1;
     (void)signal(SIGTERM, killed);

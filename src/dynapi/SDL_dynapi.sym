@@ -71,7 +71,6 @@ SDL3_0.0.0 {
     SDL_CreateSurfaceFrom;
     SDL_CreateSurfacePalette;
     SDL_CreateSystemCursor;
-    SDL_CreateTLS;
     SDL_CreateTexture;
     SDL_CreateTextureFromSurface;
     SDL_CreateTextureWithProperties;

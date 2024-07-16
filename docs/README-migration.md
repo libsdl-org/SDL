@@ -1886,12 +1886,16 @@ SDL_CreateThreadWithStackSize has been replaced with SDL_CreateThreadWithPropert
 
 SDL_CreateThread and SDL_CreateThreadWithProperties now take beginthread/endthread function pointers on all platforms (ignoring them on most), and have been replaced with macros that hide this detail on all platforms. This works the same as before at the source code level, but the actual function signature that is called in SDL has changed. The library's exported symbol is SDL_CreateThreadRuntime, and looking for "SDL_CreateThread" in the DLL/Shared Library/Dylib will fail. You should not call this directly, but instead always use the macro!
 
+SDL_GetTLS() and SDL_SetTLS() take a pointer to a TLS ID, and will automatically initialize it in a thread-safe way as needed.
+
 The following functions have been renamed:
 * SDL_TLSCleanup() => SDL_CleanupTLS()
-* SDL_TLSCreate() => SDL_CreateTLS()
 * SDL_TLSGet() => SDL_GetTLS()
 * SDL_TLSSet() => SDL_SetTLS()
 * SDL_ThreadID() => SDL_GetCurrentThreadID()
+
+The following functions have been removed:
+* SDL_TLSCreate() - TLS IDs are automatically allocated as needed.
 
 The following symbols have been renamed:
 * SDL_threadID => SDL_ThreadID

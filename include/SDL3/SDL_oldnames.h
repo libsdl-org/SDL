@@ -624,7 +624,6 @@
 
 /* ##SDL_thread.h */
 #define SDL_TLSCleanup SDL_CleanupTLS
-#define SDL_TLSCreate SDL_CreateTLS
 #define SDL_TLSGet SDL_GetTLS
 #define SDL_TLSSet SDL_SetTLS
 #define SDL_threadID SDL_ThreadID
@@ -1241,7 +1240,6 @@
 
 /* ##SDL_thread.h */
 #define SDL_TLSCleanup SDL_TLSCleanup_renamed_SDL_CleanupTLS
-#define SDL_TLSCreate SDL_TLSCreate_renamed_SDL_CreateTLS
 #define SDL_TLSGet SDL_TLSGet_renamed_SDL_GetTLS
 #define SDL_TLSSet SDL_TLSSet_renamed_SDL_SetTLS
 #define SDL_threadID SDL_threadID_renamed_SDL_ThreadID
