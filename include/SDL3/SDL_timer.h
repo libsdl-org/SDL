@@ -115,8 +115,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
  * Wait a specified number of nanoseconds before returning.
  *
  * This function waits a specified number of nanoseconds before returning. It
- * will attempt to wait as close to the requested time as possible, busy waiting
- * if necessary, but could return later due to OS scheduling.
+ * will attempt to wait as close to the requested time as possible, busy
+ * waiting if necessary, but could return later due to OS scheduling.
  *
  * \param ns the number of nanoseconds to delay.
  *
