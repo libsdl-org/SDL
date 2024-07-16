@@ -161,6 +161,8 @@
 {
     if (([sender draggingSourceOperationMask] & NSDragOperationGeneric) == NSDragOperationGeneric) {
         return NSDragOperationGeneric;
+    } else if (([sender draggingSourceOperationMask] & NSDragOperationCopy) == NSDragOperationCopy) {
+        return NSDragOperationCopy;
     }
 
     return NSDragOperationNone; /* no idea what to do with this, reject it. */
@@ -176,6 +178,14 @@
         y = (sdlwindow->h - point.y);
         SDL_SendDropPosition(sdlwindow, x, y);
         return NSDragOperationGeneric;
+    } else if (([sender draggingSourceOperationMask] & NSDragOperationCopy) == NSDragOperationCopy) {
+        SDL_Window *sdlwindow = [self findSDLWindow];
+        NSPoint point = [sender draggingLocation];
+        float x, y;
+        x = point.x;
+        y = (sdlwindow->h - point.y);
+        SDL_SendDropPosition(sdlwindow, x, y);
+        return NSDragOperationCopy;
     }
 
     return NSDragOperationNone; /* no idea what to do with this, reject it. */
@@ -183,63 +193,115 @@
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender
 {
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". [SDL] In performDragOperation, draggingSourceOperationMask %lx, "
+                 "expected Generic %lx, others Copy %lx, Link %lx, Private %lx, Move %lx, Delete %lx\n",
+                 (unsigned long)[sender draggingSourceOperationMask],
+                 (unsigned long)NSDragOperationGeneric,
+                 (unsigned long)NSDragOperationCopy,
+                 (unsigned long)NSDragOperationLink,
+                 (unsigned long)NSDragOperationPrivate,
+                 (unsigned long)NSDragOperationMove,
+                 (unsigned long)NSDragOperationDelete);
+    if ([sender draggingPasteboard]) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". [SDL] In performDragOperation, valid draggingPasteboard, "
+                     "name [%s] '%s', changeCount %ld\n",
+                     [[[[sender draggingPasteboard] name] className] UTF8String],
+                     [[[[sender draggingPasteboard] name] description] UTF8String],
+                     (long)[[sender draggingPasteboard] changeCount]);
+    }
     @autoreleasepool {
         NSPasteboard *pasteboard = [sender draggingPasteboard];
-        NSArray *types = [NSArray arrayWithObject:NSFilenamesPboardType];
-        NSString *desiredType = [pasteboard availableTypeFromArray:types];
+        NSString *desiredType = [pasteboard availableTypeFromArray:@[ NSFilenamesPboardType, NSPasteboardTypeString ]];
         SDL_Window *sdlwindow = [self findSDLWindow];
-        NSData *data;
-        NSArray *array;
+        NSData *pboardData;
+        id pboardPlist;
+        NSString *pboardString;
         NSPoint point;
         float x, y;
+
+        for (NSString *supportedType in [pasteboard types]) {
+            NSString *typeString = [pasteboard stringForType:supportedType];
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". [SDL] In performDragOperation, Pasteboard type '%s', stringForType (%lu) '%s'\n",
+                         [[supportedType description] UTF8String],
+                         (unsigned long)[[typeString description] length],
+                         [[typeString description] UTF8String]);
+        }
 
         if (desiredType == nil) {
             return NO; /* can't accept anything that's being dropped here. */
         }
-
-        data = [pasteboard dataForType:desiredType];
-        if (data == nil) {
+        pboardData = [pasteboard dataForType:desiredType];
+        if (pboardData == nil) {
             return NO;
         }
+        SDL_assert([desiredType isEqualToString:NSFilenamesPboardType] ||
+                   [desiredType isEqualToString:NSPasteboardTypeString]);
 
-        SDL_assert([desiredType isEqualToString:NSFilenamesPboardType]);
-        array = [pasteboard propertyListForType:@"NSFilenamesPboardType"];
+        pboardString = [pasteboard stringForType:desiredType];
+        pboardPlist = [pasteboard propertyListForType:desiredType];
 
-        /* Code addon to update the mouse location */
+        /* Use SendDropPosition to update the mouse location */
         point = [sender draggingLocation];
         x = point.x;
         y = (sdlwindow->h - point.y);
         if (x >= 0.0f && x < (float)sdlwindow->w && y >= 0.0f && y < (float)sdlwindow->h) {
-            SDL_SendMouseMotion(0, sdlwindow, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
+            SDL_SendDropPosition(sdlwindow, x, y);
         }
-        /* Code addon to update the mouse location */
+        /* Use SendDropPosition to update the mouse location */
 
-        for (NSString *path in array) {
-            NSURL *fileURL = [NSURL fileURLWithPath:path];
-            NSNumber *isAlias = nil;
+        if ([desiredType isEqualToString:NSFilenamesPboardType]) {
+            for (NSString *path in (NSArray *)pboardPlist) {
+                NSURL *fileURL = [NSURL fileURLWithPath:path];
+                NSNumber *isAlias = nil;
 
-            [fileURL getResourceValue:&isAlias forKey:NSURLIsAliasFileKey error:nil];
+                [fileURL getResourceValue:&isAlias forKey:NSURLIsAliasFileKey error:nil];
 
-            /* If the URL is an alias, resolve it. */
-            if ([isAlias boolValue]) {
-                NSURLBookmarkResolutionOptions opts = NSURLBookmarkResolutionWithoutMounting | NSURLBookmarkResolutionWithoutUI;
-                NSData *bookmark = [NSURL bookmarkDataWithContentsOfURL:fileURL error:nil];
-                if (bookmark != nil) {
-                    NSURL *resolvedURL = [NSURL URLByResolvingBookmarkData:bookmark
-                                                                   options:opts
-                                                             relativeToURL:nil
-                                                       bookmarkDataIsStale:nil
-                                                                     error:nil];
-
-                    if (resolvedURL != nil) {
-                        fileURL = resolvedURL;
+                /* If the URL is an alias, resolve it. */
+                if ([isAlias boolValue]) {
+                    NSURLBookmarkResolutionOptions opts = NSURLBookmarkResolutionWithoutMounting |
+                                                          NSURLBookmarkResolutionWithoutUI;
+                    NSData *bookmark = [NSURL bookmarkDataWithContentsOfURL:fileURL error:nil];
+                    if (bookmark != nil) {
+                        NSURL *resolvedURL = [NSURL URLByResolvingBookmarkData:bookmark
+                                                                       options:opts
+                                                                 relativeToURL:nil
+                                                           bookmarkDataIsStale:nil
+                                                                         error:nil];
+                        if (resolvedURL != nil) {
+                            fileURL = resolvedURL;
+                        }
                     }
                 }
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". [SDL] In performDragOperation, desiredType '%s', "
+                             "Submitting DropFile as (%lu) '%s'\n",
+                             [[desiredType description] UTF8String],
+                             (unsigned long)[[[fileURL path] description] length],
+                             [[[fileURL path] description] UTF8String]);
+                if (!SDL_SendDropFile(sdlwindow, NULL, [[[fileURL path] description] UTF8String])) {
+                    return NO;
+                }
             }
-
-            if (!SDL_SendDropFile(sdlwindow, NULL, [[fileURL path] UTF8String])) {
-                return NO;
+        } else if ([desiredType isEqualToString:NSPasteboardTypeString]) {
+            char *buffer  = SDL_strdup([[pboardString description] UTF8String]);
+            char *saveptr = NULL;
+            char *token   = SDL_strtok_r(buffer, "\r\n", &saveptr);
+            while (token) {
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". [SDL] In performDragOperation, desiredType '%s', "
+                             "Submitting DropText as (%lu) '%s'\n",
+                             [[desiredType description] UTF8String],
+                             strlen(token), token);
+                if (!SDL_SendDropText(sdlwindow, token)) {
+                    SDL_free(buffer);
+                    return NO;
+                }
+                token = SDL_strtok_r(NULL, "\r\n", &saveptr);
             }
+            SDL_free(buffer);
         }
 
         SDL_SendDropComplete(sdlwindow);
@@ -2954,7 +3016,8 @@ void Cocoa_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept)
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
         if (accept) {
-            [data.nswindow registerForDraggedTypes:[NSArray arrayWithObject:(NSString *)kUTTypeFileURL]];
+            [data.nswindow registerForDraggedTypes:@[ (NSString *)kUTTypeFileURL,
+                                                      (NSString *)kUTTypeUTF8PlainText ]];
         } else {
             [data.nswindow unregisterDraggedTypes];
         }
