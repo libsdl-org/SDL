@@ -68,6 +68,28 @@ static void surfaceTearDown(void *arg)
     testSurface = NULL;
 }
 
+static void DitherPalette(SDL_Palette *palette)
+{
+    int i;
+
+    for (i = 0; i < palette->ncolors; i++) {
+        int r, g, b;
+        /* map each bit field to the full [0, 255] interval,
+           so 0 is mapped to (0, 0, 0) and 255 to (255, 255, 255) */
+        r = i & 0xe0;
+        r |= r >> 3 | r >> 6;
+        palette->colors[i].r = (Uint8)r;
+        g = (i << 3) & 0xe0;
+        g |= g >> 3 | g >> 6;
+        palette->colors[i].g = (Uint8)g;
+        b = i & 0x3;
+        b |= b << 2;
+        b |= b << 4;
+        palette->colors[i].b = (Uint8)b;
+        palette->colors[i].a = SDL_ALPHA_OPAQUE;
+    }
+}
+
 /**
  * Helper that blits in a specific blend mode, -1 for color mod, -2 for alpha mod
  */
@@ -78,9 +100,6 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
     int ret;
     SDL_Surface *src;
     SDL_Surface *dst;
-    int checkFailCount1;
-    int checkFailCount2;
-    int checkFailCount3;
     Uint32 color;
     Uint8 srcR = 10, srcG = 128, srcB = 240, srcA = 100;
     Uint8 dstR = 128, dstG = 128, dstB = 128, dstA = 128;
@@ -96,18 +115,35 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
     }
 
     /* Clear surface. */
-    color = SDL_MapSurfaceRGBA(dst, dstR, dstG, dstB, dstA);
-    SDLTest_AssertPass("Call to SDL_MapSurfaceRGBA()");
+    if (SDL_ISPIXELFORMAT_INDEXED(dst_format)) {
+        SDL_Palette *palette = SDL_CreateSurfacePalette(dst);
+        DitherPalette(palette);
+        palette->colors[0].r = dstR;
+        palette->colors[0].g = dstG;
+        palette->colors[0].b = dstB;
+        palette->colors[0].a = dstA;
+        color = 0;
+    } else {
+        color = SDL_MapSurfaceRGBA(dst, dstR, dstG, dstB, dstA);
+        SDLTest_AssertPass("Call to SDL_MapSurfaceRGBA()");
+    }
     ret = SDL_FillSurfaceRect(dst, NULL, color);
     SDLTest_AssertPass("Call to SDL_FillSurfaceRect()");
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    SDL_GetRGBA(color, SDL_GetPixelFormatDetails(dst->format), NULL, &dstR, &dstG, &dstB, &dstA);
+    SDL_GetRGBA(color, SDL_GetPixelFormatDetails(dst->format), SDL_GetSurfacePalette(dst), &dstR, &dstG, &dstB, &dstA);
 
     /* Create src surface */
     src = SDL_CreateSurface(1, 1, src_format);
     SDLTest_AssertCheck(src != NULL, "Verify src surface is not NULL");
     if (src == NULL) {
         return;
+    }
+    if (SDL_ISPIXELFORMAT_INDEXED(src_format)) {
+        SDL_Palette *palette = SDL_CreateSurfacePalette(src);
+        palette->colors[0].r = srcR;
+        palette->colors[0].g = srcG;
+        palette->colors[0].b = srcB;
+        palette->colors[0].a = srcA;
     }
 
     /* Reset alpha modulation */
@@ -131,7 +167,7 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
     ret = SDL_FillSurfaceRect(src, NULL, color);
     SDLTest_AssertPass("Call to SDL_FillSurfaceRect()");
     SDLTest_AssertCheck(ret == 0, "Verify result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
-    SDL_GetRGBA(color, SDL_GetPixelFormatDetails(src->format), NULL, &srcR, &srcG, &srcB, &srcA);
+    SDL_GetRGBA(color, SDL_GetPixelFormatDetails(src->format), SDL_GetSurfacePalette(src), &srcR, &srcG, &srcB, &srcA);
 
     /* Set blend mode. */
     if (mode >= 0) {
@@ -146,16 +182,11 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
 
     /* Test blend mode. */
 #define FLOAT(X)    ((float)X / 255.0f)
-    checkFailCount1 = 0;
-    checkFailCount2 = 0;
-    checkFailCount3 = 0;
     switch (mode) {
     case -1:
         /* Set color mod. */
         ret = SDL_SetSurfaceColorMod(src, srcR, srcG, srcB);
-        if (ret != 0) {
-            checkFailCount2++;
-        }
+        SDLTest_AssertCheck(ret == 0, "Validate results from calls to SDL_SetSurfaceColorMod, expected: 0, got: %i", ret);
         expectedR = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcR) * FLOAT(srcR)) * FLOAT(srcA) + FLOAT(dstR) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
         expectedG = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcG) * FLOAT(srcG)) * FLOAT(srcA) + FLOAT(dstG) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
         expectedB = (Uint8)SDL_roundf(SDL_clamp((FLOAT(srcB) * FLOAT(srcB)) * FLOAT(srcA) + FLOAT(dstB) * (1.0f - FLOAT(srcA)), 0.0f, 1.0f) * 255.0f);
@@ -164,9 +195,7 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
     case -2:
         /* Set alpha mod. */
         ret = SDL_SetSurfaceAlphaMod(src, srcA);
-        if (ret != 0) {
-            checkFailCount3++;
-        }
+        SDLTest_AssertCheck(ret == 0, "Validate results from calls to SDL_SetSurfaceAlphaMod, expected: 0, got: %i", ret);
         expectedR = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcR) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstR) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
         expectedG = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcG) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstG) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
         expectedB = (Uint8)SDL_roundf(SDL_clamp(FLOAT(srcB) * (FLOAT(srcA) * FLOAT(srcA)) + FLOAT(dstB) * (1.0f - (FLOAT(srcA) * FLOAT(srcA))), 0.0f, 1.0f) * 255.0f);
@@ -219,30 +248,33 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
         return;
     }
 
-    /* Blitting. */
-    ret = SDL_BlitSurface(src, NULL, dst, NULL);
-    if (ret != 0) {
-        checkFailCount1++;
+    if (SDL_ISPIXELFORMAT_INDEXED(dst_format)) {
+        SDL_Palette *palette = SDL_GetSurfacePalette(dst);
+        palette->colors[1].r = expectedR;
+        palette->colors[1].g = expectedG;
+        palette->colors[1].b = expectedB;
+        palette->colors[1].a = expectedA;
     }
 
-    SDLTest_AssertCheck(checkFailCount1 == 0, "Validate results from calls to SDL_BlitSurface, expected: 0, got: %i", checkFailCount1);
-    SDLTest_AssertCheck(checkFailCount2 == 0, "Validate results from calls to SDL_SetSurfaceColorMod, expected: 0, got: %i", checkFailCount2);
-    SDLTest_AssertCheck(checkFailCount3 == 0, "Validate results from calls to SDL_SetSurfaceAlphaMod, expected: 0, got: %i", checkFailCount3);
-
-    SDL_ReadSurfacePixel(dst, 0, 0, &actualR, &actualG, &actualB, &actualA);
-    deltaR = SDL_abs((int)actualR - expectedR);
-    deltaG = SDL_abs((int)actualG - expectedG);
-    deltaB = SDL_abs((int)actualB - expectedB);
-    deltaA = SDL_abs((int)actualA - expectedA);
-    SDLTest_AssertCheck(
-        deltaR <= MAXIMUM_ERROR &&
-        deltaG <= MAXIMUM_ERROR &&
-        deltaB <= MAXIMUM_ERROR &&
-        deltaA <= MAXIMUM_ERROR,
-        "Checking %s -> %s blit results, expected %d,%d,%d,%d, got %d,%d,%d,%d",
+    /* Blitting. */
+    ret = SDL_BlitSurface(src, NULL, dst, NULL);
+    SDLTest_AssertCheck(ret == 0, "Validate results from calls to SDL_BlitSurface, expected: 0, got: %i: %s", ret, (ret < 0) ? SDL_GetError() : "success");
+    if (ret == 0) {
+        SDL_ReadSurfacePixel(dst, 0, 0, &actualR, &actualG, &actualB, &actualA);
+        deltaR = SDL_abs((int)actualR - expectedR);
+        deltaG = SDL_abs((int)actualG - expectedG);
+        deltaB = SDL_abs((int)actualB - expectedB);
+        deltaA = SDL_abs((int)actualA - expectedA);
+        SDLTest_AssertCheck(
+            deltaR <= MAXIMUM_ERROR &&
+            deltaG <= MAXIMUM_ERROR &&
+            deltaB <= MAXIMUM_ERROR &&
+            deltaA <= MAXIMUM_ERROR,
+            "Checking %s -> %s blit results, expected %d,%d,%d,%d, got %d,%d,%d,%d",
             SDL_GetPixelFormatName(src_format),
             SDL_GetPixelFormatName(dst_format),
             expectedR, expectedG, expectedB, expectedA, actualR, actualG, actualB, actualA);
+    }
 
     /* Clean up */
     SDL_DestroySurface(src);
@@ -252,7 +284,7 @@ static void testBlitBlendModeWithFormats(int mode, SDL_PixelFormat src_format, S
 static void testBlitBlendMode(int mode)
 {
     const SDL_PixelFormat src_formats[] = {
-        SDL_PIXELFORMAT_XRGB8888, SDL_PIXELFORMAT_ARGB8888
+        SDL_PIXELFORMAT_INDEX8, SDL_PIXELFORMAT_XRGB8888, SDL_PIXELFORMAT_ARGB8888
     };
     const SDL_PixelFormat dst_formats[] = {
         SDL_PIXELFORMAT_XRGB8888, SDL_PIXELFORMAT_ARGB8888
