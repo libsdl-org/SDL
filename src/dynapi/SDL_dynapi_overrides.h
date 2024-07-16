@@ -148,6 +148,7 @@
 #define SDL_FlushEvent SDL_FlushEvent_REAL
 #define SDL_FlushEvents SDL_FlushEvents_REAL
 #define SDL_FlushRenderer SDL_FlushRenderer_REAL
+#define SDL_FreeEventMemory SDL_FreeEventMemory_REAL
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GL_CreateContext SDL_GL_CreateContext_REAL
 #define SDL_GL_DestroyContext SDL_GL_DestroyContext_REAL

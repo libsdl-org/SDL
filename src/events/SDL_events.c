@@ -97,14 +97,62 @@ typedef struct SDL_EventMemory
     struct SDL_EventMemory *next;
 } SDL_EventMemory;
 
-static SDL_Mutex *SDL_event_memory_lock;
-static SDL_EventMemory *SDL_event_memory_head;
-static SDL_EventMemory *SDL_event_memory_tail;
+typedef struct SDL_EventMemoryState
+{
+    SDL_EventMemory *head;
+    SDL_EventMemory *tail;
+} SDL_EventMemoryState;
+
+static SDL_TLSID SDL_event_memory;
+
+
+static void SDL_CleanupEventMemory(void *data)
+{
+    SDL_EventMemoryState *state = (SDL_EventMemoryState *)data;
+
+    while (state->head) {
+        SDL_EventMemory *entry = state->head;
+        state->head = entry->next;
+        SDL_free(entry->memory);
+        SDL_free(entry);
+    }
+    SDL_free(state);
+}
+
+static SDL_EventMemoryState *SDL_GetEventMemoryState(SDL_bool create)
+{
+    SDL_EventMemoryState *state;
+
+    state = SDL_GetTLS(&SDL_event_memory);
+    if (!state) {
+        if (!create) {
+            return NULL;
+        }
+
+        state = (SDL_EventMemoryState *)SDL_calloc(1, sizeof(*state));
+        if (!state) {
+            return NULL;
+        }
+
+        if (SDL_SetTLS(&SDL_event_memory, state, SDL_CleanupEventMemory) < 0) {
+            SDL_free(state);
+            return NULL;
+        }
+    }
+    return state;
+}
 
 void *SDL_FreeLater(void *memory)
 {
+    SDL_EventMemoryState *state;
+
     if (memory == NULL) {
         return NULL;
+    }
+
+    state = SDL_GetEventMemoryState(SDL_TRUE);
+    if (!state) {
+        return memory;  // this is now a leak, but you probably have bigger problems if malloc failed.
     }
 
     SDL_EventMemory *entry = (SDL_EventMemory *)SDL_malloc(sizeof(*entry));
@@ -112,20 +160,16 @@ void *SDL_FreeLater(void *memory)
         return memory;  // this is now a leak, but you probably have bigger problems if malloc failed. We could probably pool up and reuse entries, though.
     }
 
-    SDL_LockMutex(SDL_event_memory_lock);
-    {
-        entry->eventID = SDL_last_event_id;
-        entry->memory = memory;
-        entry->next = NULL;
+    entry->eventID = SDL_last_event_id;
+    entry->memory = memory;
+    entry->next = NULL;
 
-        if (SDL_event_memory_tail) {
-            SDL_event_memory_tail->next = entry;
-        } else {
-            SDL_event_memory_head = entry;
-        }
-        SDL_event_memory_tail = entry;
+    if (state->tail) {
+        state->tail->next = entry;
+    } else {
+        state->head = entry;
     }
-    SDL_UnlockMutex(SDL_event_memory_lock);
+    state->tail = entry;
 
     return memory;
 }
@@ -143,31 +187,39 @@ const char *SDL_AllocateEventString(const char *string)
     return NULL;
 }
 
-void SDL_FlushEventMemory(Uint32 eventID)
+static void SDL_FlushEventMemory(Uint32 eventID)
 {
-    SDL_LockMutex(SDL_event_memory_lock);
-    {
-        if (SDL_event_memory_head) {
-            while (SDL_event_memory_head) {
-                SDL_EventMemory *entry = SDL_event_memory_head;
+    SDL_EventMemoryState *state;
 
-                if (eventID && (Sint32)(eventID - entry->eventID) < 0) {
-                    break;
-                }
+    state = SDL_GetEventMemoryState(SDL_FALSE);
+    if (!state) {
+        return;
+    }
 
-                /* If you crash here, your application has memory corruption
-                 * or freed memory in an event, which is no longer necessary.
-                 */
-                SDL_event_memory_head = entry->next;
-                SDL_free(entry->memory);
-                SDL_free(entry);
+    if (state->head) {
+        while (state->head) {
+            SDL_EventMemory *entry = state->head;
+
+            if (eventID && (Sint32)(eventID - entry->eventID) < 0) {
+                break;
             }
-            if (!SDL_event_memory_head) {
-                SDL_event_memory_tail = NULL;
-            }
+
+            /* If you crash here, your application has memory corruption
+             * or freed memory in an event, which is no longer necessary.
+             */
+            state->head = entry->next;
+            SDL_free(entry->memory);
+            SDL_free(entry);
+        }
+        if (!state->head) {
+            state->tail = NULL;
         }
     }
-    SDL_UnlockMutex(SDL_event_memory_lock);
+}
+
+void SDL_FreeEventMemory(void)
+{
+    SDL_FlushEventMemory(0);
 }
 
 #ifndef SDL_JOYSTICK_DISABLED
@@ -697,10 +749,6 @@ void SDL_StopEventLoop(void)
         SDL_disabled_events[i] = NULL;
     }
 
-    if (SDL_event_memory_lock) {
-        SDL_DestroyMutex(SDL_event_memory_lock);
-        SDL_event_memory_lock = NULL;
-    }
     if (SDL_event_watchers_lock) {
         SDL_DestroyMutex(SDL_event_watchers_lock);
         SDL_event_watchers_lock = NULL;
@@ -742,14 +790,6 @@ int SDL_StartEventLoop(void)
     if (SDL_event_watchers_lock == NULL) {
         SDL_event_watchers_lock = SDL_CreateMutex();
         if (SDL_event_watchers_lock == NULL) {
-            SDL_UnlockMutex(SDL_EventQ.lock);
-            return -1;
-        }
-    }
-
-    if (SDL_event_memory_lock == NULL) {
-        SDL_event_memory_lock = SDL_CreateMutex();
-        if (SDL_event_memory_lock == NULL) {
             SDL_UnlockMutex(SDL_EventQ.lock);
             return -1;
         }

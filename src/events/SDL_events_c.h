@@ -38,7 +38,6 @@
 /* Start and stop the event processing loop */
 extern int SDL_StartEventLoop(void);
 extern void SDL_StopEventLoop(void);
-extern void SDL_FlushEventMemory(Uint32 eventID);
 extern void SDL_QuitInterrupt(void);
 
 extern const char *SDL_AllocateEventString(const char *string);
