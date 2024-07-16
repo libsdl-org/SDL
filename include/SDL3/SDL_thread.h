@@ -492,7 +492,9 @@ typedef void (SDLCALL *SDL_TLSDestructorCallback)(void *value);
 /**
  * Set the current thread's value associated with a thread local storage ID.
  *
- * If the thread local storage ID is not initialized (the value is 0), a new ID will be created in a thread-safe way, so all calls using a pointer to the same ID will refer to the same local storage.
+ * If the thread local storage ID is not initialized (the value is 0), a new
+ * ID will be created in a thread-safe way, so all calls using a pointer to
+ * the same ID will refer to the same local storage.
  *
  * Note that replacing a value from a previous call to this function on the
  * same thread does _not_ call the previous value's destructor!
