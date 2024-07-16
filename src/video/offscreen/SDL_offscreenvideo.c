@@ -51,14 +51,29 @@ static void OFFSCREEN_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
+static SDL_bool OFFSCREEN_Available(const char *enable_hint)
+{
+    const char *hint = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
+    if (hint) {
+        if (SDL_strcmp(hint, enable_hint) == 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
+    if (!OFFSCREEN_Available(OFFSCREENVID_DRIVER_NAME)) {
+        return NULL;
+    }
+
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
-        return 0;
+        return NULL;
     }
 
     /* General video */
