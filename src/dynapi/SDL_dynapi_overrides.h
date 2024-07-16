@@ -100,7 +100,6 @@
 #define SDL_CreateSurfaceFrom SDL_CreateSurfaceFrom_REAL
 #define SDL_CreateSurfacePalette SDL_CreateSurfacePalette_REAL
 #define SDL_CreateSystemCursor SDL_CreateSystemCursor_REAL
-#define SDL_CreateTLS SDL_CreateTLS_REAL
 #define SDL_CreateTexture SDL_CreateTexture_REAL
 #define SDL_CreateTextureFromSurface SDL_CreateTextureFromSurface_REAL
 #define SDL_CreateTextureWithProperties SDL_CreateTextureWithProperties_REAL

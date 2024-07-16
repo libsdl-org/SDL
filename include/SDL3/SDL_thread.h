@@ -73,18 +73,17 @@ typedef struct SDL_Thread SDL_Thread;
 typedef Uint64 SDL_ThreadID;
 
 /**
- * Thread local storage ID values.
+ * Thread local storage ID.
  *
  * 0 is the invalid ID. An app can create these and then set data for these
  * IDs that is unique to each thread.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
- * \sa SDL_CreateTLS
  * \sa SDL_GetTLS
  * \sa SDL_SetTLS
  */
-typedef Uint32 SDL_TLSID;
+typedef SDL_AtomicInt SDL_TLSID;
 
 /**
  * The SDL thread priority.
@@ -463,33 +462,19 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread * thread, int *status
 extern SDL_DECLSPEC void SDLCALL SDL_DetachThread(SDL_Thread * thread);
 
 /**
- * Create a piece of thread-local storage.
- *
- * This creates an identifier that is globally visible to all threads but
- * refers to data that is thread-specific.
- *
- * \returns the newly created thread local storage identifier or 0 on error.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetTLS
- * \sa SDL_SetTLS
- */
-extern SDL_DECLSPEC SDL_TLSID SDLCALL SDL_CreateTLS(void);
-
-/**
  * Get the current thread's value associated with a thread local storage ID.
  *
- * \param id the thread local storage ID.
+ * \param id a pointer to the thread local storage ID, may not be NULL.
  * \returns the value associated with the ID for the current thread or NULL if
  *          no value has been set; call SDL_GetError() for more information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetTLS
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_GetTLS(SDL_TLSID id);
-
+extern SDL_DECLSPEC void * SDLCALL SDL_GetTLS(SDL_TLSID *id);
 
 /**
  * The callback used to cleanup data passed to SDL_SetTLS.
@@ -507,27 +492,33 @@ typedef void (SDLCALL *SDL_TLSDestructorCallback)(void *value);
 /**
  * Set the current thread's value associated with a thread local storage ID.
  *
+ * If the thread local storage ID is not initialized (the value is 0), a new ID will be created in a thread-safe way, so all calls using a pointer to the same ID will refer to the same local storage.
+ *
  * Note that replacing a value from a previous call to this function on the
  * same thread does _not_ call the previous value's destructor!
  *
  * `destructor` can be NULL; it is assumed that `value` does not need to be
  * cleaned up if so.
  *
- * \param id the thread local storage ID.
+ * \param id a pointer to the thread local storage ID, may not be NULL.
  * \param value the value to associate with the ID for the current thread.
  * \param destructor a function called when the thread exits, to free the
- *                   value. Can be NULL.
+ *                   value, may be NULL.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetTLS
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID id, const void *value, SDL_TLSDestructorCallback destructor);
+extern SDL_DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback destructor);
 
 /**
  * Cleanup all TLS data for this thread.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
