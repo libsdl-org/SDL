@@ -48,7 +48,7 @@ extern int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst);
 extern void SDL_InvalidateAllBlitMap(SDL_Surface *surface);
 
 /* Miscellaneous functions */
-extern void SDL_DitherColors(SDL_Color *colors, int bpp);
+extern void SDL_DitherPalette(SDL_Palette *palette);
 extern Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 extern void SDL_DetectPalette(const SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alpha_channel);
 extern SDL_Surface *SDL_DuplicatePixels(int width, int height, SDL_PixelFormat format, SDL_Colorspace colorspace, void *pixels, int pitch);
