@@ -126,7 +126,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     }
 }
 
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     @autoreleasepool {
 #ifdef SDL_PLATFORM_TVOS

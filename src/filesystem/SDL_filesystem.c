@@ -411,14 +411,38 @@ const char *SDL_GetBasePath(void)
     return CachedBasePath;
 }
 
+
+static char *CachedUserFolders[SDL_FOLDER_TOTAL];
+
+const char *SDL_GetUserFolder(SDL_Folder folder)
+{
+    const int idx = (int) folder;
+    if ((idx < 0) || (idx >= SDL_arraysize(CachedUserFolders))) {
+        SDL_InvalidParamError("folder");
+        return NULL;
+    }
+
+    if (!CachedUserFolders[idx]) {
+        CachedUserFolders[idx] = SDL_SYS_GetUserFolder(folder);
+    }
+    return CachedUserFolders[idx];
+}
+
+
+
 void SDL_InitFilesystem(void)
 {
     CachedBasePath = NULL;  // just in case.
+    SDL_zeroa(CachedUserFolders);
 }
 
 void SDL_QuitFilesystem(void)
 {
     SDL_free(CachedBasePath);
     CachedBasePath = NULL;
+    for (int i = 0; i < SDL_arraysize(CachedUserFolders); i++) {
+        SDL_free(CachedUserFolders[i]);
+        CachedUserFolders[i] = NULL;
+    }
 }
 

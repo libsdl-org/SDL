@@ -204,12 +204,13 @@ typedef enum SDL_Folder
     SDL_FOLDER_TEMPLATES,
     /** Video files that can be played using a standard video player (mp4,
       webm...). */
-    SDL_FOLDER_VIDEOS
+    SDL_FOLDER_VIDEOS,
+    /** total number of types in this enum, not a folder type by itself. */
+    SDL_FOLDER_TOTAL
 } SDL_Folder;
 
 /**
- * Finds the most suitable user folder for the specified purpose, and returns
- * its path in OS-specific notation.
+ * Finds the most suitable user folder for a specific purpose.
  *
  * Many OSes provide certain standard folders for certain purposes, such as
  * storing pictures, music or videos for a certain user. This function gives
@@ -220,14 +221,10 @@ typedef enum SDL_Folder
  * data for the application to manage, see SDL_GetBasePath() and
  * SDL_GetPrefPath().
  *
- * Note that the function is expensive, and should be called once at the
- * beginning of the execution and kept for as long as needed.
- *
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
- * The returned value is owned by the caller and should be freed with
- * SDL_free().
+ * The returned string follows the SDL_GetStringRule.
  *
  * If NULL is returned, the error may be obtained with SDL_GetError().
  *
@@ -236,10 +233,8 @@ typedef enum SDL_Folder
  *          folder, or NULL if an error happened.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_Folder
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
 
 /* Abstract filesystem interface */
