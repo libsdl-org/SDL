@@ -582,7 +582,6 @@ void SDL_Quit(void)
      */
     SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
 
-    SDL_FlushEventMemory(0);
     SDL_FreeEnvironmentMemory();
 
     SDL_QuitMainThread();
