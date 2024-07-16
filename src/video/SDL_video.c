@@ -3504,15 +3504,11 @@ int SDL_SetWindowOpacity(SDL_Window *window, float opacity)
     return retval;
 }
 
-int SDL_GetWindowOpacity(SDL_Window *window, float *out_opacity)
+float SDL_GetWindowOpacity(SDL_Window *window)
 {
-    CHECK_WINDOW_MAGIC(window, -1);
+    CHECK_WINDOW_MAGIC(window, -1.0f);
 
-    if (out_opacity) {
-        *out_opacity = window->opacity;
-    }
-
-    return 0;
+    return window->opacity;
 }
 
 int SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
