@@ -42,7 +42,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return sceRtcGetTickResolution();
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     const Uint64 max_delay = 0xffffffffLL * SDL_NS_PER_US;
     if (ns > max_delay) {

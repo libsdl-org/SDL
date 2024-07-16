@@ -39,7 +39,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return kBUSCLK;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     struct timespec tv;
     tv.tv_sec = (ns / SDL_NS_PER_SECOND);
