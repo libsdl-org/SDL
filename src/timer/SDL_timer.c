@@ -643,5 +643,26 @@ Uint64 SDL_GetTicks(void)
 
 void SDL_Delay(Uint32 ms)
 {
-    SDL_DelayNS(SDL_MS_TO_NS(ms));
+    SDL_SYS_DelayNS(SDL_MS_TO_NS(ms));
+}
+
+void SDL_DelayNS(Uint64 ns)
+{
+    Uint64 current_value = SDL_GetTicksNS();
+    Uint64 target_value = current_value + ns;
+
+    // Sleep for a short number of cycles
+    // We'll use 1 ms as a scheduling timeslice, it's a good value for modern operating systems
+    const int SCHEDULING_TIMESLICE_NS = 1 * SDL_NS_PER_MS;
+    while (current_value < target_value) {
+        Uint64 remaining_ns = (target_value - current_value);
+        if (remaining_ns > (SCHEDULING_TIMESLICE_NS + SDL_NS_PER_US)) {
+            // Sleep for a short time, less than the scheduling timeslice
+            SDL_SYS_DelayNS(SCHEDULING_TIMESLICE_NS - SDL_NS_PER_US);
+        } else {
+            // Spin for any remaining time
+            SDL_CPUPauseInstruction();
+        }
+        current_value = SDL_GetTicksNS();
+    }
 }
