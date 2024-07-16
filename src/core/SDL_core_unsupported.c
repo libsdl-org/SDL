@@ -114,8 +114,8 @@ const char *SDL_GetWinRTFSPath(int pathType)
 
 #ifndef SDL_PLATFORM_ANDROID
 
-SDL_DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
-void SDL_AndroidBackButton()
+SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
+void SDL_SendAndroidBackButton()
 {
     SDL_Unsupported();
 }
@@ -162,9 +162,9 @@ void *SDL_GetAndroidJNIEnv()
     return NULL;
 }
 
-typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
-SDL_DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata);
-int SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata)
+typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
+SDL_DECLSPEC int SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
+int SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
 {
     (void)permission;
     (void)cb;
@@ -172,16 +172,16 @@ int SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermi
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
-int SDL_AndroidSendMessage(Uint32 command, int param)
+SDL_DECLSPEC int SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
+int SDL_SendAndroidMessage(Uint32 command, int param)
 {
     (void)command;
     (void)param;
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
-int SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset)
+SDL_DECLSPEC int SDLCALL SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
+int SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset)
 {
     (void)message;
     (void)duration;

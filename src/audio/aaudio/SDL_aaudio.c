@@ -382,7 +382,7 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
 }
 
 // !!! FIXME: make this non-blocking!
-static void SDLCALL AndroidRequestPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
+static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, SDL_bool granted)
 {
     SDL_AtomicSet((SDL_AtomicInt *) userdata, granted ? 1 : -1);
 }
@@ -399,7 +399,7 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
         // !!! FIXME: make this non-blocking!
         SDL_AtomicInt permission_response;
         SDL_AtomicSet(&permission_response, 0);
-        if (SDL_AndroidRequestPermission("android.permission.RECORD_AUDIO", AndroidRequestPermissionBlockingCallback, &permission_response) == -1) {
+        if (SDL_RequestAndroidPermission("android.permission.RECORD_AUDIO", RequestAndroidPermissionBlockingCallback, &permission_response) == -1) {
             return -1;
         }
 

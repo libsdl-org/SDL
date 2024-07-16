@@ -122,12 +122,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displ
  * \param displayID the instance of the display to query.
  * \param adapterIndex a pointer to be filled in with the adapter index.
  * \param outputIndex a pointer to be filled in with the output index.
- * \returns SDL_TRUE on success or SDL_FALSE on failure; call SDL_GetError()
- *          for more information.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
+extern SDL_DECLSPEC int SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 
 #endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
 
@@ -383,7 +383,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
+extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
 
 /**
  * See the official Android developer guide for more information:
@@ -483,7 +483,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void)
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
 
 
-typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
+typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
 
 /**
  * Request permissions at runtime, asynchronously.
@@ -515,7 +515,7 @@ typedef void (SDLCALL *SDL_AndroidRequestPermissionCallback)(void *userdata, con
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata);
+extern SDL_DECLSPEC int SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
 
 /**
  * Shows an Android toast notification.
@@ -543,7 +543,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AndroidRequestPermission(const char *permiss
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
+extern SDL_DECLSPEC int SDLCALL SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
 
 /**
  * Send a user command to SDLActivity.
@@ -559,7 +559,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int du
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
+extern SDL_DECLSPEC int SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
 
 #endif /* SDL_PLATFORM_ANDROID */
 

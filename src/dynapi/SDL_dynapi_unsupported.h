@@ -46,7 +46,7 @@ typedef struct XUserHandle XUserHandle;
 #endif
 
 #ifndef SDL_PLATFORM_ANDROID
-typedef void *SDL_AndroidRequestPermissionCallback;
+typedef void *SDL_RequestAndroidPermissionCallback;
 #endif
 
 #ifndef SDL_PLATFORM_IOS

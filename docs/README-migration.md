@@ -1750,10 +1750,11 @@ SDL_WindowsMessageHook has changed signatures so the message may be modified and
 
 SDL_GetAndroidExternalStorageState() takes the state as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
-SDL_AndroidRequestPermission is no longer a blocking call; the caller now provides a callback function that fires when a response is available.
+SDL_RequestAndroidPermission is no longer a blocking call; the caller now provides a callback function that fires when a response is available.
 
 SDL_iPhoneSetAnimationCallback() and SDL_iPhoneSetEventPump() have been renamed to SDL_SetiOSAnimationCallback() and SDL_SetiOSEventPump(), respectively. SDL2 has had macros to provide this new name with the old symbol since the introduction of the iPad, but now the correctly-named symbol is the only option.
 
+SDL_GetDXGIOutputInfo() now returns the standard int error code.
 
 The following functions have been removed:
 * SDL_RenderGetD3D11Device() - replaced with the "SDL.renderer.d3d11.device" property
@@ -1762,11 +1763,17 @@ The following functions have been removed:
 * SDL_GetWinRTFSPathUNICODE() - Use SDL_GetWinRTFSPath() and SDL_iconv_string to convert from UTF-8 to UTF-16.
 
 The following functions have been renamed:
+* SDL_AndroidBackButton() => SDL_SendAndroidBackButton()
 * SDL_AndroidGetActivity() => SDL_GetAndroidActivity()
 * SDL_AndroidGetExternalStoragePath() => SDL_GetAndroidExternalStoragePath()
 * SDL_AndroidGetExternalStorageState() => SDL_GetAndroidExternalStorageState()
 * SDL_AndroidGetInternalStoragePath() => SDL_GetAndroidInternalStoragePath()
 * SDL_AndroidGetJNIEnv() => SDL_GetAndroidJNIEnv()
+* SDL_AndroidRequestPermission() => SDL_RequestAndroidPermission()
+* SDL_AndroidRequestPermissionCallback() => SDL_RequestAndroidPermissionCallback()
+* SDL_AndroidSendMessage() => SDL_SendAndroidMessage()
+* SDL_AndroidShowToast() => SDL_ShowAndroidToast()
+* SDL_DXGIGetOutputInfo() => SDL_GetDXGIOutputInfo()
 * SDL_Direct3D9GetAdapterIndex() => SDL_GetDirect3D9AdapterIndex()
 * SDL_GDKGetDefaultUser() => SDL_GetGDKDefaultUser()
 * SDL_GDKGetTaskQueue() => SDL_GetGDKTaskQueue()

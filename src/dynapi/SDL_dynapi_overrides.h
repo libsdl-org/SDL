@@ -37,10 +37,6 @@
 #define SDL_AddTimerNS SDL_AddTimerNS_REAL
 #define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
 #define SDL_AllocateEventMemory SDL_AllocateEventMemory_REAL
-#define SDL_AndroidBackButton SDL_AndroidBackButton_REAL
-#define SDL_AndroidRequestPermission SDL_AndroidRequestPermission_REAL
-#define SDL_AndroidSendMessage SDL_AndroidSendMessage_REAL
-#define SDL_AndroidShowToast SDL_AndroidShowToast_REAL
 #define SDL_AtomicAdd SDL_AtomicAdd_REAL
 #define SDL_AtomicCompareAndSwap SDL_AtomicCompareAndSwap_REAL
 #define SDL_AtomicCompareAndSwapPointer SDL_AtomicCompareAndSwapPointer_REAL
@@ -110,7 +106,6 @@
 #define SDL_CreateWindowAndRenderer SDL_CreateWindowAndRenderer_REAL
 #define SDL_CreateWindowWithProperties SDL_CreateWindowWithProperties_REAL
 #define SDL_CursorVisible SDL_CursorVisible_REAL
-#define SDL_DXGIGetOutputInfo   SDL_DXGIGetOutputInfo_REAL
 #define SDL_DateTimeToTime SDL_DateTimeToTime_REAL
 #define SDL_DelEventWatch SDL_DelEventWatch_REAL
 #define SDL_DelHintCallback SDL_DelHintCallback_REAL
@@ -229,6 +224,7 @@
 #define SDL_GetCurrentTime SDL_GetCurrentTime_REAL
 #define SDL_GetCurrentVideoDriver SDL_GetCurrentVideoDriver_REAL
 #define SDL_GetCursor SDL_GetCursor_REAL
+#define SDL_GetDXGIOutputInfo   SDL_GetDXGIOutputInfo_REAL
 #define SDL_GetDateTimeLocalePreferences SDL_GetDateTimeLocalePreferences_REAL
 #define SDL_GetDayOfWeek SDL_GetDayOfWeek_REAL
 #define SDL_GetDayOfYear SDL_GetDayOfYear_REAL
@@ -691,6 +687,7 @@
 #define SDL_RenderTextureRotated SDL_RenderTextureRotated_REAL
 #define SDL_RenderViewportSet SDL_RenderViewportSet_REAL
 #define SDL_ReportAssertion SDL_ReportAssertion_REAL
+#define SDL_RequestAndroidPermission SDL_RequestAndroidPermission_REAL
 #define SDL_ResetAssertionReport SDL_ResetAssertionReport_REAL
 #define SDL_ResetHint SDL_ResetHint_REAL
 #define SDL_ResetHints SDL_ResetHints_REAL
@@ -711,6 +708,8 @@
 #define SDL_ScreenKeyboardShown SDL_ScreenKeyboardShown_REAL
 #define SDL_ScreenSaverEnabled SDL_ScreenSaverEnabled_REAL
 #define SDL_SeekIO SDL_SeekIO_REAL
+#define SDL_SendAndroidBackButton SDL_SendAndroidBackButton_REAL
+#define SDL_SendAndroidMessage SDL_SendAndroidMessage_REAL
 #define SDL_SendGamepadEffect SDL_SendGamepadEffect_REAL
 #define SDL_SendJoystickEffect SDL_SendJoystickEffect_REAL
 #define SDL_SendJoystickVirtualSensorData SDL_SendJoystickVirtualSensorData_REAL
@@ -817,6 +816,7 @@
 #define SDL_SetX11EventHook SDL_SetX11EventHook_REAL
 #define SDL_SetiOSAnimationCallback SDL_SetiOSAnimationCallback_REAL
 #define SDL_SetiOSEventPump SDL_SetiOSEventPump_REAL
+#define SDL_ShowAndroidToast SDL_ShowAndroidToast_REAL
 #define SDL_ShowCursor SDL_ShowCursor_REAL
 #define SDL_ShowMessageBox SDL_ShowMessageBox_REAL
 #define SDL_ShowOpenFileDialog SDL_ShowOpenFileDialog_REAL
