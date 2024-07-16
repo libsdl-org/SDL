@@ -98,7 +98,7 @@ SDL_DYNAPI_PROC(int,SDL_ConvertEventToRenderCoordinates,(SDL_Renderer *a, SDL_Ev
 SDL_DYNAPI_PROC(int,SDL_ConvertPixels,(int a, int b, SDL_PixelFormat c, const void *d, int e, SDL_PixelFormat f, void *g, int h),(a,b,c,d,e,f,g,h),return)
 SDL_DYNAPI_PROC(int,SDL_ConvertPixelsAndColorspace,(int a, int b, SDL_PixelFormat c, SDL_Colorspace d, SDL_PropertiesID e, const void *f, int g, SDL_PixelFormat h, SDL_Colorspace i, SDL_PropertiesID j, void *k, int l),(a,b,c,d,e,f,g,h,i,j,k,l),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_ConvertSurface,(SDL_Surface *a, SDL_PixelFormat b),(a,b),return)
-SDL_DYNAPI_PROC(SDL_Surface*,SDL_ConvertSurfaceAndColorspace,(SDL_Surface *a, SDL_PixelFormat b, const SDL_Palette *c, SDL_Colorspace d, SDL_PropertiesID e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_ConvertSurfaceAndColorspace,(SDL_Surface *a, SDL_PixelFormat b, SDL_Palette *c, SDL_Colorspace d, SDL_PropertiesID e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_CopyProperties,(SDL_PropertiesID a, SDL_PropertiesID b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_AudioStream*,SDL_CreateAudioStream,(const SDL_AudioSpec *a, const SDL_AudioSpec *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Cursor*,SDL_CreateColorCursor,(SDL_Surface *a, int b, int c),(a,b,c),return)

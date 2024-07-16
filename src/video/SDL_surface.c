@@ -1342,9 +1342,10 @@ int SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
     }
 }
 
-SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, const SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props)
+SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props)
 {
-    SDL_Surface *convert;
+    SDL_Palette *temp_palette = NULL;
+    SDL_Surface *convert = NULL;
     SDL_Colorspace src_colorspace;
     SDL_PropertiesID src_properties;
     Uint32 copy_flags;
@@ -1359,12 +1360,12 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
 
     if (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
-        return NULL;
+        goto error;
     }
 
     if (format == SDL_PIXELFORMAT_UNKNOWN) {
         SDL_InvalidParamError("format");
-        return NULL;
+        goto error;
     }
 
     /* Check for empty destination palette! (results in empty image) */
@@ -1377,7 +1378,14 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
         }
         if (i == palette->ncolors) {
             SDL_SetError("Empty destination palette");
-            return NULL;
+            goto error;
+        }
+    } else if (SDL_ISPIXELFORMAT_INDEXED(format)) {
+        // Create a dither palette for conversion
+        temp_palette = SDL_CreatePalette(1 << SDL_BITSPERPIXEL(format));
+        if (temp_palette) {
+            SDL_DitherPalette(temp_palette);
+            palette = temp_palette;
         }
     }
 
@@ -1387,7 +1395,10 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     /* Create a new surface with the desired format */
     convert = SDL_CreateSurface(surface->w, surface->h, format);
     if (!convert) {
-        return NULL;
+        goto error;
+    }
+    if (SDL_ISPIXELFORMAT_INDEXED(format)) {
+        SDL_SetSurfacePalette(convert, palette);
     }
 
     if (colorspace == SDL_COLORSPACE_UNKNOWN) {
@@ -1397,22 +1408,13 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
 
     if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         if (SDL_ConvertPixelsAndColorspace(surface->w, surface->h, surface->format, src_colorspace, src_properties, surface->pixels, surface->pitch, convert->format, colorspace, props, convert->pixels, convert->pitch) < 0) {
-            SDL_DestroySurface(convert);
-            return NULL;
+            goto error;
         }
 
         /* Save the original copy flags */
         copy_flags = surface->internal->map.info.flags;
 
         goto end;
-    }
-
-    /* Copy the palette if any */
-    if (palette && convert->internal->palette) {
-        SDL_memcpy(convert->internal->palette->colors,
-                   palette->colors,
-                   palette->ncolors * sizeof(SDL_Color));
-        convert->internal->palette->ncolors = palette->ncolors;
     }
 
     /* Save the original copy flags */
@@ -1509,8 +1511,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
 
     /* SDL_BlitSurfaceUnchecked failed, and so the conversion */
     if (ret < 0) {
-        SDL_DestroySurface(convert);
-        return NULL;
+        goto error;
     }
 
     if (copy_flags & SDL_COPY_COLORKEY) {
@@ -1547,8 +1548,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
             /* Create a dummy surface to get the colorkey converted */
             tmp = SDL_CreateSurface(1, 1, surface->format);
             if (!tmp) {
-                SDL_DestroySurface(convert);
-                return NULL;
+                goto error;
             }
 
             /* Share the palette, if any */
@@ -1564,8 +1564,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
             tmp2 = SDL_ConvertSurfaceAndColorspace(tmp, format, palette, colorspace, props);
             if (!tmp2) {
                 SDL_DestroySurface(tmp);
-                SDL_DestroySurface(convert);
-                return NULL;
+                goto error;
             }
 
             /* Get the converted colorkey */
@@ -1585,6 +1584,9 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     }
 
 end:
+    if (temp_palette) {
+        SDL_DestroyPalette(temp_palette);
+    }
 
     SDL_SetSurfaceClipRect(convert, &surface->internal->clip_rect);
 
@@ -1601,6 +1603,15 @@ end:
 
     /* We're ready to go! */
     return convert;
+
+error:
+    if (temp_palette) {
+        SDL_DestroyPalette(temp_palette);
+    }
+    if (convert) {
+        SDL_DestroySurface(convert);
+    }
+    return NULL;
 }
 
 SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)

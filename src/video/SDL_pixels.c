@@ -1077,28 +1077,28 @@ void SDL_DestroyPalette(SDL_Palette *palette)
 /*
  * Calculate an 8-bit (3 red, 3 green, 2 blue) dithered palette of colors
  */
-void SDL_DitherColors(SDL_Color *colors, int bpp)
+void SDL_DitherPalette(SDL_Palette *palette)
 {
     int i;
-    if (bpp != 8) {
+    if (palette->ncolors != 256) {
         return; /* only 8bpp supported right now */
     }
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < palette->ncolors; i++) {
         int r, g, b;
         /* map each bit field to the full [0, 255] interval,
            so 0 is mapped to (0, 0, 0) and 255 to (255, 255, 255) */
         r = i & 0xe0;
         r |= r >> 3 | r >> 6;
-        colors[i].r = (Uint8)r;
+        palette->colors[i].r = (Uint8)r;
         g = (i << 3) & 0xe0;
         g |= g >> 3 | g >> 6;
-        colors[i].g = (Uint8)g;
+        palette->colors[i].g = (Uint8)g;
         b = i & 0x3;
         b |= b << 2;
         b |= b << 4;
-        colors[i].b = (Uint8)b;
-        colors[i].a = SDL_ALPHA_OPAQUE;
+        palette->colors[i].b = (Uint8)b;
+        palette->colors[i].a = SDL_ALPHA_OPAQUE;
     }
 }
 
@@ -1414,9 +1414,9 @@ static Uint8 *MapNto1(const SDL_PixelFormatDetails *src, const SDL_Palette *pal,
         return NULL;
     }
 
-    dithered.ncolors = 256;
-    SDL_DitherColors(colors, 8);
     dithered.colors = colors;
+    dithered.ncolors = SDL_arraysize(colors);
+    SDL_DitherPalette(&dithered);
     return Map1to1(&dithered, pal, identical);
 }
 
