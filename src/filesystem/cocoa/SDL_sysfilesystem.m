@@ -61,7 +61,7 @@ char *SDL_SYS_GetBasePath(void)
     }
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     @autoreleasepool {
         char *retval = NULL;

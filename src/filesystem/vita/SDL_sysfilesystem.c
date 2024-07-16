@@ -39,7 +39,7 @@ char *SDL_SYS_GetBasePath(void)
     return SDL_strdup("app0:/");
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     const char *envr = "ux0:/data/";
     char *retval = NULL;

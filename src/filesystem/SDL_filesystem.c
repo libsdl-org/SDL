@@ -429,6 +429,15 @@ const char *SDL_GetUserFolder(SDL_Folder folder)
 }
 
 
+const char *SDL_GetPrefPath(const char *org, const char *app)
+{
+    char *path = SDL_SYS_GetPrefPath(org, app);
+    if (path) {
+        SDL_FreeLater(path);
+    }
+    return path;
+}
+
 
 void SDL_InitFilesystem(void)
 {

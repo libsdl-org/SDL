@@ -34,7 +34,7 @@ char *SDL_SYS_GetBasePath(void)
     return SDL_strdup("/");
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     const char *append = "/libsdl/";
     char *retval;

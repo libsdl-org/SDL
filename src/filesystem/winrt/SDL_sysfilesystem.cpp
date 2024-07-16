@@ -137,7 +137,7 @@ extern "C" char *SDL_SYS_GetBasePath(void)
     return destPath;
 }
 
-extern "C" char *SDL_GetPrefPath(const char *org, const char *app)
+extern "C" char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     /* WinRT note: The 'SHGetFolderPath' API that is used in Windows 7 and
      * earlier is not available on WinRT or Windows Phone.  WinRT provides

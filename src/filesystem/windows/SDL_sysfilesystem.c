@@ -90,7 +90,7 @@ char *SDL_SYS_GetBasePath(void)
     return retval;
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     /*
      * Vista and later has a new API for this, but SHGetFolderPath works there,

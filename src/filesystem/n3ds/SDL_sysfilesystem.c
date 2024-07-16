@@ -38,7 +38,7 @@ char *SDL_SYS_GetBasePath(void)
     return base_path;
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     char *pref_path = NULL;
     if (!app) {

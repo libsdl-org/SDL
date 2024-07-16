@@ -61,7 +61,7 @@ static int SDLCALL enum_callback(void *userdata, const char *origdir, const char
 int main(int argc, char *argv[])
 {
     SDLTest_CommonState *state;
-    char *pref_path;
+    const char *pref_path;
     const char *base_path;
 
     /* Initialize test framework */
@@ -97,7 +97,6 @@ int main(int argc, char *argv[])
                      SDL_GetError());
     } else {
         SDL_Log("pref path: '%s'\n", pref_path);
-        SDL_free(pref_path);
     }
 
     pref_path = SDL_GetPrefPath(NULL, "test_filesystem");
@@ -106,7 +105,6 @@ int main(int argc, char *argv[])
                      SDL_GetError());
     } else {
         SDL_Log("pref path: '%s'\n", pref_path);
-        SDL_free(pref_path);
     }
 
     if (base_path) {

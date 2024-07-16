@@ -253,7 +253,7 @@ char *SDL_SYS_GetBasePath(void)
     return retval;
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     /*
      * We use XDG's base directory spec, even if you're not on Linux.

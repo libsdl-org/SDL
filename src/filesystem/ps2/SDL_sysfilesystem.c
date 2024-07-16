@@ -73,7 +73,7 @@ static void recursive_mkdir(const char *dir)
     mkdir(tmp, S_IRWXU);
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     char *retval = NULL;
     size_t len;
