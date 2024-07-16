@@ -629,7 +629,7 @@ int SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displayID)
 }
 #endif /* !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
 
-SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
+int SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
 {
 #ifndef HAVE_DXGI_H
     if (adapterIndex) {
@@ -638,8 +638,7 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
     if (outputIndex) {
         *outputIndex = -1;
     }
-    SDL_SetError("SDL was compiled without DXGI support due to missing dxgi.h header");
-    return SDL_FALSE;
+    return SDL_SetError("SDL was compiled without DXGI support due to missing dxgi.h header");
 #else
     const SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
     const SDL_VideoData *videodata = videodevice ? videodevice->driverdata : NULL;
@@ -649,26 +648,22 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
     IDXGIOutput *pDXGIOutput;
 
     if (!adapterIndex) {
-        SDL_InvalidParamError("adapterIndex");
-        return SDL_FALSE;
+        return SDL_InvalidParamError("adapterIndex");
     }
 
     if (!outputIndex) {
-        SDL_InvalidParamError("outputIndex");
-        return SDL_FALSE;
+        return SDL_InvalidParamError("outputIndex");
     }
 
     *adapterIndex = -1;
     *outputIndex = -1;
 
     if (!pData) {
-        SDL_SetError("Invalid display index");
-        return SDL_FALSE;
+        return SDL_SetError("Invalid display index");
     }
 
     if (!videodata || !videodata->pDXGIFactory) {
-        SDL_SetError("Unable to create DXGI interface");
-        return SDL_FALSE;
+        return SDL_SetError("Unable to create DXGI interface");
     }
 
     nAdapter = 0;
@@ -690,10 +685,9 @@ SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *
     }
 
     if (*adapterIndex == -1) {
-        return SDL_FALSE;
-    } else {
-        return SDL_TRUE;
+        return SDL_SetError("Couldn't find matching adapter");
     }
+    return 0;
 #endif
 }
 

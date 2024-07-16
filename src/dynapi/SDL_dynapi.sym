@@ -12,10 +12,6 @@ SDL3_0.0.0 {
     SDL_AddTimerNS;
     SDL_AddVulkanRenderSemaphores;
     SDL_AllocateEventMemory;
-    SDL_AndroidBackButton;
-    SDL_AndroidRequestPermission;
-    SDL_AndroidSendMessage;
-    SDL_AndroidShowToast;
     SDL_AtomicAdd;
     SDL_AtomicCompareAndSwap;
     SDL_AtomicCompareAndSwapPointer;
@@ -85,7 +81,6 @@ SDL3_0.0.0 {
     SDL_CreateWindowAndRenderer;
     SDL_CreateWindowWithProperties;
     SDL_CursorVisible;
-    SDL_DXGIGetOutputInfo;
     SDL_DateTimeToTime;
     SDL_DelEventWatch;
     SDL_DelHintCallback;
@@ -204,6 +199,7 @@ SDL3_0.0.0 {
     SDL_GetCurrentTime;
     SDL_GetCurrentVideoDriver;
     SDL_GetCursor;
+    SDL_GetDXGIOutputInfo;
     SDL_GetDateTimeLocalePreferences;
     SDL_GetDayOfWeek;
     SDL_GetDayOfYear;
@@ -666,6 +662,7 @@ SDL3_0.0.0 {
     SDL_RenderTextureRotated;
     SDL_RenderViewportSet;
     SDL_ReportAssertion;
+    SDL_RequestAndroidPermission;
     SDL_ResetAssertionReport;
     SDL_ResetHint;
     SDL_ResetHints;
@@ -686,6 +683,8 @@ SDL3_0.0.0 {
     SDL_ScreenKeyboardShown;
     SDL_ScreenSaverEnabled;
     SDL_SeekIO;
+    SDL_SendAndroidBackButton;
+    SDL_SendAndroidMessage;
     SDL_SendGamepadEffect;
     SDL_SendJoystickEffect;
     SDL_SendJoystickVirtualSensorData;
@@ -792,6 +791,7 @@ SDL3_0.0.0 {
     SDL_SetX11EventHook;
     SDL_SetiOSAnimationCallback;
     SDL_SetiOSEventPump;
+    SDL_ShowAndroidToast;
     SDL_ShowCursor;
     SDL_ShowMessageBox;
     SDL_ShowOpenFileDialog;

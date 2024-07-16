@@ -559,7 +559,7 @@ static int ANDROIDCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *sp
 
     // just in case SDL_OpenCamera is overwriting device->spec as CameraPermissionCallback runs, we work from a different copy.
     SDL_copyp(&device->hidden->requested_spec, spec);
-    if (SDL_AndroidRequestPermission("android.permission.CAMERA", CameraPermissionCallback, device) < 0) {
+    if (SDL_RequestAndroidPermission("android.permission.CAMERA", CameraPermissionCallback, device) < 0) {
         UnrefPhysicalCamera(device);
         return -1;
     }

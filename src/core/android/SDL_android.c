@@ -2245,7 +2245,7 @@ void Android_JNI_HapticStop(int device_id)
 /* See SDLActivity.java for constants. */
 #define COMMAND_SET_KEEP_SCREEN_ON 5
 
-int SDL_AndroidSendMessage(Uint32 command, int param)
+int SDL_SendAndroidMessage(Uint32 command, int param)
 {
     if (command >= 0x8000) {
         return Android_JNI_SendMessage(command, param);
@@ -2446,7 +2446,7 @@ SDL_bool SDL_IsDeXMode(void)
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
 }
 
-void SDL_AndroidBackButton(void)
+void SDL_SendAndroidBackButton(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midManualBackButton);
@@ -2645,7 +2645,7 @@ const char *SDL_GetAndroidCachePath(void)
     return s_AndroidCachePath;
 }
 
-int SDL_AndroidShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
+int SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xOffset, int yOffset)
 {
     return Android_JNI_ShowToast(message, duration, gravity, xOffset, yOffset);
 }
@@ -2716,7 +2716,7 @@ typedef struct NativePermissionRequestInfo
 {
     int request_code;
     char *permission;
-    SDL_AndroidRequestPermissionCallback callback;
+    SDL_RequestAndroidPermissionCallback callback;
     void *userdata;
     struct NativePermissionRequestInfo *next;
 } NativePermissionRequestInfo;
@@ -2744,7 +2744,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-int SDL_AndroidRequestPermission(const char *permission, SDL_AndroidRequestPermissionCallback cb, void *userdata)
+int SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
 {
     if (!permission) {
         return SDL_InvalidParamError("permission");

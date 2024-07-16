@@ -3556,3 +3556,33 @@ typedef SDL_Colour, SDL_Color;
 - SDL_LinuxSetThreadPriorityAndPolicy
 + SDL_SetLinuxThreadPriorityAndPolicy
   (...)
+@@
+@@
+- SDL_DXGIGetOutputInfo
++ SDL_GetDXGIOutputInfo
+  (...)
+@@
+@@
+- SDL_AndroidBackButton
++ SDL_TriggerAndroidBackButton
+  (...)
+@@
+@@
+- SDL_AndroidRequestPermission
++ SDL_RequestAndroidPermission
+  (...)
+@@
+@@
+- SDL_AndroidRequestPermissionCallback
++ SDL_RequestAndroidPermissionCallback
+  (...)
+@@
+@@
+- SDL_AndroidShowToast
++ SDL_ShowAndroidToast
+  (...)
+@@
+@@
+- SDL_AndroidSendMessage
++ SDL_SendAndroidMessage
+  (...)
