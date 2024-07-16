@@ -230,7 +230,7 @@ static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, S
     wdata->window = window;
 
     /* Setup driver data for this window */
-    window->driverdata = wdata;
+    window->internal = wdata;
 
     /* One window, it always has focus */
     SDL_SetMouseFocus(window);
@@ -246,8 +246,8 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
 
-    if (window->driverdata) {
-        data = window->driverdata;
+    if (window->internal) {
+        data = window->internal;
         /* update pixel ratio */
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
@@ -266,8 +266,8 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)
 {
     SDL_WindowData *data;
-    if (window->driverdata) {
-        data = window->driverdata;
+    if (window->internal) {
+        data = window->internal;
         *w = SDL_lroundf(window->w * data->pixel_ratio);
         *h = SDL_lroundf(window->h * data->pixel_ratio);
     }
@@ -277,8 +277,8 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
 
-    if (window->driverdata) {
-        data = window->driverdata;
+    if (window->internal) {
+        data = window->internal;
 
         Emscripten_UnregisterEventHandlers(data);
 
@@ -286,8 +286,8 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
         SDL_free(data->canvas_id);
 
-        SDL_free(window->driverdata);
-        window->driverdata = NULL;
+        SDL_free(window->internal);
+        window->internal = NULL;
     }
 }
 
@@ -296,8 +296,8 @@ static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *wi
     SDL_WindowData *data;
     int res = -1;
 
-    if (window->driverdata) {
-        data = window->driverdata;
+    if (window->internal) {
+        data = window->internal;
 
         if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;

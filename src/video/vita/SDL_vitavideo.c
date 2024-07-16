@@ -55,7 +55,7 @@ SDL_Window *Vita_Window;
 
 static void VITA_Destroy(SDL_VideoDevice *device)
 {
-    SDL_free(device->driverdata);
+    SDL_free(device->internal);
     SDL_free(device);
 }
 
@@ -91,7 +91,7 @@ static SDL_VideoDevice *VITA_Create()
 #endif
     phdata->ime_active = SDL_FALSE;
 
-    device->driverdata = phdata;
+    device->internal = phdata;
 
     /* Setup amount of available displays and current display */
     device->num_displays = 0;
@@ -234,7 +234,7 @@ int VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     }
 
     /* Setup driver data for this window */
-    window->driverdata = wdata;
+    window->internal = wdata;
 
     // Vita can only have one window
     if (Vita_Window) {
@@ -328,13 +328,13 @@ void VITA_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
 
-    data = window->driverdata;
+    data = window->internal;
     if (data) {
         // TODO: should we destroy egl context? No one sane should recreate ogl window as non-ogl
         SDL_free(data);
     }
 
-    window->driverdata = NULL;
+    window->internal = NULL;
     Vita_Window = NULL;
 }
 
@@ -413,7 +413,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
 
 void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     SceInt32 res;
 
 #ifdef SDL_VIDEO_VITA_PVR
@@ -475,7 +475,7 @@ void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifndef SDL_VIDEO_VITA_PVR
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
 
     SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
 
@@ -496,7 +496,7 @@ void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 SDL_bool VITA_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef SDL_VIDEO_VITA_PVR
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     return videodata->ime_active;
 #else
     SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
@@ -507,7 +507,7 @@ SDL_bool VITA_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 void VITA_PumpEvents(SDL_VideoDevice *_this)
 {
 #ifndef SDL_VIDEO_VITA_PVR
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
 #endif
 
     if (_this->suspend_screensaver) {

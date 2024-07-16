@@ -53,7 +53,7 @@ static int (*orig_x11_errhandler)(Display *, XErrorEvent *) = NULL;
 
 static void X11_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *data = device->driverdata;
+    SDL_VideoData *data = device->internal;
     if (device->vulkan_config.loader_handle) {
         device->Vulkan_UnloadLibrary(device);
     }
@@ -68,7 +68,7 @@ static void X11_DeleteDevice(SDL_VideoDevice *device)
     if (device->wakeup_lock) {
         SDL_DestroyMutex(device->wakeup_lock);
     }
-    SDL_free(device->driverdata);
+    SDL_free(device->internal);
     SDL_free(device);
 
     SDL_X11_UnloadSymbols();
@@ -140,7 +140,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         SDL_free(device);
         return NULL;
     }
-    device->driverdata = data;
+    device->internal = data;
 
     data->global_mouse_changed = SDL_TRUE;
 
@@ -152,7 +152,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     data->request_display = X11_XOpenDisplay(display);
     if (!data->request_display) {
         X11_XCloseDisplay(data->display);
-        SDL_free(device->driverdata);
+        SDL_free(device->internal);
         SDL_free(device);
         SDL_X11_UnloadSymbols();
         return NULL;
@@ -318,7 +318,7 @@ static int X11_CheckWindowManagerErrorHandler(Display *d, XErrorEvent *e)
 
 static void X11_CheckWindowManager(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     Display *display = data->display;
     Atom _NET_SUPPORTING_WM_CHECK;
     int status, real_format;
@@ -378,7 +378,7 @@ static void X11_CheckWindowManager(SDL_VideoDevice *_this)
 
 int X11_VideoInit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     /* Get the process PID to be associated to the window */
     data->pid = getpid();
@@ -465,7 +465,7 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 
 void X11_VideoQuit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     if (data->clipboard_window) {
         X11_XDestroyWindow(data->display, data->clipboard_window);

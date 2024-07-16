@@ -165,7 +165,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #ifdef SDL_PLATFORM_VISIONOS
     displayLink.preferredFramesPerSecond = 90 / animationInterval;      //TODO: Get frame max frame rate on visionOS
 #elif defined(__IPHONE_10_3)
-    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
 
     if ([displayLink respondsToSelector:@selector(preferredFramesPerSecond)] && data != nil && data.uiwindow != nil && [data.uiwindow.screen respondsToSelector:@selector(maximumFramesPerSecond)]) {
         displayLink.preferredFramesPerSecond = data.uiwindow.screen.maximumFramesPerSecond / animationInterval;
@@ -511,7 +511,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)updateKeyboard
 {
-    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *) window->driverdata;
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *) window->internal;
 
     CGAffineTransform t = self.view.transform;
     CGPoint offset = CGPointMake(0.0, 0.0);
@@ -581,12 +581,12 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 static SDL_uikitviewcontroller *GetWindowViewController(SDL_Window *window)
 {
-    if (!window || !window->driverdata) {
+    if (!window || !window->internal) {
         SDL_SetError("Invalid window");
         return nil;
     }
 
-    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
 
     return data.viewcontroller;
 }

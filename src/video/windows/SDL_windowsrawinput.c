@@ -181,7 +181,7 @@ done:
 
 static int WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     Uint32 flags = 0;
     if (data->raw_mouse_enabled) {
         flags |= ENABLE_RAW_MOUSE_INPUT;
@@ -201,14 +201,14 @@ static int WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
 
 int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     data->raw_mouse_enabled = enabled;
     return WIN_UpdateRawInputEnabled(_this);
 }
 
 int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     data->raw_keyboard_enabled = enabled;
     return WIN_UpdateRawInputEnabled(_this);
 }

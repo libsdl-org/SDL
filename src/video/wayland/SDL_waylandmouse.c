@@ -346,7 +346,7 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, struct Wayland_C
         /* Nothing to see here, bail. */
         return SDL_FALSE;
     }
-    focusdata = focus->driverdata;
+    focusdata = focus->internal;
 
     /* Cursors use integer scaling. */
     *scale = SDL_ceilf(focusdata->windowed_scale_factor);
@@ -423,17 +423,17 @@ static SDL_Cursor *Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot
     SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         SDL_VideoDevice *vd = SDL_GetVideoDevice();
-        SDL_VideoData *wd = vd->driverdata;
+        SDL_VideoData *wd = vd->internal;
         struct Wayland_CursorData *data = SDL_calloc(1, sizeof(struct Wayland_CursorData));
         if (!data) {
             SDL_free(cursor);
             return NULL;
         }
-        cursor->driverdata = (void *)data;
+        cursor->internal = (void *)data;
 
         /* Allocate shared memory buffer for this cursor */
         if (Wayland_AllocSHMBuffer(surface->w, surface->h, &data->cursor_data.custom) != 0) {
-            SDL_free(cursor->driverdata);
+            SDL_free(cursor->internal);
             SDL_free(cursor);
             return NULL;
         }
@@ -457,7 +457,7 @@ static SDL_Cursor *Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot
 
 static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
 {
-    SDL_VideoData *data = SDL_GetVideoDevice()->driverdata;
+    SDL_VideoData *data = SDL_GetVideoDevice()->internal;
     SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         struct Wayland_CursorData *cdata = SDL_calloc(1, sizeof(struct Wayland_CursorData));
@@ -465,7 +465,7 @@ static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
             SDL_free(cursor);
             return NULL;
         }
-        cursor->driverdata = (void *)cdata;
+        cursor->internal = (void *)cdata;
 
         /* The surface is only necessary if the cursor shape manager is not present.
          *
@@ -514,13 +514,13 @@ static void Wayland_FreeCursor(SDL_Cursor *cursor)
     }
 
     /* Probably not a cursor we own */
-    if (!cursor->driverdata) {
+    if (!cursor->internal) {
         return;
     }
 
-    Wayland_FreeCursorData((struct Wayland_CursorData *)cursor->driverdata);
+    Wayland_FreeCursorData((struct Wayland_CursorData *)cursor->internal);
 
-    SDL_free(cursor->driverdata);
+    SDL_free(cursor->internal);
     SDL_free(cursor);
 }
 
@@ -600,7 +600,7 @@ static void Wayland_SetSystemCursorShape(struct SDL_WaylandInput *input, SDL_Sys
 static int Wayland_ShowCursor(SDL_Cursor *cursor)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *d = vd->driverdata;
+    SDL_VideoData *d = vd->internal;
     struct SDL_WaylandInput *input = d->input;
     struct wl_pointer *pointer = d->pointer;
     float scale = 1.0f;
@@ -617,7 +617,7 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
     }
 
     if (cursor) {
-        struct Wayland_CursorData *data = cursor->driverdata;
+        struct Wayland_CursorData *data = cursor->internal;
 
         /* TODO: High-DPI custom cursors? -flibit */
         if (data->is_system_cursor) {
@@ -684,8 +684,8 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
 static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *d = vd->driverdata;
-    SDL_WindowData *wind = window->driverdata;
+    SDL_VideoData *d = vd->internal;
+    SDL_WindowData *wind = window->internal;
     struct SDL_WaylandInput *input = d->input;
 
     if (input->cursor_visible || (input->warp_emulation_prohibited && !d->relative_mouse_mode)) {
@@ -730,7 +730,7 @@ static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
 static int Wayland_WarpMouseGlobal(float x, float y)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *d = vd->driverdata;
+    SDL_VideoData *d = vd->internal;
     struct SDL_WaylandInput *input = d->input;
     SDL_WindowData *wind = input->pointer_focus;
 
@@ -746,7 +746,7 @@ static int Wayland_WarpMouseGlobal(float x, float y)
 static int Wayland_SetRelativeMouseMode(SDL_bool enabled)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *data = vd->driverdata;
+    SDL_VideoData *data = vd->internal;
 
     if (enabled) {
         /* Disable mouse warp emulation if it's enabled. */
@@ -804,7 +804,7 @@ static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float 
 #if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
 static void Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
 {
-    Wayland_CursorData *cdata = (Wayland_CursorData *) cursor->driverdata;
+    Wayland_CursorData *cdata = (Wayland_CursorData *) cursor->internal;
 
     /* Probably not a cursor we own */
     if (cdata == NULL) {
@@ -830,7 +830,7 @@ void Wayland_RecreateCursors(void)
 {
     SDL_Cursor *cursor;
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_VideoData *vdata = SDL_GetVideoDevice()->driverdata;
+    SDL_VideoData *vdata = SDL_GetVideoDevice()->internal;
 
     if (vdata && vdata->cursor_themes) {
         SDL_free(vdata->cursor_themes);
@@ -861,7 +861,7 @@ void Wayland_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *d = vd->driverdata;
+    SDL_VideoData *d = vd->internal;
     struct SDL_WaylandInput *input = d->input;
 
     mouse->CreateCursor = Wayland_CreateCursor;

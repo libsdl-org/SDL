@@ -112,7 +112,7 @@ struct SDL_Window
 
     SDL_PropertiesID props;
 
-    SDL_WindowData *driverdata;
+    SDL_WindowData *internal;
 
     SDL_Window *prev;
     SDL_Window *next;
@@ -154,7 +154,7 @@ struct SDL_VideoDisplay
 
     SDL_PropertiesID props;
 
-    SDL_DisplayData *driverdata;
+    SDL_DisplayData *internal;
 };
 
 /* Video device flags */
@@ -456,7 +456,7 @@ struct SDL_VideoDevice
 
     /* * * */
     /* Data private to this driver */
-    SDL_VideoData *driverdata;
+    SDL_VideoData *internal;
     struct SDL_GLDriverData *gl_data;
 
 #ifdef SDL_VIDEO_OPENGL_EGL

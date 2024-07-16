@@ -31,8 +31,8 @@
 int Wayland_InitKeyboard(SDL_VideoDevice *_this)
 {
 #ifdef SDL_USE_IME
-    SDL_VideoData *driverdata = _this->driverdata;
-    if (!driverdata->text_input_manager) {
+    SDL_VideoData *internal = _this->internal;
+    if (!internal->text_input_manager) {
         SDL_IME_Init();
     }
 #endif
@@ -44,8 +44,8 @@ int Wayland_InitKeyboard(SDL_VideoDevice *_this)
 void Wayland_QuitKeyboard(SDL_VideoDevice *_this)
 {
 #ifdef SDL_USE_IME
-    SDL_VideoData *driverdata = _this->driverdata;
-    if (!driverdata->text_input_manager) {
+    SDL_VideoData *internal = _this->internal;
+    if (!internal->text_input_manager) {
         SDL_IME_Quit();
     }
 #endif
@@ -53,10 +53,10 @@ void Wayland_QuitKeyboard(SDL_VideoDevice *_this)
 
 int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_VideoData *driverdata = _this->driverdata;
-    struct SDL_WaylandInput *input = driverdata->input;
+    SDL_VideoData *internal = _this->internal;
+    struct SDL_WaylandInput *input = internal->input;
 
-    if (driverdata->text_input_manager) {
+    if (internal->text_input_manager) {
         if (input && input->text_input) {
             const SDL_Rect *rect = &input->text_input->cursor_rect;
 
@@ -88,10 +88,10 @@ int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 
 int Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_VideoData *driverdata = _this->driverdata;
-    struct SDL_WaylandInput *input = driverdata->input;
+    SDL_VideoData *internal = _this->internal;
+    struct SDL_WaylandInput *input = internal->input;
 
-    if (driverdata->text_input_manager) {
+    if (internal->text_input_manager) {
         if (input && input->text_input) {
             zwp_text_input_v3_disable(input->text_input->text_input);
             zwp_text_input_v3_commit(input->text_input->text_input);
@@ -112,9 +112,9 @@ int Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 
 int Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_VideoData *driverdata = _this->driverdata;
-    if (driverdata->text_input_manager) {
-        struct SDL_WaylandInput *input = driverdata->input;
+    SDL_VideoData *internal = _this->internal;
+    if (internal->text_input_manager) {
+        struct SDL_WaylandInput *input = internal->input;
         if (input && input->text_input) {
             if (!SDL_RectsEqual(&window->text_input_rect, &input->text_input->cursor_rect)) {
                 SDL_copyp(&input->text_input->cursor_rect, &window->text_input_rect);
@@ -142,9 +142,9 @@ SDL_bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
      * _only_ way to get text input. So, in addition to checking for the text
      * input protocol, make sure we don't have any physical keyboards either.
      */
-    SDL_VideoData *driverdata = _this->driverdata;
-    SDL_bool haskeyboard = (driverdata->input != NULL) && (driverdata->input->keyboard != NULL);
-    SDL_bool hastextmanager = (driverdata->text_input_manager != NULL);
+    SDL_VideoData *internal = _this->internal;
+    SDL_bool haskeyboard = (internal->input != NULL) && (internal->input->keyboard != NULL);
+    SDL_bool hastextmanager = (internal->text_input_manager != NULL);
     return !haskeyboard && hastextmanager;
 }
 

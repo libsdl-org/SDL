@@ -839,10 +839,10 @@ void SDL_DelVideoDisplay(SDL_DisplayID displayID, SDL_bool send_event)
     SDL_DestroyProperties(display->props);
     SDL_free(display->name);
     SDL_ResetFullscreenDisplayModes(display);
-    SDL_free(display->desktop_mode.driverdata);
-    display->desktop_mode.driverdata = NULL;
-    SDL_free(display->driverdata);
-    display->driverdata = NULL;
+    SDL_free(display->desktop_mode.internal);
+    display->desktop_mode.internal = NULL;
+    SDL_free(display->internal);
+    display->internal = NULL;
     SDL_free(display);
 
     if (display_index < (_this->num_displays - 1)) {
@@ -932,7 +932,7 @@ SDL_DisplayData *SDL_GetDisplayDriverData(SDL_DisplayID displayID)
 
     CHECK_DISPLAY_MAGIC(display, NULL);
 
-    return display->driverdata;
+    return display->internal;
 }
 
 SDL_DisplayData *SDL_GetDisplayDriverDataForWindow(SDL_Window *window)
@@ -1216,8 +1216,8 @@ void SDL_ResetFullscreenDisplayModes(SDL_VideoDisplay *display)
     int i;
 
     for (i = display->num_fullscreen_modes; i--;) {
-        SDL_free(display->fullscreen_modes[i].driverdata);
-        display->fullscreen_modes[i].driverdata = NULL;
+        SDL_free(display->fullscreen_modes[i].internal);
+        display->fullscreen_modes[i].internal = NULL;
     }
     SDL_free(display->fullscreen_modes);
     display->fullscreen_modes = NULL;
@@ -1335,8 +1335,8 @@ void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode 
 
     SDL_copyp(&last_mode, &display->desktop_mode);
 
-    if (display->desktop_mode.driverdata) {
-        SDL_free(display->desktop_mode.driverdata);
+    if (display->desktop_mode.internal) {
+        SDL_free(display->desktop_mode.internal);
     }
     SDL_copyp(&display->desktop_mode, mode);
     display->desktop_mode.displayID = display->id;

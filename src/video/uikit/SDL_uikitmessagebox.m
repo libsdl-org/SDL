@@ -93,7 +93,7 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
     }
 
     if (messageboxdata->window) {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)messageboxdata->window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)messageboxdata->window->internal;
         window = data.uiwindow;
     }
 

@@ -93,7 +93,7 @@ SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 
-    context = SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
+    context = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 
     if (context != NULL) {
         FB_WIDTH = window->w;

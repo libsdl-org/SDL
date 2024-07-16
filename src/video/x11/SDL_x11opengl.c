@@ -232,7 +232,7 @@ int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return SDL_SetError("Could not retrieve OpenGL functions");
     }
 
-    display = _this->driverdata->display;
+    display = _this->internal->display;
     if (!_this->gl_data->glXQueryExtension(display, &_this->gl_data->errorBase, &_this->gl_data->eventBase)) {
         return SDL_SetError("GLX is not supported");
     }
@@ -337,7 +337,7 @@ static SDL_bool HasExtension(const char *extension, const char *extensions)
 
 static void X11_GL_InitExtensions(SDL_VideoDevice *_this)
 {
-    Display *display = _this->driverdata->display;
+    Display *display = _this->internal->display;
     const int screen = DefaultScreen(display);
     XVisualInfo *vinfo = NULL;
     Window w = 0;
@@ -711,7 +711,7 @@ SDL_bool X11_GL_UseEGL(SDL_VideoDevice *_this)
 
 SDL_GLContext X11_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
     int screen = SDL_GetDisplayDriverDataForWindow(window)->screen;
     XWindowAttributes xattr;
@@ -845,9 +845,9 @@ SDL_GLContext X11_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 
 int X11_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
-    Display *display = _this->driverdata->display;
+    Display *display = _this->internal->display;
     Window drawable =
-        (context ? window->driverdata->xwindow : None);
+        (context ? window->internal->xwindow : None);
     GLXContext glx_context = (GLXContext)context;
     int rc;
 
@@ -889,8 +889,8 @@ int X11_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
     if ((interval < 0) && (!_this->gl_data->HAS_GLX_EXT_swap_control_tear)) {
         return SDL_SetError("Negative swap interval unsupported in this GL");
     } else if (_this->gl_data->glXSwapIntervalEXT) {
-        Display *display = _this->driverdata->display;
-        const SDL_WindowData *windowdata = SDL_GL_GetCurrentWindow()->driverdata;
+        Display *display = _this->internal->display;
+        const SDL_WindowData *windowdata = SDL_GL_GetCurrentWindow()->internal;
 
         Window drawable = windowdata->xwindow;
 
@@ -937,7 +937,7 @@ static SDL_GLSwapIntervalTearBehavior CheckSwapIntervalTearBehavior(SDL_VideoDev
         if (!_this->gl_data->HAS_GLX_EXT_swap_control_tear) {
             _this->gl_data->swap_interval_tear_behavior = SDL_SWAPINTERVALTEAR_UNKNOWN;
         } else {
-            Display *display = _this->driverdata->display;
+            Display *display = _this->internal->display;
             unsigned int allow_late_swap_tearing = 22;
             int original_val = (int) current_val;
 
@@ -978,8 +978,8 @@ static SDL_GLSwapIntervalTearBehavior CheckSwapIntervalTearBehavior(SDL_VideoDev
 int X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     if (_this->gl_data->glXSwapIntervalEXT) {
-        Display *display = _this->driverdata->display;
-        const SDL_WindowData *windowdata = SDL_GL_GetCurrentWindow()->driverdata;
+        Display *display = _this->internal->display;
+        const SDL_WindowData *windowdata = SDL_GL_GetCurrentWindow()->internal;
         Window drawable = windowdata->xwindow;
         unsigned int allow_late_swap_tearing = 0;
         unsigned int val = 0;
@@ -1025,7 +1025,7 @@ int X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 
 int X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
 
     _this->gl_data->glXSwapBuffers(display, data->xwindow);
@@ -1034,7 +1034,7 @@ int X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 int X11_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
-    Display *display = _this->driverdata->display;
+    Display *display = _this->internal->display;
     GLXContext glx_context = (GLXContext)context;
 
     if (!_this->gl_data) {

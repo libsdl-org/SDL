@@ -90,7 +90,7 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER, data->egl_surface);
 #endif
 
-    window->driverdata = data;
+    window->internal = data;
     Android_Window = window;
 
 endfunction:
@@ -128,7 +128,7 @@ int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_
             goto endfunction;
         }
 
-        data = window->driverdata;
+        data = window->internal;
         if (!data || !data->native_window) {
             if (data && !data->native_window) {
                 SDL_SetError("Missing native window");
@@ -175,8 +175,8 @@ void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (window == Android_Window) {
         Android_Window = NULL;
 
-        if (window->driverdata) {
-            SDL_WindowData *data = window->driverdata;
+        if (window->internal) {
+            SDL_WindowData *data = window->internal;
 
 #ifdef SDL_VIDEO_OPENGL_EGL
             if (data->egl_surface != EGL_NO_SURFACE) {
@@ -187,8 +187,8 @@ void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             if (data->native_window) {
                 ANativeWindow_release(data->native_window);
             }
-            SDL_free(window->driverdata);
-            window->driverdata = NULL;
+            SDL_free(window->internal);
+            window->internal = NULL;
         }
     }
 

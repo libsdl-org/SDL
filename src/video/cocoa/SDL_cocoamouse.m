@@ -74,7 +74,7 @@ static SDL_Cursor *Cocoa_CreateDefaultCursor(void)
         if (nscursor) {
             cursor = SDL_calloc(1, sizeof(*cursor));
             if (cursor) {
-                cursor->driverdata = (void *)CFBridgingRetain(nscursor);
+                cursor->internal = (void *)CFBridgingRetain(nscursor);
             }
         }
 
@@ -97,7 +97,7 @@ static SDL_Cursor *Cocoa_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y
         if (nscursor) {
             cursor = SDL_calloc(1, sizeof(*cursor));
             if (cursor) {
-                cursor->driverdata = (void *)CFBridgingRetain(nscursor);
+                cursor->internal = (void *)CFBridgingRetain(nscursor);
             }
         }
 
@@ -221,7 +221,7 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
             cursor = SDL_calloc(1, sizeof(*cursor));
             if (cursor) {
                 /* We'll free it later, so retain it here */
-                cursor->driverdata = (void *)CFBridgingRetain(nscursor);
+                cursor->internal = (void *)CFBridgingRetain(nscursor);
             }
         }
 
@@ -232,7 +232,7 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
 static void Cocoa_FreeCursor(SDL_Cursor *cursor)
 {
     @autoreleasepool {
-        CFBridgingRelease(cursor->driverdata);
+        CFBridgingRelease(cursor->internal);
         SDL_free(cursor);
     }
 }
@@ -243,10 +243,10 @@ static int Cocoa_ShowCursor(SDL_Cursor *cursor)
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
         for (; window != NULL; window = window->next) {
-            SDL_CocoaWindowData *driverdata = (__bridge SDL_CocoaWindowData *)window->driverdata;
-            if (driverdata) {
-                [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
-                                                      withObject:[driverdata.nswindow contentView]
+            SDL_CocoaWindowData *internal = (__bridge SDL_CocoaWindowData *)window->internal;
+            if (internal) {
+                [internal.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
+                                                      withObject:[internal.nswindow contentView]
                                                    waitUntilDone:NO];
             }
         }
@@ -273,7 +273,7 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
     CGPoint point;
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->focus) {
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)mouse->focus->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)mouse->focus->internal;
         if ([data.listener isMovingOrFocusClickPending]) {
             DLog("Postponing warp, window being moved or focused.");
             [data.listener setPendingMoveX:x Y:y];
@@ -346,7 +346,7 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     /* We will re-apply the non-relative mode when the window finishes being moved,
      * if it is being moved right now.
      */
-    data = (__bridge SDL_CocoaWindowData *)window->driverdata;
+    data = (__bridge SDL_CocoaWindowData *)window->internal;
     if ([data.listener isMovingOrFocusClickPending]) {
         return 0;
     }
@@ -391,12 +391,12 @@ int Cocoa_InitMouse(SDL_VideoDevice *_this)
 {
     NSPoint location;
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_MouseData *driverdata = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
-    if (driverdata == NULL) {
+    SDL_MouseData *internal = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
+    if (internal == NULL) {
         return -1;
     }
 
-    mouse->driverdata = driverdata;
+    mouse->internal = internal;
     mouse->CreateCursor = Cocoa_CreateCursor;
     mouse->CreateSystemCursor = Cocoa_CreateSystemCursor;
     mouse->ShowCursor = Cocoa_ShowCursor;
@@ -410,8 +410,8 @@ int Cocoa_InitMouse(SDL_VideoDevice *_this)
     SDL_SetDefaultCursor(Cocoa_CreateDefaultCursor());
 
     location = [NSEvent mouseLocation];
-    driverdata->lastMoveX = location.x;
-    driverdata->lastMoveY = location.y;
+    internal->lastMoveX = location.x;
+    internal->lastMoveY = location.y;
     return 0;
 }
 
@@ -427,7 +427,7 @@ static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
     }
 
     for (window = _this->windows; window; window = window->next) {
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
         if (data && data.nswindow == nswindow) {
             switch ([event type]) {
             case NSEventTypeLeftMouseDown:
@@ -452,7 +452,7 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_Mouse *mouse;
-    SDL_MouseData *driverdata;
+    SDL_MouseData *data;
     NSPoint location;
     CGFloat lastMoveX, lastMoveY;
     float deltaX, deltaY;
@@ -485,19 +485,19 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     }
 
     mouse = SDL_GetMouse();
-    driverdata = (SDL_MouseData *)mouse->driverdata;
-    if (!driverdata) {
+    data = (SDL_MouseData *)mouse->internal;
+    if (!data) {
         return; /* can happen when returning from fullscreen Space on shutdown */
     }
 
-    seenWarp = driverdata->seenWarp;
-    driverdata->seenWarp = NO;
+    seenWarp = data->seenWarp;
+    data->seenWarp = NO;
 
     location = [NSEvent mouseLocation];
-    lastMoveX = driverdata->lastMoveX;
-    lastMoveY = driverdata->lastMoveY;
-    driverdata->lastMoveX = location.x;
-    driverdata->lastMoveY = location.y;
+    lastMoveX = data->lastMoveX;
+    lastMoveY = data->lastMoveY;
+    data->lastMoveX = location.x;
+    data->lastMoveY = location.y;
     DLog("Last seen mouse: (%g, %g)", location.x, location.y);
 
     /* Non-relative movement is handled in -[Cocoa_WindowListener mouseMoved:] */
@@ -517,8 +517,8 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     deltaY = [event deltaY];
 
     if (seenWarp) {
-        deltaX += (lastMoveX - driverdata->lastWarpX);
-        deltaY += ((CGDisplayPixelsHigh(kCGDirectMainDisplay) - lastMoveY) - driverdata->lastWarpY);
+        deltaX += (lastMoveX - data->lastWarpX);
+        deltaY += ((CGDisplayPixelsHigh(kCGDirectMainDisplay) - lastMoveY) - data->lastWarpY);
 
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
@@ -563,10 +563,10 @@ void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y)
     /* This makes Cocoa_HandleMouseEvent ignore the delta caused by the warp,
      * since it gets included in the next movement event.
      */
-    SDL_MouseData *driverdata = (SDL_MouseData *)SDL_GetMouse()->driverdata;
-    driverdata->lastWarpX = x;
-    driverdata->lastWarpY = y;
-    driverdata->seenWarp = SDL_TRUE;
+    SDL_MouseData *data = (SDL_MouseData *)SDL_GetMouse()->internal;
+    data->lastWarpX = x;
+    data->lastWarpY = y;
+    data->seenWarp = SDL_TRUE;
 
     DLog("(%g, %g)", x, y);
 }
@@ -575,9 +575,9 @@ void Cocoa_QuitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse) {
-        if (mouse->driverdata) {
-            SDL_free(mouse->driverdata);
-            mouse->driverdata = NULL;
+        if (mouse->internal) {
+            SDL_free(mouse->internal);
+            mouse->internal = NULL;
         }
     }
 }

@@ -61,7 +61,7 @@ SDL_GLContext Cocoa_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *windo
 {
     @autoreleasepool {
         SDL_GLContext context;
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
 
 #ifdef SDL_VIDEO_OPENGL_CGL
         if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
@@ -102,14 +102,14 @@ int Cocoa_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 int Cocoa_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        return SDL_EGL_SwapBuffers(_this, ((__bridge SDL_CocoaWindowData *)window->driverdata).egl_surface);
+        return SDL_EGL_SwapBuffers(_this, ((__bridge SDL_CocoaWindowData *)window->internal).egl_surface);
     }
 }
 
 int Cocoa_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     @autoreleasepool {
-        return SDL_EGL_MakeCurrent(_this, window ? ((__bridge SDL_CocoaWindowData *)window->driverdata).egl_surface : EGL_NO_SURFACE, context);
+        return SDL_EGL_MakeCurrent(_this, window ? ((__bridge SDL_CocoaWindowData *)window->internal).egl_surface : EGL_NO_SURFACE, context);
     }
 }
 
@@ -118,7 +118,7 @@ int Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         NSView *v;
         /* The current context is lost in here; save it and reset it. */
-        SDL_CocoaWindowData *windowdata = (__bridge SDL_CocoaWindowData *)window->driverdata;
+        SDL_CocoaWindowData *windowdata = (__bridge SDL_CocoaWindowData *)window->internal;
         SDL_Window *current_win = SDL_GL_GetCurrentWindow();
         SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
@@ -149,7 +149,7 @@ int Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 SDL_EGLSurface Cocoa_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        return ((__bridge SDL_CocoaWindowData *)window->driverdata).egl_surface;
+        return ((__bridge SDL_CocoaWindowData *)window->internal).egl_surface;
     }
 }
 

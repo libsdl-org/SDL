@@ -114,7 +114,7 @@ static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
         data.uiscreenmode = uiscreenmode;
     }
 
-    mode->driverdata = (void *)CFBridgingRetain(data);
+    mode->internal = (void *)CFBridgingRetain(data);
 
     return 0;
 }
@@ -122,9 +122,9 @@ static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
 
 static void UIKit_FreeDisplayModeData(SDL_DisplayMode *mode)
 {
-    if (mode->driverdata != NULL) {
-        CFRelease(mode->driverdata);
-        mode->driverdata = NULL;
+    if (mode->internal != NULL) {
+        CFRelease(mode->internal);
+        mode->internal = NULL;
     }
 }
 
@@ -266,7 +266,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
         return SDL_OutOfMemory();
     }
 
-    display.driverdata = (SDL_DisplayData *)CFBridgingRetain(data);
+    display.internal = (SDL_DisplayData *)CFBridgingRetain(data);
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
         return -1;
     }
@@ -298,7 +298,7 @@ int UIKit_AddDisplay(SDL_bool send_event){
         return SDL_OutOfMemory();
     }
 
-    display.driverdata = (SDL_DisplayData *)CFBridgingRetain(data);
+    display.internal = (SDL_DisplayData *)CFBridgingRetain(data);
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
         return -1;
     }
@@ -317,11 +317,11 @@ void UIKit_DelDisplay(UIScreen *uiscreen, SDL_bool send_event)
     if (displays) {
         for (i = 0; displays[i]; ++i) {
             SDL_VideoDisplay *display = SDL_GetVideoDisplay(displays[i]);
-            SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+            SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
 
             if (data && data.uiscreen == uiscreen) {
-                CFRelease(display->driverdata);
-                display->driverdata = NULL;
+                CFRelease(display->internal);
+                display->internal = NULL;
                 SDL_DelVideoDisplay(displays[i], send_event);
                 break;
             }
@@ -372,7 +372,7 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
 #ifndef SDL_PLATFORM_VISIONOS
     @autoreleasepool {
-        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
 
         SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
@@ -408,10 +408,10 @@ int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
 {
 #ifndef SDL_PLATFORM_VISIONOS
     @autoreleasepool {
-        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
 
 #ifndef SDL_PLATFORM_TVOS
-        SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)mode->driverdata;
+        SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)mode->internal;
         [data.uiscreen setCurrentMode:modedata.uiscreenmode];
 #endif
 
@@ -437,7 +437,7 @@ int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
 int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     @autoreleasepool {
-        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
 #ifdef SDL_PLATFORM_VISIONOS
         CGRect frame = CGRectMake(0, 0, SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
 #else
@@ -477,9 +477,9 @@ void UIKit_QuitModes(SDL_VideoDevice *_this)
                 UIKit_FreeDisplayModeData(mode);
             }
 
-            if (display->driverdata != NULL) {
-                CFRelease(display->driverdata);
-                display->driverdata = NULL;
+            if (display->internal != NULL) {
+                CFRelease(display->internal);
+                display->internal = NULL;
             }
         }
     }

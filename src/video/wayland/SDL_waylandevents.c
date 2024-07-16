@@ -346,7 +346,7 @@ static struct wl_callback_listener sync_listener = {
 
 void Wayland_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_VideoData *d = _this->driverdata;
+    SDL_VideoData *d = _this->internal;
 
     /* Queue a sync event to unblock the event queue fd if it's empty and being waited on.
      * TODO: Maybe use a pipe to avoid the compositor roundtrip?
@@ -376,7 +376,7 @@ static int dispatch_queued_events(SDL_VideoData *viddata)
 
 int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 {
-    SDL_VideoData *d = _this->driverdata;
+    SDL_VideoData *d = _this->internal;
     struct SDL_WaylandInput *input = d->input;
     SDL_bool key_repeat_active = SDL_FALSE;
 
@@ -452,7 +452,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 
 void Wayland_PumpEvents(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *d = _this->driverdata;
+    SDL_VideoData *d = _this->internal;
     struct SDL_WaylandInput *input = d->input;
     int err;
 
@@ -1893,10 +1893,10 @@ SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoDevice *_this)
     SDL_VideoData *driver_data = NULL;
     struct wl_data_source *id = NULL;
 
-    if (!_this || !_this->driverdata) {
+    if (!_this || !_this->internal) {
         SDL_SetError("Video driver uninitialized");
     } else {
-        driver_data = _this->driverdata;
+        driver_data = _this->internal;
 
         if (driver_data->data_device_manager) {
             id = wl_data_device_manager_create_data_source(
@@ -1926,10 +1926,10 @@ SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(SDL_V
     SDL_VideoData *driver_data = NULL;
     struct zwp_primary_selection_source_v1 *id = NULL;
 
-    if (!_this || !_this->driverdata) {
+    if (!_this || !_this->internal) {
         SDL_SetError("Video driver uninitialized");
     } else {
-        driver_data = _this->driverdata;
+        driver_data = _this->internal;
 
         if (driver_data->primary_selection_device_manager) {
             id = zwp_primary_selection_device_manager_v1_create_source(
@@ -3129,7 +3129,7 @@ static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
 
 int Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
 {
-    SDL_WindowData *w = window->driverdata;
+    SDL_WindowData *w = window->internal;
     SDL_VideoData *d = input->display;
 
     if (!d->pointer_constraints || !input->pointer) {
@@ -3157,7 +3157,7 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input, SDL_Window *windo
 
 int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
 {
-    SDL_WindowData *w = window->driverdata;
+    SDL_WindowData *w = window->internal;
 
     if (w->locked_pointer) {
         zwp_locked_pointer_v1_destroy(w->locked_pointer);
@@ -3172,7 +3172,7 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input, SDL_Window *win
 
 static void pointer_confine_destroy(SDL_Window *window)
 {
-    SDL_WindowData *w = window->driverdata;
+    SDL_WindowData *w = window->internal;
     if (w->confined_pointer) {
         zwp_confined_pointer_v1_destroy(w->confined_pointer);
         w->confined_pointer = NULL;
@@ -3263,7 +3263,7 @@ static const struct zwp_confined_pointer_v1_listener confined_pointer_listener =
 
 int Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *window)
 {
-    SDL_WindowData *w = window->driverdata;
+    SDL_WindowData *w = window->internal;
     SDL_VideoData *d = input->display;
     struct zwp_confined_pointer_v1 *confined_pointer;
     struct wl_region *confine_rect;
@@ -3337,7 +3337,7 @@ int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input, SDL_Window *
 
 int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *input)
 {
-    SDL_WindowData *w = window->driverdata;
+    SDL_WindowData *w = window->internal;
     SDL_VideoData *d = input->display;
 
     if (!d->key_inhibitor_manager) {
@@ -3358,7 +3358,7 @@ int Wayland_input_grab_keyboard(SDL_Window *window, struct SDL_WaylandInput *inp
 
 int Wayland_input_ungrab_keyboard(SDL_Window *window)
 {
-    SDL_WindowData *w = window->driverdata;
+    SDL_WindowData *w = window->internal;
 
     if (w->key_inhibitor) {
         zwp_keyboard_shortcuts_inhibitor_v1_destroy(w->key_inhibitor);

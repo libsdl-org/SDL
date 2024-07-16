@@ -47,7 +47,7 @@
 
 static void RPI_Destroy(SDL_VideoDevice *device)
 {
-    SDL_free(device->driverdata);
+    SDL_free(device->internal);
     SDL_free(device);
 }
 
@@ -93,7 +93,7 @@ static SDL_VideoDevice *RPI_Create()
         return NULL;
     }
 
-    device->driverdata = phdata;
+    device->internal = phdata;
 
     /* Setup amount of available displays */
     device->num_displays = 0;
@@ -181,7 +181,7 @@ static void AddDispManXDisplay(const int display_id)
 
     data->dispman_display = handle;
 
-    display.driverdata = data;
+    display.internal = data;
 
     SDL_AddVideoDisplay(&display, SDL_FALSE);
 }
@@ -244,7 +244,7 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         return -1;
     }
     display = SDL_GetVideoDisplayForWindow(window);
-    displaydata = display->driverdata;
+    displaydata = display->internal;
 
     /* Windows have one size for now */
     window->w = display->desktop_mode.w;
@@ -305,7 +305,7 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     }
 
     /* Setup driver data for this window */
-    window->driverdata = wdata;
+    window->internal = wdata;
 
     /* One window, it always has focus */
     SDL_SetMouseFocus(window);
@@ -317,7 +317,7 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
 
 void RPI_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
 
     if (data) {
@@ -339,7 +339,7 @@ void RPI_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
 #endif
         SDL_free(data);
-        window->driverdata = NULL;
+        window->internal = NULL;
     }
 }
 

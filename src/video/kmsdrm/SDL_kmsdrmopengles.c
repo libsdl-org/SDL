@@ -54,7 +54,7 @@ int KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
        so gbm dev isn't yet created when this is called, AND we can't alter the
        call order in SDL_CreateWindow(). */
 #if 0
-    NativeDisplayType display = (NativeDisplayType)_this->driverdata->gbm_dev;
+    NativeDisplayType display = (NativeDisplayType)_this->internal->gbm_dev;
     return SDL_EGL_LoadLibrary(_this, path, display, EGL_PLATFORM_GBM_MESA);
 #endif
     return 0;
@@ -86,9 +86,9 @@ SDL_EGL_CreateContext_impl(KMSDRM)
 
 int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windata = window->driverdata;
+    SDL_WindowData *windata = window->internal;
     SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_VideoData *viddata = _this->internal;
     KMSDRM_FBInfo *fb_info;
     int ret = 0;
 

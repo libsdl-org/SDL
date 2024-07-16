@@ -44,7 +44,7 @@ static SDL_bool PSP_initialized = SDL_FALSE;
 
 static void PSP_Destroy(SDL_VideoDevice *device)
 {
-    SDL_free(device->driverdata);
+    SDL_free(device->internal);
     SDL_free(device);
 }
 
@@ -75,7 +75,7 @@ static SDL_VideoDevice *PSP_Create()
     }
     device->gl_data = gldata;
 
-    device->driverdata = phdata;
+    device->internal = phdata;
 
     phdata->egl_initialized = SDL_TRUE;
 
@@ -204,7 +204,7 @@ int PSP_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     }
 
     /* Setup driver data for this window */
-    window->driverdata = wdata;
+    window->internal = wdata;
 
     SDL_SetKeyboardFocus(window);
 

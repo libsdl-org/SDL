@@ -374,7 +374,7 @@ int gxm_init(SDL_Renderer *renderer)
         .colorMask = SCE_GXM_COLOR_MASK_ALL
     };
 
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
 
     SceGxmInitializeParams initializeParams;
     SDL_memset(&initializeParams, 0, sizeof(SceGxmInitializeParams));
@@ -858,7 +858,7 @@ int gxm_init(SDL_Renderer *renderer)
 
 void gxm_finish(SDL_Renderer *renderer)
 {
-    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
 
     // wait until rendering is done
     sceGxmFinish(data->gxm_context);

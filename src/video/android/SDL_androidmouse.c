@@ -64,7 +64,7 @@ static SDL_Cursor *Android_WrapCursor(int custom_cursor, int system_cursor)
         if (data) {
             data->custom_cursor = custom_cursor;
             data->system_cursor = system_cursor;
-            cursor->driverdata = data;
+            cursor->internal = data;
         } else {
             SDL_free(cursor);
             cursor = NULL;
@@ -104,11 +104,11 @@ static SDL_Cursor *Android_CreateSystemCursor(SDL_SystemCursor id)
 
 static void Android_FreeCursor(SDL_Cursor *cursor)
 {
-    SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)cursor->driverdata;
+    SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)cursor->internal;
     if (data->custom_cursor != 0) {
         Android_JNI_DestroyCustomCursor(data->custom_cursor);
     }
-    SDL_free(cursor->driverdata);
+    SDL_free(cursor->internal);
     SDL_free(cursor);
 }
 
@@ -139,7 +139,7 @@ static int Android_ShowCursor(SDL_Cursor *cursor)
         cursor = Android_CreateEmptyCursor();
     }
     if (cursor) {
-        SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)cursor->driverdata;
+        SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)cursor->internal;
         if (data->custom_cursor) {
             if (!Android_JNI_SetCustomCursor(data->custom_cursor)) {
                 return SDL_Unsupported();

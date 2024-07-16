@@ -82,7 +82,7 @@
 static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-    SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+    SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->internal;
     SDL_uikitview *view;
 
 #ifdef SDL_PLATFORM_VISIONOS
@@ -99,7 +99,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow 
         return SDL_OutOfMemory();
     }
 
-    window->driverdata = (SDL_WindowData *)CFBridgingRetain(data);
+    window->internal = (SDL_WindowData *)CFBridgingRetain(data);
 
     data.uiwindow = uiwindow;
 
@@ -156,7 +156,7 @@ int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
 {
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
         SDL_Window *other;
 
         /* We currently only handle a single window per display on iOS */
@@ -179,7 +179,7 @@ int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
             }
             bestmode = SDL_GetClosestFullscreenDisplayMode(display->id, window->w, window->h, 0.0f, include_high_density_modes);
             if (bestmode) {
-                SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)bestmode->driverdata;
+                SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)bestmode->internal;
                 [data.uiscreen setCurrentMode:modedata.uiscreenmode];
 
                 /* desktop_mode doesn't change here (the higher level will
@@ -224,7 +224,7 @@ int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
 void UIKit_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         data.viewcontroller.title = @(window->title);
     }
 }
@@ -232,12 +232,12 @@ void UIKit_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         [data.uiwindow makeKeyAndVisible];
 
         /* Make this window the current mouse focus for touch input */
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-        SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+        SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->internal;
 #ifndef SDL_PLATFORM_VISIONOS
         if (displaydata.uiscreen == [UIScreen mainScreen])
 #endif
@@ -251,7 +251,7 @@ void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void UIKit_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         data.uiwindow.hidden = YES;
     }
 }
@@ -267,7 +267,7 @@ void UIKit_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 static void UIKit_UpdateWindowBorder(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
     SDL_uikitviewcontroller *viewcontroller = data.viewcontroller;
 
 #if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
@@ -320,7 +320,7 @@ void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window)
 #ifndef SDL_PLATFORM_TVOS
 #if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
     @autoreleasepool {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         SDL_uikitviewcontroller *viewcontroller = data.viewcontroller;
         if (@available(iOS 14.0, *)) {
             [viewcontroller setNeedsUpdateOfPrefersPointerLocked];
@@ -333,8 +333,8 @@ void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window)
 void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        if (window->driverdata != NULL) {
-            SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        if (window->internal != NULL) {
+            SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
             NSArray *views = nil;
 
             [data.viewcontroller stopAnimation];
@@ -354,8 +354,8 @@ void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             data.uiwindow.rootViewController = nil;
             data.uiwindow.hidden = YES;
 
-            CFRelease(window->driverdata);
-            window->driverdata = NULL;
+            CFRelease(window->internal);
+            window->internal = NULL;
         }
     }
 }
@@ -363,7 +363,7 @@ void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void UIKit_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)
 {
     @autoreleasepool {
-        SDL_UIKitWindowData *windata = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        SDL_UIKitWindowData *windata = (__bridge SDL_UIKitWindowData *)window->internal;
         UIView *view = windata.viewcontroller.view;
         CGSize size = view.bounds.size;
         CGFloat scale = 1.0;
@@ -394,7 +394,7 @@ UIKit_GetSupportedOrientations(SDL_Window *window)
     NSUInteger orientationMask = 0;
 
     @autoreleasepool {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         UIApplication *app = [UIApplication sharedApplication];
 
         /* Get all possible valid orientations. If the app delegate doesn't tell
@@ -455,12 +455,12 @@ UIKit_GetSupportedOrientations(SDL_Window *window)
 
 int SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam)
 {
-    if (!window || !window->driverdata) {
+    if (!window || !window->internal) {
         return SDL_SetError("Invalid window");
     }
 
     @autoreleasepool {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         [data.viewcontroller setAnimationCallback:interval
                                          callback:callback
                                     callbackParam:callbackParam];

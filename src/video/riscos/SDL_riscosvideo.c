@@ -46,7 +46,7 @@ static void RISCOS_VideoQuit(SDL_VideoDevice *_this);
 
 static void RISCOS_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_free(device->driverdata);
+    SDL_free(device->internal);
     SDL_free(device);
 }
 
@@ -68,7 +68,7 @@ static SDL_VideoDevice *RISCOS_CreateDevice(void)
         return NULL;
     }
 
-    device->driverdata = data;
+    device->internal = data;
 
     /* Set the function pointers */
     device->VideoInit = RISCOS_VideoInit;
@@ -101,7 +101,7 @@ VideoBootStrap RISCOS_bootstrap = {
 
 static int RISCOS_VideoInit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     if (RISCOS_InitEvents(_this) < 0) {
         return -1;

@@ -271,7 +271,7 @@ static SDL_bool GetDisplayMode(SDL_VideoDevice *_this, CGDisplayModeRef vidmode,
     mode->h = (int)height;
     mode->pixel_density = (float)pixelW / width;
     mode->refresh_rate = refreshrate;
-    mode->driverdata = data;
+    mode->internal = data;
     return SDL_TRUE;
 }
 
@@ -386,7 +386,7 @@ void Cocoa_InitModes(SDL_VideoDevice *_this)
                 Cocoa_GetHDRProperties(displaydata->display, &display.HDR);
 
                 display.desktop_mode = mode;
-                display.driverdata = displaydata;
+                display.internal = displaydata;
                 SDL_AddVideoDisplay(&display, SDL_FALSE);
                 SDL_free(display.name);
             }
@@ -402,7 +402,7 @@ void Cocoa_UpdateDisplays(SDL_VideoDevice *_this)
 
     for (i = 0; i < _this->num_displays; ++i) {
         SDL_VideoDisplay *display = _this->displays[i];
-        SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+        SDL_DisplayData *displaydata = (SDL_DisplayData *)display->internal;
 
         Cocoa_GetHDRProperties(displaydata->display, &HDR);
         SDL_SetDisplayHDRProperties(display, &HDR);
@@ -411,7 +411,7 @@ void Cocoa_UpdateDisplays(SDL_VideoDevice *_this)
 
 int Cocoa_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
-    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->internal;
     CGRect cgrect;
 
     cgrect = CGDisplayBounds(displaydata->display);
@@ -424,7 +424,7 @@ int Cocoa_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SD
 
 int Cocoa_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
-    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->internal;
     NSScreen *screen = GetNSScreenForDisplayID(displaydata->display);
 
     if (screen == nil) {
@@ -444,7 +444,7 @@ int Cocoa_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
 
 int Cocoa_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
-    SDL_DisplayData *data = (SDL_DisplayData *)display->driverdata;
+    SDL_DisplayData *data = (SDL_DisplayData *)display->internal;
     CVDisplayLinkRef link = NULL;
     CFArrayRef modes;
     CFDictionaryRef dict = NULL;
@@ -488,8 +488,8 @@ int Cocoa_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
             if (GetDisplayMode(_this, moderef, SDL_FALSE, modes, link, &mode)) {
                 if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
-                    CFRelease(((SDL_DisplayModeData *)mode.driverdata)->modes);
-                    SDL_free(mode.driverdata);
+                    CFRelease(mode.internal->modes);
+                    SDL_free(mode.internal);
                 }
             }
         }
@@ -521,8 +521,8 @@ static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayMo
 
 int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
-    SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
+    SDL_DisplayData *displaydata = (SDL_DisplayData *)display->internal;
+    SDL_DisplayModeData *data = mode->internal;
     CGDisplayFadeReservationToken fade_token = kCGDisplayFadeReservationInvalidToken;
     CGError result = kCGErrorSuccess;
 
@@ -533,7 +533,7 @@ int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
         CGDisplayFade(fade_token, 0.3, kCGDisplayBlendNormal, kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, TRUE);
     }
 
-    if (data == display->desktop_mode.driverdata) {
+    if (data == display->desktop_mode.internal) {
         /* Restoring desktop mode */
         SetDisplayModeForDisplay(displaydata->display, data);
     } else {
@@ -564,15 +564,15 @@ void Cocoa_QuitModes(SDL_VideoDevice *_this)
         SDL_VideoDisplay *display = _this->displays[i];
         SDL_DisplayModeData *mode;
 
-        if (display->current_mode->driverdata != display->desktop_mode.driverdata) {
+        if (display->current_mode->internal != display->desktop_mode.internal) {
             Cocoa_SetDisplayMode(_this, display, &display->desktop_mode);
         }
 
-        mode = (SDL_DisplayModeData *)display->desktop_mode.driverdata;
+        mode = display->desktop_mode.internal;
         CFRelease(mode->modes);
 
         for (j = 0; j < display->num_fullscreen_modes; j++) {
-            mode = (SDL_DisplayModeData *)display->fullscreen_modes[j].driverdata;
+            mode = display->fullscreen_modes[j].internal;
             CFRelease(mode->modes);
         }
     }
