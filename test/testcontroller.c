@@ -973,6 +973,7 @@ static void DelController(SDL_JoystickID id)
 
 static void HandleGamepadRemapped(SDL_JoystickID id)
 {
+    const char *sdlmapping;
     char *mapping;
     int i = FindController(id);
 
@@ -987,7 +988,8 @@ static void HandleGamepadRemapped(SDL_JoystickID id)
     }
 
     /* Get the current mapping */
-    mapping = SDL_GetGamepadMapping(controllers[i].gamepad);
+    sdlmapping = SDL_GetGamepadMapping(controllers[i].gamepad);
+    mapping = sdlmapping ? SDL_strdup(sdlmapping) : NULL;
 
     /* Make sure the mapping has a valid name */
     if (mapping && !MappingHasName(mapping)) {
@@ -1063,10 +1065,9 @@ static void HandleGamepadAdded(SDL_JoystickID id, SDL_bool verbose)
         }
 
         if (verbose) {
-            char *mapping = SDL_GetGamepadMapping(gamepad);
+            const char *mapping = SDL_GetGamepadMapping(gamepad);
             if (mapping) {
                 SDL_Log("Mapping: %s\n", mapping);
-                SDL_free(mapping);
             }
         }
     } else {
@@ -2053,14 +2054,13 @@ int main(int argc, char *argv[])
 
     if (show_mappings) {
         int count = 0;
-        char **mappings = SDL_GetGamepadMappings(&count);
+        const char * const *mappings = SDL_GetGamepadMappings(&count);
         int map_i;
         SDL_Log("Supported mappings:\n");
         for (map_i = 0; map_i < count; ++map_i) {
             SDL_Log("\t%s\n", mappings[map_i]);
         }
         SDL_Log("\n");
-        SDL_free(mappings);
     }
 
     /* Create a window to display gamepad state */

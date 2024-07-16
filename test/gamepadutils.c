@@ -416,13 +416,12 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
     }
 
     ctx->type = SDL_GetGamepadType(gamepad);
-    char *mapping = SDL_GetGamepadMapping(gamepad);
+    const char *mapping = SDL_GetGamepadMapping(gamepad);
     if (mapping) {
         if (SDL_strstr(mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
             /* Just for display purposes */
             ctx->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
         }
-        SDL_free(mapping);
     }
 
     for (i = 0; i < SDL_GAMEPAD_BUTTON_TOUCHPAD; ++i) {
@@ -750,7 +749,7 @@ void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_FRect *area)
     SDL_copyp(&ctx->area, area);
 }
 
-static SDL_bool GetBindingString(const char *label, char *mapping, char *text, size_t size)
+static SDL_bool GetBindingString(const char *label, const char *mapping, char *text, size_t size)
 {
     char *key;
     char *value, *end;
@@ -791,7 +790,7 @@ static SDL_bool GetBindingString(const char *label, char *mapping, char *text, s
     return found;
 }
 
-static SDL_bool GetButtonBindingString(SDL_GamepadButton button, char *mapping, char *text, size_t size)
+static SDL_bool GetButtonBindingString(SDL_GamepadButton button, const char *mapping, char *text, size_t size)
 {
     char label[32];
     SDL_bool baxy_mapping = SDL_FALSE;
@@ -839,7 +838,7 @@ static SDL_bool GetButtonBindingString(SDL_GamepadButton button, char *mapping, 
     }
 }
 
-static SDL_bool GetAxisBindingString(SDL_GamepadAxis axis, int direction, char *mapping, char *text, size_t size)
+static SDL_bool GetAxisBindingString(SDL_GamepadAxis axis, int direction, const char *mapping, char *text, size_t size)
 {
     char label[32];
 
@@ -1022,7 +1021,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     const float arrow_extent = 48.0f;
     SDL_FRect dst, rect, highlight;
     Uint8 r, g, b, a;
-    char *mapping = NULL;
+    const char *mapping = NULL;
     SDL_bool has_accel;
     SDL_bool has_gyro;
 
@@ -1286,8 +1285,6 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             }
         }
     }
-
-    SDL_free(mapping);
 }
 
 void DestroyGamepadDisplay(GamepadDisplay *ctx)

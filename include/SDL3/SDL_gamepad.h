@@ -389,22 +389,20 @@ extern SDL_DECLSPEC int SDLCALL SDL_ReloadGamepadMappings(void);
 /**
  * Get the current gamepad mappings.
  *
- * You must free the returned pointer with SDL_free() when you are done with
- * it, but you do _not_ free each string in the array.
+ * The returned pointer follows the SDL_GetStringRule.
  *
  * \param count a pointer filled in with the number of mappings returned, can
  *              be NULL.
- * \returns an array of the mapping strings, NULL-terminated. Must be freed
- *          with SDL_free(). Returns NULL on error.
+ * \returns an array of the mapping strings, NULL-terminated. Returns NULL on error.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC char ** SDLCALL SDL_GetGamepadMappings(int *count);
+extern SDL_DECLSPEC const char * const * SDLCALL SDL_GetGamepadMappings(int *count);
 
 /**
  * Get the gamepad mapping string for a given GUID.
  *
- * The returned string must be freed with SDL_free().
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param guid a structure containing the GUID for which a mapping is desired.
  * \returns a mapping string or NULL on error; call SDL_GetError() for more
@@ -415,12 +413,12 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GetGamepadMappings(int *count);
  * \sa SDL_GetJoystickGUIDForID
  * \sa SDL_GetJoystickGUID
  */
-extern SDL_DECLSPEC char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID guid);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID guid);
 
 /**
  * Get the current mapping of a gamepad.
  *
- * The returned string must be freed with SDL_free().
+ * The returned string follows the SDL_GetStringRule.
  *
  * Details about mappings are discussed with SDL_AddGamepadMapping().
  *
@@ -435,7 +433,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID
  * \sa SDL_GetGamepadMappingForGUID
  * \sa SDL_SetGamepadMapping
  */
-extern SDL_DECLSPEC char * SDLCALL SDL_GetGamepadMapping(SDL_Gamepad *gamepad);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadMapping(SDL_Gamepad *gamepad);
 
 /**
  * Set the current mapping of a joystick or gamepad.
@@ -651,16 +649,17 @@ extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetRealGamepadTypeForID(SDL_Joys
  *
  * This can be called before any gamepads are opened.
  *
+ * The returned string follows the SDL_GetStringRule.
+ *
  * \param instance_id the joystick instance ID.
- * \returns the mapping string. Must be freed with SDL_free(). Returns NULL if
- *          no mapping is available.
+ * \returns the mapping string. Returns NULL if no mapping is available.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetGamepads
  * \sa SDL_GetGamepadMapping
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetGamepadMappingForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetGamepadMappingForID(SDL_JoystickID instance_id);
 
 /**
  * Open a gamepad for use.
