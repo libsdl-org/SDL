@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     const SDL_FRect save_file_rect = { 50, 290, 220, 140 };
     const SDL_FRect open_folder_rect = { 370, 50, 220, 140 };
     int i;
-    char *initial_path = NULL;
+    const char *initial_path = NULL;
     const int nfilters = sizeof(filters) / sizeof(*filters);
 
     /* Initialize test framework */
@@ -145,10 +145,6 @@ int main(int argc, char *argv[]) {
         SDLTest_DrawString(r, open_folder_rect.x+5, open_folder_rect.y+open_folder_rect.h/2, "Open Folder...");
 
         SDL_RenderPresent(r);
-    }
-
-    if (initial_path) {
-        SDL_free(initial_path);
     }
 
     SDLTest_CleanupTextDrawing();

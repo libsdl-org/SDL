@@ -37,7 +37,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return NULL;
 }
 
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
