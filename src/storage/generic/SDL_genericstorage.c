@@ -225,15 +225,18 @@ static const SDL_StorageInterface GENERIC_user_iface = {
 static SDL_Storage *GENERIC_User_Create(const char *org, const char *app, SDL_PropertiesID props)
 {
     SDL_Storage *result;
-
-    char *prefpath = SDL_GetPrefPath(org, app);
+    char *prefpath = NULL;
+    const char *sdlprefpath = SDL_GetPrefPath(org, app);
+    if (sdlprefpath) {
+        prefpath = SDL_strdup(sdlprefpath);
+    }
     if (prefpath == NULL) {
         return NULL;
     }
 
     result = SDL_OpenStorage(&GENERIC_user_iface, prefpath);
     if (result == NULL) {
-        SDL_free(prefpath);
+        SDL_free(prefpath);  // otherwise CloseStorage will free it.
     }
     return result;
 }

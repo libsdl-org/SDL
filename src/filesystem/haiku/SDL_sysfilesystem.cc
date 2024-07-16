@@ -65,7 +65,7 @@ char *SDL_SYS_GetBasePath(void)
 }
 
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     // !!! FIXME: is there a better way to do this?
     const char *home = SDL_getenv("HOME");

@@ -116,15 +116,14 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetBasePath(void);
  *   your applications that use this function.
  * - Always use a unique app string for each one, and make sure it never
  *   changes for an app once you've decided on it.
- * - Unicode characters are legal, as long as it's UTF-8 encoded, but...
+ * - Unicode characters are legal, as long as they are UTF-8 encoded, but...
  * - ...only use letters, numbers, and spaces. Avoid punctuation like "Game
  *   Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.
  *
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
- * The pointer returned is owned by the caller. Please call SDL_free() on the
- * pointer when done with it.
+ * The returned string follows the SDL_GetStringRule.
  *
  * \param org the name of your organization.
  * \param app the name of your application.
@@ -136,7 +135,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetBasePath(void);
  *
  * \sa SDL_GetBasePath
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
 
 /**
  * The type of the OS-provided default folder for a specific purpose.

@@ -31,7 +31,7 @@ char *SDL_SYS_GetBasePath(void)
     return NULL;
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     SDL_Unsupported();
     return NULL;

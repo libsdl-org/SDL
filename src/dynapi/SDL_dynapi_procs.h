@@ -413,7 +413,7 @@ SDL_DYNAPI_PROC(const char*,SDL_GetPixelFormatName,(SDL_PixelFormat a),(a),retur
 SDL_DYNAPI_PROC(const char*,SDL_GetPlatform,(void),(),return)
 SDL_DYNAPI_PROC(void*,SDL_GetPointerProperty,(SDL_PropertiesID a, const char *b, void *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_PowerState,SDL_GetPowerInfo,(int *a, int *b),(a,b),return)
-SDL_DYNAPI_PROC(char*,SDL_GetPrefPath,(const char *a, const char *b),(a,b),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetPrefPath,(const char *a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Locale*,SDL_GetPreferredLocales,(void),(),return)
 SDL_DYNAPI_PROC(SDL_DisplayID,SDL_GetPrimaryDisplay,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetPrimarySelectionText,(void),(),return)
