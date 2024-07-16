@@ -88,7 +88,7 @@ struct SDL_Texture
 
     SDL_PropertiesID props;
 
-    void *driverdata; /**< Driver specific texture representation */
+    void *internal; /**< Driver specific texture representation */
 
     SDL_Texture *prev;
     SDL_Texture *next;
@@ -290,7 +290,7 @@ struct SDL_Renderer
 
     SDL_bool destroyed;   // already destroyed by SDL_DestroyWindow; just free this struct in SDL_DestroyRenderer.
 
-    void *driverdata;
+    void *internal;
 
     SDL_Renderer *next;
 };

@@ -69,7 +69,7 @@ static HRGN GenerateSpanListRegion(SDL_Surface *shape, int offset_x, int offset_
 
 int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HRGN mask = NULL;
 
     /* Generate a set of spans for the region */

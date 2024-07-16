@@ -36,7 +36,7 @@ int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prope
         return -1;
     }
 
-    window->driverdata = offscreen_window;
+    window->internal = offscreen_window;
 
     if (window->x == SDL_WINDOWPOS_UNDEFINED) {
         window->x = 0;
@@ -71,7 +71,7 @@ int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prope
 
 void OFFSCREEN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *offscreen_window = window->driverdata;
+    SDL_WindowData *offscreen_window = window->internal;
 
     if (offscreen_window) {
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -80,7 +80,7 @@ void OFFSCREEN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_free(offscreen_window);
     }
 
-    window->driverdata = NULL;
+    window->internal = NULL;
 }
 
 void OFFSCREEN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)

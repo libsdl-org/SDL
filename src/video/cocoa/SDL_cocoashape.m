@@ -28,7 +28,7 @@
 
 int Cocoa_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape)
 {
-    SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
+    SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
     BOOL ignoresMouseEvents = NO;
 
     if (shape) {

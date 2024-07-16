@@ -67,7 +67,7 @@ static void X11_XsettingsNotify(const char *name, XSettingsAction action, XSetti
 
 void X11_InitXsettings(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     SDLX11_SettingsData *xsettings_data = &data->xsettings_data;
 
     xsettings_data->xsettings = xsettings_client_new(data->display,
@@ -77,7 +77,7 @@ void X11_InitXsettings(SDL_VideoDevice *_this)
 
 void X11_QuitXsettings(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     SDLX11_SettingsData *xsettings_data = &data->xsettings_data;
 
     if (xsettings_data->xsettings) {
@@ -88,7 +88,7 @@ void X11_QuitXsettings(SDL_VideoDevice *_this)
 
 void X11_HandleXsettings(SDL_VideoDevice *_this, const XEvent *xevent)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     SDLX11_SettingsData *xsettings_data = &data->xsettings_data;
 
     if (xsettings_data->xsettings) {
@@ -100,7 +100,7 @@ void X11_HandleXsettings(SDL_VideoDevice *_this, const XEvent *xevent)
 }
 
 int X11_GetXsettingsIntKey(SDL_VideoDevice *_this, const char *key, int fallback_value) {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     SDLX11_SettingsData *xsettings_data = &data->xsettings_data;
     XSettingsSetting *setting = NULL;
     int res = fallback_value;

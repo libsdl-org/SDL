@@ -38,7 +38,7 @@ static SDL_Cursor *WIN_CreateDefaultCursor()
 {
     SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        cursor->driverdata = LoadCursor(NULL, IDC_ARROW);
+        cursor->internal = LoadCursor(NULL, IDC_ARROW);
     }
 
     return cursor;
@@ -187,7 +187,7 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
     cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        cursor->driverdata = hcursor;
+        cursor->internal = hcursor;
     } else {
         DestroyCursor(hcursor);
     }
@@ -283,7 +283,7 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
 
         hcursor = LoadCursor(NULL, name);
 
-        cursor->driverdata = hcursor;
+        cursor->internal = hcursor;
     }
 
     return cursor;
@@ -291,7 +291,7 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
 
 static void WIN_FreeCursor(SDL_Cursor *cursor)
 {
-    HCURSOR hcursor = (HCURSOR)cursor->driverdata;
+    HCURSOR hcursor = (HCURSOR)cursor->internal;
 
     DestroyCursor(hcursor);
     SDL_free(cursor);
@@ -303,7 +303,7 @@ static int WIN_ShowCursor(SDL_Cursor *cursor)
         cursor = SDL_blank_cursor;
     }
     if (cursor) {
-        SDL_cursor = (HCURSOR)cursor->driverdata;
+        SDL_cursor = (HCURSOR)cursor->internal;
     } else {
         SDL_cursor = NULL;
     }
@@ -336,7 +336,7 @@ void WIN_SetCursorPos(int x, int y)
 
 static int WIN_WarpMouse(SDL_Window *window, float x, float y)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     POINT pt;
 
@@ -373,13 +373,13 @@ static int WIN_SetRelativeMouseMode(SDL_bool enabled)
 static int WIN_CaptureMouse(SDL_Window *window)
 {
     if (window) {
-        SDL_WindowData *data = window->driverdata;
+        SDL_WindowData *data = window->internal;
         SetCapture(data->hwnd);
     } else {
         SDL_Window *focus_window = SDL_GetMouseFocus();
 
         if (focus_window) {
-            SDL_WindowData *data = focus_window->driverdata;
+            SDL_WindowData *data = focus_window->internal;
             if (!data->mouse_tracked) {
                 SDL_SetMouseFocus(NULL);
             }

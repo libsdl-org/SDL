@@ -54,7 +54,7 @@ static void NGAGE_VideoQuit(SDL_VideoDevice *_this);
 
 static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *phdata = device->driverdata;
+    SDL_VideoData *phdata = device->internal;
 
     if (phdata) {
         /* Free Epoc resources */
@@ -129,7 +129,7 @@ static SDL_VideoDevice *NGAGE_CreateDevice(void)
     device->DestroyWindow = NGAGE_DestroyWindow;
 
     /* N-Gage specific data */
-    device->driverdata = phdata;
+    device->internal = phdata;
 
     return device;
 }

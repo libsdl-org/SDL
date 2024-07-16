@@ -44,7 +44,7 @@ static void android_egl_context_restore(SDL_Window *window)
 {
     if (window) {
         SDL_Event event;
-        SDL_WindowData *data = window->driverdata;
+        SDL_WindowData *data = window->internal;
         SDL_GL_MakeCurrent(window, NULL);
         if (SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context) < 0) {
             /* The context is no longer valid, create a new one */
@@ -68,7 +68,7 @@ static void android_egl_context_backup(SDL_Window *window)
     if (window) {
         int interval = 0;
         /* Keep a copy of the EGL Context so we can try to restore it when we resume */
-        SDL_WindowData *data = window->driverdata;
+        SDL_WindowData *data = window->internal;
         data->egl_context = SDL_GL_GetCurrentContext();
 
         /* Save/Restore the swap interval / vsync */
@@ -93,7 +93,7 @@ static void android_egl_context_backup(SDL_Window *window)
 
 void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
 
     if (videodata->isPaused) {
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -162,7 +162,7 @@ void Android_PumpEvents_Blocking(SDL_VideoDevice *_this)
 
 void Android_PumpEvents_NonBlocking(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     static int backup_context = 0;
 
     if (videodata->isPaused) {

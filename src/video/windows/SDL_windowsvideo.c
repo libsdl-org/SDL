@@ -93,7 +93,7 @@ extern void D3D12_XBOX_GetResolution(Uint32 *width, Uint32 *height);
 
 static void WIN_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *data = device->driverdata;
+    SDL_VideoData *data = device->internal;
 
     SDL_UnregisterApp();
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -115,8 +115,8 @@ static void WIN_DeleteDevice(SDL_VideoDevice *device)
     if (device->wakeup_lock) {
         SDL_DestroyMutex(device->wakeup_lock);
     }
-    SDL_free(device->driverdata->rawinput);
-    SDL_free(device->driverdata);
+    SDL_free(device->internal->rawinput);
+    SDL_free(device->internal);
     SDL_free(device);
 }
 
@@ -138,7 +138,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
         SDL_free(device);
         return NULL;
     }
-    device->driverdata = data;
+    device->internal = data;
     device->wakeup_lock = SDL_CreateMutex();
     device->system_theme = WIN_GetSystemTheme();
 
@@ -335,7 +335,7 @@ VideoBootStrap WINDOWS_bootstrap = {
 static BOOL WIN_DeclareDPIAwareUnaware(SDL_VideoDevice *_this)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     if (data->SetProcessDpiAwarenessContext) {
         return data->SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
@@ -350,7 +350,7 @@ static BOOL WIN_DeclareDPIAwareUnaware(SDL_VideoDevice *_this)
 static BOOL WIN_DeclareDPIAwareSystem(SDL_VideoDevice *_this)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     if (data->SetProcessDpiAwarenessContext) {
         /* Windows 10, version 1607 */
@@ -369,7 +369,7 @@ static BOOL WIN_DeclareDPIAwareSystem(SDL_VideoDevice *_this)
 static BOOL WIN_DeclareDPIAwarePerMonitor(SDL_VideoDevice *_this)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     if (data->SetProcessDpiAwarenessContext) {
         /* Windows 10, version 1607 */
@@ -391,7 +391,7 @@ static BOOL WIN_DeclareDPIAwarePerMonitorV2(SDL_VideoDevice *_this)
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     return FALSE;
 #else
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     /* Declare DPI aware (may have been done in external code or a manifest, as well) */
     if (data->SetProcessDpiAwarenessContext) {
@@ -427,7 +427,7 @@ static BOOL WIN_DeclareDPIAwarePerMonitorV2(SDL_VideoDevice *_this)
 #ifdef HIGHDPI_DEBUG
 static const char *WIN_GetDPIAwareness(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     if (data->GetThreadDpiAwarenessContext && data->AreDpiAwarenessContextsEqual) {
         DPI_AWARENESS_CONTEXT context = data->GetThreadDpiAwarenessContext();
@@ -466,7 +466,7 @@ static void WIN_InitDPIAwareness(SDL_VideoDevice *_this)
 
 int WIN_VideoInit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     WIN_InitDPIAwareness(_this);
 
@@ -641,7 +641,7 @@ int SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outpu
     return SDL_SetError("SDL was compiled without DXGI support due to missing dxgi.h header");
 #else
     const SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
-    const SDL_VideoData *videodata = videodevice ? videodevice->driverdata : NULL;
+    const SDL_VideoData *videodata = videodevice ? videodevice->internal : NULL;
     SDL_DisplayData *pData = SDL_GetDisplayDriverData(displayID);
     int nAdapter, nOutput;
     IDXGIAdapter *pDXGIAdapter;
@@ -714,7 +714,7 @@ SDL_SystemTheme WIN_GetSystemTheme(void)
 SDL_bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     if (data->AreDpiAwarenessContextsEqual && data->GetThreadDpiAwarenessContext) {
         /* Windows 10, version 1607 */

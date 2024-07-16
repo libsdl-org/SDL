@@ -32,7 +32,7 @@ extern "C" {
 #endif
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
-    return (SDL_BWin *)(window->driverdata);
+    return (SDL_BWin *)(window->internal);
 }
 
 static SDL_INLINE SDL_BLooper *_GetBeLooper() {
@@ -69,7 +69,7 @@ static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
         return -1;
     }
 
-    window->driverdata = (SDL_WindowData *)bwin;
+    window->internal = (SDL_WindowData *)bwin;
     int32 winID = _GetBeLooper()->GetID(window);
     bwin->SetID(winID);
 
@@ -194,7 +194,7 @@ void HAIKU_DestroyWindow(SDL_VideoDevice *_this, SDL_Window * window) {
     _ToBeWin(window)->LockLooper();    /* This MUST be locked */
     _GetBeLooper()->ClearID(_ToBeWin(window));
     _ToBeWin(window)->Quit();
-    window->driverdata = NULL;
+    window->internal = NULL;
 }
 
 #ifdef __cplusplus

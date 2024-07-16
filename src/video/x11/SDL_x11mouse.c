@@ -36,7 +36,7 @@ static SDL_Cursor *sys_cursors[SDL_HITTEST_RESIZE_LEFT + 1];
 
 static Display *GetDisplay(void)
 {
-    return SDL_GetVideoDevice()->driverdata->display;
+    return SDL_GetVideoDevice()->internal->display;
 }
 
 static Cursor X11_CreateEmptyCursor(void)
@@ -73,7 +73,7 @@ static SDL_Cursor *X11_CreateDefaultCursor(void)
     SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
         /* None is used to indicate the default cursor */
-        cursor->driverdata = (void *)(uintptr_t)None;
+        cursor->internal = (void *)(uintptr_t)None;
     }
     return cursor;
 }
@@ -206,7 +206,7 @@ static SDL_Cursor *X11_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         if (x11_cursor == None) {
             x11_cursor = X11_CreatePixmapCursor(surface, hot_x, hot_y);
         }
-        cursor->driverdata = (void *)(uintptr_t)x11_cursor;
+        cursor->internal = (void *)(uintptr_t)x11_cursor;
     }
 
     return cursor;
@@ -263,7 +263,7 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
     if (x11_cursor != None) {
         cursor = SDL_calloc(1, sizeof(*cursor));
         if (cursor) {
-            cursor->driverdata = (void *)(uintptr_t)x11_cursor;
+            cursor->internal = (void *)(uintptr_t)x11_cursor;
         }
     }
 
@@ -272,7 +272,7 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
 
 static void X11_FreeCursor(SDL_Cursor *cursor)
 {
-    Cursor x11_cursor = (Cursor)cursor->driverdata;
+    Cursor x11_cursor = (Cursor)cursor->internal;
 
     if (x11_cursor != None) {
         X11_XFreeCursor(GetDisplay(), x11_cursor);
@@ -285,7 +285,7 @@ static int X11_ShowCursor(SDL_Cursor *cursor)
     Cursor x11_cursor = 0;
 
     if (cursor) {
-        x11_cursor = (Cursor)cursor->driverdata;
+        x11_cursor = (Cursor)cursor->internal;
     } else {
         x11_cursor = X11_CreateEmptyCursor();
     }
@@ -297,7 +297,7 @@ static int X11_ShowCursor(SDL_Cursor *cursor)
         SDL_Window *window;
 
         for (window = video->windows; window; window = window->next) {
-            SDL_WindowData *data = window->driverdata;
+            SDL_WindowData *data = window->internal;
             if (data) {
                 if (x11_cursor != None) {
                     X11_XDefineCursor(display, data->xwindow, x11_cursor);
@@ -313,7 +313,7 @@ static int X11_ShowCursor(SDL_Cursor *cursor)
 
 static void X11_WarpMouseInternal(Window xwindow, float x, float y)
 {
-    SDL_VideoData *videodata = SDL_GetVideoDevice()->driverdata;
+    SDL_VideoData *videodata = SDL_GetVideoDevice()->internal;
     Display *display = videodata->display;
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_bool warp_hack = SDL_FALSE;
@@ -354,7 +354,7 @@ static void X11_WarpMouseInternal(Window xwindow, float x, float y)
 
 static int X11_WarpMouse(SDL_Window *window, float x, float y)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     /* If we have no barrier, we need to warp */
@@ -387,7 +387,7 @@ static int X11_CaptureMouse(SDL_Window *window)
     SDL_Window *mouse_focus = SDL_GetMouseFocus();
 
     if (window) {
-        SDL_WindowData *data = window->driverdata;
+        SDL_WindowData *data = window->internal;
 
         /* If XInput2 is handling the pointer input, non-confinement grabs will always fail with 'AlreadyGrabbed',
          * since the pointer is being grabbed by XInput2.
@@ -415,7 +415,7 @@ static int X11_CaptureMouse(SDL_Window *window)
 
 static SDL_MouseButtonFlags X11_GetGlobalMouseState(float *x, float *y)
 {
-    SDL_VideoData *videodata = SDL_GetVideoDevice()->driverdata;
+    SDL_VideoData *videodata = SDL_GetVideoDevice()->internal;
     SDL_DisplayID *displays;
     Display *display = GetDisplay();
     int i;
@@ -505,7 +505,7 @@ void X11_InitMouse(SDL_VideoDevice *_this)
 
 void X11_QuitMouse(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     SDL_XInput2DeviceInfo *i;
     SDL_XInput2DeviceInfo *next;
     int j;

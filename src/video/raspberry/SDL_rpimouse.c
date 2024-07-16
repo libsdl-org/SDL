@@ -92,7 +92,7 @@ static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     ret = vc_dispmanx_resource_write_data(curdata->resource, VC_IMAGE_ARGB8888, surface->pitch, surface->pixels, &dst_rect);
     SDL_assert(ret == DISPMANX_SUCCESS);
 
-    cursor->driverdata = curdata;
+    cursor->internal = curdata;
 
     return cursor;
 }
@@ -117,7 +117,7 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
 
     if (cursor != global_cursor) {
         if (global_cursor) {
-            curdata = (RPI_CursorData *)global_cursor->driverdata;
+            curdata = (RPI_CursorData *)global_cursor->internal;
             if (curdata && curdata->element > DISPMANX_NO_HANDLE) {
                 update = vc_dispmanx_update_start(0);
                 SDL_assert(update);
@@ -135,7 +135,7 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
         return 0;
     }
 
-    curdata = (RPI_CursorData *)cursor->driverdata;
+    curdata = (RPI_CursorData *)cursor->internal;
     if (!curdata) {
         return -1;
     }
@@ -187,7 +187,7 @@ static void RPI_FreeCursor(SDL_Cursor *cursor)
     RPI_CursorData *curdata;
 
     if (cursor) {
-        curdata = (RPI_CursorData *)cursor->driverdata;
+        curdata = (RPI_CursorData *)cursor->internal;
 
         if (curdata) {
             if (curdata->element != DISPMANX_NO_HANDLE) {
@@ -204,7 +204,7 @@ static void RPI_FreeCursor(SDL_Cursor *cursor)
                 SDL_assert(ret == DISPMANX_SUCCESS);
             }
 
-            SDL_free(cursor->driverdata);
+            SDL_free(cursor->internal);
         }
         SDL_free(cursor);
         if (cursor == global_cursor) {
@@ -222,11 +222,11 @@ static int RPI_WarpMouseGlobalGraphically(float x, float y)
     VC_RECT_T src_rect;
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (!mouse || !mouse->cur_cursor || !mouse->cur_cursor->driverdata) {
+    if (!mouse || !mouse->cur_cursor || !mouse->cur_cursor->internal) {
         return 0;
     }
 
-    curdata = (RPI_CursorData *)mouse->cur_cursor->driverdata;
+    curdata = (RPI_CursorData *)mouse->cur_cursor->internal;
     if (curdata->element == DISPMANX_NO_HANDLE) {
         return 0;
     }
@@ -271,7 +271,7 @@ static int RPI_WarpMouseGlobal(float x, float y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (!mouse || !mouse->cur_cursor || !mouse->cur_cursor->driverdata) {
+    if (!mouse || !mouse->cur_cursor || !mouse->cur_cursor->internal) {
         return 0;
     }
 

@@ -48,7 +48,7 @@ static BOOL WIN_OpenClipboard(SDL_VideoDevice *_this)
     HWND hwnd = NULL;
 
     if (_this->windows) {
-        hwnd = _this->windows->driverdata->hwnd;
+        hwnd = _this->windows->internal->hwnd;
     }
     for (attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
         if (OpenClipboard(hwnd)) {
@@ -213,7 +213,7 @@ static int WIN_SetClipboardText(SDL_VideoDevice *_this, const char *mime_type)
 
 int WIN_SetClipboardData(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     size_t i;
     int result = 0;
 

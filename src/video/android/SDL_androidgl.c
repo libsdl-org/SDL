@@ -38,7 +38,7 @@
 int Android_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     if (window && context) {
-        return SDL_EGL_MakeCurrent(_this, window->driverdata->egl_surface, context);
+        return SDL_EGL_MakeCurrent(_this, window->internal->egl_surface, context);
     } else {
         return SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
@@ -50,7 +50,7 @@ SDL_GLContext Android_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *win
 
     Android_ActivityMutex_Lock_Running();
 
-    ret = SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
+    ret = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 
@@ -70,7 +70,7 @@ int Android_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     /*_this->egl_data->eglWaitNative(EGL_CORE_NATIVE_ENGINE);
     _this->egl_data->eglWaitGL();*/
-    retval = SDL_EGL_SwapBuffers(_this, window->driverdata->egl_surface);
+    retval = SDL_EGL_SwapBuffers(_this, window->internal->egl_surface);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 

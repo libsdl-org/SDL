@@ -75,7 +75,7 @@ static int Android_SuspendScreenSaver(SDL_VideoDevice *_this)
 
 static void Android_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_free(device->driverdata);
+    SDL_free(device->internal);
     SDL_free(device);
 }
 
@@ -97,7 +97,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
         return NULL;
     }
 
-    device->driverdata = data;
+    device->internal = data;
     device->system_theme = Android_SystemTheme;
 
     /* Set the function pointers */
@@ -167,7 +167,7 @@ VideoBootStrap Android_bootstrap = {
 
 int Android_VideoInit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     SDL_DisplayID displayID;
     SDL_VideoDisplay *display;
     SDL_DisplayMode mode;
@@ -181,7 +181,6 @@ int Android_VideoInit(SDL_VideoDevice *_this)
     mode.w = Android_DeviceWidth;
     mode.h = Android_DeviceHeight;
     mode.refresh_rate = Android_ScreenRate;
-    mode.driverdata = NULL;
 
     displayID = SDL_AddBasicVideoDisplay(&mode);
     if (displayID == 0) {

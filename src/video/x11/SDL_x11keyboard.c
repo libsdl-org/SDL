@@ -83,7 +83,7 @@ static SDL_Scancode X11_KeyCodeToSDLScancode(SDL_VideoDevice *_this, KeyCode key
 
 KeySym X11_KeyCodeToSym(SDL_VideoDevice *_this, KeyCode keycode, unsigned char group, unsigned int mod_mask)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     KeySym keysym;
     unsigned int mods_ret[16];
 
@@ -125,7 +125,7 @@ KeySym X11_KeyCodeToSym(SDL_VideoDevice *_this, KeyCode keycode, unsigned char g
 
 int X11_InitKeyboard(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     int i = 0;
     int j = 0;
     int min_keycode, max_keycode;
@@ -343,7 +343,7 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
         { SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS, Mod5Mask | ShiftMask | LockMask }
     };
 
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     int i;
     SDL_Scancode scancode;
     SDL_Keymap *keymap;
@@ -392,7 +392,7 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
 
 void X11_QuitKeyboard(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
     if (data->xkb) {
@@ -409,7 +409,7 @@ void X11_QuitKeyboard(SDL_VideoDevice *_this)
 static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef X_HAVE_UTF8_STRING
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
     if (data && data->ic) {
         /* Clear any partially entered dead keys */
@@ -447,13 +447,13 @@ int X11_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 
 SDL_bool X11_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     return videodata->is_steam_deck;
 }
 
 void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
 
     if (videodata->is_steam_deck) {
         /* For more documentation of the URL parameters, see:
@@ -470,7 +470,7 @@ void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 
 void X11_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
 
     if (videodata->is_steam_deck) {
         SDL_OpenURL("steam://close/keyboard");
@@ -480,7 +480,7 @@ void X11_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 
 SDL_bool X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
 
     return videodata->steam_keyboard_open;
 }

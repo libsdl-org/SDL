@@ -134,7 +134,7 @@ int Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                  const struct VkAllocationCallbacks *allocator,
                                  VkSurfaceKHR *surface)
 {
-    SDL_WindowData *windowData = window->driverdata;
+    SDL_WindowData *windowData = window->internal;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateWaylandSurfaceKHR vkCreateWaylandSurfaceKHR =
@@ -200,7 +200,7 @@ SDL_bool Wayland_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
 
     return vkGetPhysicalDeviceWaylandPresentationSupportKHR(physicalDevice,
                                                             queueFamilyIndex,
-                                                            _this->driverdata->display);
+                                                            _this->internal->display);
 }
 
 #endif

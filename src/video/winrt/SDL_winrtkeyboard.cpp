@@ -88,7 +88,7 @@ void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::
         return;
     }
 
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
     if (SDL_TextInputActive(window)) {
         /* Characters outside Unicode Basic Multilingual Plane (BMP)

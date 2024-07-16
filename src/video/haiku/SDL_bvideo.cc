@@ -44,7 +44,7 @@ extern "C" {
 #include "../../events/SDL_mouse_c.h"
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
-    return (SDL_BWin *)(window->driverdata);
+    return (SDL_BWin *)(window->internal);
 }
 
 static SDL_VideoDevice * HAIKU_CreateDevice(void)
@@ -54,7 +54,7 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
 
-    device->driverdata = NULL; /* FIXME: Is this the cause of some of the
+    device->internal = NULL; /* FIXME: Is this the cause of some of the
                                   SDL_Quit() errors? */
 
 /* TODO: Figure out if any initialization needs to go here */
@@ -116,7 +116,7 @@ VideoBootStrap HAIKU_bootstrap = {
 
 void HAIKU_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free(device->driverdata);
+    SDL_free(device->internal);
     SDL_free(device);
 }
 
@@ -155,7 +155,7 @@ static SDL_Cursor * HAIKU_CreateSystemCursor(SDL_SystemCursor id)
 
     SDL_Cursor *cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        cursor->driverdata = (void *)new BCursor(cursorId);
+        cursor->internal = (void *)new BCursor(cursorId);
     }
 
     return cursor;
@@ -168,8 +168,8 @@ static SDL_Cursor * HAIKU_CreateDefaultCursor()
 
 static void HAIKU_FreeCursor(SDL_Cursor * cursor)
 {
-    if (cursor->driverdata) {
-        delete (BCursor*) cursor->driverdata;
+    if (cursor->internal) {
+        delete (BCursor*) cursor->internal;
     }
     SDL_free(cursor);
 }
@@ -190,7 +190,7 @@ static SDL_Cursor * HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot
 
     cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        cursor->driverdata = (void *)new BCursor(cursorBitmap, BPoint(hot_x, hot_y));
+        cursor->internal = (void *)new BCursor(cursorBitmap, BPoint(hot_x, hot_y));
     } else {
         return NULL;
     }
@@ -207,7 +207,7 @@ static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 	}
 
 	if (cursor) {
-		BCursor *hCursor = (BCursor*)cursor->driverdata;
+		BCursor *hCursor = (BCursor*)cursor->internal;
 		be_app->SetCursor(hCursor);
 	} else {
 		BCursor *hCursor = new BCursor(B_CURSOR_ID_NO_CURSOR);

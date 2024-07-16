@@ -50,16 +50,16 @@ static SDL_Scancode SDL_RISCOS_translate_keycode(int keycode)
 
 void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *driverdata = _this->driverdata;
+    SDL_VideoData *internal = _this->internal;
     Uint8 key = 2;
     int i;
 
     /* Check for key releases */
     for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
-        if (driverdata->key_pressed[i] != 255) {
-            if ((_kernel_osbyte(129, driverdata->key_pressed[i] ^ 0xff, 0xff) & 0xff) != 255) {
-                SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, driverdata->key_pressed[i], SDL_RISCOS_translate_keycode(driverdata->key_pressed[i]), SDL_RELEASED);
-                driverdata->key_pressed[i] = 255;
+        if (internal->key_pressed[i] != 255) {
+            if ((_kernel_osbyte(129, internal->key_pressed[i] ^ 0xff, 0xff) & 0xff) != 255) {
+                SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, internal->key_pressed[i], SDL_RISCOS_translate_keycode(internal->key_pressed[i]), SDL_RELEASED);
+                internal->key_pressed[i] = 255;
             }
         }
     }
@@ -85,11 +85,11 @@ void RISCOS_PollKeyboard(SDL_VideoDevice *_this)
 
             /* Record the press so we can detect release later. */
             for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
-                if (driverdata->key_pressed[i] == key) {
+                if (internal->key_pressed[i] == key) {
                     break;
                 }
-                if (driverdata->key_pressed[i] == 255) {
-                    driverdata->key_pressed[i] = key;
+                if (internal->key_pressed[i] == 255) {
+                    internal->key_pressed[i] = key;
                     break;
                 }
             }
@@ -110,7 +110,7 @@ static const Uint8 mouse_button_map[] = {
 
 void RISCOS_PollMouse(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *driverdata = _this->driverdata;
+    SDL_VideoData *internal = _this->internal;
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Rect rect;
     _kernel_swi_regs regs;
@@ -129,22 +129,22 @@ void RISCOS_PollMouse(SDL_VideoDevice *_this)
         SDL_SendMouseMotion(0, mouse->focus, SDL_DEFAULT_MOUSE_ID, SDL_FALSE, (float)x, (float)y);
     }
 
-    if (driverdata->last_mouse_buttons != buttons) {
+    if (internal->last_mouse_buttons != buttons) {
         for (i = 0; i < SDL_arraysize(mouse_button_map); i++) {
             SDL_SendMouseButton(0, mouse->focus, SDL_DEFAULT_MOUSE_ID, (buttons & (1 << i)) ? SDL_PRESSED : SDL_RELEASED, mouse_button_map[i]);
         }
-        driverdata->last_mouse_buttons = buttons;
+        internal->last_mouse_buttons = buttons;
     }
 }
 
 int RISCOS_InitEvents(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *driverdata = _this->driverdata;
+    SDL_VideoData *internal = _this->internal;
     _kernel_swi_regs regs;
     int i, status;
 
     for (i = 0; i < RISCOS_MAX_KEYS_PRESSED; i++) {
-        driverdata->key_pressed[i] = 255;
+        internal->key_pressed[i] = 255;
     }
 
     status = (_kernel_osbyte(202, 0, 255) & 0xFF);
@@ -153,7 +153,7 @@ int RISCOS_InitEvents(SDL_VideoDevice *_this)
     SDL_ToggleModState(SDL_KMOD_SCROLL, (status & (1 << 1)) ? SDL_TRUE : SDL_FALSE);
 
     _kernel_swi(OS_Mouse, &regs, &regs);
-    driverdata->last_mouse_buttons = regs.r[2];
+    internal->last_mouse_buttons = regs.r[2];
 
     /* Disable escape. */
     _kernel_osbyte(229, 1, 0);

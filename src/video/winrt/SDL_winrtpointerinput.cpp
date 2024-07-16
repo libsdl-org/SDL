@@ -57,7 +57,7 @@ WINRT_TransformCursorPosition(SDL_Window *window,
         return rawPosition;
     }
 
-    SDL_WindowData *windowData = window->driverdata;
+    SDL_WindowData *windowData = window->internal;
     if (windowData->coreWindow == nullptr) {
         // For some reason, the window isn't associated with a CoreWindow.
         // This might end up being the case as XAML support is extended.

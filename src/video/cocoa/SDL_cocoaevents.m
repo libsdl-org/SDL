@@ -35,7 +35,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     if (device && device->windows) {
         for (sdlwindow = device->windows; sdlwindow; sdlwindow = sdlwindow->next) {
-            NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)sdlwindow->driverdata).nswindow;
+            NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)sdlwindow->internal).nswindow;
             if (win == nswindow) {
                 return sdlwindow;
             }
@@ -565,7 +565,7 @@ int Cocoa_PumpEventsUntilDate(SDL_VideoDevice *_this, NSDate *expiration, bool a
 {
     /* Run any existing modal sessions. */
     for (SDL_Window *w = _this->windows; w; w = w->next) {
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)w->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)w->internal;
         if (data.modal_session) {
             [NSApp runModalSession:data.modal_session];
         }
@@ -620,7 +620,7 @@ void Cocoa_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
                                             location:NSMakePoint(0, 0)
                                        modifierFlags:0
                                            timestamp:0.0
-                                        windowNumber:((__bridge SDL_CocoaWindowData *)window->driverdata).window_number
+                                        windowNumber:((__bridge SDL_CocoaWindowData *)window->internal).window_number
                                              context:nil
                                              subtype:0
                                                data1:0
@@ -633,7 +633,7 @@ void Cocoa_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
 int Cocoa_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
 
         if (data.screensaver_assertion) {
             IOPMAssertionRelease(data.screensaver_assertion);

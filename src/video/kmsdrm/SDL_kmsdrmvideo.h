@@ -110,9 +110,9 @@ struct SDL_DisplayData
     drmModeCrtc *saved_crtc; /* CRTC to restore on quit */
     SDL_bool saved_vrr;
 
-    /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's driverdata struct,
+    /* DRM & GBM cursor stuff lives here, not in an SDL_Cursor's internal struct,
        because setting/unsetting up these is done on window creation/destruction,
-       where we may not have an SDL_Cursor at all (so no SDL_Cursor driverdata).
+       where we may not have an SDL_Cursor at all (so no SDL_Cursor internal).
        There's only one cursor GBM BO because we only support one cursor. */
     struct gbm_bo *cursor_bo;
     int cursor_bo_drm_fd;
@@ -126,7 +126,7 @@ struct SDL_WindowData
     SDL_VideoData *viddata;
     /* SDL internals expect EGL surface to be here, and in KMSDRM the GBM surface is
        what supports the EGL surface on the driver side, so all these surfaces and buffers
-       are expected to be here, in the struct pointed by SDL_Window driverdata pointer:
+       are expected to be here, in the struct pointed by SDL_Window internal pointer:
        this one. So don't try to move these to dispdata!  */
     struct gbm_surface *gs;
     struct gbm_bo *bo;

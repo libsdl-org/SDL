@@ -54,7 +54,7 @@ static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, SDL
 
         curdata->system_cursor = cursor_str;
         curdata->is_custom = is_custom;
-        cursor->driverdata = curdata;
+        cursor->internal = curdata;
     }
 
     return cursor;
@@ -127,13 +127,13 @@ static void Emscripten_FreeCursor(SDL_Cursor *cursor)
 {
     Emscripten_CursorData *curdata;
     if (cursor) {
-        curdata = (Emscripten_CursorData *)cursor->driverdata;
+        curdata = (Emscripten_CursorData *)cursor->internal;
 
         if (curdata) {
             if (curdata->is_custom) {
                 SDL_free((char *)curdata->system_cursor);
             }
-            SDL_free(cursor->driverdata);
+            SDL_free(cursor->internal);
         }
 
         SDL_free(cursor);
@@ -144,8 +144,8 @@ static int Emscripten_ShowCursor(SDL_Cursor *cursor)
 {
     Emscripten_CursorData *curdata;
     if (SDL_GetMouseFocus() != NULL) {
-        if (cursor && cursor->driverdata) {
-            curdata = (Emscripten_CursorData *)cursor->driverdata;
+        if (cursor && cursor->internal) {
+            curdata = (Emscripten_CursorData *)cursor->internal;
 
             if (curdata->system_cursor) {
                 /* *INDENT-OFF* */ /* clang-format off */
@@ -181,7 +181,7 @@ static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
             return -1;
         }
 
-        window_data = window->driverdata;
+        window_data = window->internal;
 
         if (emscripten_request_pointerlock(window_data->canvas_id, 1) >= EMSCRIPTEN_RESULT_SUCCESS) {
             return 0;

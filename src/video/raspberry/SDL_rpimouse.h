@@ -33,7 +33,7 @@ struct _RPI_CursorData
     int w, h;
 };
 
-#define SDL_RPI_CURSORDATA(curs) RPI_CursorData *curdata = (RPI_CursorData *)((curs) ? (curs)->driverdata : NULL)
+#define SDL_RPI_CURSORDATA(curs) RPI_CursorData *curdata = (RPI_CursorData *)((curs) ? (curs)->internal : NULL)
 
 extern void RPI_InitMouse(SDL_VideoDevice *_this);
 extern void RPI_QuitMouse(SDL_VideoDevice *_this);

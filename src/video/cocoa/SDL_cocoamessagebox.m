@@ -42,7 +42,7 @@
 
         /* Retain the NSWindow because we'll show the alert later on the main thread */
         if (window) {
-            nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
+            nswindow = ((__bridge SDL_CocoaWindowData *)window->internal).nswindow;
         } else {
             nswindow = nil;
         }

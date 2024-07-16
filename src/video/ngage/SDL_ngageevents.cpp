@@ -44,7 +44,7 @@ int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent);
 
 void NGAGE_PumpEvents(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     while (data->NGAGE_WsEventStatus != KRequestPending) {
         data->NGAGE_WsSession.GetEvent(data->NGAGE_WsEvent);
@@ -149,7 +149,7 @@ static SDL_Scancode ConvertScancode(SDL_VideoDevice *_this, int key)
 
 int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     int posted = 0;
 
     switch (aWsEvent.Type()) {

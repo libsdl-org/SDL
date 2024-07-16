@@ -32,7 +32,7 @@
 struct SDL_Cursor
 {
     struct SDL_Cursor *next;
-    void *driverdata;
+    void *internal;
 };
 
 typedef struct
@@ -126,7 +126,7 @@ typedef struct
     SDL_bool cursor_shown;
 
     /* Driver-dependent data. */
-    void *driverdata;
+    void *internal;
 } SDL_Mouse;
 
 /* Initialize the mouse subsystem, called before the main video driver is initialized */

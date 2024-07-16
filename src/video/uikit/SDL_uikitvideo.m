@@ -53,8 +53,8 @@ static void UIKit_VideoQuit(SDL_VideoDevice *_this);
 static void UIKit_DeleteDevice(SDL_VideoDevice *device)
 {
     @autoreleasepool {
-        if (device->driverdata){
-            CFRelease(device->driverdata);
+        if (device->internal){
+            CFRelease(device->internal);
         }
         SDL_free(device);
     }
@@ -74,7 +74,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
 
         data = [SDL_UIKitVideoData new];
 
-        device->driverdata = (SDL_VideoData *)CFBridgingRetain(data);
+        device->internal = (SDL_VideoData *)CFBridgingRetain(data);
         device->system_theme = UIKit_GetSystemTheme();
 
         /* Set the function pointers */
@@ -212,7 +212,7 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window){
 #else
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
-    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
     CGRect frame = screen.bounds;
 
     /* Use the UIWindow bounds instead of the UIScreen bounds, when possible.
@@ -256,7 +256,7 @@ void UIKit_ForceUpdateHomeIndicator(void)
     /* Force the main SDL window to re-evaluate home indicator state */
     SDL_Window *focus = SDL_GetKeyboardFocus();
     if (focus) {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)focus->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)focus->internal;
         if (data != nil) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"

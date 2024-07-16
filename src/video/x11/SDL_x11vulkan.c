@@ -44,7 +44,7 @@ typedef uint32_t xcb_visualid_t;
 
 int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    SDL_VideoData *videoData = _this->driverdata;
+    SDL_VideoData *videoData = _this->internal;
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
     SDL_bool hasSurfaceExtension = SDL_FALSE;
@@ -132,7 +132,7 @@ fail:
 
 void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *videoData = _this->driverdata;
+    SDL_VideoData *videoData = _this->internal;
     if (_this->vulkan_config.loader_handle) {
         if (videoData->vulkan_xlib_xcb_library) {
             SDL_UnloadObject(videoData->vulkan_xlib_xcb_library);
@@ -145,7 +145,7 @@ void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                           Uint32 *count)
 {
-    SDL_VideoData *videoData = _this->driverdata;
+    SDL_VideoData *videoData = _this->internal;
     if (videoData->vulkan_xlib_xcb_library) {
         static const char *const extensionsForXCB[] = {
             VK_KHR_SURFACE_EXTENSION_NAME,
@@ -173,8 +173,8 @@ int X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                              const struct VkAllocationCallbacks *allocator,
                              VkSurfaceKHR *surface)
 {
-    SDL_VideoData *videoData = _this->driverdata;
-    SDL_WindowData *windowData = window->driverdata;
+    SDL_VideoData *videoData = _this->internal;
+    SDL_WindowData *windowData = window->internal;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
     if (!_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan is not loaded");
@@ -237,7 +237,7 @@ SDL_bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
                                            VkPhysicalDevice physicalDevice,
                                            Uint32 queueFamilyIndex)
 {
-    SDL_VideoData *videoData = _this->driverdata;
+    SDL_VideoData *videoData = _this->internal;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
     const char *forced_visual_id;
     VisualID visualid;

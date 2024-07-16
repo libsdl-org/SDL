@@ -117,7 +117,7 @@ static struct wl_buffer_listener buffer_listener = {
 int Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shmBuffer)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *data = vd->driverdata;
+    SDL_VideoData *data = vd->internal;
     struct wl_shm_pool *shm_pool;
     const Uint32 SHM_FMT = WL_SHM_FORMAT_ARGB8888;
 

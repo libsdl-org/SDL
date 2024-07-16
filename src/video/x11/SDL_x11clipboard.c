@@ -40,7 +40,7 @@ static const char *text_mime_types[] = {
 /* Get any application owned window handle for clipboard association */
 static Window GetWindow(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     /* We create an unmapped window that exists just to manage the clipboard,
        since X11 selection data is tied to a specific window and dies with it.
@@ -64,7 +64,7 @@ static Window GetWindow(SDL_VideoDevice *_this)
 static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_ClipboardDataCallback callback,
                             void *userdata, const char **mime_types, size_t mime_count, Uint32 sequence)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
     Window window;
     SDLX11_ClipboardData *clipboard;
@@ -159,7 +159,7 @@ static SDL_bool WaitForSelection(SDL_VideoDevice *_this, Atom selection_type, SD
 static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
                               const char *mime_type, size_t *length)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
     Window window;
     Window owner;
@@ -267,7 +267,7 @@ const char **X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types
 
 int X11_SetClipboardData(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
     if (XA_CLIPBOARD == None) {
         return SDL_SetError("Couldn't access X clipboard");
@@ -277,7 +277,7 @@ int X11_SetClipboardData(SDL_VideoDevice *_this)
 
 void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     Atom XA_CLIPBOARD = X11_XInternAtom(videodata->display, "CLIPBOARD", 0);
     if (XA_CLIPBOARD == None) {
         SDL_SetError("Couldn't access X clipboard");
@@ -328,7 +328,7 @@ SDL_bool X11_HasPrimarySelectionText(SDL_VideoDevice *_this)
 
 void X11_QuitClipboard(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     if (data->primary_selection.sequence == 0) {
         SDL_free(data->primary_selection.userdata);
     }

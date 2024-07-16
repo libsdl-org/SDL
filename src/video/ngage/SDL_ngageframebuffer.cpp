@@ -46,7 +46,7 @@ void RedrawWindowL(SDL_VideoDevice *_this);
 
 int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     SDL_Surface *surface;
     const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XRGB4444;
     int w, h;
@@ -199,7 +199,7 @@ int GetBpp(TDisplayMode displaymode)
 
 void DrawBackground(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     /* Draw background */
     TUint16 *screenBuffer = (TUint16 *)phdata->NGAGE_FrameBuffer;
     /* Draw black background */
@@ -208,7 +208,7 @@ void DrawBackground(SDL_VideoDevice *_this)
 
 void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *screenBuffer)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);
 
     TInt i;
@@ -333,7 +333,7 @@ void DirectDraw(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects, TUint16 *
 
 void DirectUpdate(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
 
     if (!phdata->NGAGE_IsWindowFocused) {
         SDL_PauseAudio(1);
@@ -368,7 +368,7 @@ void DirectUpdate(SDL_VideoDevice *_this, int numrects, SDL_Rect *rects)
 
 void RedrawWindowL(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *phdata = _this->driverdata;
+    SDL_VideoData *phdata = _this->internal;
     SDL_Surface *screen = (SDL_Surface *)SDL_GetWindowData(_this->windows, NGAGE_SURFACE);
 
     int w = screen->w;
