@@ -1,0 +1,33 @@
+name: 'Build (All)'
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  controller:
+    name: 'Create test plan'
+    runs-on: 'ubuntu-latest'
+    outputs:
+      platforms: ${{ steps.plan.outputs.platforms }}
+    steps:
+      - uses: actions/setup-python@main
+        with:
+          python-version: 3.x
+      - uses: actions/checkout@main
+        with:
+          sparse-checkout: '.github/workflows/create-test-plan.py'
+      - name: 'Create plan'
+        id: plan
+        run: |
+          python .github/workflows/create-test-plan.py \
+            --github-variable platforms \
+            --github-ci \
+            --verbose
+  level1:
+    needs: [controller]
+    uses: './.github/workflows/generic.yml'
+    with:
+      platforms: ${{ needs.controller.outputs.platforms }}
