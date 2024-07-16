@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     }
 
     if (base_path) {
-        char **globlist;
+        const char * const *globlist;
 
         if (SDL_EnumerateDirectory(base_path, enum_callback, NULL) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Base path enumeration failed!");
@@ -122,7 +122,6 @@ int main(int argc, char *argv[])
             for (i = 0; globlist[i]; i++) {
                 SDL_Log("GLOB[%d]: '%s'", i, globlist[i]);
             }
-            SDL_free(globlist);
         }
 
         /* !!! FIXME: put this in a subroutine and make it test more thoroughly (and put it in testautomation). */

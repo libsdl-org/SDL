@@ -354,7 +354,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  * convenience, but if `count` is non-NULL, on return it will contain the
  * number of items in the array, not counting the NULL terminator.
  *
- * You must free the returned pointer with SDL_free() when done with it.
+ * The returned pointer follows the SDL_GetStringRule.
  *
  * \param path the path of the directory to enumerate.
  * \param pattern the pattern that files in the directory must match. Can be
@@ -370,7 +370,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
+extern SDL_DECLSPEC const char * const *SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

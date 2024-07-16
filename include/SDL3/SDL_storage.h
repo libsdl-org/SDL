@@ -383,7 +383,7 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *sto
  * convenience, but if `count` is non-NULL, on return it will contain the
  * number of items in the array, not counting the NULL terminator.
  *
- * You must free the returned pointer with SDL_free() when done with it.
+ * The returned pointer follows the SDL_GetStringRule.
  *
  * \param storage a storage container.
  * \param path the path of the directory to enumerate.
@@ -401,7 +401,7 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *sto
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC char **SDLCALL SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
+extern SDL_DECLSPEC const char * const *SDLCALL SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
