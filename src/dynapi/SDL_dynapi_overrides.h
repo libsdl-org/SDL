@@ -60,6 +60,7 @@
 #define SDL_ClearComposition SDL_ClearComposition_REAL
 #define SDL_ClearError SDL_ClearError_REAL
 #define SDL_ClearProperty SDL_ClearProperty_REAL
+#define SDL_ClearSurface SDL_ClearSurface_REAL
 #define SDL_CloseAudioDevice SDL_CloseAudioDevice_REAL
 #define SDL_CloseCamera SDL_CloseCamera_REAL
 #define SDL_CloseGamepad SDL_CloseGamepad_REAL
@@ -652,6 +653,7 @@
 #define SDL_ReadS8 SDL_ReadS8_REAL
 #define SDL_ReadStorageFile SDL_ReadStorageFile_REAL
 #define SDL_ReadSurfacePixel SDL_ReadSurfacePixel_REAL
+#define SDL_ReadSurfacePixelFloat SDL_ReadSurfacePixelFloat_REAL
 #define SDL_ReadU16BE SDL_ReadU16BE_REAL
 #define SDL_ReadU16LE SDL_ReadU16LE_REAL
 #define SDL_ReadU32BE SDL_ReadU32BE_REAL

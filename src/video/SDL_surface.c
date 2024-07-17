@@ -1960,6 +1960,63 @@ int SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, SDL_bool linear)
     return SDL_PremultiplyAlphaPixelsAndColorspace(surface->w, surface->h, surface->format, colorspace, surface->internal->props, surface->pixels, surface->pitch, surface->format, colorspace, surface->internal->props, surface->pixels, surface->pitch, linear);
 }
 
+int SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a)
+{
+    SDL_Rect clip_rect;
+    int result = -1;
+
+    if (!SDL_SurfaceValid(surface)) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    SDL_GetSurfaceClipRect(surface, &clip_rect);
+    SDL_SetSurfaceClipRect(surface, NULL);
+
+    if (!SDL_ISPIXELFORMAT_FOURCC(surface->format) &&
+        SDL_BYTESPERPIXEL(surface->format) <= sizeof(Uint32)) {
+        Uint32 color;
+
+        color = SDL_MapSurfaceRGBA(surface,
+                    (Uint8)SDL_roundf(SDL_clamp(r, 0.0f, 1.0f) * 255.0f),
+                    (Uint8)SDL_roundf(SDL_clamp(g, 0.0f, 1.0f) * 255.0f),
+                    (Uint8)SDL_roundf(SDL_clamp(b, 0.0f, 1.0f) * 255.0f),
+                    (Uint8)SDL_roundf(SDL_clamp(a, 0.0f, 1.0f) * 255.0f));
+        result = SDL_FillSurfaceRect(surface, NULL, color);
+    } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        // We can't directly set an RGB value on a YUV surface
+        SDL_Surface *tmp = SDL_CreateSurface(surface->w, surface->h, SDL_PIXELFORMAT_ARGB8888);
+        if (!tmp) {
+            goto done;
+        }
+
+        if (SDL_ClearSurface(tmp, r, g, b, a) == 0) {
+            result = SDL_ConvertPixelsAndColorspace(surface->w, surface->h, tmp->format, SDL_GetSurfaceColorspace(tmp), tmp->internal->props, tmp->pixels, tmp->pitch, surface->format, SDL_GetSurfaceColorspace(surface), surface->internal->props, surface->pixels, surface->pitch);
+        }
+        SDL_DestroySurface(tmp);
+    } else {
+        // Take advantage of blit color conversion
+        SDL_Surface *tmp = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA128_FLOAT);
+        if (!tmp) {
+            goto done;
+        }
+        SDL_SetSurfaceColorspace(tmp, SDL_GetSurfaceColorspace(surface));
+
+        float *pixels = (float *)tmp->pixels;
+        pixels[0] = r;
+        pixels[1] = g;
+        pixels[2] = b;
+        pixels[3] = a;
+
+        result = SDL_BlitSurfaceScaled(tmp, NULL, surface, NULL, SDL_SCALEMODE_NEAREST);
+        SDL_DestroySurface(tmp);
+    }
+
+done:
+    SDL_SetSurfaceClipRect(surface, &clip_rect);
+
+    return result;
+}
+
 Uint32 SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
 {
     return SDL_MapSurfaceRGBA(surface, r, g, b, SDL_ALPHA_OPAQUE);
@@ -1983,7 +2040,31 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
     Uint8 *p;
     int result = -1;
 
-    if (!surface || !surface->format || !surface->pixels) {
+    if (r) {
+        *r = 0;
+    } else {
+        r = &unused;
+    }
+
+    if (g) {
+        *g = 0;
+    } else {
+        g = &unused;
+    }
+
+    if (b) {
+        *b = 0;
+    } else {
+        b = &unused;
+    }
+
+    if (a) {
+        *a = 0;
+    } else {
+        a = &unused;
+    }
+
+    if (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -1993,22 +2074,6 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
 
     if (y < 0 || y >= surface->h) {
         return SDL_InvalidParamError("y");
-    }
-
-    if (!r) {
-        r = &unused;
-    }
-
-    if (!g) {
-        g = &unused;
-    }
-
-    if (!b) {
-        b = &unused;
-    }
-
-    if (!a) {
-        a = &unused;
     }
 
     bytes_per_pixel = SDL_BYTESPERPIXEL(surface->format);
@@ -2021,7 +2086,24 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
 
     p = (Uint8 *)surface->pixels + y * surface->pitch + x * bytes_per_pixel;
 
-    if (bytes_per_pixel > sizeof(pixel)) {
+    if (bytes_per_pixel <= sizeof(pixel) && !SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        /* Fill the appropriate number of least-significant bytes of pixel,
+         * leaving the most-significant bytes set to zero */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        SDL_memcpy(((Uint8 *)&pixel) + (sizeof(pixel) - bytes_per_pixel), p, bytes_per_pixel);
+#else
+        SDL_memcpy(&pixel, p, bytes_per_pixel);
+#endif
+        SDL_GetRGBA(pixel, surface->internal->format, surface->internal->palette, r, g, b, a);
+        result = 0;
+    } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        // FIXME: We need code to extract a single macroblock from a YUV surface
+        SDL_Surface *converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
+        if (converted) {
+            result = SDL_ReadSurfacePixel(converted, x, y, r, g, b, a);
+            SDL_DestroySurface(converted);
+        }
+    } else {
         /* This is really slow, but it gets the job done */
         Uint8 rgba[4];
         SDL_Colorspace colorspace = SDL_GetSurfaceColorspace(surface);
@@ -2033,20 +2115,107 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
             *a = rgba[3];
             result = 0;
         }
-    } else {
-        /* Fill the appropriate number of least-significant bytes of pixel,
-         * leaving the most-significant bytes set to zero */
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        SDL_memcpy(((Uint8 *)&pixel) + (sizeof(pixel) - bytes_per_pixel), p, bytes_per_pixel);
-#else
-        SDL_memcpy(&pixel, p, bytes_per_pixel);
-#endif
-        SDL_GetRGBA(pixel, surface->internal->format, surface->internal->palette, r, g, b, a);
-        result = 0;
     }
 
     if (SDL_MUSTLOCK(surface)) {
         SDL_UnlockSurface(surface);
+    }
+    return result;
+}
+
+int SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, float *g, float *b, float *a)
+{
+    float unused;
+    int result = -1;
+
+    if (r) {
+        *r = 0.0f;
+    } else {
+        r = &unused;
+    }
+
+    if (g) {
+        *g = 0.0f;
+    } else {
+        g = &unused;
+    }
+
+    if (b) {
+        *b = 0.0f;
+    } else {
+        b = &unused;
+    }
+
+    if (a) {
+        *a = 0.0f;
+    } else {
+        a = &unused;
+    }
+
+    if (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (x < 0 || x >= surface->w) {
+        return SDL_InvalidParamError("x");
+    }
+
+    if (y < 0 || y >= surface->h) {
+        return SDL_InvalidParamError("y");
+    }
+
+    if (SDL_BYTESPERPIXEL(surface->format) <= sizeof(Uint32) && !SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        Uint8 r8, g8, b8, a8;
+
+        if (SDL_ReadSurfacePixel(surface, x, y, &r8, &g8, &b8, &a8) == 0) {
+            *r = (float)r8 / 255.0f;
+            *g = (float)g8 / 255.0f;
+            *b = (float)b8 / 255.0f;
+            *a = (float)a8 / 255.0f;
+            result = 0;
+        }
+    } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        // FIXME: We need code to extract a single macroblock from a YUV surface
+        SDL_Surface *converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
+        if (converted) {
+            result = SDL_ReadSurfacePixelFloat(converted, x, y, r, g, b, a);
+            SDL_DestroySurface(converted);
+        }
+    } else {
+        /* This is really slow, but it gets the job done */
+        float rgba[4];
+        Uint8 *p;
+
+        if (SDL_MUSTLOCK(surface)) {
+            if (SDL_LockSurface(surface) < 0) {
+                return -1;
+            }
+        }
+
+        p = (Uint8 *)surface->pixels + y * surface->pitch + x * SDL_BYTESPERPIXEL(surface->format);
+
+        if (surface->format == SDL_PIXELFORMAT_RGBA128_FLOAT) {
+            SDL_memcpy(rgba, p, sizeof(rgba));
+            result = 0;
+        } else {
+            SDL_Colorspace src_colorspace = SDL_GetSurfaceColorspace(surface);
+            SDL_Colorspace dst_colorspace = (src_colorspace == SDL_COLORSPACE_SRGB_LINEAR ? SDL_COLORSPACE_SRGB_LINEAR : SDL_COLORSPACE_SRGB);
+
+            if (SDL_ConvertPixelsAndColorspace(1, 1, surface->format, src_colorspace, surface->internal->props, p, surface->pitch, SDL_PIXELFORMAT_RGBA128_FLOAT, dst_colorspace, 0, rgba, sizeof(rgba)) == 0) {
+                result = 0;
+            }
+        }
+
+        if (result == 0) {
+            *r = rgba[0];
+            *g = rgba[1];
+            *b = rgba[2];
+            *a = rgba[3];
+        }
+
+        if (SDL_MUSTLOCK(surface)) {
+            SDL_UnlockSurface(surface);
+        }
     }
     return result;
 }
