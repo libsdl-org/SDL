@@ -1269,8 +1269,6 @@ Textures are created with SDL_SCALEMODE_LINEAR by default, and use SDL_BLENDMODE
 
 SDL_QueryTexture() has been removed. The properties of the texture can be queried using SDL_PROP_TEXTURE_FORMAT_NUMBER, SDL_PROP_TEXTURE_ACCESS_NUMBER, SDL_PROP_TEXTURE_WIDTH_NUMBER, and SDL_PROP_TEXTURE_HEIGHT_NUMBER. A function SDL_GetTextureSize() has been added to get the size of the texture as floating point values.
 
-SDL_GetRenderDrawBlendMode(), SDL_GetTextureBlendMode(), and SDL_GetTextureScaleMode() have been changed to return the values directly instead of an int error code.
-
 Mouse and touch events are no longer filtered to change their coordinates, instead you
 can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
 the rendering viewport.
@@ -1713,8 +1711,6 @@ SDL_PixelFormat is used instead of Uint32 for API functions that refer to pixel 
 SDL_SetSurfaceColorKey() takes an SDL_bool to enable and disable colorkey. RLE acceleration isn't controlled by the parameter, you should use SDL_SetSurfaceRLE() to change that separately.
 
 SDL_SetSurfaceRLE() takes an SDL_bool to enable and disable RLE acceleration.
-
-SDL_GetSurfaceBlendMode() and SDL_GetSurfaceColorKey() have been changed to return the values directly instead of an int error code.
 
 The following functions have been renamed:
 * SDL_BlitScaled() => SDL_BlitSurfaceScaled()

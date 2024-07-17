@@ -1641,6 +1641,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
 
     {
         Uint8 r, g, b, a;
+        SDL_BlendMode blendMode;
 
         SDL_GetSurfaceColorMod(surface, &r, &g, &b);
         SDL_SetTextureColorMod(texture, r, g, b);
@@ -1652,7 +1653,8 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
             /* We converted to a texture with alpha format */
             SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         } else {
-            SDL_SetTextureBlendMode(texture, SDL_GetSurfaceBlendMode(surface));
+            SDL_GetSurfaceBlendMode(surface, &blendMode);
+            SDL_SetTextureBlendMode(texture, blendMode);
         }
     }
     return texture;
@@ -1812,11 +1814,14 @@ int SDL_SetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode blendMode)
     return 0;
 }
 
-SDL_BlendMode SDL_GetTextureBlendMode(SDL_Texture *texture)
+int SDL_GetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode *blendMode)
 {
-    CHECK_TEXTURE_MAGIC(texture, SDL_BLENDMODE_INVALID);
+    CHECK_TEXTURE_MAGIC(texture, -1);
 
-    return texture->blendMode;
+    if (blendMode) {
+        *blendMode = texture->blendMode;
+    }
+    return 0;
 }
 
 int SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
@@ -1835,11 +1840,14 @@ int SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
     return 0;
 }
 
-SDL_ScaleMode SDL_GetTextureScaleMode(SDL_Texture *texture)
+int SDL_GetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode *scaleMode)
 {
-    CHECK_TEXTURE_MAGIC(texture, SDL_SCALEMODE_LINEAR);
+    CHECK_TEXTURE_MAGIC(texture, -1);
 
-    return texture->scaleMode;
+    if (scaleMode) {
+        *scaleMode = texture->scaleMode;
+    }
+    return 0;
 }
 
 #if SDL_HAVE_YUV
@@ -3065,11 +3073,14 @@ int SDL_SetRenderColorScale(SDL_Renderer *renderer, float scale)
     return 0;
 }
 
-float SDL_GetRenderColorScale(SDL_Renderer *renderer)
+int SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale)
 {
-    CHECK_RENDERER_MAGIC(renderer, 1.0f);
+    CHECK_RENDERER_MAGIC(renderer, -1);
 
-    return renderer->color_scale / renderer->SDR_white_point;
+    if (scale) {
+        *scale = renderer->color_scale / renderer->SDR_white_point;
+    }
+    return 0;
 }
 
 int SDL_SetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
@@ -3087,18 +3098,20 @@ int SDL_SetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
     return 0;
 }
 
-SDL_BlendMode SDL_GetRenderDrawBlendMode(SDL_Renderer *renderer)
+int SDL_GetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode *blendMode)
 {
-    CHECK_RENDERER_MAGIC(renderer, SDL_BLENDMODE_INVALID);
+    CHECK_RENDERER_MAGIC(renderer, -1);
 
-    return renderer->blendMode;
+    *blendMode = renderer->blendMode;
+    return 0;
 }
 
 int SDL_RenderClear(SDL_Renderer *renderer)
 {
+    int retval;
     CHECK_RENDERER_MAGIC(renderer, -1);
-
-    return QueueCmdClear(renderer);
+    retval = QueueCmdClear(renderer);
+    return retval;
 }
 
 int SDL_RenderPoint(SDL_Renderer *renderer, float x, float y)
@@ -3965,7 +3978,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     float r = 0, g = 0, b = 0, a = 0;
 
     /* Save */
-    blendMode = SDL_GetRenderDrawBlendMode(renderer);
+    SDL_GetRenderDrawBlendMode(renderer, &blendMode);
     SDL_GetRenderDrawColorFloat(renderer, &r, &g, &b, &a);
 
     if (texture) {

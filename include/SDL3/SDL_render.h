@@ -1006,13 +1006,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetTextureBlendMode(SDL_Texture *texture, SD
  * Get the blend mode used for texture copy operations.
  *
  * \param texture the texture to query.
- * \returns the current SDL_BlendMode.
+ * \param blendMode a pointer filled in with the current SDL_BlendMode.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetTextureBlendMode
  */
-extern SDL_DECLSPEC SDL_BlendMode SDLCALL SDL_GetTextureBlendMode(SDL_Texture *texture);
+extern SDL_DECLSPEC int SDLCALL SDL_GetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode *blendMode);
 
 /**
  * Set the scale mode used for texture scale operations.
@@ -1036,13 +1038,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetTextureScaleMode(SDL_Texture *texture, SD
  * Get the scale mode used for texture scale operations.
  *
  * \param texture the texture to query.
- * \returns the current scale mode.
+ * \param scaleMode a pointer filled in with the current scale mode.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetTextureScaleMode
  */
-extern SDL_DECLSPEC SDL_ScaleMode SDLCALL SDL_GetTextureScaleMode(SDL_Texture *texture);
+extern SDL_DECLSPEC int SDLCALL SDL_GetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode *scaleMode);
 
 /**
  * Update the given texture rectangle with new pixel data.
@@ -1637,13 +1641,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetRenderColorScale(SDL_Renderer *renderer, 
  * Get the color scale used for render operations.
  *
  * \param renderer the rendering context.
- * \returns the current color scale value.
+ * \param scale a pointer filled in with the current color scale value.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetRenderColorScale
  */
-extern SDL_DECLSPEC float SDLCALL SDL_GetRenderColorScale(SDL_Renderer *renderer);
+extern SDL_DECLSPEC int SDLCALL SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale);
 
 /**
  * Set the blend mode used for drawing operations (Fill and Line).
@@ -1665,13 +1671,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetRenderDrawBlendMode(SDL_Renderer *rendere
  * Get the blend mode used for drawing operations.
  *
  * \param renderer the rendering context.
- * \returns the current SDL_BlendMode.
+ * \param blendMode a pointer filled in with the current SDL_BlendMode.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetRenderDrawBlendMode
  */
-extern SDL_DECLSPEC SDL_BlendMode SDLCALL SDL_GetRenderDrawBlendMode(SDL_Renderer *renderer);
+extern SDL_DECLSPEC int SDLCALL SDL_GetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode *blendMode);
 
 /**
  * Clear the current rendering target with the drawing color.
