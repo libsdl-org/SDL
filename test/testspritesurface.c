@@ -140,8 +140,8 @@ int main(int argc, char *argv[])
         positions[i].y = SDL_rand(WINDOW_HEIGHT - sprite_h);
         positions[i].w = sprite_w;
         positions[i].h = sprite_h;
-        velocities[i].x = 0.0f;
-        velocities[i].y = 0.0f;
+        velocities[i].x = 0;
+        velocities[i].y = 0;
         while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
             velocities[i].x = (SDL_rand(MAX_SPEED * 2 + 1)) - MAX_SPEED;
             velocities[i].y = (SDL_rand(MAX_SPEED * 2 + 1)) - MAX_SPEED;
