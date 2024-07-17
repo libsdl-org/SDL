@@ -829,6 +829,25 @@ extern SDL_DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_
 extern SDL_DECLSPEC int SDLCALL SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, SDL_bool linear);
 
 /**
+ * Clear a surface with a specific color, with floating point precision.
+ *
+ * This function handles all surface formats, and ignores any clip rectangle.
+ *
+ * If the surface is YUV, the color is assumed to be in the sRGB colorspace, otherwise the color is assumed to be in the colorspace of the suface.
+ *
+ * \param surface the SDL_Surface to clear.
+ * \param r the red component of the pixel, normally in the range 0-1
+ * \param g the green component of the pixel, normally in the range 0-1
+ * \param b the blue component of the pixel, normally in the range 0-1
+ * \param a the alpha component of the pixel, normally in the range 0-1
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a);
+
+/**
  * Perform a fast fill of a rectangle with a specific color.
  *
  * `color` should be a pixel of the format used by the surface, and can be
@@ -1137,6 +1156,30 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint
  * \since This function is available since SDL 3.0.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+
+/**
+ * Retrieves a single pixel from a surface.
+ *
+ * This function prioritizes correctness over speed: it is suitable for unit
+ * tests, but is not intended for use in a game engine.
+ *
+ * \param surface the surface to read.
+ * \param x the horizontal coordinate, 0 <= x < width.
+ * \param y the vertical coordinate, 0 <= y < height.
+ * \param r a pointer filled in with the red channel, normally in the range 0-1, or NULL to ignore
+ *          this channel.
+ * \param g a pointer filled in with the green channel, normally in the range 0-1, or NULL to
+ *          ignore this channel.
+ * \param b a pointer filled in with the blue channel, normally in the range 0-1, or NULL to
+ *          ignore this channel.
+ * \param a a pointer filled in with the alpha channel, normally in the range 0-1, or NULL to
+ *          ignore this channel.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, float *g, float *b, float *a);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

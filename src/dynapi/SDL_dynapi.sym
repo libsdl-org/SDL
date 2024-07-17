@@ -35,6 +35,7 @@ SDL3_0.0.0 {
     SDL_ClearComposition;
     SDL_ClearError;
     SDL_ClearProperty;
+    SDL_ClearSurface;
     SDL_CloseAudioDevice;
     SDL_CloseCamera;
     SDL_CloseGamepad;
@@ -627,6 +628,7 @@ SDL3_0.0.0 {
     SDL_ReadS8;
     SDL_ReadStorageFile;
     SDL_ReadSurfacePixel;
+    SDL_ReadSurfacePixelFloat;
     SDL_ReadU16BE;
     SDL_ReadU16LE;
     SDL_ReadU32BE;
