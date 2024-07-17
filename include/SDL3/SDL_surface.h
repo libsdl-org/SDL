@@ -61,7 +61,7 @@ typedef Uint32 SDL_SurfaceFlags;
  *
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_MUSTLOCK(S) (((S)->flags & (SDL_SURFACE_LOCK_NEEDED | SDL_SURFACE_LOCKED)) == SDL_SURFACE_LOCK_NEEDED)
+#define SDL_MUSTLOCK(S) ((((S)->flags & SDL_SURFACE_LOCK_NEEDED)) == SDL_SURFACE_LOCK_NEEDED)
 
 /**
  * The scaling mode.
