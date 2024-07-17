@@ -561,7 +561,10 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
 
     /* Lock source surface */
     if (SDL_MUSTLOCK(src)) {
-        SDL_LockSurface(src);
+        if (SDL_LockSurface(src) < 0) {
+            SDL_DestroySurface(rz_dst);
+            return NULL;
+        }
     }
 
     /* check if the rotation is a multiple of 90 degrees so we can take a fast path and also somewhat reduce
