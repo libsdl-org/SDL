@@ -97,7 +97,7 @@ void SDL_UnregisterApp(void)
 
 /* Returns SDL_WinRT_DeviceFamily enum */
 SDL_DECLSPEC int SDLCALL SDL_GetWinRTDeviceFamily(void);
-int SDL_GetWinRTDeviceFamily()
+int SDL_GetWinRTDeviceFamily(void)
 {
     SDL_Unsupported();
     return 0; /* SDL_WINRT_DEVICEFAMILY_UNKNOWN */
@@ -115,20 +115,20 @@ const char *SDL_GetWinRTFSPath(int pathType)
 #ifndef SDL_PLATFORM_ANDROID
 
 SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
-void SDL_SendAndroidBackButton()
+void SDL_SendAndroidBackButton(void)
 {
     SDL_Unsupported();
 }
 
 SDL_DECLSPEC void *SDLCALL SDL_GetAndroidActivity(void);
-void *SDL_GetAndroidActivity()
+void *SDL_GetAndroidActivity(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
 SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidCachePath(void);
-const char* SDL_GetAndroidCachePath()
+const char* SDL_GetAndroidCachePath(void)
 {
     SDL_Unsupported();
     return NULL;
@@ -136,7 +136,7 @@ const char* SDL_GetAndroidCachePath()
 
 
 SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidExternalStoragePath(void);
-const char* SDL_GetAndroidExternalStoragePath()
+const char* SDL_GetAndroidExternalStoragePath(void)
 {
     SDL_Unsupported();
     return NULL;
@@ -156,7 +156,7 @@ const char *SDL_GetAndroidInternalStoragePath(void)
 }
 
 SDL_DECLSPEC void *SDLCALL SDL_GetAndroidJNIEnv(void);
-void *SDL_GetAndroidJNIEnv()
+void *SDL_GetAndroidJNIEnv(void)
 {
     SDL_Unsupported();
     return NULL;
@@ -192,20 +192,20 @@ int SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xof
 }
 
 SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
-int SDL_GetAndroidSDKVersion()
+int SDL_GetAndroidSDKVersion(void)
 {
     return SDL_Unsupported();
 }
 
 SDL_DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
-SDL_bool SDL_IsAndroidTV()
+SDL_bool SDL_IsAndroidTV(void)
 {
     SDL_Unsupported();
     return SDL_FALSE;
 }
 
 SDL_DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
-SDL_bool SDL_IsChromebook()
+SDL_bool SDL_IsChromebook(void)
 {
     SDL_Unsupported();
     return SDL_FALSE;

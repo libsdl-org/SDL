@@ -213,7 +213,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     return SDL_FALSE;
 }
 
-static void WGI_LoadRawGameControllerStatics()
+static void WGI_LoadRawGameControllerStatics(void)
 {
     HRESULT hr;
     HSTRING_HEADER class_name_header;
@@ -228,7 +228,7 @@ static void WGI_LoadRawGameControllerStatics()
     }
 }
 
-static void WGI_LoadOtherControllerStatics()
+static void WGI_LoadOtherControllerStatics(void)
 {
     HRESULT hr;
     HSTRING_HEADER class_name_header;

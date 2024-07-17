@@ -41,7 +41,7 @@ static void VIVANTE_Destroy(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static SDL_VideoDevice *VIVANTE_Create()
+static SDL_VideoDevice *VIVANTE_Create(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;

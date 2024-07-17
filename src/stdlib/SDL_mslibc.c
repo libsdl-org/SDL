@@ -36,7 +36,7 @@ __declspec(selectany) int _fltused = 1;
 #ifdef _M_IX86
 
 /* Float to long */
-void __declspec(naked) _ftol()
+void __declspec(naked) _ftol(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -85,18 +85,18 @@ localexit:
     /* *INDENT-ON* */
 }
 
-void _ftol2_sse()
+void _ftol2_sse(void)
 {
     _ftol();
 }
 
-void _ftol2()
+void _ftol2(void)
 {
     _ftol();
 }
 
 /* 64-bit math operators for 32-bit systems */
-void __declspec(naked) _allmul()
+void __declspec(naked) _allmul(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -124,7 +124,7 @@ hard:
     /* *INDENT-ON* */
 }
 
-void __declspec(naked) _alldiv()
+void __declspec(naked) _alldiv(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -210,7 +210,7 @@ L8:
     /* *INDENT-ON* */
 }
 
-void __declspec(naked) _aulldiv()
+void __declspec(naked) _aulldiv(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -266,7 +266,7 @@ L2:
     /* *INDENT-ON* */
 }
 
-void __declspec(naked) _allrem()
+void __declspec(naked) _allrem(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -351,7 +351,7 @@ L8:
     /* *INDENT-ON* */
 }
 
-void __declspec(naked) _aullrem()
+void __declspec(naked) _aullrem(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -408,7 +408,7 @@ L2:
     /* *INDENT-ON* */
 }
 
-void __declspec(naked) _alldvrm()
+void __declspec(naked) _alldvrm(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -516,7 +516,7 @@ L8:
     /* *INDENT-ON* */
 }
 
-void __declspec(naked) _aulldvrm()
+void __declspec(naked) _aulldvrm(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -587,7 +587,7 @@ L2:
     /* *INDENT-ON* */
 }
 
-void __declspec(naked) _allshl()
+void __declspec(naked) _allshl(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -612,7 +612,7 @@ RETZERO:
     /* *INDENT-ON* */
 }
 
-void __declspec(naked) _allshr()
+void __declspec(naked) _allshr(void)
 {
     /* *INDENT-OFF* */
     __asm {
@@ -637,7 +637,7 @@ RETSIGN:
     /* *INDENT-ON* */
 }
 
-void __declspec(naked) _aullshr()
+void __declspec(naked) _aullshr(void)
 {
     /* *INDENT-OFF* */
     __asm {

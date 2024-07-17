@@ -75,7 +75,7 @@ static void RPI_GetRefreshRate(int *numerator, int *denominator)
     *denominator = 1;
 }
 
-static SDL_VideoDevice *RPI_Create()
+static SDL_VideoDevice *RPI_Create(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;

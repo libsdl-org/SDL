@@ -48,7 +48,7 @@ static void PSP_Destroy(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static SDL_VideoDevice *PSP_Create()
+static SDL_VideoDevice *PSP_Create(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;

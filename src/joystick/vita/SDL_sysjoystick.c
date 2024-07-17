@@ -134,12 +134,12 @@ static int VITA_JoystickInit(void)
     return SDL_numjoysticks;
 }
 
-static int VITA_JoystickGetCount()
+static int VITA_JoystickGetCount(void)
 {
     return SDL_numjoysticks;
 }
 
-static void VITA_JoystickDetect()
+static void VITA_JoystickDetect(void)
 {
 }
 

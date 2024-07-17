@@ -323,7 +323,7 @@ dbghelp_failed:
                            SDLTest_TrackedFree);
 }
 
-void SDLTest_RandFillAllocations()
+void SDLTest_RandFillAllocations(void)
 {
     SDLTest_TrackAllocations();
 

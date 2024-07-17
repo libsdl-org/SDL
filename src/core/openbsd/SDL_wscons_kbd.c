@@ -452,7 +452,7 @@ static SDL_WSCONS_input_data *SDL_WSCONS_Init_Keyboard(const char *dev)
     return input;
 }
 
-void SDL_WSCONS_Init()
+void SDL_WSCONS_Init(void)
 {
     inputs[0] = SDL_WSCONS_Init_Keyboard("/dev/wskbd0");
     inputs[1] = SDL_WSCONS_Init_Keyboard("/dev/wskbd1");
@@ -463,7 +463,7 @@ void SDL_WSCONS_Init()
     return;
 }
 
-void SDL_WSCONS_Quit()
+void SDL_WSCONS_Quit(void)
 {
     int i = 0;
     SDL_WSCONS_input_data *input = NULL;
@@ -924,7 +924,7 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
     }
 }
 
-void SDL_WSCONS_PumpEvents()
+void SDL_WSCONS_PumpEvents(void)
 {
     int i = 0;
     for (i = 0; i < 4; i++) {

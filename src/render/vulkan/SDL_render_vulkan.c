@@ -1639,7 +1639,7 @@ static SDL_bool VULKAN_InstanceExtensionFound(VULKAN_RenderData *rendererData, c
     return SDL_FALSE;
 }
 
-static SDL_bool VULKAN_ValidationLayersFound()
+static SDL_bool VULKAN_ValidationLayersFound(void)
 {
     uint32_t instanceLayerCount = 0;
     uint32_t i;

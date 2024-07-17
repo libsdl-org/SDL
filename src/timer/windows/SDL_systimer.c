@@ -31,7 +31,7 @@ static void SDL_CleanupWaitableTimer(void *timer)
     CloseHandle(timer);
 }
 
-HANDLE SDL_GetWaitableTimer()
+HANDLE SDL_GetWaitableTimer(void)
 {
     static SDL_TLSID TLS_timer_handle;
     HANDLE timer;

@@ -102,7 +102,7 @@ static void draw_textf(SDL_Renderer* renderer, int x, int y, const char* fmt, ..
     draw_text(renderer, x, y, text);
 }
 
-static void queue_audio()
+static void queue_audio(void)
 {
     Uint8* new_data = NULL;
     int new_len = 0;
