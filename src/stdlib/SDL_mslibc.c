@@ -120,12 +120,12 @@ localexit:
     /* *INDENT-ON* */
 }
 
-void _ftol2_sse()
+void _ftol2_sse(void)
 {
     _ftol();
 }
 
-void _ftol2()
+void _ftol2(void)
 {
     _ftol();
 }

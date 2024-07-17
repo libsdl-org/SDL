@@ -1239,7 +1239,7 @@ void SDL_SIMDFree(void *ptr)
 
 #include <stdio.h>
 
-int main()
+int main(void)
 {
     printf("CPU count: %d\n", SDL_GetCPUCount());
     printf("CPU type: %s\n", SDL_GetCPUType());

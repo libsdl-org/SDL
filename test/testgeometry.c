@@ -62,7 +62,7 @@ int LoadSprite(const char *file)
     return 0;
 }
 
-void loop()
+void loop(void)
 {
     int i;
     SDL_Event event;

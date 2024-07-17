@@ -28,7 +28,7 @@ SDL_Renderer *renderer;
 SDL_Surface *surface;
 int done;
 
-void DrawChessBoard()
+void DrawChessBoard(void)
 {
     int row = 0, column = 0, x = 0;
     SDL_Rect rect, darea;
@@ -53,7 +53,7 @@ void DrawChessBoard()
     SDL_RenderPresent(renderer);
 }
 
-void loop()
+void loop(void)
 {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {

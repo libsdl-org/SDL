@@ -178,7 +178,7 @@ PrintUsage(char *argv0)
     SDL_Log("\n");
 }
 
-void loop()
+void loop(void)
 {
     SDL_Event event;
 

@@ -81,7 +81,7 @@ void _surfaceTearDown(void *arg)
 /**
  * Helper that clears the test surface
  */
-void _clearTestSurface()
+void _clearTestSurface(void)
 {
     int ret;
     Uint32 color;

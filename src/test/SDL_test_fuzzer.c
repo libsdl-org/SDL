@@ -68,54 +68,54 @@ void SDLTest_FuzzerInit(Uint64 execKey)
     fuzzerInvocationCounter = 0;
 }
 
-int SDLTest_GetFuzzerInvocationCount()
+int SDLTest_GetFuzzerInvocationCount(void)
 {
     return fuzzerInvocationCounter;
 }
 
-Uint8 SDLTest_RandomUint8()
+Uint8 SDLTest_RandomUint8(void)
 {
     fuzzerInvocationCounter++;
 
     return (Uint8)SDLTest_RandomInt(&rndContext) & 0x000000FF;
 }
 
-Sint8 SDLTest_RandomSint8()
+Sint8 SDLTest_RandomSint8(void)
 {
     fuzzerInvocationCounter++;
 
     return (Sint8)SDLTest_RandomInt(&rndContext) & 0x000000FF;
 }
 
-Uint16 SDLTest_RandomUint16()
+Uint16 SDLTest_RandomUint16(void)
 {
     fuzzerInvocationCounter++;
 
     return (Uint16)SDLTest_RandomInt(&rndContext) & 0x0000FFFF;
 }
 
-Sint16 SDLTest_RandomSint16()
+Sint16 SDLTest_RandomSint16(void)
 {
     fuzzerInvocationCounter++;
 
     return (Sint16)SDLTest_RandomInt(&rndContext) & 0x0000FFFF;
 }
 
-Sint32 SDLTest_RandomSint32()
+Sint32 SDLTest_RandomSint32(void)
 {
     fuzzerInvocationCounter++;
 
     return (Sint32)SDLTest_RandomInt(&rndContext);
 }
 
-Uint32 SDLTest_RandomUint32()
+Uint32 SDLTest_RandomUint32(void)
 {
     fuzzerInvocationCounter++;
 
     return (Uint32)SDLTest_RandomInt(&rndContext);
 }
 
-Uint64 SDLTest_RandomUint64()
+Uint64 SDLTest_RandomUint64(void)
 {
     union
     {
@@ -132,7 +132,7 @@ Uint64 SDLTest_RandomUint64()
     return value.v64;
 }
 
-Sint64 SDLTest_RandomSint64()
+Sint64 SDLTest_RandomSint64(void)
 {
     union
     {
@@ -425,24 +425,24 @@ Sint64 SDLTest_RandomSint64BoundaryValue(Sint64 boundary1, Sint64 boundary2, SDL
                                                 validDomain);
 }
 
-float SDLTest_RandomUnitFloat()
+float SDLTest_RandomUnitFloat(void)
 {
     return SDLTest_RandomUint32() / (float)UINT_MAX;
 }
 
-float SDLTest_RandomFloat()
+float SDLTest_RandomFloat(void)
 {
     return (float)(SDLTest_RandomUnitDouble() * 2.0 * (double)FLT_MAX - (double)(FLT_MAX));
 }
 
 double
-SDLTest_RandomUnitDouble()
+SDLTest_RandomUnitDouble(void)
 {
     return (double)(SDLTest_RandomUint64() >> 11) * (1.0 / 9007199254740992.0);
 }
 
 double
-SDLTest_RandomDouble()
+SDLTest_RandomDouble(void)
 {
     double r = 0.0;
     double s = 1.0;
@@ -456,7 +456,7 @@ SDLTest_RandomDouble()
     return r;
 }
 
-char *SDLTest_RandomAsciiString()
+char *SDLTest_RandomAsciiString(void)
 {
     return SDLTest_RandomAsciiStringWithMaximumLength(255);
 }

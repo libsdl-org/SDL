@@ -21,7 +21,7 @@ static void EnableTestLog(int *message_count)
     SDL_LogSetOutputFunction(TestLogOutput, message_count);
 }
 
-static void DisableTestLog()
+static void DisableTestLog(void)
 {
     SDL_LogSetOutputFunction(original_function, original_userdata);
 }

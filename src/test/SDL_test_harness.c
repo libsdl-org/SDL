@@ -339,7 +339,7 @@ static void SDLTest_LogTestSuiteSummary(SDLTest_TestSuiteReference *testSuites)
 #endif
 
 /* Gets a timer value in seconds */
-static float GetClock()
+static float GetClock(void)
 {
     float currentClock = SDL_GetPerformanceCounter() / (float)SDL_GetPerformanceFrequency();
     return currentClock;

@@ -624,7 +624,7 @@ int video_getWindowDisplayMode(void *arg)
 }
 
 /* Helper function that checks for an 'Invalid window' error */
-void _checkInvalidWindowError()
+void _checkInvalidWindowError(void)
 {
     const char *invalidWindowError = "Invalid window";
     char *lastError;
@@ -1300,7 +1300,7 @@ int video_getSetWindowPosition(void *arg)
 }
 
 /* Helper function that checks for an 'Invalid parameter' error */
-void _checkInvalidParameterError()
+void _checkInvalidParameterError(void)
 {
     const char *invalidParameterError = "Parameter";
     char *lastError;

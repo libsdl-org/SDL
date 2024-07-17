@@ -208,7 +208,7 @@ DrawRectRectIntersections(SDL_Renderer *renderer)
     }
 }
 
-void loop()
+void loop(void)
 {
     int i;
     SDL_Event event;

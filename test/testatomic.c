@@ -31,7 +31,7 @@ tf(SDL_bool _tf)
     return f;
 }
 
-static void RunBasicTest()
+static void RunBasicTest(void)
 {
     int value;
     SDL_SpinLock lock = 0;
@@ -153,7 +153,7 @@ static void runAdder(void)
     SDL_Log("Finished in %f sec\n", (end - start) / 1000.f);
 }
 
-static void RunEpicTest()
+static void RunEpicTest(void)
 {
     int b;
     atomicValue v;

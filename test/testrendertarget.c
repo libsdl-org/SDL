@@ -173,7 +173,7 @@ Draw(DrawState *s)
     return SDL_TRUE;
 }
 
-void loop()
+void loop(void)
 {
     int i;
     SDL_Event event;

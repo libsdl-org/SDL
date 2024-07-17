@@ -1008,7 +1008,7 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
     }
 }
 
-static SDL_bool HIDAPI_CreateCombinedJoyCons()
+static SDL_bool HIDAPI_CreateCombinedJoyCons(void)
 {
     SDL_HIDAPI_Device *device, *combined;
     SDL_HIDAPI_Device *joycons[2] = { NULL, NULL };

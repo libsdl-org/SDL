@@ -94,7 +94,7 @@ void UpdateTexture(SDL_Texture *texture)
     SDL_UnlockTexture(texture);
 }
 
-void loop()
+void loop(void)
 {
     SDL_Event event;
 

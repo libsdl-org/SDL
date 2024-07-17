@@ -55,7 +55,7 @@ typedef struct
 static int vsync_sema_id = 0;
 
 /* PRIVATE METHODS */
-static int vsync_handler()
+static int vsync_handler(void)
 {
     iSignalSema(vsync_sema_id);
 

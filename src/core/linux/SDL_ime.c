@@ -40,7 +40,7 @@ static _SDL_IME_ProcessKeyEvent SDL_IME_ProcessKeyEvent_Real = NULL;
 static _SDL_IME_UpdateTextRect SDL_IME_UpdateTextRect_Real = NULL;
 static _SDL_IME_PumpEvents SDL_IME_PumpEvents_Real = NULL;
 
-static void InitIME()
+static void InitIME(void)
 {
     static SDL_bool inited = SDL_FALSE;
 #ifdef HAVE_FCITX
@@ -142,7 +142,7 @@ void SDL_IME_UpdateTextRect(const SDL_Rect *rect)
     }
 }
 
-void SDL_IME_PumpEvents()
+void SDL_IME_PumpEvents(void)
 {
     if (SDL_IME_PumpEvents_Real) {
         SDL_IME_PumpEvents_Real();

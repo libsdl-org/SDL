@@ -50,7 +50,7 @@ static int X11_VideoInit(_THIS);
 static void X11_VideoQuit(_THIS);
 
 /* Find out what class name we should use */
-static char *get_classname()
+static char *get_classname(void)
 {
     char *spot;
 #if defined(__LINUX__) || defined(__FREEBSD__)
