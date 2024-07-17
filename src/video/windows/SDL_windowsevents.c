@@ -133,7 +133,7 @@ static void WIN_SetMessageTick(DWORD tick)
     message_tick = tick;
 }
 
-static Uint64 WIN_GetEventTimestamp()
+static Uint64 WIN_GetEventTimestamp(void)
 {
     Uint64 timestamp, now;
 
@@ -2090,7 +2090,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static void WIN_UpdateClipCursorForWindows()
+static void WIN_UpdateClipCursorForWindows(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
@@ -2112,7 +2112,7 @@ static void WIN_UpdateClipCursorForWindows()
     }
 }
 
-static void WIN_UpdateMouseCapture()
+static void WIN_UpdateMouseCapture(void)
 {
     SDL_Window *focusWindow = SDL_GetKeyboardFocus();
 
@@ -2408,7 +2408,7 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 }
 
 /* Unregisters the windowclass registered in SDL_RegisterApp above. */
-void SDL_UnregisterApp()
+void SDL_UnregisterApp(void)
 {
     WNDCLASSEX wcex;
 

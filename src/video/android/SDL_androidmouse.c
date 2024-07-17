@@ -74,7 +74,7 @@ static SDL_Cursor *Android_WrapCursor(int custom_cursor, int system_cursor)
     return cursor;
 }
 
-static SDL_Cursor *Android_CreateDefaultCursor()
+static SDL_Cursor *Android_CreateDefaultCursor(void)
 {
     return Android_WrapCursor(0, SDL_SYSTEM_CURSOR_DEFAULT);
 }
@@ -112,7 +112,7 @@ static void Android_FreeCursor(SDL_Cursor *cursor)
     SDL_free(cursor);
 }
 
-static SDL_Cursor *Android_CreateEmptyCursor()
+static SDL_Cursor *Android_CreateEmptyCursor(void)
 {
     if (!empty_cursor) {
         SDL_Surface *empty_surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
@@ -125,7 +125,7 @@ static SDL_Cursor *Android_CreateEmptyCursor()
     return empty_cursor;
 }
 
-static void Android_DestroyEmptyCursor()
+static void Android_DestroyEmptyCursor(void)
 {
     if (empty_cursor) {
         Android_FreeCursor(empty_cursor);

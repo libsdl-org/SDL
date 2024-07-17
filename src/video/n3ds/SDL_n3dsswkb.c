@@ -30,17 +30,17 @@
 static SwkbdState sw_keyboard;
 const static size_t BUFFER_SIZE = 256;
 
-void N3DS_SwkbInit()
+void N3DS_SwkbInit(void)
 {
     swkbdInit(&sw_keyboard, SWKBD_TYPE_NORMAL, 2, -1);
 }
 
-void N3DS_SwkbPoll()
+void N3DS_SwkbPoll(void)
 {
     return;
 }
 
-void N3DS_SwkbQuit()
+void N3DS_SwkbQuit(void)
 {
     return;
 }

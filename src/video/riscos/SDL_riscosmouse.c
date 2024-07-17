@@ -28,7 +28,7 @@
 
 #include <kernel.h>
 
-static SDL_Cursor *RISCOS_CreateDefaultCursor()
+static SDL_Cursor *RISCOS_CreateDefaultCursor(void)
 {
     SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {

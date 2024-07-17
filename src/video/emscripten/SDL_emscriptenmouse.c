@@ -60,7 +60,7 @@ static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, SDL
     return cursor;
 }
 
-static SDL_Cursor *Emscripten_CreateDefaultCursor()
+static SDL_Cursor *Emscripten_CreateDefaultCursor(void)
 {
     return Emscripten_CreateCursorFromString("default", SDL_FALSE);
 }
@@ -194,7 +194,7 @@ static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
     return -1;
 }
 
-void Emscripten_InitMouse()
+void Emscripten_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -207,7 +207,7 @@ void Emscripten_InitMouse()
     SDL_SetDefaultCursor(Emscripten_CreateDefaultCursor());
 }
 
-void Emscripten_FiniMouse()
+void Emscripten_FiniMouse(void)
 {
 }
 

@@ -34,7 +34,7 @@ DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
 static SDL_Cursor *SDL_blank_cursor = NULL;
 
-static SDL_Cursor *WIN_CreateDefaultCursor()
+static SDL_Cursor *WIN_CreateDefaultCursor(void)
 {
     SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
@@ -195,7 +195,7 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     return cursor;
 }
 
-static SDL_Cursor *WIN_CreateBlankCursor()
+static SDL_Cursor *WIN_CreateBlankCursor(void)
 {
     SDL_Cursor *cursor = NULL;
     SDL_Surface *surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_ARGB8888);
@@ -522,7 +522,7 @@ static void WIN_SetLinearMouseScale(int mouse_speed)
     }
 }
 
-void WIN_UpdateMouseSystemScale()
+void WIN_UpdateMouseSystemScale(void)
 {
     int mouse_speed;
     int params[3] = { 0, 0, 0 };

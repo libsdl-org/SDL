@@ -272,7 +272,7 @@ static void Wayland_DBusInitCursorProperties(SDL_VideoData *vdata)
     }
 }
 
-static void Wayland_DBusFinishCursorProperties()
+static void Wayland_DBusFinishCursorProperties(void)
 {
     SDL_free(dbus_cursor_theme);
     dbus_cursor_theme = NULL;

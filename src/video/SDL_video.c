@@ -694,7 +694,7 @@ SDL_SystemTheme SDL_GetSystemTheme(void)
     }
 }
 
-static void SDL_UpdateDesktopBounds()
+static void SDL_UpdateDesktopBounds(void)
 {
     SDL_Rect rect;
     SDL_zero(rect);

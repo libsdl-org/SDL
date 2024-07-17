@@ -89,7 +89,7 @@ enum WaylandModeScale
     WAYLAND_MODE_SCALE_NONE
 };
 
-static enum WaylandModeScale GetModeScaleMethod()
+static enum WaylandModeScale GetModeScaleMethod(void)
 {
     static enum WaylandModeScale scale_mode = WAYLAND_MODE_SCALE_UNDEFINED;
 

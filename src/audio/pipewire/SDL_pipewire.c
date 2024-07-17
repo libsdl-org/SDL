@@ -179,7 +179,7 @@ static int load_pipewire_syms(void)
     return 0;
 }
 
-static int init_pipewire_library()
+static int init_pipewire_library(void)
 {
     if (!load_pipewire_library()) {
         if (!load_pipewire_syms()) {

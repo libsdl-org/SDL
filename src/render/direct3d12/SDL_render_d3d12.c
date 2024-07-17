@@ -1200,7 +1200,7 @@ done:
     return result;
 }
 
-static DXGI_MODE_ROTATION D3D12_GetCurrentRotation()
+static DXGI_MODE_ROTATION D3D12_GetCurrentRotation(void)
 {
     /* FIXME */
     return DXGI_MODE_ROTATION_IDENTITY;

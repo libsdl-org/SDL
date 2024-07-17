@@ -35,7 +35,7 @@ typedef struct SDL_WSCONS_mouse_input_data
     SDL_MouseID mouseID;
 } SDL_WSCONS_mouse_input_data;
 
-SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse()
+SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse(void)
 {
 #ifdef WSMOUSEIO_SETVERSION
     int version = WSMOUSE_EVENT_VERSION;

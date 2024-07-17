@@ -119,7 +119,7 @@ static HMODULE hid_lib_handle = NULL;
 static HMODULE cfgmgr32_lib_handle = NULL;
 static BOOLEAN hidapi_initialized = FALSE;
 
-static void free_library_handles()
+static void free_library_handles(void)
 {
 	if (hid_lib_handle)
 		FreeLibrary(hid_lib_handle);
@@ -134,7 +134,7 @@ static void free_library_handles()
 # pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
 
-static int lookup_functions()
+static int lookup_functions(void)
 {
 	hid_lib_handle = LoadLibraryW(L"hid.dll");
 	if (hid_lib_handle == NULL) {
@@ -221,7 +221,7 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
 }
 
-static hid_device *new_hid_device()
+static hid_device *new_hid_device(void)
 {
 	hid_device *dev = (hid_device*) calloc(1, sizeof(hid_device));
 

@@ -165,7 +165,7 @@ void WIN_QuitKeyboard(SDL_VideoDevice *_this)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void WIN_ResetDeadKeys()
+void WIN_ResetDeadKeys(void)
 {
     /*
     if a deadkey has been typed, but not the next character (which the deadkey might modify),

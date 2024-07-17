@@ -133,7 +133,7 @@ static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontex
     SDL_EVDEV_kbd_reraise_signal(signum);
 }
 
-static void kbd_unregister_emerg_cleanup()
+static void kbd_unregister_emerg_cleanup(void)
 {
     int tabidx;
 

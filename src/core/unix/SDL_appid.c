@@ -24,7 +24,7 @@
 #include "SDL_appid.h"
 #include <unistd.h>
 
-const char *SDL_GetExeName()
+const char *SDL_GetExeName(void)
 {
     static const char *proc_name = NULL;
 
@@ -57,7 +57,7 @@ const char *SDL_GetExeName()
     return proc_name;
 }
 
-const char *SDL_GetAppID()
+const char *SDL_GetAppID(void)
 {
     /* Always check the hint, as it may have changed */
     const char *id_str = SDL_GetHint(SDL_HINT_APP_ID);

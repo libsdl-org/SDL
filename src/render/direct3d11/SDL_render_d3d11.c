@@ -808,7 +808,7 @@ done:
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
-static DXGI_MODE_ROTATION D3D11_GetCurrentRotation()
+static DXGI_MODE_ROTATION D3D11_GetCurrentRotation(void)
 {
     /* FIXME */
     return DXGI_MODE_ROTATION_IDENTITY;

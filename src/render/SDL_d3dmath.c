@@ -26,7 +26,7 @@
 
 /* Direct3D matrix math functions */
 
-Float4X4 MatrixIdentity()
+Float4X4 MatrixIdentity(void)
 {
     Float4X4 m;
     SDL_zero(m);

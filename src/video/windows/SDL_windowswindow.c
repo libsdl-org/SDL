@@ -352,7 +352,7 @@ static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const cha
     data->mouse_relative_mode_center = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
-static SDL_WindowEraseBackgroundMode GetEraseBackgroundModeHint()
+static SDL_WindowEraseBackgroundMode GetEraseBackgroundModeHint(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE);
     if (!hint)
