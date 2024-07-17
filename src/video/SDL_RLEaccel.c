@@ -62,7 +62,7 @@
  *
  * Encoding of surfaces with per-pixel alpha:
  *
- *   The sequence begins with a struct SDL_PixelFormatDetails describing the target
+ *   The sequence begins with an SDL_PixelFormat value describing the target
  *   pixel format, to provide reliable un-encoding.
  *
  *   Each scan line is encoded twice: First all completely opaque pixels,
@@ -1425,7 +1425,6 @@ int SDL_RLESurface(SDL_Surface *surface)
 
     /* The surface is now accelerated */
     surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
-    SDL_UpdateSurfaceLockFlag(surface);
 
     return 0;
 }
@@ -1521,7 +1520,6 @@ void SDL_UnRLESurface(SDL_Surface *surface, SDL_bool recode)
 {
     if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         surface->internal->flags &= ~SDL_INTERNAL_SURFACE_RLEACCEL;
-        SDL_UpdateSurfaceLockFlag(surface);
 
         if (recode && !(surface->flags & SDL_SURFACE_PREALLOCATED)) {
             if (surface->internal->map.info.flags & SDL_COPY_RLE_COLORKEY) {
@@ -1532,14 +1530,12 @@ void SDL_UnRLESurface(SDL_Surface *surface, SDL_bool recode)
                 if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
                     /* Memory corruption? */
                     surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
-                    SDL_UpdateSurfaceLockFlag(surface);
                     return;
                 }
                 surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
                 if (!surface->pixels) {
                     /* Oh crap... */
                     surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
-                    SDL_UpdateSurfaceLockFlag(surface);
                     return;
                 }
                 surface->flags |= SDL_SURFACE_SIMD_ALIGNED;
@@ -1556,7 +1552,6 @@ void SDL_UnRLESurface(SDL_Surface *surface, SDL_bool recode)
                 if (!UnRLEAlpha(surface)) {
                     /* Oh crap... */
                     surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
-                    SDL_UpdateSurfaceLockFlag(surface);
                     return;
                 }
             }

@@ -46,7 +46,7 @@ SDL_bool SDL_SurfaceValid(SDL_Surface *surface)
 
 void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface)
 {
-    if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
+    if (SDL_SurfaceHasRLE(surface)) {
         surface->flags |= SDL_SURFACE_LOCK_NEEDED;
     } else {
         surface->flags &= ~SDL_SURFACE_LOCK_NEEDED;
@@ -460,6 +460,7 @@ int SDL_SetSurfaceRLE(SDL_Surface *surface, SDL_bool enabled)
     if (surface->internal->map.info.flags != flags) {
         SDL_InvalidateMap(&surface->internal->map);
     }
+    SDL_UpdateSurfaceLockFlag(surface);
     return 0;
 }
 
@@ -1250,7 +1251,6 @@ int SDL_LockSurface(SDL_Surface *surface)
         if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
             SDL_UnRLESurface(surface, SDL_TRUE);
             surface->internal->flags |= SDL_INTERNAL_SURFACE_RLEACCEL; /* save accel'd state */
-            SDL_UpdateSurfaceLockFlag(surface);
         }
 #endif
     }
