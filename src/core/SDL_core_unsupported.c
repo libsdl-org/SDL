@@ -142,11 +142,11 @@ const char* SDL_GetAndroidExternalStoragePath()
     return NULL;
 }
 
-SDL_DECLSPEC int SDLCALL SDL_GetAndroidExternalStorageState(Uint32 *state);
-int SDL_GetAndroidExternalStorageState(Uint32 *state)
+SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
+Uint32 SDL_GetAndroidExternalStorageState(void)
 {
-    (void)state;
-    return SDL_Unsupported();
+    SDL_Unsupported();
+    return 0;
 }
 SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidInternalStoragePath(void);
 const char *SDL_GetAndroidInternalStoragePath(void)

@@ -1641,7 +1641,6 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
 
     {
         Uint8 r, g, b, a;
-        SDL_BlendMode blendMode;
 
         SDL_GetSurfaceColorMod(surface, &r, &g, &b);
         SDL_SetTextureColorMod(texture, r, g, b);
@@ -1653,8 +1652,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
             /* We converted to a texture with alpha format */
             SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         } else {
-            SDL_GetSurfaceBlendMode(surface, &blendMode);
-            SDL_SetTextureBlendMode(texture, blendMode);
+            SDL_SetTextureBlendMode(texture, SDL_GetSurfaceBlendMode(surface));
         }
     }
     return texture;
@@ -1799,6 +1797,10 @@ int SDL_SetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode blendMode)
 
     CHECK_TEXTURE_MAGIC(texture, -1);
 
+    if (blendMode == SDL_BLENDMODE_INVALID) {
+        return SDL_InvalidParamError("blendMode");
+    }
+
     renderer = texture->renderer;
     if (!IsSupportedBlendMode(renderer, blendMode)) {
         return SDL_Unsupported();
@@ -1810,14 +1812,11 @@ int SDL_SetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode blendMode)
     return 0;
 }
 
-int SDL_GetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode *blendMode)
+SDL_BlendMode SDL_GetTextureBlendMode(SDL_Texture *texture)
 {
-    CHECK_TEXTURE_MAGIC(texture, -1);
+    CHECK_TEXTURE_MAGIC(texture, SDL_BLENDMODE_INVALID);
 
-    if (blendMode) {
-        *blendMode = texture->blendMode;
-    }
-    return 0;
+    return texture->blendMode;
 }
 
 int SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
@@ -1836,14 +1835,11 @@ int SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
     return 0;
 }
 
-int SDL_GetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode *scaleMode)
+SDL_ScaleMode SDL_GetTextureScaleMode(SDL_Texture *texture)
 {
-    CHECK_TEXTURE_MAGIC(texture, -1);
+    CHECK_TEXTURE_MAGIC(texture, SDL_SCALEMODE_LINEAR);
 
-    if (scaleMode) {
-        *scaleMode = texture->scaleMode;
-    }
-    return 0;
+    return texture->scaleMode;
 }
 
 #if SDL_HAVE_YUV
@@ -3069,19 +3065,20 @@ int SDL_SetRenderColorScale(SDL_Renderer *renderer, float scale)
     return 0;
 }
 
-int SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale)
+float SDL_GetRenderColorScale(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_RENDERER_MAGIC(renderer, 1.0f);
 
-    if (scale) {
-        *scale = renderer->color_scale / renderer->SDR_white_point;
-    }
-    return 0;
+    return renderer->color_scale / renderer->SDR_white_point;
 }
 
 int SDL_SetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (blendMode == SDL_BLENDMODE_INVALID) {
+        return SDL_InvalidParamError("blendMode");
+    }
 
     if (!IsSupportedBlendMode(renderer, blendMode)) {
         return SDL_Unsupported();
@@ -3090,20 +3087,18 @@ int SDL_SetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
     return 0;
 }
 
-int SDL_GetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode *blendMode)
+SDL_BlendMode SDL_GetRenderDrawBlendMode(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_RENDERER_MAGIC(renderer, SDL_BLENDMODE_INVALID);
 
-    *blendMode = renderer->blendMode;
-    return 0;
+    return renderer->blendMode;
 }
 
 int SDL_RenderClear(SDL_Renderer *renderer)
 {
-    int retval;
     CHECK_RENDERER_MAGIC(renderer, -1);
-    retval = QueueCmdClear(renderer);
-    return retval;
+
+    return QueueCmdClear(renderer);
 }
 
 int SDL_RenderPoint(SDL_Renderer *renderer, float x, float y)
@@ -3970,7 +3965,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
     float r = 0, g = 0, b = 0, a = 0;
 
     /* Save */
-    SDL_GetRenderDrawBlendMode(renderer, &blendMode);
+    blendMode = SDL_GetRenderDrawBlendMode(renderer);
     SDL_GetRenderDrawColorFloat(renderer, &r, &g, &b, &a);
 
     if (texture) {

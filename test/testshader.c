@@ -332,7 +332,7 @@ SDL_GL_LoadTexture(SDL_Surface *surface, GLfloat *texcoord)
     }
 
     /* Save the alpha blending attributes */
-    SDL_GetSurfaceBlendMode(surface, &saved_mode);
+    saved_mode = SDL_GetSurfaceBlendMode(surface);
     SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 
     /* Copy the surface into the GL texture image */

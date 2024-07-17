@@ -355,7 +355,7 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
         return -1;
     }
 
-    SDL_GetSurfaceBlendMode(src, &blendmode);
+    blendmode = SDL_GetSurfaceBlendMode(src);
     SDL_GetSurfaceAlphaMod(src, &alphaMod);
     SDL_GetSurfaceColorMod(src, &rMod, &gMod, &bMod);
 
@@ -841,7 +841,7 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                         SDL_BlendMode blendmode;
                         Uint8 alphaMod, rMod, gMod, bMod;
 
-                        SDL_GetSurfaceBlendMode(src, &blendmode);
+                        blendmode = SDL_GetSurfaceBlendMode(src);
                         SDL_GetSurfaceAlphaMod(src, &alphaMod);
                         SDL_GetSurfaceColorMod(src, &rMod, &gMod, &bMod);
 
