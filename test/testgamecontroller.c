@@ -107,7 +107,7 @@ static int virtual_axis_start_x;
 static int virtual_axis_start_y;
 static SDL_GameControllerButton virtual_button_active = SDL_CONTROLLER_BUTTON_INVALID;
 
-static void UpdateWindowTitle()
+static void UpdateWindowTitle(void)
 {
     if (!window) {
         return;
@@ -329,7 +329,7 @@ typedef struct
     Uint8 ucLedBlue;                  /* 46 */
 } DS5EffectsState_t;
 
-static void CyclePS5TriggerEffect()
+static void CyclePS5TriggerEffect(void)
 {
     DS5EffectsState_t state;
 
@@ -351,7 +351,7 @@ static void CyclePS5TriggerEffect()
     SDL_GameControllerSendEffect(gamecontroller, &state, sizeof(state));
 }
 
-static SDL_bool ShowingFront()
+static SDL_bool ShowingFront(void)
 {
     SDL_bool showing_front = SDL_TRUE;
     int i;
@@ -394,7 +394,7 @@ static int SDLCALL VirtualControllerSetLED(void *userdata, Uint8 red, Uint8 gree
     return 0;
 }
 
-static void OpenVirtualController()
+static void OpenVirtualController(void)
 {
     SDL_VirtualJoystickDesc desc;
     int virtual_index;
@@ -420,7 +420,7 @@ static void OpenVirtualController()
     }
 }
 
-static void CloseVirtualController()
+static void CloseVirtualController(void)
 {
     int i;
 

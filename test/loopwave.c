@@ -46,7 +46,7 @@ quit(int rc)
 }
 
 static void
-close_audio()
+close_audio(void)
 {
     if (device != 0) {
         SDL_CloseAudioDevice(device);
@@ -55,7 +55,7 @@ close_audio()
 }
 
 static void
-open_audio()
+open_audio(void)
 {
     /* Initialize fillerup() variables */
     device = SDL_OpenAudioDevice(NULL, SDL_FALSE, &wave.spec, NULL, 0);
@@ -70,7 +70,7 @@ open_audio()
 }
 
 #ifndef __EMSCRIPTEN__
-static void reopen_audio()
+static void reopen_audio(void)
 {
     close_audio();
     open_audio();
@@ -103,7 +103,7 @@ fillerup(void *unused, Uint8 *stream, int len)
 static int done = 0;
 
 #ifdef __EMSCRIPTEN__
-void loop()
+void loop(void)
 {
     if (done || (SDL_GetAudioDeviceStatus(device) != SDL_AUDIO_PLAYING)) {
         emscripten_cancel_main_loop();

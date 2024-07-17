@@ -35,7 +35,7 @@ DrawRects(SDL_Renderer *renderer)
 }
 
 static void
-loop()
+loop(void)
 {
     /* Check for events */
     while (SDL_PollEvent(&event)) {

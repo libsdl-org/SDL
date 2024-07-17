@@ -87,7 +87,7 @@ void Draw(DrawState *s)
     /* SDL_Delay(10); */
 }
 
-void loop()
+void loop(void)
 {
     int i;
     SDL_Event event;

@@ -148,7 +148,7 @@ quit(int rc)
     exit(rc);
 }
 
-void loop()
+void loop(void)
 {
     int i;
     SDL_Event event;

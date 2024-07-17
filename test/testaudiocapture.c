@@ -24,7 +24,7 @@ static SDL_AudioDeviceID devid_in = 0;
 static SDL_AudioDeviceID devid_out = 0;
 
 static void
-loop()
+loop(void)
 {
     SDL_bool please_quit = SDL_FALSE;
     SDL_Event e;

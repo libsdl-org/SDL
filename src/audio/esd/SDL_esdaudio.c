@@ -64,7 +64,7 @@ static struct
 
 #undef SDL_ESD_SYM
 
-static void UnloadESDLibrary()
+static void UnloadESDLibrary(void)
 {
     if (esd_handle) {
         SDL_UnloadObject(esd_handle);
@@ -96,7 +96,7 @@ static int LoadESDLibrary(void)
 
 #else
 
-static void UnloadESDLibrary()
+static void UnloadESDLibrary(void)
 {
     return;
 }

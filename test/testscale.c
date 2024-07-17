@@ -78,7 +78,7 @@ void Draw(DrawState *s)
     SDL_RenderPresent(s->renderer);
 }
 
-void loop()
+void loop(void)
 {
     int i;
     SDL_Event event;

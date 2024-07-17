@@ -56,7 +56,7 @@ static void RPI_Destroy(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static int RPI_GetRefreshRate()
+static int RPI_GetRefreshRate(void)
 {
     TV_DISPLAY_STATE_T tvstate;
     if (vc_tv_get_display_state(&tvstate) == 0) {

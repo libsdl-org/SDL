@@ -79,7 +79,7 @@ static SDL_bool realtime_portal_supported(DBusConnection *conn)
                                               "RTTimeUSecMax", DBUS_TYPE_INT64, &res);
 }
 
-static void set_rtkit_interface()
+static void set_rtkit_interface(void)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -108,7 +108,7 @@ static DBusConnection *get_rtkit_dbus_connection()
     return NULL;
 }
 
-static void rtkit_initialize()
+static void rtkit_initialize(void)
 {
     DBusConnection *dbus_conn;
 
@@ -134,7 +134,7 @@ static void rtkit_initialize()
     }
 }
 
-static SDL_bool rtkit_initialize_realtime_thread()
+static SDL_bool rtkit_initialize_realtime_thread(void)
 {
     // Following is an excerpt from rtkit README that outlines the requirements
     // a thread must meet before making rtkit requests:

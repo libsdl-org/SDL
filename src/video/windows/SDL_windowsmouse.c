@@ -474,7 +474,7 @@ static void WIN_SetLinearMouseScale(int mouse_speed)
     }
 }
 
-void WIN_UpdateMouseSystemScale()
+void WIN_UpdateMouseSystemScale(void)
 {
     int mouse_speed;
     int params[3] = { 0, 0, 0 };

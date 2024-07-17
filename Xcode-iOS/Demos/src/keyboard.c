@@ -196,7 +196,7 @@ loadFont(void)
 }
 
 void
-draw()
+draw(void)
 {
     SDL_SetRenderDrawColor(renderer, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
     SDL_RenderClear(renderer);

@@ -143,7 +143,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_Rect viewport)
     }
 }
 
-void loop()
+void loop(void)
 {
     int i;
     SDL_Event event;

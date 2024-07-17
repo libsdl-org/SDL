@@ -74,12 +74,12 @@ void X11_InitXfixes(_THIS)
     xfixes_initialized = 1;
 }
 
-int X11_XfixesIsInitialized()
+int X11_XfixesIsInitialized(void)
 {
     return xfixes_initialized;
 }
 
-int X11_GetXFixesSelectionNotifyEvent()
+int X11_GetXFixesSelectionNotifyEvent(void)
 {
     return xfixes_selection_notify_event;
 }

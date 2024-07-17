@@ -78,7 +78,7 @@ quit(int rc)
 }
 
 static void
-Render()
+Render(void)
 {
     static float color[8][3] = {
         { 1.0, 1.0, 0.0 },

@@ -131,7 +131,7 @@ VideoBootStrap DUMMY_evdev_bootstrap = {
     NULL /* no ShowMessageBox implementation */
 };
 void SDL_EVDEV_Init(void);
-void SDL_EVDEV_Poll();
+void SDL_EVDEV_Poll(void);
 void SDL_EVDEV_Quit(void);
 static void DUMMY_EVDEV_Poll(_THIS)
 {
