@@ -924,6 +924,106 @@ static int surface_testPalette(void *arg)
     return TEST_COMPLETED;
 }
 
+static int surface_testClearSurface(void *arg)
+{
+    SDL_PixelFormat formats[] = {
+        SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGBA8888,
+        SDL_PIXELFORMAT_ARGB2101010, SDL_PIXELFORMAT_ABGR2101010,
+        SDL_PIXELFORMAT_ARGB64, SDL_PIXELFORMAT_RGBA64,
+        SDL_PIXELFORMAT_ARGB128_FLOAT, SDL_PIXELFORMAT_RGBA128_FLOAT,
+        SDL_PIXELFORMAT_YV12, SDL_PIXELFORMAT_UYVY, SDL_PIXELFORMAT_NV12
+    };
+    SDL_Surface *surface;
+    SDL_PixelFormat format;
+    const float MAXIMUM_ERROR_RGB = 0.0001f;
+    const float MAXIMUM_ERROR_YUV = 0.01f;
+    float srcR = 10 / 255.0f, srcG = 128 / 255.0f, srcB = 240 / 255.0f, srcA = 1.0f;
+    float actualR, actualG, actualB, actualA;
+    float deltaR, deltaG, deltaB, deltaA;
+    int i, ret;
+
+    for (i = 0; i < SDL_arraysize(formats); ++i) {
+        const float MAXIMUM_ERROR = SDL_ISPIXELFORMAT_FOURCC(formats[i]) ? MAXIMUM_ERROR_YUV : MAXIMUM_ERROR_RGB;
+
+        format = formats[i];
+
+        surface = SDL_CreateSurface(1, 1, format);
+        SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+        ret = SDL_ClearSurface(surface, srcR, srcG, srcB, srcA);
+        SDLTest_AssertCheck(ret == 0, "SDL_ClearSurface()");
+        ret = SDL_ReadSurfacePixelFloat(surface, 0, 0, &actualR, &actualG, &actualB, &actualA);
+        SDLTest_AssertCheck(ret == 0, "SDL_ReadSurfacePixelFloat()");
+        deltaR = SDL_fabsf(actualR - srcR);
+        deltaG = SDL_fabsf(actualG - srcG);
+        deltaB = SDL_fabsf(actualB - srcB);
+        deltaA = SDL_fabsf(actualA - srcA);
+        SDLTest_AssertCheck(
+            deltaR <= MAXIMUM_ERROR &&
+            deltaG <= MAXIMUM_ERROR &&
+            deltaB <= MAXIMUM_ERROR &&
+            deltaA <= MAXIMUM_ERROR,
+            "Checking %s surface clear results, expected %.4f,%.4f,%.4f,%.4f, got %.4f,%.4f,%.4f,%.4f",
+            SDL_GetPixelFormatName(format),
+            srcR, srcG, srcB, srcA, actualR, actualG, actualB, actualA);
+
+        SDL_DestroySurface(surface);
+    }
+
+    return TEST_COMPLETED;
+}
+
+static int surface_testPremultiplyAlpha(void *arg)
+{
+    SDL_PixelFormat formats[] = {
+        SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_RGBA8888,
+        SDL_PIXELFORMAT_ARGB2101010, SDL_PIXELFORMAT_ABGR2101010,
+        SDL_PIXELFORMAT_ARGB64, SDL_PIXELFORMAT_RGBA64,
+        SDL_PIXELFORMAT_ARGB128_FLOAT, SDL_PIXELFORMAT_RGBA128_FLOAT,
+    };
+    SDL_Surface *surface;
+    SDL_PixelFormat format;
+    const float MAXIMUM_ERROR_LOW_PRECISION = 1 / 255.0f;
+    const float MAXIMUM_ERROR_HIGH_PRECISION = 0.0001f;
+    float srcR = 10 / 255.0f, srcG = 128 / 255.0f, srcB = 240 / 255.0f, srcA = 170 / 255.0f;
+    float expectedR = srcR * srcA;
+    float expectedG = srcG * srcA;
+    float expectedB = srcB * srcA;
+    float actualR, actualG, actualB;
+    float deltaR, deltaG, deltaB;
+    int i, ret;
+
+    for (i = 0; i < SDL_arraysize(formats); ++i) {
+        const float MAXIMUM_ERROR = (SDL_BITSPERPIXEL(formats[i]) > 32) ? MAXIMUM_ERROR_HIGH_PRECISION : MAXIMUM_ERROR_LOW_PRECISION;
+
+        format = formats[i];
+
+        surface = SDL_CreateSurface(1, 1, format);
+        SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+        ret = SDL_SetSurfaceColorspace(surface, SDL_COLORSPACE_SRGB);
+        SDLTest_AssertCheck(ret == 0, "SDL_SetSurfaceColorspace()");
+        ret = SDL_ClearSurface(surface, srcR, srcG, srcB, srcA);
+        SDLTest_AssertCheck(ret == 0, "SDL_ClearSurface()");
+        ret = SDL_PremultiplySurfaceAlpha(surface, SDL_FALSE);
+        SDLTest_AssertCheck(ret == 0, "SDL_PremultiplySurfaceAlpha()");
+        ret = SDL_ReadSurfacePixelFloat(surface, 0, 0, &actualR, &actualG, &actualB, NULL);
+        SDLTest_AssertCheck(ret == 0, "SDL_ReadSurfacePixelFloat()");
+        deltaR = SDL_fabsf(actualR - expectedR);
+        deltaG = SDL_fabsf(actualG - expectedG);
+        deltaB = SDL_fabsf(actualB - expectedB);
+        SDLTest_AssertCheck(
+            deltaR <= MAXIMUM_ERROR &&
+            deltaG <= MAXIMUM_ERROR &&
+            deltaB <= MAXIMUM_ERROR,
+            "Checking %s alpha premultiply results, expected %.4f,%.4f,%.4f, got %.4f,%.4f,%.4f",
+            SDL_GetPixelFormatName(format),
+            expectedR, expectedG, expectedB, actualR, actualG, actualB);
+
+        SDL_DestroySurface(surface);
+    }
+
+    return TEST_COMPLETED;
+}
+
 
 /* ================= Test References ================== */
 
@@ -992,12 +1092,21 @@ static const SDLTest_TestCaseReference surfaceTestPalette = {
     surface_testPalette, "surface_testPalette", "Test surface palette operations.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestClearSurface = {
+    surface_testClearSurface, "surface_testClearSurface", "Test clear surface operations.", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference surfaceTestPremultiplyAlpha = {
+    surface_testPremultiplyAlpha, "surface_testPremultiplyAlpha", "Test alpha premultiply operations.", TEST_ENABLED
+};
+
 /* Sequence of Surface test cases */
 static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTest1, &surfaceTest2, &surfaceTest3, &surfaceTest4, &surfaceTest5,
     &surfaceTest6, &surfaceTest7, &surfaceTest8, &surfaceTest9, &surfaceTest10,
     &surfaceTest11, &surfaceTest12, &surfaceTest13,
-    &surfaceTestOverflow, &surfaceTestFlip, &surfaceTestPalette, NULL
+    &surfaceTestOverflow, &surfaceTestFlip, &surfaceTestPalette,
+    &surfaceTestClearSurface, &surfaceTestPremultiplyAlpha, NULL
 };
 
 /* Surface test suite (global) */
