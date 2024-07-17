@@ -515,13 +515,20 @@ SDL_bool SDL_SurfaceHasColorKey(SDL_Surface *surface)
     return SDL_TRUE;
 }
 
-Uint32 SDL_GetSurfaceColorKey(SDL_Surface *surface)
+int SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key)
 {
     if (!SDL_SurfaceValid(surface)) {
-        return 0;
+        return SDL_InvalidParamError("surface");
     }
 
-    return surface->internal->map.info.colorkey;
+    if (!(surface->internal->map.info.flags & SDL_COPY_COLORKEY)) {
+        return SDL_SetError("Surface doesn't have a colorkey");
+    }
+
+    if (key) {
+        *key = surface->internal->map.info.colorkey;
+    }
+    return 0;
 }
 
 /* This is a fairly slow function to switch from colorkey to alpha
@@ -739,39 +746,40 @@ int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
     return status;
 }
 
-SDL_BlendMode SDL_GetSurfaceBlendMode(SDL_Surface *surface)
+int SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
 {
-    SDL_BlendMode blendMode;
-
     if (!SDL_SurfaceValid(surface)) {
-        SDL_InvalidParamError("surface");
-        return SDL_BLENDMODE_INVALID;
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (!blendMode) {
+        return 0;
     }
 
     switch (surface->internal->map.info.flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL)) {
     case SDL_COPY_BLEND:
-        blendMode = SDL_BLENDMODE_BLEND;
+        *blendMode = SDL_BLENDMODE_BLEND;
         break;
     case SDL_COPY_BLEND_PREMULTIPLIED:
-        blendMode = SDL_BLENDMODE_BLEND_PREMULTIPLIED;
+        *blendMode = SDL_BLENDMODE_BLEND_PREMULTIPLIED;
         break;
     case SDL_COPY_ADD:
-        blendMode = SDL_BLENDMODE_ADD;
+        *blendMode = SDL_BLENDMODE_ADD;
         break;
     case SDL_COPY_ADD_PREMULTIPLIED:
-        blendMode = SDL_BLENDMODE_ADD_PREMULTIPLIED;
+        *blendMode = SDL_BLENDMODE_ADD_PREMULTIPLIED;
         break;
     case SDL_COPY_MOD:
-        blendMode = SDL_BLENDMODE_MOD;
+        *blendMode = SDL_BLENDMODE_MOD;
         break;
     case SDL_COPY_MUL:
-        blendMode = SDL_BLENDMODE_MUL;
+        *blendMode = SDL_BLENDMODE_MUL;
         break;
     default:
-        blendMode = SDL_BLENDMODE_NONE;
+        *blendMode = SDL_BLENDMODE_NONE;
         break;
     }
-    return blendMode;
+    return 0;
 }
 
 SDL_bool SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect)
@@ -1147,7 +1155,7 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
             /* Save source infos */
             SDL_GetSurfaceColorMod(src, &r, &g, &b);
             SDL_GetSurfaceAlphaMod(src, &alpha);
-            blendMode = SDL_GetSurfaceBlendMode(src);
+            SDL_GetSurfaceBlendMode(src, &blendMode);
             srcrect2.x = srcrect->x;
             srcrect2.y = srcrect->y;
             srcrect2.w = srcrect->w;

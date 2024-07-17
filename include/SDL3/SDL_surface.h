@@ -511,14 +511,16 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasColorKey(SDL_Surface *surface
  * If the surface doesn't have color key enabled this function returns -1.
  *
  * \param surface the SDL_Surface structure to query.
- * \returns the transparent pixel.
+ * \param key a pointer filled in with the transparent pixel.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetSurfaceColorKey
  * \sa SDL_SurfaceHasColorKey
  */
-extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface);
+extern SDL_DECLSPEC int SDLCALL SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key);
 
 /**
  * Set an additional color value multiplied into blit operations.
@@ -618,13 +620,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetSurfaceBlendMode(SDL_Surface *surface, SD
  * Get the blend mode used for blit operations.
  *
  * \param surface the SDL_Surface structure to query.
- * \returns the current SDL_BlendMode.
+ * \param blendMode a pointer filled in with the current SDL_BlendMode.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetSurfaceBlendMode
  */
-extern SDL_DECLSPEC SDL_BlendMode SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface *surface);
+extern SDL_DECLSPEC int SDLCALL SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode);
 
 /**
  * Set the clipping rectangle for a surface.

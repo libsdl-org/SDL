@@ -54,8 +54,8 @@ static void surfaceSetUp(void *arg)
         /* Disable blend mode for target surface */
         result = SDL_SetSurfaceBlendMode(testSurface, blendMode);
         SDLTest_AssertCheck(result == 0, "Validate result from SDL_SetSurfaceBlendMode, expected: 0, got: %i", result);
-        currentBlendMode = SDL_GetSurfaceBlendMode(testSurface);
-        SDLTest_AssertCheck(currentBlendMode != SDL_BLENDMODE_INVALID, "Validate result from SDL_GetSurfaceBlendMode, expected: !SDL_BLENDMODE_INVALID, got: 0x%" SDL_PRIx32, currentBlendMode);
+        result = SDL_GetSurfaceBlendMode(testSurface, &currentBlendMode);
+        SDLTest_AssertCheck(result == 0, "Validate result from SDL_GetSurfaceBlendMode, expected: 0, got: %i", result);
         SDLTest_AssertCheck(currentBlendMode == blendMode, "Validate blendMode, expected: %" SDL_PRIu32 ", got: %" SDL_PRIu32, blendMode, currentBlendMode);
     }
 }
