@@ -25,6 +25,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
+#include "../SDL_sysfilesystem.h"
+
 #include <kernel.h>
 #include <swis.h>
 #include <unixlib/local.h>

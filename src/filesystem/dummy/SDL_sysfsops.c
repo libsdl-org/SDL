@@ -23,6 +23,9 @@
 
 #if defined(SDL_FSOPS_DUMMY)
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* System dependent filesystem routines                                */
+
 #include "../SDL_sysfilesystem.h"
 
 int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)

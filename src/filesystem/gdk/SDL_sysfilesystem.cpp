@@ -20,9 +20,10 @@
 */
 #include "SDL_internal.h"
 
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
+
+#include "../SDL_sysfilesystem.h"
 
 #include "../../core/windows/SDL_windows.h"
 #include <SDL3/SDL_hints.h>

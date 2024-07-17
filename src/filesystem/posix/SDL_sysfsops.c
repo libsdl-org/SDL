@@ -23,13 +23,16 @@
 
 #if defined(SDL_FSOPS_POSIX)
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* System dependent filesystem routines                                */
+
+#include "../SDL_sysfilesystem.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <dirent.h>
 #include <sys/stat.h>
-
-#include "../SDL_sysfilesystem.h"
 
 int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {

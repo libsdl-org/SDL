@@ -20,13 +20,15 @@
 */
 #include "SDL_internal.h"
 
-#include <sys/stat.h>
-#include <unistd.h>
-
 #ifdef SDL_FILESYSTEM_PSP
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
+
+#include "../SDL_sysfilesystem.h"
+
+#include <sys/stat.h>
+#include <unistd.h>
 
 char *SDL_SYS_GetBasePath(void)
 {

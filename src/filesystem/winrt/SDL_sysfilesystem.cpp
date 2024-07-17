@@ -25,6 +25,9 @@
 
 #ifdef SDL_PLATFORM_WINRT
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* System dependent filesystem routines                                */
+
 extern "C" {
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysfilesystem.h"
