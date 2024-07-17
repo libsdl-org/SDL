@@ -517,6 +517,10 @@ SDL_bool SDL_SurfaceHasColorKey(SDL_Surface *surface)
 
 int SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key)
 {
+    if (key) {
+        *key = 0;
+    }
+
     if (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
@@ -649,6 +653,15 @@ int SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
 int SDL_GetSurfaceColorMod(SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b)
 {
     if (!SDL_SurfaceValid(surface)) {
+        if (r) {
+            *r = 255;
+        }
+        if (g) {
+            *g = 255;
+        }
+        if (b) {
+            *b = 255;
+        }
         return SDL_InvalidParamError("surface");
     }
 
@@ -689,6 +702,9 @@ int SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
 int SDL_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha)
 {
     if (!SDL_SurfaceValid(surface)) {
+        if (alpha) {
+            *alpha = 255;
+        }
         return SDL_InvalidParamError("surface");
     }
 
@@ -748,6 +764,10 @@ int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
 
 int SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
 {
+    if (blendMode) {
+        *blendMode = SDL_BLENDMODE_INVALID;
+    }
+
     if (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
@@ -808,6 +828,9 @@ SDL_bool SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect)
 int SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
 {
     if (!SDL_SurfaceValid(surface)) {
+        if (rect) {
+            SDL_zerop(rect);
+        }
         return SDL_InvalidParamError("surface");
     }
     if (!rect) {
