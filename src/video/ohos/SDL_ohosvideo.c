@@ -103,6 +103,8 @@ static void OHOS_SetDevice(SDL_VideoDevice *device)
     device->SetWindowPosition = OHOS_SetWindowPosition;
     device->SetWindowSize = OHOS_SetWindowSize;
     device->free = OHOS_DeleteDevice;
+    device->ShowWindow = OHOS_ShowWindow;
+    device->HideWindow = OHOS_HideWindow;
 
     /* GL pointers */
     device->GL_LoadLibrary = OHOS_GLES_LoadLibrary;
@@ -223,9 +225,7 @@ void OHOS_SendResize(SDL_Window *window)
       can be properly resized. The screen resolution change can for
       which can happen after VideoInit().
     */
-    SDL_WindowData *data;
     SDL_VideoDevice *device = SDL_GetVideoDevice();
-    data = (SDL_WindowData*)window->driverdata;
     if (device && device->num_displays > 0) {
         SDL_VideoDisplay *display          = &device->displays[0];
         display->desktop_mode.format       = OHOS_ScreenFormat;
@@ -243,9 +243,6 @@ void OHOS_SendResize(SDL_Window *window)
         display->display_modes[0].h            = g_ohosDeviceHeight;
         display->display_modes[0].refresh_rate = OHOS_ScreenRate;
         display->current_mode                  = display->display_modes[0];
-
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, data->width, data->height);
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, data->x, data->y);
     }
 }
 

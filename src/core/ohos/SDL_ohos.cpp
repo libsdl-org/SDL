@@ -725,13 +725,13 @@ static napi_value OHOS_NAPI_SDLAppEntry(napi_env env, napi_callback_info info)
 
 void OHOS_GetRootNode(int windowId, napi_ref *rootRef)
 {
-    *rootRef = GetRootNode(windowId);
+    *rootRef = SDL_GetRootNode(windowId);
     return;
 }
 
 char *OHOS_GetXComponentId(napi_ref nodeRef)
 {
-    return GetXComponentId(nodeRef);
+    return SDL_GetXComponentId(nodeRef);
 }
 
 void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, WindowPosition *windowPosition)
@@ -741,28 +741,35 @@ void OHOS_AddChildNode(napi_ref nodeRef, napi_ref *childRef, WindowPosition *win
     NodePosition nodePositon(to_string(windowPosition->width), to_string(windowPosition->height),
         to_string(windowPosition->x), to_string(windowPosition->y));
     NodeParams nodeParams(NodeType::XCOMPONENT, &xComponentModel, &nodePositon);
-    *childRef = AddSdlChildNode(nodeRef, &nodeParams);
+    *childRef = SDL_AddSdlChildNode(nodeRef, &nodeParams);
     return;
 }
 
 bool OHOS_RemoveChildNode(napi_ref nodeChildRef)
 {
-    return RemoveSdlChildNode(nodeChildRef);
+    return SDL_RemoveSdlChildNode(nodeChildRef);
 }
 
 bool OHOS_ResizeNode(napi_ref nodeRef, int w, int h)
 {
-    return ResizeNode(nodeRef, to_string(w), to_string(h));
+    return SDL_ResizeNode(nodeRef, to_string(w), to_string(h));
 }
 
 bool OHOS_ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef)
 {
-    return ReParentNode(nodeParentNewRef, nodeChildRef);
+    return SDL_ReParentNode(nodeParentNewRef, nodeChildRef);
 }
 
 bool OHOS_MoveNode(napi_ref nodeRef, int x, int y)
 {
-    return MoveNode(nodeRef, to_string(x), to_string(y));
+    return SDL_MoveNode(nodeRef, to_string(x), to_string(y));
+}
+
+bool OHOS_SetNodeVisibility(napi_ref nodeRef, int n)
+{
+    bool r = false;
+    r = SDL_SetNodeVisibility(nodeRef, n);
+    return r;
 }
 
 napi_value SDLNapi::OHOS_SetWindowId(napi_env env, napi_callback_info info)

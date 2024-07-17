@@ -129,6 +129,11 @@ void OHOS_DestroyWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
     }
 
     SDL_UnlockMutex(g_ohosPageMutex);
+
+    if (((window->flags & SDL_WINDOW_RECREATE) == 0) &&
+        ((window->flags & SDL_WINDOW_FOREIGN_OHOS) == 0)) {
+        OHOS_ClearPluginData(window->xcompentId);
+    }
 }
 
 SDL_bool OHOS_GetWindowWMInfo(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_SysWMinfo *info)
@@ -163,6 +168,16 @@ void OHOS_SetWindowSize(SDL_VideoDevice *thisDevice, SDL_Window *window)
 void OHOS_SetWindowPosition(SDL_VideoDevice *thisDevice, SDL_Window *window)
 {
     OHOS_MoveNode(window->ohosHandle, window->x, window->y);
+}
+
+void OHOS_ShowWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
+{
+    OHOS_SetNodeVisibility(window->ohosHandle, 0);
+}
+
+void OHOS_HideWindow(SDL_VideoDevice *thisDevice, SDL_Window *window)
+{
+    OHOS_SetNodeVisibility(window->ohosHandle, 1);
 }
 
 static void OHOS_WaitGetNativeXcompent(const char *strID, pthread_t tid, OH_NativeXComponent **nativeXComponent)
@@ -213,20 +228,26 @@ int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const
     OH_NativeXComponent *nativeXComponent = NULL;
     SDL_WindowData *windowData = NULL;
     SDL_WindowData *sdlWindowData = NULL;
-    if (data == NULL && window->ohosHandle == NULL) {
+    if (data == NULL && window->ohosHandle == NULL)
         return -1;
-    }
-    if (data != NULL && window->ohosHandle == NULL) {
+    if (data != NULL && window->ohosHandle == NULL)
         window->ohosHandle = data;
-    }
     strID = OHOS_GetXComponentId(window->ohosHandle);
     window->xcompentId = strID;
 
     tid = pthread_self();
-    OHOS_AddXcomPomentIdForThread(strID, tid);
-    OHOS_WaitGetNativeXcompent(strID, tid, &nativeXComponent);
-    OHOS_WaitGetNativeWindow(strID, tid, &windowData, nativeXComponent);
-    
+    if ((window->flags & SDL_WINDOW_RECREATE) == 0) {
+        OHOS_AddXcomPomentIdForThread(strID, tid);
+        OHOS_WaitGetNativeXcompent(strID, tid, &nativeXComponent);
+        OHOS_WaitGetNativeWindow(strID, tid, &windowData, nativeXComponent);
+    } else {
+        OHOS_FindNativeXcomPoment(strID, &nativeXComponent);
+        OHOS_FindNativeWindow(nativeXComponent, &windowData);
+    }
+
+    if (windowData == NULL)
+        return -1;
+	
     sdlWindowData = (SDL_WindowData *)SDL_malloc(sizeof(SDL_WindowData));
     SDL_LockMutex(g_ohosPageMutex);
     OHOS_SetRealWindowPosition(window, windowData);
@@ -235,7 +256,7 @@ int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const
         SDL_free(data);
         goto endfunction;
     }
-    SDL_Log("Successful get windowdata, native_window = %p.", sdlWindowData->native_window);
+
     if ((window->flags & SDL_WINDOW_OPENGL) != 0) {
         if (thisDevice->gl_config.alpha_size == 0) {
             thisDevice->gl_config.alpha_size = OHOS_EGL_ALPHA_SIZE_DEFAULT;

@@ -56,3 +56,15 @@ void OHOS_FindOrCreateThreadLock(pthread_t id, OhosThreadLock **lock)
     SDL_UnlockMutex(g_ohosPageMutex);
     return;
 }
+
+void OHOS_ClearPluginData(char *id)
+{
+    std::string strId(id);
+    OH_NativeXComponent *c = nullptr;
+	
+    SDL_LockMutex(g_ohosPageMutex);
+    pthread_t t = OhosPluginManager::GetInstance()->GetThreadIdFromXComponentId(strId);
+    OhosPluginManager::GetInstance()->FindNativeXcomPoment(strId, &c);
+    OhosPluginManager::GetInstance()->ClearPluginManagerData(strId, c, t);
+    SDL_UnlockMutex(g_ohosPageMutex);
+}

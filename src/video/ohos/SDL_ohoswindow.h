@@ -41,6 +41,8 @@ extern void OHOS_SetWindowPosition(SDL_VideoDevice *thisDevice, SDL_Window *wind
 extern int OHOS_CreateWindowFrom(SDL_VideoDevice *thisDevice, SDL_Window *window, const void *data);
 extern char *OHOS_GetWindowTitle(SDL_VideoDevice *thisDevice, SDL_Window *window);
 extern int SetupWindowData(SDL_VideoDevice *thisDevice, SDL_Window *window, SDL_Window *w, SDL_WindowData *data);
+extern void OHOS_ShowWindow(SDL_VideoDevice *thisDevice, SDL_Window *window);
+extern void OHOS_HideWindow(SDL_VideoDevice *thisDevice, SDL_Window *window);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

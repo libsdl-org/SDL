@@ -45,7 +45,7 @@ static bool ThreadSafeAsyn(cJSON * const root)
     return true;
 }
 
-napi_ref GetRootNode(int windowId)
+napi_ref SDL_GetRootNode(int windowId)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -67,7 +67,7 @@ napi_ref GetRootNode(int windowId)
     return returnValue;
 }
 
-char* GetXComponentId(napi_ref nodeRef)
+char* SDL_GetXComponentId(napi_ref nodeRef)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -90,7 +90,7 @@ char* GetXComponentId(napi_ref nodeRef)
     return returnValue;
 }
 
-napi_ref AddSdlChildNode(napi_ref nodeRef, NodeParams *nodeParams)
+napi_ref SDL_AddSdlChildNode(napi_ref nodeRef, NodeParams *nodeParams)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -113,7 +113,7 @@ napi_ref AddSdlChildNode(napi_ref nodeRef, NodeParams *nodeParams)
     return returnValue;
 }
 
-bool RemoveSdlChildNode(napi_ref nodeChildRef)
+bool SDL_RemoveSdlChildNode(napi_ref nodeChildRef)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -135,7 +135,7 @@ bool RemoveSdlChildNode(napi_ref nodeChildRef)
     return returnValue;
 }
 
-bool SdlRaiseNode(napi_ref nodeRef)
+bool SDL_SdlRaiseNode(napi_ref nodeRef)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -157,7 +157,7 @@ bool SdlRaiseNode(napi_ref nodeRef)
     return returnValue;
 }
 
-bool LowerNode(napi_ref nodeRef)
+bool SDL_LowerNode(napi_ref nodeRef)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -179,7 +179,7 @@ bool LowerNode(napi_ref nodeRef)
     return returnValue;
 }
 
-bool ResizeNode(napi_ref nodeRef, std::string width, std::string height)
+bool SDL_ResizeNode(napi_ref nodeRef, std::string width, std::string height)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -203,7 +203,7 @@ bool ResizeNode(napi_ref nodeRef, std::string width, std::string height)
     return returnValue;
 }
 
-bool ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef)
+bool SDL_ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -226,7 +226,7 @@ bool ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef)
     return returnValue;
 }
 
-bool SetNodeVisibility(napi_ref nodeRef, int visibility)
+bool SDL_SetNodeVisibility(napi_ref nodeRef, int visibility)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -240,7 +240,7 @@ bool SetNodeVisibility(napi_ref nodeRef, int visibility)
     if (cur_thread_id == g_napiCallback->mainThreadId) {
         std::uintptr_t returnValuePointer = reinterpret_cast<std::uintptr_t>(&returnValue);
         cJSON_AddNumberToObject(root, OHOS_JSON_RETURN_VALUE, returnValuePointer);
-        OHOS_TS_RemoveChildNode(root);
+        OHOS_TS_SetNodeVisibility(root);
         cJSON_free(root);
     } else {
         cJSON_AddNumberToObject(root, OHOS_TS_CALLBACK_TYPE, NAPI_CALLBACK_VISIBILITY);
@@ -249,7 +249,7 @@ bool SetNodeVisibility(napi_ref nodeRef, int visibility)
     return returnValue;
 }
 
-NodeRect *GetNodeRect(napi_ref nodeRef)
+NodeRect *SDL_GetNodeRect(napi_ref nodeRef)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
@@ -272,7 +272,7 @@ NodeRect *GetNodeRect(napi_ref nodeRef)
     return returnValue;
 }
 
-bool MoveNode(napi_ref nodeRef, std::string x, std::string y)
+bool SDL_MoveNode(napi_ref nodeRef, std::string x, std::string y)
 {
     cJSON *root = cJSON_CreateObject();
     if (root == NULL) {

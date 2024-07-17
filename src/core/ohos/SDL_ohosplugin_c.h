@@ -31,6 +31,8 @@ OhosThreadLock* OHOS_CreateThreadLock(long *id);
 void OHOS_AddXcomPomentIdForThread(char *xCompentId, pthread_t threadId);
 
 void OHOS_FindOrCreateThreadLock(pthread_t id, OhosThreadLock **lock);
+
+void OHOS_ClearPluginData(char* data);
 /* *INDENT-ON* */
 #endif
 

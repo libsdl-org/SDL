@@ -173,9 +173,13 @@ int OhosPluginManager::ClearPluginManagerData(std::string &id, OH_NativeXCompone
     }
     
     if (threadXcompentList.find(threadId) != threadXcompentList.end()) {
-        for (auto iter = threadXcompentList[threadId].begin(); iter != threadXcompentList[threadId].end(); iter++) {
+        auto iter = threadXcompentList[threadId].begin();
+        int size = threadXcompentList[threadId].size();
+        for (int i = 0; i < size; i++) {
             if (*iter == id) {
-                    threadXcompentList[threadId].erase(iter);
+                iter = threadXcompentList[threadId].erase(iter);
+            } else {
+                iter++;
             }
         }
         if (threadXcompentList[threadId].empty()) {

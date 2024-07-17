@@ -128,35 +128,35 @@ using ThreadLockInfo = struct {
  * @param windowId: Specifies the ID of the window.
  * @return
  */
-napi_ref GetRootNode(int windowId);
+napi_ref SDL_GetRootNode(int windowId);
 
 /**
  * Add a child node to the parent node and returns the child node.
  * @param node: Parent node.
  * @return Child node.
  */
-napi_ref AddSdlChildNode(napi_ref nodeRef, NodeParams *nodeParams);
+napi_ref SDL_AddSdlChildNode(napi_ref nodeRef, NodeParams *nodeParams);
 
 /**
  * Remove a child node from a parent node.
  * @param nodeChild: Child node to be removed.
  * @return An array containing the elements that were deleted.
  */
-bool RemoveSdlChildNode(napi_ref nodeChildRef);
+bool SDL_RemoveSdlChildNode(napi_ref nodeChildRef);
 
 /**
  * Place the node at the top layer.
  * @param node: Indicates the node to be operated
  * @return null
  */
-bool SdlRaiseNode(napi_ref nodeRef);
+bool SDL_SdlRaiseNode(napi_ref nodeRef);
 
 /**
  * Place the node at the bottom layer.
  * @param node: Indicates the node to be operated
  * @return null
  */
-bool LowerNode(napi_ref nodeRef);
+bool SDL_LowerNode(napi_ref nodeRef);
 
 /**
  * Adjusting the Width and Height of a Node.
@@ -165,7 +165,7 @@ bool LowerNode(napi_ref nodeRef);
  * @param height
  * @return null
  */
-bool ResizeNode(napi_ref nodeRef, std::string width, std::string height);
+bool SDL_ResizeNode(napi_ref nodeRef, std::string width, std::string height);
 
 /**
  * Move a child node to another parent node. Cross-window movement is not supported.
@@ -173,7 +173,7 @@ bool ResizeNode(napi_ref nodeRef, std::string width, std::string height);
  * @param nodeChild: Node needs to be Moved
  * @return null
  */
-bool ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef);
+bool SDL_ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef);
 
 /**
  * Modifying the Position of a Node in the Parent Window.
@@ -182,21 +182,21 @@ bool ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef);
  * @param y
  * @return null
  */
-bool MoveNode(napi_ref nodeRef, std::string x, std::string y);
+bool SDL_MoveNode(napi_ref nodeRef, std::string x, std::string y);
 
 /**
  * Set the node to invisible.
  * @param node
  * @return null
  */
-bool SetNodeVisibility(napi_ref nodeRef, int visibility);
+bool SDL_SetNodeVisibility(napi_ref nodeRef, int visibility);
 
 /**
  * Obtaining the Rect of a Node
  * @param node
  * @return {x, y, w, h}
  */
-NodeRect *GetNodeRect(napi_ref nodeRef);
+NodeRect *SDL_GetNodeRect(napi_ref nodeRef);
 
 /**
  * Returns the XComponent object in the specified node.
@@ -205,7 +205,7 @@ NodeRect *GetNodeRect(napi_ref nodeRef);
  * @return OH_NativeXComponent
  * @todo
  */
-char* GetXComponentId(napi_ref nodeRef);
+char* SDL_GetXComponentId(napi_ref nodeRef);
 
 void ThreadSafeSyn(cJSON * const root);
 

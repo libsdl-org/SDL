@@ -298,11 +298,11 @@ void OHOS_TS_SetNodeVisibility(const cJSON *root)
     cJSON *data = cJSON_GetObjectItem(root, OHOS_JSON_VISIBILITY);
     int visibility = data->valueint;
     
-    napi_value argv[OHOS_THREADSAFE_ARG1] = {nullptr};
+    napi_value argv[OHOS_THREADSAFE_ARG2] = {nullptr};
     argv[OHOS_THREADSAFE_ARG0] = OHOS_TS_GetNode(root);
     napi_create_int32(g_napiCallback->env, visibility, &argv[OHOS_THREADSAFE_ARG1]);
     napi_value jsMethod = OHOS_TS_GetJsMethod("setNodeVisibility");
-    napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG1, argv, nullptr);
+    napi_status ret = napi_call_function(g_napiCallback->env, nullptr, jsMethod, OHOS_THREADSAFE_ARG2, argv, nullptr);
     data = cJSON_GetObjectItem(root, OHOS_JSON_RETURN_VALUE);
     if (data != nullptr) {
         long long temp = static_cast<long long>(data->valuedouble);

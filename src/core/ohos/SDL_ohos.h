@@ -75,6 +75,7 @@ extern bool OHOS_RemoveChildNode(napi_ref nodeChildRef);
 extern bool OHOS_ResizeNode(napi_ref nodeRef, int w, int h);
 extern bool OHOS_ReParentNode(napi_ref nodeParentNewRef, napi_ref nodeChildRef);
 extern bool OHOS_MoveNode(napi_ref nodeRef, int x, int y);
+extern bool OHOS_SetNodeVisibility(napi_ref nodeRef, int n);
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 /* *INDENT-OFF* */

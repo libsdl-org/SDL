@@ -2781,6 +2781,7 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
     }
 
     SDL_FinishWindowCreation(window, flags);
+
 #ifdef __OHOS__
     window->flags &= ~SDL_WINDOW_RECREATE;
 #endif
