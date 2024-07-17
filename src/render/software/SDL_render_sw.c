@@ -135,7 +135,9 @@ static int SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     size_t length;
 
     if (SDL_MUSTLOCK(surface)) {
-        SDL_LockSurface(surface);
+        if (SDL_LockSurface(surface) < 0) {
+            return -1;
+        }
     }
     src = (Uint8 *)pixels;
     dst = (Uint8 *)surface->pixels +
@@ -341,7 +343,9 @@ static int SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Tex
      * necessary because this code is going to access the pixel buffer directly.
      */
     if (SDL_MUSTLOCK(src)) {
-        SDL_LockSurface(src);
+        if (SDL_LockSurface(src) < 0) {
+            return -1;
+        }
     }
 
     /* Clone the source surface but use its pixel buffer directly.
