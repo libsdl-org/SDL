@@ -78,11 +78,7 @@ Returns colorkey info for a surface
 */
 static Uint32 get_colorkey(SDL_Surface *src)
 {
-    Uint32 key = 0;
-    if (SDL_SurfaceHasColorKey(src)) {
-        SDL_GetSurfaceColorKey(src, &key);
-    }
-    return key;
+    return SDL_GetSurfaceColorKey(src);
 }
 
 /* rotate (sx, sy) by (angle, center) into (dx, dy) */
@@ -501,9 +497,8 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     }
 
     if (SDL_SurfaceHasColorKey(src)) {
-        if (SDL_GetSurfaceColorKey(src, &colorkey) == 0) {
-            colorKeyAvailable = SDL_TRUE;
-        }
+        colorkey = SDL_GetSurfaceColorKey(src);
+        colorKeyAvailable = SDL_TRUE;
     }
     /* This function requires a 32-bit surface or 8-bit surface with a colorkey */
     is8bit = src->internal->format->bits_per_pixel == 8 && colorKeyAvailable;
@@ -536,7 +531,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     /* Adjust for guard rows */
     rz_dst->h = rect_dest->h;
 
-    SDL_GetSurfaceBlendMode(src, &blendmode);
+    blendmode = SDL_GetSurfaceBlendMode(src);
 
     if (colorKeyAvailable == SDL_TRUE) {
         /* If available, the colorkey will be used to discard the pixels that are outside of the rotated area. */

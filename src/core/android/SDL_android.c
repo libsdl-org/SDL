@@ -2507,22 +2507,19 @@ const char *SDL_GetAndroidInternalStoragePath(void)
     return s_AndroidInternalFilesPath;
 }
 
-int SDL_GetAndroidExternalStorageState(Uint32 *state)
+Uint32 SDL_GetAndroidExternalStorageState(void)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
     jmethodID mid;
     jclass cls;
     jstring stateString;
     const char *state_string;
-    int stateFlags;
+    Uint32 stateFlags;
 
     JNIEnv *env = Android_JNI_GetEnv();
     if (!LocalReferenceHolder_Init(&refs, env)) {
         LocalReferenceHolder_Cleanup(&refs);
-        if (state) {
-            *state = 0;
-        }
-        return -1;
+        return 0;
     }
 
     cls = (*env)->FindClass(env, "android/os/Environment");
@@ -2546,10 +2543,8 @@ int SDL_GetAndroidExternalStorageState(Uint32 *state)
     (*env)->ReleaseStringUTFChars(env, stateString, state_string);
 
     LocalReferenceHolder_Cleanup(&refs);
-    if (state) {
-        *state = stateFlags;
-    }
-    return 0;
+
+    return stateFlags;
 }
 
 // this caches a string until the process ends, so there's no need to use SDL_FreeLater.

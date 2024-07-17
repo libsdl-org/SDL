@@ -524,7 +524,7 @@ int SDL_SW_BlitTriangle(
 
     bounding_rect_fixedpoint(d0, d1, d2, &dstrect);
 
-    SDL_GetSurfaceBlendMode(src, &blend);
+    blend = SDL_GetSurfaceBlendMode(src);
 
     /* TRIANGLE_GET_TEXTCOORD interpolates up to the max values included, so reduce by 1 */
     {

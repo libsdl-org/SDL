@@ -402,9 +402,8 @@ static void testBlendModeOperation(TestRenderOperation op, int mode, SDL_PixelFo
         return;
     }
     if (SDL_ISPIXELFORMAT_ALPHA(dst_format)) {
-        SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
-        ret = SDL_GetTextureBlendMode(dst, &blendMode);
-        SDLTest_AssertCheck(ret == 0, "Verify result from SDL_GetTextureBlendMode(), expected: 0, got: %i", ret);
+        SDL_BlendMode blendMode = SDL_GetTextureBlendMode(dst);
+        SDLTest_AssertCheck(blendMode != SDL_BLENDMODE_INVALID, "Verify result from SDL_GetTextureBlendMode(), expected: !SDL_BLENDMODE_INVALID, got: 0x%" SDL_PRIx32, blendMode);
         SDLTest_AssertCheck(blendMode == SDL_BLENDMODE_BLEND, "Verify alpha texture blend mode, expected %d, got %" SDL_PRIu32, SDL_BLENDMODE_BLEND, blendMode);
     }
 

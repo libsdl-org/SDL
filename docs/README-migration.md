@@ -1269,6 +1269,8 @@ Textures are created with SDL_SCALEMODE_LINEAR by default, and use SDL_BLENDMODE
 
 SDL_QueryTexture() has been removed. The properties of the texture can be queried using SDL_PROP_TEXTURE_FORMAT_NUMBER, SDL_PROP_TEXTURE_ACCESS_NUMBER, SDL_PROP_TEXTURE_WIDTH_NUMBER, and SDL_PROP_TEXTURE_HEIGHT_NUMBER. A function SDL_GetTextureSize() has been added to get the size of the texture as floating point values.
 
+SDL_GetRenderDrawBlendMode(), SDL_GetTextureBlendMode(), and SDL_GetTextureScaleMode() have been changed to return the values directly instead of an int error code.
+
 Mouse and touch events are no longer filtered to change their coordinates, instead you
 can call SDL_ConvertEventToRenderCoordinates() to explicitly map event coordinates into
 the rendering viewport.
@@ -1712,6 +1714,8 @@ SDL_SetSurfaceColorKey() takes an SDL_bool to enable and disable colorkey. RLE a
 
 SDL_SetSurfaceRLE() takes an SDL_bool to enable and disable RLE acceleration.
 
+SDL_GetSurfaceBlendMode() and SDL_GetSurfaceColorKey() have been changed to return the values directly instead of an int error code.
+
 The following functions have been renamed:
 * SDL_BlitScaled() => SDL_BlitSurfaceScaled()
 * SDL_ConvertSurfaceFormat() => SDL_ConvertSurface()
@@ -1748,8 +1752,6 @@ The following symbols have been renamed:
 ## SDL_system.h
 
 SDL_WindowsMessageHook has changed signatures so the message may be modified and it can block further message processing.
-
-SDL_GetAndroidExternalStorageState() takes the state as an output parameter and returns 0 if the function succeeds or a negative error code if there was an error.
 
 SDL_RequestAndroidPermission is no longer a blocking call; the caller now provides a callback function that fires when a response is available.
 
