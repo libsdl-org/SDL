@@ -842,18 +842,18 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 }
 
 /* Lock / Unlock Mutex */
-void Android_ActivityMutex_Lock()
+void Android_ActivityMutex_Lock(void)
 {
     SDL_LockMutex(Android_ActivityMutex);
 }
 
-void Android_ActivityMutex_Unlock()
+void Android_ActivityMutex_Unlock(void)
 {
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
 /* Lock the Mutex when the Activity is in its 'Running' state */
-void Android_ActivityMutex_Lock_Running()
+void Android_ActivityMutex_Lock_Running(void)
 {
     int pauseSignaled = 0;
     int resumeSignaled = 0;
@@ -1439,13 +1439,13 @@ void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint)
     (*env)->DeleteLocalRef(env, jhint);
 }
 
-void Android_JNI_MinizeWindow()
+void Android_JNI_MinizeWindow(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midMinimizeWindow);
 }
 
-SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss()
+SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midShouldMinimizeOnFocusLoss);
@@ -1879,7 +1879,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
     return SDL_FALSE;
 }
 
-static void Internal_Android_Create_AssetManager()
+static void Internal_Android_Create_AssetManager(void)
 {
 
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
@@ -1918,7 +1918,7 @@ static void Internal_Android_Create_AssetManager()
     LocalReferenceHolder_Cleanup(&refs);
 }
 
-static void Internal_Android_Destroy_AssetManager()
+static void Internal_Android_Destroy_AssetManager(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
 
@@ -2153,7 +2153,7 @@ int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seco
 }
 
 /* Add all touch devices */
-void Android_JNI_InitTouch()
+void Android_JNI_InitTouch(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midInitTouch);

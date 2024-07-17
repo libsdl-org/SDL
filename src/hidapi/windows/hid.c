@@ -264,7 +264,7 @@ static void register_error(hid_device *device, const char *op)
 }
 
 #ifndef HIDAPI_USE_DDK
-static int lookup_functions()
+static int lookup_functions(void)
 {
 	lib_handle = LoadLibrary(TEXT("hid.dll"));
 	if (lib_handle) {

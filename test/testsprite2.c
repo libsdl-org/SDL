@@ -392,7 +392,7 @@ void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_RenderPresent(renderer);
 }
 
-static void MoveAllSprites()
+static void MoveAllSprites(void)
 {
     int i;
 
@@ -404,7 +404,7 @@ static void MoveAllSprites()
     }
 }
 
-void loop()
+void loop(void)
 {
     Uint32 now;
     SDL_Event event;

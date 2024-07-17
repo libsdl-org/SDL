@@ -174,7 +174,7 @@ void DrawRects(SDL_Renderer *renderer)
     }
 }
 
-void loop()
+void loop(void)
 {
     Uint32 now;
     int i;

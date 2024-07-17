@@ -133,13 +133,13 @@ static int PS2_JoystickInit(void)
 }
 
 /* Function to return the number of joystick devices plugged in right now */
-static int PS2_JoystickGetCount()
+static int PS2_JoystickGetCount(void)
 {
     return (int)enabled_pads;
 }
 
 /* Function to cause any queued joystick insertions to be processed */
-static void PS2_JoystickDetect()
+static void PS2_JoystickDetect(void)
 {
 }
 

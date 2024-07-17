@@ -325,7 +325,7 @@ int done;
 Uint32 frames;
 shader_data *datas;
 
-void loop()
+void loop(void)
 {
     SDL_Event event;
     int i;

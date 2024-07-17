@@ -223,7 +223,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageFace = {
 /**
  * \brief Returns the Face test image as SDL_Surface.
  */
-SDL_Surface *SDLTest_ImageFace()
+SDL_Surface *SDLTest_ImageFace(void)
 {
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imageFace.pixel_data,

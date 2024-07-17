@@ -77,7 +77,7 @@ static struct
 
 #undef SDL_FS_SYM
 
-static void UnloadFusionSoundLibrary()
+static void UnloadFusionSoundLibrary(void)
 {
     if (fs_handle) {
         SDL_UnloadObject(fs_handle);
@@ -110,7 +110,7 @@ static int LoadFusionSoundLibrary(void)
 
 #else
 
-static void UnloadFusionSoundLibrary()
+static void UnloadFusionSoundLibrary(void)
 {
     return;
 }

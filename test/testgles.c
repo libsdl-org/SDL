@@ -49,7 +49,7 @@ quit(int rc)
 }
 
 static void
-Render()
+Render(void)
 {
     static GLubyte color[8][4] = { { 255, 0, 0, 0 },
                                    { 255, 0, 0, 255 },
