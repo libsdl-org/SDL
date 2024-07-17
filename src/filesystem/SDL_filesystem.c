@@ -20,6 +20,8 @@
 */
 
 #include "SDL_internal.h"
+
+#include "SDL_filesystem_c.h"
 #include "SDL_sysfilesystem.h"
 #include "../stdlib/SDL_sysstdlib.h"
 
