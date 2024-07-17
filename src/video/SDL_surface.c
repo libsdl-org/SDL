@@ -1769,40 +1769,18 @@ int SDL_ConvertPixels(int width, int height,
 /*
  * Premultiply the alpha on a block of pixels
  *
- * This is currently only implemented for SDL_PIXELFORMAT_ARGB8888
- *
  * Here are some ideas for optimization:
  * https://github.com/Wizermil/premultiply_alpha/tree/master/premultiply_alpha
  * https://developer.arm.com/documentation/101964/0201/Pre-multiplied-alpha-channel-data
  */
-int SDL_PremultiplyAlpha(int width, int height,
-                         SDL_PixelFormat src_format, const void *src, int src_pitch,
-                         SDL_PixelFormat dst_format, void *dst, int dst_pitch)
+
+static void SDL_PremultiplyAlpha_AXYZ8888(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {
     int c;
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-
-    if (!src) {
-        return SDL_InvalidParamError("src");
-    }
-    if (!src_pitch) {
-        return SDL_InvalidParamError("src_pitch");
-    }
-    if (!dst) {
-        return SDL_InvalidParamError("dst");
-    }
-    if (!dst_pitch) {
-        return SDL_InvalidParamError("dst_pitch");
-    }
-    if (src_format != SDL_PIXELFORMAT_ARGB8888) {
-        return SDL_InvalidParamError("src_format");
-    }
-    if (dst_format != SDL_PIXELFORMAT_ARGB8888) {
-        return SDL_InvalidParamError("dst_format");
-    }
 
     while (height--) {
         const Uint32 *src_px = (const Uint32 *)src;
@@ -1825,7 +1803,192 @@ int SDL_PremultiplyAlpha(int width, int height,
         src = (const Uint8 *)src + src_pitch;
         dst = (Uint8 *)dst + dst_pitch;
     }
-    return 0;
+}
+
+static void SDL_PremultiplyAlpha_XYZA8888(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    int c;
+    Uint32 srcpixel;
+    Uint32 srcR, srcG, srcB, srcA;
+    Uint32 dstpixel;
+    Uint32 dstR, dstG, dstB, dstA;
+
+    while (height--) {
+        const Uint32 *src_px = (const Uint32 *)src;
+        Uint32 *dst_px = (Uint32 *)dst;
+        for (c = width; c; --c) {
+            /* Component bytes extraction. */
+            srcpixel = *src_px++;
+            RGBA_FROM_RGBA8888(srcpixel, srcR, srcG, srcB, srcA);
+
+            /* Alpha pre-multiplication of each component. */
+            dstA = srcA;
+            dstR = (srcA * srcR) / 255;
+            dstG = (srcA * srcG) / 255;
+            dstB = (srcA * srcB) / 255;
+
+            /* RGBA8888 pixel recomposition. */
+            RGBA8888_FROM_RGBA(dstpixel, dstR, dstG, dstB, dstA);
+            *dst_px++ = dstpixel;
+        }
+        src = (const Uint8 *)src + src_pitch;
+        dst = (Uint8 *)dst + dst_pitch;
+    }
+}
+
+static void SDL_PremultiplyAlpha_AXYZ128(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    int c;
+    float flR, flG, flB, flA;
+
+    while (height--) {
+        const float *src_px = (const float *)src;
+        float *dst_px = (float *)dst;
+        for (c = width; c; --c) {
+            flA = *src_px++;
+            flR = *src_px++;
+            flG = *src_px++;
+            flB = *src_px++;
+
+            /* Alpha pre-multiplication of each component. */
+            flR *= flA;
+            flG *= flA;
+            flB *= flA;
+
+            *dst_px++ = flA;
+            *dst_px++ = flR;
+            *dst_px++ = flG;
+            *dst_px++ = flB;
+        }
+        src = (const Uint8 *)src + src_pitch;
+        dst = (Uint8 *)dst + dst_pitch;
+    }
+}
+
+static int SDL_PremultiplyAlphaPixelsAndColorspace(int width, int height, SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch, SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch, SDL_bool linear)
+{
+    SDL_Surface *convert = NULL;
+    void *final_dst = dst;
+    int final_dst_pitch = dst_pitch;
+    SDL_PixelFormat format;
+    SDL_Colorspace colorspace;
+    int result = -1;
+
+    if (!src) {
+        return SDL_InvalidParamError("src");
+    }
+    if (!src_pitch) {
+        return SDL_InvalidParamError("src_pitch");
+    }
+    if (!dst) {
+        return SDL_InvalidParamError("dst");
+    }
+    if (!dst_pitch) {
+        return SDL_InvalidParamError("dst_pitch");
+    }
+
+    // Use a high precision format if we're converting to linear colorspace or using high precision pixel formats
+    if (linear ||
+        SDL_ISPIXELFORMAT_10BIT(src_format) || SDL_BITSPERPIXEL(src_format) > 32 ||
+        SDL_ISPIXELFORMAT_10BIT(dst_format) || SDL_BITSPERPIXEL(dst_format) > 32) {
+        if (src_format == SDL_PIXELFORMAT_ARGB128_FLOAT ||
+            src_format == SDL_PIXELFORMAT_ABGR128_FLOAT) {
+            format = src_format;
+        } else {
+            format = SDL_PIXELFORMAT_ARGB128_FLOAT;
+        }
+    } else {
+        if (src_format == SDL_PIXELFORMAT_ARGB8888 ||
+            src_format == SDL_PIXELFORMAT_ABGR8888 ||
+            src_format == SDL_PIXELFORMAT_RGBA8888 ||
+            src_format == SDL_PIXELFORMAT_BGRA8888) {
+            format = src_format;
+        } else {
+            format = SDL_PIXELFORMAT_ARGB8888;
+        }
+    }
+    if (linear) {
+        colorspace = SDL_COLORSPACE_SRGB_LINEAR;
+    } else {
+        colorspace = SDL_COLORSPACE_SRGB;
+    }
+
+    if (src_format != format || src_colorspace != colorspace) {
+        convert = SDL_CreateSurface(width, height, format);
+        if (!convert) {
+            goto done;
+        }
+        if (SDL_ConvertPixelsAndColorspace(width, height, src_format, src_colorspace, src_properties, src, src_pitch, format, colorspace, 0, convert->pixels, convert->pitch) < 0) {
+            goto done;
+        }
+
+        src = convert->pixels;
+        src_pitch = convert->pitch;
+        dst = convert->pixels;
+        dst_pitch = convert->pitch;
+
+    } else if (dst_format != format || dst_colorspace != colorspace) {
+        convert = SDL_CreateSurface(width, height, format);
+        if (!convert) {
+            goto done;
+        }
+        dst = convert->pixels;
+        dst_pitch = convert->pitch;
+    }
+
+    switch (format) {
+    case SDL_PIXELFORMAT_ARGB8888:
+    case SDL_PIXELFORMAT_ABGR8888:
+        SDL_PremultiplyAlpha_AXYZ8888(width, height, src, src_pitch, dst, dst_pitch);
+        break;
+    case SDL_PIXELFORMAT_RGBA8888:
+    case SDL_PIXELFORMAT_BGRA8888:
+        SDL_PremultiplyAlpha_XYZA8888(width, height, src, src_pitch, dst, dst_pitch);
+        break;
+    case SDL_PIXELFORMAT_ARGB128_FLOAT:
+    case SDL_PIXELFORMAT_ABGR128_FLOAT:
+        SDL_PremultiplyAlpha_AXYZ128(width, height, src, src_pitch, dst, dst_pitch);
+        break;
+    default:
+        SDL_SetError("Unexpected internal pixel format");
+        goto done;
+    }
+
+    if (dst != final_dst) {
+        if (SDL_ConvertPixelsAndColorspace(width, height, format, colorspace, 0, convert->pixels, convert->pitch, dst_format, dst_colorspace, dst_properties, final_dst, final_dst_pitch) < 0) {
+            goto done;
+        }
+    }
+    result = 0;
+
+done:
+    if (convert) {
+        SDL_DestroySurface(convert);
+    }
+    return result;
+}
+
+int SDL_PremultiplyAlpha(int width, int height,
+                         SDL_PixelFormat src_format, const void *src, int src_pitch,
+                         SDL_PixelFormat dst_format, void *dst, int dst_pitch, SDL_bool linear)
+{
+    SDL_Colorspace src_colorspace = SDL_GetDefaultColorspaceForFormat(src_format);
+    SDL_Colorspace dst_colorspace = SDL_GetDefaultColorspaceForFormat(dst_format);
+
+    return SDL_PremultiplyAlphaPixelsAndColorspace(width, height, src_format, src_colorspace, 0, src, src_pitch, dst_format, dst_colorspace, 0, dst, dst_pitch, linear);
+}
+
+int SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, SDL_bool linear)
+{
+    SDL_Colorspace colorspace;
+
+    if (!SDL_SurfaceValid(surface)) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    colorspace = SDL_GetSurfaceColorspace(surface);
+
+    return SDL_PremultiplyAlphaPixelsAndColorspace(surface->w, surface->h, surface->format, colorspace, surface->internal->props, surface->pixels, surface->pitch, surface->format, colorspace, surface->internal->props, surface->pixels, surface->pitch, linear);
 }
 
 Uint32 SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)

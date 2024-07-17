@@ -610,6 +610,7 @@ SDL3_0.0.0 {
     SDL_PollEvent;
     SDL_PostSemaphore;
     SDL_PremultiplyAlpha;
+    SDL_PremultiplySurfaceAlpha;
     SDL_PumpEvents;
     SDL_PushEvent;
     SDL_PutAudioStreamData;

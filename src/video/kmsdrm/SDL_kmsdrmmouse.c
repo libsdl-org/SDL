@@ -267,7 +267,7 @@ static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_
        straight-alpha pixels, so we always have to convert. */
     SDL_PremultiplyAlpha(surface->w, surface->h,
                          surface->format, surface->pixels, surface->pitch,
-                         SDL_PIXELFORMAT_ARGB8888, curdata->buffer, surface->w * 4);
+                         SDL_PIXELFORMAT_ARGB8888, curdata->buffer, surface->w * 4, SDL_TRUE);
 
     cursor->internal = curdata;
 
