@@ -426,8 +426,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidInternalStoragePath(void);
  *
  * If external storage is currently unavailable, this will return 0.
  *
- * \returns the current state of external storage, or 0 if
- *              external storage is currently unavailable.
+ * \returns the current state of external storage, or 0 if external storage is
+ *          currently unavailable.
  *
  * \since This function is available since SDL 3.0.0.
  *
