@@ -794,8 +794,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixelsAndColorspace(int width, int he
  *
  * This is safe to use with src == dst, but not for other overlapping areas.
  *
- * This function is currently only implemented for SDL_PIXELFORMAT_ARGB8888.
- *
  * \param width the width of the block to convert, in pixels.
  * \param height the height of the block to convert, in pixels.
  * \param src_format an SDL_PixelFormat value of the `src` pixels format.
@@ -804,12 +802,27 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixelsAndColorspace(int width, int he
  * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
  * \param dst a pointer to be filled in with premultiplied pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
+ * \param linear SDL_TRUE to convert from sRGB to linear space for the alpha multiplication, SDL_FALSE to do multiplication in sRGB space.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch);
+extern SDL_DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch, SDL_bool linear);
+
+/**
+ * Premultiply the alpha in a surface.
+ *
+ * This is safe to use with src == dst, but not for other overlapping areas.
+ *
+ * \param surface the surface to modify.
+ * \param linear SDL_TRUE to convert from sRGB to linear space for the alpha multiplication, SDL_FALSE to do multiplication in sRGB space.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, SDL_bool linear);
 
 /**
  * Perform a fast fill of a rectangle with a specific color.

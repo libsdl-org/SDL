@@ -635,6 +635,7 @@
 #define SDL_PollEvent SDL_PollEvent_REAL
 #define SDL_PostSemaphore SDL_PostSemaphore_REAL
 #define SDL_PremultiplyAlpha SDL_PremultiplyAlpha_REAL
+#define SDL_PremultiplySurfaceAlpha SDL_PremultiplySurfaceAlpha_REAL
 #define SDL_PumpEvents SDL_PumpEvents_REAL
 #define SDL_PushEvent SDL_PushEvent_REAL
 #define SDL_PutAudioStreamData SDL_PutAudioStreamData_REAL
