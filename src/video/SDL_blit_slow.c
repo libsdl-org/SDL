@@ -26,7 +26,6 @@
 
 typedef enum
 {
-    SlowBlitPixelAccess_Unknown,
     SlowBlitPixelAccess_Index8,
     SlowBlitPixelAccess_RGB,
     SlowBlitPixelAccess_RGBA,
@@ -95,8 +94,6 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
             src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
 
             switch (src_access) {
-            case SlowBlitPixelAccess_Unknown:
-                break;
             case SlowBlitPixelAccess_Index8:
                 srcpixel = *src;
                 srcR = src_pal->colors[srcpixel].r;
@@ -151,8 +148,6 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
             }
             if ((flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL))) {
                 switch (dst_access) {
-                case SlowBlitPixelAccess_Unknown:
-                    break;
                 case SlowBlitPixelAccess_Index8:
                     dstpixel = *dst;
                     dstR = dst_pal->colors[dstpixel].r;
@@ -279,8 +274,6 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
             }
 
             switch (dst_access) {
-            case SlowBlitPixelAccess_Unknown:
-                break;
             case SlowBlitPixelAccess_Index8:
                 RGB332_FROM_RGB(dstpixel, dstR, dstG, dstB);
                 if (info->table) {
@@ -431,8 +424,6 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_
     float v[4];
 
     switch (access) {
-    case SlowBlitPixelAccess_Unknown:
-        break;
     case SlowBlitPixelAccess_Index8:
         pixel = *pixels;
         fR = (float)pal->colors[pixel].r / 255.0f;
@@ -616,8 +607,6 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL
     }
 
     switch (access) {
-    case SlowBlitPixelAccess_Unknown:
-        break;
     case SlowBlitPixelAccess_Index8:
         R = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 7.0f);
         G = (Uint8)SDL_roundf(SDL_clamp(fG, 0.0f, 1.0f) * 7.0f);
