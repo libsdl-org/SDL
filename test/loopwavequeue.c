@@ -48,7 +48,7 @@ void poked(int sig)
     done = 1;
 }
 
-void loop()
+void loop(void)
 {
 #ifdef __EMSCRIPTEN__
     if (done || (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)) {

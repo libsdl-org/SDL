@@ -95,7 +95,7 @@ void DrawOnViewport(SDL_Renderer *renderer)
     SDL_RenderSetClipRect(renderer, NULL);
 }
 
-void loop()
+void loop(void)
 {
     SDL_Event event;
     int i;

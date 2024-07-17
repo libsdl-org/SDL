@@ -677,7 +677,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imagePrimitivesBlend = {
 /**
  * \brief Returns the PrimitivesBlend test image as SDL_Surface.
  */
-SDL_Surface *SDLTest_ImagePrimitivesBlend()
+SDL_Surface *SDLTest_ImagePrimitivesBlend(void)
 {
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imagePrimitivesBlend.pixel_data,

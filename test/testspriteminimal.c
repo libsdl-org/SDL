@@ -43,7 +43,7 @@ quit(int rc)
     exit(rc);
 }
 
-void MoveSprites()
+void MoveSprites(void)
 {
     int i;
     int window_w = WINDOW_WIDTH;
@@ -77,7 +77,7 @@ void MoveSprites()
     SDL_RenderPresent(renderer);
 }
 
-void loop()
+void loop(void)
 {
     SDL_Event event;
 

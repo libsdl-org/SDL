@@ -41,7 +41,7 @@ extern "C" {
  */
 static SDL_bool s_bXInputEnabled = SDL_TRUE;
 
-static SDL_bool SDL_XInputUseOldJoystickMapping()
+static SDL_bool SDL_XInputUseOldJoystickMapping(void)
 {
 #ifdef __WINRT__
     /* TODO: remove this __WINRT__ block, but only after integrating with UWP/WinRT's HID API */

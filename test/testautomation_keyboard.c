@@ -102,7 +102,7 @@ int keyboard_getKeyFromName(void *arg)
 /*
  * Local helper to check for the invalid scancode error message
  */
-void _checkInvalidScancodeError()
+void _checkInvalidScancodeError(void)
 {
     const char *expectedError = "Parameter 'scancode' is invalid";
     const char *error;
@@ -574,7 +574,7 @@ int keyboard_getScancodeFromName(void *arg)
 /*
  * Local helper to check for the invalid scancode error message
  */
-void _checkInvalidNameError()
+void _checkInvalidNameError(void)
 {
     const char *expectedError = "Parameter 'name' is invalid";
     const char *error;

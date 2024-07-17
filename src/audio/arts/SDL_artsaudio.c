@@ -86,7 +86,7 @@ static struct
 
 #undef SDL_ARTS_SYM
 
-static void UnloadARTSLibrary()
+static void UnloadARTSLibrary(void)
 {
     if (arts_handle) {
         SDL_UnloadObject(arts_handle);
@@ -119,7 +119,7 @@ static int LoadARTSLibrary(void)
 
 #else
 
-static void UnloadARTSLibrary()
+static void UnloadARTSLibrary(void)
 {
     return;
 }

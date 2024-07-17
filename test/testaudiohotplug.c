@@ -81,7 +81,7 @@ devtypestr(int iscapture)
 }
 
 static void
-iteration()
+iteration(void)
 {
     SDL_Event e;
     SDL_AudioDeviceID dev;
@@ -124,7 +124,7 @@ iteration()
 }
 
 #ifdef __EMSCRIPTEN__
-void loop()
+void loop(void)
 {
     if (done)
         emscripten_cancel_main_loop();

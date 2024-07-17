@@ -23,7 +23,7 @@
 #undef main
 #endif
 
-__attribute__((weak)) void reset_IOP()
+__attribute__((weak)) void reset_IOP(void)
 {
     SifInitRpc(0);
     while (!SifIopReset(NULL, 0)) {
@@ -32,7 +32,7 @@ __attribute__((weak)) void reset_IOP()
     }
 }
 
-static void prepare_IOP()
+static void prepare_IOP(void)
 {
     reset_IOP();
     SifInitRpc(0);
@@ -41,12 +41,12 @@ static void prepare_IOP()
     sbv_patch_fileio();
 }
 
-static void init_drivers()
+static void init_drivers(void)
 {
 	init_ps2_filesystem_driver();
 }
 
-static void deinit_drivers()
+static void deinit_drivers(void)
 {
 	deinit_ps2_filesystem_driver();
 }

@@ -107,7 +107,7 @@ print_modifiers(char **text, size_t *maxlen)
 }
 
 static void
-PrintModifierState()
+PrintModifierState(void)
 {
     char message[512];
     char *spot;
@@ -166,7 +166,7 @@ PrintText(const char *eventtype, const char *text)
     SDL_Log("%s Text (%s): \"%s%s\"\n", eventtype, expanded, *text == '"' ? "\\" : "", text);
 }
 
-void loop()
+void loop(void)
 {
     SDL_Event event;
     /* Check for events */

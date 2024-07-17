@@ -53,7 +53,7 @@ play_through_once(void *arg, Uint8 *stream, int len)
     }
 }
 
-void loop()
+void loop(void)
 {
     if (SDL_AtomicGet(&cbd[0].done)) {
 #ifdef __EMSCRIPTEN__

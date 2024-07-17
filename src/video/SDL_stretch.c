@@ -367,7 +367,7 @@ static void printf_128(const char *str, __m128i var)
 }
 #endif
 
-static SDL_INLINE int hasSSE2()
+static SDL_INLINE int hasSSE2(void)
 {
     static int val = -1;
     if (val != -1) {

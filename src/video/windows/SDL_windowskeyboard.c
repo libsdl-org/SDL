@@ -166,7 +166,7 @@ void WIN_QuitKeyboard(_THIS)
 #endif /* !SDL_DISABLE_WINDOWS_IME */
 }
 
-void WIN_ResetDeadKeys()
+void WIN_ResetDeadKeys(void)
 {
     /*
     if a deadkey has been typed, but not the next character (which the deadkey might modify),
@@ -367,7 +367,7 @@ static void UILess_ReleaseSinks(SDL_VideoData *videodata);
 static void UILess_EnableUIUpdates(SDL_VideoData *videodata);
 static void UILess_DisableUIUpdates(SDL_VideoData *videodata);
 
-static SDL_bool WIN_ShouldShowNativeUI()
+static SDL_bool WIN_ShouldShowNativeUI(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_IME_SHOW_UI, SDL_FALSE);
 }

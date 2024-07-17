@@ -540,7 +540,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlit = {
 /**
  * \brief Returns the Blit test image as SDL_Surface.
  */
-SDL_Surface *SDLTest_ImageBlit()
+SDL_Surface *SDLTest_ImageBlit(void)
 {
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imageBlit.pixel_data,
@@ -1014,7 +1014,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitColor = {
 /**
  * \brief Returns the BlitColor test image as SDL_Surface.
  */
-SDL_Surface *SDLTest_ImageBlitColor()
+SDL_Surface *SDLTest_ImageBlitColor(void)
 {
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imageBlitColor.pixel_data,
@@ -1651,7 +1651,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imageBlitAlpha = {
 /**
  * \brief Returns the BlitAlpha test image as SDL_Surface.
  */
-SDL_Surface *SDLTest_ImageBlitAlpha()
+SDL_Surface *SDLTest_ImageBlitAlpha(void)
 {
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imageBlitAlpha.pixel_data,

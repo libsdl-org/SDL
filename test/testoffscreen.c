@@ -32,7 +32,7 @@ static int width = 640;
 static int height = 480;
 static unsigned int max_frames = 200;
 
-void draw()
+void draw(void)
 {
     SDL_Rect Rect;
 
@@ -50,7 +50,7 @@ void draw()
     SDL_RenderPresent(renderer);
 }
 
-void save_surface_to_bmp()
+void save_surface_to_bmp(void)
 {
     SDL_Surface *surface;
     Uint32 r_mask, g_mask, b_mask, a_mask;
@@ -71,7 +71,7 @@ void save_surface_to_bmp()
     SDL_FreeSurface(surface);
 }
 
-void loop()
+void loop(void)
 {
     SDL_Event event;
 

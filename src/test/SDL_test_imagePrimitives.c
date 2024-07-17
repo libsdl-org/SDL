@@ -504,7 +504,7 @@ static const SDLTest_SurfaceImage_t SDLTest_imagePrimitives = {
 /**
  * \brief Returns the Primitives test image as SDL_Surface.
  */
-SDL_Surface *SDLTest_ImagePrimitives()
+SDL_Surface *SDLTest_ImagePrimitives(void)
 {
     SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)SDLTest_imagePrimitives.pixel_data,

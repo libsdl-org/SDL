@@ -40,7 +40,7 @@ static void subsystemsTearDown(void *arg)
  * \sa SDL_QuitSubSystem
  *
  */
-static int subsystems_referenceCount()
+static int subsystems_referenceCount(void)
 {
     const int system = SDL_INIT_VIDEO;
     int result;
@@ -90,7 +90,7 @@ static int subsystems_referenceCount()
  * \sa SDL_QuitSubSystem
  *
  */
-static int subsystems_dependRefCountInitAllQuitByOne()
+static int subsystems_dependRefCountInitAllQuitByOne(void)
 {
     int result;
     /* Ensure that we start with reset subsystems. */
@@ -128,7 +128,7 @@ static int subsystems_dependRefCountInitAllQuitByOne()
  * \sa SDL_QuitSubSystem
  *
  */
-static int subsystems_dependRefCountInitByOneQuitAll()
+static int subsystems_dependRefCountInitByOneQuitAll(void)
 {
     int result;
     /* Ensure that we start with reset subsystems. */
@@ -163,7 +163,7 @@ static int subsystems_dependRefCountInitByOneQuitAll()
  * \sa SDL_QuitSubSystem
  *
  */
-static int subsystems_dependRefCountWithExtraInit()
+static int subsystems_dependRefCountWithExtraInit(void)
 {
     int result;
     /* Ensure that we start with reset subsystems. */

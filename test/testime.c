@@ -333,7 +333,7 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_Rect *dst
     return unifontGlyph[codepoint].width;
 }
 
-static void unifont_cleanup()
+static void unifont_cleanup(void)
 {
     int i, j;
     for (i = 0; i < state->num_windows; ++i) {
@@ -425,12 +425,12 @@ Uint32 utf8_decode(char *p, size_t len)
     return codepoint;
 }
 
-void usage()
+void usage(void)
 {
     SDL_Log("usage: testime [--font fontfile]\n");
 }
 
-void InitInput()
+void InitInput(void)
 {
     /* Prepare a rect for text input */
     textRect.x = textRect.y = 100;
@@ -444,7 +444,7 @@ void InitInput()
     SDL_StartTextInput();
 }
 
-void CleanupVideo()
+void CleanupVideo(void)
 {
     SDL_StopTextInput();
 #ifdef HAVE_SDL_TTF
@@ -597,7 +597,7 @@ void _Redraw(int rendererID)
     SDL_SetTextInputRect(&markedRect);
 }
 
-void Redraw()
+void Redraw(void)
 {
     int i;
     for (i = 0; i < state->num_windows; ++i) {
