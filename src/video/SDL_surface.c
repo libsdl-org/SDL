@@ -1354,7 +1354,6 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     int ret;
     SDL_bool palette_ck_transform = SDL_FALSE;
     Uint8 palette_ck_value = 0;
-    SDL_bool palette_has_alpha = SDL_FALSE;
     Uint8 *palette_saved_alpha = NULL;
     int palette_saved_alpha_ncolors = 0;
 
@@ -1449,8 +1448,6 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
             if (!has_alpha_channel) {
                 set_opaque = SDL_TRUE;
             }
-        } else {
-            palette_has_alpha = SDL_TRUE;
         }
 
         /* Set opaque and backup palette alpha values */
@@ -1471,7 +1468,6 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     if (copy_flags & SDL_COPY_COLORKEY) {
         if (surface->internal->palette && !palette) {
             palette_ck_transform = SDL_TRUE;
-            palette_has_alpha = SDL_TRUE;
             palette_ck_value = surface->internal->palette->colors[surface->internal->map.info.colorkey].a;
             surface->internal->palette->colors[surface->internal->map.info.colorkey].a = SDL_ALPHA_TRANSPARENT;
         }
@@ -1592,8 +1588,7 @@ end:
 
     /* Enable alpha blending by default if the new surface has an
      * alpha channel or alpha modulation */
-    if ((SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_ISPIXELFORMAT_ALPHA(format)) ||
-        (palette_has_alpha && SDL_ISPIXELFORMAT_ALPHA(format)) ||
+    if (SDL_ISPIXELFORMAT_ALPHA(format) ||
         (copy_flags & SDL_COPY_MODULATE_ALPHA)) {
         SDL_SetSurfaceBlendMode(convert, SDL_BLENDMODE_BLEND);
     }
