@@ -17,10 +17,9 @@
   "buildOption": {
     "externalNativeOptions": {
       "path": "./src/main/cpp/CMakeLists.txt",
-      "arguments": "-v -DOHOS_STL=c++_shared -DSDL_TESTS=ON",
+      "arguments": "-DOHOS_STL=c++_shared -DSDL_TESTS=ON",
       "abiFilters": [
         "arm64-v8a",
-        "armeabi-v7a",
         "x86_64"
       ],
       "cppFlags": "",
