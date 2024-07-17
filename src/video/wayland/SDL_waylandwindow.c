@@ -1963,6 +1963,11 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
         }
     }
 
+    data->double_buffer = SDL_FALSE;
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
+        data->double_buffer = SDL_TRUE;
+    }
+
     data->outputs = NULL;
     data->num_outputs = 0;
 
