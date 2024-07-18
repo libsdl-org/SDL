@@ -250,7 +250,7 @@ WASAPI doesn't need this. This is just for DirectSound/WinMM.
 char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
 #if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    return WIN_StringToUTF8(name); /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
+    return WIN_StringToUTF8W(name); /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
 #else
     static const GUID nullguid = { 0 };
     const unsigned char *ptr;
