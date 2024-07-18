@@ -156,7 +156,7 @@ typedef enum SDL_PenSubtype
  *
  * \param count the number of pens in the array (number of array elements
  *              minus 1, i.e., not counting the terminator 0).
- * \returns a 0 terminated array of SDL_PenID values, or NULL on error. The
+ * \returns a 0 terminated array of SDL_PenID values, or NULL on failure. The
  *          array must be freed with SDL_free(). On a NULL return,
  *          SDL_GetError() is set.
  *

@@ -86,8 +86,8 @@ typedef struct SDL_Finger
  * \param count a pointer filled in with the number of devices returned, can
  *              be NULL.
  * \returns a 0 terminated array of touch device IDs which should be freed
- *          with SDL_free(), or NULL on error; call SDL_GetError() for more
- *          details.
+ *          with SDL_free(), or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -99,8 +99,8 @@ extern SDL_DECLSPEC SDL_TouchID *SDLCALL SDL_GetTouchDevices(int *count);
  * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param touchID the touch device instance ID.
- * \returns touch device name, or NULL on error; call SDL_GetError() for more
- *          details.
+ * \returns touch device name, or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -123,8 +123,8 @@ extern SDL_DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_Touch
  * \param count a pointer filled in with the number of fingers returned, can
  *              be NULL.
  * \returns a NULL terminated array of SDL_Finger pointers which should be
- *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
- *          more details.
+ *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

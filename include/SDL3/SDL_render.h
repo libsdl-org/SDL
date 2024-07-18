@@ -327,8 +327,7 @@ extern SDL_DECLSPEC SDL_Window *SDLCALL SDL_GetRenderWindow(SDL_Renderer *render
  * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param renderer the rendering context.
- * \returns the name of the selected renderer, or NULL if the renderer is
- *          invalid.
+ * \returns the name of the selected renderer, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1705,7 +1704,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderClear(SDL_Renderer *renderer);
  * \param renderer the renderer which should draw a point.
  * \param x the x coordinate of the point.
  * \param y the y coordinate of the point.
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1736,7 +1736,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderPoints(SDL_Renderer *renderer, const S
  * \param y1 the y coordinate of the start point.
  * \param x2 the x coordinate of the end point.
  * \param y2 the y coordinate of the end point.
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1766,7 +1767,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderLines(SDL_Renderer *renderer, const SD
  * \param renderer the renderer which should draw a rectangle.
  * \param rect a pointer to the destination rectangle, or NULL to outline the
  *             entire rendering target.
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *            SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1797,7 +1799,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderRects(SDL_Renderer *renderer, const SD
  * \param renderer the renderer which should fill a rectangle.
  * \param rect a pointer to the destination rectangle, or NULL for the entire
  *             rendering target.
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *            SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1831,7 +1834,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer *renderer, cons
  *                texture.
  * \param dstrect a pointer to the destination rectangle, or NULL for the
  *                entire rendering target.
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *            SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1881,7 +1885,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer,
  *                array, if NULL all vertices will be rendered in sequential
  *                order.
  * \param num_indices number of indices.
- * \returns 0 on success, or -1 if the operation is not supported.
+ * \returns 0 on success or a negative error code on failure; call
+ *            SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

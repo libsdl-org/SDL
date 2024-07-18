@@ -450,7 +450,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetFloatProperty(SDL_PropertiesID props, c
  * \param name the name of the property to query.
  * \param default_value the default value of the property.
  * \returns the value of the property, or `default_value` if it is not set or
- *          not a float property.
+ *          not a boolean property.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

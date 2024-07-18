@@ -212,8 +212,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
  *
  * \param count a pointer filled in with the number of joysticks returned.
  * \returns a 0 terminated array of joystick instance IDs which should be
- *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
- *          more details.
+ *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -364,7 +364,7 @@ extern SDL_DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickTypeForID(SDL_Joysti
  * for use.
  *
  * \param instance_id the joystick instance ID.
- * \returns a joystick identifier or NULL if an error occurred; call
+ * \returns a joystick identifier or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -470,7 +470,7 @@ typedef struct SDL_VirtualJoystickDesc
  * Attach a new virtual joystick.
  *
  * \param desc joystick description.
- * \returns the joystick instance ID, or 0 if an error occurred; call
+ * \returns the joystick instance ID, or 0 on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.

@@ -935,8 +935,8 @@ typedef Uint32 SDL_HapticID;
  * \param count a pointer filled in with the number of haptic devices
  *              returned.
  * \returns a 0 terminated array of haptic device instance IDs which should be
- *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
- *          more details.
+ *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

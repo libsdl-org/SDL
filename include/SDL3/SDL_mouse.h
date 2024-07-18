@@ -137,8 +137,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  *
  * \param count a pointer filled in with the number of mice returned.
  * \returns a 0 terminated array of mouse instance IDs which should be freed
- *          with SDL_free(), or NULL on error; call SDL_GetError() for more
- *          details.
+ *          with SDL_free(), or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -482,7 +482,7 @@ extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_GetCursor(void);
  * You do not have to call SDL_DestroyCursor() on the return value, but it is
  * safe to do so.
  *
- * \returns the default cursor on success or NULL on failure.
+ * \returns the default cursor on success or NULL on failuree; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

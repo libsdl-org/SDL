@@ -162,7 +162,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, 
  *
  * \param threadID the Unix thread ID to change priority of.
  * \param priority the new, Unix-specific, priority value.
- * \returns 0 on success, or -1 on error.
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -280,7 +280,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(SDL_bool enabled);
  * rationale being that the SDL headers can avoid including jni.h.
  *
  * \returns a pointer to Java native interface object (JNIEnv) to which the
- *          current thread is attached, or 0 on error.
+ *          current thread is attached, or NULL on failure; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -304,7 +304,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);
  * https://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/functions.html
  *
  * \returns the jobject representing the instance of the Activity class of the
- *          Android application, or NULL on error.
+ *          Android application, or NULL on failure; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -813,7 +813,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle * outTaskQu
  *
  * \param outUserHandle a pointer to be filled in with the default user
  *                      handle.
- * \returns 0 if success, -1 if any error occurs.
+ * \returns 0 if success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
