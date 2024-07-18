@@ -170,10 +170,11 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentCameraDriver(void);
 /**
  * Get a list of currently connected camera devices.
  *
- * \param count a pointer filled in with the number of camera devices. Can be
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
+ * \param count a pointer filled in with the number of cameras returned, may be
  *              NULL.
- * \returns a 0 terminated array of camera instance IDs which should be freed
- *          with SDL_free() or NULL on failure; call SDL_GetError() for more
+ * \returns a 0 terminated array of camera instance IDs or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -182,7 +183,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentCameraDriver(void);
  *
  * \sa SDL_OpenCamera
  */
-extern SDL_DECLSPEC SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
+extern SDL_DECLSPEC const SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
 
 /**
  * Get the list of native formats/sizes a camera supports.

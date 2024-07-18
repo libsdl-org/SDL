@@ -695,7 +695,7 @@ SDL_CameraPosition SDL_GetCameraPosition(SDL_CameraID instance_id)
 }
 
 
-SDL_CameraID *SDL_GetCameras(int *count)
+const SDL_CameraID *SDL_GetCameras(int *count)
 {
     int dummy_count;
     if (!count) {
@@ -731,7 +731,7 @@ SDL_CameraID *SDL_GetCameras(int *count)
 
     *count = num_devices;
 
-    return retval;
+    return SDL_FreeLater(retval);
 }
 
 const SDL_CameraSpec * const *SDL_GetCameraSupportedFormats(SDL_CameraID instance_id, int *count)
@@ -747,10 +747,10 @@ const SDL_CameraSpec * const *SDL_GetCameraSupportedFormats(SDL_CameraID instanc
 
     int i;
     int num_specs = device->num_specs;
-    const SDL_CameraSpec **retval = (const SDL_CameraSpec **) SDL_malloc(((num_specs + 1) * sizeof(SDL_CameraSpec *)) + (num_specs * sizeof (SDL_CameraSpec)));
+    const SDL_CameraSpec **retval = (const SDL_CameraSpec **) SDL_malloc(((num_specs + 1) * sizeof(*retval)) + (num_specs * sizeof (**retval)));
     if (retval) {
-        SDL_CameraSpec *specs = (SDL_CameraSpec *)((Uint8 *)retval + ((num_specs + 1) * sizeof(SDL_CameraSpec *)));
-        SDL_memcpy(specs, device->all_specs, sizeof (SDL_CameraSpec) * num_specs);
+        SDL_CameraSpec *specs = (SDL_CameraSpec *)((Uint8 *)retval + ((num_specs + 1) * sizeof(*retval)));
+        SDL_memcpy(specs, device->all_specs, num_specs * sizeof(*specs));
         for (i = 0; i < num_specs; ++i) {
             retval[i] = specs++;
         }
