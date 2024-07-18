@@ -520,6 +520,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID *id, const void *value, SDL
 /**
  * Cleanup all TLS data for this thread.
  *
+ * If you are creating your threads outside of SDL and then calling SDL functions, you should call this function before your thread exits, to properly clean up SDL memory.
+ *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.

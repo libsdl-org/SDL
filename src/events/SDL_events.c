@@ -110,12 +110,7 @@ static void SDL_CleanupEventMemory(void *data)
 {
     SDL_EventMemoryState *state = (SDL_EventMemoryState *)data;
 
-    while (state->head) {
-        SDL_EventMemory *entry = state->head;
-        state->head = entry->next;
-        SDL_free(entry->memory);
-        SDL_free(entry);
-    }
+    SDL_FreeEventMemory(NULL);
     SDL_free(state);
 }
 
@@ -217,9 +212,46 @@ static void SDL_FlushEventMemory(Uint32 eventID)
     }
 }
 
-void SDL_FreeEventMemory(void)
+void SDL_FreeEventMemory(const void *mem)
 {
-    SDL_FlushEventMemory(0);
+    SDL_EventMemoryState *state;
+
+    state = SDL_GetEventMemoryState(SDL_FALSE);
+    if (!state) {
+        return;
+    }
+
+    if (mem) {
+        SDL_EventMemory *prev = NULL, *entry;
+
+        for (entry = state->head; entry; prev = entry, entry = entry->next) {
+            if (mem == entry->memory) {
+                if (prev) {
+                    prev->next = entry->next;
+                }
+                if (entry == state->head) {
+                    state->head = entry->next;
+                }
+                if (entry == state->tail) {
+                    state->tail = prev;
+                }
+                SDL_free(entry->memory);
+                SDL_free(entry);
+                break;
+            }
+        }
+    } else {
+        if (state->head) {
+            while (state->head) {
+                SDL_EventMemory *entry = state->head;
+
+                state->head = entry->next;
+                SDL_free(entry->memory);
+                SDL_free(entry);
+            }
+            state->tail = NULL;
+        }
+    }
 }
 
 #ifndef SDL_JOYSTICK_DISABLED
@@ -741,7 +773,7 @@ void SDL_StopEventLoop(void)
     SDL_EventQ.free = NULL;
     SDL_AtomicSet(&SDL_sentinel_pending, 0);
 
-    SDL_FlushEventMemory(0);
+    SDL_FreeEventMemory(NULL);
 
     /* Clear disabled event state */
     for (i = 0; i < SDL_arraysize(SDL_disabled_events); ++i) {
