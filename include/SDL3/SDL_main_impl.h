@@ -75,8 +75,8 @@
             #endif
 
             typedef struct HINSTANCE__ * HINSTANCE;
-            typedef char* LPSTR;
-            typedef wchar_t* PWSTR;
+            typedef char *LPSTR;
+            typedef wchar_t *PWSTR;
 
             /* The VC++ compiler needs main/wmain defined, but not for GDK */
             #if defined(_MSC_VER) && !defined(SDL_PLATFORM_GDK)

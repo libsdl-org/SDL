@@ -93,7 +93,7 @@ typedef struct SDL_DialogFileFilter
  * \sa SDL_ShowSaveFileDialog
  * \sa SDL_ShowOpenFolderDialog
  */
-typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const *filelist, int filter);
+typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const *filelist, int filter);
 
 /**
  * Displays a dialog that lets the user select a file on their filesystem.

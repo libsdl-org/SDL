@@ -733,7 +733,7 @@ typedef struct SDL_PixelFormatDetails
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char* SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat format);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat format);
 
 /**
  * Convert one of the enumerated pixel formats to a bpp value and RGBA masks.
@@ -812,7 +812,7 @@ extern SDL_DECLSPEC const SDL_PixelFormatDetails * SDLCALL SDL_GetPixelFormatDet
  * \sa SDL_SetPaletteColors
  * \sa SDL_SetSurfacePalette
  */
-extern SDL_DECLSPEC SDL_Palette *SDLCALL SDL_CreatePalette(int ncolors);
+extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreatePalette(int ncolors);
 
 /**
  * Set a range of colors in a palette.

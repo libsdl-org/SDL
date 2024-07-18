@@ -302,7 +302,7 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_Prop
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadRuntime(SDL_ThreadFunction fn, const char *name, void *data, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
+extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadRuntime(SDL_ThreadFunction fn, const char *name, void *data, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
 
 /**
  * The actual entry point for SDL_CreateThreadWithProperties.
@@ -316,7 +316,7 @@ extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadRuntime(SDL_ThreadFuncti
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
+extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
 
 #define SDL_CreateThread(fn, name, data) SDL_CreateThreadRuntime((fn), (name), (data), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
 #define SDL_CreateThreadWithProperties(props) SDL_CreateThreadWithPropertiesRuntime((props), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
@@ -338,7 +338,7 @@ extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadWithPropertiesRuntime(SD
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetThreadName(SDL_Thread *thread);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetThreadName(SDL_Thread *thread);
 
 /**
  * Get the thread identifier for the current thread.
@@ -373,7 +373,7 @@ extern SDL_DECLSPEC SDL_ThreadID SDLCALL SDL_GetCurrentThreadID(void);
  *
  * \sa SDL_GetCurrentThreadID
  */
-extern SDL_DECLSPEC SDL_ThreadID SDLCALL SDL_GetThreadID(SDL_Thread * thread);
+extern SDL_DECLSPEC SDL_ThreadID SDLCALL SDL_GetThreadID(SDL_Thread *thread);
 
 /**
  * Set the priority for the current thread.
@@ -423,7 +423,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetThreadPriority(SDL_ThreadPriority priorit
  * \sa SDL_CreateThread
  * \sa SDL_DetachThread
  */
-extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread * thread, int *status);
+extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread *thread, int *status);
 
 /**
  * Let a thread clean up on exit without intervention.
@@ -459,7 +459,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread * thread, int *status
  * \sa SDL_CreateThread
  * \sa SDL_WaitThread
  */
-extern SDL_DECLSPEC void SDLCALL SDL_DetachThread(SDL_Thread * thread);
+extern SDL_DECLSPEC void SDLCALL SDL_DetachThread(SDL_Thread *thread);
 
 /**
  * Get the current thread's value associated with a thread local storage ID.

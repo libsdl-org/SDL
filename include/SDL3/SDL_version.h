@@ -172,7 +172,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetVersion(void);
  *
  * \sa SDL_GetVersion
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetRevision(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetRevision(void);
 
 
 /* Ends C function definitions when using C++ */

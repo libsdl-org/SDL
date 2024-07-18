@@ -164,7 +164,7 @@ typedef struct SDL_Mutex SDL_Mutex;
  * \sa SDL_TryLockMutex
  * \sa SDL_UnlockMutex
  */
-extern SDL_DECLSPEC SDL_Mutex *SDLCALL SDL_CreateMutex(void);
+extern SDL_DECLSPEC SDL_Mutex * SDLCALL SDL_CreateMutex(void);
 
 /**
  * Lock the mutex.
@@ -331,7 +331,7 @@ typedef struct SDL_RWLock SDL_RWLock;
  * \sa SDL_TryLockRWLockForWriting
  * \sa SDL_UnlockRWLock
  */
-extern SDL_DECLSPEC SDL_RWLock *SDLCALL SDL_CreateRWLock(void);
+extern SDL_DECLSPEC SDL_RWLock * SDLCALL SDL_CreateRWLock(void);
 
 /**
  * Lock the read/write lock for _read only_ operations.
@@ -550,7 +550,7 @@ typedef struct SDL_Semaphore SDL_Semaphore;
  * \sa SDL_WaitSemaphore
  * \sa SDL_WaitSemaphoreTimeout
  */
-extern SDL_DECLSPEC SDL_Semaphore *SDLCALL SDL_CreateSemaphore(Uint32 initial_value);
+extern SDL_DECLSPEC SDL_Semaphore * SDLCALL SDL_CreateSemaphore(Uint32 initial_value);
 
 /**
  * Destroy a semaphore.
@@ -694,7 +694,7 @@ typedef struct SDL_Condition SDL_Condition;
  * \sa SDL_WaitConditionTimeout
  * \sa SDL_DestroyCondition
  */
-extern SDL_DECLSPEC SDL_Condition *SDLCALL SDL_CreateCondition(void);
+extern SDL_DECLSPEC SDL_Condition * SDLCALL SDL_CreateCondition(void);
 
 /**
  * Destroy a condition variable.

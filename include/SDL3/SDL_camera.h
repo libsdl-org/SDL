@@ -147,7 +147,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumCameraDrivers(void);
  *
  * \sa SDL_GetNumCameraDrivers
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetCameraDriver(int index);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetCameraDriver(int index);
 
 /**
  * Get the name of the current camera driver.
@@ -165,7 +165,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCameraDriver(int index);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentCameraDriver(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentCameraDriver(void);
 
 /**
  * Get a list of currently connected camera devices.
@@ -182,7 +182,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentCameraDriver(void);
  *
  * \sa SDL_OpenCamera
  */
-extern SDL_DECLSPEC SDL_CameraID *SDLCALL SDL_GetCameras(int *count);
+extern SDL_DECLSPEC SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
 
 /**
  * Get the list of native formats/sizes a camera supports.
@@ -225,7 +225,7 @@ extern SDL_DECLSPEC SDL_CameraID *SDLCALL SDL_GetCameras(int *count);
  * \sa SDL_GetCameras
  * \sa SDL_OpenCamera
  */
-extern SDL_DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraSupportedFormats(SDL_CameraID devid, int *count);
+extern SDL_DECLSPEC SDL_CameraSpec * SDLCALL SDL_GetCameraSupportedFormats(SDL_CameraID devid, int *count);
 
 /**
  * Get the human-readable device name for a camera.
@@ -307,7 +307,7 @@ extern SDL_DECLSPEC SDL_CameraPosition SDLCALL SDL_GetCameraPosition(SDL_CameraI
  * \sa SDL_GetCameras
  * \sa SDL_GetCameraFormat
  */
-extern SDL_DECLSPEC SDL_Camera *SDLCALL SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec);
+extern SDL_DECLSPEC SDL_Camera * SDLCALL SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec);
 
 /**
  * Query if camera access has been approved by the user.

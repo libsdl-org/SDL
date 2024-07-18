@@ -110,7 +110,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_OutOfMemory(void);
  * \sa SDL_ClearError
  * \sa SDL_SetError
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetError(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetError(void);
 
 /**
  * Clear any previous error message for this thread.
