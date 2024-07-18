@@ -806,7 +806,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertPixelsAndColorspace(int width, int he
  * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
  * \param dst a pointer to be filled in with premultiplied pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
- * \param linear SDL_TRUE to convert from sRGB to linear space for the alpha multiplication, SDL_FALSE to do multiplication in sRGB space.
+ * \param linear SDL_TRUE to convert from sRGB to linear space for the alpha
+ *               multiplication, SDL_FALSE to do multiplication in sRGB space.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -820,7 +821,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_PremultiplyAlpha(int width, int height, SDL_
  * This is safe to use with src == dst, but not for other overlapping areas.
  *
  * \param surface the surface to modify.
- * \param linear SDL_TRUE to convert from sRGB to linear space for the alpha multiplication, SDL_FALSE to do multiplication in sRGB space.
+ * \param linear SDL_TRUE to convert from sRGB to linear space for the alpha
+ *               multiplication, SDL_FALSE to do multiplication in sRGB space.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -833,13 +835,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_PremultiplySurfaceAlpha(SDL_Surface *surface
  *
  * This function handles all surface formats, and ignores any clip rectangle.
  *
- * If the surface is YUV, the color is assumed to be in the sRGB colorspace, otherwise the color is assumed to be in the colorspace of the suface.
+ * If the surface is YUV, the color is assumed to be in the sRGB colorspace,
+ * otherwise the color is assumed to be in the colorspace of the suface.
  *
  * \param surface the SDL_Surface to clear.
- * \param r the red component of the pixel, normally in the range 0-1
- * \param g the green component of the pixel, normally in the range 0-1
- * \param b the blue component of the pixel, normally in the range 0-1
- * \param a the alpha component of the pixel, normally in the range 0-1
+ * \param r the red component of the pixel, normally in the range 0-1.
+ * \param g the green component of the pixel, normally in the range 0-1.
+ * \param b the blue component of the pixel, normally in the range 0-1.
+ * \param a the alpha component of the pixel, normally in the range 0-1.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1166,14 +1169,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x
  * \param surface the surface to read.
  * \param x the horizontal coordinate, 0 <= x < width.
  * \param y the vertical coordinate, 0 <= y < height.
- * \param r a pointer filled in with the red channel, normally in the range 0-1, or NULL to ignore
- *          this channel.
- * \param g a pointer filled in with the green channel, normally in the range 0-1, or NULL to
- *          ignore this channel.
- * \param b a pointer filled in with the blue channel, normally in the range 0-1, or NULL to
- *          ignore this channel.
- * \param a a pointer filled in with the alpha channel, normally in the range 0-1, or NULL to
- *          ignore this channel.
+ * \param r a pointer filled in with the red channel, normally in the range
+ *          0-1, or NULL to ignore this channel.
+ * \param g a pointer filled in with the green channel, normally in the range
+ *          0-1, or NULL to ignore this channel.
+ * \param b a pointer filled in with the blue channel, normally in the range
+ *          0-1, or NULL to ignore this channel.
+ * \param a a pointer filled in with the alpha channel, normally in the range
+ *          0-1, or NULL to ignore this channel.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
