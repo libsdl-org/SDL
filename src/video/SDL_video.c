@@ -2056,7 +2056,7 @@ void SDL_ToggleDragAndDropSupport(void)
     }
 }
 
-SDL_Window **SDLCALL SDL_GetWindows(int *count)
+SDL_Window * const *SDLCALL SDL_GetWindows(int *count)
 {
     if (count) {
         *count = 0;
@@ -2091,7 +2091,7 @@ SDL_Window **SDLCALL SDL_GetWindows(int *count)
     if (count) {
         *count = num_added;
     }
-    return windows;
+    return SDL_FreeLater(windows);
 }
 
 static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)

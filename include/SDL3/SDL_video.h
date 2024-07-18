@@ -791,15 +791,15 @@ extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetWindowPixelFormat(SDL_Window 
 /**
  * Get a list of valid windows.
  *
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
  * \param count a pointer filled in with the number of windows returned, may
  *              be NULL.
- * \returns a 0 terminated array of window pointers which should be freed with
- *          SDL_free(), or NULL on error; call SDL_GetError() for more
- *          details.
+ * \returns a NULL terminated array of SDL_Window pointers or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Window **SDLCALL SDL_GetWindows(int *count);
+extern SDL_DECLSPEC SDL_Window * const *SDLCALL SDL_GetWindows(int *count);
 
 /**
  * Create a window with the specified dimensions and flags.
