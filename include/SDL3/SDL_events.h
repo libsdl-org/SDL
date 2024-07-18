@@ -1428,14 +1428,20 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
  * Free temporary event memory allocated by SDL.
  *
  * This function frees temporary memory allocated for events and APIs that
- * return temporary strings. This memory is local to the thread that creates
+ * follow the SDL_GetStringRule. This memory is local to the thread that creates
  * it and is automatically freed for the main thread when pumping the event
- * loop. For other threads you may want to call this function periodically to
+ * loop. For other threads you may call this function periodically to
  * free any temporary memory created by that thread.
+ *
+ * You can free a specific pointer, to provide more fine grained control over memory management, or you can pass NULL to free all pending temporary allocations. You should *NOT* pass NULL on your main event handling thread, as there may be temporary memory being used by events in-flight. For that thread SDL will call this internally when it's safe to do so.
  *
  * Note that if you call SDL_AllocateEventMemory() on one thread and pass it
  * to another thread, e.g. via a user event, then you should be sure the other
- * thread has finished processing it before calling this function.
+ * thread has finished processing it before calling this function with NULL.
+ *
+ * All temporary memory is freed on the main thread in SDL_Quit() and for other threads when they call SDL_CleanupTLS(), which is automatically called at cleanup time for threads created using SDL_CreateThread().
+ *
+ * \param mem a pointer allocated with SDL_AllocateEventMemory(), or NULL to free all pending temporary allocations.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1443,7 +1449,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
  *
  * \sa SDL_AllocateEventMemory
  */
-extern SDL_DECLSPEC void SDLCALL SDL_FreeEventMemory(void);
+extern SDL_DECLSPEC void SDLCALL SDL_FreeEventMemory(const void *mem);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
