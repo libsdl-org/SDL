@@ -15,17 +15,22 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows (x64),          flags: -A x64,   project: VisualC/SDL.sln, projectflags: '/p:Platform=x64',   libusb-arch: 'x64', artifact: 'SDL-VC-x64' }
-        - { name: Windows (x86),          flags: -A Win32, project: VisualC/SDL.sln, projectflags: '/p:Platform=Win32', libusb-arch: 'x86', artifact: 'SDL-VC-x86' }
-        - { name: Windows (clang-cl x64), flags: -T ClangCL -A x64, artifact: 'SDL-clang-cl-x64' }
-        - { name: Windows (clang-cl x86), flags: -T ClangCL -A Win32, artifact: 'SDL-clang-cl-x86' }
-        - { name: Windows (ARM),          flags: -A ARM, artifact: 'SDL-VC-arm32', notests: true }
-        - { name: Windows (ARM64),        flags: -A ARM64, artifact: 'SDL-VC-arm64', notests: true }
-        - { name: UWP (x64),              flags: -A x64 -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0", nowerror: true, notests: true,
-            project: VisualC-WinRT/SDL-UWP.sln, projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0', artifact: 'SDL-VC-UWP' }
+        - { name: 'Windows (x64)',                vcvars: 'x64',        artifact: 'SDL-VC-x64',         project: 'VisualC/SDL.sln', projectflags: '/p:Platform=x64', }
+        - { name: 'Windows (x86)',                vcvars: 'x64_x86',    artifact: 'SDL-VC-x86',         project: 'VisualC/SDL.sln', projectflags: '/p:Platform=Win32', }
+        - { name: 'Windows (clang-cl x64)',       vcvars: 'x64',        artifact: 'SDL-clang-cl-x64',   cmake-args: '-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl', cppflags: '/clang:-m64', ldflags: '/MACHINE:X64',  }
+        - { name: 'Windows (clang-cl x86)',       vcvars: 'x86',        artifact: 'SDL-clang-cl-x86',   cmake-args: '-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl', cppflags: '/clang:-m32', ldflags: '/MACHINE:X86', }
+        - { name: 'Windows (ARM)',                vcvars: 'x64_arm',    artifact: 'SDL-VC-arm32',       notests: true, }
+        - { name: 'Windows (ARM64)',              vcvars: 'x64_arm64',  artifact: 'SDL-VC-arm64',       notests: true, }
+        - { name: 'UWP (x64)',                    vcvars: 'x64',        artifact: 'SDL-VC-UWP',         notests: true, cmake-args: '-DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DSDL_TESTS=OFF',
+            project: 'VisualC-WinRT/SDL-UWP.sln', projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0', }
 
     steps:
     - uses: actions/checkout@v4
+    - name: Set up ninja
+      uses: ./.github/actions/setup-ninja
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.platform.vcvars }}
     - name: Set up libusb
       uses: ./.github/actions/setup-msvc-libusb-action
       if: ${{ matrix.platform.libusb-arch != '' }}
@@ -65,12 +70,18 @@ jobs:
         with open(f"{ builddir }/CMakeLists.txt", "w") as f:
           f.write(cmakelists_txt)
     - name: Configure (CMake)
-      run: cmake -S build -B build `
+      run: cmake -S build -B build -GNinja `
         -Wdeprecated -Wdev -Werror `
-        -DSDL_WERROR=${{ !matrix.platform.nowerror }} `
+        -DCMAKE_BUILD_TYPE=Release `
+        -DSDL_WERROR=ON `
         -DSDL_SHARED=ON `
         -DSDL_STATIC=ON `
         -DSDL_TESTS=ON `
+        -DCMAKE_C_FLAGS="${{ matrix.platform.cppflags }}" `
+        -DCMAKE_CXX_FLAGS="${{ matrix.platform.cppflags }}" `
+        -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.platform.ldflags }}" `
+        -DCMAKE_SHARED_LINKER_FLAGS="${{ matrix.platform.ldflags }}" `
+        -DCMAKE_STATIC_LINKER_FLAGS="${{ matrix.platform.ldflags }}" `
         -DSDL_INSTALL_TESTS=ON `
         -DSDL_VENDOR_INFO="Github Workflow" `
         -DSDL_DISABLE_INSTALL=OFF `
@@ -78,12 +89,12 @@ jobs:
         -DSDL_DISABLE_INSTALL_DOCS=OFF `
         -DSDLTEST_PROCDUMP=ON `
         -DLibUSB_ROOT="${{ steps.libusb.outputs.root }}" `
-        ${{ matrix.platform.flags }} `
+        ${{ matrix.platform.cmake-args }} `
         -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build (CMake)
       id: build
       run: |
-        cmake --build build/ --config Release --parallel
+        cmake --build build/ --config Release --verbose --parallel
     - name: Run build-time tests
       id: tests
       if: ${{ !matrix.platform.notests }}
@@ -97,12 +108,18 @@ jobs:
     - name: Package (CPack)
       if: ${{ always() && steps.build.outcome == 'success' }}
       run: |
-        cmake --build build/ --config Release --target PACKAGE
+        cmake --build build/ --config Release --target package
     - name: Verify CMake configuration files
       run: |
-        cmake -S cmake/test -B cmake_config_build `
+        cmake -S cmake/test -B cmake_config_build -GNinja `
+          -DCMAKE_BUILD_TYPE=Release `
           -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} `
-          ${{ matrix.platform.flags }}
+          -DCMAKE_C_FLAGS="${{ matrix.platform.cppflags }}" `
+          -DCMAKE_CXX_FLAGS="${{ matrix.platform.cppflags }}" `
+          -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.platform.ldflags }}" `
+          -DCMAKE_SHARED_LINKER_FLAGS="${{ matrix.platform.ldflags }}" `
+          -DCMAKE_STATIC_LINKER_FLAGS="${{ matrix.platform.ldflags }}" `
+          ${{ matrix.platform.cmake-args }}
         cmake --build cmake_config_build --config Release
     - name: Add msbuild to PATH
       if: ${{ matrix.platform.project != '' }}
