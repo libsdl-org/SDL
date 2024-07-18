@@ -194,7 +194,7 @@ int KMSDRM_GLES_SwapWindow(_THIS, SDL_Window *window)
            we have waited here, there won't be a pending pageflip so the
            WaitPageflip at the beginning of this function will be a no-op.
            Just leave it here and don't worry.
-           Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
+           Run your SDL2 program with "SDL_VIDEO_DOUBLE_BUFFER=1 <program_name>"
            to enable this. */
         if (windata->double_buffer) {
             if (!KMSDRM_WaitPageflip(_this, windata)) {
