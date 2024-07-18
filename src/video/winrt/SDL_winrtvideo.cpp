@@ -310,7 +310,7 @@ static int WINRT_AddDisplaysForOutput(SDL_VideoDevice *_this, IDXGIAdapter1 *dxg
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIOutput::FindClosestMatchingMode failed", hr);
         goto done;
     } else {
-        display.name = WIN_StringToUTF8(dxgiOutputDesc.DeviceName);
+        display.name = WIN_StringToUTF8W(dxgiOutputDesc.DeviceName);
         WINRT_DXGIModeToSDLDisplayMode(&closestMatch, &display.desktop_mode);
 
         hr = dxgiOutput->GetDisplayModeList(DXGI_FORMAT_B8G8R8A8_UNORM, 0, &numModes, NULL);

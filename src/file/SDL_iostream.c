@@ -119,19 +119,19 @@ static int SDLCALL windows_file_open(IOStreamWindowsData *iodata, const char *fi
 #endif
 
     {
-        LPTSTR tstr = WIN_UTF8ToString(filename);
+        LPWSTR str = WIN_UTF8ToStringW(filename);
 #if defined(SDL_PLATFORM_WINRT)
         CREATEFILE2_EXTENDED_PARAMETERS extparams;
         SDL_zero(extparams);
         extparams.dwSize = sizeof(extparams);
         extparams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-        h = CreateFile2(tstr,
+        h = CreateFile2(str,
                         (w_right | r_right),
                         (w_right) ? 0 : FILE_SHARE_READ,
                         (must_exist | truncate | a_mode),
                         &extparams);
 #else
-        h = CreateFile(tstr,
+        h = CreateFileW(str,
                        (w_right | r_right),
                        (w_right) ? 0 : FILE_SHARE_READ,
                        NULL,
@@ -139,7 +139,7 @@ static int SDLCALL windows_file_open(IOStreamWindowsData *iodata, const char *fi
                        FILE_ATTRIBUTE_NORMAL,
                        NULL);
 #endif
-        SDL_free(tstr);
+        SDL_free(str);
     }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && !defined(SDL_PLATFORM_WINRT)

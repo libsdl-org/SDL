@@ -113,7 +113,7 @@ extern "C" const char *SDL_GetWinRTFSPath(SDL_WinRT_Path pathType)
         return NULL;
     }
 
-    char *utf8Path = WIN_StringToUTF8(ucs2Path);
+    char *utf8Path = WIN_StringToUTF8W(ucs2Path);
     utf8Paths[pathType] = utf8Path;
     SDL_free(utf8Path);
     return utf8Paths[pathType].c_str();
@@ -176,12 +176,12 @@ extern "C" char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     }
     SDL_wcslcpy(path, srcPath, SDL_arraysize(path));
 
-    worg = WIN_UTF8ToString(org);
+    worg = WIN_UTF8ToStringW(org);
     if (!worg) {
         return NULL;
     }
 
-    wapp = WIN_UTF8ToString(app);
+    wapp = WIN_UTF8ToStringW(app);
     if (!wapp) {
         SDL_free(worg);
         return NULL;
@@ -225,7 +225,7 @@ extern "C" char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 
     SDL_wcslcat(path, L"\\", new_wpath_len + 1);
 
-    retval = WIN_StringToUTF8(path);
+    retval = WIN_StringToUTF8W(path);
 
     return retval;
 }
@@ -257,7 +257,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 
     wpath += L"\\";
 
-    return WIN_StringToUTF8(wpath.c_str());
+    return WIN_StringToUTF8W(wpath.c_str());
 }
 
 #endif /* SDL_PLATFORM_WINRT */
