@@ -115,7 +115,7 @@ SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType)
         return NULL;
     }
 
-    char *utf8Path = WIN_StringToUTF8(ucs2Path);
+    char *utf8Path = WIN_StringToUTF8W(ucs2Path);
     utf8Paths[pathType] = utf8Path;
     SDL_free(utf8Path);
     return utf8Paths[pathType].c_str();
@@ -181,13 +181,13 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
     SDL_wcslcpy(path, srcPath, SDL_arraysize(path));
 
-    worg = WIN_UTF8ToString(org);
+    worg = WIN_UTF8ToStringW(org);
     if (!worg) {
         SDL_OutOfMemory();
         return NULL;
     }
 
-    wapp = WIN_UTF8ToString(app);
+    wapp = WIN_UTF8ToStringW(app);
     if (!wapp) {
         SDL_free(worg);
         SDL_OutOfMemory();
@@ -232,7 +232,7 @@ SDL_GetPrefPath(const char *org, const char *app)
 
     SDL_wcslcat(path, L"\\", new_wpath_len + 1);
 
-    retval = WIN_StringToUTF8(path);
+    retval = WIN_StringToUTF8W(path);
 
     return retval;
 }
