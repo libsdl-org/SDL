@@ -215,7 +215,7 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  * The function prototype for `callback` is:
  *
  * ```c
- * void callback(void* callbackParam);
+ * void callback(void *callbackParam);
  * ```
  *
  * Where its parameter, `callbackParam`, is what was passed as `callbackParam`
@@ -246,7 +246,7 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  *
  * \sa SDL_SetiOSEventPump
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetiOSAnimationCallback(SDL_Window * window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
+extern SDL_DECLSPEC int SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
 
 /**
  * Use this function to enable or disable the SDL event pump on Apple iOS.
@@ -416,7 +416,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
  *
  * \sa SDL_GetAndroidExternalStorageState
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidInternalStoragePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
 
 /**
  * Get the current state of external storage for this Android application.
@@ -541,7 +541,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RequestAndroidPermission(const char *permiss
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
+extern SDL_DECLSPEC int SDLCALL SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xoffset, int yoffset);
 
 /**
  * Send a user command to SDLActivity.
@@ -803,7 +803,7 @@ typedef struct XUser *XUserHandle;
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle * outTaskQueue);
+extern SDL_DECLSPEC int SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue);
 
 /**
  * Gets a reference to the default user handle for GDK.
@@ -817,7 +817,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle * outTaskQu
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GetGDKDefaultUser(XUserHandle * outUserHandle);
+extern SDL_DECLSPEC int SDLCALL SDL_GetGDKDefaultUser(XUserHandle *outUserHandle);
 
 #endif
 

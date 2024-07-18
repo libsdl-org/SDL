@@ -433,7 +433,7 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
  * \since This datatype is available since SDL 3.0.0.
  */
 typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
-                                 const SDL_AssertData* data, void* userdata);
+                                 const SDL_AssertData *data, void *userdata);
 
 /**
  * Set an application-defined assertion handler.

@@ -162,7 +162,7 @@ typedef enum SDL_PenSubtype
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_PenID *SDLCALL SDL_GetPens(int *count);
+extern SDL_DECLSPEC SDL_PenID * SDLCALL SDL_GetPens(int *count);
 
 /**
  * Retrieves the pen's current status.
@@ -237,7 +237,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetPenName(SDL_PenID instance_id);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetPenName(SDL_PenID instance_id);
 
 /**
  * Pen capabilities, as reported by SDL_GetPenCapabilities()
