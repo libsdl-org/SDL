@@ -23,7 +23,7 @@ static SDLTest_CommonState *state = NULL;
 
 int SDL_AppInit(void **appstate, int argc, char **argv)
 {
-    SDL_AudioDeviceID *devices;
+    const SDL_AudioDeviceID *devices;
     SDL_AudioSpec outspec;
     SDL_AudioSpec inspec;
     SDL_AudioDeviceID device;

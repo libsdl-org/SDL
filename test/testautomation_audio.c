@@ -366,7 +366,7 @@ static int audio_enumerateAndNameAudioDevices(void *arg)
     int t;
     int i, n;
     const char *name;
-    SDL_AudioDeviceID *devices = NULL;
+    const SDL_AudioDeviceID *devices = NULL;
 
     /* Iterate over types: t=0 playback device, t=1 recording device */
     for (t = 0; t < 2; t++) {
@@ -388,8 +388,6 @@ static int audio_enumerateAndNameAudioDevices(void *arg)
                 }
             }
         }
-
-        SDL_free(devices);
     }
 
     return TEST_COMPLETED;

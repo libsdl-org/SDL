@@ -146,7 +146,7 @@ static void SDLCALL fill_buffer(void *userdata, SDL_AudioStream *stream, int len
 
 int main(int argc, char *argv[])
 {
-    SDL_AudioDeviceID *devices = NULL;
+    const SDL_AudioDeviceID *devices = NULL;
     SDLTest_CommonState *state;
     int devcount = 0;
     int i;
@@ -233,8 +233,6 @@ int main(int argc, char *argv[])
 
         SDL_DestroyAudioStream(stream);
     }
-
-    SDL_free(devices);
 
     SDL_Quit();
     return 0;

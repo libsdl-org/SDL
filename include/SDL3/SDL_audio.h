@@ -448,11 +448,11 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  * If this function returns NULL, to signify an error, `*count` will be set to
  * zero.
  *
- * \param count a pointer filled in with the number of devices returned. NULL
- *              is allowed.
- * \returns a 0 terminated array of device instance IDs which should be freed
- *          with SDL_free(), or NULL on error; call SDL_GetError() for more
- *          details.
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
+ * \param count a pointer filled in with the number of devices returned, may be NULL.
+ * \returns a 0 terminated array of device instance IDs or NULL on error; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -461,7 +461,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  * \sa SDL_OpenAudioDevice
  * \sa SDL_GetAudioRecordingDevices
  */
-extern SDL_DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioPlaybackDevices(int *count);
+extern SDL_DECLSPEC const SDL_AudioDeviceID *SDLCALL SDL_GetAudioPlaybackDevices(int *count);
 
 /**
  * Get a list of currently-connected audio recording devices.
@@ -477,10 +477,10 @@ extern SDL_DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioPlaybackDevices(int *
  * If this function returns NULL, to signify an error, `*count` will be set to
  * zero.
  *
- * \param count a pointer filled in with the number of devices returned. NULL
- *              is allowed.
- * \returns a 0 terminated array of device instance IDs which should be freed
- *          with SDL_free(), or NULL on failure; call SDL_GetError() for more
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
+ * \param count a pointer filled in with the number of devices returned, may be NULL.
+ * \returns a 0 terminated array of device instance IDs, or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -490,7 +490,7 @@ extern SDL_DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioPlaybackDevices(int *
  * \sa SDL_OpenAudioDevice
  * \sa SDL_GetAudioPlaybackDevices
  */
-extern SDL_DECLSPEC SDL_AudioDeviceID *SDLCALL SDL_GetAudioRecordingDevices(int *count);
+extern SDL_DECLSPEC const SDL_AudioDeviceID *SDLCALL SDL_GetAudioRecordingDevices(int *count);
 
 /**
  * Get the human-readable name of a specific audio device.
