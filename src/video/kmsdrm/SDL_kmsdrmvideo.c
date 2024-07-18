@@ -1478,6 +1478,12 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
     windata->viddata = viddata;
     window->driverdata = windata;
 
+    /* Do we want a double buffering scheme to get low video lag? */
+    windata->double_buffer = SDL_FALSE;
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
+        windata->double_buffer = SDL_TRUE;
+    }
+
     if (!is_vulkan && !vulkan_mode) { /* NON-Vulkan block. */
 
         /* Maybe you didn't ask for an OPENGL window, but that's what you will get.
