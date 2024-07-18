@@ -32,7 +32,7 @@ set(SDL3_FOUND TRUE)
 
 if(SDL_CPU_X86)
     set(_sdl_arch_subdir "x86")
-elseif(SDL_CPU_X64)
+elseif(SDL_CPU_X64 OR SDL_CPU_ARM64EC)
     set(_sdl_arch_subdir "x64")
 elseif(SDL_CPU_ARM64)
     set(_sdl_arch_subdir "arm64")
