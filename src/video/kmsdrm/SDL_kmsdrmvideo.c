@@ -535,7 +535,7 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display, 
 /* Deinitializes the internal of the SDL Displays in the SDL display list. */
 static void KMSDRM_DeinitDisplays(SDL_VideoDevice *_this)
 {
-    SDL_DisplayID *displays;
+    const SDL_DisplayID *displays;
     SDL_DisplayData *dispdata;
     int i;
 
@@ -559,7 +559,6 @@ static void KMSDRM_DeinitDisplays(SDL_VideoDevice *_this)
                 dispdata->crtc = NULL;
             }
         }
-        SDL_free(displays);
     }
 }
 

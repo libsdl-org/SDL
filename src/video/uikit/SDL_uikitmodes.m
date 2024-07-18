@@ -310,7 +310,7 @@ int UIKit_AddDisplay(SDL_bool send_event){
 
 void UIKit_DelDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
-    SDL_DisplayID *displays;
+    const SDL_DisplayID *displays;
     int i;
 
     displays = SDL_GetDisplays(NULL);
@@ -326,7 +326,6 @@ void UIKit_DelDisplay(UIScreen *uiscreen, SDL_bool send_event)
                 break;
             }
         }
-        SDL_free(displays);
     }
 }
 

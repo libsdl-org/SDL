@@ -1192,7 +1192,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
         }
 
         if (state->verbose & VERBOSE_MODES) {
-            SDL_DisplayID *displays;
+            const SDL_DisplayID *displays;
             SDL_Rect bounds, usablebounds;
             const SDL_DisplayMode **modes;
             const SDL_DisplayMode *mode;
@@ -1270,7 +1270,6 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("DXGI Adapter Index: %d  Output Index: %d", adapterIndex, outputIndex);
 #endif
             }
-            SDL_free(displays);
         }
 
         if (state->verbose & VERBOSE_RENDER) {
@@ -1287,11 +1286,10 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
 
         state->displayID = SDL_GetPrimaryDisplay();
         if (state->display_index > 0) {
-            SDL_DisplayID *displays = SDL_GetDisplays(&n);
+            const SDL_DisplayID *displays = SDL_GetDisplays(&n);
             if (state->display_index < n) {
                 state->displayID = displays[state->display_index];
             }
-            SDL_free(displays);
 
             if (SDL_WINDOWPOS_ISUNDEFINED(state->window_x)) {
                 state->window_x = SDL_WINDOWPOS_UNDEFINED_DISPLAY(state->displayID);
@@ -2021,7 +2019,7 @@ static void SDLTest_PasteScreenShot(void)
 static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
 {
     int num_displays;
-    SDL_DisplayID *displays;
+    const SDL_DisplayID *displays;
     SDL_Window *window;
     SDL_WindowFlags flags;
     const SDL_DisplayMode *mode;
@@ -2062,7 +2060,6 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
             SDL_SetWindowFullscreen(window, SDL_TRUE);
         }
     }
-    SDL_free(displays);
 }
 
 int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event)
@@ -2158,7 +2155,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
                     int num_displays;
-                    SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+                    const SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
                     if (displays) {
                         SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
                         int current_index = -1;
@@ -2181,7 +2178,6 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                                                   SDL_WINDOWPOS_CENTERED_DISPLAY(dest),
                                                   SDL_WINDOWPOS_CENTERED_DISPLAY(dest));
                         }
-                        SDL_free(displays);
                     }
                 }
             }

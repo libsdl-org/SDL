@@ -265,7 +265,7 @@ SDL_DYNAPI_PROC(SDL_DisplayID,SDL_GetDisplayForWindow,(SDL_Window *a),(a),return
 SDL_DYNAPI_PROC(const char*,SDL_GetDisplayName,(SDL_DisplayID a),(a),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetDisplayProperties,(SDL_DisplayID a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetDisplayUsableBounds,(SDL_DisplayID a, SDL_Rect *b),(a,b),return)
-SDL_DYNAPI_PROC(SDL_DisplayID*,SDL_GetDisplays,(int *a),(a),return)
+SDL_DYNAPI_PROC(const SDL_DisplayID*,SDL_GetDisplays,(int *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetError,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GetEventFilter,(SDL_EventFilter *a, void **b),(a,b),return)
 SDL_DYNAPI_PROC(float,SDL_GetFloatProperty,(SDL_PropertiesID a, const char *b, float c),(a,b,c),return)

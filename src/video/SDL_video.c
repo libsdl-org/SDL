@@ -699,7 +699,7 @@ static void SDL_UpdateDesktopBounds(void)
     SDL_Rect rect;
     SDL_zero(rect);
 
-    SDL_DisplayID *displays = SDL_GetDisplays(NULL);
+    const SDL_DisplayID *displays = SDL_GetDisplays(NULL);
     if (displays) {
         for (int i = 0; displays[i]; ++i) {
             SDL_Rect bounds;
@@ -711,7 +711,6 @@ static void SDL_UpdateDesktopBounds(void)
                 }
             }
         }
-        SDL_free(displays);
     }
     SDL_copyp(&_this->desktop_bounds, &rect);
 }
@@ -850,7 +849,7 @@ void SDL_DelVideoDisplay(SDL_DisplayID displayID, SDL_bool send_event)
     SDL_UpdateDesktopBounds();
 }
 
-SDL_DisplayID *SDL_GetDisplays(int *count)
+const SDL_DisplayID *SDL_GetDisplays(int *count)
 {
     int i;
     SDL_DisplayID *displays;
@@ -879,7 +878,7 @@ SDL_DisplayID *SDL_GetDisplays(int *count)
             *count = 0;
         }
     }
-    return displays;
+    return SDL_FreeLater(displays);
 }
 
 SDL_VideoDisplay *SDL_GetVideoDisplay(SDL_DisplayID displayID)

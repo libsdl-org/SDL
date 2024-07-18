@@ -305,7 +305,7 @@ static int video_getWindowFlags(void *arg)
  */
 static int video_getFullscreenDisplayModes(void *arg)
 {
-    SDL_DisplayID *displays;
+    const SDL_DisplayID *displays;
     const SDL_DisplayMode **modes;
     int count;
     int i;
@@ -323,7 +323,6 @@ static int video_getFullscreenDisplayModes(void *arg)
             SDLTest_AssertCheck(count >= 0, "Validate number of modes; expected: >= 0; got: %d", count);
             SDL_free((void *)modes);
         }
-        SDL_free(displays);
     }
 
     return TEST_COMPLETED;
@@ -334,7 +333,7 @@ static int video_getFullscreenDisplayModes(void *arg)
  */
 static int video_getClosestDisplayModeCurrentResolution(void *arg)
 {
-    SDL_DisplayID *displays;
+    const SDL_DisplayID *displays;
     const SDL_DisplayMode **modes;
     SDL_DisplayMode current;
     const SDL_DisplayMode *closest;
@@ -373,7 +372,6 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
             }
             SDL_free((void *)modes);
         }
-        SDL_free(displays);
     }
 
     return TEST_COMPLETED;
@@ -384,7 +382,7 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
  */
 static int video_getClosestDisplayModeRandomResolution(void *arg)
 {
-    SDL_DisplayID *displays;
+    const SDL_DisplayID *displays;
     SDL_DisplayMode target;
     int i;
     int variation;
@@ -411,7 +409,6 @@ static int video_getClosestDisplayModeRandomResolution(void *arg)
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=random/variation%d)", variation);
             }
         }
-        SDL_free(displays);
     }
 
     return TEST_COMPLETED;
@@ -1673,7 +1670,7 @@ cleanup:
  */
 static int video_setWindowCenteredOnDisplay(void *arg)
 {
-    SDL_DisplayID *displays;
+    const SDL_DisplayID *displays;
     SDL_Window *window;
     const char *title = "video_setWindowCenteredOnDisplay Test Window";
     int x, y, w, h;
@@ -1869,8 +1866,6 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 destroyVideoSuiteTestWindow(window);
             }
         }
-
-        SDL_free(displays);
     }
 
     return TEST_COMPLETED;

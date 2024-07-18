@@ -416,7 +416,7 @@ static int X11_CaptureMouse(SDL_Window *window)
 static SDL_MouseButtonFlags X11_GetGlobalMouseState(float *x, float *y)
 {
     SDL_VideoData *videodata = SDL_GetVideoDevice()->internal;
-    SDL_DisplayID *displays;
+    const SDL_DisplayID *displays;
     Display *display = GetDisplay();
     int i;
 
@@ -458,7 +458,6 @@ static SDL_MouseButtonFlags X11_GetGlobalMouseState(float *x, float *y)
                     }
                 }
             }
-            SDL_free(displays);
         }
     }
 

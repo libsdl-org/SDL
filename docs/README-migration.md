@@ -1970,7 +1970,7 @@ Rather than iterating over displays using display index, there is a new function
 {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) == 0) {
         int i, num_displays = 0;
-        SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+        const SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
         if (displays) {
             for (i = 0; i < num_displays; ++i) {
                 SDL_DisplayID instance_id = displays[i];
@@ -1978,7 +1978,6 @@ Rather than iterating over displays using display index, there is a new function
 
                 SDL_Log("Display %" SDL_PRIu32 ": %s\n", instance_id, name ? name : "Unknown");
             }
-            SDL_free(displays);
         }
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
