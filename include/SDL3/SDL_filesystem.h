@@ -68,7 +68,7 @@ extern "C" {
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \returns an absolute path in UTF-8 encoding to the application data
  *          directory. NULL will be returned on error or when the platform
@@ -123,7 +123,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetBasePath(void);
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param org the name of your organization.
  * \param app the name of your application.
@@ -223,7 +223,7 @@ typedef enum SDL_Folder
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * If NULL is returned, the error may be obtained with SDL_GetError().
  *
@@ -354,7 +354,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  * convenience, but if `count` is non-NULL, on return it will contain the
  * number of items in the array, not counting the NULL terminator.
  *
- * The returned pointer follows the SDL_GetStringRule.
+ * The returned pointer follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param path the path of the directory to enumerate.
  * \param pattern the pattern that files in the directory must match. Can be

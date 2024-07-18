@@ -62,7 +62,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
  * This functions returns empty string if there was not enough memory left for
  * a copy of the clipboard's content.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \returns the clipboard text on success or an empty string on failure; call
  *          SDL_GetError() for more information.
@@ -106,7 +106,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
  * This functions returns empty string if there was not enough memory left for
  * a copy of the primary selection's content.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \returns the primary selection text on success or an empty string on
  *          failure; call SDL_GetError() for more information.

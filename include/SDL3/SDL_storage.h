@@ -383,7 +383,7 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *sto
  * convenience, but if `count` is non-NULL, on return it will contain the
  * number of items in the array, not counting the NULL terminator.
  *
- * The returned pointer follows the SDL_GetStringRule.
+ * The returned pointer follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param storage a storage container.
  * \param path the path of the directory to enumerate.

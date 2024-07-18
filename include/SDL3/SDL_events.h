@@ -350,7 +350,7 @@ typedef struct SDL_KeyboardEvent
  * will be inserted into the editing text. The length is the number of UTF-8
  * characters that will be replaced by new typing.
  *
- * The text string follows the SDL_GetStringRule.
+ * The text string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -368,7 +368,7 @@ typedef struct SDL_TextEditingEvent
 /**
  * Keyboard IME candidates event structure (event.edit_candidates.*)
  *
- * The candidates follow the SDL_GetStringRule.
+ * The candidates follow the SDL_GetStringRule, and will be automatically freed later.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -387,7 +387,7 @@ typedef struct SDL_TextEditingCandidatesEvent
 /**
  * Keyboard text input event structure (event.text.*)
  *
- * The text string follows the SDL_GetStringRule.
+ * The text string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * This event will never be delivered unless text input is enabled by calling
  * SDL_StartTextInput(). Text input is disabled by default!
@@ -784,7 +784,7 @@ typedef struct SDL_PenButtonEvent
  * An event used to drop text or request a file open by the system
  * (event.drop.*)
  *
- * The source and data strings follow the SDL_GetStringRule.
+ * The source and data strings follow the SDL_GetStringRule, and will be automatically freed later.
  *
  * \since This struct is available since SDL 3.0.0.
  */
