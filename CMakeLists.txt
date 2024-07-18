@@ -141,6 +141,7 @@ check_cpu_architecture(x86 SDL_CPU_X86)
 check_cpu_architecture(x64 SDL_CPU_X64)
 check_cpu_architecture(arm32 SDL_CPU_ARM32)
 check_cpu_architecture(arm64 SDL_CPU_ARM64)
+check_cpu_architecture(arm64ec SDL_CPU_ARM64EC)
 check_cpu_architecture(loongarch64 SDL_CPU_LOONGARCH64)
 
 # Check for 64 or 32 bit
@@ -239,7 +240,7 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
 endif()
 
 # Default option knobs
-if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA OR PSP OR PS2 OR N3DS)
+if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA OR PSP OR PS2 OR N3DS OR SDL_CPU_ARM64EC)
   set(OPT_DEF_LIBC ON)
 endif()
 if(WINDOWS OR DARWIN OR MACOSX OR IOS OR TVOS)
