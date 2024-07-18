@@ -80,6 +80,16 @@ static const size_t CONSTANTS_OFFSET_DECODE_BT2020_LIMITED = ALIGN_CONSTANTS(16,
 static const size_t CONSTANTS_OFFSET_DECODE_BT2020_FULL = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT2020_LIMITED + sizeof(float) * 4 * 4);
 static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_DECODE_BT2020_FULL + sizeof(float) * 4 * 4;
 
+/* Sampler types */
+typedef enum
+{
+    SDL_METAL_SAMPLER_NEAREST_CLAMP,
+    SDL_METAL_SAMPLER_NEAREST_WRAP,
+    SDL_METAL_SAMPLER_LINEAR_CLAMP,
+    SDL_METAL_SAMPLER_LINEAR_WRAP,
+    SDL_NUM_METAL_SAMPLERS
+} SDL_METAL_sampler_type;
+
 typedef enum SDL_MetalVertexFunction
 {
     SDL_METAL_VERTEX_SOLID,
@@ -130,8 +140,7 @@ typedef struct METAL_ShaderPipelines
 @property(nonatomic, retain) id<MTLRenderCommandEncoder> mtlcmdencoder;
 @property(nonatomic, retain) id<MTLLibrary> mtllibrary;
 @property(nonatomic, retain) id<CAMetalDrawable> mtlbackbuffer;
-@property(nonatomic, retain) id<MTLSamplerState> mtlsamplernearest;
-@property(nonatomic, retain) id<MTLSamplerState> mtlsamplerlinear;
+@property(nonatomic, retain) NSMutableArray<id<MTLSamplerState>> *mtlsamplers;
 @property(nonatomic, retain) id<MTLBuffer> mtlbufconstants;
 @property(nonatomic, retain) id<MTLBuffer> mtlbufquadindices;
 @property(nonatomic, assign) SDL_MetalView mtlview;
@@ -148,7 +157,6 @@ typedef struct METAL_ShaderPipelines
 @interface METAL_TextureData : NSObject
 @property(nonatomic, retain) id<MTLTexture> mtltexture;
 @property(nonatomic, retain) id<MTLTexture> mtltextureUv;
-@property(nonatomic, retain) id<MTLSamplerState> mtlsampler;
 @property(nonatomic, assign) SDL_MetalFragmentFunction fragmentFunction;
 #if SDL_HAVE_YUV
 @property(nonatomic, assign) BOOL yuv;
@@ -739,11 +747,6 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
 #endif /* SDL_HAVE_YUV */
         texturedata = [[METAL_TextureData alloc] init];
-        if (texture->scaleMode == SDL_SCALEMODE_NEAREST) {
-            texturedata.mtlsampler = data.mtlsamplernearest;
-        } else {
-            texturedata.mtlsampler = data.mtlsamplerlinear;
-        }
         if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
 #if SDL_HAVE_YUV
@@ -1094,16 +1097,6 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static void METAL_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
-    @autoreleasepool {
-        METAL_RenderData *data = (__bridge METAL_RenderData *)renderer->internal;
-        METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->internal;
-
-        if (scaleMode == SDL_SCALEMODE_NEAREST) {
-            texturedata.mtlsampler = data.mtlsamplernearest;
-        } else {
-            texturedata.mtlsampler = data.mtlsamplerlinear;
-        }
-    }
 }
 
 static int METAL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -1503,13 +1496,32 @@ static SDL_bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cm
     }
 
     if (texture != statecache->texture) {
-        METAL_TextureData *oldtexturedata = NULL;
-        if (statecache->texture) {
-            oldtexturedata = (__bridge METAL_TextureData *)statecache->texture->internal;
+        id<MTLSamplerState> mtlsampler;
+
+        if (texture->scaleMode == SDL_SCALEMODE_NEAREST) {
+            switch (cmd->data.draw.texture_address_mode) {
+            case SDL_TEXTURE_ADDRESS_CLAMP:
+                mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_NEAREST_CLAMP];
+                break;
+            case SDL_TEXTURE_ADDRESS_WRAP:
+                mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_NEAREST_WRAP];
+                break;
+            default:
+                return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+            }
+        } else {
+            switch (cmd->data.draw.texture_address_mode) {
+            case SDL_TEXTURE_ADDRESS_CLAMP:
+                mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_LINEAR_CLAMP];
+                break;
+            case SDL_TEXTURE_ADDRESS_WRAP:
+                mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_LINEAR_WRAP];
+                break;
+            default:
+                return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+            }
         }
-        if (!oldtexturedata || (texturedata.mtlsampler != oldtexturedata.mtlsampler)) {
-            [data.mtlcmdencoder setFragmentSamplerState:texturedata.mtlsampler atIndex:0];
-        }
+        [data.mtlcmdencoder setFragmentSamplerState:mtlsampler atIndex:0];
 
         [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
 #if SDL_HAVE_YUV
@@ -1904,7 +1916,6 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         MTLSamplerDescriptor *samplerdesc;
         id<MTLCommandQueue> mtlcmdqueue;
         id<MTLLibrary> mtllibrary;
-        id<MTLSamplerState> mtlsamplernearest, mtlsamplerlinear;
         id<MTLBuffer> mtlbufconstantstaging, mtlbufquadindicesstaging, mtlbufconstants, mtlbufquadindices;
         id<MTLCommandBuffer> cmdbuffer;
         id<MTLBlitCommandEncoder> blitcmd;
@@ -2066,17 +2077,27 @@ static int METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         data.allpipelines = NULL;
         ChooseShaderPipelines(data, MTLPixelFormatBGRA8Unorm);
 
+        static struct
+        {
+            MTLSamplerMinMagFilter filter;
+            MTLSamplerAddressMode address;
+        } samplerParams[] = {
+            { MTLSamplerMinMagFilterNearest, MTLSamplerAddressModeClampToEdge },
+            { MTLSamplerMinMagFilterNearest, MTLSamplerAddressModeRepeat },
+            { MTLSamplerMinMagFilterLinear, MTLSamplerAddressModeClampToEdge },
+            { MTLSamplerMinMagFilterLinear, MTLSamplerAddressModeRepeat },
+        };
+        SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == SDL_NUM_METAL_SAMPLERS);
+
+        data.mtlsamplers = [[NSMutableArray<id<MTLSamplerState>> alloc] init];
         samplerdesc = [[MTLSamplerDescriptor alloc] init];
-
-        samplerdesc.minFilter = MTLSamplerMinMagFilterNearest;
-        samplerdesc.magFilter = MTLSamplerMinMagFilterNearest;
-        mtlsamplernearest = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
-        data.mtlsamplernearest = mtlsamplernearest;
-
-        samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
-        samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
-        mtlsamplerlinear = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
-        data.mtlsamplerlinear = mtlsamplerlinear;
+        for (int i = 0; i < SDL_arraysize(samplerParams); ++i) {
+            samplerdesc.minFilter = samplerParams[i].filter;
+            samplerdesc.magFilter = samplerParams[i].filter;
+            samplerdesc.sAddressMode = samplerParams[i].address;
+            samplerdesc.tAddressMode = samplerParams[i].address;
+            [data.mtlsamplers addObject:[data.mtldevice newSamplerStateWithDescriptor:samplerdesc]];
+        }
 
         mtlbufconstantstaging = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModeShared];
 

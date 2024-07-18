@@ -23,9 +23,10 @@ typedef struct SDLTest_SurfaceImage_s {
 } SDLTest_SurfaceImage_t;
 
 /* Test images */
-SDL_Surface *SDLTest_ImageBlit(void);
-SDL_Surface *SDLTest_ImageBlitColor(void);
-SDL_Surface *SDLTest_ImageFace(void);
-SDL_Surface *SDLTest_ImagePrimitives(void);
-SDL_Surface *SDLTest_ImageBlendingBackground(void);
-SDL_Surface *SDLTest_ImageBlendingSprite(void);
+extern SDL_Surface *SDLTest_ImageBlit(void);
+extern SDL_Surface *SDLTest_ImageBlitColor(void);
+extern SDL_Surface *SDLTest_ImageFace(void);
+extern SDL_Surface *SDLTest_ImagePrimitives(void);
+extern SDL_Surface *SDLTest_ImageBlendingBackground(void);
+extern SDL_Surface *SDLTest_ImageBlendingSprite(void);
+extern SDL_Surface *SDLTest_ImageWrappingSprite(void);

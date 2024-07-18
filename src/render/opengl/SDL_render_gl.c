@@ -541,15 +541,6 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
     renderdata->glBindTexture(textype, data->texture);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, scaleMode);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, scaleMode);
-    /* According to the spec, CLAMP_TO_EDGE is the default for TEXTURE_RECTANGLE
-       and setting it causes an INVALID_ENUM error in the latest NVidia drivers.
-    */
-    if (textype != GL_TEXTURE_RECTANGLE_ARB) {
-        renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_S,
-                                    GL_CLAMP_TO_EDGE);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T,
-                                    GL_CLAMP_TO_EDGE);
-    }
 #ifdef SDL_PLATFORM_MACOS
 #ifndef GL_TEXTURE_STORAGE_HINT_APPLE
 #define GL_TEXTURE_STORAGE_HINT_APPLE 0x85BC
@@ -609,10 +600,6 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                                     scaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER,
                                     scaleMode);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_S,
-                                    GL_CLAMP_TO_EDGE);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T,
-                                    GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_U_NUMBER, data->utexture);
@@ -622,10 +609,6 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                                     scaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER,
                                     scaleMode);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_S,
-                                    GL_CLAMP_TO_EDGE);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T,
-                                    GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, internalFormat, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, format, type, NULL);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_V_NUMBER, data->vtexture);
@@ -646,10 +629,6 @@ static int GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Pr
                                     scaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER,
                                     scaleMode);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_S,
-                                    GL_CLAMP_TO_EDGE);
-        renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T,
-                                    GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(textype, 0, GL_LUMINANCE_ALPHA, (texture_w + 1) / 2,
                                  (texture_h + 1) / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_UV_NUMBER, data->utexture);
@@ -1141,6 +1120,23 @@ static int SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const
     return 0;
 }
 
+static int SetTextureAddressMode(GL_RenderData *data, GLenum textype, SDL_TextureAddressMode addressMode)
+{
+    switch (addressMode) {
+    case SDL_TEXTURE_ADDRESS_CLAMP:
+        data->glTexParameteri(textype, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        break;
+    case SDL_TEXTURE_ADDRESS_WRAP:
+        data->glTexParameteri(textype, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        break;
+    default:
+        return SDL_SetError("Unknown texture address mode: %d\n", addressMode);
+    }
+    return 0;
+}
+
 static int SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
@@ -1157,22 +1153,38 @@ static int SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
             }
             data->glBindTexture(textype, texturedata->vtexture);
 
+            if (SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode) < 0) {
+                return -1;
+            }
+
             if (data->GL_ARB_multitexture_supported) {
                 data->glActiveTextureARB(GL_TEXTURE1_ARB);
             }
             data->glBindTexture(textype, texturedata->utexture);
+
+            if (SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode) < 0) {
+                return -1;
+            }
         }
         if (texturedata->nv12) {
             if (data->GL_ARB_multitexture_supported) {
                 data->glActiveTextureARB(GL_TEXTURE1_ARB);
             }
             data->glBindTexture(textype, texturedata->utexture);
+
+            if (SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode) < 0) {
+                return -1;
+            }
         }
 #endif
         if (data->GL_ARB_multitexture_supported) {
             data->glActiveTextureARB(GL_TEXTURE0_ARB);
         }
         data->glBindTexture(textype, texturedata->texture);
+
+        if (SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode) < 0) {
+            return -1;
+        }
 
         data->drawstate.texture = texture;
     }

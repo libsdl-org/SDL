@@ -928,7 +928,8 @@ static int SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, vo
                         &(ptr[0].src), &(ptr[1].src), &(ptr[2].src),
                         surface,
                         &(ptr[0].dst), &(ptr[1].dst), &(ptr[2].dst),
-                        ptr[0].color, ptr[1].color, ptr[2].color);
+                        ptr[0].color, ptr[1].color, ptr[2].color,
+                        cmd->data.draw.texture_address_mode);
                 }
             } else {
                 GeometryFillData *ptr = (GeometryFillData *)verts;

@@ -158,9 +158,12 @@ typedef enum {
 } SDL_vulkan_renderpass_type;
 
 /* Sampler types */
-typedef enum {
-    SDL_VULKAN_SAMPLER_NEAREST = 0,
-    SDL_VULKAN_SAMPLER_LINEAR = 1,
+typedef enum
+{
+    SDL_VULKAN_SAMPLER_NEAREST_CLAMP,
+    SDL_VULKAN_SAMPLER_NEAREST_WRAP,
+    SDL_VULKAN_SAMPLER_LINEAR_CLAMP,
+    SDL_VULKAN_SAMPLER_LINEAR_WRAP,
     SDL_VULKAN_NUM_SAMPLERS
 } SDL_vulkan_sampler_type;
 
@@ -180,6 +183,15 @@ static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
 static const float INPUTTYPE_SCRGB = 2;
 static const float INPUTTYPE_HDR10 = 3;
+
+typedef enum
+{
+    SAMPLER_POINT_CLAMP,
+    SAMPLER_POINT_WRAP,
+    SAMPLER_LINEAR_CLAMP,
+    SAMPLER_LINEAR_WRAP,
+    NUM_SAMPLERS
+} Sampler;
 
 /* Pixel shader constants, common values */
 typedef struct
@@ -1904,34 +1916,37 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
 
     /* Create samplers */
     {
+        static struct
+        {
+            VkFilter filter;
+            VkSamplerAddressMode address;
+        } samplerParams[] = {
+            { VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE },
+            { VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT },
+            { VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE },
+            { VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT },
+        };
+        SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == SDL_VULKAN_NUM_SAMPLERS);
         VkSamplerCreateInfo samplerCreateInfo = { 0 };
         samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
-        samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
         samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         samplerCreateInfo.mipLodBias = 0.0f;
         samplerCreateInfo.anisotropyEnable = VK_FALSE;
         samplerCreateInfo.maxAnisotropy = 1.0f;
         samplerCreateInfo.minLod = 0.0f;
         samplerCreateInfo.maxLod = 1000.0f;
-        result = vkCreateSampler(rendererData->device, &samplerCreateInfo, NULL, &rendererData->samplers[SDL_VULKAN_SAMPLER_NEAREST]);
-        if (result != VK_SUCCESS) {
-            VULKAN_DestroyAll(renderer);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateSampler(): %s\n", SDL_Vulkan_GetResultString(result));
-            return result;
-        }
-
-        samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        result = vkCreateSampler(rendererData->device, &samplerCreateInfo, NULL, &rendererData->samplers[SDL_VULKAN_SAMPLER_LINEAR]);
-        if (result != VK_SUCCESS) {
-            VULKAN_DestroyAll(renderer);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateSampler(): %s\n", SDL_Vulkan_GetResultString(result));
-            return result;
+        for (int i = 0; i < SDL_arraysize(samplerParams); ++i) {
+            samplerCreateInfo.magFilter = samplerParams[i].filter;
+            samplerCreateInfo.minFilter = samplerParams[i].filter;
+            samplerCreateInfo.addressModeU = samplerParams[i].address;
+            samplerCreateInfo.addressModeV = samplerParams[i].address;
+            result = vkCreateSampler(rendererData->device, &samplerCreateInfo, NULL, &rendererData->samplers[i]);
+            if (result != VK_SUCCESS) {
+                VULKAN_DestroyAll(renderer);
+                SDL_LogError(SDL_LOG_CATEGORY_RENDER, "vkCreateSampler(): %s\n", SDL_Vulkan_GetResultString(result));
+                return result;
+            }
         }
     }
 
@@ -2602,8 +2617,8 @@ static int VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
         samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
         samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         samplerCreateInfo.mipLodBias = 0.0f;
         samplerCreateInfo.anisotropyEnable = VK_FALSE;
@@ -3627,10 +3642,28 @@ static SDL_bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderComm
 
     switch (textureData->scaleMode) {
     case VK_FILTER_NEAREST:
-        textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_NEAREST];
+        switch (cmd->data.draw.texture_address_mode) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_NEAREST_CLAMP];
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_NEAREST_WRAP];
+            break;
+        default:
+            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+        }
         break;
     case VK_FILTER_LINEAR:
-        textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_LINEAR];
+        switch (cmd->data.draw.texture_address_mode) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_LINEAR_CLAMP];
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            textureSampler = rendererData->samplers[SDL_VULKAN_SAMPLER_LINEAR_WRAP];
+            break;
+        default:
+            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+        }
         break;
     default:
         return SDL_SetError("Unknown scale mode: %d", textureData->scaleMode);
