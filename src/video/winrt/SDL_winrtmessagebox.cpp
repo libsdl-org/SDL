@@ -34,7 +34,7 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Popups;
 
 static String ^ WINRT_UTF8ToPlatformString(const char *str) {
-    wchar_t *wstr = WIN_UTF8ToString(str);
+    wchar_t *wstr = WIN_UTF8ToStringW(str);
     String ^ rtstr = ref new String(wstr);
     SDL_free(wstr);
     return rtstr;

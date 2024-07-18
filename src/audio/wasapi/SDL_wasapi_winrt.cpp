@@ -145,7 +145,7 @@ void SDL_WasapiDeviceEventHandler::OnDeviceAdded(DeviceWatcher ^ sender, DeviceI
        available and switch automatically. (!!! FIXME...?) */
 
     SDL_assert(sender == this->watcher);
-    char *utf8dev = WIN_StringToUTF8(info->Name->Data());
+    char *utf8dev = WIN_StringToUTF8W(info->Name->Data());
     if (utf8dev) {
         SDL_AudioSpec spec;
         SDL_zero(spec);
