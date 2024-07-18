@@ -391,15 +391,16 @@ extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
 /**
  * Get a list of currently connected displays.
  *
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
  * \param count a pointer filled in with the number of displays returned, may
  *              be NULL.
- * \returns a 0 terminated array of display instance IDs which should be freed
- *          with SDL_free(), or NULL on failure; call SDL_GetError() for more
+ * \returns a 0 terminated array of display instance IDs or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_DisplayID * SDLCALL SDL_GetDisplays(int *count);
+extern SDL_DECLSPEC const SDL_DisplayID * SDLCALL SDL_GetDisplays(int *count);
 
 /**
  * Return the primary display.
