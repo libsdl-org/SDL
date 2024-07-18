@@ -100,7 +100,7 @@ const char *SDL_GetHapticNameForID(SDL_HapticID instance_id)
     if (SDL_GetHapticIndex(instance_id, &device_index)) {
         name = SDL_SYS_HapticName(device_index);
     }
-    return name ? SDL_FreeLater(SDL_strdup(name)) : NULL;
+    return SDL_CreateTemporaryString(name);
 }
 
 SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
@@ -187,9 +187,9 @@ SDL_HapticID SDL_GetHapticID(SDL_Haptic *haptic)
 
 const char *SDL_GetHapticName(SDL_Haptic *haptic)
 {
-    CHECK_HAPTIC_MAGIC(haptic, 0);
+    CHECK_HAPTIC_MAGIC(haptic, NULL);
 
-    return haptic->name;
+    return SDL_CreateTemporaryString(haptic->name);
 }
 
 SDL_bool SDL_IsMouseHaptic(void)
@@ -336,7 +336,7 @@ void SDL_CloseHaptic(SDL_Haptic *haptic)
     }
 
     /* Free the data associated with this device */
-    SDL_FreeLater(haptic->name);  // this pointer is handed to the app in SDL_GetHapticName()
+    SDL_free(haptic->name);
     SDL_free(haptic);
 }
 

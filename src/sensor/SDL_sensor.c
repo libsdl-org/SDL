@@ -246,11 +246,11 @@ const char *SDL_GetSensorNameForID(SDL_SensorID instance_id)
 
     SDL_LockSensors();
     if (SDL_GetDriverAndSensorIndex(instance_id, &driver, &device_index)) {
-        name = driver->GetDeviceName(device_index);
+        name = SDL_CreateTemporaryString(driver->GetDeviceName(device_index));
     }
     SDL_UnlockSensors();
 
-    return name ? SDL_FreeLater(SDL_strdup(name)) : NULL;
+    return name;
 }
 
 SDL_SensorType SDL_GetSensorTypeForID(SDL_SensorID instance_id)
@@ -407,7 +407,7 @@ const char *SDL_GetSensorName(SDL_Sensor *sensor)
     {
         CHECK_SENSOR_MAGIC(sensor, NULL);
 
-        retval = sensor->name;
+        retval = SDL_CreateTemporaryString(sensor->name);
     }
     SDL_UnlockSensors();
 
@@ -526,7 +526,7 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
         }
 
         /* Free the data associated with this sensor */
-        SDL_FreeLater(sensor->name);  // this pointer gets handed to the app by SDL_GetSensorName().
+        SDL_free(sensor->name);
         SDL_free(sensor);
     }
     SDL_UnlockSensors();

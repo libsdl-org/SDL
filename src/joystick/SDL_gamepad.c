@@ -1600,7 +1600,7 @@ static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, co
         /* Only overwrite the mapping if the priority is the same or higher. */
         if (pGamepadMapping->priority <= priority) {
             /* Update existing mapping */
-            SDL_FreeLater(pGamepadMapping->name);  // this is returned in SDL_GetGamepadName.
+            SDL_free(pGamepadMapping->name);
             pGamepadMapping->name = pchName;
             SDL_free(pGamepadMapping->mapping);
             pGamepadMapping->mapping = pchMapping;
@@ -2198,8 +2198,7 @@ const char * const *SDL_GetGamepadMappings(int *count)
         SDL_free(mappings);
     }
 
-    SDL_FreeLater(retval);
-    return (const char * const *) retval;
+    return SDL_FreeLater(retval);
 }
 
 /*
@@ -2221,8 +2220,7 @@ const char *SDL_GetGamepadMappingForGUID(SDL_JoystickGUID guid)
     }
     SDL_UnlockJoysticks();
 
-    SDL_FreeLater(retval);
-    return retval;
+    return SDL_FreeLater(retval);
 }
 
 /*
@@ -2240,8 +2238,7 @@ const char *SDL_GetGamepadMapping(SDL_Gamepad *gamepad)
     }
     SDL_UnlockJoysticks();
 
-    SDL_FreeLater(retval);
-    return retval;
+    return SDL_FreeLater(retval);
 }
 
 /*
@@ -2434,7 +2431,7 @@ const char *SDL_GetGamepadNameForID(SDL_JoystickID instance_id)
             if (SDL_strcmp(mapping->name, "*") == 0) {
                 retval = SDL_GetJoystickNameForID(instance_id);
             } else {
-                retval = mapping->name;
+                retval = SDL_CreateTemporaryString(mapping->name);
             }
         }
     }
@@ -2538,8 +2535,7 @@ const char *SDL_GetGamepadMappingForID(SDL_JoystickID instance_id)
     }
     SDL_UnlockJoysticks();
 
-    SDL_FreeLater(retval);
-    return retval;
+    return SDL_FreeLater(retval);
 }
 
 /*
@@ -3314,7 +3310,7 @@ const char *SDL_GetGamepadName(SDL_Gamepad *gamepad)
             gamepad->joystick->steam_handle != 0) {
             retval = SDL_GetJoystickName(gamepad->joystick);
         } else {
-            retval = gamepad->name;
+            retval = SDL_CreateTemporaryString(gamepad->name);
         }
     }
     SDL_UnlockJoysticks();
@@ -3707,7 +3703,7 @@ void SDL_QuitGamepadMappings(void)
     while (s_pSupportedGamepads) {
         pGamepadMap = s_pSupportedGamepads;
         s_pSupportedGamepads = s_pSupportedGamepads->next;
-        SDL_FreeLater(pGamepadMap->name);  // this is returned in SDL_GetGamepadName.
+        SDL_free(pGamepadMap->name);
         SDL_free(pGamepadMap->mapping);
         SDL_free(pGamepadMap);
     }

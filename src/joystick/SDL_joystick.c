@@ -780,13 +780,13 @@ const char *SDL_GetJoystickNameForID(SDL_JoystickID instance_id)
     SDL_LockJoysticks();
     info = SDL_GetJoystickVirtualGamepadInfoForID(instance_id);
     if (info) {
-        name = info->name;
+        name = SDL_CreateTemporaryString(info->name);
     } else if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        name = driver->GetDeviceName(device_index);
+        name = SDL_CreateTemporaryString(driver->GetDeviceName(device_index));
     }
     SDL_UnlockJoysticks();
 
-    return name ? SDL_FreeLater(SDL_strdup(name)) : NULL;
+    return name;
 }
 
 /*
@@ -800,14 +800,14 @@ const char *SDL_GetJoystickPathForID(SDL_JoystickID instance_id)
 
     SDL_LockJoysticks();
     if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        path = driver->GetDevicePath(device_index);
+        path = SDL_CreateTemporaryString(driver->GetDevicePath(device_index));
     }
     SDL_UnlockJoysticks();
 
     if (!path) {
         SDL_Unsupported();
     }
-    return path ? SDL_FreeLater(SDL_strdup(path)) : NULL;
+    return path;
 }
 
 /*
@@ -1653,9 +1653,9 @@ const char *SDL_GetJoystickName(SDL_Joystick *joystick)
 
         info = SDL_GetJoystickVirtualGamepadInfoForID(joystick->instance_id);
         if (info) {
-            retval = info->name;
+            retval = SDL_CreateTemporaryString(info->name);
         } else {
-            retval = joystick->name;
+            retval = SDL_CreateTemporaryString(joystick->name);
         }
     }
     SDL_UnlockJoysticks();
@@ -1675,7 +1675,7 @@ const char *SDL_GetJoystickPath(SDL_Joystick *joystick)
         CHECK_JOYSTICK_MAGIC(joystick, NULL);
 
         if (joystick->path) {
-            retval = joystick->path;
+            retval = SDL_CreateTemporaryString(joystick->path);
         } else {
             SDL_Unsupported();
             retval = NULL;
@@ -1884,9 +1884,9 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
         }
 
         /* Free the data associated with this joystick */
-        SDL_FreeLater(joystick->name);  // SDL_GetJoystickName returns this pointer.
-        SDL_FreeLater(joystick->path);  // SDL_GetJoystickPath returns this pointer.
-        SDL_FreeLater(joystick->serial);  // SDL_GetJoystickSerial returns this pointer.
+        SDL_free(joystick->name);
+        SDL_free(joystick->path);
+        SDL_free(joystick->serial);
         SDL_free(joystick->axes);
         SDL_free(joystick->balls);
         SDL_free(joystick->hats);
@@ -3431,7 +3431,7 @@ const char *SDL_GetJoystickSerial(SDL_Joystick *joystick)
     {
         CHECK_JOYSTICK_MAGIC(joystick, NULL);
 
-        retval = joystick->serial;
+        retval = SDL_CreateTemporaryString(joystick->serial);
     }
     SDL_UnlockJoysticks();
 

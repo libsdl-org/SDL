@@ -59,13 +59,13 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
         event.type = evtype;
         event.common.timestamp = 0;
         if (source) {
-            event.drop.source = SDL_AllocateEventString(source);
+            event.drop.source = SDL_CreateTemporaryString(source);
             if (!event.drop.source) {
                 return 0;
             }
         }
         if (data) {
-            event.drop.data = SDL_AllocateEventString(data);
+            event.drop.data = SDL_CreateTemporaryString(data);
             if (!event.drop.data) {
                 return 0;
             }

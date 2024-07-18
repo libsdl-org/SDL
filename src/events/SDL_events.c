@@ -290,7 +290,7 @@ void *SDL_AllocateEventMemory(size_t size)
     return SDL_FreeLater(SDL_malloc(size));
 }
 
-const char *SDL_AllocateEventString(const char *string)
+const char *SDL_CreateTemporaryString(const char *string)
 {
     if (string) {
         return SDL_FreeLater(SDL_strdup(string));

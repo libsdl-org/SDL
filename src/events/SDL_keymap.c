@@ -1017,7 +1017,7 @@ const char *SDL_GetKeyName(SDL_Keycode key)
 
         end = SDL_UCS4ToUTF8(key, name);
         *end = '\0';
-        return SDL_FreeLater(SDL_strdup(name));
+        return SDL_CreateTemporaryString(name);
     }
 }
 

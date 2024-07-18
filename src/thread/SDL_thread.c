@@ -329,7 +329,7 @@ void SDL_RunThread(SDL_Thread *thread)
     if (!SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
         /* Clean up if something already detached us. */
         if (SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_DETACHED, SDL_THREAD_STATE_CLEANED)) {
-            SDL_FreeLater(thread->name);
+            SDL_free(thread->name); /* Can't free later, we've already cleaned up TLS */
             SDL_free(thread);
         }
     }

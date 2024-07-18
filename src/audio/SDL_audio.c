@@ -170,7 +170,7 @@ static int GetDefaultSampleFramesFromFreq(const int freq)
 int *SDL_ChannelMapDup(const int *origchmap, int channels)
 {
     const size_t chmaplen = sizeof (*origchmap) * channels;
-    int *chmap = (int *) SDL_malloc(chmaplen);
+    int *chmap = (int *)SDL_malloc(chmaplen);
     if (chmap) {
         SDL_memcpy(chmap, origchmap, chmaplen);
     }
@@ -544,8 +544,8 @@ static void DestroyPhysicalAudioDevice(SDL_AudioDevice *device)
     SDL_DestroyMutex(device->lock);
     SDL_DestroyCondition(device->close_cond);
     SDL_free(device->work_buffer);
-    SDL_FreeLater(device->chmap);  // this pointer is handed to the app during SDL_GetAudioDeviceChannelMap
-    SDL_FreeLater(device->name);  // this pointer is handed to the app during SDL_GetAudioDeviceName
+    SDL_free(device->chmap);
+    SDL_free(device->name);
     SDL_free(device);
 }
 
@@ -1432,7 +1432,7 @@ const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
     const char *retval = NULL;
     SDL_AudioDevice *device = ObtainPhysicalAudioDevice(devid);
     if (device) {
-        retval = device->name;
+        retval = SDL_CreateTemporaryString(device->name);
     }
     ReleaseAudioDevice(device);
 
@@ -1465,8 +1465,8 @@ const int *SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count)
     int channels = 0;
     SDL_AudioDevice *device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
     if (device) {
-        retval = device->chmap;
         channels = device->spec.channels;
+        retval = SDL_FreeLater(SDL_ChannelMapDup(device->chmap, channels));
     }
     ReleaseAudioDevice(device);
 
