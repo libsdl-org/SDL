@@ -33,8 +33,8 @@ set(PKGCONFIG_DEPENDS)
 add_library(sdl-build-options INTERFACE)
 
 if(WINDOWS_STORE)
-  target_compile_definitions(sdl-build-options INTERFACE "-DSDL_BUILDING_WINRT=1")
-  target_compile_options(sdl-build-options INTERFACE "-ZW")
+  target_compile_definitions(sdl-build-options INTERFACE "-DSDL_BUILDING_WINRT=1" "WINAPI_FAMILY=WINAPI_FAMILY_APP")
+  target_compile_options(sdl-build-options INTERFACE "$<$<COMPILE_LANGUAGE:CXX>:-ZW>" "$<$<COMPILE_LANGUAGE:CXX>:-EHsc>")
 endif()
 
 # CMake 3.0 expands the "if(${A})" in "set(OFF 1);set(A OFF);if(${A})" to "if(1)"
