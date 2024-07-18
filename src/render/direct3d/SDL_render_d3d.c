@@ -62,7 +62,8 @@ typedef struct
     SDL_bool updateSize;
     SDL_bool beginScene;
     SDL_bool enableSeparateAlphaBlend;
-    D3DTEXTUREFILTERTYPE scaleMode[8];
+    D3DTEXTUREFILTERTYPE scaleMode[3];
+    SDL_TextureAddressMode addressMode[3];
     IDirect3DSurface9 *defaultRenderTarget;
     IDirect3DSurface9 *currentRenderTarget;
     void *d3dxDLL;
@@ -276,6 +277,9 @@ static void D3D_InitRenderState(D3D_RenderData *data)
 
     /* Reset our current scale mode */
     SDL_memset(data->scaleMode, 0xFF, sizeof(data->scaleMode));
+
+    /* Reset our current address mode */
+    SDL_zeroa(data->addressMode);
 
     /* Start the render with beginScene */
     data->beginScene = SDL_TRUE;
@@ -927,19 +931,32 @@ static int BindTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWO
 static void UpdateTextureScaleMode(D3D_RenderData *data, D3D_TextureData *texturedata, unsigned index)
 {
     if (texturedata->scaleMode != data->scaleMode[index]) {
-        IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_MINFILTER,
-                                         texturedata->scaleMode);
-        IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_MAGFILTER,
-                                         texturedata->scaleMode);
-        IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_ADDRESSU,
-                                         D3DTADDRESS_CLAMP);
-        IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_ADDRESSV,
-                                         D3DTADDRESS_CLAMP);
+        IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_MINFILTER, texturedata->scaleMode);
+        IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_MAGFILTER, texturedata->scaleMode);
         data->scaleMode[index] = texturedata->scaleMode;
     }
 }
 
-static int SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, D3D9_Shader *shader, const float **shader_params)
+static void UpdateTextureAddressMode(D3D_RenderData *data, SDL_TextureAddressMode addressMode, unsigned index)
+{
+    if (addressMode != data->addressMode[index]) {
+        switch (addressMode) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+            IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+            IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+            break;
+        default:
+            break;
+        }
+        data->addressMode[index] = addressMode;
+    }
+}
+
+static int SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, SDL_TextureAddressMode addressMode, D3D9_Shader *shader, const float **shader_params)
 {
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
 
@@ -948,6 +965,7 @@ static int SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, D3D9_Sh
     }
 
     UpdateTextureScaleMode(data, texturedata, 0);
+    UpdateTextureAddressMode(data, addressMode, 0);
 
     *shader = texturedata->shader;
     *shader_params = texturedata->shader_params;
@@ -959,6 +977,8 @@ static int SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, D3D9_Sh
     if (texturedata->yuv) {
         UpdateTextureScaleMode(data, texturedata, 1);
         UpdateTextureScaleMode(data, texturedata, 2);
+        UpdateTextureAddressMode(data, addressMode, 1);
+        UpdateTextureAddressMode(data, addressMode, 2);
 
         if (BindTextureRep(data->device, &texturedata->utexture, 1) < 0) {
             return -1;
@@ -994,7 +1014,7 @@ static int SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             IDirect3DDevice9_SetTexture(data->device, 2, NULL);
         }
 #endif
-        if (texture && SetupTextureState(data, texture, &shader, &shader_params) < 0) {
+        if (texture && SetupTextureState(data, texture, cmd->data.draw.texture_address_mode, &shader, &shader_params) < 0) {
             return -1;
         }
 

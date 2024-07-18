@@ -134,6 +134,16 @@ extern "C" {
 /* !!! FIXME: vertex buffer bandwidth could be lower; only use UV coords when
    !!! FIXME:  textures are needed. */
 
+/* Sampler types */
+typedef enum
+{
+    SDL_D3D12_SAMPLER_NEAREST_CLAMP,
+    SDL_D3D12_SAMPLER_NEAREST_WRAP,
+    SDL_D3D12_SAMPLER_LINEAR_CLAMP,
+    SDL_D3D12_SAMPLER_LINEAR_WRAP,
+    SDL_D3D12_NUM_SAMPLERS
+} SDL_D3D12_sampler_type;
+
 /* Vertex shader, common values */
 typedef struct
 {
@@ -294,8 +304,7 @@ typedef struct
     D3D12_PipelineState *currentPipelineState;
 
     D3D12_VertexBuffer vertexBuffers[SDL_D3D12_NUM_VERTEX_BUFFERS];
-    D3D12_CPU_DESCRIPTOR_HANDLE nearestPixelSampler;
-    D3D12_CPU_DESCRIPTOR_HANDLE linearSampler;
+    D3D12_CPU_DESCRIPTOR_HANDLE samplers[SDL_D3D12_NUM_SAMPLERS];
 
     /* Data for staging/allocating textures */
     ID3D12Resource *uploadBuffers[SDL_D3D12_NUM_UPLOAD_BUFFERS];
@@ -1057,7 +1066,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     data->srvDescriptorSize = D3D_CALL(d3dDevice, GetDescriptorHandleIncrementSize, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     SDL_zero(descriptorHeapDesc);
-    descriptorHeapDesc.NumDescriptors = 2;
+    descriptorHeapDesc.NumDescriptors = 4;
     descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
     descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     result = D3D_CALL(data->d3dDevice, CreateDescriptorHeap,
@@ -1165,22 +1174,32 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     }
 
     /* Create samplers to use when drawing textures: */
+    static struct
+    {
+        D3D12_FILTER filter;
+        D3D12_TEXTURE_ADDRESS_MODE address;
+    } samplerParams[] = {
+        { D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_CLAMP },
+        { D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_WRAP },
+        { D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP },
+        { D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP },
+    };
+    SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == SDL_D3D12_NUM_SAMPLERS);
     SDL_zero(samplerDesc);
-    samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-    samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
     samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
     samplerDesc.MipLODBias = 0.0f;
     samplerDesc.MaxAnisotropy = 1;
     samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
     samplerDesc.MinLOD = 0.0f;
     samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(data->samplerDescriptorHeap, &data->nearestPixelSampler);
-    D3D_CALL(data->d3dDevice, CreateSampler, &samplerDesc, data->nearestPixelSampler);
-
-    samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    data->linearSampler.ptr = data->nearestPixelSampler.ptr + data->samplerDescriptorSize;
-    D3D_CALL(data->d3dDevice, CreateSampler, &samplerDesc, data->linearSampler);
+    D3D_CALL_RET_ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart(data->samplerDescriptorHeap, &data->samplers[0]);
+    for (i = 0; i < SDL_arraysize(samplerParams); ++i) {
+        samplerDesc.Filter = samplerParams[i].filter;
+        samplerDesc.AddressU = samplerParams[i].address;
+        samplerDesc.AddressV = samplerParams[i].address;
+        data->samplers[i].ptr = data->samplers[0].ptr + i * data->samplerDescriptorSize;
+        D3D_CALL(data->d3dDevice, CreateSampler, &samplerDesc, data->samplers[i]);
+    }
 
     /* Initialize the pool allocator for SRVs */
     for (i = 0; i < SDL_D3D12_MAX_NUM_TEXTURES; ++i) {
@@ -2797,10 +2816,28 @@ static int D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
 
     switch (textureData->scaleMode) {
     case D3D12_FILTER_MIN_MAG_MIP_POINT:
-        textureSampler = &rendererData->nearestPixelSampler;
+        switch (cmd->data.draw.texture_address_mode) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            textureSampler = &rendererData->samplers[SDL_D3D12_SAMPLER_NEAREST_CLAMP];
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            textureSampler = &rendererData->samplers[SDL_D3D12_SAMPLER_NEAREST_WRAP];
+            break;
+        default:
+            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+        }
         break;
     case D3D12_FILTER_MIN_MAG_MIP_LINEAR:
-        textureSampler = &rendererData->linearSampler;
+        switch (cmd->data.draw.texture_address_mode) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            textureSampler = &rendererData->samplers[SDL_D3D12_SAMPLER_LINEAR_CLAMP];
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            textureSampler = &rendererData->samplers[SDL_D3D12_SAMPLER_LINEAR_WRAP];
+            break;
+        default:
+            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+        }
         break;
     default:
         return SDL_SetError("Unknown scale mode: %d\n", textureData->scaleMode);

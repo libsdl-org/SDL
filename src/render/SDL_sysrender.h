@@ -30,6 +30,13 @@
 extern "C" {
 #endif
 
+typedef enum SDL_TextureAddressMode
+{
+    SDL_TEXTURE_ADDRESS_AUTO,
+    SDL_TEXTURE_ADDRESS_CLAMP,
+    SDL_TEXTURE_ADDRESS_WRAP,
+} SDL_TextureAddressMode;
+
 /**
  * A rectangle, with the origin at the upper left (double precision).
  */
@@ -132,6 +139,7 @@ typedef struct SDL_RenderCommand
             SDL_FColor color;
             SDL_BlendMode blend;
             SDL_Texture *texture;
+            SDL_TextureAddressMode texture_address_mode;
         } draw;
         struct
         {
@@ -262,6 +270,7 @@ struct SDL_Renderer
     float color_scale;
     SDL_FColor color;        /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */
+    SDL_TextureAddressMode texture_address_mode;
 
     SDL_RenderCommand *render_commands;
     SDL_RenderCommand *render_commands_tail;

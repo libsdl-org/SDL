@@ -576,6 +576,7 @@ static SDL_RenderCommand *PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_Ren
             cmd->data.draw.color = *color;
             cmd->data.draw.blend = blendMode;
             cmd->data.draw.texture = texture;
+            cmd->data.draw.texture_address_mode = SDL_TEXTURE_ADDRESS_CLAMP;
         }
     }
     return cmd;
@@ -715,12 +716,14 @@ static int QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
                             const float *uv, int uv_stride,
                             int num_vertices,
                             const void *indices, int num_indices, int size_indices,
-                            float scale_x, float scale_y)
+                            float scale_x, float scale_y, SDL_TextureAddressMode texture_address_mode)
 {
     SDL_RenderCommand *cmd;
     int retval = -1;
     cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_GEOMETRY, texture);
     if (cmd) {
+        cmd->data.draw.texture_address_mode = texture_address_mode;
+
         retval = renderer->QueueGeometry(renderer, cmd, texture,
                                          xy, xy_stride,
                                          color, color_stride, uv, uv_stride,
@@ -3602,7 +3605,7 @@ int SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count)
             retval = QueueCmdGeometry(renderer, NULL,
                                       xy, xy_stride, &renderer->color, 0 /* color_stride */, NULL, 0,
                                       num_vertices, indices, num_indices, size_indices,
-                                      1.0f, 1.0f);
+                                      1.0f, 1.0f, SDL_TEXTURE_ADDRESS_CLAMP);
         }
 
         SDL_small_free(xy, isstack1);
@@ -3818,7 +3821,7 @@ int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FR
                                   num_vertices,
                                   indices, num_indices, size_indices,
                                   renderer->view->scale.x,
-                                  renderer->view->scale.y);
+                                  renderer->view->scale.y, SDL_TEXTURE_ADDRESS_CLAMP);
     } else {
 
         real_dstrect.x *= renderer->view->scale.x;
@@ -3976,7 +3979,7 @@ int SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
                                   num_vertices,
                                   indices, num_indices, size_indices,
                                   renderer->view->scale.x,
-                                  renderer->view->scale.y);
+                                  renderer->view->scale.y, SDL_TEXTURE_ADDRESS_CLAMP);
     } else {
 
         retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip,
@@ -4340,7 +4343,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                                           xy, xy_stride, color, color_stride, uv, uv_stride,
                                           num_vertices, prev, 3, 4,
                                           renderer->view->scale.x,
-                                          renderer->view->scale.y);
+                                          renderer->view->scale.y, SDL_TEXTURE_ADDRESS_CLAMP);
                 if (retval < 0) {
                     goto end;
                 }
@@ -4361,7 +4364,7 @@ static int SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                                   xy, xy_stride, color, color_stride, uv, uv_stride,
                                   num_vertices, prev, 3, 4,
                                   renderer->view->scale.x,
-                                  renderer->view->scale.y);
+                                  renderer->view->scale.y, SDL_TEXTURE_ADDRESS_CLAMP);
         if (retval < 0) {
             goto end;
         }
@@ -4386,6 +4389,7 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
 {
     int i;
     int count = indices ? num_indices : num_vertices;
+    SDL_TextureAddressMode texture_address_mode;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -4440,13 +4444,16 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         texture = texture->native;
     }
 
-    if (texture) {
+    texture_address_mode = renderer->texture_address_mode;
+    if (texture_address_mode == SDL_TEXTURE_ADDRESS_AUTO && texture) {
+        texture_address_mode = SDL_TEXTURE_ADDRESS_CLAMP;
         for (i = 0; i < num_vertices; ++i) {
             const float *uv_ = (const float *)((const char *)uv + i * uv_stride);
             float u = uv_[0];
             float v = uv_[1];
             if (u < 0.0f || v < 0.0f || u > 1.0f || v > 1.0f) {
-                return SDL_SetError("Values of 'uv' out of bounds %f %f at %d/%d", u, v, i, num_vertices);
+                texture_address_mode = SDL_TEXTURE_ADDRESS_WRAP;
+                break;
             }
         }
     }
@@ -4473,7 +4480,7 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
 
     /* For the software renderer, try to reinterpret triangles as SDL_Rect */
 #if SDL_VIDEO_RENDER_SW
-    if (renderer->software) {
+    if (renderer->software && texture_address_mode == SDL_TEXTURE_ADDRESS_CLAMP) {
         return SDL_SW_RenderGeometryRaw(renderer, texture,
                                         xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
                                         indices, num_indices, size_indices);
@@ -4485,7 +4492,7 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                               num_vertices,
                               indices, num_indices, size_indices,
                               renderer->view->scale.x,
-                              renderer->view->scale.y);
+                              renderer->view->scale.y, texture_address_mode);
 }
 
 SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)

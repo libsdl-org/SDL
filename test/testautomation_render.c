@@ -1076,6 +1076,109 @@ clearScreen(void)
     return 0;
 }
 
+/**
+ * Tests geometry UV wrapping
+ */
+static int render_testUVWrapping(void *arg)
+{
+    SDL_Vertex vertices[6];
+    SDL_Vertex *verts = vertices;
+    SDL_FColor color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float tw, th;
+    SDL_FRect rect;
+    float min_U = -0.5f;
+    float max_U = 1.5f;
+    float min_V = -0.5f;
+    float max_V = 1.5f;
+    SDL_Texture *tface;
+    SDL_Surface *referenceSurface = NULL;
+
+    /* Clear surface. */
+    clearScreen();
+
+    /* Create face surface. */
+    tface = loadTestFace();
+    SDLTest_AssertCheck(tface != NULL, "Verify loadTestFace() result");
+    if (tface == NULL) {
+        return TEST_ABORTED;
+    }
+
+    CHECK_FUNC(SDL_GetTextureSize, (tface, &tw, &th))
+    rect.w = tw * 2;
+    rect.h = th * 2;
+    rect.x = (TESTRENDER_SCREEN_W - rect.w) / 2;
+    rect.y = (TESTRENDER_SCREEN_H - rect.h) / 2;
+
+    /*
+     *   0--1
+     *   | /|
+     *   |/ |
+     *   3--2
+     *
+     *  Draw sprite2 as triangles that can be recombined as rect by software renderer
+     */
+
+    /* 0 */
+    verts->position.x = rect.x;
+    verts->position.y = rect.y;
+    verts->color = color;
+    verts->tex_coord.x = min_U;
+    verts->tex_coord.y = min_V;
+    verts++;
+    /* 1 */
+    verts->position.x = rect.x + rect.w;
+    verts->position.y = rect.y;
+    verts->color = color;
+    verts->tex_coord.x = max_U;
+    verts->tex_coord.y = min_V;
+    verts++;
+    /* 2 */
+    verts->position.x = rect.x + rect.w;
+    verts->position.y = rect.y + rect.h;
+    verts->color = color;
+    verts->tex_coord.x = max_U;
+    verts->tex_coord.y = max_V;
+    verts++;
+    /* 0 */
+    verts->position.x = rect.x;
+    verts->position.y = rect.y;
+    verts->color = color;
+    verts->tex_coord.x = min_U;
+    verts->tex_coord.y = min_V;
+    verts++;
+    /* 2 */
+    verts->position.x = rect.x + rect.w;
+    verts->position.y = rect.y + rect.h;
+    verts->color = color;
+    verts->tex_coord.x = max_U;
+    verts->tex_coord.y = max_V;
+    verts++;
+    /* 3 */
+    verts->position.x = rect.x;
+    verts->position.y = rect.y + rect.h;
+    verts->color = color;
+    verts->tex_coord.x = min_U;
+    verts->tex_coord.y = max_V;
+    verts++;
+
+    /* Blit sprites as triangles onto the screen */
+    SDL_RenderGeometry(renderer, tface, vertices, 6, NULL, 0);
+
+    /* See if it's the same */
+    referenceSurface = SDLTest_ImageWrappingSprite();
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+    /* Make current */
+    SDL_RenderPresent(renderer);
+
+    /* Clean up. */
+    SDL_DestroyTexture(tface);
+    SDL_DestroySurface(referenceSurface);
+    referenceSurface = NULL;
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Render test cases */
@@ -1115,11 +1218,15 @@ static const SDLTest_TestCaseReference renderTest9 = {
     (SDLTest_TestCaseFp)render_testLogicalSize, "render_testLogicalSize", "Tests logical size", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestUVWrapping = {
+    (SDLTest_TestCaseFp)render_testUVWrapping, "render_testUVWrapping", "Tests geometry UV wrapping", TEST_ENABLED
+};
+
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTest1, &renderTest2, &renderTest3, &renderTest4,
     &renderTest5, &renderTest6, &renderTest7, &renderTest8,
-    &renderTest9, NULL
+    &renderTest9, &renderTestUVWrapping, NULL
 };
 
 /* Render test suite (global) */

@@ -68,6 +68,16 @@ extern ISwapChainBackgroundPanelNative *WINRT_GlobalSwapChainBackgroundPanelNati
 /* !!! FIXME: vertex buffer bandwidth could be lower; only use UV coords when
    !!! FIXME:  textures are needed. */
 
+/* Sampler types */
+typedef enum
+{
+    SDL_D3D11_SAMPLER_NEAREST_CLAMP,
+    SDL_D3D11_SAMPLER_NEAREST_WRAP,
+    SDL_D3D11_SAMPLER_LINEAR_CLAMP,
+    SDL_D3D11_SAMPLER_LINEAR_WRAP,
+    SDL_NUM_D3D11_SAMPLERS
+} SDL_D3D11_sampler_type;
+
 /* Vertex shader, common values */
 typedef struct
 {
@@ -181,8 +191,7 @@ typedef struct
     ID3D11PixelShader *pixelShaders[NUM_SHADERS];
     int blendModesCount;
     D3D11_BlendMode *blendModes;
-    ID3D11SamplerState *nearestPixelSampler;
-    ID3D11SamplerState *linearSampler;
+    ID3D11SamplerState *samplers[SDL_NUM_D3D11_SAMPLERS];
     D3D_FEATURE_LEVEL featureLevel;
     SDL_bool pixelSizeChanged;
 
@@ -346,8 +355,9 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
         SAFE_RELEASE(data->vertexShaderConstants);
         SAFE_RELEASE(data->clippedRasterizer);
         SAFE_RELEASE(data->mainRasterizer);
-        SAFE_RELEASE(data->linearSampler);
-        SAFE_RELEASE(data->nearestPixelSampler);
+        for (i = 0; i < SDL_arraysize(data->samplers); ++i) {
+            SAFE_RELEASE(data->samplers[i]);
+        }
 
         if (data->blendModesCount > 0) {
             for (i = 0; i < data->blendModesCount; ++i) {
@@ -734,31 +744,35 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     }
 
     /* Create samplers to use when drawing textures: */
+    static struct 
+    {
+        D3D11_FILTER filter;
+        D3D11_TEXTURE_ADDRESS_MODE address;
+    } samplerParams[] = {
+        { D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP },
+        { D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP },
+        { D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP },
+        { D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP },
+    };
+    SDL_COMPILE_TIME_ASSERT(samplerParams_SIZE, SDL_arraysize(samplerParams) == SDL_NUM_D3D11_SAMPLERS);
     SDL_zero(samplerDesc);
-    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
     samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
     samplerDesc.MipLODBias = 0.0f;
     samplerDesc.MaxAnisotropy = 1;
     samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
     samplerDesc.MinLOD = 0.0f;
     samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    result = ID3D11Device_CreateSamplerState(data->d3dDevice,
-                                             &samplerDesc,
-                                             &data->nearestPixelSampler);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateSamplerState [nearest-pixel filter]"), result);
-        goto done;
-    }
-
-    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-    result = ID3D11Device_CreateSamplerState(data->d3dDevice,
-                                             &samplerDesc,
-                                             &data->linearSampler);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateSamplerState [linear filter]"), result);
-        goto done;
+    for (int i = 0; i < SDL_arraysize(samplerParams); ++i) {
+        samplerDesc.Filter = samplerParams[i].filter;
+        samplerDesc.AddressU = samplerParams[i].address;
+        samplerDesc.AddressV = samplerParams[i].address;
+        result = ID3D11Device_CreateSamplerState(data->d3dDevice,
+                                                 &samplerDesc,
+                                                 &data->samplers[i]);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateSamplerState [nearest-pixel filter]"), result);
+            goto done;
+        }
     }
 
     /* Setup Direct3D rasterizer states */
@@ -2426,10 +2440,28 @@ static int D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *c
 
     switch (textureData->scaleMode) {
     case D3D11_FILTER_MIN_MAG_MIP_POINT:
-        textureSampler = rendererData->nearestPixelSampler;
+        switch (cmd->data.draw.texture_address_mode) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            textureSampler = rendererData->samplers[SDL_D3D11_SAMPLER_NEAREST_CLAMP];
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            textureSampler = rendererData->samplers[SDL_D3D11_SAMPLER_NEAREST_WRAP];
+            break;
+        default:
+            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+        }
         break;
     case D3D11_FILTER_MIN_MAG_MIP_LINEAR:
-        textureSampler = rendererData->linearSampler;
+        switch (cmd->data.draw.texture_address_mode) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            textureSampler = rendererData->samplers[SDL_D3D11_SAMPLER_LINEAR_CLAMP];
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            textureSampler = rendererData->samplers[SDL_D3D11_SAMPLER_LINEAR_WRAP];
+            break;
+        default:
+            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+        }
         break;
     default:
         return SDL_SetError("Unknown scale mode: %d\n", textureData->scaleMode);
