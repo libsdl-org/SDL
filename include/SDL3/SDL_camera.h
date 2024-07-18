@@ -198,24 +198,19 @@ extern SDL_DECLSPEC SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
  * format on your behalf.
  *
  * If `count` is not NULL, it will be filled with the number of elements in
- * the returned array. Additionally, the last element of the array has all
- * fields set to zero (this element is not included in `count`).
+ * the returned array.
  *
- * The returned list is owned by the caller, and should be released with
- * SDL_free() when no longer needed.
- *
- * Note that it's legal for a camera to supply a list with only the zeroed
- * final element and `*count` set to zero; this is what will happen on
+ * Note that it's legal for a camera to supply an empty list. This is what will happen on
  * Emscripten builds, since that platform won't tell _anything_ about
  * available cameras until you've opened one, and won't even tell if there
  * _is_ a camera until the user has given you permission to check through a
  * scary warning popup.
  *
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
  * \param devid the camera device instance ID to query.
- * \param count a pointer filled in with the number of elements in the list.
- *              Can be NULL.
- * \returns a 0 terminated array of SDL_CameraSpecs, which should be freed
- *          with SDL_free(), or NULL on failure; call
+ * \param count a pointer filled in with the number of elements in the list, may be NULL.
+ * \returns a NULL terminated array of pointers to SDL_CameraSpec or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -225,7 +220,7 @@ extern SDL_DECLSPEC SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
  * \sa SDL_GetCameras
  * \sa SDL_OpenCamera
  */
-extern SDL_DECLSPEC SDL_CameraSpec * SDLCALL SDL_GetCameraSupportedFormats(SDL_CameraID devid, int *count);
+extern SDL_DECLSPEC const SDL_CameraSpec * const * SDLCALL SDL_GetCameraSupportedFormats(SDL_CameraID devid, int *count);
 
 /**
  * Get the human-readable device name for a camera.

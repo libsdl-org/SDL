@@ -734,7 +734,7 @@ SDL_CameraID *SDL_GetCameras(int *count)
     return retval;
 }
 
-SDL_CameraSpec *SDL_GetCameraSupportedFormats(SDL_CameraID instance_id, int *count)
+const SDL_CameraSpec * const *SDL_GetCameraSupportedFormats(SDL_CameraID instance_id, int *count)
 {
     if (count) {
         *count = 0;
@@ -745,17 +745,25 @@ SDL_CameraSpec *SDL_GetCameraSupportedFormats(SDL_CameraID instance_id, int *cou
         return NULL;
     }
 
-    SDL_CameraSpec *retval = (SDL_CameraSpec *) SDL_calloc(device->num_specs + 1, sizeof (SDL_CameraSpec));
+    int i;
+    int num_specs = device->num_specs;
+    const SDL_CameraSpec **retval = (const SDL_CameraSpec **) SDL_malloc(((num_specs + 1) * sizeof(SDL_CameraSpec *)) + (num_specs * sizeof (SDL_CameraSpec)));
     if (retval) {
-        SDL_memcpy(retval, device->all_specs, sizeof (SDL_CameraSpec) * device->num_specs);
+        SDL_CameraSpec *specs = (SDL_CameraSpec *)((Uint8 *)retval + ((num_specs + 1) * sizeof(SDL_CameraSpec *)));
+        SDL_memcpy(specs, device->all_specs, sizeof (SDL_CameraSpec) * num_specs);
+        for (i = 0; i < num_specs; ++i) {
+            retval[i] = specs++;
+        }
+        retval[i] = NULL;
+
         if (count) {
-            *count = device->num_specs;
+            *count = num_specs;
         }
     }
 
     ReleaseCamera(device);
 
-    return retval;
+    return SDL_FreeLater(retval);
 }
 
 
