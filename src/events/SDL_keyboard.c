@@ -156,7 +156,7 @@ void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, SDL_bool send_event)
         return;
     }
 
-    SDL_FreeLater(SDL_keyboards[keyboard_index].name);
+    SDL_free(SDL_keyboards[keyboard_index].name);
 
     if (keyboard_index != SDL_keyboard_count - 1) {
         SDL_memcpy(&SDL_keyboards[keyboard_index], &SDL_keyboards[keyboard_index + 1], (SDL_keyboard_count - keyboard_index - 1) * sizeof(SDL_keyboards[keyboard_index]));
@@ -207,7 +207,7 @@ const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
     if (keyboard_index < 0) {
         return NULL;
     }
-    return SDL_keyboards[keyboard_index].name;
+    return SDL_CreateTemporaryString(SDL_keyboards[keyboard_index].name);
 }
 
 void SDL_ResetKeyboard(void)
@@ -719,7 +719,7 @@ int SDL_SendKeyboardText(const char *text)
         event.type = SDL_EVENT_TEXT_INPUT;
         event.common.timestamp = 0;
         event.text.windowID = keyboard->focus ? keyboard->focus->id : 0;
-        event.text.text = SDL_AllocateEventString(text);
+        event.text.text = SDL_CreateTemporaryString(text);
         if (!event.text.text) {
             return 0;
         }
@@ -751,7 +751,7 @@ int SDL_SendEditingText(const char *text, int start, int length)
         event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
         event.edit.start = start;
         event.edit.length = length;
-        event.edit.text = SDL_AllocateEventString(text);
+        event.edit.text = SDL_CreateTemporaryString(text);
         if (!event.edit.text) {
             return 0;
         }
@@ -783,7 +783,7 @@ int SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int sel
                 return 0;
             }
             for (int i = 0; i < num_candidates; ++i) {
-                event_candidates[i] = SDL_AllocateEventString(candidates[i]);
+                event_candidates[i] = SDL_CreateTemporaryString(candidates[i]);
             }
             event_candidates[num_candidates] = NULL;
             event.edit_candidates.candidates = event_candidates;

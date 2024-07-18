@@ -349,7 +349,7 @@ int SDL_SetPrimarySelectionText(const char *text)
             return -1;
         }
     } else {
-        SDL_FreeLater(_this->primary_selection_text);  // this pointer might be given to the app by SDL_GetPrimarySelectionText.
+        SDL_FreeLater(_this->primary_selection_text);  // SDL_GetPrimarySelectionText() returns this pointer.
         _this->primary_selection_text = SDL_strdup(text);
     }
 

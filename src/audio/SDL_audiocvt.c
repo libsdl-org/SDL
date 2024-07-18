@@ -565,7 +565,7 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
 
     if (src_spec) {
         if (src_spec->channels != stream->src_spec.channels) {
-            SDL_FreeLater(stream->src_chmap);  // this pointer is handed to the app during SDL_GetAudioStreamInputChannelMap
+            SDL_free(stream->src_chmap);
             stream->src_chmap = NULL;
         }
         SDL_copyp(&stream->src_spec, src_spec);
@@ -573,7 +573,7 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
 
     if (dst_spec) {
         if (dst_spec->channels != stream->dst_spec.channels) {
-            SDL_FreeLater(stream->dst_chmap);  // this pointer is handed to the app during SDL_GetAudioStreamInputChannelMap
+            SDL_free(stream->dst_chmap);
             stream->dst_chmap = NULL;
         }
         SDL_copyp(&stream->dst_spec, dst_spec);
@@ -613,11 +613,11 @@ static int SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec
             if (!dupmap) {
                 retval = SDL_SetError("Invalid channel mapping");
             } else {
-                SDL_FreeLater(*stream_chmap);  // this pointer is handed to the app during SDL_GetAudioStreamInputChannelMap
+                SDL_free(*stream_chmap);
                 *stream_chmap = dupmap;
             }
         } else {
-            SDL_FreeLater(*stream_chmap);  // this pointer is handed to the app during SDL_GetAudioStreamInputChannelMap
+            SDL_free(*stream_chmap);
             *stream_chmap = NULL;
         }
     }
@@ -642,8 +642,8 @@ const int *SDL_GetAudioStreamInputChannelMap(SDL_AudioStream *stream, int *count
     int channels = 0;
     if (stream) {
         SDL_LockMutex(stream->lock);
-        retval = stream->src_chmap;
         channels = stream->src_spec.channels;
+        retval = SDL_FreeLater(SDL_ChannelMapDup(stream->src_chmap, channels));
         SDL_UnlockMutex(stream->lock);
     }
 
@@ -660,8 +660,8 @@ const int *SDL_GetAudioStreamOutputChannelMap(SDL_AudioStream *stream, int *coun
     int channels = 0;
     if (stream) {
         SDL_LockMutex(stream->lock);
-        retval = stream->dst_chmap;
         channels = stream->dst_spec.channels;
+        retval = SDL_FreeLater(SDL_ChannelMapDup(stream->dst_chmap, channels));
         SDL_UnlockMutex(stream->lock);
     }
 

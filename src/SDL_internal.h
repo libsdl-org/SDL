@@ -296,6 +296,8 @@ extern int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeout
 extern int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
 extern SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
 
+extern const char *SDL_CreateTemporaryString(const char *string);
+
 /* Queue `memory` to be passed to SDL_free once the event queue is emptied.
    this manages the list of pointers to SDL_AllocateEventMemory, but you
    can use it to queue pointers from other subsystems that can die at any

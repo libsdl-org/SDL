@@ -312,7 +312,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, SDL_bool send_event)
         return;
     }
 
-    SDL_FreeLater(SDL_mice[mouse_index].name);  // SDL_GetMouseNameForID returns this pointer.
+    SDL_free(SDL_mice[mouse_index].name);
 
     if (mouse_index != SDL_mouse_count - 1) {
         SDL_memcpy(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
@@ -376,7 +376,7 @@ const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
     if (mouse_index < 0) {
         return NULL;
     }
-    return SDL_mice[mouse_index].name;
+    return SDL_CreateTemporaryString(SDL_mice[mouse_index].name);
 }
 
 void SDL_SetDefaultCursor(SDL_Cursor *cursor)

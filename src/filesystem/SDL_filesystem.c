@@ -383,8 +383,7 @@ const char * const *SDL_InternalGlobDirectory(const char *path, const char *patt
     SDL_free(folded);
     SDL_free(pathcpy);
 
-    SDL_FreeLater(retval);
-    return (const char * const *) retval;
+    return SDL_FreeLater(retval);
 }
 
 static int GlobDirectoryGetPathInfo(const char *path, SDL_PathInfo *info, void *userdata)
@@ -435,10 +434,7 @@ const char *SDL_GetUserFolder(SDL_Folder folder)
 const char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *path = SDL_SYS_GetPrefPath(org, app);
-    if (path) {
-        SDL_FreeLater(path);
-    }
-    return path;
+    return SDL_FreeLater(path);
 }
 
 
