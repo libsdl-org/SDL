@@ -13,7 +13,7 @@
 static SDL_Window *createVideoSuiteTestWindow(const char *title)
 {
     SDL_Window *window;
-    SDL_Window **windows;
+    SDL_Window * const *windows;
     SDL_Event event;
     int w, h;
     int count;
@@ -34,7 +34,6 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     windows = SDL_GetWindows(&count);
     SDLTest_AssertCheck(windows != NULL, "Validate that returned window list is not NULL");
     SDLTest_AssertCheck(windows[0] == window, "Validate that the window is first in the window list");
-    SDL_free(windows);
 
     /* Wayland and XWayland windows require that a frame be presented before they are fully mapped and visible onscreen.
      * This is required for the mouse/keyboard grab tests to pass.
