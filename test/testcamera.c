@@ -101,7 +101,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    SDL_CameraID *devices = SDL_GetCameras(&devcount);
+    const SDL_CameraID *devices = SDL_GetCameras(&devcount);
     if (!devices) {
         SDL_Log("SDL_GetCameras failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -139,8 +139,6 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
             camera_id = devices[0];
         }
     }
-
-    SDL_free(devices);
 
     if (!camera_id) {
         SDL_Log("No cameras available?");
