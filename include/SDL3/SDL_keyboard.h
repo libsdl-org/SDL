@@ -75,8 +75,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  *
  * \param count a pointer filled in with the number of keyboards returned.
  * \returns a 0 terminated array of keyboards instance IDs which should be
- *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
- *          more details.
+ *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -93,7 +93,7 @@ extern SDL_DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
  * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param instance_id the keyboard instance ID.
- * \returns the name of the selected keyboard, or NULL on failure; call
+ * \returns the name of the selected keyboard or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.

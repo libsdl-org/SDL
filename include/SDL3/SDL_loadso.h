@@ -56,8 +56,7 @@ extern "C" {
  * Dynamically load a shared object.
  *
  * \param sofile a system-dependent name of the object file.
- * \returns an opaque pointer to the object handle or NULL if there was an
- *          error; call SDL_GetError() for more information.
+ * \returns an opaque pointer to the object handle or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -83,7 +82,7 @@ extern SDL_DECLSPEC void *SDLCALL SDL_LoadObject(const char *sofile);
  *
  * \param handle a valid shared object handle returned by SDL_LoadObject().
  * \param name the name of the function to look up.
- * \returns a pointer to the function or NULL if there was an error; call
+ * \returns a pointer to the function or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.

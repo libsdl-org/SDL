@@ -301,7 +301,7 @@ typedef struct SDL_GamepadBinding
  *
  * \param mapping the mapping string.
  * \returns 1 if a new mapping is added, 0 if an existing mapping is updated,
- *          -1 on error; call SDL_GetError() for more information.
+ *          -1 on failure; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -332,7 +332,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
  * \param src the data stream for the mappings to be added.
  * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error.
- * \returns the number of mappings added or -1 on error; call SDL_GetError()
+ * \returns the number of mappings added or -1 on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -360,7 +360,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, 
  * Windows, etc).
  *
  * \param file the mappings file to load.
- * \returns the number of mappings added or -1 on error; call SDL_GetError()
+ * \returns the number of mappings added or -1 on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -393,8 +393,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_ReloadGamepadMappings(void);
  *
  * \param count a pointer filled in with the number of mappings returned, can
  *              be NULL.
- * \returns an array of the mapping strings, NULL-terminated. Returns NULL on
- *          error; call SDL_GetError() for more information.
+ * \returns an array of the mapping strings, NULL-terminated, or NULL on
+ *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -406,7 +406,7 @@ extern SDL_DECLSPEC const char * const * SDLCALL SDL_GetGamepadMappings(int *cou
  * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param guid a structure containing the GUID for which a mapping is desired.
- * \returns a mapping string or NULL on error; call SDL_GetError() for more
+ * \returns a mapping string or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -470,7 +470,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasGamepad(void);
  *
  * \param count a pointer filled in with the number of gamepads returned.
  * \returns a 0 terminated array of joystick instance IDs which should be
- *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
  *          more details.
  *
  * \since This function is available since SDL 3.0.0.
@@ -971,7 +971,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadConnected(SDL_Gamepad *gamepad);
  * SDL to crash.
  *
  * \param gamepad the gamepad object that you want to get a joystick from.
- * \returns an SDL_Joystick object; call SDL_GetError() for more information.
+ * \returns an SDL_Joystick object, or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1013,7 +1013,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
  * \param gamepad a gamepad.
  * \param count a pointer filled in with the number of bindings returned.
  * \returns a NULL terminated array of pointers to bindings which should be
- *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
+ *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
  *          more details.
  *
  * \since This function is available since SDL 3.0.0.
@@ -1199,7 +1199,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadHasButton(SDL_Gamepad *gamepad, 
  *
  * \param gamepad a gamepad.
  * \param button a button index (one of the SDL_GamepadButton values).
- * \returns 1 for pressed state or 0 for not pressed state or error; call
+ * \returns 1 for pressed state or 0 for not pressed state or failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.

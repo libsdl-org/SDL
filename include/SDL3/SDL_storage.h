@@ -227,7 +227,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
  * \param storage a storage container to query.
  * \param path the relative path of the file to query.
  * \param length a pointer to be filled with the file's length.
- * \returns 0 if the file could be queried, a negative value otherwise; call
+ * \returns 0 if the file could be queried or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -245,7 +245,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetStorageFileSize(SDL_Storage *storage, con
  * \param path the relative path of the file to read.
  * \param destination a client-provided buffer to read the file into.
  * \param length the length of the destination buffer.
- * \returns 0 if the file was read, a negative value otherwise; call
+ * \returns 0 if the file was read or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -263,7 +263,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const 
  * \param path the relative path of the file to write.
  * \param source a client-provided buffer to write from.
  * \param length the length of the source buffer.
- * \returns 0 if the file was written, a negative value otherwise; call
+ * \returns 0 if the file was written or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.

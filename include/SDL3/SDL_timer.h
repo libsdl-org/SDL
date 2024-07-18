@@ -182,7 +182,7 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID,
  * \param callback the SDL_TimerCallback function to call when the specified
  *                 `interval` elapses.
  * \param userdata a pointer that is passed to `callback`.
- * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
+ * \returns a timer ID or 0 on failure; call SDL_GetError() for more
  *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -245,7 +245,7 @@ typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerI
  * \param callback the SDL_TimerCallback function to call when the specified
  *                 `interval` elapses.
  * \param userdata a pointer that is passed to `callback`.
- * \returns a timer ID or 0 if an error occurs; call SDL_GetError() for more
+ * \returns a timer ID or 0 on failure; call SDL_GetError() for more
  *          information.
  *
  * \threadsafety It is safe to call this function from any thread.

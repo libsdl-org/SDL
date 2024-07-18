@@ -394,8 +394,8 @@ extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
  * \param count a pointer filled in with the number of displays returned, may
  *              be NULL.
  * \returns a 0 terminated array of display instance IDs which should be freed
- *          with SDL_free(), or NULL on error; call SDL_GetError() for more
- *          details.
+ *          with SDL_free(), or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -533,8 +533,8 @@ extern SDL_DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetCurrentDisplayOrientat
  * big on this display, to aid in readability.
  *
  * \param displayID the instance ID of the display to query.
- * \returns the content scale of the display, or 0.0f on error; call
- *          SDL_GetError() for more details.
+ * \returns the content scale of the display, or 0.0f on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -557,8 +557,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displ
  * \param displayID the instance ID of the display to query.
  * \param count a pointer filled in with the number of display modes returned.
  * \returns a NULL terminated array of display mode pointers which should be
- *          freed with SDL_free(), or NULL on error; call SDL_GetError() for
- *          more details.
+ *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -584,7 +584,7 @@ extern SDL_DECLSPEC const SDL_DisplayMode **SDLCALL SDL_GetFullscreenDisplayMode
  * \param include_high_density_modes boolean to include high density modes in
  *                                   the search.
  * \returns a pointer to the closest display mode equal to or larger than the
- *          desired mode, or NULL on error; call SDL_GetError() for more
+ *          desired mode, or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -603,7 +603,7 @@ extern SDL_DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetClosestFullscreenDispl
  * display mode.
  *
  * \param displayID the instance ID of the display to query.
- * \returns a pointer to the desktop display mode or NULL on error; call
+ * \returns a pointer to the desktop display mode or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -622,7 +622,7 @@ extern SDL_DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetDesktopDisplayMode(SDL
  * display mode.
  *
  * \param displayID the instance ID of the display to query.
- * \returns a pointer to the desktop display mode or NULL on error; call
+ * \returns a pointer to the desktop display mode or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -2173,8 +2173,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
  *
  * \param modal_window the window that should be set modal.
  * \param parent_window the parent window for the modal window.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -2583,8 +2582,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
  * SDL_GLContext is opaque to the application.
  *
  * \param window the window to associate with the context.
- * \returns the OpenGL context associated with `window` or NULL on error; call
- *          SDL_GetError() for more details.
+ * \returns the OpenGL context associated with `window` or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

@@ -128,7 +128,7 @@ typedef struct SDL_Surface
  * \param width the width of the surface.
  * \param height the height of the surface.
  * \param format the SDL_PixelFormat for the new surface's pixel format.
- * \returns the new SDL_Surface structure that is created or NULL if it fails;
+ * \returns the new SDL_Surface structure that is created or NULL on failure;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -156,7 +156,7 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_CreateSurface(int width, int height
  * \param format the SDL_PixelFormat for the new surface's pixel format.
  * \param pixels a pointer to existing pixel data.
  * \param pitch the number of bytes between each row, including padding.
- * \returns the new SDL_Surface structure that is created or NULL if it fails;
+ * \returns the new SDL_Surface structure that is created or NULL on failure;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -355,8 +355,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * \param src the data stream for the surface.
  * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error.
- * \returns a pointer to a new SDL_Surface structure or NULL if there was an
- *          error; call SDL_GetError() for more information.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -373,8 +373,8 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, SDL_b
  * will result in a memory leak.
  *
  * \param file the BMP file to load.
- * \returns a pointer to a new SDL_Surface structure or NULL if there was an
- *          error; call SDL_GetError() for more information.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -688,7 +688,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMo
  * The returned surface should be freed with SDL_DestroySurface().
  *
  * \param surface the surface to duplicate.
- * \returns a copy of the surface, or NULL on failure; call SDL_GetError() for
+ * \returns a copy of the surface or NULL on failure; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -710,7 +710,7 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_DuplicateSurface(SDL_Surface *surfa
  *
  * \param surface the existing SDL_Surface structure to convert.
  * \param format the new pixel format.
- * \returns the new SDL_Surface structure that is created or NULL if it fails;
+ * \returns the new SDL_Surface structure that is created or NULL on failure;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -733,7 +733,7 @@ extern SDL_DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface(SDL_Surface *surface
  * \param palette an optional palette to use for indexed formats, may be NULL.
  * \param colorspace the new colorspace.
  * \param props an SDL_PropertiesID with additional color properties, or 0.
- * \returns the new SDL_Surface structure that is created or NULL if it fails;
+ * \returns the new SDL_Surface structure that is created or NULL on failure;
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.

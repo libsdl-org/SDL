@@ -56,7 +56,7 @@ extern "C" {
  * \param fmt a printf()-style message format string.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any.
- * \returns always -1.
+ * \returns -1.
  *
  * \since This function is available since SDL 3.0.0.
  *

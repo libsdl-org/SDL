@@ -148,8 +148,8 @@ typedef enum SDL_SensorType
  *
  * \param count a pointer filled in with the number of sensors returned.
  * \returns a 0 terminated array of sensor instance IDs which should be freed
- *          with SDL_free(), or NULL on error; call SDL_GetError() for more
- *          details.
+ *          with SDL_free(), or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -199,7 +199,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableTypeForID(SDL_SensorID i
  * Open a sensor for use.
  *
  * \param instance_id the sensor instance ID.
- * \returns an SDL_Sensor sensor object, or NULL if an error occurred.
+ * \returns an SDL_Sensor object or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -209,7 +209,7 @@ extern SDL_DECLSPEC SDL_Sensor *SDLCALL SDL_OpenSensor(SDL_SensorID instance_id)
  * Return the SDL_Sensor associated with an instance ID.
  *
  * \param instance_id the sensor instance ID.
- * \returns an SDL_Sensor object.
+ * \returns an SDL_Sensor object or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -232,7 +232,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor 
  * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param sensor the SDL_Sensor object.
- * \returns the sensor name, or NULL if `sensor` is NULL.
+ * \returns the sensor name or NULL on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -263,7 +263,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
  * Get the instance ID of a sensor.
  *
  * \param sensor the SDL_Sensor object to inspect.
- * \returns the sensor instance ID, or 0 if `sensor` is NULL.
+ * \returns the sensor instance ID, or 0 on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

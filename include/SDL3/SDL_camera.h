@@ -173,8 +173,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentCameraDriver(void);
  * \param count a pointer filled in with the number of camera devices. Can be
  *              NULL.
  * \returns a 0 terminated array of camera instance IDs which should be freed
- *          with SDL_free(), or NULL on error; call SDL_GetError() for more
- *          details.
+ *          with SDL_free() or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -215,8 +215,8 @@ extern SDL_DECLSPEC SDL_CameraID *SDLCALL SDL_GetCameras(int *count);
  * \param count a pointer filled in with the number of elements in the list.
  *              Can be NULL.
  * \returns a 0 terminated array of SDL_CameraSpecs, which should be freed
- *          with SDL_free(), or NULL on error; call SDL_GetError() for more
- *          details.
+ *          with SDL_free(), or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -233,7 +233,7 @@ extern SDL_DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraSupportedFormats(SDL_Ca
  * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param instance_id the camera device instance ID.
- * \returns a human-readable device name, or NULL on error; call
+ * \returns a human-readable device name or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -297,7 +297,7 @@ extern SDL_DECLSPEC SDL_CameraPosition SDLCALL SDL_GetCameraPosition(SDL_CameraI
  * \param instance_id the camera device instance ID.
  * \param spec the desired format for data the device will provide. Can be
  *             NULL.
- * \returns device, or NULL on failure; call SDL_GetError() for more
+ * \returns an SDL_Camera object or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \threadsafety It is safe to call this function from any thread.
