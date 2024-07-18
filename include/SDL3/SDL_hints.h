@@ -3883,7 +3883,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
 /**
  * Get the value of a hint.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.

@@ -407,7 +407,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
  *
  * https://developer.android.com/reference/android/content/Context#getFilesDir()
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \returns the path used for internal storage or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -448,7 +448,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
  *
  * https://developer.android.com/reference/android/content/Context#getExternalFilesDir()
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \returns the path used for external storage for this application on success
  *          or NULL on failure; call SDL_GetError() for more information.
@@ -471,7 +471,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void)
  *
  * https://developer.android.com/reference/android/content/Context#getCacheDir()
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \returns the path used for caches for this application on success or NULL
  *          on failure; call SDL_GetError() for more information.
@@ -625,7 +625,7 @@ typedef enum SDL_WinRT_DeviceFamily
  *
  * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param pathType the type of path to retrieve, one of SDL_WinRT_Path.
  * \returns a UTF-8 string (8-bit, multi-byte) containing the path, or NULL if

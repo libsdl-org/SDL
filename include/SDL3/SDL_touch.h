@@ -96,7 +96,7 @@ extern SDL_DECLSPEC SDL_TouchID *SDLCALL SDL_GetTouchDevices(int *count);
 /**
  * Get the touch device name as reported from the driver.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param touchID the touch device instance ID.
  * \returns touch device name, or NULL on error; call SDL_GetError() for more

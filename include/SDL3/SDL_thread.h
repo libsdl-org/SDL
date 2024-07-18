@@ -330,7 +330,7 @@ extern SDL_DECLSPEC SDL_Thread *SDLCALL SDL_CreateThreadWithPropertiesRuntime(SD
 /**
  * Get the thread name as it was specified in SDL_CreateThread().
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param thread the thread to query.
  * \returns a pointer to a UTF-8 string that names the specified thread, or

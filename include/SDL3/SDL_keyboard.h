@@ -90,7 +90,7 @@ extern SDL_DECLSPEC SDL_KeyboardID *SDLCALL SDL_GetKeyboards(int *count);
  *
  * This function returns "" if the keyboard doesn't have a name.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param instance_id the keyboard instance ID.
  * \returns the name of the selected keyboard, or NULL on failure; call
@@ -280,7 +280,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetScancodeName(SDL_Scancode scancode, const
 /**
  * Get a human-readable name for a scancode.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * **Warning**: The returned name is by design not stable across platforms,
  * e.g. the name for `SDL_SCANCODE_LGUI` is "Left GUI" under Linux but "Left
@@ -326,7 +326,7 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
  *
  * If the key doesn't have a name, this function returns an empty string ("").
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param key the desired SDL_Keycode to query.
  * \returns a UTF-8 encoded string of the key name.

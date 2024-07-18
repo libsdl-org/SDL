@@ -134,7 +134,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumCameraDrivers(void);
  * "coremedia" or "android". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param index the index of the camera driver; the value ranges from 0 to
  *              SDL_GetNumCameraDrivers() - 1.
@@ -156,7 +156,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetCameraDriver(int index);
  * "coremedia" or "android". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \returns the name of the current camera driver or NULL if no driver has
  *          been initialized.
@@ -230,7 +230,7 @@ extern SDL_DECLSPEC SDL_CameraSpec *SDLCALL SDL_GetCameraSupportedFormats(SDL_Ca
 /**
  * Get the human-readable device name for a camera.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param instance_id the camera device instance ID.
  * \returns a human-readable device name, or NULL on error; call

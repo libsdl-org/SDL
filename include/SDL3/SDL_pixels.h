@@ -723,7 +723,7 @@ typedef struct SDL_PixelFormatDetails
 /**
  * Get the human readable name of a pixel format.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param format the pixel format to query.
  * \returns the human readable name of the specified pixel format or

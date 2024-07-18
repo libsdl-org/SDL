@@ -378,7 +378,7 @@ extern SDL_DECLSPEC void *SDLCALL SDL_GetPointerProperty(SDL_PropertiesID props,
 /**
  * Get a string property from a group of properties.
  *
- * The returned string follows the SDL_GetStringRule.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param props the properties to query.
  * \param name the name of the property to query.
