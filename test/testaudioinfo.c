@@ -20,7 +20,7 @@ print_devices(SDL_bool recording)
     const char *typestr = (recording ? "recording" : "playback");
     int n = 0;
     int frames;
-    SDL_AudioDeviceID *devices = recording ? SDL_GetAudioRecordingDevices(&n) : SDL_GetAudioPlaybackDevices(&n);
+    const SDL_AudioDeviceID *devices = recording ? SDL_GetAudioRecordingDevices(&n) : SDL_GetAudioPlaybackDevices(&n);
 
     if (!devices) {
         SDL_Log("  Driver failed to report %s devices: %s\n\n", typestr, SDL_GetError());
@@ -46,7 +46,6 @@ print_devices(SDL_bool recording)
         }
         SDL_Log("\n");
     }
-    SDL_free(devices);
 }
 
 int main(int argc, char **argv)

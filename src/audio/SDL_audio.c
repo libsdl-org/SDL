@@ -1330,7 +1330,7 @@ static int SDLCALL RecordingAudioThread(void *devicep)  // thread entry point
 }
 
 
-static SDL_AudioDeviceID *GetAudioDevices(int *count, SDL_bool recording)
+static const SDL_AudioDeviceID *GetAudioDevices(int *count, SDL_bool recording)
 {
     SDL_AudioDeviceID *retval = NULL;
     int num_devices = 0;
@@ -1373,15 +1373,15 @@ static SDL_AudioDeviceID *GetAudioDevices(int *count, SDL_bool recording)
             *count = 0;
         }
     }
-    return retval;
+    return SDL_FreeLater(retval);
 }
 
-SDL_AudioDeviceID *SDL_GetAudioPlaybackDevices(int *count)
+const SDL_AudioDeviceID *SDL_GetAudioPlaybackDevices(int *count)
 {
     return GetAudioDevices(count, SDL_FALSE);
 }
 
-SDL_AudioDeviceID *SDL_GetAudioRecordingDevices(int *count)
+const SDL_AudioDeviceID *SDL_GetAudioRecordingDevices(int *count)
 {
     return GetAudioDevices(count, SDL_TRUE);
 }

@@ -161,7 +161,6 @@ Rather than iterating over audio devices using a device index, there are new fun
                 const char *name = SDL_GetAudioDeviceName(instance_id);
                 SDL_Log("AudioDevice %" SDL_PRIu32 ": %s\n", instance_id, name);
             }
-            SDL_free(devices);
         }
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
     }
