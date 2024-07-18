@@ -26,6 +26,20 @@ static SDL_Surface *frame_current = NULL;
 static SDL_CameraID front_camera = 0;
 static SDL_CameraID back_camera = 0;
 
+static void PrintCameraSpecs(SDL_CameraID camera_id)
+{
+    const SDL_CameraSpec *const *specs = SDL_GetCameraSupportedFormats(camera_id, NULL);
+    if (specs) {
+        int i;
+
+        SDL_Log("Available formats:\n");
+        for (i = 0; specs[i]; ++i) {
+            const SDL_CameraSpec *s = specs[i];
+            SDL_Log("    %dx%d %.2f FPS %s\n", s->width, s->height, (float)s->framerate_numerator / s->framerate_denominator, SDL_GetPixelFormatName(s->format));
+        }
+    }
+}
+
 int SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     char window_title[128];
@@ -132,6 +146,8 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Log("No cameras available?");
         return SDL_APP_FAILURE;
     }
+
+    PrintCameraSpecs(camera_id);
 
     SDL_CameraSpec *pspec = &spec;
     spec.framerate_numerator = 1000;
