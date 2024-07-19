@@ -1431,7 +1431,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
  * This function changes ownership of temporary event memory allocated for events and APIs that
  * follow the SDL_GetStringRule. If this function succeeds, the memory will no longer be automatically freed by SDL, it must be freed using SDL_free() by the application.
  *
- * If the memory isn't temporary, or it was allocated on a different thread, this will return NULL, and the application does not have ownership of the memory.
+ * If the memory isn't temporary, or it was allocated on a different thread, or if it is associated with an event currently in the event queue, this will return NULL, and the application does not have ownership of the memory.
  *
  * Note that even if a function follows the SDL_GetStringRule it may not be using temporary event memory, and this function will return NULL in that case.
  *
@@ -1443,6 +1443,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AllocateEventMemory
+ * \sa SDL_free
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_ClaimEventMemory(const void *mem);
 
@@ -1451,15 +1452,11 @@ extern SDL_DECLSPEC void * SDLCALL SDL_ClaimEventMemory(const void *mem);
  *
  * This function frees temporary memory allocated for events and APIs that
  * follow the SDL_GetStringRule. This memory is local to the thread that creates
- * it and is automatically freed for the main thread when pumping the event
- * loop. For other threads you may call this function periodically to
+ * it and is automatically freed for the main thread when processing events.
+ * For other threads you may call this function periodically to
  * free any temporary memory created by that thread.
  *
- * You can free a specific pointer, to provide more fine grained control over memory management, or you can pass NULL to free all pending temporary allocations. You should *NOT* pass NULL on your main event handling thread, as there may be temporary memory being used by events in-flight. For that thread SDL will call this internally when it's safe to do so.
- *
- * Note that if you call SDL_AllocateEventMemory() on one thread and pass it
- * to another thread, e.g. via a user event, then you should be sure the other
- * thread has finished processing it before calling this function with NULL.
+ * You can free a specific pointer, to provide more fine grained control over memory management, or you can pass NULL to free all pending temporary allocations.
  *
  * All temporary memory is freed on the main thread in SDL_Quit() and for other threads when they call SDL_CleanupTLS(), which is automatically called at cleanup time for threads created using SDL_CreateThread().
  *

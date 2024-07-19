@@ -71,10 +71,25 @@ typedef struct
 static SDL_DisabledEventBlock *SDL_disabled_events[256];
 static Uint32 SDL_userevents = SDL_EVENT_USER;
 
-/* Private data -- event queue */
+typedef struct SDL_EventMemory
+{
+    void *memory;
+    struct SDL_EventMemory *prev;
+    struct SDL_EventMemory *next;
+} SDL_EventMemory;
+
+typedef struct SDL_EventMemoryState
+{
+    SDL_EventMemory *head;
+    SDL_EventMemory *tail;
+} SDL_EventMemoryState;
+
+static SDL_TLSID SDL_event_memory;
+
 typedef struct SDL_EventEntry
 {
     SDL_Event event;
+    SDL_EventMemory *memory;
     struct SDL_EventEntry *prev;
     struct SDL_EventEntry *next;
 } SDL_EventEntry;
@@ -89,22 +104,6 @@ static struct
     SDL_EventEntry *tail;
     SDL_EventEntry *free;
 } SDL_EventQ = { NULL, SDL_FALSE, { 0 }, 0, NULL, NULL, NULL };
-
-typedef struct SDL_EventMemory
-{
-    Uint32 eventID;
-    void *memory;
-    struct SDL_EventMemory *next;
-} SDL_EventMemory;
-
-typedef struct SDL_EventMemoryState
-{
-    SDL_EventMemory *head;
-    SDL_EventMemory *tail;
-} SDL_EventMemoryState;
-
-static SDL_TLSID SDL_event_memory;
-
 
 static void SDL_CleanupEventMemory(void *data)
 {
@@ -137,6 +136,130 @@ static SDL_EventMemoryState *SDL_GetEventMemoryState(SDL_bool create)
     return state;
 }
 
+static SDL_EventMemory *SDL_GetEventMemoryEntry(SDL_EventMemoryState *state, const void *mem)
+{
+    SDL_EventMemory *entry;
+
+    // Start from the end, it's likely to have been recently allocated
+    for (entry = state->tail; entry; entry = entry->prev) {
+        if (mem == entry->memory) {
+            return entry;
+        }
+    }
+    return NULL;
+}
+
+static void SDL_LinkEventMemoryEntry(SDL_EventMemoryState *state, SDL_EventMemory *entry)
+{
+    entry->prev = state->tail;
+    entry->next = NULL;
+
+    if (state->tail) {
+        state->tail->next = entry;
+    } else {
+        state->head = entry;
+    }
+    state->tail = entry;
+}
+
+static void SDL_UnlinkEventMemoryEntry(SDL_EventMemoryState *state, SDL_EventMemory *entry)
+{
+    if (state->head == entry) {
+        state->head = entry->next;
+    }
+    if (state->tail == entry) {
+        state->tail = entry->prev;
+    }
+
+    if (entry->prev) {
+        entry->prev->next = entry->next;
+    }
+    if (entry->next) {
+        entry->next->prev = entry->prev;
+    }
+
+    entry->prev = NULL;
+    entry->next = NULL;
+}
+
+static void SDL_FreeEventMemoryEntry(SDL_EventMemoryState *state, SDL_EventMemory *entry, SDL_bool free_data)
+{
+    if (free_data) {
+        SDL_free(entry->memory);
+    }
+    SDL_free(entry);
+}
+
+static void SDL_LinkEventMemoryToEvent(SDL_EventEntry *event, const void *mem)
+{
+    SDL_EventMemoryState *state;
+    SDL_EventMemory *entry;
+
+    state = SDL_GetEventMemoryState(SDL_FALSE);
+    if (!state) {
+        return;
+    }
+
+    entry = SDL_GetEventMemoryEntry(state, mem);
+    if (entry) {
+        SDL_UnlinkEventMemoryEntry(state, entry);
+        entry->next = event->memory;
+        event->memory = entry;
+    }
+}
+
+// Transfer the event memory from the thread-local event memory list to the event
+static void SDL_TransferEventMemoryToEvent(SDL_EventEntry *event)
+{
+    switch (event->event.type) {
+    case SDL_EVENT_TEXT_EDITING:
+        SDL_LinkEventMemoryToEvent(event, event->event.edit.text);
+        break;
+    case SDL_EVENT_TEXT_EDITING_CANDIDATES:
+        SDL_LinkEventMemoryToEvent(event, event->event.edit_candidates.candidates);
+        break;
+    case SDL_EVENT_TEXT_INPUT:
+        SDL_LinkEventMemoryToEvent(event, event->event.text.text);
+        break;
+    case SDL_EVENT_DROP_BEGIN:
+    case SDL_EVENT_DROP_FILE:
+    case SDL_EVENT_DROP_TEXT:
+    case SDL_EVENT_DROP_COMPLETE:
+    case SDL_EVENT_DROP_POSITION:
+        SDL_LinkEventMemoryToEvent(event, event->event.drop.source);
+        SDL_LinkEventMemoryToEvent(event, event->event.drop.data);
+        break;
+    default:
+        if (event->event.type >= SDL_EVENT_USER && event->event.type <= SDL_EVENT_LAST-1) {
+            SDL_LinkEventMemoryToEvent(event, event->event.user.data1);
+            SDL_LinkEventMemoryToEvent(event, event->event.user.data2);
+        }
+        break;
+    }
+}
+
+// Transfer the event memory from the event to the thread-local event memory list
+static void SDL_TransferEventMemoryFromEvent(SDL_EventEntry *event)
+{
+    SDL_EventMemoryState *state;
+    SDL_EventMemory *entry, *next;
+
+    if (!event->memory) {
+        return;
+    }
+
+    state = SDL_GetEventMemoryState(SDL_TRUE);
+    if (!state) {
+        return;  // this is now a leak, but you probably have bigger problems if malloc failed.
+    }
+
+    for (entry = event->memory; entry; entry = next) {
+        next = entry->next;
+        SDL_LinkEventMemoryEntry(state, entry);
+    }
+    event->memory = NULL;
+}
+
 void *SDL_FreeLater(void *memory)
 {
     SDL_EventMemoryState *state;
@@ -155,16 +278,9 @@ void *SDL_FreeLater(void *memory)
         return memory;  // this is now a leak, but you probably have bigger problems if malloc failed. We could probably pool up and reuse entries, though.
     }
 
-    entry->eventID = SDL_last_event_id;
     entry->memory = memory;
-    entry->next = NULL;
 
-    if (state->tail) {
-        state->tail->next = entry;
-    } else {
-        state->head = entry;
-    }
-    state->tail = entry;
+    SDL_LinkEventMemoryEntry(state, entry);
 
     return memory;
 }
@@ -182,58 +298,17 @@ const char *SDL_AllocateEventString(const char *string)
     return NULL;
 }
 
-static void SDL_FlushEventMemory(Uint32 eventID)
-{
-    SDL_EventMemoryState *state;
-
-    state = SDL_GetEventMemoryState(SDL_FALSE);
-    if (!state) {
-        return;
-    }
-
-    if (state->head) {
-        while (state->head) {
-            SDL_EventMemory *entry = state->head;
-
-            if (eventID && (Sint32)(eventID - entry->eventID) < 0) {
-                break;
-            }
-
-            /* If you crash here, your application has memory corruption
-             * or freed memory in an event, which is no longer necessary.
-             */
-            state->head = entry->next;
-            SDL_free(entry->memory);
-            SDL_free(entry);
-        }
-        if (!state->head) {
-            state->tail = NULL;
-        }
-    }
-}
-
 void *SDL_ClaimEventMemory(const void *mem)
 {
     SDL_EventMemoryState *state;
 
     state = SDL_GetEventMemoryState(SDL_FALSE);
     if (state && mem) {
-        SDL_EventMemory *prev = NULL, *entry;
-
-        for (entry = state->head; entry; prev = entry, entry = entry->next) {
-            if (mem == entry->memory) {
-                if (prev) {
-                    prev->next = entry->next;
-                }
-                if (entry == state->head) {
-                    state->head = entry->next;
-                }
-                if (entry == state->tail) {
-                    state->tail = prev;
-                }
-                SDL_free(entry);
-                return (void *)mem;
-            }
+        SDL_EventMemory *entry = SDL_GetEventMemoryEntry(state, mem);
+        if (entry) {
+            SDL_UnlinkEventMemoryEntry(state, entry);
+            SDL_FreeEventMemoryEntry(state, entry, SDL_FALSE);
+            return (void *)mem;
         }
     }
     return NULL;
@@ -249,34 +324,17 @@ void SDL_FreeEventMemory(const void *mem)
     }
 
     if (mem) {
-        SDL_EventMemory *prev = NULL, *entry;
-
-        for (entry = state->head; entry; prev = entry, entry = entry->next) {
-            if (mem == entry->memory) {
-                if (prev) {
-                    prev->next = entry->next;
-                }
-                if (entry == state->head) {
-                    state->head = entry->next;
-                }
-                if (entry == state->tail) {
-                    state->tail = prev;
-                }
-                SDL_free(entry->memory);
-                SDL_free(entry);
-                break;
-            }
+        SDL_EventMemory *entry = SDL_GetEventMemoryEntry(state, mem);
+        if (entry) {
+            SDL_UnlinkEventMemoryEntry(state, entry);
+            SDL_FreeEventMemoryEntry(state, entry, SDL_TRUE);
         }
     } else {
-        if (state->head) {
-            while (state->head) {
-                SDL_EventMemory *entry = state->head;
+        while (state->head) {
+            SDL_EventMemory *entry = state->head;
 
-                state->head = entry->next;
-                SDL_free(entry->memory);
-                SDL_free(entry);
-            }
-            state->tail = NULL;
+            SDL_UnlinkEventMemoryEntry(state, entry);
+            SDL_FreeEventMemoryEntry(state, entry, SDL_TRUE);
         }
     }
 }
@@ -784,6 +842,7 @@ void SDL_StopEventLoop(void)
     /* Clean out EventQ */
     for (entry = SDL_EventQ.head; entry;) {
         SDL_EventEntry *next = entry->next;
+        SDL_TransferEventMemoryFromEvent(entry);
         SDL_free(entry);
         entry = next;
     }
@@ -890,6 +949,8 @@ static int SDL_AddEvent(SDL_Event *event)
     if (event->type == SDL_EVENT_POLL_SENTINEL) {
         SDL_AtomicAdd(&SDL_sentinel_pending, 1);
     }
+    entry->memory = NULL;
+    SDL_TransferEventMemoryToEvent(entry);
 
     if (SDL_EventQ.tail) {
         SDL_EventQ.tail->next = entry;
@@ -917,6 +978,8 @@ static int SDL_AddEvent(SDL_Event *event)
 /* Remove an event from the queue -- called with the queue locked */
 static void SDL_CutEvent(SDL_EventEntry *entry)
 {
+    SDL_TransferEventMemoryFromEvent(entry);
+
     if (entry->prev) {
         entry->prev->next = entry->next;
     }
@@ -1093,10 +1156,7 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     /* Free old event memory */
-    /*SDL_FlushEventMemory(SDL_last_event_id - SDL_MAX_QUEUED_EVENTS);*/
-    if (SDL_AtomicGet(&SDL_EventQ.count) == 0) {
-        SDL_FlushEventMemory(SDL_last_event_id);
-    }
+    SDL_FreeEventMemory(NULL);
 
     /* Release any keys held down from last frame */
     SDL_ReleaseAutoReleaseKeys();
