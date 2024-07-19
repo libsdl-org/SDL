@@ -89,7 +89,7 @@ typedef struct GamepadMapping_t
 typedef struct
 {
     int refcount _guarded;
-    SDL_JoystickID *joysticks _guarded;
+    const SDL_JoystickID *joysticks _guarded;
     GamepadMapping_t **joystick_mappings _guarded;
 
     int num_changed_mappings _guarded;
@@ -579,7 +579,6 @@ static void PopMappingChangeTracking(void)
         }
     }
 
-    SDL_free(tracker->joysticks);
     SDL_free(tracker->joystick_mappings);
     SDL_free(tracker->changed_mappings);
     SDL_free(tracker);
@@ -2358,7 +2357,7 @@ int SDL_InitGamepadMappings(void)
 int SDL_InitGamepads(void)
 {
     int i;
-    SDL_JoystickID *joysticks;
+    const SDL_JoystickID *joysticks;
 
     SDL_gamepads_initialized = SDL_TRUE;
 
@@ -2373,7 +2372,6 @@ int SDL_InitGamepads(void)
                 SDL_PrivateGamepadAdded(joysticks[i]);
             }
         }
-        SDL_free(joysticks);
     }
 
     return 0;
@@ -2383,7 +2381,7 @@ SDL_bool SDL_HasGamepad(void)
 {
     int num_joysticks = 0;
     int num_gamepads = 0;
-    SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
+    const SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
     if (joysticks) {
         int i;
         for (i = num_joysticks - 1; i >= 0 && num_gamepads == 0; --i) {
@@ -2391,7 +2389,6 @@ SDL_bool SDL_HasGamepad(void)
                 ++num_gamepads;
             }
         }
-        SDL_free(joysticks);
     }
     if (num_gamepads > 0) {
         return SDL_TRUE;

@@ -714,7 +714,7 @@ SDL_bool SDL_HasJoystick(void)
     return SDL_FALSE;
 }
 
-SDL_JoystickID *SDL_GetJoysticks(int *count)
+const SDL_JoystickID *SDL_GetJoysticks(int *count)
 {
     int i, num_joysticks, device_index;
     int joystick_index = 0, total_joysticks = 0;
@@ -751,7 +751,7 @@ SDL_JoystickID *SDL_GetJoysticks(int *count)
     }
     SDL_UnlockJoysticks();
 
-    return joysticks;
+    return SDL_FreeLater(joysticks);
 }
 
 const SDL_SteamVirtualGamepadInfo *SDL_GetJoystickVirtualGamepadInfoForID(SDL_JoystickID instance_id)
@@ -1905,7 +1905,7 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
 void SDL_QuitJoysticks(void)
 {
     int i;
-    SDL_JoystickID *joysticks;
+    const SDL_JoystickID *joysticks;
 
     SDL_LockJoysticks();
 
@@ -1916,7 +1916,6 @@ void SDL_QuitJoysticks(void)
         for (i = 0; joysticks[i]; ++i) {
             SDL_PrivateJoystickRemoved(joysticks[i]);
         }
-        SDL_free(joysticks);
     }
 
     while (SDL_joysticks) {
