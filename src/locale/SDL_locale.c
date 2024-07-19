@@ -56,7 +56,7 @@ static const SDL_Locale * const *build_locales_from_csv_string(char *csv, int *c
     if (!retval) {
         return NULL; /* oh well */
     }
-    loc = (SDL_Locale *)((Uint8 *)retval + ((num_locales + 1) * sizeof(SDL_Locale *)));
+    loc = (SDL_Locale *)(retval + (num_locales + 1));
     ptr = (char *)(loc + num_locales);
     SDL_memcpy(ptr, csv, slen);
 
