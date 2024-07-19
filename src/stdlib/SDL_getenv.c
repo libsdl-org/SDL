@@ -80,7 +80,7 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
     return 0;
 }
 /* We have a real environment table, but no real setenv? Fake it w/ putenv. */
-#elif (defined(HAVE_GETENV) && defined(HAVE_PUTENV) && !defined(HAVE_SETENV))
+#elif (defined(HAVE_GETENV) && defined(HAVE_PUTENV) && defined(HAVE_UNSETENV) && !defined(HAVE_SETENV))
 int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     size_t len;
