@@ -24,7 +24,6 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "../../core/unix/SDL_poll.h"
-#include "../../core/unix/SDL_uri_decode.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_scancode_tables_c.h"
 #include "../../core/linux/SDL_system_theme.h"

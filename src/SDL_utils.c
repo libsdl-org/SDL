@@ -22,6 +22,10 @@
 
 #include "SDL_hashtable.h"
 
+#if defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE)
+#include <unistd.h>
+#endif
+
 /* Common utility functions that aren't in the public API */
 
 int SDL_powerof2(int x)
@@ -205,4 +209,114 @@ void SDL_SetObjectsInvalid(void)
         SDL_DestroyHashTable(SDL_objects);
         SDL_objects = NULL;
     }
+}
+
+static int SDL_URIDecode(const char *src, char *dst, int len)
+{
+    int ri, wi, di;
+    char decode = '\0';
+    if (!src || !dst || len < 0) {
+        return -1;
+    }
+    if (len == 0) {
+        len = SDL_strlen(src);
+    }
+    for (ri = 0, wi = 0, di = 0; ri < len && wi < len; ri += 1) {
+        if (di == 0) {
+            /* start decoding */
+            if (src[ri] == '%') {
+                decode = '\0';
+                di += 1;
+                continue;
+            }
+            /* normal write */
+            dst[wi] = src[ri];
+            wi += 1;
+        } else if (di == 1 || di == 2) {
+            char off = '\0';
+            char isa = src[ri] >= 'a' && src[ri] <= 'f';
+            char isA = src[ri] >= 'A' && src[ri] <= 'F';
+            char isn = src[ri] >= '0' && src[ri] <= '9';
+            if (!(isa || isA || isn)) {
+                /* not a hexadecimal */
+                int sri;
+                for (sri = ri - di; sri <= ri; sri += 1) {
+                    dst[wi] = src[sri];
+                    wi += 1;
+                }
+                di = 0;
+                continue;
+            }
+            /* itsy bitsy magicsy */
+            if (isn) {
+                off = 0 - '0';
+            } else if (isa) {
+                off = 10 - 'a';
+            } else if (isA) {
+                off = 10 - 'A';
+            }
+            decode |= (src[ri] + off) << (2 - di) * 4;
+            if (di == 2) {
+                dst[wi] = decode;
+                wi += 1;
+                di = 0;
+            } else {
+                di += 1;
+            }
+        }
+    }
+    dst[wi] = '\0';
+    return wi;
+}
+
+int SDL_URIToLocal(const char *src, char *dst)
+{
+    if (SDL_memcmp(src, "file:/", 6) == 0) {
+        src += 6; /* local file? */
+    } else if (SDL_strstr(src, ":/") != NULL) {
+        return -1; /* wrong scheme */
+    }
+
+    SDL_bool local = src[0] != '/' || (src[0] != '\0' && src[1] == '/');
+
+    /* Check the hostname, if present. RFC 3986 states that the hostname component of a URI is not case-sensitive. */
+    if (!local && src[0] == '/' && src[2] != '/') {
+        char *hostname_end = SDL_strchr(src + 1, '/');
+        if (hostname_end) {
+            const size_t src_len = hostname_end - (src + 1);
+            size_t hostname_len;
+
+#if defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE)
+            char hostname[257];
+            if (gethostname(hostname, 255) == 0) {
+                hostname[256] = '\0';
+                hostname_len = SDL_strlen(hostname);
+                if (hostname_len == src_len && SDL_strncasecmp(src + 1, hostname, src_len) == 0) {
+                    src = hostname_end + 1;
+                    local = SDL_TRUE;
+                }
+            }
+#endif
+
+            if (!local) {
+                static const char *localhost = "localhost";
+                hostname_len = SDL_strlen(localhost);
+                if (hostname_len == src_len && SDL_strncasecmp(src + 1, localhost, src_len) == 0) {
+                    src = hostname_end + 1;
+                    local = SDL_TRUE;
+                }
+            }
+        }
+    }
+
+    if (local) {
+        /* Convert URI escape sequences to real characters */
+        if (src[0] == '/') {
+            src++;
+        } else {
+            src--;
+        }
+        return SDL_URIDecode(src, dst, 0);
+    }
+    return -1;
 }

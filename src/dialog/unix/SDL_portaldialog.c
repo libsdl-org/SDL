@@ -22,7 +22,6 @@
 #include "../SDL_dialog_utils.h"
 
 #include "../../core/linux/SDL_dbus.h"
-#include "../../core/unix/SDL_uri_decode.h"
 
 #ifdef SDL_USE_LIBDBUS
 
