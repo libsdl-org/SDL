@@ -146,9 +146,10 @@ typedef enum SDL_SensorType
 /**
  * Get a list of currently connected sensors.
  *
- * \param count a pointer filled in with the number of sensors returned, may be NULL.
- * \returns a 0 terminated array of sensor instance IDs or NULL on failure; call SDL_GetError() for more
- *          information.
+ * \param count a pointer filled in with the number of sensors returned, may
+ *              be NULL.
+ * \returns a 0 terminated array of sensor instance IDs or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -159,7 +160,8 @@ extern SDL_DECLSPEC const SDL_SensorID * SDLCALL SDL_GetSensors(int *count);
  *
  * This can be called before any sensors are opened.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the sensor instance ID.
  * \returns the sensor name, or NULL if `instance_id` is not valid.
@@ -198,7 +200,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableTypeForID(SDL_SensorID i
  * Open a sensor for use.
  *
  * \param instance_id the sensor instance ID.
- * \returns an SDL_Sensor object or NULL on failure; call SDL_GetError() for more information.
+ * \returns an SDL_Sensor object or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -208,7 +211,8 @@ extern SDL_DECLSPEC SDL_Sensor * SDLCALL SDL_OpenSensor(SDL_SensorID instance_id
  * Return the SDL_Sensor associated with an instance ID.
  *
  * \param instance_id the sensor instance ID.
- * \returns an SDL_Sensor object or NULL on failure; call SDL_GetError() for more information.
+ * \returns an SDL_Sensor object or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -228,10 +232,12 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor 
 /**
  * Get the implementation dependent name of a sensor.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param sensor the SDL_Sensor object.
- * \returns the sensor name or NULL on failure; call SDL_GetError() for more information.
+ * \returns the sensor name or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -262,7 +268,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
  * Get the instance ID of a sensor.
  *
  * \param sensor the SDL_Sensor object to inspect.
- * \returns the sensor instance ID, or 0 on failure; call SDL_GetError() for more information.
+ * \returns the sensor instance ID, or 0 on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

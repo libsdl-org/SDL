@@ -349,7 +349,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
  * "x11" or "windows". These never have Unicode characters, and are not meant
  * to be proper names.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param index the index of a video driver.
  * \returns the name of the video driver with the given **index**.
@@ -367,7 +368,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetVideoDriver(int index);
  * "x11" or "windows". These never have Unicode characters, and are not meant
  * to be proper names.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the name of the current video driver or NULL if no driver has been
  *          initialized.
@@ -391,12 +393,13 @@ extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
 /**
  * Get a list of currently connected displays.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param count a pointer filled in with the number of displays returned, may
  *              be NULL.
- * \returns a 0 terminated array of display instance IDs or NULL on failure; call SDL_GetError() for more
- *          information.
+ * \returns a 0 terminated array of display instance IDs or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -446,7 +449,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_Displa
 /**
  * Get the name of a display in UTF-8 encoding.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param displayID the instance ID of the display to query.
  * \returns the name of a display or NULL on failure; call SDL_GetError() for
@@ -555,12 +559,14 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displ
  * - refresh rate -> highest to lowest
  * - pixel density -> lowest to highest
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param displayID the instance ID of the display to query.
- * \param count a pointer filled in with the number of display modes returned, may be NULL.
- * \returns a NULL terminated array of display mode pointers or NULL on failure; call SDL_GetError() for
- *          more information.
+ * \param count a pointer filled in with the number of display modes returned,
+ *              may be NULL.
+ * \returns a NULL terminated array of display mode pointers or NULL on
+ *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -767,7 +773,8 @@ extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetWindowFullscreenMode(
 /**
  * Get the raw ICC profile data for the screen the window is currently on.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param window the window to query.
  * \param size the size of the ICC profile.
@@ -793,11 +800,13 @@ extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetWindowPixelFormat(SDL_Window 
 /**
  * Get a list of valid windows.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param count a pointer filled in with the number of windows returned, may
  *              be NULL.
- * \returns a NULL terminated array of SDL_Window pointers or NULL on failure; call SDL_GetError() for more information.
+ * \returns a NULL terminated array of SDL_Window pointers or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -1306,7 +1315,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowTitle(SDL_Window *window, const cha
 /**
  * Get the title of a window.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param window the window to query.
  * \returns the title of the window in UTF-8 format or "" if there is no
@@ -2175,7 +2185,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
  *
  * \param modal_window the window that should be set modal.
  * \param parent_window the parent window for the modal window.
- * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -2584,8 +2595,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
  * SDL_GLContext is opaque to the application.
  *
  * \param window the window to associate with the context.
- * \returns the OpenGL context associated with `window` or NULL on failure; call
- *          SDL_GetError() for more information.
+ * \returns the OpenGL context associated with `window` or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

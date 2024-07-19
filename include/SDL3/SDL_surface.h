@@ -355,8 +355,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * \param src the data stream for the surface.
  * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error.
- * \returns a pointer to a new SDL_Surface structure or NULL on failure;
- *          call SDL_GetError() for more information.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -373,8 +373,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, SDL_
  * will result in a memory leak.
  *
  * \param file the BMP file to load.
- * \returns a pointer to a new SDL_Surface structure or NULL on failure;
- *          call SDL_GetError() for more information.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

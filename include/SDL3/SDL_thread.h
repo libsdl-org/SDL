@@ -330,7 +330,8 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithPropertiesRuntime(S
 /**
  * Get the thread name as it was specified in SDL_CreateThread().
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param thread the thread to query.
  * \returns a pointer to a UTF-8 string that names the specified thread, or
@@ -520,7 +521,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetTLS(SDL_TLSID *id, const void *value, SDL
 /**
  * Cleanup all TLS data for this thread.
  *
- * If you are creating your threads outside of SDL and then calling SDL functions, you should call this function before your thread exits, to properly clean up SDL memory.
+ * If you are creating your threads outside of SDL and then calling SDL
+ * functions, you should call this function before your thread exits, to
+ * properly clean up SDL memory.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

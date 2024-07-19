@@ -134,7 +134,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumCameraDrivers(void);
  * "coremedia" or "android". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param index the index of the camera driver; the value ranges from 0 to
  *              SDL_GetNumCameraDrivers() - 1.
@@ -156,7 +157,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCameraDriver(int index);
  * "coremedia" or "android". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the name of the current camera driver or NULL if no driver has
  *          been initialized.
@@ -170,12 +172,13 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentCameraDriver(void);
 /**
  * Get a list of currently connected camera devices.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
- * \param count a pointer filled in with the number of cameras returned, may be
- *              NULL.
- * \returns a 0 terminated array of camera instance IDs or NULL on failure; call SDL_GetError() for more
- *          information.
+ * \param count a pointer filled in with the number of cameras returned, may
+ *              be NULL.
+ * \returns a 0 terminated array of camera instance IDs or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -201,18 +204,20 @@ extern SDL_DECLSPEC const SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
  * If `count` is not NULL, it will be filled with the number of elements in
  * the returned array.
  *
- * Note that it's legal for a camera to supply an empty list. This is what will happen on
- * Emscripten builds, since that platform won't tell _anything_ about
- * available cameras until you've opened one, and won't even tell if there
- * _is_ a camera until the user has given you permission to check through a
- * scary warning popup.
+ * Note that it's legal for a camera to supply an empty list. This is what
+ * will happen on Emscripten builds, since that platform won't tell _anything_
+ * about available cameras until you've opened one, and won't even tell if
+ * there _is_ a camera until the user has given you permission to check
+ * through a scary warning popup.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param devid the camera device instance ID to query.
- * \param count a pointer filled in with the number of elements in the list, may be NULL.
- * \returns a NULL terminated array of pointers to SDL_CameraSpec or NULL on failure; call
- *          SDL_GetError() for more information.
+ * \param count a pointer filled in with the number of elements in the list,
+ *              may be NULL.
+ * \returns a NULL terminated array of pointers to SDL_CameraSpec or NULL on
+ *          failure; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -226,7 +231,8 @@ extern SDL_DECLSPEC const SDL_CameraSpec * const * SDLCALL SDL_GetCameraSupporte
 /**
  * Get the human-readable device name for a camera.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the camera device instance ID.
  * \returns a human-readable device name or NULL on failure; call
@@ -293,8 +299,8 @@ extern SDL_DECLSPEC SDL_CameraPosition SDLCALL SDL_GetCameraPosition(SDL_CameraI
  * \param instance_id the camera device instance ID.
  * \param spec the desired format for data the device will provide. Can be
  *             NULL.
- * \returns an SDL_Camera object or NULL on failure; call SDL_GetError() for more
- *          information.
+ * \returns an SDL_Camera object or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

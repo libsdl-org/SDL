@@ -62,7 +62,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
  * This functions returns empty string if there was not enough memory left for
  * a copy of the clipboard's content.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the clipboard text on success or an empty string on failure; call
  *          SDL_GetError() for more information.
@@ -106,7 +107,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
  * This functions returns empty string if there was not enough memory left for
  * a copy of the primary selection's content.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the primary selection text on success or an empty string on
  *          failure; call SDL_GetError() for more information.
@@ -221,7 +223,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
  * \returns the retrieved data buffer or NULL on failure; call SDL_GetError()
  *          for more information.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ *          This returns temporary memory which will be automatically freed
+ *          later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \since This function is available since SDL 3.0.0.
  *

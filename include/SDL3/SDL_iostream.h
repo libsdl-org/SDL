@@ -224,8 +224,8 @@ typedef struct SDL_IOStream SDL_IOStream;
  * \param file a UTF-8 string representing the filename to open.
  * \param mode an ASCII string representing the mode to be used for opening
  *             the file.
- * \returns a pointer to the SDL_IOStream structure that is created or NULL
- *          on failure; call SDL_GetError() for more information.
+ * \returns a pointer to the SDL_IOStream structure that is created or NULL on
+ *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -258,8 +258,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromFile(const char *file, cons
  *
  * \param mem a pointer to a buffer to feed an SDL_IOStream stream.
  * \param size the buffer size, in bytes.
- * \returns a pointer to a new SDL_IOStream structure or NULL on failure;
- *          call SDL_GetError() for more information.
+ * \returns a pointer to a new SDL_IOStream structure or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -291,8 +291,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromMem(void *mem, size_t size)
  *
  * \param mem a pointer to a read-only buffer to feed an SDL_IOStream stream.
  * \param size the buffer size, in bytes.
- * \returns a pointer to a new SDL_IOStream structure or NULL on failure;
- *          call SDL_GetError() for more information.
+ * \returns a pointer to a new SDL_IOStream structure or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -319,8 +319,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromConstMem(const void *mem, s
  * - `SDL_PROP_IOSTREAM_DYNAMIC_CHUNKSIZE_NUMBER`: memory will be allocated in
  *   multiples of this size, defaulting to 1024.
  *
- * \returns a pointer to a new SDL_IOStream structure or NULL on failure;
- *          call SDL_GetError() for more information.
+ * \returns a pointer to a new SDL_IOStream structure or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -488,7 +488,8 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  * \param context a pointer to an SDL_IOStream structure.
  * \param ptr a pointer to a buffer to read data into.
  * \param size the number of bytes to read from the data source.
- * \returns the number of bytes read, or 0 on end of file or other failure; call SDL_GetError() for more information.
+ * \returns the number of bytes read, or 0 on end of file or other failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -576,7 +577,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRIN
  * \param datasize if not NULL, will store the number of bytes read.
  * \param closeio if SDL_TRUE, calls SDL_CloseIO() on `src` before returning,
  *                even in the case of an error.
- * \returns the data or NULL on failure; call SDL_GetError() for more information.
+ * \returns the data or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -595,7 +597,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *da
  *
  * \param file the path to read all available data from.
  * \param datasize if not NULL, will store the number of bytes read.
- * \returns the data or NULL on failure; call SDL_GetError() for more information.
+ * \returns the data or NULL on failure; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.0.0.
  *

@@ -162,7 +162,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, 
  *
  * \param threadID the Unix thread ID to change priority of.
  * \param priority the new, Unix-specific, priority value.
- * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more information.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -280,7 +281,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(SDL_bool enabled);
  * rationale being that the SDL headers can avoid including jni.h.
  *
  * \returns a pointer to Java native interface object (JNIEnv) to which the
- *          current thread is attached, or NULL on failure; call SDL_GetError() for more information.
+ *          current thread is attached, or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -304,7 +306,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);
  * https://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/functions.html
  *
  * \returns the jobject representing the instance of the Activity class of the
- *          Android application, or NULL on failure; call SDL_GetError() for more information.
+ *          Android application, or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -407,7 +410,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
  *
  * https://developer.android.com/reference/android/content/Context#getFilesDir()
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the path used for internal storage or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -448,7 +452,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
  *
  * https://developer.android.com/reference/android/content/Context#getExternalFilesDir()
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the path used for external storage for this application on success
  *          or NULL on failure; call SDL_GetError() for more information.
@@ -471,7 +476,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void)
  *
  * https://developer.android.com/reference/android/content/Context#getCacheDir()
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the path used for caches for this application on success or NULL
  *          on failure; call SDL_GetError() for more information.
@@ -625,7 +631,8 @@ typedef enum SDL_WinRT_DeviceFamily
  *
  * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param pathType the type of path to retrieve, one of SDL_WinRT_Path.
  * \returns a UTF-8 string (8-bit, multi-byte) containing the path, or NULL if
@@ -813,7 +820,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQue
  *
  * \param outUserHandle a pointer to be filled in with the default user
  *                      handle.
- * \returns 0 if success or a negative error code on failure; call SDL_GetError() for more information.
+ * \returns 0 if success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

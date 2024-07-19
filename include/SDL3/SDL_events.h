@@ -350,7 +350,8 @@ typedef struct SDL_KeyboardEvent
  * will be inserted into the editing text. The length is the number of UTF-8
  * characters that will be replaced by new typing.
  *
- * The text string is temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * The text string is temporary memory which will be automatically freed
+ * later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -368,7 +369,8 @@ typedef struct SDL_TextEditingEvent
 /**
  * Keyboard IME candidates event structure (event.edit_candidates.*)
  *
- * The candidates are temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * The candidates are temporary memory which will be automatically freed
+ * later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -387,7 +389,8 @@ typedef struct SDL_TextEditingCandidatesEvent
 /**
  * Keyboard text input event structure (event.text.*)
  *
- * The text string is temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * The text string is temporary memory which will be automatically freed
+ * later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * This event will never be delivered unless text input is enabled by calling
  * SDL_StartTextInput(). Text input is disabled by default!
@@ -784,7 +787,9 @@ typedef struct SDL_PenButtonEvent
  * An event used to drop text or request a file open by the system
  * (event.drop.*)
  *
- * The source and data strings are temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * The source and data strings are temporary memory which will be
+ * automatically freed later, and can be claimed with
+ * SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -1409,7 +1414,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 /**
  * Allocate temporary memory.
  *
- * You can use this to allocate memory that will be automatically freed later, after event processing is complete.
+ * You can use this to allocate memory that will be automatically freed later,
+ * after event processing is complete.
  *
  * \param size the amount of memory to allocate.
  * \returns a pointer to the memory allocated or NULL on failure; call
@@ -1427,13 +1433,20 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
 /**
  * Claim ownership of temporary memory.
  *
- * This function changes ownership of temporary memory allocated for events and functions that
- * return temporary memory. If this function succeeds, the memory will no longer be automatically freed by SDL, it must be freed using SDL_free() by the application.
+ * This function changes ownership of temporary memory allocated for events
+ * and functions that return temporary memory. If this function succeeds, the
+ * memory will no longer be automatically freed by SDL, it must be freed using
+ * SDL_free() by the application.
  *
- * If the memory isn't temporary, or it was allocated on a different thread, or if it is associated with an event currently in the event queue, this will return NULL, and the application does not have ownership of the memory.
+ * If the memory isn't temporary, or it was allocated on a different thread,
+ * or if it is associated with an event currently in the event queue, this
+ * will return NULL, and the application does not have ownership of the
+ * memory.
  *
  * \param mem a pointer allocated with SDL_AllocateTemporaryMemory().
- * \returns a pointer to the memory now owned by the application, which must be freed using SDL_free(), or NULL if the memory is not temporary or was allocated on a different thread.
+ * \returns a pointer to the memory now owned by the application, which must
+ *          be freed using SDL_free(), or NULL if the memory is not temporary
+ *          or was allocated on a different thread.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1447,17 +1460,22 @@ extern SDL_DECLSPEC void * SDLCALL SDL_ClaimTemporaryMemory(const void *mem);
 /**
  * Free temporary memory.
  *
- * This function frees temporary memory allocated for events and functions that
- * return temporary memory. This memory is local to the thread that creates
- * it and is automatically freed for the main thread when processing events.
- * For other threads you may call this function periodically to
- * free any temporary memory created by that thread.
+ * This function frees temporary memory allocated for events and functions
+ * that return temporary memory. This memory is local to the thread that
+ * creates it and is automatically freed for the main thread when processing
+ * events. For other threads you may call this function periodically to free
+ * any temporary memory created by that thread.
  *
- * You can free a specific pointer, to provide more fine grained control over memory management, or you can pass NULL to free all pending temporary allocations.
+ * You can free a specific pointer, to provide more fine grained control over
+ * memory management, or you can pass NULL to free all pending temporary
+ * allocations.
  *
- * All temporary memory is freed on the main thread in SDL_Quit() and for other threads when they call SDL_CleanupTLS(), which is automatically called at cleanup time for threads created using SDL_CreateThread().
+ * All temporary memory is freed on the main thread in SDL_Quit() and for
+ * other threads when they call SDL_CleanupTLS(), which is automatically
+ * called at cleanup time for threads created using SDL_CreateThread().
  *
- * \param mem a pointer allocated with SDL_AllocateTemporaryMemory(), or NULL to free all pending temporary allocations.
+ * \param mem a pointer allocated with SDL_AllocateTemporaryMemory(), or NULL
+ *            to free all pending temporary allocations.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

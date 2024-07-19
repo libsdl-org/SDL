@@ -135,11 +135,13 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * You should wait for input from a device before you consider it actively in
  * use.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
- * \param count a pointer filled in with the number of mice returned, may be NULL.
- * \returns a 0 terminated array of mouse instance IDs or NULL on failure; call SDL_GetError() for more
- *          information.
+ * \param count a pointer filled in with the number of mice returned, may be
+ *              NULL.
+ * \returns a 0 terminated array of mouse instance IDs or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -153,7 +155,8 @@ extern SDL_DECLSPEC const SDL_MouseID * SDLCALL SDL_GetMice(int *count);
  *
  * This function returns "" if the mouse doesn't have a name.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the mouse instance ID.
  * \returns the name of the selected mouse, or NULL on failure; call
@@ -483,7 +486,8 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetCursor(void);
  * You do not have to call SDL_DestroyCursor() on the return value, but it is
  * safe to do so.
  *
- * \returns the default cursor on success or NULL on failuree; call SDL_GetError() for more information.
+ * \returns the default cursor on success or NULL on failuree; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

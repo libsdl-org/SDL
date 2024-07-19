@@ -154,7 +154,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumRenderDrivers(void);
  * "direct3d12" or "metal". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param index the index of the rendering driver; the value ranges from 0 to
  *              SDL_GetNumRenderDrivers() - 1.
@@ -324,10 +325,12 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetRenderWindow(SDL_Renderer *rende
 /**
  * Get the name of a renderer.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param renderer the rendering context.
- * \returns the name of the selected renderer, or NULL on failure; call SDL_GetError() for more information.
+ * \returns the name of the selected renderer, or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1768,7 +1771,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderLines(SDL_Renderer *renderer, const SD
  * \param rect a pointer to the destination rectangle, or NULL to outline the
  *             entire rendering target.
  * \returns 0 on success or a negative error code on failure; call
- *            SDL_GetError() for more information.
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1800,7 +1803,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderRects(SDL_Renderer *renderer, const SD
  * \param rect a pointer to the destination rectangle, or NULL for the entire
  *             rendering target.
  * \returns 0 on success or a negative error code on failure; call
- *            SDL_GetError() for more information.
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1835,7 +1838,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderFillRects(SDL_Renderer *renderer, cons
  * \param dstrect a pointer to the destination rectangle, or NULL for the
  *                entire rendering target.
  * \returns 0 on success or a negative error code on failure; call
- *            SDL_GetError() for more information.
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -1886,7 +1889,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer,
  *                order.
  * \param num_indices number of indices.
  * \returns 0 on success or a negative error code on failure; call
- *            SDL_GetError() for more information.
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *

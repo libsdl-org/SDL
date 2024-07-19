@@ -400,7 +400,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
  * "coreaudio" or "wasapi". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param index the index of the audio driver; the value ranges from 0 to
  *              SDL_GetNumAudioDrivers() - 1.
@@ -423,7 +424,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDriver(int index);
  * "coreaudio" or "wasapi". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the name of the current audio driver or NULL if no driver has been
  *          initialized.
@@ -448,11 +450,13 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentAudioDriver(void);
  * If this function returns NULL, to signify an error, `*count` will be set to
  * zero.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
- * \param count a pointer filled in with the number of devices returned, may be NULL.
- * \returns a 0 terminated array of device instance IDs or NULL on error; call SDL_GetError() for more
- *          information.
+ * \param count a pointer filled in with the number of devices returned, may
+ *              be NULL.
+ * \returns a 0 terminated array of device instance IDs or NULL on error; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -477,11 +481,13 @@ extern SDL_DECLSPEC const SDL_AudioDeviceID * SDLCALL SDL_GetAudioPlaybackDevice
  * If this function returns NULL, to signify an error, `*count` will be set to
  * zero.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
- * \param count a pointer filled in with the number of devices returned, may be NULL.
- * \returns a 0 terminated array of device instance IDs, or NULL on failure; call SDL_GetError() for more
- *          information.
+ * \param count a pointer filled in with the number of devices returned, may
+ *              be NULL.
+ * \returns a 0 terminated array of device instance IDs, or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -495,7 +501,8 @@ extern SDL_DECLSPEC const SDL_AudioDeviceID * SDLCALL SDL_GetAudioRecordingDevic
 /**
  * Get the human-readable name of a specific audio device.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param devid the instance ID of the device to query.
  * \returns the name of the audio device, or NULL on failure; call
@@ -555,7 +562,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid
  * Audio devices usually have no remapping applied. This is represented by
  * returning NULL, and does not signify an error.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param devid the instance ID of the device to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
@@ -634,8 +642,8 @@ extern SDL_DECLSPEC const int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDe
  *              default device.
  * \param spec the requested device configuration. Can be NULL to use
  *             reasonable defaults.
- * \returns the device ID on success or 0 on failure; call SDL_GetError() for more
- *          information.
+ * \returns the device ID on success or 0 on failure; call SDL_GetError() for
+ *          more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -739,8 +747,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID dev
  * this function will always return -1.0f when used on physical devices.
  *
  * \param devid the audio device to query.
- * \returns the gain of the device or -1.0f on failure; call
- *          SDL_GetError() for more information.
+ * \returns the gain of the device or -1.0f on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -831,7 +839,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * \param streams an array of audio streams to unbind.
  * \param num_streams number streams listed in the `streams` array.
  * \returns 0 on success or a negative error code on failure; call
- *           SDL_GetError() for more information.
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -851,8 +859,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, SD
  *
  * \param devid an audio device to bind a stream to.
  * \param stream an audio stream to bind to a device.
- * \returns 0 on success or a negative error code on failure; call SDL_GetError() for more
- *          information.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -992,7 +1000,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *stream
  * \param dst_spec the new format of the audio output; if NULL, it is not
  *                 changed.
  * \returns 0 on success or a negative error code on failure; call
- *           SDL_GetError() for more information.
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running.
@@ -1059,8 +1067,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream
  * Audio streams default to a gain of 1.0f (no change in output).
  *
  * \param stream the SDL_AudioStream to query.
- * \returns the gain of the stream or -1.0f on failure; call
- *          SDL_GetError() for more information.
+ * \returns the gain of the stream or -1.0f on failure; call SDL_GetError()
+ *          for more information.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running.
@@ -1105,7 +1113,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamGain(SDL_AudioStream *stream, 
  * Audio streams default to no remapping applied. This is represented by
  * returning NULL, and does not signify an error.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
@@ -1130,7 +1139,8 @@ extern SDL_DECLSPEC const int * SDLCALL SDL_GetAudioStreamInputChannelMap(SDL_Au
  * Audio streams default to no remapping applied. This is represented by
  * returning NULL, and does not signify an error.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
@@ -1289,8 +1299,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream, 
  * \param stream the stream the audio is being requested from.
  * \param buf a buffer to fill with audio data.
  * \param len the maximum number of bytes to fill.
- * \returns the number of bytes read from the stream or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns the number of bytes read from the stream or a negative error code
+ *          on failure; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread, but if the
  *               stream has a callback set, the caller might need to manage
@@ -1572,7 +1582,8 @@ typedef void (SDLCALL *SDL_AudioStreamCallback)(void *userdata, SDL_AudioStream 
  * \param userdata an opaque pointer provided to the callback for its own
  *                 personal use.
  * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information. This only fails if `stream` is NULL.
+ *          SDL_GetError() for more information. This only fails if `stream`
+ *          is NULL.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1621,7 +1632,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamGetCallback(SDL_AudioStream *s
  * \param userdata an opaque pointer provided to the callback for its own
  *                 personal use.
  * \returns 0 on success or a negative error code on failure; call
- *            SDL_GetError() for more information. This only fails if `stream` is NULL.
+ *          SDL_GetError() for more information. This only fails if `stream`
+ *          is NULL.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

@@ -37,9 +37,9 @@
  * controller. For XInput controllers this returns the XInput user index. Many
  * joysticks will not be able to supply this information.
  *
- * SDL_GUID is used as a stable 128-bit identifier for a joystick
- * device that does not change over time. It identifies class of the device (a
- * X360 wired controller for example). This identifier is platform dependent.
+ * SDL_GUID is used as a stable 128-bit identifier for a joystick device that
+ * does not change over time. It identifies class of the device (a X360 wired
+ * controller for example). This identifier is platform dependent.
  *
  * In order to use these functions, SDL_Init() must have been called with the
  * SDL_INIT_JOYSTICK flag. This causes SDL to scan the system for joysticks,
@@ -201,11 +201,13 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
 /**
  * Get a list of currently connected joysticks.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
- * \param count a pointer filled in with the number of joysticks returned, may be NULL.
- * \returns a 0 terminated array of joystick instance IDs or NULL on failure; call SDL_GetError() for
- *          more information.
+ * \param count a pointer filled in with the number of joysticks returned, may
+ *              be NULL.
+ * \returns a 0 terminated array of joystick instance IDs or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -219,7 +221,8 @@ extern SDL_DECLSPEC const SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
  *
  * This can be called before any joysticks are opened.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the joystick instance ID.
  * \returns the name of the selected joystick. If no name can be found, this
@@ -237,7 +240,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickNameForID(SDL_JoystickID
  *
  * This can be called before any joysticks are opened.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the joystick instance ID.
  * \returns the path of the selected joystick. If no path can be found, this
@@ -356,8 +360,8 @@ extern SDL_DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickTypeForID(SDL_Joysti
  * for use.
  *
  * \param instance_id the joystick instance ID.
- * \returns a joystick identifier or NULL on failure; call
- *          SDL_GetError() for more information.
+ * \returns a joystick identifier or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -462,8 +466,8 @@ typedef struct SDL_VirtualJoystickDesc
  * Attach a new virtual joystick.
  *
  * \param desc joystick description.
- * \returns the joystick instance ID, or 0 on failure; call
- *          SDL_GetError() for more information.
+ * \returns the joystick instance ID, or 0 on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -658,7 +662,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joyst
 /**
  * Get the implementation dependent name of a joystick.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick().
  * \returns the name of the selected joystick. If no name can be found, this
@@ -673,7 +678,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickName(SDL_Joystick *joyst
 /**
  * Get the implementation dependent path of a joystick.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick().
  * \returns the path of the selected joystick. If no path can be found, this
@@ -792,7 +798,8 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickFirmwareVersion(SDL_Joystick *
  *
  * Returns the serial number of the joystick, or NULL if it is not available.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick().
  * \returns the serial number of the selected joystick, or NULL if
@@ -814,20 +821,6 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickSerial(SDL_Joystick *joy
  */
 extern SDL_DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickType(SDL_Joystick *joystick);
 
-/**
- * Convert a GUID string into a SDL_GUID structure.
- *
- * Performs no error checking. If this function is given a string containing
- * an invalid GUID, the function will silently succeed, but the GUID generated
- * will not be useful.
- *
- * \param pchGUID string containing an ASCII representation of a GUID.
- * \returns a SDL_GUID structure.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GUIDToString
- */
 extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GUIDFromString(const char *pchGUID);
 
 /**

@@ -227,8 +227,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_StorageReady(SDL_Storage *storage);
  * \param storage a storage container to query.
  * \param path the relative path of the file to query.
  * \param length a pointer to be filled with the file's length.
- * \returns 0 if the file could be queried or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns 0 if the file could be queried or a negative error code on
+ *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -263,8 +263,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_ReadStorageFile(SDL_Storage *storage, const 
  * \param path the relative path of the file to write.
  * \param source a client-provided buffer to write from.
  * \param length the length of the source buffer.
- * \returns 0 if the file was written or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \returns 0 if the file was written or a negative error code on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -383,7 +383,8 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *sto
  * convenience, but if `count` is non-NULL, on return it will contain the
  * number of items in the array, not counting the NULL terminator.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param storage a storage container.
  * \param path the path of the directory to enumerate.
