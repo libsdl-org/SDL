@@ -86,9 +86,9 @@ static int clipboard_testClipboardDataFunctions(void *arg)
     int last_clipboard_update_count;
     int last_clipboard_callback_count;
     int last_clipboard_cleanup_count;
-    void *data;
+    const void *data;
     size_t size;
-    char *text;
+    const char *text;
     const char *expected_text;
 
     TestClipboardData test_data1 = {
@@ -186,7 +186,6 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         size == SDL_strlen(expected_text),
         "Verify test text size, expected %d, got %d",
         (int)SDL_strlen(expected_text), (int)size);
-    SDL_free(text);
 
     expected_text = "CUSTOM";
     boolResult = SDL_HasClipboardData(test_mime_types[TEST_MIME_TYPE_CUSTOM_TEXT]);
@@ -206,7 +205,6 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         size == SDL_strlen(expected_text),
         "Verify test text size, expected %d, got %d",
         (int)SDL_strlen(expected_text), (int)size);
-    SDL_free(text);
 
     boolResult = SDL_HasClipboardData(test_mime_types[TEST_MIME_TYPE_DATA]);
     SDLTest_AssertCheck(
@@ -220,7 +218,6 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         size == test_data1.data_size,
         "Verify test data size, expected %d, got %d",
         (int)test_data1.data_size, (int)size);
-    SDL_free(data);
 
     boolResult = SDL_HasClipboardData("test/invalid");
     SDLTest_AssertCheck(
@@ -235,7 +232,6 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         size == 0,
         "Verify invalid data size, expected 0, got %d",
         (int)size);
-    SDL_free(data);
 
 #if 0 /* There's no guarantee how or when the callback is called */
     SDLTest_AssertCheck(
@@ -287,7 +283,6 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         size == SDL_strlen(expected_text),
         "Verify test text size, expected %d, got %d",
         (int)SDL_strlen(expected_text), (int)size);
-    SDL_free(text);
 
     expected_text = "CUSTOM";
     boolResult = SDL_HasClipboardData(test_mime_types[TEST_MIME_TYPE_CUSTOM_TEXT]);
@@ -307,7 +302,6 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         size == SDL_strlen(expected_text),
         "Verify test text size, expected %d, got %d",
         (int)SDL_strlen(expected_text), (int)size);
-    SDL_free(text);
 
     data = SDL_GetClipboardData(test_mime_types[TEST_MIME_TYPE_DATA], &size);
     SDLTest_AssertCheck(
@@ -317,7 +311,6 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         size == test_data2.data_size,
         "Verify test data size, expected %d, got %d",
         (int)test_data2.data_size, (int)size);
-    SDL_free(data);
 
     data = SDL_GetClipboardData("test/invalid", &size);
     SDLTest_AssertCheck(
@@ -328,7 +321,6 @@ static int clipboard_testClipboardDataFunctions(void *arg)
         size == 0,
         "Verify invalid data size, expected 0, got %d",
         (int)size);
-    SDL_free(data);
 
 #if 0 /* There's no guarantee how or when the callback is called */
     SDLTest_AssertCheck(

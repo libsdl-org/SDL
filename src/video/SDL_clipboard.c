@@ -162,7 +162,7 @@ void *SDL_GetInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type
     return data;
 }
 
-void *SDL_GetClipboardData(const char *mime_type, size_t *size)
+const void *SDL_GetClipboardData(const char *mime_type, size_t *size)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -184,16 +184,16 @@ void *SDL_GetClipboardData(const char *mime_type, size_t *size)
     *size = 0;
 
     if (_this->GetClipboardData) {
-        return _this->GetClipboardData(_this, mime_type, size);
+        return SDL_FreeLater(_this->GetClipboardData(_this, mime_type, size));
     } else if (_this->GetClipboardText && SDL_IsTextMimeType(mime_type)) {
-        void *data = _this->GetClipboardText(_this);
-        if (data && *(char *)data == '\0') {
-            SDL_free(data);
-            data = NULL;
+        char *text = _this->GetClipboardText(_this);
+        if (text && *text == '\0') {
+            SDL_free(text);
+            text = NULL;
         }
-        return data;
+        return SDL_FreeLater(text);
     } else {
-        return SDL_GetInternalClipboardData(_this, mime_type, size);
+        return SDL_FreeLater(SDL_GetInternalClipboardData(_this, mime_type, size));
     }
 }
 
@@ -297,16 +297,15 @@ const char *SDL_GetClipboardText(void)
 
     text_mime_types = SDL_GetTextMimeTypes(_this, &num_mime_types);
     for (i = 0; i < num_mime_types; ++i) {
-        void *clipdata = SDL_GetClipboardData(text_mime_types[i], &length);
+        const void *clipdata = SDL_GetClipboardData(text_mime_types[i], &length);
         if (clipdata) {
-            text = (const char *) clipdata;
-            SDL_FreeLater(clipdata);  // returned string follows the SDL_GetStringRule.
+            text = (const char *)clipdata;
             break;
         }
     }
 
     if (!text) {
-        text = "";
+        text = SDL_CreateTemporaryString("");
     }
     return text;
 }
@@ -349,7 +348,7 @@ int SDL_SetPrimarySelectionText(const char *text)
             return -1;
         }
     } else {
-        SDL_FreeLater(_this->primary_selection_text);  // SDL_GetPrimarySelectionText() returns this pointer.
+        SDL_free(_this->primary_selection_text);
         _this->primary_selection_text = SDL_strdup(text);
     }
 
@@ -367,13 +366,13 @@ const char *SDL_GetPrimarySelectionText(void)
     }
 
     if (_this->GetPrimarySelectionText) {
-        return SDL_FreeLater(_this->GetPrimarySelectionText(_this));  // returned pointer follows the SDL_GetStringRule
+        return SDL_FreeLater(_this->GetPrimarySelectionText(_this));
     } else {
         const char *text = _this->primary_selection_text;
         if (!text) {
             text = "";
         }
-        return text;
+        return SDL_CreateTemporaryString(text);
     }
 }
 
