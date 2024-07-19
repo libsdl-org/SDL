@@ -122,13 +122,14 @@ extern SDL_DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_Touch
 /**
  * Get a list of active fingers for a given touch device.
  *
- * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param touchID the ID of a touch device.
  * \param count a pointer filled in with the number of fingers returned, can
  *              be NULL.
- * \returns a NULL terminated array of SDL_Finger pointers or NULL on failure; call SDL_GetError() for
- *          more information.
+ * \returns a NULL terminated array of SDL_Finger pointers or NULL on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */

@@ -1028,8 +1028,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
  *
  * \param gamepad a gamepad.
  * \param count a pointer filled in with the number of bindings returned.
- * \returns a NULL terminated array of pointers to bindings or NULL on failure; call SDL_GetError() for
- *          more information.
+ * \returns a NULL terminated array of pointers to bindings or NULL on
+ *          failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
