@@ -175,6 +175,108 @@ static int events_addDelEventWatchWithUserdata(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * Creates and validates temporary event memory
+ */
+static int events_eventMemory(void *arg)
+{
+    SDL_Event event;
+    void *mem, *claimed, *tmp;
+    SDL_bool found;
+
+    {
+        /* Create and claim event memory */
+        mem = SDL_AllocateEventMemory(1);
+        SDLTest_AssertCheck(mem != NULL, "SDL_AllocateEventMemory()");
+        *(char *)mem = '1';
+
+        claimed = SDL_ClaimEventMemory(mem);
+        SDLTest_AssertCheck(claimed != NULL, "SDL_ClaimEventMemory() returned a valid pointer");
+
+        /* Verify that we can't claim it again */
+        tmp = SDL_ClaimEventMemory(mem);
+        SDLTest_AssertCheck(tmp == NULL, "SDL_ClaimEventMemory() can't claim memory twice");
+
+        /* Verify that freeing the original pointer does nothing */
+        SDL_FreeEventMemory(mem);
+        SDLTest_AssertCheck(*(char *)mem == '1', "SDL_FreeEventMemory() on claimed memory has no effect");
+
+        /* Clean up */
+        SDL_free(claimed);
+    }
+
+    {
+        /* Create and free event memory */
+        mem = SDL_AllocateEventMemory(1);
+        SDLTest_AssertCheck(mem != NULL, "SDL_AllocateEventMemory()");
+        *(char *)mem = '1';
+
+        SDL_FreeEventMemory(mem);
+        claimed = SDL_ClaimEventMemory(mem);
+        SDLTest_AssertCheck(claimed == NULL, "SDL_ClaimEventMemory() can't claim memory after it's been freed");
+    }
+
+    {
+        /* Create event memory and queue it */
+        mem = SDL_AllocateEventMemory(1);
+        SDLTest_AssertCheck(mem != NULL, "SDL_AllocateEventMemory()");
+        *(char *)mem = '2';
+
+        SDL_zero(event);
+        event.type = SDL_EVENT_USER;
+        event.user.data1 = mem;
+        SDL_PushEvent(&event);
+
+        /* Verify that we can't claim the memory once it's on the queue */
+        claimed = SDL_ClaimEventMemory(mem);
+        SDLTest_AssertCheck(claimed == NULL, "SDL_ClaimEventMemory() can't claim memory on the event queue");
+
+        /* Get the event and verify the memory is valid */
+        found = SDL_FALSE;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_USER && event.user.data1 == mem) {
+                found = SDL_TRUE;
+            }
+        }
+        SDLTest_AssertCheck(found, "SDL_PollEvent() returned queued event");
+
+        /* Verify that we can claim the memory now that we've dequeued it */
+        claimed = SDL_ClaimEventMemory(mem);
+        SDLTest_AssertCheck(claimed != NULL, "SDL_ClaimEventMemory() can claim memory after dequeuing event");
+
+        /* Clean up */
+        SDL_free(claimed);
+    }
+
+    {
+        /* Create event memory and queue it */
+        mem = SDL_AllocateEventMemory(1);
+        SDLTest_AssertCheck(mem != NULL, "SDL_AllocateEventMemory()");
+        *(char *)mem = '3';
+
+        SDL_zero(event);
+        event.type = SDL_EVENT_USER;
+        event.user.data1 = mem;
+        SDL_PushEvent(&event);
+
+        /* Get the event and verify the memory is valid */
+        found = SDL_FALSE;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_USER && event.user.data1 == mem) {
+                found = SDL_TRUE;
+            }
+        }
+        SDLTest_AssertCheck(found, "SDL_PollEvent() returned queued event");
+
+        /* Verify that pumping the event loop frees event memory */
+        SDL_PumpEvents();
+        claimed = SDL_ClaimEventMemory(mem);
+        SDLTest_AssertCheck(claimed == NULL, "SDL_ClaimEventMemory() can't claim memory after pumping the event loop");
+    }
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Events test cases */
@@ -190,9 +292,13 @@ static const SDLTest_TestCaseReference eventsTest3 = {
     (SDLTest_TestCaseFp)events_addDelEventWatchWithUserdata, "events_addDelEventWatchWithUserdata", "Adds and deletes an event watch function with userdata", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference eventsTestEventMemory = {
+    (SDLTest_TestCaseFp)events_eventMemory, "events_eventMemory", "Creates and validates temporary event memory", TEST_ENABLED
+};
+
 /* Sequence of Events test cases */
 static const SDLTest_TestCaseReference *eventsTests[] = {
-    &eventsTest1, &eventsTest2, &eventsTest3, NULL
+    &eventsTest1, &eventsTest2, &eventsTest3, &eventsTestEventMemory, NULL
 };
 
 /* Events test suite (global) */
