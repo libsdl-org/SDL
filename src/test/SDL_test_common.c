@@ -1996,7 +1996,7 @@ static void SDLTest_PasteScreenShot(void)
 
     for (i = 0; i < SDL_arraysize(image_formats); ++i) {
         size_t size;
-        void *data = SDL_GetClipboardData(image_formats[i], &size);
+        const void *data = SDL_GetClipboardData(image_formats[i], &size);
         if (data) {
             char filename[16];
             SDL_IOStream *file;
@@ -2008,7 +2008,6 @@ static void SDLTest_PasteScreenShot(void)
                 SDL_WriteIO(file, data, size);
                 SDL_CloseIO(file);
             }
-            SDL_free(data);
             return;
         }
     }
