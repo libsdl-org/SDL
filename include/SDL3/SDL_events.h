@@ -350,7 +350,7 @@ typedef struct SDL_KeyboardEvent
  * will be inserted into the editing text. The length is the number of UTF-8
  * characters that will be replaced by new typing.
  *
- * The text string follows the SDL_GetStringRule, and will be automatically freed later.
+ * The text string is temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -368,7 +368,7 @@ typedef struct SDL_TextEditingEvent
 /**
  * Keyboard IME candidates event structure (event.edit_candidates.*)
  *
- * The candidates follow the SDL_GetStringRule, and will be automatically freed later.
+ * The candidates are temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -387,7 +387,7 @@ typedef struct SDL_TextEditingCandidatesEvent
 /**
  * Keyboard text input event structure (event.text.*)
  *
- * The text string follows the SDL_GetStringRule, and will be automatically freed later.
+ * The text string is temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * This event will never be delivered unless text input is enabled by calling
  * SDL_StartTextInput(). Text input is disabled by default!
@@ -784,7 +784,7 @@ typedef struct SDL_PenButtonEvent
  * An event used to drop text or request a file open by the system
  * (event.drop.*)
  *
- * The source and data strings follow the SDL_GetStringRule, and will be automatically freed later.
+ * The source and data strings are temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -1425,9 +1425,9 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
 
 /**
- * Claim ownership of temporary memory allocated by SDL.
+ * Claim ownership of temporary memory.
  *
- * This function changes ownership of temporary memory allocated for events and APIs that
+ * This function changes ownership of temporary memory allocated for events and functions that
  * return temporary memory. If this function succeeds, the memory will no longer be automatically freed by SDL, it must be freed using SDL_free() by the application.
  *
  * If the memory isn't temporary, or it was allocated on a different thread, or if it is associated with an event currently in the event queue, this will return NULL, and the application does not have ownership of the memory.
@@ -1445,10 +1445,10 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
 extern SDL_DECLSPEC void * SDLCALL SDL_ClaimTemporaryMemory(const void *mem);
 
 /**
- * Free temporary memory allocated by SDL.
+ * Free temporary memory.
  *
- * This function frees temporary memory allocated for events and APIs that
- * follow the SDL_GetStringRule. This memory is local to the thread that creates
+ * This function frees temporary memory allocated for events and functions that
+ * return temporary memory. This memory is local to the thread that creates
  * it and is automatically freed for the main thread when processing events.
  * For other threads you may call this function periodically to
  * free any temporary memory created by that thread.

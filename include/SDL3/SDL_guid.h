@@ -66,7 +66,7 @@ typedef struct SDL_GUID {
 /**
  * Get an ASCII string representation for a given SDL_GUID.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param guid the SDL_GUID you wish to convert to string.
  * \returns the string representation of the GUID or NULL on failure; call

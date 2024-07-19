@@ -159,7 +159,7 @@ extern SDL_DECLSPEC const SDL_SensorID * SDLCALL SDL_GetSensors(int *count);
  *
  * This can be called before any sensors are opened.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the sensor instance ID.
  * \returns the sensor name, or NULL if `instance_id` is not valid.
@@ -228,7 +228,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor 
 /**
  * Get the implementation dependent name of a sensor.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param sensor the SDL_Sensor object.
  * \returns the sensor name or NULL on failure; call SDL_GetError() for more information.
