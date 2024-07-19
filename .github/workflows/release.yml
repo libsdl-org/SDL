@@ -282,6 +282,10 @@ jobs:
     needs: [msvc, src]
     runs-on: windows-latest
     steps:
+      - name: 'Fetch .github/actions/setup-ninja/action.yml'
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: '.github/actions/setup-ninja/action.yml'
       - name: 'Download source archives'
         uses: actions/download-artifact@v4
         with:
@@ -306,41 +310,90 @@ jobs:
           cd '${{ github.workspace }}/vc'
           unzip "${{ github.workspace }}/${{ needs.msvc.outputs.VC-devel }}"
           echo "path=${{ github.workspace }}/vc/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$env:GITHUB_OUTPUT
+      - name: Set up ninja
+        uses: ./.github/actions/setup-ninja
+      - name: 'Configure vcvars x86'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64_x86
       - name: 'CMake (configure + build + tests) x86'
         run: |
-          $env:PATH += ";${{ steps.bin.outputs.path }}/x86"
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -B build_x86                                        `
+              -GNinja                                             `
+              -DCMAKE_BUILD_TYPE=Debug                            `
+              -Werror=dev                                         `
               -DTEST_FULL=TRUE                                    `
               -DTEST_STATIC=FALSE                                 `
+              -DTEST_SHARED=TRUE                                  `
               -DTEST_TEST=TRUE                                    `
-              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}" `
-              -Werror=dev                                         `
-              -B build_x86 -A win32
+              -DCMAKE_SUPPRESS_REGENERATION=TRUE                  `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"
+          Start-Sleep -Seconds 2
           cmake --build build_x86 --config Release --verbose
           ctest --test-dir build_x86 --no-tests=error -C Release --output-on-failure
+      - name: 'Configure vcvars x64'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
       - name: 'CMake (configure + build + tests) x64'
         run: |
-          $env:PATH += ";${{ steps.bin.outputs.path }}/x86"
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -B build_x64                                        `
+              -GNinja                                             `
+              -DCMAKE_BUILD_TYPE=Debug                            `
+              -Werror=dev                                         `
               -DTEST_FULL=TRUE                                    `
               -DTEST_STATIC=FALSE                                 `
+              -DTEST_SHARED=TRUE                                  `
               -DTEST_TEST=TRUE                                    `
-              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}" `
-              -Werror=dev                                         `
-              -B build_x64 -A x64
+              -DCMAKE_SUPPRESS_REGENERATION=TRUE                  `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"
+          Start-Sleep -Seconds 2
           cmake --build build_x64 --config Release --verbose
           ctest --test-dir build_x64 --no-tests=error -C Release --output-on-failure
+      - name: 'Configure vcvars arm64'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64_arm64
       - name: 'CMake (configure + build) arm64'
         run: |
-          $env:PATH += ";${{ steps.bin.outputs.path }}/x86"
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -B build_arm64                                      `
+              -GNinja                                             `
+              -DCMAKE_BUILD_TYPE=Debug                            `
+              -Werror=dev                                         `
               -DTEST_FULL=TRUE                                    `
               -DTEST_STATIC=FALSE                                 `
+              -DTEST_SHARED=TRUE                                  `
               -DTEST_TEST=TRUE                                    `
-              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}" `
-              -Werror=dev                                         `
-              -B build_arm64 -A ARM64
+              -DCMAKE_SUPPRESS_REGENERATION=TRUE                  `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"
+          Start-Sleep -Seconds 2
           cmake --build build_arm64 --config Release --verbose
+      - name: 'CMake (configure + build) arm64ec'
+        run: |
+          cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -B build_arm64ec                                    `
+              -GNinja                                             `
+              -DCMAKE_BUILD_TYPE=Debug                            `
+              -Werror=dev                                         `
+              -DTEST_FULL=TRUE                                    `
+              -DTEST_STATIC=FALSE                                 `
+              -DTEST_SHARED=TRUE                                  `
+              -DTEST_TEST=TRUE                                    `
+              -DSDL_DISABLE_AVX=TRUE                              `
+              -DSDL_DISABLE_AVX2=TRUE                             `
+              -DSDL_DISABLE_AVX512F=TRUE                          `
+              -DCMAKE_SUPPRESS_REGENERATION=TRUE                  `
+              -DCMAKE_C_FLAGS="/arm64EC" `
+              -DCMAKE_CXX_FLAGS="/arm64EC" `
+              -DCMAKE_EXE_LINKER_FLAGS="/MACHINE:ARM64EC"         `
+              -DCMAKE_SHARED_LINKER_FLAGS="/MACHINE:ARM64EC"      `
+              -DCMAKE_STATIC_LINKER_FLAGS="/MACHINE:ARM64EC"      `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"
+          Start-Sleep -Seconds 2
+          cmake --build build_arm64ec --config Release --verbose
 
   mingw:
     needs: [src]
