@@ -74,6 +74,7 @@ SDL_DYNAPI_PROC(int,SDL_BlitSurfaceUnchecked,(SDL_Surface *a, const SDL_Rect *b,
 SDL_DYNAPI_PROC(int,SDL_BlitSurfaceUncheckedScaled,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d, SDL_ScaleMode e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_BroadcastCondition,(SDL_Condition *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_CaptureMouse,(SDL_bool a),(a),return)
+SDL_DYNAPI_PROC(void*,SDL_ClaimEventMemory,(const void *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_CleanupTLS,(void),(),)
 SDL_DYNAPI_PROC(int,SDL_ClearAudioStream,(SDL_AudioStream *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_ClearClipboardData,(void),(),return)

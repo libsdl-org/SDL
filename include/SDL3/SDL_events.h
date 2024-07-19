@@ -1420,9 +1420,31 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_ClaimEventMemory
  * \sa SDL_FreeEventMemory
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_AllocateEventMemory(size_t size);
+
+/**
+ * Claim ownership of temporary event memory allocated by SDL.
+ *
+ * This function changes ownership of temporary event memory allocated for events and APIs that
+ * follow the SDL_GetStringRule. If this function succeeds, the memory will no longer be automatically freed by SDL, it must be freed using SDL_free() by the application.
+ *
+ * If the memory isn't temporary, or it was allocated on a different thread, this will return NULL, and the application does not have ownership of the memory.
+ *
+ * Note that even if a function follows the SDL_GetStringRule it may not be using temporary event memory, and this function will return NULL in that case.
+ *
+ * \param mem a pointer allocated with SDL_AllocateEventMemory().
+ * \returns a pointer to the memory now owned by the application, which must be freed using SDL_free(), or NULL if the memory is not temporary or was allocated on a different thread.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AllocateEventMemory
+ */
+extern SDL_DECLSPEC void * SDLCALL SDL_ClaimEventMemory(const void *mem);
 
 /**
  * Free temporary event memory allocated by SDL.
