@@ -34,7 +34,7 @@ print_mode(const char *prefix, const SDL_DisplayMode *mode)
 int main(int argc, char *argv[])
 {
     const SDL_DisplayID *displays;
-    const SDL_DisplayMode **modes;
+    const SDL_DisplayMode * const *modes;
     const SDL_DisplayMode *mode;
     int num_displays, i;
     SDLTest_CommonState *state;
@@ -94,7 +94,6 @@ int main(int argc, char *argv[])
             (void)SDL_snprintf(prefix, sizeof(prefix), "    MODE %d", m);
             print_mode(prefix, modes[m]);
         }
-        SDL_free((void*)modes);
 
         SDL_Log("\n");
     }

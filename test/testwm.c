@@ -53,7 +53,7 @@ static const SDL_DisplayMode *highlighted_mode = NULL;
 static void
 draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
 {
-    const SDL_DisplayMode **modes;
+    const SDL_DisplayMode * const *modes;
     char text[1024];
     const int lineHeight = 10;
     int i, j;
@@ -143,7 +143,6 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
                     column_chars = 0;
                 }
             }
-            SDL_free((void *)modes);
         }
     }
 }

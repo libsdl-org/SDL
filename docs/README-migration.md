@@ -2015,14 +2015,13 @@ Rather than iterating over display modes using an index, there is a new function
 {
     SDL_DisplayID display = SDL_GetPrimaryDisplay();
     int num_modes = 0;
-    SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display, &num_modes);
+    const SDL_DisplayMode * const *modes = SDL_GetFullscreenDisplayModes(display, &num_modes);
     if (modes) {
         for (i = 0; i < num_modes; ++i) {
             SDL_DisplayMode *mode = modes[i];
             SDL_Log("Display %" SDL_PRIu32 " mode %d: %dx%d@%gx %gHz\n",
                     display, i, mode->w, mode->h, mode->pixel_density, mode->refresh_rate);
         }
-        SDL_free(modes);
     }
 }
 ```
