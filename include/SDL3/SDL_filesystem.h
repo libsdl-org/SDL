@@ -367,8 +367,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  * \param count on return, will be set to the number of items in the returned
  *              array. Can be NULL.
  * \returns an array of strings on success or NULL on failure; call
- *          SDL_GetError() for more information. The caller should pass the
- *          returned pointer to SDL_free when done with it.
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
