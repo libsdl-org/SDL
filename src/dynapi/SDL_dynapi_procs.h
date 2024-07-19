@@ -379,7 +379,7 @@ SDL_DYNAPI_PROC(int,SDL_GetMasksForPixelFormat,(SDL_PixelFormat a, int *b, Uint3
 SDL_DYNAPI_PROC(int,SDL_GetMaxHapticEffects,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetMaxHapticEffectsPlaying,(SDL_Haptic *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_GetMemoryFunctions,(SDL_malloc_func *a, SDL_calloc_func *b, SDL_realloc_func *c, SDL_free_func *d),(a,b,c,d),)
-SDL_DYNAPI_PROC(SDL_MouseID*,SDL_GetMice,(int *a),(a),return)
+SDL_DYNAPI_PROC(const SDL_MouseID*,SDL_GetMice,(int *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Keymod,SDL_GetModState,(void),(),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_GetMouseFocus,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetMouseNameForID,(SDL_MouseID a),(a),return)

@@ -738,7 +738,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
     int new_keyboard_count = 0;
     SDL_KeyboardID *new_keyboards = NULL;
     int old_mouse_count = 0;
-    SDL_MouseID *old_mice = NULL;
+    const SDL_MouseID *old_mice = NULL;
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
     int old_touch_count = 0;
@@ -840,7 +840,6 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
     }
 
     SDL_free(new_keyboards);
-    SDL_free(old_mice);
     SDL_free(new_mice);
     SDL_free(old_touch_devices);
     SDL_free(new_touch_devices);

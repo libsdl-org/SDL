@@ -346,7 +346,7 @@ SDL_bool SDL_HasMouse(void)
     return (SDL_mouse_count > 0);
 }
 
-SDL_MouseID *SDL_GetMice(int *count)
+const SDL_MouseID *SDL_GetMice(int *count)
 {
     int i;
     SDL_MouseID *mice;
@@ -367,7 +367,7 @@ SDL_MouseID *SDL_GetMice(int *count)
         }
     }
 
-    return mice;
+    return SDL_FreeLater(mice);
 }
 
 const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)

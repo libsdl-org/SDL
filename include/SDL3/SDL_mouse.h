@@ -135,9 +135,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * You should wait for input from a device before you consider it actively in
  * use.
  *
- * \param count a pointer filled in with the number of mice returned.
- * \returns a 0 terminated array of mouse instance IDs which should be freed
- *          with SDL_free(), or NULL on failure; call SDL_GetError() for more
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
+ * \param count a pointer filled in with the number of mice returned, may be NULL.
+ * \returns a 0 terminated array of mouse instance IDs or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -145,7 +146,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * \sa SDL_GetMouseNameForID
  * \sa SDL_HasMouse
  */
-extern SDL_DECLSPEC SDL_MouseID * SDLCALL SDL_GetMice(int *count);
+extern SDL_DECLSPEC const SDL_MouseID * SDLCALL SDL_GetMice(int *count);
 
 /**
  * Get the name of a mouse.

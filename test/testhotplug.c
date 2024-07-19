@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     SDL_GetKeyboards(&num_keyboards);
     SDL_Log("There are %d keyboards at startup\n", num_keyboards);
 
-    SDL_free(SDL_GetMice(&num_mice));
+    SDL_GetMice(&num_mice);
     SDL_Log("There are %d mice at startup\n", num_mice);
 
     SDL_GetJoysticks(&num_joysticks);

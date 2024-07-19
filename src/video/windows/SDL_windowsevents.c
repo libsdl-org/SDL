@@ -871,7 +871,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_c
     int new_keyboard_count = 0;
     SDL_KeyboardID *new_keyboards = NULL;
     int old_mouse_count = 0;
-    SDL_MouseID *old_mice = NULL;
+    const SDL_MouseID *old_mice = NULL;
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
     SDL_bool send_event = !initial_check;
@@ -983,7 +983,6 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, SDL_bool initial_c
     }
 
     SDL_free(new_keyboards);
-    SDL_free(old_mice);
     SDL_free(new_mice);
 
     SetupDiDestroyDeviceInfoList(devinfo);
