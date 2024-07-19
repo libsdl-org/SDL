@@ -365,7 +365,7 @@ SDL_DYNAPI_PROC(SDL_JoystickType,SDL_GetJoystickType,(SDL_Joystick *a),(a),retur
 SDL_DYNAPI_PROC(SDL_JoystickType,SDL_GetJoystickTypeForID,(SDL_JoystickID a),(a),return)
 SDL_DYNAPI_PROC(Uint16,SDL_GetJoystickVendor,(SDL_Joystick *a),(a),return)
 SDL_DYNAPI_PROC(Uint16,SDL_GetJoystickVendorForID,(SDL_JoystickID a),(a),return)
-SDL_DYNAPI_PROC(SDL_JoystickID*,SDL_GetJoysticks,(int *a),(a),return)
+SDL_DYNAPI_PROC(const SDL_JoystickID*,SDL_GetJoysticks,(int *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Keycode,SDL_GetKeyFromName,(const char *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Keycode,SDL_GetKeyFromScancode,(SDL_Scancode a, SDL_Keymod b),(a,b),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetKeyName,(SDL_Keycode a),(a),return)

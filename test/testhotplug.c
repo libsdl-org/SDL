@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     SDL_free(SDL_GetMice(&num_mice));
     SDL_Log("There are %d mice at startup\n", num_mice);
 
-    SDL_free(SDL_GetJoysticks(&num_joysticks));
+    SDL_GetJoysticks(&num_joysticks);
     SDL_Log("There are %d joysticks at startup\n", num_joysticks);
 
     if (enable_haptic) {

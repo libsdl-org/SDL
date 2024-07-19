@@ -210,9 +210,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
 /**
  * Get a list of currently connected joysticks.
  *
- * \param count a pointer filled in with the number of joysticks returned.
- * \returns a 0 terminated array of joystick instance IDs which should be
- *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
+ * \param count a pointer filled in with the number of joysticks returned, may be NULL.
+ * \returns a 0 terminated array of joystick instance IDs or NULL on failure; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -220,7 +221,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
  * \sa SDL_HasJoystick
  * \sa SDL_OpenJoystick
  */
-extern SDL_DECLSPEC SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
+extern SDL_DECLSPEC const SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
 
 /**
  * Get the implementation dependent name of a joystick.

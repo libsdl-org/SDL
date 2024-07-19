@@ -823,7 +823,7 @@ Rather than iterating over joysticks using device index, there is a new function
 {
     if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0) {
         int i, num_joysticks;
-        SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
+        const SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
         if (joysticks) {
             for (i = 0; i < num_joysticks; ++i) {
                 SDL_JoystickID instance_id = joysticks[i];
@@ -833,7 +833,6 @@ Rather than iterating over joysticks using device index, there is a new function
                 SDL_Log("Joystick %" SDL_PRIu32 ": %s%s%s VID 0x%.4x, PID 0x%.4x\n",
                         instance_id, name ? name : "Unknown", path ? ", " : "", path ? path : "", SDL_GetJoystickVendorForID(instance_id), SDL_GetJoystickProductForID(instance_id));
             }
-            SDL_free(joysticks);
         }
         SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
     }

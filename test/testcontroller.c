@@ -1187,7 +1187,7 @@ static void OpenVirtualGamepad(void)
 static void CloseVirtualGamepad(void)
 {
     int i;
-    SDL_JoystickID *joysticks = SDL_GetJoysticks(NULL);
+    const SDL_JoystickID *joysticks = SDL_GetJoysticks(NULL);
     if (joysticks) {
         for (i = 0; joysticks[i]; ++i) {
             SDL_JoystickID instance_id = joysticks[i];
@@ -1195,7 +1195,6 @@ static void CloseVirtualGamepad(void)
                 SDL_DetachVirtualJoystick(instance_id);
             }
         }
-        SDL_free(joysticks);
     }
 
     if (virtual_joystick) {
