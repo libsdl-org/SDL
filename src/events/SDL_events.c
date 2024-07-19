@@ -71,25 +71,25 @@ typedef struct
 static SDL_DisabledEventBlock *SDL_disabled_events[256];
 static Uint32 SDL_userevents = SDL_EVENT_USER;
 
-typedef struct SDL_EventMemory
+typedef struct SDL_TemporaryMemory
 {
     void *memory;
-    struct SDL_EventMemory *prev;
-    struct SDL_EventMemory *next;
-} SDL_EventMemory;
+    struct SDL_TemporaryMemory *prev;
+    struct SDL_TemporaryMemory *next;
+} SDL_TemporaryMemory;
 
-typedef struct SDL_EventMemoryState
+typedef struct SDL_TemporaryMemoryState
 {
-    SDL_EventMemory *head;
-    SDL_EventMemory *tail;
-} SDL_EventMemoryState;
+    SDL_TemporaryMemory *head;
+    SDL_TemporaryMemory *tail;
+} SDL_TemporaryMemoryState;
 
-static SDL_TLSID SDL_event_memory;
+static SDL_TLSID SDL_temporary_memory;
 
 typedef struct SDL_EventEntry
 {
     SDL_Event event;
-    SDL_EventMemory *memory;
+    SDL_TemporaryMemory *memory;
     struct SDL_EventEntry *prev;
     struct SDL_EventEntry *next;
 } SDL_EventEntry;
@@ -105,30 +105,30 @@ static struct
     SDL_EventEntry *free;
 } SDL_EventQ = { NULL, SDL_FALSE, { 0 }, 0, NULL, NULL, NULL };
 
-static void SDL_CleanupEventMemory(void *data)
+static void SDL_CleanupTemporaryMemory(void *data)
 {
-    SDL_EventMemoryState *state = (SDL_EventMemoryState *)data;
+    SDL_TemporaryMemoryState *state = (SDL_TemporaryMemoryState *)data;
 
-    SDL_FreeEventMemory(NULL);
+    SDL_FreeTemporaryMemory(NULL);
     SDL_free(state);
 }
 
-static SDL_EventMemoryState *SDL_GetEventMemoryState(SDL_bool create)
+static SDL_TemporaryMemoryState *SDL_GetTemporaryMemoryState(SDL_bool create)
 {
-    SDL_EventMemoryState *state;
+    SDL_TemporaryMemoryState *state;
 
-    state = SDL_GetTLS(&SDL_event_memory);
+    state = SDL_GetTLS(&SDL_temporary_memory);
     if (!state) {
         if (!create) {
             return NULL;
         }
 
-        state = (SDL_EventMemoryState *)SDL_calloc(1, sizeof(*state));
+        state = (SDL_TemporaryMemoryState *)SDL_calloc(1, sizeof(*state));
         if (!state) {
             return NULL;
         }
 
-        if (SDL_SetTLS(&SDL_event_memory, state, SDL_CleanupEventMemory) < 0) {
+        if (SDL_SetTLS(&SDL_temporary_memory, state, SDL_CleanupTemporaryMemory) < 0) {
             SDL_free(state);
             return NULL;
         }
@@ -136,9 +136,9 @@ static SDL_EventMemoryState *SDL_GetEventMemoryState(SDL_bool create)
     return state;
 }
 
-static SDL_EventMemory *SDL_GetEventMemoryEntry(SDL_EventMemoryState *state, const void *mem)
+static SDL_TemporaryMemory *SDL_GetTemporaryMemoryEntry(SDL_TemporaryMemoryState *state, const void *mem)
 {
-    SDL_EventMemory *entry;
+    SDL_TemporaryMemory *entry;
 
     // Start from the end, it's likely to have been recently allocated
     for (entry = state->tail; entry; entry = entry->prev) {
@@ -149,7 +149,7 @@ static SDL_EventMemory *SDL_GetEventMemoryEntry(SDL_EventMemoryState *state, con
     return NULL;
 }
 
-static void SDL_LinkEventMemoryEntry(SDL_EventMemoryState *state, SDL_EventMemory *entry)
+static void SDL_LinkTemporaryMemoryEntry(SDL_TemporaryMemoryState *state, SDL_TemporaryMemory *entry)
 {
     entry->prev = state->tail;
     entry->next = NULL;
@@ -162,7 +162,7 @@ static void SDL_LinkEventMemoryEntry(SDL_EventMemoryState *state, SDL_EventMemor
     state->tail = entry;
 }
 
-static void SDL_UnlinkEventMemoryEntry(SDL_EventMemoryState *state, SDL_EventMemory *entry)
+static void SDL_UnlinkTemporaryMemoryEntry(SDL_TemporaryMemoryState *state, SDL_TemporaryMemory *entry)
 {
     if (state->head == entry) {
         state->head = entry->next;
@@ -182,7 +182,7 @@ static void SDL_UnlinkEventMemoryEntry(SDL_EventMemoryState *state, SDL_EventMem
     entry->next = NULL;
 }
 
-static void SDL_FreeEventMemoryEntry(SDL_EventMemoryState *state, SDL_EventMemory *entry, SDL_bool free_data)
+static void SDL_FreeTemporaryMemoryEntry(SDL_TemporaryMemoryState *state, SDL_TemporaryMemory *entry, SDL_bool free_data)
 {
     if (free_data) {
         SDL_free(entry->memory);
@@ -190,102 +190,102 @@ static void SDL_FreeEventMemoryEntry(SDL_EventMemoryState *state, SDL_EventMemor
     SDL_free(entry);
 }
 
-static void SDL_LinkEventMemoryToEvent(SDL_EventEntry *event, const void *mem)
+static void SDL_LinkTemporaryMemoryToEvent(SDL_EventEntry *event, const void *mem)
 {
-    SDL_EventMemoryState *state;
-    SDL_EventMemory *entry;
+    SDL_TemporaryMemoryState *state;
+    SDL_TemporaryMemory *entry;
 
-    state = SDL_GetEventMemoryState(SDL_FALSE);
+    state = SDL_GetTemporaryMemoryState(SDL_FALSE);
     if (!state) {
         return;
     }
 
-    entry = SDL_GetEventMemoryEntry(state, mem);
+    entry = SDL_GetTemporaryMemoryEntry(state, mem);
     if (entry) {
-        SDL_UnlinkEventMemoryEntry(state, entry);
+        SDL_UnlinkTemporaryMemoryEntry(state, entry);
         entry->next = event->memory;
         event->memory = entry;
     }
 }
 
 // Transfer the event memory from the thread-local event memory list to the event
-static void SDL_TransferEventMemoryToEvent(SDL_EventEntry *event)
+static void SDL_TransferTemporaryMemoryToEvent(SDL_EventEntry *event)
 {
     switch (event->event.type) {
     case SDL_EVENT_TEXT_EDITING:
-        SDL_LinkEventMemoryToEvent(event, event->event.edit.text);
+        SDL_LinkTemporaryMemoryToEvent(event, event->event.edit.text);
         break;
     case SDL_EVENT_TEXT_EDITING_CANDIDATES:
-        SDL_LinkEventMemoryToEvent(event, event->event.edit_candidates.candidates);
+        SDL_LinkTemporaryMemoryToEvent(event, event->event.edit_candidates.candidates);
         break;
     case SDL_EVENT_TEXT_INPUT:
-        SDL_LinkEventMemoryToEvent(event, event->event.text.text);
+        SDL_LinkTemporaryMemoryToEvent(event, event->event.text.text);
         break;
     case SDL_EVENT_DROP_BEGIN:
     case SDL_EVENT_DROP_FILE:
     case SDL_EVENT_DROP_TEXT:
     case SDL_EVENT_DROP_COMPLETE:
     case SDL_EVENT_DROP_POSITION:
-        SDL_LinkEventMemoryToEvent(event, event->event.drop.source);
-        SDL_LinkEventMemoryToEvent(event, event->event.drop.data);
+        SDL_LinkTemporaryMemoryToEvent(event, event->event.drop.source);
+        SDL_LinkTemporaryMemoryToEvent(event, event->event.drop.data);
         break;
     default:
         if (event->event.type >= SDL_EVENT_USER && event->event.type <= SDL_EVENT_LAST-1) {
-            SDL_LinkEventMemoryToEvent(event, event->event.user.data1);
-            SDL_LinkEventMemoryToEvent(event, event->event.user.data2);
+            SDL_LinkTemporaryMemoryToEvent(event, event->event.user.data1);
+            SDL_LinkTemporaryMemoryToEvent(event, event->event.user.data2);
         }
         break;
     }
 }
 
 // Transfer the event memory from the event to the thread-local event memory list
-static void SDL_TransferEventMemoryFromEvent(SDL_EventEntry *event)
+static void SDL_TransferTemporaryMemoryFromEvent(SDL_EventEntry *event)
 {
-    SDL_EventMemoryState *state;
-    SDL_EventMemory *entry, *next;
+    SDL_TemporaryMemoryState *state;
+    SDL_TemporaryMemory *entry, *next;
 
     if (!event->memory) {
         return;
     }
 
-    state = SDL_GetEventMemoryState(SDL_TRUE);
+    state = SDL_GetTemporaryMemoryState(SDL_TRUE);
     if (!state) {
         return;  // this is now a leak, but you probably have bigger problems if malloc failed.
     }
 
     for (entry = event->memory; entry; entry = next) {
         next = entry->next;
-        SDL_LinkEventMemoryEntry(state, entry);
+        SDL_LinkTemporaryMemoryEntry(state, entry);
     }
     event->memory = NULL;
 }
 
 void *SDL_FreeLater(void *memory)
 {
-    SDL_EventMemoryState *state;
+    SDL_TemporaryMemoryState *state;
 
     if (memory == NULL) {
         return NULL;
     }
 
-    state = SDL_GetEventMemoryState(SDL_TRUE);
+    state = SDL_GetTemporaryMemoryState(SDL_TRUE);
     if (!state) {
         return memory;  // this is now a leak, but you probably have bigger problems if malloc failed.
     }
 
-    SDL_EventMemory *entry = (SDL_EventMemory *)SDL_malloc(sizeof(*entry));
+    SDL_TemporaryMemory *entry = (SDL_TemporaryMemory *)SDL_malloc(sizeof(*entry));
     if (!entry) {
         return memory;  // this is now a leak, but you probably have bigger problems if malloc failed. We could probably pool up and reuse entries, though.
     }
 
     entry->memory = memory;
 
-    SDL_LinkEventMemoryEntry(state, entry);
+    SDL_LinkTemporaryMemoryEntry(state, entry);
 
     return memory;
 }
 
-void *SDL_AllocateEventMemory(size_t size)
+void *SDL_AllocateTemporaryMemory(size_t size)
 {
     return SDL_FreeLater(SDL_malloc(size));
 }
@@ -298,43 +298,43 @@ const char *SDL_CreateTemporaryString(const char *string)
     return NULL;
 }
 
-void *SDL_ClaimEventMemory(const void *mem)
+void *SDL_ClaimTemporaryMemory(const void *mem)
 {
-    SDL_EventMemoryState *state;
+    SDL_TemporaryMemoryState *state;
 
-    state = SDL_GetEventMemoryState(SDL_FALSE);
+    state = SDL_GetTemporaryMemoryState(SDL_FALSE);
     if (state && mem) {
-        SDL_EventMemory *entry = SDL_GetEventMemoryEntry(state, mem);
+        SDL_TemporaryMemory *entry = SDL_GetTemporaryMemoryEntry(state, mem);
         if (entry) {
-            SDL_UnlinkEventMemoryEntry(state, entry);
-            SDL_FreeEventMemoryEntry(state, entry, SDL_FALSE);
+            SDL_UnlinkTemporaryMemoryEntry(state, entry);
+            SDL_FreeTemporaryMemoryEntry(state, entry, SDL_FALSE);
             return (void *)mem;
         }
     }
     return NULL;
 }
 
-void SDL_FreeEventMemory(const void *mem)
+void SDL_FreeTemporaryMemory(const void *mem)
 {
-    SDL_EventMemoryState *state;
+    SDL_TemporaryMemoryState *state;
 
-    state = SDL_GetEventMemoryState(SDL_FALSE);
+    state = SDL_GetTemporaryMemoryState(SDL_FALSE);
     if (!state) {
         return;
     }
 
     if (mem) {
-        SDL_EventMemory *entry = SDL_GetEventMemoryEntry(state, mem);
+        SDL_TemporaryMemory *entry = SDL_GetTemporaryMemoryEntry(state, mem);
         if (entry) {
-            SDL_UnlinkEventMemoryEntry(state, entry);
-            SDL_FreeEventMemoryEntry(state, entry, SDL_TRUE);
+            SDL_UnlinkTemporaryMemoryEntry(state, entry);
+            SDL_FreeTemporaryMemoryEntry(state, entry, SDL_TRUE);
         }
     } else {
         while (state->head) {
-            SDL_EventMemory *entry = state->head;
+            SDL_TemporaryMemory *entry = state->head;
 
-            SDL_UnlinkEventMemoryEntry(state, entry);
-            SDL_FreeEventMemoryEntry(state, entry, SDL_TRUE);
+            SDL_UnlinkTemporaryMemoryEntry(state, entry);
+            SDL_FreeTemporaryMemoryEntry(state, entry, SDL_TRUE);
         }
     }
 }
@@ -842,7 +842,7 @@ void SDL_StopEventLoop(void)
     /* Clean out EventQ */
     for (entry = SDL_EventQ.head; entry;) {
         SDL_EventEntry *next = entry->next;
-        SDL_TransferEventMemoryFromEvent(entry);
+        SDL_TransferTemporaryMemoryFromEvent(entry);
         SDL_free(entry);
         entry = next;
     }
@@ -859,7 +859,7 @@ void SDL_StopEventLoop(void)
     SDL_EventQ.free = NULL;
     SDL_AtomicSet(&SDL_sentinel_pending, 0);
 
-    SDL_FreeEventMemory(NULL);
+    SDL_FreeTemporaryMemory(NULL);
 
     /* Clear disabled event state */
     for (i = 0; i < SDL_arraysize(SDL_disabled_events); ++i) {
@@ -950,7 +950,7 @@ static int SDL_AddEvent(SDL_Event *event)
         SDL_AtomicAdd(&SDL_sentinel_pending, 1);
     }
     entry->memory = NULL;
-    SDL_TransferEventMemoryToEvent(entry);
+    SDL_TransferTemporaryMemoryToEvent(entry);
 
     if (SDL_EventQ.tail) {
         SDL_EventQ.tail->next = entry;
@@ -978,7 +978,7 @@ static int SDL_AddEvent(SDL_Event *event)
 /* Remove an event from the queue -- called with the queue locked */
 static void SDL_CutEvent(SDL_EventEntry *entry)
 {
-    SDL_TransferEventMemoryFromEvent(entry);
+    SDL_TransferTemporaryMemoryFromEvent(entry);
 
     if (entry->prev) {
         entry->prev->next = entry->next;
@@ -1156,7 +1156,7 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     /* Free old event memory */
-    SDL_FreeEventMemory(NULL);
+    SDL_FreeTemporaryMemory(NULL);
 
     /* Release any keys held down from last frame */
     SDL_ReleaseAutoReleaseKeys();

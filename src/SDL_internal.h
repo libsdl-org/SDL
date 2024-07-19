@@ -298,11 +298,7 @@ extern SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutN
 
 extern const char *SDL_CreateTemporaryString(const char *string);
 
-/* Queue `memory` to be passed to SDL_free once the event queue is emptied.
-   this manages the list of pointers to SDL_AllocateEventMemory, but you
-   can use it to queue pointers from other subsystems that can die at any
-   moment but definitely need to live long enough for the app to copy them
-   if they happened to query them in their last moments. */
+/* Add memory to the temporary memory pool, to be freed automatically later */
 extern void *SDL_FreeLater(void *memory);
 
 /* Ends C function definitions when using C++ */
