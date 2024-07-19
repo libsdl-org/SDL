@@ -1222,7 +1222,7 @@ const SDL_DisplayMode * const *SDL_GetFullscreenDisplayModes(SDL_DisplayID displ
 {
     int i;
     int num_modes;
-    const SDL_DisplayMode **retval;
+    SDL_DisplayMode **retval;
     SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
 
     if (count) {
@@ -1236,7 +1236,7 @@ const SDL_DisplayMode * const *SDL_GetFullscreenDisplayModes(SDL_DisplayID displ
     }
 
     num_modes = display->num_fullscreen_modes;
-    retval = (const SDL_DisplayMode **)SDL_malloc((num_modes + 1) * sizeof(*retval) + num_modes * sizeof(**retval));
+    retval = (SDL_DisplayMode **)SDL_malloc((num_modes + 1) * sizeof(*retval) + num_modes * sizeof(**retval));
     if (retval) {
         SDL_DisplayMode *modes = (SDL_DisplayMode *)((Uint8 *)retval + ((num_modes + 1) * sizeof(*retval)));
         SDL_memcpy(modes, display->fullscreen_modes, num_modes * sizeof(*modes));

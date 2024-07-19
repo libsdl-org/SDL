@@ -762,7 +762,7 @@ int SDL_SendEditingText(const char *text, int start, int length)
 
 static const char * const *CreateCandidatesForEvent(char **candidates, int num_candidates)
 {
-    const char **event_candidates;
+    char **event_candidates;
     int i;
     char *ptr;
     size_t total_length = (num_candidates + 1) * sizeof(*event_candidates);
@@ -773,7 +773,7 @@ static const char * const *CreateCandidatesForEvent(char **candidates, int num_c
         total_length += length;
     }
 
-    event_candidates = (const char **)SDL_malloc(total_length);
+    event_candidates = (char **)SDL_malloc(total_length);
     if (!event_candidates) {
         return NULL;
     }

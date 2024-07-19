@@ -745,7 +745,7 @@ const SDL_CameraSpec * const *SDL_GetCameraSupportedFormats(SDL_CameraID instanc
 
     int i;
     int num_specs = device->num_specs;
-    const SDL_CameraSpec **retval = (const SDL_CameraSpec **) SDL_malloc(((num_specs + 1) * sizeof(*retval)) + (num_specs * sizeof (**retval)));
+    SDL_CameraSpec **retval = (SDL_CameraSpec **) SDL_malloc(((num_specs + 1) * sizeof(*retval)) + (num_specs * sizeof (**retval)));
     if (retval) {
         SDL_CameraSpec *specs = (SDL_CameraSpec *)(retval + (num_specs + 1));
         SDL_memcpy(specs, device->all_specs, num_specs * sizeof(*specs));
