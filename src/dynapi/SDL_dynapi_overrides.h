@@ -54,6 +54,7 @@
 #define SDL_BlitSurfaceUncheckedScaled SDL_BlitSurfaceUncheckedScaled_REAL
 #define SDL_BroadcastCondition SDL_BroadcastCondition_REAL
 #define SDL_CaptureMouse SDL_CaptureMouse_REAL
+#define SDL_ClaimEventMemory SDL_ClaimEventMemory_REAL
 #define SDL_CleanupTLS SDL_CleanupTLS_REAL
 #define SDL_ClearAudioStream SDL_ClearAudioStream_REAL
 #define SDL_ClearClipboardData SDL_ClearClipboardData_REAL

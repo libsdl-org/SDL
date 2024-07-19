@@ -212,6 +212,33 @@ static void SDL_FlushEventMemory(Uint32 eventID)
     }
 }
 
+void *SDL_ClaimEventMemory(const void *mem)
+{
+    SDL_EventMemoryState *state;
+
+    state = SDL_GetEventMemoryState(SDL_FALSE);
+    if (state && mem) {
+        SDL_EventMemory *prev = NULL, *entry;
+
+        for (entry = state->head; entry; prev = entry, entry = entry->next) {
+            if (mem == entry->memory) {
+                if (prev) {
+                    prev->next = entry->next;
+                }
+                if (entry == state->head) {
+                    state->head = entry->next;
+                }
+                if (entry == state->tail) {
+                    state->tail = prev;
+                }
+                SDL_free(entry);
+                return (void *)mem;
+            }
+        }
+    }
+    return NULL;
+}
+
 void SDL_FreeEventMemory(const void *mem)
 {
     SDL_EventMemoryState *state;
