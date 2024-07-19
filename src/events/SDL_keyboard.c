@@ -177,7 +177,7 @@ SDL_bool SDL_HasKeyboard(void)
     return (SDL_keyboard_count > 0);
 }
 
-SDL_KeyboardID *SDL_GetKeyboards(int *count)
+const SDL_KeyboardID *SDL_GetKeyboards(int *count)
 {
     int i;
     SDL_KeyboardID *keyboards;
@@ -198,7 +198,7 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
         }
     }
 
-    return keyboards;
+    return SDL_FreeLater(keyboards);
 }
 
 const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
