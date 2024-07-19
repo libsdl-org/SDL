@@ -349,7 +349,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
  * "x11" or "windows". These never have Unicode characters, and are not meant
  * to be proper names.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param index the index of a video driver.
  * \returns the name of the video driver with the given **index**.
@@ -367,7 +367,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetVideoDriver(int index);
  * "x11" or "windows". These never have Unicode characters, and are not meant
  * to be proper names.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the name of the current video driver or NULL if no driver has been
  *          initialized.
@@ -391,7 +391,7 @@ extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
 /**
  * Get a list of currently connected displays.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param count a pointer filled in with the number of displays returned, may
  *              be NULL.
@@ -446,7 +446,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_Displa
 /**
  * Get the name of a display in UTF-8 encoding.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param displayID the instance ID of the display to query.
  * \returns the name of a display or NULL on failure; call SDL_GetError() for
@@ -555,7 +555,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displ
  * - refresh rate -> highest to lowest
  * - pixel density -> lowest to highest
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param displayID the instance ID of the display to query.
  * \param count a pointer filled in with the number of display modes returned, may be NULL.
@@ -767,7 +767,7 @@ extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetWindowFullscreenMode(
 /**
  * Get the raw ICC profile data for the screen the window is currently on.
  *
- * The returned data follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param window the window to query.
  * \param size the size of the ICC profile.
@@ -793,7 +793,7 @@ extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetWindowPixelFormat(SDL_Window 
 /**
  * Get a list of valid windows.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param count a pointer filled in with the number of windows returned, may
  *              be NULL.
@@ -1306,7 +1306,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowTitle(SDL_Window *window, const cha
 /**
  * Get the title of a window.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param window the window to query.
  * \returns the title of the window in UTF-8 format or "" if there is no

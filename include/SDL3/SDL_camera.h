@@ -134,7 +134,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumCameraDrivers(void);
  * "coremedia" or "android". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param index the index of the camera driver; the value ranges from 0 to
  *              SDL_GetNumCameraDrivers() - 1.
@@ -156,7 +156,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCameraDriver(int index);
  * "coremedia" or "android". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the name of the current camera driver or NULL if no driver has
  *          been initialized.
@@ -170,7 +170,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentCameraDriver(void);
 /**
  * Get a list of currently connected camera devices.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param count a pointer filled in with the number of cameras returned, may be
  *              NULL.
@@ -207,7 +207,7 @@ extern SDL_DECLSPEC const SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
  * _is_ a camera until the user has given you permission to check through a
  * scary warning popup.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param devid the camera device instance ID to query.
  * \param count a pointer filled in with the number of elements in the list, may be NULL.
@@ -226,7 +226,7 @@ extern SDL_DECLSPEC const SDL_CameraSpec * const * SDLCALL SDL_GetCameraSupporte
 /**
  * Get the human-readable device name for a camera.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the camera device instance ID.
  * \returns a human-readable device name or NULL on failure; call

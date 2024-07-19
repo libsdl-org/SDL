@@ -96,10 +96,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_OutOfMemory(void);
  * Error strings are set per-thread, so an error set in a different thread
  * will not interfere with the current thread's operation.
  *
- * The returned string does **NOT** follow the SDL_GetStringRule! The pointer
- * is valid until the current thread's error string is changed, so the caller
- * should make a copy if the string is to be used after calling into SDL
- * again.
+ * The returned value is a thread-local string which will remain valid until the current thread's error string is changed. The caller
+ * should make a copy if the value is needed after the next SDL API call.
  *
  * \returns a message with information about the specific error that occurred,
  *          or an empty string if there hasn't been an error message set since

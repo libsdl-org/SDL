@@ -400,7 +400,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
  * "coreaudio" or "wasapi". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param index the index of the audio driver; the value ranges from 0 to
  *              SDL_GetNumAudioDrivers() - 1.
@@ -423,7 +423,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDriver(int index);
  * "coreaudio" or "wasapi". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \returns the name of the current audio driver or NULL if no driver has been
  *          initialized.
@@ -448,7 +448,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentAudioDriver(void);
  * If this function returns NULL, to signify an error, `*count` will be set to
  * zero.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param count a pointer filled in with the number of devices returned, may be NULL.
  * \returns a 0 terminated array of device instance IDs or NULL on error; call SDL_GetError() for more
@@ -477,7 +477,7 @@ extern SDL_DECLSPEC const SDL_AudioDeviceID * SDLCALL SDL_GetAudioPlaybackDevice
  * If this function returns NULL, to signify an error, `*count` will be set to
  * zero.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param count a pointer filled in with the number of devices returned, may be NULL.
  * \returns a 0 terminated array of device instance IDs, or NULL on failure; call SDL_GetError() for more
@@ -495,7 +495,7 @@ extern SDL_DECLSPEC const SDL_AudioDeviceID * SDLCALL SDL_GetAudioRecordingDevic
 /**
  * Get the human-readable name of a specific audio device.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param devid the instance ID of the device to query.
  * \returns the name of the audio device, or NULL on failure; call
@@ -555,7 +555,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid
  * Audio devices usually have no remapping applied. This is represented by
  * returning NULL, and does not signify an error.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param devid the instance ID of the device to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
@@ -1105,7 +1105,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamGain(SDL_AudioStream *stream, 
  * Audio streams default to no remapping applied. This is represented by
  * returning NULL, and does not signify an error.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
@@ -1130,7 +1130,7 @@ extern SDL_DECLSPEC const int * SDLCALL SDL_GetAudioStreamInputChannelMap(SDL_Au
  * Audio streams default to no remapping applied. This is represented by
  * returning NULL, and does not signify an error.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.

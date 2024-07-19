@@ -83,7 +83,7 @@ typedef struct SDL_Finger
  * Therefore the returned list might be empty, although devices are available.
  * After using all devices at least once the number will be correct.
  *
- * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param count a pointer filled in with the number of devices returned, may
  *              be NULL.
@@ -97,7 +97,7 @@ extern SDL_DECLSPEC const SDL_TouchID * SDLCALL SDL_GetTouchDevices(int *count);
 /**
  * Get the touch device name as reported from the driver.
  *
- * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
+ * This returns temporary memory which will be automatically freed later, and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param touchID the touch device instance ID.
  * \returns touch device name, or NULL on failure; call SDL_GetError() for more
