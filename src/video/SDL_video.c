@@ -2000,13 +2000,13 @@ const SDL_DisplayMode *SDL_GetWindowFullscreenMode(SDL_Window *window)
     }
 }
 
-void *SDL_GetWindowICCProfile(SDL_Window *window, size_t *size)
+const void *SDL_GetWindowICCProfile(SDL_Window *window, size_t *size)
 {
     if (!_this->GetWindowICCProfile) {
         SDL_Unsupported();
         return NULL;
     }
-    return _this->GetWindowICCProfile(_this, window, size);
+    return SDL_FreeLater(_this->GetWindowICCProfile(_this, window, size));
 }
 
 SDL_PixelFormat SDL_GetWindowPixelFormat(SDL_Window *window)

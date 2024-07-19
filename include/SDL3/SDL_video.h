@@ -767,7 +767,7 @@ extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetWindowFullscreenMode(
 /**
  * Get the raw ICC profile data for the screen the window is currently on.
  *
- * Data returned should be freed with SDL_free.
+ * The returned data follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param window the window to query.
  * \param size the size of the ICC profile.
@@ -776,7 +776,7 @@ extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetWindowFullscreenMode(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void * SDLCALL SDL_GetWindowICCProfile(SDL_Window *window, size_t *size);
+extern SDL_DECLSPEC const void * SDLCALL SDL_GetWindowICCProfile(SDL_Window *window, size_t *size);
 
 /**
  * Get the pixel format associated with the window.
