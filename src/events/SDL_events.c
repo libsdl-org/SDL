@@ -268,6 +268,9 @@ void *SDL_FreeLater(void *memory)
         return NULL;
     }
 
+    // Make sure we're not adding this to the list twice
+    SDL_assert(!SDL_ClaimTemporaryMemory(memory));
+
     state = SDL_GetTemporaryMemoryState(SDL_TRUE);
     if (!state) {
         return memory;  // this is now a leak, but you probably have bigger problems if malloc failed.
