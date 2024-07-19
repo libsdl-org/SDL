@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     //SDL_CreateWindow("Dummy", 128, 128, 0);
     */
 
-    SDL_free(SDL_GetKeyboards(&num_keyboards));
+    SDL_GetKeyboards(&num_keyboards);
     SDL_Log("There are %d keyboards at startup\n", num_keyboards);
 
     SDL_free(SDL_GetMice(&num_mice));

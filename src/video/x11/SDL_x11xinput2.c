@@ -715,7 +715,7 @@ static void AddDeviceID(Uint32 deviceID, Uint32 **list, int *count)
     *list = new_list;
 }
 
-static SDL_bool HasDeviceID(Uint32 deviceID, Uint32 *list, int count)
+static SDL_bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
 {
     for (int i = 0; i < count; ++i) {
         if (deviceID == list[i]) {
@@ -734,7 +734,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
     XIDeviceInfo *info;
     int ndevices;
     int old_keyboard_count = 0;
-    SDL_KeyboardID *old_keyboards = NULL;
+    const SDL_KeyboardID *old_keyboards = NULL;
     int new_keyboard_count = 0;
     SDL_KeyboardID *new_keyboards = NULL;
     int old_mouse_count = 0;
@@ -839,7 +839,6 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
         }
     }
 
-    SDL_free(old_keyboards);
     SDL_free(new_keyboards);
     SDL_free(old_mice);
     SDL_free(new_mice);

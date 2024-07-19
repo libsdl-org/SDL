@@ -73,9 +73,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * power buttons, etc. You should wait for input from a device before you
  * consider it actively in use.
  *
- * \param count a pointer filled in with the number of keyboards returned.
- * \returns a 0 terminated array of keyboards instance IDs which should be
- *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
+ * \param count a pointer filled in with the number of keyboards returned, may be NULL.
+ * \returns a 0 terminated array of keyboards instance IDs or NULL on failure; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
@@ -83,7 +84,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * \sa SDL_GetKeyboardNameForID
  * \sa SDL_HasKeyboard
  */
-extern SDL_DECLSPEC SDL_KeyboardID * SDLCALL SDL_GetKeyboards(int *count);
+extern SDL_DECLSPEC const SDL_KeyboardID * SDLCALL SDL_GetKeyboards(int *count);
 
 /**
  * Get the name of a keyboard.
