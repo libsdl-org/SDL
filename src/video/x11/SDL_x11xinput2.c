@@ -742,7 +742,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
     int old_touch_count = 0;
-    SDL_TouchID *old_touch_devices64 = NULL;
+    const SDL_TouchID *old_touch_devices64 = NULL;
     Uint32 *old_touch_devices = NULL;
     int new_touch_count = 0;
     Uint32 *new_touch_devices = NULL;
@@ -765,7 +765,6 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
             }
         }
     }
-    SDL_free(old_touch_devices64);
 
     for (int i = 0; i < ndevices; i++) {
         XIDeviceInfo *dev = &info[i];
