@@ -70,9 +70,9 @@ static void DUMMY_JoystickSetDevicePlayerIndex(int device_index, int player_inde
 {
 }
 
-static SDL_JoystickGUID DUMMY_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID DUMMY_JoystickGetDeviceGUID(int device_index)
 {
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     SDL_zero(guid);
     return guid;
 }

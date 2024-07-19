@@ -37,8 +37,8 @@
  * controller. For XInput controllers this returns the XInput user index. Many
  * joysticks will not be able to supply this information.
  *
- * The term SDL_JoystickGUID is a stable 128-bit identifier for a joystick
- * device that does not change over time, it identifies class of the device (a
+ * SDL_GUID is used as a stable 128-bit identifier for a joystick
+ * device that does not change over time. It identifies class of the device (a
  * X360 wired controller for example). This identifier is platform dependent.
  *
  * In order to use these functions, SDL_Init() must have been called with the
@@ -84,15 +84,6 @@ extern SDL_Mutex *SDL_joystick_lock;
  * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_Joystick SDL_Joystick;
-
-/**
- * A structure that encodes the stable unique id for a joystick device.
- *
- * This is just a standard SDL_GUID by a different name.
- *
- * \since This datatype is available since SDL 3.0.0.
- */
-typedef SDL_GUID SDL_JoystickGUID;
 
 /**
  * This is a unique ID for a joystick for the time it is connected to the
@@ -286,9 +277,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetJoystickPlayerIndexForID(SDL_JoystickID i
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetJoystickGUID
- * \sa SDL_GetJoystickGUIDString
+ * \sa SDL_GUIDToString
  */
-extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUIDForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GetJoystickGUIDForID(SDL_JoystickID instance_id);
 
 /**
  * Get the USB vendor ID of a joystick, if available.
@@ -737,9 +728,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetJoystickPlayerIndex(SDL_Joystick *joystic
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetJoystickGUIDForID
- * \sa SDL_GetJoystickGUIDString
+ * \sa SDL_GUIDToString
  */
-extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUID(SDL_Joystick *joystick);
+extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GetJoystickGUID(SDL_Joystick *joystick);
 
 /**
  * Get the USB vendor ID of an opened joystick, if available.
@@ -824,44 +815,25 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickSerial(SDL_Joystick *joy
 extern SDL_DECLSPEC SDL_JoystickType SDLCALL SDL_GetJoystickType(SDL_Joystick *joystick);
 
 /**
- * Get an ASCII string representation for a given SDL_JoystickGUID.
- *
- * You should supply at least 33 bytes for pszGUID.
- *
- * \param guid the SDL_JoystickGUID you wish to convert to string.
- * \param pszGUID buffer in which to write the ASCII string.
- * \param cbGUID the size of pszGUID.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_GetJoystickGUIDForID
- * \sa SDL_GetJoystickGUID
- * \sa SDL_GetJoystickGUIDFromString
- */
-extern SDL_DECLSPEC int SDLCALL SDL_GetJoystickGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID);
-
-/**
- * Convert a GUID string into a SDL_JoystickGUID structure.
+ * Convert a GUID string into a SDL_GUID structure.
  *
  * Performs no error checking. If this function is given a string containing
  * an invalid GUID, the function will silently succeed, but the GUID generated
  * will not be useful.
  *
  * \param pchGUID string containing an ASCII representation of a GUID.
- * \returns a SDL_JoystickGUID structure.
+ * \returns a SDL_GUID structure.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetJoystickGUIDString
+ * \sa SDL_GUIDToString
  */
-extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUIDFromString(const char *pchGUID);
+extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GUIDFromString(const char *pchGUID);
 
 /**
- * Get the device information encoded in a SDL_JoystickGUID structure.
+ * Get the device information encoded in a SDL_GUID structure.
  *
- * \param guid the SDL_JoystickGUID you wish to get info about.
+ * \param guid the SDL_GUID you wish to get info about.
  * \param vendor a pointer filled in with the device VID, or 0 if not
  *               available.
  * \param product a pointer filled in with the device PID, or 0 if not
@@ -875,7 +847,7 @@ extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetJoystickGUIDFromString(const
  *
  * \sa SDL_GetJoystickGUIDForID
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16);
+extern SDL_DECLSPEC void SDLCALL SDL_GetJoystickGUIDInfo(SDL_GUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16);
 
 /**
  * Get the status of a specified joystick.

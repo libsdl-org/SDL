@@ -66,19 +66,17 @@ typedef struct SDL_GUID {
 /**
  * Get an ASCII string representation for a given SDL_GUID.
  *
- * You should supply at least 33 bytes for pszGUID.
+ * The returned string follows the SDL_GetStringRule, and will be automatically freed later.
  *
  * \param guid the SDL_GUID you wish to convert to string.
- * \param pszGUID buffer in which to write the ASCII string.
- * \param cbGUID the size of pszGUID.
- * \returns 0 on success or a negative error code on failure; call
+ * \returns the string representation of the GUID or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GUIDFromString
  */
-extern SDL_DECLSPEC int SDLCALL SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GUIDToString(SDL_GUID guid);
 
 /**
  * Convert a GUID string into a SDL_GUID structure.

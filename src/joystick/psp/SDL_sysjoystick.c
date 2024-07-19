@@ -137,7 +137,7 @@ static void PSP_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-static SDL_JoystickGUID PSP_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID PSP_JoystickGetDeviceGUID(int device_index)
 {
     /* the GUID is just the name for now */
     const char *name = PSP_JoystickGetDeviceName(device_index);

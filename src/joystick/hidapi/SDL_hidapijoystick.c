@@ -1324,7 +1324,7 @@ SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 vers
     return result;
 }
 
-SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid)
+SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_GUID guid)
 {
     SDL_HIDAPI_Device *device;
     SDL_JoystickType type = SDL_JOYSTICK_TYPE_UNKNOWN;
@@ -1341,7 +1341,7 @@ SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid)
     return type;
 }
 
-SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_JoystickGUID guid)
+SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_GUID guid)
 {
     SDL_HIDAPI_Device *device;
     SDL_GamepadType type = SDL_GAMEPAD_TYPE_STANDARD;
@@ -1455,10 +1455,10 @@ static void HIDAPI_JoystickSetDevicePlayerIndex(int device_index, int player_ind
     }
 }
 
-static SDL_JoystickGUID HIDAPI_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID HIDAPI_JoystickGetDeviceGUID(int device_index)
 {
     SDL_HIDAPI_Device *device;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
 
     device = HIDAPI_GetDeviceByIndex(device_index, NULL);
     if (device) {

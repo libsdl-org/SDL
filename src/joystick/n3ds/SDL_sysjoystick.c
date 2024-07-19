@@ -76,9 +76,9 @@ static int N3DS_JoystickGetCount(void)
     return 1;
 }
 
-static SDL_JoystickGUID N3DS_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID N3DS_JoystickGetDeviceGUID(int device_index)
 {
-    SDL_JoystickGUID guid = SDL_CreateJoystickGUIDForName("Nintendo 3DS");
+    SDL_GUID guid = SDL_CreateJoystickGUIDForName("Nintendo 3DS");
     return guid;
 }
 

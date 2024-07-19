@@ -282,7 +282,7 @@ typedef struct SDL_GamepadBinding
  * existing gamepad.
  *
  * The mapping string has the format "GUID,name,mapping", where GUID is the
- * string value from SDL_GetJoystickGUIDString(), name is the human readable
+ * string value from SDL_GUIDToString(), name is the human readable
  * string for the device and mappings are gamepad mappings to joystick ones.
  * Under Windows there is a reserved GUID of "xinput" that covers all XInput
  * devices. The mapping format for joystick is:
@@ -414,7 +414,7 @@ extern SDL_DECLSPEC const char * const * SDLCALL SDL_GetGamepadMappings(int *cou
  * \sa SDL_GetJoystickGUIDForID
  * \sa SDL_GetJoystickGUID
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_JoystickGUID guid);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_GUID guid);
 
 /**
  * Get the current mapping of a gamepad.
@@ -561,7 +561,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetGamepadPlayerIndexForID(SDL_JoystickID in
  * \sa SDL_GetGamepadGUIDString
  * \sa SDL_GetGamepads
  */
-extern SDL_DECLSPEC SDL_JoystickGUID SDLCALL SDL_GetGamepadGUIDForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GetGamepadGUIDForID(SDL_JoystickID instance_id);
 
 /**
  * Get the USB vendor ID of a gamepad, if available.

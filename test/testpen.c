@@ -222,7 +222,7 @@ static void dump_state(void)
     for (i = 0; i < pens_nr; ++i) {
         SDL_PenID penid = pens[i];
         SDL_GUID guid = SDL_GetPenGUID(penid);
-        char guid_str[33];
+        const char *guid_str;
         float axes[SDL_PEN_NUM_AXES];
         float x, y;
         int k;
@@ -232,7 +232,7 @@ static void dump_state(void)
         char *type;
         char *buttons_str;
 
-        SDL_GUIDToString(guid, guid_str, 33);
+        guid_str = SDL_GUIDToString(guid);
 
         switch (SDL_GetPenType(penid)) {
         case SDL_PEN_TYPE_ERASER:

@@ -522,7 +522,7 @@ static void WINDOWS_JoystickSetDevicePlayerIndex(int device_index, int player_in
 }
 
 /* return the stable device guid for this device index */
-static SDL_JoystickGUID WINDOWS_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID WINDOWS_JoystickGetDeviceGUID(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;

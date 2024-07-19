@@ -40,7 +40,7 @@ typedef struct joystick_hwdata
     char *name;
     SDL_Joystick *joystick;
     SDL_JoystickID instance_id;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
 
     int naxes;
     int nbuttons;

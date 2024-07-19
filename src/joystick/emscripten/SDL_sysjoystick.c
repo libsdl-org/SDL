@@ -378,7 +378,7 @@ static void EMSCRIPTEN_JoystickClose(SDL_Joystick *joystick)
     }
 }
 
-static SDL_JoystickGUID EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
 {
     /* the GUID is just the name for now */
     const char *name = EMSCRIPTEN_JoystickGetDeviceName(device_index);

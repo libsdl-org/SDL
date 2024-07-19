@@ -111,7 +111,7 @@ typedef struct SDL_RAWINPUT_Device
     Uint16 vendor_id;
     Uint16 product_id;
     Uint16 version;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     SDL_bool is_xinput;
     SDL_bool is_xboxone;
     int steam_virtual_gamepad_slot;
@@ -1215,7 +1215,7 @@ static void RAWINPUT_JoystickSetDevicePlayerIndex(int device_index, int player_i
 {
 }
 
-static SDL_JoystickGUID RAWINPUT_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID RAWINPUT_JoystickGetDeviceGUID(int device_index)
 {
     return RAWINPUT_GetDeviceByIndex(device_index)->guid;
 }

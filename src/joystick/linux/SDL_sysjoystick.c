@@ -153,7 +153,7 @@ typedef struct SDL_joylist_item
     SDL_JoystickID device_instance;
     char *path; /* "/dev/input/event2" or whatever */
     char *name; /* "SideWinder 3D Pro" or whatever */
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     dev_t devnum;
     int steam_virtual_gamepad_slot;
     struct joystick_hwdata *hwdata;
@@ -276,7 +276,7 @@ static int GuessIsSensor(int fd)
     return 0;
 }
 
-static int IsJoystick(const char *path, int *fd, char **name_return, Uint16 *vendor_return, Uint16 *product_return, SDL_JoystickGUID *guid)
+static int IsJoystick(const char *path, int *fd, char **name_return, Uint16 *vendor_return, Uint16 *product_return, SDL_GUID *guid)
 {
     struct input_id inpid;
     char *name;
@@ -440,7 +440,7 @@ static void MaybeAddDevice(const char *path)
     int fd = -1;
     char *name = NULL;
     Uint16 vendor, product;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     SDL_joylist_item *item;
     SDL_sensorlist_item *item_sensor;
 
@@ -663,7 +663,7 @@ static void HandlePendingRemovals(void)
     }
 }
 
-static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, SDL_JoystickID *device_instance)
+static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_GUID guid, SDL_JoystickID *device_instance)
 {
     SDL_joylist_item *item;
 
@@ -1186,7 +1186,7 @@ static void LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_inde
 {
 }
 
-static SDL_JoystickGUID LINUX_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID LINUX_JoystickGetDeviceGUID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->guid;
 }

@@ -70,7 +70,7 @@ struct joystick_hwdata
     SDL_bool runLoopAttached; /* is 'deviceRef' attached to a CFRunLoop? */
 
     int instance_id;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     int steam_virtual_gamepad_slot;
 
     struct joystick_hwdata *pNext; /* next device */

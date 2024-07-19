@@ -1353,12 +1353,7 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 @@
 @@
 - SDL_JoystickGetGUIDFromString
-+ SDL_GetJoystickGUIDFromString
-  (...)
-@@
-@@
-- SDL_JoystickGetGUIDString
-+ SDL_GetJoystickGUIDString
++ SDL_GUIDFromString
   (...)
 @@
 @@
@@ -3581,3 +3576,8 @@ typedef SDL_Colour, SDL_Color;
 - SDL_AndroidSendMessage
 + SDL_SendAndroidMessage
   (...)
+@@
+typedef SDL_JoystickGUID, SDL_GUID;
+@@
+- SDL_JoystickGUID
++ SDL_GUID
