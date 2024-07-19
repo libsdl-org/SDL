@@ -555,17 +555,18 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displ
  * - refresh rate -> highest to lowest
  * - pixel density -> lowest to highest
  *
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
  * \param displayID the instance ID of the display to query.
- * \param count a pointer filled in with the number of display modes returned.
- * \returns a NULL terminated array of display mode pointers which should be
- *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
+ * \param count a pointer filled in with the number of display modes returned, may be NULL.
+ * \returns a NULL terminated array of display mode pointers or NULL on failure; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC const SDL_DisplayMode ** SDLCALL SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *count);
+extern SDL_DECLSPEC const SDL_DisplayMode * const * SDLCALL SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *count);
 
 /**
  * Get the closest match to the requested display mode.

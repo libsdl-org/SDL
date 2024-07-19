@@ -306,7 +306,7 @@ static int video_getWindowFlags(void *arg)
 static int video_getFullscreenDisplayModes(void *arg)
 {
     const SDL_DisplayID *displays;
-    const SDL_DisplayMode **modes;
+    const SDL_DisplayMode * const *modes;
     int count;
     int i;
 
@@ -321,7 +321,6 @@ static int video_getFullscreenDisplayModes(void *arg)
             SDLTest_AssertPass("Call to SDL_GetFullscreenDisplayModes(%" SDL_PRIu32 ")", displays[i]);
             SDLTest_AssertCheck(modes != NULL, "Validate returned value from function; expected != NULL; got: %p", modes);
             SDLTest_AssertCheck(count >= 0, "Validate number of modes; expected: >= 0; got: %d", count);
-            SDL_free((void *)modes);
         }
     }
 
@@ -334,7 +333,7 @@ static int video_getFullscreenDisplayModes(void *arg)
 static int video_getClosestDisplayModeCurrentResolution(void *arg)
 {
     const SDL_DisplayID *displays;
-    const SDL_DisplayMode **modes;
+    const SDL_DisplayMode * const *modes;
     SDL_DisplayMode current;
     const SDL_DisplayMode *closest;
     int i, num_modes;
@@ -370,7 +369,6 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
                                         current.h, closest->h);
                 }
             }
-            SDL_free((void *)modes);
         }
     }
 
