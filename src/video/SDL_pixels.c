@@ -88,7 +88,6 @@ SDL_COMPILE_TIME_ASSERT(SDL_expand_byte_10_size, SDL_arraysize(SDL_expand_byte_1
 
 /* Helper functions */
 
-// This doesn't need SDL_FreeLater since it returns string literals.
 #define CASE(X) \
     case X:     \
         return #X;

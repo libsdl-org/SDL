@@ -97,7 +97,6 @@ static const wchar_t *SDL_GetWinRTFSPathUNICODE(SDL_WinRT_Path pathType)
     return NULL;
 }
 
-// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
 extern "C" const char *SDL_GetWinRTFSPath(SDL_WinRT_Path pathType)
 {
     typedef unordered_map<SDL_WinRT_Path, string> UTF8PathMap;
@@ -116,7 +115,7 @@ extern "C" const char *SDL_GetWinRTFSPath(SDL_WinRT_Path pathType)
     char *utf8Path = WIN_StringToUTF8W(ucs2Path);
     utf8Paths[pathType] = utf8Path;
     SDL_free(utf8Path);
-    return utf8Paths[pathType].c_str();
+    return SDL_CreateTemporaryString(utf8Paths[pathType].c_str());
 }
 
 extern "C" char *SDL_SYS_GetBasePath(void)

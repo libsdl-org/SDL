@@ -515,11 +515,10 @@ int SDL_GetNumVideoDrivers(void)
     return SDL_arraysize(bootstrap) - 1;
 }
 
-// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetVideoDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumVideoDrivers()) {
-        return bootstrap[index]->name;
+        return SDL_CreateTemporaryString(bootstrap[index]->name);
     }
     return NULL;
 }
@@ -657,14 +656,13 @@ pre_driver_error:
     return -1;
 }
 
-// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetCurrentVideoDriver(void)
 {
     if (!_this) {
         SDL_UninitializedVideo();
         return NULL;
     }
-    return _this->name;
+    return SDL_CreateTemporaryString(_this->name);
 }
 
 SDL_VideoDevice *SDL_GetVideoDevice(void)

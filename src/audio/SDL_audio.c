@@ -131,19 +131,17 @@ int SDL_GetNumAudioDrivers(void)
     return num_drivers;
 }
 
-// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetAudioDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
-        return deduped_bootstrap[index]->name;
+        return SDL_CreateTemporaryString(deduped_bootstrap[index]->name);
     }
     return NULL;
 }
 
-// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetCurrentAudioDriver(void)
 {
-    return current_audio.name;
+    return SDL_CreateTemporaryString(current_audio.name);
 }
 
 static int GetDefaultSampleFramesFromFreq(const int freq)

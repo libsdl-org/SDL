@@ -799,7 +799,6 @@ int SDL_GetNumRenderDrivers(void)
 #endif
 }
 
-// this returns string literals, so there's no need to use SDL_FreeLater.
 const char *SDL_GetRenderDriver(int index)
 {
 #ifndef SDL_RENDER_DISABLED
@@ -808,7 +807,7 @@ const char *SDL_GetRenderDriver(int index)
                             SDL_GetNumRenderDrivers() - 1);
         return NULL;
     }
-    return render_drivers[index]->name;
+    return SDL_CreateTemporaryString(render_drivers[index]->name);
 #else
     SDL_SetError("SDL not built with rendering support");
     return NULL;
