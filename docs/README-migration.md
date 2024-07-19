@@ -298,6 +298,10 @@ The following symbols have been renamed:
 The following symbols have been removed:
 * SDL_MIX_MAXVOLUME - mixer volume is now a float between 0.0 and 1.0
 
+## SDL_clipboard.h
+
+SDL_GetClipboardText() and SDL_GetPrimarySelectionText() return a const pointer to temporary memory, which does not need to be freed. You can use SDL_ClaimTemporaryMemory() to convert it to a non-const pointer that should be freed when you're done with it.
+
 ## SDL_cpuinfo.h
 
 The intrinsics headers (mmintrin.h, etc.) have been moved to `<SDL3/SDL_intrin.h>` and are no longer automatically included in SDL.h.
@@ -453,6 +457,10 @@ The following functions have been removed:
 
 The following enums have been renamed:
 * SDL_eventaction => SDL_EventAction
+
+## SDL_filesystem.h
+
+SDL_GetBasePath() and SDL_GetPrefPath() return a const pointer to temporary memory, which does not need to be freed. You can use SDL_ClaimTemporaryMemory() to convert it to a non-const pointer that should be freed when you're done with it.
 
 ## SDL_gamecontroller.h
 
@@ -685,6 +693,10 @@ However, the SDL2 code has been moved to a single-header library that can
 be dropped into an SDL3 or SDL2 program, to continue to provide this
 functionality to your app and aid migration. That is located in the
 [SDL_gesture GitHub repository](https://github.com/libsdl-org/SDL_gesture).
+
+## SDL_guid.h
+
+SDL_GUIDToString() returns a const pointer to the string representation of a GUID.
 
 ## SDL_haptic.h
 
@@ -1016,6 +1028,10 @@ The following symbols have been renamed:
 ## SDL_loadso.h
 
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
+
+## SDL_locale.h
+
+SDL_GetPreferredLocales() returns a const array of locale pointers, which does not need to be freed. You can use SDL_ClaimTemporaryMemory() to convert it to a non-const pointer that should be freed when you're done with it.
 
 ## SDL_log.h
 
@@ -2053,6 +2069,8 @@ The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported 
 SDL_WindowFlags is used instead of Uint32 for API functions that refer to window flags, and has been extended to 64 bits.
 
 SDL_GetWindowOpacity() directly returns the opacity instead of using an out parameter.
+
+SDL_GetWindowICCProfile() returns a const pointer to temporary memory, which does not need to be freed. You can use SDL_ClaimTemporaryMemory() to convert it to a non-const pointer that should be freed when you're done with it.
 
 The following functions have been renamed:
 * SDL_GL_DeleteContext() => SDL_GL_DestroyContext()
