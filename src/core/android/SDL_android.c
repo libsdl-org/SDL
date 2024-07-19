@@ -2452,7 +2452,6 @@ void SDL_SendAndroidBackButton(void)
     (*env)->CallStaticVoidMethod(env, mActivityClass, midManualBackButton);
 }
 
-// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
 const char *SDL_GetAndroidInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
@@ -2504,7 +2503,7 @@ const char *SDL_GetAndroidInternalStoragePath(void)
 
         LocalReferenceHolder_Cleanup(&refs);
     }
-    return s_AndroidInternalFilesPath;
+    return SDL_CreateTemporaryString(s_AndroidInternalFilesPath);
 }
 
 Uint32 SDL_GetAndroidExternalStorageState(void)
@@ -2547,7 +2546,6 @@ Uint32 SDL_GetAndroidExternalStorageState(void)
     return stateFlags;
 }
 
-// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
 const char *SDL_GetAndroidExternalStoragePath(void)
 {
     static char *s_AndroidExternalFilesPath = NULL;
@@ -2590,10 +2588,9 @@ const char *SDL_GetAndroidExternalStoragePath(void)
 
         LocalReferenceHolder_Cleanup(&refs);
     }
-    return s_AndroidExternalFilesPath;
+    return SDL_CreateTemporaryString(s_AndroidExternalFilesPath);
 }
 
-// this caches a string until the process ends, so there's no need to use SDL_FreeLater.
 const char *SDL_GetAndroidCachePath(void)
 {
     // !!! FIXME: lots of duplication with SDL_GetAndroidExternalStoragePath and SDL_GetAndroidInternalStoragePath; consolidate these functions!
@@ -2637,7 +2634,7 @@ const char *SDL_GetAndroidCachePath(void)
 
         LocalReferenceHolder_Cleanup(&refs);
     }
-    return s_AndroidCachePath;
+    return SDL_CreateTemporaryString(s_AndroidCachePath);
 }
 
 int SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xOffset, int yOffset)

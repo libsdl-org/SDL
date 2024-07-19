@@ -601,11 +601,10 @@ int SDL_GetVersion(void)
 /* Get the library source revision */
 const char *SDL_GetRevision(void)
 {
-    return SDL_REVISION;  // a string literal, no need to SDL_FreeLater it.
+    return SDL_REVISION;
 }
 
 // Get the name of the platform
-// (a string literal, no need to SDL_FreeLater it.)
 const char *SDL_GetPlatform(void)
 {
 #if defined(SDL_PLATFORM_AIX)

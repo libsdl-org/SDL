@@ -945,7 +945,6 @@ int SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
     return 0;
 }
 
-// these are static memory, so we don't use SDL_FreeLater on them.
 const char *SDL_GetScancodeName(SDL_Scancode scancode)
 {
     const char *name;
@@ -955,11 +954,10 @@ const char *SDL_GetScancodeName(SDL_Scancode scancode)
     }
 
     name = SDL_scancode_names[scancode];
-    if (name) {
-        return name;
+    if (!name) {
+        name = "";
     }
-
-    return "";
+    return SDL_CreateTemporaryString(name);
 }
 
 SDL_Scancode SDL_GetScancodeFromName(const char *name)
