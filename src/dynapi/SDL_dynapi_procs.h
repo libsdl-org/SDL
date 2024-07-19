@@ -276,7 +276,7 @@ SDL_DYNAPI_PROC(const char*,SDL_GetGamepadAppleSFSymbolsNameForAxis,(SDL_Gamepad
 SDL_DYNAPI_PROC(const char*,SDL_GetGamepadAppleSFSymbolsNameForButton,(SDL_Gamepad *a, SDL_GamepadButton b),(a,b),return)
 SDL_DYNAPI_PROC(Sint16,SDL_GetGamepadAxis,(SDL_Gamepad *a, SDL_GamepadAxis b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_GamepadAxis,SDL_GetGamepadAxisFromString,(const char *a),(a),return)
-SDL_DYNAPI_PROC(SDL_GamepadBinding**,SDL_GetGamepadBindings,(SDL_Gamepad *a, int *b),(a,b),return)
+SDL_DYNAPI_PROC(const SDL_GamepadBinding* const*,SDL_GetGamepadBindings,(SDL_Gamepad *a, int *b),(a,b),return)
 SDL_DYNAPI_PROC(Uint8,SDL_GetGamepadButton,(SDL_Gamepad *a, SDL_GamepadButton b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_GamepadButton,SDL_GetGamepadButtonFromString,(const char *a),(a),return)
 SDL_DYNAPI_PROC(SDL_GamepadButtonLabel,SDL_GetGamepadButtonLabel,(SDL_Gamepad *a, SDL_GamepadButton b),(a,b),return)

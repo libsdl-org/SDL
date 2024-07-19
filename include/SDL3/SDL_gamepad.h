@@ -1023,15 +1023,17 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
 /**
  * Get the SDL joystick layer bindings for a gamepad.
  *
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
+ *
  * \param gamepad a gamepad.
  * \param count a pointer filled in with the number of bindings returned.
- * \returns a NULL terminated array of pointers to bindings which should be
- *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
- *          more details.
+ * \returns a NULL terminated array of pointers to bindings or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_GamepadBinding ** SDLCALL SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count);
+extern SDL_DECLSPEC const SDL_GamepadBinding * const * SDLCALL SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count);
 
 /**
  * Manually pump gamepad updates if not using the loop.
