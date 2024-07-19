@@ -126,7 +126,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* FIXME: For SDL 2.1, adjust all the magnitude variables to be Uint16 (0xFFFF).
+/* FIXME:
  *
  * At the moment the magnitude variables are mixed between signed/unsigned, and
  * it is also not made clear that ALL of those variables expect a max of 0x7FFF.
