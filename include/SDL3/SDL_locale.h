@@ -94,13 +94,16 @@ typedef struct SDL_Locale
  * if possible, and you can call this function again to get an updated copy of
  * preferred locales.
  *
- * \returns array of locales, terminated with a locale with a NULL language
- *          field. Will return NULL on error; call SDL_GetError() for more
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
+ * \param count a pointer filled in with the number of locales returned, may
+ *              be NULL.
+ * \returns a NULL terminated array of locale pointers, or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_Locale * SDLCALL SDL_GetPreferredLocales(void);
+extern SDL_DECLSPEC const SDL_Locale * const * SDLCALL SDL_GetPreferredLocales(int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

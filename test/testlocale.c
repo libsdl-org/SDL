@@ -15,20 +15,20 @@
 
 static void log_locales(void)
 {
-    SDL_Locale *locales = SDL_GetPreferredLocales();
+    const SDL_Locale * const *locales = SDL_GetPreferredLocales(NULL);
     if (!locales) {
         SDL_Log("Couldn't determine locales: %s", SDL_GetError());
     } else {
-        SDL_Locale *l;
+        int i;
         unsigned int total = 0;
         SDL_Log("Locales, in order of preference:");
-        for (l = locales; l->language; l++) {
+        for (i = 0; locales[i]; ++i) {
+            const SDL_Locale *l = locales[i];
             const char *c = l->country;
             SDL_Log(" - %s%s%s", l->language, c ? "_" : "", c ? c : "");
             total++;
         }
         SDL_Log("%u locales seen.", total);
-        SDL_free(locales);
     }
 }
 
