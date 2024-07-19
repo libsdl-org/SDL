@@ -1564,7 +1564,7 @@ Rather than iterating over sensors using device index, there is a new function S
 {
     if (SDL_InitSubSystem(SDL_INIT_SENSOR) == 0) {
         int i, num_sensors;
-        SDL_SensorID *sensors = SDL_GetSensors(&num_sensors);
+        const SDL_SensorID *sensors = SDL_GetSensors(&num_sensors);
         if (sensors) {
             for (i = 0; i < num_sensors; ++i) {
                 SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %d, platform type %d\n",
@@ -1573,7 +1573,6 @@ Rather than iterating over sensors using device index, there is a new function S
                         SDL_GetSensorTypeForID(sensors[i]),
                         SDL_GetSensorNonPortableTypeForID(sensors[i]));
             }
-            SDL_free(sensors);
         }
         SDL_QuitSubSystem(SDL_INIT_SENSOR);
     }

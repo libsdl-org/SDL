@@ -170,7 +170,7 @@ SDL_bool SDL_SensorsOpened(void)
     return opened;
 }
 
-SDL_SensorID *SDL_GetSensors(int *count)
+const SDL_SensorID *SDL_GetSensors(int *count)
 {
     int i, num_sensors, device_index;
     int sensor_index = 0, total_sensors = 0;
@@ -207,7 +207,7 @@ SDL_SensorID *SDL_GetSensors(int *count)
     }
     SDL_UnlockSensors();
 
-    return sensors;
+    return SDL_FreeLater(sensors);
 }
 
 /*
