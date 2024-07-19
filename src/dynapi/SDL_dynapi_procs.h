@@ -317,7 +317,7 @@ SDL_DYNAPI_PROC(SDL_GamepadType,SDL_GetGamepadTypeForID,(SDL_JoystickID a),(a),r
 SDL_DYNAPI_PROC(SDL_GamepadType,SDL_GetGamepadTypeFromString,(const char *a),(a),return)
 SDL_DYNAPI_PROC(Uint16,SDL_GetGamepadVendor,(SDL_Gamepad *a),(a),return)
 SDL_DYNAPI_PROC(Uint16,SDL_GetGamepadVendorForID,(SDL_JoystickID a),(a),return)
-SDL_DYNAPI_PROC(SDL_JoystickID*,SDL_GetGamepads,(int *a),(a),return)
+SDL_DYNAPI_PROC(const SDL_JoystickID*,SDL_GetGamepads,(int *a),(a),return)
 SDL_DYNAPI_PROC(SDL_MouseButtonFlags,SDL_GetGlobalMouseState,(float *a, float *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetGlobalProperties,(void),(),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_GetGrabbedWindow,(void),(),return)

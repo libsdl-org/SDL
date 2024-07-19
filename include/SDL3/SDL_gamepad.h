@@ -468,17 +468,18 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasGamepad(void);
 /**
  * Get a list of currently connected gamepads.
  *
- * \param count a pointer filled in with the number of gamepads returned.
- * \returns a 0 terminated array of joystick instance IDs which should be
- *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
- *          more details.
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
+ * \param count a pointer filled in with the number of gamepads returned, may be NULL.
+ * \returns a 0 terminated array of joystick instance IDs or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasGamepad
  * \sa SDL_OpenGamepad
  */
-extern SDL_DECLSPEC SDL_JoystickID * SDLCALL SDL_GetGamepads(int *count);
+extern SDL_DECLSPEC const SDL_JoystickID * SDLCALL SDL_GetGamepads(int *count);
 
 /**
  * Check if the given joystick is supported by the gamepad interface.
