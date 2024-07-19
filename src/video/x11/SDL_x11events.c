@@ -36,7 +36,6 @@
 #include "SDL_x11settings.h"
 #include "../SDL_clipboard_c.h"
 #include "../../core/unix/SDL_poll.h"
-#include "../../core/unix/SDL_uri_decode.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
