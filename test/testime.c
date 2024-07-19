@@ -53,7 +53,7 @@ static int cursor_length = 0;
 static SDL_bool cursor_visible;
 static Uint64 last_cursor_change;
 static SDL_BlendMode highlight_mode;
-static char **candidates;
+static const char **candidates;
 static int num_candidates;
 static int selected_candidate;
 static SDL_bool horizontal_candidates;
@@ -431,7 +431,7 @@ static char *utf8_advance(char *p, size_t distance)
 }
 #endif
 
-static Uint32 utf8_decode(char *p, size_t len)
+static Uint32 utf8_decode(const char *p, size_t len)
 {
     Uint32 codepoint = 0;
     size_t i = 0;
@@ -476,11 +476,6 @@ static void InitInput(void)
 
 static void ClearCandidates(void)
 {
-    int i;
-
-    for (i = 0; i < num_candidates; ++i) {
-        SDL_free(candidates[i]);
-    }
     SDL_free(candidates);
     candidates = NULL;
     num_candidates = 0;
@@ -488,20 +483,12 @@ static void ClearCandidates(void)
 
 static void SaveCandidates(SDL_Event *event)
 {
-    int i;
-
     ClearCandidates();
 
     num_candidates = event->edit_candidates.num_candidates;
     if (num_candidates > 0) {
-        candidates = (char **)SDL_malloc(num_candidates * sizeof(*candidates));
-        if (!candidates) {
-            num_candidates = 0;
-            return;
-        }
-        for (i = 0; i < num_candidates; ++i) {
-            candidates[i] = SDL_strdup(event->edit_candidates.candidates[i]);
-        }
+        candidates = (const char **)SDL_ClaimTemporaryMemory(event->edit_candidates.candidates);
+        SDL_assert(candidates);
         selected_candidate = event->edit_candidates.selected_candidate;
         horizontal_candidates = event->edit_candidates.horizontal;
     }
@@ -529,7 +516,7 @@ static void DrawCandidates(int rendererID, SDL_FRect *cursorRect)
         /* FIXME */
 #else
         if (horizontal_candidates) {
-            char *utext = candidates[i];
+            const char *utext = candidates[i];
             Uint32 codepoint;
             size_t len;
             float advance = 0.0f;
@@ -544,7 +531,7 @@ static void DrawCandidates(int rendererID, SDL_FRect *cursorRect)
             w += advance;
             h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
         } else {
-            char *utext = candidates[i];
+            const char *utext = candidates[i];
             Uint32 codepoint;
             size_t len;
             float advance = 0.0f;
@@ -596,7 +583,7 @@ static void DrawCandidates(int rendererID, SDL_FRect *cursorRect)
         dstRect.h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
 
         if (horizontal_candidates) {
-            char *utext = candidates[i];
+            const char *utext = candidates[i];
             Uint32 codepoint;
             size_t len;
             float start;
@@ -621,7 +608,7 @@ static void DrawCandidates(int rendererID, SDL_FRect *cursorRect)
                 SDL_RenderFillRect(renderer, &underlineRect);
             }
         } else {
-            char *utext = candidates[i];
+            const char *utext = candidates[i];
             Uint32 codepoint;
             size_t len;
             float start;

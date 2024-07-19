@@ -760,6 +760,37 @@ int SDL_SendEditingText(const char *text, int start, int length)
     return posted;
 }
 
+static const char * const *CreateCandidatesForEvent(char **candidates, int num_candidates)
+{
+    const char **event_candidates;
+    int i;
+    char *ptr;
+    size_t total_length = (num_candidates + 1) * sizeof(*event_candidates);
+
+    for (i = 0; i < num_candidates; ++i) {
+        size_t length = SDL_strlen(candidates[i]) + 1;
+
+        total_length += length;
+    }
+
+    event_candidates = (const char **)SDL_malloc(total_length);
+    if (!event_candidates) {
+        return NULL;
+    }
+    ptr = (char *)(event_candidates + (num_candidates + 1));
+
+    for (i = 0; i < num_candidates; ++i) {
+        size_t length = SDL_strlen(candidates[i]) + 1;
+
+        event_candidates[i] = ptr;
+        SDL_memcpy(ptr, candidates[i], length);
+        ptr += length;
+    }
+    event_candidates[i] = NULL;
+
+    return SDL_FreeLater(event_candidates);
+}
+
 int SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int selected_candidate, SDL_bool horizontal)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
@@ -778,14 +809,10 @@ int SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int sel
         event.common.timestamp = 0;
         event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
         if (num_candidates > 0) {
-            const char **event_candidates = (const char **)SDL_AllocateTemporaryMemory((num_candidates + 1) * sizeof(*event_candidates));
+            const char * const *event_candidates = CreateCandidatesForEvent(candidates, num_candidates);
             if (!event_candidates) {
                 return 0;
             }
-            for (int i = 0; i < num_candidates; ++i) {
-                event_candidates[i] = SDL_CreateTemporaryString(candidates[i]);
-            }
-            event_candidates[num_candidates] = NULL;
             event.edit_candidates.candidates = event_candidates;
             event.edit_candidates.num_candidates = num_candidates;
             event.edit_candidates.selected_candidate = selected_candidate;
