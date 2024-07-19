@@ -63,7 +63,7 @@ static SDL_bool SDL_GetHapticIndex(SDL_HapticID instance_id, int *driver_index)
     return SDL_FALSE;
 }
 
-SDL_HapticID *SDL_GetHaptics(int *count)
+const SDL_HapticID *SDL_GetHaptics(int *count)
 {
     int device_index;
     int haptic_index = 0, num_haptics = 0;
@@ -89,7 +89,7 @@ SDL_HapticID *SDL_GetHaptics(int *count)
         }
     }
 
-    return haptics;
+    return SDL_FreeLater(haptics);
 }
 
 const char *SDL_GetHapticNameForID(SDL_HapticID instance_id)

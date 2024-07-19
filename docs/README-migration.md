@@ -695,7 +695,7 @@ Rather than iterating over haptic devices using device index, there is a new fun
 {
     if (SDL_InitSubSystem(SDL_INIT_HAPTIC) == 0) {
         int i, num_haptics;
-        SDL_HapticID *haptics = SDL_GetHaptics(&num_haptics);
+        const SDL_HapticID *haptics = SDL_GetHaptics(&num_haptics);
         if (haptics) {
             for (i = 0; i < num_haptics; ++i) {
                 SDL_HapticID instance_id = haptics[i];
@@ -704,7 +704,6 @@ Rather than iterating over haptic devices using device index, there is a new fun
                 SDL_Log("Haptic %" SDL_PRIu32 ": %s\n",
                         instance_id, name ? name : "Unknown");
             }
-            SDL_free(haptics);
         }
         SDL_QuitSubSystem(SDL_INIT_HAPTIC);
     }
