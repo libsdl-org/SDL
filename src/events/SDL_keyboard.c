@@ -778,7 +778,7 @@ int SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int sel
         event.common.timestamp = 0;
         event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
         if (num_candidates > 0) {
-            const char **event_candidates = (const char **)SDL_AllocateEventMemory((num_candidates + 1) * sizeof(*event_candidates));
+            const char **event_candidates = (const char **)SDL_AllocateTemporaryMemory((num_candidates + 1) * sizeof(*event_candidates));
             if (!event_candidates) {
                 return 0;
             }

@@ -36,7 +36,7 @@
 #define SDL_AddTimer SDL_AddTimer_REAL
 #define SDL_AddTimerNS SDL_AddTimerNS_REAL
 #define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
-#define SDL_AllocateEventMemory SDL_AllocateEventMemory_REAL
+#define SDL_AllocateTemporaryMemory SDL_AllocateTemporaryMemory_REAL
 #define SDL_AtomicAdd SDL_AtomicAdd_REAL
 #define SDL_AtomicCompareAndSwap SDL_AtomicCompareAndSwap_REAL
 #define SDL_AtomicCompareAndSwapPointer SDL_AtomicCompareAndSwapPointer_REAL
@@ -54,7 +54,7 @@
 #define SDL_BlitSurfaceUncheckedScaled SDL_BlitSurfaceUncheckedScaled_REAL
 #define SDL_BroadcastCondition SDL_BroadcastCondition_REAL
 #define SDL_CaptureMouse SDL_CaptureMouse_REAL
-#define SDL_ClaimEventMemory SDL_ClaimEventMemory_REAL
+#define SDL_ClaimTemporaryMemory SDL_ClaimTemporaryMemory_REAL
 #define SDL_CleanupTLS SDL_CleanupTLS_REAL
 #define SDL_ClearAudioStream SDL_ClearAudioStream_REAL
 #define SDL_ClearClipboardData SDL_ClearClipboardData_REAL
@@ -150,7 +150,7 @@
 #define SDL_FlushEvent SDL_FlushEvent_REAL
 #define SDL_FlushEvents SDL_FlushEvents_REAL
 #define SDL_FlushRenderer SDL_FlushRenderer_REAL
-#define SDL_FreeEventMemory SDL_FreeEventMemory_REAL
+#define SDL_FreeTemporaryMemory SDL_FreeTemporaryMemory_REAL
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GL_CreateContext SDL_GL_CreateContext_REAL
 #define SDL_GL_DestroyContext SDL_GL_DestroyContext_REAL
