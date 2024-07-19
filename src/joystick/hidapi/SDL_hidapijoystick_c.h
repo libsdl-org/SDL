@@ -74,7 +74,7 @@ typedef struct SDL_HIDAPI_Device
     Uint16 product_id;
     Uint16 version;
     char *serial;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     int interface_number; /* Available on Windows and Linux */
     int interface_class;
     int interface_subclass;
@@ -158,10 +158,10 @@ extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 /* Return the type of a joystick if it's present and supported */
-extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid);
+extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_GUID guid);
 
 /* Return the type of a game controller if it's present and supported */
-extern SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_JoystickGUID guid);
+extern SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_GUID guid);
 
 extern void HIDAPI_UpdateDevices(void);
 extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);

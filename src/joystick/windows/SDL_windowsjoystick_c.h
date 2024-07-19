@@ -33,7 +33,7 @@ extern "C" {
 
 typedef struct JoyStick_DeviceData
 {
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     char *joystickname;
     Uint8 send_add_event;
     SDL_JoystickID nInstanceID;
@@ -70,7 +70,7 @@ typedef struct input_t
 /* The private structure used to keep track of a joystick */
 struct joystick_hwdata
 {
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
 
 #ifdef SDL_JOYSTICK_DINPUT
     LPDIRECTINPUTDEVICE8 InputDevice;

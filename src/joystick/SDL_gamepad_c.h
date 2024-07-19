@@ -36,10 +36,10 @@ extern void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id);
 extern void SDL_PrivateGamepadRemoved(SDL_JoystickID instance_id);
 
 /* Function to return whether a joystick name and GUID is a gamepad  */
-extern SDL_bool SDL_IsGamepadNameAndGUID(const char *name, SDL_JoystickGUID guid);
+extern SDL_bool SDL_IsGamepadNameAndGUID(const char *name, SDL_GUID guid);
 
 /* Function to return whether a gamepad should be ignored */
-extern SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_JoystickGUID guid);
+extern SDL_bool SDL_ShouldIgnoreGamepad(const char *name, SDL_GUID guid);
 
 /* Handle delayed guide button on a gamepad */
 extern void SDL_GamepadHandleDelayedGuideButton(SDL_Joystick *joystick);

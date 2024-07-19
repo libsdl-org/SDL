@@ -318,7 +318,7 @@ static void VITA_JoystickQuit(void)
 {
 }
 
-static SDL_JoystickGUID VITA_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID VITA_JoystickGetDeviceGUID(int device_index)
 {
     /* the GUID is just the name for now */
     const char *name = VITA_JoystickGetDeviceName(device_index);

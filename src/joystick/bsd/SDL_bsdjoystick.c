@@ -173,7 +173,7 @@ typedef struct SDL_joylist_item
     SDL_JoystickID device_instance;
     char *path; /* "/dev/uhid0" or whatever */
     char *name; /* "SideWinder 3D Pro" or whatever */
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     dev_t devnum;
     struct SDL_joylist_item *next;
 } SDL_joylist_item;
@@ -393,7 +393,7 @@ static int MaybeAddDevice(const char *path)
 {
     struct stat sb;
     char *name = NULL;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     SDL_joylist_item *item;
     struct joystick_hwdata *hw;
 
@@ -556,7 +556,7 @@ static void BSD_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-static SDL_JoystickGUID BSD_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID BSD_JoystickGetDeviceGUID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->guid;
 }

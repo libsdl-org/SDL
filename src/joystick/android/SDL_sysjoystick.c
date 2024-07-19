@@ -304,7 +304,7 @@ int Android_OnHat(int device_id, int hat_id, int x, int y)
 int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, SDL_bool can_rumble)
 {
     SDL_joylist_item *item;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     int i;
     int result = -1;
 
@@ -551,7 +551,7 @@ static void ANDROID_JoystickSetDevicePlayerIndex(int device_index, int player_in
 {
 }
 
-static SDL_JoystickGUID ANDROID_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID ANDROID_JoystickGetDeviceGUID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->guid;
 }

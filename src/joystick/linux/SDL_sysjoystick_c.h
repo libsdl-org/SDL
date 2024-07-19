@@ -35,7 +35,7 @@ struct joystick_hwdata
     int fd_sensor;
     struct SDL_joylist_item *item;
     struct SDL_sensorlist_item *item_sensor;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     char *fname; /* Used in haptic subsystem */
 
     SDL_bool ff_rumble;

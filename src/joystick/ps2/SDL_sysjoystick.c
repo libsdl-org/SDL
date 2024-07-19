@@ -182,7 +182,7 @@ static void PS2_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 }
 
 /* Function to return the stable GUID for a plugged in device */
-static SDL_JoystickGUID PS2_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID PS2_JoystickGetDeviceGUID(int device_index)
 {
     /* the GUID is just the name for now */
     const char *name = PS2_JoystickGetDeviceName(device_index);

@@ -298,9 +298,7 @@ SDL3_0.0.0 {
     SDL_GetJoystickFromPlayerIndex;
     SDL_GetJoystickGUID;
     SDL_GetJoystickGUIDForID;
-    SDL_GetJoystickGUIDFromString;
     SDL_GetJoystickGUIDInfo;
-    SDL_GetJoystickGUIDString;
     SDL_GetJoystickHat;
     SDL_GetJoystickID;
     SDL_GetJoystickName;

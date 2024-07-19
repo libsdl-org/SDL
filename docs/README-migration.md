@@ -860,8 +860,7 @@ The following functions have been renamed:
 * SDL_JoystickGetButton() => SDL_GetJoystickButton()
 * SDL_JoystickGetFirmwareVersion() => SDL_GetJoystickFirmwareVersion()
 * SDL_JoystickGetGUID() => SDL_GetJoystickGUID()
-* SDL_JoystickGetGUIDFromString() => SDL_GetJoystickGUIDFromString()
-* SDL_JoystickGetGUIDString() => SDL_GetJoystickGUIDString()
+* SDL_JoystickGetGUIDFromString() => SDL_GUIDFromString()
 * SDL_JoystickGetHat() => SDL_GetJoystickHat()
 * SDL_JoystickGetPlayerIndex() => SDL_GetJoystickPlayerIndex()
 * SDL_JoystickGetProduct() => SDL_GetJoystickProduct()
@@ -902,6 +901,7 @@ The following functions have been removed:
 * SDL_JoystickGetDeviceProductVersion() - replaced with SDL_GetJoystickProductVersionForID()
 * SDL_JoystickGetDeviceType() - replaced with SDL_GetJoystickTypeForID()
 * SDL_JoystickGetDeviceVendor() - replaced with SDL_GetJoystickVendorForID()
+* SDL_JoystickGetGUIDString() - replaced with SDL_GUIDToString()
 * SDL_JoystickHasLED() - replaced with SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN
 * SDL_JoystickHasRumble() - replaced with SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN
 * SDL_JoystickHasRumbleTriggers() - replaced with SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN
@@ -912,6 +912,9 @@ The following functions have been removed:
 
 The following symbols have been removed:
 * SDL_JOYBALLMOTION
+
+The following structures have been renamed:
+* SDL_JoystickGUID => SDL_GUID
 
 ## SDL_keyboard.h
 

@@ -255,7 +255,7 @@ extern "C"
         SDL_joyname[0] = NULL;
     }
 
-    static SDL_JoystickGUID HAIKU_JoystickGetDeviceGUID(int device_index)
+    static SDL_GUID HAIKU_JoystickGetDeviceGUID(int device_index)
     {
         /* the GUID is just the name for now */
         const char *name = HAIKU_JoystickGetDeviceName(device_index);
