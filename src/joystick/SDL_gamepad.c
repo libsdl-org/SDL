@@ -3543,7 +3543,7 @@ SDL_Gamepad *SDL_GetGamepadFromPlayerIndex(int player_index)
 /*
  * Get the SDL joystick layer bindings for this gamepad
  */
-SDL_GamepadBinding **SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count)
+const SDL_GamepadBinding * const*SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count)
 {
     SDL_GamepadBinding **bindings = NULL;
 
@@ -3574,7 +3574,7 @@ SDL_GamepadBinding **SDL_GetGamepadBindings(SDL_Gamepad *gamepad, int *count)
     }
     SDL_UnlockJoysticks();
 
-    return bindings;
+    return SDL_FreeLater(bindings);
 }
 
 int SDL_RumbleGamepad(SDL_Gamepad *gamepad, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
