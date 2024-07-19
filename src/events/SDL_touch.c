@@ -49,7 +49,7 @@ SDL_bool SDL_TouchDevicesAvailable(void)
     return SDL_num_touch > 0;
 }
 
-SDL_TouchID *SDL_GetTouchDevices(int *count)
+const SDL_TouchID *SDL_GetTouchDevices(int *count)
 {
     if (count) {
         *count = 0;
@@ -67,7 +67,7 @@ SDL_TouchID *SDL_GetTouchDevices(int *count)
         }
     }
 
-    return retval;
+    return SDL_FreeLater(retval);
 }
 
 static int SDL_GetTouchIndex(SDL_TouchID id)
