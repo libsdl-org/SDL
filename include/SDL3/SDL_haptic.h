@@ -45,7 +45,6 @@
  *    SDL_HapticID *haptics = SDL_GetHaptics(NULL);
  *    if (haptics) {
  *        haptic = SDL_OpenHaptic(haptics[0]);
- *        SDL_free(haptics);
  *    }
  *    if (haptic == NULL)
  *       return -1;
@@ -932,17 +931,18 @@ typedef Uint32 SDL_HapticID;
 /**
  * Get a list of currently connected haptic devices.
  *
+ * The returned array follows the SDL_GetStringRule, and will be automatically freed later.
+ *
  * \param count a pointer filled in with the number of haptic devices
- *              returned.
- * \returns a 0 terminated array of haptic device instance IDs which should be
- *          freed with SDL_free(), or NULL on failure; call SDL_GetError() for
+ *              returned, may be NULL.
+ * \returns a 0 terminated array of haptic device instance IDs or NULL on failure; call SDL_GetError() for
  *          more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_OpenHaptic
  */
-extern SDL_DECLSPEC SDL_HapticID * SDLCALL SDL_GetHaptics(int *count);
+extern SDL_DECLSPEC const SDL_HapticID * SDLCALL SDL_GetHaptics(int *count);
 
 /**
  * Get the implementation dependent name of a haptic device.

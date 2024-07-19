@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     char *name = NULL;
     int index;
     SDLTest_CommonState *state;
-    SDL_HapticID *haptics;
+    const SDL_HapticID *haptics;
     int num_haptics;
 
     /* Initialize test framework */
@@ -92,7 +92,6 @@ int main(int argc, char **argv)
     if (haptics) {
         if (num_haptics == 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No Haptic devices found!\n");
-            SDL_free(haptics);
             return 1;
         }
 
@@ -102,7 +101,6 @@ int main(int argc, char **argv)
 
             if (i >= num_haptics) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Index out of range, aborting.\n");
-                SDL_free(haptics);
                 return 1;
             }
         }
@@ -116,7 +114,6 @@ int main(int argc, char **argv)
 
             if (i >= num_haptics) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to find device matching '%s', aborting.\n", name);
-                SDL_free(haptics);
                 return 1;
             }
         }
@@ -124,11 +121,9 @@ int main(int argc, char **argv)
         haptic = SDL_OpenHaptic(haptics[i]);
         if (!haptic) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s\n", SDL_GetError());
-            SDL_free(haptics);
             return 1;
         }
         SDL_Log("Device: %s\n", SDL_GetHapticName(haptic));
-        SDL_free(haptics);
     }
 
     /* We only want force feedback errors. */

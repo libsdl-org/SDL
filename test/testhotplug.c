@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
     if (enable_haptic) {
         int num_haptics;
-        SDL_free(SDL_GetHaptics(&num_haptics));
+        SDL_GetHaptics(&num_haptics);
         SDL_Log("There are %d haptic devices at startup\n", num_haptics);
     }
 
