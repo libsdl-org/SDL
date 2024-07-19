@@ -146,14 +146,13 @@ typedef enum SDL_SensorType
 /**
  * Get a list of currently connected sensors.
  *
- * \param count a pointer filled in with the number of sensors returned.
- * \returns a 0 terminated array of sensor instance IDs which should be freed
- *          with SDL_free(), or NULL on failure; call SDL_GetError() for more
+ * \param count a pointer filled in with the number of sensors returned, may be NULL.
+ * \returns a 0 terminated array of sensor instance IDs or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC SDL_SensorID * SDLCALL SDL_GetSensors(int *count);
+extern SDL_DECLSPEC const SDL_SensorID * SDLCALL SDL_GetSensors(int *count);
 
 /**
  * Get the implementation dependent name of a sensor.

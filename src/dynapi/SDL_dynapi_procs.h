@@ -470,7 +470,7 @@ SDL_DYNAPI_PROC(int,SDL_GetSensorNonPortableTypeForID,(SDL_SensorID a),(a),retur
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetSensorProperties,(SDL_Sensor *a),(a),return)
 SDL_DYNAPI_PROC(SDL_SensorType,SDL_GetSensorType,(SDL_Sensor *a),(a),return)
 SDL_DYNAPI_PROC(SDL_SensorType,SDL_GetSensorTypeForID,(SDL_SensorID a),(a),return)
-SDL_DYNAPI_PROC(SDL_SensorID*,SDL_GetSensors,(int *a),(a),return)
+SDL_DYNAPI_PROC(const SDL_SensorID*,SDL_GetSensors,(int *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetSilenceValueForFormat,(SDL_AudioFormat a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetStorageFileSize,(SDL_Storage *a, const char *b, Uint64 *c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_GetStoragePathInfo,(SDL_Storage *a, const char *b, SDL_PathInfo *c),(a,b,c),return)

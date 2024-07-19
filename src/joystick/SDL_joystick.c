@@ -858,7 +858,7 @@ static SDL_bool IsROGAlly(SDL_Joystick *joystick)
         SDL_bool has_ally_gyro = SDL_FALSE;
 
         if (SDL_InitSubSystem(SDL_INIT_SENSOR) == 0) {
-            SDL_SensorID *sensors = SDL_GetSensors(NULL);
+            const SDL_SensorID *sensors = SDL_GetSensors(NULL);
             if (sensors) {
                 int i;
                 for (i = 0; sensors[i]; ++i) {
@@ -877,7 +877,6 @@ static SDL_bool IsROGAlly(SDL_Joystick *joystick)
                         }
                     }
                 }
-                SDL_free(sensors);
             }
             SDL_QuitSubSystem(SDL_INIT_SENSOR);
         }
@@ -952,7 +951,7 @@ static SDL_bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, SDL_bool *inve
 
 static void AttemptSensorFusion(SDL_Joystick *joystick, SDL_bool invert_sensors)
 {
-    SDL_SensorID *sensors;
+    const SDL_SensorID *sensors;
     unsigned int i, j;
 
     SDL_AssertJoysticksLocked();
@@ -981,7 +980,6 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, SDL_bool invert_sensors)
                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
             }
         }
-        SDL_free(sensors);
     }
     SDL_QuitSubSystem(SDL_INIT_SENSOR);
 
