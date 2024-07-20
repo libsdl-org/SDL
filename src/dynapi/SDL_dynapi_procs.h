@@ -1279,3 +1279,5 @@ SDL_DYNAPI_PROC(bool,SDL_SetWindowProgressState,(SDL_Window *a,SDL_ProgressState
 SDL_DYNAPI_PROC(bool,SDL_SetWindowProgressValue,(SDL_Window *a,float b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_ProgressState,SDL_GetWindowProgressState,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_GetWindowProgressValue,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(bool,SDL_SetRenderTextureAddressMode,(SDL_Renderer *a,SDL_TextureAddressMode b,SDL_TextureAddressMode c),(a,b,c),return)
+SDL_DYNAPI_PROC(bool,SDL_GetRenderTextureAddressMode,(SDL_Renderer *a,SDL_TextureAddressMode *b,SDL_TextureAddressMode *c),(a,b,c),return)

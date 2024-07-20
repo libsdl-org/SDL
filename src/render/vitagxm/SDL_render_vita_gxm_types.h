@@ -206,7 +206,8 @@ typedef struct
     bool yuv;
     bool nv12;
     SDL_ScaleMode scale_mode;
-    SDL_TextureAddressMode address_mode;
+    SDL_TextureAddressMode address_mode_u;
+    SDL_TextureAddressMode address_mode_v;
 } VITA_GXM_TextureData;
 
 #endif // SDL_RENDER_VITA_GXM_TYPES_H
