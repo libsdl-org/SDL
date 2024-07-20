@@ -251,7 +251,7 @@ static void UpdateAudioStreamFormatsPhysical(SDL_AudioDevice *device)
                 // SDL_SetAudioStreamFormat does a ton of validation just to memcpy an audiospec.
                 SDL_LockMutex(stream->lock);
                 SDL_copyp(&stream->dst_spec, &spec);
-                SDL_SetAudioStreamOutputChannelMap(stream, device->chmap, spec.channels);  // this should be fast for normal cases, though!
+                SetAudioStreamChannelMap(stream, &stream->dst_spec, &stream->dst_chmap, device->chmap, spec.channels, -1);  // this should be fast for normal cases, though!
                 SDL_UnlockMutex(stream->lock);
             }
         }

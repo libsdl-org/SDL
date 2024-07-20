@@ -137,6 +137,10 @@ extern void OnAudioStreamDestroy(SDL_AudioStream *stream);
 // This just lets audio playback apply logical device gain at the same time as audiostream gain, so it's one multiplication instead of thousands.
 extern int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidbuf, int len, float extra_gain);
 
+// This is the bulk of `SDL_SetAudioStream*putChannelMap`'s work, but it lets you skip the check about changing the device end of a stream if isinput==-1.
+extern int SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec, int **stream_chmap, const int *chmap, int channels, int isinput);
+
+
 typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);

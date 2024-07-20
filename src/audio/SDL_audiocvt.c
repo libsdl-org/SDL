@@ -584,7 +584,7 @@ int SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_s
     return 0;
 }
 
-static int SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec, int **stream_chmap, const int *chmap, int channels, SDL_bool isinput)
+int SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec, int **stream_chmap, const int *chmap, int channels, int isinput)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -602,7 +602,7 @@ static int SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec
         // already have this map, don't allocate/copy it again.
     } else if (SDL_ChannelMapIsBogus(chmap, channels)) {
         retval = SDL_SetError("Invalid channel mapping");
-    } else if (stream->bound_device && (!!isinput == !!stream->bound_device->physical_device->recording)) {
+    } else if ((isinput != -1) && stream->bound_device && (!!isinput == !!stream->bound_device->physical_device->recording)) {
         // quietly refuse to change the format of the end currently bound to a device.
     } else {
         if (SDL_ChannelMapIsDefault(chmap, channels)) {
