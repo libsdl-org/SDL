@@ -234,7 +234,15 @@ static SDL_bool AudioDeviceCanUseSimpleCopy(SDL_AudioDevice *device)
 // should hold device->lock before calling.
 static void UpdateAudioStreamFormatsPhysical(SDL_AudioDevice *device)
 {
-    if (!device->recording) {  // for recording devices, we only want to move to float32 for postmix, which we'll handle elsewhere.
+    if (device->recording) {  // for recording devices, we only want to move to float32 for postmix and gain, which we'll handle elsewhere.
+        // we _do_ need to make sure the channel map is correct, though...
+        for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev; logdev = logdev->next) {
+            for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
+                // set the proper end of the stream to the device's channel map. This will obtain stream->lock itself.
+                SetAudioStreamChannelMap(stream, &stream->src_spec, &stream->src_chmap, device->chmap, device->spec.channels, -1);
+            }
+        }
+    } else {
         const SDL_bool simple_copy = AudioDeviceCanUseSimpleCopy(device);
         SDL_AudioSpec spec;
 
