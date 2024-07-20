@@ -874,7 +874,7 @@ int SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect,
 }
 
 int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
-                  SDL_Surface *dst, SDL_Rect *dstrect)
+                  SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     SDL_Rect r_src, r_dst;
 
@@ -905,7 +905,7 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
     if (srcrect) {
         SDL_Rect tmp;
         if (SDL_GetRectIntersection(srcrect, &r_src, &tmp) == SDL_FALSE) {
-            goto end;
+            return 0;
         }
 
         /* Shift dstrect, if srcrect origin has changed */
@@ -924,7 +924,7 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
     {
         SDL_Rect tmp;
         if (SDL_GetRectIntersection(&r_dst, &dst->internal->clip_rect, &tmp) == SDL_FALSE) {
-            goto end;
+            return 0;
         }
 
         /* Shift srcrect, if dstrect has changed */
@@ -937,28 +937,22 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
         r_dst = tmp;
     }
 
+    if (r_dst.w <= 0 || r_dst.h <= 0) {
+        /* No-op. */
+        return 0;
+    }
+
     /* Switch back to a fast blit if we were previously stretching */
     if (src->internal->map.info.flags & SDL_COPY_NEAREST) {
         src->internal->map.info.flags &= ~SDL_COPY_NEAREST;
         SDL_InvalidateMap(&src->internal->map);
     }
 
-    if (r_dst.w > 0 && r_dst.h > 0) {
-        if (dstrect) { /* update output parameter */
-            *dstrect = r_dst;
-        }
-        return SDL_BlitSurfaceUnchecked(src, &r_src, dst, &r_dst);
-    }
-
-end:
-    if (dstrect) { /* update output parameter */
-        dstrect->w = dstrect->h = 0;
-    }
-    return 0;
+    return SDL_BlitSurfaceUnchecked(src, &r_src, dst, &r_dst);
 }
 
 int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
-                          SDL_Surface *dst, SDL_Rect *dstrect,
+                          SDL_Surface *dst, const SDL_Rect *dstrect,
                           SDL_ScaleMode scaleMode)
 {
     SDL_Rect *clip_rect;
@@ -1105,10 +1099,6 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
 
     /* Clip again */
     SDL_GetRectIntersection(clip_rect, &final_dst, &final_dst);
-
-    if (dstrect) {
-        *dstrect = final_dst;
-    }
 
     if (final_dst.w == 0 || final_dst.h == 0 ||
         final_src.w <= 0 || final_src.h <= 0) {
