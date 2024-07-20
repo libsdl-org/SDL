@@ -1717,6 +1717,8 @@ But if you're migrating your code which uses masks, you probably have a format i
 0x0000F800 0x000007E0 0x0000001F 0x00000000 => SDL_PIXELFORMAT_RGB565
 ```
 
+SDL_BlitSurface() and SDL_BlitSurfaceScaled() now have a const `dstrect` parameter and do not fill it in with the final destination rectangle.
+
 SDL_BlitSurfaceScaled() and SDL_BlitSurfaceUncheckedScaled() now take a scale paramater.
 
 SDL_SoftStretch() now takes a scale paramater.
