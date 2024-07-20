@@ -70,6 +70,7 @@ SDL_DYNAPI_PROC(int,SDL_BindAudioStream,(SDL_AudioDeviceID a, SDL_AudioStream *b
 SDL_DYNAPI_PROC(int,SDL_BindAudioStreams,(SDL_AudioDeviceID a, SDL_AudioStream **b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_BlitSurface,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, SDL_Rect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_BlitSurfaceScaled,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, SDL_Rect *d, SDL_ScaleMode e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(int,SDL_BlitSurfaceTiled,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_BlitSurfaceUnchecked,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_BlitSurfaceUncheckedScaled,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d, SDL_ScaleMode e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_BroadcastCondition,(SDL_Condition *a),(a),return)

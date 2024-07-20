@@ -1236,6 +1236,111 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
     }
 }
 
+int SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect)
+{
+    SDL_Rect r_src, r_dst;
+
+    /* Make sure the surfaces aren't locked */
+    if (!SDL_SurfaceValid(src)) {
+        return SDL_InvalidParamError("src");
+    } else if (!SDL_SurfaceValid(dst)) {
+        return SDL_InvalidParamError("dst");
+    } else if ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
+        return SDL_SetError("Surfaces must not be locked during blit");
+    }
+
+    /* Full src surface */
+    r_src.x = 0;
+    r_src.y = 0;
+    r_src.w = src->w;
+    r_src.h = src->h;
+
+    if (dstrect) {
+        r_dst.x = dstrect->x;
+        r_dst.y = dstrect->y;
+        r_dst.w = dstrect->w;
+        r_dst.h = dstrect->h;
+    } else {
+        r_dst.x = 0;
+        r_dst.y = 0;
+        r_dst.w = dst->w;
+        r_dst.h = dst->h;
+    }
+
+    /* clip the source rectangle to the source surface */
+    if (srcrect) {
+        if (SDL_GetRectIntersection(srcrect, &r_src, &r_src) == SDL_FALSE) {
+            return 0;
+        }
+
+        /* For tiling we don't adjust the destination rectangle */
+    }
+
+    /* clip the destination rectangle against the clip rectangle */
+    {
+        if (SDL_GetRectIntersection(&r_dst, &dst->internal->clip_rect, &r_dst) == SDL_FALSE) {
+            return 0;
+        }
+
+        /* For tiling we don't adjust the source rectangle */
+    }
+
+    /* Switch back to a fast blit if we were previously stretching */
+    if (src->internal->map.info.flags & SDL_COPY_NEAREST) {
+        src->internal->map.info.flags &= ~SDL_COPY_NEAREST;
+        SDL_InvalidateMap(&src->internal->map);
+    }
+
+    int rows = r_dst.h / r_src.h;
+    int cols = r_dst.w / r_src.w;
+    int remaining_w = r_dst.w % r_src.w;
+    int remaining_h = r_dst.h % r_src.h;
+    SDL_Rect curr_src, curr_dst;
+
+    SDL_copyp(&curr_src, &r_src);
+    curr_dst.y = r_dst.y;
+    curr_dst.w = r_src.w;
+    curr_dst.h = r_src.h;
+    for (int y = 0; y < rows; ++y) {
+        curr_dst.x = r_dst.x;
+        for (int x = 0; x < cols; ++x) {
+            if (SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst) < 0) {
+                return -1;
+            }
+            curr_dst.x += curr_dst.w;
+        }
+        if (remaining_w) {
+            curr_src.w = remaining_w;
+            curr_dst.w = remaining_w;
+            if (SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst) < 0) {
+                return -1;
+            }
+            curr_src.w = r_src.w;
+            curr_dst.w = r_src.w;
+        }
+        curr_dst.y += curr_dst.h;
+    }
+    if (remaining_h) {
+        curr_src.h = remaining_h;
+        curr_dst.h = remaining_h;
+        curr_dst.x = r_dst.x;
+        for (int x = 0; x < cols; ++x) {
+            if (SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst) < 0) {
+                return -1;
+            }
+            curr_dst.x += curr_dst.w;
+        }
+        if (remaining_w) {
+            curr_src.w = remaining_w;
+            curr_dst.w = remaining_w;
+            if (SDL_BlitSurfaceUnchecked(src, &curr_src, dst, &curr_dst) < 0) {
+                return -1;
+            }
+        }
+    }
+    return 0;
+}
+
 /*
  * Lock a surface to directly access the pixels
  */

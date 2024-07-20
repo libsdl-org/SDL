@@ -50,6 +50,7 @@
 #define SDL_BindAudioStreams SDL_BindAudioStreams_REAL
 #define SDL_BlitSurface SDL_BlitSurface_REAL
 #define SDL_BlitSurfaceScaled SDL_BlitSurfaceScaled_REAL
+#define SDL_BlitSurfaceTiled SDL_BlitSurfaceTiled_REAL
 #define SDL_BlitSurfaceUnchecked SDL_BlitSurfaceUnchecked_REAL
 #define SDL_BlitSurfaceUncheckedScaled SDL_BlitSurfaceUncheckedScaled_REAL
 #define SDL_BroadcastCondition SDL_BroadcastCondition_REAL
