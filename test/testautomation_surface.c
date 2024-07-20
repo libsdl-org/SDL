@@ -366,6 +366,8 @@ static int surface_testSaveLoadBitmap(void *arg)
 static int surface_testBlitTiled(void *arg)
 {
     SDL_Surface *face = NULL;
+    SDL_Surface *testSurface2x = NULL;
+    SDL_Surface *referenceSurface2x = NULL;
     int ret = 0;
 
     /* Create sample surface */
@@ -375,17 +377,40 @@ static int surface_testBlitTiled(void *arg)
         return TEST_ABORTED;
     }
 
-    ret = SDL_BlitSurfaceTiled(face, NULL, testSurface, NULL);
-    SDLTest_AssertCheck(ret == 0, "Verify result from SDL_BlitSurfaceTiled expected: 0, got: %i", ret);
+    /* Tiled blit - 1.0 scale */
+    {
+        ret = SDL_BlitSurfaceTiled(face, NULL, testSurface, NULL);
+        SDLTest_AssertCheck(ret == 0, "Verify result from SDL_BlitSurfaceTiled expected: 0, got: %i", ret);
 
-    /* See if it's the same */
-    SDL_DestroySurface(referenceSurface);
-    referenceSurface = SDLTest_ImageBlitTiled();
-    ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+        /* See if it's the same */
+        SDL_DestroySurface(referenceSurface);
+        referenceSurface = SDLTest_ImageBlitTiled();
+        ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
+        SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+    }
+
+    /* Tiled blit - 2.0 scale */
+    {
+        testSurface2x = SDL_CreateSurface(testSurface->w * 2, testSurface->h * 2, testSurface->format);
+        SDLTest_AssertCheck(testSurface != NULL, "Check that testSurface2x is not NULL");
+        ret = SDL_FillSurfaceRect(testSurface2x, NULL, SDL_MapSurfaceRGBA(testSurface2x, 0, 0, 0, 255));
+        SDLTest_AssertCheck(ret == 0, "Validate result from SDL_FillSurfaceRect, expected: 0, got: %i", ret);
+
+        ret = SDL_BlitSurfaceTiledWithScale(face, NULL, 2.0f, SDL_SCALEMODE_NEAREST, testSurface2x, NULL);
+        SDLTest_AssertCheck(ret == 0, "Validate results from call to SDL_RenderTextureTiled, expected: 0, got: %i", ret);
+
+        /* See if it's the same */
+        referenceSurface2x = SDL_CreateSurface(referenceSurface->w * 2, referenceSurface->h * 2, referenceSurface->format);
+        SDL_BlitSurfaceScaled(referenceSurface, NULL, referenceSurface2x, NULL, SDL_SCALEMODE_NEAREST);
+        SDLTest_AssertCheck(ret == 0, "Validate results from call to SDL_BlitSurfaceScaled, expected: 0, got: %i", ret);
+        ret = SDLTest_CompareSurfaces(testSurface2x, referenceSurface2x, 0);
+        SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+    }
 
     /* Clean up. */
     SDL_DestroySurface(face);
+    SDL_DestroySurface(testSurface2x);
+    SDL_DestroySurface(referenceSurface2x);
 
     return TEST_COMPLETED;
 }

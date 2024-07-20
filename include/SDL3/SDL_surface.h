@@ -1098,6 +1098,33 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src,
 extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
+ * Perform a scaled and tiled blit to a destination surface, which may be of a different
+ * format.
+ *
+ * The pixels in `srcrect` will be scaled and repeated as many times as needed to completely fill `dstrect`.
+ *
+ * \param src the SDL_Surface structure to be copied from.
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied, or NULL to copy the entire surface.
+ * \param scale the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale of 2 would fill 64x64 tiles.
+ * \param scaleMode scale algorithm to be used.
+ * \param dst the SDL_Surface structure that is the blit target.
+ * \param dstrect the SDL_Rect structure representing the target rectangle in
+ *                the destination surface, or NULL to fill the entire surface.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety The same destination surface should not be used from two
+ *               threads at once. It is safe to use the same source surface
+ *               from multiple threads.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_BlitSurface
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);
+
+/**
  * Map an RGB triple to an opaque pixel value for a surface.
  *
  * This function maps the RGB color value to the specified pixel format and
