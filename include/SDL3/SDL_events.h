@@ -226,6 +226,8 @@ typedef enum SDL_EventType
 
     /* Pressure-sensitive pen events */
     SDL_EVENT_PEN_DOWN      = 0x1300,     /**< Pressure-sensitive pen touched drawing surface */
+    SDL_EVENT_PEN_PROXIMITY_IN,           /**< Pressure-sensitive pen has become available */
+    SDL_EVENT_PEN_PROXIMITY_OUT,          /**< Pressure-sensitive pen has become unavailable */
     SDL_EVENT_PEN_UP,                     /**< Pressure-sensitive pen stopped touching drawing surface */
     SDL_EVENT_PEN_BUTTON_DOWN,            /**< Pressure-sensitive pen button pressed */
     SDL_EVENT_PEN_BUTTON_UP,              /**< Pressure-sensitive pen button released */
@@ -714,6 +716,30 @@ typedef struct SDL_TouchFingerEvent
 } SDL_TouchFingerEvent;
 
 /**
+ * Pressure-sensitive pen proximity event structure (event.pmotion.*)
+ *
+ * When a pen becomes visible to the system (it is close enough to a tablet,
+ * etc), SDL will send an SDL_EVENT_PEN_PROXIMITY_IN event with the new
+ * pen's ID. This ID is valid until the pen leaves proximity again (has
+ * been removed from the tablet's area, the tablet has been unplugged, etc).
+ * If the same pen reenters proximity again, it will be given a new ID.
+ *
+ * Note that "proximity" means "close enough for the tablet to know the tool
+ * is there" and that the pen touching and lifting off from the tablet while
+ * not leaving the area is a different event.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_PenProximityEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_PEN_PROXIMITY_IN or SDL_EVENT_PEN_PROXIMITY_OUT */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID; /**< The window with mouse focus, if any */
+    SDL_PenID which;        /**< The pen instance id */
+} SDL_PenProximityEvent;
+
+/**
  * Pressure-sensitive pen motion event structure (event.pmotion.*)
  *
  * Depending on the hardware, you may get motion events when the
@@ -921,6 +947,7 @@ typedef union SDL_Event
     SDL_QuitEvent quit;                     /**< Quit request event data */
     SDL_UserEvent user;                     /**< Custom event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
+    SDL_PenProximityEvent pproximity;       /**< Pen proximity event data */
     SDL_PenTouchEvent ptouch;               /**< Pen tip touching event data */
     SDL_PenMotionEvent pmotion;             /**< Pen motion event data */
     SDL_PenButtonEvent pbutton;             /**< Pen button event data */

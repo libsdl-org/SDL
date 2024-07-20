@@ -75,7 +75,7 @@ SDL_PenID SDL_FindPenByHandle(void *handle)
 
 // public API ...
 
-int SDL_PenInit(void)
+int SDL_InitPen(void)
 {
     SDL_assert(pen_device_rwlock == NULL);
     SDL_assert(pen_devices == NULL);
@@ -184,7 +184,7 @@ SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis)
 }
 #endif
 
-SDL_PenID SDL_AddPenDevice(const char *name, const SDL_PenInfo *info, void *handle)
+SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo *info, void *handle)
 {
     SDL_assert(handle != NULL);  // just allocate a Uint8 so you have a unique pointer if not needed!
     SDL_assert(SDL_FindPenByHandle(handle) == 0);  // Backends shouldn't double-add pens!
@@ -222,10 +222,19 @@ SDL_PenID SDL_AddPenDevice(const char *name, const SDL_PenInfo *info, void *hand
         SDL_free(namecpy);
     }
 
+    if (retval && SDL_EventEnabled(SDL_EVENT_PEN_PROXIMITY_IN)) {
+        SDL_Event event;
+        SDL_zero(event);
+        event.pproximity.type = SDL_EVENT_PEN_PROXIMITY_IN;
+        event.pproximity.timestamp = timestamp;
+        event.pproximity.which = retval;
+        SDL_PushEvent(&event);
+    }
+
     return retval;
 }
 
-void SDL_RemovePenDevice(SDL_PenID instance_id)
+void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id)
 {
     SDL_LockRWLockForWriting(pen_device_rwlock);
     SDL_Pen *pen = FindPenByInstanceId(instance_id);
@@ -252,8 +261,18 @@ void SDL_RemovePenDevice(SDL_PenID instance_id)
         }
     }
     SDL_UnlockRWLock(pen_device_rwlock);
+
+    if (pen && SDL_EventEnabled(SDL_EVENT_PEN_PROXIMITY_OUT)) {
+        SDL_Event event;
+        SDL_zero(event);
+        event.pproximity.type = SDL_EVENT_PEN_PROXIMITY_OUT;
+        event.pproximity.timestamp = timestamp;
+        event.pproximity.which = instance_id;
+        SDL_PushEvent(&event);
+    }
 }
 
+// This presumably is happening during video quit, so we don't send PROXIMITY_OUT events here.
 extern void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handle, void *userdata), void *userdata)
 {
     SDL_LockRWLockForWriting(pen_device_rwlock);
@@ -268,7 +287,6 @@ extern void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void
     pen_devices = NULL;
     SDL_UnlockRWLock(pen_device_rwlock);
 }
-
 
 int SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 state, Uint8 eraser)
 {

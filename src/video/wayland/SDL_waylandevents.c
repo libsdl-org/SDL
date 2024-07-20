@@ -2425,17 +2425,13 @@ static void tablet_tool_handle_capability(void *data, struct zwp_tablet_tool_v2 
 
 static void tablet_tool_handle_done(void *data, struct zwp_tablet_tool_v2 *tool)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
-    if (sdltool->info.subtype != SDL_PEN_TYPE_UNKNOWN) {   // don't tell SDL about it if we don't know its role.
-        sdltool->instance_id = SDL_AddPenDevice(NULL, &sdltool->info, sdltool);
-    }
 }
 
 static void tablet_tool_handle_removed(void *data, struct zwp_tablet_tool_v2 *tool)
 {
     SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     if (sdltool->instance_id) {
-        SDL_RemovePenDevice(sdltool->instance_id);
+        SDL_RemovePenDevice(0, sdltool->instance_id);
     }
     zwp_tablet_tool_v2_destroy(tool);
     SDL_free(sdltool);
@@ -2446,6 +2442,12 @@ static void tablet_tool_handle_proximity_in(void *data, struct zwp_tablet_tool_v
     SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     SDL_WindowData *windowdata = surface ? Wayland_GetWindowDataForOwnedSurface(surface) : NULL;
     sdltool->tool_focus = windowdata ? windowdata->sdlwindow : NULL;
+
+    SDL_assert(sdltool->instance_id == 0);  // shouldn't be added at this point.
+    if (sdltool->info.subtype != SDL_PEN_TYPE_UNKNOWN) {   // don't tell SDL about it if we don't know its role.
+        sdltool->instance_id = SDL_AddPenDevice(0, NULL, &sdltool->info, sdltool);
+    }
+
     // According to the docs, this should be followed by a motion event, where we'll send our SDL events.
 }
 
@@ -2453,6 +2455,11 @@ static void tablet_tool_handle_proximity_out(void *data, struct zwp_tablet_tool_
 {
     SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     sdltool->tool_focus = NULL;
+
+    if (sdltool->instance_id) {
+        SDL_RemovePenDevice(0, sdltool->instance_id);
+        sdltool->instance_id = 0;
+    }
 }
 
 static void tablet_tool_handle_down(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t serial)
@@ -2472,7 +2479,7 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
     SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     SDL_Window *window = sdltool->tool_focus;
     if (window) {
-        const SDL_WindowData *windowdata = window->driverdata;
+        const SDL_WindowData *windowdata = window->internal;
         const float sx_f = (float)wl_fixed_to_double(sx_w);
         const float sy_f = (float)wl_fixed_to_double(sy_w);
         const float sx = sx_f * windowdata->pointer_scale.x;
