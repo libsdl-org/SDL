@@ -23,6 +23,7 @@ SDL3_0.0.0 {
     SDL_AudioDevicePaused;
     SDL_BindAudioStream;
     SDL_BindAudioStreams;
+    SDL_BlitSurface9Grid;
     SDL_BlitSurface;
     SDL_BlitSurfaceScaled;
     SDL_BlitSurfaceTiled;
@@ -662,6 +663,7 @@ SDL3_0.0.0 {
     SDL_RenderReadPixels;
     SDL_RenderRect;
     SDL_RenderRects;
+    SDL_RenderTexture9Grid;
     SDL_RenderTexture;
     SDL_RenderTextureRotated;
     SDL_RenderTextureTiled;

@@ -1899,6 +1899,28 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderTextureRotated(SDL_Renderer *renderer,
 extern SDL_DECLSPEC int SDLCALL SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float scale, const SDL_FRect *dstrect);
 
 /**
+ * Perform a scaled copy using the 9-grid algorithm to the current rendering target at subpixel precision.
+ *
+ * The pixels in the texture are split into a 3x3 grid, using the corner size for each corner, and the sides and center making up the remaining pixels. The corners are then scaled using `scale` and fit into the corners of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination rectangle.
+ *
+ * \param renderer the renderer which should copy parts of a texture.
+ * \param texture the source texture.
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                used for the 9-grid, or NULL to use the entire texture.
+ * \param corner_size the size, in pixels, of the corner in `srcrect`.
+ * \param scale the scale used to transform the corner of `srcrect` into the corner of `dstrect`, or 0.0f for an unscaled copy.
+ * \param dstrect a pointer to the destination rectangle, or NULL for the
+ *                entire rendering target.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RenderTexture
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_RenderTexture9Grid(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float corner_size, float scale, const SDL_FRect *dstrect);
+
+/**
  * Render a list of triangles, optionally using a texture and indices into the
  * vertex array Color and alpha modulation is done per vertex
  * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).

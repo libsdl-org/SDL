@@ -1444,6 +1444,127 @@ int SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, flo
     return 0;
 }
 
+int SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int corner_size, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect)
+{
+    SDL_Rect full_src, full_dst;
+    SDL_Rect curr_src, curr_dst;
+    int dst_corner_size;
+
+    /* Make sure the surfaces aren't locked */
+    if (!SDL_SurfaceValid(src)) {
+        return SDL_InvalidParamError("src");
+    } else if (!SDL_SurfaceValid(dst)) {
+        return SDL_InvalidParamError("dst");
+    }
+
+    if (!srcrect) {
+        full_src.x = 0;
+        full_src.y = 0;
+        full_src.w = src->w;
+        full_src.h = src->h;
+        srcrect = &full_src;
+    }
+
+    if (!dstrect) {
+        full_dst.x = 0;
+        full_dst.y = 0;
+        full_dst.w = dst->w;
+        full_dst.h = dst->h;
+        dstrect = &full_dst;
+    }
+
+    if (scale <= 0.0f || scale == 1.0f) {
+        dst_corner_size = corner_size;
+    } else {
+        dst_corner_size = (int)SDL_roundf(corner_size * scale);
+    }
+
+    // Upper-left corner
+    curr_src.x = srcrect->x;
+    curr_src.y = srcrect->y;
+    curr_src.w = corner_size;
+    curr_src.h = corner_size;
+    curr_dst.x = dstrect->x;
+    curr_dst.y = dstrect->y;
+    curr_dst.w = dst_corner_size;
+    curr_dst.h = dst_corner_size;
+    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
+        return -1;
+    }
+
+    // Upper-right corner
+    curr_src.x = srcrect->x + srcrect->w - corner_size;
+    curr_dst.x = dstrect->x + dstrect->w - dst_corner_size;
+    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
+        return -1;
+    }
+
+    // Lower-right corner
+    curr_src.y = srcrect->y + srcrect->h - corner_size;
+    curr_dst.y = dstrect->y + dstrect->h - dst_corner_size;
+    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
+        return -1;
+    }
+
+    // Lower-left corner
+    curr_src.x = srcrect->x;
+    curr_dst.x = dstrect->x;
+    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
+        return -1;
+    }
+
+    // Left
+    curr_src.y = srcrect->y + corner_size;
+    curr_src.h = srcrect->h - 2 * corner_size;
+    curr_dst.y = dstrect->y + dst_corner_size;
+    curr_dst.h = dstrect->h - 2 * dst_corner_size;
+    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
+        return -1;
+    }
+
+    // Right
+    curr_src.x = srcrect->x + srcrect->w - corner_size;
+    curr_dst.x = dstrect->x + dstrect->w - dst_corner_size;
+    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
+        return -1;
+    }
+
+    // Top
+    curr_src.x = srcrect->x + corner_size;
+    curr_src.y = srcrect->y;
+    curr_src.w = srcrect->w - 2 * corner_size;
+    curr_src.h = corner_size;
+    curr_dst.x = dstrect->x + dst_corner_size;
+    curr_dst.y = dstrect->y;
+    curr_dst.w = dstrect->w - 2 * dst_corner_size;
+    curr_dst.h = dst_corner_size;
+    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
+        return -1;
+    }
+
+    // Bottom
+    curr_src.y = srcrect->y + srcrect->h - corner_size;
+    curr_dst.y = dstrect->y + dstrect->h - dst_corner_size;
+    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
+        return -1;
+    }
+
+    // Center
+    curr_src.x = srcrect->x + corner_size;
+    curr_src.y = srcrect->y + corner_size;
+    curr_src.w = srcrect->w - 2 * corner_size;
+    curr_src.h = srcrect->h - 2 * corner_size;
+    curr_dst.x = dstrect->x + dst_corner_size;
+    curr_dst.y = dstrect->y + dst_corner_size;
+    curr_dst.w = dstrect->w - 2 * dst_corner_size;
+    curr_dst.h = dstrect->h - 2 * dst_corner_size;
+    if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
 /*
  * Lock a surface to directly access the pixels
  */
