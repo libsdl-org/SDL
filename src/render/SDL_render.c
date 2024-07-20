@@ -4495,6 +4495,28 @@ int SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                               renderer->view->scale.y, texture_address_mode);
 }
 
+int SDL_SetRenderTextureAddressMode(SDL_Renderer *renderer, SDL_TextureAddressMode mode)
+{
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    renderer->texture_address_mode = mode;
+    return 0;
+}
+
+int SDL_GetRenderTextureAddressMode(SDL_Renderer *renderer, SDL_TextureAddressMode *mode)
+{
+    if (mode) {
+        *mode = SDL_TEXTURE_ADDRESS_AUTO;
+    }
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (mode) {
+        *mode = renderer->texture_address_mode;
+    }
+    return 0;
+}
+
 SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     SDL_Rect real_rect;

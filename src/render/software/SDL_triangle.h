@@ -24,8 +24,6 @@
 
 #include "SDL_internal.h"
 
-#include "../SDL_sysrender.h"   // For SDL_TextureAddressMode
-
 extern int SDL_SW_FillTriangle(SDL_Surface *dst,
                                SDL_Point *d0, SDL_Point *d1, SDL_Point *d2,
                                SDL_BlendMode blend, SDL_Color c0, SDL_Color c1, SDL_Color c2);

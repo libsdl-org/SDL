@@ -400,6 +400,7 @@ SDL3_0.0.0 {
     SDL_GetRenderOutputSize;
     SDL_GetRenderScale;
     SDL_GetRenderTarget;
+    SDL_GetRenderTextureAddressMode;
     SDL_GetRenderVSync;
     SDL_GetRenderViewport;
     SDL_GetRenderWindow;
@@ -747,6 +748,7 @@ SDL3_0.0.0 {
     SDL_SetRenderLogicalPresentation;
     SDL_SetRenderScale;
     SDL_SetRenderTarget;
+    SDL_SetRenderTextureAddressMode;
     SDL_SetRenderVSync;
     SDL_SetRenderViewport;
     SDL_SetScancodeName;

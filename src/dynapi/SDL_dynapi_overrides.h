@@ -425,6 +425,7 @@
 #define SDL_GetRenderOutputSize SDL_GetRenderOutputSize_REAL
 #define SDL_GetRenderScale SDL_GetRenderScale_REAL
 #define SDL_GetRenderTarget SDL_GetRenderTarget_REAL
+#define SDL_GetRenderTextureAddressMode SDL_GetRenderTextureAddressMode_REAL
 #define SDL_GetRenderVSync SDL_GetRenderVSync_REAL
 #define SDL_GetRenderViewport SDL_GetRenderViewport_REAL
 #define SDL_GetRenderWindow SDL_GetRenderWindow_REAL
@@ -772,6 +773,7 @@
 #define SDL_SetRenderLogicalPresentation SDL_SetRenderLogicalPresentation_REAL
 #define SDL_SetRenderScale SDL_SetRenderScale_REAL
 #define SDL_SetRenderTarget SDL_SetRenderTarget_REAL
+#define SDL_SetRenderTextureAddressMode SDL_SetRenderTextureAddressMode_REAL
 #define SDL_SetRenderVSync SDL_SetRenderVSync_REAL
 #define SDL_SetRenderViewport SDL_SetRenderViewport_REAL
 #define SDL_SetScancodeName SDL_SetScancodeName_REAL

@@ -30,13 +30,6 @@
 extern "C" {
 #endif
 
-typedef enum SDL_TextureAddressMode
-{
-    SDL_TEXTURE_ADDRESS_AUTO,
-    SDL_TEXTURE_ADDRESS_CLAMP,
-    SDL_TEXTURE_ADDRESS_WRAP,
-} SDL_TextureAddressMode;
-
 /**
  * A rectangle, with the origin at the upper left (double precision).
  */
