@@ -365,6 +365,161 @@ static int render_testBlitTiled(void *arg)
     return TEST_COMPLETED;
 }
 
+static const Uint8 COLOR_SEPARATION = 85;
+
+static void Fill9GridReferenceSurface(SDL_Surface *surface, int corner_size)
+{
+    SDL_Rect rect;
+
+    // Upper left
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = corner_size;
+    rect.h = corner_size;
+    SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 1 * COLOR_SEPARATION, 1 * COLOR_SEPARATION, 0));
+
+    // Top
+    rect.x = corner_size;
+    rect.y = 0;
+    rect.w = surface->w - 2 * corner_size;
+    rect.h = corner_size;
+    SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 2 * COLOR_SEPARATION, 1 * COLOR_SEPARATION, 0));
+
+    // Upper right
+    rect.x = surface->w - corner_size;
+    rect.y = 0;
+    rect.w = corner_size;
+    rect.h = corner_size;
+    SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 3 * COLOR_SEPARATION, 1 * COLOR_SEPARATION, 0));
+
+    // Left
+    rect.x = 0;
+    rect.y = corner_size;
+    rect.w = corner_size;
+    rect.h = surface->h - 2 * corner_size;
+    SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 1 * COLOR_SEPARATION, 2 * COLOR_SEPARATION, 0));
+
+    // Center
+    rect.x = corner_size;
+    rect.y = corner_size;
+    rect.w = surface->w - 2 * corner_size;
+    rect.h = surface->h - 2 * corner_size;
+    SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 2 * COLOR_SEPARATION, 2 * COLOR_SEPARATION, 0));
+
+    // Right
+    rect.x = surface->w - corner_size;
+    rect.y = corner_size;
+    rect.w = corner_size;
+    rect.h = surface->h - 2 * corner_size;
+    SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 3 * COLOR_SEPARATION, 2 * COLOR_SEPARATION, 0));
+
+    // Lower left
+    rect.x = 0;
+    rect.y = surface->h - corner_size;
+    rect.w = corner_size;
+    rect.h = corner_size;
+    SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 1 * COLOR_SEPARATION, 3 * COLOR_SEPARATION, 0));
+
+    // Bottom
+    rect.x = corner_size;
+    rect.y = surface->h - corner_size;
+    rect.w = surface->w - 2 * corner_size;
+    rect.h = corner_size;
+    SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 2 * COLOR_SEPARATION, 3 * COLOR_SEPARATION, 0));
+
+    // Lower right
+    rect.x = surface->w - corner_size;
+    rect.y = surface->h - corner_size;
+    rect.w = corner_size;
+    rect.h = corner_size;
+    SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 3 * COLOR_SEPARATION, 3 * COLOR_SEPARATION, 0));
+}
+
+/**
+ *  Tests 9-grid blitting.
+ */
+static int render_testBlit9Grid(void *arg)
+{
+    SDL_Surface *referenceSurface = NULL;
+    SDL_Surface *source = NULL;
+    SDL_Texture *texture;
+    int x, y;
+    SDL_FRect rect;
+    int ret = 0;
+
+    /* Create source surface */
+    source = SDL_CreateSurface(3, 3, SDL_PIXELFORMAT_RGBA32);
+    SDLTest_AssertCheck(source != NULL, "Verify source surface is not NULL");
+    for (y = 0; y < 3; ++y) {
+        for (x = 0; x < 3; ++x) {
+            SDL_WriteSurfacePixel(source, x, y, (Uint8)((1 + x) * COLOR_SEPARATION), (Uint8)((1 + y) * COLOR_SEPARATION), 0, 255);
+        }
+    }
+    texture = SDL_CreateTextureFromSurface(renderer, source);
+    SDLTest_AssertCheck(texture != NULL, "Verify source texture is not NULL");
+    ret = SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+    SDLTest_AssertCheck(ret == 0, "Validate results from call to SDL_SetTextureScaleMode, expected: 0, got: %i", ret);
+
+    /* 9-grid blit - 1.0 scale */
+    {
+        /* Create reference surface */
+        SDL_DestroySurface(referenceSurface);
+        referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, SDL_PIXELFORMAT_RGBA32);
+        SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
+        Fill9GridReferenceSurface(referenceSurface, 1);
+
+        /* Clear surface. */
+        clearScreen();
+
+        /* Tiled blit. */
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.w = (float)TESTRENDER_SCREEN_W;
+        rect.h = (float)TESTRENDER_SCREEN_H;
+        ret = SDL_RenderTexture9Grid(renderer, texture, NULL, 1.0f, 1.0f, &rect);
+        SDLTest_AssertCheck(ret == 0, "Validate results from call to SDL_RenderTexture9Grid, expected: 0, got: %i", ret);
+
+        /* See if it's the same */
+        compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+        /* Make current */
+        SDL_RenderPresent(renderer);
+    }
+
+    /* 9-grid blit - 2.0 scale */
+    {
+        /* Create reference surface */
+        SDL_DestroySurface(referenceSurface);
+        referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, SDL_PIXELFORMAT_RGBA32);
+        SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
+        Fill9GridReferenceSurface(referenceSurface, 2);
+
+        /* Clear surface. */
+        clearScreen();
+
+        /* Tiled blit. */
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.w = (float)TESTRENDER_SCREEN_W;
+        rect.h = (float)TESTRENDER_SCREEN_H;
+        ret = SDL_RenderTexture9Grid(renderer, texture, NULL, 1.0f, 2.0f, &rect);
+        SDLTest_AssertCheck(ret == 0, "Validate results from call to SDL_RenderTexture9Grid, expected: 0, got: %i", ret);
+
+        /* See if it's the same */
+        compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+        /* Make current */
+        SDL_RenderPresent(renderer);
+    }
+
+    /* Clean up. */
+    SDL_DestroySurface(referenceSurface);
+    SDL_DestroySurface(source);
+    SDL_DestroyTexture(texture);
+
+    return TEST_COMPLETED;
+}
+
 /**
  * Blits doing color tests.
  *
@@ -1306,6 +1461,10 @@ static const SDLTest_TestCaseReference renderTestBlitTiled = {
     (SDLTest_TestCaseFp)render_testBlitTiled, "render_testBlitTiled", "Tests tiled blitting", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestBlit9Grid = {
+    (SDLTest_TestCaseFp)render_testBlit9Grid, "render_testBlit9Grid", "Tests 9-grid blitting", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference renderTestBlitColor = {
     (SDLTest_TestCaseFp)render_testBlitColor, "render_testBlitColor", "Tests blitting with color", TEST_ENABLED
 };
@@ -1337,6 +1496,7 @@ static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestPrimitivesWithViewport,
     &renderTestBlit,
     &renderTestBlitTiled,
+    &renderTestBlit9Grid,
     &renderTestBlitColor,
     &renderTestBlendModes,
     &renderTestViewport,

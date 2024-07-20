@@ -4160,6 +4160,123 @@ int SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const S
     }
 }
 
+int SDL_RenderTexture9Grid(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float corner_size, float scale, const SDL_FRect *dstrect)
+{
+    SDL_FRect full_src, full_dst;
+    SDL_FRect curr_src, curr_dst;
+    float dst_corner_size;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (renderer != texture->renderer) {
+        return SDL_SetError("Texture was not created with this renderer");
+    }
+
+    if (!srcrect) {
+        full_src.x = 0;
+        full_src.y = 0;
+        full_src.w = (float)texture->w;
+        full_src.h = (float)texture->h;
+        srcrect = &full_src;
+    }
+
+    if (!dstrect) {
+        GetRenderViewportSize(renderer, &full_dst);
+        dstrect = &full_dst;
+    }
+
+    if (scale <= 0.0f || scale == 1.0f) {
+        dst_corner_size = corner_size;
+    } else {
+        dst_corner_size = (corner_size * scale);
+    }
+
+    // Upper-left corner
+    curr_src.x = srcrect->x;
+    curr_src.y = srcrect->y;
+    curr_src.w = corner_size;
+    curr_src.h = corner_size;
+    curr_dst.x = dstrect->x;
+    curr_dst.y = dstrect->y;
+    curr_dst.w = dst_corner_size;
+    curr_dst.h = dst_corner_size;
+    if (SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst) < 0) {
+        return -1;
+    }
+
+    // Upper-right corner
+    curr_src.x = srcrect->x + srcrect->w - corner_size;
+    curr_dst.x = dstrect->x + dstrect->w - dst_corner_size;
+    if (SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst) < 0) {
+        return -1;
+    }
+
+    // Lower-right corner
+    curr_src.y = srcrect->y + srcrect->h - corner_size;
+    curr_dst.y = dstrect->y + dstrect->h - dst_corner_size;
+    if (SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst) < 0) {
+        return -1;
+    }
+
+    // Lower-left corner
+    curr_src.x = srcrect->x;
+    curr_dst.x = dstrect->x;
+    if (SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst) < 0) {
+        return -1;
+    }
+
+    // Left
+    curr_src.y = srcrect->y + corner_size;
+    curr_src.h = srcrect->h - 2 * corner_size;
+    curr_dst.y = dstrect->y + dst_corner_size;
+    curr_dst.h = dstrect->h - 2 * dst_corner_size;
+    if (SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst) < 0) {
+        return -1;
+    }
+
+    // Right
+    curr_src.x = srcrect->x + srcrect->w - corner_size;
+    curr_dst.x = dstrect->x + dstrect->w - dst_corner_size;
+    if (SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst) < 0) {
+        return -1;
+    }
+
+    // Top
+    curr_src.x = srcrect->x + corner_size;
+    curr_src.y = srcrect->y;
+    curr_src.w = srcrect->w - 2 * corner_size;
+    curr_src.h = corner_size;
+    curr_dst.x = dstrect->x + dst_corner_size;
+    curr_dst.y = dstrect->y;
+    curr_dst.w = dstrect->w - 2 * dst_corner_size;
+    curr_dst.h = dst_corner_size;
+    if (SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst) < 0) {
+        return -1;
+    }
+
+    // Bottom
+    curr_src.y = srcrect->y + srcrect->h - corner_size;
+    curr_dst.y = dstrect->y + dstrect->h - dst_corner_size;
+    if (SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst) < 0) {
+        return -1;
+    }
+
+    // Center
+    curr_src.x = srcrect->x + corner_size;
+    curr_src.y = srcrect->y + corner_size;
+    curr_src.w = srcrect->w - 2 * corner_size;
+    curr_src.h = srcrect->h - 2 * corner_size;
+    curr_dst.x = dstrect->x + dst_corner_size;
+    curr_dst.y = dstrect->y + dst_corner_size;
+    curr_dst.w = dstrect->w - 2 * dst_corner_size;
+    curr_dst.h = dstrect->h - 2 * dst_corner_size;
+    if (SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst) < 0) {
+        return -1;
+    }
+
+    return 0;
+}
 int SDL_RenderGeometry(SDL_Renderer *renderer,
                        SDL_Texture *texture,
                        const SDL_Vertex *vertices, int num_vertices,
