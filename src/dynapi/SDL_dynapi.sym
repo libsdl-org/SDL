@@ -664,6 +664,7 @@ SDL3_0.0.0 {
     SDL_RenderRects;
     SDL_RenderTexture;
     SDL_RenderTextureRotated;
+    SDL_RenderTextureTiled;
     SDL_RenderViewportSet;
     SDL_ReportAssertion;
     SDL_RequestAndroidPermission;

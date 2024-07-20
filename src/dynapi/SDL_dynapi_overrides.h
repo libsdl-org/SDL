@@ -689,6 +689,7 @@
 #define SDL_RenderRects SDL_RenderRects_REAL
 #define SDL_RenderTexture SDL_RenderTexture_REAL
 #define SDL_RenderTextureRotated SDL_RenderTextureRotated_REAL
+#define SDL_RenderTextureTiled SDL_RenderTextureTiled_REAL
 #define SDL_RenderViewportSet SDL_RenderViewportSet_REAL
 #define SDL_ReportAssertion SDL_ReportAssertion_REAL
 #define SDL_RequestAndroidPermission SDL_RequestAndroidPermission_REAL

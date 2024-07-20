@@ -36,6 +36,7 @@ static SDL_Renderer *renderer = NULL;
 
 static int clearScreen(void);
 static void compare(SDL_Surface *reference, int allowable_error);
+static void compare2x(SDL_Surface *reference, int allowable_error);
 static SDL_Texture *loadTestFace(void);
 static int hasDrawColor(void);
 static int isSupported(int code);
@@ -287,6 +288,78 @@ static int render_testBlit(void *arg)
     /* Clean up. */
     SDL_DestroyTexture(tface);
     SDL_DestroySurface(referenceSurface);
+    referenceSurface = NULL;
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * Tests tiled blitting routines.
+ */
+static int render_testBlitTiled(void *arg)
+{
+    int ret;
+    SDL_FRect rect;
+    SDL_Texture *tface;
+    SDL_Surface *referenceSurface = NULL;
+    SDL_Surface *referenceSurface2x = NULL;
+
+    /* Create face surface. */
+    tface = loadTestFace();
+    SDLTest_AssertCheck(tface != NULL, "Verify loadTestFace() result");
+    if (tface == NULL) {
+        return TEST_ABORTED;
+    }
+    SDL_SetTextureScaleMode(tface, SDL_SCALEMODE_NEAREST);  /* So 2x scaling is pixel perfect */
+
+    /* Tiled blit - 1.0 scale */
+    {
+        /* Clear surface. */
+        clearScreen();
+
+        /* Tiled blit. */
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.w = (float)TESTRENDER_SCREEN_W;
+        rect.h = (float)TESTRENDER_SCREEN_H;
+        ret = SDL_RenderTextureTiled(renderer, tface, NULL, 1.0f, &rect);
+        SDLTest_AssertCheck(ret == 0, "Validate results from call to SDL_RenderTextureTiled, expected: 0, got: %i", ret);
+
+        /* See if it's the same */
+        referenceSurface = SDLTest_ImageBlitTiled();
+        compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+        /* Make current */
+        SDL_RenderPresent(renderer);
+    }
+
+    /* Tiled blit - 2.0 scale */
+    {
+        /* Clear surface. */
+        clearScreen();
+
+        /* Tiled blit. */
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.w = (float)TESTRENDER_SCREEN_W * 2;
+        rect.h = (float)TESTRENDER_SCREEN_H * 2;
+        ret = SDL_RenderTextureTiled(renderer, tface, NULL, 2.0f, &rect);
+        SDLTest_AssertCheck(ret == 0, "Validate results from call to SDL_RenderTextureTiled, expected: 0, got: %i", ret);
+
+        /* See if it's the same */
+        referenceSurface2x = SDL_CreateSurface(referenceSurface->w * 2, referenceSurface->h * 2, referenceSurface->format);
+        SDL_BlitSurfaceScaled(referenceSurface, NULL, referenceSurface2x, NULL, SDL_SCALEMODE_NEAREST);
+        SDLTest_AssertCheck(ret == 0, "Validate results from call to SDL_BlitSurfaceScaled, expected: 0, got: %i", ret);
+        compare2x(referenceSurface2x, ALLOWABLE_ERROR_OPAQUE);
+
+        /* Make current */
+        SDL_RenderPresent(renderer);
+    }
+
+    /* Clean up. */
+    SDL_DestroyTexture(tface);
+    SDL_DestroySurface(referenceSurface);
+    SDL_DestroySurface(referenceSurface2x);
     referenceSurface = NULL;
 
     return TEST_COMPLETED;
@@ -1008,8 +1081,7 @@ loadTestFace(void)
  * \sa SDL_CreateSurfaceFrom
  * \sa SDL_DestroySurface
  */
-static void
-compare(SDL_Surface *referenceSurface, int allowable_error)
+static void compare(SDL_Surface *referenceSurface, int allowable_error)
 {
     int ret;
     SDL_Rect rect;
@@ -1020,6 +1092,38 @@ compare(SDL_Surface *referenceSurface, int allowable_error)
     rect.y = 0;
     rect.w = TESTRENDER_SCREEN_W;
     rect.h = TESTRENDER_SCREEN_H;
+
+    surface = SDL_RenderReadPixels(renderer, &rect);
+    if (!surface) {
+        SDLTest_AssertCheck(surface != NULL, "Validate result from SDL_RenderReadPixels, got NULL, %s", SDL_GetError());
+        return;
+    }
+
+    testSurface = SDL_ConvertSurface(surface, RENDER_COMPARE_FORMAT);
+    SDL_DestroySurface(surface);
+    if (!testSurface) {
+        SDLTest_AssertCheck(testSurface != NULL, "Validate result from SDL_ConvertSurface, got NULL, %s", SDL_GetError());
+        return;
+    }
+
+    /* Compare surface. */
+    ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, allowable_error);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+
+    /* Clean up. */
+    SDL_DestroySurface(testSurface);
+}
+static void compare2x(SDL_Surface *referenceSurface, int allowable_error)
+{
+    int ret;
+    SDL_Rect rect;
+    SDL_Surface *surface, *testSurface;
+
+    /* Explicitly specify the rect in case the window isn't the expected size... */
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = TESTRENDER_SCREEN_W * 2;
+    rect.h = TESTRENDER_SCREEN_H * 2;
 
     surface = SDL_RenderReadPixels(renderer, &rect);
     if (!surface) {
@@ -1182,39 +1286,43 @@ static int render_testUVWrapping(void *arg)
 /* ================= Test References ================== */
 
 /* Render test cases */
-static const SDLTest_TestCaseReference renderTest1 = {
+static const SDLTest_TestCaseReference renderTestGetNumRenderDrivers = {
     (SDLTest_TestCaseFp)render_testGetNumRenderDrivers, "render_testGetNumRenderDrivers", "Tests call to SDL_GetNumRenderDrivers", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference renderTest2 = {
+static const SDLTest_TestCaseReference renderTestPrimitives = {
     (SDLTest_TestCaseFp)render_testPrimitives, "render_testPrimitives", "Tests rendering primitives", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference renderTest3 = {
+static const SDLTest_TestCaseReference renderTestPrimitivesWithViewport = {
     (SDLTest_TestCaseFp)render_testPrimitivesWithViewport, "render_testPrimitivesWithViewport", "Tests rendering primitives within a viewport", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference renderTest4 = {
+static const SDLTest_TestCaseReference renderTestBlit = {
     (SDLTest_TestCaseFp)render_testBlit, "render_testBlit", "Tests blitting", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference renderTest5 = {
+static const SDLTest_TestCaseReference renderTestBlitTiled = {
+    (SDLTest_TestCaseFp)render_testBlitTiled, "render_testBlitTiled", "Tests tiled blitting", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference renderTestBlitColor = {
     (SDLTest_TestCaseFp)render_testBlitColor, "render_testBlitColor", "Tests blitting with color", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference renderTest6 = {
+static const SDLTest_TestCaseReference renderTestBlendModes = {
     (SDLTest_TestCaseFp)render_testBlendModes, "render_testBlendModes", "Tests rendering blend modes", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference renderTest7 = {
+static const SDLTest_TestCaseReference renderTestViewport = {
     (SDLTest_TestCaseFp)render_testViewport, "render_testViewport", "Tests viewport", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference renderTest8 = {
+static const SDLTest_TestCaseReference renderTestClipRect = {
     (SDLTest_TestCaseFp)render_testClipRect, "render_testClipRect", "Tests clip rect", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference renderTest9 = {
+static const SDLTest_TestCaseReference renderTestLogicalSize = {
     (SDLTest_TestCaseFp)render_testLogicalSize, "render_testLogicalSize", "Tests logical size", TEST_ENABLED
 };
 
@@ -1224,9 +1332,18 @@ static const SDLTest_TestCaseReference renderTestUVWrapping = {
 
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
-    &renderTest1, &renderTest2, &renderTest3, &renderTest4,
-    &renderTest5, &renderTest6, &renderTest7, &renderTest8,
-    &renderTest9, &renderTestUVWrapping, NULL
+    &renderTestGetNumRenderDrivers,
+    &renderTestPrimitives,
+    &renderTestPrimitivesWithViewport,
+    &renderTestBlit,
+    &renderTestBlitTiled,
+    &renderTestBlitColor,
+    &renderTestBlendModes,
+    &renderTestViewport,
+    &renderTestClipRect,
+    &renderTestLogicalSize,
+    &renderTestUVWrapping,
+    NULL
 };
 
 /* Render test suite (global) */

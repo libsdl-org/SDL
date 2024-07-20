@@ -700,6 +700,7 @@ SDL_DYNAPI_PROC(int,SDL_RenderRect,(SDL_Renderer *a, const SDL_FRect *b),(a,b),r
 SDL_DYNAPI_PROC(int,SDL_RenderRects,(SDL_Renderer *a, const SDL_FRect *b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_RenderTexture,(SDL_Renderer *a, SDL_Texture *b, const SDL_FRect *c, const SDL_FRect *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_RenderTextureRotated,(SDL_Renderer *a, SDL_Texture *b, const SDL_FRect *c, const SDL_FRect *d, const double e, const SDL_FPoint *f, const SDL_FlipMode g),(a,b,c,d,e,f,g),return)
+SDL_DYNAPI_PROC(int,SDL_RenderTextureTiled,(SDL_Renderer *a, SDL_Texture *b, const SDL_FRect *c, float d, const SDL_FRect *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_RenderViewportSet,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(SDL_AssertState,SDL_ReportAssertion,(SDL_AssertData *a, const char *b, const char *c, int d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_RequestAndroidPermission,(const char *a, SDL_RequestAndroidPermissionCallback b, void *c),(a,b,c),return)
