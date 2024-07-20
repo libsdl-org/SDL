@@ -806,7 +806,6 @@ SDL3_0.0.0 {
     SDL_ShowWindow;
     SDL_ShowWindowSystemMenu;
     SDL_SignalCondition;
-    SDL_SoftStretch;
     SDL_StartTextInput;
     SDL_StepUTF8;
     SDL_StopHapticEffect;

@@ -1756,7 +1756,8 @@ The following functions have been removed:
 * SDL_GetYUVConversionMode()
 * SDL_GetYUVConversionModeForResolution()
 * SDL_SetYUVConversionMode() - use SDL_SetSurfaceColorspace() to set the surface colorspace and SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER with SDL_CreateTextureWithProperties() to set the texture colorspace. The default colorspace for YUV pixel formats is SDL_COLORSPACE_JPEG.
-* SDL_SoftStretchLinear() - use SDL_SoftStretch() with SDL_SCALEMODE_LINEAR
+* SDL_SoftStretch() - use SDL_BlitSurfaceScaled() with SDL_SCALEMODE_NEAREST
+* SDL_SoftStretchLinear() - use SDL_BlitSurfaceScaled() with SDL_SCALEMODE_LINEAR
 
 The following symbols have been renamed:
 * SDL_PREALLOC => SDL_SURFACE_PREALLOCATED
