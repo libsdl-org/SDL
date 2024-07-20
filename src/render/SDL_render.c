@@ -3729,52 +3729,10 @@ int SDL_RenderFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, int coun
     return retval;
 }
 
-int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect)
+static int SDL_RenderTextureInternal(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect)
 {
-    SDL_FRect real_srcrect;
-    SDL_FRect real_dstrect;
     int retval;
-    int use_rendergeometry;
-
-    CHECK_RENDERER_MAGIC(renderer, -1);
-    CHECK_TEXTURE_MAGIC(texture, -1);
-
-    if (renderer != texture->renderer) {
-        return SDL_SetError("Texture was not created with this renderer");
-    }
-
-#if DONT_DRAW_WHILE_HIDDEN
-    /* Don't draw while we're hidden */
-    if (renderer->hidden) {
-        return 0;
-    }
-#endif
-
-    use_rendergeometry = (!renderer->QueueCopy);
-
-    real_srcrect.x = 0.0f;
-    real_srcrect.y = 0.0f;
-    real_srcrect.w = (float)texture->w;
-    real_srcrect.h = (float)texture->h;
-    if (srcrect) {
-        if (!SDL_GetRectIntersectionFloat(srcrect, &real_srcrect, &real_srcrect)) {
-            return 0;
-        }
-    }
-
-    GetRenderViewportSize(renderer, &real_dstrect);
-    if (dstrect) {
-        if (!SDL_HasRectIntersectionFloat(dstrect, &real_dstrect)) {
-            return 0;
-        }
-        real_dstrect = *dstrect;
-    }
-
-    if (texture->native) {
-        texture = texture->native;
-    }
-
-    texture->last_command_generation = renderer->render_command_generation;
+    SDL_bool use_rendergeometry = (!renderer->QueueCopy);
 
     if (use_rendergeometry) {
         float xy[8];
@@ -3788,15 +3746,15 @@ int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FR
         float minu, minv, maxu, maxv;
         float minx, miny, maxx, maxy;
 
-        minu = real_srcrect.x / texture->w;
-        minv = real_srcrect.y / texture->h;
-        maxu = (real_srcrect.x + real_srcrect.w) / texture->w;
-        maxv = (real_srcrect.y + real_srcrect.h) / texture->h;
+        minu = srcrect->x / texture->w;
+        minv = srcrect->y / texture->h;
+        maxu = (srcrect->x + srcrect->w) / texture->w;
+        maxv = (srcrect->y + srcrect->h) / texture->h;
 
-        minx = real_dstrect.x;
-        miny = real_dstrect.y;
-        maxx = real_dstrect.x + real_dstrect.w;
-        maxy = real_dstrect.y + real_dstrect.h;
+        minx = dstrect->x;
+        miny = dstrect->y;
+        maxx = dstrect->x + dstrect->w;
+        maxy = dstrect->y + dstrect->h;
 
         uv[0] = minu;
         uv[1] = minv;
@@ -3823,15 +3781,62 @@ int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FR
                                   renderer->view->scale.x,
                                   renderer->view->scale.y, SDL_TEXTURE_ADDRESS_CLAMP);
     } else {
+        SDL_FRect rect;
 
-        real_dstrect.x *= renderer->view->scale.x;
-        real_dstrect.y *= renderer->view->scale.y;
-        real_dstrect.w *= renderer->view->scale.x;
-        real_dstrect.h *= renderer->view->scale.y;
+        rect.x = dstrect->x * renderer->view->scale.x;
+        rect.y = dstrect->y * renderer->view->scale.y;
+        rect.w = dstrect->w * renderer->view->scale.x;
+        rect.h = dstrect->h * renderer->view->scale.y;
 
-        retval = QueueCmdCopy(renderer, texture, &real_srcrect, &real_dstrect);
+        retval = QueueCmdCopy(renderer, texture, srcrect, &rect);
     }
     return retval;
+}
+
+int SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect)
+{
+    SDL_FRect real_srcrect;
+    SDL_FRect real_dstrect;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (renderer != texture->renderer) {
+        return SDL_SetError("Texture was not created with this renderer");
+    }
+
+#if DONT_DRAW_WHILE_HIDDEN
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+#endif
+
+    real_srcrect.x = 0.0f;
+    real_srcrect.y = 0.0f;
+    real_srcrect.w = (float)texture->w;
+    real_srcrect.h = (float)texture->h;
+    if (srcrect) {
+        if (!SDL_GetRectIntersectionFloat(srcrect, &real_srcrect, &real_srcrect)) {
+            return 0;
+        }
+    }
+
+    GetRenderViewportSize(renderer, &real_dstrect);
+    if (dstrect) {
+        if (!SDL_HasRectIntersectionFloat(dstrect, &real_dstrect)) {
+            return 0;
+        }
+        real_dstrect = *dstrect;
+    }
+
+    if (texture->native) {
+        texture = texture->native;
+    }
+
+    texture->last_command_generation = renderer->render_command_generation;
+
+    return SDL_RenderTextureInternal(renderer, texture, &real_srcrect, &real_dstrect);
 }
 
 int SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -3987,6 +3992,172 @@ int SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
                                 renderer->view->scale.y);
     }
     return retval;
+}
+
+static int SDL_RenderTextureTiled_Wrap(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float scale, const SDL_FRect *dstrect)
+{
+    float xy[8];
+    const int xy_stride = 2 * sizeof(float);
+    float uv[8];
+    const int uv_stride = 2 * sizeof(float);
+    const int num_vertices = 4;
+    const int *indices = renderer->rect_index_order;
+    const int num_indices = 6;
+    const int size_indices = 4;
+    float minu, minv, maxu, maxv;
+    float minx, miny, maxx, maxy;
+
+    minu = 0.0f;
+    minv = 0.0f;
+    maxu = dstrect->w / (srcrect->w * scale);
+    maxv = dstrect->h / (srcrect->h * scale);
+
+    minx = dstrect->x;
+    miny = dstrect->y;
+    maxx = dstrect->x + dstrect->w;
+    maxy = dstrect->y + dstrect->h;
+
+    uv[0] = minu;
+    uv[1] = minv;
+    uv[2] = maxu;
+    uv[3] = minv;
+    uv[4] = maxu;
+    uv[5] = maxv;
+    uv[6] = minu;
+    uv[7] = maxv;
+
+    xy[0] = minx;
+    xy[1] = miny;
+    xy[2] = maxx;
+    xy[3] = miny;
+    xy[4] = maxx;
+    xy[5] = maxy;
+    xy[6] = minx;
+    xy[7] = maxy;
+
+    return QueueCmdGeometry(renderer, texture,
+                            xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
+                            num_vertices,
+                            indices, num_indices, size_indices,
+                            renderer->view->scale.x,
+                            renderer->view->scale.y, SDL_TEXTURE_ADDRESS_WRAP);
+}
+
+static int SDL_RenderTextureTiled_Iterate(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float scale, const SDL_FRect *dstrect)
+{
+    float tile_width = srcrect->w * scale;
+    float tile_height = srcrect->h * scale;
+    float float_rows, float_cols;
+    float remaining_w = SDL_modff(dstrect->w / tile_width, &float_cols);
+    float remaining_h = SDL_modff(dstrect->h / tile_height, &float_rows);
+    float remaining_src_w = remaining_w * srcrect->w;
+    float remaining_src_h = remaining_h * srcrect->h;
+    float remaining_dst_w = remaining_w * tile_width;
+    float remaining_dst_h = remaining_h * tile_height;
+    int rows = (int)float_rows;
+    int cols = (int)float_cols;
+    SDL_FRect curr_src, curr_dst;
+
+    SDL_copyp(&curr_src, srcrect);
+    curr_dst.y = dstrect->y;
+    curr_dst.w = tile_width;
+    curr_dst.h = tile_height;
+    for (int y = 0; y < rows; ++y) {
+        curr_dst.x = dstrect->x;
+        for (int x = 0; x < cols; ++x) {
+            if (SDL_RenderTextureInternal(renderer, texture, &curr_src, &curr_dst) < 0) {
+                return -1;
+            }
+            curr_dst.x += curr_dst.w;
+        }
+        if (remaining_dst_w > 0.0f) {
+            curr_src.w = remaining_src_w;
+            curr_dst.w = remaining_dst_w;
+            if (SDL_RenderTextureInternal(renderer, texture, &curr_src, &curr_dst) < 0) {
+                return -1;
+            }
+            curr_src.w = srcrect->w;
+            curr_dst.w = tile_width;
+        }
+        curr_dst.y += curr_dst.h;
+    }
+    if (remaining_dst_h > 0.0f) {
+        curr_src.h = remaining_src_h;
+        curr_dst.h = remaining_dst_h;
+        curr_dst.x = dstrect->x;
+        for (int x = 0; x < cols; ++x) {
+            if (SDL_RenderTextureInternal(renderer, texture, &curr_src, &curr_dst) < 0) {
+                return -1;
+            }
+            curr_dst.x += curr_dst.w;
+        }
+        if (remaining_dst_w > 0.0f) {
+            curr_src.w = remaining_src_w;
+            curr_dst.w = remaining_dst_w;
+            if (SDL_RenderTextureInternal(renderer, texture, &curr_src, &curr_dst) < 0) {
+                return -1;
+            }
+        }
+    }
+    return 0;
+}
+
+int SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float scale, const SDL_FRect *dstrect)
+{
+    SDL_FRect real_srcrect;
+    SDL_FRect real_dstrect;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (renderer != texture->renderer) {
+        return SDL_SetError("Texture was not created with this renderer");
+    }
+
+    if (scale <= 0.0f) {
+        return SDL_InvalidParamError("scale");
+    }
+
+#if DONT_DRAW_WHILE_HIDDEN
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+#endif
+
+    real_srcrect.x = 0.0f;
+    real_srcrect.y = 0.0f;
+    real_srcrect.w = (float)texture->w;
+    real_srcrect.h = (float)texture->h;
+    if (srcrect) {
+        if (!SDL_GetRectIntersectionFloat(srcrect, &real_srcrect, &real_srcrect)) {
+            return 0;
+        }
+    }
+
+    GetRenderViewportSize(renderer, &real_dstrect);
+    if (dstrect) {
+        if (!SDL_HasRectIntersectionFloat(dstrect, &real_dstrect)) {
+            return 0;
+        }
+        real_dstrect = *dstrect;
+    }
+
+    if (texture->native) {
+        texture = texture->native;
+    }
+
+    texture->last_command_generation = renderer->render_command_generation;
+
+    // See if we can use geometry with repeating texture coordinates
+    if (!renderer->software &&
+        (!srcrect ||
+         (real_srcrect.x == 0.0f && real_srcrect.y == 0.0f &&
+          real_srcrect.w == (float)texture->w && real_srcrect.h == (float)texture->h))) {
+        return SDL_RenderTextureTiled_Wrap(renderer, texture, &real_srcrect, scale, &real_dstrect);
+    } else {
+        return SDL_RenderTextureTiled_Iterate(renderer, texture, &real_srcrect, scale, &real_dstrect);
+    }
 }
 
 int SDL_RenderGeometry(SDL_Renderer *renderer,
