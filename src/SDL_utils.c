@@ -219,7 +219,7 @@ static int SDL_URIDecode(const char *src, char *dst, int len)
         return -1;
     }
     if (len == 0) {
-        len = SDL_strlen(src);
+        len = (int)SDL_strlen(src);
     }
     for (ri = 0, wi = 0, di = 0; ri < len && wi < len; ri += 1) {
         if (di == 0) {
