@@ -920,7 +920,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL
  *       SDL_SRCCOLORKEY ignored.
  *     Source surface blend mode set to SDL_BLENDMODE_NONE:
  *       copy RGB.
- *       if SDL_SRCCOLORKEY set, only copy the pixels matching the
+ *       if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
  *       RGB values of the source color key, ignoring alpha in the
  *       comparison.
  *
@@ -930,7 +930,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL
  *     Source surface blend mode set to SDL_BLENDMODE_NONE:
  *       copy RGB, set destination alpha to source per-surface alpha value.
  *     both:
- *       if SDL_SRCCOLORKEY set, only copy the pixels matching the
+ *       if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
  *       source color key.
  *
  *   RGBA->RGBA:
@@ -939,7 +939,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL
  *       SDL_SRCCOLORKEY ignored.
  *     Source surface blend mode set to SDL_BLENDMODE_NONE:
  *       copy all of RGBA to the destination.
- *       if SDL_SRCCOLORKEY set, only copy the pixels matching the
+ *       if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
  *       RGB values of the source color key, ignoring alpha in the
  *       comparison.
  *
@@ -949,7 +949,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL
  *     Source surface blend mode set to SDL_BLENDMODE_NONE:
  *       copy RGB.
  *     both:
- *       if SDL_SRCCOLORKEY set, only copy the pixels matching the
+ *       if SDL_SRCCOLORKEY set, only copy the pixels that do not match the
  *       source color key.
  * ```
  *
