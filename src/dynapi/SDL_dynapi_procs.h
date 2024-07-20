@@ -841,7 +841,6 @@ SDL_DYNAPI_PROC(int,SDL_ShowSimpleMessageBox,(SDL_MessageBoxFlags a, const char 
 SDL_DYNAPI_PROC(int,SDL_ShowWindow,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_ShowWindowSystemMenu,(SDL_Window *a, int b, int c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_SignalCondition,(SDL_Condition *a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_SoftStretch,(SDL_Surface *a, const SDL_Rect *b, SDL_Surface *c, const SDL_Rect *d, SDL_ScaleMode e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_StartTextInput,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(Uint32,SDL_StepUTF8,(const char **a, size_t *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_StopHapticEffect,(SDL_Haptic *a, int b),(a,b),return)

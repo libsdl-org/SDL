@@ -998,28 +998,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rect
 extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
- * Perform stretch blit between two surfaces of the same format.
- *
- * Using SDL_SCALEMODE_NEAREST: fast, low quality. Using SDL_SCALEMODE_LINEAR:
- * bilinear scaling, slower, better quality, only 32BPP.
- *
- * \param src the SDL_Surface structure to be copied from.
- * \param srcrect the SDL_Rect structure representing the rectangle to be
- *                copied, may not be NULL.
- * \param dst the SDL_Surface structure that is the blit target.
- * \param dstrect the SDL_Rect structure representing the target rectangle in
- *                the destination surface, may not be NULL.
- * \param scaleMode scale algorithm to be used.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_BlitSurfaceScaled
- */
-extern SDL_DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
-
-/**
  * Perform a scaled blit to a destination surface, which may be of a different
  * format.
  *

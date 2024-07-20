@@ -76,5 +76,6 @@ extern float SDL_GetDefaultSDRWhitePoint(SDL_Colorspace colorspace);
 extern float SDL_GetSurfaceSDRWhitePoint(SDL_Surface *surface, SDL_Colorspace colorspace);
 extern float SDL_GetDefaultHDRHeadroom(SDL_Colorspace colorspace);
 extern float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colorspace);
+extern int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 
 #endif /* SDL_surface_c_h_ */
