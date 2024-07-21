@@ -1000,7 +1000,7 @@ static int rect_testEnclosePoints(void *arg)
     }
 
     /* Call function and validate - special case: no result requested */
-    anyEnclosedNoResult = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, (SDL_Rect *)NULL);
+    anyEnclosedNoResult = SDL_GetRectEnclosingPoints(points, numPoints, NULL, (SDL_Rect *)NULL);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosedNoResult,
                         "Check expected return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1012,7 +1012,7 @@ static int rect_testEnclosePoints(void *arg)
     }
 
     /* Call function and validate */
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, numPoints, NULL, &result);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosed,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1083,7 +1083,7 @@ static int rect_testEnclosePointsRepeatedInput(void *arg)
     }
 
     /* Call function and validate - special case: no result requested */
-    anyEnclosedNoResult = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, (SDL_Rect *)NULL);
+    anyEnclosedNoResult = SDL_GetRectEnclosingPoints(points, numPoints, NULL, (SDL_Rect *)NULL);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosedNoResult,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1095,7 +1095,7 @@ static int rect_testEnclosePointsRepeatedInput(void *arg)
     }
 
     /* Call function and validate */
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, numPoints, NULL, &result);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosed,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1173,7 +1173,7 @@ static int rect_testEnclosePointsWithClipping(void *arg)
 
     /* Call function and validate - special case: no result requested */
     clip = refClip;
-    anyEnclosedNoResult = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)&clip, (SDL_Rect *)NULL);
+    anyEnclosedNoResult = SDL_GetRectEnclosingPoints(points, numPoints, &clip, NULL);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosedNoResult,
                         "Expected return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1187,7 +1187,7 @@ static int rect_testEnclosePointsWithClipping(void *arg)
                         "Check that source clipping rectangle was not modified");
 
     /* Call function and validate */
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, numPoints, &clip, &result);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosed,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1209,7 +1209,7 @@ static int rect_testEnclosePointsWithClipping(void *arg)
     clip.w = 0;
     clip.h = 0;
     expectedEnclosed = SDL_FALSE;
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, numPoints, &clip, &result);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosed,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1232,14 +1232,14 @@ static int rect_testEnclosePointsParam(void *arg)
     SDL_bool anyEnclosed;
 
     /* invalid parameter combinations */
-    anyEnclosed = SDL_GetRectEnclosingPoints((SDL_Point *)NULL, 1, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints((SDL_Point *)NULL, 1, &clip, &result);
     SDLTest_AssertCheck(anyEnclosed == SDL_FALSE, "Check that functions returns SDL_FALSE when 1st parameter is NULL");
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, 0, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, 0, &clip, &result);
     SDLTest_AssertCheck(anyEnclosed == SDL_FALSE, "Check that functions returns SDL_FALSE when 2nd parameter is 0");
     count = SDLTest_RandomIntegerInRange(-100, -1);
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, count, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, count, &clip, &result);
     SDLTest_AssertCheck(anyEnclosed == SDL_FALSE, "Check that functions returns SDL_FALSE when 2nd parameter is %i (negative)", count);
-    anyEnclosed = SDL_GetRectEnclosingPoints((SDL_Point *)NULL, 0, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints((SDL_Point *)NULL, 0, &clip, &result);
     SDLTest_AssertCheck(anyEnclosed == SDL_FALSE, "Check that functions returns SDL_FALSE when 1st parameter is NULL and 2nd parameter was 0");
 
     return TEST_COMPLETED;
