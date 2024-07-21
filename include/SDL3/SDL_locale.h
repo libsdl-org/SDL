@@ -60,11 +60,6 @@ typedef struct SDL_Locale
 /**
  * Report the user's preferred locale.
  *
- * This returns an array of SDL_Locale structs, the final item zeroed out.
- * When the caller is done with this array, it should call SDL_free() on the
- * returned value; all the memory involved is allocated in a single block, so
- * a single SDL_free() will suffice.
- *
  * Returned language strings are in the format xx, where 'xx' is an ISO-639
  * language specifier (such as "en" for English, "de" for German, etc).
  * Country strings are in the format YY, where "YY" is an ISO-3166 country
