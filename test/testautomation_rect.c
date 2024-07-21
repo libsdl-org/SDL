@@ -2,6 +2,7 @@
  * Original code: automated SDL rect test written by Edgar Simo "bobbens"
  * New/updated tests: aschiffler at ferzkopp dot net
  */
+#include <limits.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
@@ -160,6 +161,17 @@ static int rect_testIntersectRectAndLine(void *arg)
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
     validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 31, 0, 0, 31);
+
+    /* Test some overflow cases */
+    refRect.x = INT_MAX - 4;
+    refRect.y = INT_MAX - 4;
+    x1 = INT_MAX;
+    y1 = INT_MIN;
+    x2 = INT_MIN;
+    y2 = INT_MAX;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, x1, y1, x2, y2);
 
     return TEST_COMPLETED;
 }
