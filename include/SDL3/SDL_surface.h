@@ -958,7 +958,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL
  *                copied, or NULL to copy the entire surface.
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the x and y position in
- *                the destination surface, or NULL for (0,0). The width and height are ignored, and are copied from `srcrect`. If you want a specific width and height, you should use SDL_BlitSurfaceScaled().
+ *                the destination surface, or NULL for (0,0). The width and
+ *                height are ignored, and are copied from `srcrect`. If you
+ *                want a specific width and height, you should use
+ *                SDL_BlitSurfaceScaled().
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -1006,7 +1009,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceUnchecked(SDL_Surface *src, const
  *                copied, or NULL to copy the entire surface.
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the target rectangle in
- *                the destination surface, or NULL to fill the entire destination surface.
+ *                the destination surface, or NULL to fill the entire
+ *                destination surface.
  * \param scaleMode the SDL_ScaleMode to be used.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -1051,7 +1055,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src,
  * Perform a tiled blit to a destination surface, which may be of a different
  * format.
  *
- * The pixels in `srcrect` will be repeated as many times as needed to completely fill `dstrect`.
+ * The pixels in `srcrect` will be repeated as many times as needed to
+ * completely fill `dstrect`.
  *
  * \param src the SDL_Surface structure to be copied from.
  * \param srcrect the SDL_Rect structure representing the rectangle to be
@@ -1073,15 +1078,18 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src,
 extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
- * Perform a scaled and tiled blit to a destination surface, which may be of a different
- * format.
+ * Perform a scaled and tiled blit to a destination surface, which may be of a
+ * different format.
  *
- * The pixels in `srcrect` will be scaled and repeated as many times as needed to completely fill `dstrect`.
+ * The pixels in `srcrect` will be scaled and repeated as many times as needed
+ * to completely fill `dstrect`.
  *
  * \param src the SDL_Surface structure to be copied from.
  * \param srcrect the SDL_Rect structure representing the rectangle to be
  *                copied, or NULL to copy the entire surface.
- * \param scale the scale used to transform srcrect into the destination rectangle, e.g. a 32x32 texture with a scale of 2 would fill 64x64 tiles.
+ * \param scale the scale used to transform srcrect into the destination
+ *              rectangle, e.g. a 32x32 texture with a scale of 2 would fill
+ *              64x64 tiles.
  * \param scaleMode scale algorithm to be used.
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the target rectangle in
@@ -1100,16 +1108,21 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL
 extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
- * Perform a scaled blit using the 9-grid algorithm to a destination surface, which may be of a different
- * format.
+ * Perform a scaled blit using the 9-grid algorithm to a destination surface,
+ * which may be of a different format.
  *
- * The pixels in the source surface are split into a 3x3 grid, using the corner size for each corner, and the sides and center making up the remaining pixels. The corners are then scaled using `scale` and fit into the corners of the destination rectangle. The sides and center are then stretched into place to cover the remaining destination rectangle.
+ * The pixels in the source surface are split into a 3x3 grid, using the
+ * corner size for each corner, and the sides and center making up the
+ * remaining pixels. The corners are then scaled using `scale` and fit into
+ * the corners of the destination rectangle. The sides and center are then
+ * stretched into place to cover the remaining destination rectangle.
  *
  * \param src the SDL_Surface structure to be copied from.
- * \param srcrect the SDL_Rect structure representing the rectangle to be
- *                used for the 9-grid, or NULL to use the entire surface.
+ * \param srcrect the SDL_Rect structure representing the rectangle to be used
+ *                for the 9-grid, or NULL to use the entire surface.
  * \param corner_size the size, in pixels, of the corner in `srcrect`.
- * \param scale the scale used to transform the corner of `srcrect` into the corner of `dstrect`, or 0.0f for an unscaled blit.
+ * \param scale the scale used to transform the corner of `srcrect` into the
+ *              corner of `dstrect`, or 0.0f for an unscaled blit.
  * \param scaleMode scale algorithm to be used.
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the target rectangle in
