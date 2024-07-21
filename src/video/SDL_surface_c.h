@@ -46,6 +46,9 @@ struct SDL_SurfaceData
     /** detailed format for this surface */
     const SDL_PixelFormatDetails *format;
 
+    /** Pixel colorspace */
+    SDL_Colorspace colorspace;
+
     /** palette for indexed surfaces */
     SDL_Palette *palette;
 

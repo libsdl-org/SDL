@@ -181,15 +181,8 @@ int SDL_CalculateBlit(SDL_Surface *surface)
     SDL_BlitFunc blit = NULL;
     SDL_BlitMap *map = &surface->internal->map;
     SDL_Surface *dst = map->dst;
-    SDL_Colorspace src_colorspace = SDL_GetSurfaceColorspace(surface);
-    SDL_Colorspace dst_colorspace = SDL_GetSurfaceColorspace(dst);
-
-    if (src_colorspace == SDL_COLORSPACE_UNKNOWN) {
-        return -1;
-    }
-    if (dst_colorspace == SDL_COLORSPACE_UNKNOWN) {
-        return -1;
-    }
+    SDL_Colorspace src_colorspace = surface->internal->colorspace;
+    SDL_Colorspace dst_colorspace = dst->internal->colorspace;
 
     /* We don't currently support blitting to < 8 bpp surfaces */
     if (SDL_BITSPERPIXEL(dst->format) < 8) {

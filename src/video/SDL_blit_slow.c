@@ -837,12 +837,8 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     float src_headroom;
     SDL_TonemapContext tonemap;
 
-    src_colorspace = SDL_GetSurfaceColorspace(info->src_surface);
-    dst_colorspace = SDL_GetSurfaceColorspace(info->dst_surface);
-    if (src_colorspace == SDL_COLORSPACE_UNKNOWN ||
-        dst_colorspace == SDL_COLORSPACE_UNKNOWN) {
-        return;
-    }
+    src_colorspace = info->src_surface->internal->colorspace;
+    dst_colorspace = info->dst_surface->internal->colorspace;
     src_primaries = SDL_COLORSPACEPRIMARIES(src_colorspace);
     dst_primaries = SDL_COLORSPACEPRIMARIES(dst_colorspace);
 

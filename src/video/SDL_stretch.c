@@ -44,7 +44,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
 
     if (src->format != dst->format) {
         // Slow!
-        SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->internal->palette, SDL_GetSurfaceColorspace(dst), dst->internal->props);
+        SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->internal->palette, dst->internal->colorspace, dst->internal->props);
         if (!src_tmp) {
             return -1;
         }
@@ -68,11 +68,10 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
         if (src_tmp && dst_tmp) {
             ret = SDL_SoftStretch(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
             if (ret == 0) {
-                SDL_Colorspace dst_colorspace = SDL_GetSurfaceColorspace(dst);
                 SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
                     dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
                     dst_tmp->pixels, dst_tmp->pitch,
-                    dst->format, dst_colorspace, SDL_GetSurfaceProperties(dst),
+                    dst->format, dst->internal->colorspace, SDL_GetSurfaceProperties(dst),
                     (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
             }
         } else {

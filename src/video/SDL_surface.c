@@ -158,9 +158,10 @@ static SDL_Surface *SDL_InitializeSurface(SDL_InternalSurface *mem, int width, i
     surface->internal->map.info.b = 0xFF;
     surface->internal->map.info.a = 0xFF;
 
-    if (colorspace != SDL_COLORSPACE_UNKNOWN &&
-        colorspace != SDL_GetDefaultColorspaceForFormat(format)) {
-        SDL_SetSurfaceColorspace(surface, colorspace);
+    if (colorspace == SDL_COLORSPACE_UNKNOWN) {
+        surface->internal->colorspace = SDL_GetDefaultColorspaceForFormat(format);
+    } else {
+        surface->internal->colorspace = colorspace;
     }
 
     if (props) {
@@ -289,25 +290,17 @@ int SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace colorspace)
         return SDL_InvalidParamError("surface");
     }
 
-    if (colorspace == SDL_GetDefaultColorspaceForFormat(surface->format)) {
-        return 0;
-    }
-    return SDL_SetNumberProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_COLORSPACE_NUMBER, colorspace);
+    surface->internal->colorspace = colorspace;
+    return 0;
 }
 
 SDL_Colorspace SDL_GetSurfaceColorspace(SDL_Surface *surface)
 {
-    SDL_Colorspace colorspace;
-
     if (!SDL_SurfaceValid(surface)) {
         return SDL_COLORSPACE_UNKNOWN;
     }
 
-    colorspace = (SDL_Colorspace)SDL_GetNumberProperty(surface->internal->props, SDL_PROP_SURFACE_COLORSPACE_NUMBER, SDL_COLORSPACE_UNKNOWN);
-    if (colorspace == SDL_COLORSPACE_UNKNOWN) {
-        colorspace = SDL_GetDefaultColorspaceForFormat(surface->format);
-    }
-    return colorspace;
+    return surface->internal->colorspace;
 }
 
 float SDL_GetDefaultSDRWhitePoint(SDL_Colorspace colorspace)
@@ -1740,7 +1733,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
         }
     }
 
-    src_colorspace = SDL_GetSurfaceColorspace(surface);
+    src_colorspace = surface->internal->colorspace;
     src_properties = surface->internal->props;
 
     /* Create a new surface with the desired format */
@@ -1968,7 +1961,7 @@ SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
         return NULL;
     }
 
-    return SDL_ConvertSurfaceAndColorspace(surface, surface->format, surface->internal->palette, SDL_GetSurfaceColorspace(surface), surface->internal->props);
+    return SDL_ConvertSurfaceAndColorspace(surface, surface->format, surface->internal->palette, surface->internal->colorspace, surface->internal->props);
 }
 
 SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, SDL_PixelFormat format)
@@ -2311,7 +2304,7 @@ int SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, SDL_bool linear)
         return SDL_InvalidParamError("surface");
     }
 
-    colorspace = SDL_GetSurfaceColorspace(surface);
+    colorspace = surface->internal->colorspace;
 
     return SDL_PremultiplyAlphaPixelsAndColorspace(surface->w, surface->h, surface->format, colorspace, surface->internal->props, surface->pixels, surface->pitch, surface->format, colorspace, surface->internal->props, surface->pixels, surface->pitch, linear);
 }
@@ -2346,7 +2339,7 @@ int SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a)
         }
 
         if (SDL_ClearSurface(tmp, r, g, b, a) == 0) {
-            result = SDL_ConvertPixelsAndColorspace(surface->w, surface->h, tmp->format, SDL_GetSurfaceColorspace(tmp), tmp->internal->props, tmp->pixels, tmp->pitch, surface->format, SDL_GetSurfaceColorspace(surface), surface->internal->props, surface->pixels, surface->pitch);
+            result = SDL_ConvertPixelsAndColorspace(surface->w, surface->h, tmp->format, tmp->internal->colorspace, tmp->internal->props, tmp->pixels, tmp->pitch, surface->format, surface->internal->colorspace, surface->internal->props, surface->pixels, surface->pitch);
         }
         SDL_DestroySurface(tmp);
     } else {
@@ -2355,7 +2348,7 @@ int SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a)
         if (!tmp) {
             goto done;
         }
-        SDL_SetSurfaceColorspace(tmp, SDL_GetSurfaceColorspace(surface));
+        SDL_SetSurfaceColorspace(tmp, surface->internal->colorspace);
 
         float *pixels = (float *)tmp->pixels;
         pixels[0] = r;
@@ -2462,9 +2455,8 @@ int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g,
     } else {
         /* This is really slow, but it gets the job done */
         Uint8 rgba[4];
-        SDL_Colorspace colorspace = SDL_GetSurfaceColorspace(surface);
 
-        if (SDL_ConvertPixelsAndColorspace(1, 1, surface->format, colorspace, surface->internal->props, p, surface->pitch, SDL_PIXELFORMAT_RGBA32, SDL_COLORSPACE_SRGB, 0, rgba, sizeof(rgba)) == 0) {
+        if (SDL_ConvertPixelsAndColorspace(1, 1, surface->format, surface->internal->colorspace, surface->internal->props, p, surface->pitch, SDL_PIXELFORMAT_RGBA32, SDL_COLORSPACE_SRGB, 0, rgba, sizeof(rgba)) == 0) {
             *r = rgba[0];
             *g = rgba[1];
             *b = rgba[2];
@@ -2554,7 +2546,7 @@ int SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, floa
             SDL_memcpy(rgba, p, sizeof(rgba));
             result = 0;
         } else {
-            SDL_Colorspace src_colorspace = SDL_GetSurfaceColorspace(surface);
+            SDL_Colorspace src_colorspace = surface->internal->colorspace;
             SDL_Colorspace dst_colorspace = (src_colorspace == SDL_COLORSPACE_SRGB_LINEAR ? SDL_COLORSPACE_SRGB_LINEAR : SDL_COLORSPACE_SRGB);
 
             if (SDL_ConvertPixelsAndColorspace(1, 1, surface->format, src_colorspace, surface->internal->props, p, surface->pitch, SDL_PIXELFORMAT_RGBA128_FLOAT, dst_colorspace, 0, rgba, sizeof(rgba)) == 0) {
@@ -2618,13 +2610,12 @@ int SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, 
     } else {
         /* This is really slow, but it gets the job done */
         Uint8 rgba[4];
-        SDL_Colorspace colorspace = SDL_GetSurfaceColorspace(surface);
 
         rgba[0] = r;
         rgba[1] = g;
         rgba[2] = b;
         rgba[3] = a;
-        result = SDL_ConvertPixelsAndColorspace(1, 1, SDL_PIXELFORMAT_RGBA32, SDL_COLORSPACE_SRGB, 0, rgba, sizeof(rgba), surface->format, colorspace, surface->internal->props, p, surface->pitch);
+        result = SDL_ConvertPixelsAndColorspace(1, 1, SDL_PIXELFORMAT_RGBA32, SDL_COLORSPACE_SRGB, 0, rgba, sizeof(rgba), surface->format, surface->internal->colorspace, surface->internal->props, p, surface->pitch);
     }
 
     if (SDL_MUSTLOCK(surface)) {
@@ -2683,7 +2674,7 @@ int SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, floa
             SDL_memcpy(p, rgba, sizeof(rgba));
             result = 0;
         } else {
-            SDL_Colorspace dst_colorspace = SDL_GetSurfaceColorspace(surface);
+            SDL_Colorspace dst_colorspace = surface->internal->colorspace;
             SDL_Colorspace src_colorspace = (dst_colorspace == SDL_COLORSPACE_SRGB_LINEAR ? SDL_COLORSPACE_SRGB_LINEAR : SDL_COLORSPACE_SRGB);
 
             result = SDL_ConvertPixelsAndColorspace(1, 1, SDL_PIXELFORMAT_RGBA128_FLOAT, src_colorspace, 0, rgba, sizeof(rgba), surface->format, dst_colorspace, surface->internal->props, p, surface->pitch);

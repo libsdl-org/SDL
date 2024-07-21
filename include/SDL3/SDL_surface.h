@@ -186,11 +186,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *
  * The following properties are understood by SDL:
  *
- * - `SDL_PROP_SURFACE_COLORSPACE_NUMBER`: an SDL_ColorSpace value describing
- *   the surface colorspace, defaults to SDL_COLORSPACE_SRGB_LINEAR for
- *   floating point formats, SDL_COLORSPACE_HDR10 for 10-bit formats,
- *   SDL_COLORSPACE_SRGB for other RGB surfaces and SDL_COLORSPACE_BT709_FULL
- *   for YUV surfaces.
  * - `SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point
  *   surfaces, this defines the value of 100% diffuse white, with higher
  *   values being displayed in the High Dynamic Range headroom. This defaults
@@ -214,7 +209,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surface *surface);
 
-#define SDL_PROP_SURFACE_COLORSPACE_NUMBER                  "SDL.surface.colorspace"
 #define SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT              "SDL.surface.SDR_white_point"
 #define SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT                 "SDL.surface.HDR_headroom"
 #define SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING            "SDL.surface.tonemap"
