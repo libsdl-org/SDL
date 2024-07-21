@@ -47,7 +47,7 @@ typedef HRESULT (WINAPI *DwmGetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, 
 #endif
 
 /* Corner rounding support  (Win 11+) */
-#ifndef DWMWA_WINDOW_CORNER_PREFERENCE 
+#ifndef DWMWA_WINDOW_CORNER_PREFERENCE
 #define DWMWA_WINDOW_CORNER_PREFERENCE 33
 #endif
 typedef enum {
@@ -423,7 +423,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
         return WIN_SetError("SetProp() failed");
     }
 #endif
-    
+
     window->internal = data;
 
     /* Set up the window proc function */
@@ -777,9 +777,9 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         /* The rest of this macro mess is for OpenGL or OpenGL ES windows */
 #ifdef SDL_VIDEO_OPENGL_ES2
         if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES ||
-             SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) &&
+             SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE))
 #ifdef SDL_VIDEO_OPENGL_WGL
-            (!_this->gl_data || WIN_GL_UseEGL(_this))
+             && (!_this->gl_data || WIN_GL_UseEGL(_this))
 #endif /* SDL_VIDEO_OPENGL_WGL */
         ) {
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -1204,9 +1204,9 @@ static DWM_WINDOW_CORNER_PREFERENCE WIN_UpdateCornerRoundingForHWND(HWND hwnd, D
         DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
         if (DwmGetWindowAttributeFunc && DwmSetWindowAttributeFunc) {
             DwmGetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &oldPref, sizeof(oldPref));
-            DwmSetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));            
+            DwmSetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
         }
-		
+
         SDL_UnloadObject(handle);
     }
 
@@ -1225,7 +1225,7 @@ static COLORREF WIN_UpdateBorderColorForHWND(HWND hwnd, COLORREF colorRef)
             DwmGetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &oldPref, sizeof(oldPref));
             DwmSetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));
         }
-		
+
         SDL_UnloadObject(handle);
     }
 
