@@ -461,10 +461,8 @@ typedef Sint64 SDL_Time;
 #endif /* SDL_DISABLE_ANALYZE_MACROS */
 
 #ifndef SDL_COMPILE_TIME_ASSERT
-#ifdef __cplusplus
-#if (__cplusplus >= 201103L)
+#if (defined(__cplusplus) && __cplusplus >= 201103L) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L)
 #define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
-#endif
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
 #define SDL_COMPILE_TIME_ASSERT(name, x) _Static_assert(x, #x)
 #endif
