@@ -970,6 +970,10 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         return SDL_InvalidParamError("dst");
     } else if ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
+    } else if (scaleMode != SDL_SCALEMODE_NEAREST &&
+               scaleMode != SDL_SCALEMODE_LINEAR &&
+               scaleMode != SDL_SCALEMODE_BEST) {
+        return SDL_InvalidParamError("scaleMode");
     }
 
     if (!srcrect) {
@@ -991,6 +995,11 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
     if (dst_w == src_w && dst_h == src_h) {
         /* No scaling, defer to regular blit */
         return SDL_BlitSurface(src, srcrect, dst, dstrect);
+    }
+
+    if (src_w > SDL_MAX_UINT16 || src_h > SDL_MAX_UINT16 ||
+        dst_w > SDL_MAX_UINT16 || dst_h > SDL_MAX_UINT16) {
+        return SDL_SetError("Size too large for scaling");
     }
 
     scaling_w = (double)dst_w / src_w;
@@ -1120,19 +1129,6 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
     static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
                                               SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL |
                                               SDL_COPY_COLORKEY);
-
-    if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
-        return SDL_InvalidParamError("scaleMode");
-    }
-
-    if (scaleMode != SDL_SCALEMODE_NEAREST) {
-        scaleMode = SDL_SCALEMODE_LINEAR;
-    }
-
-    if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
-        dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
-        return SDL_SetError("Size too large for scaling");
-    }
 
     if (!(src->internal->map.info.flags & SDL_COPY_NEAREST)) {
         src->internal->map.info.flags |= SDL_COPY_NEAREST;
