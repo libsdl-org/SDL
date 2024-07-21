@@ -1393,7 +1393,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT, SDL_GetDefaultHDRHeadroom(texture->colorspace));
 
     /* FOURCC format cannot be used directly by renderer back-ends for target texture */
-    texture_is_fourcc_and_target = (access == SDL_TEXTUREACCESS_TARGET && SDL_ISPIXELFORMAT_FOURCC(format));
+    texture_is_fourcc_and_target = ((access & SDL_TEXTUREACCESS_TARGET) && SDL_ISPIXELFORMAT_FOURCC(format));
 
     if (!texture_is_fourcc_and_target && IsSupportedFormat(renderer, format)) {
         if (renderer->CreateTexture(renderer, texture, props) < 0) {
@@ -1453,7 +1453,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
                 SDL_DestroyTexture(texture);
                 return NULL;
             }
-        } else if (access == SDL_TEXTUREACCESS_STREAMING) {
+        } else if (access & SDL_TEXTUREACCESS_STREAMING) {
             /* The pitch is 4 byte aligned */
             texture->pitch = (((w * SDL_BYTESPERPIXEL(format)) + 3) & ~3);
             texture->pixels = SDL_calloc(1, (size_t)texture->pitch * h);
@@ -1925,7 +1925,7 @@ static int SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
     full_rect.h = texture->h;
     rect = &full_rect;
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->access & SDL_TEXTUREACCESS_STREAMING) {
         /* We can lock the texture and copy to it */
         void *native_pixels = NULL;
         int native_pitch = 0;
@@ -1964,7 +1964,7 @@ static int SDL_UpdateTextureNative(SDL_Texture *texture, const SDL_Rect *rect,
         return 0; /* nothing to do. */
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->access & SDL_TEXTUREACCESS_STREAMING) {
         /* We can lock the texture and copy to it */
         void *native_pixels = NULL;
         int native_pitch = 0;
@@ -2058,7 +2058,7 @@ static int SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rect
         return 0; /* nothing to do. */
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->access & SDL_TEXTUREACCESS_STREAMING) {
         /* We can lock the texture and copy to it */
         void *native_pixels = NULL;
         int native_pitch = 0;
@@ -2108,7 +2108,7 @@ static int SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect,
         return 0; /* nothing to do. */
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+    if (texture->access & SDL_TEXTUREACCESS_STREAMING) {
         /* We can lock the texture and copy to it */
         void *native_pixels = NULL;
         int native_pitch = 0;
@@ -2291,7 +2291,7 @@ int SDL_LockTexture(SDL_Texture *texture, const SDL_Rect *rect, void **pixels, i
 
     CHECK_TEXTURE_MAGIC(texture, -1);
 
-    if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
+    if (!(texture->access & SDL_TEXTUREACCESS_STREAMING)) {
         return SDL_SetError("SDL_LockTexture(): texture must be streaming");
     }
 
@@ -2403,7 +2403,7 @@ void SDL_UnlockTexture(SDL_Texture *texture)
 {
     CHECK_TEXTURE_MAGIC(texture,);
 
-    if (texture->access != SDL_TEXTUREACCESS_STREAMING) {
+    if (!(texture->access & SDL_TEXTUREACCESS_STREAMING)) {
         return;
     }
 #if SDL_HAVE_YUV
@@ -2430,7 +2430,7 @@ static int SDL_SetRenderTargetInternal(SDL_Renderer *renderer, SDL_Texture *text
         if (renderer != texture->renderer) {
             return SDL_SetError("Texture was not created with this renderer");
         }
-        if (texture->access != SDL_TEXTUREACCESS_TARGET) {
+        if (!(texture->access & SDL_TEXTUREACCESS_TARGET)) {
             return SDL_SetError("Texture not created with SDL_TEXTUREACCESS_TARGET");
         }
         if (texture->native) {

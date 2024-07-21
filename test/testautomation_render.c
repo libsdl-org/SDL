@@ -97,6 +97,95 @@ static int render_testGetNumRenderDrivers(void *arg)
 }
 
 /**
+ * Tests creating and using a streaming render target
+ *
+ * \sa SDL_SetRenderDrawColor
+ * \sa SDL_RenderFillRect
+ * \sa SDL_RenderLine
+ *
+ */
+static int render_testStreamingTarget(void *arg)
+{
+    int ret;
+    SDL_Rect rect;
+    SDL_FRect dst_rect;
+    SDL_Surface *face;
+    SDL_Texture *target;
+    SDL_Surface *targetSurface;
+    SDL_Surface *referenceSurface = NULL;
+    void *pixels;
+    int pitch;
+    int i, j, ni, nj;
+    int checkFailCount1;
+
+    /* Create face surface. */
+    face = SDLTest_ImageFace();
+    SDLTest_AssertCheck(face != NULL, "Verify SDLTest_ImageFace() result");
+    if (!face) {
+        return TEST_ABORTED;
+    }
+
+    /* Create render target */
+    target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING | SDL_TEXTUREACCESS_TARGET, TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H);
+    SDLTest_AssertCheck(target != NULL, "Verify SDL_CreateTexture() result");
+    //CHECK_FUNC(SDL_SetRenderTarget, (renderer, target));
+
+    /* Lock render target and create a surface for blitting */
+    CHECK_FUNC(SDL_LockTexture, (target, NULL, &pixels, &pitch));
+    targetSurface = SDL_CreateSurfaceFrom(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, SDL_PIXELFORMAT_ARGB8888, pixels, pitch);
+    SDLTest_AssertCheck(targetSurface != NULL, "Verify SDL_CreateSurfaceFrom() result");
+
+    /* Constant values. */
+    rect.w = face->w;
+    rect.h = face->h;
+    ni = TESTRENDER_SCREEN_W - face->w;
+    nj = TESTRENDER_SCREEN_H - face->h;
+
+    /* Loop blit. */
+    checkFailCount1 = 0;
+    for (j = 0; j <= nj; j += 4) {
+        for (i = 0; i <= ni; i += 4) {
+            /* Blitting. */
+            rect.x = i;
+            rect.y = j;
+            ret = SDL_BlitSurface(face, NULL, targetSurface, &rect);
+            if (ret != 0) {
+                checkFailCount1++;
+            }
+        }
+    }
+    SDLTest_AssertCheck(checkFailCount1 == 0, "Validate results from calls to SDL_RenderTexture, expected: 0, got: %i", checkFailCount1);
+
+    /* Unlock the render target */
+    SDL_DestroySurface(targetSurface);
+    SDL_UnlockTexture(target);
+    //CHECK_FUNC(SDL_SetRenderTarget, (renderer, NULL));
+
+    /* Copy the render target to the screen */
+    dst_rect.x = 0.0f;
+    dst_rect.y = 0.0f;
+    dst_rect.w = (float)TESTRENDER_SCREEN_W;
+    dst_rect.h = (float)TESTRENDER_SCREEN_H;
+    clearScreen();
+    SDL_RenderTexture(renderer, target, NULL, &dst_rect);
+
+    /* See if it's the same */
+    referenceSurface = SDLTest_ImageBlit();
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+    /* Make current */
+    SDL_RenderPresent(renderer);
+
+    /* Clean up. */
+    SDL_DestroyTexture(target);
+    SDL_DestroySurface(face);
+    SDL_DestroySurface(referenceSurface);
+    referenceSurface = NULL;
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests the SDL primitives for rendering.
  *
  * \sa SDL_SetRenderDrawColor
@@ -1445,6 +1534,10 @@ static const SDLTest_TestCaseReference renderTestGetNumRenderDrivers = {
     (SDLTest_TestCaseFp)render_testGetNumRenderDrivers, "render_testGetNumRenderDrivers", "Tests call to SDL_GetNumRenderDrivers", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestStreamingTarget = {
+    (SDLTest_TestCaseFp)render_testStreamingTarget, "render_testStreamingTarget", "Tests a streaming render target", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference renderTestPrimitives = {
     (SDLTest_TestCaseFp)render_testPrimitives, "render_testPrimitives", "Tests rendering primitives", TEST_ENABLED
 };
@@ -1492,6 +1585,7 @@ static const SDLTest_TestCaseReference renderTestUVWrapping = {
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestGetNumRenderDrivers,
+    &renderTestStreamingTarget,
     &renderTestPrimitives,
     &renderTestPrimitivesWithViewport,
     &renderTestBlit,

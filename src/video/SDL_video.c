@@ -382,9 +382,7 @@ static int SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, S
         }
     }
 
-    data->texture = SDL_CreateTexture(data->renderer, *format,
-                                      SDL_TEXTUREACCESS_STREAMING,
-                                      w, h);
+    data->texture = SDL_CreateTexture(data->renderer, *format, SDL_TEXTUREACCESS_STREAMING, w, h);
     if (!data->texture) {
         /* codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_PROP_WINDOW_TEXTUREDATA_POINTER and not leaked here. */
         return -1; /* NOLINT(clang-analyzer-unix.Malloc) */
