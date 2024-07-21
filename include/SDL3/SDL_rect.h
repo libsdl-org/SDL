@@ -293,8 +293,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectAndLineIntersection(const SDL_Re
  *
  * A point is considered part of a rectangle if both `p` and `r` are not NULL,
  * and `p`'s x and y coordinates are >= to the rectangle's top left corner,
- * and < the rectangle's x+w and y+h. So a 1x1 rectangle considers point (0,0)
- * as "inside" and (0,1) as not.
+ * and <= the rectangle's x+w and y+h. So a 1x1 rectangle considers point (0,0)
+ * and (0,1) as "inside" and (0,2) as not.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
@@ -311,15 +311,15 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetRectAndLineIntersection(const SDL_Re
  */
 SDL_FORCE_INLINE SDL_bool SDL_PointInRectFloat(const SDL_FPoint *p, const SDL_FRect *r)
 {
-    return ( p && r && (p->x >= r->x) && (p->x < (r->x + r->w)) &&
-             (p->y >= r->y) && (p->y < (r->y + r->h)) ) ? SDL_TRUE : SDL_FALSE;
+    return ( p && r && (p->x >= r->x) && (p->x <= (r->x + r->w)) &&
+             (p->y >= r->y) && (p->y <= (r->y + r->h)) ) ? SDL_TRUE : SDL_FALSE;
 }
 
 /**
- * Determine whether a floating point rectangle has no area.
+ * Determine whether a floating point rectangle can contain any point.
  *
  * A rectangle is considered "empty" for this function if `r` is NULL, or if
- * `r`'s width and/or height are <= 0.0f.
+ * `r`'s width and/or height are < 0.0f.
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is
@@ -335,7 +335,7 @@ SDL_FORCE_INLINE SDL_bool SDL_PointInRectFloat(const SDL_FPoint *p, const SDL_FR
  */
 SDL_FORCE_INLINE SDL_bool SDL_RectEmptyFloat(const SDL_FRect *r)
 {
-    return ((!r) || (r->w <= 0.0f) || (r->h <= 0.0f)) ? SDL_TRUE : SDL_FALSE;
+    return ((!r) || (r->w < 0.0f) || (r->h < 0.0f)) ? SDL_TRUE : SDL_FALSE;
 }
 
 /**

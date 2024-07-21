@@ -46,7 +46,7 @@ SDL_bool SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
     if (Bmax < Amax) {
         Amax = Bmax;
     }
-    if (Amax <= Amin) {
+    if ((Amax - ENCLOSEPOINTS_EPSILON) < Amin) {
         return SDL_FALSE;
     }
     /* Vertical intersection */
@@ -60,7 +60,7 @@ SDL_bool SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
     if (Bmax < Amax) {
         Amax = Bmax;
     }
-    if (Amax <= Amin) {
+    if ((Amax - ENCLOSEPOINTS_EPSILON) < Amin) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
@@ -190,8 +190,8 @@ SDL_bool SDL_ENCLOSEPOINTS(const POINTTYPE *points, int count, const RECTTYPE *c
         SDL_bool added = SDL_FALSE;
         const SCALARTYPE clip_minx = clip->x;
         const SCALARTYPE clip_miny = clip->y;
-        const SCALARTYPE clip_maxx = clip->x + clip->w - 1;
-        const SCALARTYPE clip_maxy = clip->y + clip->h - 1;
+        const SCALARTYPE clip_maxx = clip->x + clip->w - ENCLOSEPOINTS_EPSILON;
+        const SCALARTYPE clip_maxy = clip->y + clip->h - ENCLOSEPOINTS_EPSILON;
 
         /* Special case for empty rectangle */
         if (SDL_RECTEMPTY(clip)) {
@@ -262,8 +262,8 @@ SDL_bool SDL_ENCLOSEPOINTS(const POINTTYPE *points, int count, const RECTTYPE *c
     if (result) {
         result->x = minx;
         result->y = miny;
-        result->w = (maxx - minx) + 1;
-        result->h = (maxy - miny) + 1;
+        result->w = (maxx - minx) + ENCLOSEPOINTS_EPSILON;
+        result->h = (maxy - miny) + ENCLOSEPOINTS_EPSILON;
     }
     return SDL_TRUE;
 }
@@ -322,8 +322,8 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
     y2 = *Y2;
     rectx1 = rect->x;
     recty1 = rect->y;
-    rectx2 = rect->x + rect->w - 1;
-    recty2 = rect->y + rect->h - 1;
+    rectx2 = rect->x + rect->w - ENCLOSEPOINTS_EPSILON;
+    recty2 = rect->y + rect->h - ENCLOSEPOINTS_EPSILON;
 
     /* Check to see if entire line is inside rect */
     if (x1 >= rectx1 && x1 <= rectx2 && x2 >= rectx1 && x2 <= rectx2 &&
@@ -429,6 +429,7 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
 #undef SCALARTYPE
 #undef BIGSCALARTYPE
 #undef COMPUTEOUTCODE
+#undef ENCLOSEPOINTS_EPSILON
 #undef SDL_HASINTERSECTION
 #undef SDL_INTERSECTRECT
 #undef SDL_RECTEMPTY
