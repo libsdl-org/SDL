@@ -3213,7 +3213,9 @@ int SDL_GetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode *blendMode)
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    *blendMode = renderer->blendMode;
+    if (blendMode) {
+        *blendMode = renderer->blendMode;
+    }
     return 0;
 }
 
