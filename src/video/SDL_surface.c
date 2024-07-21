@@ -997,11 +997,6 @@ int SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect,
         return SDL_BlitSurface(src, srcrect, dst, dstrect);
     }
 
-    if (src_w > SDL_MAX_UINT16 || src_h > SDL_MAX_UINT16 ||
-        dst_w > SDL_MAX_UINT16 || dst_h > SDL_MAX_UINT16) {
-        return SDL_SetError("Size too large for scaling");
-    }
-
     scaling_w = (double)dst_w / src_w;
     scaling_h = (double)dst_h / src_h;
 
@@ -1129,6 +1124,11 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
     static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
                                               SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL |
                                               SDL_COPY_COLORKEY);
+
+    if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
+        dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
+        return SDL_SetError("Size too large for scaling");
+    }
 
     if (!(src->internal->map.info.flags & SDL_COPY_NEAREST)) {
         src->internal->map.info.flags |= SDL_COPY_NEAREST;
