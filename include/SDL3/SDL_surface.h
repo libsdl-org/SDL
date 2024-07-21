@@ -1211,6 +1211,49 @@ extern SDL_DECLSPEC int SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x
  */
 extern SDL_DECLSPEC int SDLCALL SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, float *g, float *b, float *a);
 
+/**
+ * Writes a single pixel to a surface.
+ *
+ * This function prioritizes correctness over speed: it is suitable for unit
+ * tests, but is not intended for use in a game engine.
+ *
+ * Like SDL_MapRGBA, this uses the entire 0..255 range when converting color
+ * components from pixel formats with less than 8 bits per RGB component.
+ *
+ * \param surface the surface to write.
+ * \param x the horizontal coordinate, 0 <= x < width.
+ * \param y the vertical coordinate, 0 <= y < height.
+ * \param r the red channel value, 0-255.
+ * \param g the green channel value, 0-255.
+ * \param b the blue channel value, 0-255.
+ * \param a the alpha channel value, 0-255.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+/**
+ * Writes a single pixel to a surface.
+ *
+ * This function prioritizes correctness over speed: it is suitable for unit
+ * tests, but is not intended for use in a game engine.
+ *
+ * \param surface the surface to write.
+ * \param x the horizontal coordinate, 0 <= x < width.
+ * \param y the vertical coordinate, 0 <= y < height.
+ * \param r the red channel value, normally in the range 0-1.
+ * \param g the green channel value, normally in the range 0-1.
+ * \param b the blue channel value, normally in the range 0-1.
+ * \param a the alpha channel value, normally in the range 0-1.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, float g, float b, float a);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

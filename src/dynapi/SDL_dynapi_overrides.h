@@ -900,6 +900,8 @@
 #define SDL_WriteS64LE SDL_WriteS64LE_REAL
 #define SDL_WriteS8 SDL_WriteS8_REAL
 #define SDL_WriteStorageFile SDL_WriteStorageFile_REAL
+#define SDL_WriteSurfacePixel SDL_WriteSurfacePixel_REAL
+#define SDL_WriteSurfacePixelFloat SDL_WriteSurfacePixelFloat_REAL
 #define SDL_WriteU16BE SDL_WriteU16BE_REAL
 #define SDL_WriteU16LE SDL_WriteU16LE_REAL
 #define SDL_WriteU32BE SDL_WriteU32BE_REAL
