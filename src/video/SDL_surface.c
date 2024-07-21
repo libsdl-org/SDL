@@ -855,12 +855,6 @@ int SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
 int SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect,
                              SDL_Surface *dst, const SDL_Rect *dstrect)
 {
-    /* Switch back to a fast blit if we were previously stretching */
-    if (src->internal->map.info.flags & SDL_COPY_NEAREST) {
-        src->internal->map.info.flags &= ~SDL_COPY_NEAREST;
-        SDL_InvalidateMap(&src->internal->map);
-    }
-
     /* Check to make sure the blit mapping is valid */
     if ((src->internal->map.dst != dst) ||
         (dst->internal->palette &&
@@ -946,6 +940,12 @@ int SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect,
     if (r_dst.w <= 0 || r_dst.h <= 0) {
         /* No-op. */
         return 0;
+    }
+
+    /* Switch back to a fast blit if we were previously stretching */
+    if (src->internal->map.info.flags & SDL_COPY_NEAREST) {
+        src->internal->map.info.flags &= ~SDL_COPY_NEAREST;
+        SDL_InvalidateMap(&src->internal->map);
     }
 
     return SDL_BlitSurfaceUnchecked(src, &r_src, dst, &r_dst);
