@@ -21,6 +21,19 @@
 
 /* This file is #included twice to support int and float versions with the same code. */
 
+static SDL_bool SDL_RECT_CAN_OVERFLOW(const RECTTYPE *rect)
+{
+    if (rect->x <= (SCALARTYPE)(SDL_MIN_SINT32 / 2) ||
+        rect->x >= (SCALARTYPE)(SDL_MAX_SINT32 / 2) ||
+        rect->y <= (SCALARTYPE)(SDL_MIN_SINT32 / 2) ||
+        rect->y >= (SCALARTYPE)(SDL_MAX_SINT32 / 2) ||
+        rect->w >= (SCALARTYPE)(SDL_MAX_SINT32 / 2) ||
+        rect->h >= (SCALARTYPE)(SDL_MAX_SINT32 / 2)) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 SDL_bool SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
@@ -30,6 +43,10 @@ SDL_bool SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
         return SDL_FALSE;
     } else if (!B) {
         SDL_InvalidParamError("B");
+        return SDL_FALSE;
+    } else if (SDL_RECT_CAN_OVERFLOW(A) ||
+               SDL_RECT_CAN_OVERFLOW(B)) {
+        SDL_SetError("Potential rect math overflow");
         return SDL_FALSE;
     } else if (SDL_RECTEMPTY(A) || SDL_RECTEMPTY(B)) {
         return SDL_FALSE; /* Special cases for empty rects */
@@ -75,6 +92,10 @@ SDL_bool SDL_INTERSECTRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *resul
         return SDL_FALSE;
     } else if (!B) {
         SDL_InvalidParamError("B");
+        return SDL_FALSE;
+    } else if (SDL_RECT_CAN_OVERFLOW(A) ||
+               SDL_RECT_CAN_OVERFLOW(B)) {
+        SDL_SetError("Potential rect math overflow");
         return SDL_FALSE;
     } else if (!result) {
         SDL_InvalidParamError("result");
@@ -124,6 +145,10 @@ int SDL_UNIONRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
         return SDL_InvalidParamError("A");
     } else if (!B) {
         return SDL_InvalidParamError("B");
+    } else if (SDL_RECT_CAN_OVERFLOW(A) ||
+               SDL_RECT_CAN_OVERFLOW(B)) {
+        SDL_SetError("Potential rect math overflow");
+        return SDL_FALSE;
     } else if (!result) {
         return SDL_InvalidParamError("result");
     } else if (SDL_RECTEMPTY(A)) { /* Special cases for empty Rects */
@@ -300,6 +325,9 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
     if (!rect) {
         SDL_InvalidParamError("rect");
         return SDL_FALSE;
+    } else if (SDL_RECT_CAN_OVERFLOW(rect)) {
+        SDL_SetError("Potential rect math overflow");
+        return SDL_FALSE;
     } else if (!X1) {
         SDL_InvalidParamError("X1");
         return SDL_FALSE;
@@ -430,6 +458,7 @@ SDL_bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTY
 #undef BIGSCALARTYPE
 #undef COMPUTEOUTCODE
 #undef ENCLOSEPOINTS_EPSILON
+#undef SDL_RECT_CAN_OVERFLOW
 #undef SDL_HASINTERSECTION
 #undef SDL_INTERSECTRECT
 #undef SDL_RECTEMPTY
