@@ -849,19 +849,8 @@ int SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect,
                              SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     /* Check to make sure the blit mapping is valid */
-    if ((src->internal->map.dst != dst) ||
-        (dst->internal->palette &&
-         src->internal->map.dst_palette_version != dst->internal->palette->version) ||
-        (src->internal->palette &&
-         src->internal->map.src_palette_version != src->internal->palette->version)) {
-        if (SDL_MapSurface(src, dst) < 0) {
-            return -1;
-        }
-        /* just here for debugging */
-        /*         printf */
-        /*             ("src = 0x%08X src->flags = %08X src->internal->map.info.flags = %08x\ndst = 0x%08X dst->flags = %08X dst->internal->map.info.flags = %08X\nsrc->internal->map.blit = 0x%08x\n", */
-        /*              src, dst->flags, src->internal->map.info.flags, dst, dst->flags, */
-        /*              dst->internal->map.info.flags, src->internal->map.blit); */
+    if (SDL_ValidateMap(src, dst) < 0) {
+        return -1;
     }
     return src->internal->map.blit(src, srcrect, dst, dstrect);
 }
@@ -2705,7 +2694,6 @@ void SDL_DestroySurface(SDL_Surface *surface)
     SDL_DestroyProperties(surface->internal->props);
 
     SDL_InvalidateMap(&surface->internal->map);
-    SDL_InvalidateAllBlitMap(surface);
 
     while (surface->internal->locked > 0) {
         SDL_UnlockSurface(surface);

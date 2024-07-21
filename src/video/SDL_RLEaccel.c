@@ -1002,7 +1002,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
     int (*copy_transl)(void *, const Uint32 *, int,
                        const SDL_PixelFormatDetails *, const SDL_PixelFormatDetails *);
 
-    dest = surface->internal->map.dst;
+    dest = surface->internal->map.info.dst_surface;
     if (!dest) {
         return -1;
     }

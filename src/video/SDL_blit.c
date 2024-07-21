@@ -176,11 +176,10 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(SDL_PixelFormat src_format, SDL_PixelForm
 #endif /* SDL_HAVE_BLIT_AUTO */
 
 /* Figure out which of many blit routines to set up on a surface */
-int SDL_CalculateBlit(SDL_Surface *surface)
+int SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
 {
     SDL_BlitFunc blit = NULL;
     SDL_BlitMap *map = &surface->internal->map;
-    SDL_Surface *dst = map->dst;
     SDL_Colorspace src_colorspace = surface->internal->colorspace;
     SDL_Colorspace dst_colorspace = dst->internal->colorspace;
 
@@ -201,11 +200,9 @@ int SDL_CalculateBlit(SDL_Surface *surface)
     map->info.src_surface = surface;
     map->info.src_fmt = surface->internal->format;
     map->info.src_pal = surface->internal->palette;
-    map->info.src_pitch = surface->pitch;
     map->info.dst_surface = dst;
     map->info.dst_fmt = dst->internal->format;
     map->info.dst_pal = dst->internal->palette;
-    map->info.dst_pitch = dst->pitch;
 
 #if SDL_HAVE_RLE
     /* See if we can do RLE acceleration */

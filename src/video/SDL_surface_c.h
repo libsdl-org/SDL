@@ -60,9 +60,6 @@ struct SDL_SurfaceData
 
     /** info for fast blit mapping to other surfaces */
     SDL_BlitMap map;
-
-    /** list of BlitMap that hold a reference to this surface */
-    SDL_ListNode *list_blitmap;
 };
 
 typedef struct SDL_InternalSurface

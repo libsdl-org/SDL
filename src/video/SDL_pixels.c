@@ -1419,30 +1419,34 @@ static Uint8 *MapNto1(const SDL_PixelFormatDetails *src, const SDL_Palette *pal,
     return Map1to1(&dithered, pal, identical);
 }
 
-void SDL_InvalidateAllBlitMap(SDL_Surface *surface)
+int SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst)
 {
-    SDL_ListNode *l = surface->internal->list_blitmap;
+    SDL_BlitMap *map = &src->internal->map;
 
-    surface->internal->list_blitmap = NULL;
-
-    while (l) {
-        SDL_ListNode *tmp = l;
-        SDL_InvalidateMap((SDL_BlitMap *)l->entry);
-        l = l->next;
-        SDL_free(tmp);
+    if (map->info.dst_fmt != dst->internal->format ||
+        map->info.dst_pal != dst->internal->palette ||
+        (dst->internal->palette &&
+         map->dst_palette_version != dst->internal->palette->version) ||
+        (src->internal->palette &&
+         map->src_palette_version != src->internal->palette->version)) {
+        if (SDL_MapSurface(src, dst) < 0) {
+            return -1;
+        }
+        /* just here for debugging */
+        /*         printf */
+        /*             ("src = 0x%08X src->flags = %08X map->info.flags = %08x\ndst = 0x%08X dst->flags = %08X dst->internal->map.info.flags = %08X\nmap->blit = 0x%08x\n", */
+        /*              src, dst->flags, map->info.flags, dst, dst->flags, */
+        /*              dst->internal->map.info.flags, map->blit); */
+    } else {
+        map->info.dst_surface = dst;
     }
+    return 0;
 }
 
 void SDL_InvalidateMap(SDL_BlitMap *map)
 {
-    if (!map) {
-        return;
-    }
-    if (map->dst) {
-        /* Un-register from the destination surface */
-        SDL_ListRemove(&map->dst->internal->list_blitmap, map);
-    }
-    map->dst = NULL;
+    map->info.dst_fmt = NULL;
+    map->info.dst_pal = NULL;
     map->src_palette_version = 0;
     map->dst_palette_version = 0;
     SDL_free(map->info.table);
@@ -1515,13 +1519,6 @@ int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
         }
     }
 
-    map->dst = dst;
-
-    if (map->dst) {
-        /* Register BlitMap to the destination surface, to be invalidated when needed */
-        SDL_ListAdd(&map->dst->internal->list_blitmap, map);
-    }
-
     if (dstpal) {
         map->dst_palette_version = dstpal->version;
     } else {
@@ -1535,6 +1532,6 @@ int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     }
 
     /* Choose your blitters wisely */
-    return SDL_CalculateBlit(src);
+    return SDL_CalculateBlit(src, dst);
 }
 

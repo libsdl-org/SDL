@@ -1217,7 +1217,7 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
 SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 {
     const SDL_PixelFormatDetails *sf = surface->internal->format;
-    const SDL_PixelFormatDetails *df = surface->internal->map.dst->internal->format;
+    const SDL_PixelFormatDetails *df = surface->internal->map.info.dst_fmt;
 
     switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
     case SDL_COPY_BLEND:

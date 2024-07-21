@@ -540,6 +540,71 @@ static int surface_testBlit9Grid(void *arg)
 }
 
 /**
+ *  Tests blitting between multiple surfaces of the same format
+ */
+static int surface_testBlitMultiple(void *arg)
+{
+    SDL_Surface *source, *surface;
+    SDL_Palette *palette;
+    Uint8 *pixels;
+
+    palette = SDL_CreatePalette(2);
+    SDLTest_AssertCheck(palette != NULL, "SDL_CreatePalette()");
+    palette->colors[0].r = 0;
+    palette->colors[0].g = 0;
+    palette->colors[0].b = 0;
+    palette->colors[1].r = 0xFF;
+    palette->colors[1].g = 0;
+    palette->colors[1].b = 0;
+
+    source = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(source != NULL, "SDL_CreateSurface()");
+    SDL_SetSurfacePalette(source, palette);
+    *(Uint8 *)source->pixels = 1;
+
+    /* Set up a blit to a surface using the palette */
+    surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+    SDL_SetSurfacePalette(surface, palette);
+    pixels = (Uint8 *)surface->pixels;
+    *pixels = 0;
+    SDL_BlitSurface(source, NULL, surface, NULL);
+    SDLTest_AssertCheck(*pixels == 1, "Expected *pixels == 1 got %u", *pixels);
+
+    /* Set up a blit to another surface using the same palette */
+    SDL_DestroySurface(surface);
+    surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+    SDL_SetSurfacePalette(surface, palette);
+    pixels = (Uint8 *)surface->pixels;
+    *pixels = 0;
+    SDL_BlitSurface(source, NULL, surface, NULL);
+    SDLTest_AssertCheck(*pixels == 1, "Expected *pixels == 1 got %u", *pixels);
+
+    /* Set up a blit to new surface with a different format */
+    SDL_DestroySurface(surface);
+    surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
+    SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+    pixels = (Uint8 *)surface->pixels;
+    SDL_BlitSurface(source, NULL, surface, NULL);
+    SDLTest_AssertCheck(*pixels == 0xFF, "Expected *pixels == 0xFF got 0x%.2X", *pixels);
+
+    /* Set up a blit to another surface with the same format */
+    SDL_DestroySurface(surface);
+    surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
+    SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+    pixels = (Uint8 *)surface->pixels;
+    SDL_BlitSurface(source, NULL, surface, NULL);
+    SDLTest_AssertCheck(*pixels == 0xFF, "Expected *pixels == 0xFF got 0x%.2X", *pixels);
+
+    SDL_DestroyPalette(palette);
+    SDL_DestroySurface(source);
+    SDL_DestroySurface(surface);
+
+    return TEST_COMPLETED;
+}
+
+/**
  *  Tests surface conversion.
  */
 static int surface_testSurfaceConversion(void *arg)
@@ -1227,6 +1292,10 @@ static const SDLTest_TestCaseReference surfaceTestBlit9Grid = {
     (SDLTest_TestCaseFp)surface_testBlit9Grid, "surface_testBlit9Grid", "Tests 9-grid blitting.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestBlitMultiple = {
+    (SDLTest_TestCaseFp)surface_testBlitMultiple, "surface_testBlitMultiple", "Tests blitting between multiple surfaces of the same format.", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference surfaceTestLoadFailure = {
     (SDLTest_TestCaseFp)surface_testLoadFailure, "surface_testLoadFailure", "Tests sprite loading. A failure case.", TEST_ENABLED
 };
@@ -1297,6 +1366,7 @@ static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestBlit,
     &surfaceTestBlitTiled,
     &surfaceTestBlit9Grid,
+    &surfaceTestBlitMultiple,
     &surfaceTestLoadFailure,
     &surfaceTestSurfaceConversion,
     &surfaceTestCompleteSurfaceConversion,
