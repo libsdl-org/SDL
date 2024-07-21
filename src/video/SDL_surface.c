@@ -2459,6 +2459,126 @@ int SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, floa
     return result;
 }
 
+int SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+    Uint32 pixel = 0;
+    size_t bytes_per_pixel;
+    Uint8 *p;
+    int result = -1;
+
+    if (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (x < 0 || x >= surface->w) {
+        return SDL_InvalidParamError("x");
+    }
+
+    if (y < 0 || y >= surface->h) {
+        return SDL_InvalidParamError("y");
+    }
+
+    bytes_per_pixel = SDL_BYTESPERPIXEL(surface->format);
+
+    if (SDL_MUSTLOCK(surface)) {
+        if (SDL_LockSurface(surface) < 0) {
+            return -1;
+        }
+    }
+
+    p = (Uint8 *)surface->pixels + y * surface->pitch + x * bytes_per_pixel;
+
+    if (bytes_per_pixel <= sizeof(pixel) && !SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        pixel = SDL_MapRGBA(surface->internal->format, surface->internal->palette, r, g, b, a);
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        SDL_memcpy(p, ((Uint8 *)&pixel) + (sizeof(pixel) - bytes_per_pixel), bytes_per_pixel);
+#else
+        SDL_memcpy(p, &pixel, bytes_per_pixel);
+#endif
+        result = 0;
+    } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        result = SDL_Unsupported();
+    } else {
+        /* This is really slow, but it gets the job done */
+        Uint8 rgba[4];
+        SDL_Colorspace colorspace = SDL_GetSurfaceColorspace(surface);
+
+        rgba[0] = r;
+        rgba[1] = g;
+        rgba[2] = b;
+        rgba[3] = a;
+        result = SDL_ConvertPixelsAndColorspace(1, 1, SDL_PIXELFORMAT_RGBA32, SDL_COLORSPACE_SRGB, 0, rgba, sizeof(rgba), surface->format, colorspace, surface->internal->props, p, surface->pitch);
+    }
+
+    if (SDL_MUSTLOCK(surface)) {
+        SDL_UnlockSurface(surface);
+    }
+    return result;
+}
+
+int SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, float g, float b, float a)
+{
+    int result = -1;
+
+    if (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (x < 0 || x >= surface->w) {
+        return SDL_InvalidParamError("x");
+    }
+
+    if (y < 0 || y >= surface->h) {
+        return SDL_InvalidParamError("y");
+    }
+
+    if (SDL_BYTESPERPIXEL(surface->format) <= sizeof(Uint32) && !SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        Uint8 r8, g8, b8, a8;
+
+        r8 = (Uint8)SDL_round(SDL_clamp(r, 0.0f, 1.0f) * 255.0f);
+        g8 = (Uint8)SDL_round(SDL_clamp(g, 0.0f, 1.0f) * 255.0f);
+        b8 = (Uint8)SDL_round(SDL_clamp(b, 0.0f, 1.0f) * 255.0f);
+        a8 = (Uint8)SDL_round(SDL_clamp(a, 0.0f, 1.0f) * 255.0f);
+        if (SDL_WriteSurfacePixel(surface, x, y, r8, g8, b8, a8) == 0) {
+            result = 0;
+        }
+    } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        result = SDL_Unsupported();
+    } else {
+        /* This is really slow, but it gets the job done */
+        float rgba[4];
+        Uint8 *p;
+
+        if (SDL_MUSTLOCK(surface)) {
+            if (SDL_LockSurface(surface) < 0) {
+                return -1;
+            }
+        }
+
+        p = (Uint8 *)surface->pixels + y * surface->pitch + x * SDL_BYTESPERPIXEL(surface->format);
+
+        rgba[0] = r;
+        rgba[1] = g;
+        rgba[2] = b;
+        rgba[3] = a;
+
+        if (surface->format == SDL_PIXELFORMAT_RGBA128_FLOAT) {
+            SDL_memcpy(p, rgba, sizeof(rgba));
+            result = 0;
+        } else {
+            SDL_Colorspace dst_colorspace = SDL_GetSurfaceColorspace(surface);
+            SDL_Colorspace src_colorspace = (dst_colorspace == SDL_COLORSPACE_SRGB_LINEAR ? SDL_COLORSPACE_SRGB_LINEAR : SDL_COLORSPACE_SRGB);
+
+            result = SDL_ConvertPixelsAndColorspace(1, 1, SDL_PIXELFORMAT_RGBA128_FLOAT, src_colorspace, 0, rgba, sizeof(rgba), surface->format, dst_colorspace, surface->internal->props, p, surface->pitch);
+        }
+
+        if (SDL_MUSTLOCK(surface)) {
+            SDL_UnlockSurface(surface);
+        }
+    }
+    return result;
+}
+
 /*
  * Free a surface created by the above function.
  */

@@ -875,6 +875,8 @@ SDL3_0.0.0 {
     SDL_WriteS64LE;
     SDL_WriteS8;
     SDL_WriteStorageFile;
+    SDL_WriteSurfacePixel;
+    SDL_WriteSurfacePixelFloat;
     SDL_WriteU16BE;
     SDL_WriteU16LE;
     SDL_WriteU32BE;

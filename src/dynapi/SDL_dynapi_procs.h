@@ -910,6 +910,8 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_WriteS64BE,(SDL_IOStream *a, Sint64 b),(a,b),return
 SDL_DYNAPI_PROC(SDL_bool,SDL_WriteS64LE,(SDL_IOStream *a, Sint64 b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_WriteS8,(SDL_IOStream *a, Sint8 b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_WriteStorageFile,(SDL_Storage *a, const char *b, const void *c, Uint64 d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_WriteSurfacePixel,(SDL_Surface *a, int b, int c, Uint8 d, Uint8 e, Uint8 f, Uint8 g),(a,b,c,d,e,f,g),return)
+SDL_DYNAPI_PROC(int,SDL_WriteSurfacePixelFloat,(SDL_Surface *a, int b, int c, float d, float e, float f, float g),(a,b,c,d,e,f,g),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_WriteU16BE,(SDL_IOStream *a, Uint16 b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_WriteU16LE,(SDL_IOStream *a, Uint16 b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_WriteU32BE,(SDL_IOStream *a, Uint32 b),(a,b),return)
