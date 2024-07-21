@@ -1139,6 +1139,18 @@ static int surface_testPalette(void *arg)
     SDL_BlitSurface(source, NULL, surface, NULL);
     SDLTest_AssertCheck(*pixels == 1, "Expected *pixels == 1 got %u", *pixels);
 
+    /* Identity copy between indexed surfaces where the source has a palette */
+    palette->colors[0].r = 0;
+    palette->colors[0].g = 0;
+    palette->colors[0].b = 0;
+    palette->colors[1].r = 0xFF;
+    palette->colors[1].g = 0;
+    palette->colors[1].b = 0;
+    SDL_SetSurfacePalette(source, palette);
+    *pixels = 0;
+    SDL_BlitSurface(source, NULL, surface, NULL);
+    SDLTest_AssertCheck(*pixels == 1, "Expected *pixels == 1 got %u", *pixels);
+
     /* Identity copy between indexed surfaces where the destination has a palette */
     palette->colors[0].r = 0;
     palette->colors[0].g = 0;
@@ -1146,6 +1158,20 @@ static int surface_testPalette(void *arg)
     palette->colors[1].r = 0xFF;
     palette->colors[1].g = 0;
     palette->colors[1].b = 0;
+    SDL_SetSurfacePalette(source, NULL);
+    SDL_SetSurfacePalette(surface, palette);
+    *pixels = 0;
+    SDL_BlitSurface(source, NULL, surface, NULL);
+    SDLTest_AssertCheck(*pixels == 1, "Expected *pixels == 1 got %u", *pixels);
+
+    /* Identity copy between indexed surfaces where the source and destination share a palette */
+    palette->colors[0].r = 0;
+    palette->colors[0].g = 0;
+    palette->colors[0].b = 0;
+    palette->colors[1].r = 0xFF;
+    palette->colors[1].g = 0;
+    palette->colors[1].b = 0;
+    SDL_SetSurfacePalette(source, palette);
     SDL_SetSurfacePalette(surface, palette);
     *pixels = 0;
     SDL_BlitSurface(source, NULL, surface, NULL);
