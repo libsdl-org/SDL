@@ -3344,7 +3344,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
 
     /* Set up data for choosing the blit */
     srcfmt = surface->internal->format;
-    dstfmt = surface->internal->map.dst->internal->format;
+    dstfmt = surface->internal->map.info.dst_fmt;
 
     /* We don't support destinations less than 8-bits */
     if (dstfmt->bits_per_pixel < 8) {

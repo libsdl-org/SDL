@@ -43,9 +43,9 @@ extern const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src
 extern void SDL_ConvertColorPrimaries(float *fR, float *fG, float *fB, const float *matrix);
 
 /* Blit mapping functions */
+extern int SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst);
 extern void SDL_InvalidateMap(SDL_BlitMap *map);
 extern int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst);
-extern void SDL_InvalidateAllBlitMap(SDL_Surface *surface);
 
 /* Miscellaneous functions */
 extern void SDL_DitherPalette(SDL_Palette *palette);

@@ -919,10 +919,10 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
 {
     int which;
 
-    if (SDL_BITSPERPIXEL(surface->internal->map.dst->format) < 8) {
+    if (SDL_BITSPERPIXEL(surface->internal->map.info.dst_fmt->format) < 8) {
         which = 0;
     } else {
-        which = SDL_BYTESPERPIXEL(surface->internal->map.dst->format);
+        which = SDL_BYTESPERPIXEL(surface->internal->map.info.dst_fmt->format);
     }
 
     if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX1) {
