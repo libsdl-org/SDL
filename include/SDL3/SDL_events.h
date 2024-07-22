@@ -1445,13 +1445,22 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
  *
  * Essentially you have 3 options for handling temporary memory:
  *
- * 1. After calling a function that returns temporary memory, pass that pointer to SDL_FreeTemporaryMemory(). This gives you full control over the management of allocations.
+ * 1. After calling a function that returns temporary memory, pass that
+ * pointer to SDL_FreeTemporaryMemory(). This gives you full control over the
+ * management of allocations.
  *
- * 2. On your main thread, temporary memory is automatically cleaned up when processing events. On other threads, you can periodically call SDL_FreeTemporaryMemory(NULL) to clean up any temporary memory that has accumulated.
+ * 2. On your main thread, temporary memory is automatically cleaned up when
+ * processing events. On other threads, you can periodically call
+ * SDL_FreeTemporaryMemory(NULL) to clean up any temporary memory that has
+ * accumulated.
  *
- * 3. After calling a function that returns temporary memory, pass that pointer to SDL_ClaimTemporaryMemory(). This transfers ownership of the memory to your application and you can pass it to other threads or save it indefinitely, calling SDL_free() to free it when you're ready.
+ * 3. After calling a function that returns temporary memory, pass that
+ * pointer to SDL_ClaimTemporaryMemory(). This transfers ownership of the
+ * memory to your application and you can pass it to other threads or save it
+ * indefinitely, calling SDL_free() to free it when you're ready.
  *
- * Any of the three options are valid, and you can mix and match them to suit your application.
+ * Any of the three options are valid, and you can mix and match them to suit
+ * your application.
  *
  * \param mem a pointer allocated with SDL_AllocateTemporaryMemory().
  * \returns a pointer to the memory now owned by the application, which must
