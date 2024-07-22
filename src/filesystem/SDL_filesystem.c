@@ -43,6 +43,16 @@ int SDL_RenamePath(const char *oldpath, const char *newpath)
     return SDL_SYS_RenamePath(oldpath, newpath);
 }
 
+int SDL_CopyFile(const char *oldpath, const char *newpath)
+{
+    if (!oldpath) {
+        return SDL_InvalidParamError("oldpath");
+    } else if (!newpath) {
+        return SDL_InvalidParamError("newpath");
+    }
+    return SDL_SYS_CopyFile(oldpath, newpath);
+}
+
 int SDL_CreateDirectory(const char *path)
 {
     /* TODO: Recursively create subdirectories */

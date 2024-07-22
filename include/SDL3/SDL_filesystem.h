@@ -328,6 +328,18 @@ extern SDL_DECLSPEC int SDLCALL SDL_RemovePath(const char *path);
 extern SDL_DECLSPEC int SDLCALL SDL_RenamePath(const char *oldpath, const char *newpath);
 
 /**
+ * Copy a file.
+ *
+ * \param oldpath the old path.
+ * \param newpath the new path.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_CopyFile(const char *oldpath, const char *newpath);
+
+/**
  * Get information about a filesystem path.
  *
  * \param path the path to query.

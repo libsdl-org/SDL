@@ -80,7 +80,9 @@
 #define SDL_ConvertPixelsAndColorspace SDL_ConvertPixelsAndColorspace_REAL
 #define SDL_ConvertSurface SDL_ConvertSurface_REAL
 #define SDL_ConvertSurfaceAndColorspace SDL_ConvertSurfaceAndColorspace_REAL
+#define SDL_CopyFile SDL_CopyFile_REAL
 #define SDL_CopyProperties SDL_CopyProperties_REAL
+#define SDL_CopyStorageFile SDL_CopyStorageFile_REAL
 #define SDL_CreateAudioStream SDL_CreateAudioStream_REAL
 #define SDL_CreateColorCursor SDL_CreateColorCursor_REAL
 #define SDL_CreateCondition SDL_CreateCondition_REAL
