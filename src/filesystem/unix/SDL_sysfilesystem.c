@@ -74,18 +74,19 @@ static char *readSymLink(const char *path)
 #ifdef SDL_PLATFORM_OPENBSD
 static char *search_path_for_binary(const char *bin)
 {
-    char *envr = SDL_getenv("PATH");
+    const char *envr_real = SDL_getenv("PATH");
+    char *envr;
     size_t alloc_size;
     char *exe = NULL;
     char *start = envr;
     char *ptr;
 
-    if (!envr) {
+    if (!envr_real) {
         SDL_SetError("No $PATH set");
         return NULL;
     }
 
-    envr = SDL_strdup(envr);
+    envr = SDL_strdup(envr_real);
     if (!envr) {
         return NULL;
     }
@@ -358,7 +359,8 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fallback)
 {
   FILE *file;
-  char *home_dir, *config_home, *config_file;
+  const char *home_dir, *config_home;
+  char *config_file;
   char buffer[512];
   char *user_dir;
   char *p, *d;
@@ -486,7 +488,8 @@ error2:
 
 static char *xdg_user_dir_lookup (const char *type)
 {
-    char *dir, *home_dir, *user_dir;
+    const char *home_dir;
+    char *dir, *user_dir;
 
     dir = xdg_user_dir_lookup_with_fallback(type, NULL);
     if (dir)

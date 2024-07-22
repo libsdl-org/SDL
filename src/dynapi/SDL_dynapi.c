@@ -461,15 +461,16 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 static void SDL_InitDynamicAPILocked(void)
 {
-    char *libname = SDL_getenv_REAL(SDL_DYNAMIC_API_ENVVAR);
+    const char *libname = SDL_getenv_REAL(SDL_DYNAMIC_API_ENVVAR);
     SDL_DYNAPI_ENTRYFN entry = NULL; /* funcs from here by default. */
     SDL_bool use_internal = SDL_TRUE;
 
     if (libname) {
         while (*libname && !entry) {
-            char *ptr = libname;
+            // This is evil, but we're not making any permanent changes...
+            char *ptr = (char *)libname;
             while (SDL_TRUE) {
-                const char ch = *ptr;
+                char ch = *ptr;
                 if ((ch == ',') || (ch == '\0')) {
                     *ptr = '\0';
                     entry = (SDL_DYNAPI_ENTRYFN)get_sdlapi_entry(libname, "SDL_DYNAPI_entry");

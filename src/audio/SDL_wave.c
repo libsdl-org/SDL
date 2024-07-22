@@ -1774,7 +1774,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
     int result;
     Uint32 chunkcount = 0;
     Uint32 chunkcountlimit = 10000;
-    char *envchunkcountlimit;
+    const char *envchunkcountlimit;
     Sint64 RIFFstart, RIFFend, lastchunkpos;
     SDL_bool RIFFlengthknown = SDL_FALSE;
     WaveFormat *format = &file->format;

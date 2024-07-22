@@ -30,28 +30,19 @@
 #include "../core/android/SDL_android.h"
 #endif
 
-#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)) && (!defined(HAVE_SETENV) || !defined(HAVE_GETENV))
-/* Note this isn't thread-safe! */
-static char *SDL_envmem = NULL;
-static size_t SDL_envmemlen = 0;
-
-void SDL_FreeEnvironmentMemory(void)
-{
-    if (SDL_envmem) {
-        SDL_free(SDL_envmem);
-        SDL_envmem = NULL;
-        SDL_envmemlen = 0;
-    }
-}
+#if (defined(HAVE_GETENV) && defined(HAVE_SETENV)) || \
+    (defined(HAVE_GETENV) && defined(HAVE_PUTENV) && defined(HAVE_UNSETENV))
+#define HAVE_LIBC_ENVIRONMENT
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#define HAVE_WIN32_ENVIRONMENT
 #else
-void SDL_FreeEnvironmentMemory(void)
-{
-}
+#define HAVE_LOCAL_ENVIRONMENT
 #endif
 
 /* Put a variable into the environment */
 /* Note: Name may not contain a '=' character. (Reference: http://www.unix.com/man-page/Linux/3/setenv/) */
-#ifdef HAVE_SETENV
+#ifdef HAVE_LIBC_ENVIRONMENT
+#if defined(HAVE_SETENV)
 int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
@@ -61,7 +52,34 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
 
     return setenv(name, value, overwrite);
 }
-#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+/* We have a real environment table, but no real setenv? Fake it w/ putenv. */
+#else
+int SDL_setenv(const char *name, const char *value, int overwrite)
+{
+    char *new_variable;
+
+    /* Input validation */
+    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
+        return -1;
+    }
+
+    if (getenv(name) != NULL) {
+        if (overwrite) {
+            unsetenv(name);
+        } else {
+            return 0; /* leave the existing one there. */
+        }
+    }
+
+    /* This leaks. Sorry. Get a better OS so we don't have to do this. */
+    SDL_aprintf(&new_variable, "%s=%s", name, value);
+    if (!new_variable) {
+        return -1;
+    }
+    return putenv(new_variable);
+}
+#endif
+#elif defined(HAVE_WIN32_ENVIRONMENT)
 int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     /* Input validation */
@@ -79,38 +97,11 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
     }
     return 0;
 }
-/* We have a real environment table, but no real setenv? Fake it w/ putenv. */
-#elif (defined(HAVE_GETENV) && defined(HAVE_PUTENV) && defined(HAVE_UNSETENV) && !defined(HAVE_SETENV))
-int SDL_setenv(const char *name, const char *value, int overwrite)
-{
-    size_t len;
-    char *new_variable;
-
-    /* Input validation */
-    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL || !value) {
-        return -1;
-    }
-
-    if (getenv(name) != NULL) {
-        if (overwrite) {
-            unsetenv(name);
-        } else {
-            return 0; /* leave the existing one there. */
-        }
-    }
-
-    /* This leaks. Sorry. Get a better OS so we don't have to do this. */
-    len = SDL_strlen(name) + SDL_strlen(value) + 2;
-    new_variable = (char *)SDL_malloc(len);
-    if (!new_variable) {
-        return -1;
-    }
-
-    SDL_snprintf(new_variable, len, "%s=%s", name, value);
-    return putenv(new_variable);
-}
 #else /* roll our own */
-static char **SDL_env = (char **)0;
+
+/* We'll leak this, as environment variables are intended to persist past SDL_Quit() */
+static char **SDL_env;
+
 int SDL_setenv(const char *name, const char *value, int overwrite)
 {
     int added;
@@ -172,11 +163,11 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
     }
     return added ? 0 : -1;
 }
-#endif
+#endif // HAVE_LIBC_ENVIRONMENT
 
 /* Retrieve a variable named "name" from the environment */
-#ifdef HAVE_GETENV
-char *SDL_getenv(const char *name)
+#ifdef HAVE_LIBC_ENVIRONMENT
+const char *SDL_getenv(const char *name)
 {
 #ifdef SDL_PLATFORM_ANDROID
     /* Make sure variables from the application manifest are available */
@@ -190,34 +181,35 @@ char *SDL_getenv(const char *name)
 
     return getenv(name);
 }
-#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-char *SDL_getenv(const char *name)
+#elif defined(HAVE_WIN32_ENVIRONMENT)
+const char *SDL_getenv(const char *name)
 {
-    size_t bufferlen;
+    DWORD length, maxlen = 0;
+    char *retval = NULL;
 
     /* Input validation */
     if (!name || *name == '\0') {
         return NULL;
     }
 
-    bufferlen =
-        GetEnvironmentVariableA(name, SDL_envmem, (DWORD)SDL_envmemlen);
-    if (bufferlen == 0) {
-        return NULL;
-    }
-    if (bufferlen > SDL_envmemlen) {
-        char *newmem = (char *)SDL_realloc(SDL_envmem, bufferlen);
-        if (!newmem) {
-            return NULL;
+    for ( ; ; ) {
+        length = GetEnvironmentVariableA(name, retval, maxlen);
+
+        if (length > maxlen) {
+            char *string = (char *)SDL_realloc(retval, length);
+            if (!string)  {
+                return NULL;
+            }
+            retval = string;
+            maxlen = length;
+        } else {
+            break;
         }
-        SDL_envmem = newmem;
-        SDL_envmemlen = bufferlen;
-        GetEnvironmentVariableA(name, SDL_envmem, (DWORD)SDL_envmemlen);
     }
-    return SDL_envmem;
+    return SDL_FreeLater(retval);
 }
 #else
-char *SDL_getenv(const char *name)
+const char *SDL_getenv(const char *name)
 {
     size_t len, i;
     char *value;
@@ -239,4 +231,4 @@ char *SDL_getenv(const char *name)
     }
     return value;
 }
-#endif
+#endif // HAVE_LIBC_ENVIRONMENT

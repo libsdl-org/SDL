@@ -35,9 +35,9 @@
 int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
-    char *override = SDL_getenv("VITA_MODULE_PATH");
-    char *skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
-    char *default_path = "app0:module";
+    const char *override = SDL_getenv("VITA_MODULE_PATH");
+    const char *skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
+    const char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
     if (!skip_init) { // we don't care about actual value

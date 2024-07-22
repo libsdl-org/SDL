@@ -546,7 +546,7 @@ static int stdlib_getsetenv(void *arg)
     char *value2;
     char *expected;
     int overwrite;
-    char *text;
+    const char *text;
 
     /* Create a random name. This tests SDL_getenv, since we need to */
     /* make sure the variable is not set yet (it shouldn't). */
