@@ -1432,11 +1432,14 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
 /**
  * Claim ownership of temporary memory.
  *
- * Some functions return temporary memory which SDL will automatically clean up later. Normally you won't save these results beyond the current function scope, but if you want to use them later, you can call this function to get a pointer that the application owns, and should be freed using SDL_free().
+ * Some functions return temporary memory which SDL will automatically clean
+ * up later. Normally you won't save these results beyond the current function
+ * scope, but if you want to use them later, you can call this function to get
+ * a pointer that the application owns, and should be freed using SDL_free().
  *
- * If the memory isn't temporary, or it was returned from an SDL function called on a different thread, this
- * will return NULL, and the application does not have ownership of the
- * memory.
+ * If the memory isn't temporary, or it was returned from an SDL function
+ * called on a different thread, this will return NULL, and the application
+ * does not have ownership of the memory.
  *
  * \param mem a pointer allocated with SDL_AllocateTemporaryMemory().
  * \returns a pointer to the memory now owned by the application, which must
