@@ -146,7 +146,6 @@ SDL3_0.0.0 {
     SDL_GL_SetSwapInterval;
     SDL_GL_SwapWindow;
     SDL_GL_UnloadLibrary;
-    SDL_GUIDFromString;
     SDL_GUIDToString;
     SDL_GamepadConnected;
     SDL_GamepadEventsEnabled;
@@ -816,6 +815,7 @@ SDL3_0.0.0 {
     SDL_StopHapticRumble;
     SDL_StopTextInput;
     SDL_StorageReady;
+    SDL_StringToGUID;
     SDL_SurfaceHasColorKey;
     SDL_SurfaceHasRLE;
     SDL_SyncWindow;

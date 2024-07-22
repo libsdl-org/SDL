@@ -266,6 +266,9 @@
 #define SDL_INIT_GAMECONTROLLER SDL_INIT_GAMEPAD
 #define SDL_IsGameController SDL_IsGamepad
 
+/* ##SDL_guid.h */
+#define SDL_GUIDFromString SDL_StringToGUID
+
 /* ##SDL_haptic.h */
 #define SDL_HapticClose SDL_CloseHaptic
 #define SDL_HapticDestroyEffect SDL_DestroyHapticEffect
@@ -317,7 +320,7 @@
 #define SDL_JoystickGetButton SDL_GetJoystickButton
 #define SDL_JoystickGetFirmwareVersion SDL_GetJoystickFirmwareVersion
 #define SDL_JoystickGetGUID SDL_GetJoystickGUID
-#define SDL_JoystickGetGUIDFromString SDL_GUIDFromString
+#define SDL_JoystickGetGUIDFromString SDL_StringToGUID
 #define SDL_JoystickGetHat SDL_GetJoystickHat
 #define SDL_JoystickGetPlayerIndex SDL_GetJoystickPlayerIndex
 #define SDL_JoystickGetProduct SDL_GetJoystickProduct
@@ -881,6 +884,9 @@
 #define SDL_GameControllerUpdate SDL_GameControllerUpdate_renamed_SDL_UpdateGamepads
 #define SDL_INIT_GAMECONTROLLER SDL_INIT_GAMECONTROLLER_renamed_SDL_INIT_GAMEPAD
 #define SDL_IsGameController SDL_IsGameController_renamed_SDL_IsGamepad
+
+/* ##SDL_guid.h */
+#define SDL_GUIDFromString SDL_GUIDFromString_renamed_SDL_StringToGUID
 
 /* ##SDL_haptic.h */
 #define SDL_HapticClose SDL_HapticClose_renamed_SDL_CloseHaptic

@@ -63,7 +63,7 @@ static unsigned char nibble(unsigned char c)
 }
 
 /* convert the string version of a guid to the struct */
-SDL_GUID SDL_GUIDFromString(const char *pchGUID)
+SDL_GUID SDL_StringToGUID(const char *pchGUID)
 {
     SDL_GUID guid;
     int maxoutputbytes = sizeof(guid);

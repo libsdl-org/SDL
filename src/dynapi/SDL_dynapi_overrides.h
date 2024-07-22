@@ -171,7 +171,6 @@
 #define SDL_GL_SetSwapInterval SDL_GL_SetSwapInterval_REAL
 #define SDL_GL_SwapWindow SDL_GL_SwapWindow_REAL
 #define SDL_GL_UnloadLibrary SDL_GL_UnloadLibrary_REAL
-#define SDL_GUIDFromString SDL_GUIDFromString_REAL
 #define SDL_GUIDToString SDL_GUIDToString_REAL
 #define SDL_GamepadConnected SDL_GamepadConnected_REAL
 #define SDL_GamepadEventsEnabled SDL_GamepadEventsEnabled_REAL
@@ -841,6 +840,7 @@
 #define SDL_StopHapticRumble SDL_StopHapticRumble_REAL
 #define SDL_StopTextInput SDL_StopTextInput_REAL
 #define SDL_StorageReady SDL_StorageReady_REAL
+#define SDL_StringToGUID SDL_StringToGUID_REAL
 #define SDL_SurfaceHasColorKey SDL_SurfaceHasColorKey_REAL
 #define SDL_SurfaceHasRLE SDL_SurfaceHasRLE_REAL
 #define SDL_SyncWindow SDL_SyncWindow_REAL
