@@ -429,7 +429,7 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  *
  * On KMS/DRM:
  *
- * - `SDL_PROP_DISPLAY_KMSDRM_ORIENTATION_NUMBER`: the "panel orientation"
+ * - `SDL_PROP_DISPLAY_KMSDRM_PANEL_ORIENTATION_NUMBER`: the "panel orientation"
  *   property for the display in degrees of clockwise rotation. Note that this
  *   is provided only as a hint, and the application is responsible for any
  *   coordinate transformations needed to conform to the requested display
