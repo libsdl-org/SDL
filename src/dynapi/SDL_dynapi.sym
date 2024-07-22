@@ -130,7 +130,6 @@ SDL3_0.0.0 {
     SDL_FlushEvent;
     SDL_FlushEvents;
     SDL_FlushRenderer;
-    SDL_FreeTemporaryMemory;
     SDL_GDKSuspendComplete;
     SDL_GL_CreateContext;
     SDL_GL_DestroyContext;
