@@ -1426,41 +1426,17 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ClaimTemporaryMemory
- * \sa SDL_FreeTemporaryMemory
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
 
 /**
  * Claim ownership of temporary memory.
  *
- * This function changes ownership of temporary memory allocated for events
- * and functions that return temporary memory. If this function succeeds, the
- * memory will no longer be automatically freed by SDL, it must be freed using
- * SDL_free() by the application.
+ * Some functions return temporary memory which SDL will automatically clean up later. Normally you won't save these results beyond the current function scope, but if you want to use them later, you can call this function to get a pointer that the application owns, and should be freed using SDL_free().
  *
- * If the memory isn't temporary, or it was allocated on a different thread,
- * or if it is associated with an event currently in the event queue, this
+ * If the memory isn't temporary, or it was returned from an SDL function called on a different thread, this
  * will return NULL, and the application does not have ownership of the
  * memory.
- *
- * Essentially you have 3 options for handling temporary memory:
- *
- * 1. After calling a function that returns temporary memory, pass that
- * pointer to SDL_FreeTemporaryMemory(). This gives you full control over the
- * management of allocations.
- *
- * 2. On your main thread, temporary memory is automatically cleaned up when
- * processing events. On other threads, you can periodically call
- * SDL_FreeTemporaryMemory(NULL) to clean up any temporary memory that has
- * accumulated.
- *
- * 3. After calling a function that returns temporary memory, pass that
- * pointer to SDL_ClaimTemporaryMemory(). This transfers ownership of the
- * memory to your application and you can pass it to other threads or save it
- * indefinitely, calling SDL_free() to free it when you're ready.
- *
- * Any of the three options are valid, and you can mix and match them to suit
- * your application.
  *
  * \param mem a pointer allocated with SDL_AllocateTemporaryMemory().
  * \returns a pointer to the memory now owned by the application, which must
@@ -1475,34 +1451,6 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
  * \sa SDL_free
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_ClaimTemporaryMemory(const void *mem);
-
-/**
- * Free temporary memory.
- *
- * This function frees temporary memory allocated for events and functions
- * that return temporary memory. This memory is local to the thread that
- * creates it and is automatically freed for the main thread when processing
- * events. For other threads you may call this function periodically to free
- * any temporary memory created by that thread.
- *
- * You can free a specific pointer, to provide more fine grained control over
- * memory management, or you can pass NULL to free all pending temporary
- * allocations.
- *
- * All temporary memory is freed on the main thread in SDL_Quit() and for
- * other threads when they call SDL_CleanupTLS(), which is automatically
- * called at cleanup time for threads created using SDL_CreateThread().
- *
- * \param mem a pointer allocated with SDL_AllocateTemporaryMemory(), or NULL
- *            to free all pending temporary allocations.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_AllocateTemporaryMemory
- */
-extern SDL_DECLSPEC void SDLCALL SDL_FreeTemporaryMemory(const void *mem);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

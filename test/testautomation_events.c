@@ -197,23 +197,8 @@ static int events_temporaryMemory(void *arg)
         tmp = SDL_ClaimTemporaryMemory(mem);
         SDLTest_AssertCheck(tmp == NULL, "SDL_ClaimTemporaryMemory() can't claim memory twice");
 
-        /* Verify that freeing the original pointer does nothing */
-        SDL_FreeTemporaryMemory(mem);
-        SDLTest_AssertCheck(*(char *)mem == '1', "SDL_FreeTemporaryMemory() on claimed memory has no effect");
-
         /* Clean up */
         SDL_free(claimed);
-    }
-
-    {
-        /* Create and free event memory */
-        mem = SDL_AllocateTemporaryMemory(1);
-        SDLTest_AssertCheck(mem != NULL, "SDL_AllocateTemporaryMemory()");
-        *(char *)mem = '1';
-
-        SDL_FreeTemporaryMemory(mem);
-        claimed = SDL_ClaimTemporaryMemory(mem);
-        SDLTest_AssertCheck(claimed == NULL, "SDL_ClaimTemporaryMemory() can't claim memory after it's been freed");
     }
 
     {
