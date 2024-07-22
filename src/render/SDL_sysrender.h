@@ -73,7 +73,7 @@ struct SDL_Texture
     float SDR_white_point;      /**< The SDR white point for this content */
     float HDR_headroom;         /**< The HDR headroom needed by this content */
     SDL_PixelFormat format;     /**< The pixel format of the texture */
-    int access;                 /**< SDL_TextureAccess */
+    SDL_TextureAccess access;   /**< The texture access mode */
     int w;                      /**< The width of the texture */
     int h;                      /**< The height of the texture */
     SDL_BlendMode blendMode;    /**< The texture blend mode */

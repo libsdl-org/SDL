@@ -515,7 +515,7 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 
     psp_texture->pitch = psp_texture->textureWidth * SDL_BYTESPERPIXEL(texture->format);
     psp_texture->size = psp_texture->textureHeight * psp_texture->pitch;
-    if (texture->access & SDL_TEXTUREACCESS_TARGET) {
+    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         if (TextureSpillTargetsForSpace(renderer->internal, psp_texture->size) < 0) {
             SDL_free(psp_texture);
             return -1;
