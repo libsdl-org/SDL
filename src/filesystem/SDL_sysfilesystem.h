@@ -30,6 +30,7 @@ extern char *SDL_SYS_GetUserFolder(SDL_Folder folder);
 int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata);
 int SDL_SYS_RemovePath(const char *path);
 int SDL_SYS_RenamePath(const char *oldpath, const char *newpath);
+int SDL_SYS_CopyFile(const char *oldpath, const char *newpath);
 int SDL_SYS_CreateDirectory(const char *path);
 int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info);
 

@@ -79,6 +79,73 @@ int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
     return 0;
 }
 
+int SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
+{
+    char *buffer = NULL;
+    char *tmppath = NULL;
+    SDL_IOStream *input = NULL;
+    SDL_IOStream *output = NULL;
+    const size_t maxlen = 4096;
+    size_t len;
+    int retval = -1;
+
+    if (SDL_asprintf(&tmppath, "%s.tmp", newpath) < 0) {
+        goto done;
+    }
+
+    input = SDL_IOFromFile(oldpath, "rb");
+    if (!input) {
+        goto done;
+    }
+
+    output = SDL_IOFromFile(tmppath, "wb");
+    if (!output) {
+        goto done;
+    }
+
+    buffer = (char *)SDL_malloc(maxlen);
+    if (!buffer) {
+        goto done;
+    }
+
+    while ((len = SDL_ReadIO(input, buffer, maxlen)) > 0) {
+        if (SDL_WriteIO(output, buffer, len) < len) {
+            goto done;
+        }
+    }
+    if (SDL_GetIOStatus(input) != SDL_IO_STATUS_EOF) {
+        goto done;
+    }
+
+    SDL_CloseIO(input);
+    input = NULL;
+
+    if (SDL_CloseIO(output) < 0) {
+        goto done;
+    }
+    output = NULL;
+
+    if (SDL_RenamePath(tmppath, newpath) < 0) {
+        SDL_RemovePath(tmppath);
+        goto done;
+    }
+
+    retval = 0;
+
+done:
+    if (output) {
+        SDL_CloseIO(output);
+        SDL_RemovePath(tmppath);
+    }
+    if (input) {
+        SDL_CloseIO(input);
+    }
+    SDL_free(tmppath);
+    SDL_free(buffer);
+
+    return retval;
+}
+
 int SDL_SYS_CreateDirectory(const char *path)
 {
     const int rc = mkdir(path, 0770);

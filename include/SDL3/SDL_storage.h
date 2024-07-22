@@ -83,6 +83,9 @@ typedef struct SDL_StorageInterface
     /* Rename a path, optional for read-only storage */
     int (SDLCALL *rename)(void *userdata, const char *oldpath, const char *newpath);
 
+    /* Copy a file, optional for read-only storage */
+    int (SDLCALL *copy)(void *userdata, const char *oldpath, const char *newpath);
+
     /* Get the space remaining, optional for read-only storage */
     Uint64 (SDLCALL *space_remaining)(void *userdata);
 } SDL_StorageInterface;
@@ -336,6 +339,21 @@ extern SDL_DECLSPEC int SDLCALL SDL_RemoveStoragePath(SDL_Storage *storage, cons
  * \sa SDL_StorageReady
  */
 extern SDL_DECLSPEC int SDLCALL SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const char *newpath);
+
+/**
+ * Copy a file in a writable storage container.
+ *
+ * \param storage a storage container.
+ * \param oldpath the old path.
+ * \param newpath the new path.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_StorageReady
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_CopyStorageFile(SDL_Storage *storage, const char *oldpath, const char *newpath);
 
 /**
  * Get information about a filesystem path in a storage container.

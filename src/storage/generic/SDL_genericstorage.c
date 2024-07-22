@@ -160,6 +160,21 @@ static int GENERIC_RenameStoragePath(void *userdata, const char *oldpath, const 
     return result;
 }
 
+static int GENERIC_CopyStorageFile(void *userdata, const char *oldpath, const char *newpath)
+{
+    int result = -1;
+
+    char *fulloldpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, oldpath);
+    char *fullnewpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, newpath);
+    if (fulloldpath && fullnewpath) {
+        result = SDL_CopyFile(fulloldpath, fullnewpath);
+    }
+    SDL_free(fulloldpath);
+    SDL_free(fullnewpath);
+
+    return result;
+}
+
 static Uint64 GENERIC_GetStorageSpaceRemaining(void *userdata)
 {
     /* TODO: There's totally a way to query a folder root's quota... */
@@ -176,6 +191,7 @@ static const SDL_StorageInterface GENERIC_title_iface = {
     NULL,   /* mkdir */
     NULL,   /* remove */
     NULL,   /* rename */
+    NULL,   /* copy */
     NULL    /* space_remaining */
 };
 
@@ -219,6 +235,7 @@ static const SDL_StorageInterface GENERIC_user_iface = {
     GENERIC_CreateStorageDirectory,
     GENERIC_RemoveStoragePath,
     GENERIC_RenameStoragePath,
+    GENERIC_CopyStorageFile,
     GENERIC_GetStorageSpaceRemaining
 };
 
@@ -257,6 +274,7 @@ static const SDL_StorageInterface GENERIC_file_iface = {
     GENERIC_CreateStorageDirectory,
     GENERIC_RemoveStoragePath,
     GENERIC_RenameStoragePath,
+    GENERIC_CopyStorageFile,
     GENERIC_GetStorageSpaceRemaining
 };
 

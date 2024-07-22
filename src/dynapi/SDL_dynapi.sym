@@ -55,7 +55,9 @@ SDL3_0.0.0 {
     SDL_ConvertPixelsAndColorspace;
     SDL_ConvertSurface;
     SDL_ConvertSurfaceAndColorspace;
+    SDL_CopyFile;
     SDL_CopyProperties;
+    SDL_CopyStorageFile;
     SDL_CreateAudioStream;
     SDL_CreateColorCursor;
     SDL_CreateCondition;

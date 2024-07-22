@@ -131,6 +131,25 @@ int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
     return !rc ? WIN_SetError("Couldn't rename path") : 0;
 }
 
+int SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
+{
+    WCHAR *woldpath = WIN_UTF8ToStringW(oldpath);
+    if (!woldpath) {
+        return -1;
+    }
+
+    WCHAR *wnewpath = WIN_UTF8ToStringW(newpath);
+    if (!wnewpath) {
+        SDL_free(woldpath);
+        return -1;
+    }
+
+    const BOOL rc = CopyFileW(woldpath, wnewpath, TRUE);
+    SDL_free(wnewpath);
+    SDL_free(woldpath);
+    return !rc ? WIN_SetError("Couldn't copy path") : 0;
+}
+
 int SDL_SYS_CreateDirectory(const char *path)
 {
     WCHAR *wpath = WIN_UTF8ToStringW(path);

@@ -43,6 +43,11 @@ int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
     return SDL_Unsupported();
 }
 
+int SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
+{
+    return SDL_Unsupported();
+}
+
 int SDL_SYS_CreateDirectory(const char *path)
 {
     return SDL_Unsupported();
