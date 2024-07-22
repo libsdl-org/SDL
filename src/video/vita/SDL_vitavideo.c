@@ -170,7 +170,7 @@ int VITA_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 #ifdef SDL_VIDEO_VITA_PVR
-    char *res = SDL_getenv("VITA_RESOLUTION");
+    const char *res = SDL_getenv("VITA_RESOLUTION");
 #endif
     SDL_zero(mode);
 

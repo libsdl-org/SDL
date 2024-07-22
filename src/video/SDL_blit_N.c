@@ -878,7 +878,7 @@ static enum blit_features GetBlitFeatures(void)
     static enum blit_features features = -1;
     if (features == (enum blit_features) - 1) {
         /* Provide an override for testing .. */
-        char *override = SDL_getenv("SDL_ALTIVEC_BLIT_FEATURES");
+        const char *override = SDL_getenv("SDL_ALTIVEC_BLIT_FEATURES");
         if (override) {
             unsigned int features_as_uint = 0;
             SDL_sscanf(override, "%u", &features_as_uint);

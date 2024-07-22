@@ -662,7 +662,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_aligned_free(void *mem);
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 
-extern SDL_DECLSPEC char * SDLCALL SDL_getenv(const char *name);
+extern SDL_DECLSPEC const char * SDLCALL SDL_getenv(const char *name);
 extern SDL_DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int overwrite);
 
 typedef int (SDLCALL *SDL_CompareCallback)(const void *a, const void *b);

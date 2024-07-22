@@ -49,7 +49,6 @@
 #include "joystick/SDL_joystick_c.h"
 #include "render/SDL_sysrender.h"
 #include "sensor/SDL_sensor_c.h"
-#include "stdlib/SDL_getenv_c.h"
 #include "thread/SDL_thread_c.h"
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_video_c.h"
@@ -584,8 +583,6 @@ void SDL_Quit(void)
      * and the list of initialized subsystems.
      */
     SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
-
-    SDL_FreeEnvironmentMemory();
 
     SDL_QuitMainThread();
 

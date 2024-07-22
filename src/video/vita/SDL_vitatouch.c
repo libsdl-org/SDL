@@ -41,8 +41,8 @@ struct
     float range;
 } force_info[SCE_TOUCH_PORT_MAX_NUM];
 
-char *disableFrontPoll = NULL;
-char *disableBackPoll = NULL;
+const char *disableFrontPoll = NULL;
+const char *disableBackPoll = NULL;
 
 void VITA_InitTouch(void)
 {

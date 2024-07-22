@@ -77,7 +77,7 @@ static int CreateTempFD(off_t size)
 #endif
     {
         static const char template[] = "/sdl-shared-XXXXXX";
-        char *xdg_path;
+        const char *xdg_path;
         char tmp_path[PATH_MAX];
 
         xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
