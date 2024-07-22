@@ -287,7 +287,7 @@ typedef Uint32 SDL_AudioDeviceID;
  *
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK ((SDL_AudioDeviceID) 0xFFFFFFFF)
+#define SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK ((SDL_AudioDeviceID) 0xFFFFFFFFu)
 
 /**
  * A value used to request a default recording audio device.
@@ -298,7 +298,7 @@ typedef Uint32 SDL_AudioDeviceID;
  *
  * \since This macro is available since SDL 3.0.0.
  */
-#define SDL_AUDIO_DEVICE_DEFAULT_RECORDING ((SDL_AudioDeviceID) 0xFFFFFFFE)
+#define SDL_AUDIO_DEVICE_DEFAULT_RECORDING ((SDL_AudioDeviceID) 0xFFFFFFFEu)
 
 /**
  * Format specifier for audio data.
