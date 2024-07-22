@@ -2028,7 +2028,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     } else if (!SDL_strcasecmp(pchGUID, "xinput")) {
         is_xinput_mapping = SDL_TRUE;
     }
-    jGUID = SDL_GUIDFromString(pchGUID);
+    jGUID = SDL_StringToGUID(pchGUID);
     SDL_free(pchGUID);
 
     pGamepadMapping = SDL_PrivateAddMappingForGUID(jGUID, mappingString, &existing, priority);

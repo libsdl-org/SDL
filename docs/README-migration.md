@@ -698,6 +698,9 @@ functionality to your app and aid migration. That is located in the
 
 SDL_GUIDToString() returns a const pointer to the string representation of a GUID.
 
+The following functions have been renamed:
+* SDL_GUIDFromString() => SDL_StringToGUID()
+
 ## SDL_haptic.h
 
 Gamepads with simple rumble capability no longer show up in the SDL haptics interface, instead you should use SDL_RumbleGamepad().
@@ -872,7 +875,7 @@ The following functions have been renamed:
 * SDL_JoystickGetButton() => SDL_GetJoystickButton()
 * SDL_JoystickGetFirmwareVersion() => SDL_GetJoystickFirmwareVersion()
 * SDL_JoystickGetGUID() => SDL_GetJoystickGUID()
-* SDL_JoystickGetGUIDFromString() => SDL_GUIDFromString()
+* SDL_JoystickGetGUIDFromString() => SDL_StringToGUID()
 * SDL_JoystickGetHat() => SDL_GetJoystickHat()
 * SDL_JoystickGetPlayerIndex() => SDL_GetJoystickPlayerIndex()
 * SDL_JoystickGetProduct() => SDL_GetJoystickProduct()

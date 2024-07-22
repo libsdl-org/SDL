@@ -3581,3 +3581,8 @@ typedef SDL_JoystickGUID, SDL_GUID;
 @@
 - SDL_JoystickGUID
 + SDL_GUID
+@@
+@@
+- SDL_GUIDFromString
++ SDL_StringToGUID
+  (...)

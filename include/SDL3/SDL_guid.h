@@ -75,7 +75,7 @@ typedef struct SDL_GUID {
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GUIDFromString
+ * \sa SDL_StringToGUID
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GUIDToString(SDL_GUID guid);
 
@@ -93,7 +93,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GUIDToString(SDL_GUID guid);
  *
  * \sa SDL_GUIDToString
  */
-extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GUIDFromString(const char *pchGUID);
+extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_StringToGUID(const char *pchGUID);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
