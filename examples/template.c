@@ -16,6 +16,11 @@ static SDL_Renderer *renderer = NULL;
 /* This function runs once at startup. */
 int SDL_AppInit(void **appstate, int argc, char *argv[])
 {
+    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't initialize SDL!", SDL_GetError(), NULL);
+        return SDL_APP_FAILURE;
+    }
+
     if (SDL_CreateWindowAndRenderer("examples/renderer/clear", 640, 480, 0, &window, &renderer) == -1) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create window/renderer!", SDL_GetError(), NULL);
         return SDL_APP_FAILURE;
