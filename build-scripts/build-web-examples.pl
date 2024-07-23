@@ -82,8 +82,9 @@ sub handle_example_dir {
 
     my $dst = "$output_dir/$category/$example";
 
-    do_mkdir($dst);
     print("Building $category/$example ...\n");
+
+    do_mkdir($dst);
 
     # !!! FIXME: hardcoded SDL3 references, need to fix this for satellite libraries and SDL2.
     do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && emcc -s USE_SDL=0 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1gb -s ASSERTIONS=0 -o '$dst/index.js' '-I$examples_dir/../include' $files_str '$compile_dir/libSDL3.a'") == 0
@@ -137,6 +138,8 @@ sub handle_example_dir {
 sub handle_category_dir {
     my $category = shift;
 
+    print("Category $category ...\n");
+
     do_mkdir("$output_dir/$category");
 
     opendir(my $dh, "$examples_dir/$category") or die("Couldn't opendir '$examples_dir/$category': $!\n");
@@ -163,11 +166,14 @@ foreach (@ARGV) {
 
 usage() if not defined $output_dir;
 
-build_latest();
+print("Examples dir: $examples_dir\n");
+print("emsdk dir: $emsdk_dir\n");
+print("Compile dir: $compile_dir\n");
+print("Output dir: $output_dir\n");
 
 do_mkdir($output_dir);
 
-print("Examples dir: $examples_dir\n");
+build_latest();
 
 opendir(my $dh, $examples_dir) or die("Couldn't opendir '$examples_dir': $!\n");
 
