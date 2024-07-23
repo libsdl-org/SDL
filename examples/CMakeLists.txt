@@ -177,6 +177,7 @@ macro(add_sdl_example_executable TARGET)
 endmacro()
 
 add_sdl_example_executable(renderer-clear SOURCES renderer/01-clear/renderer-clear.c)
+add_sdl_example_executable(renderer-primitives SOURCES renderer/02-primitives/renderer-primitives.c)
 
 
 if(PSP)

@@ -35,6 +35,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
 /* This function runs once per frame, and is the heart of the program. */
 int SDL_AppIterate(void *appstate)
 {
+    return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 
 /* This function runs once at shutdown. */
