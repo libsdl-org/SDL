@@ -77,6 +77,7 @@ jobs:
         -DSDL_SHARED=ON `
         -DSDL_STATIC=ON `
         -DSDL_TESTS=ON `
+        -DSDL_EXAMPLES=ON \
         -DCMAKE_C_FLAGS="${{ matrix.platform.cppflags }}" `
         -DCMAKE_CXX_FLAGS="${{ matrix.platform.cppflags }}" `
         -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.platform.ldflags }}" `

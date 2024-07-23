@@ -80,6 +80,7 @@ jobs:
             -DSDL_WERROR=ON \
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
+            -DSDL_EXAMPLES=ON \
             -DSDL_CLANG_TIDY=ON \
             -DSDL_DISABLE_INSTALL_DOCS=OFF \
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \

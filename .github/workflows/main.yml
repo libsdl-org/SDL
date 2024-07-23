@@ -105,8 +105,9 @@ jobs:
           -DSDL_SHARED=ON \
           -DSDL_STATIC=ON \
           -DSDL_TESTS=ON \
-          -DSDL_WERROR=ON \
           -DSDL_INSTALL_TESTS=ON \
+          -DSDL_WERROR=ON \
+          -DSDL_EXAMPLES=ON \
           -DSDL_VENDOR_INFO="Github Workflow" \
           -DSDL_CLANG_TIDY=ON \
           -DSDL_DISABLE_INSTALL_DOCS=${{ !matrix.platform.no-perl }} \

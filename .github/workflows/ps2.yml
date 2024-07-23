@@ -24,6 +24,7 @@ jobs:
           -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
+          -DSDL_EXAMPLES=ON \
           -DSDL_DISABLE_INSTALL_DOCS=OFF \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release

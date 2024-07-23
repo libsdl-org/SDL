@@ -78,9 +78,9 @@ jobs:
         shell: bash
         run: |
           ${{ steps.tar.outputs.path }}/build-scripts/test-versioning.sh
-      - name: 'CMake (configure + build + tests)'
+      - name: 'CMake (configure + build + tests + examples)'
         run: |
-          cmake -S ${{ steps.tar.outputs.path }} -B /tmp/build -DSDL_TEST_LIBRARY=TRUE -DSDL_TESTS=TRUE
+          cmake -S ${{ steps.tar.outputs.path }} -B /tmp/build -DSDL_TEST_LIBRARY=TRUE -DSDL_TESTS=TRUE -DSDL_EXAMPLES=TRUE
           cmake --build /tmp/build --verbose
           ctest --test-dir /tmp/build --no-tests=error --output-on-failure
 

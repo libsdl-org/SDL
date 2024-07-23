@@ -24,10 +24,10 @@ jobs:
             -Wdeprecated -Wdev -Werror \
             -DSDL_SHARED=ON \
             -DSDL_STATIC=ON \
-            -DSDL_TESTS=ON \
             -DSDL_WERROR=OFF \
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
+            -DSDL_EXAMPLES=ON \
             -DSDL_DISABLE_INSTALL_DOCS=OFF \
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_BUILD_TYPE=Release \
