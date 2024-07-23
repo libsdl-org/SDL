@@ -176,7 +176,7 @@ macro(add_sdl_example_executable TARGET)
     target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endmacro()
 
-add_sdl_example_executable(renderer-clear SOURCES renderer/clear/renderer-clear.c)
+add_sdl_example_executable(renderer-clear SOURCES renderer/01-clear/renderer-clear.c)
 
 
 if(PSP)
