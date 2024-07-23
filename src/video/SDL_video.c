@@ -165,6 +165,7 @@ extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, SDL_bool stat
 
 static void SDL_CheckWindowDisplayChanged(SDL_Window *window);
 static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window);
+static void SDL_CheckWindowSafeAreaChanged(SDL_Window *window);
 
 /* Convenience functions for reading driver flags */
 static SDL_bool SDL_ModeSwitchingEmulated(SDL_VideoDevice *_this)
@@ -3789,6 +3790,7 @@ void SDL_OnWindowResized(SDL_Window *window)
 {
     SDL_CheckWindowDisplayChanged(window);
     SDL_CheckWindowPixelSizeChanged(window);
+    SDL_CheckWindowSafeAreaChanged(window);
 
     if ((window->flags & SDL_WINDOW_TRANSPARENT) && _this->UpdateWindowShape) {
         SDL_Surface *surface = (SDL_Surface *)SDL_GetPointerProperty(window->props, SDL_PROP_WINDOW_SHAPE_POINTER, NULL);
@@ -3811,6 +3813,43 @@ void SDL_CheckWindowPixelSizeChanged(SDL_Window *window)
 void SDL_OnWindowPixelSizeChanged(SDL_Window *window)
 {
     window->surface_valid = SDL_FALSE;
+}
+
+static void SDL_CheckWindowSafeAreaChanged(SDL_Window *window)
+{
+    SDL_Rect rect;
+
+    rect.x = window->safe_inset_left;
+    rect.y = window->safe_inset_top;
+    rect.w = window->w - (window->safe_inset_right + window->safe_inset_left);
+    rect.h = window->h - (window->safe_inset_top + window->safe_inset_bottom);
+    if (SDL_memcmp(&rect, &window->safe_rect, sizeof(rect)) != 0) {
+        SDL_copyp(&window->safe_rect, &rect);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SAFE_AREA_CHANGED, 0, 0);
+    }
+}
+
+void SDL_SetWindowSafeAreaInsets(SDL_Window *window, int left, int right, int top, int bottom)
+{
+    window->safe_inset_left = left;
+    window->safe_inset_right = right;
+    window->safe_inset_top = top;
+    window->safe_inset_bottom = bottom;
+    SDL_CheckWindowSafeAreaChanged(window);
+}
+
+int SDL_GetWindowSafeArea(SDL_Window *window, SDL_Rect *rect)
+{
+    if (rect) {
+        SDL_zerop(rect);
+    }
+
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (rect) {
+        SDL_copyp(rect, &window->safe_rect);
+    }
+    return 0;
 }
 
 void SDL_OnWindowMinimized(SDL_Window *window)

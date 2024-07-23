@@ -509,6 +509,7 @@
 #define SDL_GetWindowPixelFormat SDL_GetWindowPixelFormat_REAL
 #define SDL_GetWindowPosition SDL_GetWindowPosition_REAL
 #define SDL_GetWindowProperties SDL_GetWindowProperties_REAL
+#define SDL_GetWindowSafeArea SDL_GetWindowSafeArea_REAL
 #define SDL_GetWindowSize SDL_GetWindowSize_REAL
 #define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL
 #define SDL_GetWindowSurface SDL_GetWindowSurface_REAL

@@ -193,6 +193,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         if (windowevent == SDL_EVENT_WINDOW_MOVED ||
             windowevent == SDL_EVENT_WINDOW_RESIZED ||
             windowevent == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED ||
+            windowevent == SDL_EVENT_WINDOW_SAFE_AREA_CHANGED ||
             windowevent == SDL_EVENT_WINDOW_EXPOSED ||
             windowevent == SDL_EVENT_WINDOW_OCCLUDED) {
             SDL_FilterEvents(RemoveSupercededWindowEvents, &event);

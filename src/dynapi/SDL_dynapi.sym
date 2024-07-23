@@ -484,6 +484,7 @@ SDL3_0.0.0 {
     SDL_GetWindowPixelFormat;
     SDL_GetWindowPosition;
     SDL_GetWindowProperties;
+    SDL_GetWindowSafeArea;
     SDL_GetWindowSize;
     SDL_GetWindowSizeInPixels;
     SDL_GetWindowSurface;

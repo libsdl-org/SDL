@@ -368,6 +368,18 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     }
 }
 
+- (void)safeAreaInsetsDidChange
+{
+    // Update the safe area insets
+    if (@available(iOS 11.0, tvOS 11.0, *)) {
+        SDL_SetWindowSafeAreaInsets(sdlwindow,
+                                    (int)SDL_ceilf(self.safeAreaInsets.left),
+                                    (int)SDL_ceilf(self.safeAreaInsets.right),
+                                    (int)SDL_ceilf(self.safeAreaInsets.top),
+                                    (int)SDL_ceilf(self.safeAreaInsets.bottom));
+    }
+}
+
 #if defined(SDL_PLATFORM_TVOS) || defined(__IPHONE_9_1)
 - (SDL_Scancode)scancodeFromPress:(UIPress *)press
 {

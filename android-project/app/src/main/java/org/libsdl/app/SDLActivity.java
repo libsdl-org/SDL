@@ -918,6 +918,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                                 SDLActivity.mFullscreenModeActive = false;
                             }
+                            window.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
                         }
                     } else {
                         Log.e(TAG, "error handling message, getContext() returned no Activity");
@@ -1057,6 +1058,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeSetenv(String name, String value);
     public static native void nativeSetNaturalOrientation(int orientation);
     public static native void onNativeRotationChanged(int rotation);
+    public static native void onNativeInsetsChanged(int left, int right, int top, int bottom);
     public static native void nativeAddTouch(int touchId, String name);
     public static native void nativePermissionResult(int requestCode, boolean result);
     public static native void onNativeLocaleChanged();
