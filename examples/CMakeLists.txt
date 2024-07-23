@@ -178,6 +178,7 @@ endmacro()
 
 add_sdl_example_executable(renderer-clear SOURCES renderer/01-clear/renderer-clear.c)
 add_sdl_example_executable(renderer-primitives SOURCES renderer/02-primitives/renderer-primitives.c)
+add_sdl_example_executable(audio-simple-playback SOURCES audio/01-simple-playback/simple-playback.c)
 
 
 if(PSP)
