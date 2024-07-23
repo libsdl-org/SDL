@@ -27,7 +27,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     /* we don't _need_ a window for audio-only things but it's good policy to have one. */
-    if (SDL_CreateWindowAndRenderer("examples/renderer/clear", 640, 480, 0, &window, &renderer) == -1) {
+    if (SDL_CreateWindowAndRenderer("examples/audio/simple-playback", 640, 480, 0, &window, &renderer) == -1) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create window/renderer!", SDL_GetError(), NULL);
         return SDL_APP_FAILURE;
     }
