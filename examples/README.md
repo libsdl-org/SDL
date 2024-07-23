@@ -33,7 +33,7 @@ docs/README-main-functions.md (or view that page on the web on
 
 ## I would like to build and run these examples myself.
 
-When you build SDL with CMake, you can add `-DSDL_BUILD_EXAMPLES=On` to the
+When you build SDL with CMake, you can add `-DSDL_EXAMPLES=On` to the
 CMake command line. When you build SDL, these examples will be built with it.
 
 But most of these can just be built as a single .c file, as long as you point

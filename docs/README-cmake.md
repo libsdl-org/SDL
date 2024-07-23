@@ -44,6 +44,14 @@ cmake -S ~/sdl -B ~/build -DSDL_TEST_LIBRARY=ON -DSDL_TESTS=ON
 ```
 and then building normally. In this example, the test programs will be built and can be run from `~/build/tests/`.
 
+### Building SDL examples
+
+You can build the SDL example programs by adding `-DSDL_EXAMPLES=ON` to the first cmake command above:
+```sh
+cmake -S ~/sdl -B ~/build -DSDL_EXAMPLES=ON
+```
+and then building normally. In this example, the example programs will be built and can be run from `~/build/examples/`.
+
 ## Including SDL in your project
 
 SDL can be included in your project in 2 major ways:

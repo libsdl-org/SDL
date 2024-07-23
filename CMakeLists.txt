@@ -354,6 +354,9 @@ dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "NOT SDL_DISABLE_INSTALL
 dep_option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" "${SDL_SHARED}" "SDL_SHARED;SDL_STATIC" "${SDL_SHARED}")
 set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
 
+set_option(SDL_EXAMPLES           "Build the examples directory")
+dep_option(SDL_EXAMPLES_LINK_SHARED "link examples to shared SDL library" "${SDL_SHARED}" "SDL_SHARED;SDL_STATIC" "${SDL_SHARED}")
+
 if(VITA)
   set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
   set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
@@ -3620,6 +3623,13 @@ if(SDL_TESTS)
   set(HAVE_TESTS ON)
   enable_testing()
   add_subdirectory(test)
+endif()
+
+##### Examples subproject (must appear after the install/uninstall targets) #####
+
+if(SDL_EXAMPLES)
+  set(HAVE_EXAMPLES ON)
+  add_subdirectory(examples)
 endif()
 
 ##### Fix Objective C builds #####
