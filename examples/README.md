@@ -28,7 +28,7 @@ into the four logical pieces most apps care about:
 
 A detailed technical explanation of these callbacks is in
 docs/README-main-functions.md (or view that page on the web on
-[the wiki](https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3).
+[the wiki](https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3)).
 
 
 ## I would like to build and run these examples myself.
