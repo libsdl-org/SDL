@@ -85,7 +85,7 @@ macro(add_sdl_example_executable TARGET)
         endif()
         string(REGEX REPLACE "[_]" "" SAFE_TARGET "${TARGET}")
         file(GENERATE OUTPUT "${uwp_bindir}/${TARGET}.appxmanifest"
-            INPUT "${CMAKE_CURRENT_SOURCE_DIR}/uwp/Package.appxmanifest.in"
+            INPUT "${CMAKE_CURRENT_SOURCE_DIR}/../test/uwp/Package.appxmanifest.in"
             TARGET "${TARGET}"
         )
         set_property(SOURCE "${uwp_bindir}/${TARGET}.appxmanifest" PROPERTY VS_DEPLOYMENT_CONTENT 1)
@@ -94,10 +94,10 @@ macro(add_sdl_example_executable TARGET)
 
         list(APPEND EXTRA_SOURCES
             "${uwp_bindir}/${TARGET}.appxmanifest"
-            "uwp/logo-50x50.png"
-            "uwp/square-44x44.png"
-            "uwp/square-150x150.png"
-            "uwp/splash-620x300.png"
+            "../test/uwp/logo-50x50.png"
+            "../test/uwp/square-44x44.png"
+            "../test/uwp/square-150x150.png"
+            "../test/uwp/splash-620x300.png"
         )
     endif()
     if(AST_NEEDS_RESOURCES)
