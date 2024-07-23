@@ -2785,6 +2785,22 @@ int Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vi
             [data.listener resumeVisibleObservation];
         }
 
+        // Update the safe area insets
+        // The view never seems to reflect the safe area, so we'll use the screen instead
+        if (@available(macOS 12.0, *)) {
+            if (fullscreen) {
+                NSScreen *screen = [nswindow screen];
+
+                SDL_SetWindowSafeAreaInsets(data.window,
+                                            (int)SDL_ceilf(screen.safeAreaInsets.left),
+                                            (int)SDL_ceilf(screen.safeAreaInsets.right),
+                                            (int)SDL_ceilf(screen.safeAreaInsets.top),
+                                            (int)SDL_ceilf(screen.safeAreaInsets.bottom));
+            } else {
+                SDL_SetWindowSafeAreaInsets(data.window, 0, 0, 0, 0);
+            }
+        }
+
         ScheduleContextUpdates(data);
     }
 

@@ -100,6 +100,12 @@ struct SDL_Window
     SDL_bool is_destroying;
     SDL_bool is_dropping; /* drag/drop in progress, expecting SDL_SendDropComplete(). */
 
+    int safe_inset_left;
+    int safe_inset_right;
+    int safe_inset_top;
+    int safe_inset_bottom;
+    SDL_Rect safe_rect;
+
     SDL_bool text_input_active;
     SDL_Rect text_input_rect;
     int text_input_cursor;
@@ -526,6 +532,7 @@ extern SDL_DisplayData *SDL_GetDisplayDriverData(SDL_DisplayID display);
 extern SDL_DisplayData *SDL_GetDisplayDriverDataForWindow(SDL_Window *window);
 extern int SDL_GetMessageBoxCount(void);
 extern void SDL_SetWindowHDRProperties(SDL_Window *window, const SDL_HDROutputProperties *HDR, SDL_bool send_event);
+extern void SDL_SetWindowSafeAreaInsets(SDL_Window *window, int left, int right, int top, int bottom);
 
 extern void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor);
 

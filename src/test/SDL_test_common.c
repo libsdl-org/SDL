@@ -1614,6 +1614,14 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed pixel size to %" SDL_PRIs32 "x%" SDL_PRIs32,
                 event->window.windowID, event->window.data1, event->window.data2);
         break;
+    case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED: {
+        SDL_Rect rect;
+
+        SDL_GetWindowSafeArea(SDL_GetWindowFromID(event->window.windowID), &rect);
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed safe area to: %d,%d %dx%d\n", 
+                event->window.windowID, rect.x, rect.y, rect.w, rect.h);
+        break;
+    }
     case SDL_EVENT_WINDOW_MINIMIZED:
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " minimized", event->window.windowID);
         break;
