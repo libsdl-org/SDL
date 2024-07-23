@@ -1353,7 +1353,7 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 @@
 @@
 - SDL_JoystickGetGUIDFromString
-+ SDL_GUIDFromString
++ SDL_StringToGUID
   (...)
 @@
 @@
