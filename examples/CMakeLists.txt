@@ -234,7 +234,7 @@ if(N3DS)
             NAME "SDL-${APP}"
             DESCRIPTION "SDL3 Test suite"
             AUTHOR "SDL3 Contributors"
-            ICON "${CMAKE_CURRENT_SOURCE_DIR}/n3ds/logo48x48.png"
+            ICON "${CMAKE_CURRENT_SOURCE_DIR}/../test/n3ds/logo48x48.png"
         )
         ctr_create_3dsx(
             ${APP}
