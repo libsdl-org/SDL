@@ -1,5 +1,7 @@
 /*
- * This example code $WHAT_IT_DOES.
+ * This example code creates an simple audio stream for playing sound, and
+ * generates a sine wave sound effect for it to play as time goes on. This
+ * is the simplest way to get up and running with procedural sound.
  *
  * This code is public domain. Feel free to use it for any purpose!
  */
