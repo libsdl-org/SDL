@@ -98,6 +98,16 @@ def gradle_add_prefab_and_aar(path, aar):
     with open(path, "w") as f:
         f.write(data)
 
+def gradle_add_package_name(path, package_name):
+    with open(path) as f:
+        data = f.read()
+
+    data, count = re.subn("org.libsdl.app", package_name, data)
+    assert count >= 1
+
+    with open(path, "w") as f:
+        f.write(data)
+
 
 def main():
     description = "Create a simple Android gradle project from input sources."
@@ -190,6 +200,9 @@ def main():
 
         print(f"WARNING: copy { aar } to { aar_libs_folder }", file=sys.stderr)
 
+    # Add the package name to build.gradle
+    gradle_add_package_name(build_path / "app/build.gradle", args.package_name)
+
     # Create entry activity, subclassing SDLActivity
     activity = args.package_name[args.package_name.rfind(".") + 1:].capitalize() + "Activity"
     activity_path = build_path / "app/src/main/java" / args.package_name.replace(".", "/") / f"{activity}.java"
@@ -206,7 +219,7 @@ def main():
         """))
 
     # Add the just-generated activity to the Android manifest
-    replace_in_file(build_path / "app/src/main/AndroidManifest.xml", "SDLActivity", activity)
+    replace_in_file(build_path / "app/src/main/AndroidManifest.xml", 'name="SDLActivity"', f'name="{activity}"')
 
     # Update project and build
     print("To build and install to a device for testing, run the following:")
