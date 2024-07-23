@@ -37,7 +37,7 @@ sub usage {
 
 sub do_system {
     my $cmd = shift;
-    $cmd = "exec /usr/bin/bash -c \"$cmd\"";
+    $cmd = "exec /bin/bash -c \"$cmd\"";
     print("$cmd\n");
     return system($cmd);
 }
