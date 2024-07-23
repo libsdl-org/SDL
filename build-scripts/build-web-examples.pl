@@ -90,7 +90,7 @@ sub handle_example_dir {
     do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && emcc -s USE_SDL=0 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1gb -s ASSERTIONS=0 -o '$dst/index.js' '-I$examples_dir/../include' $files_str '$compile_dir/libSDL3.a'") == 0
         or die("Failed to build $category/$example!\n");
 
-    my $highlight_cmd = "highlight '--outdir=$dst' --style-outfile=highlight.css --fragment --stdout --syntax=c '--plug-in=$examples_dir/highlight-plugin.lua'";
+    my $highlight_cmd = "highlight '--outdir=$dst' --style-outfile=highlight.css --fragment --enclose-pre --stdout --syntax=c '--plug-in=$examples_dir/highlight-plugin.lua'";
     print("$highlight_cmd\n");
     my $pid = open2(my $child_out, my $child_in, $highlight_cmd);
 
