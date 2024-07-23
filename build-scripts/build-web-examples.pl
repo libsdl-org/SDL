@@ -56,7 +56,7 @@ sub build_latest {
     if (do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && cd '$compile_dir' && ninja") != 0) {
         # Build failed? Try nuking the build dir and running CMake from scratch.
         print("\n\nBuilding latest version of $project FROM SCRATCH ...\n");
-        if (do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && rm -rf '$compile_dir' && mkdir '$compile_dir' && cd '$compile_dir' && emcmake cmake -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel .. && ninja") != 0) {
+        if (do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && rm -rf '$compile_dir' && mkdir '$compile_dir' && cd '$compile_dir' && emcmake cmake -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel '$examples_dir/..' && ninja") != 0) {
             die("Failed to build latest version of $project!\n");  # oh well.
         }
     }
