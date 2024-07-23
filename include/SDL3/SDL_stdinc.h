@@ -91,8 +91,9 @@ void *alloca(size_t);
 /**
  * The number of elements in an array.
  *
- * NOTE: This macro double-evaluates the argument, so you should never have
- * side effects in the parameter.
+ * This macro looks like it double-evaluates the argument, but it does so
+ * inside of `sizeof`, so there are no side-effects here, as expressions do
+ * not actually run any code in these cases.
  *
  * \since This macro is available since SDL 3.0.0.
  */
