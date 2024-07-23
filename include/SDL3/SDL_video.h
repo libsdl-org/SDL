@@ -2522,7 +2522,7 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress(const char
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GL_GetCurrentEGLDisplay
+ * \sa SDL_EGL_GetCurrentEGLDisplay
  */
 extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_EGL_GetProcAddress(const char *proc);
 
