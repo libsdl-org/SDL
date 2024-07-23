@@ -224,6 +224,7 @@ endif()
 
 if(N3DS)
     set(ROMFS_DIR "${CMAKE_CURRENT_BINARY_DIR}/romfs")
+    file(MAKE_DIRECTORY "${ROMFS_DIR}")
     file(COPY ${RESOURCE_FILES} DESTINATION "${ROMFS_DIR}")
 
     foreach(APP ${SDL_EXAMPLE_EXECUTABLES})
