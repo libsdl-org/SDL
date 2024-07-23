@@ -110,11 +110,11 @@ SDL3_0.0.0 {
     SDL_DetachVirtualJoystick;
     SDL_DisableScreenSaver;
     SDL_DuplicateSurface;
-    SDL_EGL_GetCurrentEGLConfig;
-    SDL_EGL_GetCurrentEGLDisplay;
+    SDL_EGL_GetCurrentConfig;
+    SDL_EGL_GetCurrentDisplay;
     SDL_EGL_GetProcAddress;
-    SDL_EGL_GetWindowEGLSurface;
-    SDL_EGL_SetEGLAttributeCallbacks;
+    SDL_EGL_GetWindowSurface;
+    SDL_EGL_SetAttributeCallbacks;
     SDL_EnableScreenSaver;
     SDL_EnterAppMainCallbacks;
     SDL_EnumerateDirectory;

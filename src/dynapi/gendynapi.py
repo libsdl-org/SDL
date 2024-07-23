@@ -482,7 +482,7 @@ def add_dyn_api(proc):
     # File: SDL_dynapi_procs.h
     #
     # Add at last
-    # SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentEGLConfig,(void),(),return)
+    # SDL_DYNAPI_PROC(SDL_EGLConfig,SDL_EGL_GetCurrentConfig,(void),(),return)
     f = open(SDL_DYNAPI_PROCS_H, "a", newline="")
     dyn_proc = "SDL_DYNAPI_PROC(" + func_ret + "," + func_name + ",("
 

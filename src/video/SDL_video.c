@@ -4327,7 +4327,7 @@ void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor)
 #endif
 }
 
-void SDL_EGL_SetEGLAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
+void SDL_EGL_SetAttributeCallbacks(SDL_EGLAttribArrayCallback platformAttribCallback,
                                       SDL_EGLIntArrayCallback surfaceAttribCallback,
                                       SDL_EGLIntArrayCallback contextAttribCallback)
 {
@@ -4849,7 +4849,7 @@ SDL_GLContext SDL_GL_GetCurrentContext(void)
     return (SDL_GLContext)SDL_GetTLS(&_this->current_glctx_tls);
 }
 
-SDL_EGLDisplay SDL_EGL_GetCurrentEGLDisplay(void)
+SDL_EGLDisplay SDL_EGL_GetCurrentDisplay(void)
 {
 #ifdef SDL_VIDEO_OPENGL_EGL
     if (!_this) {
@@ -4867,7 +4867,7 @@ SDL_EGLDisplay SDL_EGL_GetCurrentEGLDisplay(void)
 #endif
 }
 
-SDL_EGLConfig SDL_EGL_GetCurrentEGLConfig(void)
+SDL_EGLConfig SDL_EGL_GetCurrentConfig(void)
 {
 #ifdef SDL_VIDEO_OPENGL_EGL
     if (!_this) {
@@ -4885,7 +4885,7 @@ SDL_EGLConfig SDL_EGL_GetCurrentEGLConfig(void)
 #endif
 }
 
-SDL_EGLConfig SDL_EGL_GetWindowEGLSurface(SDL_Window *window)
+SDL_EGLConfig SDL_EGL_GetWindowSurface(SDL_Window *window)
 {
 #ifdef SDL_VIDEO_OPENGL_EGL
     if (!_this) {
