@@ -306,7 +306,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 
     device->StartTextInput = GDK_StartTextInput;
     device->StopTextInput = GDK_StopTextInput;
-    device->SetTextInputArea = GDK_SetTextInputArea;
+    device->UpdateTextInputArea = GDK_UpdateTextInputArea;
     device->ClearComposition = GDK_ClearComposition;
 
     device->HasScreenKeyboardSupport = GDK_HasScreenKeyboardSupport;

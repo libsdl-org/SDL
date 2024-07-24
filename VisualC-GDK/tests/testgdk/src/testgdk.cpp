@@ -309,7 +309,7 @@ loop()
     /* Check for events */
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_KEY_DOWN && !event.key.repeat) {
-            SDL_Log("Initial SDL_EVENT_KEY_DOWN: %s", SDL_GetScancodeName(event.key.keysym.scancode));
+            SDL_Log("Initial SDL_EVENT_KEY_DOWN: %s", SDL_GetScancodeName(event.key.scancode));
         }
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
         /* On Xbox, ignore the keydown event because the features aren't supported */
