@@ -80,14 +80,31 @@ sub handle_example_dir {
     }
     closedir($dh);
 
+    my $datafilestxtpath = "$examples_dir/$category/$example/datafiles.txt";
+    my $datafiles_str = '';
+    if ( -f $datafilestxtpath ) {
+        open (my $datafilesh, '<', $datafilestxtpath) or die("Couldn't opendir '$datafilestxtpath': $!\n");
+        $spc = '';
+        while (<$datafilesh>) {
+            chomp;
+            my $path = "$examples_dir/$category/$example/$_";
+            my $fname = $_;
+            $fname =~ s/\A.*\///;
+            $datafiles_str .= "$spc--embed-file=$path\@/$fname";
+            $spc = ' ';
+        }
+        close($datafilesh);
+    }
+
     my $dst = "$output_dir/$category/$example";
 
     print("Building $category/$example ...\n");
 
+
     do_mkdir($dst);
 
     # !!! FIXME: hardcoded SDL3 references, need to fix this for satellite libraries and SDL2.
-    do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && emcc -s USE_SDL=0 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1gb -s ASSERTIONS=0 -o '$dst/index.js' '-I$examples_dir/../include' $files_str '$compile_dir/libSDL3.a'") == 0
+    do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && emcc -s USE_SDL=0 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1gb -s ASSERTIONS=0 -o '$dst/index.js' '-I$examples_dir/../include' $files_str '$compile_dir/libSDL3.a' $datafiles_str") == 0
         or die("Failed to build $category/$example!\n");
 
     my $highlight_cmd = "highlight '--outdir=$dst' --style-outfile=highlight.css --fragment --enclose-pre --stdout --syntax=c '--plug-in=$examples_dir/highlight-plugin.lua'";

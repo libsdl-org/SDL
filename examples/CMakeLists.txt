@@ -70,7 +70,7 @@ if(WINDOWS_STORE)
 endif()
 
 macro(add_sdl_example_executable TARGET)
-    cmake_parse_arguments(AST "BUILD_DEPENDENT;NEEDS_RESOURCES;" "" "SOURCES" ${ARGN})
+    cmake_parse_arguments(AST "BUILD_DEPENDENT" "" "SOURCES;DATAFILES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unknown argument(s): ${AST_UNPARSED_ARGUMENTS}")
     endif()
@@ -100,8 +100,8 @@ macro(add_sdl_example_executable TARGET)
             "../test/uwp/splash-620x300.png"
         )
     endif()
-    if(AST_NEEDS_RESOURCES)
-        list(APPEND EXTRA_SOURCES ${RESOURCE_FILES})
+    if(AST_DATAFILES)
+        list(APPEND EXTRA_SOURCES ${DATAFILES})
     endif()
     if(ANDROID)
         add_library(${TARGET} SHARED ${AST_SOURCES} ${EXTRA_SOURCES})
@@ -113,11 +113,11 @@ macro(add_sdl_example_executable TARGET)
     target_link_libraries(${TARGET} PRIVATE SDL3::${sdl_name_component})
 
     list(APPEND SDL_EXAMPLE_EXECUTABLES ${TARGET})
-    if(AST_NEEDS_RESOURCES)
+    if(AST_DATAFILES)
         if(PSP OR PS2)
             add_custom_command(TARGET ${TARGET} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} ARGS -E make_directory $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET}
-                COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${RESOURCE_FILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET})
+                COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${AST_DATAFILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET})
         elseif(WINDOWS_STORE)
             # MSVC does build the dependent targets (or POST_BUILD commands) when building an application
             # after starting to debug. By copying the resources in a custom target, the files can be copied afterwards.
@@ -125,7 +125,7 @@ macro(add_sdl_example_executable TARGET)
             cmake_minimum_required(VERSION 3.19)
             add_custom_target(zzz-resources-copy-${TARGET}
                 COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${TARGET}>/AppX"
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${RESOURCE_FILES} "$<TARGET_FILE_DIR:${TARGET}>/AppX"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${AST_DATAFILES} "$<TARGET_FILE_DIR:${TARGET}>/AppX"
             )
             add_dependencies(${TARGET} zzz-resources-copy-${TARGET})
         else()
@@ -133,15 +133,15 @@ macro(add_sdl_example_executable TARGET)
         endif()
         if(APPLE)
             # Make sure resource files get installed into macOS/iOS .app bundles.
-            set_target_properties(${TARGET} PROPERTIES RESOURCE "${RESOURCE_FILES}")
+            set_target_properties(${TARGET} PROPERTIES RESOURCE "${AST_DATAFILES}")
         endif()
         if(EMSCRIPTEN)
-            foreach(res IN LISTS RESOURCE_FILES)
+            foreach(res IN LISTS AST_DATAFILES)
                 get_filename_component(res_name "${res}" NAME)
                 target_link_options(${TARGET} PRIVATE "SHELL:--embed-file ${res}@${res_name}")
             endforeach()
         endif()
-        set_property(TARGET ${TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:${TARGET}>/$<JOIN:${RESOURCE_FILE_NAMES},$<SEMICOLON>$<TARGET_FILE_DIR:${TARGET}>/>")
+        set_property(TARGET ${TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:${TARGET}>/$<JOIN:${AST_DATAFILES},$<SEMICOLON>$<TARGET_FILE_DIR:${TARGET}>/>")
     endif()
 
     if(WINDOWS)
@@ -180,6 +180,7 @@ add_sdl_example_executable(renderer-clear SOURCES renderer/01-clear/renderer-cle
 add_sdl_example_executable(renderer-primitives SOURCES renderer/02-primitives/renderer-primitives.c)
 add_sdl_example_executable(audio-simple-playback SOURCES audio/01-simple-playback/simple-playback.c)
 add_sdl_example_executable(audio-simple-playback-callback SOURCES audio/02-simple-playback-callback/simple-playback-callback.c)
+add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ../test/sample.wav)
 
 
 if(PSP)
