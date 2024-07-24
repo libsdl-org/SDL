@@ -1452,19 +1452,15 @@ SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
     }
 }
 
-int SDL_PushEvent(SDL_Event *event)
+static SDL_bool SDL_CallEventWatchers(SDL_Event *event)
 {
-    if (!event->common.timestamp) {
-        event->common.timestamp = SDL_GetTicksNS();
-    }
-
     if ((SDL_EventOK.callback || SDL_event_watchers_count > 0) &&
         (event->common.type != SDL_EVENT_POLL_SENTINEL)) {
         SDL_LockMutex(SDL_event_watchers_lock);
         {
             if (SDL_EventOK.callback && !SDL_EventOK.callback(SDL_EventOK.userdata, event)) {
                 SDL_UnlockMutex(SDL_event_watchers_lock);
-                return 0;
+                return SDL_FALSE;
             }
 
             if (SDL_event_watchers_count > 0) {
@@ -1493,6 +1489,19 @@ int SDL_PushEvent(SDL_Event *event)
             }
         }
         SDL_UnlockMutex(SDL_event_watchers_lock);
+    }
+
+    return SDL_TRUE;
+}
+
+int SDL_PushEvent(SDL_Event *event)
+{
+    if (!event->common.timestamp) {
+        event->common.timestamp = SDL_GetTicksNS();
+    }
+
+    if (!SDL_CallEventWatchers(event)) {
+        return 0;
     }
 
     if (SDL_PeepEvents(event, 1, SDL_ADDEVENT, 0, 0) <= 0) {
@@ -1707,7 +1716,21 @@ int SDL_SendAppEvent(SDL_EventType eventType)
         SDL_Event event;
         event.type = eventType;
         event.common.timestamp = 0;
-        posted = (SDL_PushEvent(&event) > 0);
+
+        switch (eventType) {
+        case SDL_EVENT_TERMINATING:
+        case SDL_EVENT_LOW_MEMORY:
+        case SDL_EVENT_WILL_ENTER_BACKGROUND:
+        case SDL_EVENT_DID_ENTER_BACKGROUND:
+        case SDL_EVENT_WILL_ENTER_FOREGROUND:
+        case SDL_EVENT_DID_ENTER_FOREGROUND:
+            // We won't actually queue this event, it needs to be handled in this call stack by an event watcher
+            posted = SDL_CallEventWatchers(&event);
+            break;
+        default:
+            posted = (SDL_PushEvent(&event) > 0);
+            break;
+        }
     }
     return posted;
 }
