@@ -194,16 +194,15 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     // Window inset
     @Override
     public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-        Insets combined = insets.getInsets(WindowInsets.Type.statusBars() |
-                                           WindowInsets.Type.navigationBars() |
-                                           WindowInsets.Type.captionBar() |
-                                           WindowInsets.Type.systemGestures() |
-                                           WindowInsets.Type.mandatorySystemGestures() |
-                                           WindowInsets.Type.tappableElement() |
-                                           WindowInsets.Type.displayCutout() |
-                                           WindowInsets.Type.systemOverlays());
+        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+            Insets combined = insets.getInsets(WindowInsets.Type.systemBars() |
+                                               WindowInsets.Type.systemGestures() |
+                                               WindowInsets.Type.mandatorySystemGestures() |
+                                               WindowInsets.Type.tappableElement() |
+                                               WindowInsets.Type.displayCutout());
 
-        SDLActivity.onNativeInsetsChanged(combined.left, combined.right, combined.top, combined.bottom);
+            SDLActivity.onNativeInsetsChanged(combined.left, combined.right, combined.top, combined.bottom);
+        }
 
         // Pass these to any child views in case they need them
         return insets;
