@@ -23,7 +23,9 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
+extern "C" {
 #include "../SDL_sysfilesystem.h"
+}
 
 #include "../../core/windows/SDL_windows.h"
 #include <SDL3/SDL_hints.h>
@@ -133,5 +135,11 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     return folderPath;
 }
 
+/* TODO */
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

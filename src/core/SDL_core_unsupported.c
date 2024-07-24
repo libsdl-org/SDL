@@ -227,13 +227,3 @@ Sint32 JNI_OnLoad(void *vm, void *reserved)
     return -1; /* JNI_ERR */
 }
 #endif
-
-// !!! FIXME: this probably belongs in src/filesystem/gdk
-#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-const char *SDL_GetUserFolder(SDL_Folder folder)
-{
-    (void)folder;
-    SDL_Unsupported();
-    return NULL;
-}
-#endif
