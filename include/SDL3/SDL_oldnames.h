@@ -444,7 +444,7 @@
 #define SDL_CondWaitTimeout SDL_WaitConditionTimeout
 #define SDL_CreateCond SDL_CreateCondition
 #define SDL_DestroyCond SDL_DestroyCondition
-#define SDL_SemPost SDL_PostSemaphore
+#define SDL_SemPost SDL_SignalSemaphore
 #define SDL_SemTryWait SDL_TryWaitSemaphore
 #define SDL_SemValue SDL_GetSemaphoreValue
 #define SDL_SemWait SDL_WaitSemaphore
@@ -1065,7 +1065,7 @@
 #define SDL_CondWaitTimeout SDL_CondWaitTimeout_renamed_SDL_WaitConditionTimeout
 #define SDL_CreateCond SDL_CreateCond_renamed_SDL_CreateCondition
 #define SDL_DestroyCond SDL_DestroyCond_renamed_SDL_DestroyCondition
-#define SDL_SemPost SDL_SemPost_renamed_SDL_PostSemaphore
+#define SDL_SemPost SDL_SemPost_renamed_SDL_SignalSemaphore
 #define SDL_SemTryWait SDL_SemTryWait_renamed_SDL_TryWaitSemaphore
 #define SDL_SemValue SDL_SemValue_renamed_SDL_GetSemaphoreValue
 #define SDL_SemWait SDL_SemWait_renamed_SDL_WaitSemaphore

@@ -194,7 +194,7 @@ static void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *)context;
 
     LOGV("SLES: Recording Callback");
-    SDL_PostSemaphore(audiodata->playsem);
+    SDL_SignalSemaphore(audiodata->playsem);
 }
 
 static void OPENSLES_DestroyPCMRecorder(SDL_AudioDevice *device)
@@ -390,7 +390,7 @@ static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *)context;
 
     LOGV("SLES: Playback Callback");
-    SDL_PostSemaphore(audiodata->playsem);
+    SDL_SignalSemaphore(audiodata->playsem);
 }
 
 static void OPENSLES_DestroyPCMPlayer(SDL_AudioDevice *device)
@@ -673,7 +673,7 @@ static int OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int
     // If Enqueue fails, callback won't be called.
     // Post the semaphore, not to run out of buffer
     if (SL_RESULT_SUCCESS != result) {
-        SDL_PostSemaphore(audiodata->playsem);
+        SDL_SignalSemaphore(audiodata->playsem);
     }
 
     return 0;

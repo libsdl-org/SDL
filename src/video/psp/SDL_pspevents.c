@@ -66,7 +66,7 @@ int EventUpdate(void *data)
     while (running) {
         SDL_WaitSemaphore(event_sem);
         sceHprmPeekCurrentKey((u32 *)&hprm);
-        SDL_PostSemaphore(event_sem);
+        SDL_SignalSemaphore(event_sem);
         /* Delay 1/60th of a second */
         sceKernelDelayThread(1000000 / 60);
     }
@@ -82,7 +82,7 @@ void PSP_PumpEvents(SDL_VideoDevice *_this)
 
     SDL_WaitSemaphore(event_sem);
     keys = hprm;
-    SDL_PostSemaphore(event_sem);
+    SDL_SignalSemaphore(event_sem);
 
     /* HPRM Keyboard */
     changed = old_keys ^ keys;

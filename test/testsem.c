@@ -56,7 +56,7 @@ ThreadFuncRealWorld(void *data)
         SDL_Log("Thread number %d has got the semaphore (value = %" SDL_PRIu32 ")!\n",
                 state->number, SDL_GetSemaphoreValue(sem));
         SDL_Delay(200);
-        SDL_PostSemaphore(sem);
+        SDL_SignalSemaphore(sem);
         SDL_Log("Thread number %d has released the semaphore (value = %" SDL_PRIu32 ")!\n",
                 state->number, SDL_GetSemaphoreValue(sem));
         ++state->loop_count;
@@ -145,7 +145,7 @@ TestOverheadUncontended(void)
     start_ticks = SDL_GetTicks();
     for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++) {
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
-            SDL_PostSemaphore(sem);
+            SDL_SignalSemaphore(sem);
         }
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
             SDL_WaitSemaphore(sem);
@@ -211,7 +211,7 @@ TestOverheadContended(SDL_bool try_wait)
     start_ticks = SDL_GetTicks();
     for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++) {
         for (j = 0; j < NUM_OVERHEAD_OPS; j++) {
-            SDL_PostSemaphore(sem);
+            SDL_SignalSemaphore(sem);
         }
         /* Make sure threads consumed everything */
         while (SDL_GetSemaphoreValue(sem)) {

@@ -1110,7 +1110,7 @@ The following functions have been renamed:
 * SDL_CondWaitTimeout() => SDL_WaitConditionTimeout()
 * SDL_CreateCond() => SDL_CreateCondition()
 * SDL_DestroyCond() => SDL_DestroyCondition()
-* SDL_SemPost() => SDL_PostSemaphore()
+* SDL_SemPost() => SDL_SignalSemaphore()
 * SDL_SemTryWait() => SDL_TryWaitSemaphore()
 * SDL_SemValue() => SDL_GetSemaphoreValue()
 * SDL_SemWait() => SDL_WaitSemaphore()

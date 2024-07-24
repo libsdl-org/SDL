@@ -83,7 +83,7 @@ static void ManagementThreadMainloop(void)
             task->result = task->fn(task->userdata);                     // run this task.
             if (task->task_complete_sem) {                               // something waiting on result?
                 task->errorstr = SDL_strdup(SDL_GetError());
-                SDL_PostSemaphore(task->task_complete_sem);
+                SDL_SignalSemaphore(task->task_complete_sem);
             } else { // nothing waiting, we're done, free it.
                 SDL_free(task);
             }
@@ -190,11 +190,11 @@ static int ManagementThreadEntry(void *userdata)
 
     if (ManagementThreadPrepare() < 0) {
         data->errorstr = SDL_strdup(SDL_GetError());
-        SDL_PostSemaphore(data->ready_sem); // unblock calling thread.
+        SDL_SignalSemaphore(data->ready_sem); // unblock calling thread.
         return 0;
     }
 
-    SDL_PostSemaphore(data->ready_sem); // unblock calling thread.
+    SDL_SignalSemaphore(data->ready_sem); // unblock calling thread.
     ManagementThreadMainloop();
 
     WASAPI_PlatformDeinit();
