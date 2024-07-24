@@ -829,7 +829,8 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
             }
 
             if (event->type == SDL_EVENT_WINDOW_RESIZED ||
-                event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+                event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED ||
+                event->type == SDL_EVENT_WINDOW_METAL_VIEW_RESIZED) {
                 UpdateMainViewDimensions(renderer);
                 UpdateLogicalPresentation(renderer);
             } else if (event->type == SDL_EVENT_WINDOW_HIDDEN) {

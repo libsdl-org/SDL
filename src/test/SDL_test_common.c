@@ -1614,6 +1614,10 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed pixel size to %" SDL_PRIs32 "x%" SDL_PRIs32,
                 event->window.windowID, event->window.data1, event->window.data2);
         break;
+    case SDL_EVENT_WINDOW_METAL_VIEW_RESIZED:
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed metal view size",
+                event->window.windowID);
+        break;
     case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED: {
         SDL_Rect rect;
 
