@@ -28,6 +28,7 @@
 #include "SDL_androidwindow.h"
 
 #include "SDL_androidvideo.h"
+#include "SDL_androidevents.h"
 #include "SDL_androidgl.h"
 #include "../../core/android/SDL_android.h"
 
@@ -48,7 +49,9 @@ SDL_GLContext Android_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *win
 {
     SDL_GLContext ret;
 
-    Android_LockActivityMutexOnceRunning();
+    if (Android_WaitActiveAndLockActivity() < 0) {
+        return NULL;
+    }
 
     ret = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 

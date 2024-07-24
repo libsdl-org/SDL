@@ -404,8 +404,10 @@ static jobject javaAssetManagerRef = 0;
 static SDL_AtomicInt bAllowRecreateActivity;
 
 static SDL_Mutex *Android_ActivityMutex = NULL;
-SDL_Semaphore *Android_PauseSem = NULL;
-SDL_Semaphore *Android_ResumeSem = NULL;
+static SDL_Mutex *Android_LifecycleMutex = NULL;
+static SDL_Semaphore *Android_LifecycleEventSem = NULL;
+static SDL_AndroidLifecycleEvent Android_LifecycleEvents[SDL_NUM_ANDROID_LIFECYCLE_EVENTS];
+static int Android_NumLifecycleEvents;
 
 /*******************************************************************************
                  Functions called by JNI
@@ -614,14 +616,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_ActivityMutex mutex");
     }
 
-    Android_PauseSem = SDL_CreateSemaphore(0);
-    if (!Android_PauseSem) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_PauseSem semaphore");
+    Android_LifecycleMutex = SDL_CreateMutex();
+    if (!Android_LifecycleMutex) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_LifecycleMutex mutex");
     }
 
-    Android_ResumeSem = SDL_CreateSemaphore(0);
-    if (!Android_ResumeSem) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_ResumeSem semaphore");
+    Android_LifecycleEventSem = SDL_CreateSemaphore(0);
+    if (!Android_LifecycleEventSem) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_LifecycleEventSem semaphore");
     }
 
     mActivityClass = (jclass)((*env)->NewGlobalRef(env, cls));
@@ -895,18 +897,101 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     return status;
 }
 
-/* Drop file */
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
-    JNIEnv *env, jclass jcls,
-    jstring filename)
+static int FindLifecycleEvent(SDL_AndroidLifecycleEvent event)
 {
-    const char *path = (*env)->GetStringUTFChars(env, filename, NULL);
-    SDL_SendDropFile(NULL, NULL, path);
-    (*env)->ReleaseStringUTFChars(env, filename, path);
-    SDL_SendDropComplete(NULL);
+    for (int index = 0; index < Android_NumLifecycleEvents; ++index) {
+        if (Android_LifecycleEvents[index] == event) {
+            return index;
+        }
+    }
+    return -1;
 }
 
-/* Lock / Unlock Mutex */
+static void RemoveLifecycleEvent(int index)
+{
+    if (index < Android_NumLifecycleEvents - 1) {
+        SDL_memcpy(&Android_LifecycleEvents[index], &Android_LifecycleEvents[index+1], (Android_NumLifecycleEvents - index - 1) * sizeof(Android_LifecycleEvents[index]));
+    }
+    --Android_NumLifecycleEvents;
+}
+
+void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event)
+{
+    SDL_LockMutex(Android_LifecycleMutex);
+    {
+        int index;
+        SDL_bool add_event = SDL_TRUE;
+
+        switch (event) {
+        case SDL_ANDROID_LIFECYCLE_WAKE:
+            // We don't need more than one wake queued
+            index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
+            if (index >= 0) {
+                add_event = SDL_FALSE;
+            }
+            break;
+        case SDL_ANDROID_LIFECYCLE_PAUSE:
+            // If we have a resume queued, just stay in the paused state
+            index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_RESUME);
+            if (index >= 0) {
+                RemoveLifecycleEvent(index);
+                add_event = SDL_FALSE;
+            }
+            break;
+        case SDL_ANDROID_LIFECYCLE_RESUME:
+            // If we have a pause queued, just stay in the resumed state
+            index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_PAUSE);
+            if (index >= 0) {
+                RemoveLifecycleEvent(index);
+                add_event = SDL_FALSE;
+            }
+            break;
+        case SDL_ANDROID_LIFECYCLE_LOWMEMORY:
+            // We don't need more than one low memory event queued
+            index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_LOWMEMORY);
+            if (index >= 0) {
+                add_event = SDL_FALSE;
+            }
+            break;
+        case SDL_ANDROID_LIFECYCLE_DESTROY:
+            // Remove all other events, we're done!
+            while (Android_NumLifecycleEvents > 0) {
+                RemoveLifecycleEvent(0);
+            }
+            break;
+        default:
+            SDL_assert(!"Sending unexpected lifecycle event");
+            add_event = SDL_FALSE;
+            break;
+        }
+
+        if (add_event) {
+            SDL_assert(Android_NumLifecycleEvents < SDL_arraysize(Android_LifecycleEvents));
+            Android_LifecycleEvents[Android_NumLifecycleEvents++] = event;
+            SDL_SignalSemaphore(Android_LifecycleEventSem);
+        }
+    }
+    SDL_UnlockMutex(Android_LifecycleMutex);
+}
+
+SDL_bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS)
+{
+    SDL_bool got_event = SDL_FALSE;
+
+    while (!got_event && SDL_WaitSemaphoreTimeoutNS(Android_LifecycleEventSem, timeoutNS) == 0) {
+        SDL_LockMutex(Android_LifecycleMutex);
+        {
+            if (Android_NumLifecycleEvents > 0) {
+                *event = Android_LifecycleEvents[0];
+                RemoveLifecycleEvent(0);
+                got_event = SDL_TRUE;
+            }
+        }
+        SDL_UnlockMutex(Android_LifecycleMutex);
+    }
+    return got_event;
+}
+
 void Android_LockActivityMutex(void)
 {
     SDL_LockMutex(Android_ActivityMutex);
@@ -917,24 +1002,15 @@ void Android_UnlockActivityMutex(void)
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-/* Lock the Mutex when the Activity is in its 'Running' state */
-void Android_LockActivityMutexOnceRunning(void)
+/* Drop file */
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
+    JNIEnv *env, jclass jcls,
+    jstring filename)
 {
-    int pauseSignaled = 0;
-    int resumeSignaled = 0;
-
-retry:
-
-    SDL_LockMutex(Android_ActivityMutex);
-
-    pauseSignaled = SDL_GetSemaphoreValue(Android_PauseSem);
-    resumeSignaled = SDL_GetSemaphoreValue(Android_ResumeSem);
-
-    if (pauseSignaled > resumeSignaled) {
-        SDL_UnlockMutex(Android_ActivityMutex);
-        SDL_Delay(50);
-        goto retry;
-    }
+    const char *path = (*env)->GetStringUTFChars(env, filename, NULL);
+    SDL_SendDropFile(NULL, NULL, path);
+    (*env)->ReleaseStringUTFChars(env, filename, path);
+    SDL_SendDropComplete(NULL);
 }
 
 /* Set screen resolution */
@@ -1335,7 +1411,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
     JNIEnv *env, jclass cls)
 {
-    SDL_SendAppEvent(SDL_EVENT_LOW_MEMORY);
+    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_LOWMEMORY);
 }
 
 /* Locale
@@ -1357,20 +1433,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDarkModeChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
     JNIEnv *env, jclass cls)
 {
-    /* Discard previous events. The user should have handled state storage
-     * in SDL_EVENT_WILL_ENTER_BACKGROUND. After nativeSendQuit() is called, no
-     * events other than SDL_EVENT_QUIT and SDL_EVENT_TERMINATING should fire */
-    SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
-    /* Inject a SDL_EVENT_QUIT event */
-    SDL_SendQuit();
-    SDL_SendAppEvent(SDL_EVENT_TERMINATING);
-    /* Robustness: clear any pending Pause */
-    while (SDL_TryWaitSemaphore(Android_PauseSem) == 0) {
-        /* empty */
-    }
-    /* Resume the event loop so that the app can catch SDL_EVENT_QUIT which
-     * should now be the top event in the event queue. */
-    SDL_SignalSemaphore(Android_ResumeSem);
+    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_DESTROY);
 }
 
 /* Activity ends */
@@ -1384,15 +1447,17 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
         Android_ActivityMutex = NULL;
     }
 
-    if (Android_PauseSem) {
-        SDL_DestroySemaphore(Android_PauseSem);
-        Android_PauseSem = NULL;
+    if (Android_LifecycleMutex) {
+        SDL_DestroyMutex(Android_LifecycleMutex);
+        Android_LifecycleMutex = NULL;
     }
 
-    if (Android_ResumeSem) {
-        SDL_DestroySemaphore(Android_ResumeSem);
-        Android_ResumeSem = NULL;
+    if (Android_LifecycleEventSem) {
+        SDL_DestroySemaphore(Android_LifecycleEventSem);
+        Android_LifecycleEventSem = NULL;
     }
+
+    Android_NumLifecycleEvents = 0;
 
     Internal_Android_Destroy_AssetManager();
 
@@ -1410,9 +1475,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
 
-    /* Signal the pause semaphore so the event loop knows to pause and (optionally) block itself.
-     * Sometimes 2 pauses can be queued (eg pause/resume/pause), so it's always increased. */
-    SDL_SignalSemaphore(Android_PauseSem);
+    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_PAUSE);
 }
 
 /* Resume */
@@ -1421,11 +1484,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
 
-    /* Signal the resume semaphore so the event loop knows to resume and restore the GL Context
-     * We can't restore the GL Context here because it needs to be done on the SDL main thread
-     * and this function will be called from the Java thread instead.
-     */
-    SDL_SignalSemaphore(Android_ResumeSem);
+    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_RESUME);
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
