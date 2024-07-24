@@ -1799,6 +1799,8 @@ The following functions have been renamed:
 * SDL_GDKGetTaskQueue() => SDL_GetGDKTaskQueue()
 * SDL_LinuxSetThreadPriority() => SDL_SetLinuxThreadPriority()
 * SDL_LinuxSetThreadPriorityAndPolicy() => SDL_SetLinuxThreadPriorityAndPolicy()
+* SDL_OnApplicationDidBecomeActive() => SDL_OnApplicationDidEnterForeground()
+* SDL_OnApplicationWillResignActive() => SDL_OnApplicationWillEnterBackground()
 * SDL_WinRTGetDeviceFamily() => SDL_GetWinRTDeviceFamily()
 * SDL_GetWinRTFSPathUTF8() => SDL_GetWinRTFSPath()
 * SDL_iOSSetAnimationCallback() => SDL_SetiOSAnimationCallback()

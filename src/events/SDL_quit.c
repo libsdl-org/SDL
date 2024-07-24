@@ -172,14 +172,14 @@ void SDL_SendPendingSignalEvents(void)
 #ifdef SDL_BACKGROUNDING_SIGNAL
     if (send_backgrounding_pending) {
         send_backgrounding_pending = SDL_FALSE;
-        SDL_OnApplicationWillResignActive();
+        SDL_OnApplicationWillEnterBackground();
     }
 #endif
 
 #ifdef SDL_FOREGROUNDING_SIGNAL
     if (send_foregrounding_pending) {
         send_foregrounding_pending = SDL_FALSE;
-        SDL_OnApplicationDidBecomeActive();
+        SDL_OnApplicationDidEnterForeground();
     }
 #endif
 #endif
