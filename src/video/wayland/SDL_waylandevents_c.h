@@ -171,10 +171,6 @@ struct SDL_WaylandInput
 
     struct SDL_WaylandTabletInput *tablet;
 
-    /* are we forcing relative mouse mode? */
-    SDL_bool cursor_visible;
-    SDL_bool relative_mode_override;
-    SDL_bool warp_emulation_prohibited;
     SDL_bool keyboard_is_virtual;
 
     /* Current SDL modifier flags */

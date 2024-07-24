@@ -119,6 +119,18 @@ static void SDLCALL SDL_MouseRelativeSystemScaleChanged(void *userdata, const ch
     mouse->enable_relative_system_scale = SDL_GetStringBoolean(hint, SDL_FALSE);
 }
 
+static void SDLCALL SDL_MouseWarpEmulationChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->warp_emulation_hint = SDL_GetStringBoolean(hint, SDL_TRUE);
+
+    if (!mouse->warp_emulation_hint && mouse->warp_emulation_active) {
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+        mouse->warp_emulation_active = SDL_FALSE;
+    }
+}
+
 static void SDLCALL SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
@@ -210,6 +222,9 @@ int SDL_PreInitMouse(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
                         SDL_MouseRelativeSystemScaleChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE,
+                        SDL_MouseWarpEmulationChanged, mouse);
 
     SDL_AddHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
                         SDL_TouchMouseEventsChanged, mouse);
@@ -724,7 +739,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
     float xrel = 0.0f;
     float yrel = 0.0f;
 
-    if (!mouse->relative_mode && mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID) {
+    if ((!mouse->relative_mode || mouse->warp_emulation_active) && mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID) {
         /* We're not in relative mode, so all mouse events are global mouse events */
         mouseID = SDL_GLOBAL_MOUSE_ID;
     }
@@ -1132,6 +1147,9 @@ void SDL_QuitMouse(void)
     SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
                         SDL_MouseRelativeSystemScaleChanged, mouse);
 
+    SDL_DelHintCallback(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE,
+                        SDL_MouseWarpEmulationChanged, mouse);
+
     SDL_DelHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
                         SDL_TouchMouseEventsChanged, mouse);
 
@@ -1253,9 +1271,24 @@ void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, SDL_bool
     }
 }
 
+static void SDL_EnableWarpEmulation(SDL_Mouse *mouse)
+{
+    if (!mouse->cursor_shown && mouse->warp_emulation_hint && !mouse->warp_emulation_prohibited) {
+        if (SDL_SetRelativeMouseMode(SDL_TRUE) == 0) {
+            mouse->warp_emulation_active = SDL_TRUE;
+        }
+
+        /* Disable attempts at enabling warp emulation until further notice. */
+        mouse->warp_emulation_prohibited = SDL_TRUE;
+    }
+}
+
 void SDL_WarpMouseInWindow(SDL_Window *window, float x, float y)
 {
-    SDL_PerformWarpMouseInWindow(window, x, y, SDL_FALSE);
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_EnableWarpEmulation(mouse);
+
+    SDL_PerformWarpMouseInWindow(window, x, y, mouse->warp_emulation_active);
 }
 
 int SDL_WarpMouseGlobal(float x, float y)
@@ -1283,6 +1316,18 @@ int SDL_SetRelativeMouseMode(SDL_bool enabled)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Window *focusWindow = SDL_GetKeyboardFocus();
+
+    if (enabled) {
+        if (mouse->warp_emulation_active) {
+            mouse->warp_emulation_active = SDL_FALSE;
+        }
+
+        /* If the app has used relative mode before, it probably shouldn't
+         * also be emulating it using repeated mouse warps, so disable
+         * mouse warp emulation by default.
+         */
+        mouse->warp_emulation_prohibited = SDL_TRUE;
+    }
 
     if (enabled == mouse->relative_mode) {
         return 0;
@@ -1641,6 +1686,12 @@ void SDL_DestroyCursor(SDL_Cursor *cursor)
 int SDL_ShowCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+
+    if (mouse->warp_emulation_active) {
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+        mouse->warp_emulation_active = SDL_FALSE;
+        mouse->warp_emulation_prohibited = SDL_FALSE;
+    }
 
     if (!mouse->cursor_shown) {
         mouse->cursor_shown = SDL_TRUE;

@@ -3596,3 +3596,7 @@ typedef SDL_JoystickGUID, SDL_GUID;
 - SDL_OnApplicationDidBecomeActive
 + SDL_OnApplicationDidEnterForeground
   (...)
+@@
+@@
+- SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP
++ SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE
