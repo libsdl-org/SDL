@@ -1108,9 +1108,30 @@ void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDROutputP
     }
 }
 
+static void SDL_UpdateFullscreenDisplayModes(SDL_VideoDisplay *display)
+{
+    if (display->num_fullscreen_modes == 0 && _this->GetDisplayModes) {
+        _this->GetDisplayModes(_this, display);
+    }
+}
+
+static const SDL_DisplayMode *SDL_CreateTemporaryDisplayMode(const SDL_DisplayMode *mode)
+{
+    SDL_DisplayMode *retval = NULL;
+
+    if (mode) {
+        retval = (SDL_DisplayMode *)SDL_malloc(sizeof(*retval));
+        if (retval) {
+            SDL_copyp(retval, mode);
+        }
+    }
+    return SDL_FreeLater(retval);
+}
+
+// Return the matching mode as a pointer into our current mode list
 static const SDL_DisplayMode *SDL_GetFullscreenModeMatch(const SDL_DisplayMode *mode)
 {
-    const SDL_DisplayMode * const *modes;
+    SDL_VideoDisplay *display;
     SDL_DisplayMode fullscreen_mode;
 
     if (mode->w <= 0 || mode->h <= 0) {
@@ -1126,15 +1147,15 @@ static const SDL_DisplayMode *SDL_GetFullscreenModeMatch(const SDL_DisplayMode *
 
     mode = NULL;
 
-    modes = SDL_GetFullscreenDisplayModes(fullscreen_mode.displayID, NULL);
-    if (modes) {
-        int i;
+    display = SDL_GetVideoDisplay(fullscreen_mode.displayID);
+    if (display) {
+        SDL_UpdateFullscreenDisplayModes(display);
 
         /* Search for an exact match */
         if (!mode) {
-            for (i = 0; modes[i]; ++i) {
-                if (SDL_memcmp(&fullscreen_mode, modes[i], sizeof(fullscreen_mode)) == 0) {
-                    mode = modes[i];
+            for (int i = 0; display->num_fullscreen_modes; ++i) {
+                if (SDL_memcmp(&fullscreen_mode, &display->fullscreen_modes[i], sizeof(fullscreen_mode)) == 0) {
+                    mode = &display->fullscreen_modes[i];
                     break;
                 }
             }
@@ -1142,15 +1163,25 @@ static const SDL_DisplayMode *SDL_GetFullscreenModeMatch(const SDL_DisplayMode *
 
         /* Search for a mode with the same characteristics */
         if (!mode) {
-            for (i = 0; modes[i]; ++i) {
-                if (cmpmodes(&fullscreen_mode, modes[i]) == 0) {
-                    mode = modes[i];
+            for (int i = 0; display->num_fullscreen_modes; ++i) {
+                if (cmpmodes(&fullscreen_mode, &display->fullscreen_modes[i]) == 0) {
+                    mode = &display->fullscreen_modes[i];
                     break;
                 }
             }
         }
     }
     return mode;
+}
+
+// Return the window's fullscreen mode as a pointer into our current mode list
+static const SDL_DisplayMode *SDL_GetWindowFullscreenModeInternal(SDL_Window *window)
+{
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        return SDL_GetFullscreenModeMatch(&window->current_fullscreen_mode);
+    } else {
+        return SDL_GetFullscreenModeMatch(&window->requested_fullscreen_mode);
+    }
 }
 
 SDL_bool SDL_AddFullscreenDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
@@ -1232,9 +1263,7 @@ const SDL_DisplayMode * const *SDL_GetFullscreenDisplayModes(SDL_DisplayID displ
 
     CHECK_DISPLAY_MAGIC(display, NULL);
 
-    if (display->num_fullscreen_modes == 0 && _this->GetDisplayModes) {
-        _this->GetDisplayModes(_this, display);
-    }
+    SDL_UpdateFullscreenDisplayModes(display);
 
     num_modes = display->num_fullscreen_modes;
     retval = (SDL_DisplayMode **)SDL_malloc((num_modes + 1) * sizeof(*retval) + num_modes * sizeof(**retval));
@@ -1259,10 +1288,12 @@ const SDL_DisplayMode * const *SDL_GetFullscreenDisplayModes(SDL_DisplayID displ
 
 const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, SDL_bool include_high_density_modes)
 {
-    const SDL_DisplayMode * const *modes;
     const SDL_DisplayMode *mode, *closest = NULL;
     float aspect_ratio;
     int i;
+    SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
+
+    CHECK_DISPLAY_MAGIC(display, NULL);
 
     if (h > 0) {
         aspect_ratio = (float)w / h;
@@ -1271,49 +1302,45 @@ const SDL_DisplayMode *SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID display
     }
 
     if (refresh_rate == 0.0f) {
-        mode = SDL_GetDesktopDisplayMode(displayID);
-        if (mode) {
-            refresh_rate = mode->refresh_rate;
-        }
+        refresh_rate = display->desktop_mode.refresh_rate;
     }
 
-    modes = SDL_GetFullscreenDisplayModes(displayID, NULL);
-    if (modes) {
-        for (i = 0; modes[i]; ++i) {
-            mode = modes[i];
+    SDL_UpdateFullscreenDisplayModes(display);
 
-            if (w > mode->w) {
-                /* Out of sorted modes large enough here */
-                break;
-            }
-            if (h > mode->h) {
-                /* Wider, but not tall enough, due to a different aspect ratio.
-                 * This mode must be skipped, but closer modes may still follow */
-                continue;
-            }
-            if (mode->pixel_density > 1.0f && !include_high_density_modes) {
-                continue;
-            }
-            if (closest) {
-                float current_aspect_ratio = (float)mode->w / mode->h;
-                float closest_aspect_ratio = (float)closest->w / closest->h;
-                if (SDL_fabsf(aspect_ratio - closest_aspect_ratio) < SDL_fabsf(aspect_ratio - current_aspect_ratio)) {
-                    /* The mode we already found has a better aspect ratio match */
-                    continue;
-                }
+    for (i = 0; i < display->num_fullscreen_modes; ++i) {
+        mode = &display->fullscreen_modes[i];
 
-                if (mode->w == closest->w && mode->h == closest->h &&
-                    SDL_fabsf(closest->refresh_rate - refresh_rate) < SDL_fabsf(mode->refresh_rate - refresh_rate)) {
-                    /* We already found a mode and the new mode is further from our
-                     * refresh rate target */
-                    continue;
-                }
-            }
-
-            closest = mode;
+        if (w > mode->w) {
+            /* Out of sorted modes large enough here */
+            break;
         }
+        if (h > mode->h) {
+            /* Wider, but not tall enough, due to a different aspect ratio.
+             * This mode must be skipped, but closer modes may still follow */
+            continue;
+        }
+        if (mode->pixel_density > 1.0f && !include_high_density_modes) {
+            continue;
+        }
+        if (closest) {
+            float current_aspect_ratio = (float)mode->w / mode->h;
+            float closest_aspect_ratio = (float)closest->w / closest->h;
+            if (SDL_fabsf(aspect_ratio - closest_aspect_ratio) < SDL_fabsf(aspect_ratio - current_aspect_ratio)) {
+                /* The mode we already found has a better aspect ratio match */
+                continue;
+            }
+
+            if (mode->w == closest->w && mode->h == closest->h &&
+                SDL_fabsf(closest->refresh_rate - refresh_rate) < SDL_fabsf(mode->refresh_rate - refresh_rate)) {
+                /* We already found a mode and the new mode is further from our
+                 * refresh rate target */
+                continue;
+            }
+        }
+
+        closest = mode;
     }
-    return closest;
+    return SDL_CreateTemporaryDisplayMode(closest);
 }
 
 static SDL_bool DisplayModeChanged(const SDL_DisplayMode *old, const SDL_DisplayMode *new)
@@ -1352,7 +1379,7 @@ const SDL_DisplayMode *SDL_GetDesktopDisplayMode(SDL_DisplayID displayID)
 
     CHECK_DISPLAY_MAGIC(display, NULL);
 
-    return &display->desktop_mode;
+    return SDL_CreateTemporaryDisplayMode(&display->desktop_mode);
 }
 
 void SDL_SetCurrentDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode *mode)
@@ -1379,11 +1406,9 @@ const SDL_DisplayMode *SDL_GetCurrentDisplayMode(SDL_DisplayID displayID)
     CHECK_DISPLAY_MAGIC(display, NULL);
 
     /* Make sure our mode list is updated */
-    if (display->num_fullscreen_modes == 0 && _this->GetDisplayModes) {
-        _this->GetDisplayModes(_this, display);
-    }
+    SDL_UpdateFullscreenDisplayModes(display);
 
-    return display->current_mode;
+    return SDL_CreateTemporaryDisplayMode(display->current_mode);
 }
 
 int SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, SDL_DisplayMode *mode)
@@ -1746,7 +1771,7 @@ int SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, SD
     }
 
     if (fullscreen) {
-        mode = (SDL_DisplayMode *)SDL_GetWindowFullscreenMode(window);
+        mode = (SDL_DisplayMode *)SDL_GetWindowFullscreenModeInternal(window);
         if (mode) {
             window->fullscreen_exclusive = SDL_TRUE;
         } else {
@@ -1989,14 +2014,14 @@ int SDL_SetWindowFullscreenMode(SDL_Window *window, const SDL_DisplayMode *mode)
 
 const SDL_DisplayMode *SDL_GetWindowFullscreenMode(SDL_Window *window)
 {
+    const SDL_DisplayMode *retval;
+
     CHECK_WINDOW_MAGIC(window, NULL);
     CHECK_WINDOW_NOT_POPUP(window, NULL);
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        return SDL_GetFullscreenModeMatch(&window->current_fullscreen_mode);
-    } else {
-        return SDL_GetFullscreenModeMatch(&window->requested_fullscreen_mode);
-    }
+    retval = SDL_GetWindowFullscreenModeInternal(window);
+
+    return SDL_CreateTemporaryDisplayMode(retval);
 }
 
 const void *SDL_GetWindowICCProfile(SDL_Window *window, size_t *size)
@@ -3003,7 +3028,7 @@ int SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 
         SDL_GetWindowSize(window, w, h);
 
-        if (SDL_GetWindowFullscreenMode(window)) {
+        if (SDL_GetWindowFullscreenModeInternal(window)) {
             mode = SDL_GetCurrentDisplayMode(displayID);
         } else {
             mode = SDL_GetDesktopDisplayMode(displayID);
