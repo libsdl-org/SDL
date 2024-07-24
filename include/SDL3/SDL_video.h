@@ -584,6 +584,9 @@ extern SDL_DECLSPEC const SDL_DisplayMode * const * SDLCALL SDL_GetFullscreenDis
  * and finally checking the refresh rate. If all the available modes are too
  * small, then NULL is returned.
  *
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
+ *
  * \param displayID the instance ID of the display to query.
  * \param w the width in pixels of the desired display mode.
  * \param h the height in pixels of the desired display mode.
@@ -610,6 +613,9 @@ extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetClosestFullscreenDisp
  * function will return the previous native display mode, and not the current
  * display mode.
  *
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
+ *
  * \param displayID the instance ID of the display to query.
  * \returns a pointer to the desktop display mode or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -628,6 +634,9 @@ extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetDesktopDisplayMode(SD
  * when SDL runs fullscreen and has changed the resolution. In that case this
  * function will return the current display mode, and not the previous native
  * display mode.
+ *
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param displayID the instance ID of the display to query.
  * \returns a pointer to the desktop display mode or NULL on failure; call
@@ -758,6 +767,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFullscreenMode(SDL_Window *window, 
 
 /**
  * Query the display mode to use when a window is visible at fullscreen.
+ *
+ * This returns temporary memory which will be automatically freed later, and
+ * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param window the window to query.
  * \returns a pointer to the exclusive fullscreen mode to use or NULL for
