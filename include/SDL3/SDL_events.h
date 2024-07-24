@@ -130,6 +130,7 @@ typedef enum SDL_EventType
     SDL_EVENT_WINDOW_MOVED,             /**< Window has been moved to data1, data2 */
     SDL_EVENT_WINDOW_RESIZED,           /**< Window has been resized to data1xdata2 */
     SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED,/**< The pixel size of the window has changed to data1xdata2 */
+    SDL_EVENT_WINDOW_METAL_VIEW_RESIZED,/**< The pixel size of a Metal view associated with the window has changed */
     SDL_EVENT_WINDOW_MINIMIZED,         /**< Window has been minimized */
     SDL_EVENT_WINDOW_MAXIMIZED,         /**< Window has been maximized */
     SDL_EVENT_WINDOW_RESTORED,          /**< Window has been restored to normal size and position */

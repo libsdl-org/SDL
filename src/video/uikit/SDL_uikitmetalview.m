@@ -31,6 +31,7 @@
 #if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
 
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_windowevents_c.h"
 
 #import "SDL_uikitwindow.h"
 #import "SDL_uikitmetalview.h"
@@ -67,7 +68,13 @@
     CGSize size = self.bounds.size;
     size.width *= self.layer.contentsScale;
     size.height *= self.layer.contentsScale;
-    ((CAMetalLayer *)self.layer).drawableSize = size;
+
+    CAMetalLayer *metallayer = ((CAMetalLayer *)self.layer);
+    if (metallayer.drawableSize.width != size.width ||
+        metallayer.drawableSize.height != size.height) {
+        metallayer.drawableSize = size;
+        SDL_SendWindowEvent([self getSDLWindow], SDL_EVENT_WINDOW_METAL_VIEW_RESIZED, 0, 0);
+    }
 }
 
 @end
