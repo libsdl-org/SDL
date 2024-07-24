@@ -50,7 +50,7 @@ static const SDL_Locale * const *build_locales_from_csv_string(char *csv, int *c
     }
 
     slen = ((size_t)(ptr - csv)) + 1; /* SDL_strlen(csv) + 1 */
-    alloclen = (num_locales * sizeof(SDL_Locale *)) + (num_locales * sizeof(SDL_Locale)) + slen;
+    alloclen = ((num_locales + 1) * sizeof(SDL_Locale *)) + (num_locales * sizeof(SDL_Locale)) + slen;
 
     retval = (SDL_Locale **)SDL_calloc(1, alloclen);
     if (!retval) {
