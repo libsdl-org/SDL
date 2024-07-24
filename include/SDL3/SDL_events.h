@@ -79,14 +79,14 @@ typedef enum SDL_EventType
     /* Application events */
     SDL_EVENT_QUIT           = 0x100, /**< User-requested quit */
 
-    /* These application events have special meaning on iOS, see README-ios.md for details */
-    SDL_EVENT_TERMINATING,        /**< The application is being terminated by the OS
+    /* These application events have special meaning on iOS and Android, see README-ios.md and README-android.md for details */
+    SDL_EVENT_TERMINATING,      /**< The application is being terminated by the OS
                                      Called on iOS in applicationWillTerminate()
                                      Called on Android in onDestroy()
                                 */
-    SDL_EVENT_LOW_MEMORY,          /**< The application is low on memory, free memory if possible.
+    SDL_EVENT_LOW_MEMORY,       /**< The application is low on memory, free memory if possible.
                                      Called on iOS in applicationDidReceiveMemoryWarning()
-                                     Called on Android in onLowMemory()
+                                     Called on Android in onTrimMemory()
                                 */
     SDL_EVENT_WILL_ENTER_BACKGROUND, /**< The application is about to enter the background
                                      Called on iOS in applicationWillResignActive()

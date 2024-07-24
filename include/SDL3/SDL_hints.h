@@ -103,21 +103,6 @@ extern "C" {
 #define SDL_HINT_ANDROID_BLOCK_ON_PAUSE "SDL_ANDROID_BLOCK_ON_PAUSE"
 
 /**
- * A variable to control whether SDL will pause audio in background.
- *
- * The variable can be set to the following values:
- *
- * - "0": Not paused, requires that SDL_HINT_ANDROID_BLOCK_ON_PAUSE be set to
- *   "0"
- * - "1": Paused. (default)
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO "SDL_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO"
-
-/**
  * A variable to control whether we trap the Android back button to handle it
  * manually.
  *

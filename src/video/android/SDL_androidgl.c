@@ -48,11 +48,11 @@ SDL_GLContext Android_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *win
 {
     SDL_GLContext ret;
 
-    Android_ActivityMutex_Lock_Running();
+    Android_LockActivityMutexOnceRunning();
 
     ret = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_UnlockActivityMutex();
 
     return ret;
 }
@@ -61,7 +61,7 @@ int Android_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     int retval;
 
-    SDL_LockMutex(Android_ActivityMutex);
+    Android_LockActivityMutex();
 
     /* The following two calls existed in the original Java code
      * If you happen to have a device that's affected by their removal,
@@ -72,7 +72,7 @@ int Android_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     _this->egl_data->eglWaitGL();*/
     retval = SDL_EGL_SwapBuffers(_this, window->internal->egl_surface);
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_UnlockActivityMutex();
 
     return retval;
 }

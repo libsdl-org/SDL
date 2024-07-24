@@ -34,6 +34,7 @@
 #include "../sensor/SDL_sensor_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
+#include "../video/android/SDL_androidevents.h"
 
 /* An arbitrary limit so we don't have unbounded growth */
 #define SDL_MAX_QUEUED_EVENTS 65535
@@ -1173,18 +1174,22 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 /* Run the system dependent event loops */
 static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-
     /* Free old event memory */
     SDL_FreeTemporaryMemory();
 
     /* Release any keys held down from last frame */
     SDL_ReleaseAutoReleaseKeys();
 
+#ifdef SDL_PLATFORM_ANDROID
+    /* Android event processing is independent of the video subsystem */
+    Android_PumpEvents();
+#else
     /* Get events from the video subsystem */
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this) {
         _this->PumpEvents(_this);
     }
+#endif
 
 #ifndef SDL_AUDIO_DISABLED
     SDL_UpdateAudio();

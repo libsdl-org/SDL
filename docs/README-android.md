@@ -189,8 +189,77 @@ disable this behaviour, see for example:
 http://ponystyle.com/blog/2010/03/26/dealing-with-asset-compression-in-android-apps/
 
 
-Pause / Resume behaviour
+Activity lifecycle
 ================================================================================
+
+On Android the application goes through a fixed life cycle and you will get
+notifications of state changes via application events. When these events
+are delivered you must handle them in an event callback because the OS may
+not give you any processing time after the events are delivered.
+
+e.g.
+
+    int HandleAppEvents(void *userdata, SDL_Event *event)
+    {
+        switch (event->type)
+        {
+        case SDL_EVENT_TERMINATING:
+            /* Terminate the app.
+               Shut everything down before returning from this function.
+            */
+            return 0;
+        case SDL_EVENT_LOW_MEMORY:
+            /* You will get this when your app is paused and iOS wants more memory.
+               Release as much memory as possible.
+            */
+            return 0;
+        case SDL_EVENT_WILL_ENTER_BACKGROUND:
+            /* Prepare your app to go into the background.  Stop loops, etc.
+               This gets called when the user hits the home button, or gets a call.
+
+               You should not make any OpenGL graphics calls or use the rendering API,
+               in addition, you should set the render target to NULL, if you're using
+               it, e.g. call SDL_SetRenderTarget(renderer, NULL).
+            */
+            return 0;
+        case SDL_EVENT_DID_ENTER_BACKGROUND:
+            /* Your app is NOT active at this point. */
+            return 0;
+        case SDL_EVENT_WILL_ENTER_FOREGROUND:
+            /* This call happens when your app is coming back to the foreground.
+               Restore all your state here.
+            */
+            return 0;
+        case SDL_EVENT_DID_ENTER_FOREGROUND:
+            /* Restart your loops here.
+               Your app is interactive and getting CPU again.
+
+               You have access to the OpenGL context or rendering API at this point.
+               However, there's a chance (on older hardware, or on systems under heavy load),
+               where the graphics context can not be restored. You should listen for the
+               event SDL_EVENT_RENDER_DEVICE_RESET and recreate your OpenGL context and
+               restore your textures when you get it, or quit the app.
+            */
+            return 0;
+        default:
+            /* No special processing, add it to the event queue */
+            return 1;
+        }
+    }
+
+    int main(int argc, char *argv[])
+    {
+        SDL_SetEventFilter(HandleAppEvents, NULL);
+
+        ... run your main loop
+
+        return 0;
+    }
+
+
+Note that if you are using main callbacks instead of a standard C main() function,
+your SDL_AppEvent() callback will run as these events arrive and you do not need to
+use SDL_SetEventFilter.
 
 If SDL_HINT_ANDROID_BLOCK_ON_PAUSE hint is set (the default),
 the event loop will block itself when the app is paused (ie, when the user
@@ -198,33 +267,9 @@ returns to the main Android dashboard). Blocking is better in terms of battery
 use, and it allows your app to spring back to life instantaneously after resume
 (versus polling for a resume message).
 
-Upon resume, SDL will attempt to restore the GL context automatically.
-In modern devices (Android 3.0 and up) this will most likely succeed and your
-app can continue to operate as it was.
-
-However, there's a chance (on older hardware, or on systems under heavy load),
-where the GL context can not be restored. In that case you have to listen for
-a specific message (SDL_EVENT_RENDER_DEVICE_RESET) and restore your textures
-manually or quit the app.
-
-You should not use the SDL renderer API while the app going in background:
-- SDL_EVENT_WILL_ENTER_BACKGROUND:
-    after you read this message, GL context gets backed-up and you should not
-    use the SDL renderer API.
-
-    When this event is received, you have to set the render target to NULL, if you're using it.
-    (eg call SDL_SetRenderTarget(renderer, NULL))
-
-- SDL_EVENT_DID_ENTER_FOREGROUND:
-   GL context is restored, and the SDL renderer API is available (unless you
-   receive SDL_EVENT_RENDER_DEVICE_RESET).
-
-Activity lifecycle
-================================================================================
-
-You can control activity re-creation (eg. onCreate()) behaviour. This allows to keep
-or re-initialize java and native static datas, see SDL_hints.h:
-- SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY
+You can control activity re-creation (eg. onCreate()) behaviour. This allows you
+to choose whether to keep or re-initialize java and native static datas, see
+SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY in SDL_hints.h.
 
 Mouse / Touch events
 ================================================================================

@@ -139,14 +139,18 @@ SDL_bool SDL_IsAndroidTV(void);
 SDL_bool SDL_IsChromebook(void);
 SDL_bool SDL_IsDeXMode(void);
 
-void Android_ActivityMutex_Lock(void);
-void Android_ActivityMutex_Unlock(void);
-void Android_ActivityMutex_Lock_Running(void);
+void Android_LockActivityMutex(void);
+void Android_UnlockActivityMutex(void);
+void Android_LockActivityMutexOnceRunning(void);
 
 /* File Dialogs */
 SDL_bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void* userdata,
     const SDL_DialogFileFilter *filters, int nfilters, SDL_bool forwrite,
     SDL_bool multiple);
+
+/* Semaphores for event state processing */
+extern SDL_Semaphore *Android_PauseSem;
+extern SDL_Semaphore *Android_ResumeSem;
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
