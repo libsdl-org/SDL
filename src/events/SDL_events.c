@@ -34,7 +34,11 @@
 #include "../sensor/SDL_sensor_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
+
+#ifdef SDL_PLATFORM_ANDROID
+#include "../core/android/SDL_android.h"
 #include "../video/android/SDL_androidevents.h"
+#endif
 
 /* An arbitrary limit so we don't have unbounded growth */
 #define SDL_MAX_QUEUED_EVENTS 65535
@@ -1029,6 +1033,9 @@ static void SDL_CutEvent(SDL_EventEntry *entry)
 
 static int SDL_SendWakeupEvent(void)
 {
+#ifdef SDL_PLATFORM_ANDROID
+    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
+#else
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this == NULL || !_this->SendWakeupEvent) {
         return 0;
@@ -1044,6 +1051,7 @@ static int SDL_SendWakeupEvent(void)
         }
     }
     SDL_UnlockMutex(_this->wakeup_lock);
+#endif
 
     return 0;
 }
@@ -1182,7 +1190,7 @@ static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
 
 #ifdef SDL_PLATFORM_ANDROID
     /* Android event processing is independent of the video subsystem */
-    Android_PumpEvents();
+    Android_PumpEvents(0);
 #else
     /* Get events from the video subsystem */
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -1240,6 +1248,8 @@ SDL_bool SDL_PollEvent(SDL_Event *event)
 {
     return SDL_WaitEventTimeoutNS(event, 0);
 }
+
+#ifndef SDL_PLATFORM_ANDROID
 
 static Sint64 SDL_events_get_polling_interval(void)
 {
@@ -1347,6 +1357,8 @@ static SDL_Window *SDL_find_active_window(SDL_VideoDevice *_this)
     return NULL;
 }
 
+#endif // !SDL_PLATFORM_ANDROID
+
 SDL_bool SDL_WaitEvent(SDL_Event *event)
 {
     return SDL_WaitEventTimeoutNS(event, -1);
@@ -1366,8 +1378,6 @@ SDL_bool SDL_WaitEventTimeout(SDL_Event *event, Sint32 timeoutMS)
 
 SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_Window *wakeup_window;
     Uint64 start, expiration;
     SDL_bool include_sentinel = (timeoutNS == 0);
     int result;
@@ -1420,9 +1430,28 @@ SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
     /* We should have completely handled timeoutNS == 0 above */
     SDL_assert(timeoutNS != 0);
 
+#ifdef SDL_PLATFORM_ANDROID
+    for (;;) {
+        if (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0) {
+            return SDL_TRUE;
+        }
+
+        Uint64 delay = -1;
+        if (timeoutNS > 0) {
+            Uint64 now = SDL_GetTicksNS();
+            if (now >= expiration) {
+                /* Timeout expired and no events */
+                return SDL_FALSE;
+            }
+            delay = (expiration - now);
+        }
+        Android_PumpEvents(delay);
+    }
+#else
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this && _this->WaitEventTimeout && _this->SendWakeupEvent) {
         /* Look if a shown window is available to send the wakeup event. */
-        wakeup_window = SDL_find_active_window(_this);
+        SDL_Window *wakeup_window = SDL_find_active_window(_this);
         if (wakeup_window) {
             result = SDL_WaitEventTimeout_Device(_this, wakeup_window, event, start, timeoutNS);
             if (result > 0) {
@@ -1455,6 +1484,7 @@ SDL_bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
         }
         SDL_DelayNS(delay);
     }
+#endif // SDL_PLATFORM_ANDROID
 }
 
 static SDL_bool SDL_CallEventWatchers(SDL_Event *event)

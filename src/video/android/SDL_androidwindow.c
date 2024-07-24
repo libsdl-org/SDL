@@ -29,6 +29,7 @@
 #include "../../core/android/SDL_android.h"
 
 #include "SDL_androidvideo.h"
+#include "SDL_androidevents.h"
 #include "SDL_androidwindow.h"
 
 
@@ -40,7 +41,9 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     SDL_WindowData *data;
     int retval = 0;
 
-    Android_LockActivityMutexOnceRunning();
+    if (Android_WaitActiveAndLockActivity() < 0) {
+        return -1;
+    }
 
     if (Android_Window) {
         retval = SDL_SetError("Android only supports one window");

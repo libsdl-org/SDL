@@ -20,6 +20,9 @@
 */
 #include "SDL_internal.h"
 
+#ifndef SDL_android_h
+#define SDL_android_h
+
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 /* *INDENT-OFF* */
@@ -34,6 +37,23 @@ extern "C" {
 
 // this appears to be broken right now (on Android, not SDL, I think...?).
 #define ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES 0
+
+/* Life cycle */
+typedef enum
+{
+    SDL_ANDROID_LIFECYCLE_WAKE,
+    SDL_ANDROID_LIFECYCLE_PAUSE,
+    SDL_ANDROID_LIFECYCLE_RESUME,
+    SDL_ANDROID_LIFECYCLE_LOWMEMORY,
+    SDL_ANDROID_LIFECYCLE_DESTROY,
+    SDL_NUM_ANDROID_LIFECYCLE_EVENTS
+} SDL_AndroidLifecycleEvent;
+
+void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event);
+SDL_bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS);
+
+void Android_LockActivityMutex(void);
+void Android_UnlockActivityMutex(void);
 
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
@@ -111,9 +131,6 @@ int Android_JNI_GetLocale(char *buf, size_t buflen);
 /* Generic messages */
 int Android_JNI_SendMessage(int command, int param);
 
-/* Init */
-JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv *mEnv, jclass cls);
-
 /* MessageBox */
 int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
@@ -139,18 +156,10 @@ SDL_bool SDL_IsAndroidTV(void);
 SDL_bool SDL_IsChromebook(void);
 SDL_bool SDL_IsDeXMode(void);
 
-void Android_LockActivityMutex(void);
-void Android_UnlockActivityMutex(void);
-void Android_LockActivityMutexOnceRunning(void);
-
 /* File Dialogs */
 SDL_bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void* userdata,
     const SDL_DialogFileFilter *filters, int nfilters, SDL_bool forwrite,
     SDL_bool multiple);
-
-/* Semaphores for event state processing */
-extern SDL_Semaphore *Android_PauseSem;
-extern SDL_Semaphore *Android_ResumeSem;
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
@@ -158,3 +167,5 @@ extern SDL_Semaphore *Android_ResumeSem;
 }
 /* *INDENT-ON* */
 #endif
+
+#endif // SDL_android_h

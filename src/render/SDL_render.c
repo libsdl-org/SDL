@@ -29,6 +29,7 @@
 
 #ifdef SDL_PLATFORM_ANDROID
 #include "../core/android/SDL_android.h"
+#include "../video/android/SDL_androidevents.h"
 #endif
 
 /* as a courtesy to iOS apps, we don't try to draw when in the background, as
@@ -960,16 +961,18 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     int i, attempted = 0;
     SDL_PropertiesID new_props;
 
+#ifdef SDL_PLATFORM_ANDROID
+    if (Android_WaitActiveAndLockActivity() < 0) {
+        return NULL;
+    }
+#endif
+
     SDL_Renderer *renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
-        return NULL;
+        goto error;
     }
 
     SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_TRUE);
-
-#ifdef SDL_PLATFORM_ANDROID
-    Android_LockActivityMutexOnceRunning();
-#endif
 
     if ((!window && !surface) || (window && surface)) {
         SDL_InvalidParamError("window");
@@ -1135,14 +1138,16 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     return renderer;
 
 error:
-
-    SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);
-
 #ifdef SDL_PLATFORM_ANDROID
     Android_UnlockActivityMutex();
 #endif
-    SDL_free(renderer->texture_formats);
-    SDL_free(renderer);
+
+    if (renderer) {
+        SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);
+
+        SDL_free(renderer->texture_formats);
+        SDL_free(renderer);
+    }
     return NULL;
 
 #else
