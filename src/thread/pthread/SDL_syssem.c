@@ -162,7 +162,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     return (Uint32)ret;
 }
 
-int SDL_PostSemaphore(SDL_Semaphore *sem)
+int SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
     int retval;
 

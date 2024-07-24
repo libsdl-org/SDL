@@ -582,12 +582,12 @@ SDL3_0.0.0 {
     SDL_Metal_GetLayer;
     SDL_MinimizeWindow;
     SDL_MixAudio;
-    SDL_OnApplicationDidEnterForeground;
     SDL_OnApplicationDidChangeStatusBarOrientation;
     SDL_OnApplicationDidEnterBackground;
+    SDL_OnApplicationDidEnterForeground;
     SDL_OnApplicationDidReceiveMemoryWarning;
-    SDL_OnApplicationWillEnterForeground;
     SDL_OnApplicationWillEnterBackground;
+    SDL_OnApplicationWillEnterForeground;
     SDL_OnApplicationWillTerminate;
     SDL_OpenAudioDevice;
     SDL_OpenAudioDeviceStream;
@@ -612,7 +612,6 @@ SDL3_0.0.0 {
     SDL_PenConnected;
     SDL_PlayHapticRumble;
     SDL_PollEvent;
-    SDL_PostSemaphore;
     SDL_PremultiplyAlpha;
     SDL_PremultiplySurfaceAlpha;
     SDL_PumpEvents;
@@ -809,6 +808,7 @@ SDL3_0.0.0 {
     SDL_ShowWindow;
     SDL_ShowWindowSystemMenu;
     SDL_SignalCondition;
+    SDL_SignalSemaphore;
     SDL_StartTextInput;
     SDL_StepUTF8;
     SDL_StopHapticEffect;

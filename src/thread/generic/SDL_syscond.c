@@ -103,7 +103,7 @@ int SDL_SignalCondition_generic(SDL_Condition *_cond)
     SDL_LockMutex(cond->lock);
     if (cond->waiting > cond->signals) {
         ++cond->signals;
-        SDL_PostSemaphore(cond->wait_sem);
+        SDL_SignalSemaphore(cond->wait_sem);
         SDL_UnlockMutex(cond->lock);
         SDL_WaitSemaphore(cond->wait_done);
     } else {
@@ -133,7 +133,7 @@ int SDL_BroadcastCondition_generic(SDL_Condition *_cond)
         num_waiting = (cond->waiting - cond->signals);
         cond->signals = cond->waiting;
         for (i = 0; i < num_waiting; ++i) {
-            SDL_PostSemaphore(cond->wait_sem);
+            SDL_SignalSemaphore(cond->wait_sem);
         }
         /* Now all released threads are blocked here, waiting for us.
            Collect them all (and win fabulous prizes!) :-)
@@ -208,7 +208,7 @@ int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, S
             SDL_WaitSemaphore(cond->wait_sem);
         }
         /* We always notify the signal thread that we are done */
-        SDL_PostSemaphore(cond->wait_done);
+        SDL_SignalSemaphore(cond->wait_done);
 
         /* Signal handshake complete */
         --cond->signals;

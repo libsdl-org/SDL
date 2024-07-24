@@ -243,7 +243,7 @@ void SDL_QuitTimers(void)
     if (SDL_AtomicCompareAndSwap(&data->active, 1, 0)) { /* active? Move to inactive. */
         /* Shutdown the timer thread */
         if (data->thread) {
-            SDL_PostSemaphore(data->sem);
+            SDL_SignalSemaphore(data->sem);
             SDL_WaitThread(data->thread, NULL);
             data->thread = NULL;
         }
@@ -334,7 +334,7 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
     SDL_UnlockSpinlock(&data->lock);
 
     /* Wake up the timer thread if necessary */
-    SDL_PostSemaphore(data->sem);
+    SDL_SignalSemaphore(data->sem);
 
     return entry->timerID;
 }

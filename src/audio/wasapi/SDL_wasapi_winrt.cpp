@@ -186,7 +186,7 @@ void SDL_WasapiDeviceEventHandler::OnEnumerationCompleted(DeviceWatcher ^ sender
 {
     SDL_assert(sender == this->watcher);
     if (this->completed_semaphore) {
-        SDL_PostSemaphore(this->completed_semaphore);
+        SDL_SignalSemaphore(this->completed_semaphore);
     }
 }
 
@@ -283,7 +283,7 @@ HRESULT
 SDL_WasapiActivationHandler::ActivateCompleted(IActivateAudioInterfaceAsyncOperation *async)
 {
     // Just set a flag, since we're probably in a different thread. We'll pick it up and init everything on our own thread to prevent races.
-    SDL_PostSemaphore(completion_semaphore);
+    SDL_SignalSemaphore(completion_semaphore);
     return S_OK;
 }
 

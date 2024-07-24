@@ -85,7 +85,7 @@ static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_re
     // Just flag the device so we can kill it in PlayDevice instead.
     SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
     SDL_AtomicSet(&device->hidden->error_callback_triggered, (int) error);  // AAUDIO_OK is zero, so !triggered means no error.
-    SDL_PostSemaphore(device->hidden->semaphore);  // in case we're blocking in WaitDevice.
+    SDL_SignalSemaphore(device->hidden->semaphore);  // in case we're blocking in WaitDevice.
 }
 
 static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames)
@@ -149,7 +149,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
     size_t new_buffer_index = hidden->callback_bytes / device->buffer_size;
     while (old_buffer_index < new_buffer_index) {
         // Trigger audio processing
-        SDL_PostSemaphore(hidden->semaphore);
+        SDL_SignalSemaphore(hidden->semaphore);
         ++old_buffer_index;
     }
 

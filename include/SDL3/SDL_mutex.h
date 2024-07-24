@@ -544,7 +544,7 @@ typedef struct SDL_Semaphore SDL_Semaphore;
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DestroySemaphore
- * \sa SDL_PostSemaphore
+ * \sa SDL_SignalSemaphore
  * \sa SDL_TryWaitSemaphore
  * \sa SDL_GetSemaphoreValue
  * \sa SDL_WaitSemaphore
@@ -583,7 +583,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySemaphore(SDL_Semaphore *sem);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_PostSemaphore
+ * \sa SDL_SignalSemaphore
  * \sa SDL_TryWaitSemaphore
  * \sa SDL_WaitSemaphoreTimeout
  */
@@ -604,7 +604,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_WaitSemaphore(SDL_Semaphore *sem);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_PostSemaphore
+ * \sa SDL_SignalSemaphore
  * \sa SDL_WaitSemaphore
  * \sa SDL_WaitSemaphoreTimeout
  */
@@ -626,7 +626,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_TryWaitSemaphore(SDL_Semaphore *sem);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_PostSemaphore
+ * \sa SDL_SignalSemaphore
  * \sa SDL_TryWaitSemaphore
  * \sa SDL_WaitSemaphore
  */
@@ -645,7 +645,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_WaitSemaphoreTimeout(SDL_Semaphore *sem, Sin
  * \sa SDL_WaitSemaphore
  * \sa SDL_WaitSemaphoreTimeout
  */
-extern SDL_DECLSPEC int SDLCALL SDL_PostSemaphore(SDL_Semaphore *sem);
+extern SDL_DECLSPEC int SDLCALL SDL_SignalSemaphore(SDL_Semaphore *sem);
 
 /**
  * Get the current value of a semaphore.

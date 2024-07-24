@@ -46,7 +46,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     return 0;
 }
 
-int SDL_PostSemaphore(SDL_Semaphore *sem)
+int SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
     return SDL_SetError("SDL not built with thread support");
 }
@@ -153,7 +153,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     return value;
 }
 
-int SDL_PostSemaphore(SDL_Semaphore *sem)
+int SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
     if (!sem) {
         return SDL_InvalidParamError("sem");

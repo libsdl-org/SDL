@@ -831,12 +831,12 @@ static int AudioQueueThreadEntry(void *arg)
 
     if (PrepareAudioQueue(device) < 0) {
         device->hidden->thread_error = SDL_strdup(SDL_GetError());
-        SDL_PostSemaphore(device->hidden->ready_semaphore);
+        SDL_SignalSemaphore(device->hidden->ready_semaphore);
         return 0;
     }
 
     // init was successful, alert parent thread and start running...
-    SDL_PostSemaphore(device->hidden->ready_semaphore);
+    SDL_SignalSemaphore(device->hidden->ready_semaphore);
 
     // This would be WaitDevice/WaitRecordingDevice in the normal SDL audio thread, but we get *BufferReadyCallback calls here to know when to iterate.
     while (!SDL_AtomicGet(&device->shutdown)) {

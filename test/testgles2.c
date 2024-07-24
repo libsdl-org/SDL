@@ -609,7 +609,7 @@ loop_threaded(void)
             tdata = GetThreadDataForWindow(event.window.windowID);
             if (tdata) {
                 if (SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO) == WAIT_STATE_WAITING_ON_SEM) {
-                    SDL_PostSemaphore(tdata->suspend_sem);
+                    SDL_SignalSemaphore(tdata->suspend_sem);
                 }
             }
         } else if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
@@ -619,7 +619,7 @@ loop_threaded(void)
                 tdata->done = 1;
                 if (tdata->thread) {
                     SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO);
-                    SDL_PostSemaphore(tdata->suspend_sem);
+                    SDL_SignalSemaphore(tdata->suspend_sem);
                     SDL_WaitThread(tdata->thread, NULL);
                     tdata->thread = NULL;
                     SDL_DestroySemaphore(tdata->suspend_sem);

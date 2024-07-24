@@ -2511,7 +2511,7 @@ typedef SDL_atomic_t, SDL_AtomicInt;
 @@
 @@
 - SDL_SemPost
-+ SDL_PostSemaphore
++ SDL_SignalSemaphore
   (...)
 @@
 @@
