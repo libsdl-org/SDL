@@ -320,6 +320,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
 /**
  * Query Android API level of the current device.
  *
+ * - API level 35: Android 15 (VANILLA_ICE_CREAM)
  * - API level 34: Android 14 (UPSIDE_DOWN_CAKE)
  * - API level 33: Android 13 (TIRAMISU)
  * - API level 32: Android 12L (S_V2)
