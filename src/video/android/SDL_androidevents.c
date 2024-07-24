@@ -101,7 +101,6 @@ void Android_InitEvents(void)
 
 void Android_PumpEvents(void)
 {
-restart:
     if (Android_Paused) {
         if (SDL_WaitSemaphoreTimeout(Android_ResumeSem, Android_PausedWaitTime) == 0) {
 
@@ -166,7 +165,6 @@ restart:
             }
 
             Android_Paused = SDL_TRUE;
-            goto restart;
         }
     }
 }
