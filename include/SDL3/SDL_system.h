@@ -716,7 +716,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationDidReceiveMemoryWarning(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationWillResignActive(void);
+extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationWillEnterBackground(void);
 
 /**
  * Let iOS apps with external event handling report
@@ -767,7 +767,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationWillEnterForeground(void);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationDidBecomeActive(void);
+extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationDidEnterForeground(void);
 
 #ifdef SDL_PLATFORM_IOS
 

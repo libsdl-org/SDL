@@ -71,12 +71,12 @@ static BOOL UIKit_EventPumpEnabled = YES;
 
 - (void)applicationDidBecomeActive
 {
-    SDL_OnApplicationDidBecomeActive();
+    SDL_OnApplicationDidEnterForeground();
 }
 
 - (void)applicationWillResignActive
 {
-    SDL_OnApplicationWillResignActive();
+    SDL_OnApplicationWillEnterBackground();
 }
 
 - (void)applicationDidEnterBackground

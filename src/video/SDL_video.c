@@ -5497,7 +5497,7 @@ void SDL_OnApplicationDidReceiveMemoryWarning(void)
     SDL_SendAppEvent(SDL_EVENT_LOW_MEMORY);
 }
 
-void SDL_OnApplicationWillResignActive(void)
+void SDL_OnApplicationWillEnterBackground(void)
 {
     if (_this) {
         SDL_Window *window;
@@ -5519,7 +5519,7 @@ void SDL_OnApplicationWillEnterForeground(void)
     SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
 }
 
-void SDL_OnApplicationDidBecomeActive(void)
+void SDL_OnApplicationDidEnterForeground(void)
 {
     SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
 

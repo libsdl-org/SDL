@@ -3586,3 +3586,13 @@ typedef SDL_JoystickGUID, SDL_GUID;
 - SDL_GUIDFromString
 + SDL_StringToGUID
   (...)
+@@
+@@
+- SDL_OnApplicationWillResignActive
++ SDL_OnApplicationWillEnterBackground
+  (...)
+@@
+@@
+- SDL_OnApplicationDidBecomeActive
++ SDL_OnApplicationDidEnterForeground
+  (...)

@@ -582,12 +582,12 @@ SDL3_0.0.0 {
     SDL_Metal_GetLayer;
     SDL_MinimizeWindow;
     SDL_MixAudio;
-    SDL_OnApplicationDidBecomeActive;
+    SDL_OnApplicationDidEnterForeground;
     SDL_OnApplicationDidChangeStatusBarOrientation;
     SDL_OnApplicationDidEnterBackground;
     SDL_OnApplicationDidReceiveMemoryWarning;
     SDL_OnApplicationWillEnterForeground;
-    SDL_OnApplicationWillResignActive;
+    SDL_OnApplicationWillEnterBackground;
     SDL_OnApplicationWillTerminate;
     SDL_OpenAudioDevice;
     SDL_OpenAudioDeviceStream;
