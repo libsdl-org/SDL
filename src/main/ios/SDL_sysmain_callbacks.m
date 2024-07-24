@@ -26,6 +26,9 @@
 
 #import <UIKit/UIKit.h>
 
+#include "../../video/uikit/SDL_uikitevents.h"  // For SDL_UpdateLifecycleObserver()
+
+
 @interface SDLIosMainCallbacksDisplayLink : NSObject
 @property(nonatomic, retain) CADisplayLink *displayLink;
 - (void)appIteration:(CADisplayLink *)sender;
@@ -53,6 +56,7 @@ static SDLIosMainCallbacksDisplayLink *globalDisplayLink;
         self.displayLink = nil;
         globalDisplayLink = nil;
         SDL_QuitMainCallbacks();
+        SDL_UpdateLifecycleObserver();
         exit((rc < 0) ? 1 : 0);
     }
 }
