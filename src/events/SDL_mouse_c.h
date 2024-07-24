@@ -92,6 +92,9 @@ typedef struct
     SDL_bool relative_mode_warp;
     SDL_bool relative_mode_warp_motion;
     SDL_bool relative_mode_cursor_visible;
+    SDL_bool warp_emulation_hint;
+    SDL_bool warp_emulation_active;
+    SDL_bool warp_emulation_prohibited;
     int relative_mode_clip_interval;
     SDL_bool enable_normal_speed_scale;
     float normal_speed_scale;

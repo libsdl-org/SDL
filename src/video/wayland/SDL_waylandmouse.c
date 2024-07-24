@@ -624,13 +624,7 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
             if (input->cursor_shape) {
                 Wayland_SetSystemCursorShape(input, data->cursor_data.system.id);
 
-                input->cursor_visible = SDL_TRUE;
                 input->current_cursor = data;
-
-                if (input->relative_mode_override) {
-                    Wayland_input_disable_relative_pointer(input);
-                    input->relative_mode_override = SDL_FALSE;
-                }
 
                 return 0;
             } else if (!wayland_get_system_cursor(d, data, &scale)) {
@@ -662,18 +656,10 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
         } else {
             wl_surface_damage(data->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
         }
+
         wl_surface_commit(data->surface);
-
-        input->cursor_visible = SDL_TRUE;
         input->current_cursor = data;
-
-        if (input->relative_mode_override) {
-            Wayland_input_disable_relative_pointer(input);
-            input->relative_mode_override = SDL_FALSE;
-        }
-
     } else {
-        input->cursor_visible = SDL_FALSE;
         input->current_cursor = NULL;
         wl_pointer_set_cursor(pointer, input->pointer_enter_serial, NULL, 0, 0);
     }
@@ -688,40 +674,33 @@ static int Wayland_WarpMouse(SDL_Window *window, float x, float y)
     SDL_WindowData *wind = window->internal;
     struct SDL_WaylandInput *input = d->input;
 
-    if (input->cursor_visible || (input->warp_emulation_prohibited && !d->relative_mouse_mode)) {
-        if (d->pointer_constraints) {
-            const SDL_bool toggle_lock = !wind->locked_pointer;
+    if (d->pointer_constraints) {
+        const SDL_bool toggle_lock = !wind->locked_pointer;
 
-            /* The pointer confinement protocol allows setting a hint to warp the pointer,
-             * but only when the pointer is locked.
-             *
-             * Lock the pointer, set the position hint, unlock, and hope for the best.
-             */
-            if (toggle_lock) {
-                Wayland_input_lock_pointer(input, window);
-            }
-            if (wind->locked_pointer) {
-                const wl_fixed_t f_x = wl_fixed_from_double(x / wind->pointer_scale.x);
-                const wl_fixed_t f_y = wl_fixed_from_double(y / wind->pointer_scale.y);
-                zwp_locked_pointer_v1_set_cursor_position_hint(wind->locked_pointer, f_x, f_y);
-                wl_surface_commit(wind->surface);
-            }
-            if (toggle_lock) {
-                Wayland_input_unlock_pointer(input, window);
-            }
-
-            /* NOTE: There is a pending warp event under discussion that should replace this when available.
-             * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
-             */
-            SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
-        } else {
-            return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required zwp_pointer_confinement_v1 protocol");
+        /* The pointer confinement protocol allows setting a hint to warp the pointer,
+         * but only when the pointer is locked.
+         *
+         * Lock the pointer, set the position hint, unlock, and hope for the best.
+         */
+        if (toggle_lock) {
+            Wayland_input_lock_pointer(input, window);
         }
-    } else if (input->warp_emulation_prohibited) {
-        return SDL_Unsupported();
-    } else if (!d->relative_mouse_mode) {
-        Wayland_input_enable_relative_pointer(input);
-        input->relative_mode_override = SDL_TRUE;
+        if (wind->locked_pointer) {
+            const wl_fixed_t f_x = wl_fixed_from_double(x / wind->pointer_scale.x);
+            const wl_fixed_t f_y = wl_fixed_from_double(y / wind->pointer_scale.y);
+            zwp_locked_pointer_v1_set_cursor_position_hint(wind->locked_pointer, f_x, f_y);
+            wl_surface_commit(wind->surface);
+        }
+        if (toggle_lock) {
+            Wayland_input_unlock_pointer(input, window);
+        }
+
+        /* NOTE: There is a pending warp event under discussion that should replace this when available.
+         * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
+         */
+        SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
+    } else {
+        return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required zwp_pointer_confinement_v1 protocol");
     }
 
     return 0;
@@ -749,27 +728,10 @@ static int Wayland_SetRelativeMouseMode(SDL_bool enabled)
     SDL_VideoData *data = vd->internal;
 
     if (enabled) {
-        /* Disable mouse warp emulation if it's enabled. */
-        if (data->input->relative_mode_override) {
-            data->input->relative_mode_override = SDL_FALSE;
-        }
-
-        /* If the app has used relative mode before, it probably shouldn't
-         * also be emulating it using repeated mouse warps, so disable
-         * mouse warp emulation by default.
-         */
-        data->input->warp_emulation_prohibited = SDL_TRUE;
         return Wayland_input_enable_relative_pointer(data->input);
     } else {
         return Wayland_input_disable_relative_pointer(data->input);
     }
-}
-
-static void SDLCALL Wayland_EmulateMouseWarpChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    struct SDL_WaylandInput *input = (struct SDL_WaylandInput *)userdata;
-
-    input->warp_emulation_prohibited = !SDL_GetStringBoolean(hint, !input->warp_emulation_prohibited);
 }
 
 /* Wayland doesn't support getting the true global cursor position, but it can
@@ -862,7 +824,6 @@ void Wayland_InitMouse(void)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = vd->internal;
-    struct SDL_WaylandInput *input = d->input;
 
     mouse->CreateCursor = Wayland_CreateCursor;
     mouse->CreateSystemCursor = Wayland_CreateSystemCursor;
@@ -872,9 +833,6 @@ void Wayland_InitMouse(void)
     mouse->WarpMouseGlobal = Wayland_WarpMouseGlobal;
     mouse->SetRelativeMouseMode = Wayland_SetRelativeMouseMode;
     mouse->GetGlobalMouseState = Wayland_GetGlobalMouseState;
-
-    input->relative_mode_override = SDL_FALSE;
-    input->cursor_visible = SDL_TRUE;
 
     SDL_HitTestResult r = SDL_HITTEST_NORMAL;
     while (r <= SDL_HITTEST_RESIZE_LEFT) {
@@ -918,26 +876,17 @@ void Wayland_InitMouse(void)
 #endif
 
     SDL_SetDefaultCursor(Wayland_CreateDefaultCursor());
-
-    SDL_AddHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP,
-                        Wayland_EmulateMouseWarpChanged, input);
 }
 
 void Wayland_FiniMouse(SDL_VideoData *data)
 {
-    struct SDL_WaylandInput *input = data->input;
-    int i;
-
     Wayland_FreeCursorThemes(data);
 
 #ifdef SDL_USE_LIBDBUS
     Wayland_DBusFinishCursorProperties();
 #endif
 
-    SDL_DelHintCallback(SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP,
-                        Wayland_EmulateMouseWarpChanged, input);
-
-    for (i = 0; i < SDL_arraysize(sys_cursors); i++) {
+    for (int i = 0; i < SDL_arraysize(sys_cursors); i++) {
         Wayland_FreeCursor(sys_cursors[i]);
         sys_cursors[i] = NULL;
     }
