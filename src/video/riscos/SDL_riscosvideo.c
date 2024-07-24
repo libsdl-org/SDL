@@ -101,8 +101,6 @@ VideoBootStrap RISCOS_bootstrap = {
 
 static int RISCOS_VideoInit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->internal;
-
     if (RISCOS_InitEvents(_this) < 0) {
         return -1;
     }
