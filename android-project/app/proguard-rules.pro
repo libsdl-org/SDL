@@ -47,10 +47,11 @@
     void requestPermission(java.lang.String, int);
     int openURL(java.lang.String);
     int showToast(java.lang.String, int, int, int, int);
-    native java.lang.String nativeGetHint(java.lang.String);
+    java.lang.String nativeGetHint(java.lang.String);
     int openFileDescriptor(java.lang.String, java.lang.String);
     boolean showFileDialog(java.lang.String[], boolean, boolean, int);
-    native void onNativeFileDialog(int, java.lang.String[], int);
+    void onNativeFileDialog(int, java.lang.String[], int);
+    void onNativeInsetsChanged(int, int, int, int);
 }
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.HIDDeviceManager {
