@@ -968,7 +968,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_TRUE);
 
 #ifdef SDL_PLATFORM_ANDROID
-    Android_ActivityMutex_Lock_Running();
+    Android_LockActivityMutexOnceRunning();
 #endif
 
     if ((!window && !surface) || (window && surface)) {
@@ -1127,7 +1127,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     SDL_renderers = renderer;
 
 #ifdef SDL_PLATFORM_ANDROID
-    Android_ActivityMutex_Unlock();
+    Android_UnlockActivityMutex();
 #endif
 
     SDL_ClearError();
@@ -1139,7 +1139,7 @@ error:
     SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);
 
 #ifdef SDL_PLATFORM_ANDROID
-    Android_ActivityMutex_Unlock();
+    Android_UnlockActivityMutex();
 #endif
     SDL_free(renderer->texture_formats);
     SDL_free(renderer);

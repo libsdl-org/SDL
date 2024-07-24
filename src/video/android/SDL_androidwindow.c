@@ -40,7 +40,7 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     SDL_WindowData *data;
     int retval = 0;
 
-    Android_ActivityMutex_Lock_Running();
+    Android_LockActivityMutexOnceRunning();
 
     if (Android_Window) {
         retval = SDL_SetError("Android only supports one window");
@@ -95,7 +95,7 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
 endfunction:
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_UnlockActivityMutex();
 
     return retval;
 }
@@ -107,7 +107,7 @@ void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 
 int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
-    SDL_LockMutex(Android_ActivityMutex);
+    Android_LockActivityMutex();
 
     if (window == Android_Window) {
         SDL_WindowData *data;
@@ -153,7 +153,7 @@ int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 
 endfunction:
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_UnlockActivityMutex();
     return 0;
 }
 
@@ -170,7 +170,7 @@ void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 
 void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_LockMutex(Android_ActivityMutex);
+    Android_LockActivityMutex();
 
     if (window == Android_Window) {
         Android_Window = NULL;
@@ -192,7 +192,7 @@ void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
     }
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_UnlockActivityMutex();
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */

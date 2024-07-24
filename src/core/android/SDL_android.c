@@ -403,6 +403,10 @@ static jobject javaAssetManagerRef = 0;
 /* Re-create activity hint */
 static SDL_AtomicInt bAllowRecreateActivity;
 
+static SDL_Mutex *Android_ActivityMutex = NULL;
+SDL_Semaphore *Android_PauseSem = NULL;
+SDL_Semaphore *Android_ResumeSem = NULL;
+
 /*******************************************************************************
                  Functions called by JNI
 *******************************************************************************/
@@ -903,18 +907,18 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 }
 
 /* Lock / Unlock Mutex */
-void Android_ActivityMutex_Lock(void)
+void Android_LockActivityMutex(void)
 {
     SDL_LockMutex(Android_ActivityMutex);
 }
 
-void Android_ActivityMutex_Unlock(void)
+void Android_UnlockActivityMutex(void)
 {
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
 /* Lock the Mutex when the Activity is in its 'Running' state */
-void Android_ActivityMutex_Lock_Running(void)
+void Android_LockActivityMutexOnceRunning(void)
 {
     int pauseSignaled = 0;
     int resumeSignaled = 0;
