@@ -73,7 +73,7 @@
 @property(nonatomic) NSRect mouseConfinementRect;
 @end
 
-@interface SDLWindow : NSWindow <NSDraggingDestination>
+@interface SDL3Window : NSWindow <NSDraggingDestination>
 /* These are needed for borderless/fullscreen windows */
 - (BOOL)canBecomeKeyWindow;
 - (BOOL)canBecomeMainWindow;
@@ -90,7 +90,7 @@
 - (SDL_Window *)findSDLWindow;
 @end
 
-@implementation SDLWindow
+@implementation SDL3Window
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
@@ -140,7 +140,7 @@
     }
 
     delegate = [self delegate];
-    if (![delegate isKindOfClass:[Cocoa_WindowListener class]]) {
+    if (![delegate isKindOfClass:[SDL3Cocoa_WindowListener class]]) {
         return;
     }
 
@@ -418,7 +418,7 @@ static void ScheduleContextUpdates(SDL_CocoaWindowData *data)
     currentContext = [NSOpenGLContext currentContext];
     contexts = data.nscontexts;
     @synchronized(contexts) {
-        for (SDLOpenGLContext *context in contexts) {
+        for (SDL3OpenGLContext *context in contexts) {
             if (context == currentContext) {
                 [context update];
             } else {
@@ -672,7 +672,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     return [NSCursor invisibleCursor];
 }
 
-@implementation Cocoa_WindowListener
+@implementation SDL3Cocoa_WindowListener
 
 - (void)listen:(SDL_CocoaWindowData *)data
 {
@@ -994,7 +994,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
 - (void)windowWillMove:(NSNotification *)aNotification
 {
-    if ([_data.nswindow isKindOfClass:[SDLWindow class]]) {
+    if ([_data.nswindow isKindOfClass:[SDL3Window class]]) {
         pendingWindowWarpX = pendingWindowWarpY = FLT_MAX;
         isMoving = YES;
     }
@@ -1245,7 +1245,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 #ifdef SDL_VIDEO_OPENGL
 
     if (_data && _data.nscontexts) {
-        for (SDLOpenGLContext *context in _data.nscontexts) {
+        for (SDL3OpenGLContext *context in _data.nscontexts) {
             [context movedToNewScreen];
         }
     }
@@ -1894,7 +1894,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
 @end
 
-@interface SDLView : NSView
+@interface SDL3View : NSView
 {
     SDL_Window *_sdlWindow;
 }
@@ -1910,7 +1910,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 - (void)updateLayer;
 @end
 
-@implementation SDLView
+@implementation SDL3View
 
 - (void)setSDLWindow:(SDL_Window *)window
 {
@@ -2007,7 +2007,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow 
         data.sdlContentView = nsview;
 
         /* Create an event listener for the window */
-        data.listener = [[Cocoa_WindowListener alloc] init];
+        data.listener = [[SDL3Cocoa_WindowListener alloc] init];
 
         /* Fill in the SDL window with the window data */
         {
@@ -2157,7 +2157,7 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
             NSScreen *screen;
             NSRect rect, screenRect;
             NSUInteger style;
-            SDLView *contentView;
+            SDL3View *contentView;
 
             SDL_RelativeToGlobalForWindow(window, window->x, window->y, &x, &y);
             rect.origin.x = x;
@@ -2187,7 +2187,7 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
             }
 
             @try {
-                nswindow = [[SDLWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO screen:screen];
+                nswindow = [[SDL3Window alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO screen:screen];
             }
             @catch (NSException *e) {
                 return SDL_SetError("%s", [[e reason] UTF8String]);
@@ -2212,7 +2212,7 @@ int Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
 
             /* Create a default view for this window */
             rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-            contentView = [[SDLView alloc] initWithFrame:rect];
+            contentView = [[SDL3View alloc] initWithFrame:rect];
             [contentView setSDLWindow:window];
             nsview = contentView;
         }
@@ -2651,7 +2651,7 @@ void Cocoa_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bo
          * -flibit
          */
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
-        Cocoa_WindowListener *listener = data.listener;
+        SDL3Cocoa_WindowListener *listener = data.listener;
         NSWindow *nswindow = data.nswindow;
         SDL_CocoaVideoData *videodata = data.videodata;
         if (![listener isInFullscreenSpace] && ![listener isInFullscreenSpaceTransition]) {
@@ -2951,7 +2951,7 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #ifdef SDL_VIDEO_OPENGL
 
             contexts = [data.nscontexts copy];
-            for (SDLOpenGLContext *context in contexts) {
+            for (SDL3OpenGLContext *context in contexts) {
                 /* Calling setWindow:NULL causes the context to remove itself from the context list. */
                 [context setWindow:NULL];
             }

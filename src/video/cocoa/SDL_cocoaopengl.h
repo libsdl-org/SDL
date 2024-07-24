@@ -39,7 +39,7 @@ struct SDL_GLDriverData
     int initialized;
 };
 
-@interface SDLOpenGLContext : NSOpenGLContext
+@interface SDL3OpenGLContext : NSOpenGLContext
 {
     SDL_AtomicInt dirty;
     SDL_Window *window;

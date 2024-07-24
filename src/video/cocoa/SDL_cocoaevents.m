@@ -45,7 +45,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     return sdlwindow;
 }
 
-@interface SDLApplication : NSApplication
+@interface SDL3Application : NSApplication
 
 - (void)terminate:(id)sender;
 - (void)sendEvent:(NSEvent *)theEvent;
@@ -54,7 +54,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
 
 @end
 
-@implementation SDLApplication
+@implementation SDL3Application
 
 // Override terminate to handle Quit and System Shutdown smoothly.
 - (void)terminate:(id)sender
@@ -114,14 +114,14 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
 }
 
-@end // SDLApplication
+@end // SDL3Application
 
 /* setAppleMenu disappeared from the headers in 10.4 */
 @interface NSApplication (NSAppleMenu)
 - (void)setAppleMenu:(NSMenu *)menu;
 @end
 
-@interface SDLAppDelegate : NSObject <NSApplicationDelegate>
+@interface SDL3AppDelegate : NSObject <NSApplicationDelegate>
 {
   @public
     BOOL seenFirstActivate;
@@ -136,7 +136,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app;
 @end
 
-@implementation SDLAppDelegate : NSObject
+@implementation SDL3AppDelegate : NSObject
 - (id)init
 {
     self = [super init];
@@ -330,7 +330,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
     /* If we call this before NSApp activation, macOS might print a complaint
      * about ApplePersistenceIgnoreState. */
-    [SDLApplication registerUserDefaults];
+    [SDL3Application registerUserDefaults];
 }
 
 - (void)handleURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
@@ -358,7 +358,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 @end
 
-static SDLAppDelegate *appDelegate = nil;
+static SDL3AppDelegate *appDelegate = nil;
 
 static NSString *GetApplicationName(void)
 {
@@ -490,7 +490,7 @@ void Cocoa_RegisterApp(void)
         /* This can get called more than once! Be careful what you initialize! */
 
         if (NSApp == nil) {
-            [SDLApplication sharedApplication];
+            [SDL3Application sharedApplication];
             SDL_assert(NSApp != nil);
 
             s_bShouldHandleEventsInSDLApplication = SDL_TRUE;
@@ -516,11 +516,11 @@ void Cocoa_RegisterApp(void)
                 /* The SDL app delegate calls this in didFinishLaunching if it's
                  * attached to the NSApp, otherwise we need to call it manually.
                  */
-                [SDLApplication registerUserDefaults];
+                [SDL3Application registerUserDefaults];
             }
         }
         if (NSApp && !appDelegate) {
-            appDelegate = [[SDLAppDelegate alloc] init];
+            appDelegate = [[SDL3AppDelegate alloc] init];
 
             /* If someone else has an app delegate, it means we can't turn a
              * termination into SDL_Quit, and we can't handle application:openFile:
@@ -581,7 +581,7 @@ int Cocoa_PumpEventsUntilDate(SDL_VideoDevice *_this, NSDate *expiration, bool a
             Cocoa_DispatchEvent(event);
         }
 
-        // Pass events down to SDLApplication to be handled in sendEvent:
+        // Pass events down to SDL3Application to be handled in sendEvent:
         [NSApp sendEvent:event];
         if (!accumulate) {
             break;

@@ -39,7 +39,7 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-@interface SDL_cocoametalview : NSView
+@interface SDL3_cocoametalview : NSView
 
 - (instancetype)initWithFrame:(NSRect)frame
                       highDPI:(BOOL)highDPI

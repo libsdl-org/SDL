@@ -500,7 +500,7 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     data->lastMoveY = location.y;
     DLog("Last seen mouse: (%g, %g)", location.x, location.y);
 
-    /* Non-relative movement is handled in -[Cocoa_WindowListener mouseMoved:] */
+    /* Non-relative movement is handled in -[SDL3Cocoa_WindowListener mouseMoved:] */
     if (!mouse->relative_mode) {
         return;
     }

@@ -61,7 +61,7 @@ static void SDLCALL SDL_OpenGLAsyncDispatchChanged(void *userdata, const char *n
 
 static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp *now, const CVTimeStamp *outputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext)
 {
-    SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)displayLinkContext;
+    SDL3OpenGLContext *nscontext = (__bridge SDL3OpenGLContext *)displayLinkContext;
 
     /*printf("DISPLAY LINK! %u\n", (unsigned int) SDL_GetTicks()); */
     const int setting = SDL_AtomicGet(&nscontext->swapIntervalSetting);
@@ -75,7 +75,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
     return kCVReturnSuccess;
 }
 
-@implementation SDLOpenGLContext : NSOpenGLContext
+@implementation SDL3OpenGLContext : NSOpenGLContext
 
 - (id)initWithFormat:(NSOpenGLPixelFormat *)format
         shareContext:(NSOpenGLContext *)share
@@ -121,7 +121,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 {
     const int value = SDL_AtomicSet(&self->dirty, 0);
     if (value > 0) {
-        /* We call the real underlying update here, since -[SDLOpenGLContext update] just calls us. */
+        /* We call the real underlying update here, since -[SDL3OpenGLContext update] just calls us. */
         [self explicitUpdate];
     }
 }
@@ -261,7 +261,7 @@ SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_DisplayData *displaydata = (SDL_DisplayData *)display->internal;
         NSOpenGLPixelFormatAttribute attr[32];
         NSOpenGLPixelFormat *fmt;
-        SDLOpenGLContext *context;
+        SDL3OpenGLContext *context;
         SDL_GLContext sdlcontext;
         NSOpenGLContext *share_context = nil;
         int i = 0;
@@ -369,7 +369,7 @@ SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
             share_context = (__bridge NSOpenGLContext *)SDL_GL_GetCurrentContext();
         }
 
-        context = [[SDLOpenGLContext alloc] initWithFormat:fmt shareContext:share_context];
+        context = [[SDL3OpenGLContext alloc] initWithFormat:fmt shareContext:share_context];
 
         if (context == nil) {
             SDL_SetError("Failed creating OpenGL context");
@@ -439,7 +439,7 @@ int Cocoa_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLConte
 {
     @autoreleasepool {
         if (context) {
-            SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)context;
+            SDL3OpenGLContext *nscontext = (__bridge SDL3OpenGLContext *)context;
             if ([nscontext window] != window) {
                 [nscontext setWindow:window];
                 [nscontext updateIfNeeded];
@@ -456,7 +456,7 @@ int Cocoa_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLConte
 int Cocoa_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     @autoreleasepool {
-        SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
+        SDL3OpenGLContext *nscontext = (__bridge SDL3OpenGLContext *)SDL_GL_GetCurrentContext();
         int status;
 
         if (nscontext == nil) {
@@ -476,7 +476,7 @@ int Cocoa_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 int Cocoa_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     @autoreleasepool {
-        SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
+        SDL3OpenGLContext *nscontext = (__bridge SDL3OpenGLContext *)SDL_GL_GetCurrentContext();
         if (nscontext) {
             *interval = SDL_AtomicGet(&nscontext->swapIntervalSetting);
             return 0;
@@ -489,7 +489,7 @@ int Cocoa_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 int Cocoa_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)SDL_GL_GetCurrentContext();
+        SDL3OpenGLContext *nscontext = (__bridge SDL3OpenGLContext *)SDL_GL_GetCurrentContext();
         SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->internal;
         const int setting = SDL_AtomicGet(&nscontext->swapIntervalSetting);
 
@@ -526,7 +526,7 @@ int Cocoa_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 int Cocoa_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     @autoreleasepool {
-        SDLOpenGLContext *nscontext = (__bridge SDLOpenGLContext *)context;
+        SDL3OpenGLContext *nscontext = (__bridge SDL3OpenGLContext *)context;
         [nscontext cleanup];
         CFRelease(context);
     }

@@ -33,7 +33,7 @@
 /*#define DEBUG_IME NSLog */
 #define DEBUG_IME(...)
 
-@interface SDLTranslatorResponder : NSView <NSTextInputClient>
+@interface SDL3TranslatorResponder : NSView <NSTextInputClient>
 {
     NSString *_markedText;
     NSRange _markedRange;
@@ -44,7 +44,7 @@
 - (void)setInputRect:(const SDL_Rect *)rect;
 @end
 
-@implementation SDLTranslatorResponder
+@implementation SDL3TranslatorResponder
 
 - (void)setInputRect:(const SDL_Rect *)rect
 {
@@ -359,7 +359,7 @@ int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
          * text input, simply remove the field editor from its superview then add
          * it to the front most window's content view */
         if (!data.fieldEdit) {
-            data.fieldEdit = [[SDLTranslatorResponder alloc] initWithFrame:NSMakeRect(0.0, 0.0, 0.0, 0.0)];
+            data.fieldEdit = [[SDL3TranslatorResponder alloc] initWithFrame:NSMakeRect(0.0, 0.0, 0.0, 0.0)];
         }
 
         if (![[data.fieldEdit superview] isEqual:parentView]) {
