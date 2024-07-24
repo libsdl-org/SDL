@@ -1483,10 +1483,16 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, in
 /**
  * Get the safe area for this window.
  *
- * Some devices have portions of the screen which are partially obscured or not interactive, possibly due to on-screen controls, curved edges, camera notches, TV overscan, etc. This function provides the area of the window which is safe to have interactible content. You should continue rendering into the rest of the window, but it should not contain visually important or interactible content.
+ * Some devices have portions of the screen which are partially obscured or
+ * not interactive, possibly due to on-screen controls, curved edges, camera
+ * notches, TV overscan, etc. This function provides the area of the window
+ * which is safe to have interactible content. You should continue rendering
+ * into the rest of the window, but it should not contain visually important
+ * or interactible content.
  *
  * \param window the window to query.
- * \param rect a pointer filled in with the client area that is safe for interactive content.
+ * \param rect a pointer filled in with the client area that is safe for
+ *             interactive content.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
