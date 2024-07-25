@@ -918,7 +918,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                                 SDLActivity.mFullscreenModeActive = false;
                             }
-                            window.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+                            if (Build.VERSION.SDK_INT >= 28 /* Android 9 (Pie) */) {
+                                window.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+                            }
                         }
                     } else {
                         Log.e(TAG, "error handling message, getContext() returned no Activity");
