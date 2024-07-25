@@ -26,7 +26,7 @@ jobs:
         - { name: Windows (ucrt64),               os: windows-latest, shell: 'msys2 {0}', msystem: ucrt64,  msys-env: mingw-w64-ucrt-x86_64,  cmake: '-DSDLTEST_PROCDUMP=ON', artifact: 'SDL-msys2-ucrt64' }
         - { name: Ubuntu 20.04,                   os: ubuntu-20.04,   shell: sh, artifact: 'SDL-ubuntu20.04' }
         - { name: Intel oneAPI (Ubuntu 20.04),    os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-oneapi', intel: true,
-            source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icx; export CXX=icx;'}
+            source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icx; export CXX=icpx;'}
         - { name: Intel Compiler (Ubuntu 20.04),  os: ubuntu-20.04,   shell: bash, artifact: 'SDL-ubuntu20.04-icc', intel: true, cmake: '-DSDL_CLANG_TIDY=OFF',
             source_cmd: 'source /opt/intel/oneapi/setvars.sh; export CC=icc; export CXX=icpc; export CFLAGS=-diag-disable=10441; export CXXFLAGS=-diag-disable=10441; '}
         - { name: Ubuntu 22.04,                   os: ubuntu-22.04,   shell: sh, artifact: 'SDL-ubuntu22.04' }
