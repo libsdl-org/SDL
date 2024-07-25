@@ -1,7 +1,4 @@
-cmake_dependent_option(SDL_MSVC_PRESEED "Preseed CMake cache for MSVC to speed up configuration" ON "MSVC;NOT WINDOWS_STORE" OFF)
-
-if(SDL_MSVC_PRESEED)
-  set(SDL_PRESEED_FUNCTION_DEFINED TRUE)
+if(MSVC)
   function(SDL_Preseed_CMakeCache)
     set(COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS      ""    CACHE INTERNAL "Test COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS")
     set(HAVE_ALLOCA_H                                    ""    CACHE INTERNAL "Have include alloca.h")

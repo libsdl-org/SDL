@@ -57,10 +57,6 @@ include("${SDL3_SOURCE_DIR}/cmake/PreseedEmscriptenCache.cmake")
 SDL_DetectCompiler()
 SDL_DetectTargetCPUArchitectures(SDL_CPUS)
 
-if (SDL_PRESEED_FUNCTION_DEFINED)
-  SDL_Preseed_CMakeCache()
-endif()
-
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL3 to SDL4, at which point this would
 # reset to 0 anyway.
@@ -257,11 +253,17 @@ else()
   set(SDL_RPATH_DEFAULT OFF)
 endif()
 
+set(SDL_PRESEED_AVAILABLE OFF)
+if(COMMAND SDL_Preseed_CMakeCache)
+  set(SDL_PRESEED_AVAILABLE ON)
+endif()
+
 # Allow some projects to be built conditionally.
 set_option(SDL_DISABLE_INSTALL    "Disable installation of SDL3" ${SDL3_SUBPROJECT})
 cmake_dependent_option(SDL_DISABLE_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" ON)
 cmake_dependent_option(SDL_DISABLE_INSTALL_DOCS "Install docs for SDL3" ON "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" ON)
 set_option(SDL_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" OFF)
+cmake_dependent_option(SDL_PRESEED "Preseed CMake cache to speed up configuration" ON "${SDL_PRESEED_AVAILABLE}" OFF)
 
 cmake_dependent_option(SDL_DISABLE_ANDROID_JAR  "Disable creation of SDL3.jar" ${SDL3_SUBPROJECT} "ANDROID" ON)
 
@@ -368,6 +370,10 @@ endif()
 
 if(NOT (SDL_SHARED OR SDL_STATIC))
   message(FATAL_ERROR "SDL_SHARED and SDL_STATIC cannot both be disabled")
+endif()
+
+if(SDL_PRESEED)
+  SDL_Preseed_CMakeCache()
 endif()
 
 if(SDL_SHARED)

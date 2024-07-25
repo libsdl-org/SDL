@@ -1,7 +1,4 @@
-cmake_dependent_option(SDL_EMSCRIPTEN_PRESEED "Preseed CMake cache for Emscripten to speed up configuration" ON "EMSCRIPTEN" OFF)
-
-if(SDL_EMSCRIPTEN_PRESEED)
-  set(SDL_PRESEED_FUNCTION_DEFINED TRUE)
+if(EMSCRIPTEN)
   function(SDL_Preseed_CMakeCache)
     set(COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS      "1"   CACHE INTERNAL "Test COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS")
     set(HAVE_ALLOCA_H                                    "1"   CACHE INTERNAL "Have include alloca.h")
@@ -177,4 +174,3 @@ if(SDL_EMSCRIPTEN_PRESEED)
     set(HAVE_DLOPEN_IN_LIBC                              "1"   CACHE INTERNAL "Have symbol dlopen")
   endfunction()
 endif()
-
