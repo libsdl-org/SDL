@@ -2194,22 +2194,24 @@ extern "C" {
  * A variable controlling whether warping a hidden mouse cursor will activate
  * relative mouse mode.
  *
- * When this hint is set and the mouse cursor is hidden, SDL will emulate mouse
- * warps using relative mouse mode. This can provide smoother and more reliable
- * mouse motion for some older games, which continuously calculate the distance
- * travelled by the mouse pointer and warp it back to the center of the window,
- * rather than using relative mouse motion.
+ * When this hint is set and the mouse cursor is hidden, SDL will emulate
+ * mouse warps using relative mouse mode. This can provide smoother and more
+ * reliable mouse motion for some older games, which continuously calculate
+ * the distance travelled by the mouse pointer and warp it back to the center
+ * of the window, rather than using relative mouse motion.
  *
- * Note that relative mouse mode may have different mouse acceleration behavior
- * than pointer warps.
+ * Note that relative mouse mode may have different mouse acceleration
+ * behavior than pointer warps.
  *
  * If your game or application needs to warp the mouse cursor while hidden for
- * other purposes, such as drawing a software cursor, it should disable this hint.
+ * other purposes, such as drawing a software cursor, it should disable this
+ * hint.
  *
  * The variable can be set to the following values:
  *
  * - "0": Attempts to warp the mouse will always be made.
- * - "1": Some mouse warps will be emulated by forcing relative mouse mode. (default)
+ * - "1": Some mouse warps will be emulated by forcing relative mouse mode.
+ *   (default)
  *
  * If not set, this is automatically enabled unless an application uses
  * relative mouse mode directly.
