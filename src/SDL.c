@@ -52,7 +52,6 @@
 #include "thread/SDL_thread_c.h"
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_video_c.h"
-#include "video/android/SDL_androidevents.h"
 #include "filesystem/SDL_filesystem_c.h"
 
 #define SDL_INIT_EVERYTHING ~0U
@@ -225,10 +224,6 @@ int SDL_InitSubSystem(Uint32 flags)
     }
 
     SDL_InitMainThread();
-
-#ifdef SDL_PLATFORM_ANDROID
-    Android_InitEvents();
-#endif
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Init();
@@ -574,10 +569,6 @@ void SDL_Quit(void)
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
-#endif
-
-#ifdef SDL_PLATFORM_ANDROID
-    Android_QuitEvents();
 #endif
 
     SDL_SetObjectsInvalid();

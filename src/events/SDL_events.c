@@ -1788,6 +1788,9 @@ int SDL_SendSystemThemeChangedEvent(void)
 
 int SDL_InitEvents(void)
 {
+#ifdef SDL_PLATFORM_ANDROID
+    Android_InitEvents();
+#endif
 #ifndef SDL_JOYSTICK_DISABLED
     SDL_AddHintCallback(SDL_HINT_AUTO_UPDATE_JOYSTICKS, SDL_AutoUpdateJoysticksChanged, NULL);
 #endif
@@ -1817,5 +1820,8 @@ void SDL_QuitEvents(void)
 #endif
 #ifndef SDL_SENSOR_DISABLED
     SDL_DelHintCallback(SDL_HINT_AUTO_UPDATE_SENSORS, SDL_AutoUpdateSensorsChanged, NULL);
+#endif
+#ifdef SDL_PLATFORM_ANDROID
+    Android_QuitEvents();
 #endif
 }
