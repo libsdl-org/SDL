@@ -2606,6 +2606,11 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
+    SDL_GetWindowSafeArea(window, &rect);
+    (void)SDL_snprintf(text, sizeof(text), "SDL_GetWindowSafeArea: %d,%d %dx%d", rect.x, rect.y, rect.w, rect.h);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
+    textY += lineHeight;
+
     (void)SDL_snprintf(text, sizeof(text), "SDL_GetWindowFlags: ");
     SDLTest_PrintWindowFlags(text, sizeof(text), SDL_GetWindowFlags(window));
     SDLTest_DrawString(renderer, 0.0f, textY, text);
