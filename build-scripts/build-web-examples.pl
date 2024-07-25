@@ -22,6 +22,7 @@
 use warnings;
 use strict;
 use File::Basename;
+use File::Copy;
 use Cwd qw(abs_path);
 use IPC::Open2;
 
@@ -29,10 +30,11 @@ my $examples_dir = abs_path(dirname(__FILE__) . "/../examples");
 my $project = undef;
 my $emsdk_dir = undef;
 my $compile_dir = undef;
+my $cmake_flags = undef;
 my $output_dir = undef;
 
 sub usage {
-    die("USAGE: $0 <project_name> <emsdk_dir> <compiler_output_directory> <html_output_directory>\n\n");
+    die("USAGE: $0 <project_name> <emsdk_dir> <compiler_output_directory> <cmake_flags> <html_output_directory>\n\n");
 }
 
 sub do_system {
@@ -50,13 +52,20 @@ sub do_mkdir {
     }
 }
 
+sub do_copy {
+    my $src = shift;
+    my $dst = shift;
+    print("cp '$src' '$dst'\n");
+    copy($src, $dst) or die("Failed to copy '$src' to '$dst': $!\n");
+}
+
 sub build_latest {
     # Try to build just the latest without re-running cmake, since that is SLOW.
     print("Building latest version of $project ...\n");
     if (do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && cd '$compile_dir' && ninja") != 0) {
         # Build failed? Try nuking the build dir and running CMake from scratch.
         print("\n\nBuilding latest version of $project FROM SCRATCH ...\n");
-        if (do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && rm -rf '$compile_dir' && mkdir '$compile_dir' && cd '$compile_dir' && emcmake cmake -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel '$examples_dir/..' && ninja") != 0) {
+        if (do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && rm -rf '$compile_dir' && mkdir '$compile_dir' && cd '$compile_dir' && emcmake cmake -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel $cmake_flags '$examples_dir/..' && ninja") != 0) {
             die("Failed to build latest version of $project!\n");  # oh well.
         }
     }
@@ -80,32 +89,23 @@ sub handle_example_dir {
     }
     closedir($dh);
 
-    my $datafilestxtpath = "$examples_dir/$category/$example/datafiles.txt";
-    my $datafiles_str = '';
-    if ( -f $datafilestxtpath ) {
-        open (my $datafilesh, '<', $datafilestxtpath) or die("Couldn't opendir '$datafilestxtpath': $!\n");
-        $spc = '';
-        while (<$datafilesh>) {
-            chomp;
-            my $path = "$examples_dir/$category/$example/$_";
-            my $fname = $_;
-            $fname =~ s/\A.*\///;
-            $datafiles_str .= "$spc--embed-file=$path\@/$fname";
-            $spc = ' ';
-        }
-        close($datafilesh);
-    }
-
     my $dst = "$output_dir/$category/$example";
 
     print("Building $category/$example ...\n");
 
+    my $basefname = "$example";
+    $basefname =~ s/\A\d+\-//;
+    $basefname = "$category-$basefname";
+    my $jsfname = "$basefname.js";
+    my $wasmfname = "$basefname.wasm";
+    my $jssrc = "$compile_dir/examples/$jsfname";
+    my $wasmsrc = "$compile_dir/examples/$wasmfname";
+    my $jsdst = "$dst/$jsfname";
+    my $wasmdst = "$dst/$wasmfname";
 
     do_mkdir($dst);
-
-    # !!! FIXME: hardcoded SDL3 references, need to fix this for satellite libraries and SDL2.
-    do_system("EMSDK_QUIET=1 source '$emsdk_dir/emsdk_env.sh' && emcc -s USE_SDL=0 -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=1gb -s ASSERTIONS=0 -o '$dst/index.js' '-I$examples_dir/../include' $files_str '$compile_dir/libSDL3.a' $datafiles_str") == 0
-        or die("Failed to build $category/$example!\n");
+    do_copy($jssrc, $jsdst);
+    do_copy($wasmsrc, $wasmdst);
 
     my $highlight_cmd = "highlight '--outdir=$dst' --style-outfile=highlight.css --fragment --enclose-pre --stdout --syntax=c '--plug-in=$examples_dir/highlight-plugin.lua'";
     print("$highlight_cmd\n");
@@ -140,6 +140,7 @@ sub handle_example_dir {
         s/\@project_name\@/$project/g;
         s/\@category_name\@/$category/g;
         s/\@example_name\@/$example/g;
+        s/\@javascript_file\@/$jsfname/g;
         s/\@htmlified_source_code\@/$htmlified_source_code/g;
         $html .= $_;
     }
@@ -148,8 +149,6 @@ sub handle_example_dir {
     open my $htmloutput, '>', "$dst/index.html" or die("Couldn't open '$dst/index.html': $!\n");
     print $htmloutput $html;
     close($htmloutput);
-
-    
 }
 
 sub handle_category_dir {
@@ -177,6 +176,7 @@ foreach (@ARGV) {
     $project = $_, next if not defined $project;
     $emsdk_dir = $_, next if not defined $emsdk_dir;
     $compile_dir = $_, next if not defined $compile_dir;
+    $cmake_flags = $_, next if not defined $cmake_flags;
     $output_dir = $_, next if not defined $output_dir;
     usage();  # too many arguments.
 }
@@ -186,8 +186,10 @@ usage() if not defined $output_dir;
 print("Examples dir: $examples_dir\n");
 print("emsdk dir: $emsdk_dir\n");
 print("Compile dir: $compile_dir\n");
+print("CMake flags: $cmake_flags\n");
 print("Output dir: $output_dir\n");
 
+do_system("rm -rf '$output_dir'");
 do_mkdir($output_dir);
 
 build_latest();
@@ -202,5 +204,6 @@ while (readdir($dh)) {
 
 closedir($dh);
 
+print("All examples built successfully!\n");
 exit(0);  # success!
 
