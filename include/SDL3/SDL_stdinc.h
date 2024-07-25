@@ -2963,8 +2963,9 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 
 /* Starting LLVM 16, the analyser errors out if these functions do not have
    their prototype defined (clang-diagnostic-implicit-function-declaration) */
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
 
 #define SDL_malloc malloc
 #define SDL_calloc calloc
