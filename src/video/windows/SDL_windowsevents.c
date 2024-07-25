@@ -1004,6 +1004,7 @@ static SDL_bool SkipAltGrLeftControl(WPARAM wParam, LPARAM lParam)
         return SDL_FALSE;
     }
 
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     // Here is a trick: "Alt Gr" sends LCTRL, then RALT. We only
     // want the RALT message, so we try to see if the next message
     // is a RALT message. In that case, this is a false LCTRL!
@@ -1018,6 +1019,8 @@ static SDL_bool SkipAltGrLeftControl(WPARAM wParam, LPARAM lParam)
             }
         }
     }
+#endif /* !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
+
     return SDL_FALSE;
 }
 
@@ -2299,9 +2302,9 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
 
     WIN_CheckKeyboardAndMouseHotplug(_this, SDL_FALSE);
 
-#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
-
     WIN_UpdateIMECandidates(_this);
+
+#endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
 #ifdef SDL_PLATFORM_GDK
     GDK_DispatchTaskQueue();
