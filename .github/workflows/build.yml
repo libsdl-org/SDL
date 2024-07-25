@@ -11,7 +11,8 @@ jobs:
     name: 'Create test plan'
     runs-on: 'ubuntu-latest'
     outputs:
-      platforms: ${{ steps.plan.outputs.platforms }}
+      platforms-level1: ${{ steps.plan.outputs.platforms-level1 }}
+      platforms-others: ${{ steps.plan.outputs.platforms-others }}
     steps:
       - uses: actions/setup-python@main
         with:
@@ -23,11 +24,16 @@ jobs:
         id: plan
         run: |
           python .github/workflows/create-test-plan.py \
-            --github-variable platforms \
+            --github-variable-prefix platforms \
             --github-ci \
             --verbose
   level1:
     needs: [controller]
     uses: './.github/workflows/generic.yml'
     with:
-      platforms: ${{ needs.controller.outputs.platforms }}
+      platforms: ${{ needs.controller.outputs.platforms-level1 }}
+  level2:
+    needs: [controller, level1]
+    uses: './.github/workflows/generic.yml'
+    with:
+      platforms: ${{ needs.controller.outputs.platforms-others }}
