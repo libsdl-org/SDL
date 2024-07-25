@@ -3028,7 +3028,7 @@ int SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 
         SDL_GetWindowSize(window, w, h);
 
-        if (SDL_GetWindowFullscreenModeInternal(window)) {
+        if ((window->flags & SDL_WINDOW_FULLSCREEN) && SDL_GetWindowFullscreenModeInternal(window)) {
             mode = SDL_GetCurrentDisplayMode(displayID);
         } else {
             mode = SDL_GetDesktopDisplayMode(displayID);
