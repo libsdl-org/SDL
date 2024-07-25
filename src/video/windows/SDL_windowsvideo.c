@@ -104,12 +104,12 @@ static void WIN_DeleteDevice(SDL_VideoDevice *device)
         SDL_UnloadObject(data->shcoreDLL);
     }
 #endif
-#ifndef HAVE_DXGI_H
+#ifdef HAVE_DXGI_H
     if (data->pDXGIFactory) {
-        IDXGIFactory_Release(pDXGIFactory);
+        IDXGIFactory_Release(data->pDXGIFactory);
     }
     if (data->dxgiDLL) {
-        SDL_UnloadObject(pDXGIDLL);
+        SDL_UnloadObject(data->dxgiDLL);
     }
 #endif
     if (device->wakeup_lock) {
