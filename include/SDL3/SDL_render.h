@@ -1449,13 +1449,13 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_RenderViewportSet(SDL_Renderer *rendere
  * Some devices have portions of the screen which are partially obscured or
  * not interactive, possibly due to on-screen controls, curved edges, camera
  * notches, TV overscan, etc. This function provides the area of the current
- * viewport which is safe to have interactible content. You should continue rendering
- * into the rest of the render target, but it should not contain visually important
- * or interactible content.
+ * viewport which is safe to have interactible content. You should continue
+ * rendering into the rest of the render target, but it should not contain
+ * visually important or interactible content.
  *
  * \param renderer the rendering context.
- * \param rect a pointer filled in with the area that is safe for
- *             interactive content.
+ * \param rect a pointer filled in with the area that is safe for interactive
+ *             content.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
