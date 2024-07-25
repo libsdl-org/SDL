@@ -564,8 +564,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetGamepadPlayerIndexForID(SDL_JoystickID in
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \sa SDL_GetGamepadGUID
- * \sa SDL_GetGamepadGUIDString
+ * \sa SDL_GUIDToString
  * \sa SDL_GetGamepads
  */
 extern SDL_DECLSPEC SDL_GUID SDLCALL SDL_GetGamepadGUIDForID(SDL_JoystickID instance_id);
