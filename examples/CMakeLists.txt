@@ -130,6 +130,7 @@ macro(add_sdl_example_executable TARGET)
             add_custom_target(zzz-resources-copy-${TARGET}
                 COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${TARGET}>/AppX"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different ${AST_DATAFILES} "$<TARGET_FILE_DIR:${TARGET}>/AppX"
+                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             )
             add_dependencies(${TARGET} zzz-resources-copy-${TARGET})
         else()
