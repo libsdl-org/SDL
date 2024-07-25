@@ -43,8 +43,6 @@
  * to SDLK_0...SDLK_9 on AZERTY layouts.
  *
  * \since This datatype is available since SDL 3.0.0.
- *
- * \sa SDL_KeyCode
  */
 typedef Uint32 SDL_Keycode;
 
