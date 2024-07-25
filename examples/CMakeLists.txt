@@ -44,6 +44,8 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.20)
     set(example_bin_dir "${example_bin_dir}$<$<BOOL:${is_multi_config}>:/$<CONFIG>>")
 endif()
 
+file(GLOB RESOURCE_FILES ../test/*.bmp ../test/*.wav ../test/*.hex)
+
 set(RESOURCE_FILE_NAMES)
 set(RESOURCE_FILES_BINDIR)
 foreach(resource_file IN LISTS RESOURCE_FILES)
@@ -117,7 +119,9 @@ macro(add_sdl_example_executable TARGET)
         if(PSP OR PS2)
             add_custom_command(TARGET ${TARGET} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} ARGS -E make_directory $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET}
-                COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${AST_DATAFILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET})
+                COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${AST_DATAFILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET}
+                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+            )
         elseif(WINDOWS_STORE)
             # MSVC does build the dependent targets (or POST_BUILD commands) when building an application
             # after starting to debug. By copying the resources in a custom target, the files can be copied afterwards.
