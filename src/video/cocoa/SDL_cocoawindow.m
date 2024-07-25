@@ -64,6 +64,12 @@
 
 @end
 
+@interface NSScreen (SDL)
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 120000 /* Added in the 12.0 SDK */
+@property(readonly) NSEdgeInsets safeAreaInsets;
+#endif
+@end
+
 @interface NSWindow (SDL)
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 101000 /* Added in the 10.10 SDK */
 @property(readonly) NSRect contentLayoutRect;
