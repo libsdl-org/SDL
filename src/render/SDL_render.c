@@ -2999,6 +2999,53 @@ static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
     }
 }
 
+int SDL_GetRenderSafeArea(SDL_Renderer *renderer, SDL_Rect *rect)
+{
+    if (rect) {
+        SDL_zerop(rect);
+    }
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (renderer->target || !renderer->window) {
+        // The entire viewport is safe for rendering
+        return SDL_GetRenderViewport(renderer, rect);
+    }
+
+    if (rect) {
+        // Get the window safe rect
+        SDL_Rect safe;
+        if (SDL_GetWindowSafeArea(renderer->window, &safe) < 0) {
+            return -1;
+        }
+
+        // Convert the coordinates into the render space
+        float minx = (float)safe.x;
+        float miny = (float)safe.y;
+        float maxx = (float)safe.x + safe.w;
+        float maxy = (float)safe.y + safe.h;
+        if (SDL_RenderCoordinatesFromWindow(renderer, minx, miny, &minx, &miny) < 0 ||
+            SDL_RenderCoordinatesFromWindow(renderer, maxx, maxy, &maxx, &maxy) < 0) {
+            return -1;
+        }
+
+        rect->x = (int)SDL_ceilf(minx);
+        rect->y = (int)SDL_ceilf(miny);
+        rect->w = (int)SDL_ceilf(maxx - minx);
+        rect->h = (int)SDL_ceilf(maxy - miny);
+
+        // Clip with the viewport
+        SDL_Rect viewport;
+        if (SDL_GetRenderViewport(renderer, &viewport) < 0) {
+            return -1;
+        }
+        if (!SDL_GetRectIntersection(rect, &viewport, rect)) {
+            return SDL_SetError("No safe area within viewport");
+        }
+    }
+    return 0;
+}
+
 int SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     CHECK_RENDERER_MAGIC(renderer, -1)

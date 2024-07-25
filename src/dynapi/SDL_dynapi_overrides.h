@@ -426,6 +426,7 @@
 #define SDL_GetRenderMetalCommandEncoder SDL_GetRenderMetalCommandEncoder_REAL
 #define SDL_GetRenderMetalLayer SDL_GetRenderMetalLayer_REAL
 #define SDL_GetRenderOutputSize SDL_GetRenderOutputSize_REAL
+#define SDL_GetRenderSafeArea SDL_GetRenderSafeArea_REAL
 #define SDL_GetRenderScale SDL_GetRenderScale_REAL
 #define SDL_GetRenderTarget SDL_GetRenderTarget_REAL
 #define SDL_GetRenderVSync SDL_GetRenderVSync_REAL

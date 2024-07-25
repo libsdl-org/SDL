@@ -226,7 +226,9 @@ static void loop(void)
             SDL_Rect viewport;
             SDL_FRect menurect;
 
-            SDL_GetRenderViewport(renderer, &viewport);
+            SDL_SetRenderViewport(renderer, NULL);
+            SDL_GetRenderSafeArea(renderer, &viewport);
+            SDL_SetRenderViewport(renderer, &viewport);
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
