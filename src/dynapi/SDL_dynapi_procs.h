@@ -446,6 +446,7 @@ SDL_DYNAPI_PROC(int,SDL_GetRenderLogicalPresentationRect,(SDL_Renderer *a, SDL_F
 SDL_DYNAPI_PROC(void*,SDL_GetRenderMetalCommandEncoder,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(void*,SDL_GetRenderMetalLayer,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderOutputSize,(SDL_Renderer *a, int *b, int *c),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_GetRenderSafeArea,(SDL_Renderer *a, SDL_Rect *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderScale,(SDL_Renderer *a, float *b, float *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_GetRenderTarget,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetRenderVSync,(SDL_Renderer *a, int *b),(a,b),return)

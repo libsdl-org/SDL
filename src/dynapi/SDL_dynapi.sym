@@ -401,6 +401,7 @@ SDL3_0.0.0 {
     SDL_GetRenderMetalCommandEncoder;
     SDL_GetRenderMetalLayer;
     SDL_GetRenderOutputSize;
+    SDL_GetRenderSafeArea;
     SDL_GetRenderScale;
     SDL_GetRenderTarget;
     SDL_GetRenderVSync;
