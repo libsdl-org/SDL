@@ -97,6 +97,24 @@ void Android_InitEvents(void)
     }
 }
 
+static void Android_PauseAudio(void)
+{
+    ANDROIDAUDIO_PauseDevices();
+    OPENSLES_PauseDevices();
+    AAUDIO_PauseDevices();
+    Android_PausedAudio = SDL_TRUE;
+}
+
+static void Android_ResumeAudio(void)
+{
+    if (Android_PausedAudio) {
+        ANDROIDAUDIO_ResumeDevices();
+        OPENSLES_ResumeDevices();
+        AAUDIO_ResumeDevices();
+        Android_PausedAudio = SDL_FALSE;
+    }
+}
+
 static void Android_OnPause(void)
 {
     SDL_OnApplicationWillEnterBackground();
@@ -117,10 +135,7 @@ static void Android_OnPause(void)
 
     if (Android_BlockOnPause) {
         /* We're blocking, also pause audio */
-        ANDROIDAUDIO_PauseDevices();
-        OPENSLES_PauseDevices();
-        AAUDIO_PauseDevices();
-        Android_PausedAudio = SDL_TRUE;
+        Android_PauseAudio();
     }
 
     Android_Paused = SDL_TRUE;
@@ -132,11 +147,7 @@ static void Android_OnResume(void)
 
     SDL_OnApplicationWillEnterForeground();
 
-    if (Android_PausedAudio) {
-        ANDROIDAUDIO_ResumeDevices();
-        OPENSLES_ResumeDevices();
-        AAUDIO_ResumeDevices();
-    }
+    Android_ResumeAudio();
 
 #ifdef SDL_VIDEO_OPENGL_EGL
     /* Restore the GL Context from here, as this operation is thread dependent */
@@ -162,6 +173,9 @@ static void Android_OnLowMemory(void)
 
 static void Android_OnDestroy(void)
 {
+    /* Make sure we unblock any audio processing before we quit */
+    Android_ResumeAudio();
+
     /* Discard previous events. The user should have handled state storage
      * in SDL_EVENT_WILL_ENTER_BACKGROUND. After nativeSendQuit() is called, no
      * events other than SDL_EVENT_QUIT and SDL_EVENT_TERMINATING should fire */
@@ -212,7 +226,8 @@ void Android_PumpEvents(Sint64 timeoutNS)
     SDL_AndroidLifecycleEvent event;
     SDL_bool paused = Android_Paused;
 
-    while (Android_WaitLifecycleEvent(&event, GetLifecycleEventTimeout(paused, timeoutNS))) {
+    while (!Android_Destroyed &&
+           Android_WaitLifecycleEvent(&event, GetLifecycleEventTimeout(paused, timeoutNS))) {
         Android_HandleLifecycleEvent(event);
 
         switch (event) {
