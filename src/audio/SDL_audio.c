@@ -23,6 +23,8 @@
 #include "SDL_audio_c.h"
 #include "SDL_sysaudio.h"
 #include "../thread/SDL_systhread.h"
+#include "aaudio/SDL_aaudio.h"
+#include "openslES/SDL_openslES.h"
 
 // Available audio drivers
 static const AudioBootStrap *const bootstrap[] = {
@@ -99,6 +101,7 @@ static const AudioBootStrap *const bootstrap[] = {
 };
 
 static SDL_AudioDriver current_audio;
+static SDL_bool SDL_system_audio_paused;
 
 // Deduplicated list of audio bootstrap drivers.
 static const AudioBootStrap *deduped_bootstrap[SDL_arraysize(bootstrap) - 1];
@@ -1120,7 +1123,7 @@ SDL_bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
             // We should have updated this elsewhere if the format changed!
             SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &device->spec, stream->dst_chmap, device->chmap));
 
-            const int br = SDL_AtomicGet(&logdev->paused) ? 0 : SDL_GetAudioStreamDataAdjustGain(stream, device_buffer, buffer_size, logdev->gain);
+            const int br = (SDL_system_audio_paused || SDL_AtomicGet(&logdev->paused)) ? 0 : SDL_GetAudioStreamDataAdjustGain(stream, device_buffer, buffer_size, logdev->gain);
             if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
                 failed = SDL_TRUE;
                 SDL_memset(device_buffer, device->silence_value, buffer_size);  // just supply silence to the device before we die.
@@ -1140,39 +1143,41 @@ SDL_bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
 
             SDL_memset(final_mix_buffer, '\0', work_buffer_size);  // start with silence.
 
-            for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev; logdev = logdev->next) {
-                if (SDL_AtomicGet(&logdev->paused)) {
-                    continue;  // paused? Skip this logical device.
-                }
-
-                const SDL_AudioPostmixCallback postmix = logdev->postmix;
-                float *mix_buffer = final_mix_buffer;
-                if (postmix) {
-                    mix_buffer = device->postmix_buffer;
-                    SDL_memset(mix_buffer, '\0', work_buffer_size);  // start with silence.
-                }
-
-                for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
-                    // We should have updated this elsewhere if the format changed!
-                    SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &outspec, stream->dst_chmap, device->chmap));
-
-                    /* this will hold a lock on `stream` while getting. We don't explicitly lock the streams
-                       for iterating here because the binding linked list can only change while the device lock is held.
-                       (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind
-                       the same stream to different devices at the same time, though.) */
-                    const int br = SDL_GetAudioStreamDataAdjustGain(stream, device->work_buffer, work_buffer_size, logdev->gain);
-                    if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
-                        failed = SDL_TRUE;
-                        break;
-                    } else if (br > 0) {  // it's okay if we get less than requested, we mix what we have.
-                        MixFloat32Audio(mix_buffer, (float *) device->work_buffer, br);
+            if (!SDL_system_audio_paused) {
+                for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev; logdev = logdev->next) {
+                    if (SDL_AtomicGet(&logdev->paused)) {
+                        continue;  // paused? Skip this logical device.
                     }
-                }
 
-                if (postmix) {
-                    SDL_assert(mix_buffer == device->postmix_buffer);
-                    postmix(logdev->postmix_userdata, &outspec, mix_buffer, work_buffer_size);
-                    MixFloat32Audio(final_mix_buffer, mix_buffer, work_buffer_size);
+                    const SDL_AudioPostmixCallback postmix = logdev->postmix;
+                    float *mix_buffer = final_mix_buffer;
+                    if (postmix) {
+                        mix_buffer = device->postmix_buffer;
+                        SDL_memset(mix_buffer, '\0', work_buffer_size);  // start with silence.
+                    }
+
+                    for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
+                        // We should have updated this elsewhere if the format changed!
+                        SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &outspec, stream->dst_chmap, device->chmap));
+
+                        /* this will hold a lock on `stream` while getting. We don't explicitly lock the streams
+                           for iterating here because the binding linked list can only change while the device lock is held.
+                           (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind
+                           the same stream to different devices at the same time, though.) */
+                        const int br = SDL_GetAudioStreamDataAdjustGain(stream, device->work_buffer, work_buffer_size, logdev->gain);
+                        if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
+                            failed = SDL_TRUE;
+                            break;
+                        } else if (br > 0) {  // it's okay if we get less than requested, we mix what we have.
+                            MixFloat32Audio(mix_buffer, (float *) device->work_buffer, br);
+                        }
+                    }
+
+                    if (postmix) {
+                        SDL_assert(mix_buffer == device->postmix_buffer);
+                        postmix(logdev->postmix_userdata, &outspec, mix_buffer, work_buffer_size);
+                        MixFloat32Audio(final_mix_buffer, mix_buffer, work_buffer_size);
+                    }
                 }
             }
 
@@ -1258,7 +1263,7 @@ SDL_bool SDL_RecordingAudioThreadIterate(SDL_AudioDevice *device)
         int br = device->RecordDevice(device, device->work_buffer, device->buffer_size);
         if (br < 0) {  // uhoh, device failed for some reason!
             failed = SDL_TRUE;
-        } else if (br > 0) {  // queue the new data to each bound stream.
+        } else if (br > 0 && !SDL_system_audio_paused) {  // queue the new data to each bound stream.
             for (SDL_LogicalAudioDevice *logdev = device->logical_devices; logdev; logdev = logdev->next) {
                 if (SDL_AtomicGet(&logdev->paused)) {
                     continue;  // paused? Skip this logical device.
@@ -2412,6 +2417,31 @@ int SDL_AudioDeviceFormatChanged(SDL_AudioDevice *device, const SDL_AudioSpec *n
     const int retval = SDL_AudioDeviceFormatChangedAlreadyLocked(device, newspec, new_sample_frames);
     ReleaseAudioDevice(device);
     return retval;
+}
+
+// This is currently only used on Android.
+// If we want to open this API up, we'll have to account for audio drivers that set ProvidesOwnCallbackThread.
+void SDL_PauseSystemAudio(void)
+{
+    if (!SDL_system_audio_paused) {
+        AAUDIO_PauseDevices();
+        OPENSLES_PauseDevices();
+        SDL_system_audio_paused = SDL_TRUE;
+    }
+}
+
+void SDL_ResumeSystemAudio(void)
+{
+    if (SDL_system_audio_paused) {
+        AAUDIO_ResumeDevices();
+        OPENSLES_ResumeDevices();
+        SDL_system_audio_paused = SDL_FALSE;
+    }
+}
+
+SDL_bool SDL_SystemAudioPaused(void)
+{
+    return SDL_system_audio_paused;
 }
 
 // This is an internal function, so SDL_PumpEvents() can check for pending audio device events.

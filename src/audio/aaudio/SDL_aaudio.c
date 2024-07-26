@@ -440,14 +440,12 @@ static SDL_bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
                 SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
             }
 
-            SDL_LockMutex(device->lock);
             hidden->resume = SDL_TRUE;
         }
     }
     return SDL_FALSE;  // keep enumerating.
 }
 
-// Pause (block) all non already paused audio devices by taking their mixer lock
 void AAUDIO_PauseDevices(void)
 {
     if (ctx.handle) {  // AAUDIO driver is used?
@@ -455,14 +453,12 @@ void AAUDIO_PauseDevices(void)
     }
 }
 
-// Resume (unblock) all non already paused audio devices by releasing their mixer lock
 static SDL_bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
     if (hidden) {
         if (hidden->resume) {
             hidden->resume = SDL_FALSE;
-            SDL_UnlockMutex(device->lock);
         }
 
         if (hidden->stream) {

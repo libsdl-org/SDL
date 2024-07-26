@@ -28,9 +28,7 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 
-#include "../../audio/android/SDL_androidaudio.h"
-#include "../../audio/aaudio/SDL_aaudio.h"
-#include "../../audio/openslES/SDL_openslES.h"
+#include "../../audio/SDL_audio_c.h"
 
 
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -99,18 +97,14 @@ void Android_InitEvents(void)
 
 static void Android_PauseAudio(void)
 {
-    ANDROIDAUDIO_PauseDevices();
-    OPENSLES_PauseDevices();
-    AAUDIO_PauseDevices();
+    SDL_PauseSystemAudio();
     Android_PausedAudio = SDL_TRUE;
 }
 
 static void Android_ResumeAudio(void)
 {
     if (Android_PausedAudio) {
-        ANDROIDAUDIO_ResumeDevices();
-        OPENSLES_ResumeDevices();
-        AAUDIO_ResumeDevices();
+        SDL_ResumeSystemAudio();
         Android_PausedAudio = SDL_FALSE;
     }
 }

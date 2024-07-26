@@ -33,7 +33,6 @@
 
 struct SDL_PrivateAudioData
 {
-    int resume;  // Resume device if it was paused automatically
 };
 
 static SDL_AudioDevice *playbackDevice = NULL;
@@ -123,46 +122,6 @@ static void ANDROIDAUDIO_CloseDevice(SDL_AudioDevice *device)
         }
         SDL_free(device->hidden);
         device->hidden = NULL;
-    }
-}
-
-// Pause (block) all non already paused audio devices by taking their mixer lock
-void ANDROIDAUDIO_PauseDevices(void)
-{
-    // TODO: Handle multiple devices?
-    struct SDL_PrivateAudioData *hidden;
-    if (playbackDevice && playbackDevice->hidden) {
-        hidden = (struct SDL_PrivateAudioData *)playbackDevice->hidden;
-        SDL_LockMutex(playbackDevice->lock);
-        hidden->resume = SDL_TRUE;
-    }
-
-    if (recordingDevice && recordingDevice->hidden) {
-        hidden = (struct SDL_PrivateAudioData *)recordingDevice->hidden;
-        SDL_LockMutex(recordingDevice->lock);
-        hidden->resume = SDL_TRUE;
-    }
-}
-
-// Resume (unblock) all non already paused audio devices by releasing their mixer lock
-void ANDROIDAUDIO_ResumeDevices(void)
-{
-    // TODO: Handle multiple devices?
-    struct SDL_PrivateAudioData *hidden;
-    if (playbackDevice && playbackDevice->hidden) {
-        hidden = (struct SDL_PrivateAudioData *)playbackDevice->hidden;
-        if (hidden->resume) {
-            hidden->resume = SDL_FALSE;
-            SDL_UnlockMutex(playbackDevice->lock);
-        }
-    }
-
-    if (recordingDevice && recordingDevice->hidden) {
-        hidden = (struct SDL_PrivateAudioData *)recordingDevice->hidden;
-        if (hidden->resume) {
-            hidden->resume = SDL_FALSE;
-            SDL_UnlockMutex(recordingDevice->lock);
-        }
     }
 }
 

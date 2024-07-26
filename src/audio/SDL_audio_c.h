@@ -22,6 +22,10 @@
 #ifndef SDL_audio_c_h_
 #define SDL_audio_c_h_
 
+extern void SDL_PauseSystemAudio(void);
+extern void SDL_ResumeSystemAudio(void);
+extern SDL_bool SDL_SystemAudioPaused(void);
+
 extern void SDL_UpdateAudio(void);
 
 #endif /* SDL_audio_c_h_ */
