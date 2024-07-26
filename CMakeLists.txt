@@ -1246,9 +1246,6 @@ if(ANDROID)
   endif()
 
   if(SDL_AUDIO)
-    set(SDL_AUDIO_DRIVER_ANDROID 1)
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/audio/android/*.c")
-
     set(SDL_AUDIO_DRIVER_OPENSLES 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/audio/openslES/*.c")
 
