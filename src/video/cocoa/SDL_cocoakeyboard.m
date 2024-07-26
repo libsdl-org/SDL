@@ -39,9 +39,15 @@
     NSRange _markedRange;
     NSRange _selectedRange;
     SDL_Rect _inputRect;
+    int _pendingRawCode;
+    SDL_Scancode _pendingScancode;
+    Uint64 _pendingTimestamp;
 }
 - (void)doCommandBySelector:(SEL)myselector;
 - (void)setInputRect:(const SDL_Rect *)rect;
+- (void)setPendingKey:(int)rawcode scancode:(SDL_Scancode)scancode timestamp:(Uint64)timestamp;
+- (void)sendPendingKey;
+- (void)clearPendingKey;
 @end
 
 @implementation SDL3TranslatorResponder
@@ -71,6 +77,9 @@
     if ([self hasMarkedText]) {
         [self unmarkText];
     }
+
+    // Deliver the raw key event that generated this text
+    [self sendPendingKey];
 
     SDL_SendKeyboardText(str);
 }
@@ -116,6 +125,9 @@
     _selectedRange = selectedRange;
     _markedRange = NSMakeRange(0, [aString length]);
 
+    // This key event was consumed by the IME
+    [self clearPendingKey];
+
     SDL_SendEditingText([aString UTF8String],
                         (int)selectedRange.location, (int)selectedRange.length);
 
@@ -126,6 +138,9 @@
 - (void)unmarkText
 {
     _markedText = nil;
+
+    // This key event was consumed by the IME
+    [self clearPendingKey];
 
     SDL_SendEditingText("", 0, 0);
 }
@@ -179,6 +194,28 @@
 - (NSArray *)validAttributesForMarkedText
 {
     return [NSArray array];
+}
+
+- (void)setPendingKey:(int)rawcode scancode:(SDL_Scancode)scancode timestamp:(Uint64)timestamp
+{
+    _pendingRawCode = rawcode;
+    _pendingScancode = scancode;
+    _pendingTimestamp = timestamp;
+}
+
+- (void)sendPendingKey;
+{
+    if (_pendingRawCode < 0) {
+        return;
+    }
+
+    SDL_SendKeyboardKey(_pendingTimestamp, SDL_DEFAULT_KEYBOARD_ID, _pendingRawCode, _pendingScancode, SDL_PRESSED);
+    [self clearPendingKey];
+}
+
+- (void)clearPendingKey;
+{
+    _pendingRawCode = -1;
 }
 
 @end
@@ -404,9 +441,6 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     }
 
     scancode = [event keyCode];
-#if 0
-    const char *text;
-#endif
 
     if ((scancode == 10 || scancode == 50) && KBGetLayoutType(LMGetKbdType()) == kKeyboardISO) {
         /* see comments in scancodes_darwin.h */
@@ -427,22 +461,17 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
             UpdateKeymap(data, SDL_TRUE);
         }
 
-        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, SDL_PRESSED);
 #ifdef DEBUG_SCANCODES
         if (code == SDL_SCANCODE_UNKNOWN) {
             SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
         }
 #endif
         if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {
-            /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
+            [data.fieldEdit setPendingKey:scancode scancode:code timestamp:Cocoa_GetEventTimestamp([event timestamp])];
             [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
-#if 0
-            text = [[event characters] UTF8String];
-            if(text && *text) {
-                SDL_SendKeyboardText(text);
-                [data->fieldEdit setString:@""];
-            }
-#endif
+            [data.fieldEdit sendPendingKey];
+        } else {
+            SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, SDL_PRESSED);
         }
         break;
     case NSEventTypeKeyUp:
