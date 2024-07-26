@@ -2146,9 +2146,14 @@ static void ApplyWindowFlags(SDL_Window *window, SDL_WindowFlags flags)
 static void SDL_FinishWindowCreation(SDL_Window *window, SDL_WindowFlags flags)
 {
     PrepareDragAndDropSupport(window);
-    ApplyWindowFlags(window, flags);
-    if (!(flags & SDL_WINDOW_HIDDEN)) {
-        SDL_ShowWindow(window);
+
+    if (window->flags & SDL_WINDOW_EXTERNAL) {
+        // Whoever has created the window has already applied whatever flags are needed
+    } else {
+        ApplyWindowFlags(window, flags);
+        if (!(flags & SDL_WINDOW_HIDDEN)) {
+            SDL_ShowWindow(window);
+        }
     }
 }
 
