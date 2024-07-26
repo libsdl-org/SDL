@@ -931,9 +931,6 @@ typedef Uint32 SDL_HapticID;
 /**
  * Get a list of currently connected haptic devices.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param count a pointer filled in with the number of haptic devices
  *              returned, may be NULL.
  * \returns a 0 terminated array of haptic device instance IDs or NULL on
@@ -943,15 +940,12 @@ typedef Uint32 SDL_HapticID;
  *
  * \sa SDL_OpenHaptic
  */
-extern SDL_DECLSPEC const SDL_HapticID * SDLCALL SDL_GetHaptics(int *count);
+extern SDL_DECLSPEC_TEMP const SDL_HapticID * SDLCALL SDL_GetHaptics(int *count);
 
 /**
  * Get the implementation dependent name of a haptic device.
  *
  * This can be called before any haptic devices are opened.
- *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the haptic device instance ID.
  * \returns the name of the selected haptic device. If no name can be found,
@@ -963,7 +957,7 @@ extern SDL_DECLSPEC const SDL_HapticID * SDLCALL SDL_GetHaptics(int *count);
  * \sa SDL_GetHapticName
  * \sa SDL_OpenHaptic
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetHapticNameForID(SDL_HapticID instance_id);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetHapticNameForID(SDL_HapticID instance_id);
 
 /**
  * Open a haptic device for use.
@@ -1016,9 +1010,6 @@ extern SDL_DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticID(SDL_Haptic *haptic);
 /**
  * Get the implementation dependent name of a haptic device.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param haptic the SDL_Haptic obtained from SDL_OpenJoystick().
  * \returns the name of the selected haptic device. If no name can be found,
  *          this function returns NULL; call SDL_GetError() for more
@@ -1028,7 +1019,7 @@ extern SDL_DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticID(SDL_Haptic *haptic);
  *
  * \sa SDL_GetHapticNameForID
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetHapticName(SDL_Haptic *haptic);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetHapticName(SDL_Haptic *haptic);
 
 /**
  * Query whether or not the current mouse has haptic capabilities.

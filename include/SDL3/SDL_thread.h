@@ -330,16 +330,13 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithPropertiesRuntime(S
 /**
  * Get the thread name as it was specified in SDL_CreateThread().
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param thread the thread to query.
  * \returns a pointer to a UTF-8 string that names the specified thread, or
  *          NULL if it doesn't have a name.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetThreadName(SDL_Thread *thread);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetThreadName(SDL_Thread *thread);
 
 /**
  * Get the thread identifier for the current thread.

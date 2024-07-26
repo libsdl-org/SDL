@@ -201,9 +201,6 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
 /**
  * Get a list of currently connected joysticks.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param count a pointer filled in with the number of joysticks returned, may
  *              be NULL.
  * \returns a 0 terminated array of joystick instance IDs or NULL on failure;
@@ -214,15 +211,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
  * \sa SDL_HasJoystick
  * \sa SDL_OpenJoystick
  */
-extern SDL_DECLSPEC const SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
+extern SDL_DECLSPEC_TEMP const SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
 
 /**
  * Get the implementation dependent name of a joystick.
  *
  * This can be called before any joysticks are opened.
- *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the joystick instance ID.
  * \returns the name of the selected joystick. If no name can be found, this
@@ -233,15 +227,12 @@ extern SDL_DECLSPEC const SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
  * \sa SDL_GetJoystickName
  * \sa SDL_GetJoysticks
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickNameForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickNameForID(SDL_JoystickID instance_id);
 
 /**
  * Get the implementation dependent path of a joystick.
  *
  * This can be called before any joysticks are opened.
- *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the joystick instance ID.
  * \returns the path of the selected joystick. If no path can be found, this
@@ -252,7 +243,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickNameForID(SDL_JoystickID
  * \sa SDL_GetJoystickPath
  * \sa SDL_GetJoysticks
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickPathForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickPathForID(SDL_JoystickID instance_id);
 
 /**
  * Get the player index of a joystick.
@@ -662,9 +653,6 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joyst
 /**
  * Get the implementation dependent name of a joystick.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick().
  * \returns the name of the selected joystick. If no name can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
@@ -673,13 +661,10 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joyst
  *
  * \sa SDL_GetJoystickNameForID
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickName(SDL_Joystick *joystick);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickName(SDL_Joystick *joystick);
 
 /**
  * Get the implementation dependent path of a joystick.
- *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick().
  * \returns the path of the selected joystick. If no path can be found, this
@@ -689,7 +674,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickName(SDL_Joystick *joyst
  *
  * \sa SDL_GetJoystickPathForID
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickPath(SDL_Joystick *joystick);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickPath(SDL_Joystick *joystick);
 
 /**
  * Get the player index of an opened joystick.
@@ -798,16 +783,13 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickFirmwareVersion(SDL_Joystick *
  *
  * Returns the serial number of the joystick, or NULL if it is not available.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param joystick the SDL_Joystick obtained from SDL_OpenJoystick().
  * \returns the serial number of the selected joystick, or NULL if
  *          unavailable.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickSerial(SDL_Joystick *joystick);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickSerial(SDL_Joystick *joystick);
 
 /**
  * Get the type of an opened joystick.

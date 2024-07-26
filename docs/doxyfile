@@ -1298,6 +1298,7 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = DOXYGEN_SHOULD_IGNORE_THIS=1 \
                          SDL_DECLSPEC= \
+                         SDL_DECLSPEC_TEMP= \
                          SDLCALL= \
                          _WIN32=1
 

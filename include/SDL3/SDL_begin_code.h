@@ -67,6 +67,8 @@
 #  endif
 # endif
 #endif
+/* This is used to mark functions that return temporary memory */
+#define SDL_DECLSPEC_TEMP   SDL_DECLSPEC
 
 /* By default SDL uses the C calling convention */
 #ifndef SDLCALL

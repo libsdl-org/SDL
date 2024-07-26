@@ -3872,9 +3872,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
 /**
  * Get the value of a hint.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
@@ -3883,7 +3880,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetHint(const char *name);
 
 /**
  * Get the boolean value of a hint variable.

@@ -79,7 +79,6 @@ static Uint32 SDL_userevents = SDL_EVENT_USER;
 typedef struct SDL_TemporaryMemory
 {
     void *memory;
-    Uint64 timestamp;
     struct SDL_TemporaryMemory *prev;
     struct SDL_TemporaryMemory *next;
 } SDL_TemporaryMemory;
@@ -111,7 +110,6 @@ static struct
     SDL_EventEntry *free;
 } SDL_EventQ = { NULL, SDL_FALSE, { 0 }, 0, NULL, NULL, NULL };
 
-static void SDL_FreeTemporaryMemory(void);
 
 static void SDL_CleanupTemporaryMemory(void *data)
 {
@@ -268,23 +266,6 @@ static void SDL_TransferTemporaryMemoryFromEvent(SDL_EventEntry *event)
     event->memory = NULL;
 }
 
-static void SDL_CollectTemporaryMemory(SDL_TemporaryMemoryState *state, Uint64 now)
-{
-    // Temporary memory will age out and be collected after 1 second
-    const int TEMPORARY_MEMORY_COLLECT_TIME_MS = 1000;
-
-    while (state->head) {
-        SDL_TemporaryMemory *entry = state->head;
-
-        if ((now - entry->timestamp) < TEMPORARY_MEMORY_COLLECT_TIME_MS) {
-            break;
-        }
-
-        SDL_UnlinkTemporaryMemoryEntry(state, entry);
-        SDL_FreeTemporaryMemoryEntry(state, entry, SDL_TRUE);
-    }
-}
-
 void *SDL_FreeLater(void *memory)
 {
     SDL_TemporaryMemoryState *state;
@@ -301,16 +282,12 @@ void *SDL_FreeLater(void *memory)
         return memory;  // this is now a leak, but you probably have bigger problems if malloc failed.
     }
 
-    Uint64 now = SDL_GetTicks();
-    SDL_CollectTemporaryMemory(state, now);
-
     SDL_TemporaryMemory *entry = (SDL_TemporaryMemory *)SDL_malloc(sizeof(*entry));
     if (!entry) {
         return memory;  // this is now a leak, but you probably have bigger problems if malloc failed. We could probably pool up and reuse entries, though.
     }
 
     entry->memory = memory;
-    entry->timestamp = now;
 
     SDL_LinkTemporaryMemoryEntry(state, entry);
 
@@ -885,8 +862,6 @@ void SDL_StopEventLoop(void)
     SDL_EventQ.free = NULL;
     SDL_AtomicSet(&SDL_sentinel_pending, 0);
 
-    SDL_FreeTemporaryMemory();
-
     /* Clear disabled event state */
     for (i = 0; i < SDL_arraysize(SDL_disabled_events); ++i) {
         SDL_free(SDL_disabled_events[i]);
@@ -1183,9 +1158,6 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 /* Run the system dependent event loops */
 static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
 {
-    /* Free old event memory */
-    SDL_FreeTemporaryMemory();
-
     /* Release any keys held down from last frame */
     SDL_ReleaseAutoReleaseKeys();
 

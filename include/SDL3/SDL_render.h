@@ -154,9 +154,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumRenderDrivers(void);
  * "direct3d12" or "metal". These never have Unicode characters, and are not
  * meant to be proper names.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param index the index of the rendering driver; the value ranges from 0 to
  *              SDL_GetNumRenderDrivers() - 1.
  * \returns the name of the rendering driver at the requested index, or NULL
@@ -166,7 +163,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumRenderDrivers(void);
  *
  * \sa SDL_GetNumRenderDrivers
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetRenderDriver(int index);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetRenderDriver(int index);
 
 /**
  * Create a window and default renderer.
@@ -325,9 +322,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetRenderWindow(SDL_Renderer *rende
 /**
  * Get the name of a renderer.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param renderer the rendering context.
  * \returns the name of the selected renderer, or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -337,7 +331,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetRenderWindow(SDL_Renderer *rende
  * \sa SDL_CreateRenderer
  * \sa SDL_CreateRendererWithProperties
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetRendererName(SDL_Renderer *renderer);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetRendererName(SDL_Renderer *renderer);
 
 /**
  * Get the properties associated with a renderer.

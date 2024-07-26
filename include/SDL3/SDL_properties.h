@@ -378,9 +378,6 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetPointerProperty(SDL_PropertiesID props
 /**
  * Get a string property from a group of properties.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param props the properties to query.
  * \param name the name of the property to query.
  * \param default_value the default value of the property.
@@ -395,7 +392,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetPointerProperty(SDL_PropertiesID props
  * \sa SDL_HasProperty
  * \sa SDL_SetStringProperty
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetStringProperty(SDL_PropertiesID props, const char *name, const char *default_value);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetStringProperty(SDL_PropertiesID props, const char *name, const char *default_value);
 
 /**
  * Get a number property from a group of properties.
