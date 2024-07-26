@@ -1435,7 +1435,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
  * Claim ownership of temporary memory.
  *
  * Some functions return temporary memory which SDL will automatically clean
- * up. If you want to hold onto it for a long time or beyond the current
+ * up. If you want to hold onto it past the current event being handled or beyond the current
  * function scope, you can call this function to get a pointer that you own,
  * and can free using SDL_free() when you're done.
  *
