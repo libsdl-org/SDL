@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import argparse
 import dataclasses
+import fnmatch
 from enum import Enum
 import json
 import logging
 import os
+import re
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -595,6 +597,7 @@ def main():
     parser.add_argument("--github-variable-prefix", default="platforms")
     parser.add_argument("--github-ci", action="store_true")
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--commit-message-file")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING)
@@ -608,6 +611,18 @@ def main():
         ),
     )
 
+    filters = []
+    if args.commit_message_file:
+        with open(args.commit_message_file, "r") as f:
+            commit_message = f.read()
+            for m in re.finditer(r"\[sdl-ci-filter (.*)]", commit_message, flags=re.M):
+                filters.append(m.group(1).strip(" \t\n\r\t'\""))
+
+    if not filters:
+        filters.append("*")
+
+    logger.info("filters: %r", filters)
+
     all_level_platforms = {}
 
     for level_i, level_keys in enumerate(all_level_keys, 1):
@@ -618,6 +633,16 @@ def main():
         remaining_keys.difference_update(level_keys)
         all_level_platforms[level_key] = specs_to_plaform(level_specs)
         logger.info("=" * 80)
+
+    logger.info("Keys before filter: %r", remaining_keys)
+
+    filtered_remaining_keys = set()
+    for filter in filters:
+        filtered_remaining_keys.update(fnmatch.filter(remaining_keys, filter))
+
+    logger.info("Keys after filter: %r", filtered_remaining_keys)
+
+    remaining_keys = filtered_remaining_keys
 
     logger.info("Remaining:")
     remaining_specs = tuple(JOB_SPECS[key] for key in remaining_keys)
@@ -639,4 +664,3 @@ def main():
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
