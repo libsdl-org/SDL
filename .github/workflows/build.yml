@@ -23,10 +23,18 @@ jobs:
       - name: 'Create plan'
         id: plan
         run: |
+          # Adding [sdl-ci-filter GLOB] to the commit message will limit the jobs
+          # e.g. [sdl-ci-filter msvc-*]
+          EOF=$(openssl rand -hex 32)
+          cat >/tmp/commit_message.txt <<$EOF
+          ${{ github.event.head_commit.message }}
+          $EOF
+
           python .github/workflows/create-test-plan.py \
             --github-variable-prefix platforms \
             --github-ci \
-            --verbose
+            --verbose \
+            --commit-message-file /tmp/commit_message.txt
   level1:
     needs: [controller]
     uses: './.github/workflows/generic.yml'
