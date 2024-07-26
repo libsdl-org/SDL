@@ -352,8 +352,7 @@ typedef struct SDL_KeyboardEvent
  * will be inserted into the editing text. The length is the number of UTF-8
  * characters that will be replaced by new typing.
  *
- * The text string is temporary memory which will be automatically freed
- * later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * The text string is temporary memory which will be freed in SDL_FreeTemporaryMemory() and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -371,8 +370,7 @@ typedef struct SDL_TextEditingEvent
 /**
  * Keyboard IME candidates event structure (event.edit_candidates.*)
  *
- * The candidates are temporary memory which will be automatically freed
- * later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * The candidates are a single allocation of temporary memory which will be freed in SDL_FreeTemporaryMemory() and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -391,8 +389,7 @@ typedef struct SDL_TextEditingCandidatesEvent
 /**
  * Keyboard text input event structure (event.text.*)
  *
- * The text string is temporary memory which will be automatically freed
- * later, and can be claimed with SDL_ClaimTemporaryMemory().
+ * The text string is temporary memory which will be freed in SDL_FreeTemporaryMemory() and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * This event will never be delivered unless text input is enabled by calling
  * SDL_StartTextInput(). Text input is disabled by default!
@@ -789,9 +786,7 @@ typedef struct SDL_PenButtonEvent
  * An event used to drop text or request a file open by the system
  * (event.drop.*)
  *
- * The source and data strings are temporary memory which will be
- * automatically freed later, and can be claimed with
- * SDL_ClaimTemporaryMemory().
+ * The source and data strings are temporary memory which will be freed in SDL_FreeTemporaryMemory() and can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -855,6 +850,8 @@ typedef struct SDL_QuitEvent
  * SDL_PushEvent(). The contents of the structure members are completely up to
  * the programmer; the only requirement is that '''type''' is a value obtained
  * from SDL_RegisterEvents().
+ *
+ * If the data pointers are temporary memory, they will be automatically transfered to the thread that pulls the event from the queue, or freed if the event is flushed.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -1416,8 +1413,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 /**
  * Allocate temporary memory.
  *
- * You can use this to allocate memory that will be automatically freed later,
- * after event processing is complete.
+ * You can use this to allocate memory from the temporary memory pool for the current thread.
  *
  * \param size the amount of memory to allocate.
  * \returns a pointer to the memory allocated or NULL on failure; call
@@ -1428,24 +1424,18 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ClaimTemporaryMemory
+ * \sa SDL_FreeTemporaryMemory
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
 
 /**
  * Claim ownership of temporary memory.
  *
- * Some functions return temporary memory which SDL will automatically clean
- * up. If you want to hold onto it past the current event being handled or
- * beyond the current function scope, you can call this function to get a
- * pointer that you own, and can free using SDL_free() when you're done.
- *
- * If the memory isn't temporary, this will return NULL, and you don't have
- * ownership of the memory.
+ * This function removes memory from the temporary memory pool for the current thread and gives ownership to the application. The application should use SDL_free() to free it when it is done using it.
  *
  * \param mem a pointer allocated with SDL_AllocateTemporaryMemory().
  * \returns a pointer to the memory now owned by the application, which must
- *          be freed using SDL_free(), or NULL if the memory is not temporary
- *          or is not owned by this thread.
+ *          be freed using SDL_free(), or NULL if the memory is not in the temporary memory pool for the current thread.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1455,6 +1445,22 @@ extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
  * \sa SDL_free
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_ClaimTemporaryMemory(const void *mem);
+
+/**
+ * Free temporary memory for the current thread.
+ *
+ * This function frees all temporary memory for the current thread. If you would like to hold onto a specific pointer beyond this call, you should call SDL_ClaimTemporaryMemory() to move it out of the temporary memory pool.
+ *
+ * This function is automatically called in SDL_Quit() on the main thread and in SDL_CleanupTLS() when other threads complete.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AllocateTemporaryMemory
+ * \sa SDL_ClaimTemporaryMemory
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_FreeTemporaryMemory(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -936,7 +936,7 @@ while (my $d = readdir(DH)) {
 
             my $paramsstr = undef;
 
-            if (!$is_forced_inline && $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC\s+(const\s+|)(unsigned\s+|)(.*?)([\*\s]+)(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
+            if (!$is_forced_inline && $decl =~ /\A\s*extern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC\w*\s+(const\s+|)(unsigned\s+|)(.*?)([\*\s]+)(\*?)\s*SDLCALL\s+(.*?)\s*\((.*?)\);/) {
                 $sym = $8;
                 $rettype = "$3$4$5$6";
                 $paramsstr = $9;
@@ -1000,15 +1000,21 @@ while (my $d = readdir(DH)) {
             }
 
             if (!$is_forced_inline) {  # don't do with forced-inline because we don't want the implementation inserted in the wiki.
+                my $shrink_length = 0;
+
                 $decl = '';  # rebuild this with the line breaks, since it looks better for syntax highlighting.
                 foreach (@decllines) {
                     if ($decl eq '') {
+                        my $temp;
+
                         $decl = $_;
-                        $decl =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC\s+(.*?)\s+(\*?)SDLCALL\s+/$3$4 /;
+                        $temp = $decl;
+                        $temp =~ s/\Aextern\s+(SDL_DEPRECATED\s+|)(SDLMAIN_|SDL_)?DECLSPEC\w*\s+(.*?)\s+(\*?)SDLCALL\s+/$3$4 /;
+                        $shrink_length = length($decl) - length($temp);
+                        $decl = $temp;
                     } else {
                         my $trimmed = $_;
-                        # !!! FIXME: trim space for SDL_DEPRECATED if it was used, too.
-                        $trimmed =~ s/\A\s{28}//;  # 28 for shrinking to match the removed "extern SDL_DECLSPEC SDLCALL "
+                        $trimmed =~ s/\A\s{$shrink_length}//;  # shrink to match the removed "extern SDL_DECLSPEC SDLCALL "
                         $decl .= $trimmed;
                     }
                     $decl .= "\n";

@@ -411,9 +411,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
  *
  * https://developer.android.com/reference/android/content/Context#getFilesDir()
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \returns the path used for internal storage or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -421,7 +418,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
  *
  * \sa SDL_GetAndroidExternalStorageState
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
 
 /**
  * Get the current state of external storage for this Android application.
@@ -453,9 +450,6 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
  *
  * https://developer.android.com/reference/android/content/Context#getExternalFilesDir()
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \returns the path used for external storage for this application on success
  *          or NULL on failure; call SDL_GetError() for more information.
  *
@@ -463,7 +457,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
  *
  * \sa SDL_GetAndroidExternalStorageState
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
 
 /**
  * Get the path used for caching data for this Android application.
@@ -477,15 +471,12 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void)
  *
  * https://developer.android.com/reference/android/content/Context#getCacheDir()
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \returns the path used for caches for this application on success or NULL
  *          on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAndroidCachePath(void);
 
 
 typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
@@ -632,9 +623,6 @@ typedef enum SDL_WinRT_DeviceFamily
  *
  * https://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param pathType the type of path to retrieve, one of SDL_WinRT_Path.
  * \returns a UTF-8 string (8-bit, multi-byte) containing the path, or NULL if
  *          the path is not available for any reason; call SDL_GetError() for
@@ -642,7 +630,7 @@ typedef enum SDL_WinRT_DeviceFamily
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetWinRTFSPath(SDL_WinRT_Path pathType);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetWinRTFSPath(SDL_WinRT_Path pathType);
 
 /**
  * Detects the device family of WinRT platform at runtime.

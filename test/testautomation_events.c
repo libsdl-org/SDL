@@ -233,32 +233,6 @@ static int events_temporaryMemory(void *arg)
         SDL_free(claimed);
     }
 
-    {
-        /* Create event memory and queue it */
-        mem = SDL_AllocateTemporaryMemory(1);
-        SDLTest_AssertCheck(mem != NULL, "SDL_AllocateTemporaryMemory()");
-        *(char *)mem = '3';
-
-        SDL_zero(event);
-        event.type = SDL_EVENT_USER;
-        event.user.data1 = mem;
-        SDL_PushEvent(&event);
-
-        /* Get the event and verify the memory is valid */
-        found = SDL_FALSE;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_USER && event.user.data1 == mem) {
-                found = SDL_TRUE;
-            }
-        }
-        SDLTest_AssertCheck(found, "SDL_PollEvent() returned queued event");
-
-        /* Verify that pumping the event loop frees event memory */
-        SDL_PumpEvents();
-        claimed = SDL_ClaimTemporaryMemory(mem);
-        SDLTest_AssertCheck(claimed == NULL, "SDL_ClaimTemporaryMemory() can't claim memory after pumping the event loop");
-    }
-
     return TEST_COMPLETED;
 }
 

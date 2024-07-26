@@ -135,9 +135,6 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * You should wait for input from a device before you consider it actively in
  * use.
  *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
- *
  * \param count a pointer filled in with the number of mice returned, may be
  *              NULL.
  * \returns a 0 terminated array of mouse instance IDs or NULL on failure;
@@ -148,15 +145,12 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * \sa SDL_GetMouseNameForID
  * \sa SDL_HasMouse
  */
-extern SDL_DECLSPEC const SDL_MouseID * SDLCALL SDL_GetMice(int *count);
+extern SDL_DECLSPEC_TEMP const SDL_MouseID * SDLCALL SDL_GetMice(int *count);
 
 /**
  * Get the name of a mouse.
  *
  * This function returns "" if the mouse doesn't have a name.
- *
- * This returns temporary memory which will be automatically freed later, and
- * can be claimed with SDL_ClaimTemporaryMemory().
  *
  * \param instance_id the mouse instance ID.
  * \returns the name of the selected mouse, or NULL on failure; call
@@ -166,7 +160,7 @@ extern SDL_DECLSPEC const SDL_MouseID * SDLCALL SDL_GetMice(int *count);
  *
  * \sa SDL_GetMice
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID instance_id);
+extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID instance_id);
 
 /**
  * Get the window which currently has mouse focus.
