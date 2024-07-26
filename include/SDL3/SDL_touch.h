@@ -59,7 +59,7 @@ typedef enum SDL_TouchDeviceType
  *
  * \since This struct is available since SDL 3.0.0.
  *
- * \sa SDL_GetTouchFinger
+ * \sa SDL_GetTouchFingers
  */
 typedef struct SDL_Finger
 {
