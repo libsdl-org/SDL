@@ -3686,11 +3686,6 @@ void SDL_QuitGamepads(void)
         SDL_CloseGamepad(SDL_gamepads);
     }
 
-    if (s_gamepadInstanceIDs) {
-        SDL_DestroyHashTable(s_gamepadInstanceIDs);
-        s_gamepadInstanceIDs = NULL;
-    }
-
     SDL_UnlockJoysticks();
 }
 
@@ -3710,6 +3705,11 @@ void SDL_QuitGamepadMappings(void)
 
     SDL_FreeVIDPIDList(&SDL_allowed_gamepads);
     SDL_FreeVIDPIDList(&SDL_ignored_gamepads);
+
+    if (s_gamepadInstanceIDs) {
+        SDL_DestroyHashTable(s_gamepadInstanceIDs);
+        s_gamepadInstanceIDs = NULL;
+    }
 }
 
 /*
