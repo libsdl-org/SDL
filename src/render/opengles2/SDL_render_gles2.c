@@ -2133,17 +2133,14 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         goto error;
     }
     if (SDL_GL_MakeCurrent(window, data->context) < 0) {
-        SDL_GL_DestroyContext(data->context);
         goto error;
     }
 
     if (GLES2_LoadFunctions(data) < 0) {
-        SDL_GL_DestroyContext(data->context);
         goto error;
     }
 
     if (GLES2_CacheShaders(data) < 0) {
-        SDL_GL_DestroyContext(data->context);
         goto error;
     }
 
@@ -2237,7 +2234,6 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     return 0;
 
 error:
-    SDL_free(data);
     if (changed_window) {
         /* Uh oh, better try to put it back... */
         char *error = SDL_strdup(SDL_GetError());

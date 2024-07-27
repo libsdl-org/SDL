@@ -4151,10 +4151,8 @@ static int VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
 
     /* Initialize Vulkan resources */
     if (VULKAN_CreateDeviceResources(renderer, create_props) != VK_SUCCESS) {
-        VULKAN_DestroyRenderer(renderer);
         return -1;
     } else if (VULKAN_CreateWindowSizeDependentResources(renderer) != VK_SUCCESS) {
-        VULKAN_DestroyRenderer(renderer);
         return -1;
     }
 

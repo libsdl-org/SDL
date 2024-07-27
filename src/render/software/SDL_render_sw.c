@@ -1124,7 +1124,6 @@ int SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SD
 
     data = (SW_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        SW_DestroyRenderer(renderer);
         return -1;
     }
     data->surface = surface;
@@ -1162,7 +1161,6 @@ int SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SD
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SW_DestroyRenderer(renderer);
         return SDL_SetError("Unsupported output colorspace");
     }
 
