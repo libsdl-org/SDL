@@ -2506,15 +2506,6 @@ void SDLTest_CommonQuit(SDLTest_CommonState *state)
         }
         SDL_free(state->windows);
     }
-    if (state->flags & SDL_INIT_CAMERA) {
-        SDL_QuitSubSystem(SDL_INIT_CAMERA);
-    }
-    if (state->flags & SDL_INIT_VIDEO) {
-        SDL_QuitSubSystem(SDL_INIT_VIDEO);
-    }
-    if (state->flags & SDL_INIT_AUDIO) {
-        SDL_QuitSubSystem(SDL_INIT_AUDIO);
-    }
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
 }
