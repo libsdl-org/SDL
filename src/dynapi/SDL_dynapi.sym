@@ -11,7 +11,6 @@ SDL3_0.0.0 {
     SDL_AddTimer;
     SDL_AddTimerNS;
     SDL_AddVulkanRenderSemaphores;
-    SDL_AllocateTemporaryMemory;
     SDL_AtomicAdd;
     SDL_AtomicCompareAndSwap;
     SDL_AtomicCompareAndSwapPointer;
@@ -32,7 +31,6 @@ SDL3_0.0.0 {
     SDL_BlitSurfaceUncheckedScaled;
     SDL_BroadcastCondition;
     SDL_CaptureMouse;
-    SDL_ClaimTemporaryMemory;
     SDL_CleanupTLS;
     SDL_ClearAudioStream;
     SDL_ClearClipboardData;
@@ -130,7 +128,6 @@ SDL3_0.0.0 {
     SDL_FlushEvent;
     SDL_FlushEvents;
     SDL_FlushRenderer;
-    SDL_FreeTemporaryMemory;
     SDL_GDKSuspendComplete;
     SDL_GL_CreateContext;
     SDL_GL_DestroyContext;
