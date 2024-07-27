@@ -447,7 +447,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentAudioDriver(void);
  * \param count a pointer filled in with the number of devices returned, may
  *              be NULL.
  * \returns a 0 terminated array of device instance IDs or NULL on error; call
- *          SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          SDL_GetError() for more information. This should be freed with
+ *          SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -475,7 +476,8 @@ extern SDL_DECLSPEC_FREE SDL_AudioDeviceID * SDLCALL SDL_GetAudioPlaybackDevices
  * \param count a pointer filled in with the number of devices returned, may
  *              be NULL.
  * \returns a 0 terminated array of device instance IDs, or NULL on failure;
- *          call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -550,7 +552,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid
  * \param devid the instance ID of the device to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
  * \returns an array of the current channel mapping, with as many elements as
- *          the current output spec's channels, or NULL if default. This should be freed with SDL_free() when it is no longer needed.
+ *          the current output spec's channels, or NULL if default. This
+ *          should be freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1098,7 +1101,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamGain(SDL_AudioStream *stream, 
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
  * \returns an array of the current channel mapping, with as many elements as
- *          the current output spec's channels, or NULL if default. This should be freed with SDL_free() when it is no longer needed.
+ *          the current output spec's channels, or NULL if default. This
+ *          should be freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running.
@@ -1121,7 +1125,8 @@ extern SDL_DECLSPEC_FREE int * SDLCALL SDL_GetAudioStreamInputChannelMap(SDL_Aud
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
  * \returns an array of the current channel mapping, with as many elements as
- *          the current output spec's channels, or NULL if default. This should be freed with SDL_free() when it is no longer needed.
+ *          the current output spec's channels, or NULL if default. This
+ *          should be freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running.

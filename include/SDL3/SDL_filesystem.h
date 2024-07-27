@@ -125,7 +125,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetBasePath(void);
  * \param app the name of your application.
  * \returns a UTF-8 string of the user directory in platform-dependent
  *          notation. NULL if there's a problem (creating directory failed,
- *          etc.). This should be freed with SDL_free() when it is no longer needed.
+ *          etc.). This should be freed with SDL_free() when it is no longer
+ *          needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -367,7 +368,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  * \param count on return, will be set to the number of items in the returned
  *              array. Can be NULL.
  * \returns an array of strings on success or NULL on failure; call
- *          SDL_GetError() for more information. This is a single allocation that should be freed with SDL_free() when it is no longer needed.
+ *          SDL_GetError() for more information. This is a single allocation
+ *          that should be freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

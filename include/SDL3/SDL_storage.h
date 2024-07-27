@@ -410,7 +410,9 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *sto
  *              array. Can be NULL.
  * \returns an array of strings on success or NULL on failure; call
  *          SDL_GetError() for more information. The caller should pass the
- *          returned pointer to SDL_free when done with it. This is a single allocation that should be freed with SDL_free() when it is no longer needed.
+ *          returned pointer to SDL_free when done with it. This is a single
+ *          allocation that should be freed with SDL_free() when it is no
+ *          longer needed.
  *
  * \threadsafety It is safe to call this function from any thread, assuming
  *               the `storage` object is thread-safe.

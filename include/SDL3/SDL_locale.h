@@ -92,7 +92,9 @@ typedef struct SDL_Locale
  * \param count a pointer filled in with the number of locales returned, may
  *              be NULL.
  * \returns a NULL terminated array of locale pointers, or NULL on failure;
- *          call SDL_GetError() for more information. This is a single allocation that should be freed with SDL_free() when it is no longer needed.
+ *          call SDL_GetError() for more information. This is a single
+ *          allocation that should be freed with SDL_free() when it is no
+ *          longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */

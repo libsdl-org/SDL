@@ -63,7 +63,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
  * a copy of the clipboard's content.
  *
  * \returns the clipboard text on success or an empty string on failure; call
- *          SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          SDL_GetError() for more information. This should be freed with
+ *          SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -105,7 +106,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
  * a copy of the primary selection's content.
  *
  * \returns the primary selection text on success or an empty string on
- *          failure; call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          failure; call SDL_GetError() for more information. This should be
+ *          freed with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -215,7 +217,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
  * \param mime_type the mime type to read from the clipboard.
  * \param size a pointer filled in with the length of the returned data.
  * \returns the retrieved data buffer or NULL on failure; call SDL_GetError()
- *          for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          for more information. This should be freed with SDL_free() when it
+ *          is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *

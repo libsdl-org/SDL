@@ -392,7 +392,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_ReloadGamepadMappings(void);
  * \param count a pointer filled in with the number of mappings returned, can
  *              be NULL.
  * \returns an array of the mapping strings, NULL-terminated, or NULL on
- *          failure; call SDL_GetError() for more information. This is a single allocation that should be freed with SDL_free() when it is no longer needed.
+ *          failure; call SDL_GetError() for more information. This is a
+ *          single allocation that should be freed with SDL_free() when it is
+ *          no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -403,7 +405,8 @@ extern SDL_DECLSPEC_FREE char ** SDLCALL SDL_GetGamepadMappings(int *count);
  *
  * \param guid a structure containing the GUID for which a mapping is desired.
  * \returns a mapping string or NULL on failure; call SDL_GetError() for more
- *          information. This should be freed with SDL_free() when it is no longer needed.
+ *          information. This should be freed with SDL_free() when it is no
+ *          longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -419,7 +422,8 @@ extern SDL_DECLSPEC_FREE char * SDLCALL SDL_GetGamepadMappingForGUID(SDL_GUID gu
  *
  * \param gamepad the gamepad you want to get the current mapping for.
  * \returns a string that has the gamepad's mapping or NULL if no mapping is
- *          available; call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          available; call SDL_GetError() for more information. This should
+ *          be freed with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -465,7 +469,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasGamepad(void);
  * \param count a pointer filled in with the number of gamepads returned, may
  *              be NULL.
  * \returns a 0 terminated array of joystick instance IDs or NULL on failure;
- *          call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -640,7 +645,8 @@ extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetRealGamepadTypeForID(SDL_Joys
  * This can be called before any gamepads are opened.
  *
  * \param instance_id the joystick instance ID.
- * \returns the mapping string. Returns NULL if no mapping is available. This should be freed with SDL_free() when it is no longer needed.
+ * \returns the mapping string. Returns NULL if no mapping is available. This
+ *          should be freed with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -995,7 +1001,9 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GamepadEventsEnabled(void);
  * \param gamepad a gamepad.
  * \param count a pointer filled in with the number of bindings returned.
  * \returns a NULL terminated array of pointers to bindings or NULL on
- *          failure; call SDL_GetError() for more information. This is a single allocation that should be freed with SDL_free() when it is no longer needed.
+ *          failure; call SDL_GetError() for more information. This is a
+ *          single allocation that should be freed with SDL_free() when it is
+ *          no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */

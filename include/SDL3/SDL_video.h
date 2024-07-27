@@ -390,7 +390,8 @@ extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
  * \param count a pointer filled in with the number of displays returned, may
  *              be NULL.
  * \returns a 0 terminated array of display instance IDs or NULL on failure;
- *          call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -551,7 +552,9 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displ
  * \param count a pointer filled in with the number of display modes returned,
  *              may be NULL.
  * \returns a NULL terminated array of display mode pointers or NULL on
- *          failure; call SDL_GetError() for more information. This is a single allocation that should be freed with SDL_free() when it is no longer needed.
+ *          failure; call SDL_GetError() for more information. This is a
+ *          single allocation that should be freed with SDL_free() when it is
+ *          no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -576,8 +579,8 @@ extern SDL_DECLSPEC_FREE SDL_DisplayMode ** SDLCALL SDL_GetFullscreenDisplayMode
  *                     for the desktop refresh rate.
  * \param include_high_density_modes boolean to include high density modes in
  *                                   the search.
- * \param mode a pointer filled in with the closest display mode equal to or larger than the
- *          desired mode.
+ * \param mode a pointer filled in with the closest display mode equal to or
+ *             larger than the desired mode.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -762,7 +765,8 @@ extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetWindowFullscreenMode(
  * \param window the window to query.
  * \param size the size of the ICC profile.
  * \returns the raw ICC profile data on success or NULL on failure; call
- *          SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          SDL_GetError() for more information. This should be freed with
+ *          SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -786,7 +790,9 @@ extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetWindowPixelFormat(SDL_Window 
  * \param count a pointer filled in with the number of windows returned, may
  *              be NULL.
  * \returns a NULL terminated array of SDL_Window pointers or NULL on failure;
- *          call SDL_GetError() for more information. This is a single allocation that should be freed with SDL_free() when it is no longer needed.
+ *          call SDL_GetError() for more information. This is a single
+ *          allocation that should be freed with SDL_free() when it is no
+ *          longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */

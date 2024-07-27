@@ -169,7 +169,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentCameraDriver(void);
  * \param count a pointer filled in with the number of cameras returned, may
  *              be NULL.
  * \returns a 0 terminated array of camera instance IDs or NULL on failure;
- *          call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -205,7 +206,9 @@ extern SDL_DECLSPEC_FREE SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
  * \param count a pointer filled in with the number of elements in the list,
  *              may be NULL.
  * \returns a NULL terminated array of pointers to SDL_CameraSpec or NULL on
- *          failure; call SDL_GetError() for more information. This is a single allocation that should be freed with SDL_free() when it is no longer needed.
+ *          failure; call SDL_GetError() for more information. This is a
+ *          single allocation that should be freed with SDL_free() when it is
+ *          no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

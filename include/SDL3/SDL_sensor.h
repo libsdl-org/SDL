@@ -149,7 +149,8 @@ typedef enum SDL_SensorType
  * \param count a pointer filled in with the number of sensors returned, may
  *              be NULL.
  * \returns a 0 terminated array of sensor instance IDs or NULL on failure;
- *          call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */
