@@ -3860,7 +3860,12 @@ int SDL_GetWindowSafeArea(SDL_Window *window, SDL_Rect *rect)
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (rect) {
-        SDL_copyp(rect, &window->safe_rect);
+        if (SDL_RectEmpty(&window->safe_rect)) {
+            rect->w = window->w;
+            rect->h = window->h;
+        } else {
+            SDL_copyp(rect, &window->safe_rect);
+        }
     }
     return 0;
 }
