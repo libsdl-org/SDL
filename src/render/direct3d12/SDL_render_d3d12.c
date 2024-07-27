@@ -644,9 +644,9 @@ static int D3D12_IssueBatch(D3D12_RenderData *data)
 static void D3D12_DestroyRenderer(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
-    D3D12_WaitForGPU(data);
-    D3D12_ReleaseAll(renderer);
     if (data) {
+        D3D12_WaitForGPU(data);
+        D3D12_ReleaseAll(renderer);
         SDL_free(data);
     }
 }
@@ -3343,11 +3343,9 @@ int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propert
 
     /* Initialize Direct3D resources */
     if (FAILED(D3D12_CreateDeviceResources(renderer))) {
-        D3D12_DestroyRenderer(renderer);
         return -1;
     }
     if (FAILED(D3D12_CreateWindowSizeDependentResources(renderer))) {
-        D3D12_DestroyRenderer(renderer);
         return -1;
     }
 

@@ -643,7 +643,6 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_free(renderer);
         return SDL_SetError("Unsupported output colorspace");
     }
 

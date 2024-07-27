@@ -1703,7 +1703,6 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
 
     result = IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
     if (FAILED(result)) {
-        D3D_DestroyRenderer(renderer);
         return D3D_SetError("GetDeviceCaps()", result);
     }
 
@@ -1724,20 +1723,17 @@ int D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Propertie
                                      device_flags,
                                      &pparams, &data->device);
     if (FAILED(result)) {
-        D3D_DestroyRenderer(renderer);
         return D3D_SetError("CreateDevice()", result);
     }
 
     /* Get presentation parameters to fill info */
     result = IDirect3DDevice9_GetSwapChain(data->device, 0, &chain);
     if (FAILED(result)) {
-        D3D_DestroyRenderer(renderer);
         return D3D_SetError("GetSwapChain()", result);
     }
     result = IDirect3DSwapChain9_GetPresentParameters(chain, &pparams);
     if (FAILED(result)) {
         IDirect3DSwapChain9_Release(chain);
-        D3D_DestroyRenderer(renderer);
         return D3D_SetError("GetPresentParameters()", result);
     }
     IDirect3DSwapChain9_Release(chain);

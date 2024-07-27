@@ -254,7 +254,6 @@ static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, S
 #endif
 
     if (gxm_init(renderer) != 0) {
-        SDL_free(data);
         return SDL_SetError("gxm_init failed");
     }
 

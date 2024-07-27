@@ -1698,12 +1698,10 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
         goto error;
     }
     if (SDL_GL_MakeCurrent(window, data->context) < 0) {
-        SDL_GL_DestroyContext(data->context);
         goto error;
     }
 
     if (GL_LoadFunctions(data) < 0) {
-        SDL_GL_DestroyContext(data->context);
         goto error;
     }
 
@@ -1819,7 +1817,6 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
             SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
     } else {
         SDL_SetError("Can't create render targets, GL_EXT_framebuffer_object not available");
-        SDL_GL_DestroyContext(data->context);
         goto error;
     }
 
@@ -1847,7 +1844,6 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
     return 0;
 
 error:
-    SDL_free(data);
     if (changed_window) {
         /* Uh oh, better try to put it back... */
         char *error = SDL_strdup(SDL_GetError());
