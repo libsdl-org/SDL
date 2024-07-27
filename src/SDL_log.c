@@ -118,6 +118,7 @@ void SDL_InitLog(void)
 void SDL_QuitLog(void)
 {
     SDL_ResetLogPriorities();
+
     if (log_function_mutex) {
         SDL_DestroyMutex(log_function_mutex);
         log_function_mutex = NULL;
