@@ -80,18 +80,18 @@ int main(int argc, char *argv[])
     //SDL_CreateWindow("Dummy", 128, 128, 0);
     */
 
-    SDL_GetKeyboards(&num_keyboards);
+    SDL_free(SDL_GetKeyboards(&num_keyboards));
     SDL_Log("There are %d keyboards at startup\n", num_keyboards);
 
-    SDL_GetMice(&num_mice);
+    SDL_free(SDL_GetMice(&num_mice));
     SDL_Log("There are %d mice at startup\n", num_mice);
 
-    SDL_GetJoysticks(&num_joysticks);
+    SDL_free(SDL_GetJoysticks(&num_joysticks));
     SDL_Log("There are %d joysticks at startup\n", num_joysticks);
 
     if (enable_haptic) {
         int num_haptics;
-        SDL_GetHaptics(&num_haptics);
+        SDL_free(SDL_GetHaptics(&num_haptics));
         SDL_Log("There are %d haptic devices at startup\n", num_haptics);
     }
 

@@ -15,7 +15,7 @@
 
 static void log_locales(void)
 {
-    const SDL_Locale * const *locales = SDL_GetPreferredLocales(NULL);
+    SDL_Locale **locales = SDL_GetPreferredLocales(NULL);
     if (!locales) {
         SDL_Log("Couldn't determine locales: %s", SDL_GetError());
     } else {
@@ -29,6 +29,7 @@ static void log_locales(void)
             total++;
         }
         SDL_Log("%u locales seen.", total);
+        SDL_free(locales);
     }
 }
 

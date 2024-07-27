@@ -235,7 +235,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_PenConnected(SDL_PenID instance_id);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetPenName(SDL_PenID instance_id);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetPenName(SDL_PenID instance_id);
 
 /**
  * Pen capabilities, as reported by SDL_GetPenCapabilities()

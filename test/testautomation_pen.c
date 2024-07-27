@@ -38,6 +38,7 @@
 #define SDL_GetPenName         SDL_SUT_GetPenName
 #define SDL_GetPenCapabilities SDL_SUT_GetPenCapabilities
 #define SDL_GetPenType         SDL_SUT_GetPenType
+#define SDL_GetPersistentString(X) X
 
 #define SDL_GetPenPtr                SDL_SUT_GetPenPtr
 #define SDL_PenModifyBegin           SDL_SUT_PenModifyBegin

@@ -418,7 +418,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
  *
  * \sa SDL_GetAndroidExternalStorageState
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
 
 /**
  * Get the current state of external storage for this Android application.
@@ -457,7 +457,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
  *
  * \sa SDL_GetAndroidExternalStorageState
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
 
 /**
  * Get the path used for caching data for this Android application.
@@ -476,7 +476,7 @@ extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAndroidExternalStoragePath(
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAndroidCachePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
 
 
 typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, SDL_bool granted);
@@ -630,7 +630,7 @@ typedef enum SDL_WinRT_DeviceFamily
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetWinRTFSPath(SDL_WinRT_Path pathType);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetWinRTFSPath(SDL_WinRT_Path pathType);
 
 /**
  * Detects the device family of WinRT platform at runtime.

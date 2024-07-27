@@ -213,7 +213,7 @@ const char *SDL_GetPenName(SDL_PenID instance_id)
 {
     const char *result;
     SDL_LOAD_LOCK_PEN(pen, instance_id, NULL);
-    result = pen->name; /* Allocated separately from the pen table, so it is safe to hand to client code  */
+    result = SDL_GetPersistentString(pen->name);
     SDL_UNLOCK_PENS();
     return result;
 }

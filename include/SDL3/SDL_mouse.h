@@ -138,14 +138,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasMouse(void);
  * \param count a pointer filled in with the number of mice returned, may be
  *              NULL.
  * \returns a 0 terminated array of mouse instance IDs or NULL on failure;
- *          call SDL_GetError() for more information.
+ *          call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetMouseNameForID
  * \sa SDL_HasMouse
  */
-extern SDL_DECLSPEC_TEMP const SDL_MouseID * SDLCALL SDL_GetMice(int *count);
+extern SDL_DECLSPEC_FREE SDL_MouseID * SDLCALL SDL_GetMice(int *count);
 
 /**
  * Get the name of a mouse.
@@ -160,7 +160,7 @@ extern SDL_DECLSPEC_TEMP const SDL_MouseID * SDLCALL SDL_GetMice(int *count);
  *
  * \sa SDL_GetMice
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID instance_id);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID instance_id);
 
 /**
  * Get the window which currently has mouse focus.

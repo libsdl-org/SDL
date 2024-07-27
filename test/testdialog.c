@@ -44,7 +44,8 @@ static void SDLCALL callback(void* userdata, const char* const* files, int filte
     }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     SDL_Window *w;
     SDL_Renderer *r;
     SDLTest_CommonState *state;

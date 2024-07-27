@@ -21,21 +21,24 @@
 #include "SDL_internal.h"
 
 /* convert the guid to a printable string */
-const char *SDL_GUIDToString(SDL_GUID guid)
+void SDL_GUIDToString(SDL_GUID guid, char *pszGUID, int cbGUID)
 {
     static const char k_rgchHexToASCII[] = "0123456789abcdef";
     int i;
-    char string[sizeof(guid) * 2 + 1];
 
-    for (i = 0; i < sizeof(guid.data); ++i) {
+    if ((!pszGUID) || (cbGUID <= 0)) {
+        return;
+    }
+
+    for (i = 0; i < sizeof(guid.data) && i < (cbGUID - 1) / 2; i++) {
+        /* each input byte writes 2 ascii chars, and might write a null byte. */
+        /* If we don't have room for next input byte, stop */
         unsigned char c = guid.data[i];
 
-        string[i * 2 + 0] = k_rgchHexToASCII[c >> 4];
-        string[i * 2 + 1] = k_rgchHexToASCII[c & 0x0F];
+        *pszGUID++ = k_rgchHexToASCII[c >> 4];
+        *pszGUID++ = k_rgchHexToASCII[c & 0x0F];
     }
-    string[sizeof(string) -1] = '\0';
-
-    return SDL_CreateTemporaryString(string);
+    *pszGUID = '\0';
 }
 
 /*-----------------------------------------------------------------------------

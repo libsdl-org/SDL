@@ -514,12 +514,11 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display, 
     SDL_DisplayData *dispdata = display->internal;
     drmModeConnector *connector = dispdata->connector;
 
-    const SDL_DisplayMode *closest;
+    SDL_DisplayMode closest;
     drmModeModeInfo *drm_mode;
 
-    closest = SDL_GetClosestFullscreenDisplayMode(display->id, width, height, 0.0f, SDL_FALSE);
-    if (closest) {
-        const SDL_DisplayModeData *modedata = closest->internal;
+    if (SDL_GetClosestFullscreenDisplayMode(display->id, width, height, 0.0f, SDL_FALSE, &closest) == 0) {
+        const SDL_DisplayModeData *modedata = closest.internal;
         drm_mode = &connector->modes[modedata->mode_index];
         return drm_mode;
     } else {
@@ -535,7 +534,7 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display, 
 /* Deinitializes the internal of the SDL Displays in the SDL display list. */
 static void KMSDRM_DeinitDisplays(SDL_VideoDevice *_this)
 {
-    const SDL_DisplayID *displays;
+    SDL_DisplayID *displays;
     SDL_DisplayData *dispdata;
     int i;
 
@@ -559,6 +558,7 @@ static void KMSDRM_DeinitDisplays(SDL_VideoDevice *_this)
                 dispdata->crtc = NULL;
             }
         }
+        SDL_free(displays);
     }
 }
 

@@ -811,7 +811,7 @@ const char *SDL_GetRenderDriver(int index)
                             SDL_GetNumRenderDrivers() - 1);
         return NULL;
     }
-    return SDL_CreateTemporaryString(render_drivers[index]->name);
+    return render_drivers[index]->name;
 #else
     SDL_SetError("SDL not built with rendering support");
     return NULL;
@@ -1204,7 +1204,7 @@ const char *SDL_GetRendererName(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
-    return renderer->name;
+    return SDL_GetPersistentString(renderer->name);
 }
 
 SDL_PropertiesID SDL_GetRendererProperties(SDL_Renderer *renderer)

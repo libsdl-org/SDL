@@ -957,7 +957,8 @@ const char *SDL_GetScancodeName(SDL_Scancode scancode)
     if (!name) {
         name = "";
     }
-    return SDL_CreateTemporaryString(name);
+    // This is pointing to static memory or application managed memory
+    return name;
 }
 
 SDL_Scancode SDL_GetScancodeFromName(const char *name)
@@ -1015,7 +1016,7 @@ const char *SDL_GetKeyName(SDL_Keycode key)
 
         end = SDL_UCS4ToUTF8(key, name);
         *end = '\0';
-        return SDL_CreateTemporaryString(name);
+        return SDL_GetPersistentString(name);
     }
 }
 

@@ -65,4 +65,6 @@ extern void SDL_SetObjectValid(void *object, SDL_ObjectType type, SDL_bool valid
 extern SDL_bool SDL_ObjectValid(void *object, SDL_ObjectType type);
 extern void SDL_SetObjectsInvalid(void);
 
+extern const char *SDL_GetPersistentString(const char *string);
+
 #endif /* SDL_utils_h_ */

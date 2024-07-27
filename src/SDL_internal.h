@@ -279,27 +279,22 @@
 #define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
 #include <SDL3/SDL_main.h>
 
-#include "SDL_utils_c.h"
-
-/* The internal implementations of these functions have up to nanosecond precision.
-   We can expose these functions as part of the API if we want to later.
-*/
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include "SDL_utils_c.h"
+
 /* Do any initialization that needs to happen before threads are started */
 extern void SDL_InitMainThread(void);
 
+/* The internal implementations of these functions have up to nanosecond precision.
+   We can expose these functions as part of the API if we want to later.
+*/
 extern int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS);
 extern int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
 extern SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
-
-extern const char *SDL_CreateTemporaryString(const char *string);
-
-/* Add memory to the temporary memory pool, to be freed automatically later */
-extern void *SDL_FreeLater(void *memory);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

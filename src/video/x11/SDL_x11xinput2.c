@@ -725,6 +725,30 @@ static SDL_bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
     return SDL_FALSE;
 }
 
+static void AddDeviceID64(Uint64 deviceID, Uint64 **list, int *count)
+{
+    int new_count = (*count + 1);
+    Uint64 *new_list = (Uint64 *)SDL_realloc(*list, new_count * sizeof(*new_list));
+    if (!new_list) {
+        /* Oh well, we'll drop this one */
+        return;
+    }
+    new_list[new_count - 1] = deviceID;
+
+    *count = new_count;
+    *list = new_list;
+}
+
+static SDL_bool HasDeviceID64(Uint64 deviceID, const Uint64 *list, int count)
+{
+    for (int i = 0; i < count; ++i) {
+        if (deviceID == list[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2
 
 void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
@@ -734,18 +758,17 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
     XIDeviceInfo *info;
     int ndevices;
     int old_keyboard_count = 0;
-    const SDL_KeyboardID *old_keyboards = NULL;
+    SDL_KeyboardID *old_keyboards = NULL;
     int new_keyboard_count = 0;
     SDL_KeyboardID *new_keyboards = NULL;
     int old_mouse_count = 0;
-    const SDL_MouseID *old_mice = NULL;
+    SDL_MouseID *old_mice = NULL;
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
     int old_touch_count = 0;
-    const SDL_TouchID *old_touch_devices64 = NULL;
-    Uint32 *old_touch_devices = NULL;
+    Uint64 *old_touch_devices = NULL;
     int new_touch_count = 0;
-    Uint32 *new_touch_devices = NULL;
+    Uint64 *new_touch_devices = NULL;
     SDL_bool send_event = !initial_check;
 
     SDL_assert(X11_Xinput2IsInitialized());
@@ -754,17 +777,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
 
     old_keyboards = SDL_GetKeyboards(&old_keyboard_count);
     old_mice = SDL_GetMice(&old_mouse_count);
-
-    /* SDL_TouchID is 64-bit, but our helper functions take Uint32 */
-    old_touch_devices64 = SDL_GetTouchDevices(&old_touch_count);
-    if (old_touch_count > 0) {
-        old_touch_devices = (Uint32 *)SDL_malloc(old_touch_count * sizeof(*old_touch_devices));
-        if (old_touch_devices) {
-            for (int i = 0; i < old_touch_count; ++i) {
-                old_touch_devices[i] = (Uint32)old_touch_devices64[i];
-            }
-        }
-    }
+    old_touch_devices = SDL_GetTouchDevices(&old_touch_count);
 
     for (int i = 0; i < ndevices; i++) {
         XIDeviceInfo *dev = &info[i];
@@ -796,7 +809,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
         for (int j = 0; j < dev->num_classes; j++) {
-            Uint32 touchID;
+            Uint64 touchID;
             SDL_TouchDeviceType touchType;
             XIAnyClassInfo *class = dev->classes[j];
             XITouchClassInfo *t = (XITouchClassInfo *)class;
@@ -806,9 +819,9 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
                 continue;
             }
 
-            touchID = (Uint32)t->sourceid;
-            AddDeviceID(touchID, &new_touch_devices, &new_touch_count);
-            if (!HasDeviceID(touchID, old_touch_devices, old_touch_count)) {
+            touchID = (Uint64)t->sourceid;
+            AddDeviceID64(touchID, &new_touch_devices, &new_touch_count);
+            if (!HasDeviceID64(touchID, old_touch_devices, old_touch_count)) {
                 if (t->mode == XIDependentTouch) {
                     touchType = SDL_TOUCH_DEVICE_INDIRECT_RELATIVE;
                 } else { /* XIDirectTouch */
@@ -833,12 +846,14 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, SDL_bool initial_check)
     }
 
     for (int i = old_touch_count; i--;) {
-        if (!HasDeviceID(old_touch_devices[i], new_touch_devices, new_touch_count)) {
+        if (!HasDeviceID64(old_touch_devices[i], new_touch_devices, new_touch_count)) {
             SDL_DelTouch(old_touch_devices[i]);
         }
     }
 
+    SDL_free(old_keyboards);
     SDL_free(new_keyboards);
+    SDL_free(old_mice);
     SDL_free(new_mice);
     SDL_free(old_touch_devices);
     SDL_free(new_touch_devices);

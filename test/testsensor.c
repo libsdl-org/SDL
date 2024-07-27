@@ -58,7 +58,7 @@ static void HandleSensorEvent(SDL_SensorEvent *event)
 
 int main(int argc, char **argv)
 {
-    const SDL_SensorID *sensors;
+    SDL_SensorID *sensors;
     int i, num_sensors, num_opened;
     SDLTest_CommonState *state;
 
@@ -104,6 +104,7 @@ int main(int argc, char **argv)
                 }
             }
         }
+        SDL_free(sensors);
     }
     SDL_Log("Opened %d sensors\n", num_opened);
 

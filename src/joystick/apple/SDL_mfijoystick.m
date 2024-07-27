@@ -1916,7 +1916,7 @@ static GCControllerDirectionPad *GetDirectionalPadForController(GCController *co
 }
 #endif /* SDL_JOYSTICK_MFI && ENABLE_PHYSICAL_INPUT_PROFILE */
 
-char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
+const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
     char elementName[256];
     elementName[0] = '\0';
@@ -2031,10 +2031,10 @@ char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton
     }
 #endif
 
-    return SDL_strdup(elementName);
+    return *elementName ? SDL_GetPersistentString(elementName) : NULL;
 }
 
-char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
+const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
     char elementName[256];
     elementName[0] = '\0';
@@ -2071,7 +2071,7 @@ char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axi
         }
     }
 #endif
-    return *elementName ? SDL_strdup(elementName) : NULL;
+    return *elementName ? SDL_GetPersistentString(elementName) : NULL;
 }
 
 SDL_JoystickDriver SDL_IOS_JoystickDriver = {
