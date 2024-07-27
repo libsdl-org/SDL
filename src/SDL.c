@@ -113,7 +113,6 @@ static SDL_bool SDL_MainIsReady = SDL_FALSE;
 #else
 static SDL_bool SDL_MainIsReady = SDL_TRUE;
 #endif
-static SDL_bool SDL_main_thread_initialized = SDL_FALSE;
 static SDL_bool SDL_bInMainQuit = SDL_FALSE;
 static Uint8 SDL_SubsystemRefCount[32];
 
@@ -186,33 +185,21 @@ void SDL_SetMainReady(void)
 /* Initialize all the subsystems that require initialization before threads start */
 void SDL_InitMainThread(void)
 {
-    if (SDL_main_thread_initialized) {
-        return;
-    }
-
     SDL_InitTLSData();
     SDL_InitTicks();
     SDL_InitFilesystem();
     SDL_InitLog();
     SDL_InitProperties();
     SDL_GetGlobalProperties();
-
-    SDL_main_thread_initialized = SDL_TRUE;
 }
 
 static void SDL_QuitMainThread(void)
 {
-    if (!SDL_main_thread_initialized) {
-        return;
-    }
-
     SDL_QuitProperties();
     SDL_QuitLog();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
     SDL_QuitTLSData();
-
-    SDL_main_thread_initialized = SDL_FALSE;
 }
 
 int SDL_InitSubSystem(SDL_InitFlags flags)
