@@ -30,11 +30,12 @@
 #include "../core/android/SDL_android.h"
 #endif
 
-#if (defined(HAVE_GETENV) && defined(HAVE_SETENV)) || \
-    (defined(HAVE_GETENV) && defined(HAVE_PUTENV) && defined(HAVE_UNSETENV))
-#define HAVE_LIBC_ENVIRONMENT
-#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #define HAVE_WIN32_ENVIRONMENT
+#elif defined(HAVE_GETENV) && \
+      (defined(HAVE_SETENV) || defined(HAVE_PUTENV)) && \
+      (defined(HAVE_UNSETENV) || defined(HAVE_PUTENV))
+#define HAVE_LIBC_ENVIRONMENT
 #else
 #define HAVE_LOCAL_ENVIRONMENT
 #endif
@@ -64,15 +65,13 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
     }
 
     if (getenv(name) != NULL) {
-        if (overwrite) {
-            unsetenv(name);
-        } else {
+        if (!overwrite) {
             return 0; /* leave the existing one there. */
         }
     }
 
     /* This leaks. Sorry. Get a better OS so we don't have to do this. */
-    SDL_aprintf(&new_variable, "%s=%s", name, value);
+    SDL_asprintf(&new_variable, "%s=%s", name, value);
     if (!new_variable) {
         return -1;
     }
@@ -92,7 +91,7 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
             return 0; /* asked not to overwrite existing value. */
         }
     }
-    if (!SetEnvironmentVariableA(name, *value ? value : NULL)) {
+    if (!SetEnvironmentVariableA(name, value)) {
         return -1;
     }
     return 0;
@@ -138,14 +137,12 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
         len = (value - name);
         for (; SDL_env[i]; ++i) {
             if (SDL_strncmp(SDL_env[i], name, len) == 0) {
+                /* If we found it, just replace the entry */
+                SDL_free(SDL_env[i]);
+                SDL_env[i] = new_variable;
+                added = 1;
                 break;
             }
-        }
-        /* If we found it, just replace the entry */
-        if (SDL_env[i]) {
-            SDL_free(SDL_env[i]);
-            SDL_env[i] = new_variable;
-            added = 1;
         }
     }
 
@@ -162,6 +159,68 @@ int SDL_setenv(const char *name, const char *value, int overwrite)
         }
     }
     return added ? 0 : -1;
+}
+#endif // HAVE_LIBC_ENVIRONMENT
+
+#ifdef HAVE_LIBC_ENVIRONMENT
+#if defined(HAVE_UNSETENV)
+int SDL_unsetenv(const char *name)
+{
+    /* Input validation */
+    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
+        return -1;
+    }
+
+    return unsetenv(name);
+}
+/* We have a real environment table, but no unsetenv? Fake it w/ putenv. */
+#else
+int SDL_unsetenv(const char *name)
+{
+    /* Input validation */
+    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
+        return -1;
+    }
+
+    // Hope this environment uses the non-standard extension of removing the environment variable if it has no '='
+    return putenv(name);
+}
+#endif
+#elif defined(HAVE_WIN32_ENVIRONMENT)
+int SDL_unsetenv(const char *name)
+{
+    /* Input validation */
+    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
+        return -1;
+    }
+
+    if (!SetEnvironmentVariableA(name, NULL)) {
+        return -1;
+    }
+    return 0;
+}
+#else
+int SDL_unsetenv(const char *name)
+{
+    size_t len, i;
+
+    /* Input validation */
+    if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
+        return -1;
+    }
+
+    if (SDL_env) {
+        len = SDL_strlen(name);
+        for (i = 0; SDL_env[i]; ++i) {
+            if ((SDL_strncmp(SDL_env[i], name, len) == 0) &&
+                (SDL_env[i][len] == '=')) {
+                /* Just clear out this entry for now */
+                *SDL_env[i] = '\0';
+                break;
+            }
+        }
+    }
+    return 0;
 }
 #endif // HAVE_LIBC_ENVIRONMENT
 
@@ -194,6 +253,7 @@ const char *SDL_getenv(const char *name)
     }
 
     for ( ; ; ) {
+        SetLastError(ERROR_SUCCESS);
         length = GetEnvironmentVariableA(name, string, maxlen);
 
         if (length > maxlen) {
@@ -204,6 +264,12 @@ const char *SDL_getenv(const char *name)
             string = temp;
             maxlen = length;
         } else {
+            if (GetLastError() != ERROR_SUCCESS) {
+                if (string) {
+                    SDL_free(string);
+                }
+                return NULL;
+            }
             break;
         }
     }
@@ -227,10 +293,11 @@ const char *SDL_getenv(const char *name)
     value = (char *)0;
     if (SDL_env) {
         len = SDL_strlen(name);
-        for (i = 0; SDL_env[i] && !value; ++i) {
+        for (i = 0; SDL_env[i]; ++i) {
             if ((SDL_strncmp(SDL_env[i], name, len) == 0) &&
                 (SDL_env[i][len] == '=')) {
                 value = &SDL_env[i][len + 1];
+                break;
             }
         }
     }

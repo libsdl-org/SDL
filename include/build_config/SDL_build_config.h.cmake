@@ -75,12 +75,10 @@
 #cmakedefine HAVE_CALLOC 1
 #cmakedefine HAVE_REALLOC 1
 #cmakedefine HAVE_FREE 1
-#ifndef SDL_PLATFORM_WIN32 /* Don't use C runtime versions of these on Windows */
 #cmakedefine HAVE_GETENV 1
 #cmakedefine HAVE_SETENV 1
 #cmakedefine HAVE_PUTENV 1
 #cmakedefine HAVE_UNSETENV 1
-#endif
 #cmakedefine HAVE_ABS 1
 #cmakedefine HAVE_BCOPY 1
 #cmakedefine HAVE_MEMSET 1

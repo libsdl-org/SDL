@@ -1063,6 +1063,7 @@
 #define SDL_uitoa SDL_uitoa_REAL
 #define SDL_ulltoa SDL_ulltoa_REAL
 #define SDL_ultoa SDL_ultoa_REAL
+#define SDL_unsetenv SDL_unsetenv_REAL
 #define SDL_utf8strlcpy SDL_utf8strlcpy_REAL
 #define SDL_utf8strlen SDL_utf8strlen_REAL
 #define SDL_utf8strnlen SDL_utf8strnlen_REAL
