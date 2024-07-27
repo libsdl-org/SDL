@@ -3,6 +3,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(sdl_test LANGUAGES C)
 
+include(CheckLanguage)
+include(FeatureSummary)
 include(GenerateExportHeader)
 
 if(ANDROID)
@@ -19,13 +21,22 @@ cmake_policy(SET CMP0074 NEW)
 # Override CMAKE_FIND_ROOT_PATH_MODE to allow search for SDL2 outside of sysroot
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE NEVER)
 
-include(FeatureSummary)
-
 option(TEST_SHARED "Test linking to shared SDL2 library" ON)
 add_feature_info("TEST_SHARED" TEST_SHARED "Test linking with shared library")
 
 option(TEST_STATIC "Test linking to static SDL2 library" ON)
 add_feature_info("TEST_STATIC" TEST_STATIC "Test linking with static library")
+
+if(APPLE)
+    # multiple values for CMAKE_OSX_ARCHITECTURES not supported with Swift
+    list(LENGTH CMAKE_OSX_ARCHITECTURES count_osx_archs)
+    if(count_osx_archs LESS_EQUAL 1)
+        check_language(Swift)
+        if(CMAKE_Swift_COMPILER)
+            enable_language(Swift)
+        endif()
+    endif()
+endif()
 
 if(TEST_SHARED)
     find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2)
@@ -75,6 +86,12 @@ if(TEST_SHARED)
     generate_export_header(sharedlib-shared-vars EXPORT_MACRO_NAME MYLIBRARY_EXPORT)
     target_compile_definitions(sharedlib-shared-vars PRIVATE "EXPORT_HEADER=\"${CMAKE_CURRENT_BINARY_DIR}/sharedlib-shared-vars_export.h\"")
     set_target_properties(sharedlib-shared-vars PROPERTIES C_VISIBILITY_PRESET "hidden")
+
+    if(CMAKE_Swift_COMPILER)
+        add_executable(swift-shared main.swift)
+        target_include_directories(swift-shared PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/swift")
+        target_link_libraries(swift-shared PRIVATE SDL2::SDL2)
+    endif()
 endif()
 
 if(TEST_STATIC)
@@ -110,6 +127,12 @@ if(TEST_STATIC)
         add_executable(cli-static-vars main_cli.c)
         target_link_libraries(cli-static-vars PRIVATE ${SDL2_STATIC_LIBRARIES})
         target_include_directories(cli-static-vars PRIVATE ${SDL2_INCLUDE_DIRS})
+    endif()
+
+    if(CMAKE_Swift_COMPILER)
+        add_executable(swift-static main.swift)
+        target_include_directories(swift-static PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/swift")
+        target_link_libraries(swift-static PRIVATE SDL2::SDL2-static)
     endif()
 endif()
 
