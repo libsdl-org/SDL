@@ -115,7 +115,6 @@ static Uint64 app_ready_ticks = 0;
 static SDLTest_CommonState *state = NULL;
 
 static Thing *things = NULL;
-static char *current_titlebar = NULL;
 
 static Thing *mouseover_thing = NULL;
 static Thing *droppable_highlighted_thing = NULL;
@@ -135,19 +134,14 @@ static Texture *soundboard_levels_texture = NULL;
 
 static void SetTitleBar(const char *fmt, ...)
 {
-    char *newstr = NULL;
+    char *title = NULL;
     va_list ap;
     va_start(ap, fmt);
-    SDL_vasprintf(&newstr, fmt, ap);
+    SDL_vasprintf(&title, fmt, ap);
     va_end(ap);
 
-    if (newstr && (!current_titlebar || (SDL_strcmp(current_titlebar, newstr) != 0))) {
-        SDL_SetWindowTitle(state->windows[0], newstr);
-        SDL_free(current_titlebar);
-        current_titlebar = newstr;
-    } else {
-        SDL_free(newstr);
-    }
+    SDL_SetWindowTitle(state->windows[0], title);
+    SDL_free(title);
 }
 
 static void SetDefaultTitleBar(void)
