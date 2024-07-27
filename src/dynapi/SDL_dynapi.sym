@@ -694,6 +694,8 @@ SDL3_0.0.0 {
     SDL_SendGamepadEffect;
     SDL_SendJoystickEffect;
     SDL_SendJoystickVirtualSensorData;
+    SDL_SetAppMetadata;
+    SDL_SetAppMetadataWithProperties;
     SDL_SetAssertionHandler;
     SDL_SetAudioDeviceGain;
     SDL_SetAudioPostmixCallback;
