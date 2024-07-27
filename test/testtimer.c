@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
         return_code = test_sdl_delay_within_bounds();
     }
 
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return return_code;
 }

@@ -14,7 +14,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test_common.h>
+#include <SDL3/SDL_test.h>
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
@@ -217,10 +217,6 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int i;
-
-    /* Enable standard application logging */
-    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Initialize parameters */
     num_objects = NUM_OBJECTS;
 
@@ -229,6 +225,10 @@ int main(int argc, char *argv[])
     if (!state) {
         return 1;
     }
+
+    /* Enable standard application logging */
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     for (i = 1; i < argc;) {
         int consumed;
 
@@ -309,6 +309,7 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
 
     return 0;
