@@ -49,6 +49,7 @@ class SdlPlatform(Enum):
     PowerPC64 = "powerpc64"
     Ps2 = "ps2"
     Psp = "psp"
+    Vita = "vita"
     Riscos = "riscos"
     FreeBSD = "freebsd"
     NetBSD = "netbsd"
@@ -65,6 +66,11 @@ class Msys2Platform(Enum):
 class IntelCompiler(Enum):
     Icc = "icc"
     Icx = "icx"
+
+
+class VitaGLES(Enum):
+    Pib = "pib"
+    Pvr = "pvr"
 
 
 @dataclasses.dataclass(slots=True)
@@ -89,6 +95,7 @@ class JobSpec:
     msvc_arch: Optional[MsvcArch] = None
     clang_cl: bool = False
     uwp: bool = False
+    vita_gles: Optional[VitaGLES] = None
 
 
 JOB_SPECS = {
@@ -124,6 +131,8 @@ JOB_SPECS = {
     "ppc64": JobSpec(name="PowerPC64",                                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.PowerPC64,   artifact="SDL-ppc64le",            container="dockcross/linux-ppc64le:latest", ),
     "ps2": JobSpec(name="Sony PlayStation 2",                               os=JobOs.UbuntuLatest,  platform=SdlPlatform.Ps2,         artifact="SDL-ps2",                container="ps2dev/ps2dev:latest", ),
     "psp": JobSpec(name="Sony PlayStation Portable",                        os=JobOs.UbuntuLatest,  platform=SdlPlatform.Psp,         artifact="SDL-psp",                container="pspdev/pspdev:latest", ),
+    "vita-pib": JobSpec(name="Sony PlayStation Vita (GLES w/ pib)",         os=JobOs.UbuntuLatest,  platform=SdlPlatform.Vita,        artifact="SDL-vita-pib",           container="vitasdk/vitasdk:latest", vita_gles=VitaGLES.Pib,  ),
+    "vita-pvr": JobSpec(name="Sony PlayStation Vita (GLES w/ PVR_PSP2)",    os=JobOs.UbuntuLatest,  platform=SdlPlatform.Vita,        artifact="SDL-vita-pvr",           container="vitasdk/vitasdk:latest", vita_gles=VitaGLES.Pvr, ),
     "riscos": JobSpec(name="RISC OS",                                       os=JobOs.UbuntuLatest,  platform=SdlPlatform.Riscos,      artifact="SDL-riscos",             container="riscosdotinfo/riscos-gccsdk-4.7:latest", ),
     "netbsd": JobSpec(name="NetBSD",                                        os=JobOs.UbuntuLatest,  platform=SdlPlatform.NetBSD,      artifact="SDL-netbsd-x64", ),
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
@@ -187,6 +196,7 @@ class JobDetails:
     cpactions_arch: str = ""
     cpactions_setup_cmd: str = ""
     cpactions_install_cmd: str = ""
+    setup_vita_gles_type: str = ""
 
     def to_workflow(self) -> dict[str, str|bool]:
         data = {
@@ -242,6 +252,7 @@ class JobDetails:
             "cpactions-arch": self.cpactions_arch,
             "cpactions-setup-cmd": self.cpactions_setup_cmd,
             "cpactions-install-cmd": self.cpactions_install_cmd,
+            "setup-vita-gles-type": self.setup_vita_gles_type,
         }
         return {k: v for k, v in data.items() if v != ""}
 
@@ -476,6 +487,28 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.cc = "psp-gcc"
             job.ldflags = ["-L${PSPDEV}/lib", "-L${PSPDEV}/psp/lib", "-L${PSPDEV}/psp/sdk/lib", ]
             job.pollute_directories = ["${PSPDEV}/include", "${PSPDEV}/psp/include", "${PSPDEV}/psp/sdk/include", ]
+        case SdlPlatform.Vita:
+            job.sudo = ""
+            job.apt_packages = []
+            job.apk_packages = ["cmake", "ninja", "pkgconf", "bash", "tar"]
+            job.cmake_toolchain_file = "${VITASDK}/share/vita.toolchain.cmake"
+            assert spec.vita_gles is not None
+            job.setup_vita_gles_type = {
+                VitaGLES.Pib: "pib",
+                VitaGLES.Pvr: "pvr",
+            }[spec.vita_gles]
+            job.cmake_arguments.extend((
+                f"-DVIDEO_VITA_PIB={ 'true' if spec.vita_gles == VitaGLES.Pib else 'false' }",
+                f"-DVIDEO_VITA_PVR={ 'true' if spec.vita_gles == VitaGLES.Pvr else 'false' }",
+                "-DSDL_ARMNEON=ON",
+                "-DSDL_ARMSIMD=ON",
+                ))
+            # Fix vita.toolchain.cmake (https://github.com/vitasdk/vita-toolchain/pull/253)
+            job.source_cmd = "sed -i -E 's/set\( PKG_CONFIG_EXECUTABLE \"\$\{VITASDK}\/bin\/arm-vita-eabi-pkg-config\" )/set( PKG_CONFIG_EXECUTABLE \"${VITASDK}\/bin\/arm-vita-eabi-pkg-config\" CACHE PATH \"Path of pkg-config executable\" )/' ${VITASDK}/share/vita.toolchain.cmake"
+            job.clang_tidy = False
+            job.run_tests = False
+            job.shared = False
+            job.cc = "arm-vita-eabi-gcc"
         case SdlPlatform.Haiku:
             fpic = False
             job.run_tests = False

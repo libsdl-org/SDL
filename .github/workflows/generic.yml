@@ -38,8 +38,7 @@ jobs:
       - name: 'Set up ninja'
         if: ${{ matrix.platform.setup-ninja }}
         uses: ./.github/actions/setup-ninja
-      - name: 'Set up libusb'
-        id: libusb
+      - name: 'Set up libusb for MSVC'
         if: ${{ matrix.platform.setup-libusb-arch != '' }}
         uses: ./.github/actions/setup-msvc-libusb
         with:
@@ -114,6 +113,11 @@ jobs:
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
           brew update
           brew install ${{ matrix.platform.brew-packages }}
+      - name: 'Set up GLES for VITA'  # Must be after apk
+        if: ${{ matrix.platform.setup-vita-gles-type != '' }}
+        uses: ./.github/actions/setup-vita-gles
+        with:
+          type: ${{ matrix.platform.setup-vita-gles-type }}
 
       - name: 'Pollute toolchain with "bad SDL headers'
         if: ${{ matrix.platform.pollute-directories != '' }}
