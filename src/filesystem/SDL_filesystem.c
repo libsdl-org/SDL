@@ -450,17 +450,19 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 
 void SDL_InitFilesystem(void)
 {
-    CachedBasePath = NULL;  // just in case.
-    SDL_zeroa(CachedUserFolders);
 }
 
 void SDL_QuitFilesystem(void)
 {
-    SDL_free(CachedBasePath);
-    CachedBasePath = NULL;
+    if (CachedBasePath) {
+        SDL_free(CachedBasePath);
+        CachedBasePath = NULL;
+    }
     for (int i = 0; i < SDL_arraysize(CachedUserFolders); i++) {
-        SDL_free(CachedUserFolders[i]);
-        CachedUserFolders[i] = NULL;
+        if (CachedUserFolders[i]) {
+            SDL_free(CachedUserFolders[i]);
+            CachedUserFolders[i] = NULL;
+        }
     }
 }
 
