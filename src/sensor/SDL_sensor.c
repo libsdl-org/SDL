@@ -170,7 +170,7 @@ SDL_bool SDL_SensorsOpened(void)
     return opened;
 }
 
-const SDL_SensorID *SDL_GetSensors(int *count)
+SDL_SensorID *SDL_GetSensors(int *count)
 {
     int i, num_sensors, device_index;
     int sensor_index = 0, total_sensors = 0;
@@ -207,7 +207,7 @@ const SDL_SensorID *SDL_GetSensors(int *count)
     }
     SDL_UnlockSensors();
 
-    return SDL_FreeLater(sensors);
+    return sensors;
 }
 
 /*
@@ -246,7 +246,7 @@ const char *SDL_GetSensorNameForID(SDL_SensorID instance_id)
 
     SDL_LockSensors();
     if (SDL_GetDriverAndSensorIndex(instance_id, &driver, &device_index)) {
-        name = SDL_CreateTemporaryString(driver->GetDeviceName(device_index));
+        name = SDL_GetPersistentString(driver->GetDeviceName(device_index));
     }
     SDL_UnlockSensors();
 
@@ -407,7 +407,7 @@ const char *SDL_GetSensorName(SDL_Sensor *sensor)
     {
         CHECK_SENSOR_MAGIC(sensor, NULL);
 
-        retval = SDL_CreateTemporaryString(sensor->name);
+        retval = SDL_GetPersistentString(sensor->name);
     }
     SDL_UnlockSensors();
 

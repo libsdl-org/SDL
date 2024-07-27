@@ -177,7 +177,7 @@ SDL_bool SDL_HasKeyboard(void)
     return (SDL_keyboard_count > 0);
 }
 
-const SDL_KeyboardID *SDL_GetKeyboards(int *count)
+SDL_KeyboardID *SDL_GetKeyboards(int *count)
 {
     int i;
     SDL_KeyboardID *keyboards;
@@ -198,7 +198,7 @@ const SDL_KeyboardID *SDL_GetKeyboards(int *count)
         }
     }
 
-    return SDL_FreeLater(keyboards);
+    return keyboards;
 }
 
 const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
@@ -207,7 +207,7 @@ const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
     if (keyboard_index < 0) {
         return NULL;
     }
-    return SDL_CreateTemporaryString(SDL_keyboards[keyboard_index].name);
+    return SDL_GetPersistentString(SDL_keyboards[keyboard_index].name);
 }
 
 void SDL_ResetKeyboard(void)
@@ -762,7 +762,7 @@ int SDL_SendEditingText(const char *text, int start, int length)
 
 static const char * const *CreateCandidatesForEvent(char **candidates, int num_candidates)
 {
-    char **event_candidates;
+    const char **event_candidates;
     int i;
     char *ptr;
     size_t total_length = (num_candidates + 1) * sizeof(*event_candidates);
@@ -773,7 +773,7 @@ static const char * const *CreateCandidatesForEvent(char **candidates, int num_c
         total_length += length;
     }
 
-    event_candidates = (char **)SDL_malloc(total_length);
+    event_candidates = (const char **)SDL_AllocateTemporaryMemory(total_length);
     if (!event_candidates) {
         return NULL;
     }
@@ -788,7 +788,7 @@ static const char * const *CreateCandidatesForEvent(char **candidates, int num_c
     }
     event_candidates[i] = NULL;
 
-    return SDL_FreeLater(event_candidates);
+    return event_candidates;
 }
 
 int SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int selected_candidate, SDL_bool horizontal)

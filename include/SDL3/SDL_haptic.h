@@ -45,6 +45,7 @@
  *    SDL_HapticID *haptics = SDL_GetHaptics(NULL);
  *    if (haptics) {
  *        haptic = SDL_OpenHaptic(haptics[0]);
+ *        SDL_free(haptics);
  *    }
  *    if (haptic == NULL)
  *       return -1;
@@ -934,13 +935,13 @@ typedef Uint32 SDL_HapticID;
  * \param count a pointer filled in with the number of haptic devices
  *              returned, may be NULL.
  * \returns a 0 terminated array of haptic device instance IDs or NULL on
- *          failure; call SDL_GetError() for more information.
+ *          failure; call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_OpenHaptic
  */
-extern SDL_DECLSPEC_TEMP const SDL_HapticID * SDLCALL SDL_GetHaptics(int *count);
+extern SDL_DECLSPEC_FREE SDL_HapticID * SDLCALL SDL_GetHaptics(int *count);
 
 /**
  * Get the implementation dependent name of a haptic device.
@@ -957,7 +958,7 @@ extern SDL_DECLSPEC_TEMP const SDL_HapticID * SDLCALL SDL_GetHaptics(int *count)
  * \sa SDL_GetHapticName
  * \sa SDL_OpenHaptic
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetHapticNameForID(SDL_HapticID instance_id);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetHapticNameForID(SDL_HapticID instance_id);
 
 /**
  * Open a haptic device for use.
@@ -1019,7 +1020,7 @@ extern SDL_DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticID(SDL_Haptic *haptic);
  *
  * \sa SDL_GetHapticNameForID
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetHapticName(SDL_Haptic *haptic);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetHapticName(SDL_Haptic *haptic);
 
 /**
  * Query whether or not the current mouse has haptic capabilities.

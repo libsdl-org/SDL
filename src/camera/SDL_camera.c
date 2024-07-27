@@ -66,14 +66,14 @@ int SDL_GetNumCameraDrivers(void)
 const char *SDL_GetCameraDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumCameraDrivers()) {
-        return SDL_CreateTemporaryString(bootstrap[index]->name);
+        return bootstrap[index]->name;
     }
     return NULL;
 }
 
 const char *SDL_GetCurrentCameraDriver(void)
 {
-    return SDL_CreateTemporaryString(camera_driver.name);
+    return camera_driver.name;
 }
 
 char *SDL_GetCameraThreadName(SDL_Camera *device, char *buf, size_t buflen)
@@ -675,7 +675,7 @@ const char *SDL_GetCameraName(SDL_CameraID instance_id)
     const char *retval = NULL;
     SDL_Camera *device = ObtainPhysicalCamera(instance_id);
     if (device) {
-        retval = SDL_CreateTemporaryString(device->name);
+        retval = SDL_GetPersistentString(device->name);
         ReleaseCamera(device);
     }
     return retval;
@@ -693,7 +693,7 @@ SDL_CameraPosition SDL_GetCameraPosition(SDL_CameraID instance_id)
 }
 
 
-const SDL_CameraID *SDL_GetCameras(int *count)
+SDL_CameraID *SDL_GetCameras(int *count)
 {
     int dummy_count;
     if (!count) {
@@ -729,10 +729,10 @@ const SDL_CameraID *SDL_GetCameras(int *count)
 
     *count = num_devices;
 
-    return SDL_FreeLater(retval);
+    return retval;
 }
 
-const SDL_CameraSpec * const *SDL_GetCameraSupportedFormats(SDL_CameraID instance_id, int *count)
+SDL_CameraSpec **SDL_GetCameraSupportedFormats(SDL_CameraID instance_id, int *count)
 {
     if (count) {
         *count = 0;
@@ -761,7 +761,7 @@ const SDL_CameraSpec * const *SDL_GetCameraSupportedFormats(SDL_CameraID instanc
 
     ReleaseCamera(device);
 
-    return SDL_FreeLater(retval);
+    return retval;
 }
 
 

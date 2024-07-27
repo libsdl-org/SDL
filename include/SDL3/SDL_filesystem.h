@@ -77,7 +77,7 @@ extern "C" {
  *
  * \sa SDL_GetPrefPath
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetBasePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetBasePath(void);
 
 /**
  * Get the user-and-app-specific path where files can be written.
@@ -125,13 +125,13 @@ extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetBasePath(void);
  * \param app the name of your application.
  * \returns a UTF-8 string of the user directory in platform-dependent
  *          notation. NULL if there's a problem (creating directory failed,
- *          etc.).
+ *          etc.). This should be freed with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetBasePath
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetPrefPath(const char *org, const char *app);
+extern SDL_DECLSPEC_FREE char * SDLCALL SDL_GetPrefPath(const char *org, const char *app);
 
 /**
  * The type of the OS-provided default folder for a specific purpose.
@@ -227,7 +227,7 @@ typedef enum SDL_Folder
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetUserFolder(SDL_Folder folder);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
 
 /* Abstract filesystem interface */
@@ -367,13 +367,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  * \param count on return, will be set to the number of items in the returned
  *              array. Can be NULL.
  * \returns an array of strings on success or NULL on failure; call
- *          SDL_GetError() for more information.
+ *          SDL_GetError() for more information. This is a single allocation that should be freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const char * const * SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
+extern SDL_DECLSPEC_FREE char ** SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

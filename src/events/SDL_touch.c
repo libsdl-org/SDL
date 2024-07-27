@@ -49,7 +49,7 @@ SDL_bool SDL_TouchDevicesAvailable(void)
     return SDL_num_touch > 0;
 }
 
-const SDL_TouchID *SDL_GetTouchDevices(int *count)
+SDL_TouchID *SDL_GetTouchDevices(int *count)
 {
     if (count) {
         *count = 0;
@@ -67,7 +67,7 @@ const SDL_TouchID *SDL_GetTouchDevices(int *count)
         }
     }
 
-    return SDL_FreeLater(retval);
+    return retval;
 }
 
 static int SDL_GetTouchIndex(SDL_TouchID id)
@@ -105,7 +105,7 @@ const char *SDL_GetTouchDeviceName(SDL_TouchID id)
     if (!touch) {
         return NULL;
     }
-    return SDL_CreateTemporaryString(touch->name);
+    return SDL_GetPersistentString(touch->name);
 }
 
 SDL_TouchDeviceType SDL_GetTouchDeviceType(SDL_TouchID id)
@@ -134,7 +134,7 @@ static SDL_Finger *SDL_GetFinger(const SDL_Touch *touch, SDL_FingerID id)
     return touch->fingers[index];
 }
 
-const SDL_Finger * const * SDL_GetTouchFingers(SDL_TouchID touchID, int *count)
+SDL_Finger **SDL_GetTouchFingers(SDL_TouchID touchID, int *count)
 {
     SDL_Finger **fingers;
     SDL_Finger *finger_data;
@@ -164,7 +164,7 @@ const SDL_Finger * const * SDL_GetTouchFingers(SDL_TouchID touchID, int *count)
     if (count) {
         *count = touch->num_fingers;
     }
-    return SDL_FreeLater(fingers);
+    return fingers;
 }
 
 int SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name)

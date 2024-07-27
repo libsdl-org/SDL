@@ -416,12 +416,13 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
     }
 
     ctx->type = SDL_GetGamepadType(gamepad);
-    const char *mapping = SDL_GetGamepadMapping(gamepad);
+    char *mapping = SDL_GetGamepadMapping(gamepad);
     if (mapping) {
         if (SDL_strstr(mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
             /* Just for display purposes */
             ctx->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
         }
+        SDL_free(mapping);
     }
 
     for (i = 0; i < SDL_GAMEPAD_BUTTON_TOUCHPAD; ++i) {
@@ -1021,7 +1022,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     const float arrow_extent = 48.0f;
     SDL_FRect dst, rect, highlight;
     Uint8 r, g, b, a;
-    const char *mapping = NULL;
+    char *mapping;
     SDL_bool has_accel;
     SDL_bool has_gyro;
 
@@ -1285,6 +1286,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             }
         }
     }
+    SDL_free(mapping);
 }
 
 void DestroyGamepadDisplay(GamepadDisplay *ctx)

@@ -135,7 +135,7 @@ test_multi_audio(const SDL_AudioDeviceID *devices, int devcount)
 
 int main(int argc, char **argv)
 {
-    const SDL_AudioDeviceID *devices = NULL;
+    SDL_AudioDeviceID *devices;
     int devcount = 0;
     int i;
     char *filename = NULL;
@@ -192,6 +192,7 @@ int main(int argc, char **argv)
             test_multi_audio(devices, devcount);
             SDL_free(sound);
         }
+        SDL_free(devices);
     }
 
     SDL_free(filename);

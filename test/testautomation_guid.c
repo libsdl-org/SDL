@@ -106,13 +106,13 @@ TestGUIDToString(void *arg)
 
     SDLTest_AssertPass("Call to SDL_GUIDToString");
     for (i = 0; i < NUM_TEST_GUIDS; ++i) {
-        const char *guid_str;
+        char guid_str[33];
         SDL_GUID guid;
 
         upper_lower_to_bytestring(guid.data,
                                   test_guids[i].upper, test_guids[i].lower);
 
-        guid_str = SDL_GUIDToString(guid);
+        SDL_GUIDToString(guid, guid_str, sizeof(guid_str));
         SDLTest_AssertCheck(SDL_strcmp(guid_str, test_guids[i].str) == 0, "Checking whether strings match, expected %s, got %s\n", test_guids[i].str, guid_str);
     }
 

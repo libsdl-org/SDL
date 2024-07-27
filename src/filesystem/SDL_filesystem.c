@@ -298,7 +298,7 @@ static int SDLCALL GlobDirectoryCallback(void *userdata, const char *dirname, co
     return retval;
 }
 
-const char * const *SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata)
+char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata)
 {
     int dummycount;
     if (!count) {
@@ -393,7 +393,7 @@ const char * const *SDL_InternalGlobDirectory(const char *path, const char *patt
     SDL_free(folded);
     SDL_free(pathcpy);
 
-    return SDL_FreeLater(retval);
+    return retval;
 }
 
 static int GlobDirectoryGetPathInfo(const char *path, SDL_PathInfo *info, void *userdata)
@@ -406,7 +406,7 @@ static int GlobDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallb
     return SDL_EnumerateDirectory(path, cb, cbuserdata);
 }
 
-const char * const *SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count)
+char **SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count)
 {
     //SDL_Log("SDL_GlobDirectory('%s', '%s') ...", path, pattern);
     return SDL_InternalGlobDirectory(path, pattern, flags, count, GlobDirectoryEnumerator, GlobDirectoryGetPathInfo, NULL);
@@ -441,10 +441,10 @@ const char *SDL_GetUserFolder(SDL_Folder folder)
 }
 
 
-const char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_GetPrefPath(const char *org, const char *app)
 {
     char *path = SDL_SYS_GetPrefPath(org, app);
-    return SDL_FreeLater(path);
+    return path;
 }
 
 

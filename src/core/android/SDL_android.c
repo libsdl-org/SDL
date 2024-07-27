@@ -2584,7 +2584,7 @@ const char *SDL_GetAndroidInternalStoragePath(void)
 
         LocalReferenceHolder_Cleanup(&refs);
     }
-    return SDL_CreateTemporaryString(s_AndroidInternalFilesPath);
+    return s_AndroidInternalFilesPath;
 }
 
 Uint32 SDL_GetAndroidExternalStorageState(void)
@@ -2669,7 +2669,7 @@ const char *SDL_GetAndroidExternalStoragePath(void)
 
         LocalReferenceHolder_Cleanup(&refs);
     }
-    return SDL_CreateTemporaryString(s_AndroidExternalFilesPath);
+    return s_AndroidExternalFilesPath;
 }
 
 const char *SDL_GetAndroidCachePath(void)
@@ -2715,7 +2715,7 @@ const char *SDL_GetAndroidCachePath(void)
 
         LocalReferenceHolder_Cleanup(&refs);
     }
-    return SDL_CreateTemporaryString(s_AndroidCachePath);
+    return s_AndroidCachePath;
 }
 
 int SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xOffset, int yOffset)

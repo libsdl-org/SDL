@@ -53,7 +53,7 @@ static int cursor_length = 0;
 static SDL_bool cursor_visible;
 static Uint64 last_cursor_change;
 static SDL_BlendMode highlight_mode;
-static const char **candidates;
+static char **candidates;
 static int num_candidates;
 static int selected_candidate;
 static SDL_bool horizontal_candidates;
@@ -476,6 +476,11 @@ static void InitInput(void)
 
 static void ClearCandidates(void)
 {
+    int i;
+
+    for (i = 0; i < num_candidates; ++i) {
+        SDL_free(candidates[i]);
+    }
     SDL_free(candidates);
     candidates = NULL;
     num_candidates = 0;
@@ -483,12 +488,20 @@ static void ClearCandidates(void)
 
 static void SaveCandidates(SDL_Event *event)
 {
+    int i;
+
     ClearCandidates();
 
     num_candidates = event->edit_candidates.num_candidates;
     if (num_candidates > 0) {
-        candidates = (const char **)SDL_ClaimTemporaryMemory(event->edit_candidates.candidates);
-        SDL_assert(candidates);
+        candidates = (char **)SDL_malloc(num_candidates * sizeof(*candidates));
+        if (!candidates) {
+            num_candidates = 0;
+            return;
+        }
+        for (i = 0; i < num_candidates; ++i) {
+            candidates[i] = SDL_strdup(event->edit_candidates.candidates[i]);
+        }
         selected_candidate = event->edit_candidates.selected_candidate;
         horizontal_candidates = event->edit_candidates.horizontal;
     }

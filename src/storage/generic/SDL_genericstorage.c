@@ -203,10 +203,8 @@ static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID 
     if (override != NULL) {
         basepath = SDL_strdup(override);
     } else {
-        const char *sdlbasepath = SDL_GetBasePath();
-        if (sdlbasepath) {
-            basepath = SDL_strdup(sdlbasepath);
-        }
+        const char *base = SDL_GetBasePath();
+        basepath = base ? SDL_strdup(base) : NULL;
     }
 
     if (basepath != NULL) {
@@ -242,11 +240,7 @@ static const SDL_StorageInterface GENERIC_user_iface = {
 static SDL_Storage *GENERIC_User_Create(const char *org, const char *app, SDL_PropertiesID props)
 {
     SDL_Storage *result;
-    char *prefpath = NULL;
-    const char *sdlprefpath = SDL_GetPrefPath(org, app);
-    if (sdlprefpath) {
-        prefpath = SDL_strdup(sdlprefpath);
-    }
+    char *prefpath = SDL_GetPrefPath(org, app);
     if (prefpath == NULL) {
         return NULL;
     }

@@ -185,7 +185,8 @@ const char *SDL_getenv(const char *name)
 const char *SDL_getenv(const char *name)
 {
     DWORD length, maxlen = 0;
-    char *retval = NULL;
+    char *string = NULL;
+    const char *retval = NULL;
 
     /* Input validation */
     if (!name || *name == '\0') {
@@ -193,20 +194,24 @@ const char *SDL_getenv(const char *name)
     }
 
     for ( ; ; ) {
-        length = GetEnvironmentVariableA(name, retval, maxlen);
+        length = GetEnvironmentVariableA(name, string, maxlen);
 
         if (length > maxlen) {
-            char *string = (char *)SDL_realloc(retval, length);
-            if (!string)  {
+            char *temp = (char *)SDL_realloc(string, length);
+            if (!temp)  {
                 return NULL;
             }
-            retval = string;
+            string = temp;
             maxlen = length;
         } else {
             break;
         }
     }
-    return SDL_FreeLater(retval);
+    if (string) {
+        retval = SDL_GetPersistentString(string);
+        SDL_free(string);
+    }
+    return retval;
 }
 #else
 const char *SDL_getenv(const char *name)

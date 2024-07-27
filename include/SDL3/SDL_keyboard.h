@@ -76,14 +76,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * \param count a pointer filled in with the number of keyboards returned, may
  *              be NULL.
  * \returns a 0 terminated array of keyboards instance IDs or NULL on failure;
- *          call SDL_GetError() for more information.
+ *          call SDL_GetError() for more information. This should be freed with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetKeyboardNameForID
  * \sa SDL_HasKeyboard
  */
-extern SDL_DECLSPEC_TEMP const SDL_KeyboardID * SDLCALL SDL_GetKeyboards(int *count);
+extern SDL_DECLSPEC_FREE SDL_KeyboardID * SDLCALL SDL_GetKeyboards(int *count);
 
 /**
  * Get the name of a keyboard.
@@ -98,7 +98,7 @@ extern SDL_DECLSPEC_TEMP const SDL_KeyboardID * SDLCALL SDL_GetKeyboards(int *co
  *
  * \sa SDL_GetKeyboards
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id);
 
 /**
  * Query the window which currently has keyboard focus.
@@ -297,7 +297,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetScancodeName(SDL_Scancode scancode, const
  * \sa SDL_GetScancodeFromName
  * \sa SDL_SetScancodeName
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetScancodeName(SDL_Scancode scancode);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetScancodeName(SDL_Scancode scancode);
 
 /**
  * Get a scancode from a human-readable name.
@@ -331,7 +331,7 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
  * \sa SDL_GetKeyFromScancode
  * \sa SDL_GetScancodeFromKey
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetKeyName(SDL_Keycode key);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetKeyName(SDL_Keycode key);
 
 /**
  * Get a key code from a human-readable name.

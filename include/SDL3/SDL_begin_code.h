@@ -67,8 +67,11 @@
 #  endif
 # endif
 #endif
-/* This is used to mark functions that return temporary memory */
-#define SDL_DECLSPEC_TEMP   SDL_DECLSPEC
+
+/* This is used to mark functions that return memory that need to be freed with SDL_free() */
+#ifndef SDL_DECLSPEC_FREE
+#define SDL_DECLSPEC_FREE   SDL_DECLSPEC
+#endif
 
 /* By default SDL uses the C calling convention */
 #ifndef SDLCALL

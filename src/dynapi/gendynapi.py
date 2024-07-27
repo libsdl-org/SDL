@@ -197,7 +197,7 @@ def main():
             func_ret = func_ret.replace('extern', ' ')
             func_ret = func_ret.replace('SDLCALL', ' ')
             func_ret = func_ret.replace('SDL_DECLSPEC', ' ')
-            func_ret = func_ret.replace('SDL_DECLSPEC_TEMP', ' ')
+            func_ret = func_ret.replace('SDL_DECLSPEC_FREE', ' ')
             # Remove trailing spaces in front of '*'
             tmp = ""
             while func_ret != tmp:

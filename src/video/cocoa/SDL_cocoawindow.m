@@ -1803,7 +1803,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     }
     if (existingTouchCount == 0) {
         int numFingers;
-        const SDL_Finger * const *fingers = SDL_GetTouchFingers(touchID, &numFingers);
+        SDL_Finger **fingers = SDL_GetTouchFingers(touchID, &numFingers);
         if (fingers) {
             DLog("Reset Lost Fingers: %d", numFingers);
             for (--numFingers; numFingers >= 0; --numFingers) {
@@ -1816,6 +1816,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
                 SDL_Window *window = NULL;
                 SDL_SendTouch(Cocoa_GetEventTimestamp([theEvent timestamp]), touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
             }
+            SDL_free(fingers);
         }
     }
 

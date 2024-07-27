@@ -134,14 +134,14 @@ int SDL_GetNumAudioDrivers(void)
 const char *SDL_GetAudioDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
-        return SDL_CreateTemporaryString(deduped_bootstrap[index]->name);
+        return deduped_bootstrap[index]->name;
     }
     return NULL;
 }
 
 const char *SDL_GetCurrentAudioDriver(void)
 {
-    return SDL_CreateTemporaryString(current_audio.name);
+    return current_audio.name;
 }
 
 static int GetDefaultSampleFramesFromFreq(const int freq)
@@ -1336,7 +1336,7 @@ static int SDLCALL RecordingAudioThread(void *devicep)  // thread entry point
 }
 
 
-static const SDL_AudioDeviceID *GetAudioDevices(int *count, SDL_bool recording)
+static SDL_AudioDeviceID *GetAudioDevices(int *count, SDL_bool recording)
 {
     SDL_AudioDeviceID *retval = NULL;
     int num_devices = 0;
@@ -1379,15 +1379,15 @@ static const SDL_AudioDeviceID *GetAudioDevices(int *count, SDL_bool recording)
             *count = 0;
         }
     }
-    return SDL_FreeLater(retval);
+    return retval;
 }
 
-const SDL_AudioDeviceID *SDL_GetAudioPlaybackDevices(int *count)
+SDL_AudioDeviceID *SDL_GetAudioPlaybackDevices(int *count)
 {
     return GetAudioDevices(count, SDL_FALSE);
 }
 
-const SDL_AudioDeviceID *SDL_GetAudioRecordingDevices(int *count)
+SDL_AudioDeviceID *SDL_GetAudioRecordingDevices(int *count)
 {
     return GetAudioDevices(count, SDL_TRUE);
 }
@@ -1438,7 +1438,7 @@ const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
     const char *retval = NULL;
     SDL_AudioDevice *device = ObtainPhysicalAudioDevice(devid);
     if (device) {
-        retval = SDL_CreateTemporaryString(device->name);
+        retval = SDL_GetPersistentString(device->name);
     }
     ReleaseAudioDevice(device);
 
@@ -1465,14 +1465,14 @@ int SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec, int *
     return retval;
 }
 
-const int *SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count)
+int *SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count)
 {
-    const int *retval = NULL;
+    int *retval = NULL;
     int channels = 0;
     SDL_AudioDevice *device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
     if (device) {
         channels = device->spec.channels;
-        retval = SDL_FreeLater(SDL_ChannelMapDup(device->chmap, channels));
+        retval = SDL_ChannelMapDup(device->chmap, channels);
     }
     ReleaseAudioDevice(device);
 

@@ -65,12 +65,12 @@ static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void
             }
             break;
         case SDL_PROPERTY_TYPE_STRING:
-            SDL_FreeLater(property->value.string_value);  // SDL_GetStringProperty() returns this pointer
+            SDL_free(property->value.string_value);
             break;
         default:
             break;
         }
-        SDL_FreeLater(property->string_storage);  // this pointer might be given to the app by SDL_GetStringProperty.
+        SDL_free(property->string_storage);
     }
     SDL_free((void *)key);
     SDL_free((void *)value);
