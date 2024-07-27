@@ -378,7 +378,7 @@ static int stdlib_swprintf(void *arg)
     const wchar_t *expected;
     size_t size;
 
-    result = SDL_swprintf(text, sizeof(text), L"%s", "foo");
+    result = SDL_swprintf(text, SDL_arraysize(text), L"%s", "foo");
     expected = L"foo";
     SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\", \"foo\")");
     SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %S, got: %S", expected, text);

@@ -840,7 +840,7 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, SDL_WindowFlags f
         SDL_snprintfcat(text, maxlen, "TRANSPARENT");
         break;
     default:
-        SDL_snprintfcat(text, maxlen, "0x%8.8x", flag);
+        SDL_snprintfcat(text, maxlen, "0x%16.16" SDL_PRIx64, flag);
         break;
     }
 }

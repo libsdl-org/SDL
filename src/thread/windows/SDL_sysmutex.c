@@ -146,7 +146,8 @@ static SDL_Mutex *SDL_CreateMutex_cs(void)
 #ifdef SDL_PLATFORM_WINRT
         InitializeCriticalSectionEx(&mutex->cs, 2000, 0);
 #else
-        InitializeCriticalSectionAndSpinCount(&mutex->cs, 2000);
+        // This function always succeeds
+        (void)InitializeCriticalSectionAndSpinCount(&mutex->cs, 2000);
 #endif
     }
     return (SDL_Mutex *)mutex;

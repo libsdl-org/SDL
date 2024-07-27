@@ -928,10 +928,16 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
     if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX1) {
         switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
-            return bitmap_blit_1b[which];
+            if (which < SDL_arraysize(bitmap_blit_1b)) {
+                return bitmap_blit_1b[which];
+            }
+            break;
 
         case SDL_COPY_COLORKEY:
-            return colorkey_blit_1b[which];
+            if (which < SDL_arraysize(colorkey_blit_1b)) {
+                return colorkey_blit_1b[which];
+            }
+            break;
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
             return which >= 2 ? Blit1btoNAlpha : (SDL_BlitFunc)NULL;
@@ -945,10 +951,16 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
     if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX2) {
         switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
-            return bitmap_blit_2b[which];
+            if (which < SDL_arraysize(bitmap_blit_2b)) {
+                return bitmap_blit_2b[which];
+            }
+            break;
 
         case SDL_COPY_COLORKEY:
-            return colorkey_blit_2b[which];
+            if (which < SDL_arraysize(colorkey_blit_2b)) {
+                return colorkey_blit_2b[which];
+            }
+            break;
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
             return which >= 2 ? Blit2btoNAlpha : (SDL_BlitFunc)NULL;
@@ -962,10 +974,16 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
     if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX4) {
         switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
-            return bitmap_blit_4b[which];
+            if (which < SDL_arraysize(bitmap_blit_4b)) {
+                return bitmap_blit_4b[which];
+            }
+            break;
 
         case SDL_COPY_COLORKEY:
-            return colorkey_blit_4b[which];
+            if (which < SDL_arraysize(colorkey_blit_4b)) {
+                return colorkey_blit_4b[which];
+            }
+            break;
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
             return which >= 2 ? Blit4btoNAlpha : (SDL_BlitFunc)NULL;
