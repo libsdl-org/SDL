@@ -68,6 +68,7 @@ static SDL_GLContext *context = NULL;
 static int depth = 16;
 static SDL_bool suspend_when_occluded;
 static GLES2_Context ctx;
+static shader_data *datas;
 
 static int LoadContext(GLES2_Context *data)
 {
@@ -100,6 +101,7 @@ quit(int rc)
 {
     int i;
 
+    SDL_free(datas);
     if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
@@ -535,7 +537,6 @@ Render(unsigned int width, unsigned int height, shader_data *data)
 
 static int done;
 static Uint32 frames;
-static shader_data *datas;
 #ifndef SDL_PLATFORM_EMSCRIPTEN
 static thread_data *threads;
 #endif
@@ -934,6 +935,7 @@ int main(int argc, char *argv[])
                 SDL_WaitThread(threads[i].thread, NULL);
             }
         }
+        SDL_free(threads);
     } else {
         while (!done) {
             loop();
