@@ -352,16 +352,16 @@ const char *SDL_GetPersistentString(const char *string)
         SDL_SetTLS(&SDL_string_storage, strings, SDL_FreePersistentStrings);
     }
 
-    const void *retval;
-    if (!SDL_FindInHashTable(strings, string, &retval)) {
+    const char *retval;
+    if (!SDL_FindInHashTable(strings, string, (const void **)&retval)) {
         char *new_string = SDL_strdup(string);
         if (!new_string) {
             return NULL;
         }
 
         // If the hash table insert fails, at least we can return the string we allocated
+        SDL_InsertIntoHashTable(strings, new_string, new_string);
         retval = new_string;
-        SDL_InsertIntoHashTable(strings, string, retval);
     }
-    return (const char *)retval;
+    return retval;
 }
