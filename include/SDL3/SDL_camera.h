@@ -178,7 +178,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentCameraDriver(void);
  *
  * \sa SDL_OpenCamera
  */
-extern SDL_DECLSPEC_FREE SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
+extern SDL_DECLSPEC SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
 
 /**
  * Get the list of native formats/sizes a camera supports.
@@ -217,7 +217,7 @@ extern SDL_DECLSPEC_FREE SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
  * \sa SDL_GetCameras
  * \sa SDL_OpenCamera
  */
-extern SDL_DECLSPEC_FREE SDL_CameraSpec ** SDLCALL SDL_GetCameraSupportedFormats(SDL_CameraID devid, int *count);
+extern SDL_DECLSPEC SDL_CameraSpec ** SDLCALL SDL_GetCameraSupportedFormats(SDL_CameraID devid, int *count);
 
 /**
  * Get the human-readable device name for a camera.

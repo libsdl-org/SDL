@@ -98,7 +98,7 @@ typedef struct SDL_Locale
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_FREE SDL_Locale ** SDLCALL SDL_GetPreferredLocales(int *count);
+extern SDL_DECLSPEC SDL_Locale ** SDLCALL SDL_GetPreferredLocales(int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
