@@ -74,6 +74,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
                 NULL,
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
+            SDL_Quit();
             SDLTest_CommonDestroyState(state);
             return 1;
         }

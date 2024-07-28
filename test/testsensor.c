@@ -72,6 +72,7 @@ int main(int argc, char **argv)
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }
@@ -79,6 +80,7 @@ int main(int argc, char **argv)
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_SENSOR) < 0) {
         SDL_Log("Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }

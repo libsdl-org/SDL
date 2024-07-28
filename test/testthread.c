@@ -28,8 +28,8 @@ static SDLTest_CommonState *state;
 static void
 quit(int rc)
 {
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     /* Let 'main()' return normally */
     if (rc != 0) {
         exit(rc);

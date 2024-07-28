@@ -58,6 +58,7 @@ iostrm_error_quit(unsigned line, SDL_IOStream *iostrm)
         SDL_CloseIO(iostrm);
     }
     cleanup();
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
     exit(1); /* quit with iostrm error (test failed) */
 }
