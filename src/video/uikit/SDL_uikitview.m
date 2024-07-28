@@ -120,6 +120,8 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         [data.uiwindow layoutIfNeeded];
     }
 
+    sdlwindow = window;
+
     /* Add ourself to the new window. */
     if (window) {
         data = (__bridge SDL_UIKitWindowData *)window->internal;
@@ -144,8 +146,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
          * layout now to immediately update the bounds. */
         [data.uiwindow layoutIfNeeded];
     }
-
-    sdlwindow = window;
 }
 
 - (SDL_Window *)getSDLWindow
