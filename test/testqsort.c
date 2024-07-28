@@ -135,6 +135,7 @@ int main(int argc, char *argv[])
         test_sort("random sorted", nums, arraylen);
     }
 
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
 
     return 0;

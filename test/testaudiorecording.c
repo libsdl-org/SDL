@@ -210,8 +210,8 @@ void SDL_AppQuit(void *appstate)
     SDL_DestroyAudioStream(stream_out);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 }
 
 

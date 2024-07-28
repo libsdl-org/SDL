@@ -156,6 +156,8 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags)
 /**
  * Free the common state object.
  *
+ * You should call SDL_Quit() before calling this function.
+ *
  * \param state The common state object to destroy
  */
 void SDLTest_CommonDestroyState(SDLTest_CommonState *state);

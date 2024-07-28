@@ -2243,6 +2243,7 @@ int main(int argc, char *argv[])
 
     result = run_test() ? 0 : 1;
 
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
     return result;
 }

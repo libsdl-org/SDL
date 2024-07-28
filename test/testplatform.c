@@ -483,8 +483,8 @@ int main(int argc, char *argv[])
     status += Test64Bit(verbose);
     status += TestCPUInfo(verbose);
     status += TestAssertions(verbose);
-    SDL_Quit();
 
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
 
     return status;

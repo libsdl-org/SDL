@@ -149,6 +149,7 @@ int main(int argc, char **argv)
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }
