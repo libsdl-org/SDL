@@ -138,6 +138,7 @@ jobs:
             -DSDL_WERROR=${{ matrix.platform.werror }} \
             -DSDL_EXAMPLES=${{ matrix.platform.build-tests }} \
             -DSDL_TESTS=${{ matrix.platform.build-tests }} \
+            -DSDLTEST_TRACKMEM=ON \
             -DSDL_INSTALL_TESTS=${{ matrix.platform.build-tests }} \
             -DSDL_CLANG_TIDY=${{ matrix.platform.clang-tidy }} \
             -DSDL_DISABLE_INSTALL_DOCS=OFF \
