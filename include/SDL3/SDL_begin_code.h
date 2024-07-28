@@ -68,11 +68,6 @@
 # endif
 #endif
 
-/* This is used to mark functions that return memory that need to be freed with SDL_free() */
-#ifndef SDL_DECLSPEC
-#define SDL_DECLSPEC   SDL_DECLSPEC
-#endif
-
 /* By default SDL uses the C calling convention */
 #ifndef SDLCALL
 #if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINRT) || defined(SDL_PLATFORM_GDK)) && !defined(__GNUC__)
