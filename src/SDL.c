@@ -107,6 +107,63 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
 #endif
 }
 
+/* App metadata */
+
+int SDL_SetAppMetadata(const char *appname, const char *appversion, const char *appidentifier)
+{
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, appname);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, appversion);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, appidentifier);
+    return 0;
+}
+
+static SDL_bool SDL_ValidMetadataProperty(const char *name)
+{
+    if (!name || !*name) {
+        return SDL_FALSE;
+    }
+
+    if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_VERSION_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_IDENTIFIER_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_CREATOR_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_COPYRIGHT_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_URL_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+int SDL_SetAppMetadataProperty(const char *name, const char *value)
+{
+    if (!SDL_ValidMetadataProperty(name)) {
+        return SDL_InvalidParamError("name");
+    }
+
+    return SDL_SetStringProperty(SDL_GetGlobalProperties(), name, value);
+}
+
+const char *SDL_GetAppMetadataProperty(const char *name)
+{
+    if (!SDL_ValidMetadataProperty(name)) {
+        SDL_InvalidParamError("name");
+        return NULL;
+    }
+
+    const SDL_PropertiesID props = SDL_GetGlobalProperties();
+    const char *value = SDL_GetStringProperty(props, name, NULL);
+    if (!value || !*value) {
+        if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
+            value = "SDL Application";
+        } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
+            value = "application";
+        }
+    }
+    return value;
+}
+
+
 /* The initialized subsystems */
 #ifdef SDL_MAIN_NEEDED
 static SDL_bool SDL_MainIsReady = SDL_FALSE;
