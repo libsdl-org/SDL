@@ -246,8 +246,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAppMetadata(const char *appname, const ch
  * These are the supported properties:
  *
  * - `SDL_PROP_APP_METADATA_NAME_STRING`: The human-readable name of the
- *   application, like "My Game 2: Bad Guy's Revenge!". This defaults to "SDL
- *   Application".
+ *   application, like "My Game 2: Bad Guy's Revenge!". This will show up anywhere the OS shows the name of the application separately from window titles, such as volume control applets, etc. This defaults to "SDL Application".
  * - SDL_PROP_APP_METADATA_VERSION_STRING`: The version of the app that is
  *   running; there are no rules on format, so "1.0.3beta2" and "April 22nd,
  *   2024" and a git hash are all valid options. This has no default.
@@ -255,7 +254,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAppMetadata(const char *appname, const ch
  *   identifies this app. This must be in reverse-domain format, like
  *   "com.example.mygame2". This string is used by desktop compositors to
  *   identify and group windows together, as well as match applications with
- *   associated desktop settings and icons. This has no default.
+ *   associated desktop settings and icons. If you plan to package your application in a container such as Flatpak, the
+ * app ID should match the name of your Flatpak container as well. This has no default.
  * - SDL_PROP_APP_METADATA_CREATOR_STRING`: The human-readable name of the
  *   creator/developer/maker of this app, like "MojoWorkshop, LLC"
  * - SDL_PROP_APP_METADATA_COPYRIGHT_STRING`: The human-readable copyright
