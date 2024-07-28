@@ -20,6 +20,7 @@
 #include "SDL_test.h"
 
 static SDL_TLSID tls;
+static SDL_Thread *thread = NULL;
 static SDL_atomic_t alive;
 static int testprio = 0;
 static SDLTest_CommonState *state;
@@ -80,13 +81,13 @@ killed(int sig)
     SDL_Log("Killed with SIGTERM, waiting 5 seconds to exit\n");
     SDL_Delay(5 * 1000);
     SDL_AtomicSet(&alive, 0);
+    SDL_WaitThread(thread, NULL);
     quit(0);
 }
 
 int main(int argc, char *argv[])
 {
-    int i = 1;
-    SDL_Thread *thread;
+    int i;
 
     state = SDLTest_CommonCreateState(argv, 0);
     if (!state) {
