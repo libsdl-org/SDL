@@ -107,6 +107,52 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
 #endif
 }
 
+/* App metadata */
+static SDL_PropertiesID SDL_app_metadata_properties = 0;
+
+int SDL_SetAppMetadata(const char *appname, const char *appversion, const char *appidentifier)
+{
+    const SDL_PropertiesID props = SDL_CreateProperties();
+
+    if (appname && *appname) {
+        SDL_SetStringProperty(props, SDL_PROP_APP_METADATA_NAME_STRING, appname);
+    }
+    if (appversion && *appversion) {
+        SDL_SetStringProperty(props, SDL_PROP_APP_METADATA_VERSION_STRING, appversion);
+    }
+    if (appidentifier && *appidentifier) {
+        SDL_SetStringProperty(props, SDL_PROP_APP_METADATA_IDENTIFIER_STRING, appidentifier);
+    }
+
+    const int retval = SDL_SetAppMetadataWithProperties(props);
+    SDL_DestroyProperties(props);
+    return retval;
+}
+
+int SDL_SetAppMetadataWithProperties(SDL_PropertiesID props)
+{
+    SDL_PropertiesID new_props = 0;
+    if (props) {
+        new_props = SDL_CreateProperties();
+        if (!new_props) {
+            return -1;
+        } else if (SDL_CopyProperties(props, new_props) < 0) {
+            SDL_DestroyProperties(new_props);
+            return -1;
+        }
+    }
+    SDL_DestroyProperties(SDL_app_metadata_properties);
+    SDL_app_metadata_properties = new_props;
+    return 0;
+}
+
+SDL_PropertiesID SDL_GetAppMetadata(void)
+{
+    return SDL_app_metadata_properties;
+}
+
+
+
 /* The initialized subsystems */
 #ifdef SDL_MAIN_NEEDED
 static SDL_bool SDL_MainIsReady = SDL_FALSE;
@@ -557,6 +603,9 @@ void SDL_Quit(void)
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
+
+    SDL_DestroyProperties(SDL_app_metadata_properties);
+    SDL_app_metadata_properties = 0;
 
     SDL_SetObjectsInvalid();
     SDL_ClearHints();

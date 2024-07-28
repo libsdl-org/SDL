@@ -1049,12 +1049,10 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     const int min_period = PW_MIN_SAMPLES * SPA_MAX(device->spec.freq / PW_BASE_CLOCK_RATE, 1);
 
     // Get the hints for the application name, icon name, stream name and role
-    app_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME);
+    const SDL_PropertiesID metadata = SDL_GetAppMetadata();
+    app_name = SDL_GetStringProperty(metadata, SDL_PROP_APP_METADATA_NAME_STRING, NULL);
     if (!app_name || *app_name == '\0') {
-        app_name = SDL_GetHint(SDL_HINT_APP_NAME);
-        if (!app_name || *app_name == '\0') {
-            app_name = "SDL Application";
-        }
+        app_name = "SDL Application";
     }
 
     icon_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_APP_ICON_NAME);
@@ -1063,7 +1061,7 @@ static int PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     }
 
     // App ID. Default to NULL if not available.
-    app_id = SDL_GetHint(SDL_HINT_APP_ID);
+    app_id = SDL_GetStringProperty(metadata, SDL_PROP_APP_METADATA_IDENTIFIER_STRING, NULL);
 
     stream_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
     if (!stream_name || *stream_name == '\0') {
