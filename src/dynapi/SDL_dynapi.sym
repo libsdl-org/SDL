@@ -158,6 +158,7 @@ SDL3_0.0.0 {
     SDL_GetAndroidInternalStoragePath;
     SDL_GetAndroidJNIEnv;
     SDL_GetAndroidSDKVersion;
+    SDL_GetAppMetadataProperty;
     SDL_GetAssertionHandler;
     SDL_GetAssertionReport;
     SDL_GetAudioDeviceChannelMap;
@@ -695,7 +696,7 @@ SDL3_0.0.0 {
     SDL_SendJoystickEffect;
     SDL_SendJoystickVirtualSensorData;
     SDL_SetAppMetadata;
-    SDL_SetAppMetadataWithProperties;
+    SDL_SetAppMetadataProperty;
     SDL_SetAssertionHandler;
     SDL_SetAudioDeviceGain;
     SDL_SetAudioPostmixCallback;

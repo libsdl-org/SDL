@@ -364,9 +364,9 @@ static NSString *GetApplicationName(void)
 {
     NSString *appName = nil;
 
-    const char *metaname = SDL_GetStringProperty(SDL_GetAppMetadata(), SDL_PROP_APP_METADATA_NAME_STRING, NULL);
+    const char *metaname = SDL_GetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_APP_METADATA_NAME_STRING, NULL);
     if (metaname && *metaname) {
-        appname = [NSString stringWithUTF8String:metaname];
+        appName = [NSString stringWithUTF8String:metaname];
     }
 
     /* Determine the application name */
@@ -430,7 +430,7 @@ static void CreateApplicationMenus(void)
 
     // !!! FIXME: Menu items can't take parameters, just a basic selector, so this should instead call a selector
     // !!! FIXME: that itself calls -[NSApplication orderFrontStandardAboutPanelWithOptions:optionsDictionary],
-    // !!! FIXME: filling in that NSDictionary with pieces of SDL_GetAppMetadata()'s properties.
+    // !!! FIXME: filling in that NSDictionary with SDL_GetAppMetadataProperty()
     [appleMenu addItemWithTitle:title action:@selector(orderFrontStandardAboutPanel:) keyEquivalent:@""];
 
     [appleMenu addItem:[NSMenuItem separatorItem]];

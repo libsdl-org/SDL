@@ -286,8 +286,6 @@ extern "C" {
 
 #include "SDL_utils_c.h"
 
-extern SDL_PropertiesID SDL_GetAppMetadata(void);
-
 /* Do any initialization that needs to happen before threads are started */
 extern void SDL_InitMainThread(void);
 

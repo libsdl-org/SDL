@@ -264,11 +264,7 @@ static void JACK_CloseDevice(SDL_AudioDevice *device)
 // !!! FIXME: unify this (PulseAudio has a getAppName, Pipewire has a thing, etc)
 static const char *GetJackAppName(void)
 {
-    const char *retval = SDL_GetStringProperty(SDL_GetAppMetadata(), SDL_PROP_APP_METADATA_NAME_STRING, NULL);
-    if (!retval || !*retval) {
-        retval = "SDL Application";
-    }
-    return retval;
+    return SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
 }
 
 static int JACK_OpenDevice(SDL_AudioDevice *device)

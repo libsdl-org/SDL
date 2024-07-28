@@ -106,8 +106,8 @@ typedef Uint32 SDL_InitFlags;
  * this call will increase the ref-count and return.
  *
  * Consider reporting some basic metadata about your application before
- * calling SDL_Init, using either SDL_SetAppMetadata or
- * SDL_SetAppMetadataWithProperties.
+ * calling SDL_Init, using either SDL_SetAppMetadata() or
+ * SDL_SetAppMetadataProperty().
  *
  * \param flags subsystem initialization flags.
  * \returns 0 on success or a negative error code on failure; call
@@ -116,7 +116,7 @@ typedef Uint32 SDL_InitFlags;
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetAppMetadata
- * \sa SDL_SetAppMetadataWithProperties
+ * \sa SDL_SetAppMetadataProperty
  * \sa SDL_InitSubSystem
  * \sa SDL_Quit
  * \sa SDL_SetMainReady
@@ -188,7 +188,6 @@ extern SDL_DECLSPEC SDL_InitFlags SDLCALL SDL_WasInit(SDL_InitFlags flags);
  */
 extern SDL_DECLSPEC void SDLCALL SDL_Quit(void);
 
-
 /**
  * Specify basic metadata about your app.
  *
@@ -207,7 +206,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Quit(void);
  * Passing a NULL removes any previous metadata.
  *
  * This is a simplified interface for the most important information. You can
- * supply significantly more detailed metadata with SDL_SetAppMetadataWithProperties.
+ * supply significantly more detailed metadata with SDL_SetAppMetadataProperty().
  *
  * \param appname The name of the application ("My Game 2: Bad Guy's Revenge!").
  * \param appversion The version of the application ("1.0.0beta5" or a git hash, or whatever makes sense).
@@ -217,12 +216,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_Quit(void);
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \threadsafety This function is not thread-safe.
+ * \threadsafety It is safe to call this function from any thread.
  *
- * \sa SDL_SetAppMetadataWithProperties
+ * \sa SDL_SetAppMetadataProperty
  */
 extern SDL_DECLSPEC int SDLCALL SDL_SetAppMetadata(const char *appname, const char *appversion, const char *appidentifier);
-
 
 /**
  * Specify metadata about your app through a set of properties.
@@ -239,46 +237,47 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAppMetadata(const char *appname, const ch
  * Multiple calls to this function are allowed, but various state might not
  * change once it has been set up with a previous call to this function.
  *
- * Any previously set values not included in `props` will be removed.
- * Passing a 0 for `props` removes all previous metadata.
+ * Once set, this metadata can be read using SDL_GetMetadataProperty().
  *
  * These are the supported properties:
  *
  * - `SDL_PROP_APP_METADATA_NAME_STRING`: The human-readable name of
- *   the application, like "My Game 2: Bad Guy's Revenge!"
+ *   the application, like "My Game 2: Bad Guy's Revenge!". This defaults to "SDL Application".
  * - SDL_PROP_APP_METADATA_VERSION_STRING`: The version of the app that
  *   is running; there are no rules on format, so "1.0.3beta2" and
- *   "April 22nd, 2024" and a git hash are all valid options.
+ *   "April 22nd, 2024" and a git hash are all valid options. This has no default.
  * - `SDL_PROP_APP_METADATA_IDENTIFIER_STRING`: A unique string that
  *   identifies this app. This must be in reverse-domain format, like
  *   "com.example.mygame2". This string is used by desktop compositors to
  *   identify and group windows together, as well as match applications
- *   with associated desktop settings and icons.
+ *   with associated desktop settings and icons. This has no default.
  * - SDL_PROP_APP_METADATA_CREATOR_STRING`: The human-readable name
  *   of the creator/developer/maker of this app, like "MojoWorkshop, LLC"
  * - SDL_PROP_APP_METADATA_COPYRIGHT_STRING`: The human-readable copyright
  *   notice, like "Copyright (c) 2024 MojoWorkshop, LLC" or whatnot. Keep
  *   this to one line, don't paste a copy of a whole software license in
- *   here.
+ *   here. This has no default.
  * - SDL_PROP_APP_METADATA_URL_STRING`: A URL to the app on the web. Maybe
  *   a product page, or a storefront, or even a GitHub repository, for
- *   user's further information.
+ *   user's further information This has no default.
  * - SDL_PROP_APP_METADATA_TYPE_STRING`: The type of application this is.
  *   Currently this string can be "game" for a video game, "mediaplayer" for
  *   a media player, or generically "application" if nothing else applies.
- *   Future versions of SDL might add new types.
+ *   Future versions of SDL might add new types. This defaults to "application".
  *
- * \param props the properties to use.
+ * \param name the name of the metadata property to set.
+ * \param value the value of the property, or NULL to remove that property.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
- * \threadsafety This function is not thread-safe.
+ * \threadsafety It is safe to call this function from any thread.
  *
+ * \sa SDL_GetAppMetadataProperty
  * \sa SDL_SetAppMetadata
  */
-extern SDL_DECLSPEC int SDLCALL SDL_SetAppMetadataWithProperties(SDL_PropertiesID props);
+extern SDL_DECLSPEC int SDLCALL SDL_SetAppMetadataProperty(const char *name, const char *value);
 
 #define SDL_PROP_APP_METADATA_NAME_STRING         "SDL.app.metadata.name"
 #define SDL_PROP_APP_METADATA_VERSION_STRING      "SDL.app.metadata.version"
@@ -287,6 +286,25 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAppMetadataWithProperties(SDL_PropertiesI
 #define SDL_PROP_APP_METADATA_COPYRIGHT_STRING    "SDL.app.metadata.copyright"
 #define SDL_PROP_APP_METADATA_URL_STRING          "SDL.app.metadata.url"
 #define SDL_PROP_APP_METADATA_TYPE_STRING         "SDL.app.metadata.type"
+
+/**
+ * Get metadata about your app.
+ *
+ * This returns metadata previously set using SDL_SetAppMetadata() or SDL_SetAppMetadataProperty(). See SDL_SetAppMetadataProperty() for the list of available properties and their meanings.
+ *
+ * \param name the name of the metadata property to get.
+ * \returns the current value of the metadata property, or the default if it is not set, NULL for properties with no default.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \threadsafety It is safe to call this function from any thread, although
+ *               the string returned is not protected and could potentially be
+ *               freed if you call SDL_SetAppMetadataProperty() to set that property from another thread.
+ *
+ * \sa SDL_SetAppMetadata
+ * \sa SDL_SetAppMetadataProperty
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAppMetadataProperty(const char *name);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

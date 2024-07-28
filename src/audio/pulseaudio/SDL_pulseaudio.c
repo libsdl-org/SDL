@@ -264,31 +264,9 @@ static int load_pulseaudio_syms(void)
     return 0;
 }
 
-static SDL_INLINE int squashVersion(const int major, const int minor, const int patch)
-{
-    return ((major & 0xFF) << 16) | ((minor & 0xFF) << 8) | (patch & 0xFF);
-}
-
-// Workaround for older pulse: pa_context_new() must have non-NULL appname
 static const char *getAppName(void)
 {
-    const char *retval = SDL_GetStringProperty(SDL_GetAppMetadata(), SDL_PROP_APP_METADATA_NAME_STRING, NULL);
-    if (retval && *retval) {
-        return retval;
-    }
-
-    retval = "SDL Application"; // the "oh well" default.
-
-    const char *verstr = PULSEAUDIO_pa_get_library_version();
-    if (verstr) {
-        int maj, min, patch;
-        if (SDL_sscanf(verstr, "%d.%d.%d", &maj, &min, &patch) == 3) {
-            if (squashVersion(maj, min, patch) >= squashVersion(0, 9, 15)) {
-                retval = NULL; // 0.9.15+ handles NULL correctly.
-            }
-        }
-    }
-    return retval;
+    return SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
 }
 
 static void OperationStateChangeCallback(pa_operation *o, void *userdata)

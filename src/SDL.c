@@ -108,49 +108,60 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
 }
 
 /* App metadata */
-static SDL_PropertiesID SDL_app_metadata_properties = 0;
 
 int SDL_SetAppMetadata(const char *appname, const char *appversion, const char *appidentifier)
 {
-    const SDL_PropertiesID props = SDL_CreateProperties();
-
-    if (appname && *appname) {
-        SDL_SetStringProperty(props, SDL_PROP_APP_METADATA_NAME_STRING, appname);
-    }
-    if (appversion && *appversion) {
-        SDL_SetStringProperty(props, SDL_PROP_APP_METADATA_VERSION_STRING, appversion);
-    }
-    if (appidentifier && *appidentifier) {
-        SDL_SetStringProperty(props, SDL_PROP_APP_METADATA_IDENTIFIER_STRING, appidentifier);
-    }
-
-    const int retval = SDL_SetAppMetadataWithProperties(props);
-    SDL_DestroyProperties(props);
-    return retval;
-}
-
-int SDL_SetAppMetadataWithProperties(SDL_PropertiesID props)
-{
-    SDL_PropertiesID new_props = 0;
-    if (props) {
-        new_props = SDL_CreateProperties();
-        if (!new_props) {
-            return -1;
-        } else if (SDL_CopyProperties(props, new_props) < 0) {
-            SDL_DestroyProperties(new_props);
-            return -1;
-        }
-    }
-    SDL_DestroyProperties(SDL_app_metadata_properties);
-    SDL_app_metadata_properties = new_props;
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, appname);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, appversion);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, appidentifier);
     return 0;
 }
 
-SDL_PropertiesID SDL_GetAppMetadata(void)
+static SDL_bool SDL_ValidMetadataProperty(const char *name)
 {
-    return SDL_app_metadata_properties;
+    if (!name || !*name) {
+        return SDL_FALSE;
+    }
+
+    if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_VERSION_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_IDENTIFIER_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_CREATOR_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_COPYRIGHT_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_URL_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
 }
 
+int SDL_SetAppMetadataProperty(const char *name, const char *value)
+{
+    if (!SDL_ValidMetadataProperty(name)) {
+        return SDL_InvalidParamError("name");
+    }
+
+    return SDL_SetStringProperty(SDL_GetGlobalProperties(), name, value);
+}
+
+const char *SDL_GetAppMetadataProperty(const char *name)
+{
+    if (!SDL_ValidMetadataProperty(name)) {
+        SDL_InvalidParamError("name");
+        return NULL;
+    }
+
+    const SDL_PropertiesID props = SDL_GetGlobalProperties();
+    const char *value = SDL_GetStringProperty(props, name, NULL);
+    if (!value || !*value) {
+        if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
+            value = "SDL Application";
+        } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
+            value = "application";
+        }
+    }
+    return value;
+}
 
 
 /* The initialized subsystems */
@@ -603,9 +614,6 @@ void SDL_Quit(void)
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
 #endif
-
-    SDL_DestroyProperties(SDL_app_metadata_properties);
-    SDL_app_metadata_properties = 0;
 
     SDL_SetObjectsInvalid();
     SDL_ClearHints();

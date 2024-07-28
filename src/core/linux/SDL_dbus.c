@@ -495,10 +495,7 @@ SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
         const char *interface = "org.freedesktop.ScreenSaver";
 
         if (inhibit) {
-            const char *app = SDL_GetStringProperty(SDL_GetAppMetadata(), SDL_PROP_APP_METADATA_NAME_STRING, NULL);
-            if (!app || !app[0]) {
-                app = "SDL Application";
-            }
+            const char *app = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
             const char *reason = SDL_GetHint(SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME);
             if (!reason || !reason[0]) {
                 reason = default_inhibit_reason;

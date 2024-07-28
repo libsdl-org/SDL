@@ -782,12 +782,12 @@ The following hints have been removed:
 * SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING - SDL now properly handles the 0x406D1388 Exception if no debugger intercepts it, preventing its propagation.
 * SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 - replaced with SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, defaulting to SDL_TRUE
 * SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING
-* SDL_HINT_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or using SDL_PROP_APP_METADATA_NAME_STRING in SDL_SetAppMetadataWithProperties()
+* SDL_HINT_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_NAME_STRING with SDL_SetAppMetadataProperty().
 * SDL_HINT_AUDIO_DEVICE_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or using SDL_PROP_APP_METADATA_NAME_STRING in SDL_SetAppMetadataWithProperties()
 
 * Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
 * Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
-* The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS have been removed and replaced with app metadata (either use the appindentifier param to SDL_SetAppMetadata() or SDL_PROP_APP_METADATA_IDENTIFIER_STRING in SDL_SetAppMetadataWithProperties()).
+* The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS have been removed and replaced with app metadata (either use the appindentifier param to SDL_SetAppMetadata() or set SDL_PROP_APP_METADATA_IDENTIFIER_STRING with SDL_SetAppMetadataProperty()).
 
 The following hints have been renamed:
 * SDL_HINT_ALLOW_TOPMOST => SDL_HINT_WINDOW_ALLOW_TOPMOST
