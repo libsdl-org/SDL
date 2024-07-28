@@ -126,6 +126,38 @@ extern "C" {
 #define SDL_HINT_ANDROID_TRAP_BACK_BUTTON "SDL_ANDROID_TRAP_BACK_BUTTON"
 
 /**
+ * A variable setting the app ID string.
+ *
+ * This string is used by desktop compositors to identify and group windows
+ * together, as well as match applications with associated desktop settings
+ * and icons.
+ *
+ * This will override SDL_PROP_APP_METADATA_IDENTIFIER_STRING, if set by the application.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_APP_ID      "SDL_APP_ID"
+
+/**
+ * A variable setting the application name.
+ *
+ * This hint lets you specify the application name sent to the OS when
+ * required. For example, this will often appear in volume control applets for
+ * audio streams, and in lists of applications which are inhibiting the
+ * screensaver. You should use a string that describes your program ("My Game
+ * 2: The Revenge")
+ *
+ * This will override SDL_PROP_APP_METADATA_NAME_STRING, if set by the application.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_APP_NAME "SDL_APP_NAME"
+
+/**
  * A variable controlling whether controllers used with the Apple TV generate
  * UI events.
  *

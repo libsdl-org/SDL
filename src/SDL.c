@@ -151,8 +151,15 @@ const char *SDL_GetAppMetadataProperty(const char *name)
         return NULL;
     }
 
-    const SDL_PropertiesID props = SDL_GetGlobalProperties();
-    const char *value = SDL_GetStringProperty(props, name, NULL);
+    const char *value = NULL;
+    if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
+        value = SDL_GetHint(SDL_HINT_APP_NAME);
+    } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_IDENTIFIER_STRING) == 0) {
+        value = SDL_GetHint(SDL_HINT_APP_ID);
+    }
+    if (!value || !*value) {
+        value = SDL_GetStringProperty(SDL_GetGlobalProperties(), name, NULL);
+    }
     if (!value || !*value) {
         if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
             value = "SDL Application";
