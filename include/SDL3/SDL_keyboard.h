@@ -84,7 +84,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasKeyboard(void);
  * \sa SDL_GetKeyboardNameForID
  * \sa SDL_HasKeyboard
  */
-extern SDL_DECLSPEC_FREE SDL_KeyboardID * SDLCALL SDL_GetKeyboards(int *count);
+extern SDL_DECLSPEC SDL_KeyboardID * SDLCALL SDL_GetKeyboards(int *count);
 
 /**
  * Get the name of a keyboard.
