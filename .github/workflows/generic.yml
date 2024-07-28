@@ -72,15 +72,6 @@ jobs:
         uses: ./.github/actions/setup-loongarch64-toolchain
         id: setup-loongarch64-toolchain
         if: ${{ matrix.platform.platform == 'loongarch64' }}
-        with:
-          version: '2022.09.0'
-      - name: 'Configure LoongArch64 variables'
-        if: ${{ matrix.platform.platform == 'loongarch64' }}
-        shell: sh
-        run: |
-          # We cannot use GitHub expressions in the controller job
-          echo "LOONGARCH64_CC=${{ steps.setup-loongarch64-toolchain.outputs.cc }}" >>$GITHUB_ENV
-          echo "LOONGARCH64_CXX=${{ steps.setup-loongarch64-toolchain.outputs.cxx }}" >>$GITHUB_ENV
       - name: 'Setup Intel oneAPI toolchain'
         id: intel
         if: ${{ matrix.platform.intel }}

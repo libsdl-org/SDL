@@ -1,5 +1,5 @@
-name: 'Setup libusb for MSBC'
-description: 'Greet someone'
+name: 'Setup LoongArch64 toolchain'
+description: 'Download Linux LoongArch64 toolchain and set output variables'
 inputs:
   version:
     description: 'LoongArch64 version'
@@ -21,13 +21,13 @@ runs:
       id: restore-cache
       with:
         path: /opt/cross-tools
-        key: loongarch64-${{ matrix.platform.toolchain-version }}
+        key: loongarch64-${{ inputs.version }}
 
     - name: 'Download LoongArch64 gcc+glibc toolchain'
       if: ${{ !steps.restore-cache.outputs.cache-hit }}
       shell: bash
       run: |
-        url="https://github.com/loongson/build-tools/releases/download/${{ matrix.platform.toolchain-version }}/loongarch64-clfs-6.3-cross-tools-gcc-glibc.tar.xz"
+        url="https://github.com/loongson/build-tools/releases/download/${{ inputs.version }}/loongarch64-clfs-6.3-cross-tools-gcc-glibc.tar.xz"
         
         wget "$url" -O /tmp/toolchain.tar.xz
         
@@ -38,12 +38,16 @@ runs:
       if: ${{ !steps.restore-cache.outputs.cache-hit }}
       with:
         path: /opt/cross-tools
-        key: loongarch64-${{ matrix.platform.toolchain-version }}
+        key: loongarch64-${{ inputs.version }}
     - name: 'Set output vars'
       id: final
       shell: bash
       run: |
         prefix=/opt/cross-tools
         echo "prefix=${prefix}" >> $GITHUB_OUTPUT
-        echo "cc=${prefix}/bin/loongarch64-unknown-linux-gnu-gcc" >> $GITHUB_OUTPUT
-        echo "cxx=${prefix}/bin/loongarch64-unknown-linux-gnu-g++" >> $GITHUB_OUTPUT
+        cc="${prefix}/bin/loongarch64-unknown-linux-gnu-gcc"
+        cxx="${prefix}/bin/loongarch64-unknown-linux-gnu-g++"
+        echo "cc=${cc}" >> $GITHUB_OUTPUT
+        echo "cxx=${cxx}" >> $GITHUB_OUTPUT
+        echo "LOONGARCH64_CC=${cc}" >>$GITHUB_ENV
+        echo "LOONGARCH64_CXX=${cxx}" >>$GITHUB_ENV

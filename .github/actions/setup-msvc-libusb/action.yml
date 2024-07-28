@@ -1,5 +1,5 @@
 name: 'Setup libusb for MSVC'
-description: 'Setup libusb for MSVC'
+description: 'Download libusb sdk for MSVC, and set output/environment variables'
 inputs:
   version:
     description: 'libusb version'

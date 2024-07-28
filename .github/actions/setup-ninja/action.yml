@@ -1,5 +1,5 @@
 name: 'Setup ninja'
-description: 'Setup ninja'
+description: 'Download ninja and add it to the PATH environment variable'
 inputs:
   version:
     description: 'Ninja version'

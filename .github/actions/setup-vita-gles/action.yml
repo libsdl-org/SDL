@@ -1,5 +1,5 @@
 name: 'Setup GLES for PlayStation Vita'
-description: 'Setup GLES (PVR and PIB)'
+description: 'Download GLES for VITA (PVR or PIB), and copy it into the vita sdk'
 inputs:
   pib-version:
     description: 'PIB version'
@@ -18,7 +18,7 @@ runs:
       shell: sh
       run: |
         if test "x${VITASDK}" = "x"; then
-          echo "VITASKD must be defined"
+          echo "VITASDK must be defined"
           exit 1;
         fi
         case "x${{ inputs.type }}" in
