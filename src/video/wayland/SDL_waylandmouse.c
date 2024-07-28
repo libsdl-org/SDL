@@ -328,7 +328,6 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, struct Wayland_C
     int size = dbus_cursor_size;
 
     SDL_Window *focus;
-    SDL_WindowData *focusdata;
 
     /* Fallback envvar if the DBus properties don't exist */
     if (size <= 0) {
@@ -342,16 +341,15 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, struct Wayland_C
     }
     /* First, find the appropriate theme based on the current scale... */
     focus = SDL_GetMouse()->focus;
-    if (!focus) {
-        /* Nothing to see here, bail. */
-        return SDL_FALSE;
+    if (focus) {
+        /* Cursors use integer scaling. */
+        *scale = SDL_ceilf(focus->internal->windowed_scale_factor);
+    } else {
+        *scale = 1.0f;
     }
-    focusdata = focus->internal;
 
-    /* Cursors use integer scaling. */
-    *scale = SDL_ceilf(focusdata->windowed_scale_factor);
     size *= (int)*scale;
-    for (int i = 0; i < vdata->num_cursor_themes; i += 1) {
+    for (int i = 0; i < vdata->num_cursor_themes; ++i) {
         if (vdata->cursor_themes[i].size == size) {
             theme = vdata->cursor_themes[i].theme;
             break;
