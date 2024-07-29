@@ -1510,6 +1510,8 @@ SDL_IOStream *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
 
 The internal `FILE *` is available through a standard SDL_IOStream property, for streams made through SDL_IOFromFile() that use stdio behind the scenes; apps use this pointer at their own risk and should make sure that SDL and the app are using the same C runtime.
 
+On Apple platforms, SDL_RWFromFile (now called SDL_IOFromFile) no longer tries to read from inside the app bundle's resource directory, instead now using the specified path unchanged. One can use SDL_GetBasePath() to find the resource directory on these platforms.
+
 
 The functions SDL_ReadU8(), SDL_ReadU16LE(), SDL_ReadU16BE(), SDL_ReadU32LE(), SDL_ReadU32BE(), SDL_ReadU64LE(), and SDL_ReadU64BE() now return SDL_TRUE if the read succeeded and SDL_FALSE if it didn't, and store the data in a pointer passed in as a parameter.
 

@@ -44,11 +44,6 @@ struct SDL_IOStream
     SDL_PropertiesID props;
 };
 
-
-#ifdef SDL_PLATFORM_APPLE
-#include "cocoa/SDL_iostreambundlesupport.h"
-#endif /* SDL_PLATFORM_APPLE */
-
 #ifdef SDL_PLATFORM_3DS
 #include "n3ds/SDL_iostreamromfs.h"
 #endif /* SDL_PLATFORM_3DS */
@@ -650,9 +645,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 
 #elif defined(HAVE_STDIO_H)
     {
-        #if defined(SDL_PLATFORM_APPLE)
-        FILE *fp = SDL_OpenFPFromBundleOrFallback(file, mode);
-        #elif defined(SDL_PLATFORM_WINRT)
+        #if defined(SDL_PLATFORM_WINRT)
         FILE *fp = NULL;
         fopen_s(&fp, file, mode);
         #elif defined(SDL_PLATFORM_3DS)
