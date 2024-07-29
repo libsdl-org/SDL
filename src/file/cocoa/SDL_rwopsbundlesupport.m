@@ -24,6 +24,7 @@
 #import <Foundation/Foundation.h>
 
 #include "SDL_rwopsbundlesupport.h"
+#include "SDL_hints.h"
 
 /* For proper OS X applications, the resources are contained inside the application bundle.
  So the strategy is to first check the application bundle for the file, then fallback to the current working directory.
@@ -40,6 +41,11 @@ FILE *SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
         NSString *resource_path;
         NSString *ns_string_file_component;
         NSString *full_path_with_file_to_try;
+
+        /* if the app doesn't want this app bundle behavior, just use the path as-is. */
+        if (!SDL_GetHintBoolean(SDL_HINT_APPLE_RWFROMFILE_USE_RESOURCES, SDL_TRUE)) {
+            return fopen(file, mode);
+        }
 
         /* If the file mode is writable, skip all the bundle stuff because generally the bundle is read-only. */
         if (SDL_strchr(mode, 'r') == NULL) {
