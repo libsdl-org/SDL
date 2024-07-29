@@ -23,16 +23,7 @@
 #ifndef SDL_aaudio_h_
 #define SDL_aaudio_h_
 
-#ifdef SDL_AUDIO_DRIVER_AAUDIO
-
-void AAUDIO_ResumeDevices(void);
-void AAUDIO_PauseDevices(void);
-
-#else
-
-#define AAUDIO_ResumeDevices()
-#define AAUDIO_PauseDevices()
-
-#endif
+extern void AAUDIO_ResumeDevices(void);
+extern void AAUDIO_PauseDevices(void);
 
 #endif // SDL_aaudio_h_
