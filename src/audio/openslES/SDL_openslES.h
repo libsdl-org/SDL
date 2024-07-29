@@ -23,7 +23,16 @@
 #ifndef SDL_openslesaudio_h_
 #define SDL_openslesaudio_h_
 
+#ifdef SDL_AUDIO_DRIVER_OPENSLES
+
 extern void OPENSLES_ResumeDevices(void);
 extern void OPENSLES_PauseDevices(void);
+
+#else
+
+#define OPENSLES_ResumeDevices()
+#define OPENSLES_PauseDevices()
+
+#endif
 
 #endif // SDL_openslesaudio_h_
