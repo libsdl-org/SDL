@@ -132,7 +132,8 @@ extern "C" {
  * together, as well as match applications with associated desktop settings
  * and icons.
  *
- * This will override SDL_PROP_APP_METADATA_IDENTIFIER_STRING, if set by the application.
+ * This will override SDL_PROP_APP_METADATA_IDENTIFIER_STRING, if set by the
+ * application.
  *
  * This hint should be set before SDL is initialized.
  *
@@ -149,7 +150,8 @@ extern "C" {
  * screensaver. You should use a string that describes your program ("My Game
  * 2: The Revenge")
  *
- * This will override SDL_PROP_APP_METADATA_NAME_STRING, if set by the application.
+ * This will override SDL_PROP_APP_METADATA_NAME_STRING, if set by the
+ * application.
  *
  * This hint should be set before SDL is initialized.
  *
