@@ -3100,10 +3100,10 @@ extern "C" {
  * try opening a path to discover that SDL adjusts the path to elsewhere, so
  * this hint allows that behavior to be disabled.
  *
- * If running from a App Bundle, this will be MyApp.app/Contents/Resources.
- * If running as a normal Unix-like process, this will be the directory where
- * the running binary lives. Setting this hint to 0 avoids this and just
- * uses the requested path as-is.
+ * If running from a App Bundle, this will be MyApp.app/Contents/Resources. If
+ * running as a normal Unix-like process, this will be the directory where the
+ * running binary lives. Setting this hint to 0 avoids this and just uses the
+ * requested path as-is.
  *
  * This variable can be set to the following values:
  *
