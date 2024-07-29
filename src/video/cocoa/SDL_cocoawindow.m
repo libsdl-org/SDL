@@ -1526,8 +1526,6 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 {
     SDL_Window *window = _data.window;
 
-    SDL_assert(isDragAreaRunning == [_data.nswindow isMovableByWindowBackground]);
-
     if (window->hit_test) { /* if no hit-test, skip this. */
         const NSPoint location = [theEvent locationInWindow];
         const SDL_Point point = { (int)location.x, window->h - (((int)location.y) - 1) };
@@ -1538,13 +1536,13 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
                 [_data.nswindow setMovableByWindowBackground:YES];
             }
             return YES; /* dragging! */
+        } else {
+            if (isDragAreaRunning) {
+                isDragAreaRunning = NO;
+                [_data.nswindow setMovableByWindowBackground:NO];
+                return YES; /* was dragging, drop event. */
+            }
         }
-    }
-
-    if (isDragAreaRunning) {
-        isDragAreaRunning = NO;
-        [_data.nswindow setMovableByWindowBackground:NO];
-        return YES; /* was dragging, drop event. */
     }
 
     return NO; /* not a special area, carry on. */
@@ -2381,16 +2379,16 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         /* isZoomed always returns true if the window is not resizable */
         if (!(window->flags & SDL_WINDOW_RESIZABLE) || !Cocoa_IsZoomed(window)) {
             if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-				int x, y;
-				NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
+                int x, y;
+                NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
 
                 /* Cocoa will resize the window from the bottom-left rather than the
                  * top-left when -[nswindow setContentSize:] is used, so we must set the
                  * entire frame based on the new size, in order to preserve the position.
                  */
                 SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &x, &y);
-				rect.origin.x = x;
-				rect.origin.y = y;
+                rect.origin.x = x;
+                rect.origin.y = y;
                 rect.size.width = window->floating.w;
                 rect.size.height = window->floating.h;
                 ConvertNSRect(&rect);
