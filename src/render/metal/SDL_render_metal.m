@@ -702,7 +702,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
 
         if (surface) {
-            if (@available(iOS 11.0, *)) {
+            if (@available(iOS 11.0, tvOS 11.0, *)) {
                 mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
             }
         } else {
@@ -735,7 +735,7 @@ static int METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
         if (yuv || nv12) {
             if (surface) {
-                if (@available(iOS 11.0, *)) {
+                if (@available(iOS 11.0, tvOS 11.0, *)) {
                     mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
                 }
             } else {
