@@ -1716,10 +1716,16 @@ extern SDL_WindowFlags WINRT_DetectWindowFlags(SDL_Window *window);
 static void SDL_RestoreMousePosition(SDL_Window *window)
 {
     float x, y;
+    SDL_Mouse *mouse = SDL_GetMouse();
 
     if (window == SDL_GetMouseFocus()) {
+        const SDL_bool prev_warp_val = mouse->warp_emulation_prohibited;
         SDL_GetMouseState(&x, &y);
+
+        /* Disable the warp emulation so it isn't accidentally activated on a fullscreen transitions. */
+        mouse->warp_emulation_prohibited = SDL_TRUE;
         SDL_WarpMouseInWindow(window, x, y);
+        mouse->warp_emulation_prohibited = prev_warp_val;
     }
 }
 
