@@ -107,7 +107,7 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
     struct timespec tp;
 
     if (clock_gettime(CLOCK_REALTIME, &tp) == 0) {
-        //tp.tv_sec = SDL_min(tp.tv_sec, SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1);
+        tp.tv_sec = SDL_min(tp.tv_sec, SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1);
         *ticks = SDL_SECONDS_TO_NS(tp.tv_sec) + tp.tv_nsec;
         return 0;
     }
