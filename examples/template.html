@@ -5,63 +5,148 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>@project_name@ Example: @category_name@/@example_name@</title>
     <style>
-      body {
-        font-family: arial;
+      html, body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        font-family: 'Liberation Sans', sans-serif;
+      }
+
+      .canvas-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: black;
+      }
+
+      #canvas {
+        box-shadow: 0 0 0.5rem #7787;
+      }
+
+      #output-container {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        background-color: black;
+        border: none;
+        border-top: 1px solid #778;
         margin: 0;
-        padding: none;
+        padding: 1rem;
+
+        transition: top 0.25s;
       }
 
-      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
-      div.emscripten { text-align: center; }      
-      div.emscripten_border { border: 1px solid black; }
-      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; background-color: black; }
+      #output-container::before {
+        position: absolute;
+        bottom: 100%;
+        right: 1rem;
 
-      @-webkit-keyframes rotation {
-        from {-webkit-transform: rotate(0deg);}
-        to {-webkit-transform: rotate(360deg);}
+        content: 'Console';
+        font-size: 1.5rem;
+        color: white;
+        background: black;
+        border: 1px solid #778;
+        border-bottom: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
       }
-      @-moz-keyframes rotation {
-        from {-moz-transform: rotate(0deg);}
-        to {-moz-transform: rotate(360deg);}
+
+      #output-container:hover,
+      #output-container:focus-within {
+        top: 50%;
       }
-      @-o-keyframes rotation {
-        from {-o-transform: rotate(0deg);}
-        to {-o-transform: rotate(360deg);}
+
+      #output-container:focus-within {
+        border-top: 2px solid orange;
       }
-      @keyframes rotation {
-        from {transform: rotate(0deg);}
-        to {transform: rotate(360deg);}
+
+      #output-container:focus-within::before {
+        border: 2px solid orange;
+        border-bottom: none;
       }
 
       #output {
         width: 100%;
-        height: 200px;
-        margin: 0 auto;
-        margin-top: 10px;
-        border-left: 0px;
-        border-right: 0px;
-        padding-left: 0px;
-        padding-right: 0px;
-        display: none;
-        background-color: black;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+
+        border: none;
+        background: black;
         color: white;
-        font-family: 'Lucida Console', Monaco, monospace;
         outline: none;
+        resize: none;
+
+        font-family: 'Lucida Console', Monaco, monospace;
       }
 
-      .source_code {
+      #source-code {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        background: #e0eaee;
+        padding: 1rem;
+
+        transition: top 0.25s;
+      }
+
+      #source-code::before {
+        position: absolute;
+        bottom: 100%;
+        left: 1rem;
+
+        content: 'Source code';
+        font-size: 1.5rem;
+        background: linear-gradient(to bottom, #789, #e0eaee);
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+
+      #source-code:hover,
+      #source-code:focus-within {
+        top: 50%;
+      }
+
+      #source-code:focus-within {
+        border-top: 2px solid orange;
+      }
+
+      #source-code:focus-within::before {
+        border: 2px solid orange;
+        border-bottom: none;
+      }
+
+      #source-code-contents {
+        height: 100%;
+        overflow: scroll;
       }
     </style>
     <link rel="stylesheet" type="text/css" href="highlight.css">
   </head>
   <body>
-    <div class="emscripten_border">
-      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+    <div class="canvas-container">
+      <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     </div>
-    <textarea id="output" rows="8"></textarea>
+    <div id="output-container">
+      <textarea id="output" rows="8" spellcheck="false" readonly></textarea>
+    </div>
 
-    <div class="source_code">@htmlified_source_code@</div>
+    <div id="source-code" tabindex="1">
+      <div id="source-code-contents">@htmlified_source_code@</div>
+    </div>
 
     <script type='text/javascript'>
       var Module = {
