@@ -652,8 +652,19 @@ static int OPENSLES_WaitDevice(SDL_AudioDevice *device)
 
     LOGV("OPENSLES_WaitDevice()");
 
-    // Wait for an audio chunk to finish
-    return SDL_WaitSemaphore(audiodata->playsem);
+    while (!SDL_AtomicGet(&device->shutdown)) {
+        // this semaphore won't fire when the app is in the background (OPENSLES_PauseDevices was called).
+        const int rc = SDL_WaitSemaphoreTimeout(audiodata->playsem, 100);
+        if (rc == -1) {  // uh, what?
+            return -1;
+        } else if (rc == 0) {
+            return 0;  // semaphore was signaled, let's go!
+        } else {
+            SDL_assert(rc == SDL_MUTEX_TIMEDOUT);
+        }
+        // Still waiting on the semaphore (or the system), check other things then wait again.
+    }
+    return 0;
 }
 
 static int OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
