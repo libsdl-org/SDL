@@ -229,8 +229,6 @@
 		A7D8B58723E2514300DCD162 /* SDL_joystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7D023E2513E00DCD162 /* SDL_joystick_c.h */; };
 		A7D8B5B723E2514300DCD162 /* controller_type.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7D923E2513E00DCD162 /* controller_type.h */; };
 		A7D8B5BD23E2514300DCD162 /* SDL_iostream.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7DB23E2513F00DCD162 /* SDL_iostream.c */; };
-		A7D8B5C323E2514300DCD162 /* SDL_iostreambundlesupport.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7DD23E2513F00DCD162 /* SDL_iostreambundlesupport.h */; };
-		A7D8B5C923E2514300DCD162 /* SDL_iostreambundlesupport.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7DE23E2513F00DCD162 /* SDL_iostreambundlesupport.m */; };
 		A7D8B5CF23E2514300DCD162 /* SDL_syspower.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7E123E2513F00DCD162 /* SDL_syspower.m */; };
 		A7D8B5D523E2514300DCD162 /* SDL_syspower.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7E223E2513F00DCD162 /* SDL_syspower.h */; };
 		A7D8B5E723E2514300DCD162 /* SDL_power.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7E723E2513F00DCD162 /* SDL_power.c */; };
@@ -789,8 +787,6 @@
 		A7D8A7D023E2513E00DCD162 /* SDL_joystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_joystick_c.h; sourceTree = "<group>"; };
 		A7D8A7D923E2513E00DCD162 /* controller_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_type.h; sourceTree = "<group>"; };
 		A7D8A7DB23E2513F00DCD162 /* SDL_iostream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_iostream.c; sourceTree = "<group>"; };
-		A7D8A7DD23E2513F00DCD162 /* SDL_iostreambundlesupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_iostreambundlesupport.h; sourceTree = "<group>"; };
-		A7D8A7DE23E2513F00DCD162 /* SDL_iostreambundlesupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_iostreambundlesupport.m; sourceTree = "<group>"; };
 		A7D8A7E123E2513F00DCD162 /* SDL_syspower.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_syspower.m; sourceTree = "<group>"; };
 		A7D8A7E223E2513F00DCD162 /* SDL_syspower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_syspower.h; sourceTree = "<group>"; };
 		A7D8A7E723E2513F00DCD162 /* SDL_power.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_power.c; sourceTree = "<group>"; };
@@ -1884,19 +1880,9 @@
 		A7D8A7DA23E2513E00DCD162 /* file */ = {
 			isa = PBXGroup;
 			children = (
-				A7D8A7DC23E2513F00DCD162 /* cocoa */,
 				A7D8A7DB23E2513F00DCD162 /* SDL_iostream.c */,
 			);
 			path = file;
-			sourceTree = "<group>";
-		};
-		A7D8A7DC23E2513F00DCD162 /* cocoa */ = {
-			isa = PBXGroup;
-			children = (
-				A7D8A7DD23E2513F00DCD162 /* SDL_iostreambundlesupport.h */,
-				A7D8A7DE23E2513F00DCD162 /* SDL_iostreambundlesupport.m */,
-			);
-			path = cocoa;
 			sourceTree = "<group>";
 		};
 		A7D8A7DF23E2513F00DCD162 /* power */ = {
@@ -2462,7 +2448,6 @@
 				F3F7D9152933074E00816151 /* SDL_revision.h in Headers */,
 				A7D8BA3123E2514400DCD162 /* SDL_rotate.h in Headers */,
 				F3F7D9652933074E00816151 /* SDL_iostream.h in Headers */,
-				A7D8B5C323E2514300DCD162 /* SDL_iostreambundlesupport.h in Headers */,
 				F3F7D9492933074E00816151 /* SDL_scancode.h in Headers */,
 				F3F7D94D2933074E00816151 /* SDL_sensor.h in Headers */,
 				A7D8A98D23E2514000DCD162 /* SDL_sensor_c.h in Headers */,
@@ -2877,7 +2862,6 @@
 				F3F528CD2C29E1C300E6CC26 /* s_isnan.c in Sources */,
 				F3F07D5A269640160074468B /* SDL_hidapi_luna.c in Sources */,
 				A7D8BBD523E2574800DCD162 /* SDL_uikitclipboard.m in Sources */,
-				A7D8B5C923E2514300DCD162 /* SDL_iostreambundlesupport.m in Sources */,
 				F386F6F92884663E001840AA /* SDL_utils.c in Sources */,
 				E4F7981E2AD8D86A00669F54 /* SDL_render_unsupported.c in Sources */,
 				A7D8AC0F23E2514100DCD162 /* SDL_video.c in Sources */,
