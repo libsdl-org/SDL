@@ -144,7 +144,6 @@
 
 /* Enable various audio drivers */
 #ifndef SDL_AUDIO_DISABLED
-#define SDL_AUDIO_DRIVER_ANDROID    1
 #define SDL_AUDIO_DRIVER_OPENSLES   1
 #define SDL_AUDIO_DRIVER_AAUDIO     1
 #endif /* SDL_AUDIO_DISABLED */
