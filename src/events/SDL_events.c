@@ -1732,6 +1732,9 @@ int SDL_SendAppEvent(SDL_EventType eventType)
         case SDL_EVENT_WILL_ENTER_FOREGROUND:
         case SDL_EVENT_DID_ENTER_FOREGROUND:
             // We won't actually queue this event, it needs to be handled in this call stack by an event watcher
+            if (SDL_EventLoggingVerbosity > 0) {
+                SDL_LogEvent(&event);
+            }
             posted = SDL_CallEventWatchers(&event);
             break;
         default:
