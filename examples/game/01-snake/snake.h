@@ -44,7 +44,7 @@ typedef struct
     unsigned occupied_cells;
 } SnakeContext;
 
-typedef Sint32 SDLCALL (*RandFunc)(Sint32 n);
+typedef Sint32 (SDLCALL *RandFunc)(Sint32 n);
 
 void snake_initialize(SnakeContext *ctx, RandFunc rand);
 void snake_redir(SnakeContext *ctx, SnakeDirection dir);
