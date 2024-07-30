@@ -5,6 +5,9 @@
  */
 #ifndef SNAKE_H
 #define SNAKE_H
+
+#include <SDL3/SDL.h>
+
 #define SNAKE_GAME_WIDTH  24U
 #define SNAKE_GAME_HEIGHT 18U
 #define SNAKE_MATRIX_SIZE (SNAKE_GAME_WIDTH * SNAKE_GAME_HEIGHT)
