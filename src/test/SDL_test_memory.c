@@ -67,6 +67,16 @@ static SDL_free_func SDL_free_orig = NULL;
 static int s_previous_allocations = 0;
 static SDL_tracked_allocation *s_tracked_allocations[256];
 static SDL_bool s_randfill_allocations = SDL_FALSE;
+static SDL_AtomicInt s_lock;
+
+#define LOCK_ALLOCATOR()                               \
+    do {                                               \
+        if (SDL_AtomicCompareAndSwap(&s_lock, 0, 1)) { \
+            break;                                     \
+        }                                              \
+        SDL_CPUPauseInstruction();                     \
+    } while (SDL_TRUE)
+#define UNLOCK_ALLOCATOR() do { SDL_AtomicSet(&s_lock, 0); } while (0)
 
 static unsigned int get_allocation_bucket(void *mem)
 {
@@ -80,12 +90,15 @@ static unsigned int get_allocation_bucket(void *mem)
 static SDL_tracked_allocation* SDL_GetTrackedAllocation(void *mem)
 {
     SDL_tracked_allocation *entry;
+    LOCK_ALLOCATOR();
     int index = get_allocation_bucket(mem);
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
+            UNLOCK_ALLOCATOR();
             return entry;
         }
     }
+    UNLOCK_ALLOCATOR();
     return NULL;
 }
 
@@ -113,6 +126,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
     if (!entry) {
         return;
     }
+    LOCK_ALLOCATOR();
     entry->mem = mem;
     entry->size = size;
 
@@ -158,6 +172,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
 
     entry->next = s_tracked_allocations[index];
     s_tracked_allocations[index] = entry;
+    UNLOCK_ALLOCATOR();
 }
 
 static void SDL_UntrackAllocation(void *mem)
@@ -165,6 +180,7 @@ static void SDL_UntrackAllocation(void *mem)
     SDL_tracked_allocation *entry, *prev;
     int index = get_allocation_bucket(mem);
 
+    LOCK_ALLOCATOR();
     prev = NULL;
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
@@ -174,10 +190,12 @@ static void SDL_UntrackAllocation(void *mem)
                 s_tracked_allocations[index] = entry->next;
             }
             SDL_free_orig(entry);
+            UNLOCK_ALLOCATOR();
             return;
         }
         prev = entry;
     }
+    UNLOCK_ALLOCATOR();
 }
 
 static void rand_fill_memory(void* ptr, size_t start, size_t end)
