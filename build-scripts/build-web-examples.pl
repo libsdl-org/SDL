@@ -106,12 +106,11 @@ sub handle_example_dir {
 
     my $description = '';
     if (open(my $readmetxth, '<', "$examples_dir/$category/$example/README.txt")) {
-        my $spc = '';
         while (<$readmetxth>) {
             chomp;
-            s/\"/\\"/g;
-            $description .= "$spc$_";
-            $spc = ' ';
+            s/\A\s+//;
+            s/\s+\Z//;
+            $description .= "$_<br/>";
         }
         close($readmetxth);
     }
