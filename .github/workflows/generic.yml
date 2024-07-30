@@ -273,13 +273,6 @@ jobs:
             rm -rf build/dist/_CPack_Packages
             rm -rf build/CMakeFiles
             rm -rf build/docs
-      - name: "Upload Android test apk's"
-        uses: actions/upload-artifact@v4
-        if: ${{ always() && matrix.platform.artifact != '' && steps.apks.outcome == 'success' }}
-        with:
-          if-no-files-found: error
-          name: '${{ matrix.platform.artifact }}-apks'
-          path: build/test/*.apk
       - name: Add msbuild to PATH
         id: setup-msbuild
         if: ${{ matrix.platform.msvc-project != '' }}
@@ -322,7 +315,7 @@ jobs:
           xcodebuild -project Xcode/SDL/SDL.xcodeproj -target SDL3 -configuration Release -sdk ${{ matrix.platform.xcode-sdk }} clean build
       - name: 'Upload binary package'
         uses: actions/upload-artifact@v4
-        if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') }}
+        if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
         with:
           if-no-files-found: error
           name: '${{ matrix.platform.artifact }}'
@@ -334,3 +327,10 @@ jobs:
           if-no-files-found: ignore
           name: '${{ matrix.platform.artifact }}-minidumps'
           path: build/**/*.dmp
+      - name: "Upload Android test apk's"
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.platform.enable-artifacts && always() && matrix.platform.artifact != '' && steps.apks.outcome == 'success' }}
+        with:
+          if-no-files-found: error
+          name: '${{ matrix.platform.artifact }}-apks'
+          path: build/test/*.apk

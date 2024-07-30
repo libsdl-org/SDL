@@ -198,13 +198,14 @@ class JobDetails:
     cpactions_install_cmd: str = ""
     setup_vita_gles_type: str = ""
 
-    def to_workflow(self) -> dict[str, str|bool]:
+    def to_workflow(self, enable_artifacts) -> dict[str, str|bool]:
         data = {
             "name": self.name,
             "os": self.os,
             "container": self.container if self.container else "",
             "platform": self.platform,
             "artifact": self.artifact,
+            "enable-artifacts": enable_artifacts,
             "shell": self.shell,
             "msys2-msystem": self.msys2_msystem,
             "msys2-env": self.msys2_env,
@@ -504,7 +505,7 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 "-DSDL_ARMSIMD=ON",
                 ))
             # Fix vita.toolchain.cmake (https://github.com/vitasdk/vita-toolchain/pull/253)
-            job.source_cmd = "sed -i -E 's/set\( PKG_CONFIG_EXECUTABLE \"\$\{VITASDK}\/bin\/arm-vita-eabi-pkg-config\" )/set( PKG_CONFIG_EXECUTABLE \"${VITASDK}\/bin\/arm-vita-eabi-pkg-config\" CACHE PATH \"Path of pkg-config executable\" )/' ${VITASDK}/share/vita.toolchain.cmake"
+            job.source_cmd = r"""sed -i -E "s#set\\( PKG_CONFIG_EXECUTABLE \"\\$\\{VITASDK}/bin/arm-vita-eabi-pkg-config\" \\)#set\\( PKG_CONFIG_EXECUTABLE \"${VITASDK}/bin/arm-vita-eabi-pkg-config\" CACHE PATH \"Path of pkg-config executable\" \\)#" ${VITASDK}/share/vita.toolchain.cmake"""
             job.clang_tidy = False
             job.run_tests = False
             job.shared = False
@@ -613,16 +614,13 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
     return job
 
 
-def specs_to_plaform(specs: tuple[JobSpec, ...]) -> list[dict[str, str|bool]]:
-    result = []
-    for spec in specs:
-        logger.info("spec=%r", spec)
-        job = spec_to_job(spec)
-        logger.info("job=%r", job)
-        platform = job.to_workflow()
-        result.append(platform)
-        logger.info("platform=%r", platform)
-    return result
+def spec_to_platform(spec: JobSpec, enable_artifacts: bool) -> dict[str, str|bool]:
+    logger.info("spec=%r", spec)
+    job = spec_to_job(spec)
+    logger.info("job=%r", job)
+    platform = job.to_workflow(enable_artifacts=enable_artifacts)
+    logger.info("platform=%r", platform)
+    return platform
 
 
 def main():
@@ -631,6 +629,7 @@ def main():
     parser.add_argument("--github-ci", action="store_true")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--commit-message-file")
+    parser.add_argument("--no-artifact", dest="enable_artifacts", action="store_false")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING)
@@ -651,6 +650,9 @@ def main():
             for m in re.finditer(r"\[sdl-ci-filter (.*)]", commit_message, flags=re.M):
                 filters.append(m.group(1).strip(" \t\n\r\t'\""))
 
+            if re.search(r"\[sdl-ci-artifacts?]", commit_message, flags=re.M):
+                args.enable_artifacts = True
+
     if not filters:
         filters.append("*")
 
@@ -658,13 +660,15 @@ def main():
 
     all_level_platforms = {}
 
+    all_platforms = {k: spec_to_platform(spec, enable_artifacts=args.enable_artifacts) for k, spec in JOB_SPECS.items()}
+
     for level_i, level_keys in enumerate(all_level_keys, 1):
         level_key = f"level{level_i}"
         logger.info("Level %d: keys=%r", level_i, level_keys)
         assert all(k in remaining_keys for k in level_keys)
-        level_specs = tuple(JOB_SPECS[key] for key in level_keys)
+        level_platforms = tuple(all_platforms[key] for key in level_keys)
         remaining_keys.difference_update(level_keys)
-        all_level_platforms[level_key] = specs_to_plaform(level_specs)
+        all_level_platforms[level_key] = level_platforms
         logger.info("=" * 80)
 
     logger.info("Keys before filter: %r", remaining_keys)
@@ -677,9 +681,8 @@ def main():
 
     remaining_keys = filtered_remaining_keys
 
-    logger.info("Remaining:")
-    remaining_specs = tuple(JOB_SPECS[key] for key in remaining_keys)
-    all_level_platforms["others"] = specs_to_plaform(remaining_specs)
+    logger.info("Remaining: %r", remaining_keys)
+    all_level_platforms["others"] = tuple(all_platforms[key] for key in remaining_keys)
 
     if args.github_ci:
         for level, platforms in all_level_platforms.items():
