@@ -198,7 +198,7 @@ class JobDetails:
     cpactions_install_cmd: str = ""
     setup_vita_gles_type: str = ""
 
-    def to_workflow(self, enable_artifacts) -> dict[str, str|bool]:
+    def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
         data = {
             "name": self.name,
             "os": self.os,
