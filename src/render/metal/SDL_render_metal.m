@@ -1300,7 +1300,7 @@ static const float TEXTURETYPE_NV12 = 2;
 static const float TEXTURETYPE_NV21 = 3;
 static const float TEXTURETYPE_YUV = 4;
 
-static const float INPUTTYPE_UNSPECIFIED = 0;
+//static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
 static const float INPUTTYPE_SCRGB = 2;
 static const float INPUTTYPE_HDR10 = 3;
