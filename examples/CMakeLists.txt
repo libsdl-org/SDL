@@ -44,7 +44,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.20)
     set(example_bin_dir "${example_bin_dir}$<$<BOOL:${is_multi_config}>:/$<CONFIG>>")
 endif()
 
-file(GLOB RESOURCE_FILES ../test/*.bmp ../test/*.wav ../test/*.hex)
+file(GLOB RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/*.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/*.wav ${CMAKE_CURRENT_SOURCE_DIR}/../test/*.hex)
 
 set(RESOURCE_FILE_NAMES)
 set(RESOURCE_FILES_BINDIR)
@@ -63,7 +63,7 @@ add_custom_target(copy-sdl-example-resources
 )
 
 if(WINDOWS_STORE)
-    add_library(sdl_example_main_callbacks_uwp OBJECT ../test/main.cpp)
+    add_library(sdl_example_main_callbacks_uwp OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/../test/main.cpp)
     target_link_libraries(sdl_example_main_callbacks_uwp PRIVATE SDL3::Headers)
     target_compile_options(sdl_example_main_callbacks_uwp PRIVATE "/ZW")
     target_compile_definitions(sdl_example_main_callbacks_uwp PRIVATE "SDL_MAIN_USE_CALLBACKS")
@@ -96,10 +96,10 @@ macro(add_sdl_example_executable TARGET)
 
         list(APPEND EXTRA_SOURCES
             "${uwp_bindir}/${TARGET}.appxmanifest"
-            "../test/uwp/logo-50x50.png"
-            "../test/uwp/square-44x44.png"
-            "../test/uwp/square-150x150.png"
-            "../test/uwp/splash-620x300.png"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../test/uwp/logo-50x50.png"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../test/uwp/square-44x44.png"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../test/uwp/square-150x150.png"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../test/uwp/splash-620x300.png"
         )
     endif()
     if(AST_DATAFILES)
@@ -185,7 +185,7 @@ add_sdl_example_executable(renderer-clear SOURCES renderer/01-clear/renderer-cle
 add_sdl_example_executable(renderer-primitives SOURCES renderer/02-primitives/renderer-primitives.c)
 add_sdl_example_executable(audio-simple-playback SOURCES audio/01-simple-playback/simple-playback.c)
 add_sdl_example_executable(audio-simple-playback-callback SOURCES audio/02-simple-playback-callback/simple-playback-callback.c)
-add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ../test/sample.wav)
+add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.wav)
 
 
 if(PSP)
@@ -311,7 +311,7 @@ if(ANDROID AND TARGET SDL3::Jar)
 
         include(SdlAndroidFunctions)
         sdl_create_android_debug_keystore(SDL_example-debug-keystore)
-        sdl_android_compile_resources(SDL_example-resources RESFOLDER ../test/android/res)
+        sdl_android_compile_resources(SDL_example-resources RESFOLDER ${CMAKE_CURRENT_SOURCE_DIR}/../test/android/res)
         add_custom_target(sdl-example-apks)
         foreach(EXAMPLE ${SDL_EXAMPLE_EXECUTABLES})
             set(ANDROID_MANIFEST_APP_NAME "${EXAMPLE}")
@@ -323,11 +323,11 @@ if(ANDROID AND TARGET SDL3::Jar)
             set(GENERATED_SRC_FOLDER "${CMAKE_CURRENT_BINARY_DIR}/android/${EXAMPLE}-src")
             set(GENERATED_RES_FOLDER "${GENERATED_SRC_FOLDER}/res")
             set(JAVA_PACKAGE_DIR "${GENERATED_SRC_FOLDER}/${JAVA_PACKAGE_DIR}")
-            configure_file(../test/android/cmake/SDLEntryTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java" @ONLY)
-            configure_file(../test/android/cmake/SDLTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" @ONLY)
-            configure_file(../test/android/cmake/res/values/strings.xml.cmake android/res/values/strings-${EXAMPLE}.xml @ONLY)
-            configure_file(../test/android/cmake/res/xml/shortcuts.xml.cmake "${GENERATED_RES_FOLDER}/xml/shortcuts.xml" @ONLY)
-            configure_file(../test/android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
+            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../test/android/cmake/SDLEntryTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java" @ONLY)
+            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../test/android/cmake/SDLTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" @ONLY)
+            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../test/android/cmake/res/values/strings.xml.cmake android/res/values/strings-${EXAMPLE}.xml @ONLY)
+            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../test/android/cmake/res/xml/shortcuts.xml.cmake "${GENERATED_RES_FOLDER}/xml/shortcuts.xml" @ONLY)
+            configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../test/android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
             file(GENERATE
                 OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/android/${EXAMPLE}-$<CONFIG>/res/values/strings.xml"
                 INPUT "${CMAKE_CURRENT_BINARY_DIR}/android/res/values/strings-${EXAMPLE}.xml"
