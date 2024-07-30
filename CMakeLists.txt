@@ -3583,7 +3583,10 @@ if(NOT SDL_DISABLE_INSTALL)
   if(ANDROID)
     if(TARGET SDL3-jar)
       set(SDL_INSTALL_JAVADIR "${CMAKE_INSTALL_DATAROOTDIR}/java" CACHE PATH "Path where to install java clases + java sources")
+      set(PROGUARD_RULES_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android-project/app/proguard-rules.pro")
       install(FILES $<TARGET_PROPERTY:SDL3-jar,INSTALL_FILES>
+        DESTINATION "${SDL_INSTALL_JAVADIR}/SDL3")
+      install(FILES "${PROGUARD_RULES_PATH}" RENAME "proguard.txt"
         DESTINATION "${SDL_INSTALL_JAVADIR}/SDL3")
       configure_package_config_file(cmake/SDL3jarTargets.cmake.in SDL3jarTargets.cmake
         INSTALL_DESTINATION "${SDL_SDL_INSTALL_CMAKEDIR}"

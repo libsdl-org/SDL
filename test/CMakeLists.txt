@@ -334,7 +334,7 @@ function(files2headers OUTPUT)
             # Don't add the 'output' header to the output, to avoid marking them as GENERATED
             # (generated files are removed when running the CLEAN target)
             add_custom_command(OUTPUT "${intermediate}"
-                COMMAND Python3::Interpreter "${xxd}" -i "${CMAKE_CURRENT_SOURCE_DIR}/${input}" "-o" "${intermediate}"
+                COMMAND "${Python3_EXECUTABLE}" "${xxd}" -i "${CMAKE_CURRENT_SOURCE_DIR}/${input}" "-o" "${intermediate}"
                 COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${intermediate}" "${output}"
                 DEPENDS "${xxd}" "${bmp}"
             )
