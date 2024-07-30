@@ -156,6 +156,12 @@
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
           return function(text) {
+            var elem = document.getElementById('output-container');
+            if (elem.style['top'] == '') {
+                elem.style['top'] = '50%';
+                setTimeout(function() { elem.style['top'] = ''; }, 3000);
+            }
+
             if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
             // These replacements are necessary if you render to raw HTML
             //text = text.replace(/&/g, "&amp;");
