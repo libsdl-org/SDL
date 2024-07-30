@@ -135,20 +135,19 @@
       }
 
       #example-description {
-        background: black;
         color: white;
-        height: 100%;
-        align-items: center;
+        text-align: center;
+        position: relative; /* required for proper positioning */
       }
     </style>
     <link rel="stylesheet" type="text/css" href="highlight.css">
   </head>
   <body>
-    <div id="example-description">
-      @description@
-    </div>
     <div class="canvas-container">
       <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    </div>
+    <div id="example-description">
+      @description@
     </div>
     <div id="output-container">
       <textarea id="output" rows="8" spellcheck="false" readonly></textarea>
