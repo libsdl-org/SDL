@@ -34,8 +34,8 @@ static void new_food_pos_(SnakeContext *ctx, RandFunc rand)
     char x;
     char y;
     for (;;) {
-        x = rand(SNAKE_GAME_WIDTH);
-        y = rand(SNAKE_GAME_HEIGHT);
+        x = (char) rand(SNAKE_GAME_WIDTH);
+        y = (char) rand(SNAKE_GAME_HEIGHT);
         if (snake_cell_at(ctx, x, y) == SNAKE_CELL_NOTHING) {
             put_cell_at_(ctx, x, y, SNAKE_CELL_FOOD);
             break;
