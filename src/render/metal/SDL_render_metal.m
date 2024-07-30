@@ -1348,29 +1348,29 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
             constants->texture_type = TEXTURETYPE_YUV;
-            constants->input_type = INPUTTYPE_SRGB;
             break;
         case SDL_PIXELFORMAT_NV12:
             constants->texture_type = TEXTURETYPE_NV12;
-            constants->input_type = INPUTTYPE_SRGB;
             break;
         case SDL_PIXELFORMAT_NV21:
             constants->texture_type = TEXTURETYPE_NV21;
-            constants->input_type = INPUTTYPE_SRGB;
             break;
         case SDL_PIXELFORMAT_P010:
             constants->texture_type = TEXTURETYPE_NV12;
-            constants->input_type = INPUTTYPE_HDR10;
             break;
         default:
             constants->texture_type = TEXTURETYPE_RGB;
-            if (texture->colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-                constants->input_type = INPUTTYPE_SCRGB;
-            } else if (texture->colorspace == SDL_COLORSPACE_HDR10) {
-                constants->input_type = INPUTTYPE_HDR10;
-            } else {
-                constants->input_type = INPUTTYPE_UNSPECIFIED;
-            }
+        }
+
+        switch (SDL_COLORSPACETRANSFER(texture->colorspace)) {
+        case SDL_TRANSFER_CHARACTERISTICS_LINEAR:
+            constants->input_type = INPUTTYPE_SCRGB;
+            break;
+        case SDL_TRANSFER_CHARACTERISTICS_PQ:
+            constants->input_type = INPUTTYPE_HDR10;
+            break;
+        default:
+            constants->input_type = INPUTTYPE_SRGB;
             break;
         }
 
