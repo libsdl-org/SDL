@@ -133,10 +133,20 @@
         height: 100%;
         overflow: scroll;
       }
+
+      #example-description {
+        background: black;
+        color: white;
+        height: 100%;
+        align-items: center;
+      }
     </style>
     <link rel="stylesheet" type="text/css" href="highlight.css">
   </head>
   <body>
+    <div id="example-description">
+      @description@
+    </div>
     <div class="canvas-container">
       <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     </div>
@@ -201,7 +211,6 @@
           if (text) console.error('[post-exception status] ' + text);
         };
       };
-      @print_description@
     </script>
     <script async type="text/javascript" src="@javascript_file@"></script>
   </body>

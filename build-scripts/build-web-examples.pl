@@ -103,16 +103,15 @@ sub handle_example_dir {
     my $jsdst = "$dst/$jsfname";
     my $wasmdst = "$dst/$wasmfname";
 
-    my $print_description = '';
+    my $description = '';
     if (open(my $readmetxth, '<', "$examples_dir/$category/$example/README.txt")) {
         my $spc = '';
         while (<$readmetxth>) {
             chomp;
             s/\"/\\"/g;
-            $print_description .= "${spc}Module.print(\"$_\");";
+            $description .= "$spc$_";
             $spc = ' ';
         }
-        $print_description .= "${spc}Module.print(\"\");";
         close($readmetxth);
     }
 
@@ -155,7 +154,7 @@ sub handle_example_dir {
         s/\@example_name\@/$example/g;
         s/\@javascript_file\@/$jsfname/g;
         s/\@htmlified_source_code\@/$htmlified_source_code/g;
-        s/\@print_description\@/$print_description/g;
+        s/\@description\@/$description/g;
         $html .= $_;
     }
     close($htmltemplate);
