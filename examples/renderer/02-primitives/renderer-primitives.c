@@ -1,6 +1,6 @@
 /*
- * This example code creates an SDL window and renderer, and then draws a few
- * lines and rectangles to it every frame.
+ * This example creates an SDL window and renderer, and then draws some lines,
+ * rectangles and points to it every frame.
  *
  * This code is public domain. Feel free to use it for any purpose!
  */
