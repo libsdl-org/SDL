@@ -80,27 +80,27 @@ typedef enum SDL_EventType
     SDL_EVENT_QUIT           = 0x100, /**< User-requested quit */
 
     /* These application events have special meaning on iOS and Android, see README-ios.md and README-android.md for details */
-    SDL_EVENT_TERMINATING,      /**< The application is being terminated by the OS
+    SDL_EVENT_TERMINATING,      /**< The application is being terminated by the OS. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationWillTerminate()
                                      Called on Android in onDestroy()
                                 */
-    SDL_EVENT_LOW_MEMORY,       /**< The application is low on memory, free memory if possible.
+    SDL_EVENT_LOW_MEMORY,       /**< The application is low on memory, free memory if possible. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationDidReceiveMemoryWarning()
                                      Called on Android in onTrimMemory()
                                 */
-    SDL_EVENT_WILL_ENTER_BACKGROUND, /**< The application is about to enter the background
+    SDL_EVENT_WILL_ENTER_BACKGROUND, /**< The application is about to enter the background. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationWillResignActive()
                                      Called on Android in onPause()
                                 */
-    SDL_EVENT_DID_ENTER_BACKGROUND, /**< The application did enter the background and may not get CPU for some time
+    SDL_EVENT_DID_ENTER_BACKGROUND, /**< The application did enter the background and may not get CPU for some time. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationDidEnterBackground()
                                      Called on Android in onPause()
                                 */
-    SDL_EVENT_WILL_ENTER_FOREGROUND, /**< The application is about to enter the foreground
+    SDL_EVENT_WILL_ENTER_FOREGROUND, /**< The application is about to enter the foreground. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationWillEnterForeground()
                                      Called on Android in onResume()
                                 */
-    SDL_EVENT_DID_ENTER_FOREGROUND, /**< The application is now interactive
+    SDL_EVENT_DID_ENTER_FOREGROUND, /**< The application is now interactive. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationDidBecomeActive()
                                      Called on Android in onResume()
                                 */
