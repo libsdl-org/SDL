@@ -124,17 +124,12 @@ static Uint64 timestamp_offset;
 
 static void WIN_SetMessageTick(DWORD tick)
 {
-    if (message_tick) {
-        if (tick < message_tick && timestamp_offset) {
-            /* The tick counter rolled over, bump our offset */
-            timestamp_offset += SDL_MS_TO_NS(0x100000000LL);
-        }
-    }
     message_tick = tick;
 }
 
 static Uint64 WIN_GetEventTimestamp(void)
 {
+    const Uint64 TIMESTAMP_WRAP_OFFSET = SDL_MS_TO_NS(0x100000000LL);
     Uint64 timestamp, now;
 
     if (!SDL_processing_messages) {
@@ -144,13 +139,20 @@ static Uint64 WIN_GetEventTimestamp(void)
 
     now = SDL_GetTicksNS();
     timestamp = SDL_MS_TO_NS(message_tick);
-
-    if (!timestamp_offset) {
-        timestamp_offset = (now - timestamp);
-    }
     timestamp += timestamp_offset;
-
-    if (timestamp > now) {
+    if (!timestamp_offset) {
+        // Initializing timestamp offset
+        //SDL_Log("Initializing timestamp offset\n");
+        timestamp_offset = (now - timestamp);
+        timestamp = now;
+    } else if ((Sint64)(now - timestamp - TIMESTAMP_WRAP_OFFSET) >= 0) {
+        // The windows message tick wrapped
+        //SDL_Log("Adjusting timestamp offset for wrapping tick\n");
+        timestamp_offset += TIMESTAMP_WRAP_OFFSET;
+        timestamp += TIMESTAMP_WRAP_OFFSET;
+    } else if (timestamp > now) {
+        // We got a newer timestamp, but it can't be newer than now, so adjust our offset
+        //SDL_Log("Adjusting timestamp offset, %.2f ms newer\n", (double)(timestamp - now) / SDL_NS_PER_MS);
         timestamp_offset -= (timestamp - now);
         timestamp = now;
     }
