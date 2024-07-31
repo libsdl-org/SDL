@@ -217,6 +217,8 @@ typedef enum SDL_EventType
     SDL_EVENT_DROP_BEGIN,                /**< A new set of drops is beginning (NULL filename) */
     SDL_EVENT_DROP_COMPLETE,             /**< Current set of drops is now complete (NULL filename) */
     SDL_EVENT_DROP_POSITION,             /**< Position while moving over the window */
+    SDL_EVENT_DRAG_ENTER,                /**< Drag event started */
+    SDL_EVENT_DRAG_EXIT,                 /**< Drag event ended */
 
     /* Audio hotplug events */
     SDL_EVENT_AUDIO_DEVICE_ADDED = 0x1100,  /**< A new audio device is available */
@@ -784,7 +786,7 @@ typedef struct SDL_PenButtonEvent
  */
 typedef struct SDL_DropEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_DROP_BEGIN or SDL_EVENT_DROP_FILE or SDL_EVENT_DROP_TEXT or SDL_EVENT_DROP_COMPLETE or SDL_EVENT_DROP_POSITION */
+    SDL_EventType type; /**< SDL_EVENT_DROP_BEGIN or SDL_EVENT_DROP_FILE or SDL_EVENT_DROP_TEXT or SDL_EVENT_DROP_COMPLETE or SDL_EVENT_DROP_POSITION or SDL_EVENT_DRAG_ENTER or SDL_EVENT_DRAG_EXIT */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;    /**< The window that was dropped on, if any */
