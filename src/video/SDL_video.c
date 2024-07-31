@@ -1141,7 +1141,7 @@ static const SDL_DisplayMode *SDL_GetFullscreenModeMatch(const SDL_DisplayMode *
 
         /* Search for an exact match */
         if (!mode) {
-            for (int i = 0; display->num_fullscreen_modes; ++i) {
+            for (int i = 0; i < display->num_fullscreen_modes; ++i) {
                 if (SDL_memcmp(&fullscreen_mode, &display->fullscreen_modes[i], sizeof(fullscreen_mode)) == 0) {
                     mode = &display->fullscreen_modes[i];
                     break;
@@ -1151,7 +1151,7 @@ static const SDL_DisplayMode *SDL_GetFullscreenModeMatch(const SDL_DisplayMode *
 
         /* Search for a mode with the same characteristics */
         if (!mode) {
-            for (int i = 0; display->num_fullscreen_modes; ++i) {
+            for (int i = 0; i < display->num_fullscreen_modes; ++i) {
                 if (cmpmodes(&fullscreen_mode, &display->fullscreen_modes[i]) == 0) {
                     mode = &display->fullscreen_modes[i];
                     break;
