@@ -1346,7 +1346,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 data->xdnd_req = X11_PickTargetFromAtoms(display, xevent->xclient.data.l[2], xevent->xclient.data.l[3], xevent->xclient.data.l[4]);
             }
         }
-        else if (xevent.xclient.message_type == videodata->XdndLeave) {
+        else if (xevent->xclient.message_type == videodata->XdndLeave) {
 
             SDL_SendDragExit(data->window);
 
