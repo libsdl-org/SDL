@@ -247,6 +247,23 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     /**
+     * The application entry point, called on a dedicated thread (SDLThread).
+     * The default implementation uses the getMainSharedObject() and getMainFunction() methods
+     * to invoke native code from the specified shared library.
+     * It can be overridden by derived classes.
+     */
+    protected void main() {
+        String library = SDLActivity.mSingleton.getMainSharedObject();
+        String function = SDLActivity.mSingleton.getMainFunction();
+        String[] arguments = SDLActivity.mSingleton.getArguments();
+
+        Log.v("SDL", "Running main function " + function + " from library " + library);
+        SDLActivity.nativeRunMain(library, function, arguments);
+        Log.v("SDL", "Finished main function");
+    }
+
+
+    /**
      * This method creates a Runnable which invokes SDL_main. The default implementation
      * uses the getMainSharedObject() and getMainFunction() methods to invoke native
      * code from the specified shared library.
@@ -2112,13 +2129,9 @@ class SDLMain implements Runnable {
             Log.v("SDL", "modify thread properties failed " + e.toString());
         }
 
-        Log.v("SDL", "Running main function " + function + " from library " + library);
-
         SDLActivity.nativeInitMainThread();
-        SDLActivity.nativeRunMain(library, function, arguments);
+        SDLActivity.mSingleton.main();
         SDLActivity.nativeCleanupMainThread();
-
-        Log.v("SDL", "Finished main function");
 
         if (SDLActivity.mSingleton != null && !SDLActivity.mSingleton.isFinishing()) {
             // Let's finish the Activity
