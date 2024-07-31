@@ -1226,7 +1226,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
     SDL_LockMutex(Android_ActivityMutex);
 
 #ifdef SDL_VIDEO_OPENGL_EGL
-    if (Android_Window) {
+    if (Android_Window && (Android_Window->flags & SDL_WINDOW_OPENGL)) {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_WindowData *data = Android_Window->internal;
 
@@ -1256,7 +1256,7 @@ retry:
         SDL_WindowData *data = Android_Window->internal;
 
         /* Wait for Main thread being paused and context un-activated to release 'egl_surface' */
-        if (!data->backup_done) {
+        if ((Android_Window->flags & SDL_WINDOW_OPENGL) && !data->backup_done) {
             nb_attempt -= 1;
             if (nb_attempt == 0) {
                 SDL_SetError("Try to release egl_surface with context probably still active");
