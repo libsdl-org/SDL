@@ -262,16 +262,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Log.v("SDL", "Finished main function");
     }
 
-
-    /**
-     * This method creates a Runnable which invokes SDL_main. The default implementation
-     * uses the getMainSharedObject() and getMainFunction() methods to invoke native
-     * code from the specified shared library.
-     */
-    protected Runnable createSDLMainRunnable() {
-        return new SDLMain();
-    }
-
     /**
      * This method returns the name of the shared object with the application entry point
      * It can be overridden by derived classes.
@@ -855,7 +845,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     // Start up the C app thread and enable sensor input for the first time
                     // FIXME: Why aren't we enabling sensor input at start?
 
-                    mSDLThread = new Thread(SDLActivity.mSingleton.createSDLMainRunnable(), "SDLThread");
+                    mSDLThread = new Thread(new SDLMain(), "SDLThread");
                     mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
                     mSDLThread.start();
 
