@@ -1032,6 +1032,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // C functions we call
     public static native String nativeGetVersion();
     public static native int nativeSetupJNI();
+    public static native void nativeInitMainThread();
+    public static native void nativeCleanupMainThread();
     public static native int nativeRunMain(String library, String function, Object arguments);
     public static native void nativeLowMemory();
     public static native void nativeSendQuit();
@@ -2112,7 +2114,9 @@ class SDLMain implements Runnable {
 
         Log.v("SDL", "Running main function " + function + " from library " + library);
 
+        SDLActivity.nativeInitMainThread();
         SDLActivity.nativeRunMain(library, function, arguments);
+        SDLActivity.nativeCleanupMainThread();
 
         Log.v("SDL", "Finished main function");
 
