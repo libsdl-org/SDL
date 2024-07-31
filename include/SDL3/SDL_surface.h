@@ -1135,6 +1135,42 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, 
 extern SDL_DECLSPEC int SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int corner_size, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
+ * Perform a scaled blit using the 9-grid algorithm to a destination surface,
+ * which may be of a different format.
+ *
+ * The pixels in the source surface are split into a 3x3 grid, using the
+ * corner size for each corner, and the sides and center making up the
+ * remaining pixels. The corners are then scaled using `scale` and fit into
+ * the corners of the destination rectangle. The sides and center are then
+ * stretched into place to cover the remaining destination rectangle.
+ *
+ * \param src the SDL_Surface structure to be copied from.
+ * \param srcrect the SDL_Rect structure representing the rectangle to be used
+ *                for the 9-grid, or NULL to use the entire surface.
+ * \param left_width the width, in pixels, of the left corners in `srcrect`.
+ * \param right_width the width, in pixels, of the right corners in `srcrect`.
+ * \param top_height the height, in pixels, of the top conders in `srcrect`.
+ * \param bottom_height the height, in pixels, of the bottom corners in `srcrect`.
+ * \param scale the scale used to transform the corner of `srcrect` into the
+ *              corner of `dstrect`, or 0.0f for an unscaled blit.
+ * \param scaleMode scale algorithm to be used.
+ * \param dst the SDL_Surface structure that is the blit target.
+ * \param dstrect the SDL_Rect structure representing the target rectangle in
+ *                the destination surface, or NULL to fill the entire surface.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety The same destination surface should not be used from two
+ *               threads at once. It is safe to use the same source surface
+ *               from multiple threads.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_BlitSurface
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_BlitSurface9GridComplex(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);
+
+/**
  * Map an RGB triple to an opaque pixel value for a surface.
  *
  * This function maps the RGB color value to the specified pixel format and
