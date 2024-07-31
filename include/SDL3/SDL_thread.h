@@ -336,7 +336,7 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithPropertiesRuntime(S
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetThreadName(SDL_Thread *thread);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetThreadName(SDL_Thread *thread);
 
 /**
  * Get the thread identifier for the current thread.

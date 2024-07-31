@@ -1,5 +1,5 @@
-name: 'Setup libusb for MSBC'
-description: 'Greet someone'
+name: 'Setup libusb for MSVC'
+description: 'Download libusb sdk for MSVC, and set output/environment variables'
 inputs:
   version:
     description: 'libusb version'
@@ -68,3 +68,4 @@ runs:
           exit 1
         }
         echo "root=${libusb_incdir};${libusb_libdir}" >> $env:GITHUB_OUTPUT
+        echo "LibUSB_ROOT=${libusb_incdir};${libusb_libdir}" >> $env:GITHUB_ENV

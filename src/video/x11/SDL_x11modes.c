@@ -686,7 +686,7 @@ static int X11_UpdateXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int scr
 
 static void X11_HandleXRandROutputChange(SDL_VideoDevice *_this, const XRROutputChangeNotifyEvent *ev)
 {
-    const SDL_DisplayID *displays;
+    SDL_DisplayID *displays;
     SDL_VideoDisplay *display = NULL;
     int i;
 
@@ -704,6 +704,7 @@ static void X11_HandleXRandROutputChange(SDL_VideoDevice *_this, const XRROutput
                 break;
             }
         }
+        SDL_free(displays);
     }
 
     if (ev->connection == RR_Disconnected) { /* output is going away */

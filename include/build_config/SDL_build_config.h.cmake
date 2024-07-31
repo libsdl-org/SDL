@@ -75,12 +75,10 @@
 #cmakedefine HAVE_CALLOC 1
 #cmakedefine HAVE_REALLOC 1
 #cmakedefine HAVE_FREE 1
-#ifndef SDL_PLATFORM_WIN32 /* Don't use C runtime versions of these on Windows */
 #cmakedefine HAVE_GETENV 1
 #cmakedefine HAVE_SETENV 1
 #cmakedefine HAVE_PUTENV 1
 #cmakedefine HAVE_UNSETENV 1
-#endif
 #cmakedefine HAVE_ABS 1
 #cmakedefine HAVE_BCOPY 1
 #cmakedefine HAVE_MEMSET 1
@@ -268,7 +266,6 @@
 /* Enable various audio drivers */
 #cmakedefine SDL_AUDIO_DRIVER_ALSA @SDL_AUDIO_DRIVER_ALSA@
 #cmakedefine SDL_AUDIO_DRIVER_ALSA_DYNAMIC @SDL_AUDIO_DRIVER_ALSA_DYNAMIC@
-#cmakedefine SDL_AUDIO_DRIVER_ANDROID @SDL_AUDIO_DRIVER_ANDROID@
 #cmakedefine SDL_AUDIO_DRIVER_OPENSLES @SDL_AUDIO_DRIVER_OPENSLES@
 #cmakedefine SDL_AUDIO_DRIVER_AAUDIO @SDL_AUDIO_DRIVER_AAUDIO@
 #cmakedefine SDL_AUDIO_DRIVER_COREAUDIO @SDL_AUDIO_DRIVER_COREAUDIO@

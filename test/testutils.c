@@ -20,23 +20,17 @@
  *
  * Fails and returns NULL if out of memory.
  */
-char *
-GetNearbyFilename(const char *file)
+char *GetNearbyFilename(const char *file)
 {
     const char *base = SDL_GetBasePath();
     char *path;
 
     if (base) {
         SDL_IOStream *rw;
-        size_t len = SDL_strlen(base) + SDL_strlen(file) + 1;
 
-        path = SDL_malloc(len);
-
-        if (!path) {
+        if (SDL_asprintf(&path, "%s%s", base, file) < 0) {
             return NULL;
         }
-
-        (void)SDL_snprintf(path, len, "%s%s", base, file);
 
         rw = SDL_IOFromFile(path, "rb");
         if (rw) {
@@ -60,8 +54,7 @@ GetNearbyFilename(const char *file)
  *
  * Fails and returns NULL if out of memory.
  */
-char *
-GetResourceFilename(const char *user_specified, const char *def)
+char *GetResourceFilename(const char *user_specified, const char *def)
 {
     if (user_specified) {
         return SDL_strdup(user_specified);
@@ -79,9 +72,7 @@ GetResourceFilename(const char *user_specified, const char *def)
  *
  * If height_out is non-NULL, set it to the texture height.
  */
-SDL_Texture *
-LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
-            int *width_out, int *height_out)
+SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent, int *width_out, int *height_out)
 {
     SDL_Surface *temp = NULL;
     SDL_Texture *texture = NULL;

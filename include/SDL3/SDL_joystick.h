@@ -204,14 +204,15 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasJoystick(void);
  * \param count a pointer filled in with the number of joysticks returned, may
  *              be NULL.
  * \returns a 0 terminated array of joystick instance IDs or NULL on failure;
- *          call SDL_GetError() for more information.
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasJoystick
  * \sa SDL_OpenJoystick
  */
-extern SDL_DECLSPEC_TEMP const SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
+extern SDL_DECLSPEC SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
 
 /**
  * Get the implementation dependent name of a joystick.
@@ -227,7 +228,7 @@ extern SDL_DECLSPEC_TEMP const SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *co
  * \sa SDL_GetJoystickName
  * \sa SDL_GetJoysticks
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickNameForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickNameForID(SDL_JoystickID instance_id);
 
 /**
  * Get the implementation dependent path of a joystick.
@@ -243,7 +244,7 @@ extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickNameForID(SDL_Joyst
  * \sa SDL_GetJoystickPath
  * \sa SDL_GetJoysticks
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickPathForID(SDL_JoystickID instance_id);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickPathForID(SDL_JoystickID instance_id);
 
 /**
  * Get the player index of a joystick.
@@ -661,7 +662,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joyst
  *
  * \sa SDL_GetJoystickNameForID
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickName(SDL_Joystick *joystick);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickName(SDL_Joystick *joystick);
 
 /**
  * Get the implementation dependent path of a joystick.
@@ -674,7 +675,7 @@ extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickName(SDL_Joystick *
  *
  * \sa SDL_GetJoystickPathForID
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickPath(SDL_Joystick *joystick);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickPath(SDL_Joystick *joystick);
 
 /**
  * Get the player index of an opened joystick.
@@ -789,7 +790,7 @@ extern SDL_DECLSPEC Uint16 SDLCALL SDL_GetJoystickFirmwareVersion(SDL_Joystick *
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetJoystickSerial(SDL_Joystick *joystick);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetJoystickSerial(SDL_Joystick *joystick);
 
 /**
  * Get the type of an opened joystick.

@@ -55,6 +55,7 @@ static void quit(int rc)
     SDL_free(menus);
     menus = NULL;
 
+    SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
     /* Let 'main()' return normally */
     if (rc != 0) {

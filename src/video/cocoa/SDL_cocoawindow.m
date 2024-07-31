@@ -1526,8 +1526,6 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 {
     SDL_Window *window = _data.window;
 
-    SDL_assert(isDragAreaRunning == [_data.nswindow isMovableByWindowBackground]);
-
     if (window->hit_test) { /* if no hit-test, skip this. */
         const NSPoint location = [theEvent locationInWindow];
         const SDL_Point point = { (int)location.x, window->h - (((int)location.y) - 1) };
@@ -1538,13 +1536,13 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
                 [_data.nswindow setMovableByWindowBackground:YES];
             }
             return YES; /* dragging! */
+        } else {
+            if (isDragAreaRunning) {
+                isDragAreaRunning = NO;
+                [_data.nswindow setMovableByWindowBackground:NO];
+                return YES; /* was dragging, drop event. */
+            }
         }
-    }
-
-    if (isDragAreaRunning) {
-        isDragAreaRunning = NO;
-        [_data.nswindow setMovableByWindowBackground:NO];
-        return YES; /* was dragging, drop event. */
     }
 
     return NO; /* not a special area, carry on. */
@@ -1803,7 +1801,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
     }
     if (existingTouchCount == 0) {
         int numFingers;
-        const SDL_Finger * const *fingers = SDL_GetTouchFingers(touchID, &numFingers);
+        SDL_Finger **fingers = SDL_GetTouchFingers(touchID, &numFingers);
         if (fingers) {
             DLog("Reset Lost Fingers: %d", numFingers);
             for (--numFingers; numFingers >= 0; --numFingers) {
@@ -1816,6 +1814,7 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
                 SDL_Window *window = NULL;
                 SDL_SendTouch(Cocoa_GetEventTimestamp([theEvent timestamp]), touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
             }
+            SDL_free(fingers);
         }
     }
 
@@ -2380,16 +2379,16 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         /* isZoomed always returns true if the window is not resizable */
         if (!(window->flags & SDL_WINDOW_RESIZABLE) || !Cocoa_IsZoomed(window)) {
             if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-				int x, y;
-				NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
+                int x, y;
+                NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
 
                 /* Cocoa will resize the window from the bottom-left rather than the
                  * top-left when -[nswindow setContentSize:] is used, so we must set the
                  * entire frame based on the new size, in order to preserve the position.
                  */
                 SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &x, &y);
-				rect.origin.x = x;
-				rect.origin.y = y;
+                rect.origin.x = x;
+                rect.origin.y = y;
                 rect.size.width = window->floating.w;
                 rect.size.height = window->floating.h;
                 ConvertNSRect(&rect);

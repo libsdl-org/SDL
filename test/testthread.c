@@ -20,6 +20,7 @@
 #include <SDL3/SDL_test.h>
 
 static SDL_TLSID tls;
+static SDL_Thread *thread = NULL;
 static int alive = 0;
 static int testprio = 0;
 static SDLTest_CommonState *state;
@@ -28,8 +29,8 @@ static SDLTest_CommonState *state;
 static void
 quit(int rc)
 {
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     /* Let 'main()' return normally */
     if (rc != 0) {
         exit(rc);
@@ -83,13 +84,13 @@ killed(int sig)
     SDL_Log("Killed with SIGTERM, waiting 5 seconds to exit\n");
     SDL_Delay(5 * 1000);
     alive = 0;
+    SDL_WaitThread(thread, NULL);
     quit(0);
 }
 
 int main(int argc, char *argv[])
 {
     int i;
-    SDL_Thread *thread;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);

@@ -394,7 +394,7 @@ function(SDL_PrintSummary)
     message(STATUS "")
   endif()
 
-  if(UNIX AND NOT (ANDROID OR APPLE))
+  if(UNIX AND NOT (ANDROID OR APPLE OR EMSCRIPTEN))
     if(NOT (HAVE_X11 OR HAVE_WAYLAND))
       message(STATUS "SDL is being built without a X11 or wayland video driver.")
       message(STATUS "The library will not be able to create windows on most unix environments.")

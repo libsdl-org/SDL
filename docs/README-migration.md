@@ -158,9 +158,9 @@ Rather than iterating over audio devices using a device index, there are new fun
         if (devices) {
             for (i = 0; i < num_devices; ++i) {
                 SDL_AudioDeviceID instance_id = devices[i];
-                const char *name = SDL_GetAudioDeviceName(instance_id);
-                SDL_Log("AudioDevice %" SDL_PRIu32 ": %s\n", instance_id, name);
+                SDL_Log("AudioDevice %" SDL_PRIu32 ": %s\n", instance_id, SDL_GetAudioDeviceName(instance_id));
             }
+            SDL_free(devices);
         }
         SDL_QuitSubSystem(SDL_INIT_AUDIO);
     }
@@ -297,10 +297,6 @@ The following symbols have been renamed:
 
 The following symbols have been removed:
 * SDL_MIX_MAXVOLUME - mixer volume is now a float between 0.0 and 1.0
-
-## SDL_clipboard.h
-
-SDL_GetClipboardText() and SDL_GetPrimarySelectionText() return a const pointer to temporary memory, which does not need to be freed. You can use SDL_ClaimTemporaryMemory() to convert it to a non-const pointer that should be freed when you're done with it.
 
 ## SDL_cpuinfo.h
 
@@ -457,10 +453,6 @@ The following functions have been removed:
 
 The following enums have been renamed:
 * SDL_eventaction => SDL_EventAction
-
-## SDL_filesystem.h
-
-SDL_GetBasePath() and SDL_GetPrefPath() return a const pointer to temporary memory, which does not need to be freed. You can use SDL_ClaimTemporaryMemory() to convert it to a non-const pointer that should be freed when you're done with it.
 
 ## SDL_gamecontroller.h
 
@@ -710,15 +702,13 @@ Rather than iterating over haptic devices using device index, there is a new fun
 {
     if (SDL_InitSubSystem(SDL_INIT_HAPTIC) == 0) {
         int i, num_haptics;
-        const SDL_HapticID *haptics = SDL_GetHaptics(&num_haptics);
+        SDL_HapticID *haptics = SDL_GetHaptics(&num_haptics);
         if (haptics) {
             for (i = 0; i < num_haptics; ++i) {
                 SDL_HapticID instance_id = haptics[i];
-                const char *name = SDL_GetHapticNameForID(instance_id);
-
-                SDL_Log("Haptic %" SDL_PRIu32 ": %s\n",
-                        instance_id, name ? name : "Unknown");
+                SDL_Log("Haptic %" SDL_PRIu32 ": %s\n", instance_id, SDL_GetHapticNameForID(instance_id));
             }
+            SDL_free(haptics);
         }
         SDL_QuitSubSystem(SDL_INIT_HAPTIC);
     }
@@ -792,10 +782,11 @@ The following hints have been removed:
 * SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING - SDL now properly handles the 0x406D1388 Exception if no debugger intercepts it, preventing its propagation.
 * SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 - replaced with SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, defaulting to SDL_TRUE
 * SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING
+* SDL_HINT_AUDIO_DEVICE_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_NAME_STRING with SDL_SetAppMetadataProperty()
 
 * Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
 * Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
-* The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS have been removed and replaced with the unified hint SDL_HINT_APP_ID
+* The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS have been removed and replaced by either using the appindentifier param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_IDENTIFIER_STRING with SDL_SetAppMetadataProperty()
 
 The following hints have been renamed:
 * SDL_HINT_ALLOW_TOPMOST => SDL_HINT_WINDOW_ALLOW_TOPMOST
@@ -840,7 +831,7 @@ Rather than iterating over joysticks using device index, there is a new function
 {
     if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) == 0) {
         int i, num_joysticks;
-        const SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
+        SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
         if (joysticks) {
             for (i = 0; i < num_joysticks; ++i) {
                 SDL_JoystickID instance_id = joysticks[i];
@@ -850,6 +841,7 @@ Rather than iterating over joysticks using device index, there is a new function
                 SDL_Log("Joystick %" SDL_PRIu32 ": %s%s%s VID 0x%.4x, PID 0x%.4x\n",
                         instance_id, name ? name : "Unknown", path ? ", " : "", path ? path : "", SDL_GetJoystickVendorForID(instance_id), SDL_GetJoystickProductForID(instance_id));
             }
+            SDL_free(joysticks);
         }
         SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
     }
@@ -1033,10 +1025,6 @@ The following symbols have been renamed:
 ## SDL_loadso.h
 
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
-
-## SDL_locale.h
-
-SDL_GetPreferredLocales() returns a const array of locale pointers, which does not need to be freed. You can use SDL_ClaimTemporaryMemory() to convert it to a non-const pointer that should be freed when you're done with it.
 
 ## SDL_log.h
 
@@ -1522,6 +1510,8 @@ SDL_IOStream *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
 
 The internal `FILE *` is available through a standard SDL_IOStream property, for streams made through SDL_IOFromFile() that use stdio behind the scenes; apps use this pointer at their own risk and should make sure that SDL and the app are using the same C runtime.
 
+On Apple platforms, SDL_RWFromFile (now called SDL_IOFromFile) no longer tries to read from inside the app bundle's resource directory, instead now using the specified path unchanged. One can use SDL_GetBasePath() to find the resource directory on these platforms.
+
 
 The functions SDL_ReadU8(), SDL_ReadU16LE(), SDL_ReadU16BE(), SDL_ReadU32LE(), SDL_ReadU32BE(), SDL_ReadU64LE(), and SDL_ReadU64BE() now return SDL_TRUE if the read succeeded and SDL_FALSE if it didn't, and store the data in a pointer passed in as a parameter.
 
@@ -1588,7 +1578,7 @@ Rather than iterating over sensors using device index, there is a new function S
 {
     if (SDL_InitSubSystem(SDL_INIT_SENSOR) == 0) {
         int i, num_sensors;
-        const SDL_SensorID *sensors = SDL_GetSensors(&num_sensors);
+        SDL_SensorID *sensors = SDL_GetSensors(&num_sensors);
         if (sensors) {
             for (i = 0; i < num_sensors; ++i) {
                 SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %d, platform type %d\n",
@@ -1597,6 +1587,7 @@ Rather than iterating over sensors using device index, there is a new function S
                         SDL_GetSensorTypeForID(sensors[i]),
                         SDL_GetSensorNonPortableTypeForID(sensors[i]));
             }
+            SDL_free(sensors);
         }
         SDL_QuitSubSystem(SDL_INIT_SENSOR);
     }
@@ -1996,7 +1987,7 @@ Rather than iterating over displays using display index, there is a new function
 {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) == 0) {
         int i, num_displays = 0;
-        const SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+        SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
         if (displays) {
             for (i = 0; i < num_displays; ++i) {
                 SDL_DisplayID instance_id = displays[i];
@@ -2004,6 +1995,7 @@ Rather than iterating over displays using display index, there is a new function
 
                 SDL_Log("Display %" SDL_PRIu32 ": %s\n", instance_id, name ? name : "Unknown");
             }
+            SDL_free(displays);
         }
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
@@ -2041,13 +2033,14 @@ Rather than iterating over display modes using an index, there is a new function
 {
     SDL_DisplayID display = SDL_GetPrimaryDisplay();
     int num_modes = 0;
-    const SDL_DisplayMode * const *modes = SDL_GetFullscreenDisplayModes(display, &num_modes);
+    SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display, &num_modes);
     if (modes) {
         for (i = 0; i < num_modes; ++i) {
             SDL_DisplayMode *mode = modes[i];
             SDL_Log("Display %" SDL_PRIu32 " mode %d: %dx%d@%gx %gHz\n",
                     display, i, mode->w, mode->h, mode->pixel_density, mode->refresh_rate);
         }
+        SDL_free(modes);
     }
 }
 ```
@@ -2079,8 +2072,6 @@ The SDL_WINDOW_TOOLTIP and SDL_WINDOW_POPUP_MENU window flags are now supported 
 SDL_WindowFlags is used instead of Uint32 for API functions that refer to window flags, and has been extended to 64 bits.
 
 SDL_GetWindowOpacity() directly returns the opacity instead of using an out parameter.
-
-SDL_GetWindowICCProfile() returns a const pointer to temporary memory, which does not need to be freed. You can use SDL_ClaimTemporaryMemory() to convert it to a non-const pointer that should be freed when you're done with it.
 
 The following functions have been renamed:
 * SDL_GL_DeleteContext() => SDL_GL_DestroyContext()

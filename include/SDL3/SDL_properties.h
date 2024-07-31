@@ -384,7 +384,12 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetPointerProperty(SDL_PropertiesID props
  * \returns the value of the property, or `default_value` if it is not set or
  *          not a string property.
  *
- * \threadsafety It is safe to call this function from any thread.
+ * \threadsafety It is safe to call this function from any thread, although
+ *               the data returned is not protected and could potentially be
+ *               freed if you call SDL_SetStringProperty() or
+ *               SDL_ClearProperty() on these properties from another thread.
+ *               If you need to avoid this, use SDL_LockProperties() and
+ *               SDL_UnlockProperties().
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -392,7 +397,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetPointerProperty(SDL_PropertiesID props
  * \sa SDL_HasProperty
  * \sa SDL_SetStringProperty
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetStringProperty(SDL_PropertiesID props, const char *name, const char *default_value);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetStringProperty(SDL_PropertiesID props, const char *name, const char *default_value);
 
 /**
  * Get a number property from a group of properties.

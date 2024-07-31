@@ -840,7 +840,7 @@ static void SDLTest_PrintWindowFlag(char *text, size_t maxlen, SDL_WindowFlags f
         SDL_snprintfcat(text, maxlen, "TRANSPARENT");
         break;
     default:
-        SDL_snprintfcat(text, maxlen, "0x%8.8x", flag);
+        SDL_snprintfcat(text, maxlen, "0x%16.16" SDL_PRIx64, flag);
         break;
     }
 }
@@ -1130,7 +1130,6 @@ static SDL_HitTestResult SDLCALL SDLTest_ExampleHitTestCallback(SDL_Window *win,
 SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
 {
     int i, j, m, n, w, h;
-    const SDL_DisplayMode *fullscreen_mode;
     char text[1024];
 
     if (state->flags & SDL_INIT_VIDEO) {
@@ -1192,9 +1191,9 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
         }
 
         if (state->verbose & VERBOSE_MODES) {
-            const SDL_DisplayID *displays;
+            SDL_DisplayID *displays;
             SDL_Rect bounds, usablebounds;
-            const SDL_DisplayMode * const *modes;
+            SDL_DisplayMode **modes;
             const SDL_DisplayMode *mode;
             int bpp;
             Uint32 Rmask, Gmask, Bmask, Amask;
@@ -1258,6 +1257,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                         }
                     }
                 }
+                SDL_free(modes);
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
                 /* Print the D3D9 adapter index */
@@ -1269,6 +1269,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
                 SDL_Log("DXGI Adapter Index: %d  Output Index: %d", adapterIndex, outputIndex);
 #endif
             }
+            SDL_free(displays);
         }
 
         if (state->verbose & VERBOSE_RENDER) {
@@ -1285,10 +1286,11 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
 
         state->displayID = SDL_GetPrimaryDisplay();
         if (state->display_index > 0) {
-            const SDL_DisplayID *displays = SDL_GetDisplays(&n);
+            SDL_DisplayID *displays = SDL_GetDisplays(&n);
             if (state->display_index < n) {
                 state->displayID = displays[state->display_index];
             }
+            SDL_free(displays);
 
             if (SDL_WINDOWPOS_ISUNDEFINED(state->window_x)) {
                 state->window_x = SDL_WINDOWPOS_UNDEFINED_DISPLAY(state->displayID);
@@ -1304,10 +1306,7 @@ SDL_bool SDLTest_CommonInit(SDLTest_CommonState *state)
             if (state->window_flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
                 include_high_density_modes = SDL_TRUE;
             }
-            fullscreen_mode = SDL_GetClosestFullscreenDisplayMode(state->displayID, state->window_w, state->window_h, state->refresh_rate, include_high_density_modes);
-            if (fullscreen_mode) {
-                SDL_memcpy(&state->fullscreen_mode, fullscreen_mode, sizeof(state->fullscreen_mode));
-            }
+            SDL_GetClosestFullscreenDisplayMode(state->displayID, state->window_w, state->window_h, state->refresh_rate, include_high_density_modes, &state->fullscreen_mode);
         }
 
         state->windows =
@@ -1622,7 +1621,7 @@ static void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Rect rect;
 
         SDL_GetWindowSafeArea(SDL_GetWindowFromID(event->window.windowID), &rect);
-        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed safe area to: %d,%d %dx%d\n", 
+        SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed safe area to: %d,%d %dx%d\n",
                 event->window.windowID, rect.x, rect.y, rect.w, rect.h);
         break;
     }
@@ -2008,7 +2007,7 @@ static void SDLTest_PasteScreenShot(void)
 
     for (i = 0; i < SDL_arraysize(image_formats); ++i) {
         size_t size;
-        const void *data = SDL_GetClipboardData(image_formats[i], &size);
+        void *data = SDL_GetClipboardData(image_formats[i], &size);
         if (data) {
             char filename[16];
             SDL_IOStream *file;
@@ -2020,6 +2019,7 @@ static void SDLTest_PasteScreenShot(void)
                 SDL_WriteIO(file, data, size);
                 SDL_CloseIO(file);
             }
+            SDL_free(data);
             return;
         }
     }
@@ -2029,7 +2029,7 @@ static void SDLTest_PasteScreenShot(void)
 static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
 {
     int num_displays;
-    const SDL_DisplayID *displays;
+    SDL_DisplayID *displays;
     SDL_Window *window;
     SDL_WindowFlags flags;
     const SDL_DisplayMode *mode;
@@ -2060,8 +2060,9 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
                     if (state->window_flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
                         include_high_density_modes = SDL_TRUE;
                     }
-                    mode = SDL_GetClosestFullscreenDisplayMode(displays[index], state->window_w, state->window_h, state->refresh_rate, include_high_density_modes);
-                    SDL_SetWindowFullscreenMode(window, mode);
+                    if (SDL_GetClosestFullscreenDisplayMode(displays[index], state->window_w, state->window_h, state->refresh_rate, include_high_density_modes, &new_mode) == 0) {
+                        SDL_SetWindowFullscreenMode(window, &new_mode);
+                    }
                 }
             }
             if (!mode) {
@@ -2070,6 +2071,7 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
             SDL_SetWindowFullscreen(window, SDL_TRUE);
         }
     }
+    SDL_free(displays);
 }
 
 int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event)
@@ -2270,12 +2272,13 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
         case SDLK_V:
             if (withAlt) {
                 /* Alt-V paste awesome text from the primary selection! */
-                const char *text = SDL_GetPrimarySelectionText();
+                char *text = SDL_GetPrimarySelectionText();
                 if (*text) {
                     SDL_Log("Primary selection: %s\n", text);
                 } else {
                     SDL_Log("Primary selection is empty\n");
                 }
+                SDL_free(text);
 
             } else if (withControl) {
                 if (withShift) {
@@ -2283,12 +2286,13 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                     SDLTest_PasteScreenShot();
                 } else {
                     /* Ctrl-V paste awesome text! */
-                    const char *text = SDL_GetClipboardText();
+                    char *text = SDL_GetClipboardText();
                     if (*text) {
                         SDL_Log("Clipboard: %s\n", text);
                     } else {
                         SDL_Log("Clipboard is empty\n");
                     }
+                    SDL_free(text);
                 }
             }
             break;
@@ -2501,15 +2505,6 @@ void SDLTest_CommonQuit(SDLTest_CommonState *state)
             SDL_DestroyWindow(state->windows[i]);
         }
         SDL_free(state->windows);
-    }
-    if (state->flags & SDL_INIT_CAMERA) {
-        SDL_QuitSubSystem(SDL_INIT_CAMERA);
-    }
-    if (state->flags & SDL_INIT_VIDEO) {
-        SDL_QuitSubSystem(SDL_INIT_VIDEO);
-    }
-    if (state->flags & SDL_INIT_AUDIO) {
-        SDL_QuitSubSystem(SDL_INIT_AUDIO);
     }
     SDL_Quit();
     SDLTest_CommonDestroyState(state);

@@ -132,43 +132,8 @@ extern "C" {
  * together, as well as match applications with associated desktop settings
  * and icons.
  *
- * On Wayland this corresponds to the "app ID" window property and on X11 this
- * corresponds to the WM_CLASS property. Windows inherit the value of this
- * hint at creation time. Changing this hint after a window has been created
- * will not change the app ID or class of existing windows.
- *
- * For *nix platforms, this string should be formatted in reverse-DNS notation
- * and follow some basic rules to be valid:
- *
- * - The application ID must be composed of two or more elements separated by
- *   a period (.) character.
- * - Each element must contain one or more of the alphanumeric characters
- *   (A-Z, a-z, 0-9) plus underscore (_) and hyphen (-) and must not start
- *   with a digit. Note that hyphens, while technically allowed, should not be
- *   used if possible, as they are not supported by all components that use
- *   the ID, such as D-Bus. For maximum compatibility, replace hyphens with an
- *   underscore.
- * - The empty string is not a valid element (ie: your application ID may not
- *   start or end with a period and it is not valid to have two periods in a
- *   row).
- * - The entire ID must be less than 255 characters in length.
- *
- * Examples of valid app ID strings:
- *
- * - org.MyOrg.MyApp
- * - com.your_company.your_app
- *
- * Desktops such as GNOME and KDE require that the app ID string matches your
- * application's .desktop file name (e.g. if the app ID string is
- * 'org.MyOrg.MyApp', your application's .desktop file should be named
- * 'org.MyOrg.MyApp.desktop').
- *
- * If you plan to package your application in a container such as Flatpak, the
- * app ID should match the name of your Flatpak container as well.
- *
- * If not set, SDL will attempt to use the application executable name. If the
- * executable name cannot be retrieved, the generic string "SDL_App" will be
- * used.
+ * This will override SDL_PROP_APP_METADATA_IDENTIFIER_STRING, if set by the
+ * application.
  *
  * This hint should be set before SDL is initialized.
  *
@@ -177,7 +142,7 @@ extern "C" {
 #define SDL_HINT_APP_ID      "SDL_APP_ID"
 
 /**
- * Specify an application name.
+ * A variable setting the application name.
  *
  * This hint lets you specify the application name sent to the OS when
  * required. For example, this will often appear in volume control applets for
@@ -185,12 +150,8 @@ extern "C" {
  * screensaver. You should use a string that describes your program ("My Game
  * 2: The Revenge")
  *
- * Setting this to "" or leaving it unset will have SDL use a reasonable
- * default: probably the application's name or "SDL Application" if SDL
- * doesn't have any better information.
- *
- * Note that, for audio streams, this can be overridden with
- * SDL_HINT_AUDIO_DEVICE_APP_NAME.
+ * This will override SDL_PROP_APP_METADATA_NAME_STRING, if set by the
+ * application.
  *
  * This hint should be set before SDL is initialized.
  *
@@ -253,29 +214,6 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_AUDIO_CATEGORY   "SDL_AUDIO_CATEGORY"
-
-/**
- * Specify an application name for an audio device.
- *
- * Some audio backends (such as PulseAudio) allow you to describe your audio
- * stream. Among other things, this description might show up in a system
- * control panel that lets the user adjust the volume on specific audio
- * streams instead of using one giant master volume slider.
- *
- * This hints lets you transmit that information to the OS. The contents of
- * this hint are used while opening an audio device. You should use a string
- * that describes your program ("My Game 2: The Revenge")
- *
- * Setting this to "" or leaving it unset will have SDL use a reasonable
- * default: this will be the name set with SDL_HINT_APP_NAME, if that hint is
- * set. Otherwise, it'll probably the application's name or "SDL Application"
- * if SDL doesn't have any better information.
- *
- * This hint should be set before an audio device is opened.
- *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_AUDIO_DEVICE_APP_NAME "SDL_AUDIO_DEVICE_APP_NAME"
 
 /**
  * Specify an application icon name for an audio device.
@@ -3880,7 +3818,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 
 /**
  * Get the boolean value of a hint variable.

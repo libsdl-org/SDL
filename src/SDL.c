@@ -107,13 +107,76 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
 #endif
 }
 
+/* App metadata */
+
+int SDL_SetAppMetadata(const char *appname, const char *appversion, const char *appidentifier)
+{
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, appname);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, appversion);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, appidentifier);
+    return 0;
+}
+
+static SDL_bool SDL_ValidMetadataProperty(const char *name)
+{
+    if (!name || !*name) {
+        return SDL_FALSE;
+    }
+
+    if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_VERSION_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_IDENTIFIER_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_CREATOR_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_COPYRIGHT_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_URL_STRING) == 0 ||
+        SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+int SDL_SetAppMetadataProperty(const char *name, const char *value)
+{
+    if (!SDL_ValidMetadataProperty(name)) {
+        return SDL_InvalidParamError("name");
+    }
+
+    return SDL_SetStringProperty(SDL_GetGlobalProperties(), name, value);
+}
+
+const char *SDL_GetAppMetadataProperty(const char *name)
+{
+    if (!SDL_ValidMetadataProperty(name)) {
+        SDL_InvalidParamError("name");
+        return NULL;
+    }
+
+    const char *value = NULL;
+    if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
+        value = SDL_GetHint(SDL_HINT_APP_NAME);
+    } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_IDENTIFIER_STRING) == 0) {
+        value = SDL_GetHint(SDL_HINT_APP_ID);
+    }
+    if (!value || !*value) {
+        value = SDL_GetStringProperty(SDL_GetGlobalProperties(), name, NULL);
+    }
+    if (!value || !*value) {
+        if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
+            value = "SDL Application";
+        } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
+            value = "application";
+        }
+    }
+    return value;
+}
+
+
 /* The initialized subsystems */
 #ifdef SDL_MAIN_NEEDED
 static SDL_bool SDL_MainIsReady = SDL_FALSE;
 #else
 static SDL_bool SDL_MainIsReady = SDL_TRUE;
 #endif
-static SDL_bool SDL_main_thread_initialized = SDL_FALSE;
 static SDL_bool SDL_bInMainQuit = SDL_FALSE;
 static Uint8 SDL_SubsystemRefCount[32];
 
@@ -186,36 +249,24 @@ void SDL_SetMainReady(void)
 /* Initialize all the subsystems that require initialization before threads start */
 void SDL_InitMainThread(void)
 {
-    if (SDL_main_thread_initialized) {
-        return;
-    }
-
     SDL_InitTLSData();
     SDL_InitTicks();
     SDL_InitFilesystem();
     SDL_InitLog();
     SDL_InitProperties();
     SDL_GetGlobalProperties();
-
-    SDL_main_thread_initialized = SDL_TRUE;
 }
 
 static void SDL_QuitMainThread(void)
 {
-    if (!SDL_main_thread_initialized) {
-        return;
-    }
-
     SDL_QuitProperties();
     SDL_QuitLog();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
     SDL_QuitTLSData();
-
-    SDL_main_thread_initialized = SDL_FALSE;
 }
 
-int SDL_InitSubSystem(Uint32 flags)
+int SDL_InitSubSystem(SDL_InitFlags flags)
 {
     Uint32 flags_initialized = 0;
 
@@ -431,12 +482,12 @@ quit_and_error:
     return -1;
 }
 
-int SDL_Init(Uint32 flags)
+int SDL_Init(SDL_InitFlags flags)
 {
     return SDL_InitSubSystem(flags);
 }
 
-void SDL_QuitSubSystem(Uint32 flags)
+void SDL_QuitSubSystem(SDL_InitFlags flags)
 {
     /* Shut down requested initialized subsystems */
 
@@ -527,7 +578,7 @@ void SDL_QuitSubSystem(Uint32 flags)
     }
 }
 
-Uint32 SDL_WasInit(Uint32 flags)
+Uint32 SDL_WasInit(SDL_InitFlags flags)
 {
     int i;
     int num_subsystems = SDL_arraysize(SDL_SubsystemRefCount);

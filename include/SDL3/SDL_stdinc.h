@@ -665,6 +665,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 
 extern SDL_DECLSPEC const char * SDLCALL SDL_getenv(const char *name);
 extern SDL_DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int overwrite);
+extern SDL_DECLSPEC int SDLCALL SDL_unsetenv(const char *name);
 
 typedef int (SDLCALL *SDL_CompareCallback)(const void *a, const void *b);
 extern SDL_DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size, SDL_CompareCallback compare);
@@ -2963,8 +2964,9 @@ size_t wcslcat(wchar_t *dst, const wchar_t *src, size_t size);
 
 /* Starting LLVM 16, the analyser errors out if these functions do not have
    their prototype defined (clang-diagnostic-implicit-function-declaration) */
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
 
 #define SDL_malloc malloc
 #define SDL_calloc calloc

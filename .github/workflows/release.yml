@@ -561,11 +561,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: 'Setup Android NDK'
-        uses: nttld/setup-ndk@v1
-        with:
-          local-cache: true
-          ndk-version: r21e
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'

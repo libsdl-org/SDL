@@ -50,7 +50,6 @@
 #define HAVE_REALLOC    1
 #define HAVE_FREE   1
 #define HAVE_GETENV 1
-#define HAVE_SETENV 1
 #define HAVE_PUTENV 1
 #define HAVE_SETENV 1
 #define HAVE_UNSETENV   1

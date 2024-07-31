@@ -80,12 +80,13 @@ sub handle_example_dir {
     opendir(my $dh, "$examples_dir/$category/$example") or die("Couldn't opendir '$examples_dir/$category/$example': $!\n");
     my $spc = '';
     while (readdir($dh)) {
-        next if not /\.c\Z/;  # only care about .c files.
         my $path = "$examples_dir/$category/$example/$_";
         next if not -f $path;    # only care about files.
-        push @files, $path;
-        $files_str .= "$spc$path";
-        $spc = ' ';
+        push @files, $path if /\.[ch]\Z/;  # add .c and .h files to source code.
+        if (/\.c\Z/) {  # only care about .c files for compiling.
+            $files_str .= "$spc$path";
+            $spc = ' ';
+        }
     }
     closedir($dh);
 
@@ -103,6 +104,17 @@ sub handle_example_dir {
     my $jsdst = "$dst/$jsfname";
     my $wasmdst = "$dst/$wasmfname";
 
+    my $description = '';
+    if (open(my $readmetxth, '<', "$examples_dir/$category/$example/README.txt")) {
+        while (<$readmetxth>) {
+            chomp;
+            s/\A\s+//;
+            s/\s+\Z//;
+            $description .= "$_<br/>";
+        }
+        close($readmetxth);
+    }
+
     do_mkdir($dst);
     do_copy($jssrc, $jsdst);
     do_copy($wasmsrc, $wasmdst);
@@ -112,7 +124,7 @@ sub handle_example_dir {
     my $pid = open2(my $child_out, my $child_in, $highlight_cmd);
 
     my $htmlified_source_code = '';
-    foreach (@files) {
+    foreach (sort(@files)) {
         my $path = $_;
         open my $srccode, '<', $path or die("Couldn't open '$path': $!\n");
         my $fname = "$path";
@@ -121,6 +133,7 @@ sub handle_example_dir {
         while (<$srccode>) {
             print $child_in $_;
         }
+        print $child_in "\n\n\n";
         close($srccode);
     }
 
@@ -142,6 +155,7 @@ sub handle_example_dir {
         s/\@example_name\@/$example/g;
         s/\@javascript_file\@/$jsfname/g;
         s/\@htmlified_source_code\@/$htmlified_source_code/g;
+        s/\@description\@/$description/g;
         $html .= $_;
     }
     close($htmltemplate);

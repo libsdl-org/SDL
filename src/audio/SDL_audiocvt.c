@@ -636,14 +636,14 @@ int SDL_SetAudioStreamOutputChannelMap(SDL_AudioStream *stream, const int *chmap
     return SetAudioStreamChannelMap(stream, &stream->dst_spec, &stream->dst_chmap, chmap, channels, SDL_FALSE);
 }
 
-const int *SDL_GetAudioStreamInputChannelMap(SDL_AudioStream *stream, int *count)
+int *SDL_GetAudioStreamInputChannelMap(SDL_AudioStream *stream, int *count)
 {
-    const int *retval = NULL;
+    int *retval = NULL;
     int channels = 0;
     if (stream) {
         SDL_LockMutex(stream->lock);
         channels = stream->src_spec.channels;
-        retval = SDL_FreeLater(SDL_ChannelMapDup(stream->src_chmap, channels));
+        retval = SDL_ChannelMapDup(stream->src_chmap, channels);
         SDL_UnlockMutex(stream->lock);
     }
 
@@ -654,14 +654,14 @@ const int *SDL_GetAudioStreamInputChannelMap(SDL_AudioStream *stream, int *count
     return retval;
 }
 
-const int *SDL_GetAudioStreamOutputChannelMap(SDL_AudioStream *stream, int *count)
+int *SDL_GetAudioStreamOutputChannelMap(SDL_AudioStream *stream, int *count)
 {
-    const int *retval = NULL;
+    int *retval = NULL;
     int channels = 0;
     if (stream) {
         SDL_LockMutex(stream->lock);
         channels = stream->dst_spec.channels;
-        retval = SDL_FreeLater(SDL_ChannelMapDup(stream->dst_chmap, channels));
+        retval = SDL_ChannelMapDup(stream->dst_chmap, channels);
         SDL_UnlockMutex(stream->lock);
     }
 

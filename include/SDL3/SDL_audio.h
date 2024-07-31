@@ -411,7 +411,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
  *
  * \sa SDL_GetNumAudioDrivers
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAudioDriver(int index);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDriver(int index);
 /* @} */
 
 /**
@@ -428,7 +428,7 @@ extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAudioDriver(int index);
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetCurrentAudioDriver(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentAudioDriver(void);
 
 /**
  * Get a list of currently-connected audio playback devices.
@@ -447,7 +447,8 @@ extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetCurrentAudioDriver(void);
  * \param count a pointer filled in with the number of devices returned, may
  *              be NULL.
  * \returns a 0 terminated array of device instance IDs or NULL on error; call
- *          SDL_GetError() for more information.
+ *          SDL_GetError() for more information. This should be freed with
+ *          SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -456,7 +457,7 @@ extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetCurrentAudioDriver(void);
  * \sa SDL_OpenAudioDevice
  * \sa SDL_GetAudioRecordingDevices
  */
-extern SDL_DECLSPEC_TEMP const SDL_AudioDeviceID * SDLCALL SDL_GetAudioPlaybackDevices(int *count);
+extern SDL_DECLSPEC SDL_AudioDeviceID * SDLCALL SDL_GetAudioPlaybackDevices(int *count);
 
 /**
  * Get a list of currently-connected audio recording devices.
@@ -475,7 +476,8 @@ extern SDL_DECLSPEC_TEMP const SDL_AudioDeviceID * SDLCALL SDL_GetAudioPlaybackD
  * \param count a pointer filled in with the number of devices returned, may
  *              be NULL.
  * \returns a 0 terminated array of device instance IDs, or NULL on failure;
- *          call SDL_GetError() for more information.
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -484,7 +486,7 @@ extern SDL_DECLSPEC_TEMP const SDL_AudioDeviceID * SDLCALL SDL_GetAudioPlaybackD
  * \sa SDL_OpenAudioDevice
  * \sa SDL_GetAudioPlaybackDevices
  */
-extern SDL_DECLSPEC_TEMP const SDL_AudioDeviceID * SDLCALL SDL_GetAudioRecordingDevices(int *count);
+extern SDL_DECLSPEC SDL_AudioDeviceID * SDLCALL SDL_GetAudioRecordingDevices(int *count);
 
 /**
  * Get the human-readable name of a specific audio device.
@@ -501,7 +503,7 @@ extern SDL_DECLSPEC_TEMP const SDL_AudioDeviceID * SDLCALL SDL_GetAudioRecording
  * \sa SDL_GetAudioRecordingDevices
  * \sa SDL_GetDefaultAudioInfo
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
 
 /**
  * Get the current audio format of a specific audio device.
@@ -550,7 +552,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid
  * \param devid the instance ID of the device to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
  * \returns an array of the current channel mapping, with as many elements as
- *          the current output spec's channels, or NULL if default.
+ *          the current output spec's channels, or NULL if default. This
+ *          should be freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -558,7 +561,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid
  *
  * \sa SDL_SetAudioStreamInputChannelMap
  */
-extern SDL_DECLSPEC_TEMP const int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count);
+extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count);
 
 /**
  * Open a specific audio device.
@@ -1098,7 +1101,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamGain(SDL_AudioStream *stream, 
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
  * \returns an array of the current channel mapping, with as many elements as
- *          the current output spec's channels, or NULL if default.
+ *          the current output spec's channels, or NULL if default. This
+ *          should be freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running.
@@ -1107,7 +1111,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAudioStreamGain(SDL_AudioStream *stream, 
  *
  * \sa SDL_SetAudioStreamInputChannelMap
  */
-extern SDL_DECLSPEC_TEMP const int * SDLCALL SDL_GetAudioStreamInputChannelMap(SDL_AudioStream *stream, int *count);
+extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamInputChannelMap(SDL_AudioStream *stream, int *count);
 
 /**
  * Get the current output channel map of an audio stream.
@@ -1121,7 +1125,8 @@ extern SDL_DECLSPEC_TEMP const int * SDLCALL SDL_GetAudioStreamInputChannelMap(S
  * \param stream the SDL_AudioStream to query.
  * \param count On output, set to number of channels in the map. Can be NULL.
  * \returns an array of the current channel mapping, with as many elements as
- *          the current output spec's channels, or NULL if default.
+ *          the current output spec's channels, or NULL if default. This
+ *          should be freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running.
@@ -1130,7 +1135,7 @@ extern SDL_DECLSPEC_TEMP const int * SDLCALL SDL_GetAudioStreamInputChannelMap(S
  *
  * \sa SDL_SetAudioStreamInputChannelMap
  */
-extern SDL_DECLSPEC_TEMP const int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioStream *stream, int *count);
+extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioStream *stream, int *count);
 
 /**
  * Set the current input channel map of an audio stream.

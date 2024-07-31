@@ -526,10 +526,16 @@ SDL_BlitFunc SDL_CalculateBlit1(SDL_Surface *surface)
 
     switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
     case 0:
-        return one_blit[which];
+        if (which < SDL_arraysize(one_blit)) {
+            return one_blit[which];
+        }
+        break;
 
     case SDL_COPY_COLORKEY:
-        return one_blitkey[which];
+        if (which < SDL_arraysize(one_blitkey)) {
+            return one_blitkey[which];
+        }
+        break;
 
     case SDL_COPY_COLORKEY | SDL_COPY_BLEND:  /* this is not super-robust but handles a specific case we found sdl12-compat. */
         return (surface->internal->map.info.a == 255) ? one_blitkey[which] :

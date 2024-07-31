@@ -561,10 +561,12 @@ int main(int argc, char *argv[])
 #endif
 
 done:
-    for (i = 0; i < state->num_windows; ++i) {
-        SDLTest_TextWindowDestroy(windowstates[i].textwindow);
+    if (windowstates) {
+        for (i = 0; i < state->num_windows; ++i) {
+            SDLTest_TextWindowDestroy(windowstates[i].textwindow);
+        }
+        SDL_free(windowstates);
     }
-    SDL_free(windowstates);
     SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
     return 0;

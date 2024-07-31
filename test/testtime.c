@@ -221,6 +221,7 @@ int main(int argc, char *argv[])
     }
 
 quit:
+    SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
     return 0;
 }

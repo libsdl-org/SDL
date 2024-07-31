@@ -433,7 +433,7 @@ SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)
 const char *SDL_GetThreadName(SDL_Thread *thread)
 {
     if (thread) {
-        return thread->name;
+        return SDL_GetPersistentString(thread->name);
     } else {
         return NULL;
     }
@@ -451,7 +451,7 @@ void SDL_WaitThread(SDL_Thread *thread, int *status)
         if (status) {
             *status = thread->status;
         }
-        SDL_FreeLater(thread->name);
+        SDL_free(thread->name);
         SDL_free(thread);
     }
 }

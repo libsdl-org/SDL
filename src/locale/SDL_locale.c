@@ -22,7 +22,7 @@
 #include "SDL_internal.h"
 #include "SDL_syslocale.h"
 
-static const SDL_Locale * const *build_locales_from_csv_string(char *csv, int *count)
+static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
 {
     int i, num_locales;
     size_t slen;
@@ -95,10 +95,10 @@ static const SDL_Locale * const *build_locales_from_csv_string(char *csv, int *c
         *count = num_locales;
     }
 
-    return SDL_FreeLater(retval);
+    return retval;
 }
 
-const SDL_Locale * const *SDL_GetPreferredLocales(int *count)
+SDL_Locale **SDL_GetPreferredLocales(int *count)
 {
     char locbuf[128]; /* enough for 21 "xx_YY," language strings. */
     const char *hint = SDL_GetHint(SDL_HINT_PREFERRED_LOCALES);

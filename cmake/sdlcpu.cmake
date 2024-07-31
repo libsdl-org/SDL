@@ -79,6 +79,8 @@ ${src_main}
 
   include(CMakePushCheckState)
 
+  set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+
   cmake_push_check_state(RESET)
   try_compile(SDL_CPU_CHECK_ALL
     "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CMakeTmp/SDL_detect_arch"

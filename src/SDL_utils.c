@@ -320,3 +320,48 @@ int SDL_URIToLocal(const char *src, char *dst)
     }
     return -1;
 }
+
+// This is a set of per-thread persistent strings that we can return from the SDL API.
+// This is used for short strings that might persist past the lifetime of the object
+// they are related to.
+
+static SDL_TLSID SDL_string_storage;
+
+static void SDL_FreePersistentStrings( void *value )
+{
+    SDL_HashTable *strings = (SDL_HashTable *)value;
+    SDL_DestroyHashTable(strings);
+}
+
+const char *SDL_GetPersistentString(const char *string)
+{
+    if (!string) {
+        return NULL;
+    }
+    if (!*string) {
+        return "";
+    }
+
+    SDL_HashTable *strings = (SDL_HashTable *)SDL_GetTLS(&SDL_string_storage);
+    if (!strings) {
+        strings = SDL_CreateHashTable(NULL, 32, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeValue, SDL_FALSE);
+        if (!strings) {
+            return NULL;
+        }
+
+        SDL_SetTLS(&SDL_string_storage, strings, SDL_FreePersistentStrings);
+    }
+
+    const char *retval;
+    if (!SDL_FindInHashTable(strings, string, (const void **)&retval)) {
+        char *new_string = SDL_strdup(string);
+        if (!new_string) {
+            return NULL;
+        }
+
+        // If the hash table insert fails, at least we can return the string we allocated
+        SDL_InsertIntoHashTable(strings, new_string, new_string);
+        retval = new_string;
+    }
+    return retval;
+}

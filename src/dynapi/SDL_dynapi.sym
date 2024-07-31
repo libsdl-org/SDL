@@ -11,7 +11,6 @@ SDL3_0.0.0 {
     SDL_AddTimer;
     SDL_AddTimerNS;
     SDL_AddVulkanRenderSemaphores;
-    SDL_AllocateTemporaryMemory;
     SDL_AtomicAdd;
     SDL_AtomicCompareAndSwap;
     SDL_AtomicCompareAndSwapPointer;
@@ -32,7 +31,6 @@ SDL3_0.0.0 {
     SDL_BlitSurfaceUncheckedScaled;
     SDL_BroadcastCondition;
     SDL_CaptureMouse;
-    SDL_ClaimTemporaryMemory;
     SDL_CleanupTLS;
     SDL_ClearAudioStream;
     SDL_ClearClipboardData;
@@ -130,7 +128,6 @@ SDL3_0.0.0 {
     SDL_FlushEvent;
     SDL_FlushEvents;
     SDL_FlushRenderer;
-    SDL_FreeTemporaryMemory;
     SDL_GDKSuspendComplete;
     SDL_GL_CreateContext;
     SDL_GL_DestroyContext;
@@ -161,6 +158,7 @@ SDL3_0.0.0 {
     SDL_GetAndroidInternalStoragePath;
     SDL_GetAndroidJNIEnv;
     SDL_GetAndroidSDKVersion;
+    SDL_GetAppMetadataProperty;
     SDL_GetAssertionHandler;
     SDL_GetAssertionReport;
     SDL_GetAudioDeviceChannelMap;
@@ -697,6 +695,8 @@ SDL3_0.0.0 {
     SDL_SendGamepadEffect;
     SDL_SendJoystickEffect;
     SDL_SendJoystickVirtualSensorData;
+    SDL_SetAppMetadata;
+    SDL_SetAppMetadataProperty;
     SDL_SetAssertionHandler;
     SDL_SetAudioDeviceGain;
     SDL_SetAudioPostmixCallback;
@@ -1041,6 +1041,7 @@ SDL3_0.0.0 {
     SDL_uitoa;
     SDL_ulltoa;
     SDL_ultoa;
+    SDL_unsetenv;
     SDL_utf8strlcpy;
     SDL_utf8strlen;
     SDL_utf8strnlen;

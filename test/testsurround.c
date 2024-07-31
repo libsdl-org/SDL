@@ -146,7 +146,7 @@ static void SDLCALL fill_buffer(void *userdata, SDL_AudioStream *stream, int len
 
 int main(int argc, char *argv[])
 {
-    const SDL_AudioDeviceID *devices = NULL;
+    SDL_AudioDeviceID *devices;
     SDLTest_CommonState *state;
     int devcount = 0;
     int i;
@@ -181,7 +181,6 @@ int main(int argc, char *argv[])
     devices = SDL_GetAudioPlaybackDevices(&devcount);
     if (!devices) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioPlaybackDevices() failed: %s\n", SDL_GetError());
-        devcount = 0;
     }
 
     SDL_Log("Available audio devices:");
@@ -233,6 +232,7 @@ int main(int argc, char *argv[])
 
         SDL_DestroyAudioStream(stream);
     }
+    SDL_free(devices);
 
     SDL_Quit();
     return 0;

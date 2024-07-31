@@ -421,8 +421,8 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
 static void D3D11_DestroyRenderer(SDL_Renderer *renderer)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
-    D3D11_ReleaseAll(renderer);
     if (data) {
+        D3D11_ReleaseAll(renderer);
         SDL_free(data);
     }
 }
@@ -744,7 +744,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     }
 
     /* Create samplers to use when drawing textures: */
-    static struct 
+    static struct
     {
         D3D11_FILTER filter;
         D3D11_TEXTURE_ADDRESS_MODE address;
@@ -2880,11 +2880,9 @@ static int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
 
     /* Initialize Direct3D resources */
     if (FAILED(D3D11_CreateDeviceResources(renderer))) {
-        D3D11_DestroyRenderer(renderer);
         return -1;
     }
     if (FAILED(D3D11_CreateWindowSizeDependentResources(renderer))) {
-        D3D11_DestroyRenderer(renderer);
         return -1;
     }
 

@@ -23,7 +23,7 @@ static SDLTest_CommonState *state = NULL;
 
 int SDL_AppInit(void **appstate, int argc, char **argv)
 {
-    const SDL_AudioDeviceID *devices;
+    SDL_AudioDeviceID *devices;
     SDL_AudioSpec outspec;
     SDL_AudioSpec inspec;
     SDL_AudioDeviceID device;
@@ -103,6 +103,7 @@ int SDL_AppInit(void **appstate, int argc, char **argv)
     device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
     if (!device) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for playback: %s!\n", SDL_GetError());
+        SDL_free(devices);
         return SDL_APP_FAILURE;
     }
     SDL_PauseAudioDevice(device);
@@ -110,9 +111,11 @@ int SDL_AppInit(void **appstate, int argc, char **argv)
     stream_out = SDL_CreateAudioStream(&outspec, &outspec);
     if (!stream_out) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for playback: %s!\n", SDL_GetError());
+        SDL_free(devices);
         return SDL_APP_FAILURE;
     } else if (SDL_BindAudioStream(device, stream_out) == -1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't bind an audio stream for playback: %s!\n", SDL_GetError());
+        SDL_free(devices);
         return SDL_APP_FAILURE;
     }
 
@@ -124,8 +127,10 @@ int SDL_AppInit(void **appstate, int argc, char **argv)
     device = SDL_OpenAudioDevice(want_device, NULL);
     if (!device) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for recording: %s!\n", SDL_GetError());
+        SDL_free(devices);
         return SDL_APP_FAILURE;
     }
+    SDL_free(devices);
     SDL_PauseAudioDevice(device);
     SDL_GetAudioDeviceFormat(device, &inspec, NULL);
     stream_in = SDL_CreateAudioStream(&inspec, &inspec);
@@ -205,8 +210,8 @@ void SDL_AppQuit(void *appstate)
     SDL_DestroyAudioStream(stream_out);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 }
 
 

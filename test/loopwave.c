@@ -134,6 +134,7 @@ void SDL_AppQuit(void *appstate)
 {
     SDL_DestroyAudioStream(stream);
     SDL_free(wave.sound);
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
 }
 

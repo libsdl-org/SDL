@@ -53,7 +53,7 @@ static const SDL_DisplayMode *highlighted_mode = NULL;
 static void
 draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
 {
-    const SDL_DisplayMode * const *modes;
+    SDL_DisplayMode **modes;
     char text[1024];
     const int lineHeight = 10;
     int i, j;
@@ -62,7 +62,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
     float x, y;
     float table_top;
     SDL_FPoint mouse_pos = { -1.0f, -1.0f };
-    const SDL_DisplayID *displays;
+    SDL_DisplayID *displays;
 
     /* Get mouse position */
     if (SDL_GetMouseFocus() == window) {
@@ -99,7 +99,6 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
     }
 
     displays = SDL_GetDisplays(NULL);
-
     if (displays) {
         for (i = 0; displays[i]; ++i) {
             SDL_DisplayID display = displays[i];
@@ -143,7 +142,9 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
                     column_chars = 0;
                 }
             }
+            SDL_free(modes);
         }
+        SDL_free(displays);
     }
 }
 

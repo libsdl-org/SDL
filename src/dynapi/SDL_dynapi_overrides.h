@@ -36,7 +36,6 @@
 #define SDL_AddTimer SDL_AddTimer_REAL
 #define SDL_AddTimerNS SDL_AddTimerNS_REAL
 #define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
-#define SDL_AllocateTemporaryMemory SDL_AllocateTemporaryMemory_REAL
 #define SDL_AtomicAdd SDL_AtomicAdd_REAL
 #define SDL_AtomicCompareAndSwap SDL_AtomicCompareAndSwap_REAL
 #define SDL_AtomicCompareAndSwapPointer SDL_AtomicCompareAndSwapPointer_REAL
@@ -57,7 +56,6 @@
 #define SDL_BlitSurfaceUncheckedScaled SDL_BlitSurfaceUncheckedScaled_REAL
 #define SDL_BroadcastCondition SDL_BroadcastCondition_REAL
 #define SDL_CaptureMouse SDL_CaptureMouse_REAL
-#define SDL_ClaimTemporaryMemory SDL_ClaimTemporaryMemory_REAL
 #define SDL_CleanupTLS SDL_CleanupTLS_REAL
 #define SDL_ClearAudioStream SDL_ClearAudioStream_REAL
 #define SDL_ClearClipboardData SDL_ClearClipboardData_REAL
@@ -155,7 +153,6 @@
 #define SDL_FlushEvent SDL_FlushEvent_REAL
 #define SDL_FlushEvents SDL_FlushEvents_REAL
 #define SDL_FlushRenderer SDL_FlushRenderer_REAL
-#define SDL_FreeTemporaryMemory SDL_FreeTemporaryMemory_REAL
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_GL_CreateContext SDL_GL_CreateContext_REAL
 #define SDL_GL_DestroyContext SDL_GL_DestroyContext_REAL
@@ -186,6 +183,7 @@
 #define SDL_GetAndroidInternalStoragePath SDL_GetAndroidInternalStoragePath_REAL
 #define SDL_GetAndroidJNIEnv SDL_GetAndroidJNIEnv_REAL
 #define SDL_GetAndroidSDKVersion SDL_GetAndroidSDKVersion_REAL
+#define SDL_GetAppMetadataProperty SDL_GetAppMetadataProperty_REAL
 #define SDL_GetAssertionHandler SDL_GetAssertionHandler_REAL
 #define SDL_GetAssertionReport SDL_GetAssertionReport_REAL
 #define SDL_GetAudioDeviceChannelMap SDL_GetAudioDeviceChannelMap_REAL
@@ -722,6 +720,8 @@
 #define SDL_SendGamepadEffect SDL_SendGamepadEffect_REAL
 #define SDL_SendJoystickEffect SDL_SendJoystickEffect_REAL
 #define SDL_SendJoystickVirtualSensorData SDL_SendJoystickVirtualSensorData_REAL
+#define SDL_SetAppMetadata SDL_SetAppMetadata_REAL
+#define SDL_SetAppMetadataProperty SDL_SetAppMetadataProperty_REAL
 #define SDL_SetAssertionHandler SDL_SetAssertionHandler_REAL
 #define SDL_SetAudioDeviceGain SDL_SetAudioDeviceGain_REAL
 #define SDL_SetAudioPostmixCallback SDL_SetAudioPostmixCallback_REAL
@@ -1066,6 +1066,7 @@
 #define SDL_uitoa SDL_uitoa_REAL
 #define SDL_ulltoa SDL_ulltoa_REAL
 #define SDL_ultoa SDL_ultoa_REAL
+#define SDL_unsetenv SDL_unsetenv_REAL
 #define SDL_utf8strlcpy SDL_utf8strlcpy_REAL
 #define SDL_utf8strlen SDL_utf8strlen_REAL
 #define SDL_utf8strnlen SDL_utf8strnlen_REAL

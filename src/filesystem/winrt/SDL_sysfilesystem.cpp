@@ -115,7 +115,7 @@ extern "C" const char *SDL_GetWinRTFSPath(SDL_WinRT_Path pathType)
     char *utf8Path = WIN_StringToUTF8W(ucs2Path);
     utf8Paths[pathType] = utf8Path;
     SDL_free(utf8Path);
-    return SDL_CreateTemporaryString(utf8Paths[pathType].c_str());
+    return SDL_GetPersistentString(utf8Paths[pathType].c_str());
 }
 
 extern "C" char *SDL_SYS_GetBasePath(void)

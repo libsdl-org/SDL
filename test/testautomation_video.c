@@ -13,7 +13,7 @@
 static SDL_Window *createVideoSuiteTestWindow(const char *title)
 {
     SDL_Window *window;
-    SDL_Window * const *windows;
+    SDL_Window **windows;
     SDL_Event event;
     int w, h;
     int count;
@@ -34,6 +34,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     windows = SDL_GetWindows(&count);
     SDLTest_AssertCheck(windows != NULL, "Validate that returned window list is not NULL");
     SDLTest_AssertCheck(windows[0] == window, "Validate that the window is first in the window list");
+    SDL_free(windows);
 
     /* Wayland and XWayland windows require that a frame be presented before they are fully mapped and visible onscreen.
      * This is required for the mouse/keyboard grab tests to pass.
@@ -305,8 +306,8 @@ static int video_getWindowFlags(void *arg)
  */
 static int video_getFullscreenDisplayModes(void *arg)
 {
-    const SDL_DisplayID *displays;
-    const SDL_DisplayMode * const *modes;
+    SDL_DisplayID *displays;
+    SDL_DisplayMode **modes;
     int count;
     int i;
 
@@ -321,7 +322,9 @@ static int video_getFullscreenDisplayModes(void *arg)
             SDLTest_AssertPass("Call to SDL_GetFullscreenDisplayModes(%" SDL_PRIu32 ")", displays[i]);
             SDLTest_AssertCheck(modes != NULL, "Validate returned value from function; expected != NULL; got: %p", modes);
             SDLTest_AssertCheck(count >= 0, "Validate number of modes; expected: >= 0; got: %d", count);
+            SDL_free(modes);
         }
+        SDL_free(displays);
     }
 
     return TEST_COMPLETED;
@@ -332,11 +335,11 @@ static int video_getFullscreenDisplayModes(void *arg)
  */
 static int video_getClosestDisplayModeCurrentResolution(void *arg)
 {
-    const SDL_DisplayID *displays;
-    const SDL_DisplayMode * const *modes;
+    SDL_DisplayID *displays;
+    SDL_DisplayMode **modes;
     SDL_DisplayMode current;
-    const SDL_DisplayMode *closest;
-    int i, num_modes;
+    SDL_DisplayMode closest;
+    int i, result, num_modes;
 
     /* Get number of displays */
     displays = SDL_GetDisplays(NULL);
@@ -355,21 +358,23 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
                 SDL_memcpy(&current, modes[0], sizeof(current));
 
                 /* Make call */
-                closest = SDL_GetClosestFullscreenDisplayMode(displays[i], current.w, current.h, current.refresh_rate, SDL_FALSE);
+                result = SDL_GetClosestFullscreenDisplayMode(displays[i], current.w, current.h, current.refresh_rate, SDL_FALSE, &closest);
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=current)");
-                SDLTest_Assert(closest != NULL, "Verify returned value is not NULL");
+                SDLTest_AssertCheck(result == 0, "Verify return value; expected: 0, got: %d", result);
 
                 /* Check that one gets the current resolution back again */
-                if (closest) {
-                    SDLTest_AssertCheck(closest->w == current.w,
+                if (result == 0) {
+                    SDLTest_AssertCheck(closest.w == current.w,
                                         "Verify returned width matches current width; expected: %d, got: %d",
-                                        current.w, closest->w);
-                    SDLTest_AssertCheck(closest->h == current.h,
+                                        current.w, closest.w);
+                    SDLTest_AssertCheck(closest.h == current.h,
                                         "Verify returned height matches current height; expected: %d, got: %d",
-                                        current.h, closest->h);
+                                        current.h, closest.h);
                 }
             }
+            SDL_free(modes);
         }
+        SDL_free(displays);
     }
 
     return TEST_COMPLETED;
@@ -380,8 +385,9 @@ static int video_getClosestDisplayModeCurrentResolution(void *arg)
  */
 static int video_getClosestDisplayModeRandomResolution(void *arg)
 {
-    const SDL_DisplayID *displays;
+    SDL_DisplayID *displays;
     SDL_DisplayMode target;
+    SDL_DisplayMode closest;
     int i;
     int variation;
 
@@ -403,10 +409,11 @@ static int video_getClosestDisplayModeRandomResolution(void *arg)
                 target.refresh_rate = (variation & 8) ? (float)SDLTest_RandomIntegerInRange(25, 120) : 0.0f;
 
                 /* Make call; may or may not find anything, so don't validate any further */
-                SDL_GetClosestFullscreenDisplayMode(displays[i], target.w, target.h, target.refresh_rate, SDL_FALSE);
+                SDL_GetClosestFullscreenDisplayMode(displays[i], target.w, target.h, target.refresh_rate, SDL_FALSE, &closest);
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=random/variation%d)", variation);
             }
         }
+        SDL_free(displays);
     }
 
     return TEST_COMPLETED;
@@ -1668,7 +1675,7 @@ cleanup:
  */
 static int video_setWindowCenteredOnDisplay(void *arg)
 {
-    const SDL_DisplayID *displays;
+    SDL_DisplayID *displays;
     SDL_Window *window;
     const char *title = "video_setWindowCenteredOnDisplay Test Window";
     int x, y, w, h;
@@ -1864,6 +1871,7 @@ static int video_setWindowCenteredOnDisplay(void *arg)
                 destroyVideoSuiteTestWindow(window);
             }
         }
+        SDL_free(displays);
     }
 
     return TEST_COMPLETED;

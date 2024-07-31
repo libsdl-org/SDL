@@ -356,7 +356,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
  *
  * \sa SDL_GetNumVideoDrivers
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetVideoDriver(int index);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetVideoDriver(int index);
 
 /**
  * Get the name of the currently initialized video driver.
@@ -373,7 +373,7 @@ extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetVideoDriver(int index);
  * \sa SDL_GetNumVideoDrivers
  * \sa SDL_GetVideoDriver
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetCurrentVideoDriver(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentVideoDriver(void);
 
 /**
  * Get the current system theme.
@@ -390,11 +390,12 @@ extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
  * \param count a pointer filled in with the number of displays returned, may
  *              be NULL.
  * \returns a 0 terminated array of display instance IDs or NULL on failure;
- *          call SDL_GetError() for more information.
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const SDL_DisplayID * SDLCALL SDL_GetDisplays(int *count);
+extern SDL_DECLSPEC SDL_DisplayID * SDLCALL SDL_GetDisplays(int *count);
 
 /**
  * Return the primary display.
@@ -448,7 +449,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_Displa
  *
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetDisplayName(SDL_DisplayID displayID);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetDisplayName(SDL_DisplayID displayID);
 
 /**
  * Get the desktop area represented by a display.
@@ -551,13 +552,15 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetDisplayContentScale(SDL_DisplayID displ
  * \param count a pointer filled in with the number of display modes returned,
  *              may be NULL.
  * \returns a NULL terminated array of display mode pointers or NULL on
- *          failure; call SDL_GetError() for more information.
+ *          failure; call SDL_GetError() for more information. This is a
+ *          single allocation that should be freed with SDL_free() when it is
+ *          no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC_TEMP const SDL_DisplayMode * const * SDLCALL SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *count);
+extern SDL_DECLSPEC SDL_DisplayMode ** SDLCALL SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *count);
 
 /**
  * Get the closest match to the requested display mode.
@@ -576,16 +579,17 @@ extern SDL_DECLSPEC_TEMP const SDL_DisplayMode * const * SDLCALL SDL_GetFullscre
  *                     for the desktop refresh rate.
  * \param include_high_density_modes boolean to include high density modes in
  *                                   the search.
- * \returns a pointer to the closest display mode equal to or larger than the
- *          desired mode, or NULL on failure; call SDL_GetError() for more
- *          information.
+ * \param mode a pointer filled in with the closest display mode equal to or
+ *             larger than the desired mode.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetDisplays
  * \sa SDL_GetFullscreenDisplayModes
  */
-extern SDL_DECLSPEC_TEMP const SDL_DisplayMode * SDLCALL SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, SDL_bool include_high_density_modes);
+extern SDL_DECLSPEC int SDLCALL SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, SDL_bool include_high_density_modes, SDL_DisplayMode *mode);
 
 /**
  * Get information about the desktop's display mode.
@@ -604,7 +608,7 @@ extern SDL_DECLSPEC_TEMP const SDL_DisplayMode * SDLCALL SDL_GetClosestFullscree
  * \sa SDL_GetCurrentDisplayMode
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC_TEMP const SDL_DisplayMode * SDLCALL SDL_GetDesktopDisplayMode(SDL_DisplayID displayID);
+extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetDesktopDisplayMode(SDL_DisplayID displayID);
 
 /**
  * Get information about the current display mode.
@@ -623,7 +627,7 @@ extern SDL_DECLSPEC_TEMP const SDL_DisplayMode * SDLCALL SDL_GetDesktopDisplayMo
  * \sa SDL_GetDesktopDisplayMode
  * \sa SDL_GetDisplays
  */
-extern SDL_DECLSPEC_TEMP const SDL_DisplayMode * SDLCALL SDL_GetCurrentDisplayMode(SDL_DisplayID displayID);
+extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetCurrentDisplayMode(SDL_DisplayID displayID);
 
 /**
  * Get the display containing a point.
@@ -753,7 +757,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowFullscreenMode(SDL_Window *window, 
  * \sa SDL_SetWindowFullscreenMode
  * \sa SDL_SetWindowFullscreen
  */
-extern SDL_DECLSPEC_TEMP const SDL_DisplayMode * SDLCALL SDL_GetWindowFullscreenMode(SDL_Window *window);
+extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetWindowFullscreenMode(SDL_Window *window);
 
 /**
  * Get the raw ICC profile data for the screen the window is currently on.
@@ -761,11 +765,12 @@ extern SDL_DECLSPEC_TEMP const SDL_DisplayMode * SDLCALL SDL_GetWindowFullscreen
  * \param window the window to query.
  * \param size the size of the ICC profile.
  * \returns the raw ICC profile data on success or NULL on failure; call
- *          SDL_GetError() for more information.
+ *          SDL_GetError() for more information. This should be freed with
+ *          SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP const void * SDLCALL SDL_GetWindowICCProfile(SDL_Window *window, size_t *size);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetWindowICCProfile(SDL_Window *window, size_t *size);
 
 /**
  * Get the pixel format associated with the window.
@@ -785,11 +790,13 @@ extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetWindowPixelFormat(SDL_Window 
  * \param count a pointer filled in with the number of windows returned, may
  *              be NULL.
  * \returns a NULL terminated array of SDL_Window pointers or NULL on failure;
- *          call SDL_GetError() for more information.
+ *          call SDL_GetError() for more information. This is a single
+ *          allocation that should be freed with SDL_free() when it is no
+ *          longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC_TEMP SDL_Window * const * SDLCALL SDL_GetWindows(int *count);
+extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
 
 /**
  * Create a window with the specified dimensions and flags.
@@ -1322,7 +1329,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowTitle(SDL_Window *window, const cha
  *
  * \sa SDL_SetWindowTitle
  */
-extern SDL_DECLSPEC_TEMP const char * SDLCALL SDL_GetWindowTitle(SDL_Window *window);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetWindowTitle(SDL_Window *window);
 
 /**
  * Set the icon for a window.

@@ -361,7 +361,7 @@ SDL_bool SDL_HasMouse(void)
     return (SDL_mouse_count > 0);
 }
 
-const SDL_MouseID *SDL_GetMice(int *count)
+SDL_MouseID *SDL_GetMice(int *count)
 {
     int i;
     SDL_MouseID *mice;
@@ -382,7 +382,7 @@ const SDL_MouseID *SDL_GetMice(int *count)
         }
     }
 
-    return SDL_FreeLater(mice);
+    return mice;
 }
 
 const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
@@ -391,7 +391,7 @@ const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
     if (mouse_index < 0) {
         return NULL;
     }
-    return SDL_CreateTemporaryString(SDL_mice[mouse_index].name);
+    return SDL_GetPersistentString(SDL_mice[mouse_index].name);
 }
 
 void SDL_SetDefaultCursor(SDL_Cursor *cursor)

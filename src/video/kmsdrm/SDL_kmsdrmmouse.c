@@ -315,13 +315,14 @@ static int KMSDRM_ShowCursor(SDL_Cursor *cursor)
            This happens on video quit, where we get here after
            the mouse focus has been unset, yet SDL wants to
            restore the system default cursor (makes no sense here). */
-        const SDL_DisplayID *displays = SDL_GetDisplays(NULL);
+        SDL_DisplayID *displays = SDL_GetDisplays(NULL);
         if (displays) {
             /* Iterate on the displays, hiding the cursor. */
             for (i = 0; i < displays[i]; i++) {
                 display = SDL_GetVideoDisplay(displays[i]);
                 ret = KMSDRM_RemoveCursorFromBO(display);
             }
+            SDL_free(displays);
         }
     } else {
         display = SDL_GetVideoDisplayForWindow(window);

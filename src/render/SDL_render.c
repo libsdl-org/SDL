@@ -811,7 +811,7 @@ const char *SDL_GetRenderDriver(int index)
                             SDL_GetNumRenderDrivers() - 1);
         return NULL;
     }
-    return SDL_CreateTemporaryString(render_drivers[index]->name);
+    return render_drivers[index]->name;
 #else
     SDL_SetError("SDL not built with rendering support");
     return NULL;
@@ -1029,6 +1029,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
                 if (rc == 0) {
                     break;  // Yay, we got one!
                 }
+                SDL_DestroyRendererWithoutFreeing(renderer);
                 SDL_zerop(renderer);  // make sure we don't leave function pointers from a previous CreateRenderer() in this struct.
             }
         }
@@ -1144,10 +1145,7 @@ error:
 #endif
 
     if (renderer) {
-        SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);
-
-        SDL_free(renderer->texture_formats);
-        SDL_free(renderer);
+        SDL_DestroyRenderer(renderer);
     }
     return NULL;
 
@@ -1204,7 +1202,7 @@ const char *SDL_GetRendererName(SDL_Renderer *renderer)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
-    return renderer->name;
+    return SDL_GetPersistentString(renderer->name);
 }
 
 SDL_PropertiesID SDL_GetRendererProperties(SDL_Renderer *renderer)
@@ -5082,9 +5080,14 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     renderer->destroyed = SDL_TRUE;
 
-    SDL_DestroyProperties(renderer->props);
-
     SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
+
+    if (renderer->window) {
+        SDL_PropertiesID props = SDL_GetWindowProperties(renderer->window);
+        if (SDL_GetPointerProperty(props, SDL_PROP_WINDOW_RENDERER_POINTER, NULL) == renderer) {
+            SDL_ClearProperty(props, SDL_PROP_WINDOW_RENDERER_POINTER);
+        }
+    }
 
     SDL_DiscardAllCommands(renderer);
 
@@ -5095,18 +5098,27 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
         SDL_assert(tex != renderer->textures); /* satisfy static analysis. */
     }
 
-    SDL_free(renderer->vertex_data);
-
-    if (renderer->window) {
-        SDL_ClearProperty(SDL_GetWindowProperties(renderer->window), SDL_PROP_WINDOW_RENDERER_POINTER);
+    /* Clean up renderer-specific resources */
+    if (renderer->DestroyRenderer) {
+        renderer->DestroyRenderer(renderer);
     }
 
-    /* Free the target mutex */
-    SDL_DestroyMutex(renderer->target_mutex);
-    renderer->target_mutex = NULL;
-
-    /* Clean up renderer-specific resources */
-    renderer->DestroyRenderer(renderer);
+    if (renderer->target_mutex) {
+        SDL_DestroyMutex(renderer->target_mutex);
+        renderer->target_mutex = NULL;
+    }
+    if (renderer->vertex_data) {
+        SDL_free(renderer->vertex_data);
+        renderer->vertex_data = NULL;
+    }
+    if (renderer->texture_formats) {
+        SDL_free(renderer->texture_formats);
+        renderer->texture_formats = NULL;
+    }
+    if (renderer->props) {
+        SDL_DestroyProperties(renderer->props);
+        renderer->props = 0;
+    }
 }
 
 void SDL_DestroyRenderer(SDL_Renderer *renderer)
@@ -5137,7 +5149,6 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
 
     SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);  // It's no longer magical...
 
-    SDL_free(renderer->texture_formats);
     SDL_free(renderer);
 }
 

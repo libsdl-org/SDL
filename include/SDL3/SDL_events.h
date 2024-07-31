@@ -80,27 +80,27 @@ typedef enum SDL_EventType
     SDL_EVENT_QUIT           = 0x100, /**< User-requested quit */
 
     /* These application events have special meaning on iOS and Android, see README-ios.md and README-android.md for details */
-    SDL_EVENT_TERMINATING,      /**< The application is being terminated by the OS
+    SDL_EVENT_TERMINATING,      /**< The application is being terminated by the OS. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationWillTerminate()
                                      Called on Android in onDestroy()
                                 */
-    SDL_EVENT_LOW_MEMORY,       /**< The application is low on memory, free memory if possible.
+    SDL_EVENT_LOW_MEMORY,       /**< The application is low on memory, free memory if possible. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationDidReceiveMemoryWarning()
                                      Called on Android in onTrimMemory()
                                 */
-    SDL_EVENT_WILL_ENTER_BACKGROUND, /**< The application is about to enter the background
+    SDL_EVENT_WILL_ENTER_BACKGROUND, /**< The application is about to enter the background. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationWillResignActive()
                                      Called on Android in onPause()
                                 */
-    SDL_EVENT_DID_ENTER_BACKGROUND, /**< The application did enter the background and may not get CPU for some time
+    SDL_EVENT_DID_ENTER_BACKGROUND, /**< The application did enter the background and may not get CPU for some time. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationDidEnterBackground()
                                      Called on Android in onPause()
                                 */
-    SDL_EVENT_WILL_ENTER_FOREGROUND, /**< The application is about to enter the foreground
+    SDL_EVENT_WILL_ENTER_FOREGROUND, /**< The application is about to enter the foreground. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationWillEnterForeground()
                                      Called on Android in onResume()
                                 */
-    SDL_EVENT_DID_ENTER_FOREGROUND, /**< The application is now interactive
+    SDL_EVENT_DID_ENTER_FOREGROUND, /**< The application is now interactive. This event must be handled in a callback set with SDL_AddEventWatch().
                                      Called on iOS in applicationDidBecomeActive()
                                      Called on Android in onResume()
                                 */
@@ -352,10 +352,6 @@ typedef struct SDL_KeyboardEvent
  * will be inserted into the editing text. The length is the number of UTF-8
  * characters that will be replaced by new typing.
  *
- * The text string is temporary memory which will be freed in
- * SDL_FreeTemporaryMemory() and can be claimed with
- * SDL_ClaimTemporaryMemory().
- *
  * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_TextEditingEvent
@@ -371,10 +367,6 @@ typedef struct SDL_TextEditingEvent
 
 /**
  * Keyboard IME candidates event structure (event.edit_candidates.*)
- *
- * The candidates are a single allocation of temporary memory which will be
- * freed in SDL_FreeTemporaryMemory() and can be claimed with
- * SDL_ClaimTemporaryMemory().
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -392,10 +384,6 @@ typedef struct SDL_TextEditingCandidatesEvent
 
 /**
  * Keyboard text input event structure (event.text.*)
- *
- * The text string is temporary memory which will be freed in
- * SDL_FreeTemporaryMemory() and can be claimed with
- * SDL_ClaimTemporaryMemory().
  *
  * This event will never be delivered unless text input is enabled by calling
  * SDL_StartTextInput(). Text input is disabled by default!
@@ -792,10 +780,6 @@ typedef struct SDL_PenButtonEvent
  * An event used to drop text or request a file open by the system
  * (event.drop.*)
  *
- * The source and data strings are temporary memory which will be freed in
- * SDL_FreeTemporaryMemory() and can be claimed with
- * SDL_ClaimTemporaryMemory().
- *
  * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_DropEvent
@@ -858,10 +842,6 @@ typedef struct SDL_QuitEvent
  * SDL_PushEvent(). The contents of the structure members are completely up to
  * the programmer; the only requirement is that '''type''' is a value obtained
  * from SDL_RegisterEvents().
- *
- * If the data pointers are temporary memory, they will be automatically
- * transfered to the thread that pulls the event from the queue, or freed if
- * the event is flushed.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -1420,65 +1400,6 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_EventEnabled(Uint32 type);
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 
-/**
- * Allocate temporary memory.
- *
- * You can use this to allocate memory from the temporary memory pool for the
- * current thread.
- *
- * \param size the amount of memory to allocate.
- * \returns a pointer to the memory allocated or NULL on failure; call
- *          SDL_GetError() for more information.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_ClaimTemporaryMemory
- * \sa SDL_FreeTemporaryMemory
- */
-extern SDL_DECLSPEC void * SDLCALL SDL_AllocateTemporaryMemory(size_t size);
-
-/**
- * Claim ownership of temporary memory.
- *
- * This function removes memory from the temporary memory pool for the current
- * thread and gives ownership to the application. The application should use
- * SDL_free() to free it when it is done using it.
- *
- * \param mem a pointer allocated with SDL_AllocateTemporaryMemory().
- * \returns a pointer to the memory now owned by the application, which must
- *          be freed using SDL_free(), or NULL if the memory is not in the
- *          temporary memory pool for the current thread.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_AllocateTemporaryMemory
- * \sa SDL_free
- */
-extern SDL_DECLSPEC void * SDLCALL SDL_ClaimTemporaryMemory(const void *mem);
-
-/**
- * Free temporary memory for the current thread.
- *
- * This function frees all temporary memory for the current thread. If you
- * would like to hold onto a specific pointer beyond this call, you should
- * call SDL_ClaimTemporaryMemory() to move it out of the temporary memory
- * pool.
- *
- * This function is automatically called in SDL_Quit() on the main thread and
- * in SDL_CleanupTLS() when other threads complete.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_AllocateTemporaryMemory
- * \sa SDL_ClaimTemporaryMemory
- */
-extern SDL_DECLSPEC void SDLCALL SDL_FreeTemporaryMemory(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

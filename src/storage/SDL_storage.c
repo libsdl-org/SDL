@@ -353,7 +353,7 @@ static int GlobStorageDirectoryEnumerator(const char *path, SDL_EnumerateDirecto
     return SDL_EnumerateStorageDirectory((SDL_Storage *) userdata, path, cb, cbuserdata);
 }
 
-const char * const *SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, SDL_GlobFlags flags, int *count)
+char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, SDL_GlobFlags flags, int *count)
 {
     CHECK_STORAGE_MAGIC_RET(NULL)
     return SDL_InternalGlobDirectory(path, pattern, flags, count, GlobStorageDirectoryEnumerator, GlobStorageDirectoryGetPathInfo, storage);

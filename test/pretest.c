@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     (void)argv;
     SDL_Init(0);
     start = SDL_GetTicks();
-    SDL_GetPrefPath("libsdl", "test_filesystem");
+    SDL_free(SDL_GetPrefPath("libsdl", "test_filesystem"));
     prequit = SDL_GetTicks();
     SDL_Log("SDL_GetPrefPath took %" SDL_PRIu64 "ms", prequit - start);
     SDL_Quit();

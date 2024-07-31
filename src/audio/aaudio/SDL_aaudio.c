@@ -43,7 +43,6 @@ struct SDL_PrivateAudioData
     size_t processed_bytes;
     SDL_Semaphore *semaphore;
     SDL_AtomicInt error_callback_triggered;
-    SDL_bool resume;  // Resume device if it was paused automatically
 };
 
 // Debug
@@ -165,7 +164,18 @@ static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
 
 static int AAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    SDL_WaitSemaphore(device->hidden->semaphore);
+    while (!SDL_AtomicGet(&device->shutdown)) {
+        // this semaphore won't fire when the app is in the background (AAUDIO_PauseDevices was called).
+        const int rc = SDL_WaitSemaphoreTimeout(device->hidden->semaphore, 100);
+        if (rc == -1) {  // uh, what?
+            return -1;
+        } else if (rc == 0) {
+            return 0;  // semaphore was signaled, let's go!
+        } else {
+            SDL_assert(rc == SDL_MUTEX_TIMEDOUT);
+        }
+        // Still waiting on the semaphore (or the system), check other things then wait again.
+    }
     return 0;
 }
 
@@ -439,9 +449,6 @@ static SDL_bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
                 LOGI("SDL Failed AAudioStream_requestPause %d", res);
                 SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
             }
-
-            SDL_LockMutex(device->lock);
-            hidden->resume = SDL_TRUE;
         }
     }
     return SDL_FALSE;  // keep enumerating.
@@ -460,11 +467,6 @@ static SDL_bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
     if (hidden) {
-        if (hidden->resume) {
-            hidden->resume = SDL_FALSE;
-            SDL_UnlockMutex(device->lock);
-        }
-
         if (hidden->stream) {
             aaudio_result_t res = ctx.AAudioStream_requestStart(hidden->stream);
             if (res != AAUDIO_OK) {

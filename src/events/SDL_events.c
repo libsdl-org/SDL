@@ -236,10 +236,6 @@ static void SDL_TransferTemporaryMemoryToEvent(SDL_EventEntry *event)
         SDL_LinkTemporaryMemoryToEvent(event, event->event.drop.data);
         break;
     default:
-        if (event->event.type >= SDL_EVENT_USER && event->event.type <= SDL_EVENT_LAST-1) {
-            SDL_LinkTemporaryMemoryToEvent(event, event->event.user.data1);
-            SDL_LinkTemporaryMemoryToEvent(event, event->event.user.data2);
-        }
         break;
     }
 }
@@ -266,7 +262,7 @@ static void SDL_TransferTemporaryMemoryFromEvent(SDL_EventEntry *event)
     event->memory = NULL;
 }
 
-void *SDL_FreeLater(void *memory)
+static void *SDL_FreeLater(void *memory)
 {
     SDL_TemporaryMemoryState *state;
 
@@ -275,7 +271,7 @@ void *SDL_FreeLater(void *memory)
     }
 
     // Make sure we're not adding this to the list twice
-    SDL_assert(!SDL_ClaimTemporaryMemory(memory));
+    //SDL_assert(!SDL_ClaimTemporaryMemory(memory));
 
     state = SDL_GetTemporaryMemoryState(SDL_TRUE);
     if (!state) {
@@ -1158,6 +1154,9 @@ void SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 /* Run the system dependent event loops */
 static void SDL_PumpEventsInternal(SDL_bool push_sentinel)
 {
+    /* Free any temporary memory from old events */
+    SDL_FreeTemporaryMemory();
+
     /* Release any keys held down from last frame */
     SDL_ReleaseAutoReleaseKeys();
 
@@ -1733,6 +1732,9 @@ int SDL_SendAppEvent(SDL_EventType eventType)
         case SDL_EVENT_WILL_ENTER_FOREGROUND:
         case SDL_EVENT_DID_ENTER_FOREGROUND:
             // We won't actually queue this event, it needs to be handled in this call stack by an event watcher
+            if (SDL_EventLoggingVerbosity > 0) {
+                SDL_LogEvent(&event);
+            }
             posted = SDL_CallEventWatchers(&event);
             break;
         default:

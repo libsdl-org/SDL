@@ -516,7 +516,7 @@ static void Wayland_move_window(SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;
     SDL_DisplayData *display;
-    const SDL_DisplayID *displays;
+    SDL_DisplayID *displays;
 
     if (wind->outputs && wind->num_outputs) {
         display = wind->outputs[wind->num_outputs - 1];
@@ -559,6 +559,7 @@ static void Wayland_move_window(SDL_Window *window)
                 break;
             }
         }
+        SDL_free(displays);
     }
 }
 

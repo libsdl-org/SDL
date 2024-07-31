@@ -171,8 +171,8 @@ int main(int argc, char *argv[])
 
     SDL_Log("Reader threads have terminated, quitting!");
     SDL_DestroyRWLock(rwlock);
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 
     return 0;
 }
