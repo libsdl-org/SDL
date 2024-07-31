@@ -253,13 +253,15 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
     SDL_Surface *converted;
     NSBitmapImageRep *imgrep;
     Uint8 *pixels;
-    int i;
     NSImage *img;
 
     converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
     if (!converted) {
         return nil;
     }
+
+    /* Premultiply the alpha channel */
+    SDL_PremultiplySurfaceAlpha(converted, SDL_FALSE);
 
     imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
                                                      pixelsWide:converted->w
@@ -280,15 +282,6 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
     pixels = [imgrep bitmapData];
     SDL_memcpy(pixels, converted->pixels, (size_t)converted->h * converted->pitch);
     SDL_DestroySurface(converted);
-
-    /* Premultiply the alpha channel */
-    for (i = (surface->h * surface->w); i--;) {
-        Uint8 alpha = pixels[3];
-        pixels[0] = (Uint8)(((Uint16)pixels[0] * alpha) / 255);
-        pixels[1] = (Uint8)(((Uint16)pixels[1] * alpha) / 255);
-        pixels[2] = (Uint8)(((Uint16)pixels[2] * alpha) / 255);
-        pixels += 4;
-    }
 
     img = [[NSImage alloc] initWithSize:NSMakeSize(surface->w, surface->h)];
     if (img != nil) {
