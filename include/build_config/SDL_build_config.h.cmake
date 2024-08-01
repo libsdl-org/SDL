@@ -226,9 +226,7 @@
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBDECOR_H 1
 
-#cmakedefine HAVE_D3D_H @HAVE_D3D_H@
 #cmakedefine HAVE_D3D11_H @HAVE_D3D11_H@
-#cmakedefine HAVE_D3D12_H @HAVE_D3D12_H@
 #cmakedefine HAVE_DDRAW_H @HAVE_DDRAW_H@
 #cmakedefine HAVE_DSOUND_H @HAVE_DSOUND_H@
 #cmakedefine HAVE_DINPUT_H @HAVE_DINPUT_H@

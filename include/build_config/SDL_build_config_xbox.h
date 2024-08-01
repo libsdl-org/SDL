@@ -41,7 +41,6 @@
 /*#define HAVE_WINDOWS_GAMING_INPUT_H 1*/
 /*#define HAVE_D3D11_H 1*/
 /*#define HAVE_ROAPI_H 1*/
-#define HAVE_D3D12_H 1
 /*#define HAVE_SHELLSCALINGAPI_H 1*/
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
@@ -208,7 +207,7 @@
 #define SDL_VIDEO_DRIVER_DUMMY  1
 #define SDL_VIDEO_DRIVER_WINDOWS    1
 
-#if !defined(SDL_VIDEO_RENDER_D3D12) && defined(HAVE_D3D12_H)
+#if !defined(SDL_VIDEO_RENDER_D3D12)
 #define SDL_VIDEO_RENDER_D3D12  1
 #endif
 

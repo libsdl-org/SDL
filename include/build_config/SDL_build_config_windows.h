@@ -93,11 +93,6 @@ typedef unsigned int uintptr_t;
 #define HAVE_D3D11_H 1
 #define HAVE_ROAPI_H 1
 #endif
-#if defined(__has_include)
-#if __has_include(<d3d12.h>) && __has_include(<d3d12sdklayers.h>)
-#define HAVE_D3D12_H 1
-#endif
-#endif
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0603  /* Windows 8.1 SDK */
 #define HAVE_SHELLSCALINGAPI_H 1
 #endif
@@ -282,7 +277,7 @@ typedef unsigned int uintptr_t;
 #if !defined(SDL_VIDEO_RENDER_D3D11) && defined(HAVE_D3D11_H)
 #define SDL_VIDEO_RENDER_D3D11  1
 #endif
-#if !defined(SDL_VIDEO_RENDER_D3D12) && defined(HAVE_D3D12_H)
+#if !defined(SDL_VIDEO_RENDER_D3D12)
 #define SDL_VIDEO_RENDER_D3D12  1
 #endif
 
