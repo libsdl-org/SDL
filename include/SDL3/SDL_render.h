@@ -1932,7 +1932,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_RenderTextureTiled(SDL_Renderer *renderer, S
  * \param left_width the width, in pixels, of the left corners in `srcrect`.
  * \param right_width the width, in pixels, of the right corners in `srcrect`.
  * \param top_height the height, in pixels, of the top corners in `srcrect`.
- * \param bottom_height the height, in pixels, of the bottom corners in `srcrect`.
+ * \param bottom_height the height, in pixels, of the bottom corners in
+ *                      `srcrect`.
  * \param scale the scale used to transform the corner of `srcrect` into the
  *              corner of `dstrect`, or 0.0f for an unscaled copy.
  * \param dstrect a pointer to the destination rectangle, or NULL for the
