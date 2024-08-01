@@ -933,11 +933,13 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 - (void)windowDidChangeScreen:(NSNotification *)aNotification
 {
     /*printf("WINDOWDIDCHANGESCREEN\n");*/
+    #ifdef SDL_VIDEO_OPENGL
     if (_data && _data.nscontexts) {
         for (SDLOpenGLContext *context in _data.nscontexts) {
             [context movedToNewScreen];
         }
     }
+    #endif /* SDL_VIDEO_OPENGL */
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification *)aNotification
@@ -2346,7 +2348,6 @@ void Cocoa_DestroyWindow(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) CFBridgingRelease(window->driverdata);
 
     if (data) {
-        NSArray *contexts;
         if ([data.listener isInFullscreenSpace]) {
             [NSMenu setMenuBarVisible:YES];
         }
@@ -2360,7 +2361,7 @@ void Cocoa_DestroyWindow(_THIS, SDL_Window * window)
 
         #ifdef SDL_VIDEO_OPENGL
 
-        contexts = [data.nscontexts copy];
+        NSArray *contexts = [data.nscontexts copy];
         for (SDLOpenGLContext *context in contexts) {
             /* Calling setWindow:NULL causes the context to remove itself from the context list. */
             [context setWindow:NULL];
