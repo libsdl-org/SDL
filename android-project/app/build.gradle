@@ -1,17 +1,11 @@
-def buildWithCMake = project.hasProperty('BUILD_WITH_CMAKE');
-def buildAsLibrary = project.hasProperty('BUILD_AS_LIBRARY');
-def buildAsApplication = !buildAsLibrary
-if (buildAsApplication) {
-    apply plugin: 'com.android.application'
-}
-else {
-    apply plugin: 'com.android.library'
+plugins {
+     id 'com.android.application'
 }
 
+def buildWithCMake = project.hasProperty('BUILD_WITH_CMAKE');
+
 android {
-    if (buildAsApplication) {
-        namespace "org.libsdl.app"
-    }
+    namespace "org.libsdl.app"
     compileSdkVersion 34
     defaultConfig {
         minSdkVersion 19
@@ -60,18 +54,6 @@ android {
     }
     lint {
         abortOnError false
-    }
-
-    if (buildAsLibrary) {
-        libraryVariants.all { variant ->
-            variant.outputs.each { output ->
-                def outputFile = output.outputFile
-                if (outputFile != null && outputFile.name.endsWith(".aar")) {
-                    def fileName = "org.libsdl.app.aar";
-                    output.outputFile = new File(outputFile.parent, fileName);
-                }
-            }
-        }
     }
 }
 
