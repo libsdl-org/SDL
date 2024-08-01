@@ -109,10 +109,8 @@ static const char *cross[] = {
     "0,0"
 };
 
-static SDL_Cursor *
-init_color_cursor(const char *file)
+static SDL_Surface *load_image_file(const char *file)
 {
-    SDL_Cursor *cursor = NULL;
     SDL_Surface *surface = SDL_LoadBMP(file);
     if (surface) {
         if (SDL_GetSurfacePalette(surface)) {
@@ -138,14 +136,50 @@ init_color_cursor(const char *file)
                 break;
             }
         }
+    }
+    return surface;
+}
+
+static SDL_Surface *load_image(const char *file)
+{
+    SDL_Surface *surface = load_image_file(file);
+    if (surface) {
+        /* Add a 2x version of this image, if available */
+        SDL_Surface *surface2x = NULL;
+        const char *ext = SDL_strrchr(file, '.');
+        size_t len = SDL_strlen(file) + 2 + 1;
+        char *file2x = (char *)SDL_malloc(len);
+        if (file2x) {
+            SDL_strlcpy(file2x, file, len);
+            if (ext) {
+                SDL_memcpy(file2x + (ext - file), "2x", 3);
+                SDL_strlcat(file2x, ext, len);
+            } else {
+                SDL_strlcat(file2x, "2x", len);
+            }
+            surface2x = load_image_file(file2x);
+            SDL_free(file2x);
+        }
+        if (surface2x) {
+            SDL_AddSurfaceAlternateImage(surface, surface2x);
+            SDL_DestroySurface(surface2x);
+        }
+    }
+    return surface;
+}
+
+static SDL_Cursor *init_color_cursor(const char *file)
+{
+    SDL_Cursor *cursor = NULL;
+    SDL_Surface *surface = load_image(file);
+    if (surface) {
         cursor = SDL_CreateColorCursor(surface, 0, 0);
         SDL_DestroySurface(surface);
     }
     return cursor;
 }
 
-static SDL_Cursor *
-init_system_cursor(const char *image[])
+static SDL_Cursor *init_system_cursor(const char *image[])
 {
     int i, row, col;
     Uint8 data[4 * 32];
@@ -373,6 +407,14 @@ int main(int argc, char *argv[])
     num_cursors = 0;
 
     if (color_cursor) {
+        SDL_Surface *icon = load_image(color_cursor);
+        if (icon) {
+            for (i = 0; i < state->num_windows; ++i) {
+                SDL_SetWindowIcon(state->windows[i], icon);
+            }
+            SDL_DestroySurface(icon);
+        }
+
         cursor = init_color_cursor(color_cursor);
         if (cursor) {
             cursors[num_cursors] = cursor;

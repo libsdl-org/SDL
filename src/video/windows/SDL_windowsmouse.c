@@ -27,12 +27,24 @@
 #include "SDL_windowsrawinput.h"
 
 #include "../SDL_video_c.h"
+#include "../SDL_blit.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../joystick/usb_ids.h"
 
 
+typedef struct CachedCursor
+{
+    float scale;
+    HCURSOR cursor;
+    struct CachedCursor *next;
+} CachedCursor;
+
 struct SDL_CursorData
 {
+    SDL_Surface *surface;
+    int hot_x;
+    int hot_y;
+    CachedCursor *cache;
     HCURSOR cursor;
 };
 
@@ -189,6 +201,7 @@ static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
     ii.hbmColor = is_monochrome ? NULL : CreateColorBitmap(surface);
 
     if (!ii.hbmMask || (!is_monochrome && !ii.hbmColor)) {
+        SDL_SetError("Couldn't create cursor bitmaps");
         return NULL;
     }
 
@@ -208,11 +221,29 @@ static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
 static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
-    HCURSOR hcursor = WIN_CreateHCursor(surface, hot_x, hot_y);
-    if (!hcursor) {
-        return NULL;
+    if (!SDL_SurfaceHasAlternateImages(surface)) {
+        HCURSOR hcursor = WIN_CreateHCursor(surface, hot_x, hot_y);
+        if (!hcursor) {
+            return NULL;
+        }
+        return WIN_CreateCursorAndData(hcursor);
     }
-    return WIN_CreateCursorAndData(hcursor);
+
+    // Dynamically generate cursors at the appropriate DPI
+    SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
+    if (cursor) {
+        SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data));
+        if (!data) {
+            SDL_free(cursor);
+            return NULL;
+        }
+        data->hot_x = hot_x;
+        data->hot_y = hot_y;
+        data->surface = surface;
+        ++surface->refcount;
+        cursor->internal = data;
+    }
+    return cursor;
 }
 
 static SDL_Cursor *WIN_CreateBlankCursor(void)
@@ -302,11 +333,77 @@ static void WIN_FreeCursor(SDL_Cursor *cursor)
 {
     SDL_CursorData *data = cursor->internal;
 
+    if (data->surface) {
+        SDL_DestroySurface(data->surface);
+    }
+    while (data->cache) {
+        CachedCursor *entry = data->cache;
+        data->cache = entry->next;
+        DestroyCursor(entry->cursor);
+        SDL_free(entry);
+    }
     if (data->cursor) {
         DestroyCursor(data->cursor);
     }
     SDL_free(data);
     SDL_free(cursor);
+}
+
+static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
+{
+    SDL_CursorData *data = cursor->internal;
+
+    SDL_Window *focus = SDL_GetMouseFocus();
+    if (!focus) {
+        return NULL;
+    }
+
+    float scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(focus));
+    for (CachedCursor *entry = data->cache; entry; entry = entry->next) {
+        if (scale == entry->scale) {
+            return entry->cursor;
+        }
+    }
+
+    // Need to create a cursor for this content scale
+    SDL_Surface *surface = NULL;
+    HCURSOR hcursor = NULL;
+    CachedCursor *entry = NULL;
+
+    surface = SDL_GetSurfaceImage(data->surface, scale);
+    if (!surface) {
+        goto error;
+    }
+
+    int hot_x = (int)SDL_round(data->hot_x * scale);
+    int hot_y = (int)SDL_round(data->hot_x * scale);
+    hcursor = WIN_CreateHCursor(surface, hot_x, hot_y);
+    if (!hcursor) {
+        goto error;
+    }
+
+    entry = (CachedCursor *)SDL_malloc(sizeof(*entry));
+    if (!entry) {
+        goto error;
+    }
+    entry->cursor = hcursor;
+    entry->scale = scale;
+    entry->next = data->cache;
+    data->cache = entry;
+
+    SDL_DestroySurface(surface);
+
+    return hcursor;
+
+error:
+    if (surface) {
+        SDL_DestroySurface(surface);
+    }
+    if (hcursor) {
+        DestroyCursor(hcursor);
+    }
+    SDL_free(entry);
+    return NULL;
 }
 
 static int WIN_ShowCursor(SDL_Cursor *cursor)
@@ -315,7 +412,11 @@ static int WIN_ShowCursor(SDL_Cursor *cursor)
         cursor = SDL_blank_cursor;
     }
     if (cursor) {
-        SDL_cursor = cursor->internal->cursor;
+        if (cursor->internal->surface) {
+            SDL_cursor = GetCachedCursor(cursor);
+        } else {
+            SDL_cursor = cursor->internal->cursor;
+        }
     } else {
         SDL_cursor = NULL;
     }
