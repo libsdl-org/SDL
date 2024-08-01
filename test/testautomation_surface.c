@@ -417,71 +417,71 @@ static int surface_testBlitTiled(void *arg)
 
 static const Uint8 COLOR_SEPARATION = 85;
 
-static void Fill9GridReferenceSurface(SDL_Surface *surface, int corner_size)
+static void Fill9GridReferenceSurface(SDL_Surface *surface, int left_width, int right_width, int top_height, int bottom_height)
 {
     SDL_Rect rect;
 
     // Upper left
     rect.x = 0;
     rect.y = 0;
-    rect.w = corner_size;
-    rect.h = corner_size;
+    rect.w = left_width;
+    rect.h = top_height;
     SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 1 * COLOR_SEPARATION, 1 * COLOR_SEPARATION, 0));
 
     // Top
-    rect.x = corner_size;
+    rect.x = left_width;
     rect.y = 0;
-    rect.w = surface->w - 2 * corner_size;
-    rect.h = corner_size;
+    rect.w = surface->w - left_width - right_width;
+    rect.h = top_height;
     SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 2 * COLOR_SEPARATION, 1 * COLOR_SEPARATION, 0));
 
     // Upper right
-    rect.x = surface->w - corner_size;
+    rect.x = surface->w - right_width;
     rect.y = 0;
-    rect.w = corner_size;
-    rect.h = corner_size;
+    rect.w = right_width;
+    rect.h = top_height;
     SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 3 * COLOR_SEPARATION, 1 * COLOR_SEPARATION, 0));
 
     // Left
     rect.x = 0;
-    rect.y = corner_size;
-    rect.w = corner_size;
-    rect.h = surface->h - 2 * corner_size;
+    rect.y = top_height;
+    rect.w = left_width;
+    rect.h = surface->h - top_height - bottom_height;
     SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 1 * COLOR_SEPARATION, 2 * COLOR_SEPARATION, 0));
 
     // Center
-    rect.x = corner_size;
-    rect.y = corner_size;
-    rect.w = surface->w - 2 * corner_size;
-    rect.h = surface->h - 2 * corner_size;
+    rect.x = left_width;
+    rect.y = top_height;
+    rect.w = surface->w - right_width - left_width;
+    rect.h = surface->h - top_height - bottom_height;
     SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 2 * COLOR_SEPARATION, 2 * COLOR_SEPARATION, 0));
 
     // Right
-    rect.x = surface->w - corner_size;
-    rect.y = corner_size;
-    rect.w = corner_size;
-    rect.h = surface->h - 2 * corner_size;
+    rect.x = surface->w - right_width;
+    rect.y = top_height;
+    rect.w = right_width;
+    rect.h = surface->h - top_height - bottom_height;
     SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 3 * COLOR_SEPARATION, 2 * COLOR_SEPARATION, 0));
 
     // Lower left
     rect.x = 0;
-    rect.y = surface->h - corner_size;
-    rect.w = corner_size;
-    rect.h = corner_size;
+    rect.y = surface->h - bottom_height;
+    rect.w = left_width;
+    rect.h = bottom_height;
     SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 1 * COLOR_SEPARATION, 3 * COLOR_SEPARATION, 0));
 
     // Bottom
-    rect.x = corner_size;
-    rect.y = surface->h - corner_size;
-    rect.w = surface->w - 2 * corner_size;
-    rect.h = corner_size;
+    rect.x = left_width;
+    rect.y = surface->h - bottom_height;
+    rect.w = surface->w - left_width - right_width;
+    rect.h = bottom_height;
     SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 2 * COLOR_SEPARATION, 3 * COLOR_SEPARATION, 0));
 
     // Lower right
-    rect.x = surface->w - corner_size;
-    rect.y = surface->h - corner_size;
-    rect.w = corner_size;
-    rect.h = corner_size;
+    rect.x = surface->w - right_width;
+    rect.y = surface->h - bottom_height;
+    rect.w = right_width;
+    rect.h = bottom_height;
     SDL_FillSurfaceRect(surface, &rect, SDL_MapSurfaceRGB(surface, 3 * COLOR_SEPARATION, 3 * COLOR_SEPARATION, 0));
 }
 
@@ -509,9 +509,9 @@ static int surface_testBlit9Grid(void *arg)
         SDL_DestroySurface(referenceSurface);
         referenceSurface = SDL_CreateSurface(testSurface->w, testSurface->h, testSurface->format);
         SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
-        Fill9GridReferenceSurface(referenceSurface, 1);
+        Fill9GridReferenceSurface(referenceSurface, 1, 1, 1, 1);
 
-        ret = SDL_BlitSurface9Grid(source, NULL, 1, 0.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
+        ret = SDL_BlitSurface9Grid(source, NULL, 1, 1, 1, 1, 0.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
         SDLTest_AssertCheck(ret == 0, "Validate result from SDL_BlitSurface9Grid, expected: 0, got: %i", ret);
 
         ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
@@ -524,9 +524,77 @@ static int surface_testBlit9Grid(void *arg)
         SDL_DestroySurface(referenceSurface);
         referenceSurface = SDL_CreateSurface(testSurface->w, testSurface->h, testSurface->format);
         SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
-        Fill9GridReferenceSurface(referenceSurface, 2);
+        Fill9GridReferenceSurface(referenceSurface, 2, 2, 2, 2);
 
-        ret = SDL_BlitSurface9Grid(source, NULL, 1, 2.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
+        ret = SDL_BlitSurface9Grid(source, NULL, 1, 1, 1, 1, 2.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
+        SDLTest_AssertCheck(ret == 0, "Validate result from SDL_BlitSurface9Grid, expected: 0, got: %i", ret);
+
+        ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
+        SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+    }
+
+    /* Clean up. */
+    SDL_DestroySurface(source);
+
+    /* Create complex source surface */
+    source = SDL_CreateSurface(5, 5, SDL_PIXELFORMAT_RGBA32);
+    SDLTest_AssertCheck(source != NULL, "Verify source surface is not NULL");
+    SDL_WriteSurfacePixel(source, 0, 0, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 0, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 0, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 0, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 0, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+
+    SDL_WriteSurfacePixel(source, 0, 1, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 1, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 1, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 1, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 1, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+
+    SDL_WriteSurfacePixel(source, 0, 2, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 2, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 2, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 2, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 2, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+
+    SDL_WriteSurfacePixel(source, 0, 3, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 3, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 3, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 3, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 3, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+
+    SDL_WriteSurfacePixel(source, 0, 4, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 4, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 4, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 4, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 4, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+
+    /* complex 9-grid blit - 1.0 scale */
+    {
+        SDLTest_Log("complex 9-grid blit - 1.0 scale");
+        /* Create reference surface */
+        SDL_DestroySurface(referenceSurface);
+        referenceSurface = SDL_CreateSurface(testSurface->w, testSurface->h, testSurface->format);
+        SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
+        Fill9GridReferenceSurface(referenceSurface, 1, 2, 1, 2);
+
+        ret = SDL_BlitSurface9Grid(source, NULL, 1, 2, 1, 2, 0.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
+        SDLTest_AssertCheck(ret == 0, "Validate result from SDL_BlitSurface9Grid, expected: 0, got: %i", ret);
+
+        ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
+        SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+    }
+
+    /* complex 9-grid blit - 2.0 scale */
+    {
+        SDLTest_Log("complex 9-grid blit - 2.0 scale");
+        /* Create reference surface */
+        SDL_DestroySurface(referenceSurface);
+        referenceSurface = SDL_CreateSurface(testSurface->w, testSurface->h, testSurface->format);
+        SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
+        Fill9GridReferenceSurface(referenceSurface, 2, 4, 2, 4);
+
+        ret = SDL_BlitSurface9Grid(source, NULL, 1, 2, 1, 2, 2.0f, SDL_SCALEMODE_NEAREST, testSurface, NULL);
         SDLTest_AssertCheck(ret == 0, "Validate result from SDL_BlitSurface9Grid, expected: 0, got: %i", ret);
 
         ret = SDLTest_CompareSurfaces(testSurface, referenceSurface, 0);
