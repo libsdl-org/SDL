@@ -436,6 +436,126 @@ SDL_Palette *SDL_GetSurfacePalette(SDL_Surface *surface)
     return surface->internal->palette;
 }
 
+int SDL_AddSurfaceAlternateImage(SDL_Surface *surface, SDL_Surface *image)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (!SDL_SurfaceValid(image)) {
+        return SDL_InvalidParamError("image");
+    }
+
+    SDL_Surface **images = (SDL_Surface **)SDL_realloc(surface->internal->images, (surface->internal->num_images + 1) * sizeof(*images));
+    if (!images) {
+        return -1;
+    }
+    images[surface->internal->num_images] = image;
+    surface->internal->images = images;
+    ++surface->internal->num_images;
+    ++image->refcount;
+    return 0;
+}
+
+SDL_bool SDL_SurfaceHasAlternateImages(SDL_Surface *surface)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        return SDL_FALSE;
+    }
+
+    return (surface->internal->num_images > 0);
+}
+
+SDL_Surface **SDL_GetSurfaceImages(SDL_Surface *surface, int *count)
+{
+    if (count) {
+        *count = 0;
+    }
+
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    int num_images = 1 + surface->internal->num_images;
+    SDL_Surface **images = (SDL_Surface **)SDL_malloc((num_images + 1) * sizeof(*images));
+    if (!images) {
+        return NULL;
+    }
+    images[0] = surface;
+    if (surface->internal->num_images > 0) {
+        SDL_memcpy(&images[1], surface->internal->images, (surface->internal->num_images * sizeof(images[1])));
+    }
+    images[num_images] = NULL;
+
+    if (count) {
+        *count = num_images;
+    }
+    return images;
+}
+
+SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    if (!SDL_SurfaceHasAlternateImages(surface)) {
+        ++surface->refcount;
+        return surface;
+    }
+
+    // This surface has high DPI images, pick the best one available, or scale one to the correct size
+    SDL_Surface **images = SDL_GetSurfaceImages(surface, NULL);
+    if (!images) {
+        // Failure, fall back to the existing surface
+        ++surface->refcount;
+        return surface;
+    }
+
+    SDL_Surface *closest = NULL;
+    int desired_w = (int)SDL_round(surface->w * display_scale);
+    int desired_h = (int)SDL_round(surface->h * display_scale);
+    int closest_distance = -1;
+    for (int i = 0; images[i]; ++i) {
+        SDL_Surface *candidate = images[i];
+        int delta_w = (candidate->w - desired_w);
+        int delta_h = (candidate->h - desired_h);
+        int distance = (delta_w * delta_w) + (delta_h * delta_h);
+        if (closest_distance < 0 || distance < closest_distance) {
+            closest = candidate;
+            closest_distance = distance;
+        }
+    }
+    SDL_free(images);
+    SDL_assert(closest != NULL);    // We should always have at least one surface
+
+    if (closest->w == desired_w && closest->h == desired_h) {
+        ++closest->refcount;
+        return closest;
+    }
+
+    // We need to scale an image to the correct size
+    return SDL_ScaleSurface(closest, desired_w, desired_h, SDL_SCALEMODE_LINEAR);
+}
+
+void SDL_RemoveSurfaceAlternateImages(SDL_Surface *surface)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        return;
+    }
+
+    if (surface->internal->num_images > 0) {
+        for (int i = 0; i < surface->internal->num_images; ++i) {
+            SDL_DestroySurface(surface->internal->images[i]);
+        }
+        SDL_free(surface->internal->images);
+        surface->internal->images = NULL;
+        surface->internal->num_images = 0;
+    }
+}
+
 int SDL_SetSurfaceRLE(SDL_Surface *surface, SDL_bool enabled)
 {
     int flags;
@@ -1945,6 +2065,13 @@ end:
         SDL_SetSurfaceRLE(convert, SDL_TRUE);
     }
 
+    /* Copy alternate images */
+    for (int i = 0; i < surface->internal->num_images; ++i) {
+        if (SDL_AddSurfaceAlternateImage(convert, surface->internal->images[i]) < 0) {
+            goto error;
+        }
+    }
+
     /* We're ready to go! */
     return convert;
 
@@ -2787,6 +2914,8 @@ void SDL_DestroySurface(SDL_Surface *surface)
     if (--surface->refcount > 0) {
         return;
     }
+
+    SDL_RemoveSurfaceAlternateImages(surface);
 
     SDL_DestroyProperties(surface->internal->props);
 
