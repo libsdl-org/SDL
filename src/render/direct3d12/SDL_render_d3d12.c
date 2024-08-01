@@ -38,7 +38,18 @@
 #define D3D12_TEXTURE_DATA_PITCH_ALIGNMENT 256
 #endif
 #else
-#include <d3d12.h>
+
+/* From the DirectX-Headers build system:
+ * "MinGW has RPC headers which define old versions, and complain if D3D
+ * headers are included before the RPC headers, since D3D headers were
+ * generated with new MIDL and "require" new RPC headers."
+ */
+#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#ifndef WINAPI_PARTITION_GAMES
+#define WINAPI_PARTITION_GAMES 0
+#endif /* WINAPI_PARTITION_GAMES */
+#include "../../video/directx/d3d12.h"
+
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <d3d12sdklayers.h>
