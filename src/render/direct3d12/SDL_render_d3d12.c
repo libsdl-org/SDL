@@ -31,29 +31,10 @@
 #include "../../video/windows/SDL_windowswindow.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
+#include "../../video/directx/SDL_d3d12.h"
 
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 #include "SDL_render_d3d12_xbox.h"
-#ifndef D3D12_TEXTURE_DATA_PITCH_ALIGNMENT
-#define D3D12_TEXTURE_DATA_PITCH_ALIGNMENT 256
-#endif
-#else
-
-/* From the DirectX-Headers build system:
- * "MinGW has RPC headers which define old versions, and complain if D3D
- * headers are included before the RPC headers, since D3D headers were
- * generated with new MIDL and "require" new RPC headers."
- */
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
-#ifndef WINAPI_PARTITION_GAMES
-#define WINAPI_PARTITION_GAMES 0
-#endif /* WINAPI_PARTITION_GAMES */
-#include "../../video/directx/d3d12.h"
-
-#include <dxgi1_6.h>
-#include <dxgidebug.h>
-#include <d3d12sdklayers.h>
-#include <sdkddkver.h>
 #endif
 
 #include "SDL_shaders_d3d12.h"
@@ -62,28 +43,6 @@
 #define SDL_COMPOSE_ERROR(str) __FUNCTION__ ", " str
 #else
 #define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
-#endif
-
-#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-#define SAFE_RELEASE(X) \
-    if (X) {            \
-        (X)->Release(); \
-        X = NULL;       \
-    }
-#define D3D_CALL(THIS, FUNC, ...)             (THIS)->FUNC(__VA_ARGS__)
-#define D3D_CALL_RET(THIS, FUNC, RETVAL, ...) *(RETVAL) = (THIS)->FUNC(__VA_ARGS__)
-#define D3D_GUID(X)                           (X)
-/* DXGI_PRESENT flags are removed on Xbox */
-#define DXGI_PRESENT_ALLOW_TEARING 0
-#else
-#define SAFE_RELEASE(X)          \
-    if (X) {                     \
-        (X)->lpVtbl->Release(X); \
-        X = NULL;                \
-    }
-#define D3D_CALL(THIS, FUNC, ...)     (THIS)->lpVtbl->FUNC((THIS), ##__VA_ARGS__)
-#define D3D_CALL_RET(THIS, FUNC, ...) (THIS)->lpVtbl->FUNC((THIS), ##__VA_ARGS__)
-#define D3D_GUID(X)                   &(X)
 #endif
 
 /* Set up for C function definitions, even when using C++ */
@@ -431,39 +390,39 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
         int i;
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-        SAFE_RELEASE(data->dxgiFactory);
-        SAFE_RELEASE(data->dxgiAdapter);
-        SAFE_RELEASE(data->swapChain);
+        D3D_SAFE_RELEASE(data->dxgiFactory);
+        D3D_SAFE_RELEASE(data->dxgiAdapter);
+        D3D_SAFE_RELEASE(data->swapChain);
 #endif
-        SAFE_RELEASE(data->d3dDevice);
-        SAFE_RELEASE(data->debugInterface);
-        SAFE_RELEASE(data->commandQueue);
-        SAFE_RELEASE(data->commandList);
-        SAFE_RELEASE(data->rtvDescriptorHeap);
-        SAFE_RELEASE(data->textureRTVDescriptorHeap);
-        SAFE_RELEASE(data->srvDescriptorHeap);
-        SAFE_RELEASE(data->samplerDescriptorHeap);
-        SAFE_RELEASE(data->fence);
+        D3D_SAFE_RELEASE(data->d3dDevice);
+        D3D_SAFE_RELEASE(data->debugInterface);
+        D3D_SAFE_RELEASE(data->commandQueue);
+        D3D_SAFE_RELEASE(data->commandList);
+        D3D_SAFE_RELEASE(data->rtvDescriptorHeap);
+        D3D_SAFE_RELEASE(data->textureRTVDescriptorHeap);
+        D3D_SAFE_RELEASE(data->srvDescriptorHeap);
+        D3D_SAFE_RELEASE(data->samplerDescriptorHeap);
+        D3D_SAFE_RELEASE(data->fence);
 
         for (i = 0; i < SDL_D3D12_NUM_BUFFERS; ++i) {
-            SAFE_RELEASE(data->commandAllocators[i]);
-            SAFE_RELEASE(data->renderTargets[i]);
+            D3D_SAFE_RELEASE(data->commandAllocators[i]);
+            D3D_SAFE_RELEASE(data->renderTargets[i]);
         }
 
         if (data->pipelineStateCount > 0) {
             for (i = 0; i < data->pipelineStateCount; ++i) {
-                SAFE_RELEASE(data->pipelineStates[i].pipelineState);
+                D3D_SAFE_RELEASE(data->pipelineStates[i].pipelineState);
             }
             SDL_free(data->pipelineStates);
             data->pipelineStateCount = 0;
         }
 
         for (i = 0; i < NUM_ROOTSIGS; ++i) {
-            SAFE_RELEASE(data->rootSignatures[i]);
+            D3D_SAFE_RELEASE(data->rootSignatures[i]);
         }
 
         for (i = 0; i < SDL_D3D12_NUM_VERTEX_BUFFERS; ++i) {
-            SAFE_RELEASE(data->vertexBuffers[i].resource);
+            D3D_SAFE_RELEASE(data->vertexBuffers[i].resource);
             data->vertexBuffers[i].size = 0;
         }
 
@@ -477,7 +436,7 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
         if (data->dxgiDebug) {
             DXGI_DEBUG_RLO_FLAGS rloFlags = (DXGI_DEBUG_RLO_FLAGS)(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL);
             D3D_CALL(data->dxgiDebug, ReportLiveObjects, SDL_DXGI_DEBUG_ALL, rloFlags);
-            SAFE_RELEASE(data->dxgiDebug);
+            D3D_SAFE_RELEASE(data->dxgiDebug);
         }
 #endif
 
@@ -578,7 +537,7 @@ static void D3D12_ResetCommandList(D3D12_RenderData *data)
 
     /* Release any upload buffers that were inflight */
     for (i = 0; i < data->currentUploadBuffer; ++i) {
-        SAFE_RELEASE(data->uploadBuffers[i]);
+        D3D_SAFE_RELEASE(data->uploadBuffers[i]);
     }
     data->currentUploadBuffer = 0;
 
@@ -737,7 +696,7 @@ static D3D12_PipelineState *D3D12_CreatePipelineState(SDL_Renderer *renderer,
 
     pipelineStates = (D3D12_PipelineState *)SDL_realloc(data->pipelineStates, (data->pipelineStateCount + 1) * sizeof(*pipelineStates));
     if (!pipelineStates) {
-        SAFE_RELEASE(pipelineState);
+        D3D_SAFE_RELEASE(pipelineState);
         return NULL;
     }
 
@@ -758,7 +717,7 @@ static HRESULT D3D12_CreateVertexBuffer(D3D12_RenderData *data, size_t vbidx, si
     D3D12_RESOURCE_DESC vbufferDesc;
     HRESULT result;
 
-    SAFE_RELEASE(data->vertexBuffers[vbidx].resource);
+    D3D_SAFE_RELEASE(data->vertexBuffers[vbidx].resource);
 
     SDL_zero(vbufferHeapProps);
     vbufferHeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -914,7 +873,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
 
         D3D_CALL(dxgiInfoQueue, SetBreakOnSeverity, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, TRUE);
         D3D_CALL(dxgiInfoQueue, SetBreakOnSeverity, SDL_DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-        SAFE_RELEASE(dxgiInfoQueue);
+        D3D_SAFE_RELEASE(dxgiInfoQueue);
 #endif /* __IDXGIInfoQueue_INTERFACE_DEFINED__ */
         creationFlags = DXGI_CREATE_FACTORY_DEBUG;
     }
@@ -965,7 +924,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         D3D_CALL(infoQueue, SetBreakOnSeverity, D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
         D3D_CALL(infoQueue, SetBreakOnSeverity, D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
 
-        SAFE_RELEASE(infoQueue);
+        D3D_SAFE_RELEASE(infoQueue);
     }
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
@@ -1178,7 +1137,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER, data->commandQueue);
 
 done:
-    SAFE_RELEASE(d3dDevice);
+    D3D_SAFE_RELEASE(d3dDevice);
     return result;
 }
 
@@ -1361,7 +1320,7 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, data->swapChain);
 
 done:
-    SAFE_RELEASE(swapChain);
+    D3D_SAFE_RELEASE(swapChain);
     return result;
 }
 #endif
@@ -1414,7 +1373,7 @@ static HRESULT D3D12_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 
     /* Release render targets */
     for (i = 0; i < SDL_D3D12_NUM_BUFFERS; ++i) {
-        SAFE_RELEASE(data->renderTargets[i]);
+        D3D_SAFE_RELEASE(data->renderTargets[i]);
     }
 
     /* The width and height of the swap chain must be based on the display's
@@ -1827,12 +1786,12 @@ static void D3D12_DestroyTexture(SDL_Renderer *renderer,
        Unfortunately, this means that deleting a lot of textures mid-frame will have poor performance. */
     D3D12_IssueBatch(rendererData);
 
-    SAFE_RELEASE(textureData->mainTexture);
-    SAFE_RELEASE(textureData->stagingBuffer);
+    D3D_SAFE_RELEASE(textureData->mainTexture);
+    D3D_SAFE_RELEASE(textureData->stagingBuffer);
     D3D12_FreeSRVIndex(renderer, textureData->mainSRVIndex);
 #if SDL_HAVE_YUV
-    SAFE_RELEASE(textureData->mainTextureU);
-    SAFE_RELEASE(textureData->mainTextureV);
+    D3D_SAFE_RELEASE(textureData->mainTextureU);
+    D3D_SAFE_RELEASE(textureData->mainTextureV);
     if (textureData->yuv) {
         D3D12_FreeSRVIndex(renderer, textureData->mainSRVIndexU);
         D3D12_FreeSRVIndex(renderer, textureData->mainSRVIndexV);
@@ -1923,7 +1882,7 @@ static int D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Res
                       NULL,
                       (void **)&textureMemory);
     if (FAILED(result)) {
-        SAFE_RELEASE(rendererData->uploadBuffers[rendererData->currentUploadBuffer]);
+        D3D_SAFE_RELEASE(rendererData->uploadBuffers[rendererData->currentUploadBuffer]);
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Resource::Map [map staging texture]"), result);
     }
 
@@ -2172,7 +2131,7 @@ static int D3D12_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                       NULL,
                       (void **)&textureMemory);
     if (FAILED(result)) {
-        SAFE_RELEASE(rendererData->uploadBuffers[rendererData->currentUploadBuffer]);
+        D3D_SAFE_RELEASE(rendererData->uploadBuffers[rendererData->currentUploadBuffer]);
         return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Resource::Map [map staging texture]"), result);
     }
 
@@ -2277,7 +2236,7 @@ static void D3D12_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     /* Execute the command list before releasing the staging buffer */
     D3D12_IssueBatch(rendererData);
-    SAFE_RELEASE(textureData->stagingBuffer);
+    D3D_SAFE_RELEASE(textureData->stagingBuffer);
 }
 
 static void D3D12_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
@@ -3136,7 +3095,7 @@ static SDL_Surface *D3D12_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
     D3D_CALL(readbackBuffer, Unmap, 0, NULL);
 
 done:
-    SAFE_RELEASE(readbackBuffer);
+    D3D_SAFE_RELEASE(readbackBuffer);
     return output;
 }
 

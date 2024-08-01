@@ -23,17 +23,7 @@
 #if SDL_VIDEO_RENDER_D3D12 && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #include "../../core/windows/SDL_windows.h"
-
-/* From the DirectX-Headers build system:
- * "MinGW has RPC headers which define old versions, and complain if D3D
- * headers are included before the RPC headers, since D3D headers were
- * generated with new MIDL and "require" new RPC headers."
- */
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
-#ifndef WINAPI_PARTITION_GAMES
-#define WINAPI_PARTITION_GAMES 0
-#endif /* WINAPI_PARTITION_GAMES */
-#include "../../video/directx/d3d12.h"
+#include "../../video/directx/SDL_d3d12.h"
 
 #include "SDL_shaders_d3d12.h"
 
