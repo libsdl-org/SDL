@@ -29,10 +29,12 @@
 /* The default mouse input device, for platforms that don't have multiple mice */
 #define SDL_DEFAULT_MOUSE_ID    1
 
+typedef struct SDL_CursorData SDL_CursorData;
+
 struct SDL_Cursor
 {
     struct SDL_Cursor *next;
-    void *internal;
+    SDL_CursorData *internal;
 };
 
 typedef struct

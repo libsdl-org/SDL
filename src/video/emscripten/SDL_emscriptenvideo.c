@@ -152,7 +152,7 @@ static int Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *d
 
 static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
 {
-    Emscripten_FiniMouse();
+    Emscripten_QuitMouse();
 }
 
 static int Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)

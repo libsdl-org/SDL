@@ -24,8 +24,7 @@
 
 #include "../SDL_sysvideo.h"
 
-typedef struct _RPI_CursorData RPI_CursorData;
-struct _RPI_CursorData
+struct SDL_CursorData
 {
     DISPMANX_RESOURCE_HANDLE_T resource;
     DISPMANX_ELEMENT_HANDLE_T element;

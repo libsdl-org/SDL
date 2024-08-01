@@ -30,18 +30,38 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../joystick/usb_ids.h"
 
+
+struct SDL_CursorData
+{
+    HCURSOR cursor;
+};
+
 DWORD SDL_last_warp_time = 0;
 HCURSOR SDL_cursor = NULL;
 static SDL_Cursor *SDL_blank_cursor = NULL;
 
-static SDL_Cursor *WIN_CreateDefaultCursor(void)
+static SDL_Cursor *WIN_CreateCursorAndData(HCURSOR hcursor)
 {
-    SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        cursor->internal = LoadCursor(NULL, IDC_ARROW);
+    if (!hcursor) {
+        return NULL;
     }
 
+    SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
+    if (cursor) {
+        SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data));
+        if (!data) {
+            SDL_free(cursor);
+            return NULL;
+        }
+        data->cursor = hcursor;
+        cursor->internal = data;
+    }
     return cursor;
+}
+
+static SDL_Cursor *WIN_CreateDefaultCursor(void)
+{
+    return WIN_CreateCursorAndData(LoadCursor(NULL, IDC_ARROW));
 }
 
 static SDL_bool IsMonochromeSurface(SDL_Surface *surface)
@@ -155,10 +175,9 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, SDL_bool is_monochrome)
     return bitmap;
 }
 
-static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
+static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     HCURSOR hcursor;
-    SDL_Cursor *cursor;
     ICONINFO ii;
     SDL_bool is_monochrome = IsMonochromeSurface(surface);
 
@@ -184,15 +203,16 @@ static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         WIN_SetError("CreateIconIndirect()");
         return NULL;
     }
+    return hcursor;
+}
 
-    cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        cursor->internal = hcursor;
-    } else {
-        DestroyCursor(hcursor);
+static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
+{
+    HCURSOR hcursor = WIN_CreateHCursor(surface, hot_x, hot_y);
+    if (!hcursor) {
+        return NULL;
     }
-
-    return cursor;
+    return WIN_CreateCursorAndData(hcursor);
 }
 
 static SDL_Cursor *WIN_CreateBlankCursor(void)
@@ -208,12 +228,11 @@ static SDL_Cursor *WIN_CreateBlankCursor(void)
 
 static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
 {
-    SDL_Cursor *cursor;
     LPCTSTR name;
 
     switch (id) {
     default:
-        SDL_assert(0);
+        SDL_assert(!"Unknown system cursor ID");
         return NULL;
     case SDL_SYSTEM_CURSOR_DEFAULT:
         name = IDC_ARROW;
@@ -276,24 +295,17 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
         name = IDC_SIZEWE;
         break;
     }
-
-    cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        HCURSOR hcursor;
-
-        hcursor = LoadCursor(NULL, name);
-
-        cursor->internal = hcursor;
-    }
-
-    return cursor;
+    return WIN_CreateCursorAndData(LoadCursor(NULL, name));
 }
 
 static void WIN_FreeCursor(SDL_Cursor *cursor)
 {
-    HCURSOR hcursor = (HCURSOR)cursor->internal;
+    SDL_CursorData *data = cursor->internal;
 
-    DestroyCursor(hcursor);
+    if (data->cursor) {
+        DestroyCursor(data->cursor);
+    }
+    SDL_free(data);
     SDL_free(cursor);
 }
 
@@ -303,7 +315,7 @@ static int WIN_ShowCursor(SDL_Cursor *cursor)
         cursor = SDL_blank_cursor;
     }
     if (cursor) {
-        SDL_cursor = (HCURSOR)cursor->internal;
+        SDL_cursor = cursor->internal->cursor;
     } else {
         SDL_cursor = NULL;
     }
