@@ -723,6 +723,7 @@ SDL_DYNAPI_PROC(int,SDL_RunApp,(int a, char *b[], SDL_main_func c, void *d),(a,b
 SDL_DYNAPI_PROC(int,SDL_RunHapticEffect,(SDL_Haptic *a, int b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_SaveBMP,(SDL_Surface *a, const char *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SaveBMP_IO,(SDL_Surface *a, SDL_IOStream *b, SDL_bool c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_ScaleSurface,(SDL_Surface *a, int b, int c, SDL_ScaleMode d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_ScreenKeyboardShown,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_ScreenSaverEnabled,(void),(),return)
 SDL_DYNAPI_PROC(Sint64,SDL_SeekIO,(SDL_IOStream *a, Sint64 b, SDL_IOWhence c),(a,b,c),return)
