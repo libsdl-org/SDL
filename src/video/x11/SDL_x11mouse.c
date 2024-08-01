@@ -29,6 +29,11 @@
 #include "../SDL_video_c.h"
 #include "../../events/SDL_mouse_c.h"
 
+struct SDL_CursorData
+{
+    Cursor cursor;
+};
+
 /* FIXME: Find a better place to put this... */
 static Cursor x11_empty_cursor = None;
 static SDL_bool x11_cursor_visible = SDL_TRUE;
@@ -69,14 +74,25 @@ static void X11_DestroyEmptyCursor(void)
     }
 }
 
-static SDL_Cursor *X11_CreateDefaultCursor(void)
+static SDL_Cursor *X11_CreateCursorAndData(Cursor x11_cursor)
 {
-    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
+    SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        /* None is used to indicate the default cursor */
-        cursor->internal = (void *)(uintptr_t)None;
+        SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data));
+        if (!data) {
+            SDL_free(cursor);
+            return NULL;
+        }
+        data->cursor = x11_cursor;
+        cursor->internal = data;
     }
     return cursor;
+}
+
+static SDL_Cursor *X11_CreateDefaultCursor(void)
+{
+    /* None is used to indicate the default cursor */
+    return X11_CreateCursorAndData(None);
 }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
@@ -195,22 +211,17 @@ static Cursor X11_CreatePixmapCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
 static SDL_Cursor *X11_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
-    SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        Cursor x11_cursor = None;
+    Cursor x11_cursor = None;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
-        if (SDL_X11_HAVE_XCURSOR) {
-            x11_cursor = X11_CreateXCursorCursor(surface, hot_x, hot_y);
-        }
-#endif
-        if (x11_cursor == None) {
-            x11_cursor = X11_CreatePixmapCursor(surface, hot_x, hot_y);
-        }
-        cursor->internal = (void *)(uintptr_t)x11_cursor;
+    if (SDL_X11_HAVE_XCURSOR) {
+        x11_cursor = X11_CreateXCursorCursor(surface, hot_x, hot_y);
     }
-
-    return cursor;
+#endif
+    if (x11_cursor == None) {
+        x11_cursor = X11_CreatePixmapCursor(surface, hot_x, hot_y);
+    }
+    return X11_CreateCursorAndData(x11_cursor);
 }
 
 static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)
@@ -262,10 +273,7 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
     }
 
     if (x11_cursor != None) {
-        cursor = SDL_calloc(1, sizeof(*cursor));
-        if (cursor) {
-            cursor->internal = (void *)(uintptr_t)x11_cursor;
-        }
+        cursor = X11_CreateCursorAndData(x11_cursor);
     }
 
     return cursor;
@@ -273,11 +281,12 @@ static SDL_Cursor *X11_CreateSystemCursor(SDL_SystemCursor id)
 
 static void X11_FreeCursor(SDL_Cursor *cursor)
 {
-    Cursor x11_cursor = (Cursor)cursor->internal;
+    Cursor x11_cursor = cursor->internal->cursor;
 
     if (x11_cursor != None) {
         X11_XFreeCursor(GetDisplay(), x11_cursor);
     }
+    SDL_free(cursor->internal);
     SDL_free(cursor);
 }
 
@@ -286,7 +295,7 @@ static int X11_ShowCursor(SDL_Cursor *cursor)
     Cursor x11_cursor = 0;
 
     if (cursor) {
-        x11_cursor = (Cursor)cursor->internal;
+        x11_cursor = cursor->internal->cursor;
     } else {
         x11_cursor = X11_CreateEmptyCursor();
     }

@@ -66,7 +66,7 @@ typedef struct
     SDL_SystemCursor id;
 } Wayland_SystemCursor;
 
-struct Wayland_CursorData
+struct SDL_CursorData
 {
     union
     {
@@ -287,7 +287,7 @@ struct wl_callback_listener cursor_frame_listener = {
 
 static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 {
-    struct Wayland_CursorData *c = (struct Wayland_CursorData *)data;
+    SDL_CursorData *c = (SDL_CursorData *)data;
 
     const Uint64 now = SDL_GetTicks();
     const Uint64 elapsed = (now - c->cursor_data.system.last_frame_time_ms) % c->cursor_data.system.total_duration;
@@ -318,7 +318,7 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
     wl_surface_commit(c->surface);
 }
 
-static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, struct Wayland_CursorData *cdata, float *scale)
+static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, SDL_CursorData *cdata, float *scale)
 {
     struct wl_cursor_theme *theme = NULL;
     struct wl_cursor *cursor;
@@ -422,12 +422,12 @@ static SDL_Cursor *Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot
     if (cursor) {
         SDL_VideoDevice *vd = SDL_GetVideoDevice();
         SDL_VideoData *wd = vd->internal;
-        struct Wayland_CursorData *data = SDL_calloc(1, sizeof(struct Wayland_CursorData));
+        SDL_CursorData *data = SDL_calloc(1, sizeof(*data));
         if (!data) {
             SDL_free(cursor);
             return NULL;
         }
-        cursor->internal = (void *)data;
+        cursor->internal = data;
 
         /* Allocate shared memory buffer for this cursor */
         if (Wayland_AllocSHMBuffer(surface->w, surface->h, &data->cursor_data.custom) != 0) {
@@ -458,12 +458,12 @@ static SDL_Cursor *Wayland_CreateSystemCursor(SDL_SystemCursor id)
     SDL_VideoData *data = SDL_GetVideoDevice()->internal;
     SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        struct Wayland_CursorData *cdata = SDL_calloc(1, sizeof(struct Wayland_CursorData));
+        SDL_CursorData *cdata = SDL_calloc(1, sizeof(*cdata));
         if (!cdata) {
             SDL_free(cursor);
             return NULL;
         }
-        cursor->internal = (void *)cdata;
+        cursor->internal = cdata;
 
         /* The surface is only necessary if the cursor shape manager is not present.
          *
@@ -487,7 +487,7 @@ static SDL_Cursor *Wayland_CreateDefaultCursor(void)
     return Wayland_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 }
 
-static void Wayland_FreeCursorData(struct Wayland_CursorData *d)
+static void Wayland_FreeCursorData(SDL_CursorData *d)
 {
     /* Buffers for system cursors must not be destroyed. */
     if (d->is_system_cursor) {
@@ -516,7 +516,7 @@ static void Wayland_FreeCursor(SDL_Cursor *cursor)
         return;
     }
 
-    Wayland_FreeCursorData((struct Wayland_CursorData *)cursor->internal);
+    Wayland_FreeCursorData(cursor->internal);
 
     SDL_free(cursor->internal);
     SDL_free(cursor);
@@ -615,7 +615,7 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
     }
 
     if (cursor) {
-        struct Wayland_CursorData *data = cursor->internal;
+        SDL_CursorData *data = cursor->internal;
 
         /* TODO: High-DPI custom cursors? -flibit */
         if (data->is_system_cursor) {
@@ -764,7 +764,7 @@ static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float 
 #if 0  /* TODO RECONNECT: See waylandvideo.c for more information! */
 static void Wayland_RecreateCursor(SDL_Cursor *cursor, SDL_VideoData *vdata)
 {
-    Wayland_CursorData *cdata = (Wayland_CursorData *) cursor->internal;
+    SDL_CursorData *cdata = cursor->internal;
 
     /* Probably not a cursor we own */
     if (cdata == NULL) {

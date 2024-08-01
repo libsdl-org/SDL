@@ -41,12 +41,11 @@
 #define BUTTON_BACK       8
 #define BUTTON_FORWARD    16
 
-typedef struct
+struct SDL_CursorData
 {
     int custom_cursor;
     int system_cursor;
-
-} SDL_AndroidCursorData;
+};
 
 /* Last known Android mouse button state (includes all buttons) */
 static int last_state;
@@ -60,7 +59,7 @@ static SDL_Cursor *Android_WrapCursor(int custom_cursor, int system_cursor)
 
     cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)SDL_calloc(1, sizeof(*data));
+        SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data));
         if (data) {
             data->custom_cursor = custom_cursor;
             data->system_cursor = system_cursor;
@@ -104,7 +103,7 @@ static SDL_Cursor *Android_CreateSystemCursor(SDL_SystemCursor id)
 
 static void Android_FreeCursor(SDL_Cursor *cursor)
 {
-    SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)cursor->internal;
+    SDL_CursorData *data = cursor->internal;
     if (data->custom_cursor != 0) {
         Android_JNI_DestroyCustomCursor(data->custom_cursor);
     }
@@ -139,7 +138,7 @@ static int Android_ShowCursor(SDL_Cursor *cursor)
         cursor = Android_CreateEmptyCursor();
     }
     if (cursor) {
-        SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)cursor->internal;
+        SDL_CursorData *data = cursor->internal;
         if (data->custom_cursor) {
             if (!Android_JNI_SetCustomCursor(data->custom_cursor)) {
                 return SDL_Unsupported();
