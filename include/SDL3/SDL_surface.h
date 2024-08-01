@@ -1105,8 +1105,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, 
  * Perform a scaled blit using the 9-grid algorithm to a destination surface,
  * which may be of a different format.
  *
- * The pixels in the source surface are split into a 3x3 grid, using the
- * corner size for each corner, and the sides and center making up the
+ * The pixels in the source surface are split into a 3x3 grid, using the different
+ * corner sizes for each corner, and the sides and center making up the
  * remaining pixels. The corners are then scaled using `scale` and fit into
  * the corners of the destination rectangle. The sides and center are then
  * stretched into place to cover the remaining destination rectangle.
@@ -1114,7 +1114,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, 
  * \param src the SDL_Surface structure to be copied from.
  * \param srcrect the SDL_Rect structure representing the rectangle to be used
  *                for the 9-grid, or NULL to use the entire surface.
- * \param corner_size the size, in pixels, of the corner in `srcrect`.
+ * \param left_width the width, in pixels, of the left corners in `srcrect`.
+ * \param right_width the width, in pixels, of the right corners in `srcrect`.
+ * \param top_height the height, in pixels, of the top corners in `srcrect`.
+ * \param bottom_height the height, in pixels, of the bottom corners in `srcrect`.
  * \param scale the scale used to transform the corner of `srcrect` into the
  *              corner of `dstrect`, or 0.0f for an unscaled blit.
  * \param scaleMode scale algorithm to be used.
@@ -1132,7 +1135,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, 
  *
  * \sa SDL_BlitSurface
  */
-extern SDL_DECLSPEC int SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int corner_size, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);
+extern SDL_DECLSPEC int SDLCALL SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect);
 
 /**
  * Map an RGB triple to an opaque pixel value for a surface.
