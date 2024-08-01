@@ -785,25 +785,31 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
 
     now = SDL_GetTicksNS();
     if (total > 0) {
-        Uint64 timestamp, increment;
+        Uint64 mouse_timestamp, mouse_increment;
         Uint64 delta = (now - data->last_rawinput_poll);
-        if (total > 1 && delta <= SDL_MS_TO_NS(100)) {
+        UINT total_mouse = 0;
+        for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
+            if (input->header.dwType == RIM_TYPEMOUSE) {
+                ++total_mouse;
+            }
+        }
+        if (total_mouse > 1 && delta <= SDL_MS_TO_NS(100)) {
             /* We'll spread these events over the time since the last poll */
-            timestamp = data->last_rawinput_poll;
-            increment = delta / total;
+            mouse_timestamp = data->last_rawinput_poll;
+            mouse_increment = delta / total_mouse;
         } else {
             /* Do we want to track the update rate per device? */
-            timestamp = now;
-            increment = 0;
+            mouse_timestamp = now;
+            mouse_increment = 0;
         }
         for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
-            timestamp += increment;
             if (input->header.dwType == RIM_TYPEMOUSE) {
                 RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
-                WIN_HandleRawMouseInput(timestamp, data, input->header.hDevice, rawmouse);
+                mouse_timestamp += mouse_increment;
+                WIN_HandleRawMouseInput(mouse_timestamp, data, input->header.hDevice, rawmouse);
             } else if (input->header.dwType == RIM_TYPEKEYBOARD) {
                 RAWKEYBOARD *rawkeyboard = (RAWKEYBOARD *)((BYTE *)input + data->rawinput_offset);
-                WIN_HandleRawKeyboardInput(timestamp, data, input->header.hDevice, rawkeyboard);
+                WIN_HandleRawKeyboardInput(now, data, input->header.hDevice, rawkeyboard);
             }
         }
     }
