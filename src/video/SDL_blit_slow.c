@@ -146,7 +146,7 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                     continue;
                 }
             }
-            if ((flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL))) {
+            if (flags & SDL_COPY_BLEND_MASK) {
                 switch (dst_access) {
                 case SlowBlitPixelAccess_Index8:
                     dstpixel = *dst;
@@ -206,7 +206,7 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
                     srcB = (srcB * srcA) / 255;
                 }
             }
-            switch (flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL)) {
+            switch (flags & SDL_COPY_BLEND_MASK) {
             case 0:
                 dstR = srcR;
                 dstG = srcG;
