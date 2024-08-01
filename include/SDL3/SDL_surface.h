@@ -307,6 +307,76 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetSurfacePalette(SDL_Surface *surface, SDL_
 extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_GetSurfacePalette(SDL_Surface *surface);
 
 /**
+ * Add an alternate version of a surface.
+ *
+ * This function adds an alternate version of this surface, usually used for content with high DPI representations like cursors or icons. The size, format, and content do not need to match the original surface, and these alternate versions will not be updated when the original surface changes.
+ *
+ * This function adds a reference to the alternate version, so you should call SDL_DestroySurface() on the image after this call.
+ *
+ * \param surface the SDL_Surface structure to update.
+ * \param image a pointer to an alternate SDL_Surface to associate with this surface.
+ * \returns SDL_TRUE if alternate versions are available or SDL_TRUE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_RemoveSurfaceAlternateImages
+ * \sa SDL_GetSurfaceImages
+ * \sa SDL_SurfaceHasAlternateImages
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_AddSurfaceAlternateImage(SDL_Surface *surface, SDL_Surface *image);
+
+/**
+ * Return whether a surface has alternate versions available.
+ *
+ * \param surface the SDL_Surface structure to query.
+ * \returns SDL_TRUE if alternate versions are available or SDL_TRUE otherwise.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AddSurfaceAlternateImage
+ * \sa SDL_RemoveSurfaceAlternateImages
+ * \sa SDL_GetSurfaceImages
+ */
+extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SurfaceHasAlternateImages(SDL_Surface *surface);
+
+/**
+ * Get an array including all versions of a surface.
+ *
+ * This returns all versions of a surface, with the surface being queried as the first element in the returned array.
+ *
+ * Freeing the array of surfaces does not affect the surfaces in the array. They are still referenced by the surface being queried and will be cleaned up normally.
+ *
+ * \param surface the SDL_Surface structure to query.
+ * \param count a pointer filled in with the number of surface pointers returned, may
+ *              be NULL.
+ * \returns a NULL terminated array of SDL_Surface pointers or NULL on failure;
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AddSurfaceAlternateImage
+ * \sa SDL_RemoveSurfaceAlternateImages
+ * \sa SDL_SurfaceHasAlternateImages
+ */
+extern SDL_DECLSPEC SDL_Surface ** SDLCALL SDL_GetSurfaceImages(SDL_Surface *surface, int *count);
+
+/**
+ * Remove all alternate versions of a surface.
+ *
+ * This function removes a reference from all the alternative versions, destroying them if this is the last reference to them.
+ *
+ * \param surface the SDL_Surface structure to update.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_AddSurfaceAlternateImage
+ * \sa SDL_GetSurfaceImages
+ * \sa SDL_SurfaceHasAlternateImages
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_RemoveSurfaceAlternateImages(SDL_Surface *surface);
+
+/**
  * Set up a surface for directly accessing the pixels.
  *
  * Between calls to SDL_LockSurface() / SDL_UnlockSurface(), you can write to
@@ -679,6 +749,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMo
 /**
  * Creates a new surface identical to the existing surface.
  *
+ * If the original surface has alternate images, the new surface will have a reference to them as well.
+ *
  * The returned surface should be freed with SDL_DestroySurface().
  *
  * \param surface the surface to duplicate.
@@ -720,6 +792,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ScaleSurface(SDL_Surface *surface,
  * If you are converting to an indexed surface and want to map colors to a
  * palette, you can use SDL_ConvertSurfaceAndColorspace() instead.
  *
+ * If the original surface has alternate images, the new surface will have a reference to them as well.
+ *
  * \param surface the existing SDL_Surface structure to convert.
  * \param format the new pixel format.
  * \returns the new SDL_Surface structure that is created or NULL on failure;
@@ -739,6 +813,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurface(SDL_Surface *surfac
  * This function converts an existing surface to a new format and colorspace
  * and returns the new surface. This will perform any pixel format and
  * colorspace conversion needed.
+ *
+ * If the original surface has alternate images, the new surface will have a reference to them as well.
  *
  * \param surface the existing SDL_Surface structure to convert.
  * \param format the new pixel format.
