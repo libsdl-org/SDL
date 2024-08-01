@@ -385,16 +385,15 @@ void SDLTest_LogAllocations(void)
                     pSymbol->MaxNameLen = MAX_SYM_NAME;
                     IMAGEHLP_LINE64 dbg_line;
                     dbg_line.SizeOfStruct = sizeof(dbg_line);
+                    dbg_line.FileName = "";
+                    dbg_line.LineNumber = 0;
 
                     if (dyn_dbghelp.module) {
                         if (!dyn_dbghelp.pSymFromAddr(GetCurrentProcess(), entry->stack[stack_index], &dwDisplacement, pSymbol)) {
                             SDL_strlcpy(pSymbol->Name, "???", MAX_SYM_NAME);
                             dwDisplacement = 0;
                         }
-                        if (!dyn_dbghelp.pSymGetLineFromAddr64(GetCurrentProcess(), (DWORD64)entry->stack[stack_index], &lineColumn, &dbg_line)) {
-                            dbg_line.FileName = "";
-                            dbg_line.LineNumber = 0;
-                        }
+                        dyn_dbghelp.pSymGetLineFromAddr64(GetCurrentProcess(), (DWORD64)entry->stack[stack_index], &lineColumn, &dbg_line);
                     }
                     SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%I64x %s:%u", pSymbol->Name, dwDisplacement, dbg_line.FileName, (Uint32)dbg_line.LineNumber);
                 }
