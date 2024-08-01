@@ -687,6 +687,7 @@ SDL3_0.0.0 {
     SDL_RunHapticEffect;
     SDL_SaveBMP;
     SDL_SaveBMP_IO;
+    SDL_ScaleSurface;
     SDL_ScreenKeyboardShown;
     SDL_ScreenSaverEnabled;
     SDL_SeekIO;

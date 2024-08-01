@@ -1968,6 +1968,88 @@ SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
     return SDL_ConvertSurfaceAndColorspace(surface, surface->format, surface->internal->palette, surface->internal->colorspace, surface->internal->props);
 }
 
+SDL_Surface *SDL_ScaleSurface(SDL_Surface *surface, int width, int height, SDL_ScaleMode scaleMode)
+{
+    SDL_Surface *convert = NULL;
+    Uint32 copy_flags;
+    SDL_Color copy_color;
+    int ret;
+
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        goto error;
+    }
+
+    if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        // We can't directly scale a YUV surface (yet!)
+        SDL_Surface *tmp = SDL_CreateSurface(surface->w, surface->h, SDL_PIXELFORMAT_ARGB8888);
+        if (!tmp) {
+            return NULL;
+        }
+
+        SDL_Surface *scaled = SDL_ScaleSurface(tmp, width, height, scaleMode);
+        SDL_DestroySurface(tmp);
+        if (!scaled) {
+            return NULL;
+        }
+        tmp = scaled;
+
+        SDL_Surface *result = SDL_ConvertSurfaceAndColorspace(tmp, surface->format, NULL, surface->internal->colorspace, surface->internal->props);
+        SDL_DestroySurface(tmp);
+        return result;
+    }
+
+    /* Create a new surface with the desired size */
+    convert = SDL_CreateSurface(width, height, surface->format);
+    if (!convert) {
+        goto error;
+    }
+    SDL_SetSurfacePalette(convert, surface->internal->palette);
+    SDL_SetSurfaceColorspace(convert, surface->internal->colorspace);
+
+    /* Save the original copy flags */
+    copy_flags = surface->internal->map.info.flags;
+    copy_color.r = surface->internal->map.info.r;
+    copy_color.g = surface->internal->map.info.g;
+    copy_color.b = surface->internal->map.info.b;
+    copy_color.a = surface->internal->map.info.a;
+    surface->internal->map.info.r = 0xFF;
+    surface->internal->map.info.g = 0xFF;
+    surface->internal->map.info.b = 0xFF;
+    surface->internal->map.info.a = 0xFF;
+    surface->internal->map.info.flags = (copy_flags & (SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY));
+    SDL_InvalidateMap(&surface->internal->map);
+
+    ret = SDL_BlitSurfaceScaled(surface, NULL, convert, NULL, scaleMode);
+
+    /* Clean up the original surface, and update converted surface */
+    convert->internal->map.info.r = copy_color.r;
+    convert->internal->map.info.g = copy_color.g;
+    convert->internal->map.info.b = copy_color.b;
+    convert->internal->map.info.a = copy_color.a;
+    convert->internal->map.info.flags = (copy_flags & ~(SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY));
+    surface->internal->map.info.r = copy_color.r;
+    surface->internal->map.info.g = copy_color.g;
+    surface->internal->map.info.b = copy_color.b;
+    surface->internal->map.info.a = copy_color.a;
+    surface->internal->map.info.flags = copy_flags;
+    SDL_InvalidateMap(&surface->internal->map);
+
+    /* SDL_BlitSurfaceScaled failed, and so the conversion */
+    if (ret < 0) {
+        goto error;
+    }
+
+    /* We're ready to go! */
+    return convert;
+
+error:
+    if (convert) {
+        SDL_DestroySurface(convert);
+    }
+    return NULL;
+}
+
 SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, SDL_PixelFormat format)
 {
     if (!SDL_SurfaceValid(surface)) {

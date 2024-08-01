@@ -712,6 +712,7 @@
 #define SDL_RunHapticEffect SDL_RunHapticEffect_REAL
 #define SDL_SaveBMP SDL_SaveBMP_REAL
 #define SDL_SaveBMP_IO SDL_SaveBMP_IO_REAL
+#define SDL_ScaleSurface SDL_ScaleSurface_REAL
 #define SDL_ScreenKeyboardShown SDL_ScreenKeyboardShown_REAL
 #define SDL_ScreenSaverEnabled SDL_ScreenSaverEnabled_REAL
 #define SDL_SeekIO SDL_SeekIO_REAL

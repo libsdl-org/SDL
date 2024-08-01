@@ -692,6 +692,24 @@ extern SDL_DECLSPEC int SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMo
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_DuplicateSurface(SDL_Surface *surface);
 
 /**
+ * Creates a new surface identical to the existing surface, scaled to the desired size.
+ *
+ * The returned surface should be freed with SDL_DestroySurface().
+ *
+ * \param surface the surface to duplicate and scale.
+ * \param width the width of the new surface.
+ * \param height the height of the new surface.
+ * \param scaleMode the SDL_ScaleMode to be used.
+ * \returns a copy of the surface or NULL on failure; call SDL_GetError() for
+ *          more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_DestroySurface
+ */
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ScaleSurface(SDL_Surface *surface, int width, int height, SDL_ScaleMode scaleMode);
+
+/**
  * Copy an existing surface to a new surface of the specified format.
  *
  * This function is used to optimize images for faster *repeat* blitting. This
@@ -1031,7 +1049,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const SD
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the target rectangle in
  *                the destination surface, may not be NULL.
- * \param scaleMode scale algorithm to be used.
+ * \param scaleMode the SDL_ScaleMode to be used.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
