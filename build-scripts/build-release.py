@@ -609,6 +609,10 @@ class Releaser:
         aar_path =  self.dist_path / f"{self.project}-{self.version}.aar"
         added_global_files = False
         with zipfile.ZipFile(aar_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_object:
+            install_txt = (self.root / "build-scripts/pkg-support/android/INSTALL.md.in").read_text()
+            install_txt = install_txt.replace("@PROJECT_VERSION@", self.version)
+            install_txt = install_txt.replace("@PROJECT_NAME@", self.project)
+            zip_object.writestr("INSTALL.md", install_txt)
             project_description = {
                 "name": self.project,
                 "version": self.version,

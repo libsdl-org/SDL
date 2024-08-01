@@ -114,7 +114,11 @@ def gradle_add_package_name(path: Path, package_name: str) -> None:
 
 def main() -> int:
     description = "Create a simple Android gradle project from input sources."
-    epilog = "You need to manually copy a prebuilt SDL3 Android archive into the project tree when using the aar variant."
+    epilog = textwrap.dedent("""\
+        You need to manually copy a prebuilt SDL3 Android archive into the project tree when using the aar variant.
+        
+        Any changes you have done to the sources in the Android project will be lost
+    """)
     parser = ArgumentParser(description=description, epilog=epilog, allow_abbrev=False)
     parser.add_argument("package_name", metavar="PACKAGENAME", help="Android package name (e.g. com.yourcompany.yourapp)")
     parser.add_argument("sources", metavar="SOURCE", nargs="*", help="Source code of your application. The files are copied to the output directory.")

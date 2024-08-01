@@ -57,13 +57,14 @@ run:
 One limitation of this script is that all sources provided will be aggregated into
 a single directory, thus all your source files should have a unique name.
 
-Once the project is complete the script will tell you where the debug APK is located.
+Once the project is complete the script will tell you how to build the project.
 If you want to create a signed release APK, you can use the project created by this
 utility to generate it.
 
+Running the script with `--help` will list all available options, and their purposes.
+
 Finally, a word of caution: re running create-android-project.py wipes any changes you may have
 done in the build directory for the app!
-
 
 
 For more complex projects, follow these instructions:
@@ -121,6 +122,48 @@ Here's an explanation of the files in the Android project, so you can customize 
         src/main/res/values/strings.xml	- strings used in your application, including the application name
         src/main/java/org/libsdl/app/SDLActivity.java - the Java class handling the initialization and binding to SDL. Be very careful changing this, as the SDL library relies on this implementation. You should instead subclass this for your application.
 
+
+Using the SDL3 Android Archive (.aar)
+================================================================================
+
+The `create-android-project.py` script can
+./create-android-project.py com.yourcompany.yourapp < sources.list
+
+The Android archive allows use of SDL3 in your Android project, without needing to copy any SDL c or java source.
+For integration with CMake/ndk-build, it uses [prefab](https://google.github.io/prefab/).
+
+Copy the archive to a `app/libs` directory of your project and add the following to `app/gradle.build`:
+```
+android {
+    /* ... */
+    buildFeatures {
+        prefab true
+    }
+}
+dependencies {
+    implementation files('libs/@PROJECT_NAME@-@PROJECT_VERSION@.aar')
+    /* ... */
+}
+```
+
+If you're using CMake, add the following to your CMakeLists.txt:
+```
+find_package(@PROJECT_NAME@ REQUIRED CONFIG)
+target_link_libraries(yourgame PRIVATE @PROJECT_NAME@::@PROJECT_NAME@)
+```
+
+If you're using ndk-build, add the following somewhere after `LOCAL_MODULE := yourgame` to your `Android.mk` or `Application.mk`:
+```
+# https://google.github.io/prefab/build-systems.html
+
+# Add the prefab modules to the import path.
+$(call import-add-path,/out)
+
+# Import @PROJECT_NAME@ so we can depend on it.
+$(call import-module,prefab/@PROJECT_NAME@)
+```
+
+If you want to avoid adding the complete SDL source base as a subproject, or adding the Java sources of the bindings to your Android project
 
 Customizing your application name
 ================================================================================
