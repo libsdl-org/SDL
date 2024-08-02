@@ -5137,12 +5137,23 @@ SDL_TextInputType SDL_GetTextInputType(SDL_PropertiesID props)
 
 SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props)
 {
-    return (SDL_Capitalization)SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_NONE);
+    if (SDL_HasProperty(props, SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER)) {
+        return (SDL_Capitalization)SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_NONE);
+    }
+
+    switch (SDL_GetTextInputType(props)) {
+    case SDL_TEXTINPUT_TYPE_TEXT:
+        return SDL_CAPITALIZE_SENTENCES;
+    case SDL_TEXTINPUT_TYPE_TEXT_NAME:
+        return SDL_CAPITALIZE_WORDS;
+    default:
+        return SDL_CAPITALIZE_NONE;
+    }
 }
 
 SDL_bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props)
 {
-    return SDL_GetBooleanProperty(props, SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, SDL_FALSE);
+    return SDL_GetBooleanProperty(props, SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, SDL_TRUE);
 }
 
 SDL_bool SDL_GetTextInputMultiline(SDL_PropertiesID props)
