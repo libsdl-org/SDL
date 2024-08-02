@@ -106,6 +106,7 @@ struct SDL_Window
     int safe_inset_bottom;
     SDL_Rect safe_rect;
 
+    SDL_PropertiesID text_input_props;
     SDL_bool text_input_active;
     SDL_Rect text_input_rect;
     int text_input_cursor;
@@ -331,14 +332,14 @@ struct SDL_VideoDevice
     int (*SuspendScreenSaver)(SDL_VideoDevice *_this);
 
     /* Text input */
-    int (*StartTextInput)(SDL_VideoDevice *_this, SDL_Window *window);
+    int (*StartTextInput)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
     int (*StopTextInput)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*UpdateTextInputArea)(SDL_VideoDevice *_this, SDL_Window *window);
     int (*ClearComposition)(SDL_VideoDevice *_this, SDL_Window *window);
 
     /* Screen keyboard */
     SDL_bool (*HasScreenKeyboardSupport)(SDL_VideoDevice *_this);
-    void (*ShowScreenKeyboard)(SDL_VideoDevice *_this, SDL_Window *window);
+    void (*ShowScreenKeyboard)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
     void (*HideScreenKeyboard)(SDL_VideoDevice *_this, SDL_Window *window);
     SDL_bool (*IsScreenKeyboardShown)(SDL_VideoDevice *_this, SDL_Window *window);
 
@@ -564,5 +565,10 @@ extern SDL_Window *SDL_GetToplevelForKeyboardFocus(void);
 extern SDL_bool SDL_ShouldAllowTopmost(void);
 
 extern void SDL_ToggleDragAndDropSupport(void);
+
+extern SDL_TextInputType SDL_GetTextInputType(SDL_PropertiesID props);
+extern SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props);
+extern SDL_bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props);
+extern SDL_bool SDL_GetTextInputMultiline(SDL_PropertiesID props);
 
 #endif /* SDL_sysvideo_h_ */

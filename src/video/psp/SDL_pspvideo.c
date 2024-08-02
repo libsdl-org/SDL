@@ -249,7 +249,7 @@ SDL_bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
-void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     char list[0x20000] __attribute__((aligned(64)));  // Needed for sceGuStart to work
     int i;
@@ -266,7 +266,36 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     data.language = PSP_UTILITY_OSK_LANGUAGE_DEFAULT;
     data.lines = 1;
     data.unk_24 = 1;
-    data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_ALL;
+    switch (SDL_GetTextInputType(props)) {
+    default:
+    case SDL_TEXTINPUT_TYPE_TEXT:
+        data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_ALL;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_NAME:
+        data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_ALL;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_EMAIL:
+        data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_ALL;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
+        data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_ALL;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
+        data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_ALL;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
+        data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_ALL;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER:
+        data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_LATIN_DIGIT;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
+        data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_LATIN_DIGIT;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
+        data.inputtype = PSP_UTILITY_OSK_INPUTTYPE_LATIN_DIGIT;
+        break;
+    }
     data.desc = NULL;
     data.intext = NULL;
     data.outtextlength = input_text_length;

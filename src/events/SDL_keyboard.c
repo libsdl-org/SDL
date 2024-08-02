@@ -327,7 +327,7 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
 
         if (SDL_TextInputActive(keyboard->focus)) {
             if (video && video->StartTextInput) {
-                video->StartTextInput(video, keyboard->focus);
+                video->StartTextInput(video, keyboard->focus, keyboard->focus->text_input_props);
             }
         }
     }

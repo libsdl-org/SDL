@@ -421,7 +421,7 @@ static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
 }
 
-int X11_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+int X11_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     X11_ResetXIM(_this, window);
 
@@ -451,7 +451,7 @@ SDL_bool X11_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return videodata->is_steam_deck;
 }
 
-void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_VideoData *videodata = _this->internal;
 
@@ -459,10 +459,33 @@ void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
         /* For more documentation of the URL parameters, see:
          * https://partner.steamgames.com/doc/api/ISteamUtils#ShowFloatingGamepadTextInput
          */
+        const int k_EFloatingGamepadTextInputModeModeSingleLine = 0;    // Enter dismisses the keyboard
+        const int k_EFloatingGamepadTextInputModeModeMultipleLines = 1; // User needs to explicitly dismiss the keyboard
+        const int k_EFloatingGamepadTextInputModeModeEmail = 2;         // Keyboard is displayed in a special mode that makes it easier to enter emails
+        const int k_EFloatingGamepadTextInputModeModeNumeric = 3;       // Numeric keypad is shown
         char deeplink[128];
+        int mode;
+
+        switch (SDL_GetTextInputType(props)) {
+        case SDL_TEXTINPUT_TYPE_TEXT_EMAIL:
+            mode = k_EFloatingGamepadTextInputModeModeEmail;
+            break;
+        case SDL_TEXTINPUT_TYPE_NUMBER:
+        case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
+        case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
+            mode = k_EFloatingGamepadTextInputModeModeNumeric;
+            break;
+        default:
+            if (SDL_GetTextInputMultiline(props)) {
+                mode = k_EFloatingGamepadTextInputModeModeMultipleLines;
+            } else {
+                mode = k_EFloatingGamepadTextInputModeModeSingleLine;
+            }
+            break;
+        }
         (void)SDL_snprintf(deeplink, sizeof(deeplink),
                            "steam://open/keyboard?XPosition=0&YPosition=0&Width=0&Height=0&Mode=%d",
-                           SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE) ? 0 : 1);
+                           mode);
         SDL_OpenURL(deeplink);
         videodata->steam_keyboard_open = SDL_TRUE;
     }

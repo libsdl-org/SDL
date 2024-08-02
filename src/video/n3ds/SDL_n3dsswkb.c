@@ -50,7 +50,7 @@ SDL_bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
-int N3DS_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+int N3DS_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     char buffer[BUFFER_SIZE];
     SwkbdButton button_pressed;

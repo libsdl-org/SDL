@@ -51,7 +51,7 @@ void Wayland_QuitKeyboard(SDL_VideoDevice *_this)
 #endif
 }
 
-int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_VideoData *internal = _this->internal;
     struct SDL_WaylandInput *input = internal->input;
@@ -59,13 +59,71 @@ int Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     if (internal->text_input_manager) {
         if (input && input->text_input) {
             const SDL_Rect *rect = &input->text_input->cursor_rect;
+            enum zwp_text_input_v3_content_hint hint = ZWP_TEXT_INPUT_V3_CONTENT_HINT_NONE;
+            enum zwp_text_input_v3_content_purpose purpose;
+
+            switch (SDL_GetTextInputType(props)) {
+            default:
+            case SDL_TEXTINPUT_TYPE_TEXT:
+                purpose = ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_NORMAL;
+                break;
+            case SDL_TEXTINPUT_TYPE_TEXT_NAME:
+                purpose = ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_NAME;
+                break;
+            case SDL_TEXTINPUT_TYPE_TEXT_EMAIL:
+                purpose = ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_EMAIL;
+                break;
+            case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
+                purpose = ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_NORMAL;
+                hint |= ZWP_TEXT_INPUT_V3_CONTENT_HINT_SENSITIVE_DATA;
+                break;
+            case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
+                purpose = ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_PASSWORD;
+                hint |= (ZWP_TEXT_INPUT_V3_CONTENT_HINT_HIDDEN_TEXT | ZWP_TEXT_INPUT_V3_CONTENT_HINT_SENSITIVE_DATA);
+                break;
+            case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
+                purpose = ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_PASSWORD;
+                hint |= ZWP_TEXT_INPUT_V3_CONTENT_HINT_SENSITIVE_DATA;
+                break;
+            case SDL_TEXTINPUT_TYPE_NUMBER:
+                purpose = ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_NUMBER;
+                break;
+            case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
+                purpose = ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_PIN;
+                hint |= (ZWP_TEXT_INPUT_V3_CONTENT_HINT_HIDDEN_TEXT | ZWP_TEXT_INPUT_V3_CONTENT_HINT_SENSITIVE_DATA);
+                break;
+            case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
+                purpose = ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_PIN;
+                hint |= ZWP_TEXT_INPUT_V3_CONTENT_HINT_SENSITIVE_DATA;
+                break;
+            }
+
+            switch (SDL_GetTextInputCapitalization(props)) {
+            default:
+            case SDL_CAPITALIZE_NONE:
+                break;
+            case SDL_CAPITALIZE_LETTERS:
+                hint |= ZWP_TEXT_INPUT_V3_CONTENT_HINT_UPPERCASE;
+                break;
+            case SDL_CAPITALIZE_WORDS:
+                hint |= ZWP_TEXT_INPUT_V3_CONTENT_HINT_TITLECASE;
+                break;
+            case SDL_CAPITALIZE_SENTENCES:
+                hint |= ZWP_TEXT_INPUT_V3_CONTENT_HINT_AUTO_CAPITALIZATION;
+                break;
+            }
+
+            if (SDL_GetTextInputAutocorrect(props)) {
+                hint |= (ZWP_TEXT_INPUT_V3_CONTENT_HINT_COMPLETION | ZWP_TEXT_INPUT_V3_CONTENT_HINT_SPELLCHECK);
+            }
+            if (SDL_GetTextInputMultiline(props)) {
+                hint |= ZWP_TEXT_INPUT_V3_CONTENT_HINT_MULTILINE;
+            }
 
             zwp_text_input_v3_enable(input->text_input->text_input);
 
             /* Now that it's enabled, set the input properties */
-            zwp_text_input_v3_set_content_type(input->text_input->text_input,
-                                               ZWP_TEXT_INPUT_V3_CONTENT_HINT_NONE,
-                                               ZWP_TEXT_INPUT_V3_CONTENT_PURPOSE_NORMAL);
+            zwp_text_input_v3_set_content_type(input->text_input->text_input, hint, purpose);
             if (!SDL_RectEmpty(rect)) {
                 /* This gets reset on enable so we have to cache it */
                 zwp_text_input_v3_set_cursor_rectangle(input->text_input->text_input,

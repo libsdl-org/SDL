@@ -278,15 +278,6 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     textField.text = obligateForBackspace;
     committedText = textField.text;
 
-    /* set UITextInputTrait properties, mostly to defaults */
-    textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-    textField.autocorrectionType = UITextAutocorrectionTypeNo;
-    textField.enablesReturnKeyAutomatically = NO;
-    textField.keyboardAppearance = UIKeyboardAppearanceDefault;
-    textField.keyboardType = UIKeyboardTypeDefault;
-    textField.returnKeyType = UIReturnKeyDefault;
-    textField.secureTextEntry = NO;
-
     textField.hidden = YES;
     keyboardVisible = NO;
 
@@ -391,6 +382,103 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     [center removeObserver:self
                       name:UITextFieldTextDidChangeNotification
                     object:nil];
+}
+
+- (void)setKeyboardProperties:(SDL_PropertiesID) props
+{
+    textField.secureTextEntry = NO;
+
+    switch (SDL_GetTextInputType(props)) {
+    default:
+    case SDL_TEXTINPUT_TYPE_TEXT:
+        textField.keyboardType = UIKeyboardTypeDefault;
+        textField.textContentType = nil;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_NAME:
+        textField.keyboardType = UIKeyboardTypeDefault;
+        textField.textContentType = UITextContentTypeName;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_EMAIL:
+        textField.keyboardType = UIKeyboardTypeEmailAddress;
+        textField.textContentType = UITextContentTypeEmailAddress;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
+        textField.keyboardType = UIKeyboardTypeDefault;
+        if (@available(iOS 11.0, *)) {
+            textField.textContentType = UITextContentTypeUsername;
+        } else {
+            textField.textContentType = nil;
+        }
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
+        textField.keyboardType = UIKeyboardTypeDefault;
+        if (@available(iOS 11.0, *)) {
+            textField.textContentType = UITextContentTypePassword;
+        } else {
+            textField.textContentType = nil;
+        }
+        textField.secureTextEntry = YES;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
+        textField.keyboardType = UIKeyboardTypeDefault;
+        if (@available(iOS 11.0, *)) {
+            textField.textContentType = UITextContentTypePassword;
+        } else {
+            textField.textContentType = nil;
+        }
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER:
+        textField.keyboardType = UIKeyboardTypeNumberPad;
+        textField.textContentType = nil;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
+        textField.keyboardType = UIKeyboardTypeNumberPad;
+        if (@available(iOS 12.0, *)) {
+            textField.textContentType = UITextContentTypeOneTimeCode;
+        } else {
+            textField.textContentType = nil;
+        }
+        textField.secureTextEntry = YES;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
+        textField.keyboardType = UIKeyboardTypeNumberPad;
+        if (@available(iOS 12.0, *)) {
+            textField.textContentType = UITextContentTypeOneTimeCode;
+        } else {
+            textField.textContentType = nil;
+        }
+        break;
+    }
+
+    switch (SDL_GetTextInputCapitalization(props)) {
+    default:
+    case SDL_CAPITALIZE_NONE:
+        textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        break;
+    case SDL_CAPITALIZE_LETTERS:
+        textField.autocapitalizationType = UITextAutocapitalizationTypeAllCharacters;
+        break;
+    case SDL_CAPITALIZE_WORDS:
+        textField.autocapitalizationType = UITextAutocapitalizationTypeWords;
+        break;
+    case SDL_CAPITALIZE_SENTENCES:
+        textField.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+        break;
+    }
+
+    if (SDL_GetTextInputAutocorrect(props)) {
+        textField.autocorrectionType = UITextAutocorrectionTypeYes;
+        textField.spellCheckingType = UITextSpellCheckingTypeYes;
+    } else {
+        textField.autocorrectionType = UITextAutocorrectionTypeNo;
+        textField.spellCheckingType = UITextSpellCheckingTypeNo;
+    }
+
+    if (SDL_GetTextInputMultiline(props)) {
+        textField.enablesReturnKeyAutomatically = YES;
+    } else {
+        textField.enablesReturnKeyAutomatically = NO;
+    }
 }
 
 /* reveal onscreen virtual keyboard */
@@ -596,10 +684,11 @@ SDL_bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
-void UIKit_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void UIKit_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
+        [vc setKeyboardProperties:props];
         [vc showKeyboard];
     }
 }

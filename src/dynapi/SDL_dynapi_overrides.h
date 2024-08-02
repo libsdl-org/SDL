@@ -841,6 +841,7 @@
 #define SDL_SignalCondition SDL_SignalCondition_REAL
 #define SDL_SignalSemaphore SDL_SignalSemaphore_REAL
 #define SDL_StartTextInput SDL_StartTextInput_REAL
+#define SDL_StartTextInputWithProperties SDL_StartTextInputWithProperties_REAL
 #define SDL_StepUTF8 SDL_StepUTF8_REAL
 #define SDL_StopHapticEffect SDL_StopHapticEffect_REAL
 #define SDL_StopHapticEffects SDL_StopHapticEffects_REAL

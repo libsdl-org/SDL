@@ -367,10 +367,92 @@ extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetTextInputArea
+ * \sa SDL_StartTextInputWithProperties
  * \sa SDL_StopTextInput
  * \sa SDL_TextInputActive
  */
 extern SDL_DECLSPEC int SDLCALL SDL_StartTextInput(SDL_Window *window);
+
+/**
+ * Text input type.
+ *
+ * These are the valid values for SDL_PROP_TEXTINPUT_TYPE_NUMBER. Not every value is valid on every platform, but where a value isn't supported, a reasonable fallback will be used.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ *
+ * \sa SDL_StartTextInputWithProperties
+ */
+typedef enum SDL_TextInputType
+{
+    SDL_TEXTINPUT_TYPE_TEXT,                        /**< The input is text */
+    SDL_TEXTINPUT_TYPE_TEXT_NAME,                   /**< The input is a person's name */
+    SDL_TEXTINPUT_TYPE_TEXT_EMAIL,                  /**< The input is an e-mail address */
+    SDL_TEXTINPUT_TYPE_TEXT_USERNAME,               /**< The input is a username */
+    SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN,        /**< The input is a secure password that is hidden */
+    SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE,       /**< The input is a secure password that is visible */
+    SDL_TEXTINPUT_TYPE_NUMBER,                      /**< The input is a number */
+    SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN,      /**< The input is a secure PIN that is hidden */
+    SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE      /**< The input is a secure PIN that is visible */
+} SDL_TextInputType;
+
+/**
+ * Auto capitalization type.
+ *
+ * These are the valid values for SDL_PROP_TEXTINPUT_AUTOCAPITALIZATION_NUMBER. Not every value is valid on every platform, but where a value isn't supported, a reasonable fallback will be used.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ *
+ * \sa SDL_StartTextInputWithProperties
+ */
+typedef enum SDL_Capitalization
+{
+    SDL_CAPITALIZE_NONE,        /**< No auto-capitalization will be done */
+    SDL_CAPITALIZE_SENTENCES,   /**< The first letter of sentences will be capitalized */
+    SDL_CAPITALIZE_WORDS,       /**< The first letter of words will be capitalized */
+    SDL_CAPITALIZE_LETTERS      /**< All letters will be capitalized */
+} SDL_Capitalization;
+
+/**
+ * Start accepting Unicode text input events in a window, with properties describing the input.
+ *
+ * This function will enable text input (SDL_EVENT_TEXT_INPUT and
+ * SDL_EVENT_TEXT_EDITING events) in the specified window. Please use this
+ * function paired with SDL_StopTextInput().
+ *
+ * Text input events are not received by default.
+ *
+ * On some platforms using this function shows the screen keyboard.
+ *
+ * These are the supported properties:
+ *
+ * - `SDL_PROP_TEXTINPUT_TYPE_NUMBER` - an SDL_TextInputType value that describes text being input, defaults to SDL_TEXTINPUT_TYPE_TEXT.
+ * - `SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER` - an SDL_Capitalization value that describes how text should be capitalized, defaults to SDL_CAPITALIZE_NONE.
+ * - `SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN` - true to enable auto completion and auto correction.
+ * - `SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN` - true if multiple lines of text are allowed. This defaults to true if SDL_HINT_RETURN_KEY_HIDES_IME is "0" or is not set, and defaults to false if SDL_HINT_RETURN_KEY_HIDES_IME is "1".
+ *
+ * On Android you can directly specify the input type:
+ *
+ * - `SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER` - the text input type to use, overriding other properties. This is documented at https://developer.android.com/reference/android/text/InputType
+ *
+ * \param window the window to enable text input.
+ * \param props the properties to use.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetTextInputArea
+ * \sa SDL_StartTextInput
+ * \sa SDL_StopTextInput
+ * \sa SDL_TextInputActive
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_StartTextInputWithProperties(SDL_Window *window, SDL_PropertiesID props);
+
+#define SDL_PROP_TEXTINPUT_TYPE_NUMBER                  "SDL.textinput.type"
+#define SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER        "SDL.textinput.capitalization"
+#define SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN          "SDL.textinput.autocorrect"
+#define SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN            "SDL.textinput.multiline"
+#define SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER     "SDL.textinput.android.inputtype"
 
 /**
  * Check whether or not Unicode text input events are enabled for a window.

@@ -30,6 +30,46 @@
 
 #include "../../core/android/SDL_android.h"
 
+#define TYPE_CLASS_TEXT                         0x00000001
+#define TYPE_CLASS_NUMBER                       0x00000002
+#define TYPE_CLASS_PHONE                        0x00000003
+#define TYPE_CLASS_DATETIME                     0x00000004
+
+#define TYPE_DATETIME_VARIATION_NORMAL          0x00000000
+#define TYPE_DATETIME_VARIATION_DATE            0x00000010
+#define TYPE_DATETIME_VARIATION_TIME            0x00000020
+
+#define TYPE_NUMBER_VARIATION_NORMAL            0x00000000
+#define TYPE_NUMBER_VARIATION_PASSWORD          0x00000010
+#define TYPE_NUMBER_FLAG_SIGNED                 0x00001000
+#define TYPE_NUMBER_FLAG_DECIMAL                0x00002000
+
+#define TYPE_TEXT_FLAG_CAP_CHARACTERS           0x00001000
+#define TYPE_TEXT_FLAG_CAP_WORDS                0x00002000
+#define TYPE_TEXT_FLAG_CAP_SENTENCES            0x00004000
+#define TYPE_TEXT_FLAG_AUTO_CORRECT             0x00008000
+#define TYPE_TEXT_FLAG_AUTO_COMPLETE            0x00010000
+#define TYPE_TEXT_FLAG_MULTI_LINE               0x00020000
+#define TYPE_TEXT_FLAG_IME_MULTI_LINE           0x00040000
+#define TYPE_TEXT_FLAG_NO_SUGGESTIONS           0x00080000
+
+#define TYPE_TEXT_VARIATION_NORMAL              0x00000000
+#define TYPE_TEXT_VARIATION_URI                 0x00000010
+#define TYPE_TEXT_VARIATION_EMAIL_ADDRESS       0x00000020
+#define TYPE_TEXT_VARIATION_EMAIL_SUBJECT       0x00000030
+#define TYPE_TEXT_VARIATION_SHORT_MESSAGE       0x00000040
+#define TYPE_TEXT_VARIATION_LONG_MESSAGE        0x00000050
+#define TYPE_TEXT_VARIATION_PERSON_NAME         0x00000060
+#define TYPE_TEXT_VARIATION_POSTAL_ADDRESS      0x00000070
+#define TYPE_TEXT_VARIATION_PASSWORD            0x00000080
+#define TYPE_TEXT_VARIATION_VISIBLE_PASSWORD    0x00000090
+#define TYPE_TEXT_VARIATION_WEB_EDIT_TEXT       0x000000a0
+#define TYPE_TEXT_VARIATION_FILTER              0x000000b0
+#define TYPE_TEXT_VARIATION_PHONETIC            0x000000c0
+#define TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS   0x000000d0
+#define TYPE_TEXT_VARIATION_WEB_PASSWORD        0x000000e0
+
+
 static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_UNKNOWN */
     SDL_SCANCODE_SOFTLEFT,         /* AKEYCODE_SOFT_LEFT */
@@ -343,9 +383,67 @@ SDL_bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
-void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
-    Android_JNI_ShowScreenKeyboard(&window->text_input_rect);
+    int input_type = 0;
+    if (SDL_HasProperty(props, SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER)) {
+        input_type = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER, 0);
+    } else {
+        switch (SDL_GetTextInputType(props)) {
+        default:
+        case SDL_TEXTINPUT_TYPE_TEXT:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_NORMAL);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_NAME:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_EMAIL:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_NORMAL);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            break;
+        case SDL_TEXTINPUT_TYPE_NUMBER:
+            input_type = (TYPE_CLASS_NUMBER | TYPE_NUMBER_VARIATION_NORMAL);
+            break;
+        case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
+            input_type = (TYPE_CLASS_NUMBER | TYPE_NUMBER_VARIATION_PASSWORD);
+            break;
+        case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
+            input_type = (TYPE_CLASS_NUMBER | TYPE_NUMBER_VARIATION_NORMAL);
+            break;
+        }
+
+        switch (SDL_GetTextInputCapitalization(props)) {
+        default:
+        case SDL_CAPITALIZE_NONE:
+            break;
+        case SDL_CAPITALIZE_LETTERS:
+            input_type |= TYPE_TEXT_FLAG_CAP_CHARACTERS;
+            break;
+        case SDL_CAPITALIZE_WORDS:
+            input_type |= TYPE_TEXT_FLAG_CAP_WORDS;
+            break;
+        case SDL_CAPITALIZE_SENTENCES:
+            input_type |= TYPE_TEXT_FLAG_CAP_SENTENCES;
+            break;
+        }
+
+        if (SDL_GetTextInputAutocorrect(props)) {
+            input_type |= (TYPE_TEXT_FLAG_AUTO_CORRECT | TYPE_TEXT_FLAG_AUTO_COMPLETE);
+        }
+
+        if (SDL_GetTextInputMultiline(props)) {
+            input_type |= TYPE_TEXT_FLAG_MULTI_LINE;
+        }
+    }
+    Android_JNI_ShowScreenKeyboard(input_type, &window->text_input_rect);
     SDL_screen_keyboard_shown = SDL_TRUE;
 }
 
@@ -358,7 +456,7 @@ void Android_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 void Android_RestoreScreenKeyboardOnResume(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (SDL_screen_keyboard_shown) {
-        Android_ShowScreenKeyboard(_this, window);
+        Android_ShowScreenKeyboard(_this, window, window->text_input_props);
     }
 }
 
