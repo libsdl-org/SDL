@@ -120,6 +120,26 @@ void HAIKU_DeleteDevice(SDL_VideoDevice * device)
     SDL_free(device);
 }
 
+struct SDL_CursorData
+{
+    BCursor *cursor;
+};
+
+static SDL_Cursor *HAIKU_CreateCursorAndData(BCursor *bcursor)
+{
+    SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
+    if (cursor) {
+        SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data));
+        if (!data) {
+            SDL_free(cursor);
+            return NULL;
+        }
+        data->cursor = bcursor;
+        cursor->internal = data;
+    }
+    return cursor;
+}
+
 static SDL_Cursor * HAIKU_CreateSystemCursor(SDL_SystemCursor id)
 {
     BCursorID cursorId = B_CURSOR_ID_SYSTEM_DEFAULT;
@@ -153,12 +173,7 @@ static SDL_Cursor * HAIKU_CreateSystemCursor(SDL_SystemCursor id)
             return NULL;
     }
 
-    SDL_Cursor *cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        cursor->internal = (void *)new BCursor(cursorId);
-    }
-
-    return cursor;
+    return HAIKU_CreateCursorAndData(new BCursor(cursorId));
 }
 
 static SDL_Cursor * HAIKU_CreateDefaultCursor()
@@ -168,15 +183,17 @@ static SDL_Cursor * HAIKU_CreateDefaultCursor()
 
 static void HAIKU_FreeCursor(SDL_Cursor * cursor)
 {
-    if (cursor->internal) {
-        delete (BCursor*) cursor->internal;
+    SDL_CursorData *data = cursor->internal;
+
+    if (data) {
+        delete data->cursor;
     }
+    SDL_free(data);
     SDL_free(cursor);
 }
 
 static SDL_Cursor * HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
-    SDL_Cursor *cursor;
     SDL_Surface *converted;
 
     converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
@@ -188,14 +205,7 @@ static SDL_Cursor * HAIKU_CreateCursor(SDL_Surface * surface, int hot_x, int hot
 	cursorBitmap->SetBits(converted->pixels, converted->h * converted->pitch, 0, B_RGBA32);
     SDL_DestroySurface(converted);
 
-    cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        cursor->internal = (void *)new BCursor(cursorBitmap, BPoint(hot_x, hot_y));
-    } else {
-        return NULL;
-    }
-
-    return cursor;
+    return HAIKU_CreateCursorAndData(new BCursor(cursorBitmap, BPoint(hot_x, hot_y)));
 }
 
 static int HAIKU_ShowCursor(SDL_Cursor *cursor)
@@ -207,7 +217,7 @@ static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 	}
 
 	if (cursor) {
-		BCursor *hCursor = (BCursor*)cursor->internal;
+		BCursor *hCursor = cursor->internal->cursor;
 		be_app->SetCursor(hCursor);
 	} else {
 		BCursor *hCursor = new BCursor(B_CURSOR_ID_NO_CURSOR);

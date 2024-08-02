@@ -337,7 +337,7 @@ __EOF__
 __EOF__
         }
         print FILE <<__EOF__;
-            switch (flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL)) {
+            switch (flags & SDL_COPY_BLEND_MASK) {
             case SDL_COPY_BLEND:
 __EOF__
         if ($A_is_const_FF) {
@@ -658,7 +658,7 @@ __EOF__
                             my $flags = "";
                             my $flag = "";
                             if ( $modulate ) {
-                                $flag = "SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA";
+                                $flag = "SDL_COPY_MODULATE_MASK";
                                 if ( $flags eq "" ) {
                                     $flags = $flag;
                                 } else {
@@ -666,7 +666,7 @@ __EOF__
                                 }
                             }
                             if ( $blend ) {
-                                $flag = "SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL";
+                                $flag = "SDL_COPY_BLEND_MASK";
                                 if ( $flags eq "" ) {
                                     $flags = $flag;
                                 } else {

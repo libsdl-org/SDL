@@ -33,6 +33,7 @@
 #define SDL_AddGamepadMappingsFromFile SDL_AddGamepadMappingsFromFile_REAL
 #define SDL_AddGamepadMappingsFromIO SDL_AddGamepadMappingsFromIO_REAL
 #define SDL_AddHintCallback SDL_AddHintCallback_REAL
+#define SDL_AddSurfaceAlternateImage SDL_AddSurfaceAlternateImage_REAL
 #define SDL_AddTimer SDL_AddTimer_REAL
 #define SDL_AddTimerNS SDL_AddTimerNS_REAL
 #define SDL_AddVulkanRenderSemaphores SDL_AddVulkanRenderSemaphores_REAL
@@ -463,6 +464,7 @@
 #define SDL_GetSurfaceColorKey SDL_GetSurfaceColorKey_REAL
 #define SDL_GetSurfaceColorMod SDL_GetSurfaceColorMod_REAL
 #define SDL_GetSurfaceColorspace SDL_GetSurfaceColorspace_REAL
+#define SDL_GetSurfaceImages SDL_GetSurfaceImages_REAL
 #define SDL_GetSurfacePalette SDL_GetSurfacePalette_REAL
 #define SDL_GetSurfaceProperties SDL_GetSurfaceProperties_REAL
 #define SDL_GetSystemRAM SDL_GetSystemRAM_REAL
@@ -669,6 +671,7 @@
 #define SDL_ReloadGamepadMappings SDL_ReloadGamepadMappings_REAL
 #define SDL_RemovePath SDL_RemovePath_REAL
 #define SDL_RemoveStoragePath SDL_RemoveStoragePath_REAL
+#define SDL_RemoveSurfaceAlternateImages SDL_RemoveSurfaceAlternateImages_REAL
 #define SDL_RemoveTimer SDL_RemoveTimer_REAL
 #define SDL_RenamePath SDL_RenamePath_REAL
 #define SDL_RenameStoragePath SDL_RenameStoragePath_REAL
@@ -712,6 +715,7 @@
 #define SDL_RunHapticEffect SDL_RunHapticEffect_REAL
 #define SDL_SaveBMP SDL_SaveBMP_REAL
 #define SDL_SaveBMP_IO SDL_SaveBMP_IO_REAL
+#define SDL_ScaleSurface SDL_ScaleSurface_REAL
 #define SDL_ScreenKeyboardShown SDL_ScreenKeyboardShown_REAL
 #define SDL_ScreenSaverEnabled SDL_ScreenSaverEnabled_REAL
 #define SDL_SeekIO SDL_SeekIO_REAL
@@ -844,6 +848,7 @@
 #define SDL_StopTextInput SDL_StopTextInput_REAL
 #define SDL_StorageReady SDL_StorageReady_REAL
 #define SDL_StringToGUID SDL_StringToGUID_REAL
+#define SDL_SurfaceHasAlternateImages SDL_SurfaceHasAlternateImages_REAL
 #define SDL_SurfaceHasColorKey SDL_SurfaceHasColorKey_REAL
 #define SDL_SurfaceHasRLE SDL_SurfaceHasRLE_REAL
 #define SDL_SyncWindow SDL_SyncWindow_REAL

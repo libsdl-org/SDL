@@ -125,7 +125,7 @@ static SDL_Cursor *WINRT_CreateSystemCursor(SDL_SystemCursor id)
         */
         CoreCursor ^ *theCursor = new CoreCursor ^ (nullptr);
         *theCursor = ref new CoreCursor(cursorType, 0);
-        cursor->internal = (void *)theCursor;
+        cursor->internal = (SDL_CursorData *)theCursor;
     }
 
     return cursor;

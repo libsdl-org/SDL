@@ -8,6 +8,7 @@ SDL3_0.0.0 {
     SDL_AddGamepadMappingsFromFile;
     SDL_AddGamepadMappingsFromIO;
     SDL_AddHintCallback;
+    SDL_AddSurfaceAlternateImage;
     SDL_AddTimer;
     SDL_AddTimerNS;
     SDL_AddVulkanRenderSemaphores;
@@ -438,6 +439,7 @@ SDL3_0.0.0 {
     SDL_GetSurfaceColorKey;
     SDL_GetSurfaceColorMod;
     SDL_GetSurfaceColorspace;
+    SDL_GetSurfaceImages;
     SDL_GetSurfacePalette;
     SDL_GetSurfaceProperties;
     SDL_GetSystemRAM;
@@ -644,6 +646,7 @@ SDL3_0.0.0 {
     SDL_ReloadGamepadMappings;
     SDL_RemovePath;
     SDL_RemoveStoragePath;
+    SDL_RemoveSurfaceAlternateImages;
     SDL_RemoveTimer;
     SDL_RenamePath;
     SDL_RenameStoragePath;
@@ -687,6 +690,7 @@ SDL3_0.0.0 {
     SDL_RunHapticEffect;
     SDL_SaveBMP;
     SDL_SaveBMP_IO;
+    SDL_ScaleSurface;
     SDL_ScreenKeyboardShown;
     SDL_ScreenSaverEnabled;
     SDL_SeekIO;
@@ -819,6 +823,7 @@ SDL3_0.0.0 {
     SDL_StopTextInput;
     SDL_StorageReady;
     SDL_StringToGUID;
+    SDL_SurfaceHasAlternateImages;
     SDL_SurfaceHasColorKey;
     SDL_SurfaceHasRLE;
     SDL_SyncWindow;

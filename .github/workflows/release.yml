@@ -596,9 +596,6 @@ jobs:
           echo "Project contents:"
           echo ""
           find "/tmp/projects/org.libsdl.testspriteminimal"
-      - name: 'Remove SDL sources to make sure they are not used'
-        run: |
-          rm -rf "${{ steps.src.outputs.path }}"
       - name: 'Copy SDL3 aar into Gradle project'
         run: |
           cp "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" "${{ steps.create-gradle-project.outputs.path }}/app/libs"
@@ -615,3 +612,26 @@ jobs:
         run: |
           cd "${{ steps.create-gradle-project.outputs.path }}"
           ./gradlew -i assembleRelease
+      - name: 'Extract Android SDK from AAR'
+        id: sdk
+        run: |
+          python "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" -o /tmp/SDL3-android
+          echo "prefix=/tmp/SDL3-android" >>$GITHUB_OUTPUT
+      - name: 'CMake (configure + build) x86, x64, arm32, arm64'
+        run: |
+          android_abis="x86 x86_64 armeabi-v7a arm64-v8a"
+          for android_abi in ${android_abis}; do
+            echo "Configure ${android_abi}"
+            cmake -S "${{ steps.src.outputs.path }}/cmake/test"                               \
+              -DTEST_FULL=TRUE                                                                \
+              -DTEST_STATIC=FALSE                                                             \
+              -DTEST_TEST=TRUE                                                                \
+              -DCMAKE_PREFIX_PATH="${{ steps.sdk.outputs.prefix }}"                           \
+              -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake  \
+              -DANDROID_ABI=${android_abi}                                                    \
+              -Werror=dev                                                                     \
+              -DCMAKE_BUILD_TYPE=Release                                                      \
+              -B "${android_abi}"
+          done
+          echo "Build ${android_abi}"
+          cmake --build "${android_abi}" --config Release --verbose

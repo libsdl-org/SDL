@@ -436,6 +436,126 @@ SDL_Palette *SDL_GetSurfacePalette(SDL_Surface *surface)
     return surface->internal->palette;
 }
 
+int SDL_AddSurfaceAlternateImage(SDL_Surface *surface, SDL_Surface *image)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (!SDL_SurfaceValid(image)) {
+        return SDL_InvalidParamError("image");
+    }
+
+    SDL_Surface **images = (SDL_Surface **)SDL_realloc(surface->internal->images, (surface->internal->num_images + 1) * sizeof(*images));
+    if (!images) {
+        return -1;
+    }
+    images[surface->internal->num_images] = image;
+    surface->internal->images = images;
+    ++surface->internal->num_images;
+    ++image->refcount;
+    return 0;
+}
+
+SDL_bool SDL_SurfaceHasAlternateImages(SDL_Surface *surface)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        return SDL_FALSE;
+    }
+
+    return (surface->internal->num_images > 0);
+}
+
+SDL_Surface **SDL_GetSurfaceImages(SDL_Surface *surface, int *count)
+{
+    if (count) {
+        *count = 0;
+    }
+
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    int num_images = 1 + surface->internal->num_images;
+    SDL_Surface **images = (SDL_Surface **)SDL_malloc((num_images + 1) * sizeof(*images));
+    if (!images) {
+        return NULL;
+    }
+    images[0] = surface;
+    if (surface->internal->num_images > 0) {
+        SDL_memcpy(&images[1], surface->internal->images, (surface->internal->num_images * sizeof(images[1])));
+    }
+    images[num_images] = NULL;
+
+    if (count) {
+        *count = num_images;
+    }
+    return images;
+}
+
+SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    if (!SDL_SurfaceHasAlternateImages(surface)) {
+        ++surface->refcount;
+        return surface;
+    }
+
+    // This surface has high DPI images, pick the best one available, or scale one to the correct size
+    SDL_Surface **images = SDL_GetSurfaceImages(surface, NULL);
+    if (!images) {
+        // Failure, fall back to the existing surface
+        ++surface->refcount;
+        return surface;
+    }
+
+    SDL_Surface *closest = NULL;
+    int desired_w = (int)SDL_round(surface->w * display_scale);
+    int desired_h = (int)SDL_round(surface->h * display_scale);
+    int closest_distance = -1;
+    for (int i = 0; images[i]; ++i) {
+        SDL_Surface *candidate = images[i];
+        int delta_w = (candidate->w - desired_w);
+        int delta_h = (candidate->h - desired_h);
+        int distance = (delta_w * delta_w) + (delta_h * delta_h);
+        if (closest_distance < 0 || distance < closest_distance) {
+            closest = candidate;
+            closest_distance = distance;
+        }
+    }
+    SDL_free(images);
+    SDL_assert(closest != NULL);    // We should always have at least one surface
+
+    if (closest->w == desired_w && closest->h == desired_h) {
+        ++closest->refcount;
+        return closest;
+    }
+
+    // We need to scale an image to the correct size
+    return SDL_ScaleSurface(closest, desired_w, desired_h, SDL_SCALEMODE_LINEAR);
+}
+
+void SDL_RemoveSurfaceAlternateImages(SDL_Surface *surface)
+{
+    if (!SDL_SurfaceValid(surface)) {
+        return;
+    }
+
+    if (surface->internal->num_images > 0) {
+        for (int i = 0; i < surface->internal->num_images; ++i) {
+            SDL_DestroySurface(surface->internal->images[i]);
+        }
+        SDL_free(surface->internal->images);
+        surface->internal->images = NULL;
+        surface->internal->num_images = 0;
+    }
+}
+
 int SDL_SetSurfaceRLE(SDL_Surface *surface, SDL_bool enabled)
 {
     int flags;
@@ -722,7 +842,7 @@ int SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
 
     status = 0;
     flags = surface->internal->map.info.flags;
-    surface->internal->map.info.flags &= ~(SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL);
+    surface->internal->map.info.flags &= ~SDL_COPY_BLEND_MASK;
     switch (blendMode) {
     case SDL_BLENDMODE_NONE:
         break;
@@ -770,7 +890,7 @@ int SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
         return 0;
     }
 
-    switch (surface->internal->map.info.flags & (SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL)) {
+    switch (surface->internal->map.info.flags & SDL_COPY_BLEND_MASK) {
     case SDL_COPY_BLEND:
         *blendMode = SDL_BLENDMODE_BLEND;
         break;
@@ -1103,9 +1223,7 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
                                    SDL_Surface *dst, const SDL_Rect *dstrect,
                                    SDL_ScaleMode scaleMode)
 {
-    static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_COLOR | SDL_COPY_MODULATE_ALPHA |
-                                              SDL_COPY_BLEND | SDL_COPY_BLEND_PREMULTIPLIED | SDL_COPY_ADD | SDL_COPY_ADD_PREMULTIPLIED | SDL_COPY_MOD | SDL_COPY_MUL |
-                                              SDL_COPY_COLORKEY);
+    static const Uint32 complex_copy_flags = (SDL_COPY_MODULATE_MASK | SDL_COPY_BLEND_MASK | SDL_COPY_COLORKEY);
 
     if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
         dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
@@ -1422,11 +1540,14 @@ int SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, flo
     return 0;
 }
 
-int SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int corner_size, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect)
+int SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_width, int right_width, int top_height, int bottom_height, float scale, SDL_ScaleMode scaleMode, SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     SDL_Rect full_src, full_dst;
     SDL_Rect curr_src, curr_dst;
-    int dst_corner_size;
+    int dst_left_width;
+    int dst_right_width;
+    int dst_top_height;
+    int dst_bottom_height;
 
     /* Make sure the surfaces aren't locked */
     if (!SDL_SurfaceValid(src)) {
@@ -1452,90 +1573,104 @@ int SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int corner_s
     }
 
     if (scale <= 0.0f || scale == 1.0f) {
-        dst_corner_size = corner_size;
+        dst_left_width = left_width;
+        dst_right_width = right_width;
+        dst_top_height = top_height;
+        dst_bottom_height = bottom_height;
     } else {
-        dst_corner_size = (int)SDL_roundf(corner_size * scale);
+        dst_left_width = (int)SDL_roundf(left_width * scale);
+        dst_right_width = (int)SDL_roundf(right_width * scale);
+        dst_top_height = (int)SDL_roundf(top_height * scale);
+        dst_bottom_height = (int)SDL_roundf(bottom_height * scale);
     }
 
     // Upper-left corner
     curr_src.x = srcrect->x;
     curr_src.y = srcrect->y;
-    curr_src.w = corner_size;
-    curr_src.h = corner_size;
+    curr_src.w = left_width;
+    curr_src.h = top_height;
     curr_dst.x = dstrect->x;
     curr_dst.y = dstrect->y;
-    curr_dst.w = dst_corner_size;
-    curr_dst.h = dst_corner_size;
+    curr_dst.w = dst_left_width;
+    curr_dst.h = dst_top_height;
     if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
         return -1;
     }
 
     // Upper-right corner
-    curr_src.x = srcrect->x + srcrect->w - corner_size;
-    curr_dst.x = dstrect->x + dstrect->w - dst_corner_size;
+    curr_src.x = srcrect->x + srcrect->w - right_width;
+    curr_src.w = right_width;
+    curr_dst.x = dstrect->x + dstrect->w - dst_right_width;
+    curr_dst.w = dst_right_width;
     if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
         return -1;
     }
 
     // Lower-right corner
-    curr_src.y = srcrect->y + srcrect->h - corner_size;
-    curr_dst.y = dstrect->y + dstrect->h - dst_corner_size;
+    curr_src.y = srcrect->y + srcrect->h - bottom_height;
+    curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
+    curr_dst.h = dst_bottom_height;
     if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
         return -1;
     }
 
     // Lower-left corner
     curr_src.x = srcrect->x;
+    curr_src.w = left_width;
     curr_dst.x = dstrect->x;
+    curr_dst.w = dst_left_width;
     if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
         return -1;
     }
 
     // Left
-    curr_src.y = srcrect->y + corner_size;
-    curr_src.h = srcrect->h - 2 * corner_size;
-    curr_dst.y = dstrect->y + dst_corner_size;
-    curr_dst.h = dstrect->h - 2 * dst_corner_size;
+    curr_src.y = srcrect->y + top_height;
+    curr_src.h = srcrect->h - top_height - bottom_height;
+    curr_dst.y = dstrect->y + dst_top_height;
+    curr_dst.h = dstrect->h - dst_top_height - dst_bottom_height;
     if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
         return -1;
     }
 
     // Right
-    curr_src.x = srcrect->x + srcrect->w - corner_size;
-    curr_dst.x = dstrect->x + dstrect->w - dst_corner_size;
+    curr_src.x = srcrect->x + srcrect->w - right_width;
+    curr_src.w = right_width;
+    curr_dst.x = dstrect->x + dstrect->w - dst_right_width;
+    curr_dst.w = dst_right_width;
     if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
         return -1;
     }
 
     // Top
-    curr_src.x = srcrect->x + corner_size;
+    curr_src.x = srcrect->x + left_width;
     curr_src.y = srcrect->y;
-    curr_src.w = srcrect->w - 2 * corner_size;
-    curr_src.h = corner_size;
-    curr_dst.x = dstrect->x + dst_corner_size;
+    curr_src.w = srcrect->w - left_width - right_width;
+    curr_src.h = top_height;
+    curr_dst.x = dstrect->x + dst_left_width;
     curr_dst.y = dstrect->y;
-    curr_dst.w = dstrect->w - 2 * dst_corner_size;
-    curr_dst.h = dst_corner_size;
+    curr_dst.w = dstrect->w - dst_left_width - dst_right_width;
+    curr_dst.h = dst_top_height;
     if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
         return -1;
     }
 
     // Bottom
-    curr_src.y = srcrect->y + srcrect->h - corner_size;
-    curr_dst.y = dstrect->y + dstrect->h - dst_corner_size;
+    curr_src.y = srcrect->y + srcrect->h - bottom_height;
+    curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
+    curr_dst.h = dst_bottom_height;
     if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
         return -1;
     }
 
     // Center
-    curr_src.x = srcrect->x + corner_size;
-    curr_src.y = srcrect->y + corner_size;
-    curr_src.w = srcrect->w - 2 * corner_size;
-    curr_src.h = srcrect->h - 2 * corner_size;
-    curr_dst.x = dstrect->x + dst_corner_size;
-    curr_dst.y = dstrect->y + dst_corner_size;
-    curr_dst.w = dstrect->w - 2 * dst_corner_size;
-    curr_dst.h = dstrect->h - 2 * dst_corner_size;
+    curr_src.x = srcrect->x + left_width;
+    curr_src.y = srcrect->y + top_height;
+    curr_src.w = srcrect->w - left_width - right_width;
+    curr_src.h = srcrect->h - top_height - bottom_height;
+    curr_dst.x = dstrect->x + dst_left_width;
+    curr_dst.y = dstrect->y + dst_top_height;
+    curr_dst.w = dstrect->w - dst_left_width - dst_right_width;
+    curr_dst.h = dstrect->h - dst_top_height - dst_bottom_height;
     if (SDL_BlitSurfaceScaled(src, &curr_src, dst, &curr_dst, scaleMode) < 0) {
         return -1;
     }
@@ -1930,6 +2065,13 @@ end:
         SDL_SetSurfaceRLE(convert, SDL_TRUE);
     }
 
+    /* Copy alternate images */
+    for (int i = 0; i < surface->internal->num_images; ++i) {
+        if (SDL_AddSurfaceAlternateImage(convert, surface->internal->images[i]) < 0) {
+            goto error;
+        }
+    }
+
     /* We're ready to go! */
     return convert;
 
@@ -1951,6 +2093,88 @@ SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
     }
 
     return SDL_ConvertSurfaceAndColorspace(surface, surface->format, surface->internal->palette, surface->internal->colorspace, surface->internal->props);
+}
+
+SDL_Surface *SDL_ScaleSurface(SDL_Surface *surface, int width, int height, SDL_ScaleMode scaleMode)
+{
+    SDL_Surface *convert = NULL;
+    Uint32 copy_flags;
+    SDL_Color copy_color;
+    int ret;
+
+    if (!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        goto error;
+    }
+
+    if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+        // We can't directly scale a YUV surface (yet!)
+        SDL_Surface *tmp = SDL_CreateSurface(surface->w, surface->h, SDL_PIXELFORMAT_ARGB8888);
+        if (!tmp) {
+            return NULL;
+        }
+
+        SDL_Surface *scaled = SDL_ScaleSurface(tmp, width, height, scaleMode);
+        SDL_DestroySurface(tmp);
+        if (!scaled) {
+            return NULL;
+        }
+        tmp = scaled;
+
+        SDL_Surface *result = SDL_ConvertSurfaceAndColorspace(tmp, surface->format, NULL, surface->internal->colorspace, surface->internal->props);
+        SDL_DestroySurface(tmp);
+        return result;
+    }
+
+    /* Create a new surface with the desired size */
+    convert = SDL_CreateSurface(width, height, surface->format);
+    if (!convert) {
+        goto error;
+    }
+    SDL_SetSurfacePalette(convert, surface->internal->palette);
+    SDL_SetSurfaceColorspace(convert, surface->internal->colorspace);
+
+    /* Save the original copy flags */
+    copy_flags = surface->internal->map.info.flags;
+    copy_color.r = surface->internal->map.info.r;
+    copy_color.g = surface->internal->map.info.g;
+    copy_color.b = surface->internal->map.info.b;
+    copy_color.a = surface->internal->map.info.a;
+    surface->internal->map.info.r = 0xFF;
+    surface->internal->map.info.g = 0xFF;
+    surface->internal->map.info.b = 0xFF;
+    surface->internal->map.info.a = 0xFF;
+    surface->internal->map.info.flags = (copy_flags & (SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY));
+    SDL_InvalidateMap(&surface->internal->map);
+
+    ret = SDL_BlitSurfaceScaled(surface, NULL, convert, NULL, scaleMode);
+
+    /* Clean up the original surface, and update converted surface */
+    convert->internal->map.info.r = copy_color.r;
+    convert->internal->map.info.g = copy_color.g;
+    convert->internal->map.info.b = copy_color.b;
+    convert->internal->map.info.a = copy_color.a;
+    convert->internal->map.info.flags = (copy_flags & ~(SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY));
+    surface->internal->map.info.r = copy_color.r;
+    surface->internal->map.info.g = copy_color.g;
+    surface->internal->map.info.b = copy_color.b;
+    surface->internal->map.info.a = copy_color.a;
+    surface->internal->map.info.flags = copy_flags;
+    SDL_InvalidateMap(&surface->internal->map);
+
+    /* SDL_BlitSurfaceScaled failed, and so the conversion */
+    if (ret < 0) {
+        goto error;
+    }
+
+    /* We're ready to go! */
+    return convert;
+
+error:
+    if (convert) {
+        SDL_DestroySurface(convert);
+    }
+    return NULL;
 }
 
 SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, SDL_PixelFormat format)
@@ -2690,6 +2914,8 @@ void SDL_DestroySurface(SDL_Surface *surface)
     if (--surface->refcount > 0) {
         return;
     }
+
+    SDL_RemoveSurfaceAlternateImages(surface);
 
     SDL_DestroyProperties(surface->internal->props);
 

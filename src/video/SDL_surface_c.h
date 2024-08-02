@@ -52,6 +52,10 @@ struct SDL_SurfaceData
     /** palette for indexed surfaces */
     SDL_Palette *palette;
 
+    /** Alternate representation of images */
+    int num_images;
+    SDL_Surface **images;
+
     /** information needed for surfaces requiring locks */
     int locked;
 
@@ -76,6 +80,7 @@ extern float SDL_GetDefaultSDRWhitePoint(SDL_Colorspace colorspace);
 extern float SDL_GetSurfaceSDRWhitePoint(SDL_Surface *surface, SDL_Colorspace colorspace);
 extern float SDL_GetDefaultHDRHeadroom(SDL_Colorspace colorspace);
 extern float SDL_GetSurfaceHDRHeadroom(SDL_Surface *surface, SDL_Colorspace colorspace);
+extern SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale);
 extern int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 
 #endif /* SDL_surface_c_h_ */

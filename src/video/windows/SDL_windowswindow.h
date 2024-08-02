@@ -48,6 +48,16 @@ typedef enum SDL_WindowEraseBackgroundMode
     SDL_ERASEBACKGROUNDMODE_ALWAYS,
 } SDL_WindowEraseBackgroundMode;
 
+typedef struct
+{
+    void **lpVtbl;
+    int refcount;
+    SDL_Window *window;
+    HWND hwnd;
+    UINT format_text;
+    UINT format_file;
+} SDLDropTarget;
+
 struct SDL_WindowData
 {
     SDL_Window *window;
@@ -89,6 +99,7 @@ struct SDL_WindowData
 
     /* Whether we retain the content of the window when changing state */
     UINT copybits_flag;
+    SDLDropTarget *drop_target;
 };
 
 extern int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);

@@ -232,7 +232,7 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
 static void Cocoa_FreeCursor(SDL_Cursor *cursor)
 {
     @autoreleasepool {
-        CFBridgingRelease(cursor->internal);
+        CFBridgingRelease((void *)cursor->internal);
         SDL_free(cursor);
     }
 }
