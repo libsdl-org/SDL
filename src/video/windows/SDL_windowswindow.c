@@ -1805,6 +1805,7 @@ static STDMETHODIMP SDLDropTarget_DragEnter(SDLDropTarget *target,
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      ". In DragEnter at %ld, %ld => nil, nil\n", pt.x, pt.y);
     }
+    SDL_SendDragEnter(target->window);
     return S_OK;
 }
 
@@ -1831,7 +1832,7 @@ static STDMETHODIMP SDLDropTarget_DragLeave(SDLDropTarget *target)
 {
     SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                  ". In DragLeave\n");
-    SDL_SendDropComplete(target->window);
+    SDL_SendDragExit(target->window);
     return S_OK;
 }
 
