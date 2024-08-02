@@ -426,9 +426,9 @@ typedef enum SDL_Capitalization
  * These are the supported properties:
  *
  * - `SDL_PROP_TEXTINPUT_TYPE_NUMBER` - an SDL_TextInputType value that describes text being input, defaults to SDL_TEXTINPUT_TYPE_TEXT.
- * - `SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER` - an SDL_Capitalization value that describes how text should be capitalized, defaults to SDL_CAPITALIZE_NONE.
- * - `SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN` - true to enable auto completion and auto correction.
- * - `SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN` - true if multiple lines of text are allowed. This defaults to true if SDL_HINT_RETURN_KEY_HIDES_IME is "0" or is not set, and defaults to false if SDL_HINT_RETURN_KEY_HIDES_IME is "1".
+ * - `SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER` - an SDL_Capitalization value that describes how text should be capitalized, defaults to SDL_CAPITALIZE_SENTENCES for normal text entry, SDL_CAPITALIZE_WORDS for SDL_TEXTINPUT_TYPE_TEXT_NAME, and SDL_CAPITALIZE_NONE for e-mail addresses, usernames, and passwords.
+ * - `SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN` - true to enable auto completion and auto correction, defaults to SDL_TRUE.
+ * - `SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN` - true if multiple lines of text are allowed. This defaults to SDL_TRUE if SDL_HINT_RETURN_KEY_HIDES_IME is "0" or is not set, and defaults to SDL_FALSE if SDL_HINT_RETURN_KEY_HIDES_IME is "1".
  *
  * On Android you can directly specify the input type:
  *

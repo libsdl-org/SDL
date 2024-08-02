@@ -759,6 +759,35 @@ static void ToggleSettings(WindowState *ctx)
     }
 }
 
+static int GetDefaultSetting(SDL_PropertiesID props, const char *setting)
+{
+    if (SDL_strcmp(setting, SDL_PROP_TEXTINPUT_TYPE_NUMBER) == 0) {
+        return SDL_TEXTINPUT_TYPE_TEXT;
+    }
+
+    if (SDL_strcmp(setting, SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER) == 0) {
+        switch (SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_TEXT)) {
+        case SDL_TEXTINPUT_TYPE_TEXT:
+            return SDL_CAPITALIZE_SENTENCES;
+        case SDL_TEXTINPUT_TYPE_TEXT_NAME:
+            return SDL_CAPITALIZE_WORDS;
+        default:
+            return SDL_CAPITALIZE_NONE;
+        }
+    }
+
+    if (SDL_strcmp(setting, SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN) == 0) {
+        return SDL_TRUE;
+    }
+
+    if (SDL_strcmp(setting, SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN) == 0) {
+        return SDL_TRUE;
+    }
+
+    SDL_assert(!"Unknown setting");
+    return 0;
+}
+
 static void DrawSettings(WindowState *ctx)
 {
     SDL_Renderer *renderer = ctx->renderer;
@@ -772,7 +801,7 @@ static void DrawSettings(WindowState *ctx)
 
     for (i = 0; i < SDL_arraysize(settings); ++i) {
         if (settings[i].setting) {
-            int value = (int)SDL_GetNumberProperty(ctx->text_settings, settings[i].setting, 0);
+            int value = (int)SDL_GetNumberProperty(ctx->text_settings, settings[i].setting, GetDefaultSetting(ctx->text_settings, settings[i].setting));
             if (value == settings[i].value) {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                 SDL_RenderFillRect(renderer, &checkbox);
