@@ -184,6 +184,7 @@
 		F3C17CEC28E417EB00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17D3928E424B800E1A26D /* sample.wav in Resources */ = {isa = PBXBuildFile; fileRef = 00794E6209D20839003FC8A1 /* sample.wav */; };
 		F3C17D3B28E4252900E1A26D /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
+		F3C2CAC62C5C8BD6004D7998 /* unifont-15.1.05.hex in Resources */ = {isa = PBXBuildFile; fileRef = F3C2CAC52C5C8BD6004D7998 /* unifont-15.1.05.hex */; };
 		F3CB56892A7895F800766177 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
 		F3CB568A2A7895F800766177 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F3CB568C2A7896BF00766177 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
@@ -1359,6 +1360,7 @@
 		F3C17C7328E40ADE00E1A26D /* testutils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testutils.c; sourceTree = "<group>"; };
 		F3C17CD628E416AC00E1A26D /* testgeometry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgeometry.c; sourceTree = "<group>"; };
 		F3C17CDC28E416CF00E1A26D /* testgeometry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgeometry.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3C2CAC52C5C8BD6004D7998 /* unifont-15.1.05.hex */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "unifont-15.1.05.hex"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1757,6 +1759,7 @@
 				00794E5F09D20839003FC8A1 /* picture.xbm */,
 				00794E6109D20839003FC8A1 /* sample.bmp */,
 				00794E6209D20839003FC8A1 /* sample.wav */,
+				F3C2CAC52C5C8BD6004D7998 /* unifont-15.1.05.hex */,
 				00794E6309D20839003FC8A1 /* utf8.txt */,
 			);
 			name = Resources;
@@ -2051,6 +2054,7 @@
 				0017977B107432AE00F5D044 /* Sources */,
 				0017977C107432AE00F5D044 /* Frameworks */,
 				F3CB56C22A78979600766177 /* Embed Frameworks */,
+				F3C2CAC42C5C8BAF004D7998 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -3015,6 +3019,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3C17D3B28E4252900E1A26D /* icon.bmp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3C2CAC42C5C8BAF004D7998 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3C2CAC62C5C8BD6004D7998 /* unifont-15.1.05.hex in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
