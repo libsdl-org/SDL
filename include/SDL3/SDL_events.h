@@ -1400,6 +1400,20 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_EventEnabled(Uint32 type);
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 
+/**
+ * Get window associated with an event.
+ *
+ * \param event an event containing a `windowID`.
+ *
+ * \returns the associated window on success or NULL if there is none.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_PollEvent
+ * \sa SDL_WaitEvent
+ * \sa SDL_WaitEventTimeout
+ */
+extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromEvent(const SDL_Event *event);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
