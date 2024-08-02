@@ -4011,6 +4011,7 @@ void SDL_DestroyWindow(SDL_Window *window)
         SDL_HideWindow(window);
     }
 
+    SDL_DestroyProperties(window->text_input_props);
     SDL_DestroyProperties(window->props);
 
     /* Clear the modal status, but don't unset the parent, as it may be
@@ -5129,23 +5130,80 @@ void SDL_WM_SetIcon(SDL_Surface *icon, Uint8 *mask)
 }
 #endif
 
-int SDL_StartTextInput(SDL_Window *window)
+SDL_TextInputType SDL_GetTextInputType(SDL_PropertiesID props)
 {
-    CHECK_WINDOW_MAGIC(window, -1);
+    return (SDL_TextInputType)SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_TEXT);
+}
 
-    /* Show the on-screen keyboard, if desired */
+SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props)
+{
+    return (SDL_Capitalization)SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_NONE);
+}
+
+SDL_bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props)
+{
+    return SDL_GetBooleanProperty(props, SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, SDL_FALSE);
+}
+
+SDL_bool SDL_GetTextInputMultiline(SDL_PropertiesID props)
+{
+    if (SDL_HasProperty(props, SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN)) {
+        return SDL_GetBooleanProperty(props, SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN, SDL_FALSE);
+    }
+
+    if (SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
+        return SDL_FALSE;
+    } else {
+        return SDL_TRUE;
+    }
+}
+
+static SDL_bool AutoShowingScreenKeyboard(void)
+{
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
     if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, SDL_FALSE)) {
+        return SDL_TRUE;
+    } else {
+        return SDL_FALSE;
+    }
+}
+
+int SDL_StartTextInput(SDL_Window *window)
+{
+    return SDL_StartTextInputWithProperties(window, 0);
+}
+
+int SDL_StartTextInputWithProperties(SDL_Window *window, SDL_PropertiesID props)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (window->text_input_props) {
+        SDL_DestroyProperties(window->text_input_props);
+        window->text_input_props = 0;
+    }
+
+    if (props) {
+        window->text_input_props = SDL_CreateProperties();
+        if (!window->text_input_props) {
+            return -1;
+        }
+        if (SDL_CopyProperties(props, window->text_input_props) < 0) {
+            return -1;
+        }
+    }
+
+    /* Show the on-screen keyboard, if desired */
+    if (AutoShowingScreenKeyboard() && !SDL_ScreenKeyboardShown(window)) {
         if (_this->ShowScreenKeyboard) {
-            _this->ShowScreenKeyboard(_this, window);
+            _this->ShowScreenKeyboard(_this, window, props);
         }
     }
 
     if (!window->text_input_active) {
         /* Finally start the text input system */
         if (_this->StartTextInput) {
-            if (_this->StartTextInput(_this, window) < 0) {
+            if (_this->StartTextInput(_this, window, props) < 0) {
                 return -1;
             }
         }
@@ -5174,9 +5232,7 @@ int SDL_StopTextInput(SDL_Window *window)
     }
 
     /* Hide the on-screen keyboard, if desired */
-    const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-    if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
-        SDL_GetStringBoolean(hint, SDL_FALSE)) {
+    if (AutoShowingScreenKeyboard() && SDL_ScreenKeyboardShown(window)) {
         if (_this->HideScreenKeyboard) {
             _this->HideScreenKeyboard(_this, window);
         }
@@ -5239,7 +5295,9 @@ SDL_bool SDL_HasScreenKeyboardSupport(void)
 
 SDL_bool SDL_ScreenKeyboardShown(SDL_Window *window)
 {
-    if (window && _this && _this->IsScreenKeyboardShown) {
+    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+
+    if (_this->IsScreenKeyboardShown) {
         return _this->IsScreenKeyboardShown(_this, window);
     }
     return SDL_FALSE;

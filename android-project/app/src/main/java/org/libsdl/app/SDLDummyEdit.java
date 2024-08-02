@@ -12,12 +12,17 @@ import android.view.inputmethod.InputConnection;
 public class SDLDummyEdit extends View implements View.OnKeyListener
 {
     InputConnection ic;
+    int input_type;
 
     public SDLDummyEdit(Context context) {
         super(context);
         setFocusableInTouchMode(true);
         setFocusable(true);
         setOnKeyListener(this);
+    }
+
+    public void setInputType(int input_type) {
+        this.input_type = input_type;
     }
 
     @Override
@@ -51,8 +56,7 @@ public class SDLDummyEdit extends View implements View.OnKeyListener
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         ic = new SDLInputConnection(this, true);
 
-        outAttrs.inputType = InputType.TYPE_CLASS_TEXT |
-                             InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+        outAttrs.inputType = input_type;
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI |
                               EditorInfo.IME_FLAG_NO_FULLSCREEN /* API 11 */;
 

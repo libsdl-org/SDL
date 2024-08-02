@@ -196,7 +196,7 @@ void WIN_ResetDeadKeys(void)
     }
 }
 
-int WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+int WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     WIN_ResetDeadKeys();
 

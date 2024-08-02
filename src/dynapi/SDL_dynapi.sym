@@ -816,6 +816,7 @@ SDL3_0.0.0 {
     SDL_SignalCondition;
     SDL_SignalSemaphore;
     SDL_StartTextInput;
+    SDL_StartTextInputWithProperties;
     SDL_StepUTF8;
     SDL_StopHapticEffect;
     SDL_StopHapticEffects;

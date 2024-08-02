@@ -411,7 +411,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
 }
 #endif
 
-void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_VideoData *videodata = _this->internal;
     SceInt32 res;
@@ -427,8 +427,46 @@ void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 
     param.supportedLanguages = SCE_IME_LANGUAGE_ENGLISH_US;
     param.languagesForced = SCE_FALSE;
-    param.type = SCE_IME_TYPE_DEFAULT;
-    param.option = SCE_IME_OPTION_NO_ASSISTANCE;
+    switch (SDL_GetTextInputType(props)) {
+    default:
+    case SDL_TEXTINPUT_TYPE_TEXT:
+        param.type = SCE_IME_TYPE_DEFAULT;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_NAME:
+        param.type = SCE_IME_TYPE_DEFAULT;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_EMAIL:
+        param.type = SCE_IME_TYPE_MAIL;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
+        param.type = SCE_IME_TYPE_DEFAULT;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
+        param.type = SCE_IME_TYPE_DEFAULT;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
+        param.type = SCE_IME_TYPE_DEFAULT;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER:
+        param.type = SCE_IME_TYPE_NUMBER;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
+        param.type = SCE_IME_TYPE_NUMBER;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
+        param.type = SCE_IME_TYPE_NUMBER;
+        break;
+    }
+    param.option = 0;
+    if (SDL_GetTextInputCapitalization(props) != SDL_CAPITALIZE_SENTENCES) {
+        param.option |= SCE_IME_OPTION_NO_AUTO_CAPITALIZATION;
+    }
+    if (!SDL_GetTextInputAutocorrect(props)) {
+        param.option |= SCE_IME_OPTION_NO_ASSISTANCE;
+    }
+    if (SDL_GetTextInputMultiline(props)) {
+        param.option |= SCE_IME_OPTION_MULTILINE;
+    }
     param.inputTextBuffer = libime_out;
     param.maxTextLength = SCE_IME_MAX_TEXT_LENGTH;
     param.handler = VITA_ImeEventHandler;

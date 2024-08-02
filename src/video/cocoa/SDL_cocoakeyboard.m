@@ -381,7 +381,7 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
     SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
 }
 
-int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window)
+int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     @autoreleasepool {
         NSView *parentView;

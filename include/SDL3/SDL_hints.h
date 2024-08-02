@@ -2620,6 +2620,8 @@ extern "C" {
  * A variable to control whether the return key on the soft keyboard should
  * hide the soft keyboard on Android and iOS.
  *
+ * This hint sets the default value of SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN.
+ *
  * The variable can be set to the following values:
  *
  * - "0": The return key will be handled as a key event. (default)

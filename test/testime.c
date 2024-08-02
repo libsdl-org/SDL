@@ -15,6 +15,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_font.h>
 #ifdef HAVE_SDL_TTF
 #include "SDL_ttf.h"
 #endif
@@ -40,6 +41,11 @@
 #endif
 #define MAX_TEXT_LENGTH 256
 
+#define WINDOW_WIDTH    640
+#define WINDOW_HEIGHT   480
+
+#define MARGIN 32.0f
+#define LINE_HEIGHT (FONT_CHARACTER_SIZE + 4.0f)
 #define CURSOR_BLINK_INTERVAL_MS    500
 
 typedef struct
@@ -47,6 +53,10 @@ typedef struct
     SDL_Window *window;
     SDL_Renderer *renderer;
     int rendererID;
+    SDL_bool settings_visible;
+    SDL_Texture *settings_icon;
+    SDL_FRect settings_rect;
+    SDL_PropertiesID text_settings;
     SDL_FRect textRect;
     SDL_FRect markedRect;
     char text[MAX_TEXT_LENGTH];
@@ -67,6 +77,33 @@ static const SDL_Color lineColor = { 0, 0, 0, 255 };
 static const SDL_Color backColor = { 255, 255, 255, 255 };
 static const SDL_Color textColor = { 0, 0, 0, 255 };
 static SDL_BlendMode highlight_mode;
+
+static const struct
+{
+    const char *label;
+    const char *setting;
+    int value;
+} settings[] = {
+    { "Text",                   SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_TEXT },
+    { "Name",                   SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_TEXT_NAME },
+    { "E-mail",                 SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_TEXT_EMAIL },
+    { "Username",               SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_TEXT_USERNAME },
+    { "Password (hidden)",      SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN },
+    { "Password (visible)",     SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE },
+    { "Number",                 SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_NUMBER },
+    { "Numeric PIN (hidden)",   SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN },
+    { "Numeric PIN (visible)",  SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE },
+    { "",                       NULL },
+    { "No capitalization",      SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_NONE },
+    { "Capitalize sentences",   SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_SENTENCES },
+    { "Capitalize words",       SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_WORDS },
+    { "All caps",               SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_LETTERS },
+    { "",                       NULL },
+    { "Auto-correct OFF",       SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, SDL_FALSE },
+    { "Auto-correct ON",        SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, SDL_TRUE },
+    { "Multiline OFF",          SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN, SDL_FALSE },
+    { "Multiline ON",           SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN, SDL_TRUE }
+};
 
 #ifdef HAVE_SDL_TTF
 static TTF_Font *font;
@@ -487,7 +524,9 @@ static void InitInput(WindowState *ctx)
     ctx->textRect.h = 50.0f;
     ctx->markedRect = ctx->textRect;
 
-    SDL_StartTextInput(ctx->window);
+    ctx->text_settings = SDL_CreateProperties();
+
+    SDL_StartTextInputWithProperties(ctx->window, ctx->text_settings);
 }
 
 
@@ -692,6 +731,7 @@ static void CleanupVideo(void)
 
         SDL_StopTextInput(ctx->window);
         ClearCandidates(ctx);
+        SDL_DestroyProperties(ctx->text_settings);
     }
 #ifdef HAVE_SDL_TTF
     TTF_CloseFont(font);
@@ -701,11 +741,85 @@ static void CleanupVideo(void)
 #endif
 }
 
+static void DrawSettingsButton(WindowState *ctx)
+{
+    SDL_Renderer *renderer = ctx->renderer;
+
+    SDL_RenderTexture(renderer, ctx->settings_icon, NULL, &ctx->settings_rect);
+}
+
+static void ToggleSettings(WindowState *ctx)
+{
+    if (ctx->settings_visible) {
+        ctx->settings_visible = SDL_FALSE;
+        SDL_StartTextInputWithProperties(ctx->window, ctx->text_settings);
+    } else {
+        SDL_StopTextInput(ctx->window);
+        ctx->settings_visible = SDL_TRUE;
+    }
+}
+
+static void DrawSettings(WindowState *ctx)
+{
+    SDL_Renderer *renderer = ctx->renderer;
+    SDL_FRect checkbox;
+    int i;
+
+    checkbox.x = MARGIN;
+    checkbox.y = MARGIN;
+    checkbox.w = (float)FONT_CHARACTER_SIZE;
+    checkbox.h = (float)FONT_CHARACTER_SIZE;
+
+    for (i = 0; i < SDL_arraysize(settings); ++i) {
+        if (settings[i].setting) {
+            int value = (int)SDL_GetNumberProperty(ctx->text_settings, settings[i].setting, 0);
+            if (value == settings[i].value) {
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                SDL_RenderFillRect(renderer, &checkbox);
+            }
+            SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
+            SDL_RenderRect(renderer, &checkbox);
+            SDLTest_DrawString(renderer, checkbox.x + checkbox.w + 8.0f, checkbox.y, settings[i].label);
+        }
+        checkbox.y += LINE_HEIGHT;
+    }
+}
+
+static void ClickSettings(WindowState *ctx, float x, float y)
+{
+    int setting = (int)SDL_floorf((y - MARGIN) / LINE_HEIGHT);
+    if (setting >= 0 && setting < SDL_arraysize(settings)) {
+        SDL_SetNumberProperty(ctx->text_settings, settings[setting].setting, settings[setting].value);
+    }
+}
+
 static void RedrawWindow(WindowState *ctx)
 {
     SDL_Renderer *renderer = ctx->renderer;
     int rendererID = ctx->rendererID;
     SDL_FRect drawnTextRect, cursorRect, underlineRect;
+    char text[MAX_TEXT_LENGTH];
+
+    DrawSettingsButton(ctx);
+
+    if (ctx->settings_visible) {
+        DrawSettings(ctx);
+        return;
+    }
+
+    /* Hide the text if it's a password */
+    switch ((SDL_TextInputType)SDL_GetNumberProperty(ctx->text_settings, SDL_PROP_TEXTINPUT_TYPE_NUMBER, SDL_TEXTINPUT_TYPE_TEXT)) {
+    case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
+    case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN: {
+        size_t len = SDL_utf8strlen(ctx->text);
+        SDL_memset(text, '*', len);
+        text[len] = '\0';
+        break;
+    }
+    default:
+        SDL_strlcpy(text, ctx->text, sizeof(text));
+        break;
+    }
 
     SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
     SDL_RenderFillRect(renderer, &ctx->textRect);
@@ -716,9 +830,9 @@ static void RedrawWindow(WindowState *ctx)
     drawnTextRect.w = 0.0f;
     drawnTextRect.h = UNIFONT_GLYPH_SIZE * UNIFONT_DRAW_SCALE;
 
-    if (ctx->text[0]) {
+    if (text[0]) {
 #ifdef HAVE_SDL_TTF
-        SDL_Surface *textSur = TTF_RenderUTF8_Blended(font, ctx->text, textColor);
+        SDL_Surface *textSur = TTF_RenderUTF8_Blended(font, text, textColor);
         SDL_Texture *texture;
 
         /* Vertically center text */
@@ -732,7 +846,7 @@ static void RedrawWindow(WindowState *ctx)
         SDL_RenderTexture(renderer, texture, NULL, &drawnTextRect);
         SDL_DestroyTexture(texture);
 #else
-        char *utext = ctx->text;
+        char *utext = text;
         Uint32 codepoint;
         size_t len;
         SDL_FRect dstrect;
@@ -756,13 +870,6 @@ static void RedrawWindow(WindowState *ctx)
     /* The marked text rectangle is the text area that hasn't been filled by committed text */
     ctx->markedRect.x = ctx->textRect.x + drawnTextRect.w;
     ctx->markedRect.w = ctx->textRect.w - drawnTextRect.w;
-    if (ctx->markedRect.w < 0) {
-        /* Stop text input because we cannot hold any more characters */
-        SDL_StopTextInput(ctx->window);
-        return;
-    } else {
-        SDL_StartTextInput(ctx->window);
-    }
 
     /* Update the drawn text rectangle for composition text, after the committed text */
     drawnTextRect.x += drawnTextRect.w;
@@ -974,10 +1081,18 @@ int main(int argc, char *argv[])
         WindowState *ctx = &windowstate[i];
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
+        int icon_w = 0, icon_h = 0;
+
+        SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_SCALEMODE_LINEAR);
 
         ctx->window = window;
         ctx->renderer = renderer;
         ctx->rendererID = i;
+        ctx->settings_icon = LoadTexture(renderer, "icon.bmp", SDL_TRUE, &icon_w, &icon_h);
+        ctx->settings_rect.x = (float)WINDOW_WIDTH - icon_w - MARGIN;
+        ctx->settings_rect.y = MARGIN;
+        ctx->settings_rect.w = (float)icon_w;
+        ctx->settings_rect.h = (float)icon_h;
 
         InitInput(ctx);
 
@@ -999,6 +1114,23 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
             switch (event.type) {
+            case SDL_EVENT_MOUSE_BUTTON_UP: {
+                SDL_FPoint point;
+                WindowState *ctx = GetWindowStateForWindowID(event.button.windowID);
+                if (!ctx) {
+                    break;
+                }
+
+                SDL_ConvertEventToRenderCoordinates(ctx->renderer, &event);
+                point.x = event.button.x;
+                point.y = event.button.y;
+                if (SDL_PointInRectFloat(&point, &ctx->settings_rect)) {
+                    ToggleSettings(ctx);
+                } else if (ctx->settings_visible) {
+                    ClickSettings(ctx, point.x, point.y);
+                }
+                break;
+            }
             case SDL_EVENT_KEY_DOWN: {
                 WindowState *ctx = GetWindowStateForWindowID(event.key.windowID);
                 if (!ctx) {
