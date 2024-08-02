@@ -114,6 +114,7 @@
     <ClInclude Include="..\src\dynapi\SDL_dynapi_procs.h" />
     <ClInclude Include="..\src\events\blank_cursor.h" />
     <ClInclude Include="..\src\events\default_cursor.h" />
+    <ClInclude Include="..\src\events\SDL_categories_c.h" />
     <ClInclude Include="..\src\events\SDL_clipboardevents_c.h" />
     <ClInclude Include="..\src\events\SDL_displayevents_c.h" />
     <ClInclude Include="..\src\events\SDL_dropevents_c.h" />
@@ -316,6 +317,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\dialog\SDL_dialog_utils.c" />
+    <ClCompile Include="..\src\events\SDL_categories.c" />
     <ClCompile Include="..\src\events\SDL_clipboardevents.c" />
     <ClCompile Include="..\src\events\SDL_displayevents.c" />
     <ClCompile Include="..\src\events\SDL_dropevents.c" />
