@@ -203,7 +203,7 @@
     _pendingTimestamp = timestamp;
 }
 
-- (void)sendPendingKey;
+- (void)sendPendingKey
 {
     if (_pendingRawCode < 0) {
         return;
@@ -213,7 +213,7 @@
     [self clearPendingKey];
 }
 
-- (void)clearPendingKey;
+- (void)clearPendingKey
 {
     _pendingRawCode = -1;
 }
