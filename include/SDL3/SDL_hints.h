@@ -686,6 +686,21 @@ extern "C" {
 #define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
 
 /**
+ * A variable containing a list of evdev devices to use if udev is not available.
+ *
+ * The list of devices is in the form:
+ *
+ *  deviceclass:path[,deviceclass:path[,...]]
+ *
+ * where device class is an integer representing the SDL_UDEV_deviceclass and path is the full path to the event device.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_EVDEV_DEVICES "SDL_EVDEV_DEVICES"
+
+/**
  * A variable controlling verbosity of the logging of SDL events pushed onto
  * the internal queue.
  *
