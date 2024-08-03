@@ -25,9 +25,6 @@
 #include "../SDL_sysaudio.h"
 #include "SDL_dummyaudio.h"
 
-// !!! FIXME: this should be an SDL hint, not an environment variable.
-#define DUMMYENVR_IODELAY "SDL_DUMMYAUDIODELAY"
-
 static int DUMMYAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     SDL_Delay(device->hidden->io_delay);
@@ -36,8 +33,6 @@ static int DUMMYAUDIO_WaitDevice(SDL_AudioDevice *device)
 
 static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    const char *envr = SDL_getenv(DUMMYENVR_IODELAY);
-
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return -1;
@@ -50,8 +45,15 @@ static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
         }
     }
 
-    device->hidden->io_delay = (Uint32) (envr ? SDL_atoi(envr) : ((device->sample_frames * 1000) / device->spec.freq));
+    device->hidden->io_delay = ((device->sample_frames * 1000) / device->spec.freq);
 
+    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DUMMY_TIMESCALE);
+    if (hint) {
+        double scale = SDL_atof(hint);
+        if (scale >= 0.0) {
+            device->hidden->io_delay = (Uint32)SDL_round(device->hidden->io_delay * scale);
+        }
+    }
     return 0; // we're good; don't change reported device format.
 }
 
