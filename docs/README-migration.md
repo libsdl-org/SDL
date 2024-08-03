@@ -759,6 +759,8 @@ The environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER have been renamed 
 
 The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS have been removed and replaced by either using the appindentifier param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_IDENTIFIER_STRING with SDL_SetAppMetadataProperty()
 
+The environment variable AUDIODEV is used exclusively to specify the audio device for the OSS and NetBSD audio drivers. Its use in the ALSA driver has been replaced with the hint SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE and in the sndio driver with the environment variable AUDIODEVICE.
+
 The following hints have been renamed:
 * SDL_HINT_VIDEODRIVER => SDL_VIDEO_DRIVER
 * SDL_HINT_AUDIODRIVER => SDL_HINT_AUDIO_DRIVER
