@@ -145,24 +145,7 @@ int SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 
 int SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    static int frame_number;
-    SDL_Surface *surface;
-
-    surface = (SDL_Surface *)SDL_GetWindowData(window, NGAGE_SURFACE);
-    if (!surface) {
-        return SDL_SetError("Couldn't find ngage surface for window");
-    }
-
-    /* Send the data to the display */
-    if (SDL_getenv("SDL_VIDEO_NGAGE_SAVE_FRAMES")) {
-        char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-                     (int)SDL_GetWindowID(window), ++frame_number);
-        SDL_SaveBMP(surface, file);
-    }
-
     DirectUpdate(_this, numrects, (SDL_Rect *)rects);
-
     return 0;
 }
 
