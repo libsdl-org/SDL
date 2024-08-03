@@ -59,7 +59,7 @@ const char *SDL_GetExeName(void)
 
 const char *SDL_GetAppID(void)
 {
-    const char *id_str = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
+    const char *id_str = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING);
 
     if (!id_str) {
         /* If the hint isn't set, try to use the application's executable name */
