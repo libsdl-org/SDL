@@ -77,7 +77,7 @@ static int CreateTempFD(off_t size)
 #endif
     {
         static const char template[] = "/sdl-shared-XXXXXX";
-        char *xdg_path;
+        const char *xdg_path;
         char tmp_path[PATH_MAX];
 
         xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
@@ -117,7 +117,7 @@ static struct wl_buffer_listener buffer_listener = {
 int Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shmBuffer)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *data = vd->driverdata;
+    SDL_VideoData *data = vd->internal;
     struct wl_shm_pool *shm_pool;
     const Uint32 SHM_FMT = WL_SHM_FORMAT_ARGB8888;
 

@@ -23,6 +23,7 @@
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 
 #include "../../events/SDL_events_c.h"
+#include "../../main/SDL_main_callbacks.h"
 
 #include "SDL_uikitevents.h"
 #include "SDL_uikitopengles.h"
@@ -46,10 +47,10 @@ static BOOL UIKit_EventPumpEnabled = YES;
 
 @implementation SDL_LifecycleObserver
 
-- (void)eventPumpChanged
+- (void)update
 {
     NSNotificationCenter *notificationCenter = NSNotificationCenter.defaultCenter;
-    if (UIKit_EventPumpEnabled && !self.isObservingNotifications) {
+    if ((UIKit_EventPumpEnabled || SDL_HasMainCallbacks()) && !self.isObservingNotifications) {
         self.isObservingNotifications = YES;
         [notificationCenter addObserver:self selector:@selector(applicationDidBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
         [notificationCenter addObserver:self selector:@selector(applicationWillResignActive) name:UIApplicationWillResignActiveNotification object:nil];
@@ -63,7 +64,7 @@ static BOOL UIKit_EventPumpEnabled = YES;
                                    name:UIApplicationDidChangeStatusBarOrientationNotification
                                  object:nil];
 #endif
-    } else if (!UIKit_EventPumpEnabled && self.isObservingNotifications) {
+    } else if (!UIKit_EventPumpEnabled && !SDL_HasMainCallbacks() && self.isObservingNotifications) {
         self.isObservingNotifications = NO;
         [notificationCenter removeObserver:self];
     }
@@ -71,12 +72,12 @@ static BOOL UIKit_EventPumpEnabled = YES;
 
 - (void)applicationDidBecomeActive
 {
-    SDL_OnApplicationDidBecomeActive();
+    SDL_OnApplicationDidEnterForeground();
 }
 
 - (void)applicationWillResignActive
 {
-    SDL_OnApplicationWillResignActive();
+    SDL_OnApplicationWillEnterBackground();
 }
 
 - (void)applicationDidEnterBackground
@@ -108,6 +109,23 @@ static BOOL UIKit_EventPumpEnabled = YES;
 
 @end
 
+void SDL_UpdateLifecycleObserver(void)
+{
+    static SDL_LifecycleObserver *lifecycleObserver;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+      lifecycleObserver = [SDL_LifecycleObserver new];
+    });
+    [lifecycleObserver update];
+}
+
+void SDL_SetiOSEventPump(SDL_bool enabled)
+{
+    UIKit_EventPumpEnabled = enabled;
+
+    SDL_UpdateLifecycleObserver();
+}
+
 Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp)
 {
     static Uint64 timestamp_offset;
@@ -124,18 +142,6 @@ Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp)
         timestamp = now;
     }
     return timestamp;
-}
-
-void SDL_iOSSetEventPump(SDL_bool enabled)
-{
-    UIKit_EventPumpEnabled = enabled;
-
-    static SDL_LifecycleObserver *lifecycleObserver;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-      lifecycleObserver = [SDL_LifecycleObserver new];
-    });
-    [lifecycleObserver eventPumpChanged];
 }
 
 void UIKit_PumpEvents(SDL_VideoDevice *_this)
@@ -181,7 +187,7 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
     SDL_AddKeyboard(keyboardID, NULL, SDL_TRUE);
 
     keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed) {
-        SDL_SendKeyboardKey(0, keyboardID, pressed ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)keyCode);
+        SDL_SendKeyboardKey(0, keyboardID, 0, (SDL_Scancode)keyCode, pressed ? SDL_PRESSED : SDL_RELEASED);
     };
 
     dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL);

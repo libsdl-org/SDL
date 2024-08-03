@@ -357,55 +357,60 @@ static void param_update(struct spa_list *param_list, struct spa_list *pending_l
 }
 
 static struct sdl_video_format {
-	Uint32 format;
-	uint32_t id;
+    SDL_PixelFormat format;
+    SDL_Colorspace colorspace;
+    uint32_t id;
 } sdl_video_formats[] = {
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	{ SDL_PIXELFORMAT_RGBX8888, SPA_VIDEO_FORMAT_RGBx,},
-	{ SDL_PIXELFORMAT_BGRX8888, SPA_VIDEO_FORMAT_BGRx,},
-	{ SDL_PIXELFORMAT_RGBA8888, SPA_VIDEO_FORMAT_RGBA,},
-	{ SDL_PIXELFORMAT_ARGB8888, SPA_VIDEO_FORMAT_ARGB,},
-	{ SDL_PIXELFORMAT_BGRA8888, SPA_VIDEO_FORMAT_BGRA,},
-	{ SDL_PIXELFORMAT_ABGR8888, SPA_VIDEO_FORMAT_ABGR,},
+    { SDL_PIXELFORMAT_RGBX8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_RGBx },
+    { SDL_PIXELFORMAT_BGRX8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_BGRx },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_RGBA },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_ARGB },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_BGRA },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_ABGR },
 #else
-	{ SDL_PIXELFORMAT_RGBX8888, SPA_VIDEO_FORMAT_xBGR,},
-	{ SDL_PIXELFORMAT_BGRX8888, SPA_VIDEO_FORMAT_xRGB,},
-	{ SDL_PIXELFORMAT_RGBA8888, SPA_VIDEO_FORMAT_ABGR,},
-	{ SDL_PIXELFORMAT_ARGB8888, SPA_VIDEO_FORMAT_BGRA,},
-	{ SDL_PIXELFORMAT_BGRA8888, SPA_VIDEO_FORMAT_ARGB,},
-	{ SDL_PIXELFORMAT_ABGR8888, SPA_VIDEO_FORMAT_RGBA,},
+    { SDL_PIXELFORMAT_RGBX8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_xBGR },
+    { SDL_PIXELFORMAT_BGRX8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_xRGB },
+    { SDL_PIXELFORMAT_RGBA8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_ABGR },
+    { SDL_PIXELFORMAT_ARGB8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_BGRA },
+    { SDL_PIXELFORMAT_BGRA8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_ARGB },
+    { SDL_PIXELFORMAT_ABGR8888, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_RGBA },
 #endif
-	{ SDL_PIXELFORMAT_RGB24, SPA_VIDEO_FORMAT_RGB,},
-	{ SDL_PIXELFORMAT_BGR24, SPA_VIDEO_FORMAT_BGR,},
-	{ SDL_PIXELFORMAT_YV12, SPA_VIDEO_FORMAT_YV12,},
-	{ SDL_PIXELFORMAT_IYUV, SPA_VIDEO_FORMAT_I420,},
-	{ SDL_PIXELFORMAT_YUY2, SPA_VIDEO_FORMAT_YUY2,},
-	{ SDL_PIXELFORMAT_UYVY, SPA_VIDEO_FORMAT_UYVY,},
-	{ SDL_PIXELFORMAT_YVYU, SPA_VIDEO_FORMAT_YVYU,},
+    { SDL_PIXELFORMAT_RGB24, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_RGB },
+    { SDL_PIXELFORMAT_BGR24, SDL_COLORSPACE_SRGB, SPA_VIDEO_FORMAT_BGR },
+    { SDL_PIXELFORMAT_YV12, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_YV12 },
+    { SDL_PIXELFORMAT_IYUV, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_I420 },
+    { SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_YUY2 },
+    { SDL_PIXELFORMAT_UYVY, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_UYVY },
+    { SDL_PIXELFORMAT_YVYU, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_YVYU },
 #if SDL_VERSION_ATLEAST(2,0,4)
-	{ SDL_PIXELFORMAT_NV12, SPA_VIDEO_FORMAT_NV12,},
-	{ SDL_PIXELFORMAT_NV21, SPA_VIDEO_FORMAT_NV21,},
+    { SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_NV12 },
+    { SDL_PIXELFORMAT_NV21, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_NV21 },
 #endif
 };
 
-static inline uint32_t sdl_format_to_id(Uint32 format)
+static uint32_t sdl_format_to_id(SDL_PixelFormat format)
 {
-	struct sdl_video_format *f;
-	SPA_FOR_EACH_ELEMENT(sdl_video_formats, f) {
-		if (f->format == format)
-			return f->id;
-	}
-	return SPA_VIDEO_FORMAT_UNKNOWN;
+    struct sdl_video_format *f;
+    SPA_FOR_EACH_ELEMENT(sdl_video_formats, f) {
+        if (f->format == format)
+            return f->id;
+    }
+    return SPA_VIDEO_FORMAT_UNKNOWN;
 }
 
-static inline Uint32 id_to_sdl_format(uint32_t id)
+static void id_to_sdl_format(uint32_t id, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
 {
-	struct sdl_video_format *f;
-	SPA_FOR_EACH_ELEMENT(sdl_video_formats, f) {
-		if (f->id == id)
-			return f->format;
-	}
-	return SDL_PIXELFORMAT_UNKNOWN;
+    struct sdl_video_format *f;
+    SPA_FOR_EACH_ELEMENT(sdl_video_formats, f) {
+        if (f->id == id) {
+            *format = f->format;
+            *colorspace = f->colorspace;
+            return;
+        }
+    }
+    *format = SDL_PIXELFORMAT_UNKNOWN;
+    *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
 struct SDL_PrivateCameraData
@@ -424,12 +429,12 @@ static void on_process(void *data)
 static void on_stream_state_changed(void *data, enum pw_stream_state old,
                 enum pw_stream_state state, const char *error)
 {
-    SDL_CameraDevice *device = data;
+    SDL_Camera *device = data;
     switch (state) {
     case PW_STREAM_STATE_UNCONNECTED:
         break;
     case PW_STREAM_STATE_STREAMING:
-        SDL_CameraDevicePermissionOutcome(device, SDL_TRUE);
+        SDL_CameraPermissionOutcome(device, SDL_TRUE);
         break;
     default:
         break;
@@ -442,13 +447,13 @@ static void on_stream_param_changed(void *data, uint32_t id, const struct spa_po
 
 static void on_add_buffer(void *data, struct pw_buffer *buffer)
 {
-    SDL_CameraDevice *device = data;
+    SDL_Camera *device = data;
     pw_array_add_ptr(&device->hidden->buffers, buffer);
 }
 
 static void on_remove_buffer(void *data, struct pw_buffer *buffer)
 {
-    SDL_CameraDevice *device = data;
+    SDL_Camera *device = data;
     struct pw_buffer **p;
     pw_array_for_each(p, &device->hidden->buffers) {
         if (*p == buffer) {
@@ -467,7 +472,7 @@ static const struct pw_stream_events stream_events = {
     .process = on_process,
 };
 
-static int PIPEWIRECAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
+static int PIPEWIRECAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
     struct pw_properties *props;
     const struct spa_pod *params[3];
@@ -512,7 +517,7 @@ static int PIPEWIRECAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraS
                     SPA_FORMAT_VIDEO_format, SPA_POD_Id(sdl_format_to_id(spec->format)),
                     SPA_FORMAT_VIDEO_size, SPA_POD_Rectangle(&SPA_RECTANGLE(spec->width, spec->height)),
                     SPA_FORMAT_VIDEO_framerate,
-		        SPA_POD_Fraction(&SPA_FRACTION(spec->interval_numerator, spec->interval_denominator)));
+		        SPA_POD_Fraction(&SPA_FRACTION(spec->framerate_numerator, spec->framerate_denominator)));
 
     if ((res = PIPEWIRE_pw_stream_connect(device->hidden->stream,
                                     PW_DIRECTION_INPUT,
@@ -528,7 +533,7 @@ static int PIPEWIRECAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraS
     return 0;
 }
 
-static void PIPEWIRECAMERA_CloseDevice(SDL_CameraDevice *device)
+static void PIPEWIRECAMERA_CloseDevice(SDL_Camera *device)
 {
     if (!device) {
         return;
@@ -545,7 +550,7 @@ static void PIPEWIRECAMERA_CloseDevice(SDL_CameraDevice *device)
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 }
 
-static int PIPEWIRECAMERA_WaitDevice(SDL_CameraDevice *device)
+static int PIPEWIRECAMERA_WaitDevice(SDL_Camera *device)
 {
     PIPEWIRE_pw_thread_loop_lock(hotplug.loop);
     PIPEWIRE_pw_thread_loop_wait(hotplug.loop);
@@ -553,7 +558,7 @@ static int PIPEWIRECAMERA_WaitDevice(SDL_CameraDevice *device)
     return 0;
 }
 
-static int PIPEWIRECAMERA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS)
+static int PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
     struct pw_buffer *b;
 
@@ -585,21 +590,20 @@ static int PIPEWIRECAMERA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *fr
     return 1;
 }
 
-static void PIPEWIRECAMERA_ReleaseFrame(SDL_CameraDevice *device, SDL_Surface *frame)
+static void PIPEWIRECAMERA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 {
     struct pw_buffer **p;
     PIPEWIRE_pw_thread_loop_lock(hotplug.loop);
     pw_array_for_each(p, &device->hidden->buffers) {
         if ((*p)->buffer->datas[0].data == frame->pixels) {
             PIPEWIRE_pw_stream_queue_buffer(device->hidden->stream, (*p));
-	    break;
+            break;
         }
     }
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 }
 
-static void collect_rates(CameraFormatAddData *data, struct param *p, const Uint32 sdlfmt,
-		const struct spa_rectangle *size)
+static void collect_rates(CameraFormatAddData *data, struct param *p, SDL_PixelFormat sdlfmt, SDL_Colorspace colorspace, const struct spa_rectangle *size)
 {
     const struct spa_pod_prop *prop;
     struct spa_pod * values;
@@ -618,23 +622,21 @@ static void collect_rates(CameraFormatAddData *data, struct param *p, const Uint
     switch (choice) {
     case SPA_CHOICE_None:
         n_vals = 1;
-	SPA_FALLTHROUGH;
+    SPA_FALLTHROUGH;
     case SPA_CHOICE_Enum:
-	for (i = 0; i < n_vals; i++) {
-            // denom and num are switched, because SDL expects an interval, while pw provides a rate
-            if (SDL_AddCameraFormat(data, sdlfmt, size->width, size->height,
-				    rates[i].denom, rates[i].num) == -1) {
+        for (i = 0; i < n_vals; i++) {
+            if (SDL_AddCameraFormat(data, sdlfmt, colorspace, size->width, size->height, rates[i].num, rates[i].denom) < 0) {
                 return;  // Probably out of memory; we'll go with what we have, if anything.
             }
-	}
-	break;
+        }
+        break;
     default:
         SDL_Log("CAMERA: unimplemented choice:%d", choice);
-	break;
+        break;
     }
 }
 
-static void collect_size(CameraFormatAddData *data, struct param *p, const Uint32 sdlfmt)
+static void collect_size(CameraFormatAddData *data, struct param *p, SDL_PixelFormat sdlfmt, SDL_Colorspace colorspace)
 {
     const struct spa_pod_prop *prop;
     struct spa_pod * values;
@@ -653,22 +655,23 @@ static void collect_size(CameraFormatAddData *data, struct param *p, const Uint3
     switch (choice) {
     case SPA_CHOICE_None:
         n_vals = 1;
-	SPA_FALLTHROUGH;
+    SPA_FALLTHROUGH;
     case SPA_CHOICE_Enum:
-	for (i = 0; i < n_vals; i++) {
-	    collect_rates(data, p, sdlfmt, &rectangles[i]);
-	}
-	break;
+        for (i = 0; i < n_vals; i++) {
+            collect_rates(data, p, sdlfmt, colorspace, &rectangles[i]);
+        }
+        break;
     default:
         SDL_Log("CAMERA: unimplemented choice:%d", choice);
-	break;
+        break;
     }
 }
 
 static void collect_format(CameraFormatAddData *data, struct param *p)
 {
     const struct spa_pod_prop *prop;
-    Uint32 sdlfmt;
+    SDL_PixelFormat sdlfmt;
+    SDL_Colorspace colorspace;
     struct spa_pod * values;
     uint32_t i, n_vals, choice, *ids;
 
@@ -686,16 +689,17 @@ static void collect_format(CameraFormatAddData *data, struct param *p)
         n_vals = 1;
 	SPA_FALLTHROUGH;
     case SPA_CHOICE_Enum:
-	for (i = 0; i < n_vals; i++) {
-	    sdlfmt = id_to_sdl_format(ids[i]);
-	    if (sdlfmt == SDL_PIXELFORMAT_UNKNOWN)
+        for (i = 0; i < n_vals; i++) {
+            id_to_sdl_format(ids[i], &sdlfmt, &colorspace);
+            if (sdlfmt == SDL_PIXELFORMAT_UNKNOWN) {
                 continue;
-	    collect_size(data, p, sdlfmt);
-	}
-	break;
+            }
+            collect_size(data, p, sdlfmt, colorspace);
+        }
+        break;
     default:
         SDL_Log("CAMERA: unimplemented choice:%d", choice);
-	break;
+        break;
     }
 }
 
@@ -710,10 +714,10 @@ static void add_device(struct global *g)
         if (p->id != SPA_PARAM_EnumFormat)
             continue;
 
-	collect_format(&data, p);
+        collect_format(&data, p);
     }
     if (data.num_specs > 0) {
-        SDL_AddCameraDevice(g->name, SDL_CAMERA_POSITION_UNKNOWN,
+        SDL_AddCamera(g->name, SDL_CAMERA_POSITION_UNKNOWN,
 				    data.num_specs, data.specs, g);
     }
     SDL_free(data.specs);
@@ -743,7 +747,7 @@ static void PIPEWIRECAMERA_DetectDevices(void)
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 }
 
-static void PIPEWIRECAMERA_FreeDeviceHandle(SDL_CameraDevice *device)
+static void PIPEWIRECAMERA_FreeDeviceHandle(SDL_Camera *device)
 {
 }
 

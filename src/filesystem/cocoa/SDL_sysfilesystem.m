@@ -25,11 +25,13 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
+#include "../SDL_sysfilesystem.h"
+
 #include <Foundation/Foundation.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
     @autoreleasepool {
         NSBundle *bundle = [NSBundle mainBundle];
@@ -61,7 +63,7 @@ char *SDL_GetBasePath(void)
     }
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     @autoreleasepool {
         char *retval = NULL;
@@ -126,7 +128,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     }
 }
 
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     @autoreleasepool {
 #ifdef SDL_PLATFORM_TVOS

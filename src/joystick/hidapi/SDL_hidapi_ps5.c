@@ -507,6 +507,12 @@ static SDL_bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             ctx->sensors_supported = SDL_TRUE;
             ctx->touchpad_supported = SDL_TRUE;
             ctx->use_alternate_report = SDL_TRUE;
+        } else if (device->vendor_id == USB_VENDOR_RAZER &&
+                   device->product_id == USB_PRODUCT_RAZER_KITSUNE) {
+            /* The Razer Kitsune doesn't respond to the detection protocol, but has a touchpad */
+            joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+            ctx->touchpad_supported = SDL_TRUE;
+            ctx->use_alternate_report = SDL_TRUE;
         }
     }
     ctx->effects_supported = (ctx->lightbar_supported || ctx->vibration_supported || ctx->playerled_supported);
@@ -1486,7 +1492,7 @@ static SDL_bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint64 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     }
 
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {

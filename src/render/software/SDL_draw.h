@@ -60,6 +60,25 @@
         setpixel;                               \
     } while (0)
 
+#define DRAW_SETPIXEL_BLEND_CLAMPED(getpixel, setpixel) \
+    do {                                                \
+        unsigned sr, sg, sb, sa = 0xFF;                 \
+        getpixel;                                       \
+        sr = DRAW_MUL(inva, sr) + r;                    \
+        if (sr > 0xff)                                  \
+            sr = 0xff;                                  \
+        sg = DRAW_MUL(inva, sg) + g;                    \
+        if (sg > 0xff)                                  \
+            sg = 0xff;                                  \
+        sb = DRAW_MUL(inva, sb) + b;                    \
+        if (sb > 0xff)                                  \
+            sb = 0xff;                                  \
+        sa = DRAW_MUL(inva, sa) + a;                    \
+        if (sa > 0xff)                                  \
+            sa = 0xff;                                  \
+        setpixel;                                       \
+    } while (0)
+
 #define DRAW_SETPIXEL_ADD(getpixel, setpixel) \
     do {                                      \
         unsigned sr, sg, sb, sa;              \
@@ -122,6 +141,10 @@
     DRAW_SETPIXEL_BLEND(RGB_FROM_RGB555(*pixel, sr, sg, sb), \
                         RGB555_FROM_RGB(*pixel, sr, sg, sb))
 
+#define DRAW_SETPIXEL_BLEND_CLAMPED_RGB555                           \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_RGB555(*pixel, sr, sg, sb), \
+                                RGB555_FROM_RGB(*pixel, sr, sg, sb))
+
 #define DRAW_SETPIXEL_ADD_RGB555                           \
     DRAW_SETPIXEL_ADD(RGB_FROM_RGB555(*pixel, sr, sg, sb), \
                       RGB555_FROM_RGB(*pixel, sr, sg, sb))
@@ -139,6 +162,9 @@
 
 #define DRAW_SETPIXELXY_BLEND_RGB555(x, y) \
     DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_RGB555)
+
+#define DRAW_SETPIXELXY_BLEND_CLAMPED_RGB555(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_CLAMPED_RGB555)
 
 #define DRAW_SETPIXELXY_ADD_RGB555(x, y) \
     DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_ADD_RGB555)
@@ -160,6 +186,10 @@
     DRAW_SETPIXEL_BLEND(RGB_FROM_RGB565(*pixel, sr, sg, sb), \
                         RGB565_FROM_RGB(*pixel, sr, sg, sb))
 
+#define DRAW_SETPIXEL_BLEND_CLAMPED_RGB565                           \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_RGB565(*pixel, sr, sg, sb), \
+                                RGB565_FROM_RGB(*pixel, sr, sg, sb))
+
 #define DRAW_SETPIXEL_ADD_RGB565                           \
     DRAW_SETPIXEL_ADD(RGB_FROM_RGB565(*pixel, sr, sg, sb), \
                       RGB565_FROM_RGB(*pixel, sr, sg, sb))
@@ -177,6 +207,9 @@
 
 #define DRAW_SETPIXELXY_BLEND_RGB565(x, y) \
     DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_RGB565)
+
+#define DRAW_SETPIXELXY_BLEND_CLAMPED_RGB565(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_CLAMPED_RGB565)
 
 #define DRAW_SETPIXELXY_ADD_RGB565(x, y) \
     DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_ADD_RGB565)
@@ -198,6 +231,10 @@
     DRAW_SETPIXEL_BLEND(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
                         XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
 
+#define DRAW_SETPIXEL_BLEND_CLAMPED_XRGB8888                           \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
+                                XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
+
 #define DRAW_SETPIXEL_ADD_XRGB8888                           \
     DRAW_SETPIXEL_ADD(RGB_FROM_XRGB8888(*pixel, sr, sg, sb), \
                       XRGB8888_FROM_RGB(*pixel, sr, sg, sb))
@@ -215,6 +252,9 @@
 
 #define DRAW_SETPIXELXY_BLEND_XRGB8888(x, y) \
     DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_XRGB8888)
+
+#define DRAW_SETPIXELXY_BLEND_CLAMPED_XRGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_CLAMPED_XRGB8888)
 
 #define DRAW_SETPIXELXY_ADD_XRGB8888(x, y) \
     DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_XRGB8888)
@@ -236,6 +276,10 @@
     DRAW_SETPIXEL_BLEND(RGBA_FROM_ARGB8888(*pixel, sr, sg, sb, sa), \
                         ARGB8888_FROM_RGBA(*pixel, sr, sg, sb, sa))
 
+#define DRAW_SETPIXEL_BLEND_CLAMPED_ARGB8888                                \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGBA_FROM_ARGB8888(*pixel, sr, sg, sb, sa), \
+                                ARGB8888_FROM_RGBA(*pixel, sr, sg, sb, sa))
+
 #define DRAW_SETPIXEL_ADD_ARGB8888                                \
     DRAW_SETPIXEL_ADD(RGBA_FROM_ARGB8888(*pixel, sr, sg, sb, sa), \
                       ARGB8888_FROM_RGBA(*pixel, sr, sg, sb, sa))
@@ -253,6 +297,9 @@
 
 #define DRAW_SETPIXELXY_BLEND_ARGB8888(x, y) \
     DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_ARGB8888)
+
+#define DRAW_SETPIXELXY_BLEND_CLAMPED_ARGB8888(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_CLAMPED_ARGB8888)
 
 #define DRAW_SETPIXELXY_ADD_ARGB8888(x, y) \
     DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_ARGB8888)
@@ -273,6 +320,10 @@
 #define DRAW_SETPIXEL_BLEND_RGB                                  \
     DRAW_SETPIXEL_BLEND(RGB_FROM_PIXEL(*pixel, fmt, sr, sg, sb), \
                         PIXEL_FROM_RGB(*pixel, fmt, sr, sg, sb))
+
+#define DRAW_SETPIXEL_BLEND_CLAMPED_RGB                                  \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_PIXEL(*pixel, fmt, sr, sg, sb), \
+                                PIXEL_FROM_RGB(*pixel, fmt, sr, sg, sb))
 
 #define DRAW_SETPIXEL_ADD_RGB                                  \
     DRAW_SETPIXEL_ADD(RGB_FROM_PIXEL(*pixel, fmt, sr, sg, sb), \
@@ -295,8 +346,14 @@
 #define DRAW_SETPIXELXY2_BLEND_RGB(x, y) \
     DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_RGB)
 
+#define DRAW_SETPIXELXY2_BLEND_CLAMPED_RGB(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_BLEND_CLAMPED_RGB)
+
 #define DRAW_SETPIXELXY4_BLEND_RGB(x, y) \
     DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_RGB)
+
+#define DRAW_SETPIXELXY4_BLEND_CLAMPED_RGB(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_CLAMPED_RGB)
 
 #define DRAW_SETPIXELXY2_ADD_RGB(x, y) \
     DRAW_SETPIXELXY(x, y, Uint16, 2, DRAW_SETPIXEL_ADD_RGB)
@@ -327,6 +384,10 @@
     DRAW_SETPIXEL_BLEND(RGBA_FROM_PIXEL(*pixel, fmt, sr, sg, sb, sa), \
                         PIXEL_FROM_RGBA(*pixel, fmt, sr, sg, sb, sa))
 
+#define DRAW_SETPIXEL_BLEND_CLAMPED_RGBA                                      \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGBA_FROM_PIXEL(*pixel, fmt, sr, sg, sb, sa), \
+                                PIXEL_FROM_RGBA(*pixel, fmt, sr, sg, sb, sa))
+
 #define DRAW_SETPIXEL_ADD_RGBA                                      \
     DRAW_SETPIXEL_ADD(RGBA_FROM_PIXEL(*pixel, fmt, sr, sg, sb, sa), \
                       PIXEL_FROM_RGBA(*pixel, fmt, sr, sg, sb, sa))
@@ -344,6 +405,9 @@
 
 #define DRAW_SETPIXELXY4_BLEND_RGBA(x, y) \
     DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_RGBA)
+
+#define DRAW_SETPIXELXY4_BLEND_CLAMPED_RGBA(x, y) \
+    DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_BLEND_CLAMPED_RGBA)
 
 #define DRAW_SETPIXELXY4_ADD_RGBA(x, y) \
     DRAW_SETPIXELXY(x, y, Uint32, 4, DRAW_SETPIXEL_ADD_RGBA)
@@ -364,7 +428,7 @@
 #define HLINE(type, op, draw_end)                              \
     {                                                          \
         int length;                                            \
-        int pitch = (dst->pitch / dst->format->bytes_per_pixel); \
+        int pitch = (dst->pitch / dst->internal->format->bytes_per_pixel); \
         type *pixel;                                           \
         if (x1 <= x2) {                                        \
             pixel = (type *)dst->pixels + y1 * pitch + x1;     \
@@ -386,7 +450,7 @@
 #define VLINE(type, op, draw_end)                              \
     {                                                          \
         int length;                                            \
-        int pitch = (dst->pitch / dst->format->bytes_per_pixel); \
+        int pitch = (dst->pitch / dst->internal->format->bytes_per_pixel); \
         type *pixel;                                           \
         if (y1 <= y2) {                                        \
             pixel = (type *)dst->pixels + y1 * pitch + x1;     \
@@ -408,7 +472,7 @@
 #define DLINE(type, op, draw_end)                              \
     {                                                          \
         int length;                                            \
-        int pitch = (dst->pitch / dst->format->bytes_per_pixel); \
+        int pitch = (dst->pitch / dst->internal->format->bytes_per_pixel); \
         type *pixel;                                           \
         if (y1 <= y2) {                                        \
             pixel = (type *)dst->pixels + y1 * pitch + x1;     \
@@ -628,7 +692,7 @@
     do {                                                               \
         int width = rect->w;                                           \
         int height = rect->h;                                          \
-        int pitch = (dst->pitch / dst->format->bytes_per_pixel);         \
+        int pitch = (dst->pitch / dst->internal->format->bytes_per_pixel); \
         int skip = pitch - width;                                      \
         type *pixel = (type *)dst->pixels + rect->y * pitch + rect->x; \
         while (height--) {                                             \

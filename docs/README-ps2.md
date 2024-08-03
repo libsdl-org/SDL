@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 ```
 For a release binary is recommendable to reset the IOP always.
 
-Remember to do a clean compilation everytime you enable or disable the `SDL_PS2_SKIP_IOP_RESET` otherwise the change won't be reflected.
+Remember to do a clean compilation every time you enable or disable the `SDL_PS2_SKIP_IOP_RESET` otherwise the change won't be reflected.
 
 ## Getting PS2 Dev
 [Installing PS2 Dev](https://github.com/ps2dev/ps2dev)

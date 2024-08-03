@@ -247,12 +247,19 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     /**
-     * This method creates a Runnable which invokes SDL_main. The default implementation
-     * uses the getMainSharedObject() and getMainFunction() methods to invoke native
-     * code from the specified shared library.
+     * The application entry point, called on a dedicated thread (SDLThread).
+     * The default implementation uses the getMainSharedObject() and getMainFunction() methods
+     * to invoke native code from the specified shared library.
+     * It can be overridden by derived classes.
      */
-    protected Runnable createSDLMainRunnable() {
-        return new SDLMain();
+    protected void main() {
+        String library = SDLActivity.mSingleton.getMainSharedObject();
+        String function = SDLActivity.mSingleton.getMainFunction();
+        String[] arguments = SDLActivity.mSingleton.getArguments();
+
+        Log.v("SDL", "Running main function " + function + " from library " + library);
+        SDLActivity.nativeRunMain(library, function, arguments);
+        Log.v("SDL", "Finished main function");
     }
 
     /**
@@ -300,7 +307,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // Load the .so
     public void loadLibraries() {
        for (String lib : getLibraries()) {
-          SDL.loadLibrary(lib);
+          SDL.loadLibrary(lib, this);
        }
     }
 
@@ -838,7 +845,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     // Start up the C app thread and enable sensor input for the first time
                     // FIXME: Why aren't we enabling sensor input at start?
 
-                    mSDLThread = new Thread(SDLActivity.mSingleton.createSDLMainRunnable(), "SDLThread");
+                    mSDLThread = new Thread(new SDLMain(), "SDLThread");
                     mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
                     mSDLThread.start();
 
@@ -917,6 +924,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                 window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                                 SDLActivity.mFullscreenModeActive = false;
+                            }
+                            if (Build.VERSION.SDK_INT >= 28 /* Android 9 (Pie) */) {
+                                window.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
                             }
                         }
                     } else {
@@ -1029,6 +1039,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // C functions we call
     public static native String nativeGetVersion();
     public static native int nativeSetupJNI();
+    public static native void nativeInitMainThread();
+    public static native void nativeCleanupMainThread();
     public static native int nativeRunMain(String library, String function, Object arguments);
     public static native void nativeLowMemory();
     public static native void nativeSendQuit();
@@ -1057,6 +1069,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeSetenv(String name, String value);
     public static native void nativeSetNaturalOrientation(int orientation);
     public static native void onNativeRotationChanged(int rotation);
+    public static native void onNativeInsetsChanged(int left, int right, int top, int bottom);
     public static native void nativeAddTouch(int touchId, String name);
     public static native void nativePermissionResult(int requestCode, boolean result);
     public static native void onNativeLocaleChanged();
@@ -1103,7 +1116,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         /* If set, hint "explicitly controls which UI orientations are allowed". */
         if (hint.contains("LandscapeRight") && hint.contains("LandscapeLeft")) {
-            orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+            orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE;
         } else if (hint.contains("LandscapeLeft")) {
             orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
         } else if (hint.contains("LandscapeRight")) {
@@ -1114,7 +1127,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         boolean contains_Portrait = hint.contains("Portrait ") || hint.endsWith("Portrait");
 
         if (contains_Portrait && hint.contains("PortraitUpsideDown")) {
-            orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+            orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
         } else if (contains_Portrait) {
             orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         } else if (hint.contains("PortraitUpsideDown")) {
@@ -1128,8 +1141,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         /* No valid hint, nothing is explicitly allowed */
         if (!is_portrait_allowed && !is_landscape_allowed) {
             if (resizable) {
-                /* All orientations are allowed */
-                req = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+                /* All orientations are allowed, respecting user orientation lock setting */
+                req = ActivityInfo.SCREEN_ORIENTATION_FULL_USER;
             } else {
                 /* Fixed window and nothing specified. Get orientation from w/h of created window */
                 req = (w > h ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
@@ -1138,8 +1151,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             /* At least one orientation is allowed */
             if (resizable) {
                 if (is_portrait_allowed && is_landscape_allowed) {
-                    /* hint allows both landscape and portrait, promote to full sensor */
-                    req = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
+                    /* hint allows both landscape and portrait, promote to full user */
+                    req = ActivityInfo.SCREEN_ORIENTATION_FULL_USER;
                 } else {
                     /* Use the only one allowed "orientation" */
                     req = (is_landscape_allowed ? orientation_landscape : orientation_portrait);
@@ -1371,9 +1384,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
          */
         static final int HEIGHT_PADDING = 15;
 
+        public int input_type;
         public int x, y, w, h;
 
-        public ShowTextInputTask(int x, int y, int w, int h) {
+        public ShowTextInputTask(int input_type, int x, int y, int w, int h) {
+            this.input_type = input_type;
             this.x = x;
             this.y = y;
             this.w = w;
@@ -1401,6 +1416,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             } else {
                 mTextEdit.setLayoutParams(params);
             }
+            mTextEdit.setInputType(input_type);
 
             mTextEdit.setVisibility(View.VISIBLE);
             mTextEdit.requestFocus();
@@ -1415,9 +1431,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
-    public static boolean showTextInput(int x, int y, int w, int h) {
+    public static boolean showTextInput(int input_type, int x, int y, int w, int h) {
         // Transfer the task to the main thread as a Runnable
-        return mSingleton.commandHandler.post(new ShowTextInputTask(x, y, w, h));
+        return mSingleton.commandHandler.post(new ShowTextInputTask(input_type, x, y, w, h));
     }
 
     public static boolean isTextInputEvent(KeyEvent event) {
@@ -2095,10 +2111,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 class SDLMain implements Runnable {
     @Override
     public void run() {
-        // Runs SDL_main()
-        String library = SDLActivity.mSingleton.getMainSharedObject();
-        String function = SDLActivity.mSingleton.getMainFunction();
-        String[] arguments = SDLActivity.mSingleton.getArguments();
+        // Runs SDLActivity.main()
 
         try {
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DISPLAY);
@@ -2106,11 +2119,9 @@ class SDLMain implements Runnable {
             Log.v("SDL", "modify thread properties failed " + e.toString());
         }
 
-        Log.v("SDL", "Running main function " + function + " from library " + library);
-
-        SDLActivity.nativeRunMain(library, function, arguments);
-
-        Log.v("SDL", "Finished main function");
+        SDLActivity.nativeInitMainThread();
+        SDLActivity.mSingleton.main();
+        SDLActivity.nativeCleanupMainThread();
 
         if (SDLActivity.mSingleton != null && !SDLActivity.mSingleton.isFinishing()) {
             // Let's finish the Activity

@@ -291,6 +291,24 @@ int SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const char 
     return storage->iface.rename(storage->userdata, oldpath, newpath);
 }
 
+int SDL_CopyStorageFile(SDL_Storage *storage, const char *oldpath, const char *newpath)
+{
+    CHECK_STORAGE_MAGIC()
+
+    if (!oldpath) {
+        return SDL_InvalidParamError("oldpath");
+    }
+    if (!newpath) {
+        return SDL_InvalidParamError("newpath");
+    }
+
+    if (!storage->iface.copy) {
+        return SDL_Unsupported();
+    }
+
+    return storage->iface.copy(storage->userdata, oldpath, newpath);
+}
+
 int SDL_GetStoragePathInfo(SDL_Storage *storage, const char *path, SDL_PathInfo *info)
 {
     SDL_PathInfo dummy;

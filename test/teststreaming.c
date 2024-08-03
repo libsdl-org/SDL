@@ -107,7 +107,7 @@ static void loop(void)
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
+            if (event.key.key == SDLK_ESCAPE) {
                 done = SDL_TRUE;
             }
             break;
@@ -149,6 +149,7 @@ int main(int argc, char **argv)
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }

@@ -32,6 +32,7 @@
 - (instancetype)initWithFrame:(CGRect)frame;
 
 - (void)setSDLWindow:(SDL_Window *)window;
+- (SDL_Window *)getSDLWindow;
 
 #if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
 - (UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4));
@@ -42,5 +43,7 @@
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+
+- (void)safeAreaInsetsDidChange;
 
 @end

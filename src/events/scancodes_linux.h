@@ -156,17 +156,17 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 127, 0x07f */    SDL_SCANCODE_APPLICATION,       /* KEY_COMPOSE */
     /* 128, 0x080 */    SDL_SCANCODE_STOP,              /* KEY_STOP */
     /* 129, 0x081 */    SDL_SCANCODE_AGAIN,             /* KEY_AGAIN */
-    /* 130, 0x082 */    SDL_SCANCODE_UNKNOWN,           /* KEY_PROPS */
+    /* 130, 0x082 */    SDL_SCANCODE_AC_PROPERTIES,     /* KEY_PROPS */
     /* 131, 0x083 */    SDL_SCANCODE_UNDO,              /* KEY_UNDO */
     /* 132, 0x084 */    SDL_SCANCODE_UNKNOWN,           /* KEY_FRONT */
     /* 133, 0x085 */    SDL_SCANCODE_COPY,              /* KEY_COPY */
-    /* 134, 0x086 */    SDL_SCANCODE_UNKNOWN,           /* KEY_OPEN */
+    /* 134, 0x086 */    SDL_SCANCODE_AC_OPEN,           /* KEY_OPEN */
     /* 135, 0x087 */    SDL_SCANCODE_PASTE,             /* KEY_PASTE */
     /* 136, 0x088 */    SDL_SCANCODE_FIND,              /* KEY_FIND */
     /* 137, 0x089 */    SDL_SCANCODE_CUT,               /* KEY_CUT */
     /* 138, 0x08a */    SDL_SCANCODE_HELP,              /* KEY_HELP */
     /* 139, 0x08b */    SDL_SCANCODE_MENU,              /* KEY_MENU */
-    /* 140, 0x08c */    SDL_SCANCODE_CALCULATOR,        /* KEY_CALC */
+    /* 140, 0x08c */    SDL_SCANCODE_UNKNOWN,           /* KEY_CALC */
     /* 141, 0x08d */    SDL_SCANCODE_UNKNOWN,           /* KEY_SETUP */
     /* 142, 0x08e */    SDL_SCANCODE_SLEEP,             /* KEY_SLEEP */
     /* 143, 0x08f */    SDL_SCANCODE_UNKNOWN,           /* KEY_WAKEUP */
@@ -174,40 +174,40 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 145, 0x091 */    SDL_SCANCODE_UNKNOWN,           /* KEY_SENDFILE */
     /* 146, 0x092 */    SDL_SCANCODE_UNKNOWN,           /* KEY_DELETEFILE */
     /* 147, 0x093 */    SDL_SCANCODE_UNKNOWN,           /* KEY_XFER */
-    /* 148, 0x094 */    SDL_SCANCODE_APP1,              /* KEY_PROG1 */
-    /* 149, 0x095 */    SDL_SCANCODE_APP2,              /* KEY_PROG2 */
-    /* 150, 0x096 */    SDL_SCANCODE_WWW,               /* KEY_WWW */
+    /* 148, 0x094 */    SDL_SCANCODE_UNKNOWN,           /* KEY_PROG1 */
+    /* 149, 0x095 */    SDL_SCANCODE_UNKNOWN,           /* KEY_PROG2 */
+    /* 150, 0x096 */    SDL_SCANCODE_UNKNOWN,           /* KEY_WWW */
     /* 151, 0x097 */    SDL_SCANCODE_UNKNOWN,           /* KEY_MSDOS */
     /* 152, 0x098 */    SDL_SCANCODE_UNKNOWN,           /* KEY_COFFEE */
     /* 153, 0x099 */    SDL_SCANCODE_UNKNOWN,           /* KEY_ROTATE_DISPLAY */
     /* 154, 0x09a */    SDL_SCANCODE_UNKNOWN,           /* KEY_CYCLEWINDOWS */
-    /* 155, 0x09b */    SDL_SCANCODE_MAIL,              /* KEY_MAIL */
+    /* 155, 0x09b */    SDL_SCANCODE_UNKNOWN,           /* KEY_MAIL */
     /* 156, 0x09c */    SDL_SCANCODE_AC_BOOKMARKS,      /* KEY_BOOKMARKS */
-    /* 157, 0x09d */    SDL_SCANCODE_COMPUTER,          /* KEY_COMPUTER */
+    /* 157, 0x09d */    SDL_SCANCODE_UNKNOWN,           /* KEY_COMPUTER */
     /* 158, 0x09e */    SDL_SCANCODE_AC_BACK,           /* KEY_BACK */
     /* 159, 0x09f */    SDL_SCANCODE_AC_FORWARD,        /* KEY_FORWARD */
     /* 160, 0x0a0 */    SDL_SCANCODE_UNKNOWN,           /* KEY_CLOSECD */
-    /* 161, 0x0a1 */    SDL_SCANCODE_EJECT,             /* KEY_EJECTCD */
-    /* 162, 0x0a2 */    SDL_SCANCODE_EJECT,             /* KEY_EJECTCLOSECD */
-    /* 163, 0x0a3 */    SDL_SCANCODE_AUDIONEXT,         /* KEY_NEXTSONG */
-    /* 164, 0x0a4 */    SDL_SCANCODE_AUDIOPLAY,         /* KEY_PLAYPAUSE */
-    /* 165, 0x0a5 */    SDL_SCANCODE_AUDIOPREV,         /* KEY_PREVIOUSSONG */
-    /* 166, 0x0a6 */    SDL_SCANCODE_AUDIOSTOP,         /* KEY_STOPCD */
-    /* 167, 0x0a7 */    SDL_SCANCODE_UNKNOWN,           /* KEY_RECORD */
-    /* 168, 0x0a8 */    SDL_SCANCODE_AUDIOREWIND,       /* KEY_REWIND */
+    /* 161, 0x0a1 */    SDL_SCANCODE_MEDIA_EJECT,       /* KEY_EJECTCD */
+    /* 162, 0x0a2 */    SDL_SCANCODE_MEDIA_EJECT,       /* KEY_EJECTCLOSECD */
+    /* 163, 0x0a3 */    SDL_SCANCODE_MEDIA_NEXT_TRACK,  /* KEY_NEXTSONG */
+    /* 164, 0x0a4 */    SDL_SCANCODE_MEDIA_PLAY_PAUSE,   /* KEY_PLAYPAUSE */
+    /* 165, 0x0a5 */    SDL_SCANCODE_MEDIA_PREVIOUS_TRACK, /* KEY_PREVIOUSSONG */
+    /* 166, 0x0a6 */    SDL_SCANCODE_MEDIA_STOP,        /* KEY_STOPCD */
+    /* 167, 0x0a7 */    SDL_SCANCODE_MEDIA_RECORD,      /* KEY_RECORD */
+    /* 168, 0x0a8 */    SDL_SCANCODE_MEDIA_REWIND,      /* KEY_REWIND */
     /* 169, 0x0a9 */    SDL_SCANCODE_UNKNOWN,           /* KEY_PHONE */
     /* 170, 0x0aa */    SDL_SCANCODE_UNKNOWN,           /* KEY_ISO */
     /* 171, 0x0ab */    SDL_SCANCODE_UNKNOWN,           /* KEY_CONFIG */
     /* 172, 0x0ac */    SDL_SCANCODE_AC_HOME,           /* KEY_HOMEPAGE */
     /* 173, 0x0ad */    SDL_SCANCODE_AC_REFRESH,        /* KEY_REFRESH */
-    /* 174, 0x0ae */    SDL_SCANCODE_UNKNOWN,           /* KEY_EXIT */
+    /* 174, 0x0ae */    SDL_SCANCODE_AC_EXIT,           /* KEY_EXIT */
     /* 175, 0x0af */    SDL_SCANCODE_UNKNOWN,           /* KEY_MOVE */
     /* 176, 0x0b0 */    SDL_SCANCODE_UNKNOWN,           /* KEY_EDIT */
     /* 177, 0x0b1 */    SDL_SCANCODE_UNKNOWN,           /* KEY_SCROLLUP */
     /* 178, 0x0b2 */    SDL_SCANCODE_UNKNOWN,           /* KEY_SCROLLDOWN */
     /* 179, 0x0b3 */    SDL_SCANCODE_KP_LEFTPAREN,      /* KEY_KPLEFTPAREN */
     /* 180, 0x0b4 */    SDL_SCANCODE_KP_RIGHTPAREN,     /* KEY_KPRIGHTPAREN */
-    /* 181, 0x0b5 */    SDL_SCANCODE_UNKNOWN,           /* KEY_NEW */
+    /* 181, 0x0b5 */    SDL_SCANCODE_AC_NEW,            /* KEY_NEW */
     /* 182, 0x0b6 */    SDL_SCANCODE_AGAIN,             /* KEY_REDO */
     /* 183, 0x0b7 */    SDL_SCANCODE_F13,               /* KEY_F13 */
     /* 184, 0x0b8 */    SDL_SCANCODE_F14,               /* KEY_F14 */
@@ -226,22 +226,22 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 197, 0x0c5 */    SDL_SCANCODE_UNKNOWN,
     /* 198, 0x0c6 */    SDL_SCANCODE_UNKNOWN,
     /* 199, 0x0c7 */    SDL_SCANCODE_UNKNOWN,
-    /* 200, 0x0c8 */    SDL_SCANCODE_AUDIOPLAY,         /* KEY_PLAYCD */
-    /* 201, 0x0c9 */    SDL_SCANCODE_UNKNOWN,           /* KEY_PAUSECD */
+    /* 200, 0x0c8 */    SDL_SCANCODE_MEDIA_PLAY,        /* KEY_PLAYCD */
+    /* 201, 0x0c9 */    SDL_SCANCODE_MEDIA_PAUSE,       /* KEY_PAUSECD */
     /* 202, 0x0ca */    SDL_SCANCODE_UNKNOWN,           /* KEY_PROG3 */
     /* 203, 0x0cb */    SDL_SCANCODE_UNKNOWN,           /* KEY_PROG4 */
     /* 204, 0x0cc */    SDL_SCANCODE_UNKNOWN,           /* KEY_ALL_APPLICATIONS */
     /* 205, 0x0cd */    SDL_SCANCODE_UNKNOWN,           /* KEY_SUSPEND */
-    /* 206, 0x0ce */    SDL_SCANCODE_UNKNOWN,           /* KEY_CLOSE */
-    /* 207, 0x0cf */    SDL_SCANCODE_AUDIOPLAY,         /* KEY_PLAY */
-    /* 208, 0x0d0 */    SDL_SCANCODE_AUDIOFASTFORWARD,  /* KEY_FASTFORWARD */
+    /* 206, 0x0ce */    SDL_SCANCODE_AC_CLOSE,          /* KEY_CLOSE */
+    /* 207, 0x0cf */    SDL_SCANCODE_MEDIA_PLAY,        /* KEY_PLAY */
+    /* 208, 0x0d0 */    SDL_SCANCODE_MEDIA_FAST_FORWARD, /* KEY_FASTFORWARD */
     /* 209, 0x0d1 */    SDL_SCANCODE_UNKNOWN,           /* KEY_BASSBOOST */
     /* 210, 0x0d2 */    SDL_SCANCODE_PRINTSCREEN,       /* KEY_PRINT */
     /* 211, 0x0d3 */    SDL_SCANCODE_UNKNOWN,           /* KEY_HP */
     /* 212, 0x0d4 */    SDL_SCANCODE_UNKNOWN,           /* KEY_CAMERA */
     /* 213, 0x0d5 */    SDL_SCANCODE_UNKNOWN,           /* KEY_SOUND */
     /* 214, 0x0d6 */    SDL_SCANCODE_UNKNOWN,           /* KEY_QUESTION */
-    /* 215, 0x0d7 */    SDL_SCANCODE_MAIL,              /* KEY_EMAIL */
+    /* 215, 0x0d7 */    SDL_SCANCODE_UNKNOWN,           /* KEY_EMAIL */
     /* 216, 0x0d8 */    SDL_SCANCODE_UNKNOWN,           /* KEY_CHAT */
     /* 217, 0x0d9 */    SDL_SCANCODE_AC_SEARCH,         /* KEY_SEARCH */
     /* 218, 0x0da */    SDL_SCANCODE_UNKNOWN,           /* KEY_CONNECT */
@@ -250,17 +250,17 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 221, 0x0dd */    SDL_SCANCODE_UNKNOWN,           /* KEY_SHOP */
     /* 222, 0x0de */    SDL_SCANCODE_ALTERASE,          /* KEY_ALTERASE */
     /* 223, 0x0df */    SDL_SCANCODE_CANCEL,            /* KEY_CANCEL */
-    /* 224, 0x0e0 */    SDL_SCANCODE_BRIGHTNESSDOWN,    /* KEY_BRIGHTNESSDOWN */
-    /* 225, 0x0e1 */    SDL_SCANCODE_BRIGHTNESSUP,      /* KEY_BRIGHTNESSUP */
-    /* 226, 0x0e2 */    SDL_SCANCODE_MEDIASELECT,       /* KEY_MEDIA */
-    /* 227, 0x0e3 */    SDL_SCANCODE_DISPLAYSWITCH,     /* KEY_SWITCHVIDEOMODE */
-    /* 228, 0x0e4 */    SDL_SCANCODE_KBDILLUMTOGGLE,    /* KEY_KBDILLUMTOGGLE */
-    /* 229, 0x0e5 */    SDL_SCANCODE_KBDILLUMDOWN,      /* KEY_KBDILLUMDOWN */
-    /* 230, 0x0e6 */    SDL_SCANCODE_KBDILLUMUP,        /* KEY_KBDILLUMUP */
+    /* 224, 0x0e0 */    SDL_SCANCODE_UNKNOWN,           /* KEY_BRIGHTNESSDOWN */
+    /* 225, 0x0e1 */    SDL_SCANCODE_UNKNOWN,           /* KEY_BRIGHTNESSUP */
+    /* 226, 0x0e2 */    SDL_SCANCODE_MEDIA_SELECT,      /* KEY_MEDIA */
+    /* 227, 0x0e3 */    SDL_SCANCODE_UNKNOWN,           /* KEY_SWITCHVIDEOMODE */
+    /* 228, 0x0e4 */    SDL_SCANCODE_UNKNOWN,           /* KEY_KBDILLUMTOGGLE */
+    /* 229, 0x0e5 */    SDL_SCANCODE_UNKNOWN,           /* KEY_KBDILLUMDOWN */
+    /* 230, 0x0e6 */    SDL_SCANCODE_UNKNOWN,           /* KEY_KBDILLUMUP */
     /* 231, 0x0e7 */    SDL_SCANCODE_UNKNOWN,           /* KEY_SEND */
     /* 232, 0x0e8 */    SDL_SCANCODE_UNKNOWN,           /* KEY_REPLY */
     /* 233, 0x0e9 */    SDL_SCANCODE_UNKNOWN,           /* KEY_FORWARDMAIL */
-    /* 234, 0x0ea */    SDL_SCANCODE_UNKNOWN,           /* KEY_SAVE */
+    /* 234, 0x0ea */    SDL_SCANCODE_AC_SAVE,           /* KEY_SAVE */
     /* 235, 0x0eb */    SDL_SCANCODE_UNKNOWN,           /* KEY_DOCUMENTS */
     /* 236, 0x0ec */    SDL_SCANCODE_UNKNOWN,           /* KEY_BATTERY */
     /* 237, 0x0ed */    SDL_SCANCODE_UNKNOWN,           /* KEY_BLUETOOTH */
@@ -829,7 +829,7 @@ done
 #!/bin/bash
 
 function get_comment
-{   
+{
     name=$(echo "$1" | awk '{print $7}')
     if [ "$name" != "" ]; then
         grep -E "$name\s" /usr/include/linux/input-event-codes.h | grep -F "/*" | sed 's,[^/]*/,/,'

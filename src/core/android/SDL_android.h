@@ -20,6 +20,9 @@
 */
 #include "SDL_internal.h"
 
+#ifndef SDL_android_h
+#define SDL_android_h
+
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 /* *INDENT-OFF* */
@@ -35,6 +38,23 @@ extern "C" {
 // this appears to be broken right now (on Android, not SDL, I think...?).
 #define ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES 0
 
+/* Life cycle */
+typedef enum
+{
+    SDL_ANDROID_LIFECYCLE_WAKE,
+    SDL_ANDROID_LIFECYCLE_PAUSE,
+    SDL_ANDROID_LIFECYCLE_RESUME,
+    SDL_ANDROID_LIFECYCLE_LOWMEMORY,
+    SDL_ANDROID_LIFECYCLE_DESTROY,
+    SDL_NUM_ANDROID_LIFECYCLE_EVENTS
+} SDL_AndroidLifecycleEvent;
+
+void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event);
+SDL_bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS);
+
+void Android_LockActivityMutex(void);
+void Android_UnlockActivityMutex(void);
+
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(SDL_bool fullscreen);
@@ -43,7 +63,7 @@ extern void Android_JNI_MinizeWindow(void);
 extern SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
 extern SDL_bool Android_JNI_GetAccelerometerValues(float values[3]);
-extern void Android_JNI_ShowScreenKeyboard(SDL_Rect *inputRect);
+extern void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect);
 extern void Android_JNI_HideScreenKeyboard(void);
 extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);
@@ -52,15 +72,9 @@ extern SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void);
 extern SDL_DisplayOrientation Android_JNI_GetDisplayCurrentOrientation(void);
 
 /* Audio support */
-void Android_StartAudioHotplug(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture);
+void Android_StartAudioHotplug(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
 void Android_StopAudioHotplug(void);
 extern void Android_AudioThreadInit(SDL_AudioDevice *device);
-extern int Android_JNI_OpenAudioDevice(SDL_AudioDevice *device);
-extern void *Android_JNI_GetAudioBuffer(void);
-extern void Android_JNI_WriteAudioBuffer(void);
-extern int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen);
-extern void Android_JNI_FlushCapturedAudio(void);
-extern void Android_JNI_CloseAudioDevice(const int iscapture);
 
 /* Detecting device type */
 extern SDL_bool Android_IsDeXMode(void);
@@ -68,7 +82,7 @@ extern SDL_bool Android_IsChromebook(void);
 
 int Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode);
 Sint64 Android_JNI_FileSize(void *userdata);
-Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, int whence);
+Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence);
 size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOStatus *status);
 size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status);
 int Android_JNI_FileClose(void *userdata);
@@ -91,6 +105,7 @@ void Android_JNI_PollInputDevices(void);
 /* Haptic support */
 void Android_JNI_PollHapticDevices(void);
 void Android_JNI_HapticRun(int device_id, float intensity, int length);
+void Android_JNI_HapticRumble(int device_id, float low_frequency_intensity, float high_frequency_intensity, int length);
 void Android_JNI_HapticStop(int device_id);
 
 /* Video */
@@ -109,9 +124,6 @@ int Android_JNI_GetLocale(char *buf, size_t buflen);
 
 /* Generic messages */
 int Android_JNI_SendMessage(int command, int param);
-
-/* Init */
-JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv *mEnv, jclass cls);
 
 /* MessageBox */
 int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
@@ -138,13 +150,10 @@ SDL_bool SDL_IsAndroidTV(void);
 SDL_bool SDL_IsChromebook(void);
 SDL_bool SDL_IsDeXMode(void);
 
-void Android_ActivityMutex_Lock(void);
-void Android_ActivityMutex_Unlock(void);
-void Android_ActivityMutex_Lock_Running(void);
-
 /* File Dialogs */
 SDL_bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void* userdata,
-    const SDL_DialogFileFilter *filters, SDL_bool forwrite, SDL_bool multiple);
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_bool forwrite,
+    SDL_bool multiple);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
@@ -152,3 +161,5 @@ SDL_bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void* userd
 }
 /* *INDENT-ON* */
 #endif
+
+#endif // SDL_android_h

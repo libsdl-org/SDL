@@ -62,7 +62,7 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
-        return 0;
+        return NULL;
     }
 
     /* Firefox sends blur event which would otherwise prevent full screen
@@ -152,7 +152,7 @@ static int Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *d
 
 static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
 {
-    Emscripten_FiniMouse();
+    Emscripten_QuitMouse();
 }
 
 static int Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
@@ -215,9 +215,9 @@ static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, S
         scaled_w = css_w * wdata->pixel_ratio;
         scaled_h = css_h * wdata->pixel_ratio;
 
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, css_w, css_h);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(css_w), SDL_lroundf(css_h));
     }
-    emscripten_set_canvas_element_size(wdata->canvas_id, scaled_w, scaled_h);
+    emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
 
     /* if the size is not being controlled by css, we need to scale down for hidpi */
     if (!wdata->external_size) {
@@ -230,7 +230,7 @@ static int Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, S
     wdata->window = window;
 
     /* Setup driver data for this window */
-    window->driverdata = wdata;
+    window->internal = wdata;
 
     /* One window, it always has focus */
     SDL_SetMouseFocus(window);
@@ -246,13 +246,13 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
 
-    if (window->driverdata) {
-        data = window->driverdata;
+    if (window->internal) {
+        data = window->internal;
         /* update pixel ratio */
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
         }
-        emscripten_set_canvas_element_size(data->canvas_id, window->floating.w * data->pixel_ratio, window->floating.h * data->pixel_ratio);
+        emscripten_set_canvas_element_size(data->canvas_id, SDL_lroundf(window->floating.w * data->pixel_ratio), SDL_lroundf(window->floating.h * data->pixel_ratio));
 
         /*scale canvas down*/
         if (!data->external_size && data->pixel_ratio != 1.0f) {
@@ -266,10 +266,10 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)
 {
     SDL_WindowData *data;
-    if (window->driverdata) {
-        data = window->driverdata;
-        *w = window->w * data->pixel_ratio;
-        *h = window->h * data->pixel_ratio;
+    if (window->internal) {
+        data = window->internal;
+        *w = SDL_lroundf(window->w * data->pixel_ratio);
+        *h = SDL_lroundf(window->h * data->pixel_ratio);
     }
 }
 
@@ -277,8 +277,8 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
 
-    if (window->driverdata) {
-        data = window->driverdata;
+    if (window->internal) {
+        data = window->internal;
 
         Emscripten_UnregisterEventHandlers(data);
 
@@ -286,8 +286,8 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
         SDL_free(data->canvas_id);
 
-        SDL_free(window->driverdata);
-        window->driverdata = NULL;
+        SDL_free(window->internal);
+        window->internal = NULL;
     }
 }
 
@@ -296,8 +296,8 @@ static int Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *wi
     SDL_WindowData *data;
     int res = -1;
 
-    if (window->driverdata) {
-        data = window->driverdata;
+    if (window->internal) {
+        data = window->internal;
 
         if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;

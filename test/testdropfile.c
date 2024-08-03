@@ -63,7 +63,7 @@ int SDL_AppIterate(void *appstate)
         }
         SDL_RenderPresent(renderer);
     }
-    return 0;  /* keep going */
+    return SDL_APP_CONTINUE;
 }
 
 int SDL_AppInit(void **appstate, int argc, char *argv[]) {
@@ -74,7 +74,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[]) {
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
-        return -1;  /* terminate with an error */
+        return SDL_APP_FAILURE;
     }
 
     /* Enable standard application logging */
@@ -107,10 +107,10 @@ int SDL_AppInit(void **appstate, int argc, char *argv[]) {
     *appstate = dialog;
 
     dialog->state = state;
-    return 0; /* continue */
+    return SDL_APP_CONTINUE;
 onerror:
     SDLTest_CommonQuit(state);
-    return -1;  /* terminate with an error */
+    return SDL_APP_FAILURE;
 }
 
 void SDL_AppQuit(void *appstate)

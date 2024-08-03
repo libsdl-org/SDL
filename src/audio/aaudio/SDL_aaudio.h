@@ -25,8 +25,8 @@
 
 #ifdef SDL_AUDIO_DRIVER_AAUDIO
 
-void AAUDIO_ResumeDevices(void);
-void AAUDIO_PauseDevices(void);
+extern void AAUDIO_ResumeDevices(void);
+extern void AAUDIO_PauseDevices(void);
 
 #else
 

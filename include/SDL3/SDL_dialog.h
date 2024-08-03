@@ -68,7 +68,7 @@ typedef struct SDL_DialogFileFilter
  *
  * If `filelist` is:
  *
- * - NULL, an error occured. Details can be obtained with SDL_GetError().
+ * - NULL, an error occurred. Details can be obtained with SDL_GetError().
  * - A pointer to NULL, the user either didn't choose any file or canceled the
  *   dialog.
  * - A pointer to non-`NULL`, the user chose one or more files. The argument
@@ -78,14 +78,13 @@ typedef struct SDL_DialogFileFilter
  * The filelist argument does not need to be freed; it will automatically be
  * freed when the callback returns.
  *
- * The filter argument is the index of the filter that was selected, or one
- * more than the size of the list (therefore the index of the terminating NULL
- * entry) if no filter was selected, or -1 if the platform or method doesn't
- * support fetching the selected filter.
+ * The filter argument is the index of the filter that was selected, or -1 if
+ * no filter was selected or if the platform or method doesn't support
+ * fetching the selected filter.
  *
- * \param userdata An app-provided pointer, for the callback's use.
- * \param filelist The file(s) chosen by the user.
- * \param filter Index of the selected filter.
+ * \param userdata an app-provided pointer, for the callback's use.
+ * \param filelist the file(s) chosen by the user.
+ * \param filter index of the selected filter.
  *
  * \since This datatype is available since SDL 3.0.0.
  *
@@ -94,7 +93,7 @@ typedef struct SDL_DialogFileFilter
  * \sa SDL_ShowSaveFileDialog
  * \sa SDL_ShowOpenFolderDialog
  */
-typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const *filelist, int filter);
+typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const *filelist, int filter);
 
 /**
  * Displays a dialog that lets the user select a file on their filesystem.
@@ -106,7 +105,7 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
  *
  * The callback will be invoked with a null-terminated list of files the user
  * chose. The list will be empty if the user canceled the dialog, and it will
- * be NULL if an error occured.
+ * be NULL if an error occurred.
  *
  * Note that the callback may be called from a different thread than the one
  * the function was invoked on.
@@ -118,12 +117,12 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
  * requires an event-handling loop. Apps that do not use SDL to handle events
  * should add a call to SDL_PumpEvents in their main loop.
  *
- * \param callback An SDL_DialogFileCallback to be invoked when the user
+ * \param callback an SDL_DialogFileCallback to be invoked when the user
  *                 selects a file and accepts, or cancels the dialog, or an
  *                 error occurs. The first argument is a null-terminated list
  *                 of C strings, representing the paths chosen by the user.
  *                 The list will be empty if the user canceled the dialog, and
- *                 it will be NULL if an error occured. If an error occured,
+ *                 it will be NULL if an error occurred. If an error occurred,
  *                 it can be fetched with SDL_GetError(). The second argument
  *                 is the userdata pointer passed to the function. The third
  *                 argument is the index of the filter selected by the user,
@@ -131,16 +130,17 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
  *                 index of the terminating NULL filter) if no filter was
  *                 chosen, or -1 if the platform does not support detecting
  *                 the selected filter.
- * \param userdata An optional pointer to pass extra data to the callback when
+ * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked.
- * \param window The window that the dialog should be modal for. May be NULL.
+ * \param window the window that the dialog should be modal for. May be NULL.
  *               Not all platforms support this option.
- * \param filters A null-terminated list of SDL_DialogFileFilter's. May be
- *                NULL. Not all platforms support this option, and platforms
- *                that do support it may allow the user to ignore the filters.
- * \param default_location The default folder or file to start the dialog at.
+ * \param filters a list of SDL_DialogFileFilter's. May be NULL. Not all
+ *                platforms support this option, and platforms that do support
+ *                it may allow the user to ignore the filters.
+ * \param nfilters the number of filters. Ignored if filters is NULL.
+ * \param default_location the default folder or file to start the dialog at.
  *                         May be NULL. Not all platforms support this option.
- * \param allow_many If non-zero, the user will be allowed to select multiple
+ * \param allow_many if non-zero, the user will be allowed to select multiple
  *                   entries. Not all platforms support this option.
  *
  * \since This function is available since SDL 3.0.0.
@@ -150,7 +150,7 @@ typedef void(SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * const
  * \sa SDL_ShowSaveFileDialog
  * \sa SDL_ShowOpenFolderDialog
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, const char *default_location, SDL_bool allow_many);
+extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, SDL_bool allow_many);
 
 /**
  * Displays a dialog that lets the user choose a new or existing file on their
@@ -163,7 +163,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  *
  * The callback will be invoked with a null-terminated list of files the user
  * chose. The list will be empty if the user canceled the dialog, and it will
- * be NULL if an error occured.
+ * be NULL if an error occurred.
  *
  * Note that the callback may be called from a different thread than the one
  * the function was invoked on.
@@ -174,12 +174,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  * requires an event-handling loop. Apps that do not use SDL to handle events
  * should add a call to SDL_PumpEvents in their main loop.
  *
- * \param callback An SDL_DialogFileCallback to be invoked when the user
+ * \param callback an SDL_DialogFileCallback to be invoked when the user
  *                 selects a file and accepts, or cancels the dialog, or an
  *                 error occurs. The first argument is a null-terminated list
  *                 of C strings, representing the paths chosen by the user.
  *                 The list will be empty if the user canceled the dialog, and
- *                 it will be NULL if an error occured. If an error occured,
+ *                 it will be NULL if an error occurred. If an error occurred,
  *                 it can be fetched with SDL_GetError(). The second argument
  *                 is the userdata pointer passed to the function. The third
  *                 argument is the index of the filter selected by the user,
@@ -187,14 +187,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  *                 index of the terminating NULL filter) if no filter was
  *                 chosen, or -1 if the platform does not support detecting
  *                 the selected filter.
- * \param userdata An optional pointer to pass extra data to the callback when
+ * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked.
- * \param window The window that the dialog should be modal for. May be NULL.
+ * \param window the window that the dialog should be modal for. May be NULL.
  *               Not all platforms support this option.
- * \param filters A null-terminated list of SDL_DialogFileFilter's. May be
- *                NULL. Not all platforms support this option, and platforms
- *                that do support it may allow the user to ignore the filters.
- * \param default_location The default folder or file to start the dialog at.
+ * \param filters a list of SDL_DialogFileFilter's. May be NULL. Not all
+ *                platforms support this option, and platforms that do support
+ *                it may allow the user to ignore the filters.
+ * \param nfilters the number of filters. Ignored if filters is NULL.
+ * \param default_location the default folder or file to start the dialog at.
  *                         May be NULL. Not all platforms support this option.
  *
  * \since This function is available since SDL 3.0.0.
@@ -204,7 +205,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  * \sa SDL_ShowOpenFileDialog
  * \sa SDL_ShowOpenFolderDialog
  */
-extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, const char *default_location);
+extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location);
 
 /**
  * Displays a dialog that lets the user select a folder on their filesystem.
@@ -216,7 +217,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  *
  * The callback will be invoked with a null-terminated list of files the user
  * chose. The list will be empty if the user canceled the dialog, and it will
- * be NULL if an error occured.
+ * be NULL if an error occurred.
  *
  * Note that the callback may be called from a different thread than the one
  * the function was invoked on.
@@ -228,22 +229,22 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  * requires an event-handling loop. Apps that do not use SDL to handle events
  * should add a call to SDL_PumpEvents in their main loop.
  *
- * \param callback An SDL_DialogFileCallback to be invoked when the user
+ * \param callback an SDL_DialogFileCallback to be invoked when the user
  *                 selects a file and accepts, or cancels the dialog, or an
  *                 error occurs. The first argument is a null-terminated list
  *                 of C strings, representing the paths chosen by the user.
  *                 The list will be empty if the user canceled the dialog, and
- *                 it will be NULL if an error occured. If an error occured,
+ *                 it will be NULL if an error occurred. If an error occurred,
  *                 it can be fetched with SDL_GetError(). The second argument
  *                 is the userdata pointer passed to the function. The third
  *                 argument is always -1 for SDL_ShowOpenFolderDialog.
- * \param userdata An optional pointer to pass extra data to the callback when
+ * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked.
- * \param window The window that the dialog should be modal for. May be NULL.
+ * \param window the window that the dialog should be modal for. May be NULL.
  *               Not all platforms support this option.
- * \param default_location The default folder or file to start the dialog at.
+ * \param default_location the default folder or file to start the dialog at.
  *                         May be NULL. Not all platforms support this option.
- * \param allow_many If non-zero, the user will be allowed to select multiple
+ * \param allow_many if non-zero, the user will be allowed to select multiple
  *                   entries. Not all platforms support this option.
  *
  * \since This function is available since SDL 3.0.0.

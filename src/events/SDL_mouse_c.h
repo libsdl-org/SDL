@@ -29,10 +29,12 @@
 /* The default mouse input device, for platforms that don't have multiple mice */
 #define SDL_DEFAULT_MOUSE_ID    1
 
+typedef struct SDL_CursorData SDL_CursorData;
+
 struct SDL_Cursor
 {
     struct SDL_Cursor *next;
-    void *driverdata;
+    SDL_CursorData *internal;
 };
 
 typedef struct
@@ -78,7 +80,7 @@ typedef struct
     int (*CaptureMouse)(SDL_Window *window);
 
     /* Get absolute mouse coordinates. (x) and (y) are never NULL and set to zero before call. */
-    Uint32 (*GetGlobalMouseState)(float *x, float *y);
+    SDL_MouseButtonFlags (*GetGlobalMouseState)(float *x, float *y);
 
     /* Data common to all mice */
     SDL_Window *focus;
@@ -91,6 +93,11 @@ typedef struct
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
     SDL_bool relative_mode_warp_motion;
+    SDL_bool relative_mode_cursor_visible;
+    SDL_bool warp_emulation_hint;
+    SDL_bool warp_emulation_active;
+    SDL_bool warp_emulation_prohibited;
+    int relative_mode_clip_interval;
     SDL_bool enable_normal_speed_scale;
     float normal_speed_scale;
     SDL_bool enable_relative_speed_scale;
@@ -124,7 +131,7 @@ typedef struct
     SDL_bool cursor_shown;
 
     /* Driver-dependent data. */
-    void *driverdata;
+    void *internal;
 } SDL_Mouse;
 
 /* Initialize the mouse subsystem, called before the main video driver is initialized */
@@ -153,9 +160,6 @@ extern void SDL_SetMouseFocus(SDL_Window *window);
 
 /* Update the mouse capture window */
 extern int SDL_UpdateMouseCapture(SDL_bool force_release);
-
-/* Get the current mouse button state for a mouse */
-Uint32 SDL_GetMouseButtonState(SDL_Mouse *mouse, SDL_MouseID mouseID, SDL_bool include_touch);
 
 /* You can set either a single scale, or a set of {speed, scale} values in sorted order */
 extern int SDL_SetMouseSystemScale(int num_values, const float *values);

@@ -25,6 +25,7 @@
 #define libm_hidden_proto(x)
 #define libm_hidden_def(x)
 #define strong_alias(x, y)
+#define weak_alias(x, y)
 
 #if !defined(SDL_PLATFORM_HAIKU) && !defined(SDL_PLATFORM_PSP) && !defined(SDL_PLATFORM_3DS) && !defined(SDL_PLATFORM_PS2) /* already defined in a system header. */
 typedef unsigned int u_int32_t;
@@ -38,6 +39,14 @@ typedef unsigned int u_int32_t;
 #define fabs            SDL_uclibc_fabs
 #define floor           SDL_uclibc_floor
 #define __ieee754_fmod  SDL_uclibc_fmod
+#undef __isinf
+#define __isinf         SDL_uclibc_isinf
+#undef __isinff
+#define __isinff        SDL_uclibc_isinff
+#undef __isnan
+#define __isnan         SDL_uclibc_isnan
+#undef __isnanf
+#define __isnanf        SDL_uclibc_isnanf
 #define __ieee754_log   SDL_uclibc_log
 #define __ieee754_log10 SDL_uclibc_log10
 #define modf            SDL_uclibc_modf
@@ -181,48 +190,45 @@ do {								\
 } while (0)
 
 /* ieee style elementary functions */
-extern double
-__ieee754_sqrt(double)
-    attribute_hidden;
-     extern double __ieee754_acos(double) attribute_hidden;
-     extern double __ieee754_acosh(double) attribute_hidden;
-     extern double __ieee754_log(double) attribute_hidden;
-     extern double __ieee754_atanh(double) attribute_hidden;
-     extern double __ieee754_asin(double) attribute_hidden;
-     extern double __ieee754_atan2(double, double) attribute_hidden;
-     extern double __ieee754_exp(double) attribute_hidden;
-     extern double __ieee754_cosh(double) attribute_hidden;
-     extern double __ieee754_fmod(double, double) attribute_hidden;
-     extern double __ieee754_pow(double, double) attribute_hidden;
-     extern double __ieee754_lgamma_r(double, int *) attribute_hidden;
-     extern double __ieee754_gamma_r(double, int *) attribute_hidden;
-     extern double __ieee754_lgamma(double) attribute_hidden;
-     extern double __ieee754_gamma(double) attribute_hidden;
-     extern double __ieee754_log10(double) attribute_hidden;
-     extern double __ieee754_sinh(double) attribute_hidden;
-     extern double __ieee754_hypot(double, double) attribute_hidden;
-     extern double __ieee754_j0(double) attribute_hidden;
-     extern double __ieee754_j1(double) attribute_hidden;
-     extern double __ieee754_y0(double) attribute_hidden;
-     extern double __ieee754_y1(double) attribute_hidden;
-     extern double __ieee754_jn(int, double) attribute_hidden;
-     extern double __ieee754_yn(int, double) attribute_hidden;
-     extern double __ieee754_remainder(double, double) attribute_hidden;
-     extern int32_t __ieee754_rem_pio2(double, double *) attribute_hidden;
+extern double __ieee754_sqrt(double) attribute_hidden;
+extern double __ieee754_acos(double) attribute_hidden;
+extern double __ieee754_acosh(double) attribute_hidden;
+extern double __ieee754_log(double) attribute_hidden;
+extern double __ieee754_atanh(double) attribute_hidden;
+extern double __ieee754_asin(double) attribute_hidden;
+extern double __ieee754_atan2(double, double) attribute_hidden;
+extern double __ieee754_exp(double) attribute_hidden;
+extern double __ieee754_cosh(double) attribute_hidden;
+extern double __ieee754_fmod(double, double) attribute_hidden;
+extern double __ieee754_pow(double, double) attribute_hidden;
+extern double __ieee754_lgamma_r(double, int *) attribute_hidden;
+extern double __ieee754_gamma_r(double, int *) attribute_hidden;
+extern double __ieee754_lgamma(double) attribute_hidden;
+extern double __ieee754_gamma(double) attribute_hidden;
+extern double __ieee754_log10(double) attribute_hidden;
+extern double __ieee754_sinh(double) attribute_hidden;
+extern double __ieee754_hypot(double, double) attribute_hidden;
+extern double __ieee754_j0(double) attribute_hidden;
+extern double __ieee754_j1(double) attribute_hidden;
+extern double __ieee754_y0(double) attribute_hidden;
+extern double __ieee754_y1(double) attribute_hidden;
+extern double __ieee754_jn(int, double) attribute_hidden;
+extern double __ieee754_yn(int, double) attribute_hidden;
+extern double __ieee754_remainder(double, double) attribute_hidden;
+extern int32_t __ieee754_rem_pio2(double, double *) attribute_hidden;
 #if defined(_SCALB_INT)
-     extern double __ieee754_scalb(double, int) attribute_hidden;
+extern double __ieee754_scalb(double, int) attribute_hidden;
 #else
-     extern double __ieee754_scalb(double, double) attribute_hidden;
+extern double __ieee754_scalb(double, double) attribute_hidden;
 #endif
 
 /* fdlibm kernel function */
 #ifndef _IEEE_LIBM
-     extern double __kernel_standard(double, double, int) attribute_hidden;
+extern double __kernel_standard(double, double, int) attribute_hidden;
 #endif
-     extern double __kernel_sin(double, double, int) attribute_hidden;
-     extern double __kernel_cos(double, double) attribute_hidden;
-     extern double __kernel_tan(double, double, int) attribute_hidden;
-     extern int32_t __kernel_rem_pio2(const double *, double *, int, int, const unsigned int,
-                                  const int32_t *) attribute_hidden;
+extern double __kernel_sin(double, double, int) attribute_hidden;
+extern double __kernel_cos(double, double) attribute_hidden;
+extern double __kernel_tan(double, double, int) attribute_hidden;
+extern int32_t __kernel_rem_pio2(const double *, double *, int, int, const unsigned int, const int32_t *) attribute_hidden;
 
 #endif /* _MATH_PRIVATE_H_ */

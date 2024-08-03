@@ -51,7 +51,7 @@ static void SDL_DispatchMainCallbackEvent(SDL_Event *event)
     }
 }
 
-static void SDL_DispatchMainCallbackEvents()
+static void SDL_DispatchMainCallbackEvents(void)
 {
     SDL_Event events[16];
 
@@ -81,7 +81,7 @@ static int SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *event
     return 0;
 }
 
-SDL_bool SDL_HasMainCallbacks()
+SDL_bool SDL_HasMainCallbacks(void)
 {
     if (SDL_main_iteration_callback) {
         return SDL_TRUE;

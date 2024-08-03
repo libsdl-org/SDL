@@ -63,9 +63,9 @@ void vita_gpu_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-int VITA_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
+int VITA_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     SceDisplayFrameBuf framebuf;
 
     *format = SDL_PIXELFORMAT_ABGR8888;
@@ -101,7 +101,7 @@ int VITA_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, con
 
 void VITA_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
     if (!data) {
         /* The window wasn't fully initialized */

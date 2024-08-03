@@ -311,16 +311,16 @@ static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
     axis = ((int)data[5] * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
-    axis = SDL_SwapLE16(*(Sint16 *)(&data[6]));
+    axis = SDL_Swap16LE(*(Sint16 *)(&data[6]));
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
-    axis = SDL_SwapLE16(*(Sint16 *)(&data[8]));
+    axis = SDL_Swap16LE(*(Sint16 *)(&data[8]));
     if (invert_y_axes) {
         axis = ~axis;
     }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
-    axis = SDL_SwapLE16(*(Sint16 *)(&data[10]));
+    axis = SDL_Swap16LE(*(Sint16 *)(&data[10]));
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
-    axis = SDL_SwapLE16(*(Sint16 *)(&data[12]));
+    axis = SDL_Swap16LE(*(Sint16 *)(&data[12]));
     if (invert_y_axes) {
         axis = ~axis;
     }
@@ -337,7 +337,7 @@ static SDL_bool HIDAPI_DriverXbox360_UpdateDevice(SDL_HIDAPI_Device *device)
     int size = 0;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
         return SDL_FALSE;
     }

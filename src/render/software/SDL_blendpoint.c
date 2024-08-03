@@ -34,7 +34,11 @@ static int SDL_BlendPoint_RGB555(SDL_Surface *dst, int x, int y, SDL_BlendMode b
     case SDL_BLENDMODE_BLEND:
         DRAW_SETPIXELXY_BLEND_RGB555(x, y);
         break;
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+        DRAW_SETPIXELXY_BLEND_CLAMPED_RGB555(x, y);
+        break;
     case SDL_BLENDMODE_ADD:
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
         DRAW_SETPIXELXY_ADD_RGB555(x, y);
         break;
     case SDL_BLENDMODE_MOD:
@@ -59,7 +63,11 @@ static int SDL_BlendPoint_RGB565(SDL_Surface *dst, int x, int y, SDL_BlendMode b
     case SDL_BLENDMODE_BLEND:
         DRAW_SETPIXELXY_BLEND_RGB565(x, y);
         break;
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+        DRAW_SETPIXELXY_BLEND_CLAMPED_RGB565(x, y);
+        break;
     case SDL_BLENDMODE_ADD:
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
         DRAW_SETPIXELXY_ADD_RGB565(x, y);
         break;
     case SDL_BLENDMODE_MOD:
@@ -84,7 +92,11 @@ static int SDL_BlendPoint_XRGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode
     case SDL_BLENDMODE_BLEND:
         DRAW_SETPIXELXY_BLEND_XRGB8888(x, y);
         break;
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+        DRAW_SETPIXELXY_BLEND_CLAMPED_XRGB8888(x, y);
+        break;
     case SDL_BLENDMODE_ADD:
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
         DRAW_SETPIXELXY_ADD_XRGB8888(x, y);
         break;
     case SDL_BLENDMODE_MOD:
@@ -109,7 +121,11 @@ static int SDL_BlendPoint_ARGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode
     case SDL_BLENDMODE_BLEND:
         DRAW_SETPIXELXY_BLEND_ARGB8888(x, y);
         break;
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+        DRAW_SETPIXELXY_BLEND_CLAMPED_ARGB8888(x, y);
+        break;
     case SDL_BLENDMODE_ADD:
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
         DRAW_SETPIXELXY_ADD_ARGB8888(x, y);
         break;
     case SDL_BLENDMODE_MOD:
@@ -128,7 +144,7 @@ static int SDL_BlendPoint_ARGB8888(SDL_Surface *dst, int x, int y, SDL_BlendMode
 static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                               Uint8 g, Uint8 b, Uint8 a)
 {
-    SDL_PixelFormat *fmt = dst->format;
+    const SDL_PixelFormatDetails *fmt = dst->internal->format;
     unsigned inva = 0xff - a;
 
     switch (fmt->bytes_per_pixel) {
@@ -137,7 +153,11 @@ static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blen
         case SDL_BLENDMODE_BLEND:
             DRAW_SETPIXELXY2_BLEND_RGB(x, y);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DRAW_SETPIXELXY2_BLEND_CLAMPED_RGB(x, y);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DRAW_SETPIXELXY2_ADD_RGB(x, y);
             break;
         case SDL_BLENDMODE_MOD:
@@ -156,7 +176,11 @@ static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blen
         case SDL_BLENDMODE_BLEND:
             DRAW_SETPIXELXY4_BLEND_RGB(x, y);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DRAW_SETPIXELXY4_BLEND_CLAMPED_RGB(x, y);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DRAW_SETPIXELXY4_ADD_RGB(x, y);
             break;
         case SDL_BLENDMODE_MOD:
@@ -178,7 +202,7 @@ static int SDL_BlendPoint_RGB(SDL_Surface *dst, int x, int y, SDL_BlendMode blen
 static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                                Uint8 g, Uint8 b, Uint8 a)
 {
-    SDL_PixelFormat *fmt = dst->format;
+    const SDL_PixelFormatDetails *fmt = dst->internal->format;
     unsigned inva = 0xff - a;
 
     switch (fmt->bytes_per_pixel) {
@@ -187,7 +211,11 @@ static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode ble
         case SDL_BLENDMODE_BLEND:
             DRAW_SETPIXELXY4_BLEND_RGBA(x, y);
             break;
+        case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+            DRAW_SETPIXELXY4_BLEND_CLAMPED_RGBA(x, y);
+            break;
         case SDL_BLENDMODE_ADD:
+        case SDL_BLENDMODE_ADD_PREMULTIPLIED:
             DRAW_SETPIXELXY4_ADD_RGBA(x, y);
             break;
         case SDL_BLENDMODE_MOD:
@@ -209,19 +237,19 @@ static int SDL_BlendPoint_RGBA(SDL_Surface *dst, int x, int y, SDL_BlendMode ble
 int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint8 r,
                    Uint8 g, Uint8 b, Uint8 a)
 {
-    if (!dst) {
+    if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_BlendPoint(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->bits_per_pixel < 8) {
+    if (SDL_BITSPERPIXEL(dst->format) < 8) {
         return SDL_SetError("SDL_BlendPoint(): Unsupported surface format");
     }
 
     /* Perform clipping */
-    if (x < dst->clip_rect.x || y < dst->clip_rect.y ||
-        x >= (dst->clip_rect.x + dst->clip_rect.w) ||
-        y >= (dst->clip_rect.y + dst->clip_rect.h)) {
+    if (x < dst->internal->clip_rect.x || y < dst->internal->clip_rect.y ||
+        x >= (dst->internal->clip_rect.x + dst->internal->clip_rect.w) ||
+        y >= (dst->internal->clip_rect.y + dst->internal->clip_rect.h)) {
         return 0;
     }
 
@@ -231,23 +259,23 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
         b = DRAW_MUL(b, a);
     }
 
-    switch (dst->format->bits_per_pixel) {
+    switch (dst->internal->format->bits_per_pixel) {
     case 15:
-        switch (dst->format->Rmask) {
+        switch (dst->internal->format->Rmask) {
         case 0x7C00:
             return SDL_BlendPoint_RGB555(dst, x, y, blendMode, r, g, b, a);
         }
         break;
     case 16:
-        switch (dst->format->Rmask) {
+        switch (dst->internal->format->Rmask) {
         case 0xF800:
             return SDL_BlendPoint_RGB565(dst, x, y, blendMode, r, g, b, a);
         }
         break;
     case 32:
-        switch (dst->format->Rmask) {
+        switch (dst->internal->format->Rmask) {
         case 0x00FF0000:
-            if (!dst->format->Amask) {
+            if (!dst->internal->format->Amask) {
                 return SDL_BlendPoint_XRGB8888(dst, x, y, blendMode, r, g, b, a);
             } else {
                 return SDL_BlendPoint_ARGB8888(dst, x, y, blendMode, r, g, b, a);
@@ -259,7 +287,7 @@ int SDL_BlendPoint(SDL_Surface *dst, int x, int y, SDL_BlendMode blendMode, Uint
         break;
     }
 
-    if (!dst->format->Amask) {
+    if (!dst->internal->format->Amask) {
         return SDL_BlendPoint_RGB(dst, x, y, blendMode, r, g, b, a);
     } else {
         return SDL_BlendPoint_RGBA(dst, x, y, blendMode, r, g, b, a);
@@ -277,12 +305,12 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
                 SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
     int status = 0;
 
-    if (!dst) {
+    if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_BlendPoints(): dst");
     }
 
     /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->bits_per_pixel < 8) {
+    if (dst->internal->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendPoints(): Unsupported surface format");
     }
 
@@ -293,25 +321,25 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
     }
 
     /* FIXME: Does this function pointer slow things down significantly? */
-    switch (dst->format->bits_per_pixel) {
+    switch (dst->internal->format->bits_per_pixel) {
     case 15:
-        switch (dst->format->Rmask) {
+        switch (dst->internal->format->Rmask) {
         case 0x7C00:
             func = SDL_BlendPoint_RGB555;
             break;
         }
         break;
     case 16:
-        switch (dst->format->Rmask) {
+        switch (dst->internal->format->Rmask) {
         case 0xF800:
             func = SDL_BlendPoint_RGB565;
             break;
         }
         break;
     case 32:
-        switch (dst->format->Rmask) {
+        switch (dst->internal->format->Rmask) {
         case 0x00FF0000:
-            if (!dst->format->Amask) {
+            if (!dst->internal->format->Amask) {
                 func = SDL_BlendPoint_XRGB8888;
             } else {
                 func = SDL_BlendPoint_ARGB8888;
@@ -324,17 +352,17 @@ int SDL_BlendPoints(SDL_Surface *dst, const SDL_Point *points, int count,
     }
 
     if (!func) {
-        if (!dst->format->Amask) {
+        if (!dst->internal->format->Amask) {
             func = SDL_BlendPoint_RGB;
         } else {
             func = SDL_BlendPoint_RGBA;
         }
     }
 
-    minx = dst->clip_rect.x;
-    maxx = dst->clip_rect.x + dst->clip_rect.w - 1;
-    miny = dst->clip_rect.y;
-    maxy = dst->clip_rect.y + dst->clip_rect.h - 1;
+    minx = dst->internal->clip_rect.x;
+    maxx = dst->internal->clip_rect.x + dst->internal->clip_rect.w - 1;
+    miny = dst->internal->clip_rect.y;
+    maxy = dst->internal->clip_rect.y + dst->internal->clip_rect.h - 1;
 
     for (i = 0; i < count; ++i) {
         x = points[i].x;

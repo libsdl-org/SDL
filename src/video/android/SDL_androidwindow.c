@@ -29,6 +29,7 @@
 #include "../../core/android/SDL_android.h"
 
 #include "SDL_androidvideo.h"
+#include "SDL_androidevents.h"
 #include "SDL_androidwindow.h"
 
 
@@ -40,7 +41,9 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     SDL_WindowData *data;
     int retval = 0;
 
-    Android_ActivityMutex_Lock_Running();
+    if (Android_WaitActiveAndLockActivity() < 0) {
+        return -1;
+    }
 
     if (Android_Window) {
         retval = SDL_SetError("Android only supports one window");
@@ -72,7 +75,7 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         retval = SDL_SetError("Could not fetch native window");
         goto endfunction;
     }
-    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, data->native_window);
+    SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, data->native_window);
 
     /* Do not create EGLSurface for Vulkan window since it will then make the window
        incompatible with vkCreateAndroidSurfaceKHR */
@@ -87,15 +90,15 @@ int Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
             goto endfunction;
         }
     }
-    SDL_SetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER, data->egl_surface);
+    SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER, data->egl_surface);
 #endif
 
-    window->driverdata = data;
+    window->internal = data;
     Android_Window = window;
 
 endfunction:
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_UnlockActivityMutex();
 
     return retval;
 }
@@ -107,7 +110,7 @@ void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 
 int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
-    SDL_LockMutex(Android_ActivityMutex);
+    Android_LockActivityMutex();
 
     if (window == Android_Window) {
         SDL_WindowData *data;
@@ -128,7 +131,7 @@ int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_
             goto endfunction;
         }
 
-        data = window->driverdata;
+        data = window->internal;
         if (!data || !data->native_window) {
             if (data && !data->native_window) {
                 SDL_SetError("Missing native window");
@@ -153,7 +156,7 @@ int Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 
 endfunction:
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_UnlockActivityMutex();
     return 0;
 }
 
@@ -170,13 +173,13 @@ void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 
 void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_LockMutex(Android_ActivityMutex);
+    Android_LockActivityMutex();
 
     if (window == Android_Window) {
         Android_Window = NULL;
 
-        if (window->driverdata) {
-            SDL_WindowData *data = window->driverdata;
+        if (window->internal) {
+            SDL_WindowData *data = window->internal;
 
 #ifdef SDL_VIDEO_OPENGL_EGL
             if (data->egl_surface != EGL_NO_SURFACE) {
@@ -187,12 +190,12 @@ void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             if (data->native_window) {
                 ANativeWindow_release(data->native_window);
             }
-            SDL_free(window->driverdata);
-            window->driverdata = NULL;
+            SDL_free(window->internal);
+            window->internal = NULL;
         }
     }
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    Android_UnlockActivityMutex();
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */

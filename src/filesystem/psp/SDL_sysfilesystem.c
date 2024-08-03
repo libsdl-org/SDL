@@ -20,15 +20,17 @@
 */
 #include "SDL_internal.h"
 
-#include <sys/stat.h>
-#include <unistd.h>
-
 #ifdef SDL_FILESYSTEM_PSP
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-char *SDL_GetBasePath(void)
+#include "../SDL_sysfilesystem.h"
+
+#include <sys/stat.h>
+#include <unistd.h>
+
+char *SDL_SYS_GetBasePath(void)
 {
     char *retval = NULL;
     size_t len;
@@ -37,40 +39,48 @@ char *SDL_GetBasePath(void)
     getcwd(cwd, sizeof(cwd));
     len = SDL_strlen(cwd) + 2;
     retval = (char *)SDL_malloc(len);
-    SDL_snprintf(retval, len, "%s/", cwd);
+    if (retval) {
+        SDL_snprintf(retval, len, "%s/", cwd);
+    }
 
     return retval;
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     char *retval = NULL;
     size_t len;
-    char *base = SDL_GetBasePath();
     if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
+
+    const char *base = SDL_GetBasePath();
+    if (!base) {
+        return NULL;
+    }
+
     if (!org) {
         org = "";
     }
 
     len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
     retval = (char *)SDL_malloc(len);
+    if (retval) {
+        if (*org) {
+            SDL_snprintf(retval, len, "%s%s/%s/", base, org, app);
+        } else {
+            SDL_snprintf(retval, len, "%s%s/", base, app);
+        }
 
-    if (*org) {
-        SDL_snprintf(retval, len, "%s%s/%s/", base, org, app);
-    } else {
-        SDL_snprintf(retval, len, "%s%s/", base, app);
+        mkdir(retval, 0755);
     }
-    SDL_free(base);
 
-    mkdir(retval, 0755);
     return retval;
 }
 
 /* TODO */
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;

@@ -228,10 +228,10 @@ Some things that may be of interest about how it all works...
 ## Working directory
 
 In SDL 1.2, the working directory of your SDL app is by default set to its
-parent, but this is no longer the case in SDL 2.0. SDL2 does change the
-working directory, which means it'll be whatever the command line prompt
-that launched the program was using, or if launched by double-clicking in
-the finger, it will be "/", the _root of the filesystem_. Plan accordingly!
+parent, but this is no longer the case in SDL 2.0 and later. SDL2 does not
+change the working directory, which means it'll be whatever the command line
+prompt that launched the program was using, or if launched by double-clicking
+in the Finder, it will be "/", the _root of the filesystem_. Plan accordingly!
 You can use SDL_GetBasePath() to find where the program is running from and
 chdir() there directly.
 

@@ -10,13 +10,6 @@
   freely.
 */
 
-/* quiet windows compiler warnings */
-#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-#include <stdio.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -31,6 +24,34 @@ widelen(char *data)
         ++len;
     }
     return len;
+}
+
+static char *get_next_line(Uint8 **fdataptr, size_t *fdatalen)
+{
+    char *retval = (char *) *fdataptr;
+    Uint8 *ptr = *fdataptr;
+    size_t len = *fdatalen;
+
+    if (len == 0) {
+        return NULL;
+    }
+
+    while (len > 0) {
+        if (*ptr == '\r') {
+            *ptr = '\0';
+        } else if (*ptr == '\n') {
+            *ptr = '\0';
+            ptr++;
+            len--;
+            break;
+        }
+        ptr++;
+        len--;
+    }
+
+    *fdataptr = ptr;
+    *fdatalen = len;
+    return retval;
 }
 
 int main(int argc, char *argv[])
@@ -51,13 +72,15 @@ int main(int argc, char *argv[])
     };
 
     char *fname = NULL;
-    char buffer[BUFSIZ];
     char *ucs4;
     char *test[2];
     int i;
-    FILE *file;
     int errors = 0;
     SDLTest_CommonState *state;
+    Uint8 *fdata = NULL;
+    Uint8 *fdataptr = NULL;
+    char *line = NULL;
+    size_t fdatalen = 0;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -89,20 +112,19 @@ int main(int argc, char *argv[])
     }
 
     fname = GetResourceFilename(fname, "utf8.txt");
-    file = fopen(fname, "rb");
-    if (!file) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", fname);
+    fdata = (Uint8 *) (fname ? SDL_LoadFile(fname, &fdatalen) : NULL);
+    if (!fdata) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load %s\n", fname);
         return 1;
     }
-    SDL_free(fname);
 
-    while (fgets(buffer, sizeof(buffer), file)) {
+    fdataptr = fdata;
+    while ((line = get_next_line(&fdataptr, &fdatalen)) != NULL) {
         /* Convert to UCS-4 */
         size_t len;
-        ucs4 =
-            SDL_iconv_string("UCS-4", "UTF-8", buffer,
-                             SDL_strlen(buffer) + 1);
+        ucs4 = SDL_iconv_string("UCS-4", "UTF-8", line, SDL_strlen(line) + 1);
         len = (widelen(ucs4) + 1) * 4;
+
         for (i = 0; i < SDL_arraysize(formats); ++i) {
             test[0] = SDL_iconv_string(formats[i], "UCS-4", ucs4, len);
             test[1] = SDL_iconv_string("UCS-4", formats[i], test[0], len);
@@ -115,10 +137,11 @@ int main(int argc, char *argv[])
         }
         test[0] = SDL_iconv_string("UTF-8", "UCS-4", ucs4, len);
         SDL_free(ucs4);
-        (void)fputs(test[0], stdout);
+        SDL_Log("%s", test[0]);
         SDL_free(test[0]);
     }
-    (void)fclose(file);
+    SDL_free(fdata);
+    SDL_free(fname);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Total errors: %d\n", errors);
     SDL_Quit();

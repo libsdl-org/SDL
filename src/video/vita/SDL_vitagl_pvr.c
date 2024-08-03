@@ -46,8 +46,8 @@ static void getFBSize(int *width, int *height)
 int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
-    char *override = SDL_getenv("VITA_MODULE_PATH");
-    char *skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
+    const char *override = SDL_getenv("VITA_MODULE_PATH");
+    const char *skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
     char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
@@ -93,7 +93,7 @@ SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     _this->gl_config.minor_version = 0;
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 
-    context = SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
+    context = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 
     if (context != NULL) {
         FB_WIDTH = window->w;

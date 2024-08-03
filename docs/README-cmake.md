@@ -44,6 +44,14 @@ cmake -S ~/sdl -B ~/build -DSDL_TEST_LIBRARY=ON -DSDL_TESTS=ON
 ```
 and then building normally. In this example, the test programs will be built and can be run from `~/build/tests/`.
 
+### Building SDL examples
+
+You can build the SDL example programs by adding `-DSDL_EXAMPLES=ON` to the first cmake command above:
+```sh
+cmake -S ~/sdl -B ~/build -DSDL_EXAMPLES=ON
+```
+and then building normally. In this example, the example programs will be built and can be run from `~/build/examples/`.
+
 ## Including SDL in your project
 
 SDL can be included in your project in 2 major ways:
@@ -90,6 +98,8 @@ The following components are available, to be used as an argument of `find_packa
 | SDL3           | The SDL3 library, available through the `SDL3::SDL3` target. This is an alias of `SDL3::SDL3-shared` or `SDL3::SDL3-static`. This component is always available. |
 | Headers        | The SDL3 headers, available through the `SDL3::Headers` target. This component is always available.                                                              |
 
+SDL's CMake support guarantees a `SDL3::SDL3` target.
+Neither `SDL3::SDL3-shared` nor `SDL3::SDL3-static` are guaranteed to exist.
 
 ### Using a vendored SDL
 
@@ -306,6 +316,13 @@ if(WIN32)
 endif()
 ```
 
+### Linking against a static SDL library fails due to relocation errors
+
+On unix platforms, all code that ends up in shared libraries needs to be built as relocatable (=position independent) code.
+However, by default CMake builds static libraries as non-relocatable.
+Configuring SDL with `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` will result in a static `libSDL3.a` library
+which you can link against to create a shared library.
+
 ## Help, it doesn't work!
 
 Below, a SDL3 CMake project can be found that builds 99.9% of time (assuming you have internet connectivity).
@@ -330,7 +347,7 @@ endif()
 
 # 2. Try using a vendored SDL library
 if(NOT SDL3_FOUND AND EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL/CMakeLists.txt")
-    add_subdirectory(SDL)
+    add_subdirectory(SDL EXCLUDE_FROM_ALL)
     message(STATUS "Using SDL3 via add_subdirectory")
     set(SDL3_FOUND TRUE)
 endif()

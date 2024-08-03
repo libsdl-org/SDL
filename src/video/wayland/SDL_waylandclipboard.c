@@ -31,7 +31,7 @@
 
 int Wayland_SetClipboardData(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *video_data = _this->driverdata;
+    SDL_VideoData *video_data = _this->internal;
     SDL_WaylandDataDevice *data_device = NULL;
     int status = 0;
 
@@ -56,7 +56,7 @@ int Wayland_SetClipboardData(SDL_VideoDevice *_this)
 
 void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length)
 {
-    SDL_VideoData *video_data = _this->driverdata;
+    SDL_VideoData *video_data = _this->internal;
     SDL_WaylandDataDevice *data_device = NULL;
     void *buffer = NULL;
 
@@ -74,7 +74,7 @@ void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, si
 
 SDL_bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
 {
-    SDL_VideoData *video_data = _this->driverdata;
+    SDL_VideoData *video_data = _this->internal;
     SDL_WaylandDataDevice *data_device = NULL;
     SDL_bool result = SDL_FALSE;
 
@@ -105,7 +105,7 @@ const char **Wayland_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_t
 
 int Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 {
-    SDL_VideoData *video_data = _this->driverdata;
+    SDL_VideoData *video_data = _this->internal;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
     int status = -1;
 
@@ -132,7 +132,7 @@ int Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 
 char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *video_data = _this->driverdata;
+    SDL_VideoData *video_data = _this->internal;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
     char *text = NULL;
     size_t length = 0;
@@ -155,7 +155,7 @@ char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
 
 SDL_bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *video_data = _this->driverdata;
+    SDL_VideoData *video_data = _this->internal;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device = NULL;
     SDL_bool result = SDL_FALSE;
 

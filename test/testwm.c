@@ -47,14 +47,13 @@ SDL_COMPILE_TIME_ASSERT(cursorNames, SDL_arraysize(cursorNames) == SDL_NUM_SYSTE
 
 static int system_cursor = -1;
 static SDL_Cursor *cursor = NULL;
-static SDL_bool relative_mode = SDL_FALSE;
 static const SDL_DisplayMode *highlighted_mode = NULL;
 
 /* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
 static void
 draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
 {
-    const SDL_DisplayMode **modes;
+    SDL_DisplayMode **modes;
     char text[1024];
     const int lineHeight = 10;
     int i, j;
@@ -63,7 +62,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
     float x, y;
     float table_top;
     SDL_FPoint mouse_pos = { -1.0f, -1.0f };
-    SDL_DisplayID *display_ids;
+    SDL_DisplayID *displays;
 
     /* Get mouse position */
     if (SDL_GetMouseFocus() == window) {
@@ -99,18 +98,17 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
         highlighted_mode = NULL;
     }
 
-    display_ids = SDL_GetDisplays(NULL);
-
-    if (display_ids) {
-        for (i = 0; display_ids[i]; ++i) {
-            const SDL_DisplayID display_id = display_ids[i];
-            modes = SDL_GetFullscreenDisplayModes(display_id, NULL);
+    displays = SDL_GetDisplays(NULL);
+    if (displays) {
+        for (i = 0; displays[i]; ++i) {
+            SDL_DisplayID display = displays[i];
+            modes = SDL_GetFullscreenDisplayModes(display, NULL);
             for (j = 0; modes[j]; ++j) {
                 SDL_FRect cell_rect;
                 const SDL_DisplayMode *mode = modes[j];
 
                 (void)SDL_snprintf(text, sizeof(text), "%s mode %d: %dx%d@%gx %gHz",
-                                   SDL_GetDisplayName(display_id),
+                                   SDL_GetDisplayName(display),
                                    j, mode->w, mode->h, mode->pixel_density, mode->refresh_rate);
 
                 /* Update column width */
@@ -144,9 +142,9 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
                     column_chars = 0;
                 }
             }
-            SDL_free((void *)modes);
+            SDL_free(modes);
         }
-        SDL_free(display_ids);
+        SDL_free(displays);
     }
 }
 
@@ -169,7 +167,7 @@ static void loop(void)
         SDLTest_CommonEvent(state, &event, &done);
 
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+            SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (window) {
                 SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32 "\n",
                         event.window.windowID,
@@ -178,7 +176,7 @@ static void loop(void)
             }
         }
         if (event.type == SDL_EVENT_WINDOW_MOVED) {
-            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+            SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (window) {
                 SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)\n",
                         event.window.windowID,
@@ -187,29 +185,18 @@ static void loop(void)
                         SDL_GetDisplayName(SDL_GetDisplayForWindow(window)));
             }
         }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
-            relative_mode = SDL_GetRelativeMouseMode();
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_FALSE);
-            }
-        }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_TRUE);
-            }
-        }
         if (event.type == SDL_EVENT_KEY_UP) {
             SDL_bool updateCursor = SDL_FALSE;
 
-            if (event.key.keysym.sym == SDLK_a) {
+            if (event.key.key == SDLK_A) {
                 SDL_assert(!"Keyboard generated assert");
-            } else if (event.key.keysym.sym == SDLK_LEFT) {
+            } else if (event.key.key == SDLK_LEFT) {
                 --system_cursor;
                 if (system_cursor < 0) {
                     system_cursor = SDL_NUM_SYSTEM_CURSORS - 1;
                 }
                 updateCursor = SDL_TRUE;
-            } else if (event.key.keysym.sym == SDLK_RIGHT) {
+            } else if (event.key.key == SDLK_RIGHT) {
                 ++system_cursor;
                 if (system_cursor >= SDL_NUM_SYSTEM_CURSORS) {
                     system_cursor = 0;
@@ -240,7 +227,9 @@ static void loop(void)
             SDL_Rect viewport;
             SDL_FRect menurect;
 
-            SDL_GetRenderViewport(renderer, &viewport);
+            SDL_SetRenderViewport(renderer, NULL);
+            SDL_GetRenderSafeArea(renderer, &viewport);
+            SDL_SetRenderViewport(renderer, &viewport);
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);

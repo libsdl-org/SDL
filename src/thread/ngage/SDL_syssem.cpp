@@ -147,7 +147,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     return sem->count;
 }
 
-int SDL_PostSemaphore(SDL_Semaphore *sem)
+int SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
     if (!sem) {
         return SDL_InvalidParamError("sem");

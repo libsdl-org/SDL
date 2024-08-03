@@ -27,34 +27,34 @@
 
 #define DEBUG_CAMERA 0
 
-typedef struct SDL_CameraDevice SDL_CameraDevice;
+typedef struct SDL_Camera SDL_Camera;
 
 /* Backends should call this as devices are added to the system (such as
    a USB camera being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern SDL_CameraDevice *SDL_AddCameraDevice(const char *name, SDL_CameraPosition position, int num_specs, const SDL_CameraSpec *specs, void *handle);
+extern SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num_specs, const SDL_CameraSpec *specs, void *handle);
 
 /* Backends should call this if an opened camera device is lost.
    This can happen due to i/o errors, or a device being unplugged, etc. */
-extern void SDL_CameraDeviceDisconnected(SDL_CameraDevice *device);
+extern void SDL_CameraDisconnected(SDL_Camera *device);
 
-// Find an SDL_CameraDevice, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
-extern SDL_CameraDevice *SDL_FindPhysicalCameraDeviceByCallback(SDL_bool (*callback)(SDL_CameraDevice *device, void *userdata), void *userdata);
+// Find an SDL_Camera, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
+extern SDL_Camera *SDL_FindPhysicalCameraByCallback(SDL_bool (*callback)(SDL_Camera *device, void *userdata), void *userdata);
 
 // Backends should call this when the user has approved/denied access to a camera.
-extern void SDL_CameraDevicePermissionOutcome(SDL_CameraDevice *device, SDL_bool approved);
+extern void SDL_CameraPermissionOutcome(SDL_Camera *device, SDL_bool approved);
 
 // Backends can call this to get a standardized name for a thread to power a specific camera device.
-extern char *SDL_GetCameraThreadName(SDL_CameraDevice *device, char *buf, size_t buflen);
+extern char *SDL_GetCameraThreadName(SDL_Camera *device, char *buf, size_t buflen);
 
 // Backends can call these to change a device's refcount.
-extern void RefPhysicalCameraDevice(SDL_CameraDevice *device);
-extern void UnrefPhysicalCameraDevice(SDL_CameraDevice *device);
+extern void RefPhysicalCamera(SDL_Camera *device);
+extern void UnrefPhysicalCamera(SDL_Camera *device);
 
 // These functions are the heart of the camera threads. Backends can call them directly if they aren't using the SDL-provided thread.
-extern void SDL_CameraThreadSetup(SDL_CameraDevice *device);
-extern SDL_bool SDL_CameraThreadIterate(SDL_CameraDevice *device);
-extern void SDL_CameraThreadShutdown(SDL_CameraDevice *device);
+extern void SDL_CameraThreadSetup(SDL_Camera *device);
+extern SDL_bool SDL_CameraThreadIterate(SDL_Camera *device);
+extern void SDL_CameraThreadShutdown(SDL_Camera *device);
 
 // common utility functionality to gather up camera specs. Not required!
 typedef struct CameraFormatAddData
@@ -64,7 +64,7 @@ typedef struct CameraFormatAddData
     int allocated_specs;
 } CameraFormatAddData;
 
-int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormatEnum fmt, int w, int h, int interval_numerator, int interval_denominator);
+int SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_Colorspace colorspace, int w, int h, int framerate_numerator, int framerate_denominator);
 
 typedef struct SurfaceList
 {
@@ -74,7 +74,7 @@ typedef struct SurfaceList
 } SurfaceList;
 
 // Define the SDL camera driver structure
-struct SDL_CameraDevice
+struct SDL_Camera
 {
     // A mutex for locking
     SDL_Mutex *lock;
@@ -89,9 +89,9 @@ struct SDL_CameraDevice
     SDL_AtomicInt refcount;
 
     // These are, initially, set from camera_driver, but we might swap them out with Zombie versions on disconnect/failure.
-    int (*WaitDevice)(SDL_CameraDevice *device);
-    int (*AcquireFrame)(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS);
-    void (*ReleaseFrame)(SDL_CameraDevice *device, SDL_Surface *frame);
+    int (*WaitDevice)(SDL_Camera *device);
+    int (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS);
+    void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame);
 
     // All supported formats/dimensions for this device.
     SDL_CameraSpec *all_specs;
@@ -106,7 +106,7 @@ struct SDL_CameraDevice
     SDL_CameraSpec spec;
 
     // Unique value assigned at creation time.
-    SDL_CameraDeviceID instance_id;
+    SDL_CameraID instance_id;
 
     // Driver-specific hardware data on how to open device (`hidden` is driver-specific data _when opened_).
     void *handle;
@@ -161,23 +161,23 @@ struct SDL_CameraDevice
 typedef struct SDL_CameraDriverImpl
 {
     void (*DetectDevices)(void);
-    int (*OpenDevice)(SDL_CameraDevice *device, const SDL_CameraSpec *spec);
-    void (*CloseDevice)(SDL_CameraDevice *device);
-    int (*WaitDevice)(SDL_CameraDevice *device);
-    int (*AcquireFrame)(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS); // set frame->pixels, frame->pitch, and *timestampNS!
-    void (*ReleaseFrame)(SDL_CameraDevice *device, SDL_Surface *frame); // Reclaim frame->pixels and frame->pitch!
-    void (*FreeDeviceHandle)(SDL_CameraDevice *device); // SDL is done with this device; free the handle from SDL_AddCameraDevice()
+    int (*OpenDevice)(SDL_Camera *device, const SDL_CameraSpec *spec);
+    void (*CloseDevice)(SDL_Camera *device);
+    int (*WaitDevice)(SDL_Camera *device);
+    int (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS); // set frame->pixels, frame->pitch, and *timestampNS!
+    void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame); // Reclaim frame->pixels and frame->pitch!
+    void (*FreeDeviceHandle)(SDL_Camera *device); // SDL is done with this device; free the handle from SDL_AddCamera()
     void (*Deinitialize)(void);
 
     SDL_bool ProvidesOwnCallbackThread;
 } SDL_CameraDriverImpl;
 
-typedef struct SDL_PendingCameraDeviceEvent
+typedef struct SDL_PendingCameraEvent
 {
     Uint32 type;
-    SDL_CameraDeviceID devid;
-    struct SDL_PendingCameraDeviceEvent *next;
-} SDL_PendingCameraDeviceEvent;
+    SDL_CameraID devid;
+    struct SDL_PendingCameraEvent *next;
+} SDL_PendingCameraEvent;
 
 typedef struct SDL_CameraDriver
 {
@@ -187,8 +187,8 @@ typedef struct SDL_CameraDriver
 
     SDL_RWLock *device_hash_lock;  // A rwlock that protects `device_hash`
     SDL_HashTable *device_hash;  // the collection of currently-available camera devices
-    SDL_PendingCameraDeviceEvent pending_events;
-    SDL_PendingCameraDeviceEvent *pending_events_tail;
+    SDL_PendingCameraEvent pending_events;
+    SDL_PendingCameraEvent *pending_events_tail;
 
     SDL_AtomicInt device_count;
     SDL_AtomicInt shutting_down;  // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.

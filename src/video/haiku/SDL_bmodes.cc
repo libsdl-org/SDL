@@ -41,7 +41,7 @@ extern "C" {
 #define WRAP_BMODE 1 /* FIXME: Some debate as to whether this is necessary */
 
 #if WRAP_BMODE
-/* This wrapper is here so that the driverdata can be freed without freeing
+/* This wrapper is here so that the internal can be freed without freeing
    the display_mode structure */
 struct SDL_DisplayModeData {
     display_mode *bmode;
@@ -49,7 +49,7 @@ struct SDL_DisplayModeData {
 #endif
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
-    return (SDL_BWin *)(window->driverdata);
+    return (SDL_BWin *)(window->internal);
 }
 
 static SDL_INLINE SDL_BLooper *_GetBeLooper() {
@@ -58,16 +58,17 @@ static SDL_INLINE SDL_BLooper *_GetBeLooper() {
 
 static SDL_INLINE display_mode * _ExtractBMode(SDL_DisplayMode *mode) {
 #if WRAP_BMODE
-    return ((SDL_DisplayModeData *)mode->driverdata)->bmode;
+    return mode->internal->bmode;
 #else
-    return (display_mode *)(mode->driverdata);
+    return (display_mode *)mode->internal;
 #endif
 }
 
 /* Copied from haiku/trunk/src/preferences/screen/ScreenMode.cpp */
-static float get_refresh_rate(display_mode &mode) {
-    return float(mode.timing.pixel_clock * 1000)
-        / float(mode.timing.h_total * mode.timing.v_total);
+static void get_refresh_rate(display_mode &mode, int *numerator, int *denominator)
+{
+    *numerator = (mode.timing.pixel_clock * 1000);
+    *denominator = (mode.timing.h_total * mode.timing.v_total);
 }
 
 
@@ -132,7 +133,7 @@ void _SpoutModeData(display_mode *bmode) {
 
 
 
-SDL_PixelFormatEnum HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
+SDL_PixelFormat HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
 {
     switch (colorspace) {
     case B_CMAP8:
@@ -142,7 +143,7 @@ SDL_PixelFormatEnum HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
     case B_RGBA15:
     case B_RGB15_BIG:
     case B_RGBA15_BIG:
-        return SDL_PIXELFORMAT_RGB555;
+        return SDL_PIXELFORMAT_XRGB1555;
         break;
     case B_RGB16:
     case B_RGB16_BIG:
@@ -169,17 +170,15 @@ static void _BDisplayModeToSdlDisplayMode(display_mode *bmode, SDL_DisplayMode *
     SDL_zerop(mode);
     mode->w = bmode->virtual_width;
     mode->h = bmode->virtual_height;
-    mode->refresh_rate = get_refresh_rate(*bmode);
+    get_refresh_rate(*bmode, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
 
 #if WRAP_BMODE
-    SDL_DisplayModeData *data = (SDL_DisplayModeData*)SDL_calloc(1,
-        sizeof(SDL_DisplayModeData));
+    SDL_DisplayModeData *data = (SDL_DisplayModeData*)SDL_calloc(1, sizeof(SDL_DisplayModeData));
     data->bmode = bmode;
 
-    mode->driverdata = data;
-
+    mode->internal = data;
 #else
-    mode->driverdata = bmode;
+    mode->internal = bmode;
 #endif
 
     /* Set the format */

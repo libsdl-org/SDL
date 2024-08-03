@@ -24,6 +24,8 @@
 
 #include "SDL_internal.h"
 
+struct SDL_VideoDevice;
+
 /**
  * Initialize the video subsystem, optionally specifying a video driver.
  *
@@ -55,7 +57,7 @@ extern int SDL_VideoInit(const char *driver_name);
  */
 extern void SDL_VideoQuit(void);
 
-extern int SDL_SetWindowTextureVSync(SDL_Window *window, int vsync);
+extern int SDL_SetWindowTextureVSync(struct SDL_VideoDevice *_this, SDL_Window *window, int vsync);
 
 extern int SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 

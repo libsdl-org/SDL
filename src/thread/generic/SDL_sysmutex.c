@@ -124,7 +124,7 @@ void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang d
                then release the lock semaphore.
              */
             mutex->owner = 0;
-            SDL_PostSemaphore(mutex->sem);
+            SDL_SignalSemaphore(mutex->sem);
         }
     }
 #endif // SDL_THREADS_DISABLED

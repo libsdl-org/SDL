@@ -27,7 +27,6 @@ extern "C" {
 #include "../SDL_systhread.h"
 }
 
-#include <mutex>
 #include <thread>
 #include <system_error>
 
@@ -47,11 +46,10 @@ SDL_SYS_CreateThread(SDL_Thread *thread,
 {
     try {
         // !!! FIXME: no way to set a thread stack size here.
-        std::thread cpp_thread(RunThread, thread);
-        thread->handle = (void *)new std::thread(std::move(cpp_thread));
+        thread->handle = (void *)new std::thread(RunThread, thread);
         return 0;
     } catch (std::system_error &ex) {
-        return SDL_SetError("unable to start a C++ thread: code=%d; %s", ex.code(), ex.what());
+        return SDL_SetError("unable to start a C++ thread: code=%d; %s", ex.code().value(), ex.what());
     } catch (std::bad_alloc &) {
         return SDL_OutOfMemory();
     }
@@ -60,30 +58,17 @@ SDL_SYS_CreateThread(SDL_Thread *thread,
 extern "C" void
 SDL_SYS_SetupThread(const char *name)
 {
-    // Make sure a thread ID gets assigned ASAP, for debugging purposes:
-    SDL_GetCurrentThreadID();
-    return;
+    /* Do nothing. */
 }
 
 extern "C" SDL_ThreadID
 SDL_GetCurrentThreadID(void)
 {
-#ifdef SDL_PLATFORM_WINRT
-    return GetCurrentThreadId();
-#else
-    // HACK: Mimic a thread ID, if one isn't otherwise available.
-    static thread_local SDL_ThreadID current_thread_id = 0;
-    static SDL_ThreadID next_thread_id = 1;
-    static std::mutex next_thread_id_mutex;
-
-    if (current_thread_id == 0) {
-        std::lock_guard<std::mutex> lock(next_thread_id_mutex);
-        current_thread_id = next_thread_id;
-        ++next_thread_id;
-    }
-
-    return current_thread_id;
-#endif
+    static_assert(sizeof(std::thread::id) <= sizeof(SDL_ThreadID), "std::thread::id must not be bigger than SDL_ThreadID");
+    SDL_ThreadID thread_id{};
+    const auto cpp_thread_id = std::this_thread::get_id();
+    SDL_memcpy(&thread_id, &cpp_thread_id, sizeof(std::thread::id));
+    return thread_id;
 }
 
 extern "C" int
@@ -121,8 +106,12 @@ SDL_SYS_WaitThread(SDL_Thread *thread)
 
     try {
         std::thread *cpp_thread = (std::thread *)thread->handle;
-        if (cpp_thread->joinable()) {
-            cpp_thread->join();
+        if (cpp_thread) {
+            if (cpp_thread->joinable()) {
+                cpp_thread->join();
+            }
+            delete cpp_thread;
+            thread->handle = nullptr;
         }
     } catch (std::system_error &) {
         // An error occurred when joining the thread.  SDL_WaitThread does not,
@@ -140,8 +129,12 @@ SDL_SYS_DetachThread(SDL_Thread *thread)
 
     try {
         std::thread *cpp_thread = (std::thread *)thread->handle;
-        if (cpp_thread->joinable()) {
-            cpp_thread->detach();
+        if (cpp_thread) {
+            if (cpp_thread->joinable()) {
+                cpp_thread->detach();
+            }
+            delete cpp_thread;
+            thread->handle = nullptr;
         }
     } catch (std::system_error &) {
         // An error occurred when detaching the thread.  SDL_DetachThread does not,
@@ -150,14 +143,27 @@ SDL_SYS_DetachThread(SDL_Thread *thread)
     }
 }
 
-extern "C" SDL_TLSData *
-SDL_SYS_GetTLSData(void)
+static thread_local SDL_TLSData *thread_local_storage;
+
+extern "C"
+void SDL_SYS_InitTLSData(void)
 {
-    return SDL_Generic_GetTLSData();
 }
 
-extern "C" int
-SDL_SYS_SetTLSData(SDL_TLSData *data)
+extern "C"
+SDL_TLSData * SDL_SYS_GetTLSData(void)
 {
-    return SDL_Generic_SetTLSData(data);
+    return thread_local_storage;
+}
+
+extern "C"
+int SDL_SYS_SetTLSData(SDL_TLSData *data)
+{
+    thread_local_storage = data;
+    return 0;
+}
+
+extern "C"
+void SDL_SYS_QuitTLSData(void)
+{
 }

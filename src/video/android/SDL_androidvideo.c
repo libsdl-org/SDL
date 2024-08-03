@@ -63,9 +63,6 @@ static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; /* Default SurfaceView format, in case this is queried before being filled */
 float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
-SDL_Semaphore *Android_PauseSem = NULL;
-SDL_Semaphore *Android_ResumeSem = NULL;
-SDL_Mutex *Android_ActivityMutex = NULL;
 static SDL_SystemTheme Android_SystemTheme;
 
 static int Android_SuspendScreenSaver(SDL_VideoDevice *_this)
@@ -75,7 +72,7 @@ static int Android_SuspendScreenSaver(SDL_VideoDevice *_this)
 
 static void Android_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_free(device->driverdata);
+    SDL_free(device->internal);
     SDL_free(device);
 }
 
@@ -83,7 +80,6 @@ static SDL_VideoDevice *Android_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
-    SDL_bool block_on_pause;
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -97,18 +93,12 @@ static SDL_VideoDevice *Android_CreateDevice(void)
         return NULL;
     }
 
-    device->driverdata = data;
+    device->internal = data;
     device->system_theme = Android_SystemTheme;
 
     /* Set the function pointers */
     device->VideoInit = Android_VideoInit;
     device->VideoQuit = Android_VideoQuit;
-    block_on_pause = SDL_GetHintBoolean(SDL_HINT_ANDROID_BLOCK_ON_PAUSE, SDL_TRUE);
-    if (block_on_pause) {
-        device->PumpEvents = Android_PumpEvents_Blocking;
-    } else {
-        device->PumpEvents = Android_PumpEvents_NonBlocking;
-    }
 
     device->CreateSDLWindow = Android_CreateWindow;
     device->SetWindowTitle = Android_SetWindowTitle;
@@ -143,9 +133,6 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     /* Screensaver */
     device->SuspendScreenSaver = Android_SuspendScreenSaver;
 
-    /* Text input */
-    device->SetTextInputRect = Android_SetTextInputRect;
-
     /* Screen keyboard */
     device->HasScreenKeyboardSupport = Android_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = Android_ShowScreenKeyboard;
@@ -170,21 +157,19 @@ VideoBootStrap Android_bootstrap = {
 
 int Android_VideoInit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     SDL_DisplayID displayID;
     SDL_VideoDisplay *display;
     SDL_DisplayMode mode;
 
     videodata->isPaused = SDL_FALSE;
     videodata->isPausing = SDL_FALSE;
-    videodata->pauseAudio = SDL_GetHintBoolean(SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO, SDL_TRUE);
 
     SDL_zero(mode);
     mode.format = Android_ScreenFormat;
     mode.w = Android_DeviceWidth;
     mode.h = Android_DeviceHeight;
     mode.refresh_rate = Android_ScreenRate;
-    mode.driverdata = NULL;
 
     displayID = SDL_AddBasicVideoDisplay(&mode);
     if (displayID == 0) {

@@ -136,21 +136,21 @@ _m_prefetch(void *__P)
 # if defined(__clang__) && (defined(_MSC_VER) || defined(__SCE__)) && !defined(__AVX__) && !defined(SDL_DISABLE_AVX)
 #  define SDL_DISABLE_AVX       /* see https://reviews.llvm.org/D20291 and https://reviews.llvm.org/D79194 */
 # endif
-# if (defined(_MSC_VER) || defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX)
+# if (defined(_MSC_VER) || defined(__AVX__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(_M_ARM64EC) && !defined(SDL_DISABLE_AVX)
 #  define SDL_AVX_INTRINSICS 1
 #  include <immintrin.h>
 # endif
 # if defined(__clang__) && (defined(_MSC_VER) || defined(__SCE__)) && !defined(__AVX2__) && !defined(SDL_DISABLE_AVX2)
 #  define SDL_DISABLE_AVX2      /* see https://reviews.llvm.org/D20291 and https://reviews.llvm.org/D79194 */
 # endif
-# if (defined(_MSC_VER) || defined(__AVX2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX2)
+# if (defined(_MSC_VER) || defined(__AVX2__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(_M_ARM64EC) && !defined(SDL_DISABLE_AVX2)
 #  define SDL_AVX2_INTRINSICS 1
 #  include <immintrin.h>
 # endif
 # if defined(__clang__) && (defined(_MSC_VER) || defined(__SCE__)) && !defined(__AVX512F__) && !defined(SDL_DISABLE_AVX512F)
 #  define SDL_DISABLE_AVX512F   /* see https://reviews.llvm.org/D20291 and https://reviews.llvm.org/D79194 */
 # endif
-# if (defined(_MSC_VER) || defined(__AVX512F__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(SDL_DISABLE_AVX512F)
+# if (defined(_MSC_VER) || defined(__AVX512F__) || defined(SDL_HAS_TARGET_ATTRIBS)) && !defined(_M_ARM64EC) && !defined(SDL_DISABLE_AVX512F)
 #  define SDL_AVX512F_INTRINSICS 1
 #  include <immintrin.h>
 # endif

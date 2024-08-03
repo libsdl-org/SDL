@@ -78,9 +78,9 @@ jobs:
         shell: bash
         run: |
           ${{ steps.tar.outputs.path }}/build-scripts/test-versioning.sh
-      - name: 'CMake (configure + build + tests)'
+      - name: 'CMake (configure + build + tests + examples)'
         run: |
-          cmake -S ${{ steps.tar.outputs.path }} -B /tmp/build -DSDL_TEST_LIBRARY=TRUE -DSDL_TESTS=TRUE
+          cmake -S ${{ steps.tar.outputs.path }} -B /tmp/build -DSDL_TEST_LIBRARY=TRUE -DSDL_TESTS=TRUE -DSDL_EXAMPLES=TRUE
           cmake --build /tmp/build --verbose
           ctest --test-dir /tmp/build --no-tests=error --output-on-failure
 
@@ -282,6 +282,10 @@ jobs:
     needs: [msvc, src]
     runs-on: windows-latest
     steps:
+      - name: 'Fetch .github/actions/setup-ninja/action.yml'
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: '.github/actions/setup-ninja/action.yml'
       - name: 'Download source archives'
         uses: actions/download-artifact@v4
         with:
@@ -306,45 +310,94 @@ jobs:
           cd '${{ github.workspace }}/vc'
           unzip "${{ github.workspace }}/${{ needs.msvc.outputs.VC-devel }}"
           echo "path=${{ github.workspace }}/vc/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$env:GITHUB_OUTPUT
+      - name: Set up ninja
+        uses: ./.github/actions/setup-ninja
+      - name: 'Configure vcvars x86'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64_x86
       - name: 'CMake (configure + build + tests) x86'
         run: |
-          $env:PATH += ";${{ steps.bin.outputs.path }}/x86"
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -B build_x86                                        `
+              -GNinja                                             `
+              -DCMAKE_BUILD_TYPE=Debug                            `
+              -Werror=dev                                         `
               -DTEST_FULL=TRUE                                    `
               -DTEST_STATIC=FALSE                                 `
+              -DTEST_SHARED=TRUE                                  `
               -DTEST_TEST=TRUE                                    `
-              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}" `
-              -Werror=dev                                         `
-              -B build_x86 -A win32
+              -DCMAKE_SUPPRESS_REGENERATION=TRUE                  `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"
+          Start-Sleep -Seconds 2
           cmake --build build_x86 --config Release --verbose
           ctest --test-dir build_x86 --no-tests=error -C Release --output-on-failure
+      - name: 'Configure vcvars x64'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
       - name: 'CMake (configure + build + tests) x64'
         run: |
-          $env:PATH += ";${{ steps.bin.outputs.path }}/x86"
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -B build_x64                                        `
+              -GNinja                                             `
+              -DCMAKE_BUILD_TYPE=Debug                            `
+              -Werror=dev                                         `
               -DTEST_FULL=TRUE                                    `
               -DTEST_STATIC=FALSE                                 `
+              -DTEST_SHARED=TRUE                                  `
               -DTEST_TEST=TRUE                                    `
-              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}" `
-              -Werror=dev                                         `
-              -B build_x64 -A x64
+              -DCMAKE_SUPPRESS_REGENERATION=TRUE                  `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"
+          Start-Sleep -Seconds 2
           cmake --build build_x64 --config Release --verbose
           ctest --test-dir build_x64 --no-tests=error -C Release --output-on-failure
-      - name: 'CMake (configure + build + tests) arm64'
+      - name: 'Configure vcvars arm64'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64_arm64
+      - name: 'CMake (configure + build) arm64'
         run: |
-          $env:PATH += ";${{ steps.bin.outputs.path }}/x86"
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -B build_arm64                                      `
+              -GNinja                                             `
+              -DCMAKE_BUILD_TYPE=Debug                            `
+              -Werror=dev                                         `
               -DTEST_FULL=TRUE                                    `
               -DTEST_STATIC=FALSE                                 `
+              -DTEST_SHARED=TRUE                                  `
               -DTEST_TEST=TRUE                                    `
-              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}" `
-              -Werror=dev                                         `
-              -B build_arm64 -A ARM64
+              -DCMAKE_SUPPRESS_REGENERATION=TRUE                  `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"
+          Start-Sleep -Seconds 2
           cmake --build build_arm64 --config Release --verbose
+      - name: 'CMake (configure + build) arm64ec'
+        run: |
+          cmake -S "${{ steps.src.outputs.path }}/cmake/test"     `
+              -B build_arm64ec                                    `
+              -GNinja                                             `
+              -DCMAKE_BUILD_TYPE=Debug                            `
+              -Werror=dev                                         `
+              -DTEST_FULL=TRUE                                    `
+              -DTEST_STATIC=FALSE                                 `
+              -DTEST_SHARED=TRUE                                  `
+              -DTEST_TEST=TRUE                                    `
+              -DSDL_DISABLE_AVX=TRUE                              `
+              -DSDL_DISABLE_AVX2=TRUE                             `
+              -DSDL_DISABLE_AVX512F=TRUE                          `
+              -DCMAKE_SUPPRESS_REGENERATION=TRUE                  `
+              -DCMAKE_C_FLAGS="/arm64EC" `
+              -DCMAKE_CXX_FLAGS="/arm64EC" `
+              -DCMAKE_EXE_LINKER_FLAGS="/MACHINE:ARM64EC"         `
+              -DCMAKE_SHARED_LINKER_FLAGS="/MACHINE:ARM64EC"      `
+              -DCMAKE_STATIC_LINKER_FLAGS="/MACHINE:ARM64EC"      `
+              -DCMAKE_PREFIX_PATH="${{ steps.bin.outputs.path }}"
+          Start-Sleep -Seconds 2
+          cmake --build build_arm64ec --config Release --verbose
 
   mingw:
     needs: [src]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # FIXME: current ubuntu-latest ships an outdated mingw, replace with ubuntu-latest once 24.04 becomes the new default
     outputs:
       mingw-devel-tar-gz: ${{ steps.releaser.outputs.mingw-devel-tar-gz }}
       mingw-devel-tar-xz: ${{ steps.releaser.outputs.mingw-devel-tar-xz }}
@@ -461,7 +514,6 @@ jobs:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Setup Android NDK'
         uses: nttld/setup-ndk@v1
-        id: setup_ndk
         with:
           local-cache: true
           ndk-version: r21e
@@ -500,3 +552,86 @@ jobs:
         with:
           name: android
           path: '${{ github.workspace }}/dist'
+
+  android-verify:
+    needs: [android, src]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Set up Python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: 'Download source archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: sources
+          path: '${{ github.workspace }}'
+      - name: 'Download Android .aar archive'
+        uses: actions/download-artifact@v4
+        with:
+          name: android
+          path: '${{ github.workspace }}'
+      - name: 'Untar ${{ needs.src.outputs.src-tar-gz }}'
+        id: src
+        run: |
+          mkdir -p /tmp/tardir
+          tar -C /tmp/tardir -v -x -f "${{ github.workspace }}/${{ needs.src.outputs.src-tar-gz }}"
+          echo "path=/tmp/tardir/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}" >>$GITHUB_OUTPUT
+      - name: 'Create gradle project'
+        id: create-gradle-project
+        run: |
+          python ${{ steps.src.outputs.path }}/build-scripts/create-android-project.py \
+            org.libsdl.testspriteminimal \
+            ${{ steps.src.outputs.path }}/test/testspriteminimal.c \
+            ${{ steps.src.outputs.path }}/test/icon.h \
+            --variant aar \
+            --output "/tmp/projects"
+          echo "path=/tmp/projects/org.libsdl.testspriteminimal" >>$GITHUB_OUTPUT
+
+          echo ""
+          echo "Project contents:"
+          echo ""
+          find "/tmp/projects/org.libsdl.testspriteminimal"
+      - name: 'Copy SDL3 aar into Gradle project'
+        run: |
+          cp "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" "${{ steps.create-gradle-project.outputs.path }}/app/libs"
+
+          echo ""
+          echo "Project contents:"
+          echo ""
+          find "${{ steps.create-gradle-project.outputs.path }}"
+      - name: 'Build app (Gradle & ndk-build)'
+        run: |
+          cd "${{ steps.create-gradle-project.outputs.path }}"
+          ./gradlew -i assembleRelease -PBUILD_WITH_CMAKE=1
+      - name: 'Build app (Gradle & CMake)'
+        run: |
+          cd "${{ steps.create-gradle-project.outputs.path }}"
+          ./gradlew -i assembleRelease
+      - name: 'Extract Android SDK from AAR'
+        id: sdk
+        run: |
+          python "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" -o /tmp/SDL3-android
+          echo "prefix=/tmp/SDL3-android" >>$GITHUB_OUTPUT
+      - name: 'CMake (configure + build) x86, x64, arm32, arm64'
+        run: |
+          android_abis="x86 x86_64 armeabi-v7a arm64-v8a"
+          for android_abi in ${android_abis}; do
+            echo "Configure ${android_abi}"
+            cmake -S "${{ steps.src.outputs.path }}/cmake/test"                               \
+              -DTEST_FULL=TRUE                                                                \
+              -DTEST_STATIC=FALSE                                                             \
+              -DTEST_TEST=TRUE                                                                \
+              -DCMAKE_PREFIX_PATH="${{ steps.sdk.outputs.prefix }}"                           \
+              -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake  \
+              -DANDROID_ABI=${android_abi}                                                    \
+              -Werror=dev                                                                     \
+              -DCMAKE_BUILD_TYPE=Release                                                      \
+              -B "${android_abi}"
+          done
+          echo "Build ${android_abi}"
+          cmake --build "${android_abi}" --config Release --verbose

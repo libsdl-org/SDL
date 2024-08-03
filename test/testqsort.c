@@ -67,11 +67,9 @@ int main(int argc, char *argv[])
     static const int itervals[] = { SDL_arraysize(nums), 12 };
     int i;
     int iteration;
-    SDLTest_RandomContext rndctx;
     SDLTest_CommonState *state;
+    Uint64 seed = 0;
     int seed_seen = 0;
-
-    SDL_zero(rndctx);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -86,7 +84,6 @@ int main(int argc, char *argv[])
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
             if (!seed_seen) {
-                Uint64 seed = 0;
                 char *endptr = NULL;
 
                 seed = SDL_strtoull(argv[i], &endptr, 0);
@@ -97,11 +94,6 @@ int main(int argc, char *argv[])
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Invalid seed. Use a decimal or hexadecimal number.\n");
                     return 1;
                 }
-                if (seed <= ((Uint64)0xffffffff)) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Seed must be equal or greater than 0x100000000.\n");
-                    return 1;
-                }
-                SDLTest_RandomInit(&rndctx, (unsigned int)(seed >> 32), (unsigned int)(seed & 0xffffffff));
             }
         }
         if (consumed <= 0) {
@@ -114,9 +106,9 @@ int main(int argc, char *argv[])
     }
 
     if (!seed_seen) {
-        SDLTest_RandomInitTime(&rndctx);
+        seed = SDL_GetPerformanceCounter();
     }
-    SDL_Log("Using random seed 0x%08x%08x\n", rndctx.x, rndctx.c);
+    SDL_Log("Using random seed 0x%" SDL_PRIx64 "\n", seed);
 
     for (iteration = 0; iteration < SDL_arraysize(itervals); iteration++) {
         const int arraylen = itervals[iteration];
@@ -138,11 +130,12 @@ int main(int argc, char *argv[])
         test_sort("reverse sorted", nums, arraylen);
 
         for (i = 0; i < arraylen; i++) {
-            nums[i] = SDLTest_RandomInt(&rndctx);
+            nums[i] = SDL_rand_r(&seed, 1000000);
         }
         test_sort("random sorted", nums, arraylen);
     }
 
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
 
     return 0;

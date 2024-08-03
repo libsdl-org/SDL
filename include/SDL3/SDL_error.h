@@ -53,10 +53,10 @@ extern "C" {
  * }
  * ```
  *
- * \param fmt a printf()-style message format string
+ * \param fmt a printf()-style message format string.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
- *            any
- * \returns always -1.
+ *            any.
+ * \returns -1.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -70,7 +70,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const char
  *
  * This function does not do any memory allocation.
  *
- * \returns -1
+ * \returns -1.
  *
  * \since This function is available since SDL 3.0.0.
  */
@@ -96,27 +96,25 @@ extern SDL_DECLSPEC int SDLCALL SDL_OutOfMemory(void);
  * Error strings are set per-thread, so an error set in a different thread
  * will not interfere with the current thread's operation.
  *
- * The returned string is internally allocated and must not be freed by the
- * application.
+ * The returned value is a thread-local string which will remain valid until
+ * the current thread's error string is changed. The caller should make a copy
+ * if the value is needed after the next SDL API call.
  *
  * \returns a message with information about the specific error that occurred,
  *          or an empty string if there hasn't been an error message set since
- *          the last call to SDL_ClearError(). The message is only applicable
- *          when an SDL function has signaled an error. You must check the
- *          return values of SDL function calls to determine when to
- *          appropriately call SDL_GetError().
+ *          the last call to SDL_ClearError().
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_ClearError
  * \sa SDL_SetError
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetError(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetError(void);
 
 /**
  * Clear any previous error message for this thread.
  *
- * \returns 0
+ * \returns 0.
  *
  * \since This function is available since SDL 3.0.0.
  *

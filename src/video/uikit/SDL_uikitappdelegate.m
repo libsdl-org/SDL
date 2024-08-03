@@ -404,9 +404,9 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     [self performSelector:@selector(hideLaunchScreen) withObject:nil afterDelay:0.0];
 
     /* run the user's application, passing argc and argv */
-    SDL_iOSSetEventPump(SDL_TRUE);
+    SDL_SetiOSEventPump(SDL_TRUE);
     exit_status = forward_main(forward_argc, forward_argv);
-    SDL_iOSSetEventPump(SDL_FALSE);
+    SDL_SetiOSEventPump(SDL_FALSE);
 
     if (launchWindow) {
         launchWindow.hidden = YES;
@@ -491,7 +491,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     if (_this) {
         SDL_Window *window = NULL;
         for (window = _this->windows; window != NULL; window = window->next) {
-            SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+            SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
             if (data != nil) {
                 return data.uiwindow;
             }

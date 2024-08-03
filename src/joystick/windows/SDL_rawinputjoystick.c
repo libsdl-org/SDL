@@ -111,7 +111,7 @@ typedef struct SDL_RAWINPUT_Device
     Uint16 vendor_id;
     Uint16 product_id;
     Uint16 version;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     SDL_bool is_xinput;
     SDL_bool is_xboxone;
     int steam_virtual_gamepad_slot;
@@ -326,7 +326,7 @@ static struct
 static SDL_bool xinput_device_change = SDL_TRUE;
 static SDL_bool xinput_state_dirty = SDL_TRUE;
 
-static void RAWINPUT_UpdateXInput()
+static void RAWINPUT_UpdateXInput(void)
 {
     DWORD user_index;
     if (xinput_device_change) {
@@ -366,7 +366,7 @@ static void RAWINPUT_MarkXInputSlotFree(Uint8 xinput_slot)
         xinput_state[xinput_slot].used = SDL_FALSE;
     }
 }
-static SDL_bool RAWINPUT_MissingXInputSlot()
+static SDL_bool RAWINPUT_MissingXInputSlot(void)
 {
     int ii;
     for (ii = 0; ii < SDL_arraysize(xinput_state); ii++) {
@@ -561,7 +561,7 @@ static void RAWINPUT_MarkWindowsGamingInputSlotFree(WindowsGamingInputGamepadSta
     wgi_slot->correlated_context = NULL;
 }
 
-static SDL_bool RAWINPUT_MissingWindowsGamingInputSlot()
+static SDL_bool RAWINPUT_MissingWindowsGamingInputSlot(void)
 {
     int ii;
     for (ii = 0; ii < wgi_state.per_gamepad_count; ii++) {
@@ -572,7 +572,7 @@ static SDL_bool RAWINPUT_MissingWindowsGamingInputSlot()
     return SDL_FALSE;
 }
 
-static int RAWINPUT_UpdateWindowsGamingInput()
+static int RAWINPUT_UpdateWindowsGamingInput(void)
 {
     int ii;
     if (!wgi_state.gamepad_statics) {
@@ -1054,7 +1054,7 @@ static int RAWINPUT_JoystickGetCount(void)
     return SDL_RAWINPUT_numjoysticks;
 }
 
-SDL_bool RAWINPUT_IsEnabled()
+SDL_bool RAWINPUT_IsEnabled(void)
 {
     return SDL_RAWINPUT_inited && !SDL_RAWINPUT_remote_desktop;
 }
@@ -1215,7 +1215,7 @@ static void RAWINPUT_JoystickSetDevicePlayerIndex(int device_index, int player_i
 {
 }
 
-static SDL_JoystickGUID RAWINPUT_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID RAWINPUT_JoystickGetDeviceGUID(int device_index)
 {
     return RAWINPUT_GetDeviceByIndex(device_index)->guid;
 }
@@ -2102,7 +2102,7 @@ int RAWINPUT_RegisterNotifications(HWND hWnd)
     return 0;
 }
 
-int RAWINPUT_UnregisterNotifications()
+int RAWINPUT_UnregisterNotifications(void)
 {
     int i;
     RAWINPUTDEVICE rid[SDL_arraysize(subscribed_devices)];

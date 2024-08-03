@@ -23,8 +23,6 @@
 #include "SDL_audioqueue.h"
 #include "SDL_sysaudio.h"
 
-#define AUDIO_SPECS_EQUAL(x, y) (((x).format == (y).format) && ((x).channels == (y).channels) && ((x).freq == (y).freq))
-
 typedef struct SDL_MemoryPool SDL_MemoryPool;
 
 struct SDL_MemoryPool
@@ -38,6 +36,7 @@ struct SDL_MemoryPool
 struct SDL_AudioTrack
 {
     SDL_AudioSpec spec;
+    int *chmap;
     SDL_bool flushed;
     SDL_AudioTrack *next;
 
@@ -48,6 +47,8 @@ struct SDL_AudioTrack
     size_t head;
     size_t tail;
     size_t capacity;
+
+    int chmap_storage[SDL_MAX_CHANNELMAP_CHANNELS];  // !!! FIXME: this needs to grow if SDL ever supports more channels. But if it grows, we should probably be more clever about allocations.
 };
 
 struct SDL_AudioQueue
@@ -228,7 +229,7 @@ void SDL_PopAudioQueueHead(SDL_AudioQueue *queue)
 }
 
 SDL_AudioTrack *SDL_CreateAudioTrack(
-    SDL_AudioQueue *queue, const SDL_AudioSpec *spec,
+    SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap,
     Uint8 *data, size_t len, size_t capacity,
     SDL_ReleaseAudioBufferCallback callback, void *userdata)
 {
@@ -239,6 +240,13 @@ SDL_AudioTrack *SDL_CreateAudioTrack(
     }
 
     SDL_zerop(track);
+
+    if (chmap) {
+        SDL_assert(SDL_arraysize(track->chmap_storage) >= spec->channels);
+        SDL_memcpy(track->chmap_storage, chmap, sizeof (*chmap) * spec->channels);
+        track->chmap = track->chmap_storage;
+    }
+
     SDL_copyp(&track->spec, spec);
 
     track->userdata = userdata;
@@ -258,7 +266,7 @@ static void SDLCALL FreeChunkedAudioBuffer(void *userdata, const void *buf, int 
     FreeMemoryPoolBlock(&queue->chunk_pool, (void *)buf);
 }
 
-static SDL_AudioTrack *CreateChunkedAudioTrack(SDL_AudioQueue *queue, const SDL_AudioSpec *spec)
+static SDL_AudioTrack *CreateChunkedAudioTrack(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap)
 {
     void *chunk = AllocMemoryPoolBlock(&queue->chunk_pool);
 
@@ -269,7 +277,7 @@ static SDL_AudioTrack *CreateChunkedAudioTrack(SDL_AudioQueue *queue, const SDL_
     size_t capacity = queue->chunk_pool.block_size;
     capacity -= capacity % SDL_AUDIO_FRAMESIZE(*spec);
 
-    SDL_AudioTrack *track = SDL_CreateAudioTrack(queue, spec, chunk, 0, capacity, FreeChunkedAudioBuffer, queue);
+    SDL_AudioTrack *track = SDL_CreateAudioTrack(queue, spec, chmap, chunk, 0, capacity, FreeChunkedAudioBuffer, queue);
 
     if (!track) {
         FreeMemoryPoolBlock(&queue->chunk_pool, chunk);
@@ -285,7 +293,7 @@ void SDL_AddTrackToAudioQueue(SDL_AudioQueue *queue, SDL_AudioTrack *track)
 
     if (tail) {
         // If the spec has changed, make sure to flush the previous track
-        if (!AUDIO_SPECS_EQUAL(tail->spec, track->spec)) {
+        if (!SDL_AudioSpecsEqual(&tail->spec, &track->spec, tail->chmap, track->chmap)) {
             FlushAudioTrack(tail);
         }
 
@@ -310,7 +318,7 @@ static size_t WriteToAudioTrack(SDL_AudioTrack *track, const Uint8 *data, size_t
     return len;
 }
 
-int SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const Uint8 *data, size_t len)
+int SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, const int *chmap, const Uint8 *data, size_t len)
 {
     if (len == 0) {
         return 0;
@@ -319,12 +327,12 @@ int SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, cons
     SDL_AudioTrack *track = queue->tail;
 
     if (track) {
-        if (!AUDIO_SPECS_EQUAL(track->spec, *spec)) {
+        if (!SDL_AudioSpecsEqual(&track->spec, spec, track->chmap, chmap)) {
             FlushAudioTrack(track);
         }
     } else {
         SDL_assert(!queue->head);
-        track = CreateChunkedAudioTrack(queue, spec);
+        track = CreateChunkedAudioTrack(queue, spec, chmap);
 
         if (!track) {
             return -1;
@@ -335,7 +343,7 @@ int SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, cons
     }
 
     for (;;) {
-        size_t written = WriteToAudioTrack(track, data, len);
+        const size_t written = WriteToAudioTrack(track, data, len);
         data += written;
         len -= written;
 
@@ -343,7 +351,7 @@ int SDL_WriteToAudioQueue(SDL_AudioQueue *queue, const SDL_AudioSpec *spec, cons
             break;
         }
 
-        SDL_AudioTrack *new_track = CreateChunkedAudioTrack(queue, spec);
+        SDL_AudioTrack *new_track = CreateChunkedAudioTrack(queue, spec, chmap);
 
         if (!new_track) {
             return -1;
@@ -362,12 +370,13 @@ void *SDL_BeginAudioQueueIter(SDL_AudioQueue *queue)
     return queue->head;
 }
 
-size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_AudioSpec *out_spec, SDL_bool *out_flushed)
+size_t SDL_NextAudioQueueIter(SDL_AudioQueue *queue, void **inout_iter, SDL_AudioSpec *out_spec, int **out_chmap, SDL_bool *out_flushed)
 {
     SDL_AudioTrack *iter = (SDL_AudioTrack *)(*inout_iter);
     SDL_assert(iter != NULL);
 
     SDL_copyp(out_spec, &iter->spec);
+    *out_chmap = iter->chmap;
 
     SDL_bool flushed = SDL_FALSE;
     size_t queued_bytes = 0;
@@ -514,9 +523,9 @@ static const Uint8 *PeekIntoAudioQueueFuture(SDL_AudioQueue *queue, Uint8 *data,
 }
 
 const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
-                                    Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels,
+                                    Uint8 *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
                                     int past_frames, int present_frames, int future_frames,
-                                    Uint8 *scratch)
+                                    Uint8 *scratch, float gain)
 {
     SDL_AudioTrack *track = queue->head;
 
@@ -526,6 +535,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
 
     SDL_AudioFormat src_format = track->spec.format;
     int src_channels = track->spec.channels;
+    const int *src_map = track->chmap;
 
     size_t src_frame_size = SDL_AUDIO_BYTESIZE(src_format) * src_channels;
     size_t dst_frame_size = SDL_AUDIO_BYTESIZE(dst_format) * dst_channels;
@@ -553,7 +563,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
         // Do we still need to copy/convert the data?
         if (dst) {
             ConvertAudio(past_frames + present_frames + future_frames, ptr,
-                         src_format, src_channels, dst, dst_format, dst_channels, scratch);
+                         src_format, src_channels, src_map, dst, dst_format, dst_channels, dst_map, scratch, gain);
             ptr = dst;
         }
 
@@ -571,19 +581,19 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
     Uint8 *ptr = dst;
 
     if (src_past_bytes) {
-        ConvertAudio(past_frames, PeekIntoAudioQueuePast(queue, scratch, src_past_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch);
+        ConvertAudio(past_frames, PeekIntoAudioQueuePast(queue, scratch, src_past_bytes), src_format, src_channels, src_map, dst, dst_format, dst_channels, dst_map, scratch, gain);
         dst += dst_past_bytes;
         scratch += dst_past_bytes;
     }
 
     if (src_present_bytes) {
-        ConvertAudio(present_frames, ReadFromAudioQueue(queue, scratch, src_present_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch);
+        ConvertAudio(present_frames, ReadFromAudioQueue(queue, scratch, src_present_bytes), src_format, src_channels, src_map, dst, dst_format, dst_channels, dst_map, scratch, gain);
         dst += dst_present_bytes;
         scratch += dst_present_bytes;
     }
 
     if (src_future_bytes) {
-        ConvertAudio(future_frames, PeekIntoAudioQueueFuture(queue, scratch, src_future_bytes), src_format, src_channels, dst, dst_format, dst_channels, scratch);
+        ConvertAudio(future_frames, PeekIntoAudioQueueFuture(queue, scratch, src_future_bytes), src_format, src_channels, src_map, dst, dst_format, dst_channels, dst_map, scratch, gain);
         dst += dst_future_bytes;
         scratch += dst_future_bytes;
     }
@@ -598,9 +608,10 @@ size_t SDL_GetAudioQueueQueued(SDL_AudioQueue *queue)
 
     while (iter) {
         SDL_AudioSpec src_spec;
+        int *src_chmap;
         SDL_bool flushed;
 
-        size_t avail = SDL_NextAudioQueueIter(queue, &iter, &src_spec, &flushed);
+        size_t avail = SDL_NextAudioQueueIter(queue, &iter, &src_spec, &src_chmap, &flushed);
 
         if (avail >= SDL_SIZE_MAX - total) {
             total = SDL_SIZE_MAX;

@@ -63,10 +63,10 @@ extern VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
  * using the DisplayKHR extension.
  * This needs to be passed an instance that was created with the VK_KHR_DISPLAY_EXTENSION_NAME
  * extension. */
-extern SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
-                                                 VkInstance instance,
-                                                 const struct VkAllocationCallbacks *allocator,
-                                                 VkSurfaceKHR *surface);
+extern int SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
+                                            VkInstance instance,
+                                            const struct VkAllocationCallbacks *allocator,
+                                            VkSurfaceKHR *surface);
 
 /* Platform independent base function for destroying the Vulkan surface. Unlike surface
  * creation, surface destruction doesn't require platform specific extensions like

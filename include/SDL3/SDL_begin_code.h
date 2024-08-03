@@ -139,6 +139,16 @@
 #endif
 #endif /* SDL_NORETURN not defined */
 
+#ifdef __clang__
+#if __has_feature(attribute_analyzer_noreturn)
+#define SDL_ANALYZER_NORETURN __attribute__((analyzer_noreturn))
+#endif
+#endif
+
+#ifndef SDL_ANALYZER_NORETURN
+#define SDL_ANALYZER_NORETURN
+#endif
+
 /* Apparently this is needed by several Windows compilers */
 #ifndef __MACH__
 #ifndef NULL
@@ -155,7 +165,7 @@
     (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202000L)
 #define SDL_FALLTHROUGH [[fallthrough]]
 #else
-#ifdef __has_attribute
+#if defined(__has_attribute) && !defined(__SUNPRO_C) && !defined(__SUNPRO_CC)
 #define SDL_HAS_FALLTHROUGH __has_attribute(__fallthrough__)
 #else
 #define SDL_HAS_FALLTHROUGH 0

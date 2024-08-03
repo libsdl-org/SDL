@@ -103,7 +103,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     /* Remove ourself from the old window. */
     if (sdlwindow) {
         SDL_uikitview *view = nil;
-        data = (__bridge SDL_UIKitWindowData *)sdlwindow->driverdata;
+        data = (__bridge SDL_UIKitWindowData *)sdlwindow->internal;
 
         [data.views removeObject:self];
 
@@ -120,9 +120,11 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         [data.uiwindow layoutIfNeeded];
     }
 
+    sdlwindow = window;
+
     /* Add ourself to the new window. */
     if (window) {
-        data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        data = (__bridge SDL_UIKitWindowData *)window->internal;
 
         /* Make sure the SDL window has a strong reference to this view. */
         [data.views addObject:self];
@@ -144,8 +146,11 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
          * layout now to immediately update the bounds. */
         [data.uiwindow layoutIfNeeded];
     }
+}
 
-    sdlwindow = window;
+- (SDL_Window *)getSDLWindow
+{
+    return sdlwindow;
 }
 
 #if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
@@ -368,6 +373,18 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     }
 }
 
+- (void)safeAreaInsetsDidChange
+{
+    // Update the safe area insets
+    if (@available(iOS 11.0, tvOS 11.0, *)) {
+        SDL_SetWindowSafeAreaInsets(sdlwindow,
+                                    (int)SDL_ceilf(self.safeAreaInsets.left),
+                                    (int)SDL_ceilf(self.safeAreaInsets.right),
+                                    (int)SDL_ceilf(self.safeAreaInsets.top),
+                                    (int)SDL_ceilf(self.safeAreaInsets.bottom));
+    }
+}
+
 #if defined(SDL_PLATFORM_TVOS) || defined(__IPHONE_9_1)
 - (SDL_Scancode)scancodeFromPress:(UIPress *)press
 {
@@ -414,10 +431,10 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     if (!SDL_HasKeyboard()) {
         for (UIPress *press in presses) {
             SDL_Scancode scancode = [self scancodeFromPress:press];
-            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, scancode);
+            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_GLOBAL_KEYBOARD_ID, 0, scancode, SDL_PRESSED);
         }
     }
-    if (SDL_TextInputActive()) {
+    if (SDL_TextInputActive(sdlwindow)) {
         [super pressesBegan:presses withEvent:event];
     }
 }
@@ -427,10 +444,10 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     if (!SDL_HasKeyboard()) {
         for (UIPress *press in presses) {
             SDL_Scancode scancode = [self scancodeFromPress:press];
-            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_GLOBAL_KEYBOARD_ID, 0, scancode, SDL_RELEASED);
         }
     }
-    if (SDL_TextInputActive()) {
+    if (SDL_TextInputActive(sdlwindow)) {
         [super pressesEnded:presses withEvent:event];
     }
 }
@@ -440,10 +457,10 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     if (!SDL_HasKeyboard()) {
         for (UIPress *press in presses) {
             SDL_Scancode scancode = [self scancodeFromPress:press];
-            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(UIKit_GetEventTimestamp([event timestamp]), SDL_GLOBAL_KEYBOARD_ID, 0, scancode, SDL_RELEASED);
         }
     }
-    if (SDL_TextInputActive()) {
+    if (SDL_TextInputActive(sdlwindow)) {
         [super pressesCancelled:presses withEvent:event];
     }
 }
@@ -451,7 +468,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (void)pressesChanged:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
     /* This is only called when the force of a press changes. */
-    if (SDL_TextInputActive()) {
+    if (SDL_TextInputActive(sdlwindow)) {
         [super pressesChanged:presses withEvent:event];
     }
 }

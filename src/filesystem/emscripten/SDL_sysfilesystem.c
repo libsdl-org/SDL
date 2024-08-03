@@ -24,18 +24,20 @@
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
+
+#include "../SDL_sysfilesystem.h"
+
 #include <errno.h>
 #include <sys/stat.h>
 
 #include <emscripten/emscripten.h>
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
-    char *retval = "/";
-    return SDL_strdup(retval);
+    return SDL_strdup("/");
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     const char *append = "/libsdl/";
     char *retval;
@@ -82,7 +84,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     const char *home = NULL;
 

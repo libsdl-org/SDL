@@ -49,7 +49,8 @@ static SDLTest_TestSuiteReference *testSuites[] = {
     &timeTestSuite,
     &timerTestSuite,
     &videoTestSuite,
-    &subsystemsTestSuite, /* run last, not interfere with other test enviroment */
+    &blitTestSuite,
+    &subsystemsTestSuite, /* run last, not interfere with other test environment */
     NULL
 };
 

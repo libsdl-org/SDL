@@ -186,12 +186,12 @@ void *SDL_GetClipboardData(const char *mime_type, size_t *size)
     if (_this->GetClipboardData) {
         return _this->GetClipboardData(_this, mime_type, size);
     } else if (_this->GetClipboardText && SDL_IsTextMimeType(mime_type)) {
-        void *data = _this->GetClipboardText(_this);
-        if (data && *(char *)data == '\0') {
-            SDL_free(data);
-            data = NULL;
+        char *text = _this->GetClipboardText(_this);
+        if (text && *text == '\0') {
+            SDL_free(text);
+            text = NULL;
         }
-        return data;
+        return text;
     } else {
         return SDL_GetInternalClipboardData(_this, mime_type, size);
     }
@@ -297,8 +297,9 @@ char *SDL_GetClipboardText(void)
 
     text_mime_types = SDL_GetTextMimeTypes(_this, &num_mime_types);
     for (i = 0; i < num_mime_types; ++i) {
-        text = (char *)SDL_GetClipboardData(text_mime_types[i], &length);
-        if (text) {
+        void *clipdata = SDL_GetClipboardData(text_mime_types[i], &length);
+        if (clipdata) {
+            text = (char *)clipdata;
             break;
         }
     }

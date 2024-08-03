@@ -142,7 +142,7 @@ void WASAPI_PlatformThreadInit(SDL_AudioDevice *device)
         DWORD idx = 0;
         device->hidden->task = pAvSetMmThreadCharacteristicsW(L"Pro Audio", &idx);
     } else {
-        SDL_SetThreadPriority(device->iscapture ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
+        SDL_SetThreadPriority(device->recording ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
     }
 
 }
@@ -164,7 +164,7 @@ void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device)
 int WASAPI_ActivateDevice(SDL_AudioDevice *device)
 {
     IMMDevice *immdevice = NULL;
-    if (SDL_IMMDevice_Get(device, &immdevice, device->iscapture) < 0) {
+    if (SDL_IMMDevice_Get(device, &immdevice, device->recording) < 0) {
         device->hidden->client = NULL;
         return -1; // This is already set by SDL_IMMDevice_Get
     }
@@ -186,9 +186,9 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *device)
     return 0; // good to go.
 }
 
-void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_output, SDL_AudioDevice **default_capture)
+void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
-    SDL_IMMDevice_EnumerateEndpoints(default_output, default_capture);
+    SDL_IMMDevice_EnumerateEndpoints(default_playback, default_recording);
 }
 
 void WASAPI_PlatformDeleteActivationHandler(void *handler)

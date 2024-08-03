@@ -131,13 +131,13 @@ static int PS2_JoystickInit(void)
 }
 
 /* Function to return the number of joystick devices plugged in right now */
-static int PS2_JoystickGetCount()
+static int PS2_JoystickGetCount(void)
 {
     return (int)enabled_pads;
 }
 
 /* Function to cause any queued joystick insertions to be processed */
-static void PS2_JoystickDetect()
+static void PS2_JoystickDetect(void)
 {
 }
 
@@ -182,7 +182,7 @@ static void PS2_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 }
 
 /* Function to return the stable GUID for a plugged in device */
-static SDL_JoystickGUID PS2_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID PS2_JoystickGetDeviceGUID(int device_index)
 {
     /* the GUID is just the name for now */
     const char *name = PS2_JoystickGetDeviceName(device_index);

@@ -25,6 +25,10 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
+extern "C" {
+#include "../SDL_sysfilesystem.h"
+}
+
 #include <kernel/image.h>
 #include <storage/Directory.h>
 #include <storage/Entry.h>
@@ -32,7 +36,7 @@
 #include <storage/Path.h>
 
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
     char name[MAXPATHLEN];
 
@@ -51,18 +55,17 @@ char *SDL_GetBasePath(void)
 
     const size_t len = SDL_strlen(str);
     char *retval = (char *) SDL_malloc(len + 2);
-    if (!retval) {
-        return NULL;
+    if (retval) {
+        SDL_memcpy(retval, str, len);
+        retval[len] = '/';
+        retval[len+1] = '\0';
     }
 
-    SDL_memcpy(retval, str, len);
-    retval[len] = '/';
-    retval[len+1] = '\0';
     return retval;
 }
 
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     // !!! FIXME: is there a better way to do this?
     const char *home = SDL_getenv("HOME");
@@ -94,7 +97,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return retval;
 }
 
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     const char *home = NULL;
     char *retval;

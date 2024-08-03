@@ -65,7 +65,7 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
     SDL_sensor_looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
-    SDL_PostSemaphore(ctx->sem);
+    SDL_SignalSemaphore(ctx->sem);
 
     while (SDL_AtomicGet(&ctx->running)) {
         Uint64 timestamp = SDL_GetTicksNS();

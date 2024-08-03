@@ -23,7 +23,7 @@
 #if SDL_VIDEO_RENDER_D3D12 && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #include "../../core/windows/SDL_windows.h"
-#include <d3d12.h>
+#include "../../video/directx/SDL_d3d12.h"
 
 #include "SDL_shaders_d3d12.h"
 

@@ -24,9 +24,9 @@
 
 #include "SDL_windowsvideo.h"
 
-int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
+int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     SDL_bool isstack;
     size_t size;
     LPBITMAPINFO info;
@@ -66,7 +66,7 @@ int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 
         bpp = info->bmiHeader.biPlanes * info->bmiHeader.biBitCount;
         masks = (Uint32 *)((Uint8 *)info + info->bmiHeader.biSize);
-        *format = SDL_GetPixelFormatEnumForMasks(bpp, masks[0], masks[1], masks[2], 0);
+        *format = SDL_GetPixelFormatForMasks(bpp, masks[0], masks[1], masks[2], 0);
     }
     if (*format == SDL_PIXELFORMAT_UNKNOWN) {
         /* We'll use RGB format for now */
@@ -100,7 +100,7 @@ int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 
 int WIN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     int i;
 
     for (i = 0; i < numrects; ++i) {
@@ -112,7 +112,7 @@ int WIN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, cons
 
 void WIN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
     if (!data) {
         /* The window wasn't fully initialized */

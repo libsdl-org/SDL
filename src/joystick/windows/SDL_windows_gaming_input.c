@@ -56,7 +56,7 @@ typedef struct WindowsGamingInputControllerState
     SDL_JoystickID instance_id;
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController *controller;
     char *name;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     SDL_JoystickType type;
     int steam_virtual_gamepad_slot;
 } WindowsGamingInputControllerState;
@@ -213,7 +213,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     return SDL_FALSE;
 }
 
-static void WGI_LoadRawGameControllerStatics()
+static void WGI_LoadRawGameControllerStatics(void)
 {
     HRESULT hr;
     HSTRING_HEADER class_name_header;
@@ -228,7 +228,7 @@ static void WGI_LoadRawGameControllerStatics()
     }
 }
 
-static void WGI_LoadOtherControllerStatics()
+static void WGI_LoadOtherControllerStatics(void)
 {
     HRESULT hr;
     HSTRING_HEADER class_name_header;
@@ -400,7 +400,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_QueryInterface(e, &IID___x_ABI_CWindows_CGaming_CInput_CIRawGameController, (void **)&controller);
     if (SUCCEEDED(hr)) {
         char *name = NULL;
-        SDL_JoystickGUID guid = { 0 };
+        SDL_GUID guid = { 0 };
         Uint16 bus = SDL_HARDWARE_BUS_USB;
         Uint16 vendor = 0;
         Uint16 product = 0;
@@ -703,7 +703,7 @@ static void WGI_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-static SDL_JoystickGUID WGI_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID WGI_JoystickGetDeviceGUID(int device_index)
 {
     return wgi.controllers[device_index].guid;
 }

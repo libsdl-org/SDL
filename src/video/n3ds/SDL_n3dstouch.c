@@ -54,7 +54,7 @@ void N3DS_QuitTouch(void)
 
 void N3DS_PollTouch(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *internal = (SDL_VideoData *)_this->internal;
     touchPosition touch;
     SDL_Window *window;
     SDL_VideoDisplay *display;
@@ -63,7 +63,7 @@ void N3DS_PollTouch(SDL_VideoDevice *_this)
     hidTouchRead(&touch);
     pressed = (touch.px != 0 || touch.py != 0);
 
-    display = SDL_GetVideoDisplay(driverdata->touch_display);
+    display = SDL_GetVideoDisplay(internal->touch_display);
     window = display ? display->fullscreen_window : NULL;
 
     if (pressed != was_pressed) {

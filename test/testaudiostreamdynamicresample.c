@@ -102,13 +102,14 @@ static void draw_textf(SDL_Renderer* renderer, int x, int y, const char* fmt, ..
     draw_text(renderer, x, y, text);
 }
 
-static void queue_audio()
+static void queue_audio(void)
 {
     Uint8* new_data = NULL;
     int new_len = 0;
     int retval = 0;
     SDL_AudioSpec new_spec;
 
+    SDL_zero(new_spec);
     new_spec.format = spec.format;
     new_spec.channels = (int) sliders[2].value;
     new_spec.freq = (int) sliders[1].value;
@@ -218,26 +219,26 @@ static void loop(void)
         }
 #endif
         if (e.type == SDL_EVENT_KEY_DOWN) {
-            SDL_Keycode sym = e.key.keysym.sym;
-            if (sym == SDLK_q) {
+            SDL_Keycode key = e.key.key;
+            if (key == SDLK_Q) {
                 if (SDL_AudioDevicePaused(state->audio_id)) {
                     SDL_ResumeAudioDevice(state->audio_id);
                 } else {
                     SDL_PauseAudioDevice(state->audio_id);
                 }
-            } else if (sym == SDLK_w) {
+            } else if (key == SDLK_W) {
                 auto_loop = !auto_loop;
-            } else if (sym == SDLK_e) {
+            } else if (key == SDLK_E) {
                 auto_flush = !auto_flush;
-            } else if (sym == SDLK_a) {
+            } else if (key == SDLK_A) {
                 SDL_ClearAudioStream(stream);
                 SDL_Log("Cleared audio stream");
-            } else if (sym == SDLK_s) {
+            } else if (key == SDLK_S) {
                 queue_audio();
-            } else if (sym == SDLK_d) {
+            } else if (key == SDLK_D) {
                 float amount = 1.0f;
-                amount *= (e.key.keysym.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
-                amount *= (e.key.keysym.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;
+                amount *= (e.key.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
+                amount *= (e.key.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;
                 skip_audio(amount);
             }
         }

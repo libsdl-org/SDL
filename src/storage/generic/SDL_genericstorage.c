@@ -160,6 +160,21 @@ static int GENERIC_RenameStoragePath(void *userdata, const char *oldpath, const 
     return result;
 }
 
+static int GENERIC_CopyStorageFile(void *userdata, const char *oldpath, const char *newpath)
+{
+    int result = -1;
+
+    char *fulloldpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, oldpath);
+    char *fullnewpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, newpath);
+    if (fulloldpath && fullnewpath) {
+        result = SDL_CopyFile(fulloldpath, fullnewpath);
+    }
+    SDL_free(fulloldpath);
+    SDL_free(fullnewpath);
+
+    return result;
+}
+
 static Uint64 GENERIC_GetStorageSpaceRemaining(void *userdata)
 {
     /* TODO: There's totally a way to query a folder root's quota... */
@@ -176,27 +191,29 @@ static const SDL_StorageInterface GENERIC_title_iface = {
     NULL,   /* mkdir */
     NULL,   /* remove */
     NULL,   /* rename */
+    NULL,   /* copy */
     NULL    /* space_remaining */
 };
 
 static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID props)
 {
-    SDL_Storage *result;
+    SDL_Storage *result = NULL;
 
-    char *basepath;
+    char *basepath = NULL;
     if (override != NULL) {
         basepath = SDL_strdup(override);
     } else {
-        basepath = SDL_GetBasePath();
-    }
-    if (basepath == NULL) {
-        return NULL;
+        const char *base = SDL_GetBasePath();
+        basepath = base ? SDL_strdup(base) : NULL;
     }
 
-    result = SDL_OpenStorage(&GENERIC_title_iface, basepath);
-    if (result == NULL) {
-        SDL_free(basepath);
+    if (basepath != NULL) {
+        result = SDL_OpenStorage(&GENERIC_title_iface, basepath);
+        if (result == NULL) {
+            SDL_free(basepath);  // otherwise CloseStorage will free it.
+        }
     }
+
     return result;
 }
 
@@ -216,13 +233,13 @@ static const SDL_StorageInterface GENERIC_user_iface = {
     GENERIC_CreateStorageDirectory,
     GENERIC_RemoveStoragePath,
     GENERIC_RenameStoragePath,
+    GENERIC_CopyStorageFile,
     GENERIC_GetStorageSpaceRemaining
 };
 
 static SDL_Storage *GENERIC_User_Create(const char *org, const char *app, SDL_PropertiesID props)
 {
     SDL_Storage *result;
-
     char *prefpath = SDL_GetPrefPath(org, app);
     if (prefpath == NULL) {
         return NULL;
@@ -230,7 +247,7 @@ static SDL_Storage *GENERIC_User_Create(const char *org, const char *app, SDL_Pr
 
     result = SDL_OpenStorage(&GENERIC_user_iface, prefpath);
     if (result == NULL) {
-        SDL_free(prefpath);
+        SDL_free(prefpath);  // otherwise CloseStorage will free it.
     }
     return result;
 }
@@ -251,6 +268,7 @@ static const SDL_StorageInterface GENERIC_file_iface = {
     GENERIC_CreateStorageDirectory,
     GENERIC_RemoveStoragePath,
     GENERIC_RenameStoragePath,
+    GENERIC_CopyStorageFile,
     GENERIC_GetStorageSpaceRemaining
 };
 

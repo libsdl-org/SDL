@@ -23,6 +23,9 @@
 
 #if defined(SDL_FSOPS_WINDOWS)
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* System dependent filesystem routines                                */
+
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysfilesystem.h"
 
@@ -50,7 +53,7 @@ int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enumer
         // also prevent any wildcards inserted by the app from being respected.
         SDL_snprintf(pattern, patternlen, "%s\\*", path);
 
-        WCHAR *wpattern = WIN_UTF8ToString(pattern);
+        WCHAR *wpattern = WIN_UTF8ToStringW(pattern);
         SDL_free(pattern);
         if (!wpattern) {
             return -1;
@@ -72,7 +75,7 @@ int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enumer
                 }
             }
 
-            char *utf8fn = WIN_StringToUTF8(fn);
+            char *utf8fn = WIN_StringToUTF8W(fn);
             if (!utf8fn) {
                 retval = -1;
             } else {
@@ -89,7 +92,7 @@ int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enumer
 
 int SDL_SYS_RemovePath(const char *path)
 {
-    WCHAR *wpath = WIN_UTF8ToString(path);
+    WCHAR *wpath = WIN_UTF8ToStringW(path);
     if (!wpath) {
         return -1;
     }
@@ -111,12 +114,12 @@ int SDL_SYS_RemovePath(const char *path)
 
 int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
 {
-    WCHAR *woldpath = WIN_UTF8ToString(oldpath);
+    WCHAR *woldpath = WIN_UTF8ToStringW(oldpath);
     if (!woldpath) {
         return -1;
     }
 
-    WCHAR *wnewpath = WIN_UTF8ToString(newpath);
+    WCHAR *wnewpath = WIN_UTF8ToStringW(newpath);
     if (!wnewpath) {
         SDL_free(woldpath);
         return -1;
@@ -128,9 +131,28 @@ int SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
     return !rc ? WIN_SetError("Couldn't rename path") : 0;
 }
 
+int SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
+{
+    WCHAR *woldpath = WIN_UTF8ToStringW(oldpath);
+    if (!woldpath) {
+        return -1;
+    }
+
+    WCHAR *wnewpath = WIN_UTF8ToStringW(newpath);
+    if (!wnewpath) {
+        SDL_free(woldpath);
+        return -1;
+    }
+
+    const BOOL rc = CopyFileW(woldpath, wnewpath, TRUE);
+    SDL_free(wnewpath);
+    SDL_free(woldpath);
+    return !rc ? WIN_SetError("Couldn't copy path") : 0;
+}
+
 int SDL_SYS_CreateDirectory(const char *path)
 {
-    WCHAR *wpath = WIN_UTF8ToString(path);
+    WCHAR *wpath = WIN_UTF8ToStringW(path);
     if (!wpath) {
         return -1;
     }
@@ -142,7 +164,7 @@ int SDL_SYS_CreateDirectory(const char *path)
 
 int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
-    WCHAR *wpath = WIN_UTF8ToString(path);
+    WCHAR *wpath = WIN_UTF8ToStringW(path);
     if (!wpath) {
         return -1;
     }

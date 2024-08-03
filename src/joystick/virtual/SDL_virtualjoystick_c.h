@@ -50,7 +50,7 @@ typedef struct joystick_hwdata
     SDL_bool attached;
     char *name;
     SDL_JoystickType type;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     SDL_VirtualJoystickDesc desc;
     Uint32 changes;
     Sint16 *axes;

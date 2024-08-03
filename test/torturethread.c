@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
     }
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }

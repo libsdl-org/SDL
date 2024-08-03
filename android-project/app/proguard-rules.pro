@@ -5,7 +5,7 @@
 # directive in build.gradle.
 #
 # For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+#   https://developer.android.com/build/shrink-code
 
 # Add any project specific keep options here:
 
@@ -47,10 +47,11 @@
     void requestPermission(java.lang.String, int);
     int openURL(java.lang.String);
     int showToast(java.lang.String, int, int, int, int);
-    native java.lang.String nativeGetHint(java.lang.String);
+    java.lang.String nativeGetHint(java.lang.String);
     int openFileDescriptor(java.lang.String, java.lang.String);
     boolean showFileDialog(java.lang.String[], boolean, boolean, int);
-    native void onNativeFileDialog(int, java.lang.String[], int);
+    void onNativeFileDialog(int, java.lang.String[], int);
+    void onNativeInsetsChanged(int, int, int, int);
 }
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.HIDDeviceManager {
@@ -68,12 +69,12 @@
     void audioWriteFloatBuffer(float[]);
     void audioWriteShortBuffer(short[]);
     void audioWriteByteBuffer(byte[]);
-    int[] captureOpen(int, int, int, int, int);
-    int captureReadFloatBuffer(float[], boolean);
-    int captureReadShortBuffer(short[], boolean);
-    int captureReadByteBuffer(byte[], boolean);
+    int[] recordingOpen(int, int, int, int, int);
+    int recordingReadFloatBuffer(float[], boolean);
+    int recordingReadShortBuffer(short[], boolean);
+    int recordingReadByteBuffer(byte[], boolean);
     void audioClose();
-    void captureClose();
+    void recordingClose();
     void audioSetThreadPriority(boolean, int);
     int nativeSetupJNI();
     void removeAudioDevice(boolean, int);
@@ -85,4 +86,5 @@
     void pollHapticDevices();
     void hapticRun(int, float, int);
     void hapticStop(int);
+    void hapticRumble(int, float , float, int);
 }

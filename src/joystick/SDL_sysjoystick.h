@@ -76,13 +76,11 @@ typedef struct SDL_JoystickSensorInfo
 
 struct SDL_Joystick
 {
-    const void *magic _guarded;
-
     SDL_JoystickID instance_id _guarded; /* Device instance, monotonically increasing from 0 */
     char *name _guarded;                 /* Joystick name - system dependent */
     char *path _guarded;                 /* Joystick path - system dependent */
     char *serial _guarded;               /* Joystick serial */
-    SDL_JoystickGUID guid _guarded;      /* Joystick guid */
+    SDL_GUID guid _guarded;      /* Joystick guid */
     Uint16 firmware_version _guarded;    /* Firmware version, if available */
     Uint64 steam_handle _guarded;        /* Steam controller API handle */
 
@@ -120,7 +118,6 @@ struct SDL_Joystick
     Uint64 led_expiration _guarded;
 
     SDL_bool attached _guarded;
-    SDL_bool is_gamepad _guarded;
     SDL_JoystickConnectionState connection_state _guarded;
     SDL_PowerState battery_state _guarded;
     int battery_percent _guarded;
@@ -190,7 +187,7 @@ typedef struct SDL_JoystickDriver
     void (*SetDevicePlayerIndex)(int device_index, int player_index);
 
     /* Function to return the stable GUID for a plugged in device */
-    SDL_JoystickGUID (*GetDeviceGUID)(int device_index);
+    SDL_GUID (*GetDeviceGUID)(int device_index);
 
     /* Function to get the current instance id of the joystick located at device_index */
     SDL_JoystickID (*GetDeviceInstanceID)(int device_index);

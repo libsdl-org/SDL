@@ -110,6 +110,7 @@ struct SDL_WaylandInput
     struct zwp_input_timestamps_v1 *touch_timestamps;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
+    SDL_CursorData *current_cursor;
     Uint32 keyboard_id;
     Uint32 pointer_id;
     uint32_t pointer_enter_serial;
@@ -170,10 +171,6 @@ struct SDL_WaylandInput
 
     struct SDL_WaylandTabletInput *tablet;
 
-    /* are we forcing relative mouse mode? */
-    SDL_bool cursor_visible;
-    SDL_bool relative_mode_override;
-    SDL_bool warp_emulation_prohibited;
     SDL_bool keyboard_is_virtual;
 
     /* Current SDL modifier flags */

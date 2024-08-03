@@ -41,7 +41,7 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
      * exit-space button). */
     if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         @autoreleasepool {
-            SDL_cocoametalview *view = (__bridge SDL_cocoametalview *)userdata;
+            SDL3_cocoametalview *view = (__bridge SDL3_cocoametalview *)userdata;
             if (view.sdlWindowID == event->window.windowID) {
                 [view updateDrawableSize];
             }
@@ -50,7 +50,7 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
     return 0;
 }
 
-@implementation SDL_cocoametalview
+@implementation SDL3_cocoametalview
 
 /* Return a Metal-compatible layer. */
 + (Class)layerClass
@@ -133,15 +133,15 @@ static int SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 SDL_MetalView Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
         NSView *view = data.nswindow.contentView;
         BOOL highDPI = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) != 0;
         BOOL opaque = (window->flags & SDL_WINDOW_TRANSPARENT) == 0;
         Uint32 windowID = SDL_GetWindowID(window);
-        SDL_cocoametalview *newview;
+        SDL3_cocoametalview *newview;
         SDL_MetalView metalview;
 
-        newview = [[SDL_cocoametalview alloc] initWithFrame:view.frame
+        newview = [[SDL3_cocoametalview alloc] initWithFrame:view.frame
                                                     highDPI:highDPI
                                                    windowID:windowID
                                                      opaque:opaque];
@@ -164,7 +164,7 @@ SDL_MetalView Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
 void Cocoa_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view)
 {
     @autoreleasepool {
-        SDL_cocoametalview *metalview = CFBridgingRelease(view);
+        SDL3_cocoametalview *metalview = CFBridgingRelease(view);
         [metalview removeFromSuperview];
     }
 }
@@ -172,7 +172,7 @@ void Cocoa_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view)
 void *Cocoa_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view)
 {
     @autoreleasepool {
-        SDL_cocoametalview *cocoaview = (__bridge SDL_cocoametalview *)view;
+        SDL3_cocoametalview *cocoaview = (__bridge SDL3_cocoametalview *)view;
         return (__bridge void *)cocoaview.layer;
     }
 }

@@ -30,31 +30,27 @@
 
 int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_WindowData *driverdata;
+    SDL_WindowData *data;
 
-    driverdata = (SDL_WindowData *)SDL_calloc(1, sizeof(*driverdata));
-    if (!driverdata) {
+    data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
+    if (!data) {
         return -1;
     }
-    driverdata->window = window;
+    data->window = window;
 
     SDL_SetMouseFocus(window);
 
     /* All done! */
-    window->driverdata = driverdata;
+    window->internal = data;
     return 0;
 }
 
 void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *driverdata = window->driverdata;
-
-    if (!driverdata) {
-        return;
+    if (window->internal) {
+        SDL_free(window->internal);
+        window->internal = NULL;
     }
-
-    SDL_free(driverdata);
-    window->driverdata = NULL;
 }
 
 #endif /* SDL_VIDEO_DRIVER_RISCOS */

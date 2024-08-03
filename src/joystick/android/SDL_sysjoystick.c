@@ -205,7 +205,7 @@ int Android_OnPadDown(int device_id, int keycode)
         if (item && item->joystick) {
             SDL_SendJoystickButton(timestamp, item->joystick, button, SDL_PRESSED);
         } else {
-            SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, SDL_PRESSED, button_to_scancode(button));
+            SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), SDL_PRESSED);
         }
         SDL_UnlockJoysticks();
         return 0;
@@ -225,7 +225,7 @@ int Android_OnPadUp(int device_id, int keycode)
         if (item && item->joystick) {
             SDL_SendJoystickButton(timestamp, item->joystick, button, SDL_RELEASED);
         } else {
-            SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, SDL_RELEASED, button_to_scancode(button));
+            SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), SDL_RELEASED);
         }
         SDL_UnlockJoysticks();
         return 0;
@@ -301,10 +301,10 @@ int Android_OnHat(int device_id, int hat_id, int x, int y)
     return -1;
 }
 
-int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats)
+int Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, SDL_bool can_rumble)
 {
     SDL_joylist_item *item;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     int i;
     int result = -1;
 
@@ -343,8 +343,8 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
     /* Update the GUID with capability bits */
     {
         Uint16 *guid16 = (Uint16 *)guid.data;
-        guid16[6] = SDL_SwapLE16(button_mask);
-        guid16[7] = SDL_SwapLE16(axis_mask);
+        guid16[6] = SDL_Swap16LE(button_mask);
+        guid16[7] = SDL_Swap16LE(axis_mask);
     }
 
     item = (SDL_joylist_item *)SDL_malloc(sizeof(SDL_joylist_item));
@@ -372,6 +372,7 @@ int Android_AddJoystick(int device_id, const char *name, const char *desc, int v
     }
     item->naxes = naxes;
     item->nhats = nhats;
+    item->can_rumble = can_rumble;
     item->device_instance = SDL_GetNextObjectID();
     if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
@@ -550,7 +551,7 @@ static void ANDROID_JoystickSetDevicePlayerIndex(int device_index, int player_in
 {
 }
 
-static SDL_JoystickGUID ANDROID_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID ANDROID_JoystickGetDeviceGUID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->guid;
 }
@@ -578,12 +579,24 @@ static int ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
 
+    if (item->can_rumble) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+    }
+
     return 0;
 }
 
 static int ANDROID_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    return SDL_Unsupported();
+    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+    if (!item->can_rumble) {
+        return SDL_Unsupported();
+    }
+
+    float low_frequency_intensity = (float)low_frequency_rumble / SDL_MAX_UINT16;
+    float high_frequency_intensity = (float)high_frequency_rumble / SDL_MAX_UINT16;
+    Android_JNI_HapticRumble(item->device_id, low_frequency_intensity, high_frequency_intensity, 5000);
+    return 0;
 }
 
 static int ANDROID_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)

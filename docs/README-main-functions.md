@@ -141,12 +141,12 @@ int SDL_AppInit(void **appstate, int argc, char **argv);
 ```
 
 This will be called _once_ before anything else. argc/argv work like they
-always do. If this returns 0, the app runs. If it returns < 0, the app calls
-SDL_AppQuit and terminates with an exit code that reports an error to the
-platform. If it returns > 0, the app calls SDL_AppQuit and terminates with
-an exit code that reports success to the platform. This function should not
-go into an infinite mainloop; it should do any one-time startup it requires
-and then return.
+always do. If this returns SDL_APP_CONTINUE, the app runs. If it returns
+SDL_APP_FAILURE, the app calls SDL_AppQuit and terminates with an exit
+code that reports an error to the platform. If it returns SDL_APP_SUCCESS,
+the app calls SDL_AppQuit and terminates with an exit code that reports
+success to the platform. This function should not go into an infinite
+mainloop; it should do any one-time startup it requires and then return.
 
 If you want to, you can assign a pointer to `*appstate`, and this pointer
 will be made available to you in later functions calls in their `appstate`
@@ -165,15 +165,15 @@ This is called over and over, possibly at the refresh rate of the display or
 some other metric that the platform dictates. This is where the heart of your
 app runs. It should return as quickly as reasonably possible, but it's not a
 "run one memcpy and that's all the time you have" sort of thing. The app
-should do any game updates, and render a frame of video. If it returns < 0,
-SDL will call SDL_AppQuit and terminate the process with an exit code that
-reports an error to the platform. If it returns > 0, the app calls
-SDL_AppQuit and terminates with an exit code that reports success to the
-platform. If it returns 0, then SDL_AppIterate will be called again at some
-regular frequency. The platform may choose to run this more or less (perhaps
-less in the background, etc), or it might just call this function in a loop
-as fast as possible. You do not check the event queue in this function
-(SDL_AppEvent exists for that).
+should do any game updates, and render a frame of video. If it returns
+SDL_APP_FAILURE, SDL will call SDL_AppQuit and terminate the process with an
+exit code that reports an error to the platform. If it returns
+SDL_APP_SUCCESS, the app calls SDL_AppQuit and terminates with an exit code
+that reports success to the platform. If it returns SDL_APP_CONTINUE, then
+SDL_AppIterate will be called again at some regular frequency. The platform
+may choose to run this more or less (perhaps less in the background, etc),
+or it might just call this function in a loop as fast as possible. You do
+not check the  event queue in this function (SDL_AppEvent exists for that).
 
 Next:
 

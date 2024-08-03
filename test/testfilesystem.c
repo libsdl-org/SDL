@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 {
     SDLTest_CommonState *state;
     char *pref_path;
-    char *base_path;
+    const char *base_path;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -97,8 +97,8 @@ int main(int argc, char *argv[])
                      SDL_GetError());
     } else {
         SDL_Log("pref path: '%s'\n", pref_path);
-        SDL_free(pref_path);
     }
+    SDL_free(pref_path);
 
     pref_path = SDL_GetPrefPath(NULL, "test_filesystem");
     if (!pref_path) {
@@ -106,11 +106,13 @@ int main(int argc, char *argv[])
                      SDL_GetError());
     } else {
         SDL_Log("pref path: '%s'\n", pref_path);
-        SDL_free(pref_path);
     }
+    SDL_free(pref_path);
 
     if (base_path) {
         char **globlist;
+        SDL_IOStream *stream;
+        const char *text = "foo\n";
 
         if (SDL_EnumerateDirectory(base_path, enum_callback, NULL) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Base path enumeration failed!");
@@ -143,9 +145,43 @@ int main(int argc, char *argv[])
         } else if (SDL_RemovePath("testfilesystem-test") == -1) {  /* THIS SHOULD NOT FAIL! Removing a directory that is already gone should succeed here. */
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('testfilesystem-test') failed: %s", SDL_GetError());
         }
-    }
 
-    SDL_free(base_path);
+        stream = SDL_IOFromFile("testfilesystem-A", "wb");
+        if (stream) {
+            SDL_WriteIO(stream, text, SDL_strlen(text));
+            SDL_CloseIO(stream);
+
+            if (SDL_RenamePath("testfilesystem-A", "testfilesystem-B") < 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RenamePath('testfilesystem-A', 'testfilesystem-B') failed: %s", SDL_GetError());
+            } else if (SDL_CopyFile("testfilesystem-B", "testfilesystem-A") < 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CopyFile('testfilesystem-B', 'testfilesystem-A') failed: %s", SDL_GetError());
+            } else {
+                size_t sizeA, sizeB;
+                char *textA, *textB;
+
+                textA = (char *)SDL_LoadFile("testfilesystem-A", &sizeA);
+                if (!textA || sizeA != SDL_strlen(text) || SDL_strcmp(textA, text) != 0) {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Contents of testfilesystem-A didn't match, expected %s, got %s\n", text, textA);
+                }
+                SDL_free(textA);
+
+                textB = (char *)SDL_LoadFile("testfilesystem-B", &sizeB);
+                if (!textB || sizeB != SDL_strlen(text) || SDL_strcmp(textB, text) != 0) {
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Contents of testfilesystem-B didn't match, expected %s, got %s\n", text, textB);
+                }
+                SDL_free(textB);
+            }
+
+            if (SDL_RemovePath("testfilesystem-A") < 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('testfilesystem-A') failed: %s", SDL_GetError());
+            }
+            if (SDL_RemovePath("testfilesystem-B") < 0) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('testfilesystem-B') failed: %s", SDL_GetError());
+            }
+        } else {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_IOFromFile('testfilesystem-A', 'w') failed: %s", SDL_GetError());
+        }
+    }
 
     SDL_Quit();
     SDLTest_CommonDestroyState(state);

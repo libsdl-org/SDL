@@ -93,7 +93,7 @@ void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data)
 int Cocoa_SetClipboardData(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
         NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
         NSPasteboardItem *newItem = [NSPasteboardItem new];
         NSMutableArray *utiTypes = [NSMutableArray new];

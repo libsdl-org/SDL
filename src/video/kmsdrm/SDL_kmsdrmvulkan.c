@@ -158,11 +158,11 @@ char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 /* KMSDRM_Vulkan_GetInstanceExtensions(), like we do with              */
 /* VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK. */
 /***********************************************************************/
-SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                     SDL_Window *window,
-                                     VkInstance instance,
-                                     const struct VkAllocationCallbacks *allocator,
-                                     VkSurfaceKHR *surface)
+int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+                                SDL_Window *window,
+                                VkInstance instance,
+                                const struct VkAllocationCallbacks *allocator,
+                                VkSurfaceKHR *surface)
 {
     VkPhysicalDevice gpu = NULL;
     uint32_t gpu_count;
@@ -190,7 +190,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     VkDisplayPlaneAlphaFlagBitsKHR alpha_mode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
 
     VkResult result;
-    SDL_bool ret = SDL_FALSE;
+    SDL_bool ret = -1;
     SDL_bool valid_gpu = SDL_FALSE;
     SDL_bool mode_found = SDL_FALSE;
     SDL_bool plane_supports_display = SDL_FALSE;
@@ -366,7 +366,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         new_mode_parameters.visibleRegion.height = window->h;
         /* SDL (and DRM, if we look at drmModeModeInfo vrefresh) uses plain integer Hz for
            display mode refresh rate, but Vulkan expects higher precision. */
-        new_mode_parameters.refreshRate = window->current_fullscreen_mode.refresh_rate * 1000;
+        new_mode_parameters.refreshRate = (uint32_t)(window->current_fullscreen_mode.refresh_rate * 1000);
 
         SDL_zero(display_mode_create_info);
         display_mode_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR;
@@ -483,7 +483,7 @@ SDL_bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         goto clean;
     }
 
-    ret = SDL_TRUE;
+    ret = 0;  // success!
 
 clean:
     if (physical_devices) {

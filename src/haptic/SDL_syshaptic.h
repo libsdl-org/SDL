@@ -40,8 +40,6 @@ struct haptic_effect
  */
 struct SDL_Haptic
 {
-    const void *magic;
-
     SDL_HapticID instance_id;       /* Device instance, monotonically increasing from 0 */
     char *name;                     /* Device name - system dependent */
 
@@ -94,11 +92,8 @@ int SDL_SYS_HapticMouse(void);
 
 /*
  * Checks to see if the joystick has haptic capabilities.
- *
- * Returns >0 if haptic capabilities are detected, 0 if haptic
- * capabilities aren't detected and -1 on error.
  */
-extern int SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick);
+extern SDL_bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick);
 
 /*
  * Opens the haptic device for usage using the same device as
@@ -111,9 +106,9 @@ extern int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic,
 /*
  * Checks to see if haptic device and joystick device are the same.
  *
- * Returns 1 if they are the same, 0 if they aren't.
+ * Returns SDL_TRUE if they are the same, SDL_FALSE if they aren't.
  */
-extern int SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic,
+extern SDL_bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic,
                                       SDL_Joystick *joystick);
 
 /*

@@ -30,6 +30,46 @@
 
 #include "../../core/android/SDL_android.h"
 
+#define TYPE_CLASS_TEXT                         0x00000001
+#define TYPE_CLASS_NUMBER                       0x00000002
+#define TYPE_CLASS_PHONE                        0x00000003
+#define TYPE_CLASS_DATETIME                     0x00000004
+
+#define TYPE_DATETIME_VARIATION_NORMAL          0x00000000
+#define TYPE_DATETIME_VARIATION_DATE            0x00000010
+#define TYPE_DATETIME_VARIATION_TIME            0x00000020
+
+#define TYPE_NUMBER_VARIATION_NORMAL            0x00000000
+#define TYPE_NUMBER_VARIATION_PASSWORD          0x00000010
+#define TYPE_NUMBER_FLAG_SIGNED                 0x00001000
+#define TYPE_NUMBER_FLAG_DECIMAL                0x00002000
+
+#define TYPE_TEXT_FLAG_CAP_CHARACTERS           0x00001000
+#define TYPE_TEXT_FLAG_CAP_WORDS                0x00002000
+#define TYPE_TEXT_FLAG_CAP_SENTENCES            0x00004000
+#define TYPE_TEXT_FLAG_AUTO_CORRECT             0x00008000
+#define TYPE_TEXT_FLAG_AUTO_COMPLETE            0x00010000
+#define TYPE_TEXT_FLAG_MULTI_LINE               0x00020000
+#define TYPE_TEXT_FLAG_IME_MULTI_LINE           0x00040000
+#define TYPE_TEXT_FLAG_NO_SUGGESTIONS           0x00080000
+
+#define TYPE_TEXT_VARIATION_NORMAL              0x00000000
+#define TYPE_TEXT_VARIATION_URI                 0x00000010
+#define TYPE_TEXT_VARIATION_EMAIL_ADDRESS       0x00000020
+#define TYPE_TEXT_VARIATION_EMAIL_SUBJECT       0x00000030
+#define TYPE_TEXT_VARIATION_SHORT_MESSAGE       0x00000040
+#define TYPE_TEXT_VARIATION_LONG_MESSAGE        0x00000050
+#define TYPE_TEXT_VARIATION_PERSON_NAME         0x00000060
+#define TYPE_TEXT_VARIATION_POSTAL_ADDRESS      0x00000070
+#define TYPE_TEXT_VARIATION_PASSWORD            0x00000080
+#define TYPE_TEXT_VARIATION_VISIBLE_PASSWORD    0x00000090
+#define TYPE_TEXT_VARIATION_WEB_EDIT_TEXT       0x000000a0
+#define TYPE_TEXT_VARIATION_FILTER              0x000000b0
+#define TYPE_TEXT_VARIATION_PHONETIC            0x000000c0
+#define TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS   0x000000d0
+#define TYPE_TEXT_VARIATION_WEB_PASSWORD        0x000000e0
+
+
 static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_UNKNOWN */
     SDL_SCANCODE_SOFTLEFT,         /* AKEYCODE_SOFT_LEFT */
@@ -95,8 +135,8 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_TAB,              /* AKEYCODE_TAB */
     SDL_SCANCODE_SPACE,            /* AKEYCODE_SPACE */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_SYM */
-    SDL_SCANCODE_WWW,              /* AKEYCODE_EXPLORER */
-    SDL_SCANCODE_MAIL,             /* AKEYCODE_ENVELOPE */
+    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_EXPLORER */
+    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_ENVELOPE */
     SDL_SCANCODE_RETURN,           /* AKEYCODE_ENTER */
     SDL_SCANCODE_BACKSPACE,        /* AKEYCODE_DEL */
     SDL_SCANCODE_GRAVE,            /* AKEYCODE_GRAVE */
@@ -116,12 +156,12 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_MENU,             /* AKEYCODE_MENU */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_NOTIFICATION */
     SDL_SCANCODE_AC_SEARCH,        /* AKEYCODE_SEARCH */
-    SDL_SCANCODE_AUDIOPLAY,        /* AKEYCODE_MEDIA_PLAY_PAUSE */
-    SDL_SCANCODE_AUDIOSTOP,        /* AKEYCODE_MEDIA_STOP */
-    SDL_SCANCODE_AUDIONEXT,        /* AKEYCODE_MEDIA_NEXT */
-    SDL_SCANCODE_AUDIOPREV,        /* AKEYCODE_MEDIA_PREVIOUS */
-    SDL_SCANCODE_AUDIOREWIND,      /* AKEYCODE_MEDIA_REWIND */
-    SDL_SCANCODE_AUDIOFASTFORWARD, /* AKEYCODE_MEDIA_FAST_FORWARD */
+    SDL_SCANCODE_MEDIA_PLAY_PAUSE,  /* AKEYCODE_MEDIA_PLAY_PAUSE */
+    SDL_SCANCODE_MEDIA_STOP,       /* AKEYCODE_MEDIA_STOP */
+    SDL_SCANCODE_MEDIA_NEXT_TRACK, /* AKEYCODE_MEDIA_NEXT */
+    SDL_SCANCODE_MEDIA_PREVIOUS_TRACK, /* AKEYCODE_MEDIA_PREVIOUS */
+    SDL_SCANCODE_MEDIA_REWIND,     /* AKEYCODE_MEDIA_REWIND */
+    SDL_SCANCODE_MEDIA_FAST_FORWARD, /* AKEYCODE_MEDIA_FAST_FORWARD */
     SDL_SCANCODE_MUTE,             /* AKEYCODE_MUTE */
     SDL_SCANCODE_PAGEUP,           /* AKEYCODE_PAGE_UP */
     SDL_SCANCODE_PAGEDOWN,         /* AKEYCODE_PAGE_DOWN */
@@ -157,11 +197,11 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_END,              /* AKEYCODE_MOVE_END */
     SDL_SCANCODE_INSERT,           /* AKEYCODE_INSERT */
     SDL_SCANCODE_AC_FORWARD,       /* AKEYCODE_FORWARD */
-    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_MEDIA_PLAY */
-    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_MEDIA_PAUSE */
+    SDL_SCANCODE_MEDIA_PLAY,       /* AKEYCODE_MEDIA_PLAY */
+    SDL_SCANCODE_MEDIA_PAUSE,      /* AKEYCODE_MEDIA_PAUSE */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_MEDIA_CLOSE */
-    SDL_SCANCODE_EJECT,            /* AKEYCODE_MEDIA_EJECT */
-    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_MEDIA_RECORD */
+    SDL_SCANCODE_MEDIA_EJECT,      /* AKEYCODE_MEDIA_EJECT */
+    SDL_SCANCODE_MEDIA_RECORD,     /* AKEYCODE_MEDIA_RECORD */
     SDL_SCANCODE_F1,               /* AKEYCODE_F1 */
     SDL_SCANCODE_F2,               /* AKEYCODE_F2 */
     SDL_SCANCODE_F3,               /* AKEYCODE_F3 */
@@ -174,7 +214,7 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_F10,              /* AKEYCODE_F10 */
     SDL_SCANCODE_F11,              /* AKEYCODE_F11 */
     SDL_SCANCODE_F12,              /* AKEYCODE_F12 */
-    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_NUM_LOCK */
+    SDL_SCANCODE_NUMLOCKCLEAR,     /* AKEYCODE_NUM_LOCK */
     SDL_SCANCODE_KP_0,             /* AKEYCODE_NUMPAD_0 */
     SDL_SCANCODE_KP_1,             /* AKEYCODE_NUMPAD_1 */
     SDL_SCANCODE_KP_2,             /* AKEYCODE_NUMPAD_2 */
@@ -197,8 +237,8 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_KP_RIGHTPAREN,    /* AKEYCODE_NUMPAD_RIGHT_PAREN */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_VOLUME_MUTE */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_INFO */
-    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_CHANNEL_UP */
-    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_CHANNEL_DOWN */
+    SDL_SCANCODE_CHANNEL_INCREMENT, /* AKEYCODE_CHANNEL_UP */
+    SDL_SCANCODE_CHANNEL_INCREMENT, /* AKEYCODE_CHANNEL_DOWN */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_ZOOM_IN */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_ZOOM_OUT */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_TV */
@@ -241,7 +281,7 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_CONTACTS */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_CALENDAR */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_MUSIC */
-    SDL_SCANCODE_CALCULATOR,       /* AKEYCODE_CALCULATOR */
+    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_CALCULATOR */
     SDL_SCANCODE_LANG5,            /* AKEYCODE_ZENKAKU_HANKAKU */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_EISU */
     SDL_SCANCODE_INTERNATIONAL5,   /* AKEYCODE_MUHENKAN */
@@ -251,8 +291,8 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_RO */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_KANA */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_ASSIST */
-    SDL_SCANCODE_BRIGHTNESSDOWN,   /* AKEYCODE_BRIGHTNESS_DOWN */
-    SDL_SCANCODE_BRIGHTNESSUP,     /* AKEYCODE_BRIGHTNESS_UP */
+    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_BRIGHTNESS_DOWN */
+    SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_BRIGHTNESS_UP */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_MEDIA_AUDIO_TRACK */
     SDL_SCANCODE_SLEEP,            /* AKEYCODE_SLEEP */
     SDL_SCANCODE_UNKNOWN,          /* AKEYCODE_WAKEUP */
@@ -330,12 +370,12 @@ static SDL_Scancode TranslateKeycode(int keycode)
 
 int Android_OnKeyDown(int keycode)
 {
-    return SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, SDL_PRESSED, TranslateKeycode(keycode));
+    return SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, keycode, TranslateKeycode(keycode), SDL_PRESSED);
 }
 
 int Android_OnKeyUp(int keycode)
 {
-    return SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, SDL_RELEASED, TranslateKeycode(keycode));
+    return SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, keycode, TranslateKeycode(keycode), SDL_RELEASED);
 }
 
 SDL_bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
@@ -343,10 +383,67 @@ SDL_bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
-void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
-    SDL_VideoData *videodata = _this->driverdata;
-    Android_JNI_ShowScreenKeyboard(&videodata->textRect);
+    int input_type = 0;
+    if (SDL_HasProperty(props, SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER)) {
+        input_type = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER, 0);
+    } else {
+        switch (SDL_GetTextInputType(props)) {
+        default:
+        case SDL_TEXTINPUT_TYPE_TEXT:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_NORMAL);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_NAME:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PERSON_NAME);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_EMAIL:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_NORMAL);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD);
+            break;
+        case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
+            input_type = (TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            break;
+        case SDL_TEXTINPUT_TYPE_NUMBER:
+            input_type = (TYPE_CLASS_NUMBER | TYPE_NUMBER_VARIATION_NORMAL);
+            break;
+        case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
+            input_type = (TYPE_CLASS_NUMBER | TYPE_NUMBER_VARIATION_PASSWORD);
+            break;
+        case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
+            input_type = (TYPE_CLASS_NUMBER | TYPE_NUMBER_VARIATION_NORMAL);
+            break;
+        }
+
+        switch (SDL_GetTextInputCapitalization(props)) {
+        default:
+        case SDL_CAPITALIZE_NONE:
+            break;
+        case SDL_CAPITALIZE_LETTERS:
+            input_type |= TYPE_TEXT_FLAG_CAP_CHARACTERS;
+            break;
+        case SDL_CAPITALIZE_WORDS:
+            input_type |= TYPE_TEXT_FLAG_CAP_WORDS;
+            break;
+        case SDL_CAPITALIZE_SENTENCES:
+            input_type |= TYPE_TEXT_FLAG_CAP_SENTENCES;
+            break;
+        }
+
+        if (SDL_GetTextInputAutocorrect(props)) {
+            input_type |= (TYPE_TEXT_FLAG_AUTO_CORRECT | TYPE_TEXT_FLAG_AUTO_COMPLETE);
+        }
+
+        if (SDL_GetTextInputMultiline(props)) {
+            input_type |= TYPE_TEXT_FLAG_MULTI_LINE;
+        }
+    }
+    Android_JNI_ShowScreenKeyboard(input_type, &window->text_input_rect);
     SDL_screen_keyboard_shown = SDL_TRUE;
 }
 
@@ -359,20 +456,13 @@ void Android_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 void Android_RestoreScreenKeyboardOnResume(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (SDL_screen_keyboard_shown) {
-        Android_ShowScreenKeyboard(_this, window);
+        Android_ShowScreenKeyboard(_this, window, window->text_input_props);
     }
 }
 
 SDL_bool Android_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return Android_JNI_IsScreenKeyboardShown();
-}
-
-int Android_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
-{
-    SDL_VideoData *videodata = _this->driverdata;
-    videodata->textRect = *rect;
-    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */

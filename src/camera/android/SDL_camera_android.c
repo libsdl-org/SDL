@@ -252,18 +252,16 @@ static void DestroyCameraManager(void)
     }
 }
 
-static Uint32 format_android_to_sdl(Uint32 fmt)
+static void format_android_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
-        #define CASE(x, y)  case x: return y
-        CASE(AIMAGE_FORMAT_YUV_420_888, SDL_PIXELFORMAT_NV12);
-        CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565);
-        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888);
-        CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888);
-        CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888);
-        //CASE(AIMAGE_FORMAT_RGBA_FP16,   SDL_PIXELFORMAT_UNKNOWN); // 64bits
-        //CASE(AIMAGE_FORMAT_RAW_PRIVATE, SDL_PIXELFORMAT_UNKNOWN);
-        //CASE(AIMAGE_FORMAT_JPEG,        SDL_PIXELFORMAT_UNKNOWN);
+        #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
+        CASE(AIMAGE_FORMAT_YUV_420_888, SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_LIMITED);
+        CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGBA_FP16,   SDL_PIXELFORMAT_RGBA64_FLOAT, SDL_COLORSPACE_SRGB);
         #undef CASE
         default: break;
     }
@@ -272,10 +270,11 @@ static Uint32 format_android_to_sdl(Uint32 fmt)
     //SDL_Log("Unknown format AIMAGE_FORMAT '%d'", fmt);
     #endif
 
-    return SDL_PIXELFORMAT_UNKNOWN;
+    *format = SDL_PIXELFORMAT_UNKNOWN;
+    *colorspace = SDL_COLORSPACE_UNKNOWN;
 }
 
-static Uint32 format_sdl_to_android(Uint32 fmt)
+static Uint32 format_sdl_to_android(SDL_PixelFormat fmt)
 {
     switch (fmt) {
         #define CASE(x, y)  case y: return x
@@ -290,12 +289,12 @@ static Uint32 format_sdl_to_android(Uint32 fmt)
     }
 }
 
-static int ANDROIDCAMERA_WaitDevice(SDL_CameraDevice *device)
+static int ANDROIDCAMERA_WaitDevice(SDL_Camera *device)
 {
     return 0;  // this isn't used atm, since we run our own thread via onImageAvailable callbacks.
 }
 
-static int ANDROIDCAMERA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *frame, Uint64 *timestampNS)
+static int ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
     int retval = 1;
     media_status_t res;
@@ -359,7 +358,7 @@ static int ANDROIDCAMERA_AcquireFrame(SDL_CameraDevice *device, SDL_Surface *fra
     return retval;
 }
 
-static void ANDROIDCAMERA_ReleaseFrame(SDL_CameraDevice *device, SDL_Surface *frame)
+static void ANDROIDCAMERA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 {
     // !!! FIXME: this currently copies the data to the surface, but in theory we could just keep the AImage until ReleaseFrame...
     SDL_aligned_free(frame->pixels);
@@ -370,7 +369,7 @@ static void onImageAvailable(void *context, AImageReader *reader)
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onImageAvailable");
     #endif
-    SDL_CameraDevice *device = (SDL_CameraDevice *) context;
+    SDL_Camera *device = (SDL_Camera *) context;
     SDL_CameraThreadIterate(device);
 }
 
@@ -379,7 +378,7 @@ static void onDisconnected(void *context, ACameraDevice *device)
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onDisconnected");
     #endif
-    SDL_CameraDeviceDisconnected((SDL_CameraDevice *) context);
+    SDL_CameraDisconnected((SDL_Camera *) context);
 }
 
 static void onError(void *context, ACameraDevice *device, int error)
@@ -387,12 +386,12 @@ static void onError(void *context, ACameraDevice *device, int error)
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onError");
     #endif
-    SDL_CameraDeviceDisconnected((SDL_CameraDevice *) context);
+    SDL_CameraDisconnected((SDL_Camera *) context);
 }
 
 static void onClosed(void* context, ACameraCaptureSession *session)
 {
-    // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
+    // SDL_Camera *_this = (SDL_Camera *) context;
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onClosed");
     #endif
@@ -400,7 +399,7 @@ static void onClosed(void* context, ACameraCaptureSession *session)
 
 static void onReady(void* context, ACameraCaptureSession *session)
 {
-    // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
+    // SDL_Camera *_this = (SDL_Camera *) context;
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onReady");
     #endif
@@ -408,13 +407,13 @@ static void onReady(void* context, ACameraCaptureSession *session)
 
 static void onActive(void* context, ACameraCaptureSession *session)
 {
-    // SDL_CameraDevice *_this = (SDL_CameraDevice *) context;
+    // SDL_Camera *_this = (SDL_Camera *) context;
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onActive");
     #endif
 }
 
-static void ANDROIDCAMERA_CloseDevice(SDL_CameraDevice *device)
+static void ANDROIDCAMERA_CloseDevice(SDL_Camera *device)
 {
     if (device && device->hidden) {
         struct SDL_PrivateCameraData *hidden = device->hidden;
@@ -459,7 +458,7 @@ static void ANDROIDCAMERA_CloseDevice(SDL_CameraDevice *device)
 }
 
 // this is where the "opening" of the camera happens, after permission is granted.
-static int PrepareCamera(SDL_CameraDevice *device)
+static int PrepareCamera(SDL_Camera *device)
 {
     SDL_assert(device->hidden != NULL);
 
@@ -484,7 +483,7 @@ static int PrepareCamera(SDL_CameraDevice *device)
     imglistener.context = device;
     imglistener.onImageAvailable = onImageAvailable;
 
-    // just in case SDL_OpenCameraDevice is overwriting device->spec as CameraPermissionCallback runs, we work from a different copy.
+    // just in case SDL_OpenCamera is overwriting device->spec as CameraPermissionCallback runs, we work from a different copy.
     const SDL_CameraSpec *spec = &device->hidden->requested_spec;
 
     if ((res = pACameraManager_openCamera(cameraMgr, (const char *) device->handle, &dev_callbacks, &device->hidden->device)) != ACAMERA_OK) {
@@ -518,24 +517,24 @@ static int PrepareCamera(SDL_CameraDevice *device)
 
 static void SDLCALL CameraPermissionCallback(void *userdata, const char *permission, SDL_bool granted)
 {
-    SDL_CameraDevice *device = (SDL_CameraDevice *) userdata;
+    SDL_Camera *device = (SDL_Camera *) userdata;
     if (device->hidden != NULL) {   // if device was already closed, don't send an event.
         if (!granted) {
-            SDL_CameraDevicePermissionOutcome(device, SDL_FALSE);  // sorry, permission denied.
+            SDL_CameraPermissionOutcome(device, SDL_FALSE);  // sorry, permission denied.
         } else if (PrepareCamera(device) < 0) {  // permission given? Actually open the camera now.
             // uhoh, setup failed; since the app thinks we already "opened" the device, mark it as disconnected and don't report the permission.
-            SDL_CameraDeviceDisconnected(device);
+            SDL_CameraDisconnected(device);
         } else {
             // okay! We have permission to use the camera _and_ opening the hardware worked out, report that the camera is usable!
-            SDL_CameraDevicePermissionOutcome(device, SDL_TRUE);  // go go go!
+            SDL_CameraPermissionOutcome(device, SDL_TRUE);  // go go go!
         }
     }
 
-    UnrefPhysicalCameraDevice(device);   // we ref'd this in OpenDevice, release the extra reference.
+    UnrefPhysicalCamera(device);   // we ref'd this in OpenDevice, release the extra reference.
 }
 
 
-static int ANDROIDCAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSpec *spec)
+static int ANDROIDCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
 #if 0  // !!! FIXME: for now, we'll just let this fail if it is going to fail, without checking for this
     /* Cannot open a second camera, while the first one is opened.
@@ -556,19 +555,19 @@ static int ANDROIDCAMERA_OpenDevice(SDL_CameraDevice *device, const SDL_CameraSp
         return -1;
     }
 
-    RefPhysicalCameraDevice(device);  // ref'd until permission callback fires.
+    RefPhysicalCamera(device);  // ref'd until permission callback fires.
 
-    // just in case SDL_OpenCameraDevice is overwriting device->spec as CameraPermissionCallback runs, we work from a different copy.
+    // just in case SDL_OpenCamera is overwriting device->spec as CameraPermissionCallback runs, we work from a different copy.
     SDL_copyp(&device->hidden->requested_spec, spec);
-    if (SDL_AndroidRequestPermission("android.permission.CAMERA", CameraPermissionCallback, device) < 0) {
-        UnrefPhysicalCameraDevice(device);
+    if (SDL_RequestAndroidPermission("android.permission.CAMERA", CameraPermissionCallback, device) < 0) {
+        UnrefPhysicalCamera(device);
         return -1;
     }
 
     return 0;  // we don't open the camera until permission is granted, so always succeed for now.
 }
 
-static void ANDROIDCAMERA_FreeDeviceHandle(SDL_CameraDevice *device)
+static void ANDROIDCAMERA_FreeDeviceHandle(SDL_Camera *device)
 {
     if (device) {
         SDL_free(device->handle);
@@ -633,14 +632,18 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
         const int w = (int) i32ptr[1];
         const int h = (int) i32ptr[2];
         const int32_t type = i32ptr[3];
-        Uint32 sdlfmt;
+        SDL_PixelFormat sdlfmt = SDL_PIXELFORMAT_UNKNOWN;
+        SDL_Colorspace colorspace = SDL_COLORSPACE_UNKNOWN;
 
         if (type == ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS_INPUT) {
             continue;
         } else if ((w <= 0) || (h <= 0)) {
             continue;
-        } else if ((sdlfmt = format_android_to_sdl(fmt)) == SDL_PIXELFORMAT_UNKNOWN) {
-            continue;
+        } else {
+            format_android_to_sdl(fmt, &sdlfmt, &colorspace);
+            if (sdlfmt == SDL_PIXELFORMAT_UNKNOWN) {
+                continue;
+            }
         }
 
 #if 0 // !!! FIXME: these all come out with 0 durations on my test phone.  :(
@@ -650,20 +653,20 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
             const int fpsw = (int) i64ptr[1];
             const int fpsh = (int) i64ptr[2];
             const long long duration = (long long) i64ptr[3];
-                SDL_Log("CAMERA: possible fps %s %dx%d duration=%lld", SDL_GetPixelFormatName(format_android_to_sdl(fpsfmt)), fpsw, fpsh, duration);
+            SDL_Log("CAMERA: possible fps %s %dx%d duration=%lld", SDL_GetPixelFormatName(sdlfmt), fpsw, fpsh, duration);
             if ((duration > 0) && (fpsfmt == fmt) && (fpsw == w) && (fpsh == h)) {
-                SDL_AddCameraFormat(add_data, sdlfmt, w, h, duration, 1000000000);
+                SDL_AddCameraFormat(add_data, sdlfmt, colorspace, w, h, 1000000000, duration);
             }
         }
 #else
-        SDL_AddCameraFormat(add_data, sdlfmt, w, h, 1, 30);
+        SDL_AddCameraFormat(add_data, sdlfmt, colorspace, w, h, 30, 1);
 #endif
     }
 
     pACameraMetadata_free(metadata);
 }
 
-static SDL_bool FindAndroidCameraDeviceByID(SDL_CameraDevice *device, void *userdata)
+static SDL_bool FindAndroidCameraByID(SDL_Camera *device, void *userdata)
 {
     const char *devid = (const char *) userdata;
     return (SDL_strcmp(devid, (const char *) device->handle) == 0);
@@ -675,7 +678,7 @@ static void MaybeAddDevice(const char *devid)
     SDL_Log("CAMERA: MaybeAddDevice('%s')", devid);
     #endif
 
-    if (SDL_FindPhysicalCameraDeviceByCallback(FindAndroidCameraDeviceByID, (void *) devid)) {
+    if (SDL_FindPhysicalCameraByCallback(FindAndroidCameraByID, (void *) devid)) {
         return;  // already have this one.
     }
 
@@ -686,7 +689,7 @@ static void MaybeAddDevice(const char *devid)
     if (add_data.num_specs > 0) {
         char *namecpy = SDL_strdup(devid);
         if (namecpy) {
-            SDL_CameraDevice *device = SDL_AddCameraDevice(fullname, position, add_data.num_specs, add_data.specs, namecpy);
+            SDL_Camera *device = SDL_AddCamera(fullname, position, add_data.num_specs, add_data.specs, namecpy);
             if (!device) {
                 SDL_free(namecpy);
             }
@@ -722,9 +725,9 @@ static void onCameraUnavailable(void *context, const char *cameraId)
 
     // THIS CALLBACK FIRES WHEN YOU OPEN THE DEVICE YOURSELF.  :(
     // Make sure we don't have the device opened, in which case onDisconnected will fire instead if actually lost.
-    SDL_CameraDevice *device = SDL_FindPhysicalCameraDeviceByCallback(FindAndroidCameraDeviceByID, (void *) cameraId);
+    SDL_Camera *device = SDL_FindPhysicalCameraByCallback(FindAndroidCameraByID, (void *) cameraId);
     if (device && !device->hidden) {
-        SDL_CameraDeviceDisconnected(device);
+        SDL_CameraDisconnected(device);
     }
 }
 

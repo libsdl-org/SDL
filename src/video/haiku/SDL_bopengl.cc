@@ -36,7 +36,7 @@ extern "C" {
 
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
-    return (SDL_BWin *)(window->driverdata);
+    return (SDL_BWin *)(window->internal);
 }
 
 static SDL_INLINE SDL_BLooper *_GetBeLooper() {

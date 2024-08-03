@@ -206,7 +206,7 @@ static SDL_bool GetHIDScaledCalibratedState(recDevice *pDevice, recElement *pEle
         if (readScale == 0) {
             returnValue = SDL_TRUE; /* no scaling at all */
         } else {
-            *pValue = ((*pValue - pElement->minReport) * deviceScale / readScale) + min;
+            *pValue = (Sint32)(((*pValue - pElement->minReport) * deviceScale / readScale) + min);
             returnValue = SDL_TRUE;
         }
     }
@@ -743,10 +743,10 @@ static void DARWIN_JoystickSetDevicePlayerIndex(int device_index, int player_ind
 {
 }
 
-static SDL_JoystickGUID DARWIN_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID DARWIN_JoystickGetDeviceGUID(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     if (device) {
         guid = device->guid;
     } else {

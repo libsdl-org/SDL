@@ -452,7 +452,7 @@ static SDL_WSCONS_input_data *SDL_WSCONS_Init_Keyboard(const char *dev)
     return input;
 }
 
-void SDL_WSCONS_Init()
+void SDL_WSCONS_Init(void)
 {
     inputs[0] = SDL_WSCONS_Init_Keyboard("/dev/wskbd0");
     inputs[1] = SDL_WSCONS_Init_Keyboard("/dev/wskbd1");
@@ -463,7 +463,7 @@ void SDL_WSCONS_Init()
     return;
 }
 
-void SDL_WSCONS_Quit()
+void SDL_WSCONS_Quit(void)
 {
     int i = 0;
     SDL_WSCONS_input_data *input = NULL;
@@ -560,22 +560,22 @@ static void Translate_to_keycode(SDL_WSCONS_input_data *input, int type, keysym_
     switch (keyDesc.command) {
     case KS_Cmd_ScrollBack:
     {
-        SDL_SendKeyboardKey(0, input->keyboardID, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED, SDL_SCANCODE_PAGEUP);
+        SDL_SendKeyboardKey(0, input->keyboardID, 0, SDL_SCANCODE_PAGEUP, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED);
         return;
     }
     case KS_Cmd_ScrollFwd:
     {
-        SDL_SendKeyboardKey(0, input->keyboardID, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED, SDL_SCANCODE_PAGEDOWN);
+        SDL_SendKeyboardKey(0, input->keyboardID, 0, SDL_SCANCODE_PAGEDOWN, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED);
         return;
     }
     }
     for (i = 0; i < sizeof(conversion_table) / sizeof(struct wscons_keycode_to_SDL); i++) {
         if (conversion_table[i].sourcekey == group[0]) {
-            SDL_SendKeyboardKey(0, input->keyboardID, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED, conversion_table[i].targetKey);
+            SDL_SendKeyboardKey(0, input->keyboardID, group[0], conversion_table[i].targetKey, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED);
             return;
         }
     }
-    SDL_SendKeyboardKey(0, input->keyboardID, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED, SDL_SCANCODE_UNKNOWN);
+    SDL_SendKeyboardKey(0, input->keyboardID, group[0], SDL_SCANCODE_UNKNOWN, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED);
 }
 
 static void updateKeyboard(SDL_WSCONS_input_data *input)
@@ -809,13 +809,13 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
             } break;
             case WSCONS_EVENT_ALL_KEYS_UP:
                 for (i = 0; i < SDL_NUM_SCANCODES; i++) {
-                    SDL_SendKeyboardKey(0, input->keyboardID, SDL_RELEASED, i);
+                    SDL_SendKeyboardKey(0, input->keyboardID, 0, (SDL_Scancode)i, SDL_RELEASED);
                 }
                 break;
             }
 
             if (input->type == WSKBD_TYPE_USB && events[i].value <= 0xE7)
-                SDL_SendKeyboardKey(0, input->keyboardID, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)events[i].value);
+                SDL_SendKeyboardKey(0, input->keyboardID, 0, (SDL_Scancode)events[i].value, type == WSCONS_EVENT_KEY_DOWN ? SDL_PRESSED : SDL_RELEASED);
             else
                 Translate_to_keycode(input, type, events[i].value);
 
@@ -924,7 +924,7 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
     }
 }
 
-void SDL_WSCONS_PumpEvents()
+void SDL_WSCONS_PumpEvents(void)
 {
     int i = 0;
     for (i = 0; i < 4; i++) {

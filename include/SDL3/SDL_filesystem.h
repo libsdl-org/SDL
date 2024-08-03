@@ -41,8 +41,8 @@ extern "C" {
 /**
  * Get the directory where the application was run from.
  *
- * This is not necessarily a fast call, so you should call this once near
- * startup and save the string if you need it.
+ * SDL caches the result of this call internally, but the first call to this
+ * function is not necessarily fast, so plan accordingly.
  *
  * **macOS and iOS Specific Functionality**: If the application is in a ".app"
  * bundle, this function returns the Resource directory (e.g.
@@ -68,9 +68,6 @@ extern "C" {
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
- * The pointer returned is owned by the caller. Please call SDL_free() on the
- * pointer when done with it.
- *
  * \returns an absolute path in UTF-8 encoding to the application data
  *          directory. NULL will be returned on error or when the platform
  *          doesn't implement this functionality, call SDL_GetError() for more
@@ -80,7 +77,7 @@ extern "C" {
  *
  * \sa SDL_GetPrefPath
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetBasePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetBasePath(void);
 
 /**
  * Get the user-and-app-specific path where files can be written.
@@ -117,27 +114,25 @@ extern SDL_DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  *   your applications that use this function.
  * - Always use a unique app string for each one, and make sure it never
  *   changes for an app once you've decided on it.
- * - Unicode characters are legal, as long as it's UTF-8 encoded, but...
+ * - Unicode characters are legal, as long as they are UTF-8 encoded, but...
  * - ...only use letters, numbers, and spaces. Avoid punctuation like "Game
  *   Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.
  *
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
- * The pointer returned is owned by the caller. Please call SDL_free() on the
- * pointer when done with it.
- *
- * \param org the name of your organization
- * \param app the name of your application
+ * \param org the name of your organization.
+ * \param app the name of your application.
  * \returns a UTF-8 string of the user directory in platform-dependent
  *          notation. NULL if there's a problem (creating directory failed,
- *          etc.).
+ *          etc.). This should be freed with SDL_free() when it is no longer
+ *          needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetBasePath
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
+extern SDL_DECLSPEC char * SDLCALL SDL_GetPrefPath(const char *org, const char *app);
 
 /**
  * The type of the OS-provided default folder for a specific purpose.
@@ -205,12 +200,13 @@ typedef enum SDL_Folder
     SDL_FOLDER_TEMPLATES,
     /** Video files that can be played using a standard video player (mp4,
       webm...). */
-    SDL_FOLDER_VIDEOS
+    SDL_FOLDER_VIDEOS,
+    /** total number of types in this enum, not a folder type by itself. */
+    SDL_FOLDER_TOTAL
 } SDL_Folder;
 
 /**
- * Finds the most suitable user folder for the specified purpose, and returns
- * its path in OS-specific notation.
+ * Finds the most suitable user folder for a specific purpose.
  *
  * Many OSes provide certain standard folders for certain purposes, such as
  * storing pictures, music or videos for a certain user. This function gives
@@ -221,26 +217,18 @@ typedef enum SDL_Folder
  * data for the application to manage, see SDL_GetBasePath() and
  * SDL_GetPrefPath().
  *
- * Note that the function is expensive, and should be called once at the
- * beginning of the execution and kept for as long as needed.
- *
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
  *
- * The returned value is owned by the caller and should be freed with
- * SDL_free().
- *
  * If NULL is returned, the error may be obtained with SDL_GetError().
  *
- * \param folder The type of folder to find
- * \returns Either a null-terminated C string containing the full path to the
+ * \param folder the type of folder to find.
+ * \returns either a null-terminated C string containing the full path to the
  *          folder, or NULL if an error happened.
  *
  * \since This function is available since SDL 3.0.0.
- *
- * \sa SDL_Folder
  */
-extern SDL_DECLSPEC char *SDLCALL SDL_GetUserFolder(SDL_Folder folder);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 
 
 /* Abstract filesystem interface */
@@ -277,7 +265,7 @@ typedef Uint32 SDL_GlobFlags;
 /**
  * Create a directory.
  *
- * \param path the path of the directory to create
+ * \param path the path of the directory to create.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -298,9 +286,9 @@ typedef int (SDLCALL *SDL_EnumerateDirectoryCallback)(void *userdata, const char
  * callback, called once for each directory entry, until all results have been
  * provided or the callback returns <= 0.
  *
- * \param path the path of the directory to enumerate
- * \param callback a function that is called for each entry in the directory
- * \param userdata a pointer that is passed to `callback`
+ * \param path the path of the directory to enumerate.
+ * \param callback a function that is called for each entry in the directory.
+ * \param userdata a pointer that is passed to `callback`.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -311,7 +299,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_EnumerateDirectory(const char *path, SDL_Enu
 /**
  * Remove a file or an empty directory.
  *
- * \param path the path of the directory to enumerate
+ * \param path the path of the directory to enumerate.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -322,8 +310,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_RemovePath(const char *path);
 /**
  * Rename a file or directory.
  *
- * \param oldpath the old path
- * \param newpath the new path
+ * \param oldpath the old path.
+ * \param newpath the new path.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -332,11 +320,23 @@ extern SDL_DECLSPEC int SDLCALL SDL_RemovePath(const char *path);
 extern SDL_DECLSPEC int SDLCALL SDL_RenamePath(const char *oldpath, const char *newpath);
 
 /**
+ * Copy a file.
+ *
+ * \param oldpath the old path.
+ * \param newpath the new path.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_CopyFile(const char *oldpath, const char *newpath);
+
+/**
  * Get information about a filesystem path.
  *
- * \param path the path to query
+ * \param path the path to query.
  * \param info a pointer filled in with information about the path, or NULL to
- *             check for the existence of a file
+ *             check for the existence of a file.
  * \returns 0 on success or a negative error code if the file doesn't exist,
  *          or another failure; call SDL_GetError() for more information.
  *
@@ -361,23 +361,21 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetPathInfo(const char *path, SDL_PathInfo *
  * convenience, but if `count` is non-NULL, on return it will contain the
  * number of items in the array, not counting the NULL terminator.
  *
- * You must free the returned pointer with SDL_free() when done with it.
- *
- * \param path the path of the directory to enumerate
+ * \param path the path of the directory to enumerate.
  * \param pattern the pattern that files in the directory must match. Can be
  *                NULL.
  * \param flags `SDL_GLOB_*` bitflags that affect this search.
  * \param count on return, will be set to the number of items in the returned
  *              array. Can be NULL.
  * \returns an array of strings on success or NULL on failure; call
- *          SDL_GetError() for more information. The caller should pass the
- *          returned pointer to SDL_free when done with it.
+ *          SDL_GetError() for more information. This is a single allocation
+ *          that should be freed with SDL_free() when it is no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  */
-extern SDL_DECLSPEC char **SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
+extern SDL_DECLSPEC char ** SDLCALL SDL_GlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

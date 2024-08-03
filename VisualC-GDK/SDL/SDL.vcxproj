@@ -375,7 +375,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_log.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_md5.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_test_random.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_thread.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_timer.h" />
@@ -409,11 +408,13 @@
     <ClInclude Include="..\..\src\events\blank_cursor.h" />
     <ClInclude Include="..\..\src\events\default_cursor.h" />
     <ClInclude Include="..\..\src\events\scancodes_windows.h" />
+    <ClInclude Include="..\..\src\events\SDL_categories_c.h" />
     <ClInclude Include="..\..\src\events\SDL_clipboardevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_displayevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_dropevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_events_c.h" />
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h" />
+    <ClInclude Include="..\..\src\events\SDL_keymap_c.h" />
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h" />
     <ClInclude Include="..\..\src\events\SDL_touch_c.h" />
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
@@ -503,8 +504,10 @@
     <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c" />
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
+    <ClCompile Include="..\..\src\main\gdk\SDL_sysmain_runapp.cpp" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
+    <ClCompile Include="..\..\src\main\SDL_runapp.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
     <ClInclude Include="..\..\src\SDL_hashtable.h" />
     <ClInclude Include="..\..\src\SDL_hints_c.h" />
@@ -556,6 +559,7 @@
     <ClInclude Include="..\..\src\video\SDL_pixels_c.h" />
     <ClInclude Include="..\..\src\video\SDL_rect_c.h" />
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h" />
+    <ClInclude Include="..\..\src\video\SDL_surface_c.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h" />
     <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />
@@ -600,7 +604,6 @@
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
-    <ClCompile Include="..\..\src\core\SDL_runapp.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
@@ -629,11 +632,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_categories.c" />
     <ClCompile Include="..\..\src\events\SDL_clipboardevents.c" />
     <ClCompile Include="..\..\src\events\SDL_displayevents.c" />
     <ClCompile Include="..\..\src\events\SDL_dropevents.c" />
     <ClCompile Include="..\..\src\events\SDL_events.c" />
     <ClCompile Include="..\..\src\events\SDL_keyboard.c" />
+    <ClCompile Include="..\..\src\events\SDL_keymap.c" />
     <ClCompile Include="..\..\src\events\SDL_mouse.c" />
     <ClCompile Include="..\..\src\events\SDL_pen.c" />
     <ClCompile Include="..\..\src\events\SDL_quit.c" />
@@ -722,6 +727,10 @@
     <ClCompile Include="..\..\src\libm\s_cos.c" />
     <ClCompile Include="..\..\src\libm\s_fabs.c" />
     <ClCompile Include="..\..\src\libm\s_floor.c" />
+    <ClCompile Include="..\..\src\libm\s_isinf.c" />
+    <ClCompile Include="..\..\src\libm\s_isinff.c" />
+    <ClCompile Include="..\..\src\libm\s_isnan.c" />
+    <ClCompile Include="..\..\src\libm\s_isnanf.c" />
     <ClCompile Include="..\..\src\libm\s_modf.c" />
     <ClCompile Include="..\..\src\libm\s_scalbn.c" />
     <ClCompile Include="..\..\src\libm\s_sin.c" />
@@ -785,6 +794,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </MASM>
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_random.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_string.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_strtokr.c" />

@@ -33,22 +33,28 @@
 /*#define DEBUG_IME NSLog */
 #define DEBUG_IME(...)
 
-@interface SDLTranslatorResponder : NSView <NSTextInputClient>
+@interface SDL3TranslatorResponder : NSView <NSTextInputClient>
 {
     NSString *_markedText;
     NSRange _markedRange;
     NSRange _selectedRange;
     SDL_Rect _inputRect;
+    int _pendingRawCode;
+    SDL_Scancode _pendingScancode;
+    Uint64 _pendingTimestamp;
 }
 - (void)doCommandBySelector:(SEL)myselector;
 - (void)setInputRect:(const SDL_Rect *)rect;
+- (void)setPendingKey:(int)rawcode scancode:(SDL_Scancode)scancode timestamp:(Uint64)timestamp;
+- (void)sendPendingKey;
+- (void)clearPendingKey;
 @end
 
-@implementation SDLTranslatorResponder
+@implementation SDL3TranslatorResponder
 
 - (void)setInputRect:(const SDL_Rect *)rect
 {
-    _inputRect = *rect;
+    SDL_copyp(&_inputRect, rect);
 }
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
@@ -71,6 +77,9 @@
     if ([self hasMarkedText]) {
         [self unmarkText];
     }
+
+    // Deliver the raw key event that generated this text
+    [self sendPendingKey];
 
     SDL_SendKeyboardText(str);
 }
@@ -116,6 +125,9 @@
     _selectedRange = selectedRange;
     _markedRange = NSMakeRange(0, [aString length]);
 
+    // This key event was consumed by the IME
+    [self clearPendingKey];
+
     SDL_SendEditingText([aString UTF8String],
                         (int)selectedRange.location, (int)selectedRange.length);
 
@@ -126,6 +138,9 @@
 - (void)unmarkText
 {
     _markedText = nil;
+
+    // This key event was consumed by the IME
+    [self clearPendingKey];
 
     SDL_SendEditingText("", 0, 0);
 }
@@ -181,6 +196,28 @@
     return [NSArray array];
 }
 
+- (void)setPendingKey:(int)rawcode scancode:(SDL_Scancode)scancode timestamp:(Uint64)timestamp
+{
+    _pendingRawCode = rawcode;
+    _pendingScancode = scancode;
+    _pendingTimestamp = timestamp;
+}
+
+- (void)sendPendingKey
+{
+    if (_pendingRawCode < 0) {
+        return;
+    }
+
+    SDL_SendKeyboardKey(_pendingTimestamp, SDL_DEFAULT_KEYBOARD_ID, _pendingRawCode, _pendingScancode, SDL_PRESSED);
+    [self clearPendingKey];
+}
+
+- (void)clearPendingKey
+{
+    _pendingRawCode = -1;
+}
+
 @end
 
 static bool IsModifierKeyPressed(unsigned int flags,
@@ -231,19 +268,16 @@ static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned 
     }
 
     if (pressed) {
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, SDL_PRESSED, code);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, code, SDL_PRESSED);
     } else {
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, SDL_RELEASED, code);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, code, SDL_RELEASED);
     }
 }
 
 static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
 {
     TISInputSourceRef key_layout;
-    const void *chr_data;
-    int i;
-    SDL_Scancode scancode;
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    UCKeyboardLayout *keyLayoutPtr = NULL;
     CFDataRef uchrDataRef;
 
     /* See if the keymap needs to be updated */
@@ -253,29 +287,46 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
     }
     data.key_layout = key_layout;
 
-    SDL_GetDefaultKeymap(keymap);
-
     /* Try Unicode data first */
     uchrDataRef = TISGetInputSourceProperty(key_layout, kTISPropertyUnicodeKeyLayoutData);
     if (uchrDataRef) {
-        chr_data = CFDataGetBytePtr(uchrDataRef);
-    } else {
-        goto cleanup;
+        keyLayoutPtr = (UCKeyboardLayout *)CFDataGetBytePtr(uchrDataRef);
     }
 
-    if (chr_data) {
-        UInt32 keyboard_type = LMGetKbdType();
-        OSStatus err;
+    if (!keyLayoutPtr) {
+        CFRelease(key_layout);
+        return;
+    }
 
-        for (i = 0; i < SDL_arraysize(darwin_scancode_table); i++) {
+    static struct {
+        int flags;
+        SDL_Keymod modstate;
+    } mods[] = {
+        { 0, SDL_KMOD_NONE },
+        { shiftKey, SDL_KMOD_SHIFT },
+        { alphaLock, SDL_KMOD_CAPS },
+        { (shiftKey | alphaLock), (SDL_KMOD_SHIFT | SDL_KMOD_CAPS) },
+        { optionKey, SDL_KMOD_ALT },
+        { (optionKey | shiftKey), (SDL_KMOD_ALT | SDL_KMOD_SHIFT) },
+        { (optionKey | alphaLock), (SDL_KMOD_ALT | SDL_KMOD_CAPS) },
+        { (optionKey | shiftKey | alphaLock), (SDL_KMOD_ALT | SDL_KMOD_SHIFT | SDL_KMOD_CAPS) }
+    };
+
+    UInt32 keyboard_type = LMGetKbdType();
+
+    SDL_Keymap *keymap = SDL_CreateKeymap();
+    for (int m = 0; m < SDL_arraysize(mods); ++m) {
+        for (int i = 0; i < SDL_arraysize(darwin_scancode_table); i++) {
+            OSStatus err;
             UniChar s[8];
             UniCharCount len;
             UInt32 dead_key_state;
 
             /* Make sure this scancode is a valid character scancode */
-            scancode = darwin_scancode_table[i];
+            SDL_Scancode scancode = darwin_scancode_table[i];
             if (scancode == SDL_SCANCODE_UNKNOWN ||
-                (keymap[scancode] & SDLK_SCANCODE_MASK)) {
+                scancode == SDL_SCANCODE_DELETE ||
+                (SDL_GetDefaultKeyFromScancode(scancode, SDL_KMOD_NONE) & SDLK_SCANCODE_MASK)) {
                 continue;
             }
 
@@ -291,9 +342,8 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
             }
 
             dead_key_state = 0;
-            err = UCKeyTranslate((UCKeyboardLayout *)chr_data,
-                                 i, kUCKeyActionDown,
-                                 0, keyboard_type,
+            err = UCKeyTranslate(keyLayoutPtr, i, kUCKeyActionDown,
+                                 ((mods[m].flags >> 8) & 0xFF), keyboard_type,
                                  kUCKeyTranslateNoDeadKeysMask,
                                  &dead_key_state, 8, &len, s);
             if (err != noErr) {
@@ -301,20 +351,21 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
             }
 
             if (len > 0 && s[0] != 0x10) {
-                keymap[scancode] = s[0];
+                SDL_SetKeymapEntry(keymap, scancode, mods[m].modstate, s[0]);
+            } else {
+                // The default keymap doesn't have any SDL_KMOD_ALT entries, so we don't need to override them
+                if (!(mods[m].modstate & SDL_KMOD_ALT)) {
+                    SDL_SetKeymapEntry(keymap, scancode, mods[m].modstate, SDLK_UNKNOWN);
+                }
             }
         }
-        SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
-        return;
     }
-
-cleanup:
-    CFRelease(key_layout);
+    SDL_SetKeymap(keymap, send_event);
 }
 
 void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
 {
-    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
 
     UpdateKeymap(data, SDL_FALSE);
 
@@ -330,16 +381,12 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
     SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
 }
 
-void Cocoa_StartTextInput(SDL_VideoDevice *_this)
+int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     @autoreleasepool {
         NSView *parentView;
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
-        SDL_Window *window = SDL_GetKeyboardFocus();
-        NSWindow *nswindow = nil;
-        if (window) {
-            nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
-        }
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
+        NSWindow *nswindow = ((__bridge SDL_CocoaWindowData *)window->internal).nswindow;
 
         parentView = [nswindow contentView];
 
@@ -349,8 +396,7 @@ void Cocoa_StartTextInput(SDL_VideoDevice *_this)
          * text input, simply remove the field editor from its superview then add
          * it to the front most window's content view */
         if (!data.fieldEdit) {
-            data.fieldEdit =
-                [[SDLTranslatorResponder alloc] initWithFrame:NSMakeRect(0.0, 0.0, 0.0, 0.0)];
+            data.fieldEdit = [[SDL3TranslatorResponder alloc] initWithFrame:NSMakeRect(0.0, 0.0, 0.0, 0.0)];
         }
 
         if (![[data.fieldEdit superview] isEqual:parentView]) {
@@ -360,24 +406,28 @@ void Cocoa_StartTextInput(SDL_VideoDevice *_this)
             [nswindow makeFirstResponder:data.fieldEdit];
         }
     }
+    return Cocoa_UpdateTextInputArea(_this, window);
 }
 
-void Cocoa_StopTextInput(SDL_VideoDevice *_this)
+int Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
 
         if (data && data.fieldEdit) {
             [data.fieldEdit removeFromSuperview];
             data.fieldEdit = nil;
         }
     }
+    return 0;
 }
 
-int Cocoa_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
+int Cocoa_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
-    [data.fieldEdit setInputRect:rect];
+    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
+    if (data.fieldEdit) {
+        [data.fieldEdit setInputRect:&window->text_input_rect];
+    }
     return 0;
 }
 
@@ -385,15 +435,12 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
     unsigned short scancode;
     SDL_Scancode code;
-    SDL_CocoaVideoData *data = _this ? ((__bridge SDL_CocoaVideoData *)_this->driverdata) : nil;
+    SDL_CocoaVideoData *data = _this ? ((__bridge SDL_CocoaVideoData *)_this->internal) : nil;
     if (!data) {
         return; /* can happen when returning from fullscreen Space on shutdown */
     }
 
     scancode = [event keyCode];
-#if 0
-    const char *text;
-#endif
 
     if ((scancode == 10 || scancode == 50) && KBGetLayoutType(LMGetKbdType()) == kKeyboardISO) {
         /* see comments in scancodes_darwin.h */
@@ -414,26 +461,21 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
             UpdateKeymap(data, SDL_TRUE);
         }
 
-        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, SDL_PRESSED, code);
 #ifdef DEBUG_SCANCODES
         if (code == SDL_SCANCODE_UNKNOWN) {
             SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
         }
 #endif
-        if (SDL_TextInputActive()) {
-            /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
+        if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {
+            [data.fieldEdit setPendingKey:scancode scancode:code timestamp:Cocoa_GetEventTimestamp([event timestamp])];
             [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
-#if 0
-            text = [[event characters] UTF8String];
-            if(text && *text) {
-                SDL_SendKeyboardText(text);
-                [data->fieldEdit setString:@""];
-            }
-#endif
+            [data.fieldEdit sendPendingKey];
+        } else {
+            SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, SDL_PRESSED);
         }
         break;
     case NSEventTypeKeyUp:
-        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, SDL_RELEASED, code);
+        SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, SDL_RELEASED);
         break;
     case NSEventTypeFlagsChanged: {
         // see if the new modifierFlags mean any existing keys should be pressed/released...

@@ -95,7 +95,7 @@ quit(int rc)
     if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
-                SDL_GL_DeleteContext(context[i]);
+                SDL_GL_DestroyContext(context[i]);
             }
         }
 
@@ -337,7 +337,7 @@ static void loop(void)
         switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
         {
-            const int sym = event.key.keysym.sym;
+            const int sym = event.key.key;
 
             if (sym == SDLK_TAB) {
                 SDL_Log("Tab");
@@ -600,7 +600,7 @@ int main(int argc, char *argv[])
         TTF_CloseFont(font);
         TTF_Quit();
 #endif
-        g_surf_sdf = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_ABGR8888);
+        g_surf_sdf = SDL_ConvertSurface(tmp, SDL_PIXELFORMAT_ABGR8888);
 
         SDL_SetSurfaceBlendMode(g_surf_sdf, SDL_BLENDMODE_BLEND);
     }

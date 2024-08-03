@@ -11,15 +11,15 @@
 */
 /* Simple program:  Create a native window and attach an SDL renderer */
 
+#include "testnative.h"
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-#include "testnative.h"
 #include "testutils.h"
 
-#include <stdlib.h> /* for srand() */
-#include <time.h>   /* for time() */
+#include <stdlib.h>
 
 #define WINDOW_W    640
 #define WINDOW_H    480
@@ -63,14 +63,14 @@ quit(int rc)
 
 static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
 {
-    int sprite_w, sprite_h;
+    float sprite_w, sprite_h;
     int i;
     SDL_Rect viewport;
     SDL_FRect *position, *velocity;
 
     /* Query the sizes */
     SDL_GetRenderViewport(renderer, &viewport);
-    SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
+    SDL_GetTextureSize(sprite, &sprite_w, &sprite_h);
 
     /* Draw a gray background */
     SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     SDL_Renderer *renderer;
     SDL_Texture *sprite;
     int window_w, window_h;
-    int sprite_w, sprite_h;
+    float sprite_w, sprite_h;
     SDL_Event event;
 
     /* Initialize test framework */
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
         quit(3);
     }
     props = SDL_CreateProperties();
-    SDL_SetProperty(props, "sdl2-compat.external_window", native_window);
+    SDL_SetPointerProperty(props, "sdl2-compat.external_window", native_window);
     SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, WINDOW_W);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, WINDOW_H);
@@ -181,24 +181,23 @@ int main(int argc, char *argv[])
 
     /* Allocate memory for the sprite info */
     SDL_GetWindowSize(window, &window_w, &window_h);
-    SDL_QueryTexture(sprite, NULL, NULL, &sprite_w, &sprite_h);
+    SDL_GetTextureSize(sprite, &sprite_w, &sprite_h);
     positions = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*positions));
     velocities = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*velocities));
     if (!positions || !velocities) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }
-    srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(rand() % (window_w - sprite_w));
-        positions[i].y = (float)(rand() % (window_h - sprite_h));
-        positions[i].w = (float)sprite_w;
-        positions[i].h = (float)sprite_h;
+        positions[i].x = (float)(SDL_rand(window_w - (int)sprite_w));
+        positions[i].y = (float)(SDL_rand(window_h - (int)sprite_h));
+        positions[i].w = sprite_w;
+        positions[i].h = sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
-        while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
-            velocities[i].y = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+        while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
+            velocities[i].x = (float)(SDL_rand(MAX_SPEED * 2 + 1) - MAX_SPEED);
+            velocities[i].y = (float)(SDL_rand(MAX_SPEED * 2 + 1) - MAX_SPEED);
         }
     }
 

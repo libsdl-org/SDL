@@ -157,7 +157,7 @@ static SDL_Texture *CreateTexture(const char *image[], SDL_Renderer *renderer)
         SDL_memcpy((Uint8 *)surface->pixels + row * surface->pitch, image[4 + row], surface->w);
     }
 
-    palette = SDL_CreatePalette(256);
+    palette = SDL_CreateSurfacePalette(surface);
     if (!palette) {
         SDL_DestroySurface(surface);
         return NULL;
@@ -171,8 +171,6 @@ static SDL_Texture *CreateTexture(const char *image[], SDL_Renderer *renderer)
     palette->colors['X'].r = 0x00;
     palette->colors['X'].g = 0x00;
     palette->colors['X'].b = 0x00;
-    SDL_SetSurfacePalette(surface, palette);
-    SDL_DestroyPalette(palette);
 
     SDL_SetSurfaceColorKey(surface, SDL_TRUE, ' ');
 
@@ -391,7 +389,7 @@ static void HandleKeyboardKeyDown(SDL_KeyboardEvent *event)
             continue;
         }
         if (event->which == keyboard_state->instance_id) {
-            switch (event->keysym.sym) {
+            switch (event->key) {
             case SDLK_LEFT:
                 keyboard_state->position.x -= CURSOR_SIZE;
                 if (keyboard_state->position.x < 0.0f) {
@@ -401,7 +399,7 @@ static void HandleKeyboardKeyDown(SDL_KeyboardEvent *event)
             case SDLK_RIGHT:
                 keyboard_state->position.x += CURSOR_SIZE;
                 if (keyboard_state->position.x > w) {
-                    keyboard_state->position.x = w;
+                    keyboard_state->position.x = (float)w;
                 }
                 break;
             case SDLK_UP:
@@ -413,7 +411,7 @@ static void HandleKeyboardKeyDown(SDL_KeyboardEvent *event)
             case SDLK_DOWN:
                 keyboard_state->position.y += CURSOR_SIZE;
                 if (keyboard_state->position.y > h) {
-                    keyboard_state->position.y = h;
+                    keyboard_state->position.y = (float)h;
                 }
                 break;
             default:
@@ -479,8 +477,8 @@ static void loop(void)
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
-        SDL_Texture *arrow_cursor = (SDL_Texture *)SDL_GetProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, NULL);
-        SDL_Texture *cross_cursor = (SDL_Texture *)SDL_GetProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, NULL);
+        SDL_Texture *arrow_cursor = (SDL_Texture *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, NULL);
+        SDL_Texture *cross_cursor = (SDL_Texture *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, NULL);
 
         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
         SDL_RenderClear(renderer);
@@ -507,6 +505,9 @@ int main(int argc, char *argv[])
     /* Log all events, including mouse motion */
     SDL_SetHint(SDL_HINT_EVENT_LOGGING, "2");
 
+    /* Support for multiple keyboards requires raw keyboard events on Windows */
+    SDL_SetHint(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1");
+
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
@@ -521,6 +522,7 @@ int main(int argc, char *argv[])
             SDLTest_CommonQuit(state);
             return 1;
         }
+        i += consumed;
     }
 
     if (!SDLTest_CommonInit(state)) {
@@ -534,8 +536,8 @@ int main(int argc, char *argv[])
         SDL_Texture *cursor_arrow = CreateTexture(arrow, renderer);
         SDL_Texture *cursor_cross = CreateTexture(cross, renderer);
 
-        SDL_SetProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, cursor_arrow);
-        SDL_SetProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, cursor_cross);
+        SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, cursor_arrow);
+        SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, cursor_cross);
     }
 
     /* We only get mouse motion for distinct devices when relative mode is enabled */

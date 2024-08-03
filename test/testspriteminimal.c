@@ -18,9 +18,6 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include <stdlib.h>
-#include <time.h>
-
 #include "icon.h"
 
 #define WINDOW_WIDTH  640
@@ -36,7 +33,8 @@ static int sprite_w, sprite_h;
 static SDL_Renderer *renderer;
 static int done;
 
-static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h) {
+static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h)
+{
     SDL_Texture *texture = NULL;
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
@@ -44,7 +42,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
         surface = SDL_LoadBMP_IO(src, SDL_TRUE);
         if (surface) {
             /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 255, 255, 255));
+            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapSurfaceRGB(surface, 255, 255, 255));
 
             texture = SDL_CreateTextureFromSurface(r, surface);
             *w = surface->w;
@@ -136,17 +134,16 @@ int main(int argc, char *argv[])
     }
 
     /* Initialize the sprite positions */
-    srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(rand() % (WINDOW_WIDTH - sprite_w));
-        positions[i].y = (float)(rand() % (WINDOW_HEIGHT - sprite_h));
+        positions[i].x = (float)SDL_rand(WINDOW_WIDTH - sprite_w);
+        positions[i].y = (float)SDL_rand(WINDOW_HEIGHT - sprite_h);
         positions[i].w = (float)sprite_w;
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
-        while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
-            velocities[i].y = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+        while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
+            velocities[i].x = (float)(SDL_rand(MAX_SPEED * 2 + 1) - MAX_SPEED);
+            velocities[i].y = (float)(SDL_rand(MAX_SPEED * 2 + 1) - MAX_SPEED);
         }
     }
 

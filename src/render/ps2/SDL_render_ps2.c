@@ -60,7 +60,7 @@ typedef struct
 static int vsync_sema_id = 0;
 
 /* PRIVATE METHODS */
-static int vsync_handler()
+static int vsync_handler(void)
 {
     iSignalSema(vsync_sema_id);
 
@@ -145,7 +145,7 @@ static int PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         return -1;
     }
 
-    texture->driverdata = ps2_tex;
+    texture->internal = ps2_tex;
 
     return 0;
 }
@@ -153,7 +153,7 @@ static int PS2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 static int PS2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                            const SDL_Rect *rect, void **pixels, int *pitch)
 {
-    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->driverdata;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
 
     *pixels =
         (void *)((Uint8 *)ps2_texture->Mem + rect->y * ps2_texture->Width * SDL_BYTESPERPIXEL(texture->format) +
@@ -164,8 +164,8 @@ static int PS2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static void PS2_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->driverdata;
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
 
     gsKit_TexManager_invalidate(data->gsGlobal, ps2_texture);
 }
@@ -197,7 +197,7 @@ static int PS2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 static void PS2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
-    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->driverdata;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
     /*
      set texture filtering according to scaleMode
      supported hint values are nearest (0, default) or linear (1)
@@ -217,7 +217,7 @@ static int PS2_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static int PS2_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     const SDL_Rect *viewport = &cmd->data.viewport.rect;
     data->viewport = (SDL_Rect *)viewport;
 
@@ -235,7 +235,7 @@ static int PS2_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
 static int PS2_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     GSPRIMPOINT *vertices = (GSPRIMPOINT *)SDL_AllocateRenderVertices(renderer, count * sizeof(GSPRIMPOINT), 4, &cmd->data.draw.first);
     gs_rgbaq rgbaq;
     int i;
@@ -262,7 +262,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
 {
     int i;
     int count = indices ? num_indices : num_vertices;
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     const float color_scale = cmd->data.draw.color_scale;
 
     cmd->data.draw.count = count;
@@ -270,7 +270,7 @@ static int PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
 
     if (texture) {
         GSPRIMUVPOINT *vertices = (GSPRIMUVPOINT *) SDL_AllocateRenderVertices(renderer, count * sizeof(GSPRIMUVPOINT), 4, &cmd->data.draw.first);
-        GSTEXTURE *ps2_tex = (GSTEXTURE *) texture->driverdata;
+        GSTEXTURE *ps2_tex = (GSTEXTURE *) texture->internal;
 
         if (!vertices) {
             return -1;
@@ -343,7 +343,7 @@ static int PS2_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
 static int PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     SDL_Rect *viewport = data->viewport;
 
     const SDL_Rect *rect = &cmd->data.cliprect.rect;
@@ -362,7 +362,7 @@ static int PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
 static int PS2_RenderSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
 
     data->drawColor = float_GS_SETREG_RGBAQ(&cmd->data.color.color, cmd->data.color.color_scale);
     return 0;
@@ -373,7 +373,7 @@ static int PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     int offsetX, offsetY;
     SDL_Rect *viewport;
 
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
 
     /* Clear the screen, so let's put default viewport */
     gsKit_set_scissor(data->gsGlobal, GS_SCISSOR_RESET);
@@ -416,8 +416,22 @@ static void PS2_SetBlendMode(PS2_RenderData *data, int blendMode)
         data->gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
         break;
     }
+    case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+    {
+        /* FIXME: What are the settings for this? */
+        gsKit_set_primalpha(data->gsGlobal, GS_SETREG_ALPHA(A_COLOR_SOURCE, A_COLOR_DEST, A_ALPHA_SOURCE, A_COLOR_DEST, 0), 0);
+        data->gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+        break;
+    }
     case SDL_BLENDMODE_ADD:
     {
+        gsKit_set_primalpha(data->gsGlobal, GS_SETREG_ALPHA(A_COLOR_SOURCE, A_COLOR_NULL, A_ALPHA_FIX, A_COLOR_DEST, 0x80), 0);
+        data->gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+        break;
+    }
+    case SDL_BLENDMODE_ADD_PREMULTIPLIED:
+    {
+        /* FIXME: What are the settings for this? */
         gsKit_set_primalpha(data->gsGlobal, GS_SETREG_ALPHA(A_COLOR_SOURCE, A_COLOR_NULL, A_ALPHA_FIX, A_COLOR_DEST, 0x80), 0);
         data->gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
         break;
@@ -435,14 +449,14 @@ static void PS2_SetBlendMode(PS2_RenderData *data, int blendMode)
 
 static int PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     const size_t count = cmd->data.draw.count;
 
     PS2_SetBlendMode(data, cmd->data.draw.blend);
 
     if (cmd->data.draw.texture) {
         const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) (vertices + cmd->data.draw.first);
-        GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->driverdata;
+        GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->internal;
 
         gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
         gsKit_prim_list_triangle_goraud_texture_uv_3d(data->gsGlobal, ps2_tex, count, verts);
@@ -456,7 +470,7 @@ static int PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Render
 
 int PS2_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     const size_t count = cmd->data.draw.count;
     const GSPRIMPOINT *verts = (GSPRIMPOINT *)(vertices + cmd->data.draw.first);
 
@@ -469,7 +483,7 @@ int PS2_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *c
 
 int PS2_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     const size_t count = cmd->data.draw.count;
     const GSPRIMPOINT *verts = (GSPRIMPOINT *)(vertices + cmd->data.draw.first);
 
@@ -541,7 +555,7 @@ static int PS2_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
 static int PS2_RenderPresent(SDL_Renderer *renderer)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
 
     if (data->gsGlobal->DoubleBuffering == GS_SETTING_OFF) {
         if (data->vsync == -1) { // Dynamic
@@ -567,8 +581,8 @@ static int PS2_RenderPresent(SDL_Renderer *renderer)
 
 static void PS2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->driverdata;
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
 
     if (!data) {
         return;
@@ -583,12 +597,12 @@ static void PS2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     SDL_aligned_free(ps2_texture->Mem);
     SDL_free(ps2_texture);
-    texture->driverdata = NULL;
+    texture->internal = NULL;
 }
 
 static void PS2_DestroyRenderer(SDL_Renderer *renderer)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
 
     if (data) {
         gsKit_clear(data->gsGlobal, GS_BLACK);
@@ -606,7 +620,7 @@ static void PS2_DestroyRenderer(SDL_Renderer *renderer)
 
 static int PS2_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
-    PS2_RenderData *data = (PS2_RenderData *)renderer->driverdata;
+    PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     switch (vsync) {
     case -1:
     case 0:
@@ -629,7 +643,6 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_free(renderer);
         return SDL_SetError("Unsupported output colorspace");
     }
 
@@ -695,11 +708,11 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     renderer->DestroyTexture = PS2_DestroyTexture;
     renderer->DestroyRenderer = PS2_DestroyRenderer;
     renderer->SetVSync = PS2_SetVSync;
-    renderer->driverdata = data;
+    renderer->internal = data;
     PS2_InvalidateCachedState(renderer);
     renderer->window = window;
 
-    renderer->info.name = PS2_RenderDriver.name;
+    renderer->name = PS2_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);

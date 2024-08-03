@@ -24,7 +24,7 @@
 
 #include "SDL_cocoavideo.h"
 
-@interface SDLMessageBoxPresenter : NSObject
+@interface SDL3MessageBoxPresenter : NSObject
 {
   @public
     NSInteger clicked;
@@ -33,7 +33,7 @@
 - (id)initWithParentWindow:(SDL_Window *)window;
 @end
 
-@implementation SDLMessageBoxPresenter
+@implementation SDL3MessageBoxPresenter
 - (id)initWithParentWindow:(SDL_Window *)window
 {
     self = [super init];
@@ -42,7 +42,7 @@
 
         /* Retain the NSWindow because we'll show the alert later on the main thread */
         if (window) {
-            nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
+            nswindow = ((__bridge SDL_CocoaWindowData *)window->internal).nswindow;
         } else {
             nswindow = nil;
         }
@@ -70,7 +70,7 @@ static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, i
 {
     NSAlert *alert;
     const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
-    SDLMessageBoxPresenter *presenter;
+    SDL3MessageBoxPresenter *presenter;
     NSInteger clicked;
     int i;
     Cocoa_RegisterApp();
@@ -108,7 +108,7 @@ static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, i
         }
     }
 
-    presenter = [[SDLMessageBoxPresenter alloc] initWithParentWindow:messageboxdata->window];
+    presenter = [[SDL3MessageBoxPresenter alloc] initWithParentWindow:messageboxdata->window];
 
     [presenter showAlert:alert];
 

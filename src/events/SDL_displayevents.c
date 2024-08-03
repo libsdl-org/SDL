@@ -24,7 +24,7 @@
 
 #include "SDL_events_c.h"
 
-int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1)
+int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1, int data2)
 {
     int posted;
 
@@ -50,6 +50,7 @@ int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, 
         event.common.timestamp = 0;
         event.display.displayID = display->id;
         event.display.data1 = data1;
+        event.display.data2 = data2;
         posted = (SDL_PushEvent(&event) > 0);
     }
 

@@ -135,7 +135,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return SDL_US_PER_SECOND;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     int was_error;
 

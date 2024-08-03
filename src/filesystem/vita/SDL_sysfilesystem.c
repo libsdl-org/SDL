@@ -25,6 +25,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
+#include "../SDL_sysfilesystem.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -34,14 +36,12 @@
 #include <limits.h>
 #include <fcntl.h>
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
-    const char *basepath = "app0:/";
-    char *retval = SDL_strdup(basepath);
-    return retval;
+    return SDL_strdup("app0:/");
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     const char *envr = "ux0:/data/";
     char *retval = NULL;
@@ -83,7 +83,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 }
 
 /* TODO */
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;

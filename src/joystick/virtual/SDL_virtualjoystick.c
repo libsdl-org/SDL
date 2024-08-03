@@ -534,11 +534,11 @@ static void VIRTUAL_JoystickSetDevicePlayerIndex(int device_index, int player_in
     }
 }
 
-static SDL_JoystickGUID VIRTUAL_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID VIRTUAL_JoystickGetDeviceGUID(int device_index)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
     if (!hwdata) {
-        SDL_JoystickGUID guid;
+        SDL_GUID guid;
         SDL_zero(guid);
         return guid;
     }

@@ -36,7 +36,7 @@ extern "C" {
 
 #include "SDL_winrtvideo_cpp.h"
 
-static SDL_Scancode WINRT_TranslateKeycode(Windows::System::VirtualKey virtualKey, const Windows::UI::Core::CorePhysicalKeyStatus& keyStatus)
+static SDL_Scancode WINRT_TranslateKeycode(Windows::System::VirtualKey virtualKey, const Windows::UI::Core::CorePhysicalKeyStatus& keyStatus, Uint16 *rawcode)
 {
     SDL_Scancode code;
     Uint8 index;
@@ -52,6 +52,7 @@ static SDL_Scancode WINRT_TranslateKeycode(Windows::System::VirtualKey virtualKe
     /* Pack scan code into one byte to make the index. */
     index = LOBYTE(scanCode) | (HIBYTE(scanCode) ? 0x80 : 0x00);
     code = windows_scancode_table[index];
+    *rawcode = scanCode;
 
     return code;
 }
@@ -62,6 +63,7 @@ void WINRT_ProcessAcceleratorKeyActivated(Windows::UI::Core::AcceleratorKeyEvent
 
     Uint8 state;
     SDL_Scancode code;
+    Uint16 rawcode = 0;
 
     switch (args->EventType) {
     case CoreAcceleratorKeyEventType::SystemKeyDown:
@@ -76,8 +78,8 @@ void WINRT_ProcessAcceleratorKeyActivated(Windows::UI::Core::AcceleratorKeyEvent
         return;
     }
 
-    code = WINRT_TranslateKeycode(args->VirtualKey, args->KeyStatus);
-    SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, state, code);
+    code = WINRT_TranslateKeycode(args->VirtualKey, args->KeyStatus, &rawcode);
+    SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, rawcode, code, state);
 }
 
 void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::CharacterReceivedEventArgs ^ args)
@@ -86,9 +88,9 @@ void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::
         return;
     }
 
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
-    if (SDL_TextInputActive()) {
+    if (SDL_TextInputActive(window)) {
         /* Characters outside Unicode Basic Multilingual Plane (BMP)
          * are coded as so called "surrogate pair" in two separate UTF-16 character events.
          * Cache high surrogate until next character event. */
@@ -146,7 +148,7 @@ SDL_bool WINRT_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
-void WINRT_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void WINRT_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();
@@ -169,7 +171,7 @@ SDL_bool WINRT_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
     using namespace Windows::UI::ViewManagement;
     InputPane ^ inputPane = InputPane::GetForCurrentView();
     if (inputPane) {
-        switch (SDL_WinRTGetDeviceFamily()) {
+        switch (SDL_GetWinRTDeviceFamily()) {
         case SDL_WINRT_DEVICEFAMILY_XBOX:
             // Documentation recommends using inputPane->Visible
             // https://learn.microsoft.com/en-us/uwp/api/windows.ui.viewmanagement.inputpane.visible?view=winrt-22621

@@ -63,7 +63,7 @@ static void quit(int rc)
 {
     if (context) {
         /* SDL_GL_MakeCurrent(0, NULL); */ /* doesn't do anything */
-        SDL_GL_DeleteContext(context);
+        SDL_GL_DestroyContext(context);
     }
     SDLTest_CommonQuit(state);
     /* Let 'main()' return normally */
@@ -391,10 +391,10 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                if (event.key.keysym.sym == SDLK_o) {
+                if (event.key.key == SDLK_O) {
                     swap_interval--;
                     update_swap_interval = SDL_TRUE;
-                } else if (event.key.keysym.sym == SDLK_p) {
+                } else if (event.key.key == SDLK_P) {
                     swap_interval++;
                     update_swap_interval = SDL_TRUE;
                 }

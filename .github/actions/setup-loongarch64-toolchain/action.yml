@@ -1,0 +1,53 @@
+name: 'Setup LoongArch64 toolchain'
+description: 'Download Linux LoongArch64 toolchain and set output variables'
+inputs:
+  version:
+    description: 'LoongArch64 version'
+    default: '2022.09.06'
+outputs:
+  prefix:
+    description: "LoongArch toolchain prefix"
+    value: ${{ steps.final.outputs.prefix }}
+  cc:
+    description: "LoongArch C compiler"
+    value: ${{ steps.final.outputs.cc }}
+  cxx:
+    description: "LoongArch C++ compiler"
+    value: ${{ steps.final.outputs.cxx }}
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/cache/restore@v4
+      id: restore-cache
+      with:
+        path: /opt/cross-tools
+        key: loongarch64-${{ inputs.version }}
+
+    - name: 'Download LoongArch64 gcc+glibc toolchain'
+      if: ${{ !steps.restore-cache.outputs.cache-hit }}
+      shell: bash
+      run: |
+        url="https://github.com/loongson/build-tools/releases/download/${{ inputs.version }}/loongarch64-clfs-6.3-cross-tools-gcc-glibc.tar.xz"
+        
+        wget "$url" -O /tmp/toolchain.tar.xz
+        
+        mkdir -p /opt
+        tar -C /opt -x -f /tmp/toolchain.tar.xz
+
+    - uses: actions/cache/save@v4
+      if: ${{ !steps.restore-cache.outputs.cache-hit }}
+      with:
+        path: /opt/cross-tools
+        key: loongarch64-${{ inputs.version }}
+    - name: 'Set output vars'
+      id: final
+      shell: bash
+      run: |
+        prefix=/opt/cross-tools
+        echo "prefix=${prefix}" >> $GITHUB_OUTPUT
+        cc="${prefix}/bin/loongarch64-unknown-linux-gnu-gcc"
+        cxx="${prefix}/bin/loongarch64-unknown-linux-gnu-g++"
+        echo "cc=${cc}" >> $GITHUB_OUTPUT
+        echo "cxx=${cxx}" >> $GITHUB_OUTPUT
+        echo "LOONGARCH64_CC=${cc}" >>$GITHUB_ENV
+        echo "LOONGARCH64_CXX=${cxx}" >>$GITHUB_ENV

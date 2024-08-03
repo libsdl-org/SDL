@@ -150,19 +150,19 @@ extern int SDL_EGL_SetErrorEx(const char *message, const char *eglFunctionName, 
 #define SDL_EGL_SwapWindow_impl(BACKEND)                                                        \
     int BACKEND##_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)                                    \
     {                                                                                           \
-        return SDL_EGL_SwapBuffers(_this, window->driverdata->egl_surface);                     \
+        return SDL_EGL_SwapBuffers(_this, window->internal->egl_surface);                     \
     }
 
 #define SDL_EGL_MakeCurrent_impl(BACKEND)                                                                                          \
     int BACKEND##_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)                                               \
     {                                                                                                                              \
-        return SDL_EGL_MakeCurrent(_this, window ? window->driverdata->egl_surface : EGL_NO_SURFACE, context); \
+        return SDL_EGL_MakeCurrent(_this, window ? window->internal->egl_surface : EGL_NO_SURFACE, context); \
     }
 
 #define SDL_EGL_CreateContext_impl(BACKEND)                                                     \
     SDL_GLContext BACKEND##_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)                       \
     {                                                                                           \
-        return SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);                   \
+        return SDL_EGL_CreateContext(_this, window->internal->egl_surface);                   \
     }
 
 #endif /* SDL_VIDEO_OPENGL_EGL */

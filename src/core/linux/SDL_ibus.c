@@ -261,7 +261,7 @@ static DBusHandlerResult IBus_MessageHandler(DBusConnection *conn, DBusMessage *
             }
         }
 
-        SDL_IBus_UpdateTextRect(NULL);
+        SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
 
         return DBUS_HANDLER_RESULT_HANDLED;
     }
@@ -404,14 +404,18 @@ static char *IBus_GetDBusAddressFilename(void)
 static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus);
 
 static void SDLCALL IBus_SetCapabilities(void *data, const char *name, const char *old_val,
-                                         const char *internal_editing)
+                                         const char *hint)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
     if (IBus_CheckConnection(dbus)) {
         Uint32 caps = IBUS_CAP_FOCUS;
-        if (!(internal_editing && *internal_editing == '1')) {
+
+        if (hint && SDL_strstr(hint, "composition")) {
             caps |= IBUS_CAP_PREEDIT_TEXT;
+        }
+        if (hint && SDL_strstr(hint, "candidates")) {
+            // FIXME, turn off native candidate rendering
         }
 
         SDL_DBus_CallVoidMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, "SetCapabilities",
@@ -474,15 +478,19 @@ static SDL_bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
         (void)SDL_snprintf(matchstr, sizeof(matchstr), "type='signal',interface='%s'", ibus_input_interface);
         SDL_free(input_ctx_path);
         input_ctx_path = SDL_strdup(path);
-        SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, IBus_SetCapabilities, NULL);
+        SDL_AddHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, IBus_SetCapabilities, NULL);
         dbus->bus_add_match(ibus_conn, matchstr, NULL);
         dbus->connection_try_register_object_path(ibus_conn, input_ctx_path, &ibus_vtable, dbus, NULL);
         dbus->connection_flush(ibus_conn);
     }
 
-    SDL_IBus_SetFocus(SDL_GetKeyboardFocus() != NULL);
-    SDL_IBus_UpdateTextRect(NULL);
-
+    SDL_Window *window = SDL_GetKeyboardFocus();
+    if (SDL_TextInputActive(window)) {
+        SDL_IBus_SetFocus(SDL_TRUE);
+        SDL_IBus_UpdateTextInputArea(window);
+    } else {
+        SDL_IBus_SetFocus(SDL_FALSE);
+    }
     return result;
 }
 
@@ -627,7 +635,7 @@ void SDL_IBus_Quit(void)
 
     /* !!! FIXME: should we close(inotify_fd) here? */
 
-    SDL_DelHintCallback(SDL_HINT_IME_INTERNAL_EDITING, IBus_SetCapabilities, NULL);
+    SDL_DelHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, IBus_SetCapabilities, NULL);
 
     SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
 }
@@ -670,32 +678,32 @@ SDL_bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
         }
     }
 
-    SDL_IBus_UpdateTextRect(NULL);
+    SDL_IBus_UpdateTextInputArea(SDL_GetKeyboardFocus());
 
     return (result != 0);
 }
 
-void SDL_IBus_UpdateTextRect(const SDL_Rect *rect)
+void SDL_IBus_UpdateTextInputArea(SDL_Window *window)
 {
-    SDL_Window *focused_win;
     int x = 0, y = 0;
     SDL_DBusContext *dbus;
 
-    if (rect) {
-        SDL_memcpy(&ibus_cursor_rect, rect, sizeof(ibus_cursor_rect));
-    }
-
-    focused_win = SDL_GetKeyboardFocus();
-    if (!focused_win) {
+    if (!window) {
         return;
     }
 
-    SDL_GetWindowPosition(focused_win, &x, &y);
+    // We'll use a square at the text input cursor location for the ibus_cursor
+    ibus_cursor_rect.x = window->text_input_rect.x + window->text_input_cursor;
+    ibus_cursor_rect.y = window->text_input_rect.y;
+    ibus_cursor_rect.w = window->text_input_rect.h;
+    ibus_cursor_rect.h = window->text_input_rect.h;
+
+    SDL_GetWindowPosition(window, &x, &y);
 
 #ifdef SDL_VIDEO_DRIVER_X11
     {
-        SDL_PropertiesID props = SDL_GetWindowProperties(focused_win);
-        Display *x_disp = (Display *)SDL_GetProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        SDL_PropertiesID props = SDL_GetWindowProperties(window);
+        Display *x_disp = (Display *)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
         int x_screen = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, 0);
         Window x_win = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
         Window unused;

@@ -340,7 +340,7 @@ static int HIDAPI_DriverPS3_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device,
 static float HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
 {
     /* Accelerometer values are in big endian order */
-    value = SDL_SwapBE16(value);
+    value = SDL_Swap16BE(value);
     return ((float)(value - 511) / 113.0f) * SDL_STANDARD_GRAVITY;
 }
 
@@ -520,7 +520,7 @@ static SDL_bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
     int size;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
         return SDL_FALSE;
     }
@@ -618,6 +618,11 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *
 {
     Uint8 data[USB_PACKET_LENGTH];
     int size;
+
+    if (vendor_id == USB_VENDOR_LOGITECH &&
+        product_id == USB_PRODUCT_LOGITECH_CHILLSTREAM) {
+        return SDL_TRUE;
+    }
 
     if ((type == SDL_GAMEPAD_TYPE_PS3 && vendor_id != USB_VENDOR_SONY) ||
         HIDAPI_SupportsPlaystationDetection(vendor_id, product_id)) {
@@ -795,7 +800,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystic
             0,  /* SDL_GAMEPAD_BUTTON_LEFT_STICK */
             0,  /* SDL_GAMEPAD_BUTTON_RIGHT_STICK */
             14, /* SDL_GAMEPAD_BUTTON_LEFT_SHOULDER */
-            16, /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
+            15, /* SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER */
             8,  /* SDL_GAMEPAD_BUTTON_DPAD_UP */
             9,  /* SDL_GAMEPAD_BUTTON_DPAD_DOWN */
             7,  /* SDL_GAMEPAD_BUTTON_DPAD_LEFT */
@@ -953,7 +958,7 @@ static SDL_bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *devic
     int size;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
         return SDL_FALSE;
     }
@@ -1292,7 +1297,7 @@ static SDL_bool HIDAPI_DriverPS3SonySixaxis_UpdateDevice(SDL_HIDAPI_Device *devi
     int size;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
         return SDL_FALSE;
     }

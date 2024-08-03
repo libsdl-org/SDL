@@ -52,7 +52,7 @@ static void Cocoa_DeleteDevice(SDL_VideoDevice *device)
         if (device->wakeup_lock) {
             SDL_DestroyMutex(device->wakeup_lock);
         }
-        CFBridgingRelease(device->driverdata);
+        CFBridgingRelease(device->internal);
         SDL_free(device);
     }
 }
@@ -76,7 +76,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             SDL_free(device);
             return NULL;
         }
-        device->driverdata = (SDL_VideoData *)CFBridgingRetain(data);
+        device->internal = (SDL_VideoData *)CFBridgingRetain(data);
         device->wakeup_lock = SDL_CreateMutex();
         device->system_theme = Cocoa_GetSystemTheme();
 
@@ -172,7 +172,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 
         device->StartTextInput = Cocoa_StartTextInput;
         device->StopTextInput = Cocoa_StopTextInput;
-        device->SetTextInputRect = Cocoa_SetTextInputRect;
+        device->UpdateTextInputArea = Cocoa_UpdateTextInputArea;
 
         device->SetClipboardData = Cocoa_SetClipboardData;
         device->GetClipboardData = Cocoa_GetClipboardData;
@@ -195,7 +195,7 @@ VideoBootStrap COCOA_bootstrap = {
 int Cocoa_VideoInit(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
 
         Cocoa_InitModes(_this);
         Cocoa_InitKeyboard(_this);
@@ -223,7 +223,7 @@ int Cocoa_VideoInit(SDL_VideoDevice *_this)
 void Cocoa_VideoQuit(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
         Cocoa_QuitModes(_this);
         Cocoa_QuitKeyboard(_this);
         Cocoa_QuitMouse(_this);
@@ -250,50 +250,54 @@ SDL_SystemTheme Cocoa_GetSystemTheme(void)
 /* This function assumes that it's called from within an autorelease pool */
 NSImage *Cocoa_CreateImage(SDL_Surface *surface)
 {
-    SDL_Surface *converted;
-    NSBitmapImageRep *imgrep;
-    Uint8 *pixels;
-    int i;
     NSImage *img;
 
-    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32);
-    if (!converted) {
-        return nil;
-    }
-
-    imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
-                                                     pixelsWide:converted->w
-                                                     pixelsHigh:converted->h
-                                                  bitsPerSample:8
-                                                samplesPerPixel:4
-                                                       hasAlpha:YES
-                                                       isPlanar:NO
-                                                 colorSpaceName:NSDeviceRGBColorSpace
-                                                    bytesPerRow:converted->pitch
-                                                   bitsPerPixel:converted->format->bits_per_pixel];
-    if (imgrep == nil) {
-        SDL_DestroySurface(converted);
-        return nil;
-    }
-
-    /* Copy the pixels */
-    pixels = [imgrep bitmapData];
-    SDL_memcpy(pixels, converted->pixels, (size_t)converted->h * converted->pitch);
-    SDL_DestroySurface(converted);
-
-    /* Premultiply the alpha channel */
-    for (i = (surface->h * surface->w); i--;) {
-        Uint8 alpha = pixels[3];
-        pixels[0] = (Uint8)(((Uint16)pixels[0] * alpha) / 255);
-        pixels[1] = (Uint8)(((Uint16)pixels[1] * alpha) / 255);
-        pixels[2] = (Uint8)(((Uint16)pixels[2] * alpha) / 255);
-        pixels += 4;
-    }
-
     img = [[NSImage alloc] initWithSize:NSMakeSize(surface->w, surface->h)];
-    if (img != nil) {
+    if (img == nil) {
+        return nil;
+    }
+
+    SDL_Surface **images = SDL_GetSurfaceImages(surface, NULL);
+    if (!images) {
+        return nil;
+    }
+
+    for (int i = 0; images[i]; ++i) {
+        SDL_Surface *converted = SDL_ConvertSurface(images[i], SDL_PIXELFORMAT_RGBA32);
+        if (!converted) {
+            SDL_free(images);
+            return nil;
+        }
+
+        /* Premultiply the alpha channel */
+        SDL_PremultiplySurfaceAlpha(converted, SDL_FALSE);
+
+        NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
+                                                                           pixelsWide:converted->w
+                                                                           pixelsHigh:converted->h
+                                                                        bitsPerSample:8
+                                                                      samplesPerPixel:4
+                                                                             hasAlpha:YES
+                                                                             isPlanar:NO
+                                                                       colorSpaceName:NSDeviceRGBColorSpace
+                                                                          bytesPerRow:converted->pitch
+                                                                         bitsPerPixel:SDL_BITSPERPIXEL(converted->format)];
+        if (imgrep == nil) {
+            SDL_free(images);
+            SDL_DestroySurface(converted);
+            return nil;
+        }
+
+        /* Copy the pixels */
+        Uint8 *pixels = [imgrep bitmapData];
+        SDL_memcpy(pixels, converted->pixels, (size_t)converted->h * converted->pitch);
+        SDL_DestroySurface(converted);
+
+        /* Add the image representation */
         [img addRepresentation:imgrep];
     }
+    SDL_free(images);
+
     return img;
 }
 

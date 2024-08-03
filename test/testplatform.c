@@ -484,6 +484,7 @@ int main(int argc, char *argv[])
     status += TestCPUInfo(verbose);
     status += TestAssertions(verbose);
 
+    SDL_Quit();
     SDLTest_CommonDestroyState(state);
 
     return status;

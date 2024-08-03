@@ -39,7 +39,7 @@ typedef SDL_Semaphore *(*pfnSDL_CreateSemaphore)(Uint32);
 typedef void (*pfnSDL_DestroySemaphore)(SDL_Semaphore *);
 typedef int (*pfnSDL_WaitSemaphoreTimeoutNS)(SDL_Semaphore *, Sint64);
 typedef Uint32 (*pfnSDL_GetSemaphoreValue)(SDL_Semaphore *);
-typedef int (*pfnSDL_PostSemaphore)(SDL_Semaphore *);
+typedef int (*pfnSDL_SignalSemaphore)(SDL_Semaphore *);
 
 typedef struct SDL_semaphore_impl_t
 {
@@ -47,7 +47,7 @@ typedef struct SDL_semaphore_impl_t
     pfnSDL_DestroySemaphore Destroy;
     pfnSDL_WaitSemaphoreTimeoutNS WaitTimeoutNS;
     pfnSDL_GetSemaphoreValue Value;
-    pfnSDL_PostSemaphore Post;
+    pfnSDL_SignalSemaphore Post;
 } SDL_sem_impl_t;
 
 /* Implementation will be chosen at runtime based on available Kernel features */
@@ -180,7 +180,7 @@ static Uint32 SDL_GetSemaphoreValue_atom(SDL_Semaphore *_sem)
     return (Uint32)sem->count;
 }
 
-static int SDL_PostSemaphore_atom(SDL_Semaphore *_sem)
+static int SDL_SignalSemaphore_atom(SDL_Semaphore *_sem)
 {
     SDL_sem_atom *sem = (SDL_sem_atom *)_sem;
 
@@ -199,7 +199,7 @@ static const SDL_sem_impl_t SDL_sem_impl_atom = {
     &SDL_DestroySemaphore_atom,
     &SDL_WaitSemaphoreTimeoutNS_atom,
     &SDL_GetSemaphoreValue_atom,
-    &SDL_PostSemaphore_atom,
+    &SDL_SignalSemaphore_atom,
 };
 #endif /* !SDL_WINAPI_FAMILY_PHONE */
 
@@ -292,7 +292,7 @@ static Uint32 SDL_GetSemaphoreValue_kern(SDL_Semaphore *_sem)
     return (Uint32)sem->count;
 }
 
-static int SDL_PostSemaphore_kern(SDL_Semaphore *_sem)
+static int SDL_SignalSemaphore_kern(SDL_Semaphore *_sem)
 {
     SDL_sem_kern *sem = (SDL_sem_kern *)_sem;
     if (!sem) {
@@ -316,7 +316,7 @@ static const SDL_sem_impl_t SDL_sem_impl_kern = {
     &SDL_DestroySemaphore_kern,
     &SDL_WaitSemaphoreTimeoutNS_kern,
     &SDL_GetSemaphoreValue_kern,
-    &SDL_PostSemaphore_kern,
+    &SDL_SignalSemaphore_kern,
 };
 
 /**
@@ -376,7 +376,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     return SDL_sem_impl_active.Value(sem);
 }
 
-int SDL_PostSemaphore(SDL_Semaphore *sem)
+int SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
     return SDL_sem_impl_active.Post(sem);
 }

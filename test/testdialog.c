@@ -15,11 +15,10 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-const SDL_DialogFileFilter filters[4] = {
+const SDL_DialogFileFilter filters[3] = {
     { "All files", "*" },
     { "JPG images", "jpg;jpeg" },
-    { "PNG images", "png" },
-    { NULL, NULL }
+    { "PNG images", "png" }
 };
 
 static void SDLCALL callback(void* userdata, const char* const* files, int filter) {
@@ -45,7 +44,8 @@ static void SDLCALL callback(void* userdata, const char* const* files, int filte
     }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     SDL_Window *w;
     SDL_Renderer *r;
     SDLTest_CommonState *state;
@@ -53,7 +53,8 @@ int main(int argc, char *argv[]) {
     const SDL_FRect save_file_rect = { 50, 290, 220, 140 };
     const SDL_FRect open_folder_rect = { 370, 50, 220, 140 };
     int i;
-    char *initial_path = NULL;
+    const char *initial_path = NULL;
+    const int nfilters = sizeof(filters) / sizeof(*filters);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -114,11 +115,11 @@ int main(int argc, char *argv[]) {
                  * - Nonzero if the user is allowed to choose multiple entries (not for SDL_ShowSaveFileDialog)
                  */
                 if (SDL_PointInRectFloat(&p, &open_file_rect)) {
-                    SDL_ShowOpenFileDialog(callback, NULL, w, filters, initial_path, 1);
+                    SDL_ShowOpenFileDialog(callback, NULL, w, filters, nfilters, initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &open_folder_rect)) {
                     SDL_ShowOpenFolderDialog(callback, NULL, w, initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &save_file_rect)) {
-                    SDL_ShowSaveFileDialog(callback, NULL, w, filters, initial_path);
+                    SDL_ShowSaveFileDialog(callback, NULL, w, filters, nfilters, initial_path);
                 }
             }
         }
@@ -145,10 +146,6 @@ int main(int argc, char *argv[]) {
         SDLTest_DrawString(r, open_folder_rect.x+5, open_folder_rect.y+open_folder_rect.h/2, "Open Folder...");
 
         SDL_RenderPresent(r);
-    }
-
-    if (initial_path) {
-        SDL_free(initial_path);
     }
 
     SDLTest_CleanupTextDrawing();

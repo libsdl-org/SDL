@@ -114,11 +114,13 @@
     <ClInclude Include="..\src\dynapi\SDL_dynapi_procs.h" />
     <ClInclude Include="..\src\events\blank_cursor.h" />
     <ClInclude Include="..\src\events\default_cursor.h" />
+    <ClInclude Include="..\src\events\SDL_categories_c.h" />
     <ClInclude Include="..\src\events\SDL_clipboardevents_c.h" />
     <ClInclude Include="..\src\events\SDL_displayevents_c.h" />
     <ClInclude Include="..\src\events\SDL_dropevents_c.h" />
     <ClInclude Include="..\src\events\SDL_events_c.h" />
     <ClInclude Include="..\src\events\SDL_keyboard_c.h" />
+    <ClInclude Include="..\src\events\SDL_keymap_c.h" />
     <ClInclude Include="..\src\events\SDL_mouse_c.h" />
     <ClInclude Include="..\src\events\SDL_touch_c.h" />
     <ClInclude Include="..\src\events\SDL_windowevents_c.h" />
@@ -184,6 +186,7 @@
     <ClInclude Include="..\src\video\SDL_pixels_c.h" />
     <ClInclude Include="..\src\video\SDL_rect_c.h" />
     <ClInclude Include="..\src\video\SDL_RLEaccel_c.h" />
+    <ClInclude Include="..\src\video\SDL_surface_c.h" />
     <ClInclude Include="..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\src\video\SDL_sysvidocapture.h" />
     <ClInclude Include="..\src\video\SDL_yuv_c.h" />
@@ -267,7 +270,6 @@
     <ClCompile Include="..\src\camera\dummy\SDL_camera_dummy.c" />
     <ClCompile Include="..\src\camera\SDL_camera.c" />
     <ClCompile Include="..\src\core\SDL_core_unsupported.c" />
-    <ClCompile Include="..\src\core\SDL_runapp.c" />
     <ClCompile Include="..\src\core\windows\SDL_windows.c" />
     <ClCompile Include="..\src\core\windows\SDL_xinput.c" />
     <ClCompile Include="..\src\core\winrt\SDL_winrtapp_common.cpp">
@@ -315,11 +317,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\dialog\SDL_dialog_utils.c" />
+    <ClCompile Include="..\src\events\SDL_categories.c" />
     <ClCompile Include="..\src\events\SDL_clipboardevents.c" />
     <ClCompile Include="..\src\events\SDL_displayevents.c" />
     <ClCompile Include="..\src\events\SDL_dropevents.c" />
     <ClCompile Include="..\src\events\SDL_events.c" />
     <ClCompile Include="..\src\events\SDL_keyboard.c" />
+    <ClCompile Include="..\src\events\SDL_keymap.c" />
     <ClCompile Include="..\src\events\SDL_mouse.c" />
     <ClCompile Include="..\src\events\SDL_pen.c" />
     <ClCompile Include="..\src\events\SDL_quit.c" />
@@ -357,8 +361,20 @@
     <ClCompile Include="..\src\loadso\windows\SDL_sysloadso.c" />
     <ClCompile Include="..\src\locale\SDL_locale.c" />
     <ClCompile Include="..\src\locale\winrt\SDL_syslocale.c" />
+    <ClCompile Include="..\src\main\SDL_runapp.c" />
     <ClCompile Include="..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\src\main\SDL_main_callbacks.c" />
+    <ClCompile Include="..\src\main\winrt\SDL_sysmain_runapp.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+    </ClCompile>
     <ClCompile Include="..\src\misc\SDL_url.c" />
     <ClCompile Include="..\src\misc\winrt\SDL_sysurl.cpp">
       <CompileAsWinRT>true</CompileAsWinRT>
@@ -442,6 +458,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </MASM>
     <ClCompile Include="..\src\stdlib\SDL_qsort.c" />
+    <ClCompile Include="..\src\stdlib\SDL_random.c" />
     <ClCompile Include="..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\src\stdlib\SDL_string.c" />
     <ClCompile Include="..\src\stdlib\SDL_strtokr.c" />

@@ -27,14 +27,14 @@
 
 #include <emscripten/threading.h>
 
-int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormatEnum *format, void **pixels, int *pitch)
+int Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
-    const SDL_PixelFormatEnum surface_format = SDL_PIXELFORMAT_XBGR8888;
+    const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XBGR8888;
     int w, h;
 
     /* Free the old framebuffer surface */
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     surface = data->surface;
     SDL_DestroySurface(surface);
 
@@ -58,7 +58,7 @@ int Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
 {
     SDL_Surface *surface;
 
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     surface = data->surface;
     if (!surface) {
         return SDL_SetError("Couldn't find framebuffer surface for window");
@@ -152,7 +152,7 @@ int Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
 
 void Emscripten_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
     SDL_DestroySurface(data->surface);
     data->surface = NULL;

@@ -45,7 +45,7 @@ enum
 
 static const struct
 {
-    SDL_PixelFormatEnum pixel_format;
+    SDL_PixelFormat pixel_format;
     int modeflags, ncolour, log2bpp;
 } mode_to_pixelformat[] = {
     /* { SDL_PIXELFORMAT_INDEX1LSB, 0, 1, 0 }, */
@@ -70,7 +70,7 @@ static const struct
     { SDL_PIXELFORMAT_ARGB8888, MODE_FLAG_ARGB, -1, 5 }
 };
 
-static SDL_PixelFormatEnum RISCOS_ModeToPixelFormat(int ncolour, int modeflags, int log2bpp)
+static SDL_PixelFormat RISCOS_ModeToPixelFormat(int ncolour, int modeflags, int log2bpp)
 {
     int i;
 
@@ -218,8 +218,8 @@ int RISCOS_InitModes(SDL_VideoDevice *_this)
     }
 
     size = measure_mode_block(current_mode);
-    mode.driverdata = copy_memory(current_mode, size, size);
-    if (!mode.driverdata) {
+    mode.internal = copy_memory(current_mode, size, size);
+    if (!mode.internal) {
         return -1;
     }
 
@@ -267,14 +267,14 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
             continue;
         }
 
-        mode.driverdata = convert_mode_block(pos + 4);
-        if (!mode.driverdata) {
+        mode.internal = convert_mode_block(pos + 4);
+        if (!mode.internal) {
             SDL_free(block);
             return -1;
         }
 
         if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
-            SDL_free(mode.driverdata);
+            SDL_free(mode.internal);
         }
     }
 
@@ -290,7 +290,7 @@ int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL
     int i;
 
     regs.r[0] = 0;
-    regs.r[1] = (int)mode->driverdata;
+    regs.r[1] = (int)mode->internal;
     error = _kernel_swi(OS_ScreenMode, &regs, &regs);
     if (error) {
         return SDL_SetError("Unable to set the current screen mode: %s (%i)", error->errmess, error->errnum);

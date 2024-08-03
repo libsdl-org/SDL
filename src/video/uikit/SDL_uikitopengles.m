@@ -60,7 +60,7 @@ SDL_FunctionPointer UIKit_GL_GetProcAddress(SDL_VideoDevice *_this, const char *
 }
 
 /*
-  note that SDL_GL_DeleteContext makes it current without passing the window
+  note that SDL_GL_DestroyContext makes it current without passing the window
 */
 int UIKit_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
@@ -113,7 +113,7 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         SDLEAGLContext *context = nil;
         SDL_uikitopenglview *view;
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->driverdata;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
         EAGLSharegroup *sharegroup = nil;
         CGFloat scale = 1.0;
@@ -171,6 +171,11 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
             return NULL;
         }
 
+        SDL_PropertiesID props = SDL_GetWindowProperties(window);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER, view.drawableFramebuffer);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER, view.drawableRenderbuffer);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER, view.msaaResolveFramebuffer);
+
         /* The context owns the view / drawable. */
         context.sdlView = view;
 
@@ -179,7 +184,7 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
             return NULL;
         }
 
-        /* We return a +1'd context. The window's driverdata owns the view (via
+        /* We return a +1'd context. The window's internal owns the view (via
          * MakeCurrent.) */
         return (SDL_GLContext)CFBridgingRetain(context);
     }

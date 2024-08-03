@@ -140,6 +140,7 @@ static const SDL_StorageInterface STEAM_user_iface = {
     NULL,   /* mkdir */
     NULL,   /* remove */
     NULL,   /* rename */
+    NULL,   /* copy */
     STEAM_GetStorageSpaceRemaining
 };
 

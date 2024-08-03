@@ -54,7 +54,7 @@ int KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
        so gbm dev isn't yet created when this is called, AND we can't alter the
        call order in SDL_CreateWindow(). */
 #if 0
-    NativeDisplayType display = (NativeDisplayType)_this->driverdata->gbm_dev;
+    NativeDisplayType display = (NativeDisplayType)_this->internal->gbm_dev;
     return SDL_EGL_LoadLibrary(_this, path, display, EGL_PLATFORM_GBM_MESA);
 #endif
     return 0;
@@ -86,9 +86,9 @@ SDL_EGL_CreateContext_impl(KMSDRM)
 
 int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windata = window->driverdata;
+    SDL_WindowData *windata = window->internal;
     SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
-    SDL_VideoData *viddata = _this->driverdata;
+    SDL_VideoData *viddata = _this->internal;
     KMSDRM_FBInfo *fb_info;
     int ret = 0;
 
@@ -192,7 +192,7 @@ int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
            we have waited here, there won't be a pending pageflip so the
            WaitPageflip at the beginning of this function will be a no-op.
            Just leave it here and don't worry.
-           Run your SDL program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>"
+           Run your SDL program with "SDL_VIDEO_DOUBLE_BUFFER=1 <program_name>"
            to enable this. */
         if (windata->double_buffer) {
             if (!KMSDRM_WaitPageflip(_this, windata)) {

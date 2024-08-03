@@ -238,7 +238,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 #ifdef SDL_PLATFORM_LINUX
     {
         pid_t linuxTid = syscall(SYS_gettid);
-        return SDL_LinuxSetThreadPriorityAndPolicy(linuxTid, priority, policy);
+        return SDL_SetLinuxThreadPriorityAndPolicy(linuxTid, priority, policy);
     }
 #else
     if (priority == SDL_THREAD_PRIORITY_LOW) {

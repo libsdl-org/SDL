@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "SDL_fcitx.h"
+#include "../../video/SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "SDL_dbus.h"
 
@@ -211,7 +212,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
             SDL_SendEditingText("", 0, 0);
         }
 
-        SDL_Fcitx_UpdateTextRect(NULL);
+        SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
         return DBUS_HANDLER_RESULT_HANDLED;
     }
 
@@ -229,7 +230,7 @@ static void FcitxClientICCallMethod(FcitxClient *client, const char *method)
 static void SDLCALL Fcitx_SetCapabilities(void *data,
                                           const char *name,
                                           const char *old_val,
-                                          const char *internal_editing)
+                                          const char *hint)
 {
     FcitxClient *client = (FcitxClient *)data;
     Uint64 caps = 0;
@@ -237,9 +238,12 @@ static void SDLCALL Fcitx_SetCapabilities(void *data,
         return;
     }
 
-    if (!(internal_editing && *internal_editing == '1')) {
+    if (hint && SDL_strstr(hint, "composition")) {
         caps |= (1 << 1); /* Preedit Flag */
         caps |= (1 << 4); /* Formatted Preedit Flag */
+    }
+    if (hint && SDL_strstr(hint, "candidates")) {
+        // FIXME, turn off native candidate rendering
     }
 
     SDL_DBus_CallVoidMethod(FCITX_DBUS_SERVICE, client->ic_path, FCITX_IC_DBUS_INTERFACE, "SetCapability", DBUS_TYPE_UINT64, &caps, DBUS_TYPE_INVALID);
@@ -300,7 +304,7 @@ static SDL_bool FcitxClientCreateIC(FcitxClient *client)
                                     NULL);
         dbus->connection_flush(dbus->session_conn);
 
-        SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, Fcitx_SetCapabilities, client);
+        SDL_AddHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, Fcitx_SetCapabilities, client);
         return SDL_TRUE;
     }
 
@@ -390,7 +394,7 @@ SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
                             DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mod_state, DBUS_TYPE_BOOLEAN, &is_release, DBUS_TYPE_UINT32, &event_time, DBUS_TYPE_INVALID,
                             DBUS_TYPE_BOOLEAN, &handled, DBUS_TYPE_INVALID)) {
         if (handled) {
-            SDL_Fcitx_UpdateTextRect(NULL);
+            SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
             return SDL_TRUE;
         }
     }
@@ -398,27 +402,27 @@ SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
     return SDL_FALSE;
 }
 
-void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
+void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window)
 {
-    SDL_Window *focused_win = NULL;
     int x = 0, y = 0;
     SDL_Rect *cursor = &fcitx_client.cursor_rect;
 
-    if (rect) {
-        SDL_copyp(cursor, rect);
-    }
-
-    focused_win = SDL_GetKeyboardFocus();
-    if (!focused_win) {
+    if (!window) {
         return;
     }
 
-    SDL_GetWindowPosition(focused_win, &x, &y);
+    // We'll use a square at the text input cursor location for the cursor_rect
+    cursor->x = window->text_input_rect.x + window->text_input_cursor;
+    cursor->y = window->text_input_rect.y;
+    cursor->w = window->text_input_rect.h;
+    cursor->h = window->text_input_rect.h;
+
+    SDL_GetWindowPosition(window, &x, &y);
 
 #ifdef SDL_VIDEO_DRIVER_X11
     {
-        SDL_PropertiesID props = SDL_GetWindowProperties(focused_win);
-        Display *x_disp = (Display *)SDL_GetProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        SDL_PropertiesID props = SDL_GetWindowProperties(window);
+        Display *x_disp = (Display *)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
         int x_screen = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, 0);
         Window x_win = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
         Window unused;
@@ -431,7 +435,7 @@ void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect)
     if (cursor->x == -1 && cursor->y == -1 && cursor->w == 0 && cursor->h == 0) {
         /* move to bottom left */
         int w = 0, h = 0;
-        SDL_GetWindowSize(focused_win, &w, &h);
+        SDL_GetWindowSize(window, &w, &h);
         cursor->x = 0;
         cursor->y = h;
     }
@@ -452,6 +456,5 @@ void SDL_Fcitx_PumpEvents(void)
 
     while (dbus->connection_dispatch(conn) == DBUS_DISPATCH_DATA_REMAINS) {
         /* Do nothing, actual work happens in DBus_MessageFilter */
-        usleep(10);
     }
 }

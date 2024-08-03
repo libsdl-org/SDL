@@ -34,6 +34,7 @@
 #include "SDL_offscreenevents_c.h"
 #include "SDL_offscreenframebuffer_c.h"
 #include "SDL_offscreenopengles.h"
+#include "SDL_offscreenvulkan.h"
 #include "SDL_offscreenwindow.h"
 
 #define OFFSCREENVID_DRIVER_NAME "offscreen"
@@ -50,14 +51,29 @@ static void OFFSCREEN_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
+static SDL_bool OFFSCREEN_Available(const char *enable_hint)
+{
+    const char *hint = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
+    if (hint) {
+        if (SDL_strcmp(hint, enable_hint) == 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
 {
     SDL_VideoDevice *device;
 
+    if (!OFFSCREEN_Available(OFFSCREENVID_DRIVER_NAME)) {
+        return NULL;
+    }
+
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
-        return 0;
+        return NULL;
     }
 
     /* General video */
@@ -81,6 +97,14 @@ static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
     device->GL_GetProcAddress = OFFSCREEN_GLES_GetProcAddress;
     device->GL_GetSwapInterval = OFFSCREEN_GLES_GetSwapInterval;
     device->GL_SetSwapInterval = OFFSCREEN_GLES_SetSwapInterval;
+#endif
+
+#ifdef SDL_VIDEO_VULKAN
+    device->Vulkan_LoadLibrary = OFFSCREEN_Vulkan_LoadLibrary;
+    device->Vulkan_UnloadLibrary = OFFSCREEN_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = OFFSCREEN_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = OFFSCREEN_Vulkan_CreateSurface;
+    device->Vulkan_DestroySurface = OFFSCREEN_Vulkan_DestroySurface;
 #endif
 
     /* "Window" */

@@ -41,8 +41,8 @@ struct
     float range;
 } force_info[SCE_TOUCH_PORT_MAX_NUM];
 
-char *disableFrontPoll = NULL;
-char *disableBackPoll = NULL;
+const char *disableFrontPoll = NULL;
+const char *disableBackPoll = NULL;
 
 void VITA_InitTouch(void)
 {
@@ -173,11 +173,11 @@ void VITA_ConvertTouchXYToSDLXY(float *sdl_x, float *sdl_y, int vita_x, int vita
         y = (vita_y - area_info[port].y) / (area_info[port].h - 1);
     }
 
-    x = SDL_max(x, 0.0);
-    x = SDL_min(x, 1.0);
+    x = SDL_max(x, 0.0f);
+    x = SDL_min(x, 1.0f);
 
-    y = SDL_max(y, 0.0);
-    y = SDL_min(y, 1.0);
+    y = SDL_max(y, 0.0f);
+    y = SDL_min(y, 1.0f);
 
     *sdl_x = x;
     *sdl_y = y;

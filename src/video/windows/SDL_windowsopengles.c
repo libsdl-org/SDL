@@ -63,7 +63,7 @@ int WIN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 SDL_GLContext WIN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_GLContext context;
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
 #ifdef SDL_VIDEO_OPENGL_WGL
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES &&
@@ -107,7 +107,7 @@ SDL_EGL_MakeCurrent_impl(WIN)
 int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* The current context is lost in here; save it and reset it. */
-    SDL_WindowData *windowdata = window->driverdata;
+    SDL_WindowData *windowdata = window->internal;
     SDL_Window *current_win = SDL_GL_GetCurrentWindow();
     SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
@@ -136,7 +136,7 @@ int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 EGLSurface
 WIN_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windowdata = window->driverdata;
+    SDL_WindowData *windowdata = window->internal;
 
     return windowdata->egl_surface;
 }

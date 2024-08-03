@@ -43,7 +43,7 @@ static int DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
         return -1;
     }
 
-    if (!device->iscapture) {
+    if (!device->recording) {
         device->hidden->mixbuf = (Uint8 *) SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return -1;
@@ -69,7 +69,7 @@ static Uint8 *DUMMYAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     return device->hidden->mixbuf;
 }
 
-static int DUMMYAUDIO_CaptureFromDevice(SDL_AudioDevice *device, void *buffer, int buflen)
+static int DUMMYAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
 {
     // always return a full buffer of silence.
     SDL_memset(buffer, device->silence_value, buflen);
@@ -82,12 +82,12 @@ static SDL_bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice = DUMMYAUDIO_CloseDevice;
     impl->WaitDevice = DUMMYAUDIO_WaitDevice;
     impl->GetDeviceBuf = DUMMYAUDIO_GetDeviceBuf;
-    impl->WaitCaptureDevice = DUMMYAUDIO_WaitDevice;
-    impl->CaptureFromDevice = DUMMYAUDIO_CaptureFromDevice;
+    impl->WaitRecordingDevice = DUMMYAUDIO_WaitDevice;
+    impl->RecordDevice = DUMMYAUDIO_RecordDevice;
 
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
-    impl->HasCaptureSupport = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
+    impl->OnlyHasDefaultRecordingDevice = SDL_TRUE;
+    impl->HasRecordingSupport = SDL_TRUE;
 
     return SDL_TRUE;
 }

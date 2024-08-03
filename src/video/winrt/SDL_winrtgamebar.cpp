@@ -144,7 +144,7 @@ static void WINRT_HandleGameBarIsInputRedirected_NonMainThread(Platform::Object 
 
 void WINRT_InitGameBar(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *driverdata = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     IGameBarStatics_ *gameBar = WINRT_GetGameBar();
     if (gameBar) {
         /* GameBar.IsInputRedirected events can come in via something other than
@@ -157,26 +157,26 @@ void WINRT_InitGameBar(SDL_VideoDevice *_this)
         Windows::Foundation::EventHandler<Platform::Object ^> ^ handler =
             ref new Windows::Foundation::EventHandler<Platform::Object ^>(&WINRT_HandleGameBarIsInputRedirected_NonMainThread);
         __FIEventHandler_1_IInspectable *pHandler = reinterpret_cast<__FIEventHandler_1_IInspectable *>(handler);
-        gameBar->add_IsInputRedirectedChanged(pHandler, &driverdata->gameBarIsInputRedirectedToken);
+        gameBar->add_IsInputRedirectedChanged(pHandler, &data->gameBarIsInputRedirectedToken);
         gameBar->Release();
     }
 }
 
 void WINRT_QuitGameBar(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *driverdata;
+    SDL_VideoData *data;
     IGameBarStatics_ *gameBar;
-    if (!_this || !_this->driverdata) {
+    if (!_this || !_this->internal) {
         return;
     }
     gameBar = WINRT_GetGameBar();
     if (!gameBar) {
         return;
     }
-    driverdata = _this->driverdata;
-    if (driverdata->gameBarIsInputRedirectedToken.Value) {
-        gameBar->remove_IsInputRedirectedChanged(driverdata->gameBarIsInputRedirectedToken);
-        driverdata->gameBarIsInputRedirectedToken.Value = 0;
+    data = _this->internal;
+    if (data->gameBarIsInputRedirectedToken.Value) {
+        gameBar->remove_IsInputRedirectedChanged(data->gameBarIsInputRedirectedToken);
+        data->gameBarIsInputRedirectedToken.Value = 0;
     }
     WINRT_MainThreadDispatcher = nullptr;
     gameBar->Release();

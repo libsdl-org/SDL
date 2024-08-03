@@ -35,9 +35,51 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     SDL_Rect full_src;
     SDL_Rect full_dst;
 
+    if (!src) {
+        return SDL_InvalidParamError("src");
+    }
+    if (!dst) {
+        return SDL_InvalidParamError("dst");
+    }
 
-    if (src->format->format != dst->format->format) {
-        return SDL_SetError("Only works with same format surfaces");
+    if (src->format != dst->format) {
+        // Slow!
+        SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->internal->palette, dst->internal->colorspace, dst->internal->props);
+        if (!src_tmp) {
+            return -1;
+        }
+        ret = SDL_SoftStretch(src_tmp, srcrect, dst, dstrect, scaleMode);
+        SDL_DestroySurface(src_tmp);
+        return ret;
+    }
+
+    if (SDL_ISPIXELFORMAT_FOURCC(src->format)) {
+        // Slow!
+        if (!dstrect) {
+            full_dst.x = 0;
+            full_dst.y = 0;
+            full_dst.w = dst->w;
+            full_dst.h = dst->h;
+            dstrect = &full_dst;
+        }
+
+        SDL_Surface *src_tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_XRGB8888);
+        SDL_Surface *dst_tmp = SDL_CreateSurface(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
+        if (src_tmp && dst_tmp) {
+            ret = SDL_SoftStretch(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
+            if (ret == 0) {
+                SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
+                    dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
+                    dst_tmp->pixels, dst_tmp->pitch,
+                    dst->format, dst->internal->colorspace, SDL_GetSurfaceProperties(dst),
+                    (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
+            }
+        } else {
+            ret = -1;
+        }
+        SDL_DestroySurface(src_tmp);
+        SDL_DestroySurface(dst_tmp);
+        return ret;
     }
 
     if (scaleMode != SDL_SCALEMODE_NEAREST && scaleMode != SDL_SCALEMODE_LINEAR && scaleMode != SDL_SCALEMODE_BEST) {
@@ -49,7 +91,7 @@ int SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect,
     }
 
     if (scaleMode == SDL_SCALEMODE_LINEAR) {
-        if (src->format->bytes_per_pixel != 4 || src->format->format == SDL_PIXELFORMAT_ARGB2101010) {
+        if (SDL_BYTESPERPIXEL(src->format) != 4 || src->format == SDL_PIXELFORMAT_ARGB2101010) {
             return SDL_SetError("Wrong format");
         }
     }
@@ -928,8 +970,7 @@ int SDL_LowerSoftStretchNearest(SDL_Surface *s, const SDL_Rect *srcrect,
     int dst_h = dstrect->h;
     int src_pitch = s->pitch;
     int dst_pitch = d->pitch;
-
-    const int bpp = d->format->bytes_per_pixel;
+    int bpp = SDL_BYTESPERPIXEL(d->format);
 
     Uint32 *src = (Uint32 *)((Uint8 *)s->pixels + srcrect->x * bpp + srcrect->y * src_pitch);
     Uint32 *dst = (Uint32 *)((Uint8 *)d->pixels + dstrect->x * bpp + dstrect->y * dst_pitch);

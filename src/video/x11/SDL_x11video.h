@@ -36,6 +36,7 @@
 #include "SDL_x11modes.h"
 #include "SDL_x11mouse.h"
 #include "SDL_x11opengl.h"
+#include "SDL_x11settings.h"
 #include "SDL_x11window.h"
 #include "SDL_x11vulkan.h"
 
@@ -58,6 +59,8 @@ struct SDL_VideoData
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     SDL_Window *active_cursor_confined_window;
 #endif /* SDL_VIDEO_DRIVER_X11_XFIXES */
+    Window xsettings_window;
+    SDLX11_SettingsData xsettings_data;
 
     /* This is true for ICCCM2.0-compliant window managers */
     SDL_bool net_wm;
@@ -103,6 +106,7 @@ struct SDL_VideoData
 
     SDL_Scancode key_layout[256];
     SDL_bool selection_waiting;
+    SDL_bool selection_incr_waiting;
 
     SDL_bool broken_pointer_grab; /* true if XGrabPointer seems unreliable. */
 
@@ -117,10 +121,11 @@ struct SDL_VideoData
 
     int xrandr_event_base;
 
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
     XkbDescPtr xkb;
 #endif
     int xkb_event;
+    unsigned int xkb_group;
 
     KeyCode filter_code;
     Time filter_time;

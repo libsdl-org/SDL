@@ -150,7 +150,7 @@ static SDL_bool PS2AUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice = PS2AUDIO_CloseDevice;
     impl->ThreadInit = PS2AUDIO_ThreadInit;
     impl->Deinitialize = PS2AUDIO_Deinitialize;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
     return SDL_TRUE; // this audio target is available.
 }
 

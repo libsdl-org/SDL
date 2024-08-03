@@ -615,8 +615,8 @@ SDL_FORCE_INLINE void BlitBtoNAlpha(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *dst = info->dst;
     int srcskip = info->src_skip;
     int dstskip = info->dst_skip;
-    const SDL_Color *srcpal = info->src_fmt->palette->colors;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_Color *srcpal = info->src_pal->colors;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int dstbpp;
     int c;
     Uint32 pixel;
@@ -691,9 +691,8 @@ SDL_FORCE_INLINE void BlitBtoNAlphaKey(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *dst = info->dst;
     int srcskip = info->src_skip;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
-    const SDL_Color *srcpal = srcfmt->palette->colors;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    const SDL_Color *srcpal = info->src_pal->colors;
     int dstbpp;
     int c;
     Uint32 pixel;
@@ -920,19 +919,25 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
 {
     int which;
 
-    if (surface->map->dst->format->bits_per_pixel < 8) {
+    if (SDL_BITSPERPIXEL(surface->internal->map.info.dst_fmt->format) < 8) {
         which = 0;
     } else {
-        which = surface->map->dst->format->bytes_per_pixel;
+        which = SDL_BYTESPERPIXEL(surface->internal->map.info.dst_fmt->format);
     }
 
-    if (SDL_PIXELTYPE(surface->format->format) == SDL_PIXELTYPE_INDEX1) {
-        switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+    if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX1) {
+        switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
-            return bitmap_blit_1b[which];
+            if (which < SDL_arraysize(bitmap_blit_1b)) {
+                return bitmap_blit_1b[which];
+            }
+            break;
 
         case SDL_COPY_COLORKEY:
-            return colorkey_blit_1b[which];
+            if (which < SDL_arraysize(colorkey_blit_1b)) {
+                return colorkey_blit_1b[which];
+            }
+            break;
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
             return which >= 2 ? Blit1btoNAlpha : (SDL_BlitFunc)NULL;
@@ -943,13 +948,19 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
         return NULL;
     }
 
-    if (SDL_PIXELTYPE(surface->format->format) == SDL_PIXELTYPE_INDEX2) {
-        switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+    if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX2) {
+        switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
-            return bitmap_blit_2b[which];
+            if (which < SDL_arraysize(bitmap_blit_2b)) {
+                return bitmap_blit_2b[which];
+            }
+            break;
 
         case SDL_COPY_COLORKEY:
-            return colorkey_blit_2b[which];
+            if (which < SDL_arraysize(colorkey_blit_2b)) {
+                return colorkey_blit_2b[which];
+            }
+            break;
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
             return which >= 2 ? Blit2btoNAlpha : (SDL_BlitFunc)NULL;
@@ -960,13 +971,19 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
         return NULL;
     }
 
-    if (SDL_PIXELTYPE(surface->format->format) == SDL_PIXELTYPE_INDEX4) {
-        switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+    if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX4) {
+        switch (surface->internal->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
-            return bitmap_blit_4b[which];
+            if (which < SDL_arraysize(bitmap_blit_4b)) {
+                return bitmap_blit_4b[which];
+            }
+            break;
 
         case SDL_COPY_COLORKEY:
-            return colorkey_blit_4b[which];
+            if (which < SDL_arraysize(colorkey_blit_4b)) {
+                return colorkey_blit_4b[which];
+            }
+            break;
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
             return which >= 2 ? Blit4btoNAlpha : (SDL_BlitFunc)NULL;

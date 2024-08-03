@@ -2,6 +2,7 @@
  * Original code: automated SDL rect test written by Edgar Simo "bobbens"
  * New/updated tests: aschiffler at ferzkopp dot net
  */
+#include <limits.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
@@ -9,6 +10,27 @@
 /* ================= Test Case Implementation ================== */
 
 /* Helper functions */
+
+/**
+ * Private helper to check SDL_GetRectAndLineIntersectionFloat results
+ */
+static void validateIntersectRectAndLineFloatResults(
+    SDL_bool intersection, SDL_bool expectedIntersection,
+    SDL_FRect *rect,
+    float x1, float y1, float x2, float y2,
+    float x1Ref, float y1Ref, float x2Ref, float y2Ref)
+{
+    SDLTest_AssertCheck(intersection == expectedIntersection,
+                        "Check for correct intersection result: expected %s, got %s intersecting rect (%.2f,%.2f,%.2f,%.2f) with line (%.2f,%.2f - %.2f,%.2f)",
+                        (expectedIntersection == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+                        (intersection == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+                        rect->x, rect->y, rect->w, rect->h,
+                        x1Ref, y1Ref, x2Ref, y2Ref);
+    SDLTest_AssertCheck(x1 == x1Ref && y1 == y1Ref && x2 == x2Ref && y2 == y2Ref,
+                        "Check if line was incorrectly clipped or modified: got (%.2f,%.2f - %.2f,%.2f) expected (%.2f,%.2f - %.2f,%.2f)",
+                        x1, y1, x2, y2,
+                        x1Ref, y1Ref, x2Ref, y2Ref);
+}
 
 /**
  * Private helper to check SDL_GetRectAndLineIntersection results
@@ -36,6 +58,43 @@ static void validateIntersectRectAndLineResults(
 }
 
 /* Test case functions */
+
+/**
+ * Tests SDL_GetRectAndLineIntersectionFloat() clipping cases
+ *
+ * \sa SDL_GetRectAndLineIntersectionFloat
+ */
+static int rect_testIntersectRectAndLineFloat(void *arg)
+{
+    SDL_FRect rect;
+    float x1, y1;
+    float x2, y2;
+    SDL_bool intersected;
+
+    x1 = 5.0f;
+    y1 = 6.0f;
+    x2 = 23.0f;
+    y2 = 6.0f;
+    rect.x = 2.5f;
+    rect.y = 1.5f;
+    rect.w = 15.25f;
+    rect.h = 12.0f;
+    intersected = SDL_GetRectAndLineIntersectionFloat(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineFloatResults(intersected, SDL_TRUE, &rect, x1, y1, x2, y2, 5.0f, 6.0f, 17.75f, 6.0f);
+
+    x1 = 0.0f;
+    y1 = 6.0f;
+    x2 = 23.0f;
+    y2 = 6.0f;
+    rect.x = 2.5f;
+    rect.y = 1.5f;
+    rect.w = 0.25f;
+    rect.h = 12.0f;
+    intersected = SDL_GetRectAndLineIntersectionFloat(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineFloatResults(intersected, SDL_TRUE, &rect, x1, y1, x2, y2, 2.5f, 6.0f, 2.75f, 6.0f);
+
+    return TEST_COMPLETED;
+}
 
 /**
  * Tests SDL_GetRectAndLineIntersection() clipping cases
@@ -102,6 +161,17 @@ static int rect_testIntersectRectAndLine(void *arg)
     rect = refRect;
     intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
     validateIntersectRectAndLineResults(intersected, SDL_TRUE, &rect, &refRect, x1, y1, x2, y2, 31, 0, 0, 31);
+
+    /* Test some overflow cases */
+    refRect.x = INT_MAX - 4;
+    refRect.y = INT_MAX - 4;
+    x1 = INT_MAX;
+    y1 = INT_MIN;
+    x2 = INT_MIN;
+    y2 = INT_MAX;
+    rect = refRect;
+    intersected = SDL_GetRectAndLineIntersection(&rect, &x1, &y1, &x2, &y2);
+    validateIntersectRectAndLineResults(intersected, SDL_FALSE, &rect, &refRect, x1, y1, x2, y2, x1, y1, x2, y2);
 
     return TEST_COMPLETED;
 }
@@ -291,6 +361,21 @@ static int rect_testIntersectRectAndLineParam(void *arg)
 }
 
 /**
+ * Private helper to check SDL_HasRectIntersectionFloat results
+ */
+static void validateHasIntersectionFloatResults(
+    SDL_bool intersection, SDL_bool expectedIntersection,
+    SDL_FRect *rectA, SDL_FRect *rectB)
+{
+    SDLTest_AssertCheck(intersection == expectedIntersection,
+                        "Check intersection result: expected %s, got %s intersecting A (%.2f,%.2f,%.2f,%.2f) with B (%.2f,%.2f,%.2f,%.2f)",
+                        (expectedIntersection == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+                        (intersection == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+                        rectA->x, rectA->y, rectA->w, rectA->h,
+                        rectB->x, rectB->y, rectB->w, rectB->h);
+}
+
+/**
  * Private helper to check SDL_HasRectIntersection results
  */
 static void validateHasIntersectionResults(
@@ -311,6 +396,29 @@ static void validateHasIntersectionResults(
                         "Check that source rectangle B was not modified: got (%d,%d,%d,%d) expected (%d,%d,%d,%d)",
                         rectB->x, rectB->y, rectB->w, rectB->h,
                         refRectB->x, refRectB->y, refRectB->w, refRectB->h);
+}
+
+/**
+ * Private helper to check SDL_GetRectIntersection results
+ */
+static void validateIntersectRectFloatResults(
+    SDL_bool intersection, SDL_bool expectedIntersection,
+    SDL_FRect *rectA, SDL_FRect *rectB,
+    SDL_FRect *result, SDL_FRect *expectedResult)
+{
+    validateHasIntersectionFloatResults(intersection, expectedIntersection, rectA, rectB);
+    if (result && expectedResult) {
+        SDLTest_AssertCheck(result->x == expectedResult->x && result->y == expectedResult->y && result->w == expectedResult->w && result->h == expectedResult->h,
+                            "Check that intersection of rectangles A (%.2f,%.2f, %.2fx%.2f) and B (%.2f,%.2f %.2fx%.2f) was correctly calculated, got (%.2f,%.2f %.2fx%.2f) expected (%.2f,%.2f,%.2f,%.2f)",
+                            rectA->x, rectA->y, rectA->w, rectA->h,
+                            rectB->x, rectB->y, rectB->w, rectB->h,
+                            result->x, result->y, result->w, result->h,
+                            expectedResult->x, expectedResult->y, expectedResult->w, expectedResult->h);
+    }
+    SDLTest_AssertCheck(intersection == SDL_HasRectIntersectionFloat(rectA, rectB),
+                        "Check that intersection (%s) matches SDL_HasRectIntersectionFloat() result (%s)",
+                        intersection ? "SDL_TRUE" : "SDL_FALSE",
+                        SDL_HasRectIntersectionFloat(rectA, rectB) ? "SDL_TRUE" : "SDL_FALSE");
 }
 
 /**
@@ -353,6 +461,20 @@ static void validateUnionRectResults(
                         rectB->x, rectB->y, rectB->w, rectB->h,
                         result->x, result->y, result->w, result->h,
                         expectedResult->x, expectedResult->y, expectedResult->w, expectedResult->h);
+}
+
+/**
+ * Private helper to check SDL_RectEmptyFloat results
+ */
+static void validateRectEmptyFloatResults(
+    SDL_bool empty, SDL_bool expectedEmpty,
+    SDL_FRect *rect)
+{
+    SDLTest_AssertCheck(empty == expectedEmpty,
+                        "Check for correct empty result: expected %s, got %s testing (%.2f,%.2f,%.2f,%.2f)",
+                        (expectedEmpty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+                        (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
+                        rect->x, rect->y, rect->w, rect->h);
 }
 
 /**
@@ -420,6 +542,74 @@ static void validateFRectEqualsResults(
                         "Check that source rectangle B was not modified: got (%f,%f,%f,%f) expected (%f,%f,%f,%f)",
                         rectB->x, rectB->y, rectB->w, rectB->h,
                         refRectB->x, refRectB->y, refRectB->w, refRectB->h);
+}
+
+/**
+ * Tests SDL_GetRectIntersectionFloat()
+ *
+ * \sa SDL_GetRectIntersectionFloat
+ */
+static int rect_testIntersectRectFloat(void *arg)
+{
+    SDL_FRect rectA;
+    SDL_FRect rectB;
+    SDL_FRect result;
+    SDL_FRect expectedResult;
+    SDL_bool intersection;
+
+    rectA.x = 0.0f;
+    rectA.y = 0.0f;
+    rectA.w = 1.0f;
+    rectA.h = 1.0f;
+    rectB.x = 0.0f;
+    rectB.y = 0.0f;
+    rectB.w = 1.0f;
+    rectB.h = 1.0f;
+    expectedResult = rectA;
+    intersection = SDL_GetRectIntersectionFloat(&rectA, &rectB, &result);
+    validateIntersectRectFloatResults(intersection, SDL_TRUE, &rectA, &rectB, &result, &expectedResult);
+
+    rectA.x = 0.0f;
+    rectA.y = 0.0f;
+    rectA.w = 1.0f;
+    rectA.h = 1.0f;
+    rectB.x = 1.0f;
+    rectB.y = 0.0f;
+    rectB.w = 1.0f;
+    rectB.h = 1.0f;
+    expectedResult = rectB;
+    expectedResult.w = 0.0f;
+    intersection = SDL_GetRectIntersectionFloat(&rectA, &rectB, &result);
+    validateIntersectRectFloatResults(intersection, SDL_TRUE, &rectA, &rectB, &result, &expectedResult);
+
+    rectA.x = 0.0f;
+    rectA.y = 0.0f;
+    rectA.w = 1.0f;
+    rectA.h = 1.0f;
+    rectB.x = 1.0f;
+    rectB.y = 1.0f;
+    rectB.w = 1.0f;
+    rectB.h = 1.0f;
+    expectedResult = rectB;
+    expectedResult.w = 0.0f;
+    expectedResult.h = 0.0f;
+    intersection = SDL_GetRectIntersectionFloat(&rectA, &rectB, &result);
+    validateIntersectRectFloatResults(intersection, SDL_TRUE, &rectA, &rectB, &result, &expectedResult);
+
+    rectA.x = 0.0f;
+    rectA.y = 0.0f;
+    rectA.w = 1.0f;
+    rectA.h = 1.0f;
+    rectB.x = 2.0f;
+    rectB.y = 0.0f;
+    rectB.w = 1.0f;
+    rectB.h = 1.0f;
+    expectedResult = rectB;
+    expectedResult.w = -1.0f;
+    intersection = SDL_GetRectIntersectionFloat(&rectA, &rectB, &result);
+    validateIntersectRectFloatResults(intersection, SDL_FALSE, &rectA, &rectB, &result, &expectedResult);
+
+    return TEST_COMPLETED;
 }
 
 /**
@@ -953,6 +1143,39 @@ static int rect_testHasIntersectionParam(void *arg)
 }
 
 /**
+ * Test SDL_GetRectEnclosingPointsFloat()
+ *
+ * \sa SDL_GetRectEnclosingPointsFloat
+ */
+static int rect_testEnclosePointsFloat(void *arg)
+{
+    SDL_FPoint fpts[3] = { { 1.25f, 2.5f }, { 1.75f, 3.75f }, { 3.5f, 3.0f } };
+    int i, count = 3;
+    SDL_FRect clip = { 0.0f, 1.0f, 4.0f, 4.0f };
+    SDL_FRect result;
+
+    SDL_GetRectEnclosingPointsFloat(fpts, count, &clip, &result);
+    SDLTest_AssertCheck(result.x == 1.25f && result.y == 2.5f && result.w == 2.25f && result.h == 1.25f,
+                        "Resulting enclosing rectangle incorrect: expected (%.2f,%.2f - %.2fx%.2f), actual (%.2f,%.2f - %.2fx%.2f)",
+                        1.25f, 2.5f, 2.25f, 1.25f, result.x, result.y, result.w, result.h);
+    for (i = 0; i != count; i++) {
+        SDL_bool inside;
+
+        inside = SDL_PointInRectFloat(&fpts[i], &clip);
+        SDLTest_AssertCheck(inside,
+                            "Expected point (%.2f,%.2f) to be inside clip rect (%.2f,%.2f - %.2fx%.2f)",
+                            fpts[i].x, fpts[i].y, clip.x, clip.y, clip.w, clip.h);
+
+        inside = SDL_PointInRectFloat(&fpts[i], &result);
+        SDLTest_AssertCheck(inside,
+                            "Expected point (%.2f,%.2f) to be inside result rect (%.2f,%.2f - %.2fx%.2f)",
+                            fpts[i].x, fpts[i].y, result.x, result.y, result.w, result.h);
+    }
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Test SDL_GetRectEnclosingPoints() without clipping
  *
  * \sa SDL_GetRectEnclosingPoints
@@ -1000,7 +1223,7 @@ static int rect_testEnclosePoints(void *arg)
     }
 
     /* Call function and validate - special case: no result requested */
-    anyEnclosedNoResult = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, (SDL_Rect *)NULL);
+    anyEnclosedNoResult = SDL_GetRectEnclosingPoints(points, numPoints, NULL, (SDL_Rect *)NULL);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosedNoResult,
                         "Check expected return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1012,7 +1235,7 @@ static int rect_testEnclosePoints(void *arg)
     }
 
     /* Call function and validate */
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, numPoints, NULL, &result);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosed,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1083,7 +1306,7 @@ static int rect_testEnclosePointsRepeatedInput(void *arg)
     }
 
     /* Call function and validate - special case: no result requested */
-    anyEnclosedNoResult = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, (SDL_Rect *)NULL);
+    anyEnclosedNoResult = SDL_GetRectEnclosingPoints(points, numPoints, NULL, (SDL_Rect *)NULL);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosedNoResult,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1095,7 +1318,7 @@ static int rect_testEnclosePointsRepeatedInput(void *arg)
     }
 
     /* Call function and validate */
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, numPoints, NULL, &result);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosed,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1173,7 +1396,7 @@ static int rect_testEnclosePointsWithClipping(void *arg)
 
     /* Call function and validate - special case: no result requested */
     clip = refClip;
-    anyEnclosedNoResult = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)&clip, (SDL_Rect *)NULL);
+    anyEnclosedNoResult = SDL_GetRectEnclosingPoints(points, numPoints, &clip, NULL);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosedNoResult,
                         "Expected return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1187,7 +1410,7 @@ static int rect_testEnclosePointsWithClipping(void *arg)
                         "Check that source clipping rectangle was not modified");
 
     /* Call function and validate */
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, numPoints, &clip, &result);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosed,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1209,7 +1432,7 @@ static int rect_testEnclosePointsWithClipping(void *arg)
     clip.w = 0;
     clip.h = 0;
     expectedEnclosed = SDL_FALSE;
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, numPoints, &clip, &result);
     SDLTest_AssertCheck(expectedEnclosed == anyEnclosed,
                         "Check return value %s, got %s",
                         (expectedEnclosed == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE",
@@ -1232,14 +1455,14 @@ static int rect_testEnclosePointsParam(void *arg)
     SDL_bool anyEnclosed;
 
     /* invalid parameter combinations */
-    anyEnclosed = SDL_GetRectEnclosingPoints((SDL_Point *)NULL, 1, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints((SDL_Point *)NULL, 1, &clip, &result);
     SDLTest_AssertCheck(anyEnclosed == SDL_FALSE, "Check that functions returns SDL_FALSE when 1st parameter is NULL");
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, 0, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, 0, &clip, &result);
     SDLTest_AssertCheck(anyEnclosed == SDL_FALSE, "Check that functions returns SDL_FALSE when 2nd parameter is 0");
     count = SDLTest_RandomIntegerInRange(-100, -1);
-    anyEnclosed = SDL_GetRectEnclosingPoints((const SDL_Point *)points, count, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints(points, count, &clip, &result);
     SDLTest_AssertCheck(anyEnclosed == SDL_FALSE, "Check that functions returns SDL_FALSE when 2nd parameter is %i (negative)", count);
-    anyEnclosed = SDL_GetRectEnclosingPoints((SDL_Point *)NULL, 0, (const SDL_Rect *)&clip, &result);
+    anyEnclosed = SDL_GetRectEnclosingPoints((SDL_Point *)NULL, 0, &clip, &result);
     SDLTest_AssertCheck(anyEnclosed == SDL_FALSE, "Check that functions returns SDL_FALSE when 1st parameter is NULL and 2nd parameter was 0");
 
     return TEST_COMPLETED;
@@ -1486,6 +1709,48 @@ static int rect_testUnionRectParam(void *arg)
 }
 
 /**
+ * Tests SDL_RectEmptyFloat() with various inputs
+ *
+ * \sa SDL_RectEmptyFloat
+ */
+static int rect_testRectEmptyFloat(void *arg)
+{
+    SDL_FRect rect;
+    SDL_bool result;
+
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.w = 1.0f;
+    rect.h = 1.0f;
+    result = SDL_RectEmptyFloat(&rect);
+    validateRectEmptyFloatResults(result, SDL_FALSE, &rect);
+
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.w = 0.0f;
+    rect.h = 0.0f;
+    result = SDL_RectEmptyFloat(&rect);
+    validateRectEmptyFloatResults(result, SDL_FALSE, &rect);
+
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.w = -1.0f;
+    rect.h = 1.0f;
+    result = SDL_RectEmptyFloat(&rect);
+    validateRectEmptyFloatResults(result, SDL_TRUE, &rect);
+
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.w = 1.0f;
+    rect.h = -1.0f;
+    result = SDL_RectEmptyFloat(&rect);
+    validateRectEmptyFloatResults(result, SDL_TRUE, &rect);
+
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests SDL_RectEmpty() with various inputs
  *
  * \sa SDL_RectEmpty
@@ -1669,137 +1934,155 @@ static int rect_testFRectEqualsParam(void *arg)
 
 /* Rect test cases */
 
+/* SDL_GetRectAndLineIntersectionFloat */
+static const SDLTest_TestCaseReference rectTestIntersectRectAndLineFloat = {
+    (SDLTest_TestCaseFp)rect_testIntersectRectAndLineFloat, "rect_testIntersectRectAndLineFloat", "Tests SDL_GetRectAndLineIntersectionFloat", TEST_ENABLED
+};
+
 /* SDL_GetRectAndLineIntersection */
-static const SDLTest_TestCaseReference rectTest1 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectAndLine = {
     (SDLTest_TestCaseFp)rect_testIntersectRectAndLine, "rect_testIntersectRectAndLine", "Tests SDL_GetRectAndLineIntersection clipping cases", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest2 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectAndLineInside = {
     (SDLTest_TestCaseFp)rect_testIntersectRectAndLineInside, "rect_testIntersectRectAndLineInside", "Tests SDL_GetRectAndLineIntersection with line fully contained in rect", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest3 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectAndLineOutside = {
     (SDLTest_TestCaseFp)rect_testIntersectRectAndLineOutside, "rect_testIntersectRectAndLineOutside", "Tests SDL_GetRectAndLineIntersection with line fully outside of rect", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest4 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectAndLineEmpty = {
     (SDLTest_TestCaseFp)rect_testIntersectRectAndLineEmpty, "rect_testIntersectRectAndLineEmpty", "Tests SDL_GetRectAndLineIntersection with empty rectangle ", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest5 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectAndLineParam = {
     (SDLTest_TestCaseFp)rect_testIntersectRectAndLineParam, "rect_testIntersectRectAndLineParam", "Negative tests against SDL_GetRectAndLineIntersection with invalid parameters", TEST_ENABLED
 };
 
+/* SDL_GetRectIntersectionFloat */
+static const SDLTest_TestCaseReference rectTestIntersectRectFloat = {
+    (SDLTest_TestCaseFp)rect_testIntersectRectFloat, "rect_testIntersectRectFloat", "Tests SDL_GetRectIntersectionFloat", TEST_ENABLED
+};
+
 /* SDL_GetRectIntersection */
-static const SDLTest_TestCaseReference rectTest6 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectInside = {
     (SDLTest_TestCaseFp)rect_testIntersectRectInside, "rect_testIntersectRectInside", "Tests SDL_GetRectIntersection with B fully contained in A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest7 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectOutside = {
     (SDLTest_TestCaseFp)rect_testIntersectRectOutside, "rect_testIntersectRectOutside", "Tests SDL_GetRectIntersection with B fully outside of A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest8 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectPartial = {
     (SDLTest_TestCaseFp)rect_testIntersectRectPartial, "rect_testIntersectRectPartial", "Tests SDL_GetRectIntersection with B partially intersecting A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest9 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectPoint = {
     (SDLTest_TestCaseFp)rect_testIntersectRectPoint, "rect_testIntersectRectPoint", "Tests SDL_GetRectIntersection with 1x1 sized rectangles", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest10 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectEmpty = {
     (SDLTest_TestCaseFp)rect_testIntersectRectEmpty, "rect_testIntersectRectEmpty", "Tests SDL_GetRectIntersection with empty rectangles", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest11 = {
+static const SDLTest_TestCaseReference rectTestIntersectRectParam = {
     (SDLTest_TestCaseFp)rect_testIntersectRectParam, "rect_testIntersectRectParam", "Negative tests against SDL_GetRectIntersection with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_HasRectIntersection */
-static const SDLTest_TestCaseReference rectTest12 = {
+static const SDLTest_TestCaseReference rectTestHasIntersectionInside = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionInside, "rect_testHasIntersectionInside", "Tests SDL_HasRectIntersection with B fully contained in A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest13 = {
+static const SDLTest_TestCaseReference rectTestHasIntersectionOutside = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionOutside, "rect_testHasIntersectionOutside", "Tests SDL_HasRectIntersection with B fully outside of A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest14 = {
+static const SDLTest_TestCaseReference rectTestHasIntersectionPartial = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionPartial, "rect_testHasIntersectionPartial", "Tests SDL_HasRectIntersection with B partially intersecting A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest15 = {
+static const SDLTest_TestCaseReference rectTestHasIntersectionPoint = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionPoint, "rect_testHasIntersectionPoint", "Tests SDL_HasRectIntersection with 1x1 sized rectangles", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest16 = {
+static const SDLTest_TestCaseReference rectTestHasIntersectionEmpty = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionEmpty, "rect_testHasIntersectionEmpty", "Tests SDL_HasRectIntersection with empty rectangles", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest17 = {
+static const SDLTest_TestCaseReference rectTestHasIntersectionParam = {
     (SDLTest_TestCaseFp)rect_testHasIntersectionParam, "rect_testHasIntersectionParam", "Negative tests against SDL_HasRectIntersection with invalid parameters", TEST_ENABLED
 };
 
+/* SDL_GetRectEnclosingPointsFloat */
+static const SDLTest_TestCaseReference rectTestEnclosePointsFloat = {
+    (SDLTest_TestCaseFp)rect_testEnclosePointsFloat, "rect_testEnclosePointsFloat", "Tests SDL_GetRectEnclosingPointsFloat", TEST_ENABLED
+};
+
 /* SDL_GetRectEnclosingPoints */
-static const SDLTest_TestCaseReference rectTest18 = {
+static const SDLTest_TestCaseReference rectTestEnclosePoints = {
     (SDLTest_TestCaseFp)rect_testEnclosePoints, "rect_testEnclosePoints", "Tests SDL_GetRectEnclosingPoints without clipping", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest19 = {
+static const SDLTest_TestCaseReference rectTestEnclosePointsWithClipping = {
     (SDLTest_TestCaseFp)rect_testEnclosePointsWithClipping, "rect_testEnclosePointsWithClipping", "Tests SDL_GetRectEnclosingPoints with clipping", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest20 = {
+static const SDLTest_TestCaseReference rectTestEnclosePointsRepeatedInput = {
     (SDLTest_TestCaseFp)rect_testEnclosePointsRepeatedInput, "rect_testEnclosePointsRepeatedInput", "Tests SDL_GetRectEnclosingPoints with repeated input", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest21 = {
+static const SDLTest_TestCaseReference rectTestEnclosePointsParam = {
     (SDLTest_TestCaseFp)rect_testEnclosePointsParam, "rect_testEnclosePointsParam", "Negative tests against SDL_GetRectEnclosingPoints with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_GetRectUnion */
-static const SDLTest_TestCaseReference rectTest22 = {
+static const SDLTest_TestCaseReference rectTestUnionRectInside = {
     (SDLTest_TestCaseFp)rect_testUnionRectInside, "rect_testUnionRectInside", "Tests SDL_GetRectUnion where rect B is inside rect A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest23 = {
+static const SDLTest_TestCaseReference rectTestUnionRectOutside = {
     (SDLTest_TestCaseFp)rect_testUnionRectOutside, "rect_testUnionRectOutside", "Tests SDL_GetRectUnion where rect B is outside rect A", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest24 = {
+static const SDLTest_TestCaseReference rectTestUnionRectEmpty = {
     (SDLTest_TestCaseFp)rect_testUnionRectEmpty, "rect_testUnionRectEmpty", "Tests SDL_GetRectUnion where rect A or rect B are empty", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest25 = {
+static const SDLTest_TestCaseReference rectTestUnionRectParam = {
     (SDLTest_TestCaseFp)rect_testUnionRectParam, "rect_testUnionRectParam", "Negative tests against SDL_GetRectUnion with invalid parameters", TEST_ENABLED
 };
 
+/* SDL_RectEmptyFloat */
+static const SDLTest_TestCaseReference rectTestRectEmptyFloat = {
+    (SDLTest_TestCaseFp)rect_testRectEmptyFloat, "rect_testRectEmptyFloat", "Tests SDL_RectEmptyFloat with various inputs", TEST_ENABLED
+};
+
 /* SDL_RectEmpty */
-static const SDLTest_TestCaseReference rectTest26 = {
+static const SDLTest_TestCaseReference rectTestRectEmpty = {
     (SDLTest_TestCaseFp)rect_testRectEmpty, "rect_testRectEmpty", "Tests SDL_RectEmpty with various inputs", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest27 = {
+static const SDLTest_TestCaseReference rectTestRectEmptyParam = {
     (SDLTest_TestCaseFp)rect_testRectEmptyParam, "rect_testRectEmptyParam", "Negative tests against SDL_RectEmpty with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_RectsEqual */
-
-static const SDLTest_TestCaseReference rectTest28 = {
+static const SDLTest_TestCaseReference rectTestRectEquals = {
     (SDLTest_TestCaseFp)rect_testRectEquals, "rect_testRectEquals", "Tests SDL_RectsEqual with various inputs", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest29 = {
+static const SDLTest_TestCaseReference rectTestRectEqualsParam = {
     (SDLTest_TestCaseFp)rect_testRectEqualsParam, "rect_testRectEqualsParam", "Negative tests against SDL_RectsEqual with invalid parameters", TEST_ENABLED
 };
 
 /* SDL_RectsEqualFloat */
-
-static const SDLTest_TestCaseReference rectTest30 = {
+static const SDLTest_TestCaseReference rectTestFRectEquals = {
     (SDLTest_TestCaseFp)rect_testFRectEquals, "rect_testFRectEquals", "Tests SDL_RectsEqualFloat with various inputs", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference rectTest31 = {
+static const SDLTest_TestCaseReference rectTestFRectEqualsParam = {
     (SDLTest_TestCaseFp)rect_testFRectEqualsParam, "rect_testFRectEqualsParam", "Negative tests against SDL_RectsEqualFloat with invalid parameters", TEST_ENABLED
 };
 
@@ -1807,9 +2090,42 @@ static const SDLTest_TestCaseReference rectTest31 = {
  * Sequence of Rect test cases; functions that handle simple rectangles including overlaps and merges.
  */
 static const SDLTest_TestCaseReference *rectTests[] = {
-    &rectTest1, &rectTest2, &rectTest3, &rectTest4, &rectTest5, &rectTest6, &rectTest7, &rectTest8, &rectTest9, &rectTest10, &rectTest11, &rectTest12, &rectTest13, &rectTest14,
-    &rectTest15, &rectTest16, &rectTest17, &rectTest18, &rectTest19, &rectTest20, &rectTest21, &rectTest22, &rectTest23, &rectTest24, &rectTest25, &rectTest26, &rectTest27,
-    &rectTest28, &rectTest29, &rectTest30, &rectTest31, NULL
+    &rectTestIntersectRectAndLineFloat,
+    &rectTestIntersectRectAndLine,
+    &rectTestIntersectRectAndLineInside,
+    &rectTestIntersectRectAndLineOutside,
+    &rectTestIntersectRectAndLineEmpty,
+    &rectTestIntersectRectAndLineParam,
+    &rectTestIntersectRectFloat,
+    &rectTestIntersectRectInside,
+    &rectTestIntersectRectOutside,
+    &rectTestIntersectRectPartial,
+    &rectTestIntersectRectPoint,
+    &rectTestIntersectRectEmpty,
+    &rectTestIntersectRectParam,
+    &rectTestHasIntersectionInside,
+    &rectTestHasIntersectionOutside,
+    &rectTestHasIntersectionPartial,
+    &rectTestHasIntersectionPoint,
+    &rectTestHasIntersectionEmpty,
+    &rectTestHasIntersectionParam,
+    &rectTestEnclosePointsFloat,
+    &rectTestEnclosePoints,
+    &rectTestEnclosePointsWithClipping,
+    &rectTestEnclosePointsRepeatedInput,
+    &rectTestEnclosePointsParam,
+    &rectTestUnionRectInside,
+    &rectTestUnionRectOutside,
+    &rectTestUnionRectEmpty,
+    &rectTestUnionRectParam,
+    &rectTestRectEmptyFloat,
+    &rectTestRectEmpty,
+    &rectTestRectEmptyParam,
+    &rectTestRectEquals,
+    &rectTestRectEqualsParam,
+    &rectTestFRectEquals,
+    &rectTestFRectEqualsParam,
+    NULL
 };
 
 /* Rect test suite (global) */

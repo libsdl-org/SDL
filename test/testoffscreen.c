@@ -21,9 +21,6 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#include <stdlib.h>
-#include <time.h>
-
 static SDL_Renderer *renderer = NULL;
 static SDL_Window *window = NULL;
 static int done = SDL_FALSE;
@@ -112,7 +109,7 @@ int main(int argc, char *argv[])
     }
 
     /* Force the offscreen renderer, if it cannot be created then fail out */
-    SDL_SetHint("SDL_VIDEO_DRIVER", "offscreen");
+    SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
         SDL_Log("Couldn't initialize the offscreen video driver: %s\n",
                 SDL_GetError());
@@ -136,8 +133,6 @@ int main(int argc, char *argv[])
     }
 
     SDL_RenderClear(renderer);
-
-    srand((unsigned int)time(NULL));
 
 #ifndef SDL_PLATFORM_EMSCRIPTEN
     /* Main render loop */

@@ -20,9 +20,12 @@
 */
 #include "SDL_internal.h"
 
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
+
+extern "C" {
+#include "../SDL_sysfilesystem.h"
+}
 
 #include "../../core/windows/SDL_windows.h"
 #include <SDL3/SDL_hints.h>
@@ -31,7 +34,7 @@
 #include <XGameSaveFiles.h>
 
 char *
-SDL_GetBasePath(void)
+SDL_SYS_GetBasePath(void)
 {
     /* NOTE: This function is a UTF8 version of the Win32 SDL_GetBasePath()!
      * The GDK actually _recommends_ the 'A' functions over the 'W' functions :o
@@ -79,8 +82,7 @@ SDL_GetBasePath(void)
     return path;
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     XUserHandle user = NULL;
     XAsyncBlock block = { 0 };
@@ -99,7 +101,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         return SDL_strdup("T:\\");
     }
 
-    if (SDL_GDKGetDefaultUser(&user) < 0) {
+    if (SDL_GetGDKDefaultUser(&user) < 0) {
         /* Error already set, just return */
         return NULL;
     }
@@ -133,5 +135,11 @@ SDL_GetPrefPath(const char *org, const char *app)
     return folderPath;
 }
 
+/* TODO */
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

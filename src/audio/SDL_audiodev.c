@@ -45,7 +45,7 @@
 #define SDL_PATH_DEV_AUDIO "/dev/audio"
 #endif
 
-static void test_device(const SDL_bool iscapture, const char *fname, int flags, SDL_bool (*test)(int fd))
+static void test_device(const SDL_bool recording, const char *fname, int flags, SDL_bool (*test)(int fd))
 {
     struct stat sb;
     const int audio_fd = open(fname, flags | O_CLOEXEC, 0);
@@ -63,7 +63,7 @@ static void test_device(const SDL_bool iscapture, const char *fname, int flags, 
                  * information,  making this information inaccessible at
                  * enumeration time
                  */
-                SDL_AddAudioDevice(iscapture, fname, NULL, (void *)(uintptr_t)dummyhandle);
+                SDL_AddAudioDevice(recording, fname, NULL, (void *)(uintptr_t)dummyhandle);
             }
         } else {
             close(audio_fd);
@@ -76,9 +76,9 @@ static SDL_bool test_stub(int fd)
     return SDL_TRUE;
 }
 
-static void SDL_EnumUnixAudioDevices_Internal(const SDL_bool iscapture, const SDL_bool classic, SDL_bool (*test)(int))
+static void SDL_EnumUnixAudioDevices_Internal(const SDL_bool recording, const SDL_bool classic, SDL_bool (*test)(int))
 {
-    const int flags = iscapture ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT;
+    const int flags = recording ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT;
     const char *audiodev;
     char audiopath[1024];
 
@@ -105,7 +105,7 @@ static void SDL_EnumUnixAudioDevices_Internal(const SDL_bool iscapture, const SD
             }
         }
     }
-    test_device(iscapture, audiodev, flags, test);
+    test_device(recording, audiodev, flags, test);
 
     if (SDL_strlen(audiodev) < (sizeof(audiopath) - 3)) {
         int instance = 0;
@@ -113,7 +113,7 @@ static void SDL_EnumUnixAudioDevices_Internal(const SDL_bool iscapture, const SD
             (void)SDL_snprintf(audiopath, SDL_arraysize(audiopath),
                                "%s%d", audiodev, instance);
             instance++;
-            test_device(iscapture, audiopath, flags, test);
+            test_device(recording, audiopath, flags, test);
         }
     }
 }

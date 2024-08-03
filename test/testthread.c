@@ -20,6 +20,7 @@
 #include <SDL3/SDL_test.h>
 
 static SDL_TLSID tls;
+static SDL_Thread *thread = NULL;
 static int alive = 0;
 static int testprio = 0;
 static SDLTest_CommonState *state;
@@ -28,8 +29,8 @@ static SDLTest_CommonState *state;
 static void
 quit(int rc)
 {
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     /* Let 'main()' return normally */
     if (rc != 0) {
         exit(rc);
@@ -58,9 +59,9 @@ ThreadFunc(void *data)
 {
     SDL_ThreadPriority prio = SDL_THREAD_PRIORITY_NORMAL;
 
-    SDL_SetTLS(tls, "baby thread", NULL);
+    SDL_SetTLS(&tls, "baby thread", NULL);
     SDL_Log("Started thread %s: My thread id is %" SDL_PRIu64 ", thread data = %s\n",
-            (char *)data, SDL_GetCurrentThreadID(), (const char *)SDL_GetTLS(tls));
+            (char *)data, SDL_GetCurrentThreadID(), (const char *)SDL_GetTLS(&tls));
     while (alive) {
         SDL_Log("Thread '%s' is alive!\n", (char *)data);
 
@@ -83,13 +84,13 @@ killed(int sig)
     SDL_Log("Killed with SIGTERM, waiting 5 seconds to exit\n");
     SDL_Delay(5 * 1000);
     alive = 0;
+    SDL_WaitThread(thread, NULL);
     quit(0);
 }
 
 int main(int argc, char *argv[])
 {
     int i;
-    SDL_Thread *thread;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -132,10 +133,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    tls = SDL_CreateTLS();
-    SDL_assert(tls);
-    SDL_SetTLS(tls, "main thread", NULL);
-    SDL_Log("Main thread data initially: %s\n", (const char *)SDL_GetTLS(tls));
+    SDL_SetTLS(&tls, "main thread", NULL);
+    SDL_Log("Main thread data initially: %s\n", (const char *)SDL_GetTLS(&tls));
 
     alive = 1;
     thread = SDL_CreateThread(ThreadFunc, "One", "#1");
@@ -148,7 +147,7 @@ int main(int argc, char *argv[])
     alive = 0;
     SDL_WaitThread(thread, NULL);
 
-    SDL_Log("Main thread data finally: %s\n", (const char *)SDL_GetTLS(tls));
+    SDL_Log("Main thread data finally: %s\n", (const char *)SDL_GetTLS(&tls));
 
     alive = 1;
     (void)signal(SIGTERM, killed);

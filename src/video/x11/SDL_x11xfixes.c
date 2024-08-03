@@ -45,7 +45,7 @@ static SDL_bool xfixes_version_atleast(const int version, const int wantmajor, c
 
 void X11_InitXfixes(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     int version = 0;
     int event, error;
@@ -79,7 +79,7 @@ int X11_XfixesIsInitialized(void)
     return xfixes_initialized;
 }
 
-int X11_GetXFixesSelectionNotifyEvent()
+int X11_GetXFixesSelectionNotifyEvent(void)
 {
     return xfixes_selection_notify_event;
 }
@@ -93,7 +93,7 @@ int X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
             X11_ConfineCursorWithFlags(_this, window, &window->mouse_rect, 0);
         } else {
             /* Save the state for when we get focus again */
-            SDL_WindowData *wdata = window->driverdata;
+            SDL_WindowData *wdata = window->internal;
 
             SDL_memcpy(&wdata->barrier_rect, &window->mouse_rect, sizeof(wdata->barrier_rect));
 
@@ -110,7 +110,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
      * edges exactly match, a rectangle the cursor 'slips' out of the barrier.
      * To prevent that the lines for the barriers will span the whole screen.
      */
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     SDL_WindowData *wdata;
 
     if (!X11_XfixesIsInitialized()) {
@@ -123,7 +123,7 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
     }
 
     SDL_assert(window != NULL);
-    wdata = window->driverdata;
+    wdata = window->internal;
 
     /* If user did not specify an area to confine, destroy the barrier that was/is assigned to
      * this window it was assigned */
@@ -196,9 +196,9 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
 void X11_DestroyPointerBarrier(SDL_VideoDevice *_this, SDL_Window *window)
 {
     int i;
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
     if (window) {
-        SDL_WindowData *wdata = window->driverdata;
+        SDL_WindowData *wdata = window->internal;
 
         for (i = 0; i < 4; i++) {
             if (wdata->barrier[i] > 0) {

@@ -128,13 +128,13 @@ char const* const* Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, 
     return extensionsForWayland;
 }
 
-SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                      SDL_Window *window,
-                                      VkInstance instance,
-                                      const struct VkAllocationCallbacks *allocator,
-                                      VkSurfaceKHR *surface)
+int Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+                                 SDL_Window *window,
+                                 VkInstance instance,
+                                 const struct VkAllocationCallbacks *allocator,
+                                 VkSurfaceKHR *surface)
 {
-    SDL_WindowData *windowData = window->driverdata;
+    SDL_WindowData *windowData = window->internal;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
     PFN_vkCreateWaylandSurfaceKHR vkCreateWaylandSurfaceKHR =
@@ -145,14 +145,12 @@ SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     VkResult result;
 
     if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
+        return SDL_SetError("Vulkan is not loaded");
     }
 
     if (!vkCreateWaylandSurfaceKHR) {
-        SDL_SetError(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
-                     " extension is not enabled in the Vulkan instance.");
-        return SDL_FALSE;
+        return SDL_SetError(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
+                            " extension is not enabled in the Vulkan instance.");
     }
     SDL_zero(createInfo);
     createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
@@ -162,11 +160,9 @@ SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     createInfo.surface = windowData->surface;
     result = vkCreateWaylandSurfaceKHR(instance, &createInfo, allocator, surface);
     if (result != VK_SUCCESS) {
-        SDL_SetError("vkCreateWaylandSurfaceKHR failed: %s",
-                     SDL_Vulkan_GetResultString(result));
-        return SDL_FALSE;
+        return SDL_SetError("vkCreateWaylandSurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
     }
-    return SDL_TRUE;
+    return 0;
 }
 
 void Wayland_Vulkan_DestroySurface(SDL_VideoDevice *_this,
@@ -177,6 +173,34 @@ void Wayland_Vulkan_DestroySurface(SDL_VideoDevice *_this,
     if (_this->vulkan_config.loader_handle) {
         SDL_Vulkan_DestroySurface_Internal(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
     }
+}
+
+SDL_bool Wayland_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
+                                               VkInstance instance,
+                                               VkPhysicalDevice physicalDevice,
+                                               Uint32 queueFamilyIndex)
+{
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+        (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
+    PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR vkGetPhysicalDeviceWaylandPresentationSupportKHR =
+        (PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)vkGetInstanceProcAddr(
+            instance,
+            "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
+
+    if (!_this->vulkan_config.loader_handle) {
+        SDL_SetError("Vulkan is not loaded");
+        return SDL_FALSE;
+    }
+
+    if (!vkGetPhysicalDeviceWaylandPresentationSupportKHR) {
+        SDL_SetError(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
+                     " extension is not enabled in the Vulkan instance.");
+        return SDL_FALSE;
+    }
+
+    return vkGetPhysicalDeviceWaylandPresentationSupportKHR(physicalDevice,
+                                                            queueFamilyIndex,
+                                                            _this->internal->display);
 }
 
 #endif

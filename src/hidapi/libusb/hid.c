@@ -454,7 +454,7 @@ static struct usb_string_cache_entry *usb_string_cache = NULL;
 static size_t usb_string_cache_size = 0;
 static size_t usb_string_cache_insert_pos = 0;
 
-static int usb_string_cache_grow()
+static int usb_string_cache_grow(void)
 {
 	struct usb_string_cache_entry *new_cache;
 	size_t allocSize;
@@ -472,7 +472,7 @@ static int usb_string_cache_grow()
 	return 0;
 }
 
-static void usb_string_cache_destroy()
+static void usb_string_cache_destroy(void)
 {
 	size_t i;
 	for (i = 0; i < usb_string_cache_insert_pos; i++) {
@@ -486,7 +486,7 @@ static void usb_string_cache_destroy()
 	usb_string_cache_insert_pos = 0;
 }
 
-static struct usb_string_cache_entry *usb_string_cache_insert()
+static struct usb_string_cache_entry *usb_string_cache_insert(void)
 {
 	struct usb_string_cache_entry *new_entry = NULL;
 	if (usb_string_cache_insert_pos >= usb_string_cache_size) {
@@ -872,6 +872,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
 		0x0738, /* Mad Catz */
+		0x0b05, /* ASUS */
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
 		0x10f5, /* Turtle Beach */
@@ -1170,7 +1171,7 @@ static void *read_thread(void *param)
 		dev->device_handle,
 		dev->input_endpoint,
 		buf,
-		length,
+		(int) length,
 		read_callback,
 		dev,
 		5000/*timeout*/);
@@ -1597,7 +1598,7 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 		if (skipped_report_id)
 			length++;
 
-		return length;
+		return (int) length;
 	}
 	else {
 		/* Use the interrupt out endpoint */
@@ -1605,7 +1606,7 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
 		res = libusb_interrupt_transfer(dev->device_handle,
 			dev->output_endpoint,
 			(unsigned char*)data,
-			length,
+			(int) length,
 			&actual_length, 1000);
 
 		if (res < 0)
@@ -1631,7 +1632,7 @@ static int return_data(hid_device *dev, unsigned char *data, size_t length)
 	dev->input_reports = rpt->next;
 	free(rpt->data);
 	free(rpt);
-	return len;
+	return (int) len;
 }
 
 static void cleanup_mutex(void *param)
@@ -1764,7 +1765,7 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 	if (skipped_report_id)
 		length++;
 
-	return length;
+	return (int) length;
 }
 
 int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, size_t length)

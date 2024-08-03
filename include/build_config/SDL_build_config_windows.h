@@ -86,14 +86,12 @@ typedef unsigned int uintptr_t;
 #define HAVE_DXGI_H 1
 #define HAVE_XINPUT_H 1
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0A00  /* Windows 10 SDK */
+#define HAVE_DXGI1_6_H 1
 #define HAVE_WINDOWS_GAMING_INPUT_H 1
 #endif
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0602  /* Windows 8 SDK */
 #define HAVE_D3D11_H 1
 #define HAVE_ROAPI_H 1
-#endif
-#if defined(WDK_NTDDI_VERSION) && WDK_NTDDI_VERSION > 0x0A000008 /* 10.0.19041.0 */
-#define HAVE_D3D12_H 1
 #endif
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0603  /* Windows 8.1 SDK */
 #define HAVE_SHELLSCALINGAPI_H 1
@@ -172,6 +170,10 @@ typedef unsigned int uintptr_t;
 #define HAVE_FABS   1
 #define HAVE_FLOOR  1
 #define HAVE_FMOD   1
+#define HAVE_ISINF  1
+#define HAVE_ISINF_FLOAT_MACRO 1
+#define HAVE_ISNAN  1
+#define HAVE_ISNAN_FLOAT_MACRO 1
 #define HAVE_LOG    1
 #define HAVE_LOG10  1
 #define HAVE_POW    1
@@ -265,7 +267,8 @@ typedef unsigned int uintptr_t;
 #define SDL_TIMER_WINDOWS   1
 
 /* Enable various video drivers */
-#define SDL_VIDEO_DRIVER_DUMMY  1
+#define SDL_VIDEO_DRIVER_DUMMY      1
+#define SDL_VIDEO_DRIVER_OFFSCREEN  1
 #define SDL_VIDEO_DRIVER_WINDOWS    1
 
 #ifndef SDL_VIDEO_RENDER_D3D
@@ -274,7 +277,7 @@ typedef unsigned int uintptr_t;
 #if !defined(SDL_VIDEO_RENDER_D3D11) && defined(HAVE_D3D11_H)
 #define SDL_VIDEO_RENDER_D3D11  1
 #endif
-#if !defined(SDL_VIDEO_RENDER_D3D12) && defined(HAVE_D3D12_H)
+#if !defined(SDL_VIDEO_RENDER_D3D12)
 #define SDL_VIDEO_RENDER_D3D12  1
 #endif
 

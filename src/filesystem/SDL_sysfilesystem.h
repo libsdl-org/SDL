@@ -22,9 +22,15 @@
 #ifndef SDL_sysfilesystem_h_
 #define SDL_sysfilesystem_h_
 
+// return a string that we can SDL_free(). It will be cached at the higher level.
+extern char *SDL_SYS_GetBasePath(void);
+extern char *SDL_SYS_GetPrefPath(const char *org, const char *app);
+extern char *SDL_SYS_GetUserFolder(SDL_Folder folder);
+
 int SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata);
 int SDL_SYS_RemovePath(const char *path);
 int SDL_SYS_RenamePath(const char *oldpath, const char *newpath);
+int SDL_SYS_CopyFile(const char *oldpath, const char *newpath);
 int SDL_SYS_CreateDirectory(const char *path);
 int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info);
 

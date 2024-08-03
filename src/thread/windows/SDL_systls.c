@@ -42,27 +42,27 @@
 static DWORD thread_local_storage = TLS_OUT_OF_INDEXES;
 static SDL_bool generic_local_storage = SDL_FALSE;
 
-SDL_TLSData *SDL_SYS_GetTLSData(void)
+void SDL_SYS_InitTLSData(void)
 {
     if (thread_local_storage == TLS_OUT_OF_INDEXES && !generic_local_storage) {
-        static SDL_SpinLock lock;
-        SDL_LockSpinlock(&lock);
-        if (thread_local_storage == TLS_OUT_OF_INDEXES && !generic_local_storage) {
-            DWORD storage = TlsAlloc();
-            if (storage != TLS_OUT_OF_INDEXES) {
-                SDL_MemoryBarrierRelease();
-                thread_local_storage = storage;
-            } else {
-                generic_local_storage = SDL_TRUE;
-            }
+        thread_local_storage = TlsAlloc();
+        if (thread_local_storage == TLS_OUT_OF_INDEXES) {
+            SDL_Generic_InitTLSData();
+            generic_local_storage = SDL_TRUE;
         }
-        SDL_UnlockSpinlock(&lock);
     }
+}
+
+SDL_TLSData *SDL_SYS_GetTLSData(void)
+{
     if (generic_local_storage) {
         return SDL_Generic_GetTLSData();
     }
-    SDL_MemoryBarrierAcquire();
-    return (SDL_TLSData *)TlsGetValue(thread_local_storage);
+
+    if (thread_local_storage != TLS_OUT_OF_INDEXES) {
+        return (SDL_TLSData *)TlsGetValue(thread_local_storage);
+    }
+    return NULL;
 }
 
 int SDL_SYS_SetTLSData(SDL_TLSData *data)
@@ -70,10 +70,24 @@ int SDL_SYS_SetTLSData(SDL_TLSData *data)
     if (generic_local_storage) {
         return SDL_Generic_SetTLSData(data);
     }
+
     if (!TlsSetValue(thread_local_storage, data)) {
-        return SDL_SetError("TlsSetValue() failed");
+        return WIN_SetError("TlsSetValue()");
     }
     return 0;
+}
+
+void SDL_SYS_QuitTLSData(void)
+{
+    if (generic_local_storage) {
+        SDL_Generic_QuitTLSData();
+        generic_local_storage = SDL_FALSE;
+    } else {
+        if (thread_local_storage != TLS_OUT_OF_INDEXES) {
+            TlsFree(thread_local_storage);
+            thread_local_storage = TLS_OUT_OF_INDEXES;
+        }
+    }
 }
 
 #endif /* SDL_THREAD_WINDOWS */

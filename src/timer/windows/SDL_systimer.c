@@ -31,19 +31,16 @@ static void SDL_CleanupWaitableTimer(void *timer)
     CloseHandle(timer);
 }
 
-HANDLE SDL_GetWaitableTimer()
+HANDLE SDL_GetWaitableTimer(void)
 {
     static SDL_TLSID TLS_timer_handle;
     HANDLE timer;
 
-    if (!TLS_timer_handle) {
-        TLS_timer_handle = SDL_CreateTLS();
-    }
-    timer = SDL_GetTLS(TLS_timer_handle);
+    timer = SDL_GetTLS(&TLS_timer_handle);
     if (!timer) {
         timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
         if (timer) {
-            SDL_SetTLS(TLS_timer_handle, timer, SDL_CleanupWaitableTimer);
+            SDL_SetTLS(&TLS_timer_handle, timer, SDL_CleanupWaitableTimer);
         }
     }
     return timer;
@@ -66,7 +63,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return (Uint64)frequency.QuadPart;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     /* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag was added in Windows 10 version 1803.
      *

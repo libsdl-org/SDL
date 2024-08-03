@@ -37,7 +37,7 @@
 int Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     int ret;
-    SDL_VideoData *data = _this->driverdata;
+    SDL_VideoData *data = _this->internal;
 
     ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
 
@@ -50,8 +50,8 @@ int Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 SDL_GLContext Wayland_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_GLContext context;
-    context = SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
-    WAYLAND_wl_display_flush(_this->driverdata->display);
+    context = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
+    WAYLAND_wl_display_flush(_this->internal->display);
 
     return context;
 }
@@ -104,7 +104,7 @@ int Wayland_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 
 int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     const int swap_interval = _this->egl_data->egl_swapinterval;
 
     /* For windows that we know are hidden, skip swaps entirely, if we don't do
@@ -120,9 +120,22 @@ int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
         return 0;
     }
 
+    /* By default, we wait for the Wayland frame callback and then issue the pageflip (eglSwapBuffers),
+     * but if we want low latency (double buffer scheme), we issue the pageflip and then wait
+     * immediately for the Wayland frame callback.
+     */
+    if (data->double_buffer) {
+        /* Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again. */
+        if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, data->egl_surface)) {
+            return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
+        }
+
+        WAYLAND_wl_display_flush(data->waylandData->display);
+    }
+
     /* Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval */
     if (swap_interval != 0 && data->surface_status == WAYLAND_SURFACE_STATUS_SHOWN) {
-        SDL_VideoData *videodata = _this->driverdata;
+        SDL_VideoData *videodata = _this->internal;
         struct wl_display *display = videodata->display;
         /* 20hz, so we'll progress even if throttled to zero. */
         const Uint64 max_wait = SDL_GetTicksNS() + (SDL_NS_PER_SECOND / 20);
@@ -161,12 +174,14 @@ int Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_AtomicSet(&data->swap_interval_ready, 0);
     }
 
-    /* Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again. */
-    if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, data->egl_surface)) {
-        return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
-    }
+    if (!data->double_buffer) {
+        /* Feed the frame to Wayland. This will set it so the wl_surface_frame callback can fire again. */
+        if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, data->egl_surface)) {
+            return SDL_EGL_SetError("unable to show color buffer in an OS-native window", "eglSwapBuffers");
+        }
 
-    WAYLAND_wl_display_flush(data->waylandData->display);
+        WAYLAND_wl_display_flush(data->waylandData->display);
+    }
 
     return 0;
 }
@@ -176,12 +191,12 @@ int Wayland_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLC
     int ret;
 
     if (window && context) {
-        ret = SDL_EGL_MakeCurrent(_this, window->driverdata->egl_surface, context);
+        ret = SDL_EGL_MakeCurrent(_this, window->internal->egl_surface, context);
     } else {
         ret = SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
 
-    WAYLAND_wl_display_flush(_this->driverdata->display);
+    WAYLAND_wl_display_flush(_this->internal->display);
 
     _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, 0); /* see comments on Wayland_GLES_SetSwapInterval. */
 
@@ -191,13 +206,13 @@ int Wayland_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLC
 int Wayland_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
-    WAYLAND_wl_display_flush(_this->driverdata->display);
+    WAYLAND_wl_display_flush(_this->internal->display);
     return 0;
 }
 
 EGLSurface Wayland_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windowdata = window->driverdata;
+    SDL_WindowData *windowdata = window->internal;
 
     return windowdata->egl_surface;
 }

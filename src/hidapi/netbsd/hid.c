@@ -234,7 +234,7 @@ static uint32_t get_hid_report_bytes(const uint8_t *rpt, size_t len, size_t num_
  * Skips all nested Collection, i.e. iterates until the end of current level Collection.
  *
  * The return value is non-0 when an end of current Collection is found,
- * 0 when error is occured (broken Descriptor, end of a Collection is found before its begin,
+ * 0 when error is occurred (broken Descriptor, end of a Collection is found before its begin,
  *  or no Collection is found at all).
  */
 static int hid_iterate_over_collection(const uint8_t *report_descriptor, uint32_t size, unsigned int *pos, int *data_len, int *key_size)
@@ -1060,7 +1060,7 @@ int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index
 	struct usb_string_desc usd;
 	usb_string_descriptor_t *str;
 	iconv_t ic;
-	const char *src;
+	char *src;
 	size_t srcleft;
 	char *dst;
 	size_t dstleft;
@@ -1104,7 +1104,7 @@ int HID_API_EXPORT_CALL hid_get_indexed_string(hid_device *dev, int string_index
 		return -1;
 	}
 
-	src = (const char *) str->bString;
+	src = (char *) str->bString;
 	srcleft = str->bLength - 2;
 	dst = (char *) string;
 	dstleft = sizeof(wchar_t[maxlen]);

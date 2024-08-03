@@ -196,15 +196,14 @@ const char *SDL_GetHint(const char *name)
         return NULL;
     }
 
-    const char *env = SDL_getenv(name);
+    const char *retval = SDL_getenv(name);
 
     SDL_LockProperties(hints);
 
     SDL_Hint *hint = SDL_GetProperty(hints, name, NULL);
-    const char *retval = env;
     if (hint) {
-        if (!env || hint->priority == SDL_HINT_OVERRIDE) {
-            retval = hint->value;
+        if (!retval || hint->priority == SDL_HINT_OVERRIDE) {
+            retval = SDL_GetPersistentString(hint->value);
         }
     }
 

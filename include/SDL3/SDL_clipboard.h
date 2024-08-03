@@ -45,7 +45,7 @@ extern "C" {
 /**
  * Put UTF-8 text into the clipboard.
  *
- * \param text the text to store in the clipboard
+ * \param text the text to store in the clipboard.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -57,15 +57,14 @@ extern "C" {
 extern SDL_DECLSPEC int SDLCALL SDL_SetClipboardText(const char *text);
 
 /**
- * Get UTF-8 text from the clipboard, which must be freed with SDL_free().
+ * Get UTF-8 text from the clipboard.
  *
  * This functions returns empty string if there was not enough memory left for
  * a copy of the clipboard's content.
  *
  * \returns the clipboard text on success or an empty string on failure; call
- *          SDL_GetError() for more information. Caller must call SDL_free()
- *          on the returned pointer when done with it (even if there was an
- *          error).
+ *          SDL_GetError() for more information. This should be freed with
+ *          SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -89,7 +88,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
 /**
  * Put UTF-8 text into the primary selection.
  *
- * \param text the text to store in the primary selection
+ * \param text the text to store in the primary selection.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -101,16 +100,14 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasClipboardText(void);
 extern SDL_DECLSPEC int SDLCALL SDL_SetPrimarySelectionText(const char *text);
 
 /**
- * Get UTF-8 text from the primary selection, which must be freed with
- * SDL_free().
+ * Get UTF-8 text from the primary selection.
  *
  * This functions returns empty string if there was not enough memory left for
  * a copy of the primary selection's content.
  *
  * \returns the primary selection text on success or an empty string on
- *          failure; call SDL_GetError() for more information. Caller must
- *          call SDL_free() on the returned pointer when done with it (even if
- *          there was an error).
+ *          failure; call SDL_GetError() for more information. This should be
+ *          freed with SDL_free() when it is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -141,9 +138,9 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_HasPrimarySelectionText(void);
  * clipboard is cleared or new data is set. The clipboard is automatically
  * cleared in SDL_Quit().
  *
- * \param userdata A pointer to provided user data
- * \param mime_type The requested mime-type
- * \param size A pointer filled in with the length of the returned data
+ * \param userdata a pointer to provided user data.
+ * \param mime_type the requested mime-type.
+ * \param size a pointer filled in with the length of the returned data.
  * \returns a pointer to the data for the provided mime-type. Returning NULL
  *          or setting length to 0 will cause no data to be sent to the
  *          "receiver". It is up to the receiver to handle this. Essentially
@@ -161,7 +158,7 @@ typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const c
  * Callback function that will be called when the clipboard is cleared, or new
  * data is set.
  *
- * \param userdata A pointer to provided user data
+ * \param userdata a pointer to provided user data.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -181,13 +178,13 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * not need to be null terminated (e.g. you can directly copy a portion of a
  * document)
  *
- * \param callback A function pointer to the function that provides the
- *                 clipboard data
- * \param cleanup A function pointer to the function that cleans up the
- *                clipboard data
- * \param userdata An opaque pointer that will be forwarded to the callbacks
- * \param mime_types A list of mime-types that are being offered
- * \param num_mime_types The number of mime-types in the mime_types list
+ * \param callback a function pointer to the function that provides the
+ *                 clipboard data.
+ * \param cleanup a function pointer to the function that cleans up the
+ *                clipboard data.
+ * \param userdata an opaque pointer that will be forwarded to the callbacks.
+ * \param mime_types a list of mime-types that are being offered.
+ * \param num_mime_types the number of mime-types in the mime_types list.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -217,23 +214,23 @@ extern SDL_DECLSPEC int SDLCALL SDL_ClearClipboardData(void);
  * The size of text data does not include the terminator, but the text is
  * guaranteed to be null terminated.
  *
- * \param mime_type The mime type to read from the clipboard
- * \param size A pointer filled in with the length of the returned data
+ * \param mime_type the mime type to read from the clipboard.
+ * \param size a pointer filled in with the length of the returned data.
  * \returns the retrieved data buffer or NULL on failure; call SDL_GetError()
- *          for more information. Caller must call SDL_free() on the returned
- *          pointer when done with it.
+ *          for more information. This should be freed with SDL_free() when it
+ *          is no longer needed.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_HasClipboardData
  * \sa SDL_SetClipboardData
  */
-extern SDL_DECLSPEC void *SDLCALL SDL_GetClipboardData(const char *mime_type, size_t *size);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetClipboardData(const char *mime_type, size_t *size);
 
 /**
  * Query whether there is data in the clipboard for the provided mime type.
  *
- * \param mime_type The mime type to check for data for
+ * \param mime_type the mime type to check for data for.
  * \returns SDL_TRUE if there exists data in clipboard for the provided mime
  *          type, SDL_FALSE if it does not.
  *

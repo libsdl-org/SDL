@@ -56,13 +56,12 @@ static SDL_AtomicInt SDL_sensor_lock_pending;
 static int SDL_sensors_locked;
 static SDL_bool SDL_sensors_initialized;
 static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
-static char SDL_sensor_magic;
 
-#define CHECK_SENSOR_MAGIC(sensor, retval)              \
-    if (!sensor || sensor->magic != &SDL_sensor_magic) { \
-        SDL_InvalidParamError("sensor");                \
-        SDL_UnlockSensors();                            \
-        return retval;                                  \
+#define CHECK_SENSOR_MAGIC(sensor, retval)                  \
+    if (!SDL_ObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR)) { \
+        SDL_InvalidParamError("sensor");                    \
+        SDL_UnlockSensors();                                \
+        return retval;                                      \
     }
 
 SDL_bool SDL_SensorsInitialized(void)
@@ -239,7 +238,7 @@ static SDL_bool SDL_GetDriverAndSensorIndex(SDL_SensorID instance_id, SDL_Sensor
 /*
  * Get the implementation dependent name of a sensor
  */
-const char *SDL_GetSensorInstanceName(SDL_SensorID instance_id)
+const char *SDL_GetSensorNameForID(SDL_SensorID instance_id)
 {
     SDL_SensorDriver *driver;
     int device_index;
@@ -247,15 +246,14 @@ const char *SDL_GetSensorInstanceName(SDL_SensorID instance_id)
 
     SDL_LockSensors();
     if (SDL_GetDriverAndSensorIndex(instance_id, &driver, &device_index)) {
-        name = driver->GetDeviceName(device_index);
+        name = SDL_GetPersistentString(driver->GetDeviceName(device_index));
     }
     SDL_UnlockSensors();
 
-    /* FIXME: Really we should reference count this name so it doesn't go away after unlock */
     return name;
 }
 
-SDL_SensorType SDL_GetSensorInstanceType(SDL_SensorID instance_id)
+SDL_SensorType SDL_GetSensorTypeForID(SDL_SensorID instance_id)
 {
     SDL_SensorDriver *driver;
     int device_index;
@@ -270,7 +268,7 @@ SDL_SensorType SDL_GetSensorInstanceType(SDL_SensorID instance_id)
     return type;
 }
 
-int SDL_GetSensorInstanceNonPortableType(SDL_SensorID instance_id)
+int SDL_GetSensorNonPortableTypeForID(SDL_SensorID instance_id)
 {
     SDL_SensorDriver *driver;
     int device_index;
@@ -327,13 +325,14 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
         SDL_UnlockSensors();
         return NULL;
     }
-    sensor->magic = &SDL_sensor_magic;
+    SDL_SetObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR, SDL_TRUE);
     sensor->driver = driver;
     sensor->instance_id = instance_id;
     sensor->type = driver->GetDeviceType(device_index);
     sensor->non_portable_type = driver->GetDeviceNonPortableType(device_index);
 
     if (driver->Open(sensor, device_index) < 0) {
+        SDL_SetObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR, SDL_FALSE);
         SDL_free(sensor);
         SDL_UnlockSensors();
         return NULL;
@@ -362,7 +361,7 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
 /*
  * Find the SDL_Sensor that owns this instance id
  */
-SDL_Sensor *SDL_GetSensorFromInstanceID(SDL_SensorID instance_id)
+SDL_Sensor *SDL_GetSensorFromID(SDL_SensorID instance_id)
 {
     SDL_Sensor *sensor;
 
@@ -408,7 +407,7 @@ const char *SDL_GetSensorName(SDL_Sensor *sensor)
     {
         CHECK_SENSOR_MAGIC(sensor, NULL);
 
-        retval = sensor->name;
+        retval = SDL_GetPersistentString(sensor->name);
     }
     SDL_UnlockSensors();
 
@@ -454,7 +453,7 @@ int SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
 /*
  * Get the instance id for this opened sensor
  */
-SDL_SensorID SDL_GetSensorInstanceID(SDL_Sensor *sensor)
+SDL_SensorID SDL_GetSensorID(SDL_Sensor *sensor)
 {
     SDL_SensorID retval;
 
@@ -508,6 +507,7 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
 
         sensor->driver->Close(sensor);
         sensor->hwdata = NULL;
+        SDL_SetObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR, SDL_FALSE);
 
         sensorlist = SDL_sensors;
         sensorlistprev = NULL;

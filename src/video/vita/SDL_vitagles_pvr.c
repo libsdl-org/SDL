@@ -35,9 +35,9 @@
 int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     PVRSRV_PSP2_APPHINT hint;
-    char *override = SDL_getenv("VITA_MODULE_PATH");
-    char *skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
-    char *default_path = "app0:module";
+    const char *override = SDL_getenv("VITA_MODULE_PATH");
+    const char *skip_init = SDL_getenv("VITA_PVR_SKIP_INIT");
+    const char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
     if (!skip_init) { // we don't care about actual value
@@ -69,13 +69,13 @@ int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
 SDL_GLContext VITA_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    return SDL_EGL_CreateContext(_this, window->driverdata->egl_surface);
+    return SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 }
 
 int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
     if (window && context) {
-        return SDL_EGL_MakeCurrent(_this, window->driverdata->egl_surface, context);
+        return SDL_EGL_MakeCurrent(_this, window->internal->egl_surface, context);
     } else {
         return SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
@@ -83,11 +83,11 @@ int VITA_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLCont
 
 int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     if (videodata->ime_active) {
         sceImeUpdate();
     }
-    return SDL_EGL_SwapBuffers(_this, window->driverdata->egl_surface);
+    return SDL_EGL_SwapBuffers(_this, window->internal->egl_surface);
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR */

@@ -3,6 +3,7 @@ package org.libsdl.app;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Insets;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -18,6 +19,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 
 
@@ -28,7 +30,7 @@ import android.view.WindowManager;
     Because of this, that's where we set up the SDL thread
 */
 public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
-    View.OnKeyListener, View.OnTouchListener, SensorEventListener  {
+    View.OnApplyWindowInsetsListener, View.OnKeyListener, View.OnTouchListener, SensorEventListener  {
 
     // Sensors
     protected SensorManager mSensorManager;
@@ -48,6 +50,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         setFocusable(true);
         setFocusableInTouchMode(true);
         requestFocus();
+        setOnApplyWindowInsetsListener(this);
         setOnKeyListener(this);
         setOnTouchListener(this);
 
@@ -71,6 +74,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         setFocusable(true);
         setFocusableInTouchMode(true);
         requestFocus();
+        setOnApplyWindowInsetsListener(this);
         setOnKeyListener(this);
         setOnTouchListener(this);
         enableSensor(Sensor.TYPE_ACCELEROMETER, true);
@@ -185,6 +189,23 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         SDLActivity.mNextNativeState = SDLActivity.NativeState.RESUMED;
         SDLActivity.handleNativeState();
+    }
+
+    // Window inset
+    @Override
+    public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+            Insets combined = insets.getInsets(WindowInsets.Type.systemBars() |
+                                               WindowInsets.Type.systemGestures() |
+                                               WindowInsets.Type.mandatorySystemGestures() |
+                                               WindowInsets.Type.tappableElement() |
+                                               WindowInsets.Type.displayCutout());
+
+            SDLActivity.onNativeInsetsChanged(combined.left, combined.right, combined.top, combined.bottom);
+        }
+
+        // Pass these to any child views in case they need them
+        return insets;
     }
 
     // Key events

@@ -24,12 +24,13 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "../SDL_sysvideo.h"
-#include "../SDL_pixels_c.h"
+#include "../../SDL_hints_c.h"
+#include "../../events/SDL_dropevents_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_windowevents_c.h"
-#include "../../SDL_hints_c.h"
+#include "../SDL_pixels_c.h"
+#include "../SDL_sysvideo.h"
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
@@ -47,7 +48,7 @@ typedef HRESULT (WINAPI *DwmGetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, 
 #endif
 
 /* Corner rounding support  (Win 11+) */
-#ifndef DWMWA_WINDOW_CORNER_PREFERENCE 
+#ifndef DWMWA_WINDOW_CORNER_PREFERENCE
 #define DWMWA_WINDOW_CORNER_PREFERENCE 33
 #endif
 typedef enum {
@@ -183,29 +184,32 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
  */
 static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD styleEx, BOOL menu, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type)
 {
-    SDL_VideoData *videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->driverdata : NULL;
+    SDL_VideoData *videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->internal : NULL;
     RECT rect;
 
     /* Client rect, in points */
     switch (rect_type) {
-        case SDL_WINDOWRECT_CURRENT:
-            SDL_RelativeToGlobalForWindow(window, window->x, window->y, x, y);
-            *width = window->w;
-            *height = window->h;
-            break;
-        case SDL_WINDOWRECT_WINDOWED:
-            SDL_RelativeToGlobalForWindow(window, window->windowed.x, window->windowed.y, x, y);
-            *width = window->windowed.w;
-            *height = window->windowed.h;
-            break;
-        case SDL_WINDOWRECT_FLOATING:
-            SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, x, y);
-            *width = window->floating.w;
-            *height = window->floating.h;
-            break;
-        default:
-            /* Should never be here */
-            SDL_assert_release(SDL_FALSE);
+    case SDL_WINDOWRECT_CURRENT:
+        SDL_RelativeToGlobalForWindow(window, window->x, window->y, x, y);
+        *width = window->w;
+        *height = window->h;
+        break;
+    case SDL_WINDOWRECT_WINDOWED:
+        SDL_RelativeToGlobalForWindow(window, window->windowed.x, window->windowed.y, x, y);
+        *width = window->windowed.w;
+        *height = window->windowed.h;
+        break;
+    case SDL_WINDOWRECT_FLOATING:
+        SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, x, y);
+        *width = window->floating.w;
+        *height = window->floating.h;
+        break;
+    default:
+        /* Should never be here */
+        SDL_assert_release(SDL_FALSE);
+        *width = 0;
+        *height = 0;
+        break;
     }
 
     /* Copy the client size in pixels into this rect structure,
@@ -227,7 +231,7 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD 
                AdjustWindowRectEx. */
             if (videodata) {
                 UINT frame_dpi;
-                SDL_WindowData *data = window->driverdata;
+                SDL_WindowData *data = window->internal;
                 frame_dpi = (data && videodata->GetDpiForWindow) ? videodata->GetDpiForWindow(data->hwnd) : USER_DEFAULT_SCREEN_DPI;
                 if (videodata->AdjustWindowRectExForDpi(&rect, style, menu, styleEx, frame_dpi) == 0) {
                     return WIN_SetError("AdjustWindowRectExForDpi()");
@@ -260,7 +264,7 @@ static int WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD 
 
 int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     DWORD style, styleEx;
     BOOL menu;
@@ -278,7 +282,7 @@ int WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *he
 int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
 {
     SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
-    SDL_VideoData *videodata = videodevice ? videodevice->driverdata : NULL;
+    SDL_VideoData *videodata = videodevice ? videodevice->internal : NULL;
     DWORD style, styleEx;
     BOOL menu;
 
@@ -313,7 +317,7 @@ int WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
 int WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_WindowRect rect_type)
 {
     SDL_Window *child_window;
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     HWND top;
     int x, y;
@@ -350,9 +354,33 @@ static void SDLCALL WIN_MouseRelativeModeCenterChanged(void *userdata, const cha
     data->mouse_relative_mode_center = SDL_GetStringBoolean(hint, SDL_TRUE);
 }
 
+static SDL_WindowEraseBackgroundMode GetEraseBackgroundModeHint(void)
+{
+    const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE);
+    if (!hint)
+        return SDL_ERASEBACKGROUNDMODE_INITIAL;
+
+    if (SDL_strstr(hint, "never"))
+        return SDL_ERASEBACKGROUNDMODE_NEVER;
+
+    if (SDL_strstr(hint, "initial"))
+        return SDL_ERASEBACKGROUNDMODE_INITIAL;
+
+    if (SDL_strstr(hint, "always"))
+        return SDL_ERASEBACKGROUNDMODE_ALWAYS;
+
+    int mode = SDL_GetStringInteger(hint, 1);
+    if (mode < 0 || mode > 2) {
+        SDL_Log("GetEraseBackgroundModeHint: invalid value for SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE. Fallback to default");
+        return SDL_ERASEBACKGROUNDMODE_INITIAL;
+    }
+
+    return mode;
+}
+
 static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd, HWND parent)
 {
-    SDL_VideoData *videodata = _this->driverdata;
+    SDL_VideoData *videodata = _this->internal;
     SDL_WindowData *data;
 
     /* Allocate the window data */
@@ -375,6 +403,7 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
     data->initializing = SDL_TRUE;
     data->last_displayID = window->last_displayID;
     data->dwma_border_color = DWMWA_COLOR_DEFAULT;
+    data->hint_erase_background_mode = GetEraseBackgroundModeHint();
 
     if (SDL_GetHintBoolean("SDL_WINDOW_RETAIN_CONTENT", SDL_FALSE)) {
         data->copybits_flag = 0;
@@ -396,8 +425,8 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
         return WIN_SetError("SetProp() failed");
     }
 #endif
-    
-    window->driverdata = data;
+
+    window->internal = data;
 
     /* Set up the window proc function */
 #ifdef GWLP_WNDPROC
@@ -545,9 +574,9 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    SDL_SetProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, data->hwnd);
-    SDL_SetProperty(props, SDL_PROP_WINDOW_WIN32_HDC_POINTER, data->hdc);
-    SDL_SetProperty(props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, data->hinstance);
+    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, data->hwnd);
+    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HDC_POINTER, data->hdc);
+    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, data->hinstance);
 
     /* All done! */
     return 0;
@@ -555,10 +584,14 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwnd
 
 static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
     if (data) {
         SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
+
+        if (data->drop_target) {
+            WIN_AcceptDragAndDrop(window, SDL_FALSE);
+        }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         if (data->ICMFileName) {
@@ -589,7 +622,7 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
         }
         SDL_free(data);
     }
-    window->driverdata = NULL;
+    window->internal = NULL;
 }
 
 static void WIN_ConstrainPopup(SDL_Window *window)
@@ -640,13 +673,13 @@ static void WIN_SetKeyboardFocus(SDL_Window *window)
         topmost = topmost->parent;
     }
 
-    topmost->driverdata->keyboard_focus = window;
+    topmost->internal->keyboard_focus = window;
     SDL_SetKeyboardFocus(window);
 }
 
 int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    HWND hwnd = (HWND)SDL_GetProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetProperty(create_props, "sdl2-compat.external_window", NULL));
+    HWND hwnd = (HWND)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetPointerProperty(create_props, "sdl2-compat.external_window", NULL));
     HWND parent = NULL;
     if (hwnd) {
         window->flags |= SDL_WINDOW_EXTERNAL;
@@ -661,7 +694,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         int w, h;
 
         if (SDL_WINDOW_IS_POPUP(window)) {
-            parent = window->parent->driverdata->hwnd;
+            parent = window->parent->internal->hwnd;
         } else if (window->flags & SDL_WINDOW_UTILITY) {
             parent = CreateWindow(SDL_Appname, TEXT(""), STYLE_BASIC, 0, 0, 32, 32, NULL, NULL, SDL_Instance, NULL);
         }
@@ -728,7 +761,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         }
     }
 
-    HWND share_hwnd = (HWND)SDL_GetProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER, NULL);
+    HWND share_hwnd = (HWND)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER, NULL);
     if (share_hwnd) {
         HDC hdc = GetDC(share_hwnd);
         int pixel_format = GetPixelFormat(hdc);
@@ -738,7 +771,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         DescribePixelFormat(hdc, pixel_format, sizeof(pfd), &pfd);
         ReleaseDC(share_hwnd, hdc);
 
-        if (!SetPixelFormat(window->driverdata->hdc, pixel_format, &pfd)) {
+        if (!SetPixelFormat(window->internal->hdc, pixel_format, &pfd)) {
             WIN_DestroyWindow(_this, window);
             return WIN_SetError("SetPixelFormat()");
         }
@@ -750,9 +783,9 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         /* The rest of this macro mess is for OpenGL or OpenGL ES windows */
 #ifdef SDL_VIDEO_OPENGL_ES2
         if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES ||
-             SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) &&
+             SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE))
 #ifdef SDL_VIDEO_OPENGL_WGL
-            (!_this->gl_data || WIN_GL_UseEGL(_this))
+             && (!_this->gl_data || WIN_GL_UseEGL(_this))
 #endif /* SDL_VIDEO_OPENGL_WGL */
         ) {
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -784,7 +817,7 @@ int WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
 void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    HWND hwnd = window->driverdata->hwnd;
+    HWND hwnd = window->internal->hwnd;
     LPTSTR title = WIN_UTF8ToString(window->title);
     SetWindowText(hwnd, title);
     SDL_free(title);
@@ -794,7 +827,7 @@ void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    HWND hwnd = window->driverdata->hwnd;
+    HWND hwnd = window->internal->hwnd;
     HICON hicon = NULL;
     BYTE *icon_bmp;
     int icon_len, mask_len, row_len, y;
@@ -811,20 +844,20 @@ int WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *i
 
     /* Write the BITMAPINFO header */
     bmi = (BITMAPINFOHEADER *)icon_bmp;
-    bmi->biSize = SDL_SwapLE32(sizeof(BITMAPINFOHEADER));
-    bmi->biWidth = SDL_SwapLE32(icon->w);
-    bmi->biHeight = SDL_SwapLE32(icon->h * 2);
-    bmi->biPlanes = SDL_SwapLE16(1);
-    bmi->biBitCount = SDL_SwapLE16(32);
-    bmi->biCompression = SDL_SwapLE32(BI_RGB);
-    bmi->biSizeImage = SDL_SwapLE32(icon->h * icon->w * sizeof(Uint32));
-    bmi->biXPelsPerMeter = SDL_SwapLE32(0);
-    bmi->biYPelsPerMeter = SDL_SwapLE32(0);
-    bmi->biClrUsed = SDL_SwapLE32(0);
-    bmi->biClrImportant = SDL_SwapLE32(0);
+    bmi->biSize = SDL_Swap32LE(sizeof(BITMAPINFOHEADER));
+    bmi->biWidth = SDL_Swap32LE(icon->w);
+    bmi->biHeight = SDL_Swap32LE(icon->h * 2);
+    bmi->biPlanes = SDL_Swap16LE(1);
+    bmi->biBitCount = SDL_Swap16LE(32);
+    bmi->biCompression = SDL_Swap32LE(BI_RGB);
+    bmi->biSizeImage = SDL_Swap32LE(icon->h * icon->w * sizeof(Uint32));
+    bmi->biXPelsPerMeter = SDL_Swap32LE(0);
+    bmi->biYPelsPerMeter = SDL_Swap32LE(0);
+    bmi->biClrUsed = SDL_Swap32LE(0);
+    bmi->biClrImportant = SDL_Swap32LE(0);
 
     /* Write the pixels upside down into the bitmap buffer */
-    SDL_assert(icon->format->format == SDL_PIXELFORMAT_ARGB8888);
+    SDL_assert(icon->format == SDL_PIXELFORMAT_ARGB8888);
     dst = &icon_bmp[sizeof(BITMAPINFOHEADER)];
     row_len = icon->w * sizeof(Uint32);
     y = icon->h;
@@ -865,10 +898,10 @@ int WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         if (!(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
             WIN_ConstrainPopup(window);
             return WIN_SetWindowPositionInternal(window,
-                                                 window->driverdata->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER |
+                                                 window->internal->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER |
                                                  SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
         } else {
-            window->driverdata->floating_rect_pending = SDL_TRUE;
+            window->internal->floating_rect_pending = SDL_TRUE;
         }
     } else {
         return SDL_UpdateFullscreenMode(window, SDL_TRUE, SDL_TRUE);
@@ -880,16 +913,16 @@ int WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED))) {
-        WIN_SetWindowPositionInternal(window, window->driverdata->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
+        WIN_SetWindowPositionInternal(window, window->internal->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE, SDL_WINDOWRECT_FLOATING);
     } else {
-        window->driverdata->floating_rect_pending = SDL_TRUE;
+        window->internal->floating_rect_pending = SDL_TRUE;
     }
 }
 
 int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right)
 {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    HWND hwnd = window->driverdata->hwnd;
+    HWND hwnd = window->internal->hwnd;
     RECT rcClient;
 
     /* rcClient stores the size of the inner window, while rcWindow stores the outer size relative to the top-left
@@ -903,7 +936,7 @@ int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *to
 
     return 0;
 #else  /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
-    HWND hwnd = window->driverdata->hwnd;
+    HWND hwnd = window->internal->hwnd;
     RECT rcClient, rcWindow;
     POINT ptDiff;
 
@@ -955,7 +988,7 @@ int WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *to
 
 void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h)
 {
-    const SDL_WindowData *data = window->driverdata;
+    const SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     RECT rect;
 
@@ -986,11 +1019,11 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (window->flags & SDL_WINDOW_MODAL) {
-        EnableWindow(window->parent->driverdata->hwnd, FALSE);
+        EnableWindow(window->parent->internal->hwnd, FALSE);
     }
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
-    hwnd = window->driverdata->hwnd;
+    hwnd = window->internal->hwnd;
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
         bActivate = SDL_FALSE;
@@ -999,7 +1032,7 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         ShowWindow(hwnd, SW_SHOW);
     } else {
         /* Use SetWindowPos instead of ShowWindow to avoid activating the parent window if this is a child window */
-        SetWindowPos(hwnd, NULL, 0, 0, 0, 0, window->driverdata->copybits_flag | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+        SetWindowPos(hwnd, NULL, 0, 0, 0, 0, window->internal->copybits_flag | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
     }
 
     if (window->flags & SDL_WINDOW_POPUP_MENU && bActivate) {
@@ -1011,11 +1044,11 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    HWND hwnd = window->driverdata->hwnd;
+    HWND hwnd = window->internal->hwnd;
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (window->flags & SDL_WINDOW_MODAL) {
-        EnableWindow(window->parent->driverdata->hwnd, TRUE);
+        EnableWindow(window->parent->internal->hwnd, TRUE);
     }
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
@@ -1054,7 +1087,7 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
     DWORD dwMyID = 0u;
     DWORD dwCurID = 0u;
 
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     if (bForce) {
         hCurWnd = GetForegroundWindow();
@@ -1087,7 +1120,7 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 void WIN_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         HWND hwnd = data->hwnd;
@@ -1109,20 +1142,20 @@ void WIN_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
             SetWindowPos(hwnd, HWND_TOP, fx, fy, fw, fh, data->copybits_flag | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
             data->expected_resize = SDL_FALSE;
         }
-    }else {
+    } else {
         data->windowed_mode_was_maximized = SDL_TRUE;
     }
 }
 
 void WIN_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    HWND hwnd = window->driverdata->hwnd;
+    HWND hwnd = window->internal->hwnd;
     ShowWindow(hwnd, SW_MINIMIZE);
 }
 
 void WIN_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     DWORD style;
 
@@ -1138,7 +1171,7 @@ void WIN_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool 
 
 void WIN_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool resizable)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     DWORD style;
 
@@ -1156,7 +1189,7 @@ void WIN_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, SDL_bo
 
 void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         HWND hwnd = data->hwnd;
         data->expected_resize = SDL_TRUE;
@@ -1177,9 +1210,9 @@ static DWM_WINDOW_CORNER_PREFERENCE WIN_UpdateCornerRoundingForHWND(HWND hwnd, D
         DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
         if (DwmGetWindowAttributeFunc && DwmSetWindowAttributeFunc) {
             DwmGetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &oldPref, sizeof(oldPref));
-            DwmSetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));            
+            DwmSetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
         }
-		
+
         SDL_UnloadObject(handle);
     }
 
@@ -1198,7 +1231,7 @@ static COLORREF WIN_UpdateBorderColorForHWND(HWND hwnd, COLORREF colorRef)
             DwmGetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &oldPref, sizeof(oldPref));
             DwmSetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));
         }
-		
+
         SDL_UnloadObject(handle);
     }
 
@@ -1211,8 +1244,8 @@ static COLORREF WIN_UpdateBorderColorForHWND(HWND hwnd, COLORREF colorRef)
 int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_DisplayData *displaydata = display->driverdata;
-    SDL_WindowData *data = window->driverdata;
+    SDL_DisplayData *displaydata = display->internal;
+    SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     MONITORINFO minfo;
     DWORD style, styleEx;
@@ -1316,7 +1349,7 @@ int WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_Vide
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 void WIN_UpdateWindowICCProfile(SDL_Window *window, SDL_bool send_event)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
 
     if (displaydata) {
@@ -1344,7 +1377,7 @@ void WIN_UpdateWindowICCProfile(SDL_Window *window, SDL_bool send_event)
 
 void *WIN_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     char *filename_utf8;
     void *iccProfileData = NULL;
 
@@ -1361,7 +1394,7 @@ void *WIN_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t
 
 static void WIN_GrabKeyboard(SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HMODULE module;
 
     if (data->keyboard_hook) {
@@ -1395,7 +1428,7 @@ static void WIN_GrabKeyboard(SDL_Window *window)
 
 void WIN_UngrabKeyboard(SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
     if (data->keyboard_hook) {
         UnhookWindowsHookEx(data->keyboard_hook);
@@ -1501,7 +1534,7 @@ void SDL_HelperWindowDestroy(void)
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
 
     if (!data || !data->hwnd) {
         /* The window wasn't fully initialized */
@@ -1523,7 +1556,7 @@ static BOOL GetClientScreenRect(HWND hwnd, RECT *rect)
 void WIN_UpdateClipCursor(SDL_Window *window)
 {
     SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     SDL_Mouse *mouse = SDL_GetMouse();
     RECT rect, clipped_rect;
 
@@ -1634,7 +1667,7 @@ int WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opaci
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     return -1;
 #else
-    const SDL_WindowData *data = window->driverdata;
+    const SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
 
@@ -1666,10 +1699,467 @@ int WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opaci
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+
+static const char *SDLGetClipboardFormatName(UINT cf, char *text, int len)
+{
+    switch (cf) {
+    case CF_TEXT:
+        return "CF_TEXT";
+    case CF_BITMAP:
+        return "CF_BITMAP";
+    case CF_METAFILEPICT:
+        return "CF_METAFILEPICT";
+    case CF_SYLK:
+        return "CF_SYLK";
+    case CF_DIF:
+        return "CF_DIF";
+    case CF_TIFF:
+        return "CF_TIFF";
+    case CF_OEMTEXT:
+        return "CF_OEMTEXT";
+    case CF_DIB:
+        return "CF_DIB";
+    case CF_PALETTE:
+        return "CF_PALETTE";
+    case CF_PENDATA:
+        return "CF_PENDATA";
+    case CF_RIFF:
+        return "CF_RIFF";
+    case CF_WAVE:
+        return "CF_WAVE";
+    case CF_UNICODETEXT:
+        return "CF_UNICODETEXT";
+    case CF_ENHMETAFILE:
+        return "CF_ENHMETAFILE";
+    case CF_HDROP:
+        return "CF_HDROP";
+    case CF_LOCALE:
+        return "CF_LOCALE";
+    case CF_DIBV5:
+        return "CF_DIBV5";
+    case CF_OWNERDISPLAY:
+        return "CF_OWNERDISPLAY";
+    case CF_DSPTEXT:
+        return "CF_DSPTEXT";
+    case CF_DSPBITMAP:
+        return "CF_DSPBITMAP";
+    case CF_DSPMETAFILEPICT:
+        return "CF_DSPMETAFILEPICT";
+    case CF_DSPENHMETAFILE:
+        return "CF_DSPENHMETAFILE";
+    default:
+        if (GetClipboardFormatNameA(cf, text, len)) {
+            return text;
+        } else {
+            return NULL;
+        }
+    }
+}
+
+static STDMETHODIMP_(ULONG) SDLDropTarget_AddRef(SDLDropTarget *target)
+{
+    return ++target->refcount;
+}
+
+static STDMETHODIMP_(ULONG) SDLDropTarget_Release(SDLDropTarget *target)
+{
+    --target->refcount;
+    if (target->refcount == 0) {
+        SDL_free(target);
+        return 0;
+    }
+    return target->refcount;
+}
+
+static STDMETHODIMP SDLDropTarget_QueryInterface(SDLDropTarget *target, REFIID riid, PVOID *ppv)
+{
+    if (ppv == NULL) {
+        return E_INVALIDARG;
+    }
+
+    *ppv = NULL;
+    if (WIN_IsEqualIID(riid, &IID_IUnknown) ||
+        WIN_IsEqualIID(riid, &IID_IDropTarget)) {
+        *ppv = (void *)target;
+    }
+    if (*ppv) {
+        SDLDropTarget_AddRef(target);
+        return S_OK;
+    }
+    return E_NOINTERFACE;
+}
+
+static STDMETHODIMP SDLDropTarget_DragEnter(SDLDropTarget *target,
+                                            IDataObject *pDataObject, DWORD grfKeyState,
+                                            POINTL pt, DWORD *pdwEffect)
+{
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In DragEnter at %ld, %ld\n", pt.x, pt.y);
+    *pdwEffect = DROPEFFECT_COPY;
+    POINT pnt = { pt.x, pt.y };
+    if (ScreenToClient(target->hwnd, &pnt)) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In DragEnter at %ld, %ld => window %u at %ld, %ld\n", pt.x, pt.y, target->window->id, pnt.x, pnt.y);
+        SDL_SendDropPosition(target->window, pnt.x, pnt.y);
+    } else {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In DragEnter at %ld, %ld => nil, nil\n", pt.x, pt.y);
+    }
+    return S_OK;
+}
+
+static STDMETHODIMP SDLDropTarget_DragOver(SDLDropTarget *target,
+                                           DWORD grfKeyState,
+                                           POINTL pt, DWORD *pdwEffect)
+{
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In DragOver at %ld, %ld\n", pt.x, pt.y);
+    *pdwEffect = DROPEFFECT_COPY;
+    POINT pnt = { pt.x, pt.y };
+    if (ScreenToClient(target->hwnd, &pnt)) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In DragOver at %ld, %ld => window %u at %ld, %ld\n", pt.x, pt.y, target->window->id, pnt.x, pnt.y);
+        SDL_SendDropPosition(target->window, pnt.x, pnt.y);
+    } else {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In DragOver at %ld, %ld => nil, nil\n", pt.x, pt.y);
+    }
+    return S_OK;
+}
+
+static STDMETHODIMP SDLDropTarget_DragLeave(SDLDropTarget *target)
+{
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                 ". In DragLeave\n");
+    SDL_SendDropComplete(target->window);
+    return S_OK;
+}
+
+static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
+                                       IDataObject *pDataObject, DWORD grfKeyState,
+                                       POINTL pt, DWORD *pdwEffect)
+{
+    *pdwEffect = DROPEFFECT_COPY;
+    POINT pnt = { pt.x, pt.y };
+    if (ScreenToClient(target->hwnd, &pnt)) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In Drop at %ld, %ld => window %u at %ld, %ld\n", pt.x, pt.y, target->window->id, pnt.x, pnt.y);
+        SDL_SendDropPosition(target->window, pnt.x, pnt.y);
+    } else {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In Drop at %ld, %ld => nil, nil\n", pt.x, pt.y);
+    }
+
+    {
+        IEnumFORMATETC *pEnumFormatEtc;
+        HRESULT hres;
+        hres = pDataObject->lpVtbl->EnumFormatEtc(pDataObject, DATADIR_GET, &pEnumFormatEtc);
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In Drop for EnumFormatEtc, HRESULT is %08lx\n", hres);
+        if (hres == S_OK) {
+            FORMATETC fetc;
+            while (pEnumFormatEtc->lpVtbl->Next(pEnumFormatEtc, 1, &fetc, NULL) == S_OK) {
+                char name[257] = { 0 };
+                const char *cfnm = SDLGetClipboardFormatName(fetc.cfFormat, name, 256);
+                if (cfnm) {
+                    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                                 ". In Drop, Supported format is %08x, '%s'\n", fetc.cfFormat, cfnm);
+                } else {
+                    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                                 ". In Drop, Supported format is %08x, Predefined\n", fetc.cfFormat);
+                }
+            }
+        }
+    }
+
+    {
+        FORMATETC fetc;
+        fetc.cfFormat = target->format_file;
+        fetc.ptd = NULL;
+        fetc.dwAspect = DVASPECT_CONTENT;
+        fetc.lindex = -1;
+        fetc.tymed = TYMED_HGLOBAL;
+        const char *format_mime = "text/uri-list";
+        if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop File for QueryGetData, format %08x '%s', success\n",
+                         fetc.cfFormat, format_mime);
+            STGMEDIUM med;
+            HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop File for      GetData, format %08x '%s', HRESULT is %08lx\n",
+                         fetc.cfFormat, format_mime, hres);
+            if (SUCCEEDED(hres)) {
+                const size_t bsize = GlobalSize(med.hGlobal);
+                const void *buffer = (void *)GlobalLock(med.hGlobal);
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". In Drop File for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
+                             fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
+                if (buffer) {
+                    char *text = SDL_malloc(bsize + sizeof(Uint32));
+                    SDL_memcpy((Uint8 *)text, buffer, bsize);
+                    SDL_memset((Uint8 *)text + bsize, 0, sizeof(Uint32));
+                    char *saveptr = NULL;
+                    char *token = SDL_strtok_r(text, "\r\n", &saveptr);
+                    while (token != NULL) {
+                        if (SDL_URIToLocal(token, token) >= 0) {
+                            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                                         ". In Drop File, file (%lu of %lu) '%s'\n",
+                                         (unsigned long)strlen(token), (unsigned long)bsize, token);
+                            SDL_SendDropFile(target->window, NULL, token);
+                        }
+                        token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                    }
+                    SDL_free(text);
+                }
+                GlobalUnlock(med.hGlobal);
+                ReleaseStgMedium(&med);
+                SDL_SendDropComplete(target->window);
+                return S_OK;
+            }
+        }
+    }
+
+    {
+        FORMATETC fetc;
+        fetc.cfFormat = target->format_text;
+        fetc.ptd = NULL;
+        fetc.dwAspect = DVASPECT_CONTENT;
+        fetc.lindex = -1;
+        fetc.tymed = TYMED_HGLOBAL;
+        const char *format_mime = "text/plain;charset=utf-8";
+        if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop Text for QueryGetData, format %08x '%s', success\n",
+                         fetc.cfFormat, format_mime);
+            STGMEDIUM med;
+            HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx\n",
+                         fetc.cfFormat, format_mime, hres);
+            if (SUCCEEDED(hres)) {
+                const size_t bsize = GlobalSize(med.hGlobal);
+                const void *buffer = (void *)GlobalLock(med.hGlobal);
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
+                             fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
+                if (buffer) {
+                    char *text = SDL_malloc(bsize + sizeof(Uint32));
+                    SDL_memcpy((Uint8 *)text, buffer, bsize);
+                    SDL_memset((Uint8 *)text + bsize, 0, sizeof(Uint32));
+                    char *saveptr = NULL;
+                    char *token = SDL_strtok_r(text, "\r\n", &saveptr);
+                    while (token != NULL) {
+                        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                                     ". In Drop Text, text (%lu of %lu) '%s'\n",
+                                     (unsigned long)strlen(token), (unsigned long)bsize, token);
+                        SDL_SendDropText(target->window, (char *)token);
+                        token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                    }
+                    SDL_free(text);
+                }
+                GlobalUnlock(med.hGlobal);
+                ReleaseStgMedium(&med);
+                SDL_SendDropComplete(target->window);
+                return S_OK;
+            }
+        }
+    }
+
+    {
+        FORMATETC fetc;
+        fetc.cfFormat = CF_UNICODETEXT;
+        fetc.ptd = NULL;
+        fetc.dwAspect = DVASPECT_CONTENT;
+        fetc.lindex = -1;
+        fetc.tymed = TYMED_HGLOBAL;
+        const char *format_mime = "CF_UNICODETEXT";
+        if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop Text for QueryGetData, format %08x '%s', success\n",
+                         fetc.cfFormat, format_mime);
+            STGMEDIUM med;
+            HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx\n",
+                         fetc.cfFormat, format_mime, hres);
+            if (SUCCEEDED(hres)) {
+                const size_t bsize = GlobalSize(med.hGlobal);
+                const void *buffer = (void *)GlobalLock(med.hGlobal);
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
+                             fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
+                if (buffer) {
+                    buffer = WIN_StringToUTF8(buffer);
+                    if (buffer) {
+                        const size_t lbuffer = strlen(buffer);
+                        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                                     ". In Drop Text for StringToUTF8, format %08x '%s', memory (%lu) %p\n",
+                                     fetc.cfFormat, format_mime, (unsigned long)lbuffer, buffer);
+                        char *text = SDL_malloc(lbuffer + sizeof(Uint32));
+                        SDL_memcpy((Uint8 *)text, buffer, lbuffer);
+                        SDL_memset((Uint8 *)text + lbuffer, 0, sizeof(Uint32));
+                        char *saveptr = NULL;
+                        char *token = SDL_strtok_r(text, "\r\n", &saveptr);
+                        while (token != NULL) {
+                            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                                         ". In Drop Text, text (%lu of %lu) '%s'\n",
+                                         (unsigned long)strlen(token), (unsigned long)lbuffer, token);
+                            SDL_SendDropText(target->window, (char *)token);
+                            token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                        }
+                        SDL_free(text);
+                        SDL_free((void *)buffer);
+                    }
+                }
+                GlobalUnlock(med.hGlobal);
+                ReleaseStgMedium(&med);
+                SDL_SendDropComplete(target->window);
+                return S_OK;
+            }
+        }
+    }
+
+    {
+        FORMATETC fetc;
+        fetc.cfFormat = CF_TEXT;
+        fetc.ptd = NULL;
+        fetc.dwAspect = DVASPECT_CONTENT;
+        fetc.lindex = -1;
+        fetc.tymed = TYMED_HGLOBAL;
+        const char *format_mime = "CF_TEXT";
+        if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop Text for QueryGetData, format %08x '%s', success\n",
+                         fetc.cfFormat, format_mime);
+            STGMEDIUM med;
+            HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx\n",
+                         fetc.cfFormat, format_mime, hres);
+            if (SUCCEEDED(hres)) {
+                const size_t bsize = GlobalSize(med.hGlobal);
+                const void *buffer = (void *)GlobalLock(med.hGlobal);
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
+                             fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
+                if (buffer) {
+                    char *text = SDL_malloc(bsize + sizeof(Uint32));
+                    SDL_memcpy((Uint8 *)text, buffer, bsize);
+                    SDL_memset((Uint8 *)text + bsize, 0, sizeof(Uint32));
+                    char *saveptr = NULL;
+                    char *token = SDL_strtok_r(text, "\r\n", &saveptr);
+                    while (token != NULL) {
+                        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                                     ". In Drop Text, text (%lu of %lu) '%s'\n",
+                                     (unsigned long)strlen(token), (unsigned long)bsize, token);
+                        SDL_SendDropText(target->window, (char *)token);
+                        token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                    }
+                    SDL_free(text);
+                }
+                GlobalUnlock(med.hGlobal);
+                ReleaseStgMedium(&med);
+                SDL_SendDropComplete(target->window);
+                return S_OK;
+            }
+        }
+    }
+
+    {
+        FORMATETC fetc;
+        fetc.cfFormat = CF_HDROP;
+        fetc.ptd = NULL;
+        fetc.dwAspect = DVASPECT_CONTENT;
+        fetc.lindex = -1;
+        fetc.tymed = TYMED_HGLOBAL;
+        const char *format_mime = "CF_HDROP";
+        if (SUCCEEDED(pDataObject->lpVtbl->QueryGetData(pDataObject, &fetc))) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop File for QueryGetData, format %08x '%s', success\n",
+                         fetc.cfFormat, format_mime);
+            STGMEDIUM med;
+            HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Drop File for      GetData, format %08x '%s', HRESULT is %08lx\n",
+                         fetc.cfFormat, format_mime, hres);
+            if (SUCCEEDED(hres)) {
+                const size_t bsize = GlobalSize(med.hGlobal);
+                HDROP drop = (HDROP)GlobalLock(med.hGlobal);
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". In Drop File for   GlobalLock, format %08x '%s', memory (%lu) %p\n",
+                             fetc.cfFormat, format_mime, (unsigned long)bsize, drop);
+                UINT count = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
+                for (UINT i = 0; i < count; ++i) {
+                    UINT size = DragQueryFile(drop, i, NULL, 0) + 1;
+                    LPTSTR buffer = (LPTSTR)SDL_malloc(size * sizeof(TCHAR));
+                    if (buffer) {
+                        if (DragQueryFile(drop, i, buffer, size)) {
+                            char *file = WIN_StringToUTF8(buffer);
+                            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                                         ". In Drop File, file (%lu of %lu) '%s'\n",
+                                         (unsigned long)strlen(file), (unsigned long)bsize, file);
+                            SDL_SendDropFile(target->window, NULL, file);
+                            SDL_free(file);
+                        }
+                        SDL_free(buffer);
+                    }
+                }
+                GlobalUnlock(med.hGlobal);
+                ReleaseStgMedium(&med);
+                SDL_SendDropComplete(target->window);
+                return S_OK;
+            }
+        }
+    }
+
+    SDL_SendDropComplete(target->window);
+    return S_OK;
+}
+
+static void *vtDropTarget[] = {
+    (void *)(SDLDropTarget_QueryInterface),
+    (void *)(SDLDropTarget_AddRef),
+    (void *)(SDLDropTarget_Release),
+    (void *)(SDLDropTarget_DragEnter),
+    (void *)(SDLDropTarget_DragOver),
+    (void *)(SDLDropTarget_DragLeave),
+    (void *)(SDLDropTarget_Drop)
+};
+
 void WIN_AcceptDragAndDrop(SDL_Window *window, SDL_bool accept)
 {
-    const SDL_WindowData *data = window->driverdata;
-    DragAcceptFiles(data->hwnd, accept ? TRUE : FALSE);
+    SDL_WindowData *data = window->internal;
+    if (data->videodata->oleinitialized) {
+        if (accept && !data->drop_target) {
+            SDLDropTarget *drop_target = (SDLDropTarget *)SDL_calloc(1, sizeof(SDLDropTarget));
+            if (drop_target != NULL) {
+                drop_target->lpVtbl = vtDropTarget;
+                drop_target->window = window;
+                drop_target->hwnd = data->hwnd;
+                drop_target->format_file = RegisterClipboardFormat(L"text/uri-list");
+                drop_target->format_text = RegisterClipboardFormat(L"text/plain;charset=utf-8");
+                data->drop_target = drop_target;
+                SDLDropTarget_AddRef(drop_target);
+                RegisterDragDrop(data->hwnd, (LPDROPTARGET)drop_target);
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                             ". In Accept Drag and Drop, window %u, enabled Full OLE IDropTarget\n",
+                             window->id);
+            }
+        } else if (!accept && data->drop_target) {
+            RevokeDragDrop(data->hwnd);
+            SDLDropTarget_Release(data->drop_target);
+            data->drop_target = NULL;
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         ". In Accept Drag and Drop, window %u, disabled Full OLE IDropTarget\n",
+                         window->id);
+        }
+    } else {
+        DragAcceptFiles(data->hwnd, accept ? TRUE : FALSE);
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     ". In Accept Drag and Drop, window %u, %s Fallback WM_DROPFILES\n",
+                     window->id, (accept ? "enabled" : "disabled"));
+    }
 }
 
 int WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation)
@@ -1678,7 +2168,7 @@ int WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperati
 
     SDL_zero(desc);
     desc.cbSize = sizeof(desc);
-    desc.hwnd = window->driverdata->hwnd;
+    desc.hwnd = window->internal->hwnd;
     switch (operation) {
     case SDL_FLASH_CANCEL:
         desc.dwFlags = FLASHW_STOP;
@@ -1701,7 +2191,7 @@ int WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperati
 
 void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 {
-    const SDL_WindowData *data = window->driverdata;
+    const SDL_WindowData *data = window->internal;
     POINT pt;
 
     pt.x = x;
@@ -1712,7 +2202,7 @@ void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 
 int WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool focusable)
 {
-    SDL_WindowData *data = window->driverdata;
+    SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
 
@@ -1753,8 +2243,8 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
 int WIN_SetWindowModalFor(SDL_VideoDevice *_this, SDL_Window *modal_window, SDL_Window *parent_window)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_WindowData *modal_data = modal_window->driverdata;
-    const LONG_PTR parent_hwnd = (LONG_PTR)(parent_window ? parent_window->driverdata->hwnd : NULL);
+    SDL_WindowData *modal_data = modal_window->internal;
+    const LONG_PTR parent_hwnd = (LONG_PTR)(parent_window ? parent_window->internal->hwnd : NULL);
     const LONG_PTR old_ptr = GetWindowLongPtr(modal_data->hwnd, GWLP_HWNDPARENT);
     const DWORD style = GetWindowLong(modal_data->hwnd, GWL_STYLE);
 

@@ -29,19 +29,12 @@
 #include <windows.h>
 #include <dbghelp.h>
 
-static void *s_dbghelp;
-
-typedef BOOL (__stdcall *dbghelp_SymInitialize_fn)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
-
-typedef BOOL (__stdcall *dbghelp_SymFromAddr_fn)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
-static dbghelp_SymFromAddr_fn dbghelp_SymFromAddr;
-
-#ifdef _WIN64
-typedef BOOL (__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
-#else
-typedef BOOL (__stdcall *dbghelp_SymGetLineFromAddr_fn)(HANDLE hProcess, DWORD qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE Line);
-#endif
-static dbghelp_SymGetLineFromAddr_fn dbghelp_SymGetLineFromAddr;
+static struct {
+    HMODULE module;
+    BOOL (WINAPI *pSymInitialize)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
+    BOOL (WINAPI *pSymFromAddr)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
+    BOOL (WINAPI *pSymGetLineFromAddr64)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
+} dyn_dbghelp;
 
 /* older SDKs might not have this: */
 __declspec(dllimport) USHORT WINAPI RtlCaptureStackBackTrace(ULONG FramesToSkip, ULONG FramesToCapture, PVOID* BackTrace, PULONG BackTraceHash);
@@ -63,7 +56,6 @@ typedef struct SDL_tracked_allocation
     void *mem;
     size_t size;
     Uint64 stack[MAXIMUM_TRACKED_STACK_DEPTH];
-    char stack_names[MAXIMUM_TRACKED_STACK_DEPTH][256];
     struct SDL_tracked_allocation *next;
 } SDL_tracked_allocation;
 
@@ -75,6 +67,16 @@ static SDL_free_func SDL_free_orig = NULL;
 static int s_previous_allocations = 0;
 static SDL_tracked_allocation *s_tracked_allocations[256];
 static SDL_bool s_randfill_allocations = SDL_FALSE;
+static SDL_AtomicInt s_lock;
+
+#define LOCK_ALLOCATOR()                               \
+    do {                                               \
+        if (SDL_AtomicCompareAndSwap(&s_lock, 0, 1)) { \
+            break;                                     \
+        }                                              \
+        SDL_CPUPauseInstruction();                     \
+    } while (SDL_TRUE)
+#define UNLOCK_ALLOCATOR() do { SDL_AtomicSet(&s_lock, 0); } while (0)
 
 static unsigned int get_allocation_bucket(void *mem)
 {
@@ -88,12 +90,15 @@ static unsigned int get_allocation_bucket(void *mem)
 static SDL_tracked_allocation* SDL_GetTrackedAllocation(void *mem)
 {
     SDL_tracked_allocation *entry;
+    LOCK_ALLOCATOR();
     int index = get_allocation_bucket(mem);
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
+            UNLOCK_ALLOCATOR();
             return entry;
         }
     }
+    UNLOCK_ALLOCATOR();
     return NULL;
 }
 
@@ -121,6 +126,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
     if (!entry) {
         return;
     }
+    LOCK_ALLOCATOR();
     entry->mem = mem;
     entry->size = size;
 
@@ -137,15 +143,11 @@ static void SDL_TrackAllocation(void *mem, size_t size)
 
         stack_index = 0;
         while (unw_step(&cursor) > 0) {
-            unw_word_t offset, pc;
-            char sym[236];
+            unw_word_t pc;
 
             unw_get_reg(&cursor, UNW_REG_IP, &pc);
             entry->stack[stack_index] = pc;
 
-            if (unw_get_proc_name(&cursor, sym, sizeof(sym), &offset) == 0) {
-                SDL_snprintf(entry->stack_names[stack_index], sizeof(entry->stack_names[stack_index]), "%s+0x%llx", sym, (unsigned long long)offset);
-            }
             ++stack_index;
 
             if (stack_index == SDL_arraysize(entry->stack)) {
@@ -163,34 +165,14 @@ static void SDL_TrackAllocation(void *mem, size_t size)
 
         count = SDL_min(count, MAXIMUM_TRACKED_STACK_DEPTH);
         for (i = 0; i < count; i++) {
-            char symbol_buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
-            PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)symbol_buffer;
-            DWORD64 dwDisplacement = 0;
-            DWORD lineColumn = 0;
-            pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-            pSymbol->MaxNameLen = MAX_SYM_NAME;
-            IMAGEHLP_LINE line;
-            line.SizeOfStruct = sizeof(line);
-
             entry->stack[i] = (Uint64)(uintptr_t)frames[i];
-            if (s_dbghelp) {
-                if (!dbghelp_SymFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)frames[i], &dwDisplacement, pSymbol)) {
-                    SDL_strlcpy(pSymbol->Name, "???", MAX_SYM_NAME);
-                    dwDisplacement = 0;
-                }
-                if (!dbghelp_SymGetLineFromAddr(GetCurrentProcess(), (DWORD64)(uintptr_t)frames[i], &lineColumn, &line)) {
-                    line.FileName = "";
-                    line.LineNumber = 0;
-                }
-
-                SDL_snprintf(entry->stack_names[i], sizeof(entry->stack_names[i]), "%s+0x%I64x %s:%u", pSymbol->Name, dwDisplacement, line.FileName, (Uint32)line.LineNumber);
-            }
         }
     }
 #endif /* HAVE_LIBUNWIND_H */
 
     entry->next = s_tracked_allocations[index];
     s_tracked_allocations[index] = entry;
+    UNLOCK_ALLOCATOR();
 }
 
 static void SDL_UntrackAllocation(void *mem)
@@ -198,6 +180,7 @@ static void SDL_UntrackAllocation(void *mem)
     SDL_tracked_allocation *entry, *prev;
     int index = get_allocation_bucket(mem);
 
+    LOCK_ALLOCATOR();
     prev = NULL;
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
@@ -207,10 +190,12 @@ static void SDL_UntrackAllocation(void *mem)
                 s_tracked_allocations[index] = entry->next;
             }
             SDL_free_orig(entry);
+            UNLOCK_ALLOCATOR();
             return;
         }
         prev = entry;
     }
+    UNLOCK_ALLOCATOR();
 }
 
 static void rand_fill_memory(void* ptr, size_t start, size_t end)
@@ -296,28 +281,27 @@ void SDLTest_TrackAllocations(void)
         SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
     }
 #ifdef SDL_PLATFORM_WIN32
-    {
-        s_dbghelp = SDL_LoadObject("dbghelp.dll");
-        if (s_dbghelp) {
-            dbghelp_SymInitialize_fn dbghelp_SymInitialize;
-            dbghelp_SymInitialize = (dbghelp_SymInitialize_fn)SDL_LoadFunction(s_dbghelp, "SymInitialize");
-            dbghelp_SymFromAddr = (dbghelp_SymFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymFromAddr");
-#ifdef _WIN64
-            dbghelp_SymGetLineFromAddr = (dbghelp_SymGetLineFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymGetLineFromAddr64");
-#else
-            dbghelp_SymGetLineFromAddr = (dbghelp_SymGetLineFromAddr_fn)SDL_LoadFunction(s_dbghelp, "SymGetLineFromAddr");
-#endif
-            if (!dbghelp_SymInitialize || !dbghelp_SymFromAddr || !dbghelp_SymGetLineFromAddr) {
-                SDL_UnloadObject(s_dbghelp);
-                s_dbghelp = NULL;
-            } else {
-                if (!dbghelp_SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
-                    SDL_UnloadObject(s_dbghelp);
-                    s_dbghelp = NULL;
-                }
-            }
+    do {
+        dyn_dbghelp.module = SDL_LoadObject("dbghelp.dll");
+        if (!dyn_dbghelp.module) {
+            goto dbghelp_failed;
         }
-    }
+        dyn_dbghelp.pSymInitialize = (void *)SDL_LoadFunction(dyn_dbghelp.module, "SymInitialize");
+        dyn_dbghelp.pSymFromAddr = (void *)SDL_LoadFunction(dyn_dbghelp.module, "SymFromAddr");
+        dyn_dbghelp.pSymGetLineFromAddr64 = (void *)SDL_LoadFunction(dyn_dbghelp.module, "SymGetLineFromAddr64");
+        if (!dyn_dbghelp.pSymInitialize || !dyn_dbghelp.pSymFromAddr || !dyn_dbghelp.pSymGetLineFromAddr64) {
+            goto dbghelp_failed;
+        }
+        if (!dyn_dbghelp.pSymInitialize(GetCurrentProcess(), NULL, TRUE)) {
+            goto dbghelp_failed;
+        }
+        break;
+dbghelp_failed:
+        if (dyn_dbghelp.module) {
+            SDL_UnloadObject(dyn_dbghelp.module);
+            dyn_dbghelp.module = NULL;
+        }
+    } while (0);
 #endif
 
     SDL_GetMemoryFunctions(&SDL_malloc_orig,
@@ -331,7 +315,7 @@ void SDLTest_TrackAllocations(void)
                            SDLTest_TrackedFree);
 }
 
-void SDLTest_RandFillAllocations()
+void SDLTest_RandFillAllocations(void)
 {
     SDLTest_TrackAllocations();
 
@@ -377,10 +361,45 @@ void SDLTest_LogAllocations(void)
             ADD_LINE();
             /* Start at stack index 1 to skip our tracking functions */
             for (stack_index = 1; stack_index < SDL_arraysize(entry->stack); ++stack_index) {
+                char stack_entry_description[256] = "???";
+
                 if (!entry->stack[stack_index]) {
                     break;
                 }
-                (void)SDL_snprintf(line, sizeof(line), "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], entry->stack_names[stack_index]);
+#ifdef HAVE_LIBUNWIND_H
+                {
+#ifdef unw_get_proc_name_by_ip
+                    unw_word_t offset = 0;
+                    char name[256] = "???";
+                    unw_get_proc_name_by_ip(unw_local_addr_space, entry->stack[stack_index], name, sizeof(name), &offset, NULL);
+                    (void)SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%llx", name, (long long unsigned int)offset);
+#endif
+                }
+#elif defined(SDL_PLATFORM_WIN32)
+                {
+                    DWORD64 dwDisplacement = 0;
+                    char symbol_buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
+                    PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)symbol_buffer;
+                    DWORD lineColumn = 0;
+                    pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+                    pSymbol->MaxNameLen = MAX_SYM_NAME;
+                    IMAGEHLP_LINE64 dbg_line;
+                    dbg_line.SizeOfStruct = sizeof(dbg_line);
+                    dbg_line.FileName = "";
+                    dbg_line.LineNumber = 0;
+
+                    if (dyn_dbghelp.module) {
+                        if (!dyn_dbghelp.pSymFromAddr(GetCurrentProcess(), entry->stack[stack_index], &dwDisplacement, pSymbol)) {
+                            SDL_strlcpy(pSymbol->Name, "???", MAX_SYM_NAME);
+                            dwDisplacement = 0;
+                        }
+                        dyn_dbghelp.pSymGetLineFromAddr64(GetCurrentProcess(), (DWORD64)entry->stack[stack_index], &lineColumn, &dbg_line);
+                    }
+                    SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%I64x %s:%u", pSymbol->Name, dwDisplacement, dbg_line.FileName, (Uint32)dbg_line.LineNumber);
+                }
+#endif
+                (void)SDL_snprintf(line, sizeof(line), "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], stack_entry_description);
+
                 ADD_LINE();
             }
             total_allocated += entry->size;

@@ -20,7 +20,6 @@ freely.
 #endif
 
 #include <stdlib.h>
-#include <time.h>
 
 #define MENU_WIDTH  120
 #define MENU_HEIGHT 300
@@ -56,6 +55,7 @@ static void quit(int rc)
     SDL_free(menus);
     menus = NULL;
 
+    SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
     /* Let 'main()' return normally */
     if (rc != 0) {
@@ -172,7 +172,7 @@ static void loop(void)
                 }
             }
         } else if (event.type == SDL_EVENT_KEY_DOWN) {
-            if (event.key.keysym.sym == SDLK_SPACE) {
+            if (event.key.key == SDLK_SPACE) {
                 for (i = 0; i < num_menus; ++i) {
                     if (SDL_GetWindowFlags(menus[i].win) & SDL_WINDOW_HIDDEN) {
                         SDL_ShowWindow(menus[i].win);

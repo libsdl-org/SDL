@@ -92,7 +92,7 @@
 + (void)screenDisconnected:(NSNotification *)notification
 {
     UIScreen *uiscreen = [notification object];
-    UIKit_DelDisplay(uiscreen);
+    UIKit_DelDisplay(uiscreen, SDL_TRUE);
 }
 
 @end
@@ -114,7 +114,7 @@ static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
         data.uiscreenmode = uiscreenmode;
     }
 
-    mode->driverdata = (void *)CFBridgingRetain(data);
+    mode->internal = (void *)CFBridgingRetain(data);
 
     return 0;
 }
@@ -122,9 +122,9 @@ static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
 
 static void UIKit_FreeDisplayModeData(SDL_DisplayMode *mode)
 {
-    if (mode->driverdata != NULL) {
-        CFRelease(mode->driverdata);
-        mode->driverdata = NULL;
+    if (mode->internal != NULL) {
+        CFRelease(mode->internal);
+        mode->internal = NULL;
     }
 }
 
@@ -242,7 +242,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
     display.desktop_mode = mode;
 
-    display.HDR.SDR_white_point = 1.0f;
+    display.HDR.SDR_white_level = 1.0f;
     display.HDR.HDR_headroom = 1.0f;
 
 #ifndef SDL_PLATFORM_TVOS
@@ -266,7 +266,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
         return SDL_OutOfMemory();
     }
 
-    display.driverdata = (SDL_DisplayData *)CFBridgingRetain(data);
+    display.internal = (SDL_DisplayData *)CFBridgingRetain(data);
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
         return -1;
     }
@@ -285,7 +285,7 @@ int UIKit_AddDisplay(SDL_bool send_event){
     mode.h = (int)size.height;
     mode.pixel_density = 1;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
-    mode.refresh_rate = 60;
+    mode.refresh_rate = 60.0f;
 
     display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
 
@@ -298,7 +298,7 @@ int UIKit_AddDisplay(SDL_bool send_event){
         return SDL_OutOfMemory();
     }
 
-    display.driverdata = (SDL_DisplayData *)CFBridgingRetain(data);
+    display.internal = (SDL_DisplayData *)CFBridgingRetain(data);
     if (SDL_AddVideoDisplay(&display, send_event) == 0) {
         return -1;
     }
@@ -308,7 +308,7 @@ int UIKit_AddDisplay(SDL_bool send_event){
 
 #ifndef SDL_PLATFORM_VISIONOS
 
-void UIKit_DelDisplay(UIScreen *uiscreen)
+void UIKit_DelDisplay(UIScreen *uiscreen, SDL_bool send_event)
 {
     SDL_DisplayID *displays;
     int i;
@@ -317,11 +317,12 @@ void UIKit_DelDisplay(UIScreen *uiscreen)
     if (displays) {
         for (i = 0; displays[i]; ++i) {
             SDL_VideoDisplay *display = SDL_GetVideoDisplay(displays[i]);
-            SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+            SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
 
             if (data && data.uiscreen == uiscreen) {
-                CFRelease(display->driverdata);
-                SDL_DelVideoDisplay(displays[i], SDL_FALSE);
+                CFRelease(display->internal);
+                display->internal = NULL;
+                SDL_DelVideoDisplay(displays[i], send_event);
                 break;
             }
         }
@@ -371,7 +372,7 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
 #ifndef SDL_PLATFORM_VISIONOS
     @autoreleasepool {
-        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
 
         SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
@@ -386,8 +387,8 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
         for (UIScreenMode *uimode in availableModes) {
             CGSize size = GetUIScreenModeSize(data.uiscreen, uimode);
-            int w = size.width;
-            int h = size.height;
+            int w = (int)size.width;
+            int h = (int)size.height;
 
             /* Make sure the width/height are oriented correctly */
             if (isLandscape != (w > h)) {
@@ -407,10 +408,10 @@ int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
 {
 #ifndef SDL_PLATFORM_VISIONOS
     @autoreleasepool {
-        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
 
 #ifndef SDL_PLATFORM_TVOS
-        SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)mode->driverdata;
+        SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)mode->internal;
         [data.uiscreen setCurrentMode:modedata.uiscreenmode];
 #endif
 
@@ -436,7 +437,7 @@ int UIKit_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
 int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     @autoreleasepool {
-        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->driverdata;
+        SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
 #ifdef SDL_PLATFORM_VISIONOS
         CGRect frame = CGRectMake(0, 0, SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
 #else
@@ -449,10 +450,10 @@ int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
             return -1;
         }
 
-        rect->x += frame.origin.x;
-        rect->y += frame.origin.y;
-        rect->w = frame.size.width;
-        rect->h = frame.size.height;
+        rect->x += (int)frame.origin.x;
+        rect->y += (int)frame.origin.y;
+        rect->w = (int)frame.size.width;
+        rect->h = (int)frame.size.height;
     }
 
     return 0;
@@ -476,9 +477,9 @@ void UIKit_QuitModes(SDL_VideoDevice *_this)
                 UIKit_FreeDisplayModeData(mode);
             }
 
-            if (display->driverdata != NULL) {
-                CFRelease(display->driverdata);
-                display->driverdata = NULL;
+            if (display->internal != NULL) {
+                CFRelease(display->internal);
+                display->internal = NULL;
             }
         }
     }
@@ -533,7 +534,7 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
         default:
             break;
         }
-        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation);
+        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation, 0);
     }
 }
 #endif /* !SDL_PLATFORM_TVOS */

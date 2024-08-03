@@ -25,6 +25,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
+#include "../SDL_sysfilesystem.h"
+
 #include <kernel.h>
 #include <swis.h>
 #include <unixlib/local.h>
@@ -123,7 +125,7 @@ static _kernel_oserror *createDirectoryRecursive(char *path)
     return _kernel_swi(OS_File, &regs, &regs);
 }
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
     _kernel_swi_regs regs;
     _kernel_oserror *error;
@@ -150,7 +152,7 @@ char *SDL_GetBasePath(void)
     return retval;
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     char *canon, *dir, *retval;
     size_t len;
@@ -197,7 +199,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 }
 
 /* TODO */
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;

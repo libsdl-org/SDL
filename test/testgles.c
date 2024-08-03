@@ -35,7 +35,7 @@ quit(int rc)
     if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
-                SDL_GL_DeleteContext(context[i]);
+                SDL_GL_DestroyContext(context[i]);
             }
         }
 
@@ -50,7 +50,7 @@ quit(int rc)
 }
 
 static void
-Render()
+Render(void)
 {
     static GLubyte color[8][4] = { { 255, 0, 0, 0 },
                                    { 255, 0, 0, 255 },

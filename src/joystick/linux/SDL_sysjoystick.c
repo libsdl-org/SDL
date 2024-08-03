@@ -41,7 +41,6 @@
 #include <dirent.h>
 #include <linux/joystick.h>
 
-#include "../../SDL_utils_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../core/linux/SDL_evdev.h"
 #include "../SDL_sysjoystick.h"
@@ -154,7 +153,7 @@ typedef struct SDL_joylist_item
     SDL_JoystickID device_instance;
     char *path; /* "/dev/input/event2" or whatever */
     char *name; /* "SideWinder 3D Pro" or whatever */
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     dev_t devnum;
     int steam_virtual_gamepad_slot;
     struct joystick_hwdata *hwdata;
@@ -277,7 +276,7 @@ static int GuessIsSensor(int fd)
     return 0;
 }
 
-static int IsJoystick(const char *path, int *fd, char **name_return, Uint16 *vendor_return, Uint16 *product_return, SDL_JoystickGUID *guid)
+static int IsJoystick(const char *path, int *fd, char **name_return, Uint16 *vendor_return, Uint16 *product_return, SDL_GUID *guid)
 {
     struct input_id inpid;
     char *name;
@@ -441,7 +440,7 @@ static void MaybeAddDevice(const char *path)
     int fd = -1;
     char *name = NULL;
     Uint16 vendor, product;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     SDL_joylist_item *item;
     SDL_sensorlist_item *item_sensor;
 
@@ -664,7 +663,7 @@ static void HandlePendingRemovals(void)
     }
 }
 
-static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, SDL_JoystickID *device_instance)
+static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_GUID guid, SDL_JoystickID *device_instance)
 {
     SDL_joylist_item *item;
 
@@ -1187,7 +1186,7 @@ static void LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_inde
 {
 }
 
-static SDL_JoystickGUID LINUX_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID LINUX_JoystickGetDeviceGUID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->guid;
 }
@@ -2330,6 +2329,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
         MAPPED_DPAD_ALL = 0xF,
     };
     unsigned int mapped;
+    SDL_bool result = SDL_FALSE;
 
     SDL_AssertJoysticksLocked();
 
@@ -2351,22 +2351,19 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     if (!joystick) {
         return SDL_FALSE;
     }
-    joystick->magic = &SDL_joystick_magic;
     SDL_memcpy(&joystick->guid, &item->guid, sizeof(item->guid));
 
-    joystick->hwdata = (struct joystick_hwdata *)
-        SDL_calloc(1, sizeof(*joystick->hwdata));
+    joystick->hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*joystick->hwdata));
     if (!joystick->hwdata) {
         SDL_free(joystick);
         return SDL_FALSE;
     }
+    SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, SDL_TRUE);
 
     item->checked_mapping = SDL_TRUE;
 
-    if (PrepareJoystickHwdata(joystick, item, NULL) == -1) {
-        SDL_free(joystick->hwdata);
-        SDL_free(joystick);
-        return SDL_FALSE; /* SDL_SetError will already have been called */
+    if (PrepareJoystickHwdata(joystick, item, NULL) < 0) {
+        goto done; /* SDL_SetError will already have been called */
     }
 
     /* don't assign `item->hwdata` so it's not in any global state. */
@@ -2375,9 +2372,7 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 
     if (!joystick->hwdata->has_key[BTN_GAMEPAD]) {
         /* Not a gamepad according to the specs. */
-        LINUX_JoystickClose(joystick);
-        SDL_free(joystick);
-        return SDL_FALSE;
+        goto done;
     }
 
     /* We have a gamepad, start filling out the mappings */
@@ -2773,9 +2768,6 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
         }
     }
 
-    LINUX_JoystickClose(joystick);
-    SDL_free(joystick);
-
     /* Cache the mapping for later */
     item->mapping = (SDL_GamepadMapping *)SDL_malloc(sizeof(*item->mapping));
     if (item->mapping) {
@@ -2784,8 +2776,14 @@ static SDL_bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 #ifdef DEBUG_GAMEPAD_MAPPING
     SDL_Log("Generated mapping for device %d", device_index);
 #endif
+    result = SDL_TRUE;
 
-    return SDL_TRUE;
+done:
+    LINUX_JoystickClose(joystick);
+    SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, SDL_FALSE);
+    SDL_free(joystick);
+
+    return result;
 }
 
 SDL_JoystickDriver SDL_LINUX_JoystickDriver = {

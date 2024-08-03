@@ -104,7 +104,7 @@ int X11_PenIDFromDeviceID(int deviceid)
 
 static void pen_atoms_ensure_initialized(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
     if (pen_atoms.initialized) {
         return;
@@ -124,7 +124,7 @@ static void pen_atoms_ensure_initialized(SDL_VideoDevice *_this)
    Returns number of Sint32s written (<= max_words), or 0 on error. */
 static size_t xinput2_pen_get_int_property(SDL_VideoDevice *_this, int deviceid, Atom property, Sint32 *dest, size_t max_words)
 {
-    const SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    const SDL_VideoData *data = (SDL_VideoData *)_this->internal;
     Atom type_return;
     int format_return;
     unsigned long num_items_return;
@@ -222,7 +222,7 @@ static SDL_bool xinput2_wacom_deviceid(SDL_VideoDevice *_this, int deviceid, Uin
 /* Heuristically determines if device is an eraser */
 static SDL_bool xinput2_pen_is_eraser(SDL_VideoDevice *_this, int deviceid, char *devicename)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
     char dev_name[PEN_ERASER_ID_MAXLEN];
     int k;
 
@@ -415,7 +415,7 @@ static SDL_bool xinput2_device_is_pen(SDL_VideoDevice *_this, const XIDeviceInfo
 
 void X11_InitPen(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
     int i;
     XIDeviceInfo *device_info;
     int num_device_info;
@@ -481,8 +481,8 @@ void X11_InitPen(SDL_VideoDevice *_this)
                 Atom vname = val_classinfo->label;
                 int axis = -1;
 
-                float min = val_classinfo->min;
-                float max = val_classinfo->max;
+                float min = (float)val_classinfo->min;
+                float max = (float)val_classinfo->max;
 
                 if (vname == pen_atoms.abs_pressure) {
                     axis = SDL_PEN_AXIS_PRESSURE;
@@ -653,7 +653,7 @@ static void xinput2_normalize_pen_axes(const SDL_Pen *peninfo,
 
             case SDL_PEN_AXIS_ROTATION:
                 /* normalised to -1..1, so let's convert to degrees */
-                value *= 180.0;
+                value *= 180.0f;
                 value += xpen->rotation_bias;
 
                 /* handle simple over/underflow */
@@ -685,7 +685,7 @@ void X11_PenAxesFromValuators(const SDL_Pen *peninfo,
         if (valuator == SDL_PEN_AXIS_VALUATOR_MISSING || valuator >= mask_len * 8 || !(XIMaskIsSet(mask, valuator))) {
             axis_values[i] = 0.0f;
         } else {
-            axis_values[i] = input_values[valuator];
+            axis_values[i] = (float)input_values[valuator];
         }
     }
     xinput2_normalize_pen_axes(peninfo, pen, axis_values);

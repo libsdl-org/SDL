@@ -34,6 +34,9 @@
     <Filter Include="dialog">
       <UniqueIdentifier>{0000c99bfadbbcb05a474a8472910000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="main\winrt">
+      <UniqueIdentifier>{00006680a11742e2b280c6453be80000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\SDL3\SDL_begin_code.h">
@@ -273,6 +276,9 @@
     <ClInclude Include="..\src\events\SDL_keyboard_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\events\SDL_keymap_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\events\SDL_mouse_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -420,9 +426,6 @@
     <ClInclude Include="..\src\video\SDL_blit_slow.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\video\SDL_clipboard_c.h">
-      <Filter>video</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\video\SDL_egl_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -433,6 +436,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\video\SDL_RLEaccel_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\video\SDL_surface_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\video\SDL_sysvideo.h">
@@ -527,7 +533,7 @@
     </ClCompile>
     <ClCompile Include="..\src\audio\SDL_audioresample.c">
       <Filter>Source Files</Filter>
-    </ClCompile>        
+    </ClCompile>
     <ClCompile Include="..\src\audio\SDL_mixer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -544,9 +550,6 @@
       <Filter>camera</Filter>
     </ClCompile>
     <ClCompile Include="..\src\core\SDL_core_unsupported.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\core\SDL_runapp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\core\windows\SDL_windows.c">
@@ -583,6 +586,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\events\SDL_keyboard.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\events\SDL_keymap.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\events\SDL_mouse.c">
@@ -653,6 +659,12 @@
     </ClCompile>
     <ClCompile Include="..\src\main\SDL_main_callbacks.c">
       <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\SDL_runapp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\winrt\SDL_sysmain_runapp.cpp">
+      <Filter>main\winrt</Filter>
     </ClCompile>
     <ClCompile Include="..\src\power\SDL_power.c">
       <Filter>Source Files</Filter>
@@ -769,6 +781,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\stdlib\SDL_qsort.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\stdlib\SDL_random.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\stdlib\SDL_stdlib.c">
@@ -939,6 +954,7 @@
     <ClInclude Include="..\include\SDL3\SDL_main_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\video\SDL_clipboard_c.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\joystick\windows\SDL_windows_gaming_input.c">

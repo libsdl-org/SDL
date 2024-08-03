@@ -100,7 +100,7 @@ static void SDLCALL GDK_InternalHintCallback(
 static int GDK_InternalEnsureTaskQueue(void)
 {
     if (!g_TextTaskQueue) {
-        if (SDL_GDKGetTaskQueue(&g_TextTaskQueue) < 0) {
+        if (SDL_GetGDKTaskQueue(&g_TextTaskQueue) < 0) {
             /* SetError will be done for us. */
             return -1;
         }
@@ -178,7 +178,7 @@ void GDK_EnsureHints(void)
     }
 }
 
-void GDK_StartTextInput(SDL_VideoDevice *_this)
+int GDK_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     /*
      * Currently a stub, since all input is handled by the virtual keyboard,
@@ -191,14 +191,16 @@ void GDK_StartTextInput(SDL_VideoDevice *_this)
      * Right now this function isn't implemented on Desktop
      * and seems to be present only in the docs? So I didn't bother.
      */
+    return 0;
 }
 
-void GDK_StopTextInput(SDL_VideoDevice *_this)
+int GDK_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* See notice in GDK_StartTextInput */
+    return 0;
 }
 
-int GDK_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
+int GDK_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /*
      * XGameUiShowTextEntryAsync does not allow you to set
@@ -212,9 +214,10 @@ int GDK_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect)
     return 0;
 }
 
-void GDK_ClearComposition(SDL_VideoDevice *_this)
+int GDK_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     /* See notice in GDK_StartTextInput */
+    return 0;
 }
 
 SDL_bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
@@ -223,7 +226,7 @@ SDL_bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
     return SDL_TRUE;
 }
 
-void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
+void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     /*
      * There is XGameUiTextEntryOpen but it's only in online docs,
@@ -250,6 +253,39 @@ void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
         return;
     }
 
+    XGameUiTextEntryInputScope scope;
+    switch (SDL_GetTextInputType(props)) {
+    default:
+    case SDL_TEXTINPUT_TYPE_TEXT:
+        scope = (XGameUiTextEntryInputScope)g_TextInputScope;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_NAME:
+        scope = XGameUiTextEntryInputScope::Default;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_EMAIL:
+        scope = XGameUiTextEntryInputScope::EmailSmtpAddress;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
+        scope = XGameUiTextEntryInputScope::Default;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
+        scope = XGameUiTextEntryInputScope::Password;
+        break;
+    case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
+        scope = XGameUiTextEntryInputScope::Default;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER:
+        scope = XGameUiTextEntryInputScope::Number;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
+        // FIXME: Password or number scope?
+        scope = XGameUiTextEntryInputScope::Number;
+        break;
+    case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE:
+        scope = XGameUiTextEntryInputScope::Number;
+        break;
+    }
+
     g_TextBlock->queue = g_TextTaskQueue;
     g_TextBlock->context = _this;
     g_TextBlock->callback = GDK_InternalTextEntryCallback;
@@ -258,7 +294,7 @@ void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
                    g_TitleText,
                    g_DescriptionText,
                    g_DefaultText,
-                   (XGameUiTextEntryInputScope)g_TextInputScope,
+                   scope,
                    (uint32_t)g_MaxTextLength))) {
         SDL_free(g_TextBlock);
         g_TextBlock = NULL;

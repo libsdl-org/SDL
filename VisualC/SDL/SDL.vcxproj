@@ -300,7 +300,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_log.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_md5.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_test_random.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_thread.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_timer.h" />
@@ -333,11 +332,13 @@
     <ClInclude Include="..\..\src\events\blank_cursor.h" />
     <ClInclude Include="..\..\src\events\default_cursor.h" />
     <ClInclude Include="..\..\src\events\scancodes_windows.h" />
+    <ClInclude Include="..\..\src\events\SDL_categories_c.h" />
     <ClInclude Include="..\..\src\events\SDL_clipboardevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_displayevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_dropevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_events_c.h" />
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h" />
+    <ClInclude Include="..\..\src\events\SDL_keymap_c.h" />
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h" />
     <ClInclude Include="..\..\src\events\SDL_touch_c.h" />
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
@@ -404,6 +405,8 @@
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
+    <ClCompile Include="..\..\src\main\SDL_runapp.c" />
+    <ClCompile Include="..\..\src\main\windows\SDL_sysmain_runapp.c" />
     <ClCompile Include="..\..\src\render\vulkan\SDL_render_vulkan.c" />
     <ClCompile Include="..\..\src\render\vulkan\SDL_shaders_vulkan.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
@@ -447,6 +450,12 @@
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_xcb.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_xlib.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_xlib_xrandr.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenevents_c.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenframebuffer_c.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenopengles.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenvideo.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenvulkan.h" />
+    <ClInclude Include="..\..\src\video\offscreen\SDL_offscreenwindow.h" />
     <ClInclude Include="..\..\src\video\SDL_blit.h" />
     <ClInclude Include="..\..\src\video\SDL_blit_auto.h" />
     <ClInclude Include="..\..\src\video\SDL_blit_copy.h" />
@@ -456,6 +465,7 @@
     <ClInclude Include="..\..\src\video\SDL_pixels_c.h" />
     <ClInclude Include="..\..\src\video\SDL_rect_c.h" />
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h" />
+    <ClInclude Include="..\..\src\video\SDL_surface_c.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h" />
     <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />
@@ -500,7 +510,6 @@
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
-    <ClCompile Include="..\..\src\core\SDL_runapp.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
@@ -513,11 +522,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_categories.c" />
     <ClCompile Include="..\..\src\events\SDL_clipboardevents.c" />
     <ClCompile Include="..\..\src\events\SDL_displayevents.c" />
     <ClCompile Include="..\..\src\events\SDL_dropevents.c" />
     <ClCompile Include="..\..\src\events\SDL_events.c" />
     <ClCompile Include="..\..\src\events\SDL_keyboard.c" />
+    <ClCompile Include="..\..\src\events\SDL_keymap.c" />
     <ClCompile Include="..\..\src\events\SDL_mouse.c" />
     <ClCompile Include="..\..\src\events\SDL_pen.c" />
     <ClCompile Include="..\..\src\events\SDL_quit.c" />
@@ -576,6 +587,10 @@
     <ClCompile Include="..\..\src\libm\s_cos.c" />
     <ClCompile Include="..\..\src\libm\s_fabs.c" />
     <ClCompile Include="..\..\src\libm\s_floor.c" />
+    <ClCompile Include="..\..\src\libm\s_isinf.c" />
+    <ClCompile Include="..\..\src\libm\s_isinff.c" />
+    <ClCompile Include="..\..\src\libm\s_isnan.c" />
+    <ClCompile Include="..\..\src\libm\s_isnanf.c" />
     <ClCompile Include="..\..\src\libm\s_modf.c" />
     <ClCompile Include="..\..\src\libm\s_scalbn.c" />
     <ClCompile Include="..\..\src\libm\s_sin.c" />
@@ -634,6 +649,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </MASM>
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_random.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_string.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_strtokr.c" />
@@ -656,6 +672,12 @@
     <ClCompile Include="..\..\src\video\dummy\SDL_nullevents.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullframebuffer.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenevents.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenframebuffer.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenopengles.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenvideo.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenvulkan.c" />
+    <ClCompile Include="..\..\src\video\offscreen\SDL_offscreenwindow.c" />
     <ClCompile Include="..\..\src\video\SDL_blit.c" />
     <ClCompile Include="..\..\src\video\SDL_blit_0.c" />
     <ClCompile Include="..\..\src\video\SDL_blit_1.c" />

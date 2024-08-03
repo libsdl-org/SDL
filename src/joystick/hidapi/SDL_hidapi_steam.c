@@ -513,7 +513,7 @@ static bool ResetSteamController(SDL_hid_device *dev, bool bSuppressErrorSpew, u
     ADD_SETTING(SETTING_RIGHT_TRACKPAD_MODE, TRACKPAD_ABSOLUTE_MOUSE);
     ADD_SETTING(SETTING_SMOOTH_ABSOLUTE_MOUSE, 1);
     ADD_SETTING(SETTING_MOMENTUM_MAXIMUM_VELOCITY, 20000); // [0-20000] default 8000
-    ADD_SETTING(SETTING_MOMENTUM_DECAY_AMMOUNT, 50);       // [0-50] default 5
+    ADD_SETTING(SETTING_MOMENTUM_DECAY_AMOUNT, 50);       // [0-50] default 5
 #else
     ADD_SETTING(SETTING_RIGHT_TRACKPAD_MODE, TRACKPAD_NONE);
     ADD_SETTING(SETTING_SMOOTH_ABSOLUTE_MOUSE, 0);
@@ -1092,7 +1092,7 @@ static SDL_bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_Joystick *joystick = NULL;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromInstanceID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     } else {
         return SDL_FALSE;
     }

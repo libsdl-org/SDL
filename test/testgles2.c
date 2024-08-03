@@ -68,6 +68,7 @@ static SDL_GLContext *context = NULL;
 static int depth = 16;
 static SDL_bool suspend_when_occluded;
 static GLES2_Context ctx;
+static shader_data *datas;
 
 static int LoadContext(GLES2_Context *data)
 {
@@ -100,10 +101,11 @@ quit(int rc)
 {
     int i;
 
+    SDL_free(datas);
     if (context) {
         for (i = 0; i < state->num_windows; i++) {
             if (context[i]) {
-                SDL_GL_DeleteContext(context[i]);
+                SDL_GL_DestroyContext(context[i]);
             }
         }
 
@@ -498,7 +500,7 @@ Render(unsigned int width, unsigned int height, shader_data *data)
     multiply_matrix(matrix_rotate, matrix_modelview, matrix_modelview);
 
     /* Pull the camera back from the cube */
-    matrix_modelview[14] -= 2.5;
+    matrix_modelview[14] -= 2.5f;
 
     perspective_matrix(45.0f, (float)width / height, 0.01f, 100.0f, matrix_perspective);
     multiply_matrix(matrix_perspective, matrix_modelview, matrix_mvp);
@@ -535,7 +537,6 @@ Render(unsigned int width, unsigned int height, shader_data *data)
 
 static int done;
 static Uint32 frames;
-static shader_data *datas;
 #ifndef SDL_PLATFORM_EMSCRIPTEN
 static thread_data *threads;
 #endif
@@ -609,7 +610,7 @@ loop_threaded(void)
             tdata = GetThreadDataForWindow(event.window.windowID);
             if (tdata) {
                 if (SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO) == WAIT_STATE_WAITING_ON_SEM) {
-                    SDL_PostSemaphore(tdata->suspend_sem);
+                    SDL_SignalSemaphore(tdata->suspend_sem);
                 }
             }
         } else if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
@@ -619,7 +620,7 @@ loop_threaded(void)
                 tdata->done = 1;
                 if (tdata->thread) {
                     SDL_AtomicSet(&tdata->suspended, WAIT_STATE_GO);
-                    SDL_PostSemaphore(tdata->suspend_sem);
+                    SDL_SignalSemaphore(tdata->suspend_sem);
                     SDL_WaitThread(tdata->thread, NULL);
                     tdata->thread = NULL;
                     SDL_DestroySemaphore(tdata->suspend_sem);
@@ -934,6 +935,7 @@ int main(int argc, char *argv[])
                 SDL_WaitThread(threads[i].thread, NULL);
             }
         }
+        SDL_free(threads);
     } else {
         while (!done) {
             loop();

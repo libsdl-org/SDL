@@ -61,7 +61,7 @@ static int keyboard_getKeyFromName(void *arg)
     /* Case where Key is known, 1 character input */
     result = SDL_GetKeyFromName("A");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(known/single)");
-    SDLTest_AssertCheck(result == SDLK_a, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_a, result);
+    SDLTest_AssertCheck(result == SDLK_A, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_A, result);
 
     /* Case where Key is known, 2 character input */
     result = SDL_GetKeyFromName("F1");
@@ -79,9 +79,9 @@ static int keyboard_getKeyFromName(void *arg)
     SDLTest_AssertCheck(result == SDLK_FIND, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_FIND, result);
 
     /* Case where Key is known, multiple character input */
-    result = SDL_GetKeyFromName("AudioStop");
+    result = SDL_GetKeyFromName("MediaStop");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(known/multi)");
-    SDLTest_AssertCheck(result == SDLK_AUDIOSTOP, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_AUDIOSTOP, result);
+    SDLTest_AssertCheck(result == SDLK_MEDIA_STOP, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_MEDIA_STOP, result);
 
     /* Case where Key is unknown */
     result = SDL_GetKeyFromName("NotThere");
@@ -124,12 +124,12 @@ static int keyboard_getKeyFromScancode(void *arg)
     SDL_Keycode result;
 
     /* Case where input is valid */
-    result = SDL_GetKeyFromScancode(SDL_SCANCODE_A);
+    result = SDL_GetKeyFromScancode(SDL_SCANCODE_A, SDL_KMOD_NONE);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(valid)");
-    SDLTest_AssertCheck(result == SDLK_a, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_a, result);
+    SDLTest_AssertCheck(result == SDLK_A, "Verify result from call, expected: %d, got: %" SDL_PRIs32, SDLK_A, result);
 
     /* Case where input is zero */
-    result = SDL_GetKeyFromScancode(0);
+    result = SDL_GetKeyFromScancode(SDL_SCANCODE_UNKNOWN, SDL_KMOD_NONE);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(0)");
     SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIs32, SDLK_UNKNOWN, result);
 
@@ -138,13 +138,13 @@ static int keyboard_getKeyFromScancode(void *arg)
     SDLTest_AssertPass("Call to SDL_ClearError()");
 
     /* Case where input is invalid (too small) */
-    result = SDL_GetKeyFromScancode(-999);
+    result = SDL_GetKeyFromScancode((SDL_Scancode)-999, SDL_KMOD_NONE);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(-999)");
     SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIs32, SDLK_UNKNOWN, result);
     checkInvalidScancodeError();
 
     /* Case where input is invalid (too big) */
-    result = SDL_GetKeyFromScancode(999);
+    result = SDL_GetKeyFromScancode((SDL_Scancode)999, SDL_KMOD_NONE);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(999)");
     SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIs32, SDLK_UNKNOWN, result);
     checkInvalidScancodeError();
@@ -191,8 +191,8 @@ static int keyboard_getKeyName(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);
 
     /* Case where key has a N character name */
-    expected = "BrightnessUp";
-    result = SDL_GetKeyName(SDLK_BRIGHTNESSUP);
+    expected = "MediaPlay";
+    result = SDL_GetKeyName(SDLK_MEDIA_PLAY);
     SDLTest_AssertPass("Call to SDL_GetKeyName()");
     SDLTest_AssertCheck(result != NULL, "Verify result from call is not NULL");
     SDLTest_AssertCheck(SDL_strcmp(result, expected) == 0, "Verify result from call is valid, expected: %s, got: %s", expected, result);
@@ -302,7 +302,7 @@ static int keyboard_getSetModState(void *arg)
     currentState = result;
 
     /* Set random state */
-    newState = SDLTest_RandomIntegerInRange(0, allStates);
+    newState = (SDL_Keymod)SDLTest_RandomIntegerInRange(0, allStates);
     SDL_SetModState(newState);
     SDLTest_AssertPass("Call to SDL_SetModState(0x%.4x)", newState);
     result = SDL_GetModState();
@@ -336,37 +336,39 @@ static int keyboard_getSetModState(void *arg)
  */
 static int keyboard_startStopTextInput(void *arg)
 {
+    SDL_Window *window = SDL_GetKeyboardFocus();
+
     /* Start-Stop */
-    SDL_StartTextInput();
+    SDL_StartTextInput(window);
     SDLTest_AssertPass("Call to SDL_StartTextInput()");
-    SDL_StopTextInput();
+    SDL_StopTextInput(window);
     SDLTest_AssertPass("Call to SDL_StopTextInput()");
 
     /* Stop-Start */
-    SDL_StartTextInput();
+    SDL_StartTextInput(window);
     SDLTest_AssertPass("Call to SDL_StartTextInput()");
 
     /* Start-Start */
-    SDL_StartTextInput();
+    SDL_StartTextInput(window);
     SDLTest_AssertPass("Call to SDL_StartTextInput()");
 
     /* Stop-Stop */
-    SDL_StopTextInput();
+    SDL_StopTextInput(window);
     SDLTest_AssertPass("Call to SDL_StopTextInput()");
-    SDL_StopTextInput();
+    SDL_StopTextInput(window);
     SDLTest_AssertPass("Call to SDL_StopTextInput()");
 
     return TEST_COMPLETED;
 }
 
-/* Internal function to test SDL_SetTextInputRect */
-static void testSetTextInputRect(SDL_Rect refRect)
+/* Internal function to test SDL_SetTextInputArea */
+static void testSetTextInputArea(SDL_Window *window, SDL_Rect refRect)
 {
     SDL_Rect testRect;
 
     testRect = refRect;
-    SDL_SetTextInputRect(&testRect);
-    SDLTest_AssertPass("Call to SDL_SetTextInputRect with refRect(x:%d,y:%d,w:%d,h:%d)", refRect.x, refRect.y, refRect.w, refRect.h);
+    SDL_SetTextInputArea(window, &testRect, 0);
+    SDLTest_AssertPass("Call to SDL_SetTextInputArea with refRect(x:%d,y:%d,w:%d,h:%d)", refRect.x, refRect.y, refRect.w, refRect.h);
     SDLTest_AssertCheck(
         (refRect.x == testRect.x) && (refRect.y == testRect.y) && (refRect.w == testRect.w) && (refRect.h == testRect.h),
         "Check that input data was not modified, expected: x:%d,y:%d,w:%d,h:%d, got: x:%d,y:%d,w:%d,h:%d",
@@ -375,12 +377,13 @@ static void testSetTextInputRect(SDL_Rect refRect)
 }
 
 /**
- * Check call to SDL_SetTextInputRect
+ * Check call to SDL_SetTextInputArea
  *
- * \sa SDL_SetTextInputRect
+ * \sa SDL_SetTextInputArea
  */
-static int keyboard_setTextInputRect(void *arg)
+static int keyboard_setTextInputArea(void *arg)
 {
+    SDL_Window *window = SDL_GetKeyboardFocus();
     SDL_Rect refRect;
 
     /* Normal visible refRect, origin inside */
@@ -388,77 +391,77 @@ static int keyboard_setTextInputRect(void *arg)
     refRect.y = SDLTest_RandomIntegerInRange(1, 50);
     refRect.w = SDLTest_RandomIntegerInRange(10, 50);
     refRect.h = SDLTest_RandomIntegerInRange(10, 50);
-    testSetTextInputRect(refRect);
+    testSetTextInputArea(window, refRect);
 
     /* Normal visible refRect, origin 0,0 */
     refRect.x = 0;
     refRect.y = 0;
     refRect.w = SDLTest_RandomIntegerInRange(10, 50);
     refRect.h = SDLTest_RandomIntegerInRange(10, 50);
-    testSetTextInputRect(refRect);
+    testSetTextInputArea(window, refRect);
 
     /* 1Pixel refRect */
     refRect.x = SDLTest_RandomIntegerInRange(10, 50);
     refRect.y = SDLTest_RandomIntegerInRange(10, 50);
     refRect.w = 1;
     refRect.h = 1;
-    testSetTextInputRect(refRect);
+    testSetTextInputArea(window, refRect);
 
     /* 0pixel refRect */
     refRect.x = 1;
     refRect.y = 1;
     refRect.w = 1;
     refRect.h = 0;
-    testSetTextInputRect(refRect);
+    testSetTextInputArea(window, refRect);
 
     /* 0pixel refRect */
     refRect.x = 1;
     refRect.y = 1;
     refRect.w = 0;
     refRect.h = 1;
-    testSetTextInputRect(refRect);
+    testSetTextInputArea(window, refRect);
 
     /* 0pixel refRect */
     refRect.x = 1;
     refRect.y = 1;
     refRect.w = 0;
     refRect.h = 0;
-    testSetTextInputRect(refRect);
+    testSetTextInputArea(window, refRect);
 
     /* 0pixel refRect */
     refRect.x = 0;
     refRect.y = 0;
     refRect.w = 0;
     refRect.h = 0;
-    testSetTextInputRect(refRect);
+    testSetTextInputArea(window, refRect);
 
     /* negative refRect */
     refRect.x = SDLTest_RandomIntegerInRange(-200, -100);
     refRect.y = SDLTest_RandomIntegerInRange(-200, -100);
     refRect.w = 50;
     refRect.h = 50;
-    testSetTextInputRect(refRect);
+    testSetTextInputArea(window, refRect);
 
     /* oversized refRect */
     refRect.x = SDLTest_RandomIntegerInRange(1, 50);
     refRect.y = SDLTest_RandomIntegerInRange(1, 50);
     refRect.w = 5000;
     refRect.h = 5000;
-    testSetTextInputRect(refRect);
+    testSetTextInputArea(window, refRect);
 
     /* NULL refRect */
-    SDL_SetTextInputRect(NULL);
-    SDLTest_AssertPass("Call to SDL_SetTextInputRect(NULL)");
+    SDL_SetTextInputArea(window, NULL, 0);
+    SDLTest_AssertPass("Call to SDL_SetTextInputArea(NULL)");
 
     return TEST_COMPLETED;
 }
 
 /**
- * Check call to SDL_SetTextInputRect with invalid data
+ * Check call to SDL_SetTextInputArea with invalid data
  *
- * \sa SDL_SetTextInputRect
+ * \sa SDL_SetTextInputArea
  */
-static int keyboard_setTextInputRectNegative(void *arg)
+static int keyboard_setTextInputAreaNegative(void *arg)
 {
     /* Some platforms set also an error message; prepare for checking it */
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_COCOA)
@@ -470,8 +473,8 @@ static int keyboard_setTextInputRectNegative(void *arg)
 #endif
 
     /* NULL refRect */
-    SDL_SetTextInputRect(NULL);
-    SDLTest_AssertPass("Call to SDL_SetTextInputRect(NULL)");
+    SDL_SetTextInputArea(SDL_GetKeyboardFocus(), NULL, 0);
+    SDLTest_AssertPass("Call to SDL_SetTextInputArea(NULL)");
 
     /* Some platforms set also an error message; so check it */
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_COCOA)
@@ -499,16 +502,19 @@ static int keyboard_setTextInputRectNegative(void *arg)
 static int keyboard_getScancodeFromKey(void *arg)
 {
     SDL_Scancode scancode;
+    SDL_Keymod modstate;
 
     /* Regular key */
-    scancode = SDL_GetScancodeFromKey(SDLK_4);
+    scancode = SDL_GetDefaultScancodeFromKey(SDLK_4, &modstate);
     SDLTest_AssertPass("Call to SDL_GetScancodeFromKey(SDLK_4)");
-    SDLTest_AssertCheck(scancode == SDL_SCANCODE_4, "Validate return value from SDL_GetScancodeFromKey, expected: %d, got: %d", SDL_SCANCODE_4, scancode);
+    SDLTest_AssertCheck(scancode == SDL_SCANCODE_4, "Validate return value from SDL_GetDefaultScancodeFromKey, expected: %d, got: %d", SDL_SCANCODE_4, scancode);
+    SDLTest_AssertCheck(modstate == SDL_KMOD_NONE, "Validate modstate from SDL_GetDefaultScancodeFromKey, expected: %d, got: %d", SDL_KMOD_NONE, modstate);
 
     /* Virtual key */
-    scancode = SDL_GetScancodeFromKey(SDLK_PLUS);
+    scancode = SDL_GetDefaultScancodeFromKey(SDLK_PLUS, &modstate);
     SDLTest_AssertPass("Call to SDL_GetScancodeFromKey(SDLK_PLUS)");
-    SDLTest_AssertCheck(scancode == 0, "Validate return value from SDL_GetScancodeFromKey, expected: 0, got: %d", scancode);
+    SDLTest_AssertCheck(scancode == SDL_SCANCODE_EQUALS, "Validate return value from SDL_GetDefaultScancodeFromKey, expected: %d, got: %d", SDL_SCANCODE_EQUALS, scancode);
+    SDLTest_AssertCheck(modstate == SDL_KMOD_SHIFT, "Validate modstate from SDL_GetDefaultScancodeFromKey, expected: %d, got: %d", SDL_KMOD_SHIFT, modstate);
 
     return TEST_COMPLETED;
 }
@@ -660,11 +666,11 @@ static const SDLTest_TestCaseReference keyboardTest7 = {
 };
 
 static const SDLTest_TestCaseReference keyboardTest8 = {
-    (SDLTest_TestCaseFp)keyboard_setTextInputRect, "keyboard_setTextInputRect", "Check call to SDL_SetTextInputRect", TEST_ENABLED
+    (SDLTest_TestCaseFp)keyboard_setTextInputArea, "keyboard_setTextInputArea", "Check call to SDL_SetTextInputArea", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTest9 = {
-    (SDLTest_TestCaseFp)keyboard_setTextInputRectNegative, "keyboard_setTextInputRectNegative", "Check call to SDL_SetTextInputRect with invalid data", TEST_ENABLED
+    (SDLTest_TestCaseFp)keyboard_setTextInputAreaNegative, "keyboard_setTextInputAreaNegative", "Check call to SDL_SetTextInputArea with invalid data", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference keyboardTest10 = {
