@@ -1404,7 +1404,6 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  * Get window associated with an event.
  *
  * \param event an event containing a `windowID`.
- *
  * \returns the associated window on success or NULL if there is none.
  *
  * \since This function is available since SDL 3.0.0.
