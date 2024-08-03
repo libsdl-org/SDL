@@ -909,13 +909,13 @@ static SDL_bool IsInWhitelist(Uint16 vendor, Uint16 product)
 
 #if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND)
 /* We have another way to get HID devices, so use the whitelist to get devices where libusb is preferred */
-#define SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_TRUE
+#define SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_TRUE
 #else
 /* libusb is the only way to get HID devices, so don't use the whitelist, get them all */
-#define SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_FALSE
+#define SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT SDL_FALSE
 #endif /* HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND */
 
-static SDL_bool use_libusb_whitelist = SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT;
+static SDL_bool use_libusb_whitelist = SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT;
 
 /* Shared HIDAPI Implementation */
 
@@ -1140,9 +1140,9 @@ int SDL_hid_init(void)
     SDL_AddHintCallback(SDL_HINT_HIDAPI_IGNORE_DEVICES, IgnoredDevicesChanged, NULL);
 
 #ifdef SDL_USE_LIBUDEV
-    if (SDL_getenv("SDL_HIDAPI_JOYSTICK_DISABLE_UDEV") != NULL) {
+    if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_UDEV, SDL_TRUE)) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                     "udev disabled by SDL_HIDAPI_JOYSTICK_DISABLE_UDEV");
+                     "udev disabled by SDL_HINT_HIDAPI_UDEV");
         linux_enumeration_method = ENUMERATION_FALLBACK;
     } else if (SDL_DetectSandbox() != SDL_SANDBOX_NONE) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
@@ -1155,12 +1155,12 @@ int SDL_hid_init(void)
     }
 #endif
 
-    use_libusb_whitelist = SDL_GetHintBoolean("SDL_HIDAPI_LIBUSB_WHITELIST",
-                                              SDL_HIDAPI_LIBUSB_WHITELIST_DEFAULT);
+    use_libusb_whitelist = SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB_WHITELIST,
+                                              SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT);
 #ifdef HAVE_LIBUSB
-    if (SDL_getenv("SDL_HIDAPI_DISABLE_LIBUSB") != NULL) {
+    if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB, SDL_TRUE)) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                     "libusb disabled by SDL_HIDAPI_DISABLE_LIBUSB");
+                     "libusb disabled with SDL_HINT_HIDAPI_LIBUSB");
         libusb_ctx.libhandle = NULL;
     } else {
         ++attempts;

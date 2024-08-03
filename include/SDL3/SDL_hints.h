@@ -931,6 +931,52 @@ extern "C" {
 #define SDL_HINT_GDK_TEXTINPUT_TITLE "SDL_GDK_TEXTINPUT_TITLE"
 
 /**
+ * A variable to control whether HIDAPI uses libusb for device access.
+ *
+ * By default libusb will only be used for a few devices that require direct USB access, and this can be controlled with SDL_HINT_HIDAPI_LIBUSB_WHITELIST.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI will not use libusb for device access.
+ * - "1": HIDAPI will use libusb for device access if available. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_HIDAPI_LIBUSB "SDL_HIDAPI_LIBUSB"
+
+/**
+ * A variable to control whether HIDAPI uses libusb only for whitelisted devices.
+ *
+ * By default libusb will only be used for a few devices that require direct USB access.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI will use libusb for all device access.
+ * - "1": HIDAPI will use libusb only for whitelisted devices. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_HIDAPI_LIBUSB_WHITELIST "SDL_HIDAPI_LIBUSB_WHITELIST"
+
+/**
+ * A variable to control whether HIDAPI uses udev for device detection.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI will poll for device changes.
+ * - "1": HIDAPI will use udev for device detection. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_HIDAPI_UDEV "SDL_HIDAPI_UDEV"
+
+/**
  * A variable to control whether SDL_hid_enumerate() enumerates all HID
  * devices or only controllers.
  *
