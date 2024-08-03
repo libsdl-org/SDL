@@ -198,6 +198,17 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
 
 /**
+ * Specify the default ALSA audio device name.
+ *
+ * This variable is a specific audio device to open when the "default" audio device is used. By default if 4 channel audio is requested, the "plug:surround40" device will be opened and if 6 channel audio is requested the "plug:surround51" device will be opened.
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE "SDL_AUDIO_ALSA_DEFAULT_DEVICE"
+
+/**
  * A variable controlling the audio category on iOS and macOS.
  *
  * The variable can be set to the following values:
