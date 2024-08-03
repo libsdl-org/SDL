@@ -1774,7 +1774,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
     int result;
     Uint32 chunkcount = 0;
     Uint32 chunkcountlimit = 10000;
-    const char *envchunkcountlimit;
+    const char *hint;
     Sint64 RIFFstart, RIFFend, lastchunkpos;
     SDL_bool RIFFlengthknown = SDL_FALSE;
     WaveFormat *format = &file->format;
@@ -1787,10 +1787,10 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
     SDL_zero(fmtchunk);
     SDL_zero(datachunk);
 
-    envchunkcountlimit = SDL_getenv("SDL_WAVE_CHUNK_LIMIT");
-    if (envchunkcountlimit) {
+    hint = SDL_GetHint(SDL_HINT_WAVE_CHUNK_LIMIT);
+    if (hint) {
         unsigned int count;
-        if (SDL_sscanf(envchunkcountlimit, "%u", &count) == 1) {
+        if (SDL_sscanf(hint, "%u", &count) == 1) {
             chunkcountlimit = count <= SDL_MAX_UINT32 ? count : SDL_MAX_UINT32;
         }
     }
