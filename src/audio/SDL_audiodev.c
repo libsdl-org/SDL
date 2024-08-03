@@ -87,10 +87,7 @@ static void SDL_EnumUnixAudioDevices_Internal(const SDL_bool recording, const SD
     }
 
     // Figure out what our audio device is
-    audiodev = SDL_getenv("SDL_PATH_DSP");
-    if (!audiodev) {
-        audiodev = SDL_getenv("AUDIODEV");
-    }
+    audiodev = SDL_getenv("AUDIODEV");
     if (!audiodev) {
         if (classic) {
             audiodev = SDL_PATH_DEV_AUDIO;

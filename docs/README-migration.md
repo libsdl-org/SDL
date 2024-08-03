@@ -801,6 +801,9 @@ The following hints have been removed:
 * SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING
 * SDL_HINT_AUDIO_DEVICE_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_NAME_STRING with SDL_SetAppMetadataProperty()
 
+The following environment variables have been renamed:
+* SDL_PATH_DSP => AUDIODEV
+
 The following environment variables have been removed:
 * SDL_AUDIO_ALSA_DEBUG - replaced by setting the hint SDL_HINT_LOGGING to "audio=debug"
 * SDL_DUMMYAUDIODELAY - replaced with the hint SDL_HINT_AUDIO_DUMMY_TIMESCALE which allows scaling the audio time rather than specifying an absolute delay.
