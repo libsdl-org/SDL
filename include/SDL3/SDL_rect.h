@@ -116,7 +116,8 @@ typedef struct SDL_FRect
  * Convert an SDL_Rect to SDL_FRect
  *
  * \param rect a pointer to an SDL_Rect.
- * \param frect a pointer filled in with the floating point representation of `rect`.
+ * \param frect a pointer filled in with the floating point representation of
+ *              `rect`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
