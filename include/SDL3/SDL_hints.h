@@ -3301,6 +3301,20 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_NET_WM_PING      "SDL_VIDEO_X11_NET_WM_PING"
 
 /**
+ * A variable controlling whether SDL uses DirectColor visuals.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable DirectColor visuals.
+ * - "1": Enable DirectColor visuals. (default)
+ *
+ * This hint should be set before initializing the video subsystem.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VIDEO_X11_NODIRECTCOLOR "SDL_VIDEO_X11_NODIRECTCOLOR"
+
+/**
  * A variable forcing the content scaling factor for X11 displays.
  *
  * The variable can be set to a floating point value in the range 1.0-10.0f

@@ -491,7 +491,10 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
 
 SDL_bool X11_UseDirectColorVisuals(void)
 {
-    return (SDL_getenv("SDL_VIDEO_X11_NODIRECTCOLOR") == NULL);
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_NODIRECTCOLOR, SDL_FALSE)) {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
