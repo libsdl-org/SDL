@@ -195,7 +195,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     }
 }
 
-- (void)windowWillClose:(NSNotification *)notification;
+- (void)windowWillClose:(NSNotification *)notification
 {
     NSWindow *win = (NSWindow *)[notification object];
 
