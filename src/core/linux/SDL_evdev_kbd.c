@@ -473,8 +473,7 @@ void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, SDL_bool muted)
     }
 
     if (muted) {
-        /* Allow inhibiting keyboard mute with env. variable for debugging etc. */
-        if (SDL_getenv("SDL_INPUT_LINUX_KEEP_KBD") == NULL) {
+        if (SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, SDL_TRUE)) {
             /* Mute the keyboard so keystrokes only generate evdev events
              * and do not leak through to the console
              */
