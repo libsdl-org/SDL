@@ -2437,6 +2437,15 @@ extern "C" {
 #define SDL_HINT_NO_SIGNAL_HANDLERS   "SDL_NO_SIGNAL_HANDLERS"
 
 /**
+ * Specify the OpenGL library to load.
+ *
+ * This hint should be set before creating an OpenGL window or creating an OpenGL context.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_OPENGL_LIBRARY "SDL_OPENGL_LIBRARY"
+
+/**
  * A variable controlling what driver to use for OpenGL ES contexts.
  *
  * On some platforms, currently Windows and X11, OpenGL drivers may support
@@ -3340,6 +3349,15 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_VITA_TOUCH_MOUSE_DEVICE    "SDL_VITA_TOUCH_MOUSE_DEVICE"
+
+/**
+ * Specify the Vulkan library to load.
+ *
+ * This hint should be set before creating a Vulkan window or calling SDL_Vulkan_LoadLibrary().
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VULKAN_LIBRARY "SDL_VULKAN_LIBRARY"
 
 /**
  * A variable controlling how the fact chunk affects the loading of a WAVE

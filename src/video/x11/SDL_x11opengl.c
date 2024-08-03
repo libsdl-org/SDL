@@ -172,7 +172,7 @@ int X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
     /* Load the OpenGL library */
     if (path == NULL) {
-        path = SDL_getenv("SDL_OPENGL_LIBRARY");
+        path = SDL_GetHint(SDL_HINT_OPENGL_LIBRARY);
     }
     if (path == NULL) {
         path = DEFAULT_OPENGL;

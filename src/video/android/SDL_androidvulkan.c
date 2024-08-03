@@ -49,7 +49,7 @@ int Android_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
     /* Load the Vulkan loader library */
     if (!path) {
-        path = SDL_getenv("SDL_VULKAN_LIBRARY");
+        path = SDL_GetHint(SDL_HINT_VULKAN_LIBRARY);
     }
     if (!path) {
         path = "libvulkan.so";
