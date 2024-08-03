@@ -531,8 +531,9 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
 #if defined(SDL_VIDEO_OPENGL_GLX) || defined(SDL_VIDEO_OPENGL_EGL)
     const int transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
+    const char *display_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_VISUALID);
 
-    if (forced_visual_id && forced_visual_id[0] != '\0') {
+    if (forced_visual_id && *forced_visual_id) {
         XVisualInfo *vi, template;
         int nvis;
 
@@ -547,7 +548,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
             return -1;
         }
     } else if ((window->flags & SDL_WINDOW_OPENGL) &&
-               !SDL_getenv("SDL_VIDEO_X11_VISUALID")) {
+               (!display_visual_id || !*display_visual_id)) {
         XVisualInfo *vinfo = NULL;
 
 #ifdef SDL_VIDEO_OPENGL_EGL
