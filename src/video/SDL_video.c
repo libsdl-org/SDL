@@ -2649,13 +2649,17 @@ SDL_Window *SDL_GetWindowFromID(SDL_WindowID id)
     SDL_Window *window;
 
     if (!_this) {
+        SDL_UninitializedVideo();
         return NULL;
     }
-    for (window = _this->windows; window; window = window->next) {
-        if (window->id == id) {
-            return window;
+    if (id) {
+        for (window = _this->windows; window; window = window->next) {
+            if (window->id == id) {
+                return window;
+            }
         }
     }
+    SDL_SetError("Invalid window ID");                                 \
     return NULL;
 }
 
