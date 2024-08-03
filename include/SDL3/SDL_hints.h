@@ -3341,6 +3341,17 @@ extern "C" {
 #define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
 
 /**
+ * A variable controlling the maximum number of chunks in a WAVE file.
+ *
+ * This sets an upper bound on the number of chunks in a WAVE file to avoid wasting time on malformed or corrupt WAVE files. This defaults to "10000".
+ *
+ * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_IO()
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_WAVE_CHUNK_LIMIT   "SDL_WAVE_CHUNK_LIMIT"
+
+/**
  * A variable controlling how the size of the RIFF chunk affects the loading
  * of a WAVE file.
  *
@@ -3351,7 +3362,7 @@ extern "C" {
  * Note that files that have trailing data unrelated to the WAVE file or
  * corrupt files may slow down the loading process without a reliable
  * boundary. By default, SDL stops after 10000 chunks to prevent wasting time.
- * Use the environment variable SDL_WAVE_CHUNK_LIMIT to adjust this value.
+ * Use SDL_HINT_WAVE_CHUNK_LIMIT to adjust this value.
  *
  * The variable can be set to the following values:
  *
