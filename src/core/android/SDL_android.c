@@ -64,6 +64,12 @@ JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(
     JNIEnv *env, jclass cls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitSDLThread)(
+    JNIEnv *env, jclass cls);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeCleanupSDLThread)(
+    JNIEnv *env, jclass cls);
+
 JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(
     JNIEnv *env, jclass cls,
     jstring library, jstring function, jobject array);
@@ -188,6 +194,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 static JNINativeMethod SDLActivity_tab[] = {
     { "nativeGetVersion", "()Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetVersion) },
     { "nativeSetupJNI", "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
+    { "nativeInitSDLThread", "()V", SDL_JAVA_INTERFACE(nativeInitSDLThread) },
+    { "nativeCleanupSDLThread", "()V", SDL_JAVA_INTERFACE(nativeCleanupSDLThread) },
     { "nativeRunMain", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
     { "onNativeDropFile", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
     { "nativeSetScreenResolution", "(IIIIFF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
@@ -764,14 +772,10 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeAllowRecreateActivity)(
     return SDL_AtomicGet(&bAllowRecreateActivity);
 }
 
-/* Start up the SDL app */
-JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls, jstring library, jstring function, jobject array)
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitSDLThread)(
+    JNIEnv *env, jclass jcls)
 {
-    int status = -1;
-    const char *library_file;
-    void *library_handle;
-
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeRunMain() %d time", run_count);
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeInitSDLThread() %d time", run_count);
     if (run_count == 1) {
         SDL_AddHintCallback(SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY, SDL_AllowRecreateActivityChanged, NULL);
     }
@@ -779,6 +783,22 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
 
     /* Save JNIEnv of SDLThread */
     Android_JNI_SetEnv(env);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeCleanupSDLThread)(
+    JNIEnv *env, jclass jcls)
+{
+    /* This is a Java thread, it doesn't need to be Detached from the JVM.
+     * Set to mThreadKey value to NULL not to call pthread_create destructor 'Android_JNI_ThreadDestroyed' */
+    Android_JNI_SetEnv(NULL);
+}
+
+/* Start up the SDL app */
+JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls, jstring library, jstring function, jobject array)
+{
+    int status = -1;
+    const char *library_file;
+    void *library_handle;
 
     library_file = (*env)->GetStringUTFChars(env, library, NULL);
     library_handle = dlopen(library_file, RTLD_GLOBAL);
@@ -852,10 +872,6 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
     }
     (*env)->ReleaseStringUTFChars(env, library, library_file);
-
-    /* This is a Java thread, it doesn't need to be Detached from the JVM.
-     * Set to mThreadKey value to NULL not to call pthread_create destructor 'Android_JNI_ThreadDestroyed' */
-    Android_JNI_SetEnv(NULL);
 
     /* Do not issue an exit or the whole application will terminate instead of just the SDL thread */
     /* exit(status); */

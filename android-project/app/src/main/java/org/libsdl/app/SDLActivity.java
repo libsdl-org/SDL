@@ -247,12 +247,19 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     /**
-     * This method creates a Runnable which invokes SDL_main. The default implementation
-     * uses the getMainSharedObject() and getMainFunction() methods to invoke native
-     * code from the specified shared library.
+     * The application entry point, called on a dedicated thread (SDLThread).
+     * The default implementation uses the getMainSharedObject() and getMainFunction() methods
+     * to invoke native code from the specified shared library.
+     * It can be overridden by derived classes.
      */
-    protected Runnable createSDLMainRunnable() {
-        return new SDLMain();
+    protected void main() {
+        String library = SDLActivity.mSingleton.getMainSharedObject();
+        String function = SDLActivity.mSingleton.getMainFunction();
+        String[] arguments = SDLActivity.mSingleton.getArguments();
+
+        Log.v("SDL", "Running main function " + function + " from library " + library);
+        SDLActivity.nativeRunMain(library, function, arguments);
+        Log.v("SDL", "Finished main function");
     }
 
     /**
@@ -838,7 +845,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     // Start up the C app thread and enable sensor input for the first time
                     // FIXME: Why aren't we enabling sensor input at start?
 
-                    mSDLThread = new Thread(SDLActivity.mSingleton.createSDLMainRunnable(), "SDLThread");
+                    mSDLThread = new Thread(new SDLMain(), "SDLThread");
                     mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
                     mSDLThread.start();
 
@@ -1032,6 +1039,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // C functions we call
     public static native String nativeGetVersion();
     public static native int nativeSetupJNI();
+    public static native void nativeInitMainThread();
+    public static native void nativeCleanupMainThread();
     public static native int nativeRunMain(String library, String function, Object arguments);
     public static native void nativeLowMemory();
     public static native void nativeSendQuit();
@@ -2102,10 +2111,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 class SDLMain implements Runnable {
     @Override
     public void run() {
-        // Runs SDL_main()
-        String library = SDLActivity.mSingleton.getMainSharedObject();
-        String function = SDLActivity.mSingleton.getMainFunction();
-        String[] arguments = SDLActivity.mSingleton.getArguments();
+        // Runs SDLActivity.main()
 
         try {
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DISPLAY);
@@ -2113,11 +2119,9 @@ class SDLMain implements Runnable {
             Log.v("SDL", "modify thread properties failed " + e.toString());
         }
 
-        Log.v("SDL", "Running main function " + function + " from library " + library);
-
-        SDLActivity.nativeRunMain(library, function, arguments);
-
-        Log.v("SDL", "Finished main function");
+        SDLActivity.nativeInitMainThread();
+        SDLActivity.mSingleton.main();
+        SDLActivity.nativeCleanupMainThread();
 
         if (SDLActivity.mSingleton != null && !SDLActivity.mSingleton.isFinishing()) {
             // Let's finish the Activity
