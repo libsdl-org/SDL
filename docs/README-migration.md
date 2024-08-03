@@ -762,7 +762,7 @@ The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS ha
 The environment variable AUDIODEV is used exclusively to specify the audio device for the OSS and NetBSD audio drivers. Its use in the ALSA driver has been replaced with the hint SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE and in the sndio driver with the environment variable AUDIODEVICE.
 
 The following hints have been renamed:
-* SDL_HINT_VIDEODRIVER => SDL_VIDEO_DRIVER
+* SDL_HINT_VIDEODRIVER => SDL_HINT_VIDEO_DRIVER
 * SDL_HINT_AUDIODRIVER => SDL_HINT_AUDIO_DRIVER
 * SDL_HINT_ALLOW_TOPMOST => SDL_HINT_WINDOW_ALLOW_TOPMOST
 * SDL_HINT_DIRECTINPUT_ENABLED => SDL_HINT_JOYSTICK_DIRECTINPUT
@@ -804,7 +804,9 @@ The following hints have been removed:
 * SDL_HINT_AUDIO_DEVICE_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_NAME_STRING with SDL_SetAppMetadataProperty()
 
 The following environment variables have been renamed:
+* SDL_AUDIODRIVER => SDL_AUDIO_DRIVER
 * SDL_PATH_DSP => AUDIODEV
+* SDL_VIDEODRIVER => SDL_VIDEO_DRIVER
 
 The following environment variables have been removed:
 * SDL_AUDIO_ALSA_DEBUG - replaced by setting the hint SDL_HINT_LOGGING to "audio=debug"
@@ -2005,7 +2007,7 @@ The following symbols have been renamed:
 
 Several video backends have had their names lower-cased ("kmsdrm", "rpi", "android", "psp", "ps2", "vita"). SDL already does a case-insensitive compare for SDL_HINT_VIDEO_DRIVER tests, but if your app is calling SDL_GetVideoDriver() or SDL_GetCurrentVideoDriver() and doing case-sensitive compares on those strings, please update your code.
 
-SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific video driver using SDL_VIDEO_DRIVER hint.
+SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific video driver using SDL_HINT_VIDEO_DRIVER.
 
 Rather than iterating over displays using display index, there is a new function SDL_GetDisplays() to get the current list of displays, and functions which used to take a display index now take SDL_DisplayID, with an invalid ID being 0.
 ```c
