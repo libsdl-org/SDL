@@ -2091,9 +2091,8 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                              fetc.cfFormat, format_mime, (unsigned long)bsize, drop);
                 UINT count = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
                 for (UINT i = 0; i < count; ++i) {
-                    SDL_bool isstack;
                     UINT size = DragQueryFile(drop, i, NULL, 0) + 1;
-                    LPTSTR buffer = SDL_small_alloc(TCHAR, size, &isstack);
+                    LPTSTR buffer = (LPTSTR)SDL_malloc(size * sizeof(TCHAR));
                     if (buffer) {
                         if (DragQueryFile(drop, i, buffer, size)) {
                             char *file = WIN_StringToUTF8(buffer);
@@ -2103,7 +2102,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                             SDL_SendDropFile(target->window, NULL, file);
                             SDL_free(file);
                         }
-                        SDL_small_free(buffer, isstack);
+                        SDL_free(buffer);
                     }
                 }
                 GlobalUnlock(med.hGlobal);
