@@ -3358,6 +3358,86 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
 
 /**
+ * A variable controlling whether touch should be enabled on the back panel of the PlayStation Vita.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable touch on the back panel.
+ * - "1": Enable touch on the back panel. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_ENABLE_BACK_TOUCH "SDL_VITA_ENABLE_BACK_TOUCH"
+
+/**
+ * A variable controlling whether touch should be enabled on the front panel of the PlayStation Vita.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable touch on the front panel.
+ * - "1": Enable touch on the front panel. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_ENABLE_FRONT_TOUCH "SDL_VITA_ENABLE_FRONT_TOUCH"
+
+/**
+ * A variable controlling the module path on the PlayStation Vita.
+ *
+ * This hint defaults to "app0:module"
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_MODULE_PATH "SDL_VITA_MODULE_PATH"
+
+/**
+ * A variable controlling whether to perform PVR initialization on the PlayStation Vita.
+ *
+ * - "0": Skip PVR initialization.
+ * - "1": Perform the normal PVR initialization. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_PVR_INIT "SDL_VITA_PVR_INIT"
+
+/**
+ * A variable overriding the resolution reported on the PlayStation Vita.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "544": 544p (default)
+ * - "720": 725p for PSTV
+ * - "1080": 1088i for PSTV
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_RESOLUTION "SDL_VITA_RESOLUTION"
+
+/**
+ * A variable controlling whether OpenGL should be used instead of OpenGL ES on the PlayStation Vita.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Use OpenGL ES. (default)
+ * - "1": Use OpenGL.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_PVR_OPENGL "SDL_VITA_PVR_OPENGL"
+
+/**
  * A variable controlling which touchpad should generate synthetic mouse
  * events.
  *
