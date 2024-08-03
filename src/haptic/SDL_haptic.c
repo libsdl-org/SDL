@@ -539,7 +539,7 @@ int SDL_SetHapticGain(SDL_Haptic *haptic, int gain)
         return SDL_SetError("Haptic: Gain must be between 0 and 100.");
     }
 
-    /* We use the envvar to get the maximum gain. */
+    /* The user can use an environment variable to override the max gain. */
     env = SDL_getenv("SDL_HAPTIC_GAIN_MAX");
     if (env) {
         max_gain = SDL_atoi(env);
