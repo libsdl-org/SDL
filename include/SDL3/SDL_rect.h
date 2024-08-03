@@ -113,6 +113,24 @@ typedef struct SDL_FRect
 
 
 /**
+ * Convert an SDL_Rect to SDL_FRect
+ *
+ * \param rect a pointer to an SDL_Rect.
+ * \param frect a pointer filled in with the floating point representation of `rect`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+SDL_FORCE_INLINE void SDL_RectToFRect(const SDL_Rect *rect, SDL_FRect *frect)
+{
+    frect->x = (float)rect->x;
+    frect->y = (float)rect->y;
+    frect->w = (float)rect->w;
+    frect->h = (float)rect->h;
+}
+
+/**
  * Determine whether a point resides inside a rectangle.
  *
  * A point is considered part of a rectangle if both `p` and `r` are not NULL,
