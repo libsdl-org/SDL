@@ -95,6 +95,7 @@ class JobSpec:
     msvc_arch: Optional[MsvcArch] = None
     clang_cl: bool = False
     uwp: bool = False
+    gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
 
 
@@ -111,13 +112,14 @@ JOB_SPECS = {
     "msvc-arm32": JobSpec(name="Windows (MSVC, ARM)",                       os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-arm32",           msvc_arch=MsvcArch.Arm32, ),
     "msvc-arm64": JobSpec(name="Windows (MSVC, ARM64)",                     os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-arm64",           msvc_arch=MsvcArch.Arm64, ),
     "msvc-uwp-x64": JobSpec(name="UWP (MSVC, x64)",                         os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-UWP",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-WinRT/SDL-UWP.sln", uwp=True, ),
+    "msvc-gdk-x64": JobSpec(name="GDK (MSVC, x64)",                         os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-GDK",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-GDK/SDL.sln", gdk=True, no_cmake=True, ),
     "ubuntu-20.04": JobSpec(name="Ubuntu 20.04",                            os=JobOs.Ubuntu20_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu20.04", ),
     "ubuntu-22.04": JobSpec(name="Ubuntu 22.04",                            os=JobOs.Ubuntu22_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04", ),
     "ubuntu-intel-icx": JobSpec(name="Ubuntu 20.04 (Intel oneAPI)",         os=JobOs.Ubuntu20_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu20.04-oneapi", intel=IntelCompiler.Icx, ),
     "ubuntu-intel-icc": JobSpec(name="Ubuntu 20.04 (Intel Compiler)",       os=JobOs.Ubuntu20_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu20.04-icc",    intel=IntelCompiler.Icc, ),
     "macos-framework-x64":  JobSpec(name="MacOS (Framework) (x86_64)",      os=JobOs.Macos12,       platform=SdlPlatform.MacOS,       artifact="SDL-macos-framework",    apple_framework=True, apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, ),
     "macos-framework-arm64": JobSpec(name="MacOS (Framework) (arm64)",      os=JobOs.MacosLatest,   platform=SdlPlatform.MacOS,       artifact=None,                     apple_framework=True, apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, ),
-    "amcos-gnu-arm64": JobSpec(name="MacOS (GNU prefix)",                   os=JobOs.MacosLatest,   platform=SdlPlatform.MacOS,       artifact="SDL-macos-arm64-gnu",    apple_framework=False, apple_archs={AppleArch.Aarch64, },  ),
+    "macos-gnu-arm64": JobSpec(name="MacOS (GNU prefix)",                   os=JobOs.MacosLatest,   platform=SdlPlatform.MacOS,       artifact="SDL-macos-arm64-gnu",    apple_framework=False, apple_archs={AppleArch.Aarch64, },  ),
     "android-cmake": JobSpec(name="Android (CMake)",                        os=JobOs.UbuntuLatest,  platform=SdlPlatform.Android,     artifact="SDL-android-arm64",      android_abi="arm64-v8a", android_arch="aarch64", android_platform=23, ),
     "android-cmake-lean": JobSpec(name="Android (CMake, lean)",             os=JobOs.UbuntuLatest,  platform=SdlPlatform.Android,     artifact="SDL-lean-android-arm64", android_abi="arm64-v8a", android_arch="aarch64", android_platform=23, lean=True, ),
     "android-mk": JobSpec(name="Android (Android.mk)",                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.Android,     artifact=None,                     no_cmake=True, android_mk=True, ),
@@ -191,6 +193,7 @@ class JobDetails:
     setup_libusb_arch: str = ""
     xcode_sdk: str = ""
     cpactions: bool = False
+    setup_gdk_folder: str = ""
     cpactions_os: str = ""
     cpactions_version: str = ""
     cpactions_arch: str = ""
@@ -254,6 +257,7 @@ class JobDetails:
             "cpactions-setup-cmd": self.cpactions_setup_cmd,
             "cpactions-install-cmd": self.cpactions_install_cmd,
             "setup-vita-gles-type": self.setup_vita_gles_type,
+            "setup-gdk-folder": self.setup_gdk_folder,
         }
         return {k: v for k, v in data.items() if v != ""}
 
@@ -314,7 +318,7 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
         ))
     match spec.platform:
         case SdlPlatform.Msvc:
-            job.setup_ninja = True
+            job.setup_ninja = not spec.gdk
             job.clang_tidy = False  # complains about \threadsafety: "unknown command tag name [clang-diagnostic-documentation-unknown-command]"
             job.msvc_project = spec.msvc_project if spec.msvc_project else ""
             job.test_pkg_config = False
@@ -344,11 +348,14 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             if spec.msvc_project:
                 match spec.msvc_arch:
                     case MsvcArch.X86:
-                        job.msvc_project_flags.append("-p:Platform=Win32")
+                        msvc_platform = "Win32"
                     case MsvcArch.X64:
-                        job.msvc_project_flags.append("-p:Platform=x64")
+                        msvc_platform = "x64"
                     case _:
                         raise ValueError(f"Unsupported vcxproj architecture (arch={spec.msvc_arch})")
+                if spec.gdk:
+                    msvc_platform = f"Gaming.Desktop.{msvc_platform}"
+                job.msvc_project_flags.append(f"-p:Platform={msvc_platform}")
             match spec.msvc_arch:
                 case MsvcArch.X86:
                     job.msvc_vcvars = "x64_x86"
@@ -367,6 +374,8 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                     "-DCMAKE_SYSTEM_VERSION=10.0",
                 ))
                 job.msvc_project_flags.append("-p:WindowsTargetPlatformVersion=10.0.17763.0")
+            elif spec.gdk:
+                job.setup_gdk_folder = "VisualC-GDK"
             else:
                 match spec.msvc_arch:
                     case MsvcArch.X86:
@@ -610,6 +619,9 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
 
     if fpic is not None:
         job.cmake_arguments.append(f"-DCMAKE_POSITION_INDEPENDENT_CODE={tf(fpic)}")
+
+    if job.no_cmake:
+        job.cmake_arguments = []
 
     return job
 
