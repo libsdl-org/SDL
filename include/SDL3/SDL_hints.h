@@ -3312,6 +3312,15 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_SCALING_FACTOR      "SDL_VIDEO_X11_SCALING_FACTOR"
 
 /**
+ * A variable forcing the visual ID used for X11 display modes.
+ *
+ * This hint should be set before initializing the video subsystem.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VIDEO_X11_VISUALID "SDL_VIDEO_X11_VISUALID"
+
+/**
  * A variable forcing the visual ID chosen for new X11 windows.
  *
  * This hint should be set before creating a window.
