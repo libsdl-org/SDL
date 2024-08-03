@@ -336,6 +336,39 @@ extern "C" {
 #define SDL_HINT_AUDIO_DEVICE_STREAM_ROLE "SDL_AUDIO_DEVICE_STREAM_ROLE"
 
 /**
+ * Specify the input file when recording audio using the disk audio driver.
+ *
+ * This defaults to "sdlaudio-in.raw"
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_DISK_INPUT_FILE "SDL_AUDIO_DISK_INPUT_FILE"
+
+/**
+ * Specify the output file when playing audio using the disk audio driver.
+ *
+ * This defaults to "sdlaudio.raw"
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_DISK_OUTPUT_FILE "SDL_AUDIO_DISK_OUTPUT_FILE"
+
+/**
+ * A variable controlling the audio rate when using the disk audio driver.
+ *
+ * The disk audio driver normally simulates real-time for the audio rate that was specified, but you can use this variable to adjust this rate higher or lower down to 0. The default value is "1.0".
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_DISK_TIMESCALE "SDL_AUDIO_DISK_TIMESCALE"
+
+/**
  * A variable that specifies an audio backend to use.
  *
  * By default, SDL will try all available audio backends in a reasonable order

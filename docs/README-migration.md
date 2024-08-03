@@ -808,6 +808,9 @@ The following environment variables have been renamed:
 
 The following environment variables have been removed:
 * SDL_AUDIO_ALSA_DEBUG - replaced by setting the hint SDL_HINT_LOGGING to "audio=debug"
+* SDL_DISKAUDIODELAY - replaced with the hint SDL_HINT_AUDIO_DISK_TIMESCALE which allows scaling the audio time rather than specifying an absolute delay.
+* SDL_DISKAUDIOFILE - replaced with the hint SDL_HINT_AUDIO_DISK_OUTPUT_FILE
+* SDL_DISKAUDIOFILEIN - replaced with the hint SDL_HINT_AUDIO_DISK_INPUT_FILE
 * SDL_DUMMYAUDIODELAY - replaced with the hint SDL_HINT_AUDIO_DUMMY_TIMESCALE which allows scaling the audio time rather than specifying an absolute delay.
 
 The following functions have been removed:

@@ -27,13 +27,8 @@
 #include "../SDL_sysaudio.h"
 #include "SDL_diskaudio.h"
 
-// !!! FIXME: these should be SDL hints, not environment variables.
-// environment variables and defaults.
-#define DISKENVR_OUTFILE    "SDL_DISKAUDIOFILE"
 #define DISKDEFAULT_OUTFILE "sdlaudio.raw"
-#define DISKENVR_INFILE     "SDL_DISKAUDIOFILEIN"
 #define DISKDEFAULT_INFILE  "sdlaudio-in.raw"
-#define DISKENVR_IODELAY    "SDL_DISKAUDIODELAY"
 
 static int DISKAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
@@ -98,7 +93,7 @@ static void DISKAUDIO_CloseDevice(SDL_AudioDevice *device)
 
 static const char *get_filename(const SDL_bool recording)
 {
-    const char *devname = SDL_getenv(recording ? DISKENVR_INFILE : DISKENVR_OUTFILE);
+    const char *devname = SDL_GetHint(recording ? SDL_HINT_AUDIO_DISK_INPUT_FILE : SDL_HINT_AUDIO_DISK_OUTPUT_FILE);
     if (!devname) {
         devname = recording ? DISKDEFAULT_INFILE : DISKDEFAULT_OUTFILE;
     }
@@ -109,17 +104,20 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     SDL_bool recording = device->recording;
     const char *fname = get_filename(recording);
-    const char *envr = SDL_getenv(DISKENVR_IODELAY);
 
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return -1;
     }
 
-    if (envr) {
-        device->hidden->io_delay = SDL_atoi(envr);
-    } else {
-        device->hidden->io_delay = ((device->sample_frames * 1000) / device->spec.freq);
+    device->hidden->io_delay = ((device->sample_frames * 1000) / device->spec.freq);
+
+    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DISK_TIMESCALE);
+    if (hint) {
+        double scale = SDL_atof(hint);
+        if (scale >= 0.0) {
+            device->hidden->io_delay = (Uint32)SDL_round(device->hidden->io_delay * scale);
+        }
     }
 
     // Open the "audio device"
