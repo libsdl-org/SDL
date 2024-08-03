@@ -228,7 +228,7 @@ static const char *get_audio_device(void *handle, const int channels)
 
     ALSA_Device *dev = (ALSA_Device *)handle;
     if (SDL_strcmp(dev->name, "default") == 0) {
-        const char *device = SDL_getenv("AUDIODEV"); // Is there a standard variable name?
+        const char *device = SDL_GetHint(SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE);
         if (device) {
             return device;
         } else if (channels == 6) {
