@@ -815,6 +815,8 @@ The following environment variables have been removed:
 * SDL_HAPTIC_GAIN_MAX
 * SDL_HIDAPI_DISABLE_LIBUSB - replaced with the hint SDL_HINT_HIDAPI_LIBUSB
 * SDL_HIDAPI_JOYSTICK_DISABLE_UDEV - replaced with the hint SDL_HINT_HIDAPI_UDEV
+* SDL_INPUT_FREEBSD_KEEP_KBD - replaced with the hint SDL_HINT_MUTE_CONSOLE_KEYBOARD
+* SDL_INPUT_LINUX_KEEP_KBD - replaced with the hint SDL_HINT_MUTE_CONSOLE_KEYBOARD
 * VITA_DISABLE_TOUCH_BACK - replaced with the hint SDL_HINT_VITA_ENABLE_BACK_TOUCH
 * VITA_DISABLE_TOUCH_FRONT - replaced with the hint SDL_HINT_VITA_ENABLE_FRONT_TOUCH
 * VITA_MODULE_PATH - replaced with the hint SDL_HINT_VITA_MODULE_PATH
