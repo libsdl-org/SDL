@@ -821,7 +821,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * stream's format at any time.
  *
  * \param devid an audio device to bind a stream to.
- * \param streams an array of audio streams to unbind.
+ * \param streams an array of audio streams to bind.
  * \param num_streams number streams listed in the `streams` array.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
