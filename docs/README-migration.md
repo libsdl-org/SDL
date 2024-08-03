@@ -812,6 +812,12 @@ The following environment variables have been removed:
 * SDL_DISKAUDIOFILE - replaced with the hint SDL_HINT_AUDIO_DISK_OUTPUT_FILE
 * SDL_DISKAUDIOFILEIN - replaced with the hint SDL_HINT_AUDIO_DISK_INPUT_FILE
 * SDL_DUMMYAUDIODELAY - replaced with the hint SDL_HINT_AUDIO_DUMMY_TIMESCALE which allows scaling the audio time rather than specifying an absolute delay.
+* VITA_DISABLE_TOUCH_BACK - replaced with the hint SDL_HINT_VITA_ENABLE_BACK_TOUCH
+* VITA_DISABLE_TOUCH_FRONT - replaced with the hint SDL_HINT_VITA_ENABLE_FRONT_TOUCH
+* VITA_MODULE_PATH - replaced with the hint SDL_HINT_VITA_MODULE_PATH
+* VITA_PVR_OGL - replaced with the hint SDL_HINT_VITA_PVR_OPENGL
+* VITA_PVR_SKIP_INIT - replaced with the hint SDL_HINT_VITA_PVR_INIT
+* VITA_RESOLUTION - replaced with the hint SDL_HINT_VITA_RESOLUTION
 
 The following functions have been removed:
 * SDL_ClearHints() - replaced with SDL_ResetHints()
