@@ -1729,7 +1729,7 @@ static int GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pro
         data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     }
 
-    hint = SDL_getenv("GL_ARB_texture_non_power_of_two");
+    hint = SDL_GetHint("GL_ARB_texture_non_power_of_two");
     if (!hint || *hint != '0') {
         SDL_bool isGL2 = SDL_FALSE;
         const char *verstr = (const char *)data->glGetString(GL_VERSION);

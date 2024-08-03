@@ -4323,8 +4323,8 @@ SDL_bool SDL_GL_ExtensionSupported(const char *extension)
     if (where || *extension == '\0') {
         return SDL_FALSE;
     }
-    /* See if there's an environment variable override */
-    start = SDL_getenv(extension);
+    /* See if there's a hint or environment variable override */
+    start = SDL_GetHint(extension);
     if (start && *start == '0') {
         return SDL_FALSE;
     }
