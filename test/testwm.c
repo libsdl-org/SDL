@@ -167,7 +167,7 @@ static void loop(void)
         SDLTest_CommonEvent(state, &event, &done);
 
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+            SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (window) {
                 SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32 "\n",
                         event.window.windowID,
@@ -176,7 +176,7 @@ static void loop(void)
             }
         }
         if (event.type == SDL_EVENT_WINDOW_MOVED) {
-            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+            SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (window) {
                 SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)\n",
                         event.window.windowID,

@@ -408,7 +408,7 @@ static void loop(void)
             break;
         case SDL_EVENT_FINGER_DOWN:
         {
-            SDL_Window *window = SDL_GetWindowFromID(event.tfinger.windowID);
+            SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (SDL_TextInputActive(window)) {
                 SDL_Log("Stopping text input for window %" SDL_PRIu32 "\n", event.tfinger.windowID);
                 SDL_StopTextInput(window);
@@ -420,7 +420,7 @@ static void loop(void)
         }
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
             if (event.button.button == SDL_BUTTON_RIGHT) {
-                SDL_Window *window = SDL_GetWindowFromID(event.button.windowID);
+                SDL_Window *window = SDL_GetWindowFromEvent(&event);
                 if (SDL_TextInputActive(window)) {
                     SDL_Log("Stopping text input for window %" SDL_PRIu32 "\n", event.button.windowID);
                     SDL_StopTextInput(window);
