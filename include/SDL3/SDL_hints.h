@@ -3463,27 +3463,6 @@ extern "C" {
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD   "SDL_WINDOWS_RAW_KEYBOARD"
 
 /**
- * A variable controlling whether SDL uses Critical Sections for mutexes on
- * Windows.
- *
- * On Windows 7 and newer, Slim Reader/Writer Locks are available. They offer
- * better performance, allocate no kernel resources and use less memory. SDL
- * will fall back to Critical Sections on older OS versions or if forced to by
- * this hint.
- *
- * The variable can be set to the following values:
- *
- * - "0": Use SRW Locks when available, otherwise fall back to Critical
- *   Sections. (default)
- * - "1": Force the use of Critical Sections in all cases.
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS "SDL_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS"
-
-/**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.
  *
  * Kernel Semaphores are inter-process and require a context switch on every
