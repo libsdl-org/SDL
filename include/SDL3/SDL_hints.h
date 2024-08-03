@@ -3747,7 +3747,8 @@ typedef enum SDL_HintPriority
  * \param name the hint to set.
  * \param value the value of the hint variable.
  * \param priority the SDL_HintPriority level for the hint.
- * \returns 0 if the hint was set, -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3770,7 +3771,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetHintWithPriority(const char *name,
  *
  * \param name the hint to set.
  * \param value the value of the hint variable.
- * \returns 0 if the hint was set, -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3790,7 +3792,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetHint(const char *name, const char *value)
  * change.
  *
  * \param name the hint to set.
- * \returns 0 if the hint was set, -1 on error.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
