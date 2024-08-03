@@ -36,14 +36,11 @@
 
 /* Functions to blit from N-bit surfaces to other surfaces */
 
-enum blit_features
-{
-    BLIT_FEATURE_NONE = 0,
-    BLIT_FEATURE_HAS_MMX = 1,
-    BLIT_FEATURE_HAS_ALTIVEC = 2,
-    BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH = 4,
-    BLIT_FEATURE_HAS_ARM_SIMD = 8
-};
+#define BLIT_FEATURE_NONE                       0x00
+#define BLIT_FEATURE_HAS_MMX                    0x01
+#define BLIT_FEATURE_HAS_ALTIVEC                0x02
+#define BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH  0x04
+#define BLIT_FEATURE_HAS_ARM_SIMD               0x08
 
 #ifdef SDL_ALTIVEC_BLITTERS
 #ifdef SDL_PLATFORM_MACOS
@@ -873,26 +870,18 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
     vec_dss(DST_CHAN_DEST);
 }
 
-static enum blit_features GetBlitFeatures(void)
+static Uint32 GetBlitFeatures(void)
 {
-    static enum blit_features features = -1;
-    if (features == (enum blit_features) - 1) {
-        /* Provide an override for testing .. */
-        const char *override = SDL_getenv("SDL_ALTIVEC_BLIT_FEATURES");
-        if (override) {
-            unsigned int features_as_uint = 0;
-            SDL_sscanf(override, "%u", &features_as_uint);
-            features = (enum blit_features)features_as_uint;
-        } else {
-            features = (0
-                        /* Feature 1 is has-MMX */
-                        | ((SDL_HasMMX()) ? BLIT_FEATURE_HAS_MMX : 0)
-                        /* Feature 2 is has-AltiVec */
-                        | ((SDL_HasAltiVec()) ? BLIT_FEATURE_HAS_ALTIVEC : 0)
-                        /* Feature 4 is dont-use-prefetch */
-                        /* !!!! FIXME: Check for G5 or later, not the cache size! Always prefetch on a G4. */
-                        | ((GetL3CacheSize() == 0) ? BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH : 0));
-        }
+    static Uint32 features = ~0u;
+    if (features == ~0u) {
+        features = (0
+                    /* Feature 1 is has-MMX */
+                    | ((SDL_HasMMX()) ? BLIT_FEATURE_HAS_MMX : 0)
+                    /* Feature 2 is has-AltiVec */
+                    | ((SDL_HasAltiVec()) ? BLIT_FEATURE_HAS_ALTIVEC : 0)
+                    /* Feature 4 is dont-use-prefetch */
+                    /* !!!! FIXME: Check for G5 or later, not the cache size! Always prefetch on a G4. */
+                    | ((GetL3CacheSize() == 0) ? BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH : 0));
     }
     return features;
 }
