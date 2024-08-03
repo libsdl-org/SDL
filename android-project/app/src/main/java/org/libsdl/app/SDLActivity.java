@@ -2108,10 +2108,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 class SDLMain implements Runnable {
     @Override
     public void run() {
-        // Runs SDL_main()
-        String library = SDLActivity.mSingleton.getMainSharedObject();
-        String function = SDLActivity.mSingleton.getMainFunction();
-        String[] arguments = SDLActivity.mSingleton.getArguments();
+        // Runs SDLActivity.main()
 
         try {
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DISPLAY);
