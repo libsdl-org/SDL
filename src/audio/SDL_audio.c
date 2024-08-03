@@ -1577,9 +1577,9 @@ static void PrepareAudioFormat(SDL_bool recording, SDL_AudioSpec *spec)
     if (spec->freq == 0) {
         spec->freq = recording ? DEFAULT_AUDIO_RECORDING_FREQUENCY : DEFAULT_AUDIO_PLAYBACK_FREQUENCY;
 
-        const char *env = SDL_getenv("SDL_AUDIO_FREQUENCY");  // !!! FIXME: should be a hint?
-        if (env) {
-            const int val = SDL_atoi(env);
+        const char *hint = SDL_GetHint(SDL_HINT_AUDIO_FREQUENCY);
+        if (hint) {
+            const int val = SDL_atoi(hint);
             if (val > 0) {
                 spec->freq = val;
             }
@@ -1588,9 +1588,10 @@ static void PrepareAudioFormat(SDL_bool recording, SDL_AudioSpec *spec)
 
     if (spec->channels == 0) {
         spec->channels = recording ? DEFAULT_AUDIO_RECORDING_CHANNELS : DEFAULT_AUDIO_PLAYBACK_CHANNELS;;
-        const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
-        if (env) {
-            const int val = SDL_atoi(env);
+
+        const char *hint = SDL_GetHint(SDL_HINT_AUDIO_CHANNELS);
+        if (hint) {
+            const int val = SDL_atoi(hint);
             if (val > 0) {
                 spec->channels = val;
             }
@@ -1598,7 +1599,7 @@ static void PrepareAudioFormat(SDL_bool recording, SDL_AudioSpec *spec)
     }
 
     if (spec->format == 0) {
-        const SDL_AudioFormat val = ParseAudioFormatString(SDL_getenv("SDL_AUDIO_FORMAT"));
+        const SDL_AudioFormat val = ParseAudioFormatString(SDL_GetHint(SDL_HINT_AUDIO_FORMAT));
         spec->format = (val != 0) ? val : (recording ? DEFAULT_AUDIO_RECORDING_FORMAT : DEFAULT_AUDIO_PLAYBACK_FORMAT);
     }
 }

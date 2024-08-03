@@ -216,6 +216,17 @@ extern "C" {
 #define SDL_HINT_AUDIO_CATEGORY   "SDL_AUDIO_CATEGORY"
 
 /**
+ * A variable controlling the default audio channel count.
+ *
+ * If the application doesn't specify the audio channel count when opening the device, this hint can be used to specify a default channel count that will be used. This defaults to "1" for recording and "2" for playback devices.
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_CHANNELS "SDL_AUDIO_CHANNELS"
+
+/**
  * Specify an application icon name for an audio device.
  *
  * Some audio backends (such as Pulseaudio and Pipewire) allow you to set an
@@ -326,6 +337,41 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_AUDIO_DRIVER "SDL_AUDIO_DRIVER"
+
+/**
+ * A variable controlling the default audio format.
+ *
+ * If the application doesn't specify the audio format when opening the device, this hint can be used to specify a default format that will be used.
+ *
+ * The variable can be set to the following values:
+ * - "U8": Unsigned 8-bit audio
+ * - "S8": Signed 8-bit audio
+ * - "S16LE": Signed 16-bit little-endian audio
+ * - "S16BE": Signed 16-bit big-endian audio
+ * - "S16": Signed 16-bit native-endian audio (default)
+ * - "S32LE": Signed 32-bit little-endian audio
+ * - "S32BE": Signed 32-bit big-endian audio
+ * - "S32": Signed 32-bit native-endian audio
+ * - "F32LE": Floating point little-endian audio
+ * - "F32BE": Floating point big-endian audio
+ * - "F32": Floating point native-endian audio
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_FORMAT "SDL_AUDIO_FORMAT"
+
+/**
+ * A variable controlling the default audio frequency.
+ *
+ * If the application doesn't specify the audio frequency when opening the device, this hint can be used to specify a default frequency that will be used. This defaults to "44100".
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_FREQUENCY "SDL_AUDIO_FREQUENCY"
 
 /**
  * A variable that causes SDL to not ignore audio "monitors".
