@@ -40,11 +40,16 @@ static SDL_PropertiesID SDL_hint_props = 0;
 
 static SDL_PropertiesID GetHintProperties(void)
 {
-    // this isn't thread-safe, but I'm gambling we don't touch hints from two threads at once at startup.
     if (!SDL_hint_props) {
         SDL_hint_props = SDL_CreateProperties();
     }
     return SDL_hint_props;
+}
+
+void SDL_InitHints(void)
+{
+    // Just make sure the hint properties are created on the main thread
+    (void)GetHintProperties();
 }
 
 static void SDLCALL CleanupHintProperty(void *userdata, void *value)
