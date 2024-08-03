@@ -3863,6 +3863,17 @@ extern "C" {
 #define SDL_HINT_X11_WINDOW_TYPE "SDL_X11_WINDOW_TYPE"
 
 /**
+ * Specify the XCB library to load for the X11 driver.
+ *
+ * This defaults to "libX11-xcb.so"
+ *
+ * This hint should be set before initializing the video subsystem.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_X11_XCB_LIBRARY "SDL_X11_XCB_LIBRARY"
+
+/**
  * A variable controlling whether XInput should be used for controller
  * handling.
  *
