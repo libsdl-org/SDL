@@ -339,6 +339,17 @@ extern "C" {
 #define SDL_HINT_AUDIO_DRIVER "SDL_AUDIO_DRIVER"
 
 /**
+ * A variable controlling the audio rate when using the dummy audio driver.
+ *
+ * The dummy audio driver normally simulates real-time for the audio rate that was specified, but you can use this variable to adjust this rate higher or lower down to 0. The default value is "1.0".
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_DUMMY_TIMESCALE "SDL_AUDIO_DUMMY_TIMESCALE"
+
+/**
  * A variable controlling the default audio format.
  *
  * If the application doesn't specify the audio format when opening the device, this hint can be used to specify a default format that will be used.
