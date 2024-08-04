@@ -473,12 +473,14 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
     if (SUCCEEDED(hr)) {
         data->coinitialized = SDL_TRUE;
 
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
         hr = OleInitialize(NULL);
         if (SUCCEEDED(hr)) {
             data->oleinitialized = SDL_TRUE;
         } else {
             SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "OleInitialize() failed: 0x%.8x, using fallback drag-n-drop functionality\n", (unsigned int)hr);
         }
+#endif /* !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) */
     } else {
         SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "CoInitialize() failed: 0x%.8x, using fallback drag-n-drop functionality\n", (unsigned int)hr);
     }
@@ -543,10 +545,12 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     WIN_SetRawMouseEnabled(_this, SDL_FALSE);
     WIN_SetRawKeyboardEnabled(_this, SDL_FALSE);
 
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     if (data->oleinitialized) {
         OleUninitialize();
         data->oleinitialized = SDL_FALSE;
     }
+#endif /* !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) */
     if (data->coinitialized) {
         WIN_CoUninitialize();
         data->coinitialized = SDL_FALSE;

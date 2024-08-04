@@ -380,7 +380,9 @@ struct SDL_VideoData
     int render;
 
     SDL_bool coinitialized;
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     SDL_bool oleinitialized;
+#endif /* !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) */
 
     DWORD clipboard_count;
 
