@@ -50,8 +50,9 @@
         X = NULL;                \
     }
 
-/* FIXME: Remove this in favor of the COBJMACROS defines */
-#define D3D_CALL(THIS, FUNC, ...)     (THIS)->lpVtbl->FUNC((THIS), ##__VA_ARGS__)
+/* Some D3D12 calls are mismatched between Windows/Xbox, so we need to wrap the
+ * C function ourselves :(
+ */
 #define D3D_CALL_RET(THIS, FUNC, ...) (THIS)->lpVtbl->FUNC((THIS), ##__VA_ARGS__)
 
 #else /* !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) */
@@ -78,8 +79,12 @@
 /* DXGI_PRESENT flags are removed on Xbox */
 #define DXGI_PRESENT_ALLOW_TEARING 0
 
-/* FIXME: Xbox D3D12 does not define the COBJMACROS, so we need to define them ourselves */
-#define D3D_CALL(THIS, FUNC, ...)             (THIS)->FUNC(__VA_ARGS__)
+/* Xbox D3D12 does not define the COBJMACROS, so we need to define them ourselves */
+#include "SDL_d3d12_xbox_cmacros.h"
+
+/* Xbox's D3D12 ABI actually varies from Windows, if a function does not exist
+ * in the above header then you need to use this instead :(
+ */
 #define D3D_CALL_RET(THIS, FUNC, RETVAL, ...) *(RETVAL) = (THIS)->FUNC(__VA_ARGS__)
 
 #endif /* !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) */
