@@ -25,7 +25,7 @@
 #include <SDL3/SDL_stdinc.h>
 
 #include "../../core/windows/SDL_windows.h"
-#include <d3d12_x.h>
+#include "../../video/directx/SDL_d3d12.h"
 
 #include "SDL_shaders_d3d12.h"
 
