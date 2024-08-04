@@ -800,7 +800,22 @@ N3DS_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
             case SDL_RENDERCMD_SETCLIPRECT: {
                 const SDL_Rect *rect = &cmd->data.cliprect.rect;
                 if (cmd->data.cliprect.enabled) {
-                    C3D_SetScissor(GPU_SCISSOR_NORMAL, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h);
+                    unsigned int x = SDL_max(0, rect->x), w = rect->w;
+                    unsigned int y = SDL_max(0, rect->y), h = rect->h;
+
+                    if (data->boundTarget) {
+                        C3D_SetScissor(GPU_SCISSOR_NORMAL,
+                            SDL_min(data->renderTarget->frameBuf.width,  x),
+                            SDL_min(data->renderTarget->frameBuf.height, y),
+                            SDL_min(data->renderTarget->frameBuf.width,  x + w),
+                            SDL_min(data->renderTarget->frameBuf.height, y + h));
+                    } else {
+                        C3D_SetScissor(GPU_SCISSOR_NORMAL,
+                            SDL_max(0, data->renderTarget->frameBuf.width  - (rect->y + rect->h)),
+                            SDL_max(0, data->renderTarget->frameBuf.height - (rect->x + rect->w)),
+                            SDL_max(0, data->renderTarget->frameBuf.width  - rect->y),
+                            SDL_max(0, data->renderTarget->frameBuf.height - rect->x));
+                    }
                 } else {
                     C3D_SetScissor(GPU_SCISSOR_DISABLE, 0, 0, 0, 0);
                 }
