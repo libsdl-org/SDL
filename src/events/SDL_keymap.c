@@ -21,6 +21,7 @@
 #include "SDL_internal.h"
 
 #include "SDL_keymap_c.h"
+#include "SDL_keyboard_c.h"
 #include "../SDL_hashtable.h"
 
 struct SDL_Keymap
@@ -1006,12 +1007,22 @@ const char *SDL_GetKeyName(SDL_Keycode key)
     case SDLK_DELETE:
         return SDL_GetScancodeName(SDL_SCANCODE_DELETE);
     default:
-        /* Unaccented letter keys on latin keyboards are normally
-           labeled in upper case (and probably on others like Greek or
-           Cyrillic too, so if you happen to know for sure, please
-           adapt this). */
-        if (key >= 'a' && key <= 'z') {
-            key -= 32;
+        // SDL_Keycode is defined as the unshifted key on the keyboard,
+        // but the key name is defined as the letter printed on that key,
+        // which is usually the shifted capital letter.
+        if (key > 0x7F || (key >= 'a' && key <= 'z')) {
+            SDL_bool translated = SDL_FALSE;
+            SDL_Scancode scancode = SDL_GetScancodeFromKey(key, SDL_KMOD_NONE);
+            if (scancode != SDL_SCANCODE_UNKNOWN) {
+                SDL_Keycode capital = SDL_GetKeyFromScancode(scancode, SDL_KMOD_SHIFT);
+                if (capital > 0x7F || (capital >= 'A' && capital <= 'Z')) {
+                    key = capital;
+                    translated = SDL_TRUE;
+                }
+            }
+            if (!translated && key >= 'a' && key <= 'z') {
+                key = 'A' + (key - 'a');
+            }
         }
 
         end = SDL_UCS4ToUTF8(key, name);
