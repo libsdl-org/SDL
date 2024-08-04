@@ -321,6 +321,7 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.setup_ninja = not spec.gdk
             job.clang_tidy = False  # complains about \threadsafety: "unknown command tag name [clang-diagnostic-documentation-unknown-command]"
             job.msvc_project = spec.msvc_project if spec.msvc_project else ""
+            job.msvc_project_flags.append("-p:TreatWarningsAsError=true")
             job.test_pkg_config = False
             job.cmake_arguments.extend((
                 "-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=ProgramDatabase",

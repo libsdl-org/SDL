@@ -177,6 +177,11 @@
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(TreatWarningsAsError)'!=''">
+    <ClCompile>
+      <TreatWarningAsError>$(TreatWarningsAsError)</TreatWarningAsError>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SDL_test\SDL_test.vcxproj">
       <Project>{da956fd3-e143-46f2-9fe5-c77bebc56b1a}</Project>
