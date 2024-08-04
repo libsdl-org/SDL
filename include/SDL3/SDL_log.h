@@ -31,7 +31,11 @@
  * SDL's own logs are sent below the default priority threshold, so they are
  * quiet by default.
  *
- * You can change the log verbosity programmatically using SDL_SetLogPriority() or with SDL_SetHint(SDL_HINT_LOGGING, ...), or with the "SDL_LOGGING" environment variable. This variable is a comma separated set of category=level tokens that define the default logging levels for SDL applications.
+ * You can change the log verbosity programmatically using
+ * SDL_SetLogPriority() or with SDL_SetHint(SDL_HINT_LOGGING, ...), or with
+ * the "SDL_LOGGING" environment variable. This variable is a comma separated
+ * set of category=level tokens that define the default logging levels for SDL
+ * applications.
  *
  * The category can be a numeric category, one of "app", "error", "assert",
  * "system", "audio", "video", "render", "input", "test", or `*` for any
