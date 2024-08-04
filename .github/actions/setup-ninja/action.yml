@@ -1,5 +1,5 @@
 name: 'Setup ninja'
-description: 'Setup ninja'
+description: 'Download ninja and add it to the PATH environment variable'
 inputs:
   version:
     description: 'Ninja version'
@@ -36,7 +36,7 @@ runs:
         echo "cache-key=${archive}-${{ inputs.version }}-${{ runner.os }}-${{ runner.arch }}" >> ${GITHUB_OUTPUT}
     - name: 'Restore cached ${{ steps.calc.outputs.archive }}'
       id: cache-restore
-      uses: actions/cache/restore@main
+      uses: actions/cache/restore@v4
       with:
         path: '${{ runner.temp }}/${{ steps.calc.outputs.archive }}'
         key: ${{ steps.calc.outputs.cache-key }}
@@ -47,7 +47,7 @@ runs:
         Invoke-WebRequest "https://github.com/ninja-build/ninja/releases/download/v${{ inputs.version }}/${{ steps.calc.outputs.archive }}" -OutFile "${{ runner.temp }}/${{ steps.calc.outputs.archive }}"
     - name: 'Cache ${{ steps.calc.outputs.archive }}'
       if: ${{ !steps.cache-restore.outputs.cache-hit }}
-      uses: actions/cache/save@main
+      uses: actions/cache/save@v4
       with:
         path: '${{ runner.temp }}/${{ steps.calc.outputs.archive }}'
         key: ${{ steps.calc.outputs.cache-key }}

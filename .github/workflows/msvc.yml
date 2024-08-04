@@ -21,16 +21,25 @@ jobs:
         - { name: 'Windows (ARM64)',              vcvars: 'x64_arm64',  artifact: 'SDL-VC-arm64', }
         - { name: 'UWP (x64)',                    vcvars: 'x64',        artifact: 'SDL-VC-UWP',         cmake-args: '-DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION="10.0" -DSDL_TESTS=OFF',
             project: 'VisualC-WinRT/SDL-UWP.sln', projectflags: '/p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0', }
+        - { name: 'GDK (x64)',                    vcvars: 'x64',        artifact: '',                   no-cmake: true, gdk: true,
+            project: 'VisualC-GDK/SDL.sln', projectflags: '/p:Platform=Gaming.Desktop.x64', }
 
     steps:
     - uses: actions/checkout@v4
     - name: Set up ninja
+      if: ${{ !matrix.platform.no-cmake }}
       uses: ./.github/actions/setup-ninja
     - uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ matrix.platform.vcvars }}
+    - name: 'Set up Windows GDK Desktop'
+      uses: ./.github/actions/setup-gdk-desktop
+      if: ${{ matrix.platform.gdk }}
+      with:
+        folder: '${{ github.workspace }}/VisualC-GDK'
     - name: Create CMake project using SDL as a subproject
       shell: python
+      if: ${{ !matrix.platform.no-cmake }}
       run: |
         import os
         import textwrap
@@ -50,6 +59,8 @@ jobs:
             add_subdirectory("{ srcdir }" SDL)
           """))
     - name: Configure (CMake)
+      id: cmake-configure
+      if: ${{ !matrix.platform.no-cmake }}
       run: cmake -S build -B build -GNinja `
         -DCMAKE_BUILD_TYPE=Release `
         -DSDL_WERROR=ON `
@@ -66,20 +77,24 @@ jobs:
         ${{ matrix.platform.cmake-args }} `
         -DCMAKE_INSTALL_PREFIX=prefix
     - name: Build (CMake)
+      id: cmake-build
+      if: ${{ steps.cmake-configure.outcome == 'success' }}
       run: |
         cmake --build build/ --config Release --verbose --parallel -- -k0
     - name: Run build-time tests
-      id: tests
-      if: ${{ !contains(matrix.platform.name, 'ARM') && !contains(matrix.platform.name, 'UWP') }}
+      id: cmake-test
+      if: ${{ steps.cmake-build.outcome == 'success' && !contains(matrix.platform.name, 'ARM') && !contains(matrix.platform.name, 'UWP') }}
       run: |
         $env:SDL_TESTS_QUICK=1
         ctest -VV --test-dir build/ -C Release -j2
     - name: Install (CMake)
+      id: cmake-install
+      if: ${{ steps.cmake-build.outcome == 'success' }}
       run: |
         echo "SDL2_DIR=$Env:GITHUB_WORKSPACE/prefix" >> $Env:GITHUB_ENV
         cmake --install build/
     - name: Verify CMake configuration files
-      if: ${{ !contains(matrix.platform.name, 'UWP') }}
+      if: ${{ steps.cmake-install.outcome == 'success' && !contains(matrix.platform.name, 'UWP') }}
       run: |
         cmake -S cmake/test -B cmake_config_build -GNinja `
           -DCMAKE_BUILD_TYPE=Release `
@@ -96,9 +111,10 @@ jobs:
       uses: microsoft/setup-msbuild@v2
     - name: Build msbuild
       if: ${{ matrix.platform.project != '' }}
-      run: msbuild ${{ matrix.platform.project }} /m /p:BuildInParallel=true /p:Configuration=Release ${{ matrix.platform.projectflags }}
+      run: |
+        msbuild ${{ matrix.platform.project }} /m /p:BuildInParallel=true /p:Configuration=Release ${{ matrix.platform.projectflags }}
     - uses: actions/upload-artifact@v4
-      if: ${{ always() && steps.tests.outcome == 'failure' }}
+      if: ${{ always() && steps.cmake-test.outcome == 'failure' }}
       with:
         if-no-files-found: ignore
         name: '${{ matrix.platform.artifact }}-minidumps'
