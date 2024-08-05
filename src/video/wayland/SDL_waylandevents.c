@@ -1124,7 +1124,7 @@ static void Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, vo
 
             /* Note: The default SDL scancode table sets this to right alt instead of AltGr/Mode, so handle it separately. */
             if (syms[0] != XKB_KEY_ISO_Level3_Shift) {
-                keycode = SDL_GetDefaultKeyFromScancode(sc, sdlKeymap->modstate);
+                keycode = SDL_GetKeymapKeycode(NULL, sc, sdlKeymap->modstate);
             } else {
                 keycode = SDLK_MODE;
             }
@@ -1185,7 +1185,7 @@ static void Wayland_UpdateKeymap(struct SDL_WaylandInput *input)
         keymap.state = WAYLAND_xkb_state_new(input->xkb.keymap);
         if (!keymap.state) {
             SDL_SetError("failed to create XKB state");
-            SDL_DestroyKeymap(keymap.keymap);
+            SDL_ReleaseKeymap(keymap.keymap);
             return;
         }
 

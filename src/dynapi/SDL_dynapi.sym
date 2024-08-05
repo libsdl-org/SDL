@@ -199,6 +199,7 @@ SDL3_0.0.0 {
     SDL_GetCurrentCameraDriver;
     SDL_GetCurrentDisplayMode;
     SDL_GetCurrentDisplayOrientation;
+    SDL_GetCurrentKeymap;
     SDL_GetCurrentRenderOutputSize;
     SDL_GetCurrentThreadID;
     SDL_GetCurrentTime;
@@ -211,8 +212,6 @@ SDL3_0.0.0 {
     SDL_GetDaysInMonth;
     SDL_GetDefaultAssertionHandler;
     SDL_GetDefaultCursor;
-    SDL_GetDefaultKeyFromScancode;
-    SDL_GetDefaultScancodeFromKey;
     SDL_GetDesktopDisplayMode;
     SDL_GetDirect3D9AdapterIndex;
     SDL_GetDisplayBounds;
@@ -329,6 +328,8 @@ SDL3_0.0.0 {
     SDL_GetKeyboardNameForID;
     SDL_GetKeyboardState;
     SDL_GetKeyboards;
+    SDL_GetKeymapKeycode;
+    SDL_GetKeymapScancode;
     SDL_GetLogOutputFunction;
     SDL_GetLogPriority;
     SDL_GetMasksForPixelFormat;
@@ -413,7 +414,6 @@ SDL3_0.0.0 {
     SDL_GetRendererProperties;
     SDL_GetRevision;
     SDL_GetSIMDAlignment;
-    SDL_GetScancodeFromKey;
     SDL_GetScancodeFromName;
     SDL_GetScancodeName;
     SDL_GetSemaphoreValue;
@@ -644,6 +644,7 @@ SDL3_0.0.0 {
     SDL_RegisterApp;
     SDL_RegisterEvents;
     SDL_ReleaseCameraFrame;
+    SDL_ReleaseKeymap;
     SDL_ReloadGamepadMappings;
     SDL_RemovePath;
     SDL_RemoveStoragePath;

@@ -189,12 +189,13 @@ static void PrintKeymap(void)
         (SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS)
     };
     int i, m;
+    SDL_Keymap *keymap = SDL_GetCurrentKeymap();
 
     SDL_Log("Differences from the default keymap:\n");
     for (m = 0; m < SDL_arraysize(mods); ++m) {
         for (i = 0; i < SDL_NUM_SCANCODES; ++i) {
-            SDL_Keycode key = SDL_GetKeyFromScancode((SDL_Scancode)i, mods[m]);
-            SDL_Keycode default_key = SDL_GetDefaultKeyFromScancode((SDL_Scancode)i, mods[m]);
+            SDL_Keycode key = SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, mods[m]);
+            SDL_Keycode default_key = SDL_GetKeymapKeycode(NULL, (SDL_Scancode)i, mods[m]);
             if (key != default_key) {
                 char message[512];
                 char *spot;
@@ -203,13 +204,14 @@ static void PrintKeymap(void)
                 spot = message;
                 left = sizeof(message);
 
-                print_string(&spot, &left, "Scancode %s", SDL_GetScancodeName((SDL_Scancode)i));
+                print_string(&spot, &left, "Scancode %s (%d)", SDL_GetScancodeName((SDL_Scancode)i), i);
                 print_modifiers(&spot, &left, mods[m]);
-                print_string(&spot, &left, ": %s 0x%x (default: %s 0x%x)", SDL_GetKeyName(key), key, SDL_GetKeyName(default_key), default_key);
+                print_string(&spot, &left, ": %s 0x%x (default: %s 0x%x)", SDL_GetKeyName(key, SDL_FALSE), key, SDL_GetKeyName(default_key, SDL_FALSE), default_key);
                 SDL_Log("%s", message);
             }
         }
     }
+    SDL_ReleaseKeymap(keymap);
 }
 
 static void PrintModifierState(void)
@@ -242,7 +244,7 @@ static void PrintKey(SDL_KeyboardEvent *event)
                      event->raw,
                      event->scancode,
                      event->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(event->scancode),
-                     event->key, SDL_GetKeyName(event->key));
+                     event->key, SDL_GetKeyName(event->key, SDL_TRUE));
     } else {
         print_string(&spot, &left,
                      "Unknown Key (raw 0x%.2x, scancode %d = %s) %s ",
