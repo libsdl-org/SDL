@@ -200,7 +200,10 @@ extern "C" {
 /**
  * Specify the default ALSA audio device name.
  *
- * This variable is a specific audio device to open when the "default" audio device is used. By default if 4 channel audio is requested, the "plug:surround40" device will be opened and if 6 channel audio is requested the "plug:surround51" device will be opened.
+ * This variable is a specific audio device to open when the "default" audio
+ * device is used. By default if 4 channel audio is requested, the
+ * "plug:surround40" device will be opened and if 6 channel audio is requested
+ * the "plug:surround51" device will be opened.
  *
  * This hint should be set before an audio device is opened.
  *
@@ -229,7 +232,9 @@ extern "C" {
 /**
  * A variable controlling the default audio channel count.
  *
- * If the application doesn't specify the audio channel count when opening the device, this hint can be used to specify a default channel count that will be used. This defaults to "1" for recording and "2" for playback devices.
+ * If the application doesn't specify the audio channel count when opening the
+ * device, this hint can be used to specify a default channel count that will
+ * be used. This defaults to "1" for recording and "2" for playback devices.
  *
  * This hint should be set before an audio device is opened.
  *
@@ -360,7 +365,9 @@ extern "C" {
 /**
  * A variable controlling the audio rate when using the disk audio driver.
  *
- * The disk audio driver normally simulates real-time for the audio rate that was specified, but you can use this variable to adjust this rate higher or lower down to 0. The default value is "1.0".
+ * The disk audio driver normally simulates real-time for the audio rate that
+ * was specified, but you can use this variable to adjust this rate higher or
+ * lower down to 0. The default value is "1.0".
  *
  * This hint should be set before an audio device is opened.
  *
@@ -385,7 +392,9 @@ extern "C" {
 /**
  * A variable controlling the audio rate when using the dummy audio driver.
  *
- * The dummy audio driver normally simulates real-time for the audio rate that was specified, but you can use this variable to adjust this rate higher or lower down to 0. The default value is "1.0".
+ * The dummy audio driver normally simulates real-time for the audio rate that
+ * was specified, but you can use this variable to adjust this rate higher or
+ * lower down to 0. The default value is "1.0".
  *
  * This hint should be set before an audio device is opened.
  *
@@ -396,20 +405,18 @@ extern "C" {
 /**
  * A variable controlling the default audio format.
  *
- * If the application doesn't specify the audio format when opening the device, this hint can be used to specify a default format that will be used.
+ * If the application doesn't specify the audio format when opening the
+ * device, this hint can be used to specify a default format that will be
+ * used.
  *
- * The variable can be set to the following values:
- * - "U8": Unsigned 8-bit audio
- * - "S8": Signed 8-bit audio
- * - "S16LE": Signed 16-bit little-endian audio
- * - "S16BE": Signed 16-bit big-endian audio
- * - "S16": Signed 16-bit native-endian audio (default)
- * - "S32LE": Signed 32-bit little-endian audio
- * - "S32BE": Signed 32-bit big-endian audio
- * - "S32": Signed 32-bit native-endian audio
- * - "F32LE": Floating point little-endian audio
- * - "F32BE": Floating point big-endian audio
- * - "F32": Floating point native-endian audio
+ * The variable can be set to the following values: - "U8": Unsigned 8-bit
+ * audio - "S8": Signed 8-bit audio - "S16LE": Signed 16-bit little-endian
+ * audio - "S16BE": Signed 16-bit big-endian audio - "S16": Signed 16-bit
+ * native-endian audio (default) - "S32LE": Signed 32-bit little-endian audio
+ * - "S32BE": Signed 32-bit big-endian audio - "S32": Signed 32-bit
+ * native-endian audio - "F32LE": Floating point little-endian audio -
+ * "F32BE": Floating point big-endian audio - "F32": Floating point
+ * native-endian audio
  *
  * This hint should be set before an audio device is opened.
  *
@@ -420,7 +427,9 @@ extern "C" {
 /**
  * A variable controlling the default audio frequency.
  *
- * If the application doesn't specify the audio frequency when opening the device, this hint can be used to specify a default frequency that will be used. This defaults to "44100".
+ * If the application doesn't specify the audio frequency when opening the
+ * device, this hint can be used to specify a default frequency that will be
+ * used. This defaults to "44100".
  *
  * This hint should be set before an audio device is opened.
  *
@@ -686,13 +695,15 @@ extern "C" {
 #define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
 
 /**
- * A variable containing a list of evdev devices to use if udev is not available.
+ * A variable containing a list of evdev devices to use if udev is not
+ * available.
  *
  * The list of devices is in the form:
  *
- *  deviceclass:path[,deviceclass:path[,...]]
+ * deviceclass:path[,deviceclass:path[,...]]
  *
- * where device class is an integer representing the SDL_UDEV_deviceclass and path is the full path to the event device.
+ * where device class is an integer representing the SDL_UDEV_deviceclass and
+ * path is the full path to the event device.
  *
  * This hint should be set before SDL is initialized.
  *
@@ -948,7 +959,9 @@ extern "C" {
 /**
  * A variable to control whether HIDAPI uses libusb for device access.
  *
- * By default libusb will only be used for a few devices that require direct USB access, and this can be controlled with SDL_HINT_HIDAPI_LIBUSB_WHITELIST.
+ * By default libusb will only be used for a few devices that require direct
+ * USB access, and this can be controlled with
+ * SDL_HINT_HIDAPI_LIBUSB_WHITELIST.
  *
  * The variable can be set to the following values:
  *
@@ -962,9 +975,11 @@ extern "C" {
 #define SDL_HINT_HIDAPI_LIBUSB "SDL_HIDAPI_LIBUSB"
 
 /**
- * A variable to control whether HIDAPI uses libusb only for whitelisted devices.
+ * A variable to control whether HIDAPI uses libusb only for whitelisted
+ * devices.
  *
- * By default libusb will only be used for a few devices that require direct USB access.
+ * By default libusb will only be used for a few devices that require direct
+ * USB access.
  *
  * The variable can be set to the following values:
  *
@@ -2485,7 +2500,9 @@ extern "C" {
 /**
  * A variable controlling whether the keyboard should be muted on the console.
  *
- * Normally the keyboard is muted while SDL applications are running so that keyboard input doesn't show up as key strokes on the console. This hint allows you to turn that off for debugging purposes.
+ * Normally the keyboard is muted while SDL applications are running so that
+ * keyboard input doesn't show up as key strokes on the console. This hint
+ * allows you to turn that off for debugging purposes.
  *
  * The variable can be set to the following values:
  *
@@ -2516,7 +2533,8 @@ extern "C" {
 /**
  * Specify the OpenGL library to load.
  *
- * This hint should be set before creating an OpenGL window or creating an OpenGL context.
+ * This hint should be set before creating an OpenGL window or creating an
+ * OpenGL context.
  *
  * \since This hint is available since SDL 3.0.0.
  */
@@ -3118,7 +3136,8 @@ extern "C" {
  * A variable controlling whether the dummy video driver saves output frames.
  *
  * - "0": Video frames are not saved to disk. (default)
- * - "1": Video frames are saved to files in the format "SDL_windowX-Y.bmp", where X is the window ID, and Y is the frame number.
+ * - "1": Video frames are saved to files in the format "SDL_windowX-Y.bmp",
+ *   where X is the window ID, and Y is the frame number.
  *
  * This hint can be set anytime.
  *
@@ -3191,12 +3210,15 @@ extern "C" {
 #define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
 
 /**
- * A variable controlling whether the offscreen video driver saves output frames.
+ * A variable controlling whether the offscreen video driver saves output
+ * frames.
  *
- * This only saves frames that are generated using software rendering, not accelerated OpenGL rendering.
+ * This only saves frames that are generated using software rendering, not
+ * accelerated OpenGL rendering.
  *
  * - "0": Video frames are not saved to disk. (default)
- * - "1": Video frames are saved to files in the format "SDL_windowX-Y.bmp", where X is the window ID, and Y is the frame number.
+ * - "1": Video frames are saved to files in the format "SDL_windowX-Y.bmp",
+ *   where X is the window ID, and Y is the frame number.
  *
  * This hint can be set anytime.
  *
@@ -3461,7 +3483,8 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
 
 /**
- * A variable controlling whether touch should be enabled on the back panel of the PlayStation Vita.
+ * A variable controlling whether touch should be enabled on the back panel of
+ * the PlayStation Vita.
  *
  * The variable can be set to the following values:
  *
@@ -3475,7 +3498,8 @@ extern "C" {
 #define SDL_HINT_VITA_ENABLE_BACK_TOUCH "SDL_VITA_ENABLE_BACK_TOUCH"
 
 /**
- * A variable controlling whether touch should be enabled on the front panel of the PlayStation Vita.
+ * A variable controlling whether touch should be enabled on the front panel
+ * of the PlayStation Vita.
  *
  * The variable can be set to the following values:
  *
@@ -3500,7 +3524,8 @@ extern "C" {
 #define SDL_HINT_VITA_MODULE_PATH "SDL_VITA_MODULE_PATH"
 
 /**
- * A variable controlling whether to perform PVR initialization on the PlayStation Vita.
+ * A variable controlling whether to perform PVR initialization on the
+ * PlayStation Vita.
  *
  * - "0": Skip PVR initialization.
  * - "1": Perform the normal PVR initialization. (default)
@@ -3527,7 +3552,8 @@ extern "C" {
 #define SDL_HINT_VITA_RESOLUTION "SDL_VITA_RESOLUTION"
 
 /**
- * A variable controlling whether OpenGL should be used instead of OpenGL ES on the PlayStation Vita.
+ * A variable controlling whether OpenGL should be used instead of OpenGL ES
+ * on the PlayStation Vita.
  *
  * The variable can be set to the following values:
  *
@@ -3570,7 +3596,8 @@ extern "C" {
 /**
  * Specify the Vulkan library to load.
  *
- * This hint should be set before creating a Vulkan window or calling SDL_Vulkan_LoadLibrary().
+ * This hint should be set before creating a Vulkan window or calling
+ * SDL_Vulkan_LoadLibrary().
  *
  * \since This hint is available since SDL 3.0.0.
  */
@@ -3611,7 +3638,8 @@ extern "C" {
 /**
  * A variable controlling the maximum number of chunks in a WAVE file.
  *
- * This sets an upper bound on the number of chunks in a WAVE file to avoid wasting time on malformed or corrupt WAVE files. This defaults to "10000".
+ * This sets an upper bound on the number of chunks in a WAVE file to avoid
+ * wasting time on malformed or corrupt WAVE files. This defaults to "10000".
  *
  * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_IO()
  *
