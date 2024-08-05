@@ -142,7 +142,7 @@ static int timer_addRemoveTimer(void *arg)
     /* Try to remove timer again (should be a NOOP) */
     result = SDL_RemoveTimer(id);
     SDLTest_AssertPass("Call to SDL_RemoveTimer()");
-    SDLTest_AssertCheck(result == 0, "Check result value, expected: 0, got: %i", result);
+    SDLTest_AssertCheck(result < 0, "Check result value, expected: <0, got: %i", result);
 
     /* Reset state */
     param = SDLTest_RandomIntegerInRange(-1024, 1024);
@@ -162,7 +162,7 @@ static int timer_addRemoveTimer(void *arg)
     /* Remove timer again and check that callback was called */
     result = SDL_RemoveTimer(id);
     SDLTest_AssertPass("Call to SDL_RemoveTimer()");
-    SDLTest_AssertCheck(result == 0, "Check result value, expected: 0, got: %i", result);
+    SDLTest_AssertCheck(result < 0, "Check result value, expected: <0, got: %i", result);
     SDLTest_AssertCheck(g_timerCallbackCalled == 1, "Check callback WAS called, expected: 1, got: %i", g_timerCallbackCalled);
 
     return TEST_COMPLETED;
