@@ -1010,18 +1010,15 @@ const char *SDL_GetKeyName(SDL_Keycode key)
         // SDL_Keycode is defined as the unshifted key on the keyboard,
         // but the key name is defined as the letter printed on that key,
         // which is usually the shifted capital letter.
-        if (key > 0x7F || (key >= 'a' && key <= 'z')) {
-            SDL_bool translated = SDL_FALSE;
+        if (key >= 'a' && key <= 'z') {
+            key = 'A' + (key - 'a');
+        } else if (key > 0x7F) {
             SDL_Scancode scancode = SDL_GetScancodeFromKey(key, SDL_KMOD_NONE);
             if (scancode != SDL_SCANCODE_UNKNOWN) {
                 SDL_Keycode capital = SDL_GetKeyFromScancode(scancode, SDL_KMOD_SHIFT);
                 if (capital > 0x7F || (capital >= 'A' && capital <= 'Z')) {
                     key = capital;
-                    translated = SDL_TRUE;
                 }
-            }
-            if (!translated && key >= 'a' && key <= 'z') {
-                key = 'A' + (key - 'a');
             }
         }
 
