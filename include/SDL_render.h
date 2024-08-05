@@ -1741,6 +1741,7 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Renderer * renderer,
  *
  * \since This function is available since SDL 2.0.0.
  *
+ * \sa SDL_CreateRenderer
  * \sa SDL_RenderClear
  * \sa SDL_RenderDrawLine
  * \sa SDL_RenderDrawLines
