@@ -62,6 +62,18 @@ int stdlib_snprintf(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
     SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int)SDL_strlen(text), result);
 
+    result = SDL_snprintf(text, sizeof(text), "%10sA", "foo");
+    expected = "       fooA";
+    SDLTest_AssertPass("Call to SDL_snprintf(\"%%10sA\", \"foo\")");
+    SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
+    SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int)SDL_strlen(text), result);
+
+    result = SDL_snprintf(text, sizeof(text), "%-10sA", "foo");
+    expected = "foo       A";
+    SDLTest_AssertPass("Call to SDL_snprintf(\"%%-10sA\", \"foo\")");
+    SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
+    SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int)SDL_strlen(text), result);
+
     result = SDL_snprintf(text, sizeof(text), "%S", L"foo");
     expected = "foo";
     SDLTest_AssertPass("Call to SDL_snprintf(\"%%S\", \"foo\")");
