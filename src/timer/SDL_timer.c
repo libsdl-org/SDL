@@ -381,11 +381,7 @@ int SDL_RemoveTimer(SDL_TimerID id)
         }
         SDL_free(entry);
     }
-    if (canceled) {
-        return 0;
-    } else {
-        return SDL_SetError("Timer not found");
-    }
+    return 0;
 }
 
 #else
