@@ -1015,6 +1015,11 @@ const char *SDL_GetKeyName(SDL_Keycode key)
         } else if (key > 0x7F) {
             SDL_Scancode scancode = SDL_GetScancodeFromKey(key, SDL_KMOD_NONE);
             if (scancode != SDL_SCANCODE_UNKNOWN) {
+                if (key >= 0x0E00 && key <= 0x0E7F) {
+                    // Thai keyboards are QWERTY plus Thai characters, so let's use the ASCII key names
+                    return SDL_GetScancodeName(scancode);
+                }
+
                 SDL_Keycode capital = SDL_GetKeyFromScancode(scancode, SDL_KMOD_SHIFT);
                 if (capital > 0x7F || (capital >= 'A' && capital <= 'Z')) {
                     key = capital;
