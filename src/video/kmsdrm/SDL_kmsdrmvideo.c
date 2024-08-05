@@ -390,7 +390,7 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
 
     ret = KMSDRM_drmModeAddFB2WithModifiers(viddata->drm_fd, w, h, format, handles, strides, offsets, modifiers, &fb_info->fb_id, flags);
 
-    if (ret) {
+    if (ret < 0) {
         handles[0] = KMSDRM_gbm_bo_get_handle(bo).u32;
         strides[0] = KMSDRM_gbm_bo_get_stride(bo);
         offsets[0] = 0;
@@ -400,11 +400,14 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
             offsets[i] = 0;
         }
         ret = KMSDRM_drmModeAddFB2(viddata->drm_fd, w, h, format, handles, strides, offsets, &fb_info->fb_id, 0);
-    }
-
-    if (ret) {
-        SDL_free(fb_info);
-        return NULL;
+        if (ret < 0) {
+            ret = KMSDRM_drmModeAddFB(viddata->drm_fd, w, h, 24, 32, strides[0], handles[0], &fb_info->fb_id);
+            if (ret < 0) {
+                SDL_SetError("drmModeAddFB() failed");
+                SDL_free(fb_info);
+                return NULL;
+            }
+        }
     }
 
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "New DRM FB (%u): %ux%u, from BO %p",
