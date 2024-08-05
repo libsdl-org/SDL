@@ -225,12 +225,19 @@ void SDL_ResetKeyboard(void)
     }
 }
 
+SDL_Keymap *SDL_GetCurrentKeymap(void)
+{
+    SDL_Keyboard *keyboard = &SDL_keyboard;
+
+    return keyboard->keymap;
+}
+
 void SDL_SetKeymap(SDL_Keymap *keymap, SDL_bool send_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
     if (keyboard->keymap) {
-        SDL_DestroyKeymap(keyboard->keymap);
+        SDL_ReleaseKeymap(keyboard->keymap);
     }
 
     keyboard->keymap = keymap;
@@ -424,8 +431,9 @@ static SDL_Keycode SDL_ConvertNumpadKeycode(SDL_Keycode keycode, SDL_bool numloc
     }
 }
 
-static SDL_Keycode SDL_GetEventKeycode(SDL_Keyboard *keyboard, SDL_Scancode scancode, SDL_Keymod modstate)
+SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate)
 {
+    SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_bool numlock = (modstate & SDL_KMOD_NUM) != 0;
     SDL_Keycode keycode;
 
@@ -434,7 +442,7 @@ static SDL_Keycode SDL_GetEventKeycode(SDL_Keyboard *keyboard, SDL_Scancode scan
 
     if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
          keyboard->non_latin_letters) {
-        keycode = SDL_GetDefaultKeyFromScancode(scancode, modstate);
+        keycode = SDL_GetKeymapKeycode(NULL, scancode, modstate);
     } else {
         if ((keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS) &&
             keyboard->french_numbers &&
@@ -443,7 +451,7 @@ static SDL_Keycode SDL_GetEventKeycode(SDL_Keyboard *keyboard, SDL_Scancode scan
             modstate |= SDL_KMOD_SHIFT;
         }
 
-        keycode = SDL_GetKeyFromScancode(scancode, modstate);
+        keycode = SDL_GetKeymapKeycode(keyboard->keymap, scancode, modstate);
     }
 
     if (keyboard->keycode_options & KEYCODE_OPTION_HIDE_NUMPAD) {
@@ -501,7 +509,7 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
         /* Update internal keyboard state */
         keyboard->keystate[scancode] = state;
 
-        keycode = SDL_GetEventKeycode(keyboard, scancode, keyboard->modstate);
+        keycode = SDL_GetKeyFromScancode(scancode, keyboard->modstate);
 
     } else if (rawcode == 0) {
         /* Nothing to do! */
@@ -607,8 +615,9 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
 
 int SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch)
 {
+    SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Keymod modstate = SDL_KMOD_NONE;
-    SDL_Scancode scancode = SDL_GetScancodeFromKey(ch, &modstate);
+    SDL_Scancode scancode = SDL_GetKeymapScancode(keyboard->keymap, ch, &modstate);
 
     // Make sure we have this keycode in our keymap
     if (scancode == SDL_SCANCODE_UNKNOWN && ch < SDLK_SCANCODE_MASK) {
@@ -836,7 +845,7 @@ void SDL_QuitKeyboard(void)
     SDL_keyboards = NULL;
 
     if (SDL_keyboard.keymap) {
-        SDL_DestroyKeymap(SDL_keyboard.keymap);
+        SDL_ReleaseKeymap(SDL_keyboard.keymap);
         SDL_keyboard.keymap = NULL;
     }
 
@@ -877,15 +886,5 @@ void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle)
     } else {
         keyboard->modstate &= ~modstate;
     }
-}
-
-SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate)
-{
-    return SDL_GetKeymapKeycode(SDL_keyboard.keymap, scancode, modstate);
-}
-
-SDL_Scancode SDL_GetScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate)
-{
-    return SDL_GetKeymapScancode(SDL_keyboard.keymap, key, modstate);
 }
 

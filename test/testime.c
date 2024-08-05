@@ -1209,7 +1209,7 @@ int main(int argc, char *argv[])
                         event.key.scancode,
                         SDL_GetScancodeName(event.key.scancode),
                         SDL_static_cast(Uint32, event.key.key),
-                        SDL_GetKeyName(event.key.key));
+                        SDL_GetKeyName(event.key.key, SDL_TRUE));
                 break;
             }
             case SDL_EVENT_TEXT_INPUT: {

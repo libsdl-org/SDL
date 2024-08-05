@@ -1717,7 +1717,7 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->key.windowID,
                 event->key.scancode,
                 SDL_GetScancodeName(event->key.scancode),
-                event->key.key, SDL_GetKeyName(event->key.key),
+                event->key.key, SDL_GetKeyName(event->key.key, SDL_TRUE),
                 modstr);
         break;
     }
