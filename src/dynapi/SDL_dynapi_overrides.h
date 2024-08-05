@@ -177,6 +177,7 @@
 #define SDL_GamepadHasButton SDL_GamepadHasButton_REAL
 #define SDL_GamepadHasSensor SDL_GamepadHasSensor_REAL
 #define SDL_GamepadSensorEnabled SDL_GamepadSensorEnabled_REAL
+#define SDL_GenerateTextureMipmap SDL_GenerateTextureMipmap_REAL
 #define SDL_GetAndroidActivity SDL_GetAndroidActivity_REAL
 #define SDL_GetAndroidCachePath SDL_GetAndroidCachePath_REAL
 #define SDL_GetAndroidExternalStoragePath SDL_GetAndroidExternalStoragePath_REAL

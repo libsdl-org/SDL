@@ -1932,6 +1932,22 @@ static void GLES2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *textu
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, glScaleMode);
 }
 
+static int GLES2_GenMipmaps(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+    GLES2_RenderData *renderdata = (GLES2_RenderData *)renderer->driverdata;
+    SDL_assert(renderdata->glGenerateMipmap != NULL); // this should have been set up at CreateRenderer time and we shouldn't be here if it isn't!
+
+    const GLES2_TextureData *tdata = (GLES2_TextureData *)texture->driverdata;
+    if (texture != renderdata->drawstate.texture) {
+        renderdata->glActiveTexture(GL_TEXTURE0);
+        renderdata->glBindTexture(tdata->texture_type, tdata->texture);
+        renderdata->drawstate.texture = texture;
+    }
+
+    renderdata->glGenerateMipmap(tdata->texture_type);
+    return 0;  // GLES2 does not report failure here.
+}
+
 static int GLES2_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
@@ -2175,6 +2191,7 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     renderer->LockTexture = GLES2_LockTexture;
     renderer->UnlockTexture = GLES2_UnlockTexture;
     renderer->SetTextureScaleMode = GLES2_SetTextureScaleMode;
+    renderer->GenMipmaps = GLES2_GenMipmaps;  // always available since OpenGL ES 2.0.
     renderer->SetRenderTarget = GLES2_SetRenderTarget;
     renderer->QueueSetViewport = GLES2_QueueNoOp;
     renderer->QueueSetDrawColor = GLES2_QueueNoOp;

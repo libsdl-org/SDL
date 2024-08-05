@@ -1227,6 +1227,25 @@ extern SDL_DECLSPEC int SDLCALL SDL_LockTextureToSurface(SDL_Texture *texture,
 extern SDL_DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture *texture);
 
 /**
+ * Generate mipmaps for a texture.
+ *
+ * This may make this texture render better when downscaling for future
+ * draw calls. When updating a texture, call this function to regenerate
+ * mipmaps.
+ *
+ * This might not be a cheap operation, use it sparingly!
+ *
+ * Not every renderer supports this, but when unsupported, downscaled textures
+ * will just perhaps scale a little less well.
+ *
+ * \param texture a texture locked by SDL_LockTexture().
+ * \returns 0 on success, or -1 on error.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GenerateTextureMipmap(SDL_Texture *texture);
+
+/**
  * Set a texture as the current rendering target.
  *
  * The default render target is the window for which the renderer was created.

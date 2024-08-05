@@ -209,6 +209,7 @@ struct SDL_Renderer
                        const SDL_Rect *rect, void **pixels, int *pitch);
     void (*UnlockTexture)(SDL_Renderer *renderer, SDL_Texture *texture);
     void (*SetTextureScaleMode)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode);
+    int (*GenMipmaps)(SDL_Renderer *renderer, SDL_Texture *texture);
     int (*SetRenderTarget)(SDL_Renderer *renderer, SDL_Texture *texture);
     SDL_Surface *(*RenderReadPixels)(SDL_Renderer *renderer, const SDL_Rect *rect);
     int (*RenderPresent)(SDL_Renderer *renderer);

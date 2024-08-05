@@ -152,6 +152,7 @@ SDL3_0.0.0 {
     SDL_GamepadHasButton;
     SDL_GamepadHasSensor;
     SDL_GamepadSensorEnabled;
+    SDL_GenerateTextureMipmap;
     SDL_GetAndroidActivity;
     SDL_GetAndroidCachePath;
     SDL_GetAndroidExternalStoragePath;

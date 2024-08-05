@@ -197,6 +197,7 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasAxis,(SDL_Gamepad *a, SDL_GamepadAxis b),
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasButton,(SDL_Gamepad *a, SDL_GamepadButton b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadHasSensor,(SDL_Gamepad *a, SDL_SensorType b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_GamepadSensorEnabled,(SDL_Gamepad *a, SDL_SensorType b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GenerateTextureMipmap,(SDL_Texture *a),(a),return)
 SDL_DYNAPI_PROC(void*,SDL_GetAndroidActivity,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetAndroidCachePath,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetAndroidExternalStoragePath,(void),(),return)

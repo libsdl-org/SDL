@@ -2477,6 +2477,21 @@ static int SDL_SetRenderTargetInternal(SDL_Renderer *renderer, SDL_Texture *text
     return 0;
 }
 
+int SDL_GenerateTextureMipmap(SDL_Texture *texture)
+{
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    SDL_Renderer *renderer = texture->renderer;
+
+    if (!renderer->GenMipmaps) {
+        return SDL_Unsupported();
+    } else if (FlushRenderCommandsIfTextureNeeded(texture) < 0) {
+        return -1;
+    }
+
+    return renderer->GenMipmaps(renderer, texture);
+}
+
 int SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     if (!texture && renderer->logical_target) {
