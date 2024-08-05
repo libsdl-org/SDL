@@ -433,8 +433,7 @@ static SDL_Keycode SDL_GetEventKeycode(SDL_Keyboard *keyboard, SDL_Scancode scan
     modstate = SDL_KMOD_NONE;
 
     if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
-         keyboard->non_latin_letters &&
-        scancode >= SDL_SCANCODE_A && scancode <= SDL_SCANCODE_Z) {
+         keyboard->non_latin_letters) {
         keycode = SDL_GetDefaultKeyFromScancode(scancode, modstate);
     } else {
         if ((keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS) &&
