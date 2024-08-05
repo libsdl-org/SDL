@@ -2112,7 +2112,7 @@ extern "C" {
  *   layout. e.g. pressing the key associated with SDL_SCANCODE_A on a Russian
  *   keyboard would yield 'a' instead of 'ф'.
  *
- * The default value for this hint is "french_numbers"
+ * The default value for this hint is "french_numbers,latin_letters"
  *
  * Some platforms like Emscripten only provide modified keycodes and the
  * options are not used.
