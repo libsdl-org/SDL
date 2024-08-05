@@ -755,6 +755,8 @@ SDL_AddHintCallback() now returns a standard int result instead of void, returni
 
 Calling SDL_GetHint() with the name of the hint being changed from within a hint callback will now return the new value rather than the old value. The old value is still passed as a parameter to the hint callback.
 
+SDL_SetHint, SDL_SetHintWithPriority, and SDL_ResetHint now return int (-1 on error, 0 on success) instead of SDL_bool (SDL_FALSE on error, SDL_TRUE on success).
+
 The environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER have been renamed to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER.
 
 The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS have been removed and replaced by either using the appindentifier param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_IDENTIFIER_STRING with SDL_SetAppMetadataProperty()
@@ -799,6 +801,7 @@ The following hints have been removed:
 * SDL_HINT_VIDEO_X11_XINERAMA - Xinerama no longer supported by the X11 backend
 * SDL_HINT_VIDEO_X11_XVIDMODE - Xvidmode no longer supported by the X11 backend
 * SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING - SDL now properly handles the 0x406D1388 Exception if no debugger intercepts it, preventing its propagation.
+* SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS - Slim Reader/Writer Locks are always used if available
 * SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 - replaced with SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4, defaulting to SDL_TRUE
 * SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING
 * SDL_HINT_AUDIO_DEVICE_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_NAME_STRING with SDL_SetAppMetadataProperty()

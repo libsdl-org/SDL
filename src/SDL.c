@@ -255,10 +255,12 @@ void SDL_InitMainThread(void)
     SDL_InitLog();
     SDL_InitProperties();
     SDL_GetGlobalProperties();
+    SDL_InitHints();
 }
 
 static void SDL_QuitMainThread(void)
 {
+    SDL_QuitHints();
     SDL_QuitProperties();
     SDL_QuitLog();
     SDL_QuitFilesystem();
@@ -623,7 +625,6 @@ void SDL_Quit(void)
 #endif
 
     SDL_SetObjectsInvalid();
-    SDL_ClearHints();
     SDL_AssertionsQuit();
 
     SDL_QuitPixelFormatDetails();

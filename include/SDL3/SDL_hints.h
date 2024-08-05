@@ -3838,27 +3838,6 @@ extern "C" {
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD   "SDL_WINDOWS_RAW_KEYBOARD"
 
 /**
- * A variable controlling whether SDL uses Critical Sections for mutexes on
- * Windows.
- *
- * On Windows 7 and newer, Slim Reader/Writer Locks are available. They offer
- * better performance, allocate no kernel resources and use less memory. SDL
- * will fall back to Critical Sections on older OS versions or if forced to by
- * this hint.
- *
- * The variable can be set to the following values:
- *
- * - "0": Use SRW Locks when available, otherwise fall back to Critical
- *   Sections. (default)
- * - "1": Force the use of Critical Sections in all cases.
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.0.0.
- */
-#define SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS "SDL_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS"
-
-/**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.
  *
  * Kernel Semaphores are inter-process and require a context switch on every
@@ -4133,7 +4112,10 @@ typedef enum SDL_HintPriority
  * \param name the hint to set.
  * \param value the value of the hint variable.
  * \param priority the SDL_HintPriority level for the hint.
- * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -4141,9 +4123,9 @@ typedef enum SDL_HintPriority
  * \sa SDL_ResetHint
  * \sa SDL_SetHint
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
-                                                         const char *value,
-                                                         SDL_HintPriority priority);
+extern SDL_DECLSPEC int SDLCALL SDL_SetHintWithPriority(const char *name,
+                                                        const char *value,
+                                                        SDL_HintPriority priority);
 
 /**
  * Set a hint with normal priority.
@@ -4154,7 +4136,10 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  *
  * \param name the hint to set.
  * \param value the value of the hint variable.
- * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -4162,8 +4147,7 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  * \sa SDL_ResetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
-                                             const char *value);
+extern SDL_DECLSPEC int SDLCALL SDL_SetHint(const char *name, const char *value);
 
 /**
  * Reset a hint to the default value.
@@ -4173,14 +4157,17 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  * change.
  *
  * \param name the hint to set.
- * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_ResetHints
  */
-extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
+extern SDL_DECLSPEC int SDLCALL SDL_ResetHint(const char *name);
 
 /**
  * Reset all hints to the default values.
@@ -4188,6 +4175,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
  * This will reset all hints to the value of the associated environment
  * variable, or NULL if the environment isn't set. Callbacks will be called
  * normally with this change.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -4200,6 +4189,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  *
  * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
+ *
+ * \threadsafety It is safe to call this function from any thread, however
+ *               the return value only remains valid until the hint is
+ *               changed; if another thread might do so, the app should
+ *               supply locks and/or make a copy of the string. Note that
+ *               using a hint callback instead is always thread-safe, as SDL
+ *               holds a lock on the thread subsystem during the callback.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -4216,6 +4212,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetHint
@@ -4224,37 +4222,48 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
 
 /**
- * Type definition of the hint callback function.
+ * A callback used to send notifications of hint value changes.
+ *
+ * This is called an initial time during SDL_AddHintCallback with the hint's
+ * current value, and then again each time the hint's value changes.
  *
  * \param userdata what was passed as `userdata` to SDL_AddHintCallback().
  * \param name what was passed as `name` to SDL_AddHintCallback().
  * \param oldValue the previous hint value.
  * \param newValue the new value hint is to be set to.
  *
+ * \threadsafety This callback is fired from whatever thread is setting a
+ *               new hint value. SDL holds a lock on the hint subsystem when
+ *               calling this callback.
+ *
  * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_AddHintCallback
  */
 typedef void (SDLCALL *SDL_HintCallback)(void *userdata, const char *name, const char *oldValue, const char *newValue);
 
 /**
  * Add a function to watch a particular hint.
  *
+ * The callback function is called _during_ this function, to provide it an
+ * initial value, and again each time the hint's value changes.
+ *
  * \param name the hint to watch.
- * \param callback an SDL_HintCallback function that will be called when the
+ * \param callback An SDL_HintCallback function that will be called when the
  *                 hint value changes.
  * \param userdata a pointer to pass to the callback function.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety It is **NOT** safe to call this function from two threads at
- *               once.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_DelHintCallback
  */
 extern SDL_DECLSPEC int SDLCALL SDL_AddHintCallback(const char *name,
-                                                SDL_HintCallback callback,
-                                                void *userdata);
+                                                    SDL_HintCallback callback,
+                                                    void *userdata);
 
 /**
  * Remove a function watching a particular hint.
@@ -4264,13 +4273,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddHintCallback(const char *name,
  *                 hint value changes.
  * \param userdata a pointer being passed to the callback function.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_AddHintCallback
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DelHintCallback(const char *name,
-                                                 SDL_HintCallback callback,
-                                                 void *userdata);
+                                                     SDL_HintCallback callback,
+                                                     void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
