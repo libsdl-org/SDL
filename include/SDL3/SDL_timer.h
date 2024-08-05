@@ -137,7 +137,8 @@ typedef Uint32 SDL_TimerID;
  * The callback function is passed the current timer interval and returns the
  * next timer interval, in milliseconds. If the returned value is the same as
  * the one passed in, the periodic alarm continues, otherwise a new alarm is
- * scheduled. If the callback returns 0, the periodic alarm is canceled and will be removed.
+ * scheduled. If the callback returns 0, the periodic alarm is canceled and
+ * will be removed.
  *
  * \param userdata an arbitrary pointer provided by the app through
  *                 SDL_AddTimer, for its own use.
@@ -200,7 +201,8 @@ extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerC
  * The callback function is passed the current timer interval and returns the
  * next timer interval, in nanoseconds. If the returned value is the same as
  * the one passed in, the periodic alarm continues, otherwise a new alarm is
- * scheduled. If the callback returns 0, the periodic alarm is canceled and will be removed.
+ * scheduled. If the callback returns 0, the periodic alarm is canceled and
+ * will be removed.
  *
  * \param userdata an arbitrary pointer provided by the app through
  *                 SDL_AddTimer, for its own use.
