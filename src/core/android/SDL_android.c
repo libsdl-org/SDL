@@ -64,10 +64,10 @@ JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(
     JNIEnv *env, jclass cls);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitSDLThread)(
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitMainThread)(
     JNIEnv *env, jclass cls);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeCleanupSDLThread)(
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeCleanupMainThread)(
     JNIEnv *env, jclass cls);
 
 JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(
@@ -194,8 +194,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 static JNINativeMethod SDLActivity_tab[] = {
     { "nativeGetVersion", "()Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetVersion) },
     { "nativeSetupJNI", "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
-    { "nativeInitSDLThread", "()V", SDL_JAVA_INTERFACE(nativeInitSDLThread) },
-    { "nativeCleanupSDLThread", "()V", SDL_JAVA_INTERFACE(nativeCleanupSDLThread) },
+    { "nativeInitMainThread", "()V", SDL_JAVA_INTERFACE(nativeInitMainThread) },
+    { "nativeCleanupMainThread", "()V", SDL_JAVA_INTERFACE(nativeCleanupMainThread) },
     { "nativeRunMain", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
     { "onNativeDropFile", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
     { "nativeSetScreenResolution", "(IIIIFF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
@@ -772,7 +772,7 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeAllowRecreateActivity)(
     return SDL_AtomicGet(&bAllowRecreateActivity);
 }
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitSDLThread)(
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitMainThread)(
     JNIEnv *env, jclass jcls)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeInitSDLThread() %d time", run_count);
@@ -785,7 +785,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitSDLThread)(
     Android_JNI_SetEnv(env);
 }
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeCleanupSDLThread)(
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeCleanupMainThread)(
     JNIEnv *env, jclass jcls)
 {
     /* This is a Java thread, it doesn't need to be Detached from the JVM.
