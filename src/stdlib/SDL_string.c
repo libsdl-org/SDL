@@ -1529,7 +1529,7 @@ typedef enum
 
 typedef struct
 {
-    SDL_bool left_justify; /* for now: ignored. */
+    SDL_bool left_justify;
     SDL_bool force_sign;
     SDL_bool force_type; /* for now: used only by float printer, ignored otherwise. */
     SDL_bool pad_zeroes;
@@ -1541,6 +1541,9 @@ typedef struct
 
 static size_t SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *string)
 {
+    const char fill = (info && info->pad_zeroes) ? '0' : ' ';
+    size_t width = 0;
+    size_t filllen = 0;
     size_t length = 0;
     size_t slen, sz;
 
@@ -1550,23 +1553,28 @@ static size_t SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, c
 
     sz = SDL_strlen(string);
     if (info && info->width > 0 && (size_t)info->width > sz) {
-        const char fill = info->pad_zeroes ? '0' : ' ';
-        size_t width = info->width - sz;
-        size_t filllen;
-
+        width = info->width - sz;
         if (info->precision >= 0 && (size_t)info->precision < sz) {
             width += sz - (size_t)info->precision;
         }
 
         filllen = SDL_min(width, maxlen);
-        SDL_memset(text, fill, filllen);
-        text += filllen;
-        maxlen -= filllen;
-        length += width;
+        if (!info->left_justify) {
+            SDL_memset(text, fill, filllen);
+            text += filllen;
+            maxlen -= filllen;
+            length += width;
+            filllen = 0;
+        }
     }
 
     SDL_strlcpy(text, string, maxlen);
     length += sz;
+
+    if (filllen > 0) {
+        SDL_memset(text + sz, fill, filllen);
+        length += width;
+    }
 
     if (info) {
         if (info->precision >= 0 && (size_t)info->precision < sz) {
