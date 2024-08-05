@@ -4190,12 +4190,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
- * \threadsafety It is safe to call this function from any thread, however
- *               the return value only remains valid until the hint is
- *               changed; if another thread might do so, the app should
- *               supply locks and/or make a copy of the string. Note that
- *               using a hint callback instead is always thread-safe, as SDL
- *               holds a lock on the thread subsystem during the callback.
+ * \threadsafety It is safe to call this function from any thread, however the
+ *               return value only remains valid until the hint is changed; if
+ *               another thread might do so, the app should supply locks
+ *               and/or make a copy of the string. Note that using a hint
+ *               callback instead is always thread-safe, as SDL holds a lock
+ *               on the thread subsystem during the callback.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -4232,8 +4232,8 @@ extern SDL_DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bo
  * \param oldValue the previous hint value.
  * \param newValue the new value hint is to be set to.
  *
- * \threadsafety This callback is fired from whatever thread is setting a
- *               new hint value. SDL holds a lock on the hint subsystem when
+ * \threadsafety This callback is fired from whatever thread is setting a new
+ *               hint value. SDL holds a lock on the hint subsystem when
  *               calling this callback.
  *
  * \since This datatype is available since SDL 3.0.0.

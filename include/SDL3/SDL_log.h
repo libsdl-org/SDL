@@ -184,10 +184,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
 /**
  * Set the text prepended to log messages of a given priority.
  *
- * By default SDL_LOG_PRIORITY_INFO and below have no prefix, and SDL_LOG_PRIORITY_WARN and higher have a prefix showing their priority, e.g. "WARNING: ".
+ * By default SDL_LOG_PRIORITY_INFO and below have no prefix, and
+ * SDL_LOG_PRIORITY_WARN and higher have a prefix showing their priority, e.g.
+ * "WARNING: ".
  *
  * \param priority the SDL_LogPriority to modify.
- * \param prefix the prefix to use for that log priority, or NULL to use no prefix.
+ * \param prefix the prefix to use for that log priority, or NULL to use no
+ *               prefix.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
