@@ -228,7 +228,7 @@ static const char *get_audio_device(void *handle, const int channels)
 
     ALSA_Device *dev = (ALSA_Device *)handle;
     if (SDL_strcmp(dev->name, "default") == 0) {
-        const char *device = SDL_getenv("AUDIODEV"); // Is there a standard variable name?
+        const char *device = SDL_GetHint(SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE);
         if (device) {
             return device;
         } else if (channels == 6) {
@@ -426,16 +426,11 @@ static int ALSA_set_buffer_size(SDL_AudioDevice *device, snd_pcm_hw_params_t *pa
     device->sample_frames = persize;
 
     // This is useful for debugging
-    if (SDL_getenv("SDL_AUDIO_ALSA_DEBUG")) {
-        snd_pcm_uframes_t bufsize;
-
-        ALSA_snd_pcm_hw_params_get_buffer_size(hwparams, &bufsize);
-
-        SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
-                     "ALSA: period size = %ld, periods = %u, buffer size = %lu",
-                     persize, periods, bufsize);
-    }
-
+    snd_pcm_uframes_t bufsize;
+    ALSA_snd_pcm_hw_params_get_buffer_size(hwparams, &bufsize);
+    SDL_LogDebug(SDL_LOG_CATEGORY_AUDIO,
+                 "ALSA: period size = %ld, periods = %u, buffer size = %lu",
+                 persize, periods, bufsize);
     return 0;
 }
 

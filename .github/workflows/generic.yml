@@ -68,6 +68,11 @@ jobs:
         if: ${{ matrix.platform.platform == 'msvc' }}
         with:
           arch: ${{ matrix.platform.msvc-vcvars }}
+      - name: 'Set up Windows GDK Desktop'
+        uses: ./.github/actions/setup-gdk-desktop
+        if: ${{ matrix.platform.setup-gdk-folder != '' }}
+        with:
+          folder: '${{ matrix.platform.setup-gdk-folder }}'
       - name: 'Set up LoongArch64 toolchain'
         uses: ./.github/actions/setup-loongarch64-toolchain
         id: setup-loongarch64-toolchain

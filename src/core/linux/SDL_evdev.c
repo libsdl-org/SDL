@@ -198,7 +198,7 @@ int SDL_EVDEV_Init(void)
                where device class is an integer representing the
                SDL_UDEV_deviceclass and path is the full path to
                the event device. */
-            const char *devices = SDL_getenv("SDL_EVDEV_DEVICES");
+            const char *devices = SDL_GetHint(SDL_HINT_EVDEV_DEVICES);
             if (devices) {
                 /* Assume this is the old use of the env var and it is not in
                    ROM. */

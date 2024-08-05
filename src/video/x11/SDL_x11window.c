@@ -421,6 +421,42 @@ static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w)
     return 0;
 }
 
+static void SetupWindowInput(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    long fevent = 0;
+    SDL_WindowData *data = window->internal;
+    Window xwindow = data->xwindow;
+
+#ifdef X_HAVE_UTF8_STRING
+    if (SDL_X11_HAVE_UTF8 && data->ic) {
+        X11_XGetICValues(data->ic, XNFilterEvents, &fevent, NULL);
+    }
+#endif
+
+    X11_Xinput2SelectTouch(_this, window);
+
+    {
+        unsigned int x11_keyboard_events = KeyPressMask | KeyReleaseMask;
+        unsigned int x11_pointer_events = ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+
+        X11_Xinput2SelectMouseAndKeyboard(_this, window);
+
+        /* If XInput2 can handle pointer and keyboard events, we don't track them here */
+        if (data->xinput2_keyboard_enabled) {
+            x11_keyboard_events = 0;
+        }
+        if (data->xinput2_mouse_enabled) {
+            x11_pointer_events = 0;
+        }
+
+        X11_XSelectInput(data->videodata->display, xwindow,
+                         (FocusChangeMask | EnterWindowMask | LeaveWindowMask | ExposureMask |
+                          x11_keyboard_events | x11_pointer_events |
+                          PropertyChangeMask | StructureNotifyMask |
+                          KeymapStateMask | fevent));
+    }
+}
+
 static void SetWindowBordered(Display *display, int screen, Window window, SDL_bool border)
 {
     /*
@@ -461,6 +497,8 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
         if (SetupWindowData(_this, window, w) < 0) {
             return -1;
         }
+
+        SetupWindowInput(_this, window);
         return 0;
     }
 
@@ -486,7 +524,6 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     const char *wintype_name = NULL;
     long compositor = 1;
     Atom _NET_WM_PID;
-    long fevent = 0;
     const char *hint = NULL;
     int win_x, win_y;
     SDL_bool undefined_position = SDL_FALSE;
@@ -494,8 +531,9 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
 #if defined(SDL_VIDEO_OPENGL_GLX) || defined(SDL_VIDEO_OPENGL_EGL)
     const int transparent = (window->flags & SDL_WINDOW_TRANSPARENT) ? SDL_TRUE : SDL_FALSE;
     const char *forced_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_WINDOW_VISUALID);
+    const char *display_visual_id = SDL_GetHint(SDL_HINT_VIDEO_X11_VISUALID);
 
-    if (forced_visual_id && forced_visual_id[0] != '\0') {
+    if (forced_visual_id && *forced_visual_id) {
         XVisualInfo *vi, template;
         int nvis;
 
@@ -510,7 +548,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
             return -1;
         }
     } else if ((window->flags & SDL_WINDOW_OPENGL) &&
-               !SDL_getenv("SDL_VIDEO_X11_VISUALID")) {
+               (!display_visual_id || !*display_visual_id)) {
         XVisualInfo *vinfo = NULL;
 
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -783,12 +821,6 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     }
 #endif
 
-#ifdef X_HAVE_UTF8_STRING
-    if (SDL_X11_HAVE_UTF8 && windowdata->ic) {
-        X11_XGetICValues(windowdata->ic, XNFilterEvents, &fevent, NULL);
-    }
-#endif
-
 #ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
     /* Tooltips do not receive input */
     if (window->flags & SDL_WINDOW_TOOLTIP) {
@@ -798,28 +830,7 @@ int X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     }
 #endif
 
-    X11_Xinput2SelectTouch(_this, window);
-
-    {
-        unsigned int x11_keyboard_events = KeyPressMask | KeyReleaseMask;
-        unsigned int x11_pointer_events = ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
-
-        X11_Xinput2SelectMouseAndKeyboard(_this, window);
-
-        /* If XInput2 can handle pointer and keyboard events, we don't track them here */
-        if (windowdata->xinput2_keyboard_enabled) {
-            x11_keyboard_events = 0;
-        }
-        if (windowdata->xinput2_mouse_enabled) {
-            x11_pointer_events = 0;
-        }
-
-        X11_XSelectInput(display, w,
-                         (FocusChangeMask | EnterWindowMask | LeaveWindowMask | ExposureMask |
-                          x11_keyboard_events | x11_pointer_events |
-                          PropertyChangeMask | StructureNotifyMask |
-                          KeymapStateMask | fevent));
-    }
+    SetupWindowInput(_this, window);
 
     /* For _ICC_PROFILE. */
     X11_XSelectInput(display, RootWindow(display, screen), PropertyChangeMask);

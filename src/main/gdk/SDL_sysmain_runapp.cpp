@@ -126,7 +126,11 @@ int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
         XGameRuntimeUninitialize();
     } else {
 #ifdef SDL_PLATFORM_WINGDK
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not initialize - aborting", NULL);
+        if (hr == E_GAMERUNTIME_DLL_NOT_FOUND) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Gaming Runtime library not found (xgameruntime.dll)", NULL);
+        } else {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not initialize - aborting", NULL);
+        }
 #else
         SDL_assert_always(0 && "[GDK] Could not initialize - aborting");
 #endif

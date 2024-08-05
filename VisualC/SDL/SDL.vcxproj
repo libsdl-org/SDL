@@ -230,6 +230,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(TreatWarningsAsError)'!=''">
+    <ClCompile>
+      <TreatWarningAsError>$(TreatWarningsAsError)</TreatWarningAsError>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_camera.h" />

@@ -184,6 +184,11 @@
       <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(TreatWarningsAsError)'!=''">
+    <ClCompile>
+      <TreatWarningAsError>$(TreatWarningsAsError)</TreatWarningAsError>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\test\SDL_test_assert.c" />
     <ClCompile Include="..\..\src\test\SDL_test_common.c" />

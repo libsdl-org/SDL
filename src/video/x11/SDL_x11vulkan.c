@@ -58,7 +58,7 @@ int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
     /* Load the Vulkan loader library */
     if (!path) {
-        path = SDL_getenv("SDL_VULKAN_LIBRARY");
+        path = SDL_GetHint(SDL_HINT_VULKAN_LIBRARY);
     }
     if (!path) {
         path = DEFAULT_VULKAN;
@@ -107,8 +107,8 @@ int X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement either the " VK_KHR_XCB_SURFACE_EXTENSION_NAME "extension or the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else {
-        const char *libX11XCBLibraryName = SDL_getenv("SDL_X11_XCB_LIBRARY");
-        if (!libX11XCBLibraryName) {
+        const char *libX11XCBLibraryName = SDL_GetHint(SDL_HINT_X11_XCB_LIBRARY);
+        if (!libX11XCBLibraryName || !*libX11XCBLibraryName) {
             libX11XCBLibraryName = "libX11-xcb.so";
         }
         videoData->vulkan_xlib_xcb_library = SDL_LoadObject(libX11XCBLibraryName);

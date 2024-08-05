@@ -198,6 +198,20 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
 
 /**
+ * Specify the default ALSA audio device name.
+ *
+ * This variable is a specific audio device to open when the "default" audio
+ * device is used. By default if 4 channel audio is requested, the
+ * "plug:surround40" device will be opened and if 6 channel audio is requested
+ * the "plug:surround51" device will be opened.
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE "SDL_AUDIO_ALSA_DEFAULT_DEVICE"
+
+/**
  * A variable controlling the audio category on iOS and macOS.
  *
  * The variable can be set to the following values:
@@ -214,6 +228,19 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_AUDIO_CATEGORY   "SDL_AUDIO_CATEGORY"
+
+/**
+ * A variable controlling the default audio channel count.
+ *
+ * If the application doesn't specify the audio channel count when opening the
+ * device, this hint can be used to specify a default channel count that will
+ * be used. This defaults to "1" for recording and "2" for playback devices.
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_CHANNELS "SDL_AUDIO_CHANNELS"
 
 /**
  * Specify an application icon name for an audio device.
@@ -314,6 +341,41 @@ extern "C" {
 #define SDL_HINT_AUDIO_DEVICE_STREAM_ROLE "SDL_AUDIO_DEVICE_STREAM_ROLE"
 
 /**
+ * Specify the input file when recording audio using the disk audio driver.
+ *
+ * This defaults to "sdlaudio-in.raw"
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_DISK_INPUT_FILE "SDL_AUDIO_DISK_INPUT_FILE"
+
+/**
+ * Specify the output file when playing audio using the disk audio driver.
+ *
+ * This defaults to "sdlaudio.raw"
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_DISK_OUTPUT_FILE "SDL_AUDIO_DISK_OUTPUT_FILE"
+
+/**
+ * A variable controlling the audio rate when using the disk audio driver.
+ *
+ * The disk audio driver normally simulates real-time for the audio rate that
+ * was specified, but you can use this variable to adjust this rate higher or
+ * lower down to 0. The default value is "1.0".
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_DISK_TIMESCALE "SDL_AUDIO_DISK_TIMESCALE"
+
+/**
  * A variable that specifies an audio backend to use.
  *
  * By default, SDL will try all available audio backends in a reasonable order
@@ -326,6 +388,54 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_AUDIO_DRIVER "SDL_AUDIO_DRIVER"
+
+/**
+ * A variable controlling the audio rate when using the dummy audio driver.
+ *
+ * The dummy audio driver normally simulates real-time for the audio rate that
+ * was specified, but you can use this variable to adjust this rate higher or
+ * lower down to 0. The default value is "1.0".
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_DUMMY_TIMESCALE "SDL_AUDIO_DUMMY_TIMESCALE"
+
+/**
+ * A variable controlling the default audio format.
+ *
+ * If the application doesn't specify the audio format when opening the
+ * device, this hint can be used to specify a default format that will be
+ * used.
+ *
+ * The variable can be set to the following values: - "U8": Unsigned 8-bit
+ * audio - "S8": Signed 8-bit audio - "S16LE": Signed 16-bit little-endian
+ * audio - "S16BE": Signed 16-bit big-endian audio - "S16": Signed 16-bit
+ * native-endian audio (default) - "S32LE": Signed 32-bit little-endian audio
+ * - "S32BE": Signed 32-bit big-endian audio - "S32": Signed 32-bit
+ * native-endian audio - "F32LE": Floating point little-endian audio -
+ * "F32BE": Floating point big-endian audio - "F32": Floating point
+ * native-endian audio
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_FORMAT "SDL_AUDIO_FORMAT"
+
+/**
+ * A variable controlling the default audio frequency.
+ *
+ * If the application doesn't specify the audio frequency when opening the
+ * device, this hint can be used to specify a default frequency that will be
+ * used. This defaults to "44100".
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_AUDIO_FREQUENCY "SDL_AUDIO_FREQUENCY"
 
 /**
  * A variable that causes SDL to not ignore audio "monitors".
@@ -585,6 +695,23 @@ extern "C" {
 #define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
 
 /**
+ * A variable containing a list of evdev devices to use if udev is not
+ * available.
+ *
+ * The list of devices is in the form:
+ *
+ * deviceclass:path[,deviceclass:path[,...]]
+ *
+ * where device class is an integer representing the SDL_UDEV_deviceclass and
+ * path is the full path to the event device.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_EVDEV_DEVICES "SDL_EVDEV_DEVICES"
+
+/**
  * A variable controlling verbosity of the logging of SDL events pushed onto
  * the internal queue.
  *
@@ -828,6 +955,56 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_GDK_TEXTINPUT_TITLE "SDL_GDK_TEXTINPUT_TITLE"
+
+/**
+ * A variable to control whether HIDAPI uses libusb for device access.
+ *
+ * By default libusb will only be used for a few devices that require direct
+ * USB access, and this can be controlled with
+ * SDL_HINT_HIDAPI_LIBUSB_WHITELIST.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI will not use libusb for device access.
+ * - "1": HIDAPI will use libusb for device access if available. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_HIDAPI_LIBUSB "SDL_HIDAPI_LIBUSB"
+
+/**
+ * A variable to control whether HIDAPI uses libusb only for whitelisted
+ * devices.
+ *
+ * By default libusb will only be used for a few devices that require direct
+ * USB access.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI will use libusb for all device access.
+ * - "1": HIDAPI will use libusb only for whitelisted devices. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_HIDAPI_LIBUSB_WHITELIST "SDL_HIDAPI_LIBUSB_WHITELIST"
+
+/**
+ * A variable to control whether HIDAPI uses udev for device detection.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI will poll for device changes.
+ * - "1": HIDAPI will use udev for device detection. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_HIDAPI_UDEV "SDL_HIDAPI_UDEV"
 
 /**
  * A variable to control whether SDL_hid_enumerate() enumerates all HID
@@ -2321,6 +2498,24 @@ extern "C" {
 #define SDL_HINT_MOUSE_TOUCH_EVENTS    "SDL_MOUSE_TOUCH_EVENTS"
 
 /**
+ * A variable controlling whether the keyboard should be muted on the console.
+ *
+ * Normally the keyboard is muted while SDL applications are running so that
+ * keyboard input doesn't show up as key strokes on the console. This hint
+ * allows you to turn that off for debugging purposes.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Allow keystrokes to go through to the console.
+ * - "1": Mute keyboard input so it doesn't show up on the console. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_MUTE_CONSOLE_KEYBOARD "SDL_MUTE_CONSOLE_KEYBOARD"
+
+/**
  * Tell SDL not to catch the SIGINT or SIGTERM signals on POSIX platforms.
  *
  * The variable can be set to the following values:
@@ -2334,6 +2529,16 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_NO_SIGNAL_HANDLERS   "SDL_NO_SIGNAL_HANDLERS"
+
+/**
+ * Specify the OpenGL library to load.
+ *
+ * This hint should be set before creating an OpenGL window or creating an
+ * OpenGL context.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_OPENGL_LIBRARY "SDL_OPENGL_LIBRARY"
 
 /**
  * A variable controlling what driver to use for OpenGL ES contexts.
@@ -2928,6 +3133,19 @@ extern "C" {
 #define SDL_HINT_VIDEO_DRIVER "SDL_VIDEO_DRIVER"
 
 /**
+ * A variable controlling whether the dummy video driver saves output frames.
+ *
+ * - "0": Video frames are not saved to disk. (default)
+ * - "1": Video frames are saved to files in the format "SDL_windowX-Y.bmp",
+ *   where X is the window ID, and Y is the frame number.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VIDEO_DUMMY_SAVE_FRAMES "SDL_VIDEO_DUMMY_SAVE_FRAMES"
+
+/**
  * If eglGetPlatformDisplay fails, fall back to calling eglGetDisplay.
  *
  * The variable can be set to one of the following values:
@@ -2990,6 +3208,23 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
+
+/**
+ * A variable controlling whether the offscreen video driver saves output
+ * frames.
+ *
+ * This only saves frames that are generated using software rendering, not
+ * accelerated OpenGL rendering.
+ *
+ * - "0": Video frames are not saved to disk. (default)
+ * - "1": Video frames are saved to files in the format "SDL_windowX-Y.bmp",
+ *   where X is the window ID, and Y is the frame number.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VIDEO_OFFSCREEN_SAVE_FRAMES "SDL_VIDEO_OFFSCREEN_SAVE_FRAMES"
 
 /**
  * A variable controlling whether all window operations will block until
@@ -3191,6 +3426,20 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_NET_WM_PING      "SDL_VIDEO_X11_NET_WM_PING"
 
 /**
+ * A variable controlling whether SDL uses DirectColor visuals.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable DirectColor visuals.
+ * - "1": Enable DirectColor visuals. (default)
+ *
+ * This hint should be set before initializing the video subsystem.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VIDEO_X11_NODIRECTCOLOR "SDL_VIDEO_X11_NODIRECTCOLOR"
+
+/**
  * A variable forcing the content scaling factor for X11 displays.
  *
  * The variable can be set to a floating point value in the range 1.0-10.0f
@@ -3200,6 +3449,15 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_VIDEO_X11_SCALING_FACTOR      "SDL_VIDEO_X11_SCALING_FACTOR"
+
+/**
+ * A variable forcing the visual ID used for X11 display modes.
+ *
+ * This hint should be set before initializing the video subsystem.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VIDEO_X11_VISUALID "SDL_VIDEO_X11_VISUALID"
 
 /**
  * A variable forcing the visual ID chosen for new X11 windows.
@@ -3225,6 +3483,90 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
 
 /**
+ * A variable controlling whether touch should be enabled on the back panel of
+ * the PlayStation Vita.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable touch on the back panel.
+ * - "1": Enable touch on the back panel. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_ENABLE_BACK_TOUCH "SDL_VITA_ENABLE_BACK_TOUCH"
+
+/**
+ * A variable controlling whether touch should be enabled on the front panel
+ * of the PlayStation Vita.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable touch on the front panel.
+ * - "1": Enable touch on the front panel. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_ENABLE_FRONT_TOUCH "SDL_VITA_ENABLE_FRONT_TOUCH"
+
+/**
+ * A variable controlling the module path on the PlayStation Vita.
+ *
+ * This hint defaults to "app0:module"
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_MODULE_PATH "SDL_VITA_MODULE_PATH"
+
+/**
+ * A variable controlling whether to perform PVR initialization on the
+ * PlayStation Vita.
+ *
+ * - "0": Skip PVR initialization.
+ * - "1": Perform the normal PVR initialization. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_PVR_INIT "SDL_VITA_PVR_INIT"
+
+/**
+ * A variable overriding the resolution reported on the PlayStation Vita.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "544": 544p (default)
+ * - "720": 725p for PSTV
+ * - "1080": 1088i for PSTV
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_RESOLUTION "SDL_VITA_RESOLUTION"
+
+/**
+ * A variable controlling whether OpenGL should be used instead of OpenGL ES
+ * on the PlayStation Vita.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Use OpenGL ES. (default)
+ * - "1": Use OpenGL.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VITA_PVR_OPENGL "SDL_VITA_PVR_OPENGL"
+
+/**
  * A variable controlling which touchpad should generate synthetic mouse
  * events.
  *
@@ -3239,6 +3581,27 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_VITA_TOUCH_MOUSE_DEVICE    "SDL_VITA_TOUCH_MOUSE_DEVICE"
+
+/**
+ * A variable overriding the display index used in SDL_Vulkan_CreateSurface()
+ *
+ * The display index starts at 0, which is the default.
+ *
+ * This hint should be set before calling SDL_Vulkan_CreateSurface()
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VULKAN_DISPLAY "SDL_VULKAN_DISPLAY"
+
+/**
+ * Specify the Vulkan library to load.
+ *
+ * This hint should be set before creating a Vulkan window or calling
+ * SDL_Vulkan_LoadLibrary().
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_VULKAN_LIBRARY "SDL_VULKAN_LIBRARY"
 
 /**
  * A variable controlling how the fact chunk affects the loading of a WAVE
@@ -3273,6 +3636,18 @@ extern "C" {
 #define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
 
 /**
+ * A variable controlling the maximum number of chunks in a WAVE file.
+ *
+ * This sets an upper bound on the number of chunks in a WAVE file to avoid
+ * wasting time on malformed or corrupt WAVE files. This defaults to "10000".
+ *
+ * This hint should be set before calling SDL_LoadWAV() or SDL_LoadWAV_IO()
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_WAVE_CHUNK_LIMIT   "SDL_WAVE_CHUNK_LIMIT"
+
+/**
  * A variable controlling how the size of the RIFF chunk affects the loading
  * of a WAVE file.
  *
@@ -3283,7 +3658,7 @@ extern "C" {
  * Note that files that have trailing data unrelated to the WAVE file or
  * corrupt files may slow down the loading process without a reliable
  * boundary. By default, SDL stops after 10000 chunks to prevent wasting time.
- * Use the environment variable SDL_WAVE_CHUNK_LIMIT to adjust this value.
+ * Use SDL_HINT_WAVE_CHUNK_LIMIT to adjust this value.
  *
  * The variable can be set to the following values:
  *
@@ -3687,6 +4062,17 @@ extern "C" {
  * \since This hint is available since SDL 3.0.0.
  */
 #define SDL_HINT_X11_WINDOW_TYPE "SDL_X11_WINDOW_TYPE"
+
+/**
+ * Specify the XCB library to load for the X11 driver.
+ *
+ * This defaults to "libX11-xcb.so"
+ *
+ * This hint should be set before initializing the video subsystem.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_X11_XCB_LIBRARY "SDL_X11_XCB_LIBRARY"
 
 /**
  * A variable controlling whether XInput should be used for controller

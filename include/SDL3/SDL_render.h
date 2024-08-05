@@ -2057,15 +2057,16 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_RenderReadPixels(SDL_Renderer *ren
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_CreateRenderer
  * \sa SDL_RenderClear
+ * \sa SDL_RenderFillRect
+ * \sa SDL_RenderFillRects
  * \sa SDL_RenderLine
  * \sa SDL_RenderLines
  * \sa SDL_RenderPoint
  * \sa SDL_RenderPoints
  * \sa SDL_RenderRect
  * \sa SDL_RenderRects
- * \sa SDL_RenderFillRect
- * \sa SDL_RenderFillRects
  * \sa SDL_SetRenderDrawBlendMode
  * \sa SDL_SetRenderDrawColor
  */

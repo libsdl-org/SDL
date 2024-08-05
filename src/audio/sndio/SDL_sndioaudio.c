@@ -231,11 +231,8 @@ static int SNDIO_OpenDevice(SDL_AudioDevice *device)
         return -1;
     }
 
-    // !!! FIXME: we really should standardize this on a specific SDL hint.
-    const char *audiodev = SDL_getenv("AUDIODEV");
-
     // Recording devices must be non-blocking for SNDIO_FlushRecording
-    device->hidden->dev = SNDIO_sio_open(audiodev ? audiodev : SIO_DEVANY,
+    device->hidden->dev = SNDIO_sio_open(SIO_DEVANY,
                                          device->recording ? SIO_REC : SIO_PLAY, device->recording);
     if (!device->hidden->dev) {
         return SDL_SetError("sio_open() failed");

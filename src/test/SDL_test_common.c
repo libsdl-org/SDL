@@ -615,6 +615,22 @@ int SDLTest_CommonArg(SDLTest_CommonState *state, int index)
             state->hide_cursor = SDL_TRUE;
             return 1;
         }
+    } else {
+        if (SDL_strcasecmp(argv[index], "--info") == 0) {
+            ++index;
+            if (!argv[index]) {
+                return -1;
+            }
+            if (SDL_strcasecmp(argv[index], "all") == 0) {
+                state->verbose |= VERBOSE_EVENT;
+                return 2;
+            }
+            if (SDL_strcasecmp(argv[index], "event") == 0) {
+                state->verbose |= VERBOSE_EVENT;
+                return 2;
+            }
+            return -1;
+        }
     }
 
     if (state->flags & SDL_INIT_AUDIO) {
@@ -1555,7 +1571,7 @@ static const char *GamepadButtonName(const SDL_GamepadButton button)
     }
 }
 
-static void SDLTest_PrintEvent(const SDL_Event *event)
+void SDLTest_PrintEvent(const SDL_Event *event)
 {
     switch (event->type) {
     case SDL_EVENT_SYSTEM_THEME_CHANGED:

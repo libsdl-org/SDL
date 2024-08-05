@@ -137,7 +137,8 @@ typedef Uint32 SDL_TimerID;
  * The callback function is passed the current timer interval and returns the
  * next timer interval, in milliseconds. If the returned value is the same as
  * the one passed in, the periodic alarm continues, otherwise a new alarm is
- * scheduled. If the callback returns 0, the periodic alarm is cancelled.
+ * scheduled. If the callback returns 0, the periodic alarm is canceled and
+ * will be removed.
  *
  * \param userdata an arbitrary pointer provided by the app through
  *                 SDL_AddTimer, for its own use.
@@ -164,7 +165,7 @@ typedef Uint32 (SDLCALL *SDL_TimerCallback)(void *userdata, SDL_TimerID timerID,
  * The callback function is passed the current timer interval and the user
  * supplied parameter from the SDL_AddTimer() call and should return the next
  * timer interval. If the value returned from the callback is 0, the timer is
- * canceled.
+ * canceled and will be removed.
  *
  * The callback is run on a separate thread, and for short timeouts can
  * potentially be called before this function returns.
@@ -200,7 +201,8 @@ extern SDL_DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval, SDL_TimerC
  * The callback function is passed the current timer interval and returns the
  * next timer interval, in nanoseconds. If the returned value is the same as
  * the one passed in, the periodic alarm continues, otherwise a new alarm is
- * scheduled. If the callback returns 0, the periodic alarm is cancelled.
+ * scheduled. If the callback returns 0, the periodic alarm is canceled and
+ * will be removed.
  *
  * \param userdata an arbitrary pointer provided by the app through
  *                 SDL_AddTimer, for its own use.
@@ -227,7 +229,7 @@ typedef Uint64 (SDLCALL *SDL_NSTimerCallback)(void *userdata, SDL_TimerID timerI
  * The callback function is passed the current timer interval and the user
  * supplied parameter from the SDL_AddTimerNS() call and should return the
  * next timer interval. If the value returned from the callback is 0, the
- * timer is canceled.
+ * timer is canceled and will be removed.
  *
  * The callback is run on a separate thread, and for short timeouts can
  * potentially be called before this function returns.

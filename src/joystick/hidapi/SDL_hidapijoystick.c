@@ -579,9 +579,9 @@ static int HIDAPI_JoystickInit(void)
 
 #ifdef SDL_USE_LIBUDEV
     if (linux_enumeration_method == ENUMERATION_UNSET) {
-        if (SDL_getenv("SDL_HIDAPI_JOYSTICK_DISABLE_UDEV") != NULL) {
+        if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_UDEV, SDL_TRUE)) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "udev disabled by SDL_HIDAPI_JOYSTICK_DISABLE_UDEV");
+                         "udev disabled by SDL_HINT_HIDAPI_UDEV");
             linux_enumeration_method = ENUMERATION_FALLBACK;
         } else if (SDL_DetectSandbox() != SDL_SANDBOX_NONE) {
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,

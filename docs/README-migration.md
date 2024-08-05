@@ -757,6 +757,25 @@ Calling SDL_GetHint() with the name of the hint being changed from within a hint
 
 SDL_SetHint, SDL_SetHintWithPriority, and SDL_ResetHint now return int (-1 on error, 0 on success) instead of SDL_bool (SDL_FALSE on error, SDL_TRUE on success).
 
+The environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER have been renamed to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER.
+
+The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS have been removed and replaced by either using the appindentifier param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_IDENTIFIER_STRING with SDL_SetAppMetadataProperty()
+
+The environment variable AUDIODEV is used exclusively to specify the audio device for the OSS and NetBSD audio drivers. Its use in the ALSA driver has been replaced with the hint SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE and in the sndio driver with the environment variable AUDIODEVICE.
+
+The following hints have been renamed:
+* SDL_HINT_VIDEODRIVER => SDL_HINT_VIDEO_DRIVER
+* SDL_HINT_AUDIODRIVER => SDL_HINT_AUDIO_DRIVER
+* SDL_HINT_ALLOW_TOPMOST => SDL_HINT_WINDOW_ALLOW_TOPMOST
+* SDL_HINT_DIRECTINPUT_ENABLED => SDL_HINT_JOYSTICK_DIRECTINPUT
+* SDL_HINT_GDK_TEXTINPUT_DEFAULT => SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT
+* SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE => SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE
+* SDL_HINT_LINUX_DIGITAL_HATS => SDL_HINT_JOYSTICK_LINUX_DIGITAL_HATS
+* SDL_HINT_LINUX_HAT_DEADZONES => SDL_HINT_JOYSTICK_LINUX_HAT_DEADZONES
+* SDL_HINT_LINUX_JOYSTICK_CLASSIC => SDL_HINT_JOYSTICK_LINUX_CLASSIC
+* SDL_HINT_LINUX_JOYSTICK_DEADZONES => SDL_HINT_JOYSTICK_LINUX_DEADZONES
+* SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP => SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE
+
 The following hints have been removed:
 * SDL_HINT_ACCELEROMETER_AS_JOYSTICK
 * SDL_HINT_ANDROID_BLOCK_ON_PAUSE_PAUSEAUDIO - the audio will be paused when the application is paused, and SDL_HINT_ANDROID_BLOCK_ON_PAUSE can be used to control that
@@ -787,20 +806,28 @@ The following hints have been removed:
 * SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING
 * SDL_HINT_AUDIO_DEVICE_APP_NAME - replaced by either using the appname param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_NAME_STRING with SDL_SetAppMetadataProperty()
 
-* Renamed hints SDL_HINT_VIDEODRIVER and SDL_HINT_AUDIODRIVER to SDL_HINT_VIDEO_DRIVER and SDL_HINT_AUDIO_DRIVER
-* Renamed environment variables SDL_VIDEODRIVER and SDL_AUDIODRIVER to SDL_VIDEO_DRIVER and SDL_AUDIO_DRIVER
-* The environment variables SDL_VIDEO_X11_WMCLASS and SDL_VIDEO_WAYLAND_WMCLASS have been removed and replaced by either using the appindentifier param to SDL_SetAppMetadata() or setting SDL_PROP_APP_METADATA_IDENTIFIER_STRING with SDL_SetAppMetadataProperty()
+The following environment variables have been renamed:
+* SDL_AUDIODRIVER => SDL_AUDIO_DRIVER
+* SDL_PATH_DSP => AUDIODEV
+* SDL_VIDEODRIVER => SDL_VIDEO_DRIVER
 
-The following hints have been renamed:
-* SDL_HINT_ALLOW_TOPMOST => SDL_HINT_WINDOW_ALLOW_TOPMOST
-* SDL_HINT_DIRECTINPUT_ENABLED => SDL_HINT_JOYSTICK_DIRECTINPUT
-* SDL_HINT_GDK_TEXTINPUT_DEFAULT => SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT
-* SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE => SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE
-* SDL_HINT_LINUX_DIGITAL_HATS => SDL_HINT_JOYSTICK_LINUX_DIGITAL_HATS
-* SDL_HINT_LINUX_HAT_DEADZONES => SDL_HINT_JOYSTICK_LINUX_HAT_DEADZONES
-* SDL_HINT_LINUX_JOYSTICK_CLASSIC => SDL_HINT_JOYSTICK_LINUX_CLASSIC
-* SDL_HINT_LINUX_JOYSTICK_DEADZONES => SDL_HINT_JOYSTICK_LINUX_DEADZONES
-* SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP => SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE
+The following environment variables have been removed:
+* SDL_AUDIO_ALSA_DEBUG - replaced by setting the hint SDL_HINT_LOGGING to "audio=debug"
+* SDL_DISKAUDIODELAY - replaced with the hint SDL_HINT_AUDIO_DISK_TIMESCALE which allows scaling the audio time rather than specifying an absolute delay.
+* SDL_DISKAUDIOFILE - replaced with the hint SDL_HINT_AUDIO_DISK_OUTPUT_FILE
+* SDL_DISKAUDIOFILEIN - replaced with the hint SDL_HINT_AUDIO_DISK_INPUT_FILE
+* SDL_DUMMYAUDIODELAY - replaced with the hint SDL_HINT_AUDIO_DUMMY_TIMESCALE which allows scaling the audio time rather than specifying an absolute delay.
+* SDL_HAPTIC_GAIN_MAX
+* SDL_HIDAPI_DISABLE_LIBUSB - replaced with the hint SDL_HINT_HIDAPI_LIBUSB
+* SDL_HIDAPI_JOYSTICK_DISABLE_UDEV - replaced with the hint SDL_HINT_HIDAPI_UDEV
+* SDL_INPUT_FREEBSD_KEEP_KBD - replaced with the hint SDL_HINT_MUTE_CONSOLE_KEYBOARD
+* SDL_INPUT_LINUX_KEEP_KBD - replaced with the hint SDL_HINT_MUTE_CONSOLE_KEYBOARD
+* VITA_DISABLE_TOUCH_BACK - replaced with the hint SDL_HINT_VITA_ENABLE_BACK_TOUCH
+* VITA_DISABLE_TOUCH_FRONT - replaced with the hint SDL_HINT_VITA_ENABLE_FRONT_TOUCH
+* VITA_MODULE_PATH - replaced with the hint SDL_HINT_VITA_MODULE_PATH
+* VITA_PVR_OGL - replaced with the hint SDL_HINT_VITA_PVR_OPENGL
+* VITA_PVR_SKIP_INIT - replaced with the hint SDL_HINT_VITA_PVR_INIT
+* VITA_RESOLUTION - replaced with the hint SDL_HINT_VITA_RESOLUTION
 
 The following functions have been removed:
 * SDL_ClearHints() - replaced with SDL_ResetHints()
@@ -1983,7 +2010,7 @@ The following symbols have been renamed:
 
 Several video backends have had their names lower-cased ("kmsdrm", "rpi", "android", "psp", "ps2", "vita"). SDL already does a case-insensitive compare for SDL_HINT_VIDEO_DRIVER tests, but if your app is calling SDL_GetVideoDriver() or SDL_GetCurrentVideoDriver() and doing case-sensitive compares on those strings, please update your code.
 
-SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific video driver using SDL_VIDEO_DRIVER hint.
+SDL_VideoInit() and SDL_VideoQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_VIDEO, which will properly refcount the subsystems. You can choose a specific video driver using SDL_HINT_VIDEO_DRIVER.
 
 Rather than iterating over displays using display index, there is a new function SDL_GetDisplays() to get the current list of displays, and functions which used to take a display index now take SDL_DisplayID, with an invalid ID being 0.
 ```c

@@ -284,6 +284,11 @@
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(TreatWarningsAsError)'!=''">
+    <ClCompile>
+      <TreatWarningAsError>$(TreatWarningsAsError)</TreatWarningAsError>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SDL\SDL.vcxproj">
       <Project>{81ce8daf-ebb2-4761-8e45-b71abcca8c68}</Project>

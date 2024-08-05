@@ -353,7 +353,6 @@ int SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
-    SDL_bool canceled = SDL_FALSE;
 
     if (!id) {
         return SDL_InvalidParamError("id");
@@ -377,15 +376,10 @@ int SDL_RemoveTimer(SDL_TimerID id)
     if (entry) {
         if (!SDL_AtomicGet(&entry->timer->canceled)) {
             SDL_AtomicSet(&entry->timer->canceled, 1);
-            canceled = SDL_TRUE;
         }
         SDL_free(entry);
     }
-    if (canceled) {
-        return 0;
-    } else {
-        return SDL_SetError("Timer not found");
-    }
+    return 0;
 }
 
 #else

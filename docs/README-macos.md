@@ -30,7 +30,7 @@ cmake --build .
 sudo cmake --install .
 ```
 
-Please note that building SDL requires at least Xcode 6 and the 10.9 SDK.
+Please note that building SDL requires at least Xcode 12.2 and the 11.0 SDK.
 PowerPC support for macOS has been officially dropped as of SDL 2.0.2.
 32-bit Intel and macOS 10.8 runtime support has been officially dropped as
 of SDL 2.24.0.

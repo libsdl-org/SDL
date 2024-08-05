@@ -589,11 +589,10 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
     if (data) {
         SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
 
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         if (data->drop_target) {
             WIN_AcceptDragAndDrop(window, SDL_FALSE);
         }
-
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         if (data->ICMFileName) {
             SDL_free(data->ICMFileName);
         }
