@@ -202,7 +202,7 @@ static void PrintKey(SDL_KeyboardEvent *event)
                      event->raw,
                      event->scancode,
                      event->scancode == SDL_SCANCODE_UNKNOWN ? "UNKNOWN" : SDL_GetScancodeName(event->scancode),
-                     event->key, SDL_GetKeyName(event->key, SDL_TRUE));
+                     event->key, SDL_GetKeyName(event->key));
     } else {
         print_string(&spot, &left,
                      "Unknown Key (raw 0x%.2x, scancode %d = %s) %s ",

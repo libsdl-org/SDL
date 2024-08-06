@@ -286,9 +286,6 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
  * If the key doesn't have a name, this function returns an empty string ("").
  *
  * \param key the desired SDL_Keycode to query.
- * \param uppercase SDL_TRUE if the name should be the letter printed on the
- *                  key on the keyboard, which is usually uppercase, or
- *                  SDL_FALSE to return the name of the key unchanged.
  * \returns a UTF-8 encoded string of the key name.
  *
  * \since This function is available since SDL 3.0.0.
@@ -297,16 +294,12 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
  * \sa SDL_GetKeyFromScancode
  * \sa SDL_GetScancodeFromKey
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetKeyName(SDL_Keycode key, SDL_bool uppercase);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetKeyName(SDL_Keycode key);
 
 /**
  * Get a key code from a human-readable name.
  *
  * \param name the human-readable key name.
- * \param uppercase SDL_TRUE if the name is the letter printed on the key on
- *                  the keyboard, which is usually uppercase, and this
- *                  function should return the unshifted version of the key,
- *                  or SDL_FALSE to return the key unchanged.
  * \returns key code, or `SDLK_UNKNOWN` if the name wasn't recognized; call
  *          SDL_GetError() for more information.
  *
@@ -316,7 +309,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetKeyName(SDL_Keycode key, SDL_boo
  * \sa SDL_GetKeyName
  * \sa SDL_GetScancodeFromName
  */
-extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name, SDL_bool uppercase);
+extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
 
 /**
  * Start accepting Unicode text input events in a window.

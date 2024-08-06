@@ -981,8 +981,9 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
     return SDL_SCANCODE_UNKNOWN;
 }
 
-const char *SDL_GetKeyName(SDL_Keycode key, SDL_bool uppercase)
+const char *SDL_GetKeyName(SDL_Keycode key)
 {
+    const SDL_bool uppercase = SDL_TRUE;
     char name[8];
     char *end;
 
@@ -1027,8 +1028,9 @@ const char *SDL_GetKeyName(SDL_Keycode key, SDL_bool uppercase)
     }
 }
 
-SDL_Keycode SDL_GetKeyFromName(const char *name, SDL_bool uppercase)
+SDL_Keycode SDL_GetKeyFromName(const char *name)
 {
+    const SDL_bool uppercase = SDL_TRUE;
     SDL_Keycode key;
 
     /* Check input */
