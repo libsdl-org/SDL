@@ -466,8 +466,8 @@ static Wayland_CachedCustomCursor *Wayland_GetCachedCustomCursor(SDL_Cursor *cur
 
     /* Allocate shared memory buffer for this cursor */
     if (Wayland_AllocSHMBuffer(surface->w, surface->h, &cache->shmBuffer) != 0) {
-        SDL_free(cursor->internal);
-        SDL_free(cursor);
+        SDL_free(cache);
+        SDL_DestroySurface(surface);
         return NULL;
     }
 
