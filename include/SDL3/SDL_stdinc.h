@@ -2952,13 +2952,15 @@ extern SDL_DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
  *          SDL_ICONV_EINVAL is returned when an incomplete input sequence is
  *          encountered.
  *
- *          On exit: - inbuf will point to the beginning of the next multibyte
- *          sequence. On error, this is the location of the problematic input
- *          sequence. On success, this is the end of the input sequence. -
- *          inbytesleft will be set to the number of bytes left to convert,
- *          which will be 0 on success. - outbuf will point to the location
- *          where to store the next output byte. - outbytesleft will be set to
- *          the number of bytes left in the output buffer.
+ *          On exit:
+ *
+ *          - inbuf will point to the beginning of the next multibyte
+ *            sequence. On error, this is the location of the problematic
+ *            input sequence. On success, this is the end of the input
+ *            sequence. - inbytesleft will be set to the number of bytes left
+ *            to convert, which will be 0 on success. - outbuf will point to
+ *            the location where to store the next output byte. - outbytesleft
+ *            will be set to the number of bytes left in the output buffer.
  *
  * \since This function is available since SDL 3.0.0.
  *
