@@ -199,8 +199,28 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
  * \since This function is available since SDL 3.0.0.
  *
  * \sa SDL_GetKeyName
+ * \sa SDL_GetScancodeFromKey
  */
 extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, SDL_bool key_event);
+
+/**
+ * Get the scancode corresponding to the given key code according to the
+ * current keyboard layout.
+ *
+ * Note that there may be multiple scancode+modifier states that can generate
+ * this keycode, this will just return the first one found.
+ *
+ * \param key the desired SDL_Keycode to query.
+ * \param modstate a pointer to the modifier state that would be used when the
+ *                 scancode generates this key, may be NULL.
+ * \returns the SDL_Scancode that corresponds to the given SDL_Keycode.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_GetKeyFromScancode
+ * \sa SDL_GetScancodeName
+ */
+extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate);
 
 /**
  * Set a human-readable name for a scancode.

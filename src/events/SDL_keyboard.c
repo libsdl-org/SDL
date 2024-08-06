@@ -453,11 +453,11 @@ static SDL_Keycode SDL_ConvertNumpadKeycode(SDL_Keycode keycode, SDL_bool numloc
 SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, SDL_bool key_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
-    SDL_Keycode keycode;
 
     if (key_event) {
         SDL_Keymap *keymap = SDL_GetCurrentKeymap();
         SDL_bool numlock = (modstate & SDL_KMOD_NUM) != 0;
+        SDL_Keycode keycode;
 
         // We won't be applying any modifiers by default
         modstate = SDL_KMOD_NONE;
@@ -474,13 +474,17 @@ SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, S
         if (keyboard->keycode_options & KEYCODE_OPTION_HIDE_NUMPAD) {
             keycode = SDL_ConvertNumpadKeycode(keycode, numlock);
         }
-    } else {
-        // Use the real keymap
-        SDL_Keymap *keymap = keyboard->keymap;
-
-        keycode = SDL_GetKeymapKeycode(keymap, scancode, modstate);
+        return keycode;
     }
-    return keycode;
+
+    return SDL_GetKeymapKeycode(keyboard->keymap, scancode, modstate);
+}
+
+SDL_Scancode SDL_GetScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate)
+{
+    SDL_Keyboard *keyboard = &SDL_keyboard;
+
+    return SDL_GetKeymapScancode(keyboard->keymap, key, modstate);
 }
 
 static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_KeyboardID keyboardID, int rawcode, SDL_Scancode scancode, Uint8 state)
