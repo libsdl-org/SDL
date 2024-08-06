@@ -1064,6 +1064,118 @@ stdlib_overflow(void *arg)
     return TEST_COMPLETED;
 }
 
+static int
+stdlib_basename_dirname(void *arg)
+{
+    struct {
+        const char *input;
+        const char *dirname;
+        const char *basename;
+    } testcases[] = {
+        { "usr",                    ".",            "usr"            },
+        { "usr/",                   ".",            "usr"            },
+        { "",                       ".",            "."              },
+        { "/",                      "/",            "/"              },
+        { "//",                     "//",           "/"              },
+        { "///",                    "/",            "/"              },
+        { "/usr/",                  "/",            "usr"            },
+        { "/usr/lib",               "/usr",         "lib"            },
+        { "//usr//lib//",           "//usr",        "lib"            },
+        { "/home//dwc//test",       "/home//dwc",   "test"           },
+        { NULL,                     ".",            "."              },
+        { ".",                      ".",            "."              },
+        { "..",                     ".",            ".."             },
+        { "////",                   "/",            "/"              },
+        { "def",                    ".",            "def"            },
+        { "def/",                   ".",            "def"            },
+        { "abc/def",                "abc",          "def"            },
+        { "abc////def",             "abc",          "def"            },
+        { "abc/def////file.txt",    "abc/def",      "file.txt"       },
+        { "../file.txt",            "..",           "file.txt"       },
+        { "/def",                   "/",            "def"            },
+        { "/abc/def",               "/abc",         "def"            },
+        { "/abc/def/.",             "/abc/def",     "."              },
+        { "/abc///def/////.",       "/abc///def",   "."              },
+        { "/abc/def/////",          "/abc",         "def"            },
+        { "/abc///def/////",        "/abc",         "def"            },
+        { "/abc/def/////file.txt",  "/abc/def",     "file.txt"       },
+#ifdef SDL_PLATFORM_WINDOWS
+        { "C:",                                                     "C:",                                   "." },
+        { "C:/",                                                    "C:/",                                  "/" },
+        { "C://",                                                   "C:/",                                  "/" },
+        { "C:///",                                                  "C:/",                                  "/" },
+        { "C:\\",                                                   "C:\\",                                 "/" },
+        { "C:\\\\",                                                 "C:\\",                                 "/" },
+        { "C:\\\\\\",                                               "C:\\",                                 "/" },
+        { "C:/\\",                                                  "C:/",                                  "/" },
+        { "C:\\/",                                                  "C:\\",                                 "/" },
+        { "\\\\system07\\C$\\",                                     "\\\\system07",                         "C$" },
+        { "\\Program Files\\Custom Utilities\\StringFinder.exe",    "\\Program Files\\Custom Utilities",    "StringFinder.exe" },
+        { "..\\Publications\\TravelBrochure.pdf",                   "..\\Publications",                     "TravelBrochure.pdf" },
+        { "2018\\January.xlsx",                                     "2018",                                 "January.xlsx" },
+        { "C:Projects\\apilibrary\\apilibrary.sln",                 "C:Projects\\apilibrary",               "apilibrary.sln", },
+        { "C:\\Projects\\apilibrary\\apilibrary.sln",               "C:\\Projects\\apilibrary",             "apilibrary.sln", },
+        { "\\\\Server2\\Share\\Test\\Foo.txt",                      "\\\\Server2\\Share\\Test",             "Foo.txt" },
+        { "\\\\.\\Volume{b75e2c83-0000-0000-0000-602f00000000}\\Test\\Foo.txt",
+            "\\\\.\\Volume{b75e2c83-0000-0000-0000-602f00000000}\\Test",
+            "Foo.txt" },
+        { "\\\\.\\C:\\Test\\Foo.txt",
+            "\\\\.\\C:\\Test",
+            "Foo.txt" },
+        { "\\\\?\\C:\\Test\\Foo.txt",
+            "\\\\?\\C:\\Test",
+            "Foo.txt" },
+        { "\\\\?\\Volume{b75e2c83-0000-0000-0000-602f00000000}\\Test\\Foo.txt",
+            "\\\\?\\Volume{b75e2c83-0000-0000-0000-602f00000000}\\Test",
+            "Foo.txt", },
+        { "\\\\.\\UNC\\Server\\Share\\Test\\Foo.txt",
+            "\\\\.\\UNC\\Server\\Share\\Test",
+            "Foo.txt", },
+        { "\\\\?\\UNC\\Server\\Share\\Test\\Foo.txt",
+            "\\\\?\\UNC\\Server\\Share\\Test",
+            "Foo.txt", },
+        { "\\\\127.0.0.1\\c$\\temp\\test-file.txt",
+            "\\\\127.0.0.1\\c$\\temp",
+            "test-file.txt", },
+#endif
+    };
+    size_t case_i;
+    for (case_i = 0; case_i < SDL_arraysize(testcases); case_i++) {
+        char buffer[256];
+        char *result;
+        char *input;
+        SDL_bool ok;
+
+        input = NULL;
+        if (testcases[case_i].input) {
+            SDL_strlcpy(buffer, testcases[case_i].input, sizeof(buffer));
+            input = buffer;
+        }
+        result = SDL_dirname(input);
+        ok = !!result == !!testcases[case_i].dirname && (!result || SDL_strcmp(result, testcases[case_i].dirname) == 0);
+        SDLTest_AssertCheck(ok, "SDL_dirname(\"%s\") = \"%s\" (expected \"%s\")",
+            testcases[case_i].input, result, testcases[case_i].dirname);
+    }
+
+    for (case_i = 0; case_i < SDL_arraysize(testcases); case_i++) {
+        char buffer[256];
+        char *result;
+        char *input;
+        SDL_bool ok;
+
+        input = NULL;
+        if (testcases[case_i].input) {
+            SDL_strlcpy(buffer, testcases[case_i].input, sizeof(buffer));
+            input = buffer;
+        }
+        result = SDL_basename(input);
+        ok = !!result == !!testcases[case_i].basename
+             && (!result || SDL_strcmp(result, testcases[case_i].basename) == 0);
+        SDLTest_AssertCheck(ok, "SDL_basename(\"%s\") = \"%s\" (expected \"%s\")",
+            testcases[case_i].input, result, testcases[case_i].basename);
+    }
+    return TEST_COMPLETED;
+}
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
@@ -1103,6 +1215,10 @@ static const SDLTest_TestCaseReference stdlibTestOverflow = {
     stdlib_overflow, "stdlib_overflow", "Overflow detection", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference stdlibTestBasenameDirname = {
+    stdlib_basename_dirname, "stdlib_basename_dirname", "Call(s) to SDL_basename and SDL_dirname", TEST_ENABLED
+};
+
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest_strnlen,
@@ -1114,6 +1230,7 @@ static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest_sscanf,
     &stdlibTest_aligned_alloc,
     &stdlibTestOverflow,
+    &stdlibTestBasenameDirname,
     NULL
 };
 

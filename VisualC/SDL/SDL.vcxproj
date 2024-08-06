@@ -653,6 +653,7 @@
     <MASM Condition="'$(Platform)'=='x64'" Include="..\..\src\stdlib\SDL_mslibc_x64.masm">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </MASM>
+    <ClCompile Include="..\..\src\stdlib\SDL_path.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_random.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
