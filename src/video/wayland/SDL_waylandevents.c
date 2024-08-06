@@ -1185,7 +1185,7 @@ static void Wayland_UpdateKeymap(struct SDL_WaylandInput *input)
         keymap.state = WAYLAND_xkb_state_new(input->xkb.keymap);
         if (!keymap.state) {
             SDL_SetError("failed to create XKB state");
-            SDL_ReleaseKeymap(keymap.keymap);
+            SDL_DestroyKeymap(keymap.keymap);
             return;
         }
 

@@ -229,8 +229,6 @@ SDL_Keymap *SDL_GetCurrentKeymap(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    SDL_AcquireKeymap(keyboard->keymap);
-
     return keyboard->keymap;
 }
 
@@ -239,7 +237,7 @@ void SDL_SetKeymap(SDL_Keymap *keymap, SDL_bool send_event)
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
     if (keyboard->keymap) {
-        SDL_ReleaseKeymap(keyboard->keymap);
+        SDL_DestroyKeymap(keyboard->keymap);
     }
 
     keyboard->keymap = keymap;
@@ -851,7 +849,7 @@ void SDL_QuitKeyboard(void)
     SDL_keyboards = NULL;
 
     if (SDL_keyboard.keymap) {
-        SDL_ReleaseKeymap(SDL_keyboard.keymap);
+        SDL_DestroyKeymap(SDL_keyboard.keymap);
         SDL_keyboard.keymap = NULL;
     }
 
