@@ -222,12 +222,38 @@ int SDL_UDEV_Scan(void)
     return 0;
 }
 
+static void
+input_dev_get_product_info(struct udev_device *dev, Uint16 *vendor, Uint16 *product, Uint16 *version)
+{
+    const char *val = NULL;
+
+    if (vendor != NULL) {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
+        if (val != NULL) {
+            *vendor = (Uint16)SDL_strtol(val, NULL, 16);
+        }
+    }
+
+    if (product != NULL) {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
+        if (val != NULL) {
+            *product = (Uint16)SDL_strtol(val, NULL, 16);
+        }
+    }
+
+    if (version != NULL) {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
+        if (val != NULL) {
+            *version = (Uint16)SDL_strtol(val, NULL, 16);
+        }
+    }
+}
+
 SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class)
 {
     struct stat statbuf;
     char type;
     struct udev_device *dev;
-    const char* val;
     int class_temp;
 
     if (!_this) {
@@ -254,20 +280,7 @@ SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16
         return SDL_FALSE;
     }
 
-    val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
-    if (val) {
-        *vendor = (Uint16)SDL_strtol(val, NULL, 16);
-    }
-
-    val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
-    if (val) {
-        *product = (Uint16)SDL_strtol(val, NULL, 16);
-    }
-
-    val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
-    if (val) {
-        *version = (Uint16)SDL_strtol(val, NULL, 16);
-    }
+    input_dev_get_product_info(dev, vendor, product, version);
 
     class_temp = device_class(dev);
     if (class_temp) {
