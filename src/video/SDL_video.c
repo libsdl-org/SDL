@@ -3784,6 +3784,12 @@ int SDL_SetWindowRelativeMouseMode(SDL_Window *window, SDL_bool enabled)
 {
     CHECK_WINDOW_MAGIC(window, -1);
 
+    /* If the app toggles relative mode directly, it probably shouldn't
+     * also be emulating it using repeated mouse warps, so disable
+     * mouse warp emulation by default.
+     */
+    SDL_DisableMouseWarpEmulation();
+
     if (enabled == SDL_GetWindowRelativeMouseMode(window)) {
         return 0;
     }
