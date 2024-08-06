@@ -26,16 +26,16 @@
 #include "SDL_mouse_c.h"
 
 
-static int SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *event)
+static SDL_bool SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
     if (event->type == new_event->type &&
         event->window.windowID == new_event->window.windowID) {
         /* We're about to post a new move event, drop the old one */
-        return 0;
+        return SDL_FALSE;
     }
-    return 1;
+    return SDL_TRUE;
 }
 
 int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,

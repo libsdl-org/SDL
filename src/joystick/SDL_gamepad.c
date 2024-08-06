@@ -363,7 +363,7 @@ static void SDL_PrivateGamepadRemapped(SDL_JoystickID instance_id)
 /*
  * Event filter to fire gamepad events from joystick ones
  */
-static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
+static SDL_bool SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
 {
     SDL_Gamepad *gamepad;
 
@@ -422,7 +422,7 @@ static int SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
         break;
     }
 
-    return 1;
+    return SDL_TRUE;
 }
 
 /* SDL defines sensor orientation relative to the device natural
