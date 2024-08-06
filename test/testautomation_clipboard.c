@@ -9,12 +9,12 @@
 
 static int clipboard_update_count;
 
-static int ClipboardEventWatch(void *userdata, SDL_Event *event)
+static SDL_bool ClipboardEventWatch(void *userdata, SDL_Event *event)
 {
     if (event->type == SDL_EVENT_CLIPBOARD_UPDATE) {
         ++clipboard_update_count;
     }
-    return 0;
+    return SDL_TRUE;
 }
 
 enum

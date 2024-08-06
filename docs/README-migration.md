@@ -379,6 +379,8 @@ SDL_AddEventWatch() now returns -1 if it fails because it ran out of memory and 
 
 SDL_RegisterEvents() now returns 0 if it couldn't allocate any user events.
 
+SDL_EventFilter functions now return SDL_bool.
+
 The following symbols have been renamed:
 * SDL_APP_DIDENTERBACKGROUND => SDL_EVENT_DID_ENTER_BACKGROUND
 * SDL_APP_DIDENTERFOREGROUND => SDL_EVENT_DID_ENTER_FOREGROUND

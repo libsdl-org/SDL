@@ -1218,7 +1218,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event *event);
  * \param userdata what was passed as `userdata` to SDL_SetEventFilter() or
  *                 SDL_AddEventWatch, etc.
  * \param event the event that triggered the callback.
- * \returns 1 to permit event to be added to the queue, and 0 to disallow it.
+ * \returns SDL_TRUE to permit event to be added to the queue, and SDL_FALSE to disallow it.
  *          When used with SDL_AddEventWatch, the return value is ignored.
  *
  * \threadsafety SDL may call this callback at any time from any thread; the
@@ -1230,14 +1230,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event *event);
  * \sa SDL_SetEventFilter
  * \sa SDL_AddEventWatch
  */
-typedef int (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
+typedef SDL_bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
 
 /**
  * Set up a filter to process all events before they change internal state and
  * are posted to the internal event queue.
  *
- * If the filter function returns 1 when called, then the event will be added
- * to the internal queue. If it returns 0, then the event will be dropped from
+ * If the filter function returns SDL_TRUE when called, then the event will be added
+ * to the internal queue. If it returns SDL_FALSE, then the event will be dropped from
  * the queue, but the internal state will still be updated. This allows
  * selective filtering of dynamically arriving events.
  *
@@ -1346,7 +1346,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter, void 
 
 /**
  * Run a specific filter function on the current event queue, removing any
- * events for which the filter returns 0.
+ * events for which the filter returns SDL_FALSE.
  *
  * See SDL_SetEventFilter() for more information. Unlike SDL_SetEventFilter(),
  * this function does not change the filter permanently, it only uses the

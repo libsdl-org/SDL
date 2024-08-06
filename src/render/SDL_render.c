@@ -818,7 +818,7 @@ const char *SDL_GetRenderDriver(int index)
 #endif
 }
 
-static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
+static SDL_bool SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 {
     SDL_Renderer *renderer = (SDL_Renderer *)userdata;
 
@@ -855,7 +855,7 @@ static int SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
         UpdateHDRProperties(renderer);
     }
 
-    return 0;
+    return SDL_TRUE;
 }
 
 int SDL_CreateWindowAndRenderer(const char *title, int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer)
