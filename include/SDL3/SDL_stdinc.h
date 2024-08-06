@@ -2810,7 +2810,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
  * This function converts text between encodings, reading from and writing to a buffer.
  * It returns the number of succesful conversions.
  *
- * \param cd The character set conversion handle.
+ * \param cd The character set conversion context, created in SDL_iconv_open().
  * \param inbuf Address of variable that points to the first character of the input sequence.
  * \param inbytesleft The number of bytes in the input buffer.
  * \param outbuf Address of variable that points to the output buffer.
