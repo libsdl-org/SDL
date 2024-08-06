@@ -27,10 +27,9 @@ typedef struct SDL_Keymap SDL_Keymap;
 
 SDL_Keymap *SDL_GetCurrentKeymap(void);
 SDL_Keymap *SDL_CreateKeymap(void);
-void SDL_AcquireKeymap(SDL_Keymap *keymap);
 void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod modstate, SDL_Keycode keycode);
 SDL_Keycode SDL_GetKeymapKeycode(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod modstate);
 SDL_Scancode SDL_GetKeymapScancode(SDL_Keymap *keymap, SDL_Keycode keycode, SDL_Keymod *modstate);
-void SDL_ReleaseKeymap(SDL_Keymap *keymap);
+void SDL_DestroyKeymap(SDL_Keymap *keymap);
 
 #endif /* SDL_keymap_c_h_ */

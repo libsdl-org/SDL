@@ -26,7 +26,6 @@
 
 struct SDL_Keymap
 {
-    int refcount;
     SDL_HashTable *scancode_to_keycode;
     SDL_HashTable *keycode_to_scancode;
 };
@@ -41,21 +40,13 @@ SDL_Keymap *SDL_CreateKeymap(void)
         return NULL;
     }
 
-    keymap->refcount = 1;
     keymap->scancode_to_keycode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, SDL_FALSE);
     keymap->keycode_to_scancode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, SDL_FALSE);
     if (!keymap->scancode_to_keycode || !keymap->keycode_to_scancode) {
-        SDL_ReleaseKeymap(keymap);
+        SDL_DestroyKeymap(keymap);
         return NULL;
     }
     return keymap;
-}
-
-void SDL_AcquireKeymap(SDL_Keymap *keymap)
-{
-    if (keymap) {
-        ++keymap->refcount;
-    }
 }
 
 static SDL_Keymod NormalizeModifierStateForKeymap(SDL_Keymod modstate)
@@ -128,14 +119,9 @@ SDL_Scancode SDL_GetKeymapScancode(SDL_Keymap *keymap, SDL_Keycode keycode, SDL_
     return scancode;
 }
 
-void SDL_ReleaseKeymap(SDL_Keymap *keymap)
+void SDL_DestroyKeymap(SDL_Keymap *keymap)
 {
     if (!keymap) {
-        return;
-    }
-
-    --keymap->refcount;
-    if (keymap->refcount != 0) {
         return;
     }
 
@@ -1030,7 +1016,6 @@ const char *SDL_GetKeyName(SDL_Keycode key, SDL_bool uppercase)
                 if (scancode != SDL_SCANCODE_UNKNOWN) {
                     if (key >= 0x0E00 && key <= 0x0E7F) {
                         // Thai keyboards are QWERTY plus Thai characters, so let's use the ASCII key names
-                        SDL_ReleaseKeymap(keymap);
                         return SDL_GetScancodeName(scancode);
                     }
 
@@ -1039,7 +1024,6 @@ const char *SDL_GetKeyName(SDL_Keycode key, SDL_bool uppercase)
                         key = capital;
                     }
                 }
-                SDL_ReleaseKeymap(keymap);
             }
         }
 
@@ -1108,7 +1092,6 @@ SDL_Keycode SDL_GetKeyFromName(const char *name, SDL_bool uppercase)
                 if (scancode != SDL_SCANCODE_UNKNOWN && (modstate & SDL_KMOD_SHIFT)) {
                     key = SDL_GetKeymapKeycode(keymap, scancode, SDL_KMOD_NONE);
                 }
-                SDL_ReleaseKeymap(keymap);
             }
         }
         return key;
