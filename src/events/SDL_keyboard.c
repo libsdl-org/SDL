@@ -229,6 +229,8 @@ SDL_Keymap *SDL_GetCurrentKeymap(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
+    SDL_AcquireKeymap(keyboard->keymap);
+
     return keyboard->keymap;
 }
 
@@ -431,33 +433,37 @@ static SDL_Keycode SDL_ConvertNumpadKeycode(SDL_Keycode keycode, SDL_bool numloc
     }
 }
 
-SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate)
+SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, SDL_bool key_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
-    SDL_bool numlock = (modstate & SDL_KMOD_NUM) != 0;
     SDL_Keycode keycode;
 
-    // We won't be applying any modifiers by default
-    modstate = SDL_KMOD_NONE;
+    if (key_event) {
+        SDL_bool numlock = (modstate & SDL_KMOD_NUM) != 0;
 
-    if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
-         keyboard->non_latin_letters) {
-        keycode = SDL_GetKeymapKeycode(NULL, scancode, modstate);
-    } else {
-        if ((keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS) &&
-            keyboard->french_numbers &&
-            (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
-            // Add the shift state to generate a numeric keycode
-            modstate |= SDL_KMOD_SHIFT;
+        // We won't be applying any modifiers by default
+        modstate = SDL_KMOD_NONE;
+
+        if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
+            keyboard->non_latin_letters) {
+            keycode = SDL_GetKeymapKeycode(NULL, scancode, modstate);
+        } else {
+            if ((keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS) &&
+                keyboard->french_numbers &&
+                (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
+                // Add the shift state to generate a numeric keycode
+                modstate |= SDL_KMOD_SHIFT;
+            }
+
+            keycode = SDL_GetKeymapKeycode(keyboard->keymap, scancode, modstate);
         }
 
+        if (keyboard->keycode_options & KEYCODE_OPTION_HIDE_NUMPAD) {
+            keycode = SDL_ConvertNumpadKeycode(keycode, numlock);
+        }
+    } else {
         keycode = SDL_GetKeymapKeycode(keyboard->keymap, scancode, modstate);
     }
-
-    if (keyboard->keycode_options & KEYCODE_OPTION_HIDE_NUMPAD) {
-        keycode = SDL_ConvertNumpadKeycode(keycode, numlock);
-    }
-
     return keycode;
 }
 
@@ -509,7 +515,7 @@ static int SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keybo
         /* Update internal keyboard state */
         keyboard->keystate[scancode] = state;
 
-        keycode = SDL_GetKeyFromScancode(scancode, keyboard->modstate);
+        keycode = SDL_GetKeyFromScancode(scancode, keyboard->modstate, SDL_TRUE);
 
     } else if (rawcode == 0) {
         /* Nothing to do! */
