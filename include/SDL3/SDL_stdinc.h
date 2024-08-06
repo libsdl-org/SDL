@@ -2793,7 +2793,7 @@ extern SDL_DECLSPEC SDL_iconv_t SDLCALL SDL_iconv_open(const char *tocode,
                                                    const char *fromcode);
 
 /**
- * This function frees a descriptor used for character set conversion.
+ * This function frees a context used for character set conversion.
  *
  * \param cd The character set conversion handle.
  * \returns 0 on success, or -1 on failure.
