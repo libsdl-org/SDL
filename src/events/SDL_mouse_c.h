@@ -97,6 +97,7 @@ typedef struct
     SDL_bool warp_emulation_hint;
     SDL_bool warp_emulation_active;
     SDL_bool warp_emulation_prohibited;
+    Uint64 last_center_warp_time_ns;
     int relative_mode_clip_interval;
     SDL_bool enable_normal_speed_scale;
     float normal_speed_scale;
@@ -183,6 +184,7 @@ extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, S
 extern int SDL_SetRelativeMouseMode(SDL_bool enabled);
 extern SDL_bool SDL_GetRelativeMouseMode(void);
 extern void SDL_UpdateRelativeMouseMode(void);
+extern void SDL_DisableMouseWarpEmulation(void);
 
 /* TODO RECONNECT: Set mouse state to "zero" */
 #if 0
