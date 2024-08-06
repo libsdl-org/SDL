@@ -290,9 +290,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_WarpMouseGlobal(float x, float y);
 /**
  * Set relative mouse mode for a window.
  *
- * While the window has focus and relative mouse mode is enabled, the cursor is hidden, the mouse
- * position is constrained to the window, and SDL will report continuous
- * relative mouse motion even if the mouse is at the edge of the window.
+ * While the window has focus and relative mouse mode is enabled, the cursor
+ * is hidden, the mouse position is constrained to the window, and SDL will
+ * report continuous relative mouse motion even if the mouse is at the edge of
+ * the window.
  *
  * This function will flush any pending mouse motion for this window.
  *
@@ -311,7 +312,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetWindowRelativeMouseMode(SDL_Window *windo
  * Query whether relative mouse mode is enabled for a window.
  *
  * \param window the window to query.
- * \returns SDL_TRUE if relative mode is enabled for a window or SDL_FALSE otherwise.
+ * \returns SDL_TRUE if relative mode is enabled for a window or SDL_FALSE
+ *          otherwise.
  *
  * \since This function is available since SDL 3.0.0.
  *
