@@ -37,7 +37,11 @@
 #endif
 
 extern int
-SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MAX)],
+SDL_EVDEV_GuessDeviceClass(unsigned int bus_type,
+                           unsigned int vendor_id,
+                           unsigned int product_id,
+                           unsigned int version,
+                           const unsigned long bitmask_props[NBITS(INPUT_PROP_MAX)],
                            const unsigned long bitmask_ev[NBITS(EV_MAX)],
                            const unsigned long bitmask_abs[NBITS(ABS_MAX)],
                            const unsigned long bitmask_key[NBITS(KEY_MAX)],

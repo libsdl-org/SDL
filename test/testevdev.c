@@ -2175,7 +2175,9 @@ run_test(void)
             caps.rel[j] = SwapLongLE(caps.rel[j]);
         }
 
-        actual = SDL_EVDEV_GuessDeviceClass(caps.props, caps.ev, caps.abs,
+        actual = SDL_EVDEV_GuessDeviceClass(t->bus_type, t->vendor_id,
+                                            t->product_id, t->version,
+                                            caps.props, caps.ev, caps.abs,
                                             caps.keys, caps.rel);
 
         if (actual == t->expected) {

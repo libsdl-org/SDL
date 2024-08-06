@@ -392,6 +392,10 @@ static void get_caps(struct udev_device *dev, struct udev_device *pdev, const ch
 static int guess_device_class(struct udev_device *dev)
 {
     struct udev_device *pdev;
+    Uint16 bus = 0;
+    Uint16 vendor = 0;
+    Uint16 product = 0;
+    Uint16 version = 0;
     unsigned long bitmask_props[NBITS(INPUT_PROP_MAX)];
     unsigned long bitmask_ev[NBITS(EV_MAX)];
     unsigned long bitmask_abs[NBITS(ABS_MAX)];
@@ -408,13 +412,15 @@ static int guess_device_class(struct udev_device *dev)
         return 0;
     }
 
+    input_dev_get_product_info (dev, &bus, &vendor, &product, &version);
     get_caps(dev, pdev, "properties", bitmask_props, SDL_arraysize(bitmask_props));
     get_caps(dev, pdev, "capabilities/ev", bitmask_ev, SDL_arraysize(bitmask_ev));
     get_caps(dev, pdev, "capabilities/abs", bitmask_abs, SDL_arraysize(bitmask_abs));
     get_caps(dev, pdev, "capabilities/rel", bitmask_rel, SDL_arraysize(bitmask_rel));
     get_caps(dev, pdev, "capabilities/key", bitmask_key, SDL_arraysize(bitmask_key));
 
-    return SDL_EVDEV_GuessDeviceClass(&bitmask_props[0],
+    return SDL_EVDEV_GuessDeviceClass(bus, vendor, product, version,
+                                      &bitmask_props[0],
                                       &bitmask_ev[0],
                                       &bitmask_abs[0],
                                       &bitmask_key[0],
