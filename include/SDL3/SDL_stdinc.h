@@ -2902,12 +2902,13 @@ extern SDL_DECLSPEC float SDLCALL SDL_tanf(float x);
 typedef struct SDL_iconv_data_t *SDL_iconv_t;
 
 /**
- * This function allocates a context for the specified character set conversion.
+ * This function allocates a context for the specified character set
+ * conversion.
  *
  * \param tocode The target character encoding, must not be NULL.
  * \param fromcode The source character encoding, must not be NULL.
- * \returns a handle that must be freed with SDL_iconv_close,
- *          or SDL_ICONV_ERROR on failure.
+ * \returns a handle that must be freed with SDL_iconv_close, or
+ *          SDL_ICONV_ERROR on failure.
  *
  * \since This function is available since SDL 3.0.0.
  *
@@ -2933,26 +2934,31 @@ extern SDL_DECLSPEC SDL_iconv_t SDLCALL SDL_iconv_open(const char *tocode,
 extern SDL_DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
 
 /**
- * This function converts text between encodings, reading from and writing to a buffer.
+ * This function converts text between encodings, reading from and writing to
+ * a buffer.
+ *
  * It returns the number of succesful conversions.
  *
- * \param cd The character set conversion context, created in SDL_iconv_open().
- * \param inbuf Address of variable that points to the first character of the input sequence.
+ * \param cd The character set conversion context, created in
+ *           SDL_iconv_open().
+ * \param inbuf Address of variable that points to the first character of the
+ *              input sequence.
  * \param inbytesleft The number of bytes in the input buffer.
  * \param outbuf Address of variable that points to the output buffer.
  * \param outbytesleft The number of bytes in the output buffer.
- * \returns the number of conversions on success, else
- *      SDL_ICONV_E2BIG is returned when the output buffer is too small, or
- *      SDL_ICONV_EILSEQ is returned when an invalid input sequence is encountered, or
- *      SDL_ICONV_EINVAL is returned when an incomplete input sequence is encountered.
+ * \returns the number of conversions on success, else SDL_ICONV_E2BIG is
+ *          returned when the output buffer is too small, or SDL_ICONV_EILSEQ
+ *          is returned when an invalid input sequence is encountered, or
+ *          SDL_ICONV_EINVAL is returned when an incomplete input sequence is
+ *          encountered.
  *
- * On exit:
- * - inbuf will point to the beginning of the next multibyte sequence.
- *   On error, this is the location of the problematic input sequence.
- *   On success, this is the end of the input sequence.
- * - inbytesleft will be set to the number of bytes left to convert, which will be 0 on success.
- * - outbuf will point to the location where to store the next output byte.
- * - outbytesleft will be set to the number of bytes left in the output buffer.
+ *          On exit: - inbuf will point to the beginning of the next multibyte
+ *          sequence. On error, this is the location of the problematic input
+ *          sequence. On success, this is the end of the input sequence. -
+ *          inbytesleft will be set to the number of bytes left to convert,
+ *          which will be 0 on success. - outbuf will point to the location
+ *          where to store the next output byte. - outbytesleft will be set to
+ *          the number of bytes left in the output buffer.
  *
  * \since This function is available since SDL 3.0.0.
  *
