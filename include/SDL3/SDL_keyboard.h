@@ -188,7 +188,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
  * Get the key code corresponding to the given scancode according to the
  * current keyboard layout.
  *
- * If you want to get the keycode as it would be delivered in key events, including options specified in SDL_HINT_KEYCODE_OPTIONS, then you should pass `key_event` as SDL_TRUE. Otherwise this function simply translates the scancode based on the given modifier state.
+ * If you want to get the keycode as it would be delivered in key events,
+ * including options specified in SDL_HINT_KEYCODE_OPTIONS, then you should
+ * pass `key_event` as SDL_TRUE. Otherwise this function simply translates the
+ * scancode based on the given modifier state.
  *
  * \param scancode the desired SDL_Scancode to query.
  * \param modstate the modifier state to use when translating the scancode to
