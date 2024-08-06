@@ -23,8 +23,9 @@
 #ifndef SDL_keymap_c_h_
 #define SDL_keymap_c_h_
 
-#include "../SDL_hashtable.h"
+typedef struct SDL_Keymap SDL_Keymap;
 
+SDL_Keymap *SDL_GetCurrentKeymap(void);
 SDL_Keymap *SDL_CreateKeymap(void);
 void SDL_AcquireKeymap(SDL_Keymap *keymap);
 void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod modstate, SDL_Keycode keycode);

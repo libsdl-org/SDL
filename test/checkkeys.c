@@ -172,48 +172,6 @@ static void print_modifiers(char **text, size_t *maxlen, SDL_Keymod mod)
     }
 }
 
-static void PrintKeymap(void)
-{
-    SDL_Keymod mods[] = {
-        SDL_KMOD_NONE,
-        SDL_KMOD_SHIFT,
-        SDL_KMOD_CAPS,
-        (SDL_KMOD_SHIFT | SDL_KMOD_CAPS),
-        SDL_KMOD_ALT,
-        (SDL_KMOD_ALT | SDL_KMOD_SHIFT),
-        (SDL_KMOD_ALT | SDL_KMOD_CAPS),
-        (SDL_KMOD_ALT | SDL_KMOD_SHIFT | SDL_KMOD_CAPS),
-        SDL_KMOD_MODE,
-        (SDL_KMOD_MODE | SDL_KMOD_SHIFT),
-        (SDL_KMOD_MODE | SDL_KMOD_CAPS),
-        (SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS)
-    };
-    int i, m;
-    SDL_Keymap *keymap = SDL_GetCurrentKeymap();
-
-    SDL_Log("Differences from the default keymap:\n");
-    for (m = 0; m < SDL_arraysize(mods); ++m) {
-        for (i = 0; i < SDL_NUM_SCANCODES; ++i) {
-            SDL_Keycode key = SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, mods[m]);
-            SDL_Keycode default_key = SDL_GetKeymapKeycode(NULL, (SDL_Scancode)i, mods[m]);
-            if (key != default_key) {
-                char message[512];
-                char *spot;
-                size_t left;
-
-                spot = message;
-                left = sizeof(message);
-
-                print_string(&spot, &left, "Scancode %s (%d)", SDL_GetScancodeName((SDL_Scancode)i), i);
-                print_modifiers(&spot, &left, mods[m]);
-                print_string(&spot, &left, ": %s 0x%x (default: %s 0x%x)", SDL_GetKeyName(key, SDL_FALSE), key, SDL_GetKeyName(default_key, SDL_FALSE), default_key);
-                SDL_Log("%s", message);
-            }
-        }
-    }
-    SDL_ReleaseKeymap(keymap);
-}
-
 static void PrintModifierState(void)
 {
     char message[512];
@@ -434,7 +392,6 @@ static void loop(void)
             break;
         case SDL_EVENT_KEYMAP_CHANGED:
             SDL_Log("Keymap changed!\n");
-            PrintKeymap();
             break;
         case SDL_EVENT_QUIT:
             done = 1;
@@ -548,7 +505,6 @@ int main(int argc, char *argv[])
 
     /* Print initial state */
     SDL_PumpEvents();
-    PrintKeymap();
     PrintModifierState();
 
     /* Watch keystrokes */

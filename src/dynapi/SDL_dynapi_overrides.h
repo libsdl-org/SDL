@@ -224,7 +224,6 @@
 #define SDL_GetCurrentCameraDriver SDL_GetCurrentCameraDriver_REAL
 #define SDL_GetCurrentDisplayMode SDL_GetCurrentDisplayMode_REAL
 #define SDL_GetCurrentDisplayOrientation SDL_GetCurrentDisplayOrientation_REAL
-#define SDL_GetCurrentKeymap SDL_GetCurrentKeymap_REAL
 #define SDL_GetCurrentRenderOutputSize SDL_GetCurrentRenderOutputSize_REAL
 #define SDL_GetCurrentThreadID SDL_GetCurrentThreadID_REAL
 #define SDL_GetCurrentTime SDL_GetCurrentTime_REAL
@@ -353,8 +352,6 @@
 #define SDL_GetKeyboardNameForID SDL_GetKeyboardNameForID_REAL
 #define SDL_GetKeyboardState SDL_GetKeyboardState_REAL
 #define SDL_GetKeyboards SDL_GetKeyboards_REAL
-#define SDL_GetKeymapKeycode SDL_GetKeymapKeycode_REAL
-#define SDL_GetKeymapScancode SDL_GetKeymapScancode_REAL
 #define SDL_GetLogOutputFunction SDL_GetLogOutputFunction_REAL
 #define SDL_GetLogPriority SDL_GetLogPriority_REAL
 #define SDL_GetMasksForPixelFormat SDL_GetMasksForPixelFormat_REAL
@@ -669,7 +666,6 @@
 #define SDL_RegisterApp SDL_RegisterApp_REAL
 #define SDL_RegisterEvents SDL_RegisterEvents_REAL
 #define SDL_ReleaseCameraFrame SDL_ReleaseCameraFrame_REAL
-#define SDL_ReleaseKeymap SDL_ReleaseKeymap_REAL
 #define SDL_ReloadGamepadMappings SDL_ReloadGamepadMappings_REAL
 #define SDL_RemovePath SDL_RemovePath_REAL
 #define SDL_RemoveStoragePath SDL_RemoveStoragePath_REAL

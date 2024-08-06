@@ -1114,6 +1114,5 @@ SDL_Keycode SDL_GetKeyFromName(const char *name, SDL_bool uppercase)
         return key;
     }
 
-    /* Get the scancode for this name, and the associated keycode */
-    return SDL_GetKeyFromScancode(SDL_GetScancodeFromName(name), SDL_KMOD_NONE);
+    return SDL_GetKeyFromScancode(SDL_GetScancodeFromName(name), SDL_KMOD_NONE, SDL_FALSE);
 }

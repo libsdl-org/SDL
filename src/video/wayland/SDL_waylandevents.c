@@ -1457,7 +1457,7 @@ static void Wayland_ReconcileModifiers(struct SDL_WaylandInput *input)
 
 static void Wayland_HandleModifierKeys(struct SDL_WaylandInput *input, SDL_Scancode scancode, SDL_bool pressed)
 {
-    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE);
+    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, SDL_FALSE);
     SDL_Keymod mod;
 
     switch (keycode) {
@@ -1536,7 +1536,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 
     wl_array_for_each (key, keys) {
         const SDL_Scancode scancode = Wayland_get_scancode_from_key(input, *key + 8);
-        const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE);
+        const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, SDL_FALSE);
 
         switch (keycode) {
         case SDLK_LSHIFT:
