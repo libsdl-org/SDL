@@ -36,6 +36,7 @@
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
+#include <errno.h>
 #include <sys/stat.h>
 #endif
 #ifdef HAVE_LIMITS_H
@@ -632,7 +633,7 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
         FILE *fp = fopen(file, mode);
 #endif
         if (!fp) {
-            SDL_SetError("Couldn't open %s", file);
+            SDL_SetError("Couldn't open %s: %s", file, strerror(errno));
         } else if (!IsRegularFileOrPipe(fp)) {
             fclose(fp);
             fp = NULL;
