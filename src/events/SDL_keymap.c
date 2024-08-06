@@ -613,7 +613,7 @@ static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *m
         if (modstate) {
             *modstate = SDL_KMOD_SHIFT;
         }
-        return (SDL_Scancode)(SDL_SCANCODE_A + key - 'Z');
+        return (SDL_Scancode)(SDL_SCANCODE_A + key - 'A');
     }
 
     for (int i = 0; i < SDL_arraysize(normal_default_symbols); ++i) {
