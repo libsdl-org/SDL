@@ -2776,7 +2776,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_tanf(float x);
 typedef struct SDL_iconv_data_t *SDL_iconv_t;
 
 /**
- * This function allocates a descriptor for the specified character set conversion.
+ * This function allocates a context for the specified character set conversion.
  *
  * \param tocode The target character encoding, must not be NULL.
  * \param fromcode The source character encoding, must not be NULL.
