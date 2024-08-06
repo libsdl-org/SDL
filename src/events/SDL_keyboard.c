@@ -57,7 +57,8 @@ typedef struct SDL_Keyboard
     Uint8 keystate[SDL_NUM_SCANCODES];
     SDL_Keymap *keymap;
     SDL_bool french_numbers;
-    SDL_bool non_latin_letters;
+    SDL_bool latin_letters;
+    SDL_bool thai_keyboard;
     Uint32 keycode_options;
     SDL_bool autorelease_pending;
     Uint64 hardware_timestamp;
@@ -229,6 +230,17 @@ SDL_Keymap *SDL_GetCurrentKeymap(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
+    if (keyboard->thai_keyboard) {
+        // Thai keyboards are QWERTY plus Thai characters, use the default QWERTY keymap
+        return NULL;
+    }
+
+    if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
+        !keyboard->latin_letters) {
+        // We'll use the default QWERTY keymap
+        return NULL;
+    }
+
     return keyboard->keymap;
 }
 
@@ -253,10 +265,17 @@ void SDL_SetKeymap(SDL_Keymap *keymap, SDL_bool send_event)
     }
 
     // Detect non-Latin keymap
-    keyboard->non_latin_letters = SDL_TRUE;
+    keyboard->thai_keyboard = SDL_FALSE;
+    keyboard->latin_letters = SDL_FALSE;
     for (int i = SDL_SCANCODE_A; i <= SDL_SCANCODE_D; ++i) {
-        if (SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_NONE) <= 0xFF) {
-            keyboard->non_latin_letters = SDL_FALSE;
+        SDL_Keycode key = SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_NONE);
+        if (key <= 0xFF) {
+            keyboard->latin_letters = SDL_TRUE;
+            break;
+        }
+
+        if (key >= 0x0E00 && key <= 0x0E7F) {
+            keyboard->thai_keyboard = SDL_TRUE;
             break;
         }
     }
@@ -437,30 +456,29 @@ SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, S
     SDL_Keycode keycode;
 
     if (key_event) {
+        SDL_Keymap *keymap = SDL_GetCurrentKeymap();
         SDL_bool numlock = (modstate & SDL_KMOD_NUM) != 0;
 
         // We won't be applying any modifiers by default
         modstate = SDL_KMOD_NONE;
 
-        if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
-            keyboard->non_latin_letters) {
-            keycode = SDL_GetKeymapKeycode(NULL, scancode, modstate);
-        } else {
-            if ((keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS) &&
-                keyboard->french_numbers &&
-                (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
-                // Add the shift state to generate a numeric keycode
-                modstate |= SDL_KMOD_SHIFT;
-            }
-
-            keycode = SDL_GetKeymapKeycode(keyboard->keymap, scancode, modstate);
+        if ((keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS) &&
+            keyboard->french_numbers &&
+            (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
+            // Add the shift state to generate a numeric keycode
+            modstate |= SDL_KMOD_SHIFT;
         }
+
+        keycode = SDL_GetKeymapKeycode(keymap, scancode, modstate);
 
         if (keyboard->keycode_options & KEYCODE_OPTION_HIDE_NUMPAD) {
             keycode = SDL_ConvertNumpadKeycode(keycode, numlock);
         }
     } else {
-        keycode = SDL_GetKeymapKeycode(keyboard->keymap, scancode, modstate);
+        // Use the real keymap
+        SDL_Keymap *keymap = keyboard->keymap;
+
+        keycode = SDL_GetKeymapKeycode(keymap, scancode, modstate);
     }
     return keycode;
 }

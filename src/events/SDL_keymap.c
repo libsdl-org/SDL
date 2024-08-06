@@ -1008,17 +1008,11 @@ const char *SDL_GetKeyName(SDL_Keycode key, SDL_bool uppercase)
             // SDL_Keycode is defined as the unshifted key on the keyboard,
             // but the key name is defined as the letter printed on that key,
             // which is usually the shifted capital letter.
-            if (key >= 'a' && key <= 'z') {
-                key = 'A' + (key - 'a');
-            } else if (key > 0x7F) {
+            if (key > 0x7F || (key >= 'a' && key <= 'z')) {
                 SDL_Keymap *keymap = SDL_GetCurrentKeymap();
-                SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, NULL);
-                if (scancode != SDL_SCANCODE_UNKNOWN) {
-                    if (key >= 0x0E00 && key <= 0x0E7F) {
-                        // Thai keyboards are QWERTY plus Thai characters, so let's use the ASCII key names
-                        return SDL_GetScancodeName(scancode);
-                    }
-
+                SDL_Keymod modstate;
+                SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
+                if (scancode != SDL_SCANCODE_UNKNOWN && !(modstate & SDL_KMOD_SHIFT)) {
                     SDL_Keycode capital = SDL_GetKeymapKeycode(keymap, scancode, SDL_KMOD_SHIFT);
                     if (capital > 0x7F || (capital >= 'A' && capital <= 'Z')) {
                         key = capital;
@@ -1083,15 +1077,11 @@ SDL_Keycode SDL_GetKeyFromName(const char *name, SDL_bool uppercase)
             // SDL_Keycode is defined as the unshifted key on the keyboard,
             // but the key name is defined as the letter printed on that key,
             // which is usually the shifted capital letter.
-            if (key >= 'A' && key <= 'Z') {
-                key = 'a' + (key - 'A');
-            } else if (key > 0x7F) {
-                SDL_Keymap *keymap = SDL_GetCurrentKeymap();
-                SDL_Keymod modstate;
-                SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
-                if (scancode != SDL_SCANCODE_UNKNOWN && (modstate & SDL_KMOD_SHIFT)) {
-                    key = SDL_GetKeymapKeycode(keymap, scancode, SDL_KMOD_NONE);
-                }
+            SDL_Keymap *keymap = SDL_GetCurrentKeymap();
+            SDL_Keymod modstate;
+            SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
+            if (scancode != SDL_SCANCODE_UNKNOWN && (modstate & SDL_KMOD_SHIFT)) {
+                key = SDL_GetKeymapKeycode(keymap, scancode, SDL_KMOD_NONE);
             }
         }
         return key;
