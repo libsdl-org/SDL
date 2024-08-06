@@ -718,6 +718,9 @@ static int Wayland_ShowCursor(SDL_Cursor *cursor)
             }
         } else {
             Wayland_CachedCustomCursor *cached = Wayland_GetCachedCustomCursor(cursor);
+            if (!cached) {
+                return -1;
+            }
             dst_width = cached->dst_width;
             dst_height = cached->dst_height;
             scale = cached->scale;
