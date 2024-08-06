@@ -436,6 +436,7 @@
 #define SDL_GetRendererProperties SDL_GetRendererProperties_REAL
 #define SDL_GetRevision SDL_GetRevision_REAL
 #define SDL_GetSIMDAlignment SDL_GetSIMDAlignment_REAL
+#define SDL_GetScancodeFromKey SDL_GetScancodeFromKey_REAL
 #define SDL_GetScancodeFromName SDL_GetScancodeFromName_REAL
 #define SDL_GetScancodeName SDL_GetScancodeName_REAL
 #define SDL_GetSemaphoreValue SDL_GetSemaphoreValue_REAL
