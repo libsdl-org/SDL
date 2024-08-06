@@ -1393,6 +1393,17 @@ SDL_bool SDL_GetRelativeMouseMode(void)
     return mouse->relative_mode;
 }
 
+void SDL_UpdateRelativeMouseMode(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Window *focus = SDL_GetKeyboardFocus();
+    SDL_bool relative_mode = (focus && (focus->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE));
+
+    if (relative_mode != mouse->relative_mode) {
+        SDL_SetRelativeMouseMode(relative_mode);
+    }
+}
+
 int SDL_UpdateMouseCapture(SDL_bool force_release)
 {
     SDL_Mouse *mouse = SDL_GetMouse();

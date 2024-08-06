@@ -3780,6 +3780,35 @@ const SDL_Rect *SDL_GetWindowMouseRect(SDL_Window *window)
     }
 }
 
+int SDL_SetWindowRelativeMouseMode(SDL_Window *window, SDL_bool enabled)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (enabled == SDL_GetWindowRelativeMouseMode(window)) {
+        return 0;
+    }
+
+    if (enabled) {
+        window->flags |= SDL_WINDOW_MOUSE_RELATIVE_MODE;
+    } else {
+        window->flags &= ~SDL_WINDOW_MOUSE_RELATIVE_MODE;
+    }
+    SDL_UpdateRelativeMouseMode();
+
+    return 0;
+}
+
+SDL_bool SDL_GetWindowRelativeMouseMode(SDL_Window *window)
+{
+    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+
+    if (window->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE) {
+        return SDL_TRUE;
+    } else {
+        return SDL_FALSE;
+    }
+}
+
 int SDL_FlashWindow(SDL_Window *window, SDL_FlashOperation operation)
 {
     CHECK_WINDOW_MAGIC(window, -1);
@@ -5389,7 +5418,6 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     int dummybutton;
     int retval = -1;
-    SDL_bool relative_mode;
     SDL_bool show_cursor_prev;
     SDL_Window *current_window;
     SDL_MessageBoxData mbdata;
@@ -5403,7 +5431,6 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     (void)SDL_AtomicIncRef(&SDL_messagebox_count);
 
     current_window = SDL_GetKeyboardFocus();
-    relative_mode = SDL_GetRelativeMouseMode();
     SDL_UpdateMouseCapture(SDL_FALSE);
     SDL_SetRelativeMouseMode(SDL_FALSE);
     show_cursor_prev = SDL_CursorVisible();
@@ -5477,7 +5504,7 @@ int SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     if (!show_cursor_prev) {
         SDL_HideCursor();
     }
-    SDL_SetRelativeMouseMode(relative_mode);
+    SDL_UpdateRelativeMouseMode();
     SDL_UpdateMouseCapture(SDL_FALSE);
 
     return retval;

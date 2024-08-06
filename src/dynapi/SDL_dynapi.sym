@@ -386,7 +386,6 @@ SDL3_0.0.0 {
     SDL_GetRectIntersectionFloat;
     SDL_GetRectUnion;
     SDL_GetRectUnionFloat;
-    SDL_GetRelativeMouseMode;
     SDL_GetRelativeMouseState;
     SDL_GetRenderClipRect;
     SDL_GetRenderColorScale;
@@ -485,6 +484,7 @@ SDL3_0.0.0 {
     SDL_GetWindowPixelFormat;
     SDL_GetWindowPosition;
     SDL_GetWindowProperties;
+    SDL_GetWindowRelativeMouseMode;
     SDL_GetWindowSafeArea;
     SDL_GetWindowSize;
     SDL_GetWindowSizeInPixels;
@@ -749,7 +749,6 @@ SDL3_0.0.0 {
     SDL_SetPointerProperty;
     SDL_SetPointerPropertyWithCleanup;
     SDL_SetPrimarySelectionText;
-    SDL_SetRelativeMouseMode;
     SDL_SetRenderClipRect;
     SDL_SetRenderColorScale;
     SDL_SetRenderDrawBlendMode;
@@ -795,6 +794,7 @@ SDL3_0.0.0 {
     SDL_SetWindowMouseRect;
     SDL_SetWindowOpacity;
     SDL_SetWindowPosition;
+    SDL_SetWindowRelativeMouseMode;
     SDL_SetWindowResizable;
     SDL_SetWindowShape;
     SDL_SetWindowSize;

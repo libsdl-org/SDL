@@ -411,7 +411,6 @@
 #define SDL_GetRectIntersectionFloat SDL_GetRectIntersectionFloat_REAL
 #define SDL_GetRectUnion SDL_GetRectUnion_REAL
 #define SDL_GetRectUnionFloat SDL_GetRectUnionFloat_REAL
-#define SDL_GetRelativeMouseMode SDL_GetRelativeMouseMode_REAL
 #define SDL_GetRelativeMouseState SDL_GetRelativeMouseState_REAL
 #define SDL_GetRenderClipRect SDL_GetRenderClipRect_REAL
 #define SDL_GetRenderColorScale SDL_GetRenderColorScale_REAL
@@ -510,6 +509,7 @@
 #define SDL_GetWindowPixelFormat SDL_GetWindowPixelFormat_REAL
 #define SDL_GetWindowPosition SDL_GetWindowPosition_REAL
 #define SDL_GetWindowProperties SDL_GetWindowProperties_REAL
+#define SDL_GetWindowRelativeMouseMode SDL_GetWindowRelativeMouseMode_REAL
 #define SDL_GetWindowSafeArea SDL_GetWindowSafeArea_REAL
 #define SDL_GetWindowSize SDL_GetWindowSize_REAL
 #define SDL_GetWindowSizeInPixels SDL_GetWindowSizeInPixels_REAL
@@ -774,7 +774,6 @@
 #define SDL_SetPointerProperty SDL_SetPointerProperty_REAL
 #define SDL_SetPointerPropertyWithCleanup SDL_SetPointerPropertyWithCleanup_REAL
 #define SDL_SetPrimarySelectionText SDL_SetPrimarySelectionText_REAL
-#define SDL_SetRelativeMouseMode SDL_SetRelativeMouseMode_REAL
 #define SDL_SetRenderClipRect SDL_SetRenderClipRect_REAL
 #define SDL_SetRenderColorScale SDL_SetRenderColorScale_REAL
 #define SDL_SetRenderDrawBlendMode SDL_SetRenderDrawBlendMode_REAL
@@ -820,6 +819,7 @@
 #define SDL_SetWindowMouseRect SDL_SetWindowMouseRect_REAL
 #define SDL_SetWindowOpacity SDL_SetWindowOpacity_REAL
 #define SDL_SetWindowPosition SDL_SetWindowPosition_REAL
+#define SDL_SetWindowRelativeMouseMode SDL_SetWindowRelativeMouseMode_REAL
 #define SDL_SetWindowResizable SDL_SetWindowResizable_REAL
 #define SDL_SetWindowShape SDL_SetWindowShape_REAL
 #define SDL_SetWindowSize SDL_SetWindowSize_REAL
