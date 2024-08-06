@@ -179,6 +179,11 @@ extern int SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID 
 /* Warp the mouse within the window, potentially overriding relative mode */
 extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, SDL_bool ignore_relative_mode);
 
+/* Relative mouse mode */
+extern int SDL_SetRelativeMouseMode(SDL_bool enabled);
+extern SDL_bool SDL_GetRelativeMouseMode(void);
+extern void SDL_UpdateRelativeMouseMode(void);
+
 /* TODO RECONNECT: Set mouse state to "zero" */
 #if 0
 extern void SDL_ResetMouse(void);

@@ -2353,9 +2353,9 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
                 }
             }
             if (withShift) {
-                SDL_Window *current_win = SDL_GetKeyboardFocus();
-                if (current_win) {
-                    const SDL_bool shouldCapture = !(SDL_GetWindowFlags(current_win) & SDL_WINDOW_MOUSE_CAPTURE);
+                SDL_Window *window = SDL_GetWindowFromEvent(event);
+                if (window) {
+                    const SDL_bool shouldCapture = !(SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_CAPTURE);
                     const int rc = SDL_CaptureMouse(shouldCapture);
                     SDL_Log("%sapturing mouse %s!\n", shouldCapture ? "C" : "Unc", (rc == 0) ? "succeeded" : "failed");
                 }
@@ -2364,7 +2364,10 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
         case SDLK_R:
             if (withControl) {
                 /* Ctrl-R toggle mouse relative mode */
-                SDL_SetRelativeMouseMode(!SDL_GetRelativeMouseMode());
+                SDL_Window *window = SDL_GetWindowFromEvent(event);
+                if (window) {
+                    SDL_SetWindowRelativeMouseMode(window, !SDL_GetWindowRelativeMouseMode(window));
+                }
             }
             break;
         case SDLK_T:

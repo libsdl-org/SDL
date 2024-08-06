@@ -538,10 +538,10 @@ int main(int argc, char *argv[])
 
         SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), PROP_ARROW_CURSOR_TEXTURE, cursor_arrow);
         SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), PROP_CROSS_CURSOR_TEXTURE, cursor_cross);
-    }
 
-    /* We only get mouse motion for distinct devices when relative mode is enabled */
-    SDL_SetRelativeMouseMode(SDL_TRUE);
+        /* We only get mouse motion for distinct devices when relative mode is enabled */
+        SDL_SetWindowRelativeMouseMode(state->windows[i], SDL_TRUE);
+    }
 
     /* Main render loop */
     done = 0;

@@ -1106,6 +1106,10 @@ SDL_SystemCursor's items from SDL2 have been renamed to match CSS cursor names.
 The following functions have been renamed:
 * SDL_FreeCursor() => SDL_DestroyCursor()
 
+The following functions have been removed:
+* SDL_SetRelativeMouseMode() - replaced with SDL_SetWindowRelativeMouseMode()
+* SDL_GetRelativeMouseMode() - replaced with SDL_GetWindowRelativeMouseMode()
+
 The following symbols have been renamed:
 * SDL_SYSTEM_CURSOR_ARROW => SDL_SYSTEM_CURSOR_DEFAULT
 * SDL_SYSTEM_CURSOR_HAND => SDL_SYSTEM_CURSOR_POINTER

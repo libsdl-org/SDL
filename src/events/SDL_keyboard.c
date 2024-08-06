@@ -357,6 +357,9 @@ int SDL_SetKeyboardFocus(SDL_Window *window)
             }
         }
     }
+
+    SDL_UpdateRelativeMouseMode();
+
     return 0;
 }
 
