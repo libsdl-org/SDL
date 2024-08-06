@@ -126,8 +126,18 @@ static Atom X11_PickTarget(Display *disp, Atom list[], int list_count)
     int i;
     for (i = 0; i < list_count && request == None; i++) {
         name = X11_XGetAtomName(disp, list[i]);
-        if ((SDL_strcmp("text/uri-list", name) == 0) || (SDL_strcmp("text/plain", name) == 0)) {
+        /* Preferred MIME targets */
+        if ((SDL_strcmp("text/uri-list", name) == 0) ||
+            (SDL_strcmp("text/plain;charset=utf-8", name) == 0) ||
+            (SDL_strcmp("UTF8_STRING", name) == 0)) {
             request = list[i];
+        }
+        /* Fallback MIME targets */
+        if ((SDL_strcmp("text/plain", name) == 0) ||
+            (SDL_strcmp("TEXT", name) == 0)) {
+            if (request == None) {
+                request = list[i];
+            }
         }
         X11_XFree(name);
     }
@@ -1759,7 +1769,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 if (name) {
                     char *token = SDL_strtok_r((char *)p.data, "\r\n", &saveptr);
                     while (token) {
-                        if (SDL_strcmp("text/plain", name) == 0) {
+                        if ((SDL_strcmp("text/plain;charset=utf-8", name) == 0) ||
+                            (SDL_strcmp("UTF8_STRING", name) == 0) ||
+                            (SDL_strcmp("text/plain", name) == 0) ||
+                            (SDL_strcmp("TEXT", name) == 0)) {
                             SDL_SendDropText(data->window, token);
                         } else if (SDL_strcmp("text/uri-list", name) == 0) {
                             if (SDL_URIToLocal(token, token) >= 0) {
