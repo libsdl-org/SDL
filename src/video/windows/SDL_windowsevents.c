@@ -1060,7 +1060,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             m.message = msg;
             m.wParam = wParam;
             m.lParam = lParam;
-            if (!g_WindowsMessageHook(g_WindowsMessageHookData, &m, &return_val)) {
+            if (!g_WindowsMessageHook(g_WindowsMessageHookData, &m, NULL, &return_val)) {
                 return return_val;
             }
         }
@@ -1088,7 +1088,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         m.message = msg;
         m.wParam = wParam;
         m.lParam = lParam;
-        if (!g_WindowsMessageHook(g_WindowsMessageHookData, &m, &return_val)) {
+        if (!g_WindowsMessageHook(g_WindowsMessageHookData, &m, data->window, &return_val)) {
             return return_val;
         }
     }
@@ -2219,7 +2219,7 @@ int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
             }
             if (g_WindowsMessageHook && !g_HookEventsFromWindowProc) {
                 LRESULT dummy = 0;
-                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg, &dummy)) {
+                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg, NULL, &dummy)) {
                     return 1;
                 }
             }
@@ -2266,7 +2266,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (g_WindowsMessageHook && !g_HookEventsFromWindowProc) {
                 LRESULT dummy = 0;
-                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg, &dummy)) {
+                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg, NULL, &dummy)) {
                     continue;
                 }
             }
