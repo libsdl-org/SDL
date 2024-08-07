@@ -3824,6 +3824,20 @@ extern "C" {
 #define SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP "SDL_WINDOWS_ENABLE_MESSAGELOOP"
 
 /**
+ * A variable controlling whether GameInput is used for raw keyboard and mouse on Windows.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": GameInput is not used for raw keyboard and mouse events.
+ * - "1": GameInput is used for raw keyboard and mouse events, if available. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_WINDOWS_GAMEINPUT   "SDL_WINDOWS_GAMEINPUT"
+
+/**
  * A variable controlling whether raw keyboard events are used on Windows.
  *
  * The variable can be set to the following values:

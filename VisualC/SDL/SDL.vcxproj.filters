@@ -684,6 +684,9 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowskeyboard.h">
       <Filter>video\windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\video\windows\SDL_windowsgameinput.h">
+      <Filter>video\windows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\video\windows\SDL_windowsmessagebox.h">
       <Filter>video\windows</Filter>
     </ClInclude>
@@ -1338,6 +1341,9 @@
       <Filter>video\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\windows\SDL_windowskeyboard.c">
+      <Filter>video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\windows\SDL_windowsgameinput.c">
       <Filter>video\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\windows\SDL_windowsmessagebox.c">

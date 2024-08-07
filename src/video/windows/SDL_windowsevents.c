@@ -2233,6 +2233,10 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     SDL_Window *focusWindow;
 #endif
 
+    if (_this->internal->gameinput_context) {
+        WIN_UpdateGameInput(_this);
+    }
+
     if (g_WindowsEnableMessageLoop) {
         SDL_processing_messages = SDL_TRUE;
 
@@ -2310,7 +2314,9 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     /* Update mouse capture */
     WIN_UpdateMouseCapture();
 
-    WIN_CheckKeyboardAndMouseHotplug(_this, SDL_FALSE);
+    if (!_this->internal->gameinput_context) {
+        WIN_CheckKeyboardAndMouseHotplug(_this, SDL_FALSE);
+    }
 
     WIN_UpdateIMECandidates(_this);
 
