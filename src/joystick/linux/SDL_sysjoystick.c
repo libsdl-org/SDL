@@ -236,7 +236,7 @@ static SDL_bool GetSteamVirtualGamepadSlot(int fd, int *slot)
     return SDL_FALSE;
 }
 
-static int GuessDeviceClass(int fd)
+static int GuessDeviceClass(const struct input_id *inpid, int fd)
 {
     unsigned long propbit[NBITS(INPUT_PROP_MAX)] = { 0 };
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
@@ -255,21 +255,25 @@ static int GuessDeviceClass(int fd)
      * device just doesn't have any properties. */
     (void) ioctl(fd, EVIOCGPROP(sizeof(propbit)), propbit);
 
-    return SDL_EVDEV_GuessDeviceClass(propbit, evbit, absbit, keybit, relbit);
+    return SDL_EVDEV_GuessDeviceClass(inpid->bustype,
+                                      inpid->vendor,
+                                      inpid->product,
+                                      inpid->version,
+                                      propbit, evbit, absbit, keybit, relbit);
 }
 
-static int GuessIsJoystick(int fd)
+static int GuessIsJoystick(const struct input_id *inpid, int fd)
 {
-    if (GuessDeviceClass(fd) & SDL_UDEV_DEVICE_JOYSTICK) {
+    if (GuessDeviceClass(inpid, fd) & SDL_UDEV_DEVICE_JOYSTICK) {
         return 1;
     }
 
     return 0;
 }
 
-static int GuessIsSensor(int fd)
+static int GuessIsSensor(const struct input_id *inpid, int fd)
 {
-    if (GuessDeviceClass(fd) & SDL_UDEV_DEVICE_ACCELEROMETER) {
+    if (GuessDeviceClass(inpid, fd) & SDL_UDEV_DEVICE_ACCELEROMETER) {
         return 1;
     }
 
@@ -300,13 +304,13 @@ static int IsJoystick(const char *path, int *fd, char **name_return, Uint16 *ven
     }
 
     if (ioctl(*fd, JSIOCGNAME(sizeof(product_string)), product_string) <= 0) {
-        /* When udev enumeration or classification, we only got joysticks here, so no need to test */
-        if (enumeration_method != ENUMERATION_LIBUDEV && !class && !GuessIsJoystick(*fd)) {
+        /* Could have vendor and product already from udev, but should agree with evdev */
+        if (ioctl(*fd, EVIOCGID, &inpid) < 0) {
             return 0;
         }
 
-        /* Could have vendor and product already from udev, but should agree with evdev */
-        if (ioctl(*fd, EVIOCGID, &inpid) < 0) {
+        /* When udev is enabled we only get joystick devices here, so there's no need to test them */
+        if (enumeration_method != ENUMERATION_LIBUDEV && !GuessIsJoystick(&inpid, *fd)) {
             return 0;
         }
 
@@ -365,11 +369,11 @@ static int IsSensor(const char *path, int *fd)
         return 0;
     }
 
-    if (!class && !GuessIsSensor(*fd)) {
+    if (ioctl(*fd, EVIOCGID, &inpid) < 0) {
         return 0;
     }
 
-    if (ioctl(*fd, EVIOCGID, &inpid) < 0) {
+    if (!class && !GuessIsSensor(&inpid, *fd)) {
         return 0;
     }
 

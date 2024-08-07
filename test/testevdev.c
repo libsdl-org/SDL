@@ -90,6 +90,7 @@ typedef struct
     uint8_t props[(INPUT_PROP_MAX + 1) / 8];
     int expected;
     const char *todo;
+    const char *caps_insufficient;
     size_t hid_report_descriptor_length;
     const unsigned char *hid_report_descriptor;
 } GuessTest;
@@ -1588,8 +1589,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x057e,
       .product_id = 0x0306,
       .version = 0x0600,
-      /* TODO: Should this be JOYSTICK? It has one stick and two buttons */
-      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* RX, RY, RZ, hat 0 - even though this is an accelerometer, which
@@ -1633,8 +1633,7 @@ static const GuessTest guess_tests[] =
       /* Flags guessed from kernel source code, not confirmed with real
        * hardware */
       .name = "Wiimote - Balance Board",
-      /* TODO: Should this be JOYSTICK? */
-      .expected = SDL_UDEV_DEVICE_UNKNOWN,
+      .expected = SDL_UDEV_DEVICE_JOYSTICK,
       /* SYN, KEY, ABS */
       .ev = { 0x0b },
       /* Hat 0-1 */
@@ -1994,11 +1993,8 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0483,  /* STMicroelectronics */
       .product_id = 0xa3be, /* VRS DirectForce Pro Pedals */
       .version = 0x0111,
-      /* TODO: Ideally we would identify this as a joystick, but there
-       * isn't currently enough information to do that without a table
-       * of known devices. */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      .caps_insufficient = "can't distinguish from an accelerometer",
       /* SYN, ABS */
       .ev = { 0x09 },
       /* X, Y, Z */
@@ -2012,11 +2008,8 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x30b7,  /* Heusinkveld Engineering */
       .product_id = 0x1003, /* Heusinkveld Sim Pedals Ultimate */
       .version = 0x0000,
-      /* TODO: Ideally we would identify this as a joystick, but there
-       * isn't currently enough information to do that without a table
-       * of known devices. */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      .caps_insufficient = "can't distinguish from an accelerometer",
       /* SYN, ABS */
       .ev = { 0x09 },
       /* RX, RY, RZ */
@@ -2030,10 +2023,7 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0000,
       .product_id = 0x0000,
       .version = 0x0001,
-      /* TODO: Ideally we would identify this as a joystick by it having
-       * the joystick-specific THROTTLE axis and TRIGGER/THUMB buttons */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
       /* SYN, KEY, ABS, MSC */
       .ev = { 0x1b },
       /* THROTTLE only */
@@ -2050,11 +2040,8 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x1dd2,  /* Leo Bodnar Electronics Ltd */
       .product_id = 0x100c,
       .version = 0x0110,
-      /* TODO: Ideally we would identify this as a joystick, but there
-       * isn't currently enough information to do that without a table
-       * of known devices. */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      .caps_insufficient = "can't distinguish from an accelerometer",
       /* SYN, ABS */
       .ev = { 0x09 },
       /* RX, RY, RZ */
@@ -2066,11 +2053,8 @@ static const GuessTest guess_tests[] =
       .vendor_id = 0x0eb7,
       .product_id = 0x1a93,
       .version = 0x0111,
-      /* TODO: Ideally we would identify this as a joystick, but there
-       * isn't currently enough information to do that without a table
-       * of known devices. */
       .expected = SDL_UDEV_DEVICE_JOYSTICK,
-      .todo = "https://github.com/ValveSoftware/Proton/issues/5126",
+      .caps_insufficient = "X axis is not enough to guess device class",
       /* SYN, ABS */
       .ev = { 0x09 },
       /* X only */
@@ -2180,7 +2164,9 @@ run_test(void)
             caps.rel[j] = SwapLongLE(caps.rel[j]);
         }
 
-        actual = SDL_EVDEV_GuessDeviceClass(caps.props, caps.ev, caps.abs,
+        actual = SDL_EVDEV_GuessDeviceClass(t->bus_type, t->vendor_id,
+                                            t->product_id, t->version,
+                                            caps.props, caps.ev, caps.abs,
                                             caps.keys, caps.rel);
 
         if (actual == t->expected) {
@@ -2204,6 +2190,38 @@ run_test(void)
 
             if (t->todo) {
                 printf("\tKnown issue, ignoring: %s\n", t->todo);
+            } else {
+                printf("\tFailed\n");
+                success = 0;
+            }
+        }
+
+        actual = SDL_EVDEV_GuessDeviceClass(0, 0, 0, 0,
+                                            caps.props, caps.ev, caps.abs,
+                                            caps.keys, caps.rel);
+
+        if (actual == t->expected) {
+            printf("\tOK\n");
+        } else {
+            printf("\tExpected 0x%08x\n", t->expected);
+
+            for (j = 0; device_classes[j].code != 0; j++) {
+                if (t->expected & device_classes[j].code) {
+                    printf("\t\t%s\n", device_classes[j].name);
+                }
+            }
+
+            printf("\tGot      0x%08x using only evdev caps\n", actual);
+
+            for (j = 0; device_classes[j].code != 0; j++) {
+                if (actual & device_classes[j].code) {
+                    printf("\t\t%s\n", device_classes[j].name);
+                }
+            }
+
+            if (t->caps_insufficient) {
+                printf("\tKnown limitation, evdev caps are not enough information: %s\n",
+                       t->caps_insufficient);
             } else {
                 printf("\tFailed\n");
                 success = 0;
