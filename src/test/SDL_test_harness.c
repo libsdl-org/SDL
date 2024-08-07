@@ -565,7 +565,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
 
     /* Loop over all suites */
     for (i = 0; i < nbSuites; i++) {
-        suiteCounter = arraySuites[i];;
+        suiteCounter = arraySuites[i];
         testSuite = testSuites[suiteCounter];
         currentSuiteName = (testSuite->name ? testSuite->name : SDLTEST_INVALID_NAME_FORMAT);
         suiteCounter++;
