@@ -2321,8 +2321,6 @@ int SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butto
         return 0;
     }
 
-    SDL_AssertJoysticksLocked();
-
     /* Make sure we're not getting garbage or duplicate events */
     if (button >= joystick->nbuttons) {
         return 0;
