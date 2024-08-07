@@ -56,7 +56,7 @@ typedef struct joystick_hwdata
     GameInputCallbackToken guide_button_callback_token;
 } GAMEINPUT_InternalJoystickHwdata;
 
-
+// FIXME: We need a lock to protect the device list
 static GAMEINPUT_InternalList g_GameInputList = { NULL };
 static void *g_hGameInputDLL = NULL;
 static IGameInput *g_pGameInput = NULL;
@@ -103,6 +103,7 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
         elem = g_GameInputList.devices[idx];
         if (elem && elem->device == pDevice) {
             /* we're already added */
+            elem->isDeleteRequested = SDL_FALSE;
             return 0;
         }
     }
