@@ -2464,6 +2464,8 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     /* Make sure window pixel size is up to date */
     SDL_CheckWindowPixelSizeChanged(window);
 
+    SDL_ClearError();
+
     return window;
 }
 
