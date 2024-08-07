@@ -72,8 +72,8 @@ static int handle_key_event_(SnakeContext *ctx, SDL_Scancode key_code)
 
 static void set_rect_xy_(SDL_FRect *r, short x, short y)
 {
-    r->x = x * SNAKE_BLOCK_SIZE_IN_PIXELS;
-    r->y = y * SNAKE_BLOCK_SIZE_IN_PIXELS;
+    r->x = (float)(x * SNAKE_BLOCK_SIZE_IN_PIXELS);
+    r->y = (float)(y * SNAKE_BLOCK_SIZE_IN_PIXELS);
 }
 
 int SDL_AppIterate(void *appstate)
