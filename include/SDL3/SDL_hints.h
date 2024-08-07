@@ -971,7 +971,7 @@ extern "C" {
  *  - "0" (default):  The events are sent to the hook function from the event loop as described above.
  *  - "1":  Events which are untranslatable are sent to the hook function from the WindowProc handler.  Messages
  *    which translate successfully are sent to the hook from the event loop, and the translated values are sent
- *    or dispatched to the WindowProc according to its return value. Both messages willl be received by the hook.
+ *    or dispatched to the WindowProc according to its return value. Both messages will be received by the hook.
  *
  *    This hint should be set before SDL is initialized.
  *
