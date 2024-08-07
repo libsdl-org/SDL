@@ -65,6 +65,7 @@ static GAMEINPUT_InternalList g_GameInputList = { NULL };
 static void *g_hGameInputDLL = NULL;
 static IGameInput *g_pGameInput = NULL;
 static GameInputCallbackToken g_GameInputCallbackToken = GAMEINPUT_INVALID_CALLBACK_TOKEN_VALUE;
+static Uint64 g_GameInputTimestampOffset;
 
 
 static SDL_bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
@@ -257,6 +258,11 @@ static int GAMEINPUT_JoystickInit(void)
         return SDL_SetError("IGameInput::RegisterDeviceCallback failure with HRESULT of %08X", hR);
     }
 
+    // Calculate the relative offset between SDL timestamps and GameInput timestamps
+    Uint64 now = SDL_GetTicksNS();
+    uint64_t timestampUS = IGameInput_GetCurrentTimestamp(g_pGameInput);
+    g_GameInputTimestampOffset = (SDL_NS_TO_US(now) - timestampUS);
+
     GAMEINPUT_JoystickDetect();
 
     return 0;
@@ -382,7 +388,7 @@ static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
     _In_ GameInputCallbackToken callbackToken,
     _In_ void * context,
     _In_ IGameInputDevice * device,
-    _In_ uint64_t timestamp,
+    _In_ uint64_t timestampUS,
     _In_ GameInputSystemButtons currentButtons,
     _In_ GameInputSystemButtons previousButtons)
 {
@@ -390,9 +396,15 @@ static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
 
     GameInputSystemButtons changedButtons = (previousButtons ^ currentButtons);
     if (changedButtons) {
+        Uint64 timestamp = SDL_US_TO_NS(timestampUS + g_GameInputTimestampOffset);
+
         SDL_LockJoysticks();
-        SDL_SendJoystickButton(0, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (currentButtons & GameInputSystemButtonGuide) ? SDL_PRESSED : SDL_RELEASED);
-        SDL_SendJoystickButton(0, joystick, SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE, (currentButtons & GameInputSystemButtonShare) ? SDL_PRESSED : SDL_RELEASED);
+        if (changedButtons & GameInputSystemButtonGuide) {
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (currentButtons & GameInputSystemButtonGuide) ? SDL_PRESSED : SDL_RELEASED);
+        }
+        if (changedButtons & GameInputSystemButtonShare) {
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE, (currentButtons & GameInputSystemButtonShare) ? SDL_PRESSED : SDL_RELEASED);
+        }
         SDL_UnlockJoysticks();
     }
 }
@@ -506,7 +518,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
     IGameInputDevice *device = hwdata->devref->device;
     const GameInputDeviceInfo *info = hwdata->devref->info;
     IGameInputReading *reading = NULL;
-    Uint64 timestamp = SDL_GetTicksNS();
+    Uint64 timestamp;
     GameInputGamepadState state;
     HRESULT hR;
 
@@ -516,7 +528,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
         return;
     }
 
-    /* FIXME: See if we can get the delta between the reading timestamp and current time and apply the offset to timestamp */
+    timestamp = SDL_US_TO_NS(IGameInputReading_GetTimestamp(reading) + g_GameInputTimestampOffset);
 
     if (GAMEINPUT_InternalIsGamepad(info)) {
         static WORD s_XInputButtons[] = {
