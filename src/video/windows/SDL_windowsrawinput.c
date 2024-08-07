@@ -203,14 +203,36 @@ int WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
 {
     SDL_VideoData *data = _this->internal;
     data->raw_mouse_enabled = enabled;
-    return WIN_UpdateRawInputEnabled(_this);
+    if (data->gameinput_context) {
+        if (WIN_UpdateGameInputEnabled(_this) < 0) {
+            data->raw_mouse_enabled = !enabled;
+            return -1;
+        }
+    } else {
+        if (WIN_UpdateRawInputEnabled(_this) < 0) {
+            data->raw_mouse_enabled = !enabled;
+            return -1;
+        }
+    }
+    return 0;
 }
 
 int WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, SDL_bool enabled)
 {
     SDL_VideoData *data = _this->internal;
     data->raw_keyboard_enabled = enabled;
-    return WIN_UpdateRawInputEnabled(_this);
+    if (data->gameinput_context) {
+        if (WIN_UpdateGameInputEnabled(_this) < 0) {
+            data->raw_keyboard_enabled = !enabled;
+            return -1;
+        }
+    } else {
+        if (WIN_UpdateRawInputEnabled(_this) < 0) {
+            data->raw_keyboard_enabled = !enabled;
+            return -1;
+        }
+    }
+    return 0;
 }
 
 #else

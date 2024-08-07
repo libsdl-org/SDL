@@ -47,6 +47,7 @@
 
 #include "SDL_windowsclipboard.h"
 #include "SDL_windowsevents.h"
+#include "SDL_windowsgameinput.h"
 #include "SDL_windowsopengl.h"
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -436,6 +437,8 @@ struct SDL_VideoData
     SDL_bool raw_keyboard_enabled;
     SDL_bool pending_E1_key_sequence;
     Uint32 raw_input_enabled;
+
+    WIN_GameInputData *gameinput_context;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_bool ime_initialized;
