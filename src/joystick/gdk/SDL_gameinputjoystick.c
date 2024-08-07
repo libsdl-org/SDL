@@ -60,7 +60,6 @@ typedef struct joystick_hwdata
     GameInputCallbackToken system_button_callback_token;
 } GAMEINPUT_InternalJoystickHwdata;
 
-// FIXME: We need a lock to protect the device list
 static GAMEINPUT_InternalList g_GameInputList = { NULL };
 static void *g_hGameInputDLL = NULL;
 static IGameInput *g_pGameInput = NULL;
@@ -89,6 +88,8 @@ static int GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     const char *product_string = NULL;
     char tmp[4];
     int idx = 0;
+
+    SDL_AssertJoysticksLocked();
 
     info = IGameInputDevice_GetDeviceInfo(pDevice);
     if (info->capabilities & GameInputDeviceCapabilityWireless) {
@@ -157,6 +158,8 @@ static int GAMEINPUT_InternalRemoveByIndex(int idx)
     GAMEINPUT_InternalDevice *elem;
     int bytes = 0;
 
+    SDL_AssertJoysticksLocked();
+
     if (idx < 0 || idx >= g_GameInputList.count) {
         return SDL_SetError("GAMEINPUT_InternalRemoveByIndex argument idx %d is out of range", idx);
     }
@@ -187,6 +190,7 @@ static int GAMEINPUT_InternalRemoveByIndex(int idx)
 static GAMEINPUT_InternalDevice *GAMEINPUT_InternalFindByIndex(int idx)
 {
     /* We're guaranteed that the index is in range when this is called */
+    SDL_AssertJoysticksLocked();
     return g_GameInputList.devices[idx];
 }
 
@@ -206,6 +210,8 @@ static void CALLBACK GAMEINPUT_InternalJoystickDeviceCallback(
         return;
     }
 
+    SDL_LockJoysticks();
+
     if (currentStatus & GameInputDeviceConnected) {
         GAMEINPUT_InternalAddOrFind(device);
     } else {
@@ -218,6 +224,8 @@ static void CALLBACK GAMEINPUT_InternalJoystickDeviceCallback(
             }
         }
     }
+
+    SDL_UnlockJoysticks();
 }
 
 static void GAMEINPUT_JoystickDetect(void);
@@ -270,6 +278,8 @@ static int GAMEINPUT_JoystickInit(void)
 
 static int GAMEINPUT_JoystickGetCount(void)
 {
+    SDL_AssertJoysticksLocked();
+
     return g_GameInputList.count;
 }
 
@@ -277,6 +287,8 @@ static void GAMEINPUT_JoystickDetect(void)
 {
     int idx;
     GAMEINPUT_InternalDevice *elem = NULL;
+
+    SDL_AssertJoysticksLocked();
 
     for (idx = 0; idx < g_GameInputList.count; ++idx) {
         elem = g_GameInputList.devices[idx];
@@ -300,6 +312,8 @@ static SDL_bool GAMEINPUT_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 produ
 {
     int idx = 0;
     GAMEINPUT_InternalDevice *elem = NULL;
+
+    SDL_AssertJoysticksLocked();
 
     if (vendor_id == USB_VENDOR_MICROSOFT &&
         product_id == USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER) {
