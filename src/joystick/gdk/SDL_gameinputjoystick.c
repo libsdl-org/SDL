@@ -29,6 +29,10 @@
 #define COBJMACROS
 #include <GameInput.h>
 
+enum
+{
+    SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE = 11
+};
 
 typedef struct GAMEINPUT_InternalDevice
 {
@@ -53,7 +57,7 @@ typedef struct joystick_hwdata
     GAMEINPUT_InternalDevice *devref;
     SDL_bool report_sensors;
     GameInputRumbleParams rumbleParams;
-    GameInputCallbackToken guide_button_callback_token;
+    GameInputCallbackToken system_button_callback_token;
 } GAMEINPUT_InternalJoystickHwdata;
 
 // FIXME: We need a lock to protect the device list
@@ -374,16 +378,24 @@ static void GAMEINPUT_UpdatePowerInfo(SDL_Joystick *joystick, IGameInputDevice *
     SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
 
-#if 0
-static void CALLBACK GAMEINPUT_InternalGuideButtonCallback(GameInputCallbackToken callbackToken, void *context, IGameInputDevice *device, uint64_t timestamp, bool isPressed)
+static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
+    _In_ GameInputCallbackToken callbackToken,
+    _In_ void * context,
+    _In_ IGameInputDevice * device,
+    _In_ uint64_t timestamp,
+    _In_ GameInputSystemButtons currentButtons,
+    _In_ GameInputSystemButtons previousButtons)
 {
     SDL_Joystick *joystick = (SDL_Joystick *)context;
 
-    SDL_LockJoysticks();
-    SDL_SendJoystickButton(0, joystick, SDL_GAMEPAD_BUTTON_GUIDE, isPressed ? SDL_PRESSED : SDL_RELEASED);
-    SDL_UnlockJoysticks();
+    GameInputSystemButtons changedButtons = (previousButtons ^ currentButtons);
+    if (changedButtons) {
+        SDL_LockJoysticks();
+        SDL_SendJoystickButton(0, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (currentButtons & GameInputSystemButtonGuide) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_SendJoystickButton(0, joystick, SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE, (currentButtons & GameInputSystemButtonShare) ? SDL_PRESSED : SDL_RELEASED);
+        SDL_UnlockJoysticks();
+    }
 }
-#endif
 
 static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
@@ -407,16 +419,22 @@ static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         joystick->naxes = 6;
         joystick->nbuttons = 11;
         joystick->nhats = 1;
+
+        if (info->supportedSystemButtons != GameInputSystemButtonNone) {
+            if (info->supportedSystemButtons & GameInputSystemButtonShare) {
+                ++joystick->nbuttons;
+            }
+
+#if 1 // The C macro in GameInput.h version 10.0.26100 refers to a focus policy which I guess has been removed from the final API?
+#undef IGameInput_RegisterSystemButtonCallback
+#define IGameInput_RegisterSystemButtonCallback(This, device, buttonFilter, context, callbackFunc, callbackToken) ((This)->lpVtbl->RegisterSystemButtonCallback(This, device, buttonFilter, context, callbackFunc, callbackToken))
+#endif
+            IGameInput_RegisterSystemButtonCallback(g_pGameInput, elem->device, (GameInputSystemButtonGuide | GameInputSystemButtonShare), joystick, GAMEINPUT_InternalSystemButtonCallback, &hwdata->system_button_callback_token);
+        }
     } else {
         joystick->naxes = info->controllerAxisCount;
         joystick->nbuttons = info->controllerButtonCount;
         joystick->nhats = info->controllerSwitchCount;
-    }
-
-    if (GAMEINPUT_InternalIsGamepad(info)) {
-#if 0 /* The actual signature for this function is GameInputClient::RegisterSystemButtonCallback(struct IGameInputDevice *,enum GameInputSystemButtons,void *,void (*)(unsigned __int64,void *,struct IGameInputDevice *,unsigned __int64,enum GameInputSystemButtons,enum GameInputSystemButtons),unsigned __int64 *) */
-        IGameInput_RegisterGuideButtonCallback(g_pGameInput, elem->device, joystick, GAMEINPUT_InternalGuideButtonCallback, &hwdata->guide_button_callback_token);
-#endif
     }
 
     if (info->supportedRumbleMotors & (GameInputRumbleLowFrequency | GameInputRumbleHighFrequency)) {
@@ -608,8 +626,8 @@ static void GAMEINPUT_JoystickClose(SDL_Joystick* joystick)
 {
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
 
-    if (hwdata->guide_button_callback_token) {
-        IGameInput_UnregisterCallback(g_pGameInput, hwdata->guide_button_callback_token, 5000);
+    if (hwdata->system_button_callback_token) {
+        IGameInput_UnregisterCallback(g_pGameInput, hwdata->system_button_callback_token, 5000);
     }
     SDL_free(hwdata);
 
@@ -661,7 +679,15 @@ static SDL_bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_Gamepa
     out->back.kind = EMappingKind_Button;
     out->back.target = SDL_GAMEPAD_BUTTON_BACK;
 
-    /* The guide button isn't available, so don't map it */
+    if (elem->info->supportedSystemButtons & GameInputSystemButtonGuide) {
+        out->guide.kind = EMappingKind_Button;
+        out->guide.target = SDL_GAMEPAD_BUTTON_GUIDE;
+    }
+
+    if (elem->info->supportedSystemButtons & GameInputSystemButtonShare) {
+        out->misc1.kind = EMappingKind_Button;
+        out->misc1.target = SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE;
+    }
 
     out->start.kind = EMappingKind_Button;
     out->start.target = SDL_GAMEPAD_BUTTON_START;
