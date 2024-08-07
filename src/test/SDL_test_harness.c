@@ -365,10 +365,11 @@ static float GetClock(void)
  * \param userExecKey Custom execution key provided by user, or 0 to autogenerate one.
  * \param filter Filter specification. NULL disables. Case sensitive.
  * \param testIterations Number of iterations to run each test case.
+ * \param randomOrder allow to run suites and tests in random order when there is no filter
  *
  * \returns Test run result; 0 when all tests passed, 1 if any tests failed.
  */
-int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *userRunSeed, Uint64 userExecKey, const char *filter, int testIterations)
+int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *userRunSeed, Uint64 userExecKey, const char *filter, int testIterations, SDL_bool randomOrder)
 {
     int totalNumberOfTests = 0;
     int failedNumberOfTests = 0;
@@ -404,6 +405,9 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     int countSum = 0;
     const SDLTest_TestCaseReference **failedTests;
     char generatedSeed[16 + 1];
+    int nbSuites = 0;
+    int i = 0;
+    int *arraySuites = NULL;
 
     /* Sanitize test iterations */
     if (testIterations < 1) {
@@ -509,11 +513,59 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             SDL_free((void *)failedTests);
             return 2;
         }
+
+        randomOrder = SDL_FALSE;
+    }
+
+    /* Number of test suites */
+    while (testSuites[nbSuites]) {
+        nbSuites++;
+    }
+
+    arraySuites = SDL_malloc(nbSuites * sizeof(int));
+    if (!arraySuites) {
+        return SDL_OutOfMemory();
+    }
+    for (i = 0; i < nbSuites; i++) {
+        arraySuites[i] = i;
+    }
+
+    /* Mix the list of suites to run them in random order */
+    {
+        /* Exclude last test "subsystemsTestSuite" which is said to interfer with other tests */
+        nbSuites--;
+
+        if (userExecKey != 0) {
+            execKey = userExecKey;
+        } else {
+            /* dummy values to have random numbers working */
+            execKey = SDLTest_GenerateExecKey(runSeed, "random testSuites", "initialisation", 1);
+        }
+
+        /* Initialize fuzzer */
+        SDLTest_FuzzerInit(execKey);
+
+        i = 100;
+        while (i--) {
+            int a, b;
+            int tmp;
+            a = SDLTest_RandomIntegerInRange(0, nbSuites - 1);
+            b = SDLTest_RandomIntegerInRange(0, nbSuites - 1);
+            /* Swap */
+            if (randomOrder) {
+                tmp = arraySuites[b];
+                arraySuites[b] = arraySuites[a];
+                arraySuites[a] = tmp;
+            }
+        }
+
+        /* re-add last lest */
+        nbSuites++;
     }
 
     /* Loop over all suites */
-    suiteCounter = 0;
-    while (testSuites[suiteCounter]) {
+    for (i = 0; i < nbSuites; i++) {
+        suiteCounter = arraySuites[i];;
         testSuite = testSuites[suiteCounter];
         currentSuiteName = (testSuite->name ? testSuite->name : SDLTEST_INVALID_NAME_FORMAT);
         suiteCounter++;
@@ -526,6 +578,36 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                         suiteCounter,
                         currentSuiteName);
         } else {
+
+            int nbTestCases = 0;
+            int *arrayTestCases;
+            int j;
+            while (testSuite->testCases[nbTestCases]) {
+                nbTestCases++;
+            }
+
+            arrayTestCases = SDL_malloc(nbTestCases * sizeof(int));
+            if (!arrayTestCases) {
+                return SDL_OutOfMemory();
+            }
+            for (j = 0; j < nbTestCases; j++) {
+                arrayTestCases[j] = j;
+            }
+
+            /* Mix the list of testCases to run them in random order */
+            j = 100;
+            while (j--) {
+                int a, b;
+                int tmp;
+                a = SDLTest_RandomIntegerInRange(0, nbTestCases - 1);
+                b = SDLTest_RandomIntegerInRange(0, nbTestCases - 1);
+                /* Swap */
+                if (randomOrder) {
+                    tmp = arrayTestCases[b];
+                    arrayTestCases[b] = arrayTestCases[a];
+                    arrayTestCases[a] = tmp;
+                }
+            }
 
             /* Reset per-suite counters */
             testFailedCount = 0;
@@ -541,8 +623,8 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                         currentSuiteName);
 
             /* Loop over all test cases */
-            testCounter = 0;
-            while (testSuite->testCases[testCounter]) {
+            for (j = 0; j < nbTestCases; j++) {
+                testCounter = arrayTestCases[j];
                 testCase = testSuite->testCases[testCounter];
                 currentTestName = (testCase->name ? testCase->name : SDLTEST_INVALID_NAME_FORMAT);
                 testCounter++;
@@ -657,8 +739,12 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                 SDLTest_LogError(SDLTEST_LOG_SUMMARY_FORMAT, "Suite", countSum, testPassedCount, testFailedCount, testSkippedCount);
                 SDLTest_LogError(SDLTEST_FINAL_RESULT_FORMAT, "Suite", currentSuiteName, COLOR_RED "Failed" COLOR_END);
             }
+
+            SDL_free(arrayTestCases);
         }
     }
+
+    SDL_free(arraySuites);
 
     /* Take time - run end */
     runEndSeconds = GetClock();
