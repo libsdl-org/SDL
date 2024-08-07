@@ -43,9 +43,11 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
 {
     int posted;
 
-    if (!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW)) {
+    if (!window) {
         return 0;
     }
+    SDL_assert(SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW));
+
     if (window->is_destroying && windowevent != SDL_EVENT_WINDOW_DESTROYED) {
         return 0;
     }
