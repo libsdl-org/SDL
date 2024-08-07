@@ -956,6 +956,30 @@ extern "C" {
  */
 #define SDL_HINT_GDK_TEXTINPUT_TITLE "SDL_GDK_TEXTINPUT_TITLE"
 
+
+/**
+ * A variable describing the time at which Windows messages are sent to
+ * registered SDL_WindowsMessageHook callbacks.
+ *
+ * By default, the SDL event loop sends messages to the hook callback before
+ * message translation.  This means that events directly dispatched to the
+ * WindowProc from the OS (eg. all events during a modal resize) are not received.
+ * Setting this hint will cause such messages to be received by the hook function as well.
+ *
+ * The variable can be set to the following values:
+ *
+ *  - "0" (default):  The events are sent to the hook function from the event loop as described above.
+ *  - "1":  Events which are untranslatable are sent to the hook function from the WindowProc handler.  Messages
+ *    which translate successfully are sent to the hook from the event loop, and the translated values are sent
+ *    or dispatched to the WindowProc according to its return value. Both messages willl be received by the hook.
+ *
+ *    This hint should be set before SDL is initialized.
+ *
+ *    \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_HOOK_EVENTS_FROM_WINDOW_PROC "SDL_HOOK_EVENTS_FROM_WINDOW_PROC"
+
+
 /**
  * A variable to control whether HIDAPI uses libusb for device access.
  *

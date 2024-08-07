@@ -58,10 +58,15 @@ typedef struct tagMSG MSG;
  * As this is processing a message directly from the Windows event loop, this
  * callback should do the minimum required work and return quickly.
  *
+ * If SDL_HINT_HOOK_EVENTS_FROM_WINDOW_PROC is not set before windows initialization,
+ * or the function returns SDL_TRUE, the return_val parameter is ignored.
+ * 
  * \param userdata the app-defined pointer provided to
  *                 SDL_SetWindowsMessageHook.
  * \param msg a pointer to a Win32 event structure to process.
- * \returns SDL_TRUE to let event continue on, SDL_FALSE to drop it.
+ * \param return_val a pointer to the value to return to the OS from WndProc for this message.
+ * \returns SDL_TRUE if SDL should perform default handling for this mesage, SDL_FALSE if it 
+ *                   skip default handling and immediately return instead.
  *
  * \threadsafety This may only be called (by SDL) from the thread handling the
  *               Windows event loop.
@@ -71,7 +76,7 @@ typedef struct tagMSG MSG;
  * \sa SDL_SetWindowsMessageHook
  * \sa SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP
  */
-typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
+typedef SDL_bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg, Sint64 *return_val);
 
 /**
  * Set a callback for every Windows message, run before TranslateMessage().

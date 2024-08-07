@@ -1034,6 +1034,10 @@ static SDL_bool SkipAltGrLeftControl(WPARAM wParam, LPARAM lParam)
     return SDL_FALSE;
 }
 
+/* A message hook called before TranslateMessage() */
+static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
+static void *g_WindowsMessageHookData = NULL;
+
 LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     SDL_WindowData *data;
@@ -1048,6 +1052,18 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     }
 #endif
     if (!data) {
+        if (g_WindowsMessageHook && g_HookEventsFromWindowProc) {
+            MSG m;
+            LRESULT return_val = 0;
+            memset(&m, 0, sizeof(MSG));
+            m.hwnd = hwnd;
+            m.message = msg;
+            m.wParam = wParam;
+            m.lParam = lParam;
+            if (!g_WindowsMessageHook(g_WindowsMessageHookData, &m, &return_val)) {
+                return return_val;
+            }
+        }
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
     }
 
@@ -1062,6 +1078,20 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         OutputDebugStringA(message);
     }
 #endif /* WMMSG_DEBUG */
+
+    // Invoke the WindowsMessageHook if set and WndProc-time hook hint is enabled.
+    if (g_WindowsMessageHook && g_HookEventsFromWindowProc) {
+        MSG m;
+        LRESULT return_val = 0;
+        memset(&m, 0, sizeof(MSG));
+        m.hwnd = hwnd;
+        m.message = msg;
+        m.wParam = wParam;
+        m.lParam = lParam;
+        if (!g_WindowsMessageHook(g_WindowsMessageHookData, &m, &return_val)) {
+            return return_val;
+        }
+    }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (WIN_HandleIMEMessage(hwnd, msg, wParam, &lParam, data->videodata)) {
@@ -2151,10 +2181,6 @@ static void WIN_UpdateMouseCapture(void)
 }
 #endif /*!defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)*/
 
-/* A message hook called before TranslateMessage() */
-static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
-static void *g_WindowsMessageHookData = NULL;
-
 void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 {
     g_WindowsMessageHook = callback;
@@ -2191,8 +2217,9 @@ int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
             if (msg.message == WM_TIMER && !msg.hwnd && msg.wParam == timer_id) {
                 return 0;
             }
-            if (g_WindowsMessageHook) {
-                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg)) {
+            if (g_WindowsMessageHook && !g_HookEventsFromWindowProc) {
+                LRESULT dummy = 0;
+                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg, &dummy)) {
                     return 1;
                 }
             }
@@ -2237,8 +2264,9 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
         SDL_processing_messages = SDL_TRUE;
 
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            if (g_WindowsMessageHook) {
-                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg)) {
+            if (g_WindowsMessageHook && !g_HookEventsFromWindowProc) {
+                LRESULT dummy = 0;
+                if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg, &dummy)) {
                     continue;
                 }
             }

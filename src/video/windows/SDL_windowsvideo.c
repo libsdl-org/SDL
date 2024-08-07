@@ -50,6 +50,7 @@ static void WIN_VideoQuit(SDL_VideoDevice *_this);
 SDL_bool g_WindowsEnableMessageLoop = SDL_TRUE;
 SDL_bool g_WindowsEnableMenuMnemonics = SDL_FALSE;
 SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
+SDL_bool g_HookEventsFromWindowProc = SDL_FALSE;
 
 static void SDLCALL UpdateWindowsRawKeyboard(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
@@ -71,6 +72,11 @@ static void SDLCALL UpdateWindowsEnableMenuMnemonics(void *userdata, const char 
 static void SDLCALL UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     g_WindowFrameUsableWhileCursorHidden = SDL_GetStringBoolean(newValue, SDL_TRUE);
+}
+
+static void SDLCALL UpdateHookEventsFromWindowProc(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    g_HookEventsFromWindowProc = SDL_GetStringBoolean(newValue, SDL_TRUE);
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -518,6 +524,7 @@ int WIN_VideoInit(SDL_VideoDevice *_this)
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
+    SDL_AddHintCallback(SDL_HINT_HOOK_EVENTS_FROM_WINDOW_PROC, UpdateHookEventsFromWindowProc, NULL);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     data->_SDL_WAKEUP = RegisterWindowMessageA("_SDL_WAKEUP");
@@ -541,6 +548,7 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     SDL_DelHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
     SDL_DelHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
     SDL_DelHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
+    SDL_DelHintCallback(SDL_HINT_HOOK_EVENTS_FROM_WINDOW_PROC, UpdateHookEventsFromWindowProc, NULL);
 
     WIN_SetRawMouseEnabled(_this, SDL_FALSE);
     WIN_SetRawKeyboardEnabled(_this, SDL_FALSE);
