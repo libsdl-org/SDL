@@ -1054,14 +1054,14 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     if (!data) {
         if (g_WindowsMessageHook && g_HookEventsFromWindowProc) {
             MSG m;
-            LRESULT return_val = 0;
+            Sint64 return_val = 0;
             memset(&m, 0, sizeof(MSG));
             m.hwnd = hwnd;
             m.message = msg;
             m.wParam = wParam;
             m.lParam = lParam;
             if (!g_WindowsMessageHook(g_WindowsMessageHookData, &m, NULL, &return_val)) {
-                return return_val;
+                return (LRESULT)return_val;
             }
         }
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
@@ -1082,14 +1082,14 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     // Invoke the WindowsMessageHook if set and WndProc-time hook hint is enabled.
     if (g_WindowsMessageHook && g_HookEventsFromWindowProc) {
         MSG m;
-        LRESULT return_val = 0;
+        Sint64 return_val = 0;
         memset(&m, 0, sizeof(MSG));
         m.hwnd = hwnd;
         m.message = msg;
         m.wParam = wParam;
         m.lParam = lParam;
         if (!g_WindowsMessageHook(g_WindowsMessageHookData, &m, data->window, &return_val)) {
-            return return_val;
+            return (LRESULT)return_val;
         }
     }
 
@@ -2218,7 +2218,7 @@ int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
                 return 0;
             }
             if (g_WindowsMessageHook && !g_HookEventsFromWindowProc) {
-                LRESULT dummy = 0;
+                Sint64 dummy = 0;
                 if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg, NULL, &dummy)) {
                     return 1;
                 }
@@ -2265,7 +2265,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
 
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (g_WindowsMessageHook && !g_HookEventsFromWindowProc) {
-                LRESULT dummy = 0;
+                Sint64 dummy = 0;
                 if (!g_WindowsMessageHook(g_WindowsMessageHookData, &msg, NULL, &dummy)) {
                     continue;
                 }
