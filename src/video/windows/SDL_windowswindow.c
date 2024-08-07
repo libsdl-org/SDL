@@ -1904,7 +1904,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                         if (SDL_URIToLocal(token, token) >= 0) {
                             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                                          ". In Drop File, file (%lu of %lu) '%s'\n",
-                                         (unsigned long)strlen(token), (unsigned long)bsize, token);
+                                         (unsigned long)SDL_strlen(token), (unsigned long)bsize, token);
                             SDL_SendDropFile(target->window, NULL, token);
                         }
                         token = SDL_strtok_r(NULL, "\r\n", &saveptr);
@@ -1951,7 +1951,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                     while (token != NULL) {
                         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                                      ". In Drop Text, text (%lu of %lu) '%s'\n",
-                                     (unsigned long)strlen(token), (unsigned long)bsize, token);
+                                     (unsigned long)SDL_strlen(token), (unsigned long)bsize, token);
                         SDL_SendDropText(target->window, (char *)token);
                         token = SDL_strtok_r(NULL, "\r\n", &saveptr);
                     }
@@ -1991,7 +1991,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                 if (buffer) {
                     buffer = WIN_StringToUTF8(buffer);
                     if (buffer) {
-                        const size_t lbuffer = strlen(buffer);
+                        const size_t lbuffer = SDL_strlen(buffer);
                         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                                      ". In Drop Text for StringToUTF8, format %08x '%s', memory (%lu) %p\n",
                                      fetc.cfFormat, format_mime, (unsigned long)lbuffer, buffer);
@@ -2003,7 +2003,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                         while (token != NULL) {
                             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                                          ". In Drop Text, text (%lu of %lu) '%s'\n",
-                                         (unsigned long)strlen(token), (unsigned long)lbuffer, token);
+                                         (unsigned long)SDL_strlen(token), (unsigned long)lbuffer, token);
                             SDL_SendDropText(target->window, (char *)token);
                             token = SDL_strtok_r(NULL, "\r\n", &saveptr);
                         }
@@ -2051,7 +2051,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                     while (token != NULL) {
                         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                                      ". In Drop Text, text (%lu of %lu) '%s'\n",
-                                     (unsigned long)strlen(token), (unsigned long)bsize, token);
+                                     (unsigned long)SDL_strlen(token), (unsigned long)bsize, token);
                         SDL_SendDropText(target->window, (char *)token);
                         token = SDL_strtok_r(NULL, "\r\n", &saveptr);
                     }
@@ -2097,7 +2097,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                             char *file = WIN_StringToUTF8(buffer);
                             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                                          ". In Drop File, file (%lu of %lu) '%s'\n",
-                                         (unsigned long)strlen(file), (unsigned long)bsize, file);
+                                         (unsigned long)SDL_strlen(file), (unsigned long)bsize, file);
                             SDL_SendDropFile(target->window, NULL, file);
                             SDL_free(file);
                         }
