@@ -241,7 +241,7 @@ static void write_minidump(const char *child_file_path, const LPPROCESS_INFORMAT
     _splitpath_s(child_file_path, NULL, 0, NULL, 0, child_file_name, sizeof(child_file_name), NULL, 0);
     GetLocalTime(&system_time);
 
-    snprintf(dump_file_path, sizeof(dump_file_path), "minidumps/%s_%04d-%02d-%02d_%d-%02d-%02d.dmp",
+    snprintf(dump_file_path, sizeof(dump_file_path), "minidumps/%s_%04d-%02d-%02d_%02d-%02d-%02d.dmp",
              child_file_name,
              system_time.wYear, system_time.wMonth, system_time.wDay,
              system_time.wHour, system_time.wMinute, system_time.wSecond);
@@ -282,7 +282,7 @@ post_dump:
     }
 }
 
-static void print_stacktrace(const LPPROCESS_INFORMATION process_information, PCONTEXT context, LPVOID address) {
+static void print_stacktrace(const LPPROCESS_INFORMATION process_information, LPVOID address, PCONTEXT context) {
     STACKFRAME64 stack_frame;
     DWORD machine_type;
 
@@ -350,12 +350,11 @@ static void print_stacktrace(const LPPROCESS_INFORMATION process_information, PC
                                     process_information->hProcess,         /* HANDLE                           hProcess */
                                     process_information->hThread,          /* HANDLE                           hThread */
                                     &stack_frame,                          /* LPSTACKFRAME64                   StackFrame */
-                                    &context,                              /* PVOID                            ContextRecord */
+                                    context,                               /* PVOID                            ContextRecord */
                                     NULL,                                  /* PREAD_PROCESS_MEMORY_ROUTINE64   ReadMemoryRoutine */
                                     dyn_dbghelp.pSymFunctionTableAccess64, /* PFUNCTION_TABLE_ACCESS_ROUTINE64 FunctionTableAccessRoutine */
                                     dyn_dbghelp.pSymGetModuleBase64,       /* PGET_MODULE_BASE_ROUTINE64       GetModuleBaseRoutine */
                                     NULL)) {                               /* PTRANSLATE_ADDRESS_ROUTINE64     TranslateAddress */
-
         IMAGEHLP_MODULE64 module_info;
         union {
             char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(CHAR)];
@@ -571,6 +570,7 @@ int main(int argc, char *argv[]) {
                     printf_message("No support for printing stacktrack for current architecture");
 #endif
                     DebugActiveProcessStop(event.dwProcessId);
+                    process_alive = FALSE;
                 }
                 continue_status = DBG_EXCEPTION_NOT_HANDLED;
                 break;
@@ -583,7 +583,7 @@ int main(int argc, char *argv[]) {
                 }
                 /* Don't invade process on CI: downloading symbols will cause test timeouts */
                 if (!dyn_dbghelp.pSymInitialize(process_information.hProcess, NULL, FALSE)) {
-                    printf_windows_message("pSymInitialize failed: no stacktrace");
+                    printf_windows_message("SymInitialize failed: no stacktrace");
                     break;
                 }
                 break;
