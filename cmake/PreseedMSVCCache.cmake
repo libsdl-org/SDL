@@ -1,5 +1,6 @@
 if(MSVC)
   function(SDL_Preseed_CMakeCache)
+    set(COMPILER_SUPPORTS_W3                             "1"   CACHE INTERNAL "Test /W3")
     set(COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS      ""    CACHE INTERNAL "Test COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS")
     set(HAVE_ALLOCA_H                                    ""    CACHE INTERNAL "Have include alloca.h")
     set(HAVE_AUDIOCLIENT_H                               "1"   CACHE INTERNAL "Have include audioclient.h")
