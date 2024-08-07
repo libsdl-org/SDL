@@ -1870,14 +1870,23 @@ elseif(WINDOWS)
       #include <windows.h>
       #include <xinput.h>
       int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H)
-    check_c_source_compiles("
-      #define COBJMACROS
-      #include <windows.gaming.input.h>
-      __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
-      int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H)
   endif()
 
   # headers needed elsewhere
+  check_c_source_compiles("
+    #define COBJMACROS
+    #include <windows.gaming.input.h>
+    static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+    int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
+  )
+  check_c_source_compiles("
+    #include <stdbool.h>
+    #define COBJMACROS
+    #include <GameInput.h>
+    // Requires Windows SDK version 10.0.26100.0 or newer
+    static GameInputSystemButtons s = GameInputSystemButtonNone;
+    int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
+  )
   check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
   check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
   check_include_file(roapi.h HAVE_ROAPI_H)
@@ -2084,9 +2093,13 @@ elseif(WINDOWS)
         set(SDL_JOYSTICK_XINPUT 1)
         set(HAVE_XINPUT TRUE)
       endif()
-      if(HAVE_WINDOWS_GAMING_INPUT_H)
-        set(SDL_JOYSTICK_WGI 1)
-      endif()
+    endif()
+    if(HAVE_WINDOWS_GAMING_INPUT_H)
+      set(SDL_JOYSTICK_WGI 1)
+    endif()
+    if(HAVE_GAMEINPUT_H)
+      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/gdk/*.c")
+      set(SDL_JOYSTICK_GAMEINPUT 1)
     endif()
     set(HAVE_SDL_JOYSTICK TRUE)
 

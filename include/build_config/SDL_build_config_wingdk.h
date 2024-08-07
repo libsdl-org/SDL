@@ -47,6 +47,7 @@
 #define HAVE_AUDIOCLIENT_H 1
 #define HAVE_TPCSHRD_H 1
 #define HAVE_SENSORSAPI_H 1
+#define HAVE_GAMEINPUT_H 1
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64)) && (defined(_MSC_VER) && _MSC_VER >= 1600)
 #elif defined(__has_include) && (defined(__i386__) || defined(__x86_64))
 # if !__has_include(<immintrin.h>)
@@ -164,24 +165,13 @@
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_DINPUT 1
+#define SDL_JOYSTICK_GAMEINPUT 1
 #define SDL_JOYSTICK_HIDAPI 1
 #define SDL_JOYSTICK_RAWINPUT   1
 #define SDL_JOYSTICK_VIRTUAL    1
-#ifdef HAVE_WINDOWS_GAMING_INPUT_H
 #define SDL_JOYSTICK_WGI    1
-#endif
 #define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT   1
-
-/* Native GameInput: */
-/*#define SDL_JOYSTICK_GAMEINPUT 1*/
-#if defined(SDL_JOYSTICK_GAMEINPUT) && (defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_DINPUT))
-#error "GameInput cannot co-exist, choose one."
-#endif /* defined(SDL_JOYSTICK_GAMEINPUT) && (defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_DINPUT)) */
-#if defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT
-/* TODO: Implement proper haptics for GameInput! */
-#define SDL_HAPTIC_DUMMY 1
-#endif /* defined(SDL_JOYSTICK_GAMEINPUT) && SDL_JOYSTICK_GAMEINPUT */
 
 /* Enable the sensor driver */
 #ifdef HAVE_SENSORSAPI_H

@@ -22,10 +22,6 @@
 
 #include "SDL_windowsvideo.h"
 
-#if defined(__has_include) && __has_include(<GameInput.h>)
-#define HAVE_GAMEINPUT_H
-#endif
-
 #ifdef HAVE_GAMEINPUT_H
 
 #include <stdbool.h>
