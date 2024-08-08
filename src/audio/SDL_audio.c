@@ -2173,6 +2173,25 @@ const SDL_AudioFormat *SDL_ClosestAudioFormats(SDL_AudioFormat format)
     return &format_list[0][NUM_FORMATS]; // not found; return what looks like a list with only a zero in it.
 }
 
+const char *SDL_GetAudioFormatName(SDL_AudioFormat format)
+{
+    switch (format) {
+#define CASE(X) \
+    case X: return #X;
+    CASE(SDL_AUDIO_U8)
+    CASE(SDL_AUDIO_S8)
+    CASE(SDL_AUDIO_S16LE)
+    CASE(SDL_AUDIO_S16BE)
+    CASE(SDL_AUDIO_S32LE)
+    CASE(SDL_AUDIO_S32BE)
+    CASE(SDL_AUDIO_F32LE)
+    CASE(SDL_AUDIO_F32BE)
+#undef CASE
+    default:
+        return "SDL_AUDIO_UNKNOWN";
+    }
+}
+
 int SDL_GetSilenceValueForFormat(SDL_AudioFormat format)
 {
     return (format == SDL_AUDIO_U8) ? 0x80 : 0x00;

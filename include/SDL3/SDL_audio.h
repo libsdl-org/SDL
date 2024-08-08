@@ -1996,6 +1996,18 @@ extern SDL_DECLSPEC int SDLCALL SDL_ConvertAudioSamples(const SDL_AudioSpec *src
                                                     Uint8 **dst_data,
                                                     int *dst_len);
 
+/**
+ * Get the human readable name of an audio format.
+ *
+ * \param format the audio format to query.
+ * \returns the human readable name of the specified audio format or
+ *          "SDL_AUDIO_UNKNOWN" if the format isn't recognized.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioFormatName(SDL_AudioFormat format);
 
 /**
  * Get the appropriate memset value for silencing an audio format.

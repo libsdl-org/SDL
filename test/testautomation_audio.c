@@ -467,7 +467,14 @@ static const char *g_audioFormatsVerbose[] = {
     "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE",
     "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE"
 };
+static SDL_AudioFormat g_invalidAudioFormats[] = {
+    (SDL_AudioFormat)SDL_DEFINE_AUDIO_FORMAT(SDL_AUDIO_MASK_SIGNED, SDL_AUDIO_MASK_BIG_ENDIAN, SDL_AUDIO_MASK_FLOAT, SDL_AUDIO_MASK_BITSIZE)
+};
+static const char *g_invalidAudioFormatsVerbose[] = {
+    "SDL_AUDIO_UNKNOWN"
+};
 static const int g_numAudioFormats = SDL_arraysize(g_audioFormats);
+static const int g_numInvalidAudioFormats = SDL_arraysize(g_invalidAudioFormats);
 static Uint8 g_audioChannels[] = { 1, 2, 4, 6 };
 static const int g_numAudioChannels = SDL_arraysize(g_audioChannels);
 static int g_audioFrequencies[] = { 11025, 22050, 44100, 48000 };
@@ -482,6 +489,58 @@ SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_S32LE_FORMAT, SDL_AUDIO_S32LE == (SDL_AUDIO_BI
 SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_S32BE_FORMAT, SDL_AUDIO_S32BE == (SDL_AUDIO_S32LE | SDL_AUDIO_MASK_BIG_ENDIAN));
 SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_F32LE_FORMAT, SDL_AUDIO_F32LE == (SDL_AUDIO_BITSIZE(32) | SDL_AUDIO_MASK_FLOAT | SDL_AUDIO_MASK_SIGNED));
 SDL_COMPILE_TIME_ASSERT(SDL_AUDIO_F32BE_FORMAT, SDL_AUDIO_F32BE == (SDL_AUDIO_F32LE | SDL_AUDIO_MASK_BIG_ENDIAN));
+
+/**
+ * Call to SDL_GetAudioFormatName
+ *
+ * \sa SDL_GetAudioFormatName
+ */
+static int audio_getAudioFormatName(void *arg)
+{
+    const char *error;
+    int i;
+    SDL_AudioFormat format;
+    const char *result;
+
+    /* audio formats */
+    for (i = 0; i < g_numAudioFormats; i++) {
+        format = g_audioFormats[i];
+        SDLTest_Log("Audio Format: %s (%d)", g_audioFormatsVerbose[i], format);
+
+        /* Get name of format */
+        result = SDL_GetAudioFormatName(format);
+        SDLTest_AssertPass("Call to SDL_GetAudioFormatName()");
+        SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
+        if (result != NULL) {
+            SDLTest_AssertCheck(result[0] != '\0', "Verify result is non-empty");
+            SDLTest_AssertCheck(SDL_strcmp(result, g_audioFormatsVerbose[i]) == 0,
+                                "Verify result text; expected: %s, got %s", g_audioFormatsVerbose[i], result);
+        }
+    }
+
+    /* Negative cases */
+
+    /* Invalid Formats */
+    SDL_ClearError();
+    SDLTest_AssertPass("Call to SDL_ClearError()");
+    for (i = 0; i < g_numInvalidAudioFormats; i++) {
+        format = g_invalidAudioFormats[i];
+        result = SDL_GetAudioFormatName(format);
+        SDLTest_AssertPass("Call to SDL_GetAudioFormatName(%d)", format);
+        SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
+        if (result != NULL) {
+            SDLTest_AssertCheck(result[0] != '\0',
+                                "Verify result is non-empty; got: %s", result);
+            SDLTest_AssertCheck(SDL_strcmp(result, g_invalidAudioFormatsVerbose[i]) == 0,
+                                "Validate name is UNKNOWN, expected: '%s', got: '%s'", g_invalidAudioFormatsVerbose[i], result);
+        }
+        error = SDL_GetError();
+        SDLTest_AssertPass("Call to SDL_GetError()");
+        SDLTest_AssertCheck(error == NULL || error[0] == '\0', "Validate that error message is empty");
+    }
+
+    return TEST_COMPLETED;
+}
 
 /**
  * Builds various audio conversion structures
@@ -1386,6 +1445,10 @@ cleanup:
 /* ================= Test Case References ================== */
 
 /* Audio test cases */
+static const SDLTest_TestCaseReference audioTestGetAudioFormatName = {
+    audio_getAudioFormatName, "audio_getAudioFormatName", "Call to SDL_GetAudioFormatName", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference audioTest1 = {
     audio_enumerateAndNameAudioDevices, "audio_enumerateAndNameAudioDevices", "Enumerate and name available audio devices (playback and recording)", TEST_ENABLED
 };
@@ -1462,6 +1525,7 @@ static const SDLTest_TestCaseReference audioTest18 = {
 
 /* Sequence of Audio test cases */
 static const SDLTest_TestCaseReference *audioTests[] = {
+    &audioTestGetAudioFormatName,
     &audioTest1, &audioTest2, &audioTest3, &audioTest4, &audioTest5, &audioTest6,
     &audioTest7, &audioTest8, &audioTest9, &audioTest10, &audioTest11,
     &audioTest12, &audioTest13, &audioTest14, &audioTest15, &audioTest16,
