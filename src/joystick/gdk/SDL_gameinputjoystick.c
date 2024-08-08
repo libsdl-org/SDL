@@ -603,7 +603,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
             uint32_t i;
             uint32_t button_count = IGameInputReading_GetControllerButtonState(reading, info->controllerButtonCount, button_state);
             for (i = 0; i < button_count; ++i) {
-                SDL_SendJoystickButton(timestamp, joystick, i, button_state[i]);
+                SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, button_state[i]);
             }
             SDL_stack_free(button_state);
         }
@@ -613,7 +613,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
             uint32_t i;
             uint32_t axis_count = IGameInputReading_GetControllerAxisState(reading, info->controllerAxisCount, axis_state);
             for (i = 0; i < axis_count; ++i) {
-                SDL_SendJoystickAxis(timestamp, joystick, i, CONVERT_AXIS(axis_state[i]));
+                SDL_SendJoystickAxis(timestamp, joystick, (Uint8)i, CONVERT_AXIS(axis_state[i]));
             }
             SDL_stack_free(axis_state);
         }

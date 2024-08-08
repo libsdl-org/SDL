@@ -313,7 +313,7 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
         }
         if (delta.buttons) {
             for (int i = 0; i < MAX_GAMEINPUT_BUTTONS; ++i) {
-                const GameInputMouseButtons mask = (1 << i); 
+                const GameInputMouseButtons mask = (1 << i);
                 if (delta.buttons & mask) {
                     SDL_SendMouseButton(timestamp, window, mouseID, (state.buttons & mask) ? SDL_PRESSED : SDL_RELEASED, GAMEINPUT_button_map[i]);
                 }
