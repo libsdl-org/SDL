@@ -192,6 +192,7 @@
 #define SDL_GetAudioDeviceGain SDL_GetAudioDeviceGain_REAL
 #define SDL_GetAudioDeviceName SDL_GetAudioDeviceName_REAL
 #define SDL_GetAudioDriver SDL_GetAudioDriver_REAL
+#define SDL_GetAudioFormatName SDL_GetAudioFormatName_REAL
 #define SDL_GetAudioPlaybackDevices SDL_GetAudioPlaybackDevices_REAL
 #define SDL_GetAudioRecordingDevices SDL_GetAudioRecordingDevices_REAL
 #define SDL_GetAudioStreamAvailable SDL_GetAudioStreamAvailable_REAL

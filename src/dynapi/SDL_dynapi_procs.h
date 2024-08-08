@@ -212,6 +212,7 @@ SDL_DYNAPI_PROC(int,SDL_GetAudioDeviceFormat,(SDL_AudioDeviceID a, SDL_AudioSpec
 SDL_DYNAPI_PROC(float,SDL_GetAudioDeviceGain,(SDL_AudioDeviceID a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetAudioDeviceName,(SDL_AudioDeviceID a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetAudioDriver,(int a),(a),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetAudioFormatName,(SDL_AudioFormat a),(a),return)
 SDL_DYNAPI_PROC(SDL_AudioDeviceID*,SDL_GetAudioPlaybackDevices,(int *a),(a),return)
 SDL_DYNAPI_PROC(SDL_AudioDeviceID*,SDL_GetAudioRecordingDevices,(int *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetAudioStreamAvailable,(SDL_AudioStream *a),(a),return)
