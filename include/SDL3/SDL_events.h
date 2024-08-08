@@ -225,14 +225,14 @@ typedef enum SDL_EventType
     SDL_EVENT_SENSOR_UPDATE = 0x1200,     /**< A sensor was updated */
 
     /* Pressure-sensitive pen events */
-    SDL_EVENT_PEN_DOWN      = 0x1300,     /**< Pressure-sensitive pen touched drawing surface */
-    SDL_EVENT_PEN_PROXIMITY_IN,           /**< Pressure-sensitive pen has become available */
+    SDL_EVENT_PEN_PROXIMITY_IN = 0x1300,  /**< Pressure-sensitive pen has become available */
     SDL_EVENT_PEN_PROXIMITY_OUT,          /**< Pressure-sensitive pen has become unavailable */
+    SDL_EVENT_PEN_DOWN,                   /**< Pressure-sensitive pen touched drawing surface */
     SDL_EVENT_PEN_UP,                     /**< Pressure-sensitive pen stopped touching drawing surface */
     SDL_EVENT_PEN_BUTTON_DOWN,            /**< Pressure-sensitive pen button pressed */
     SDL_EVENT_PEN_BUTTON_UP,              /**< Pressure-sensitive pen button released */
     SDL_EVENT_PEN_MOTION,                 /**< Pressure-sensitive pen is moving on the tablet */
-    SDL_EVENT_PEN_AXIS,                   /**< Pressure-sensitive pen moved, or angle/pressure changed */
+    SDL_EVENT_PEN_AXIS,                   /**< Pressure-sensitive pen angle/pressure/etc changed */
 
     /* Camera hotplug events */
     SDL_EVENT_CAMERA_DEVICE_ADDED = 0x1400,  /**< A new camera device is available */

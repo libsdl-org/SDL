@@ -49,9 +49,11 @@ static int pen_device_count SDL_GUARDED_BY(pen_device_rwlock) = 0;
 // locking and calling this in that case will do the right thing.
 static SDL_Pen *FindPenByInstanceId(SDL_PenID instance_id) SDL_REQUIRES_SHARED(pen_device_rwlock)
 {
-    for (int i = 0; i < pen_device_count; i++) {
-        if (pen_devices[i].instance_id == instance_id) {
-            return &pen_devices[i];
+    if (instance_id) {
+        for (int i = 0; i < pen_device_count; i++) {
+            if (pen_devices[i].instance_id == instance_id) {
+                return &pen_devices[i];
+            }
         }
     }
     SDL_SetError("Invalid pen instance ID");
@@ -71,6 +73,21 @@ SDL_PenID SDL_FindPenByHandle(void *handle)
     SDL_UnlockRWLock(pen_device_rwlock);
     return retval;
 }
+
+SDL_PenID SDL_FindPenByCallback(SDL_bool (*callback)(void *handle, void *userdata), void *userdata)
+{
+    SDL_PenID retval = 0;
+    SDL_LockRWLockForReading(pen_device_rwlock);
+    for (int i = 0; i < pen_device_count; i++) {
+        if (callback(pen_devices[i].driverdata, userdata)) {
+            retval = pen_devices[i].instance_id;
+            break;
+        }
+    }
+    SDL_UnlockRWLock(pen_device_rwlock);
+    return retval;
+}
+
 
 
 // public API ...
@@ -172,6 +189,7 @@ SDL_bool SDL_PenConnected(SDL_PenID instance_id)
     SDL_UnlockRWLock(pen_device_rwlock);
     return retval;
 }
+#endif
 
 SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis)
 {
@@ -182,7 +200,6 @@ SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis)
     }
     return 0;  // oh well.
 }
-#endif
 
 SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo *info, void *handle)
 {
@@ -236,10 +253,14 @@ SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo
 
 void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id)
 {
+    if (!instance_id) {
+        return;
+    }
+
     SDL_LockRWLockForWriting(pen_device_rwlock);
     SDL_Pen *pen = FindPenByInstanceId(instance_id);
     if (pen) {
-        SDL_FreeLater(pen->name);  // this pointer might be given to the app by SDL_GetPenName.
+        SDL_free(pen->name);
         // we don't free `pen`, it's just part of simple array. Shuffle it out.
         const int idx = ((int) (pen - pen_devices));
         SDL_assert((idx >= 0) && (idx < pen_device_count));
@@ -273,14 +294,14 @@ void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id)
 }
 
 // This presumably is happening during video quit, so we don't send PROXIMITY_OUT events here.
-extern void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handle, void *userdata), void *userdata)
+void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handle, void *userdata), void *userdata)
 {
     SDL_LockRWLockForWriting(pen_device_rwlock);
     if (pen_device_count > 0) {
         SDL_assert(pen_devices != NULL);
         for (int i = 0; i < pen_device_count; i++) {
             callback(pen_devices[i].instance_id, pen_devices[i].driverdata, userdata);
-            SDL_FreeLater(pen_devices[i].name);  // this pointer might be given to the app by SDL_GetPenName.
+            SDL_free(pen_devices[i].name);
         }
     }
     SDL_free(pen_devices);
