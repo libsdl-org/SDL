@@ -1166,18 +1166,13 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 - (void)windowDidBecomeKey:(NSNotification *)aNotification
 {
     SDL_Window *window = _data.window;
-    SDL_Mouse *mouse = SDL_GetMouse();
 
     /* We're going to get keyboard events, since we're key. */
     /* This needs to be done before restoring the relative mouse mode. */
     Cocoa_SetKeyboardFocus(_data.keyboard_focus ? _data.keyboard_focus : window);
 
-    if (mouse->relative_mode && !mouse->relative_mode_warp && ![self isMovingOrFocusClickPending]) {
-        mouse->SetRelativeMouseMode(SDL_TRUE);
-    }
-
     /* If we just gained focus we need the updated mouse position */
-    if (!mouse->relative_mode) {
+    if (!(window->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE)) {
         NSPoint point;
         float x, y;
 
@@ -1205,11 +1200,6 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
 - (void)windowDidResignKey:(NSNotification *)aNotification
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
-    if (mouse->relative_mode && !mouse->relative_mode_warp) {
-        mouse->SetRelativeMouseMode(SDL_FALSE);
-    }
-
     /* Some other window will get mouse events, since we're not key. */
     if (SDL_GetMouseFocus() == _data.window) {
         SDL_SetMouseFocus(NULL);

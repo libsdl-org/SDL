@@ -316,11 +316,19 @@ static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 
 static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
 {
-    SDL_Window *window = SDL_GetKeyboardFocus();
     CGError result;
-    SDL_CocoaWindowData *data;
+
     if (enabled) {
+        SDL_Window *window = SDL_GetKeyboardFocus();
         if (window) {
+            /* We will re-apply the relative mode when the window finishes being moved,
+             * if it is being moved right now.
+             */
+            SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+            if ([data.listener isMovingOrFocusClickPending]) {
+                return 0;
+            }
+
             /* make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click. */
             const CGPoint point = CGPointMake((float)(window->x + (window->w / 2)), (float)(window->y + (window->h / 2)));
             Cocoa_HandleMouseWarp(point.x, point.y);
@@ -334,21 +342,6 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     }
     if (result != kCGErrorSuccess) {
         return SDL_SetError("CGAssociateMouseAndMouseCursorPosition() failed");
-    }
-
-    /* We will re-apply the non-relative mode when the window gets focus, if it
-     * doesn't have focus right now.
-     */
-    if (!window) {
-        return 0;
-    }
-
-    /* We will re-apply the non-relative mode when the window finishes being moved,
-     * if it is being moved right now.
-     */
-    data = (__bridge SDL_CocoaWindowData *)window->internal;
-    if ([data.listener isMovingOrFocusClickPending]) {
-        return 0;
     }
 
     /* The hide/unhide calls are redundant most of the time, but they fix
