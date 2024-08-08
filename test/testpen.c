@@ -24,6 +24,7 @@ typedef struct Pen
     float y;
     Uint32 buttons;
     SDL_bool eraser;
+    SDL_bool touching;
     struct Pen *next;
 } Pen;
 
@@ -90,6 +91,8 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_UpdateTexture(white_pixel, &rect, pixels, 16 * sizeof (Uint32));
     }
 
+    SDL_HideCursor();
+
     return SDL_APP_CONTINUE;
 }
 
@@ -150,6 +153,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             /*SDL_Log("Pen %" SDL_PRIu32 " down!", event->ptouch.which);*/
             pen = FindPen(event->ptouch.which);
             if (pen) {
+                pen->touching = SDL_TRUE;
                 pen->eraser = (event->ptouch.eraser != 0);
             }
             return SDL_APP_CONTINUE;
@@ -158,6 +162,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             /*SDL_Log("Pen %" SDL_PRIu32 " up!", event->ptouch.which);*/
             pen = FindPen(event->ptouch.which);
             if (pen) {
+                pen->touching = SDL_FALSE;
                 pen->axes[SDL_PEN_AXIS_PRESSURE] = 0.0f;
             }
             return SDL_APP_CONTINUE;
@@ -230,7 +235,7 @@ static void DrawOnePen(Pen *pen, int num)
     /* draw a square to represent pressure. Always green for eraser and blue for pen */
     /* we do this with a texture, so we can trivially rotate it, which SDL_RenderFillRect doesn't offer. */
     if (pen->axes[SDL_PEN_AXIS_PRESSURE] > 0.0f) {
-        const float size = (100.0f * pen->axes[SDL_PEN_AXIS_PRESSURE]) + 10.0f;
+        const float size = (150.0f * pen->axes[SDL_PEN_AXIS_PRESSURE]) + 20.0f;
         const float halfsize = size / 2.0f;
         const SDL_FRect rect = { pen->x - halfsize, pen->y - halfsize, size, size };
         const SDL_FPoint center = { halfsize, halfsize };
@@ -244,7 +249,8 @@ static void DrawOnePen(Pen *pen, int num)
 
     /* draw a little square for position in the center of the pressure, with the pen-specific color. */
     {
-        const float size = 10.0f;
+        const float distance = pen->touching ? 0.0f : SDL_clamp(pen->axes[SDL_PEN_AXIS_DISTANCE], 0.0f, 1.0f);
+        const float size = 10 + (30.0f * (1.0f - distance));
         const float halfsize = size / 2.0f;
         const SDL_FRect rect = { pen->x - halfsize, pen->y - halfsize, size, size };
         const SDL_FPoint center = { halfsize, halfsize };
