@@ -2310,8 +2310,8 @@ extern "C" {
  * relative mouse mode.
  *
  * When this hint is set, the mouse cursor is hidden, and multiple warps to
- * the window center occur within a short time period, SDL will emulate
- * mouse warps using relative mouse mode. This can provide smoother and more
+ * the window center occur within a short time period, SDL will emulate mouse
+ * warps using relative mouse mode. This can provide smoother and more
  * reliable mouse motion for some older games, which continuously calculate
  * the distance travelled by the mouse pointer and warp it back to the center
  * of the window, rather than using relative mouse motion.
