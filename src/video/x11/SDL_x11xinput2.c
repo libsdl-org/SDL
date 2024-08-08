@@ -291,10 +291,16 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         const XIHierarchyEvent *hierev = (const XIHierarchyEvent *)cookie->data;
         int i;
         for (i = 0; i < hierev->num_info; i++) {
+            // pen stuff...
             if ((hierev->info[i].flags & (XISlaveRemoved | XIDeviceDisabled)) != 0) {
                 X11_RemovePenByDeviceID(hierev->info[i].deviceid);  // it's okay if this thing isn't actually a pen, it'll handle it.
             } else if ((hierev->info[i].flags & (XISlaveAdded | XIDeviceEnabled)) != 0) {
                 X11_MaybeAddPenByDeviceID(_this, hierev->info[i].deviceid);  // this will do more checks to make sure this is valid.
+            }
+
+            // not pen stuff...
+            if (hierev->info[i].flags & XISlaveRemoved) {
+                xinput2_remove_device_info(videodata, hierev->info[i].deviceid);
             }
         }
         videodata->xinput_hierarchy_changed = SDL_TRUE;
@@ -452,7 +458,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
             SDL_SendPenMotion(0, pen->pen, window, (float) xev->event_x, (float) xev->event_y);
 
-            float axis_values[SDL_PEN_NUM_AXES];
+            float axes[SDL_PEN_NUM_AXES];
             X11_PenAxesFromValuators(pen, xev->valuators.values, xev->valuators.mask, xev->valuators.mask_len, axes);
 
             for (int i = 0; i < SDL_arraysize(axes); i++) {

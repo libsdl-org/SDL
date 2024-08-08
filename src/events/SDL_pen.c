@@ -469,9 +469,9 @@ int SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
     SDL_LockRWLockForReading(pen_device_rwlock);
     SDL_Pen *pen = FindPenByInstanceId(instance_id);
     if (pen) {
+        input_state = pen->input_state;
         const Uint32 flag = (Uint32) (1u << button);
         const Uint8 current = (input_state & flag) ? 1 : 0;
-        input_state = pen->input_state;
         x = pen->x;
         y = pen->y;
         if (state && !current) {

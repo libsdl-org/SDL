@@ -175,7 +175,7 @@ static SDL_bool FindPenByDeviceID(void *handle, void *userdata)
 {
     const X11_PenHandle *x11_handle = (const X11_PenHandle *) handle;
     FindPenByDeviceIDData *data = (FindPenByDeviceIDData *) userdata;
-    if (x11_handle->deviceid != data->x11_deviceid) {
+    if (x11_handle->x11_deviceid != data->x11_deviceid) {
         return SDL_FALSE;
     }
     data->handle = handle;
@@ -193,34 +193,28 @@ X11_PenHandle *X11_FindPenByDeviceID(int deviceid)
 
 static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo *dev)
 {
+    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
     SDL_PenCapabilityFlags capabilities = 0;
     X11_PenHandle *handle = NULL;
 
-    if (dev->use != XISlavePointer || dev->enabled == 0 || !X11_XInput2DeviceIsPen(_this, dev)) {
-        return 0;  // Only track physical devices that are enabled and look like pens
-    } else if ((handle = SDL_FindPenByHandle((void *) (size_t) dev->deviceid)) != 0) {
-        return pen;  // already have this pen, skip it.
+    if ((dev->use != XISlavePointer && (dev->use != XIFloatingSlave)) || dev->enabled == 0 || !X11_XInput2DeviceIsPen(_this, dev)) {
+        return NULL;  // Only track physical devices that are enabled and look like pens
+    } else if ((handle = X11_FindPenByDeviceID(dev->deviceid)) != 0) {
+        return handle;  // already have this pen, skip it.
     } else if ((handle = SDL_calloc(1, sizeof (*handle))) == NULL) {
-        return 0;  // oh well.
+        return NULL;  // oh well.
     }
 
     for (int i = 0; i < SDL_arraysize(handle->valuator_for_axis); i++) {
         handle->valuator_for_axis[i] = SDL_X11_PEN_AXIS_VALUATOR_MISSING;  // until proven otherwise
     }
 
+    int total_buttons = 0;
     for (int i = 0; i < dev->num_classes; i++) {
         const XIAnyClassInfo *classinfo = dev->classes[i];
-
-        // !!! FIXME: do we get XIButtonClass through here?
         if (classinfo->type == XIButtonClass) {
             const XIButtonClassInfo *button_classinfo = (const XIButtonClassInfo *)classinfo;
-            SDL_Log("BUTTONCLASS: num_buttons=%d", button_classinfo->num_buttons);
-            for (int j = 0; j < button_classinfo->num_buttons; j++) {
-                char *name = X11_XGetAtomName(data->display, button_classinfo->labels[j]);
-                SDL_Log(" - %d: '%s'", j, name);
-                X11_XFree(name);
-            }
-
+            total_buttons += button_classinfo->num_buttons;
         } else if (classinfo->type == XIValuatorClass) {
             const XIValuatorClassInfo *val_classinfo = (const XIValuatorClassInfo *)classinfo;
             const Sint8 valuator_nr = val_classinfo->number;
@@ -266,7 +260,7 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
     peninfo.capabilities = capabilities;
     peninfo.max_tilt = -1;
     peninfo.wacom_id = wacom_devicetype_id;
-    peninfo.num_buttons = -1;  fixme
+    peninfo.num_buttons = total_buttons;
     peninfo.subtype = is_eraser ? SDL_PEN_TYPE_ERASER : SDL_PEN_TYPE_PEN;
     if (is_eraser) {
         peninfo.capabilities |= SDL_PEN_CAPABILITY_ERASER;
@@ -291,7 +285,7 @@ X11_PenHandle *X11_MaybeAddPenByDeviceID(SDL_VideoDevice *_this, int deviceid)
     XIDeviceInfo *device_info = X11_XIQueryDevice(data->display, deviceid, &num_device_info);
     if (device_info) {
         SDL_assert(num_device_info == 1);
-        return X11_MaybeAddPen(_this, deviceid);
+        return X11_MaybeAddPen(_this, device_info);
     }
     return NULL;
 }
