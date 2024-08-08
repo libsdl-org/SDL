@@ -15,18 +15,28 @@
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 
-static SDL_Window *window = NULL;
+typedef struct Pen
+{
+    SDL_PenID pen;
+    Uint8 r, g, b;
+    float pressure;
+    float x;
+    float y;
+    Uint32 buttons;
+    SDL_bool eraser;
+    struct Pen *next;
+} Pen;
+
 static SDL_Renderer *renderer = NULL;
 static SDLTest_CommonState *state = NULL;
-static float pressure = 0.0f;
-static float position_x = 320.0f;
-static float position_y = 240.0f;
-static Uint32 buttons = 0;
-static SDL_bool eraser = SDL_FALSE;
+static Pen pens;
+
 
 int SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     int i;
+
+    SDL_srand(0);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -60,12 +70,6 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    window = state->windows[0];
-    if (!window) {
-        SDL_Log("Couldn't create window: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-
     SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
 
     renderer = state->renderers[0];
@@ -77,47 +81,107 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     return SDL_APP_CONTINUE;
 }
 
+static Pen *FindPen(SDL_PenID which)
+{
+    Pen *i;
+    for (i = pens.next; i != NULL; i = i->next) {
+        if (i->pen == which) {
+            return i;
+        }
+    }
+    return NULL;
+}
+
 int SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
-    switch (event->type) {
-        case SDL_EVENT_PEN_PROXIMITY_IN:
-            SDL_Log("Pen %" SDL_PRIu32 " enters proximity!", event->pproximity.which);
-            return SDL_APP_CONTINUE;
+    Pen *pen = NULL;
 
-        case SDL_EVENT_PEN_PROXIMITY_OUT:
-            SDL_Log("Pen %" SDL_PRIu32 " leaves proximity!", event->pproximity.which);
+    switch (event->type) {
+        case SDL_EVENT_PEN_PROXIMITY_IN: {
+            pen = (Pen *) SDL_calloc(1, sizeof (*pen));
+            if (!pen) {
+                SDL_Log("Out of memory!");
+                return SDL_APP_FAILURE;
+            }
+
+            SDL_Log("Pen %" SDL_PRIu32 " enters proximity!", event->pproximity.which);
+            pen->pen = event->pproximity.which;
+            pen->r = (Uint8) SDL_rand(256);
+            pen->g = (Uint8) SDL_rand(256);
+            pen->b = (Uint8) SDL_rand(256);
+            pen->x = 320.0f;
+            pen->y = 240.0f;
+            pen->next = pens.next;
+            pens.next = pen;
+
             return SDL_APP_CONTINUE;
+        }
+
+        case SDL_EVENT_PEN_PROXIMITY_OUT: {
+            Pen *prev = &pens;
+            Pen *i;
+
+            SDL_Log("Pen %" SDL_PRIu32 " leaves proximity!", event->pproximity.which);
+            for (i = pens.next; i != NULL; i = i->next) {
+                if (i->pen == event->pproximity.which) {
+                    prev->next = i->next;
+                    SDL_free(i);
+                    break;
+                }
+                prev = i;
+            }
+
+            return SDL_APP_CONTINUE;
+        }
 
         case SDL_EVENT_PEN_DOWN:
-            SDL_Log("Pen %" SDL_PRIu32 " down!", event->ptouch.which);
-            eraser = (event->ptouch.eraser != 0);
+            /*SDL_Log("Pen %" SDL_PRIu32 " down!", event->ptouch.which);*/
+            pen = FindPen(event->ptouch.which);
+            if (pen) {
+                pen->eraser = (event->ptouch.eraser != 0);
+            }
             return SDL_APP_CONTINUE;
 
         case SDL_EVENT_PEN_UP:
-            SDL_Log("Pen %" SDL_PRIu32 " up!", event->ptouch.which);
-            pressure = 0.0f;
+            /*SDL_Log("Pen %" SDL_PRIu32 " up!", event->ptouch.which);*/
+            pen = FindPen(event->ptouch.which);
+            if (pen) {
+                pen->pressure = 0.0f;
+            }
             return SDL_APP_CONTINUE;
 
         case SDL_EVENT_PEN_BUTTON_DOWN:
             /*SDL_Log("Pen %" SDL_PRIu32 " button %d down!", event->pbutton.which, (int) event->pbutton.button);*/
-            buttons |= (1 << event->pbutton.button);
+            pen = FindPen(event->ptouch.which);
+            if (pen) {
+                pen->buttons |= (1 << event->pbutton.button);
+            }
             return SDL_APP_CONTINUE;
 
         case SDL_EVENT_PEN_BUTTON_UP:
             /*SDL_Log("Pen %" SDL_PRIu32 " button %d up!", event->pbutton.which, (int) event->pbutton.button);*/
-            buttons &= ~(1 << event->pbutton.button);
+            pen = FindPen(event->ptouch.which);
+            if (pen) {
+                pen->buttons &= ~(1 << event->pbutton.button);
+            }
             return SDL_APP_CONTINUE;
 
         case SDL_EVENT_PEN_MOTION:
             /*SDL_Log("Pen %" SDL_PRIu32 " moved to (%f,%f)!", event->pmotion.which, event->pmotion.x, event->pmotion.y);*/
-            position_x = event->pmotion.x;
-            position_y = event->pmotion.y;
+            pen = FindPen(event->ptouch.which);
+            if (pen) {
+                pen->x = event->pmotion.x;
+                pen->y = event->pmotion.y;
+            }
             return SDL_APP_CONTINUE;
 
         case SDL_EVENT_PEN_AXIS:
             /*SDL_Log("Pen %" SDL_PRIu32 " axis %d is now %f!", event->paxis.which, (int) event->paxis.axis, event->paxis.value);*/
-            if (event->paxis.axis == SDL_PEN_AXIS_PRESSURE) {
-                pressure = event->paxis.value;
+            pen = FindPen(event->ptouch.which);
+            if (pen) {
+                if (event->paxis.axis == SDL_PEN_AXIS_PRESSURE) {
+                    pen->pressure = event->paxis.value;
+                }
             }
             return SDL_APP_CONTINUE;
 
@@ -140,32 +204,53 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
     return SDLTest_CommonEventMainCallbacks(state, event);
 }
 
-int SDL_AppIterate(void *appstate)
+static void DrawOnePen(Pen *pen, int num)
 {
     int i;
 
-    SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, 255);
-    SDL_RenderClear(renderer);
-
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-
-    for (i = 0; i < 30; i++) {
-        if (buttons & (1 << i)) {
-            const SDL_FRect rect = { 30.0f * ((float) i), 0.0f, 30.0f, 30.0f };
+    /* draw button presses for this pen. A square for each in the pen's color, offset down the screen so they don't overlap. */
+    SDL_SetRenderDrawColor(renderer, pen->r, pen->g, pen->b, 255);
+    for (i = 0; i < 8; i++) {   /* we assume you don't have more than 8 buttons atm... */
+        if (pen->buttons & (1 << i)) {
+            const SDL_FRect rect = { 30.0f * ((float) i), ((float) num) * 30.0f, 30.0f, 30.0f };
             SDL_RenderFillRect(renderer, &rect);
         }
     }
 
-    const float size = SDL_max(50.0f * pressure, 10.0f);
-    const float halfsize = size / 2.0f;
-    const SDL_FRect rect = { position_x - halfsize, position_y - halfsize, size, size };
-
-    if (eraser) {
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-    } else {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    /* draw a square to represent pressure. Always green for eraser and blue for pen */
+    if (pen->pressure > 0.0f) {
+        const float size = (100.0f * pen->pressure) + 10.0f;
+        const float halfsize = size / 2.0f;
+        const SDL_FRect rect = { pen->x - halfsize, pen->y - halfsize, size, size };
+        if (pen->eraser) {
+            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+        }
+        SDL_RenderFillRect(renderer, &rect);
     }
-    SDL_RenderFillRect(renderer, &rect);
+
+    /* draw a little square for position in the center of the pressure, with the pen-specific color. */
+    {
+        const float size = 10.0f;
+        const float halfsize = size / 2.0f;
+        const SDL_FRect rect = { pen->x - halfsize, pen->y - halfsize, size, size };
+        SDL_SetRenderDrawColor(renderer, pen->r, pen->g, pen->b, 255);
+        SDL_RenderFillRect(renderer, &rect);
+    }
+}
+
+int SDL_AppIterate(void *appstate)
+{
+    int num = 0;
+    Pen *pen;
+
+    SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, 255);
+    SDL_RenderClear(renderer);
+
+    for (pen = pens.next; pen != NULL; pen = pen->next, num++) {
+        DrawOnePen(pen, num);
+    }
 
     SDL_RenderPresent(renderer);
 
