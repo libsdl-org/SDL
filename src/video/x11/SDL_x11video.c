@@ -479,11 +479,11 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     }
 #endif
 
-    X11_QuitPen(_this);
     X11_QuitModes(_this);
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);
     X11_QuitTouch(_this);
+    X11_QuitPen(_this);
     X11_QuitClipboard(_this);
     X11_QuitXsettings(_this);
 }

@@ -725,8 +725,8 @@ typedef struct SDL_TouchFingerEvent
  * If the same pen reenters proximity again, it will be given a new ID.
  *
  * Note that "proximity" means "close enough for the tablet to know the tool
- * is there" and that the pen touching and lifting off from the tablet while
- * not leaving the area is a different event.
+ * is there." The pen touching and lifting off from the tablet while not
+ * leaving the area are handled by SDL_EVENT_PEN_DOWN and SDL_EVENT_PEN_UP.
  *
  * \since This struct is available since SDL 3.0.0.
  */
