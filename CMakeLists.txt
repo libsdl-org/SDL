@@ -1882,7 +1882,7 @@ elseif(WINDOWS)
   check_c_source_compiles("
     #include <stdbool.h>
     #define COBJMACROS
-    #include <GameInput.h>
+    #include <gameinput.h>
     int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
   check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)

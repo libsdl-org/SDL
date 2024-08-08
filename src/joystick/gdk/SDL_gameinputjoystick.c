@@ -27,7 +27,7 @@
 
 #include <stdbool.h>
 #define COBJMACROS
-#include <GameInput.h>
+#include <gameinput.h>
 
 enum
 {
