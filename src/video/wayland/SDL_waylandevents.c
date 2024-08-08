@@ -2727,6 +2727,10 @@ void Wayland_input_initialize_seat(SDL_VideoData *d)
     wl_seat_add_listener(input->seat, &seat_listener, input);
     wl_seat_set_user_data(input->seat, input);
 
+    if (d->tablet_manager) {
+        Wayland_input_init_tablet_support(d->input, d->tablet_manager);
+    }
+
     WAYLAND_wl_display_flush(d->display);
 }
 
