@@ -19,7 +19,7 @@ typedef struct Pen
 {
     SDL_PenID pen;
     Uint8 r, g, b;
-    float pressure;
+    float axes[SDL_PEN_NUM_AXES];
     float x;
     float y;
     Uint32 buttons;
@@ -29,6 +29,7 @@ typedef struct Pen
 
 static SDL_Renderer *renderer = NULL;
 static SDLTest_CommonState *state = NULL;
+static SDL_Texture *white_pixel = NULL;
 static Pen pens;
 
 
@@ -76,6 +77,17 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!renderer) {
         /* SDL_Log("Couldn't create renderer: %s", SDL_GetError()); */
         return SDL_APP_FAILURE;
+    }
+
+    white_pixel = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, 16, 16);
+    if (!white_pixel) {
+        SDL_Log("Couldn't create white_pixel texture: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    } else {
+        const SDL_Rect rect = { 0, 0, 16, 16 };
+        Uint32 pixels[16 * 16];
+        SDL_memset(pixels, 0xFF, sizeof (pixels));
+        SDL_UpdateTexture(white_pixel, &rect, pixels, 16 * sizeof (Uint32));
     }
 
     return SDL_APP_CONTINUE;
@@ -146,7 +158,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             /*SDL_Log("Pen %" SDL_PRIu32 " up!", event->ptouch.which);*/
             pen = FindPen(event->ptouch.which);
             if (pen) {
-                pen->pressure = 0.0f;
+                pen->axes[SDL_PEN_AXIS_PRESSURE] = 0.0f;
             }
             return SDL_APP_CONTINUE;
 
@@ -178,10 +190,8 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
         case SDL_EVENT_PEN_AXIS:
             /*SDL_Log("Pen %" SDL_PRIu32 " axis %d is now %f!", event->paxis.which, (int) event->paxis.axis, event->paxis.value);*/
             pen = FindPen(event->ptouch.which);
-            if (pen) {
-                if (event->paxis.axis == SDL_PEN_AXIS_PRESSURE) {
-                    pen->pressure = event->paxis.value;
-                }
+            if (pen && (event->paxis.axis < SDL_arraysize(pen->axes))) {
+                pen->axes[event->paxis.axis] = event->paxis.value;
             }
             return SDL_APP_CONTINUE;
 
@@ -218,16 +228,18 @@ static void DrawOnePen(Pen *pen, int num)
     }
 
     /* draw a square to represent pressure. Always green for eraser and blue for pen */
-    if (pen->pressure > 0.0f) {
-        const float size = (100.0f * pen->pressure) + 10.0f;
+    /* we do this with a texture, so we can trivially rotate it, which SDL_RenderFillRect doesn't offer. */
+    if (pen->axes[SDL_PEN_AXIS_PRESSURE] > 0.0f) {
+        const float size = (100.0f * pen->axes[SDL_PEN_AXIS_PRESSURE]) + 10.0f;
         const float halfsize = size / 2.0f;
         const SDL_FRect rect = { pen->x - halfsize, pen->y - halfsize, size, size };
+        const SDL_FPoint center = { halfsize, halfsize };
         if (pen->eraser) {
-            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+            SDL_SetTextureColorMod(white_pixel, 0, 255, 0);
         } else {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            SDL_SetTextureColorMod(white_pixel, 0, 0, 255);
         }
-        SDL_RenderFillRect(renderer, &rect);
+        SDL_RenderTextureRotated(renderer, white_pixel, NULL, &rect, pen->axes[SDL_PEN_AXIS_ROTATION], &center, SDL_FLIP_NONE);
     }
 
     /* draw a little square for position in the center of the pressure, with the pen-specific color. */
@@ -235,8 +247,9 @@ static void DrawOnePen(Pen *pen, int num)
         const float size = 10.0f;
         const float halfsize = size / 2.0f;
         const SDL_FRect rect = { pen->x - halfsize, pen->y - halfsize, size, size };
-        SDL_SetRenderDrawColor(renderer, pen->r, pen->g, pen->b, 255);
-        SDL_RenderFillRect(renderer, &rect);
+        const SDL_FPoint center = { halfsize, halfsize };
+        SDL_SetTextureColorMod(white_pixel, pen->r, pen->g, pen->b);
+        SDL_RenderTextureRotated(renderer, white_pixel, NULL, &rect, pen->axes[SDL_PEN_AXIS_ROTATION], &center, SDL_FLIP_NONE);
     }
 }
 
@@ -259,6 +272,13 @@ int SDL_AppIterate(void *appstate)
 
 void SDL_AppQuit(void *appstate)
 {
+    Pen *i, *next;
+    for (i = pens.next; i != NULL; i = next) {
+        next = i->next;
+        SDL_free(i);
+    }
+    pens.next = NULL;
+    SDL_DestroyTexture(white_pixel);
     SDLTest_CommonQuit(state);
 }
 
