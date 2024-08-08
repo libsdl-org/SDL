@@ -26,7 +26,7 @@
 
 #include <stdbool.h>
 #define COBJMACROS
-#include <GameInput.h>
+#include <gameinput.h>
 
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
