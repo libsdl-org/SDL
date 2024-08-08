@@ -551,6 +551,13 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
             int tmp;
             a = SDLTest_RandomIntegerInRange(0, nbSuites - 1);
             b = SDLTest_RandomIntegerInRange(0, nbSuites - 1);
+            /*
+             * NB: prevent swapping here to make sure the tests start with the same
+             * random seed (whether they are run in order or not).
+             * So we consume same number of SDLTest_RandomIntegerInRange() in all cases.
+             *
+             * If some random value were used at initialization before the tests start, the --seed wouldn't do the same with or without randomOrder.
+             */
             /* Swap */
             if (randomOrder) {
                 tmp = arraySuites[b];
@@ -602,6 +609,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                 a = SDLTest_RandomIntegerInRange(0, nbTestCases - 1);
                 b = SDLTest_RandomIntegerInRange(0, nbTestCases - 1);
                 /* Swap */
+                /* See previous note */
                 if (randomOrder) {
                     tmp = arrayTestCases[b];
                     arrayTestCases[b] = arrayTestCases[a];
