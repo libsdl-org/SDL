@@ -1883,8 +1883,6 @@ elseif(WINDOWS)
     #include <stdbool.h>
     #define COBJMACROS
     #include <GameInput.h>
-    // Requires Windows SDK version 10.0.26100.0 or newer
-    static GameInputSystemButtons s = GameInputSystemButtonNone;
     int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
   check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)

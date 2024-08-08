@@ -398,6 +398,8 @@ static void GAMEINPUT_UpdatePowerInfo(SDL_Joystick *joystick, IGameInputDevice *
     SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
 
+#ifdef IGameInput_RegisterSystemButtonCallback
+
 static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
     _In_ GameInputCallbackToken callbackToken,
     _In_ void * context,
@@ -423,6 +425,8 @@ static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
     }
 }
 
+#endif // IGameInput_RegisterSystemButtonCallback
+
 static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     GAMEINPUT_InternalDevice *elem = GAMEINPUT_InternalFindByIndex(device_index);
@@ -446,6 +450,7 @@ static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         joystick->nbuttons = 11;
         joystick->nhats = 1;
 
+#ifdef IGameInput_RegisterSystemButtonCallback
         if (info->supportedSystemButtons != GameInputSystemButtonNone) {
             if (info->supportedSystemButtons & GameInputSystemButtonShare) {
                 ++joystick->nbuttons;
@@ -457,6 +462,7 @@ static int GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 #endif
             IGameInput_RegisterSystemButtonCallback(g_pGameInput, elem->device, (GameInputSystemButtonGuide | GameInputSystemButtonShare), joystick, GAMEINPUT_InternalSystemButtonCallback, &hwdata->system_button_callback_token);
         }
+#endif // IGameInput_RegisterSystemButtonCallback
     } else {
         joystick->naxes = info->controllerAxisCount;
         joystick->nbuttons = info->controllerButtonCount;
@@ -705,6 +711,7 @@ static SDL_bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_Gamepa
     out->back.kind = EMappingKind_Button;
     out->back.target = SDL_GAMEPAD_BUTTON_BACK;
 
+#ifdef IGameInput_RegisterSystemButtonCallback
     if (elem->info->supportedSystemButtons & GameInputSystemButtonGuide) {
         out->guide.kind = EMappingKind_Button;
         out->guide.target = SDL_GAMEPAD_BUTTON_GUIDE;
@@ -714,6 +721,7 @@ static SDL_bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_Gamepa
         out->misc1.kind = EMappingKind_Button;
         out->misc1.target = SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE;
     }
+#endif
 
     out->start.kind = EMappingKind_Button;
     out->start.target = SDL_GAMEPAD_BUTTON_START;
