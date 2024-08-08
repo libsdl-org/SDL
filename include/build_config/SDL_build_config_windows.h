@@ -100,7 +100,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_AUDIOCLIENT_H 1
 #define HAVE_TPCSHRD_H 1
 #define HAVE_SENSORSAPI_H 1
-#if defined(__has_include) && __has_include(<GameInput.h>)
+#if defined(__has_include) && __has_include(<gameinput.h>)
 #define HAVE_GAMEINPUT_H 1
 #endif
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64)) && (defined(_MSC_VER) && _MSC_VER >= 1600)
