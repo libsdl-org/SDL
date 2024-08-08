@@ -1996,9 +1996,6 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     }
 
     if (data->xinput_hierarchy_changed) {
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-        X11_InitPen(_this);
-#endif
         X11_Xinput2UpdateDevices(_this, SDL_FALSE);
         data->xinput_hierarchy_changed = SDL_FALSE;
     }

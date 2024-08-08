@@ -104,6 +104,14 @@ struct SDL_VideoData
     Atom XdndSelection;
     Atom XKLAVIER_STATE;
 
+    /* Pen atoms (these have names that don't map well to C symbols) */
+    Atom pen_atom_device_product_id;
+    Atom pen_atom_abs_pressure;
+    Atom pen_atom_abs_tilt_x;
+    Atom pen_atom_abs_tilt_y;
+    Atom pen_atom_wacom_serial_ids;
+    Atom pen_atom_wacom_tool_type;
+
     SDL_Scancode key_layout[256];
     SDL_bool selection_waiting;
     SDL_bool selection_incr_waiting;
@@ -141,7 +149,6 @@ struct SDL_VideoData
     SDL_bool steam_keyboard_open;
 
     SDL_bool is_xwayland;
-
 };
 
 extern SDL_bool X11_UseDirectColorVisuals(void);
