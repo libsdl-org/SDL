@@ -1269,6 +1269,7 @@ static SDL_bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
     PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
 
     if (no_devices || !pipewire_core_version_at_least(1, 0, 0)) {
+        hotplug_loop_destroy();
         PIPEWIRE_Deinitialize();
         return SDL_FALSE;
     }
