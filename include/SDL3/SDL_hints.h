@@ -1227,8 +1227,8 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED"
 
 /**
- * A variable controlling whether GameInput should be used for
- * controller handling on Windows.
+ * A variable controlling whether GameInput should be used for controller
+ * handling on Windows.
  *
  * The variable can be set to the following values:
  *
