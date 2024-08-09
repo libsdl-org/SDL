@@ -72,9 +72,9 @@ extern "C" {
 /**
  * The predefined log categories
  *
- * By default the application category is enabled at the INFO level, the
- * assert category is enabled at the WARN level, test is enabled at the
- * VERBOSE level and all other categories are enabled at the ERROR level.
+ * By default the application and gpu categories are enabled at the INFO
+ * level, the assert category is enabled at the WARN level, test is enabled at
+ * the VERBOSE level and all other categories are enabled at the ERROR level.
  *
  * \since This enum is available since SDL 3.0.0.
  */
@@ -87,6 +87,7 @@ typedef enum SDL_LogCategory
     SDL_LOG_CATEGORY_AUDIO,
     SDL_LOG_CATEGORY_VIDEO,
     SDL_LOG_CATEGORY_RENDER,
+    SDL_LOG_CATEGORY_GPU,
     SDL_LOG_CATEGORY_INPUT,
     SDL_LOG_CATEGORY_TEST,
 

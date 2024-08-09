@@ -91,6 +91,7 @@ static const char * const SDL_category_names[] = {
     "AUDIO",
     "VIDEO",
     "RENDER",
+    "GPU",
     "INPUT",
     "TEST"
 };
@@ -270,6 +271,7 @@ static SDL_LogPriority SDL_GetDefaultLogPriority(int category)
 
     switch (category) {
     case SDL_LOG_CATEGORY_APPLICATION:
+    case SDL_LOG_CATEGORY_GPU:
         return SDL_LOG_PRIORITY_INFO;
     case SDL_LOG_CATEGORY_ASSERT:
         return SDL_LOG_PRIORITY_WARN;
