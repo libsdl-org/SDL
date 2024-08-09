@@ -171,7 +171,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             /*SDL_Log("Pen %" SDL_PRIu32 " button %d down!", event->pbutton.which, (int) event->pbutton.button);*/
             pen = FindPen(event->ptouch.which);
             if (pen) {
-                pen->buttons |= (1 << event->pbutton.button);
+                pen->buttons |= (1 << (event->pbutton.button-1));
             }
             return SDL_APP_CONTINUE;
 
@@ -179,7 +179,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
             /*SDL_Log("Pen %" SDL_PRIu32 " button %d up!", event->pbutton.which, (int) event->pbutton.button);*/
             pen = FindPen(event->ptouch.which);
             if (pen) {
-                pen->buttons &= ~(1 << event->pbutton.button);
+                pen->buttons &= ~(1 << (event->pbutton.button-1));
             }
             return SDL_APP_CONTINUE;
 

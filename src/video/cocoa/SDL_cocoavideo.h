@@ -38,6 +38,7 @@
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoawindow.h"
+#include "SDL_cocoapen.h"
 
 #ifndef MAC_OS_X_VERSION_10_12
 #define DECLARE_EVENT(name) static const NSEventType NSEventType##name = NS##name
