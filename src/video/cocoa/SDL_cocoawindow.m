@@ -1568,6 +1568,10 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
+    if (Cocoa_HandlePenEvent(_data, theEvent)) {
+        return;  // pen code handled it.
+    }
+
     SDL_Mouse *mouse = SDL_GetMouse();
     int button;
 
@@ -1625,6 +1629,10 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
+    if (Cocoa_HandlePenEvent(_data, theEvent)) {
+        return;  // pen code handled it.
+    }
+
     SDL_Mouse *mouse = SDL_GetMouse();
     int button;
 
@@ -1672,6 +1680,10 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
+    if (Cocoa_HandlePenEvent(_data, theEvent)) {
+        return;  // pen code handled it.
+    }
+
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_Mouse *mouse = SDL_GetMouse();
     NSPoint point;
@@ -1885,6 +1897,16 @@ static int Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_
             break;
         }
     }
+}
+
+- (void)tabletProximity:(NSEvent *)theEvent
+{
+    Cocoa_HandlePenEvent(_data, theEvent);
+}
+
+- (void)tabletPoint:(NSEvent *)theEvent
+{
+    Cocoa_HandlePenEvent(_data, theEvent);
 }
 
 @end

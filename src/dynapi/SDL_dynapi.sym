@@ -355,13 +355,6 @@ SDL3_0.0.0 {
     SDL_GetNumberProperty;
     SDL_GetOriginalMemoryFunctions;
     SDL_GetPathInfo;
-    SDL_GetPenCapabilities;
-    SDL_GetPenFromGUID;
-    SDL_GetPenGUID;
-    SDL_GetPenName;
-    SDL_GetPenStatus;
-    SDL_GetPenType;
-    SDL_GetPens;
     SDL_GetPerformanceCounter;
     SDL_GetPerformanceFrequency;
     SDL_GetPixelFormatDetails;
@@ -611,7 +604,6 @@ SDL3_0.0.0 {
     SDL_PauseAudioStreamDevice;
     SDL_PauseHaptic;
     SDL_PeepEvents;
-    SDL_PenConnected;
     SDL_PlayHapticRumble;
     SDL_PollEvent;
     SDL_PremultiplyAlpha;

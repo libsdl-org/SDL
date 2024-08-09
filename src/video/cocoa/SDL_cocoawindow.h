@@ -121,6 +121,10 @@ typedef enum
 /* Touch event handling */
 - (void)handleTouches:(NSTouchPhase)phase withEvent:(NSEvent *)theEvent;
 
+/* Tablet event handling (but these also come through on mouse events sometimes!) */
+- (void)tabletProximity:(NSEvent *)theEvent;
+- (void)tabletPoint:(NSEvent *)theEvent;
+
 @end
 /* *INDENT-ON* */
 

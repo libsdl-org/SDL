@@ -26,7 +26,6 @@
 #include "../video/SDL_sysvideo.h"
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
-#include "SDL_pen_c.h"
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
 #include "../core/windows/SDL_windows.h" // For GetDoubleClickTime()
 #endif
@@ -254,6 +253,7 @@ int SDL_PreInitMouse(void)
     mouse->was_touch_mouse_events = SDL_FALSE; /* no touch to mouse movement event pending */
 
     mouse->cursor_shown = SDL_TRUE;
+
     return 0;
 }
 
@@ -272,8 +272,6 @@ void SDL_PostInitMouse(void)
             SDL_DestroySurface(surface);
         }
     }
-
-    SDL_PenInit();
 }
 
 SDL_bool SDL_IsMouse(Uint16 vendor, Uint16 product)
@@ -741,7 +739,7 @@ static int SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_
     float xrel = 0.0f;
     float yrel = 0.0f;
 
-    if ((!mouse->relative_mode || mouse->warp_emulation_active) && mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID) {
+    if ((!mouse->relative_mode || mouse->warp_emulation_active) && mouseID != SDL_TOUCH_MOUSEID) {
         /* We're not in relative mode, so all mouse events are global mouse events */
         mouseID = SDL_GLOBAL_MOUSE_ID;
     }
@@ -935,7 +933,7 @@ static int SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_
     Uint32 buttonstate;
     SDL_MouseInputSource *source;
 
-    if (!mouse->relative_mode && mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID) {
+    if (!mouse->relative_mode && mouseID != SDL_TOUCH_MOUSEID) {
         /* We're not in relative mode, so all mouse events are global mouse events */
         mouseID = SDL_GLOBAL_MOUSE_ID;
     }
@@ -1101,7 +1099,6 @@ void SDL_QuitMouse(void)
     }
     SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_ShowCursor();
-    SDL_PenQuit();
 
     if (mouse->def_cursor) {
         SDL_SetDefaultCursor(NULL);

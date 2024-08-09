@@ -151,8 +151,6 @@ typedef enum SDL_EventType
                                              in an event watcher, the window handle is still valid and can still be used to retrieve any userdata
                                              associated with the window. Otherwise, the handle has already been destroyed and all resources
                                              associated with it are invalid */
-    SDL_EVENT_WINDOW_PEN_ENTER,         /**< Window has gained focus of the pressure-sensitive pen with ID "data1" */
-    SDL_EVENT_WINDOW_PEN_LEAVE,         /**< Window has lost focus of the pressure-sensitive pen with ID "data1" */
     SDL_EVENT_WINDOW_HDR_STATE_CHANGED, /**< Window HDR properties have changed */
     SDL_EVENT_WINDOW_FIRST = SDL_EVENT_WINDOW_SHOWN,
     SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_HDR_STATE_CHANGED,
@@ -227,11 +225,14 @@ typedef enum SDL_EventType
     SDL_EVENT_SENSOR_UPDATE = 0x1200,     /**< A sensor was updated */
 
     /* Pressure-sensitive pen events */
-    SDL_EVENT_PEN_DOWN      = 0x1300,     /**< Pressure-sensitive pen touched drawing surface */
+    SDL_EVENT_PEN_PROXIMITY_IN = 0x1300,  /**< Pressure-sensitive pen has become available */
+    SDL_EVENT_PEN_PROXIMITY_OUT,          /**< Pressure-sensitive pen has become unavailable */
+    SDL_EVENT_PEN_DOWN,                   /**< Pressure-sensitive pen touched drawing surface */
     SDL_EVENT_PEN_UP,                     /**< Pressure-sensitive pen stopped touching drawing surface */
-    SDL_EVENT_PEN_MOTION,                 /**< Pressure-sensitive pen moved, or angle/pressure changed */
     SDL_EVENT_PEN_BUTTON_DOWN,            /**< Pressure-sensitive pen button pressed */
     SDL_EVENT_PEN_BUTTON_UP,              /**< Pressure-sensitive pen button released */
+    SDL_EVENT_PEN_MOTION,                 /**< Pressure-sensitive pen is moving on the tablet */
+    SDL_EVENT_PEN_AXIS,                   /**< Pressure-sensitive pen angle/pressure/etc changed */
 
     /* Camera hotplug events */
     SDL_EVENT_CAMERA_DEVICE_ADDED = 0x1400,  /**< A new camera device is available */
@@ -426,7 +427,7 @@ typedef struct SDL_MouseMotionEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID, or SDL_PEN_MOUSEID */
+    SDL_MouseID which;  /**< The mouse instance id or SDL_TOUCH_MOUSEID */
     SDL_MouseButtonFlags state;       /**< The current button state */
     float x;            /**< X coordinate, relative to window */
     float y;            /**< Y coordinate, relative to window */
@@ -445,7 +446,7 @@ typedef struct SDL_MouseButtonEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID, or SDL_PEN_MOUSEID */
+    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID */
     Uint8 button;       /**< The mouse button index */
     Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
     Uint8 clicks;       /**< 1 for single-click, 2 for double-click, etc. */
@@ -465,7 +466,7 @@ typedef struct SDL_MouseWheelEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID, or SDL_PEN_MOUSEID */
+    SDL_MouseID which;  /**< The mouse instance id, SDL_TOUCH_MOUSEID */
     float x;            /**< The amount scrolled horizontally, positive to the right and negative to the left */
     float y;            /**< The amount scrolled vertically, positive away from the user and negative toward the user */
     SDL_MouseWheelDirection direction; /**< Set to one of the SDL_MOUSEWHEEL_* defines. When FLIPPED the values in X and Y will be opposite. Multiply by -1 to change them back */
@@ -714,67 +715,119 @@ typedef struct SDL_TouchFingerEvent
     SDL_WindowID windowID; /**< The window underneath the finger, if any */
 } SDL_TouchFingerEvent;
 
-
 /**
- * Pressure-sensitive pen touched or stopped touching surface (event.ptip.*)
+ * Pressure-sensitive pen proximity event structure (event.pmotion.*)
+ *
+ * When a pen becomes visible to the system (it is close enough to a tablet,
+ * etc), SDL will send an SDL_EVENT_PEN_PROXIMITY_IN event with the new
+ * pen's ID. This ID is valid until the pen leaves proximity again (has
+ * been removed from the tablet's area, the tablet has been unplugged, etc).
+ * If the same pen reenters proximity again, it will be given a new ID.
+ *
+ * Note that "proximity" means "close enough for the tablet to know the tool
+ * is there." The pen touching and lifting off from the tablet while not
+ * leaving the area are handled by SDL_EVENT_PEN_DOWN and SDL_EVENT_PEN_UP.
  *
  * \since This struct is available since SDL 3.0.0.
  */
-typedef struct SDL_PenTipEvent
+typedef struct SDL_PenProximityEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_PEN_PROXIMITY_IN or SDL_EVENT_PEN_PROXIMITY_OUT */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID; /**< The window with mouse focus, if any */
+    SDL_PenID which;        /**< The pen instance id */
+} SDL_PenProximityEvent;
+
+/**
+ * Pressure-sensitive pen motion event structure (event.pmotion.*)
+ *
+ * Depending on the hardware, you may get motion events when the
+ * pen is not touching a tablet, for tracking a pen even when it
+ * isn't drawing. You should listen for SDL_EVENT_PEN_DOWN and
+ * SDL_EVENT_PEN_UP events, or check `pen_state & SDL_PEN_INPUT_DOWN`
+ * to decide if a pen is "drawing" when dealing with pen motion.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_PenMotionEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_PEN_MOTION */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID; /**< The window with mouse focus, if any */
+    SDL_PenID which;        /**< The pen instance id */
+    SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event */
+    float x;                /**< X position of pen on tablet */
+    float y;                /**< Y position of pen on tablet */
+} SDL_PenMotionEvent;
+
+/**
+ * Pressure-sensitive pen touched event structure (event.ptouch.*)
+ *
+ * These events come when a pen touches a surface (a tablet, etc),
+ * or lifts off from one.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_PenTouchEvent
 {
     SDL_EventType type;     /**< SDL_EVENT_PEN_DOWN or SDL_EVENT_PEN_UP */
     Uint32 reserved;
     Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;  /**< The window with pen focus, if any */
     SDL_PenID which;        /**< The pen instance id */
-    Uint8 tip;              /**< SDL_PEN_TIP_INK when using a regular pen tip, or SDL_PEN_TIP_ERASER if the pen is being used as an eraser (e.g., flipped to use the eraser tip)  */
-    Uint8 state;            /**< SDL_PRESSED on SDL_EVENT_PEN_DOWN and SDL_RELEASED on SDL_EVENT_PEN_UP */
-    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.), SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
-    float x;                /**< X coordinate, relative to window */
-    float y;                /**< Y coordinate, relative to window */
-    float axes[SDL_PEN_NUM_AXES];   /**< Pen axes such as pressure and tilt (ordered as per SDL_PenAxis) */
-} SDL_PenTipEvent;
-
-/**
- * Pressure-sensitive pen motion / pressure / angle event structure
- * (event.pmotion.*)
- *
- * \since This struct is available since SDL 3.0.0.
- */
-typedef struct SDL_PenMotionEvent
-{
-    SDL_EventType type;     /**< SDL_EVENT_PEN_MOTION */
-    Uint32 reserved;
-    Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_WindowID windowID;  /**< The window with pen focus, if any */
-    SDL_PenID which;        /**< The pen instance id */
-    Uint8 padding1;
-    Uint8 padding2;
-    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.), SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
-    float x;                /**< X coordinate, relative to window */
-    float y;                /**< Y coordinate, relative to window */
-    float axes[SDL_PEN_NUM_AXES];   /**< Pen axes such as pressure and tilt (ordered as per SDL_PenAxis) */
-} SDL_PenMotionEvent;
+    SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event */
+    float x;                /**< X position of pen on tablet */
+    float y;                /**< Y position of pen on tablet */
+    Uint8 eraser;           /**< Non-zero if eraser end is used (not all pens support this). */
+    Uint8 state;            /**< SDL_PRESSED (pen is touching) or SDL_RELEASED (pen is lifted off) */
+} SDL_PenTouchEvent;
 
 /**
  * Pressure-sensitive pen button event structure (event.pbutton.*)
+ *
+ * This is for buttons on the pen itself that the user might click.
+ * The pen itself pressing down to draw triggers a SDL_EVENT_PEN_DOWN
+ * event instead.
  *
  * \since This struct is available since SDL 3.0.0.
  */
 typedef struct SDL_PenButtonEvent
 {
-    SDL_EventType type;     /**< SDL_EVENT_PEN_BUTTON_DOWN or SDL_EVENT_PEN_BUTTON_UP */
+    SDL_EventType type; /**< SDL_EVENT_PEN_BUTTON_DOWN or SDL_EVENT_PEN_BUTTON_UP */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID; /**< The window with mouse focus, if any */
+    SDL_PenID which;        /**< The pen instance id */
+    SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event */
+    float x;                /**< X position of pen on tablet */
+    float y;                /**< Y position of pen on tablet */
+    Uint8 button;       /**< The pen button index (first button is 1). */
+    Uint8 state;        /**< SDL_PRESSED or SDL_RELEASED */
+} SDL_PenButtonEvent;
+
+/**
+ * Pressure-sensitive pen pressure / angle event structure
+ * (event.paxis.*)
+ *
+ * You might get some of these events even if the pen isn't touching the tablet.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_PenAxisEvent
+{
+    SDL_EventType type;     /**< SDL_EVENT_PEN_AXIS */
     Uint32 reserved;
     Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID;  /**< The window with pen focus, if any */
     SDL_PenID which;        /**< The pen instance id */
-    Uint8 button;           /**< The pen button index (1 represents the pen tip for compatibility with mouse events) */
-    Uint8 state;            /**< SDL_PRESSED or SDL_RELEASED */
-    Uint16 pen_state;       /**< Pen button masks (where SDL_BUTTON(1) is the first button, SDL_BUTTON(2) is the second button etc.), SDL_PEN_DOWN_MASK is set if the pen is touching the surface, and SDL_PEN_ERASER_MASK is set if the pen is (used as) an eraser. */
-    float x;                /**< X coordinate, relative to window */
-    float y;                /**< Y coordinate, relative to window */
-    float axes[SDL_PEN_NUM_AXES]; /**< Pen axes such as pressure and tilt (ordered as per SDL_PenAxis) */
-} SDL_PenButtonEvent;
+    SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event */
+    float x;                /**< X position of pen on tablet */
+    float y;                /**< Y position of pen on tablet */
+    SDL_PenAxis axis;       /**< Axis that has changed */
+    float value;            /**< New value of axis */
+} SDL_PenAxisEvent;
 
 /**
  * An event used to drop text or request a file open by the system
@@ -894,9 +947,11 @@ typedef union SDL_Event
     SDL_QuitEvent quit;                     /**< Quit request event data */
     SDL_UserEvent user;                     /**< Custom event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
-    SDL_PenTipEvent ptip;                   /**< Pen tip touching or leaving drawing surface */
-    SDL_PenMotionEvent pmotion;             /**< Pen change in position, pressure, or angle */
-    SDL_PenButtonEvent pbutton;             /**< Pen button press */
+    SDL_PenProximityEvent pproximity;       /**< Pen proximity event data */
+    SDL_PenTouchEvent ptouch;               /**< Pen tip touching event data */
+    SDL_PenMotionEvent pmotion;             /**< Pen motion event data */
+    SDL_PenButtonEvent pbutton;             /**< Pen button event data */
+    SDL_PenAxisEvent paxis;                 /**< Pen axis event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
 

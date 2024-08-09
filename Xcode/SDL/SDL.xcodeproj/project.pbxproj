@@ -524,6 +524,8 @@
 		F3FA5A242B59ACE000FEAD97 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1B2B59ACE000FEAD97 /* yuv_rgb_lsx.h */; };
 		F3FA5A252B59ACE000FEAD97 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1C2B59ACE000FEAD97 /* yuv_rgb_common.h */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
+		0000E5D7110DFF81FF660000 /* SDL_cocoapen.h in Headers */ = {isa = PBXBuildFile; fileRef = 00002F2F5496FA184A0F0000 /* SDL_cocoapen.h */; };
+		0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000CCA310B73A7B59910000 /* SDL_cocoapen.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1076,6 +1078,8 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		00002F2F5496FA184A0F0000 /* SDL_cocoapen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_cocoapen.h; path = SDL_cocoapen.h; sourceTree = "<group>"; };
+		0000CCA310B73A7B59910000 /* SDL_cocoapen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_cocoapen.m; path = SDL_cocoapen.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1676,6 +1680,8 @@
 				A7D8A68323E2513E00DCD162 /* SDL_cocoavulkan.m */,
 				A7D8A69223E2513E00DCD162 /* SDL_cocoawindow.h */,
 				A7D8A68423E2513E00DCD162 /* SDL_cocoawindow.m */,
+				00002F2F5496FA184A0F0000 /* SDL_cocoapen.h */,
+				0000CCA310B73A7B59910000 /* SDL_cocoapen.m */,
 			);
 			path = cocoa;
 			sourceTree = "<group>";
@@ -2908,6 +2914,7 @@
 				0000494CC93F3E624D3C0000 /* SDL_systime.c in Sources */,
 				000095FA1BDE436CF3AF0000 /* SDL_time.c in Sources */,
 				0000140640E77F73F1DF0000 /* SDL_dialog_utils.c in Sources */,
+				0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
