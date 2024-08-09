@@ -417,6 +417,7 @@ int X11_VideoInit(SDL_VideoDevice *_this)
     GET_ATOM(UTF8_STRING);
     GET_ATOM(PRIMARY);
     GET_ATOM(XdndEnter);
+    GET_ATOM(XdndLeave);
     GET_ATOM(XdndPosition);
     GET_ATOM(XdndStatus);
     GET_ATOM(XdndTypeList);

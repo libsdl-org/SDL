@@ -99,6 +99,7 @@ struct SDL_Window
     SDL_bool restore_on_show; /* Child was hidden recursively by the parent, restore when shown. */
     SDL_bool is_destroying;
     SDL_bool is_dropping; /* drag/drop in progress, expecting SDL_SendDropComplete(). */
+    SDL_bool is_dragging; /* dragging in progress, expecting SDL_SendDragExit(). */
 
     int safe_inset_left;
     int safe_inset_right;

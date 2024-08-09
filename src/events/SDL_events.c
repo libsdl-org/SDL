@@ -232,6 +232,8 @@ static void SDL_TransferTemporaryMemoryToEvent(SDL_EventEntry *event)
     case SDL_EVENT_DROP_TEXT:
     case SDL_EVENT_DROP_COMPLETE:
     case SDL_EVENT_DROP_POSITION:
+    case SDL_EVENT_DRAG_ENTER:
+    case SDL_EVENT_DRAG_EXIT:
         SDL_LinkTemporaryMemoryToEvent(event, event->event.drop.source);
         SDL_LinkTemporaryMemoryToEvent(event, event->event.drop.data);
         break;
@@ -760,6 +762,12 @@ static void SDL_LogEvent(const SDL_Event *event)
         PRINT_DROP_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_EVENT_DROP_POSITION)
+        PRINT_DROP_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_DRAG_ENTER)
+        PRINT_DROP_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_DRAG_EXIT)
         PRINT_DROP_EVENT(event);
         break;
 #undef PRINT_DROP_EVENT
