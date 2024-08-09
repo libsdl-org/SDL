@@ -196,23 +196,21 @@ const char *SDL_GetHint(const char *name)
         return NULL;
     }
 
-    const SDL_PropertiesID hints = GetHintProperties(SDL_FALSE);
-    if (!hints) {
-        return NULL;
-    }
-
     const char *retval = SDL_getenv(name);
 
-    SDL_LockProperties(hints);
+    const SDL_PropertiesID hints = GetHintProperties(SDL_FALSE);
+    if (hints) {
+        SDL_LockProperties(hints);
 
-    SDL_Hint *hint = SDL_GetPointerProperty(hints, name, NULL);
-    if (hint) {
-        if (!retval || hint->priority == SDL_HINT_OVERRIDE) {
-            retval = SDL_GetPersistentString(hint->value);
+        SDL_Hint *hint = SDL_GetPointerProperty(hints, name, NULL);
+        if (hint) {
+            if (!retval || hint->priority == SDL_HINT_OVERRIDE) {
+                retval = SDL_GetPersistentString(hint->value);
+            }
         }
-    }
 
-    SDL_UnlockProperties(hints);
+        SDL_UnlockProperties(hints);
+    }
 
     return retval;
 }
