@@ -234,6 +234,10 @@ static int GAMEINPUT_JoystickInit(void)
 {
     HRESULT hR;
 
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_TRUE)) {
+        return 0;
+    }
+
     if (!g_hGameInputDLL) {
         g_hGameInputDLL = SDL_LoadObject("gameinput.dll");
         if (!g_hGameInputDLL) {
@@ -310,21 +314,20 @@ static void GAMEINPUT_JoystickDetect(void)
 
 static SDL_bool GAMEINPUT_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    int idx = 0;
-    GAMEINPUT_InternalDevice *elem = NULL;
-
     SDL_AssertJoysticksLocked();
 
-    if (vendor_id == USB_VENDOR_MICROSOFT &&
-        product_id == USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER) {
-        /* The Xbox One controller shows up as a hardcoded raw input VID/PID, which we definitely handle */
-        return SDL_TRUE;
-    }
-
-    for (idx = 0; idx < g_GameInputList.count; ++idx) {
-        elem = g_GameInputList.devices[idx];
-        if (elem && vendor_id == elem->info->vendorId && product_id == elem->info->productId) {
+    if (g_pGameInput) {
+        if (vendor_id == USB_VENDOR_MICROSOFT &&
+            product_id == USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER) {
+            /* The Xbox One controller shows up as a hardcoded raw input VID/PID, which we definitely handle */
             return SDL_TRUE;
+        }
+
+        for (int i = 0; i < g_GameInputList.count; ++i) {
+            GAMEINPUT_InternalDevice *elem = g_GameInputList.devices[i];
+            if (elem && vendor_id == elem->info->vendorId && product_id == elem->info->productId) {
+                return SDL_TRUE;
+            }
         }
     }
     return SDL_FALSE;

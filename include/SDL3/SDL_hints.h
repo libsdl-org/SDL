@@ -1227,6 +1227,21 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED"
 
 /**
+ * A variable controlling whether GameInput should be used for
+ * controller handling on Windows.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": GameInput is not used.
+ * - "1": GameInput is used. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.0.0.
+ */
+#define SDL_HINT_JOYSTICK_GAMEINPUT "SDL_JOYSTICK_GAMEINPUT"
+
+/**
  * A variable containing a list of devices known to have a GameCube form
  * factor.
  *
