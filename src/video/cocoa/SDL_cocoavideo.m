@@ -201,6 +201,8 @@ int Cocoa_VideoInit(SDL_VideoDevice *_this)
         Cocoa_InitKeyboard(_this);
         if (Cocoa_InitMouse(_this) < 0) {
             return -1;
+        } else if (Cocoa_InitPen(_this) < 0) {
+            return -1;
         }
 
         // Assume we have a mouse and keyboard
@@ -227,6 +229,7 @@ void Cocoa_VideoQuit(SDL_VideoDevice *_this)
         Cocoa_QuitModes(_this);
         Cocoa_QuitKeyboard(_this);
         Cocoa_QuitMouse(_this);
+        Cocoa_QuitPen(_this);
         SDL_DestroyMutex(data.swaplock);
         data.swaplock = NULL;
     }
