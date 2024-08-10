@@ -1240,6 +1240,15 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
             src->format == dst->format &&
             !SDL_ISPIXELFORMAT_INDEXED(src->format)) {
             return SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
+        } else if (SDL_BITSPERPIXEL(src->format) < 8) {
+            // Scaling bitmap not yet supported, convert to RGBA for blit
+            int retval = -1;
+            SDL_Surface *tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_ARGB8888);
+            if (tmp) {
+                retval = SDL_BlitSurfaceUncheckedScaled(tmp, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
+                SDL_DestroySurface(tmp);
+            }
+            return retval;
         } else {
             return SDL_BlitSurfaceUnchecked(src, srcrect, dst, dstrect);
         }
@@ -1251,6 +1260,15 @@ int SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect,
             src->format != SDL_PIXELFORMAT_ARGB2101010) {
             /* fast path */
             return SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
+        } else if (SDL_BITSPERPIXEL(src->format) < 8) {
+            // Scaling bitmap not yet supported, convert to RGBA for blit
+            int retval = -1;
+            SDL_Surface *tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_ARGB8888);
+            if (tmp) {
+                retval = SDL_BlitSurfaceUncheckedScaled(tmp, srcrect, dst, dstrect, scaleMode);
+                SDL_DestroySurface(tmp);
+            }
+            return retval;
         } else {
             /* Use intermediate surface(s) */
             SDL_Surface *tmp1 = NULL;
