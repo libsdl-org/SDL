@@ -719,10 +719,10 @@ typedef struct SDL_TouchFingerEvent
  * Pressure-sensitive pen proximity event structure (event.pmotion.*)
  *
  * When a pen becomes visible to the system (it is close enough to a tablet,
- * etc), SDL will send an SDL_EVENT_PEN_PROXIMITY_IN event with the new
- * pen's ID. This ID is valid until the pen leaves proximity again (has
- * been removed from the tablet's area, the tablet has been unplugged, etc).
- * If the same pen reenters proximity again, it will be given a new ID.
+ * etc), SDL will send an SDL_EVENT_PEN_PROXIMITY_IN event with the new pen's
+ * ID. This ID is valid until the pen leaves proximity again (has been removed
+ * from the tablet's area, the tablet has been unplugged, etc). If the same
+ * pen reenters proximity again, it will be given a new ID.
  *
  * Note that "proximity" means "close enough for the tablet to know the tool
  * is there." The pen touching and lifting off from the tablet while not
@@ -742,11 +742,11 @@ typedef struct SDL_PenProximityEvent
 /**
  * Pressure-sensitive pen motion event structure (event.pmotion.*)
  *
- * Depending on the hardware, you may get motion events when the
- * pen is not touching a tablet, for tracking a pen even when it
- * isn't drawing. You should listen for SDL_EVENT_PEN_DOWN and
- * SDL_EVENT_PEN_UP events, or check `pen_state & SDL_PEN_INPUT_DOWN`
- * to decide if a pen is "drawing" when dealing with pen motion.
+ * Depending on the hardware, you may get motion events when the pen is not
+ * touching a tablet, for tracking a pen even when it isn't drawing. You
+ * should listen for SDL_EVENT_PEN_DOWN and SDL_EVENT_PEN_UP events, or check
+ * `pen_state & SDL_PEN_INPUT_DOWN` to decide if a pen is "drawing" when
+ * dealing with pen motion.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -765,8 +765,8 @@ typedef struct SDL_PenMotionEvent
 /**
  * Pressure-sensitive pen touched event structure (event.ptouch.*)
  *
- * These events come when a pen touches a surface (a tablet, etc),
- * or lifts off from one.
+ * These events come when a pen touches a surface (a tablet, etc), or lifts
+ * off from one.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -787,9 +787,8 @@ typedef struct SDL_PenTouchEvent
 /**
  * Pressure-sensitive pen button event structure (event.pbutton.*)
  *
- * This is for buttons on the pen itself that the user might click.
- * The pen itself pressing down to draw triggers a SDL_EVENT_PEN_DOWN
- * event instead.
+ * This is for buttons on the pen itself that the user might click. The pen
+ * itself pressing down to draw triggers a SDL_EVENT_PEN_DOWN event instead.
  *
  * \since This struct is available since SDL 3.0.0.
  */
@@ -808,10 +807,10 @@ typedef struct SDL_PenButtonEvent
 } SDL_PenButtonEvent;
 
 /**
- * Pressure-sensitive pen pressure / angle event structure
- * (event.paxis.*)
+ * Pressure-sensitive pen pressure / angle event structure (event.paxis.*)
  *
- * You might get some of these events even if the pen isn't touching the tablet.
+ * You might get some of these events even if the pen isn't touching the
+ * tablet.
  *
  * \since This struct is available since SDL 3.0.0.
  */

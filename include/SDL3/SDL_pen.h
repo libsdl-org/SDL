@@ -24,9 +24,9 @@
  *
  * SDL pen event handling.
  *
- * SDL provides an API for pressure-sensitive pen (stylus and/or
- * eraser) handling, e.g., for input and drawing tablets or suitably equipped
- * mobile / tablet devices.
+ * SDL provides an API for pressure-sensitive pen (stylus and/or eraser)
+ * handling, e.g., for input and drawing tablets or suitably equipped mobile /
+ * tablet devices.
  *
  * To get started with pens, simply handle SDL_EVENT_PEN_* events. When a pen
  * starts providing input, SDL will assign it a unique SDL_PenID, which will
@@ -52,8 +52,8 @@ extern "C" {
  * Zero is used to signify an invalid/null device.
  *
  * These show up in pen events when SDL sees input from them. They remain
- * consistent as long as SDL can recognize a tool to be the same pen; but if
- * a pen physically leaves the area and returns, it might get a new ID.
+ * consistent as long as SDL can recognize a tool to be the same pen; but if a
+ * pen physically leaves the area and returns, it might get a new ID.
  *
  * \since This datatype is available since SDL 3.0.0.
  */
@@ -77,10 +77,10 @@ typedef Uint32 SDL_PenInputFlags;
 /**
  * Pen axis indices.
  *
- * These are the valid values for the `axis` field in SDL_PenAxisEvent.
- * All axes are either normalised to 0..1 or report a (positive or negative) angle
- * in degrees, with 0.0 representing the centre. Not all pens/backends support all
- * axes: unsupported axes are always zero.
+ * These are the valid values for the `axis` field in SDL_PenAxisEvent. All
+ * axes are either normalised to 0..1 or report a (positive or negative) angle
+ * in degrees, with 0.0 representing the centre. Not all pens/backends support
+ * all axes: unsupported axes are always zero.
  *
  * To convert angles for tilt and rotation into vector representation, use
  * SDL_sinf on the XTILT, YTILT, or ROTATION component, for example:
