@@ -20,13 +20,13 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-
 #include "../../events/SDL_pen_c.h"
 #include "../SDL_sysvideo.h"
 #include "SDL_x11pen.h"
 #include "SDL_x11video.h"
 #include "SDL_x11xinput2.h"
+
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 
 /* Does this device have a valuator for pressure sensitivity? */
 static SDL_bool X11_XInput2DeviceIsPen(SDL_VideoDevice *_this, const XIDeviceInfo *dev)
@@ -414,6 +414,18 @@ void X11_PenAxesFromValuators(const X11_PenHandle *pen,
         }
     }
     X11_XInput2NormalizePenAxes(pen, axis_values);
+}
+
+#else
+
+void X11_InitPen(SDL_VideoDevice *_this)
+{
+    (void) _this;
+}
+
+void X11_QuitPen(SDL_VideoDevice *_this)
+{
+    (void) _this;
 }
 
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2
