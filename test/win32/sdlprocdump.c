@@ -565,7 +565,7 @@ int main(int argc, char *argv[]) {
             case OUTPUT_DEBUG_STRING_EVENT:
             {
                 if (log_debug_stream) {
-                    size_t bytes_read = 0;
+                    SIZE_T bytes_read = 0;
                     union {
                         char char_buffer[512];
                         WCHAR wchar_buffer[256];
