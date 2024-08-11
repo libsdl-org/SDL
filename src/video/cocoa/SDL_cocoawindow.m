@@ -89,6 +89,7 @@
 /* Handle drag-and-drop of files onto the SDL window. */
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender;
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender;
+- (NSDragOperation)draggingExited:(id <NSDraggingInfo>)sender;
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender;
 - (BOOL)wantsPeriodicDraggingUpdates;
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem;
@@ -166,8 +167,12 @@
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
 {
     if (([sender draggingSourceOperationMask] & NSDragOperationGeneric) == NSDragOperationGeneric) {
+        SDL_Window *sdlwindow = [self findSDLWindow];
+        SDL_SendDragEnter(sdlwindow);
         return NSDragOperationGeneric;
     } else if (([sender draggingSourceOperationMask] & NSDragOperationCopy) == NSDragOperationCopy) {
+        SDL_Window *sdlwindow = [self findSDLWindow];
+        SDL_SendDragEnter(sdlwindow);
         return NSDragOperationCopy;
     }
 
@@ -195,6 +200,13 @@
     }
 
     return NSDragOperationNone; /* no idea what to do with this, reject it. */
+}
+
+- (NSDragOperation)draggingExited:(id <NSDraggingInfo>)sender
+{
+    SDL_Window *sdlwindow = [self findSDLWindow];
+    SDL_SendDragExit(sdlwindow);
+    return NSDragOperationNone;
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender

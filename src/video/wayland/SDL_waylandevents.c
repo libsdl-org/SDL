@@ -2045,6 +2045,8 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
                 data_device->dnd_window = NULL;
             }
         }
+
+        SDL_SendDragEnter(data_device->dnd_window);
     }
 }
 
@@ -2056,6 +2058,8 @@ static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_
         Wayland_data_offer_destroy(data_device->drag_offer);
         data_device->drag_offer = NULL;
     }
+
+    SDL_SendDragExit(data_device->dnd_window);
 }
 
 static void data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,

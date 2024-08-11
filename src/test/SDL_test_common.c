@@ -1902,6 +1902,12 @@ void SDLTest_PrintEvent(const SDL_Event *event)
     case SDL_EVENT_DROP_COMPLETE:
         SDL_Log("SDL EVENT: Drag and drop ending");
         break;
+    case SDL_EVENT_DRAG_ENTER:
+        SDL_Log("SDL EVENT: Drag and drop enter");
+        break;
+    case SDL_EVENT_DRAG_EXIT:
+        SDL_Log("SDL EVENT: Drag and drop exit");
+        break;
     case SDL_EVENT_QUIT:
         SDL_Log("SDL EVENT: Quit requested");
         break;

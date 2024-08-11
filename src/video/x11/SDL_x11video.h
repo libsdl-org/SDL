@@ -95,6 +95,7 @@ struct SDL_VideoData
     Atom UTF8_STRING;
     Atom PRIMARY;
     Atom XdndEnter;
+    Atom XdndLeave;
     Atom XdndPosition;
     Atom XdndStatus;
     Atom XdndTypeList;
