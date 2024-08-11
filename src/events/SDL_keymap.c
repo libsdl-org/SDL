@@ -1067,7 +1067,6 @@ SDL_Keycode SDL_GetKeyFromName(const char *name)
         } else {
             key = SDLK_UNKNOWN;
         }
-        return SDLK_UNKNOWN;
     } else {
         if (SDL_strlen(name) != 1) {
             key = SDLK_UNKNOWN;
