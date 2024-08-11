@@ -282,6 +282,8 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
         if (!hint) {
             SDL_free(entry);
+            SDL_UnlockProperties(hints);
+            return -1;
         } else {
             hint->value = NULL;
             hint->priority = SDL_HINT_DEFAULT;
