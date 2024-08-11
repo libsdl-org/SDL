@@ -26,7 +26,7 @@ static SDL_Surface *frame_current = NULL;
 static SDL_CameraID front_camera = 0;
 static SDL_CameraID back_camera = 0;
 
-// For frequency logging
+/* For frequency logging */
 static Uint64 last_log_time = 0;
 static int iterate_count = 0;
 static int frame_count = 0;
@@ -241,14 +241,14 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
 
         case SDL_EVENT_CAMERA_DEVICE_APPROVED:
             SDL_Log("Camera approved!");
-            SDL_CameraSpec spec;
-            SDL_GetCameraFormat(camera, &spec);
+            SDL_CameraSpec camera_spec;
+            SDL_GetCameraFormat(camera, &camera_spec);
             float fps = 0;
-            if (spec.framerate_denominator != 0) {
-                fps = (float)spec.framerate_numerator / (float)spec.framerate_denominator;
+            if (camera_spec.framerate_denominator != 0) {
+                fps = (float)camera_spec.framerate_numerator / (float)camera_spec.framerate_denominator;
             }
             SDL_Log("Camera Spec: %dx%d %.2f FPS %s",
-                    spec.width, spec.height, fps, SDL_GetPixelFormatName(spec.format));
+                    camera_spec.width, camera_spec.height, fps, SDL_GetPixelFormatName(camera_spec.format));
             break;
 
         case SDL_EVENT_CAMERA_DEVICE_DENIED:
@@ -264,19 +264,16 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
 
 int SDL_AppIterate(void *appstate)
 {
-    // Increment the iterate count
     iterate_count++;
 
-    // Get the current time
     Uint64 current_time = SDL_GetTicks();
 
-    // If a minute has passed, log the frequencies and reset the counters
-    if (current_time - last_log_time >= 60000) { // 60000 milliseconds = 1 minute
+    /* If a minute has passed, log the frequencies and reset the counters */
+    if (current_time - last_log_time >= 60000) {
         SDL_Log("SDL_AppIterate() called %d times in the last minute", iterate_count);
         float fps = (float)frame_count / 60.0f;
         SDL_Log("SDL_AcquireCameraFrame() FPS: %.2f", fps);
 
-        // Reset counters and update last log time
         iterate_count = 0;
         frame_count = 0;
         last_log_time = current_time;
