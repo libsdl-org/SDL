@@ -641,6 +641,166 @@ static const char *Emscripten_HandleBeforeUnload(int eventType, const void *rese
     return ""; /* don't trigger confirmation dialog */
 }
 
+// IF YOU CHANGE THIS STRUCTURE, YOU NEED TO UPDATE THE JAVASCRIPT THAT FILLS IT IN: makePointerEventCStruct, below.
+typedef struct Emscripten_PointerEvent
+{
+    int pointerid;
+    int button;
+    int buttons;
+    float movementX;
+    float movementY;
+    float targetX;
+    float targetY;
+    float pressure;
+    float tangential_pressure;
+    float tiltx;
+    float tilty;
+    float rotation;
+} Emscripten_PointerEvent;
+
+static void Emscripten_UpdatePointerFromEvent(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
+{
+    const SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) event->pointerid);
+    if (pen) {
+        /* rescale (in case canvas is being scaled)*/
+        double client_w, client_h;
+        emscripten_get_element_css_size(window_data->canvas_id, &client_w, &client_h);
+        const double xscale = window_data->window->w / client_w;
+        const double yscale = window_data->window->h / client_h;
+
+        const SDL_bool isPointerLocked = window_data->has_pointer_lock;
+        float mx, my;
+        if (isPointerLocked) {
+            mx = (float)(event->movementX * xscale);
+            my = (float)(event->movementY * yscale);
+        } else {
+            mx = (float)(event->targetX * xscale);
+            my = (float)(event->targetY * yscale);
+        }
+
+        SDL_SendPenMotion(0, pen, window_data->window, mx, my);
+
+        if (event->button == 0) {  // pen touch
+            SDL_SendPenTouch(0, pen, window_data->window, (event->buttons & 1) ? SDL_PRESSED : SDL_RELEASED, 0);
+        } else if (event->button == 5) {  // eraser touch...? Not sure if this is right...
+            SDL_SendPenTouch(0, pen, window_data->window, (event->buttons & 32) ? SDL_PRESSED : SDL_RELEASED, 1);
+        } else if (event->button == 1) {
+            SDL_SendPenButton(0, pen, window_data->window, (event->buttons & 4) ? SDL_PRESSED : SDL_RELEASED, 2);
+        } else if (event->button == 2) {
+            SDL_SendPenButton(0, pen, window_data->window, (event->buttons & 2) ? SDL_PRESSED : SDL_RELEASED, 1);
+        }
+
+        SDL_SendPenAxis(0, pen, window_data->window, SDL_PEN_AXIS_PRESSURE, event->pressure);
+        SDL_SendPenAxis(0, pen, window_data->window, SDL_PEN_AXIS_TANGENTIAL_PRESSURE, event->tangential_pressure);
+        SDL_SendPenAxis(0, pen, window_data->window, SDL_PEN_AXIS_XTILT, event->tiltx);
+        SDL_SendPenAxis(0, pen, window_data->window, SDL_PEN_AXIS_YTILT, event->tilty);
+        SDL_SendPenAxis(0, pen, window_data->window, SDL_PEN_AXIS_ROTATION, event->rotation);
+    }
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_HandlePointerEnter(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
+{
+    // Emscripten offers almost none of this information as specifics, but can without warning offer any of these specific things.
+    SDL_PenInfo peninfo;
+    SDL_zero(peninfo);
+    peninfo.capabilities = SDL_PEN_CAPABILITY_PRESSURE | SDL_PEN_CAPABILITY_ROTATION | SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT | SDL_PEN_CAPABILITY_TANGENTIAL_PRESSURE | SDL_PEN_CAPABILITY_ERASER;
+    peninfo.max_tilt = 90.0f;
+    peninfo.num_buttons = 2;
+    peninfo.subtype = SDL_PEN_TYPE_PEN;
+    SDL_AddPenDevice(0, NULL, &peninfo, (void *) (size_t) event->pointerid);
+    Emscripten_UpdatePointerFromEvent(window_data, event);
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_HandlePointerLeave(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
+{
+    const SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) event->pointerid);
+    if (pen) {
+        Emscripten_UpdatePointerFromEvent(window_data, event);  // last data updates?
+        SDL_RemovePenDevice(0, pen);
+    }
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_HandlePointerGeneric(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
+{
+    Emscripten_UpdatePointerFromEvent(window_data, event);
+}
+
+static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
+{
+    MAIN_THREAD_EM_ASM({
+        var target = document.querySelector(UTF8ToString($1));
+        if (target) {
+            var data = $0;
+
+            if (typeof(Module['SDL3']) === 'undefined') {
+                Module['SDL3'] = {};
+            }
+            var SDL3 = Module['SDL3'];
+
+            var makePointerEventCStruct = function(event) {
+                var ptr = 0;
+                if (event.pointerType == "pen") {
+                    ptr = _malloc($2);
+                    if (ptr != 0) {
+                        var rect = target.getBoundingClientRect();
+                        var idx = ptr >> 2;
+                        HEAP32[idx++] = event.pointerId;
+                        HEAP32[idx++] = (typeof(event.button) !== "undefined") ? event.button : -1;
+                        HEAP32[idx++] = event.buttons;
+                        HEAPF32[idx++] = event.movementX;
+                        HEAPF32[idx++] = event.movementY;
+                        HEAPF32[idx++] = event.clientX - rect.left;
+                        HEAPF32[idx++] = event.clientY - rect.top;
+                        HEAPF32[idx++] = event.pressure;
+                        HEAPF32[idx++] = event.tangentialPressure;
+                        HEAPF32[idx++] = event.tiltX;
+                        HEAPF32[idx++] = event.tiltY;
+                        HEAPF32[idx++] = event.twist;
+                    }
+                }
+                return ptr;
+            };
+
+            SDL3.eventHandlerPointerEnter = function(event) {
+                var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerEnter(data, d); _free(d); }
+            };
+            target.addEventListener("pointerenter", SDL3.eventHandlerPointerEnter);
+
+            SDL3.eventHandlerPointerLeave = function(event) {
+                var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerLeave(data, d); _free(d); }
+            };
+            target.addEventListener("pointerleave", SDL3.eventHandlerPointerLeave);
+            target.addEventListener("pointercancel", SDL3.eventHandlerPointerLeave);  /* catch this, just in case. */
+
+            SDL3.eventHandlerPointerGeneric = function(event) {
+                var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerGeneric(data, d); _free(d); }
+            };
+            target.addEventListener("pointerdown", SDL3.eventHandlerPointerGeneric);
+            target.addEventListener("pointerup", SDL3.eventHandlerPointerGeneric);
+            target.addEventListener("pointermove", SDL3.eventHandlerPointerGeneric);
+        }
+    }, data, data->canvas_id, sizeof (Emscripten_PointerEvent));
+}
+
+static void Emscripten_unset_pointer_event_callbacks(SDL_WindowData *data)
+{
+    MAIN_THREAD_EM_ASM({
+        var target = document.querySelector(UTF8ToString($0));
+        if (target) {
+            var SDL3 = Module['SDL3'];
+            target.removeEventListener("pointerenter", SDL3.eventHandlerPointerEnter);
+            target.removeEventListener("pointerleave", SDL3.eventHandlerPointerLeave);
+            target.removeEventListener("pointercancel", SDL3.eventHandlerPointerLeave);
+            target.removeEventListener("pointerdown", SDL3.eventHandlerPointerGeneric);
+            target.removeEventListener("pointerup", SDL3.eventHandlerPointerGeneric);
+            target.removeEventListener("pointermove", SDL3.eventHandlerPointerGeneric);
+            SDL3.eventHandlerPointerEnter = undefined;
+            SDL3.eventHandlerPointerLeave = undefined;
+            SDL3.eventHandlerPointerGeneric = undefined;
+        }
+    }, data->canvas_id);
+}
+
 void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
     const char *keyElement;
@@ -683,11 +843,19 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_visibilitychange_callback(data, 0, Emscripten_HandleVisibilityChange);
 
     emscripten_set_beforeunload_callback(data, Emscripten_HandleBeforeUnload);
+
+    // !!! FIXME: currently Emscripten doesn't have a Pointer Events functions like emscripten_set_*_callback, but we should use those when they do:
+    // !!! FIXME:  https://github.com/emscripten-core/emscripten/issues/7278#issuecomment-2280024621
+    Emscripten_set_pointer_event_callbacks(data);
 }
 
 void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 {
     const char *target;
+
+    // !!! FIXME: currently Emscripten doesn't have a Pointer Events functions like emscripten_set_*_callback, but we should use those when they do:
+    // !!! FIXME:  https://github.com/emscripten-core/emscripten/issues/7278#issuecomment-2280024621
+    Emscripten_unset_pointer_event_callbacks(data);
 
     /* only works due to having one window */
     emscripten_set_mousemove_callback(data->canvas_id, NULL, 0, NULL);
