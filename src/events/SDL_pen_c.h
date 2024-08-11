@@ -34,7 +34,8 @@ typedef Uint32 SDL_PenCapabilityFlags;
 #define SDL_PEN_CAPABILITY_DISTANCE  (1u << 3)  /**< Provides distance to drawing tablet on SDL_PEN_AXIS_DISTANCE. */
 #define SDL_PEN_CAPABILITY_ROTATION  (1u << 4)  /**< Provides barrel rotation info on SDL_PEN_AXIS_ROTATION. */
 #define SDL_PEN_CAPABILITY_SLIDER    (1u << 5)  /**< Provides slider/finger wheel/etc on SDL_PEN_AXIS_SLIDER. */
-#define SDL_PEN_CAPABILITY_ERASER    (1u << 6)  /**< Pen also has an eraser tip. */
+#define SDL_PEN_CAPABILITY_TANGENTIAL_PRESSURE (1u << 6)  /**< Provides barrel pressure on SDL_PEN_AXIS_TANGENTIAL_PRESSURE. */
+#define SDL_PEN_CAPABILITY_ERASER    (1u << 7)  /**< Pen also has an eraser tip. */
 
 typedef enum SDL_PenSubtype
 {
