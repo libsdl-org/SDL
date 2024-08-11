@@ -691,7 +691,11 @@ xsettings_list_copy (XSettingsList *list)
       if (new_iter)
         new_iter->next = new_node;
       else
-        new = new_node;
+        {
+          new = new_node;
+          new->next = NULL;
+        }
+
 
       new_iter = new_node;
 
