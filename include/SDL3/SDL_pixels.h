@@ -874,6 +874,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette *palette);
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGB
  * \sa SDL_MapRGBA
  * \sa SDL_MapSurfaceRGB
@@ -912,6 +913,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *form
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGBA
  * \sa SDL_MapRGB
  * \sa SDL_MapSurfaceRGBA
@@ -939,6 +941,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *for
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGBA
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
@@ -970,6 +973,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatD
  *
  * \since This function is available since SDL 3.0.0.
  *
+ * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGB
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
