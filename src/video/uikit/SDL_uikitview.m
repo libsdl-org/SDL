@@ -53,20 +53,25 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
     if ((self = [super initWithFrame:frame])) {
 #if TARGET_OS_TV
+        UISwipeGestureRecognizer *swipeUp;
+        UISwipeGestureRecognizer *swipeDown;
+        UISwipeGestureRecognizer *swipeLeft;
+        UISwipeGestureRecognizer *swipeRight;
+
         /* Apple TV Remote touchpad swipe gestures. */
-        UISwipeGestureRecognizer *swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
         [self addGestureRecognizer:swipeUp];
 
-        UISwipeGestureRecognizer *swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeDown.direction = UISwipeGestureRecognizerDirectionDown;
         [self addGestureRecognizer:swipeDown];
 
-        UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
         [self addGestureRecognizer:swipeLeft];
 
-        UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
         [self addGestureRecognizer:swipeRight];
 #endif
@@ -257,6 +262,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         }
 #endif
         if (!handled) {
+            CGPoint locationInView;
             SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
             SDL_TouchID touchId = [self touchIdForType:touchType];
             float pressure = [self pressureForTouch:touch];
@@ -267,7 +273,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
             /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
 
-            CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
+            locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
                           SDL_TRUE, locationInView.x, locationInView.y, pressure);
         }
@@ -312,6 +318,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         }
 #endif
         if (!handled) {
+            CGPoint locationInView;
             SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
             SDL_TouchID touchId = [self touchIdForType:touchType];
             float pressure = [self pressureForTouch:touch];
@@ -322,7 +329,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
             /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
 
-            CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
+            locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
                           SDL_FALSE, locationInView.x, locationInView.y, pressure);
         }
@@ -348,6 +355,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         }
 #endif
         if (!handled) {
+            CGPoint locationInView;
             SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
             SDL_TouchID touchId = [self touchIdForType:touchType];
             float pressure = [self pressureForTouch:touch];
@@ -356,7 +364,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                 continue;
             }
 
-            CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
+            locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouchMotion(touchId, (SDL_FingerID)((size_t)touch), sdlwindow,
                                 locationInView.x, locationInView.y, pressure);
         }

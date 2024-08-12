@@ -155,6 +155,10 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
         SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
         SDL_Window *other;
+        UIWindow *uiwindow;
+#if !TARGET_OS_TV
+        const CGSize origsize = data.uiscreen.currentMode.size;
+#endif
 
         /* We currently only handle a single window per display on iOS */
         for (other = _this->windows; other; other = other->next) {
@@ -167,14 +171,13 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
          * user, so it's in standby), try to force the display to a resolution
          * that most closely matches the desired window size. */
 #if !TARGET_OS_TV
-        const CGSize origsize = data.uiscreen.currentMode.size;
         if ((origsize.width == 0.0f) && (origsize.height == 0.0f)) {
+            int i;
+            const SDL_DisplayMode *bestmode = NULL;
             if (display->num_display_modes == 0) {
                 _this->GetDisplayModes(_this, display);
             }
 
-            int i;
-            const SDL_DisplayMode *bestmode = NULL;
             for (i = display->num_display_modes; i >= 0; i--) {
                 const SDL_DisplayMode *mode = &display->display_modes[i];
                 if ((mode->w >= window->w) && (mode->h >= window->h)) {
@@ -204,7 +207,7 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
 
         /* ignore the size user requested, and make a fullscreen window */
         /* !!! FIXME: can we have a smaller view? */
-        UIWindow *uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data.uiscreen.bounds];
+        uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data.uiscreen.bounds];
 
         /* put the window on an external display if appropriate. */
         if (data.uiscreen != [UIScreen mainScreen]) {
@@ -230,12 +233,14 @@ void UIKit_SetWindowTitle(_THIS, SDL_Window * window)
 void UIKit_ShowWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
+        SDL_VideoDisplay *display;
+        SDL_DisplayData *displaydata;
         SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
         [data.uiwindow makeKeyAndVisible];
 
         /* Make this window the current mouse focus for touch input */
-        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-        SDL_DisplayData *displaydata = (__bridge SDL_DisplayData *) display->driverdata;
+        display = SDL_GetDisplayForWindow(window);
+        displaydata = (__bridge SDL_DisplayData *) display->driverdata;
         if (displaydata.uiscreen == [UIScreen mainScreen]) {
             SDL_SetMouseFocus(window);
             SDL_SetKeyboardFocus(window);

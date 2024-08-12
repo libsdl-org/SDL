@@ -30,6 +30,7 @@ jobs:
         - { name: Ubuntu 22.04 (CMake),           os: ubuntu-22.04,   shell: sh }
         - { name: Ubuntu 22.04 (autotools),       os: ubuntu-22.04,   shell: sh,    autotools: true }
         - { name: iOS (CMake),                    os: macos-latest,   shell: sh,    cmake: '-DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES="arm64"', cross: true, test-pkg-config: false }
+        - { name: tvOS (CMake),                    os: macos-latest,   shell: sh,    cmake: '-DCMAKE_SYSTEM_NAME=tvOS -DCMAKE_OSX_ARCHITECTURES="arm64"', cross: true, test-pkg-config: false }
         - { name: MacOS (CMake),                  os: macos-latest,   shell: sh,    cmake: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"' }
         - { name: MacOS (autotools),              os: macos-latest,   shell: sh,    autotools: true }
 
