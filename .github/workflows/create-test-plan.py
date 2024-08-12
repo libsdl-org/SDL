@@ -124,8 +124,8 @@ JOB_SPECS = {
     "android-cmake-lean": JobSpec(name="Android (CMake, lean)",             os=JobOs.UbuntuLatest,  platform=SdlPlatform.Android,     artifact="SDL-lean-android-arm64", android_abi="arm64-v8a", android_arch="aarch64", android_platform=23, lean=True, ),
     "android-mk": JobSpec(name="Android (Android.mk)",                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.Android,     artifact=None,                     no_cmake=True, android_mk=True, ),
     "android-gradle": JobSpec(name="Android (Gradle)",                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.Android,     artifact=None,                     no_cmake=True, android_gradle=True, ),
-    "ios-xcode": JobSpec(name="iOS (xcode)",                                os=JobOs.MacosLatest,   platform=SdlPlatform.Ios,         artifact=None,                     no_cmake=True, ),
-    "tvos-xcode": JobSpec(name="tvOS (xcode)",                              os=JobOs.MacosLatest,   platform=SdlPlatform.Tvos,        artifact=None,                     no_cmake=True, ),
+    "ios": JobSpec(name="iOS (CMake & xcode)",                              os=JobOs.MacosLatest,   platform=SdlPlatform.Ios,         artifact="SDL-ios-arm64"           ),
+    "tvos": JobSpec(name="tvOS (CMake & xcode)",                            os=JobOs.MacosLatest,   platform=SdlPlatform.Tvos,        artifact="SDL-tvos-arm64",         ),
     "emscripten": JobSpec(name="Emscripten",                                os=JobOs.UbuntuLatest,  platform=SdlPlatform.Emscripten,  artifact="SDL-emscripten", ),
     "haiku": JobSpec(name="Haiku",                                          os=JobOs.UbuntuLatest,  platform=SdlPlatform.Haiku,       artifact="SDL-haiku-x64",          container="haiku/cross-compiler:x86_64-r1beta4", ),
     "loongarch64": JobSpec(name="LoongArch64",                              os=JobOs.UbuntuLatest,  platform=SdlPlatform.LoongArch64, artifact="SDL-loongarch64", ),
@@ -417,11 +417,26 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             if ubuntu_year >= 22:
                 job.apt_packages.extend(("libpipewire-0.3-dev", "libdecor-0-dev"))
         case SdlPlatform.Ios | SdlPlatform.Tvos:
+            job.brew_packages.extend([
+                "ninja",
+                "pkg-config",
+            ])
+            job.clang_tidy = False
+            job.run_tests = False
+            job.test_pkg_config = False
             match spec.platform:
                 case SdlPlatform.Ios:
                     job.xcode_sdk = 'iphoneos'
+                    job.cmake_arguments.extend([
+                        "-DCMAKE_SYSTEM_NAME=iOS",
+                        "-DCMAKE_OSX_ARCHITECTURES=\"arm64\"",
+                    ])
                 case SdlPlatform.Tvos:
                     job.xcode_sdk = 'appletvos'
+                    job.cmake_arguments.extend([
+                        "-DCMAKE_SYSTEM_NAME=tvOS",
+                        "-DCMAKE_OSX_ARCHITECTURES=\"arm64\"",
+                    ])
         case SdlPlatform.MacOS:
             if spec.apple_framework:
                 job.static = False

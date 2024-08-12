@@ -621,7 +621,7 @@ jobs:
         run: |
           android_abis="x86 x86_64 armeabi-v7a arm64-v8a"
           for android_abi in ${android_abis}; do
-            echo "Configure ${android_abi}"
+            echo "Configuring ${android_abi}..."
             cmake -S "${{ steps.src.outputs.path }}/cmake/test"                               \
               -DTEST_FULL=TRUE                                                                \
               -DTEST_STATIC=FALSE                                                             \
@@ -632,6 +632,6 @@ jobs:
               -Werror=dev                                                                     \
               -DCMAKE_BUILD_TYPE=Release                                                      \
               -B "${android_abi}"
+            echo "Building ${android_abi}..."
+            cmake --build "${android_abi}" --config Release --verbose
           done
-          echo "Build ${android_abi}"
-          cmake --build "${android_abi}" --config Release --verbose

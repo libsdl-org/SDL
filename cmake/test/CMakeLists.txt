@@ -5,7 +5,9 @@ project(sdl_test LANGUAGES C)
 
 include(CheckLanguage)
 
-if(APPLE)
+# FIXME: how to target ios/tvos with Swift?
+# https://gitlab.kitware.com/cmake/cmake/-/issues/20104
+if(APPLE AND CMAKE_SYSTEM_NAME MATCHES ".*(Darwin|MacOS).*")
     # multiple values for CMAKE_OSX_ARCHITECTURES not supported with Swift
     list(LENGTH CMAKE_OSX_ARCHITECTURES count_osx_archs)
     if(count_osx_archs LESS_EQUAL 1)
