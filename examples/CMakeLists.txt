@@ -186,6 +186,7 @@ add_sdl_example_executable(renderer-primitives SOURCES renderer/02-primitives/re
 add_sdl_example_executable(audio-simple-playback SOURCES audio/01-simple-playback/simple-playback.c)
 add_sdl_example_executable(audio-simple-playback-callback SOURCES audio/02-simple-playback-callback/simple-playback-callback.c)
 add_sdl_example_executable(audio-load-wav SOURCES audio/03-load-wav/load-wav.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.wav)
+add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-pen-drawing-lines/pen-drawing-lines.c)
 add_sdl_example_executable(game-snake SOURCES game/01-snake/main.c game/01-snake/snake.c)
 
 
