@@ -947,7 +947,7 @@ macro(CheckPTHREAD)
     elseif(BSDI)
       set(PTHREAD_CFLAGS "-D_REENTRANT -D_THREAD_SAFE")
       set(PTHREAD_LDFLAGS "")
-    elseif(DARWIN)
+    elseif(MACOS)
       set(PTHREAD_CFLAGS "-D_THREAD_SAFE")
       # causes Carbon.p complaints?
       # set(PTHREAD_CFLAGS "-D_REENTRANT -D_THREAD_SAFE")
