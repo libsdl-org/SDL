@@ -1131,6 +1131,23 @@ Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     return pixel;
 }
 
+Uint8 SDL_LookupRGBAColor(SDL_HashTable *palette_map, Uint32 pixel, const SDL_Palette *pal)
+{
+    Uint8 color_index = 0;
+    const void *value;
+    if (SDL_FindInHashTable(palette_map, (const void *)(uintptr_t)pixel, &value)) {
+        color_index = (Uint8)(uintptr_t)value;
+    } else {
+        Uint8 r = (Uint8)((pixel >> 24) & 0xFF);
+        Uint8 g = (Uint8)((pixel >> 16) & 0xFF);
+        Uint8 b = (Uint8)((pixel >>  8) & 0xFF);
+        Uint8 a = (Uint8)((pixel >>  0) & 0xFF);
+        color_index = SDL_FindColor(pal, r, g, b, a);
+        SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixel, (const void *)(uintptr_t)color_index);
+    }
+    return color_index;
+}
+
 /* Tell whether palette is opaque, and if it has an alpha_channel */
 void SDL_DetectPalette(const SDL_Palette *pal, SDL_bool *is_opaque, SDL_bool *has_alpha_channel)
 {
@@ -1401,24 +1418,6 @@ static Uint8 *Map1toN(const SDL_Palette *pal, Uint8 Rmod, Uint8 Gmod, Uint8 Bmod
     return map;
 }
 
-/* Map from BitField to Dithered-Palette to Palette */
-static Uint8 *MapNto1(const SDL_PixelFormatDetails *src, const SDL_Palette *pal, int *identical)
-{
-    /* Generate a 256 color dither palette */
-    SDL_Palette dithered;
-    SDL_Color colors[256];
-
-    if (!pal) {
-        SDL_SetError("dst does not have a palette set");
-        return NULL;
-    }
-
-    dithered.colors = colors;
-    dithered.ncolors = SDL_arraysize(colors);
-    SDL_DitherPalette(&dithered);
-    return Map1to1(&dithered, pal, identical);
-}
-
 int SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst)
 {
     SDL_BlitMap *map = &src->internal->map;
@@ -1449,8 +1448,14 @@ void SDL_InvalidateMap(SDL_BlitMap *map)
     map->info.dst_pal = NULL;
     map->src_palette_version = 0;
     map->dst_palette_version = 0;
-    SDL_free(map->info.table);
-    map->info.table = NULL;
+    if (map->info.table) {
+        SDL_free(map->info.table);
+        map->info.table = NULL;
+    }
+    if (map->info.palette_map) {
+        SDL_DestroyHashTable(map->info.palette_map);
+        map->info.palette_map = NULL;
+    }
 }
 
 int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
@@ -1504,13 +1509,7 @@ int SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     } else {
         if (SDL_ISPIXELFORMAT_INDEXED(dstfmt->format)) {
             /* BitField --> Palette */
-            map->info.table = MapNto1(srcfmt, dstpal, &map->identity);
-            if (!map->identity) {
-                if (!map->info.table) {
-                    return -1;
-                }
-            }
-            map->identity = 0; /* Don't optimize to copy */
+            map->info.palette_map = SDL_CreateHashTable(NULL, 32, SDL_HashID, SDL_KeyMatchID, NULL, SDL_FALSE);
         } else {
             /* BitField --> BitField */
             if (srcfmt == dstfmt) {

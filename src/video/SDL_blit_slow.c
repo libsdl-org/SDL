@@ -69,15 +69,21 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
     const SDL_Palette *src_pal = info->src_pal;
     const SDL_PixelFormatDetails *dst_fmt = info->dst_fmt;
     const SDL_Palette *dst_pal = info->dst_pal;
+    SDL_HashTable *palette_map = info->palette_map;
     int srcbpp = src_fmt->bytes_per_pixel;
     int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
     SlowBlitPixelAccess dst_access;
     Uint32 rgbmask = ~src_fmt->Amask;
     Uint32 ckey = info->colorkey & rgbmask;
+    Uint32 last_pixel = 0;
+    Uint8 last_index = 0;
 
     src_access = GetPixelAccessMethod(src_fmt->format);
     dst_access = GetPixelAccessMethod(dst_fmt->format);
+    if (dst_access == SlowBlitPixelAccess_Index8) {
+        last_index = SDL_LookupRGBAColor(palette_map, last_pixel, dst_pal);
+    }
 
     incy = ((Uint64)info->src_h << 16) / info->dst_h;
     incx = ((Uint64)info->src_w << 16) / info->dst_w;
@@ -275,12 +281,12 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
 
             switch (dst_access) {
             case SlowBlitPixelAccess_Index8:
-                RGB332_FROM_RGB(dstpixel, dstR, dstG, dstB);
-                if (info->table) {
-                    *dst = info->table[dstpixel];
-                } else {
-                    *dst = dstpixel;
+                dstpixel = (dstR << 24 | dstG << 16 | dstB << 8 | dstA);
+                if (dstpixel != last_pixel) {
+                    last_pixel = dstpixel;
+                    last_index = SDL_LookupRGBAColor(palette_map, dstpixel, dst_pal);
                 }
+                *dst = last_index;
                 break;
             case SlowBlitPixelAccess_RGB:
                 ASSEMBLE_RGB(dst, dstbpp, dst_fmt, dstR, dstG, dstB);
