@@ -281,7 +281,7 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
 
             switch (dst_access) {
             case SlowBlitPixelAccess_Index8:
-                dstpixel = (dstR << 24 | dstG << 16 | dstB << 8 | dstA);
+                dstpixel = ((dstR << 24) | (dstG << 16) | (dstB << 8) | dstA);
                 if (dstpixel != last_pixel) {
                     last_pixel = dstpixel;
                     last_index = SDL_LookupRGBAColor(palette_map, dstpixel, dst_pal);
@@ -583,7 +583,7 @@ static void ReadFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_
     *outA = fA;
 }
 
-static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_PixelFormatDetails *fmt, Uint8 *table, SDL_Colorspace colorspace, float SDR_white_point,
+static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL_PixelFormatDetails *fmt, SDL_Colorspace colorspace, float SDR_white_point,
                             float fR, float fG, float fB, float fA)
 {
     Uint32 R, G, B, A;
@@ -614,15 +614,8 @@ static void WriteFloatPixel(Uint8 *pixels, SlowBlitPixelAccess access, const SDL
 
     switch (access) {
     case SlowBlitPixelAccess_Index8:
-        R = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 7.0f);
-        G = (Uint8)SDL_roundf(SDL_clamp(fG, 0.0f, 1.0f) * 7.0f);
-        B = (Uint8)SDL_roundf(SDL_clamp(fB, 0.0f, 1.0f) * 3.0f);
-        pixel = (R << 5) | (G << 2) | B;
-        if (table) {
-            *pixels = table[pixel];
-        } else {
-            *pixels = pixel;
-        }
+        // This should never happen, checked before this call
+        SDL_assert(0);
         break;
     case SlowBlitPixelAccess_RGB:
         R = (Uint8)SDL_roundf(SDL_clamp(fR, 0.0f, 1.0f) * 255.0f);
@@ -828,6 +821,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     const SDL_Palette *src_pal = info->src_pal;
     const SDL_PixelFormatDetails *dst_fmt = info->dst_fmt;
     const SDL_Palette *dst_pal = info->dst_pal;
+    SDL_HashTable *palette_map = info->palette_map;
     int srcbpp = src_fmt->bytes_per_pixel;
     int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
@@ -842,6 +836,8 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     float dst_headroom;
     float src_headroom;
     SDL_TonemapContext tonemap;
+    Uint32 last_pixel = 0;
+    Uint8 last_index = 0;
 
     src_colorspace = info->src_surface->internal->colorspace;
     dst_colorspace = info->dst_surface->internal->colorspace;
@@ -892,6 +888,9 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
 
     src_access = GetPixelAccessMethod(src_fmt->format);
     dst_access = GetPixelAccessMethod(dst_fmt->format);
+    if (dst_access == SlowBlitPixelAccess_Index8) {
+        last_index = SDL_LookupRGBAColor(palette_map, last_pixel, dst_pal);
+    }
 
     incy = ((Uint64)info->src_h << 16) / info->dst_h;
     incx = ((Uint64)info->src_w << 16) / info->dst_w;
@@ -972,7 +971,20 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
                 break;
             }
 
-            WriteFloatPixel(dst, dst_access, dst_fmt, info->table, dst_colorspace, dst_white_point, dstR, dstG, dstB, dstA);
+            if (dst_access == SlowBlitPixelAccess_Index8) {
+                Uint32 R = (Uint8)SDL_roundf(SDL_clamp(SDL_sRGBfromLinear(dstR), 0.0f, 1.0f) * 255.0f);
+                Uint32 G = (Uint8)SDL_roundf(SDL_clamp(SDL_sRGBfromLinear(dstG), 0.0f, 1.0f) * 255.0f);
+                Uint32 B = (Uint8)SDL_roundf(SDL_clamp(SDL_sRGBfromLinear(dstB), 0.0f, 1.0f) * 255.0f);
+                Uint32 A = (Uint8)SDL_roundf(SDL_clamp(dstA, 0.0f, 1.0f) * 255.0f);
+                Uint32 dstpixel = ((R << 24) | (G << 16) | (B << 8) | A);
+                if (dstpixel != last_pixel) {
+                    last_pixel = dstpixel;
+                    last_index = SDL_LookupRGBAColor(palette_map, dstpixel, dst_pal);
+                }
+                *dst = last_index;
+            } else {
+                WriteFloatPixel(dst, dst_access, dst_fmt, dst_colorspace, dst_white_point, dstR, dstG, dstB, dstA);
+            }
 
             posx += incx;
             dst += dstbpp;
