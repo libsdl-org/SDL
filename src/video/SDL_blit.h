@@ -23,6 +23,8 @@
 #ifndef SDL_blit_h_
 #define SDL_blit_h_
 
+#include "../SDL_hashtable.h"
+
 /* Table to do pixel byte expansion */
 extern const Uint8 *SDL_expand_byte[9];
 extern const Uint16 SDL_expand_byte_10[];
@@ -70,6 +72,7 @@ typedef struct
     const SDL_PixelFormatDetails *dst_fmt;
     const SDL_Palette *dst_pal;
     Uint8 *table;
+    SDL_HashTable *palette_map;
     int flags;
     Uint32 colorkey;
     Uint8 r, g, b, a;
