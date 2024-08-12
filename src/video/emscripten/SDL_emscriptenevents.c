@@ -700,7 +700,7 @@ static void Emscripten_UpdatePointerFromEvent(SDL_WindowData *window_data, const
 
 EMSCRIPTEN_KEEPALIVE void Emscripten_HandlePointerEnter(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
 {
-    // Emscripten offers almost none of this information as specifics, but can without warning offer any of these specific things.
+    // Web browsers offer almost none of this information as specifics, but can without warning offer any of these specific things.
     SDL_PenInfo peninfo;
     SDL_zero(peninfo);
     peninfo.capabilities = SDL_PEN_CAPABILITY_PRESSURE | SDL_PEN_CAPABILITY_ROTATION | SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT | SDL_PEN_CAPABILITY_TANGENTIAL_PRESSURE | SDL_PEN_CAPABILITY_ERASER;
