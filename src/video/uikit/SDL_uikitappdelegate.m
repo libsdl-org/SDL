@@ -189,12 +189,14 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
+    NSString *screenname;
+    NSBundle *bundle;
     if (!(self = [super initWithNibName:nil bundle:nil])) {
         return nil;
     }
 
-    NSString *screenname = nibNameOrNil;
-    NSBundle *bundle = nibBundleOrNil;
+    screenname = nibNameOrNil;
+    bundle = nibBundleOrNil;
 
     /* A launch screen may not exist. Fall back to launch images in that case. */
     if (screenname) {
@@ -230,6 +232,10 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         /* Xcode 5 introduced a dictionary of launch images in Info.plist. */
         if (launchimages) {
             for (NSDictionary *dict in launchimages) {
+#if !TARGET_OS_TV
+                UIInterfaceOrientationMask orientmask;
+                NSString *orientstring;
+#endif
                 NSString *minversion = dict[@"UILaunchImageMinimumOSVersion"];
                 NSString *sizestring = dict[@"UILaunchImageSize"];
 
@@ -247,8 +253,8 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                 }
 
 #if !TARGET_OS_TV
-                UIInterfaceOrientationMask orientmask = UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
-                NSString *orientstring = dict[@"UILaunchImageOrientation"];
+                orientmask = UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
+                orientstring = dict[@"UILaunchImageOrientation"];
 
                 if (orientstring) {
                     if ([orientstring isEqualToString:@"PortraitUpsideDown"]) {

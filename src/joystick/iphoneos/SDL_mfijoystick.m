@@ -1283,6 +1283,8 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         }
 #if TARGET_OS_TV
         else if (controller.microGamepad) {
+            Uint8 buttons[joystick->nbuttons];
+            int button_count = 0;
             GCMicroGamepad *gamepad = controller.microGamepad;
 
             Sint16 axes[] = {
@@ -1294,8 +1296,6 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 SDL_PrivateJoystickAxis(joystick, i, axes[i]);
             }
 
-            Uint8 buttons[joystick->nbuttons];
-            int button_count = 0;
             buttons[button_count++] = gamepad.buttonA.isPressed;
             buttons[button_count++] = gamepad.buttonX.isPressed;
             buttons[button_count++] = (device->pause_button_pressed > 0);
