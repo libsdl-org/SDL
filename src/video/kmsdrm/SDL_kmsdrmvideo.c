@@ -1678,7 +1678,7 @@ int KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
     /* Tell the app that the window has moved to top-left. */
     SDL_Rect display_bounds;
-    SDL_GetDisplayBounds( SDL_GetDisplayForWindow(window), &display_bounds );
+    SDL_GetDisplayBounds(SDL_GetDisplayForWindow(window), &display_bounds);
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, display_bounds.x, display_bounds.y);
 
     /* Allocated windata will be freed in KMSDRM_DestroyWindow,
