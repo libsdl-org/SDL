@@ -859,7 +859,7 @@ int SDL_GetCPUCacheLineSize(void)
         cacheline_size = c & 0xff;
     } else {
 #if defined(HAVE_SYSCONF) && defined(_SC_LEVEL1_DCACHE_LINESIZE)
-        if ((cacheline_size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) > 0) {
+        if ((cacheline_size = (int)sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) > 0) {
             return cacheline_size;
         } else {
             cacheline_size = SDL_CACHELINE_SIZE;

@@ -1497,7 +1497,7 @@ SDL_Texture *SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormat format, S
 
 static int SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, SDL_Surface *surface)
 {
-    int access;
+    SDL_TextureAccess access;
     SDL_bool direct_update;
     SDL_PixelFormat tex_format;
     SDL_PropertiesID surface_props;
@@ -1519,8 +1519,8 @@ static int SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, SD
         return -1;
     }
 
-    tex_format = SDL_GetNumberProperty(tex_props, SDL_PROP_TEXTURE_FORMAT_NUMBER, 0);
-    access = SDL_GetNumberProperty(tex_props, SDL_PROP_TEXTURE_ACCESS_NUMBER, 0);
+    tex_format = (SDL_PixelFormat)SDL_GetNumberProperty(tex_props, SDL_PROP_TEXTURE_FORMAT_NUMBER, 0);
+    access = (SDL_TextureAccess)SDL_GetNumberProperty(tex_props, SDL_PROP_TEXTURE_ACCESS_NUMBER, 0);
 
     if (access != SDL_TEXTUREACCESS_STATIC && access != SDL_TEXTUREACCESS_STREAMING) {
         return -1;
