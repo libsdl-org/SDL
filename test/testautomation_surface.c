@@ -1266,6 +1266,97 @@ static int surface_testPalette(void *arg)
     return TEST_COMPLETED;
 }
 
+static int surface_testPalettization(void *arg)
+{
+    const SDL_Color palette_colors[] = {
+        { 0x80, 0x00, 0x00, 0xff },
+        { 0x00, 0x80, 0x00, 0xff },
+        { 0x00, 0x00, 0x80, 0xff },
+        { 0x40, 0x00, 0x00, 0xff },
+        { 0x00, 0x40, 0x00, 0xff },
+        { 0x00, 0x00, 0x40, 0xff },
+        { 0x00, 0x00, 0x00, 0xff },
+        { 0xff, 0x00, 0x00, 0xff },
+        { 0x00, 0xff, 0x00, 0xff },
+        { 0x00, 0x00, 0xff, 0xff },
+        { 0xff, 0xff, 0x00, 0xff },
+        { 0x00, 0xff, 0xff, 0xff },
+        { 0xff, 0x00, 0xff, 0xff },
+    };
+    const struct {
+        SDL_Color c;
+        Uint8 e;
+    } colors[] = {
+        { { 0xff, 0x00, 0x00, 0xff }, 7 },
+        { { 0xfe, 0x00, 0x00, 0xff }, 7 },
+        { { 0xfd, 0x00, 0x00, 0xff }, 7 },
+        { { 0xf0, 0x00, 0x00, 0xff }, 7 },
+        { { 0xd0, 0x00, 0x00, 0xff }, 7 },
+        { { 0xb0, 0x00, 0x00, 0xff }, 0 },
+        { { 0xa0, 0x00, 0x00, 0xff }, 0 },
+        { { 0xff, 0x00, 0x00, 0x00 }, 7 },
+        { { 0x00, 0x10, 0x21, 0xff }, 5 },
+        { { 0x00, 0x10, 0x19, 0xff }, 6 },
+        { { 0x81, 0x00, 0x41, 0xff }, 0 },
+        { { 0x80, 0xf0, 0xf0, 0x7f }, 11 },
+        { { 0x00, 0x00, 0x00, 0xff }, 6 },
+        { { 0x00, 0x00, 0x00, 0x01 }, 6 },
+    };
+    int i;
+    int result;
+    SDL_Surface *source, *output;
+    SDL_Palette *palette;
+    Uint8 *pixels;
+
+    palette = SDL_CreatePalette(SDL_arraysize(palette_colors));
+    SDLTest_AssertCheck(palette != NULL, "SDL_CreatePalette()");
+
+    result = SDL_SetPaletteColors(palette, palette_colors, 0, SDL_arraysize(palette_colors));
+    SDLTest_AssertCheck(result >= 0, "SDL_SetPaletteColors()");
+
+    source = SDL_CreateSurface(SDL_arraysize(palette_colors) + SDL_arraysize(colors), 1, SDL_PIXELFORMAT_RGBA8888);
+    SDLTest_AssertCheck(source != NULL, "SDL_CreateSurface()");
+    SDLTest_AssertCheck(source->w == SDL_arraysize(palette_colors) + SDL_arraysize(colors), "Expected source->w == %d, got %d", (int)(SDL_arraysize(palette_colors) + SDL_arraysize(colors)), source->w);
+    SDLTest_AssertCheck(source->h == 1, "Expected source->h == %d, got %d", 1, source->h);
+    SDLTest_AssertCheck(source->format == SDL_PIXELFORMAT_RGBA8888, "Expected source->format == SDL_PIXELFORMAT_RGBA8888, got 0x%x (%s)", source->format, SDL_GetPixelFormatName(source->format));
+    for (i = 0; i < SDL_arraysize(colors); i++) {
+        result = SDL_WriteSurfacePixel(source, i, 0, colors[i].c.r, colors[i].c.g, colors[i].c.b, colors[i].c.a);
+        SDLTest_AssertCheck(result >= 0, "SDL_WriteSurfacePixel");
+    }
+    for (i = 0; i < SDL_arraysize(palette_colors); i++) {
+        result = SDL_WriteSurfacePixel(source, SDL_arraysize(colors) + i, 0, palette_colors[i].r, palette_colors[i].g, palette_colors[i].b, palette_colors[i].a);
+        SDLTest_AssertCheck(result >= 0, "SDL_WriteSurfacePixel");
+    }
+
+    output = SDL_ConvertSurfaceAndColorspace(source, SDL_PIXELFORMAT_INDEX8, palette, SDL_COLORSPACE_UNKNOWN, 0);
+    SDLTest_AssertCheck(output != NULL, "SDL_ConvertSurfaceAndColorspace()");
+    SDLTest_AssertCheck(output->w == source->w, "Expected output->w == %d, got %d", source->w, output->w);
+    SDLTest_AssertCheck(output->h == source->h, "Expected output->h == %d, got %d", source->h, output->h);
+    SDLTest_AssertCheck(output->format == SDL_PIXELFORMAT_INDEX8, "Expected output->format == SDL_PIXELFORMAT_INDEX8, got 0x%x (%s)", output->format, SDL_GetPixelFormatName(output->format));
+
+    pixels = output->pixels;
+    for (i = 0; i < SDL_arraysize(colors); i++) {
+        int idx = i;
+        Uint8 actual = pixels[idx];
+        Uint8 expected = colors[i].e;
+        SDLTest_AssertCheck(0 <= actual && actual < SDL_arraysize(palette_colors), "0 <= output->pixels[%d] < %d", idx, (int)SDL_arraysize(palette_colors));
+        SDLTest_AssertCheck(actual == expected, "Expected output->pixels[%d] == %u, got %u", idx, expected, actual);
+    }
+    SDLTest_AssertPass("Check palette 1:1 mapping");
+    for (i = 0; i < SDL_arraysize(palette_colors); i++) {
+        int idx = SDL_arraysize(colors) + i;
+        Uint8 actual = pixels[idx];
+        Uint8 expected = i;
+        SDLTest_AssertCheck(0 <= actual && actual < SDL_arraysize(palette_colors), "0 <= output->pixels[%d] < %d", idx, (int)SDL_arraysize(palette_colors));
+        SDLTest_AssertCheck(actual == expected, "Expected output->pixels[%d] == %u, got %u", idx, expected, actual);
+    }
+    SDL_DestroyPalette(palette);
+    SDL_DestroySurface(source);
+    SDL_DestroySurface(output);
+
+    return TEST_COMPLETED;
+}
+
 static int surface_testClearSurface(void *arg)
 {
     SDL_PixelFormat formats[] = {
@@ -1446,6 +1537,10 @@ static const SDLTest_TestCaseReference surfaceTestPalette = {
     surface_testPalette, "surface_testPalette", "Test surface palette operations.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestPalettization = {
+    surface_testPalettization, "surface_testPalettization", "Test surface palettization.", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference surfaceTestClearSurface = {
     surface_testClearSurface, "surface_testClearSurface", "Test clear surface operations.", TEST_ENABLED
 };
@@ -1475,6 +1570,7 @@ static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestOverflow,
     &surfaceTestFlip,
     &surfaceTestPalette,
+    &surfaceTestPalettization,
     &surfaceTestClearSurface,
     &surfaceTestPremultiplyAlpha,
     NULL
