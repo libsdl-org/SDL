@@ -26,6 +26,11 @@ static SDL_Surface *frame_current = NULL;
 static SDL_CameraID front_camera = 0;
 static SDL_CameraID back_camera = 0;
 
+/* For frequency logging */
+static Uint64 last_log_time = 0;
+static int iterate_count = 0;
+static int frame_count = 0;
+
 static void PrintCameraSpecs(SDL_CameraID camera_id)
 {
     SDL_CameraSpec **specs = SDL_GetCameraSupportedFormats(camera_id, NULL);
@@ -151,7 +156,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     PrintCameraSpecs(camera_id);
 
     SDL_CameraSpec *pspec = &spec;
-    spec.framerate_numerator = 1000;
+    spec.framerate_numerator = 30;
     spec.framerate_denominator = 1;
 
     camera = SDL_OpenCamera(camera_id, pspec);
@@ -236,6 +241,14 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
 
         case SDL_EVENT_CAMERA_DEVICE_APPROVED:
             SDL_Log("Camera approved!");
+            SDL_CameraSpec camera_spec;
+            SDL_GetCameraFormat(camera, &camera_spec);
+            float fps = 0;
+            if (camera_spec.framerate_denominator != 0) {
+                fps = (float)camera_spec.framerate_numerator / (float)camera_spec.framerate_denominator;
+            }
+            SDL_Log("Camera Spec: %dx%d %.2f FPS %s",
+                    camera_spec.width, camera_spec.height, fps, SDL_GetPixelFormatName(camera_spec.format));
             break;
 
         case SDL_EVENT_CAMERA_DEVICE_DENIED:
@@ -251,6 +264,21 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
 
 int SDL_AppIterate(void *appstate)
 {
+    iterate_count++;
+
+    Uint64 current_time = SDL_GetTicks();
+
+    /* If a minute has passed, log the frequencies and reset the counters */
+    if (current_time - last_log_time >= 60000) {
+        SDL_Log("SDL_AppIterate() called %d times in the last minute", iterate_count);
+        float fps = (float)frame_count / 60.0f;
+        SDL_Log("SDL_AcquireCameraFrame() FPS: %.2f", fps);
+
+        iterate_count = 0;
+        frame_count = 0;
+        last_log_time = current_time;
+    }
+
     SDL_SetRenderDrawColor(renderer, 0x99, 0x99, 0x99, 255);
     SDL_RenderClear(renderer);
 
@@ -267,6 +295,8 @@ int SDL_AppIterate(void *appstate)
     #endif
 
     if (frame_next) {
+        frame_count++;
+
         if (frame_current) {
             if (SDL_ReleaseCameraFrame(camera, frame_current) < 0) {
                 SDL_Log("err SDL_ReleaseCameraFrame: %s", SDL_GetError());
@@ -278,6 +308,8 @@ int SDL_AppIterate(void *appstate)
          */
          frame_current = frame_next;
          texture_updated = SDL_FALSE;
+    } else {
+        return SDL_APP_CONTINUE;
     }
 
     if (frame_current) {
