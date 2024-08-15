@@ -555,7 +555,9 @@ SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale)
         }
         scaled = next_scaled;
         if (!scaled) {
-            return NULL;
+            // Failure, fall back to the closest surface
+            ++closest->refcount;
+            return closest;
         }
     } while (scaled->w != desired_w || scaled->h != desired_h);
 
