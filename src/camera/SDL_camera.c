@@ -1538,7 +1538,7 @@ void SDL_UpdateCamera(void)
             SDL_Event event;
             SDL_zero(event);
             event.type = i->type;
-            event.adevice.which = (Uint32) i->devid;
+            event.cdevice.which = (Uint32) i->devid;
             SDL_PushEvent(&event);
         }
         SDL_free(i);
