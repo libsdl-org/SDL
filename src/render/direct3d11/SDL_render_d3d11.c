@@ -1333,7 +1333,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     }
 
-    if (GetTextureProperty(create_props, "d3d11.texture", &textureData->mainTexture) < 0) {
+    if (GetTextureProperty(create_props, SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_POINTER, &textureData->mainTexture) < 0) {
         return -1;
     }
     if (!textureData->mainTexture) {
@@ -1354,7 +1354,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         textureDesc.Width = (textureDesc.Width + 1) / 2;
         textureDesc.Height = (textureDesc.Height + 1) / 2;
 
-        if (GetTextureProperty(create_props, "d3d11.texture_u", &textureData->mainTextureU) < 0) {
+        if (GetTextureProperty(create_props, SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_U_POINTER, &textureData->mainTextureU) < 0) {
             return -1;
         }
         if (!textureData->mainTextureU) {
@@ -1368,7 +1368,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         }
         SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_U_POINTER, textureData->mainTextureU);
 
-        if (GetTextureProperty(create_props, "d3d11.texture_v", &textureData->mainTextureV) < 0) {
+        if (GetTextureProperty(create_props, SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_V_POINTER, &textureData->mainTextureV) < 0) {
             return -1;
         }
         if (!textureData->mainTextureV) {
