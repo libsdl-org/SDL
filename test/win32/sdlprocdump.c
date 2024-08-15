@@ -487,7 +487,7 @@ int main(int argc, char *argv[]) {
     DWORD creation_flags;
     BOOL log_debug_stream = FALSE;
 
-    for (i = 1; i < argc; i++) {
+    for (i = 1; i < argc; i++, cmd_i = i + 1) {
         if (strcmp(argv[i], "--") == 0) {
             cmd_i = i + 1;
             break;
@@ -533,7 +533,7 @@ int main(int argc, char *argv[]) {
         creation_flags |= DEBUG_PROCESS | DEBUG_ONLY_THIS_PROCESS;
     }
     success = CreateProcessA(
-        argv[cmd_i],                /* LPCSTR                lpApplicationName, */
+        argv[cmd_i],            /* LPCSTR                lpApplicationName, */
         command_line,           /* LPSTR                 lpCommandLine, */
         NULL,                   /* LPSECURITY_ATTRIBUTES lpProcessAttributes, */
         NULL,                   /* LPSECURITY_ATTRIBUTES lpThreadAttributes, */
