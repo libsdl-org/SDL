@@ -514,18 +514,25 @@ SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale)
         return surface;
     }
 
+    // Find closest image. Images that are larger than the
+    // desired size are preferred over images that are smaller.
     SDL_Surface *closest = NULL;
     int desired_w = (int)SDL_round(surface->w * display_scale);
     int desired_h = (int)SDL_round(surface->h * display_scale);
+    int desired_size = desired_w * desired_h;
     int closest_distance = -1;
+    int closest_size = -1;
     for (int i = 0; images[i]; ++i) {
         SDL_Surface *candidate = images[i];
+        int size = candidate->w * candidate->h;
         int delta_w = (candidate->w - desired_w);
         int delta_h = (candidate->h - desired_h);
         int distance = (delta_w * delta_w) + (delta_h * delta_h);
-        if (closest_distance < 0 || distance < closest_distance) {
+        if (closest_distance < 0 || distance < closest_distance ||
+            (size > desired_size && closest_size < desired_size)) {
             closest = candidate;
             closest_distance = distance;
+            closest_size = size;
         }
     }
     SDL_free(images);
@@ -536,8 +543,23 @@ SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale)
         return closest;
     }
 
-    // We need to scale an image to the correct size
-    return SDL_ScaleSurface(closest, desired_w, desired_h, SDL_SCALEMODE_LINEAR);
+    // We need to scale the image to the correct size. To maintain good image quality, downscaling
+    // is done in steps, never reducing the width and height by more than half each time.
+    SDL_Surface *scaled = closest;
+    do {
+        int next_scaled_w = SDL_max(desired_w, (scaled->w + 1) / 2);
+        int next_scaled_h = SDL_max(desired_h, (scaled->h + 1) / 2);
+        SDL_Surface *next_scaled = SDL_ScaleSurface(scaled, next_scaled_w, next_scaled_h, SDL_SCALEMODE_LINEAR);
+        if (scaled != closest) {
+            SDL_DestroySurface(scaled);
+        }
+        scaled = next_scaled;
+        if (!scaled) {
+            return NULL;
+        }
+    } while (scaled->w != desired_w || scaled->h != desired_h);
+
+    return scaled;
 }
 
 void SDL_RemoveSurfaceAlternateImages(SDL_Surface *surface)

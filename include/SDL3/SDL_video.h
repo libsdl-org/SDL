@@ -1341,8 +1341,9 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetWindowTitle(SDL_Window *window);
  * situations. For example, if the original surface is 32x32, then on a 2x
  * macOS display or 200% display scale on Windows, a 64x64 version of the
  * image will be used, if available. If a matching version of the image isn't
- * available, the closest size image will be scaled to the appropriate size
- * and be used instead.
+ * available, the closest larger size image will be downscaled to the 
+ * appropriate size and be used instead, if available. Otherwise, the closest
+ * smaller image will be upscaled and be used instead.
  *
  * \param window the window to change.
  * \param icon an SDL_Surface structure containing the icon for the window.
