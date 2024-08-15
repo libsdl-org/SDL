@@ -2232,7 +2232,7 @@ static struct {
 static SDL_WindowFlags SDL_GetWindowFlagProperties(SDL_PropertiesID props)
 {
     unsigned i;
-    SDL_WindowFlags flags = (SDL_WindowFlags)SDL_GetNumberProperty(props, "SDL.window.create.flags", 0);
+    SDL_WindowFlags flags = (SDL_WindowFlags)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, 0);
 
     for (i = 0; i < SDL_arraysize(SDL_WindowFlagProperties); ++i) {
         if (SDL_WindowFlagProperties[i].invert_value) {
@@ -2486,7 +2486,7 @@ SDL_Window *SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags fl
     }
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, w);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, h);
-    SDL_SetNumberProperty(props, "SDL.window.create.flags", flags);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     return window;
@@ -2508,7 +2508,7 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, offset_y);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, w);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, h);
-    SDL_SetNumberProperty(props, "SDL.window.create.flags", flags);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     return window;
