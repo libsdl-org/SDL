@@ -391,15 +391,9 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(SDL_VideoDevice *_this, struct gbm_bo *bo)
     ret = KMSDRM_drmModeAddFB2WithModifiers(viddata->drm_fd, w, h, format, handles, strides, offsets, modifiers, &fb_info->fb_id, flags);
 
     if (ret) {
-        handles[0] = KMSDRM_gbm_bo_get_handle(bo).u32;
         strides[0] = KMSDRM_gbm_bo_get_stride(bo);
-        offsets[0] = 0;
-        for (int i = 1; i<4; i++) {
-            handles[i] = 0;
-            strides[i] = 0;
-            offsets[i] = 0;
-        }
-        ret = KMSDRM_drmModeAddFB2(viddata->drm_fd, w, h, format, handles, strides, offsets, &fb_info->fb_id, 0);
+        handles[0] = KMSDRM_gbm_bo_get_handle(bo).u32;
+        ret = KMSDRM_drmModeAddFB(viddata->drm_fd, w, h, 24, 32, strides[0], handles[0], &fb_info->fb_id);
     }
 
     if (ret) {
