@@ -308,8 +308,6 @@ int SDL_AppIterate(void *appstate)
          */
          frame_current = frame_next;
          texture_updated = SDL_FALSE;
-    } else {
-        return SDL_APP_CONTINUE;
     }
 
     if (frame_current) {
