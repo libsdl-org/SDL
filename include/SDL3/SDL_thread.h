@@ -252,10 +252,10 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  */
 extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_PropertiesID props);
 
-#define SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER                  "entry_function"
-#define SDL_PROP_THREAD_CREATE_NAME_STRING                             "name"
-#define SDL_PROP_THREAD_CREATE_USERDATA_POINTER                        "userdata"
-#define SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER                        "stacksize"
+#define SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER                  "SDL.thread.create.entry_function"
+#define SDL_PROP_THREAD_CREATE_NAME_STRING                             "SDL.thread.create.name"
+#define SDL_PROP_THREAD_CREATE_USERDATA_POINTER                        "SDL.thread.create.userdata"
+#define SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER                        "SDL.thread.create.stacksize"
 
 /* end wiki documentation for macros that are meant to look like functions. */
 #endif
@@ -320,10 +320,10 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithPropertiesRuntime(S
 
 #define SDL_CreateThread(fn, name, data) SDL_CreateThreadRuntime((fn), (name), (data), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
 #define SDL_CreateThreadWithProperties(props) SDL_CreateThreadWithPropertiesRuntime((props), (SDL_FunctionPointer) (SDL_BeginThreadFunction), (SDL_FunctionPointer) (SDL_EndThreadFunction))
-#define SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER                  "entry_function"
-#define SDL_PROP_THREAD_CREATE_NAME_STRING                             "name"
-#define SDL_PROP_THREAD_CREATE_USERDATA_POINTER                        "userdata"
-#define SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER                        "stacksize"
+#define SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER                  "SDL.thread.create.entry_function"
+#define SDL_PROP_THREAD_CREATE_NAME_STRING                             "SDL.thread.create.name"
+#define SDL_PROP_THREAD_CREATE_USERDATA_POINTER                        "SDL.thread.create.userdata"
+#define SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER                        "SDL.thread.create.stacksize"
 #endif
 
 
