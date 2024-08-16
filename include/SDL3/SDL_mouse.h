@@ -39,8 +39,8 @@ extern "C" {
 #endif
 
 /**
- * This is a unique ID for a mouse for the time it is connected to the
- * system, and is never reused for the lifetime of the application.
+ * This is a unique ID for a mouse for the time it is connected to the system,
+ * and is never reused for the lifetime of the application.
  *
  * If the mouse is disconnected and reconnected, it will get a new ID.
  *
