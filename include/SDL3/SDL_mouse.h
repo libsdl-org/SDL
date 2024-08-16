@@ -38,9 +38,26 @@
 extern "C" {
 #endif
 
+/**
+ * This is a unique ID for a mouse for the time it is connected to the
+ * system, and is never reused for the lifetime of the application.
+ *
+ * If the mouse is disconnected and reconnected, it will get a new ID.
+ *
+ * The value 0 is an invalid ID.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ */
 typedef Uint32 SDL_MouseID;
 
-typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
+/**
+ * The structure used to identify an SDL cursor.
+ *
+ * This is opaque data.
+ *
+ * \since This struct is available since SDL 3.0.0.
+ */
+typedef struct SDL_Cursor SDL_Cursor;
 
 /**
  * Cursor types for SDL_CreateSystemCursor().
