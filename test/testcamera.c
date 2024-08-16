@@ -46,7 +46,7 @@ static void PrintCameraSpecs(SDL_CameraID camera_id)
     }
 }
 
-int SDL_AppInit(void **appstate, int argc, char *argv[])
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     char window_title[128];
     int devcount = 0;
@@ -216,7 +216,7 @@ static int FlipCamera(void)
     return SDL_APP_CONTINUE;
 }
 
-int SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     switch (event->type) {
         case SDL_EVENT_KEY_DOWN: {
@@ -262,7 +262,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
     return SDLTest_CommonEventMainCallbacks(state, event);
 }
 
-int SDL_AppIterate(void *appstate)
+SDL_AppResult SDL_AppIterate(void *appstate)
 {
     iterate_count++;
 

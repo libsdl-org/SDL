@@ -34,7 +34,7 @@ static SDL_Texture *white_pixel = NULL;
 static Pen pens;
 
 
-int SDL_AppInit(void **appstate, int argc, char *argv[])
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     int i;
 
@@ -107,7 +107,7 @@ static Pen *FindPen(SDL_PenID which)
     return NULL;
 }
 
-int SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     Pen *pen = NULL;
 
@@ -259,7 +259,7 @@ static void DrawOnePen(Pen *pen, int num)
     }
 }
 
-int SDL_AppIterate(void *appstate)
+SDL_AppResult SDL_AppIterate(void *appstate)
 {
     int num = 0;
     Pen *pen;

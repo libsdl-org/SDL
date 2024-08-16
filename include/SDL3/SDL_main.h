@@ -188,15 +188,11 @@
 #define main SDL_main
 #endif
 
+#include <SDL3/SDL_init.h>
 #include <SDL3/SDL_begin_code.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef int (SDLCALL *SDL_AppInit_func)(void **appstate, int argc, char *argv[]);
-typedef int (SDLCALL *SDL_AppIterate_func)(void *appstate);
-typedef int (SDLCALL *SDL_AppEvent_func)(void *appstate, const SDL_Event *event);
-typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
 
 /*
  * You can (optionally!) define SDL_MAIN_USE_CALLBACKS before including
@@ -223,49 +219,6 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
  * the functions listed below in your program.
  */
 #ifdef SDL_MAIN_USE_CALLBACKS
-
-/**
- * Value that requests that the app continue from the main callbacks.
- *
- * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value, the
- * program will continue to run. This is the normal return value case.
- *
- * This is always 0; using this macro may be clearer, but is not required.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-#define SDL_APP_CONTINUE 0
-
-/**
- * Value that requests termination with error from the main callbacks.
- *
- * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value, the
- * program will terminate and report failure to the operating system.
- *
- * What that failure looks like is platform-dependent. On Unix, for example,
- * the process error code will be non-zero.
- *
- * This is always -1; using this macro may be clearer, but is not required.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-#define SDL_APP_FAILURE -1
-
-/**
- * Value that requests termination with success from the main callbacks.
- *
- * If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value, the
- * program will terminate and report success to the operating system.
- *
- * What that success looks like is platform-dependent. On Unix, for example,
- * the process error code will be zero.
- *
- * This is always 1; using this macro may be clearer, but is not required.
- *
- * \since This macro is available since SDL 3.0.0.
- */
-#define SDL_APP_SUCCESS 1
-
 
 /**
  * App-implemented initial entry point for SDL_MAIN_USE_CALLBACKS apps.
@@ -311,7 +264,7 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
  * \sa SDL_AppEvent
  * \sa SDL_AppQuit
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[]);
+extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[]);
 
 /**
  * App-implemented iteration entry point for SDL_MAIN_USE_CALLBACKS apps.
@@ -359,7 +312,7 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppInit(void **appstate, int argc, char 
  * \sa SDL_AppInit
  * \sa SDL_AppEvent
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void *appstate);
+extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppIterate(void *appstate);
 
 /**
  * App-implemented event entry point for SDL_MAIN_USE_CALLBACKS apps.
@@ -406,7 +359,7 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppIterate(void *appstate);
  * \sa SDL_AppInit
  * \sa SDL_AppIterate
  */
-extern SDLMAIN_DECLSPEC int SDLCALL SDL_AppEvent(void *appstate, const SDL_Event *event);
+extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, const SDL_Event *event);
 
 /**
  * App-implemented deinit entry point for SDL_MAIN_USE_CALLBACKS apps.

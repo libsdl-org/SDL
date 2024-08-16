@@ -234,7 +234,7 @@ void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done
  * \param event The event to handle.
  * \returns Value suitable for returning from SDL_AppEvent().
  */
-int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event);
+SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event);
 
 /**
  * Close test window.

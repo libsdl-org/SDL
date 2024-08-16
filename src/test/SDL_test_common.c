@@ -2090,7 +2090,7 @@ static void FullscreenTo(SDLTest_CommonState *state, int index, int windowId)
     SDL_free(displays);
 }
 
-int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event)
+SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event *event)
 {
     int i;
 
@@ -2487,7 +2487,7 @@ int SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const SDL_Event
 
 void SDLTest_CommonEvent(SDLTest_CommonState *state, SDL_Event *event, int *done)
 {
-    if (SDLTest_CommonEventMainCallbacks(state, event)) {
+    if (SDLTest_CommonEventMainCallbacks(state, event) != SDL_APP_CONTINUE) {
         *done = 1;
     }
 }
