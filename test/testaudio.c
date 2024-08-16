@@ -1073,7 +1073,7 @@ static void WindowResized(const int newwinw, const int newwinh)
     state->window_h = newwinh;
 }
 
-int SDL_AppInit(void **appstate, int argc, char *argv[])
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     int i;
 
@@ -1131,7 +1131,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
 
 static SDL_bool saw_event = SDL_FALSE;
 
-int SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     Thing *thing = NULL;
 
@@ -1254,7 +1254,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
     return SDLTest_CommonEventMainCallbacks(state, event);
 }
 
-int SDL_AppIterate(void *appstate)
+SDL_AppResult SDL_AppIterate(void *appstate)
 {
     if (app_ready_ticks == 0) {
         app_ready_ticks = SDL_GetTicks();

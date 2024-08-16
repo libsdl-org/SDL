@@ -76,7 +76,7 @@ static void set_rect_xy_(SDL_FRect *r, short x, short y)
     r->y = (float)(y * SNAKE_BLOCK_SIZE_IN_PIXELS);
 }
 
-int SDL_AppIterate(void *appstate)
+SDL_AppResult SDL_AppIterate(void *appstate)
 {
     AppState *as;
     SnakeContext *ctx;
@@ -109,7 +109,7 @@ int SDL_AppIterate(void *appstate)
     return SDL_APP_CONTINUE;
 }
 
-int SDL_AppInit(void **appstate, int argc, char *argv[])
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     (void)argc;
     (void)argv;
@@ -134,7 +134,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     return SDL_APP_CONTINUE;
 }
 
-int SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     SnakeContext *ctx = &((AppState *)appstate)->snake_ctx;
     switch (event->type) {

@@ -49,7 +49,7 @@ static void SDLCALL FeedTheAudioStreamMore(void *userdata, SDL_AudioStream *astr
 }
 
 /* This function runs once at startup. */
-int SDL_AppInit(void **appstate, int argc, char *argv[])
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     SDL_AudioSpec spec;
 
@@ -83,7 +83,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
 }
 
 /* This function runs when a new event (mouse input, keypresses, etc) occurs. */
-int SDL_AppEvent(void *appstate, const SDL_Event *event)
+SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
 {
     if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS;  /* end the program, reporting success to the OS. */
@@ -92,7 +92,7 @@ int SDL_AppEvent(void *appstate, const SDL_Event *event)
 }
 
 /* This function runs once per frame, and is the heart of the program. */
-int SDL_AppIterate(void *appstate)
+SDL_AppResult SDL_AppIterate(void *appstate)
 {
     /* we're not doing anything with the renderer, so just blank it out. */
     SDL_RenderClear(renderer);

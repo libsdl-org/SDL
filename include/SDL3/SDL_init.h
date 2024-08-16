@@ -67,6 +67,25 @@ typedef Uint32 SDL_InitFlags;
 #define SDL_INIT_CAMERA     0x00010000u /**< `SDL_INIT_CAMERA` implies `SDL_INIT_EVENTS` */
 
 /**
+ * Return values for optional main callbacks.
+ *
+ * See https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3 for details.
+ *
+ * \since This enum is available since SDL 3.0.0.
+ */
+typedef enum SDL_AppResult
+{
+    SDL_APP_CONTINUE,   /** Value that requests that the app continue from the main callbacks. If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value, the program will continue to run. */
+    SDL_APP_SUCCESS,    /** Value that requests termination with success from the main callbacks. If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value, the program will terminate and report success to the operating system. What that success looks like is platform-dependent. On Unix, for example, the process error code will be zero. */
+    SDL_APP_FAILURE     /** Value that requests termination with error from the main callbacks. If SDL_AppInit, SDL_AppEvent, or SDL_AppIterate returns this value, the program will terminate and report failure to the operating system. What that failure looks like is platform-dependent. On Unix, for example, the process error code will be non-zero. */
+} SDL_AppResult;
+
+typedef SDL_AppResult (SDLCALL *SDL_AppInit_func)(void **appstate, int argc, char *argv[]);
+typedef SDL_AppResult (SDLCALL *SDL_AppIterate_func)(void *appstate);
+typedef SDL_AppResult (SDLCALL *SDL_AppEvent_func)(void *appstate, const SDL_Event *event);
+typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate);
+
+/**
  * Initialize the SDL library.
  *
  * SDL_Init() simply forwards to calling SDL_InitSubSystem(). Therefore, the

@@ -385,46 +385,7 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     SDL_RenderPresent(renderer);
 }
 
-int SDL_AppEvent(void *appstate, const SDL_Event *event)
-{
-    return SDLTest_CommonEventMainCallbacks(state, event);
-}
-
-int SDL_AppIterate(void *appstate)
-{
-    Uint64 now;
-    int i;
-    int active_windows = 0;
-
-    for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL ||
-            (suspend_when_occluded && (SDL_GetWindowFlags(state->windows[i]) & SDL_WINDOW_OCCLUDED))) {
-            continue;
-        }
-        ++active_windows;
-        MoveSprites(state->renderers[i], sprites[i]);
-    }
-
-    /* If all windows are occluded, throttle the event polling to 15hz. */
-    if (!active_windows) {
-        SDL_DelayNS(SDL_NS_PER_SECOND / 15);
-    }
-
-    frames++;
-    now = SDL_GetTicks();
-    if (now >= next_fps_check) {
-        /* Print out some timing information */
-        const Uint64 then = next_fps_check - fps_check_delay;
-        const double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
-        next_fps_check = now + fps_check_delay;
-        frames = 0;
-    }
-
-    return SDL_APP_CONTINUE;
-}
-
-int SDL_AppInit(void **appstate, int argc, char *argv[])
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     SDL_Rect safe_area;
     int i;
@@ -488,7 +449,7 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
             } else if (SDL_strcasecmp(argv[i], "--cyclealpha") == 0) {
                 cycle_alpha = SDL_TRUE;
                 consumed = 1;
-            } else if(SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--suspend-when-occluded") == 0) {
                 suspend_when_occluded = SDL_TRUE;
                 consumed = 1;
             } else if (SDL_strcasecmp(argv[i], "--use-rendergeometry") == 0) {
@@ -589,3 +550,42 @@ int SDL_AppInit(void **appstate, int argc, char *argv[])
     return SDL_APP_CONTINUE;
 }
 
+
+SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event)
+{
+    return SDLTest_CommonEventMainCallbacks(state, event);
+}
+
+SDL_AppResult SDL_AppIterate(void *appstate)
+{
+    Uint64 now;
+    int i;
+    int active_windows = 0;
+
+    for (i = 0; i < state->num_windows; ++i) {
+        if (state->windows[i] == NULL ||
+            (suspend_when_occluded && (SDL_GetWindowFlags(state->windows[i]) & SDL_WINDOW_OCCLUDED))) {
+            continue;
+        }
+        ++active_windows;
+        MoveSprites(state->renderers[i], sprites[i]);
+    }
+
+    /* If all windows are occluded, throttle the event polling to 15hz. */
+    if (!active_windows) {
+        SDL_DelayNS(SDL_NS_PER_SECOND / 15);
+    }
+
+    frames++;
+    now = SDL_GetTicks();
+    if (now >= next_fps_check) {
+        /* Print out some timing information */
+        const Uint64 then = next_fps_check - fps_check_delay;
+        const double fps = ((double)frames * 1000) / (now - then);
+        SDL_Log("%2.2f frames per second\n", fps);
+        next_fps_check = now + fps_check_delay;
+        frames = 0;
+    }
+
+    return SDL_APP_CONTINUE;
+}
