@@ -69,7 +69,9 @@ typedef Uint32 SDL_InitFlags;
 /**
  * Return values for optional main callbacks.
  *
- * See https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3 for details.
+ * See
+ * https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3
+ * for details.
  *
  * \since This enum is available since SDL 3.0.0.
  */
