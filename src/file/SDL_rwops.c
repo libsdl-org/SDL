@@ -392,7 +392,7 @@ static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
 #endif
 
     /* don't make a possibly-costly API call for the noop seek from SDL_RWtell */
-    is_noop = (whence == RW_SEEK_CUR && offset == 0);
+    is_noop = (whence == RW_SEEK_CUR) && (offset == 0);
 
     if (is_noop || fseek(context->hidden.stdio.fp, (fseek_off_t)offset, stdiowhence) == 0) {
         Sint64 pos = ftell(context->hidden.stdio.fp);
