@@ -595,6 +595,7 @@ static void Wayland_WarpMouse(SDL_Window *window, int x, int y)
             Wayland_input_lock_pointer(input);
             input->relative_mode_override = SDL_TRUE;
         }
+        SDL_SendMouseMotion(window, 0, 0, x, y);
     }
 }
 
