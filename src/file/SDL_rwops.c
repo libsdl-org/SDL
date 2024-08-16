@@ -369,6 +369,7 @@ stdio_size(SDL_RWops * context)
 static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
 {
     int stdiowhence;
+    SDL_bool is_noop;
 
     switch (whence) {
     case RW_SEEK_SET:
@@ -390,7 +391,10 @@ static Sint64 SDLCALL stdio_seek(SDL_RWops *context, Sint64 offset, int whence)
     }
 #endif
 
-    if (fseek(context->hidden.stdio.fp, (fseek_off_t)offset, stdiowhence) == 0) {
+    /* don't make a possibly-costly API call for the noop seek from SDL_RWtell */
+    is_noop = (whence == RW_SEEK_CUR && offset == 0);
+
+    if (is_noop || fseek(context->hidden.stdio.fp, (fseek_off_t)offset, stdiowhence) == 0) {
         Sint64 pos = ftell(context->hidden.stdio.fp);
         if (pos < 0) {
             return SDL_SetError("Couldn't get stream offset");
