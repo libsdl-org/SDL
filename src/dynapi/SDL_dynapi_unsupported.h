@@ -53,4 +53,8 @@ typedef void *SDL_RequestAndroidPermissionCallback;
 typedef void *SDL_iOSAnimationCallback;
 #endif
 
+#ifndef SDL_PLATFORM_MACOS
+typedef void *SDL_macOSAnimationCallback;
+#endif
+
 #endif
