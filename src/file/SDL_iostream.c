@@ -360,7 +360,10 @@ static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, SDL_IOWhence whe
     }
 #endif
 
-    if (fseek(iodata->fp, (fseek_off_t)offset, stdiowhence) == 0) {
+    /* don't make a possibly-costly API call for the noop seek from SDL_TellIO */
+    const SDL_bool is_noop = (whence == SDL_IO_SEEK_CUR) && (offset == 0);
+
+    if (is_noop || fseek(iodata->fp, (fseek_off_t)offset, stdiowhence) == 0) {
         const Sint64 pos = ftell(iodata->fp);
         if (pos < 0) {
             return SDL_SetError("Couldn't get stream offset");
