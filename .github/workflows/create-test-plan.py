@@ -141,6 +141,19 @@ JOB_SPECS = {
 }
 
 
+class StaticLibType(Enum):
+    MSVC = "SDL3-static.lib"
+    A = "libSDL3.a"
+
+
+class SharedLibType(Enum):
+    WIN32 = "SDL3.dll"
+    SO_0 = "libSDL3.so.0"
+    SO = "libSDL3.so"
+    DYLIB = "libSDL3.0.dylib"
+    FRAMEWORK = "SDL3.framework/Versions/A/SDL3"
+
+
 @dataclasses.dataclass(slots=True)
 class JobDetails:
     name: str
@@ -171,6 +184,8 @@ class JobDetails:
     use_cmake: bool = True
     shared: bool = True
     static: bool = True
+    shared_lib: Optional[SharedLibType] = None
+    static_lib: Optional[StaticLibType] = None
     run_tests: bool = True
     test_pkg_config: bool = True
     cc_from_cmake: bool = False
@@ -238,6 +253,8 @@ class JobDetails:
             "cmake-build-arguments": my_shlex_join(self.cmake_build_arguments),
             "shared": self.shared,
             "static": self.static,
+            "shared-lib": self.shared_lib.value if self.shared_lib else None,
+            "static-lib": self.static_lib.value if self.static_lib else None,
             "cmake-build-type": self.cmake_build_type,
             "run-tests": self.run_tests,
             "android-apks": my_shlex_join(self.android_apks),
@@ -325,6 +342,8 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.msvc_project = spec.msvc_project if spec.msvc_project else ""
             job.msvc_project_flags.append("-p:TreatWarningsAsError=true")
             job.test_pkg_config = False
+            job.shared_lib = SharedLibType.WIN32
+            job.static_lib = StaticLibType.MSVC
             job.cmake_arguments.extend((
                 "-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=ProgramDatabase",
                 "-DCMAKE_EXE_LINKER_FLAGS=-DEBUG",
@@ -413,6 +432,8 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 "libudev-dev",
                 "fcitx-libs-dev",
             ))
+            job.shared_lib = SharedLibType.SO_0
+            job.static_lib = StaticLibType.A
             fpic = True
             assert spec.os.value.startswith("ubuntu-")
             ubuntu_year, ubuntu_month = [int(v) for v in spec.os.value.removeprefix("ubuntu-").split(".", 1)]
@@ -426,6 +447,8 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.clang_tidy = False
             job.run_tests = False
             job.test_pkg_config = False
+            job.shared_lib = SharedLibType.DYLIB
+            job.static_lib = StaticLibType.A
             match spec.platform:
                 case SdlPlatform.Ios:
                     job.xcode_sdk = 'iphoneos'
@@ -448,12 +471,15 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                     "'-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64'",
                     "-DSDL_FRAMEWORK=ON",
                 ))
+                job.shared_lib = SharedLibType.FRAMEWORK
             else:
                 job.clang_tidy = True
                 job.cmake_arguments.extend((
                     "-DCMAKE_OSX_ARCHITECTURES=arm64",
                     "-DCLANG_TIDY_BINARY=$(brew --prefix llvm)/bin/clang-tidy",
                 ))
+                job.shared_lib = SharedLibType.DYLIB
+                job.static_lib = StaticLibType.A
             job.apt_packages = []
             job.brew_packages.append("ninja")
             if job.test_pkg_config:
@@ -464,6 +490,8 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.android_gradle = spec.android_gradle
             job.android_mk = spec.android_mk
             job.run_tests = False
+            job.shared_lib = SharedLibType.SO
+            job.static_lib = StaticLibType.A
             if spec.android_mk or not spec.no_cmake:
                 job.android_ndk = True
             if spec.android_gradle or not spec.no_cmake:
@@ -510,6 +538,7 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 "chrome --version",
                 "chromedriver --version",
             ])
+            job.static_lib = StaticLibType.A
         case SdlPlatform.Ps2:
             build_parallel = False
             job.shared = False
@@ -522,6 +551,7 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.shared = False
             job.cc = "mips64r5900el-ps2-elf-gcc"
             job.ldflags = ["-L${PS2DEV}/ps2sdk/ee/lib", "-L${PS2DEV}/gsKit/lib", "-L${PS2DEV}/ps2sdk/ports/lib", ]
+            job.static_lib = StaticLibType.A
         case SdlPlatform.Psp:
             build_parallel = False
             job.sudo = ""
@@ -534,6 +564,7 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.cc = "psp-gcc"
             job.ldflags = ["-L${PSPDEV}/lib", "-L${PSPDEV}/psp/lib", "-L${PSPDEV}/psp/sdk/lib", ]
             job.pollute_directories = ["${PSPDEV}/include", "${PSPDEV}/psp/include", "${PSPDEV}/psp/sdk/include", ]
+            job.static_lib = StaticLibType.A
         case SdlPlatform.Vita:
             job.sudo = ""
             job.apt_packages = []
@@ -556,6 +587,7 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.run_tests = False
             job.shared = False
             job.cc = "arm-vita-eabi-gcc"
+            job.static_lib = StaticLibType.A
         case SdlPlatform.Haiku:
             fpic = False
             job.run_tests = False
@@ -567,6 +599,8 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 f"-DCMAKE_CXX_COMPILER={job.cxx}",
                 "-DCMAKE_SYSTEM_NAME=Haiku",
             ))
+            job.shared_lib = SharedLibType.SO_0
+            job.static_lib = StaticLibType.A
         case SdlPlatform.PowerPC64:
             # FIXME: Enable SDL_WERROR
             job.werror = False
@@ -574,6 +608,8 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
             job.run_tests = False
             job.sudo = ""
             job.apt_packages = []
+            job.shared_lib = SharedLibType.SO_0
+            job.static_lib = StaticLibType.A
         case SdlPlatform.LoongArch64:
             job.run_tests = False
             job.cc = "${LOONGARCH64_CC}"
@@ -583,13 +619,16 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 f"-DCMAKE_CXX_COMPILER={job.cxx}",
                 "-DCMAKE_SYSTEM_NAME=Linux",
             ))
+            job.shared_lib = SharedLibType.SO_0
+            job.static_lib = StaticLibType.A
         case SdlPlatform.N3ds:
             job.shared = False
-            job.apt_packages = ["ninja-build"]
+            job.apt_packages = ["ninja-build", "binutils"]
             job.clang_tidy = False
             job.run_tests = False
             job.cc_from_cmake = True
             job.cmake_toolchain_file = "${DEVKITPRO}/cmake/3DS.cmake"
+            job.static_lib = StaticLibType.A
         case SdlPlatform.Msys2:
             job.shell = "msys2 {0}"
             assert spec.msys2_platform
@@ -602,6 +641,8 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 "ucrt64": "mingw-w64-ucrt-x86_64",
             }[spec.msys2_platform.value]
             job.msys2_no_perl = spec.msys2_platform in (Msys2Platform.Mingw32, Msys2Platform.Clang32)
+            job.shared_lib = SharedLibType.WIN32
+            job.static_lib = StaticLibType.A
         case SdlPlatform.Riscos:
             # FIXME: Enable SDL_WERROR
             job.werror = False
@@ -616,11 +657,14 @@ def spec_to_job(spec: JobSpec) -> JobDetails:
                 "-DSDL_GCC_ATOMICS:BOOL=OFF",
             ))
             job.cmake_toolchain_file = "/home/riscos/env/toolchain-riscos.cmake"
+            job.static_lib = StaticLibType.A
         case SdlPlatform.FreeBSD | SdlPlatform.NetBSD:
             job.cpactions = True
             job.no_cmake = True
             job.run_tests = False
             job.apt_packages = []
+            job.shared_lib = SharedLibType.SO_0
+            job.static_lib = StaticLibType.A
             match spec.platform:
                 case SdlPlatform.FreeBSD:
                     job.cpactions_os = "freebsd"

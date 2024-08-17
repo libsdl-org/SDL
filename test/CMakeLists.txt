@@ -659,7 +659,7 @@ function(add_sdl_test TEST TARGET)
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
         if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
-            set_property(TEST ${TEST} APPEND PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_RUNTIME_DLL_DIRS:${TEST}>")
+            set_property(TEST ${TEST} APPEND PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_RUNTIME_DLL_DIRS:${TARGET}>")
         endif()
         if(NOT notrackmem)
             set_property(TEST ${TEST} PROPERTY FAIL_REGULAR_EXPRESSION "Total: [0-9]+\\.[0-9]+ Kb in [1-9][0-9]* allocations")
