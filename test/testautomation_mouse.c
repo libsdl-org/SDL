@@ -206,6 +206,7 @@ static int mouse_createFreeCursor(void *arg)
     }
 
     /* Free cursor again */
+    SDLTest_AssertPass("About to call SDL_DestroyCursor()");
     SDL_DestroyCursor(cursor);
     SDLTest_AssertPass("Call to SDL_DestroyCursor()");
 
@@ -240,6 +241,7 @@ static int mouse_createFreeColorCursor(void *arg)
     }
 
     /* Free cursor again */
+    SDLTest_AssertPass("About to call SDL_DestroyCursor()");
     SDL_DestroyCursor(cursor);
     SDLTest_AssertPass("Call to SDL_DestroyCursor()");
 
@@ -319,6 +321,7 @@ static int mouse_setCursor(void *arg)
     SDLTest_AssertPass("Call to SDL_SetCursor(NULL)");
 
     /* Free cursor again */
+    SDLTest_AssertPass("About to call SDL_DestroyCursor()");
     SDL_DestroyCursor(cursor);
     SDLTest_AssertPass("Call to SDL_DestroyCursor()");
 
