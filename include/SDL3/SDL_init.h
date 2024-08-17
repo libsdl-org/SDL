@@ -73,13 +73,16 @@ typedef Uint32 SDL_InitFlags;
  * https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3
  * for details.
  *
- * Returning SDL_APP_SUCCESS or SDL_APP_FAILURE from SDL_AppInit, SDL_AppEvent, or SDL_AppIterate
- * will terminate the program and report success/failure to the operating system. What that means
- * is platform-dependent. On Unix, for example, on success, the process error code will be zero,
- * and on failure it will be 1. This interface doesn't allow you to return specific exit codes,
- * just whether there was an error generally or not.
+ * Returning SDL_APP_SUCCESS or SDL_APP_FAILURE from SDL_AppInit,
+ * SDL_AppEvent, or SDL_AppIterate will terminate the program and report
+ * success/failure to the operating system. What that means is
+ * platform-dependent. On Unix, for example, on success, the process error
+ * code will be zero, and on failure it will be 1. This interface doesn't
+ * allow you to return specific exit codes, just whether there was an error
+ * generally or not.
  *
- * Returning SDL_APP_CONTINUE from these functions will let the app continue to run.
+ * Returning SDL_APP_CONTINUE from these functions will let the app continue
+ * to run.
  *
  * \since This enum is available since SDL 3.0.0.
  */
