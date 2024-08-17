@@ -1128,14 +1128,16 @@ while (my $d = readdir(DH)) {
             }
 
             # This block attempts to find the whole struct/union/enum definition by counting matching brackets. Kind of yucky.
+            # It also "parses" enums enough to find out the elements of it.
             if ($has_definition) {
                 my $started = 0;
                 my $brackets = 0;
                 my $pending = $decl;
+                my $skipping_comment = 0;
 
                 $decl = '';
                 while (!$started || ($brackets != 0)) {
-                    foreach my $seg (split(/([{}])/, $pending)) {
+                    foreach my $seg (split(/([{}])/, $pending)) {   # (this will pick up brackets in comments! Be careful!)
                         $decl .= $seg;
                         if ($seg eq '{') {
                             $started = 1;
@@ -1143,6 +1145,25 @@ while (my $d = readdir(DH)) {
                         } elsif ($seg eq '}') {
                             die("Something is wrong with header $incpath/$dent while parsing $sym; is a bracket missing?\n") if ($brackets <= 0);
                             $brackets--;
+                        }
+                    }
+
+                    if ($skipping_comment) {
+                        if ($pending =~ s/\A.*?\*\///) {
+                            $skipping_comment = 0;
+                        }
+                    }
+
+                    if (!$skipping_comment && $started && ($symtype == 4)) {  # Pick out elements of an enum.
+                        my $stripped = "$pending";
+                        $stripped =~ s/\/\*.*?\*\///g;  # dump /* comments */ that exist fully on one line.
+                        if ($stripped =~ /\/\*/) {  # uhoh, a /* comment */ that crosses newlines.
+                            $skipping_comment = 1;
+                        } elsif ($stripped =~ /\A\s*([a-zA-Z0-9_]+)(.*)\Z/) {  #\s*(\=\s*.*?|)\s*,?(.*?)\Z/) {
+                            if ($1 ne 'typedef') {  # make sure we didn't just eat the first line by accident.  :/
+                                #print("ENUM [$1] $incpath/$dent:$lineno\n");
+                                $referenceonly{$1} = $sym;
+                            }
                         }
                     }
 
@@ -2271,9 +2292,14 @@ if ($copy_direction == 1) {  # --copy-to-headers
             print FH "###### $wikified_preamble\n";
         }
 
+        my $category = 'CategoryAPIMacro';
+        if ($headersymstype{$refersto} == 4) {
+            $category = 'CategoryAPIEnumerators';  # NOT CategoryAPIEnum!
+        }
+
         print FH "# $sym\n\nPlease refer to [$refersto]($refersto) for details.\n\n";
         print FH "----\n";
-        print FH "[CategoryAPI](CategoryAPI), [CategoryAPIMacro](CategoryAPIMacro)\n\n";
+        print FH "[CategoryAPI](CategoryAPI), [$category]($category)\n\n";
 
         close(FH);
     }
