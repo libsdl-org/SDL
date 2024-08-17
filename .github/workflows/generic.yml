@@ -179,6 +179,14 @@ jobs:
         run: |
           ${{ matrix.platform.source-cmd }}
           cmake --build build --config ${{ matrix.platform.cmake-build-type }} --verbose -- ${{ matrix.platform.cmake-build-arguments }}
+      - name: 'Verify SDL_REVISION'
+        if: ${{ !matrix.platform.no-cmake }}
+        run: |
+          echo "This should show us the SDL_REVISION"
+          echo "Shared library:"
+          ${{ (matrix.platform.shared-lib && format('strings build/{0} | grep SDL-', matrix.platform.shared-lib)) || 'echo "<Shared library not supported by platform>"' }}
+          echo "Static library:"
+          ${{ (matrix.platform.static-lib && format('strings build/{0} | grep SDL-', matrix.platform.static-lib)) || 'echo "<Static library not supported by platform>"' }}
       - name: 'Run build-time tests (CMake)'
         id: tests
         if: ${{ !matrix.platform.no-cmake && matrix.platform.run-tests }}
@@ -189,10 +197,6 @@ jobs:
           set -eu
           export SDL_TESTS_QUICK=1
           ctest -VV --test-dir build/ -j2
-          if test "${{ runner.os }}" = "Linux"; then
-            # This should show us the SDL_REVISION
-            strings build/libSDL3.so.0 | grep SDL-
-          fi
       - name: "Build test apk's (CMake)"
         id: apks
         if: ${{ steps.build.outcome == 'success' && matrix.platform.android-apks != '' }}
