@@ -5,6 +5,8 @@
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
 
+#ifndef SDL_PLATFORM_EMSCRIPTEN
+
 /* Flag indicating if the param should be checked */
 static int g_paramCheck = 0;
 
@@ -13,6 +15,8 @@ static int g_paramValue = 0;
 
 /* Flag indicating that the callback was called */
 static int g_timerCallbackCalled = 0;
+
+#endif
 
 /* Fixture */
 
@@ -100,6 +104,8 @@ static int timer_delayAndGetTicks(void *arg)
     return TEST_COMPLETED;
 }
 
+#ifndef SDL_PLATFORM_EMSCRIPTEN
+
 /* Test callback */
 static Uint32 SDLCALL timerTestCallback(void *param, SDL_TimerID timerID, Uint32 interval)
 {
@@ -115,11 +121,17 @@ static Uint32 SDLCALL timerTestCallback(void *param, SDL_TimerID timerID, Uint32
     return 0;
 }
 
+#endif
+
 /**
  * Call to SDL_AddTimer and SDL_RemoveTimer
  */
 static int timer_addRemoveTimer(void *arg)
 {
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    SDLTest_Log("Timer callbacks on Emscripten require a main loop to handle events");
+    return TEST_SKIPPED;
+#else
     SDL_TimerID id;
     int result;
     int param;
@@ -166,25 +178,26 @@ static int timer_addRemoveTimer(void *arg)
     SDLTest_AssertCheck(g_timerCallbackCalled == 1, "Check callback WAS called, expected: 1, got: %i", g_timerCallbackCalled);
 
     return TEST_COMPLETED;
+#endif
 }
 
 /* ================= Test References ================== */
 
 /* Timer test cases */
 static const SDLTest_TestCaseReference timerTest1 = {
-    (SDLTest_TestCaseFp)timer_getPerformanceCounter, "timer_getPerformanceCounter", "Call to SDL_GetPerformanceCounter", TEST_ENABLED
+    timer_getPerformanceCounter, "timer_getPerformanceCounter", "Call to SDL_GetPerformanceCounter", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference timerTest2 = {
-    (SDLTest_TestCaseFp)timer_getPerformanceFrequency, "timer_getPerformanceFrequency", "Call to SDL_GetPerformanceFrequency", TEST_ENABLED
+    timer_getPerformanceFrequency, "timer_getPerformanceFrequency", "Call to SDL_GetPerformanceFrequency", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference timerTest3 = {
-    (SDLTest_TestCaseFp)timer_delayAndGetTicks, "timer_delayAndGetTicks", "Call to SDL_Delay and SDL_GetTicks", TEST_ENABLED
+    timer_delayAndGetTicks, "timer_delayAndGetTicks", "Call to SDL_Delay and SDL_GetTicks", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference timerTest4 = {
-    (SDLTest_TestCaseFp)timer_addRemoveTimer, "timer_addRemoveTimer", "Call to SDL_AddTimer and SDL_RemoveTimer", TEST_ENABLED
+    timer_addRemoveTimer, "timer_addRemoveTimer", "Call to SDL_AddTimer and SDL_RemoveTimer", TEST_ENABLED
 };
 
 /* Sequence of Timer test cases */
