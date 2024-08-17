@@ -69,10 +69,6 @@ typedef Uint32 SDL_InitFlags;
 /**
  * Return values for optional main callbacks.
  *
- * See
- * https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3
- * for details.
- *
  * Returning SDL_APP_SUCCESS or SDL_APP_FAILURE from SDL_AppInit,
  * SDL_AppEvent, or SDL_AppIterate will terminate the program and report
  * success/failure to the operating system. What that means is
@@ -83,6 +79,10 @@ typedef Uint32 SDL_InitFlags;
  *
  * Returning SDL_APP_CONTINUE from these functions will let the app continue
  * to run.
+ *
+ * See
+ * [Main callbacks in SDL3](https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3)
+ * for complete details.
  *
  * \since This enum is available since SDL 3.0.0.
  */
