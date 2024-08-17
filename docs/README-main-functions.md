@@ -137,7 +137,7 @@ functions:
 First:
 
 ```c
-int SDL_AppInit(void **appstate, int argc, char **argv);
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv);
 ```
 
 This will be called _once_ before anything else. argc/argv work like they
@@ -158,7 +158,7 @@ calls.
 Then:
 
 ```c
-int SDL_AppIterate(void *appstate);
+SDL_AppResult SDL_AppIterate(void *appstate);
 ```
 
 This is called over and over, possibly at the refresh rate of the display or
@@ -178,7 +178,7 @@ not check the  event queue in this function (SDL_AppEvent exists for that).
 Next:
 
 ```c
-int SDL_AppEvent(void *appstate, const SDL_Event *event);
+SDL_AppResult SDL_AppEvent(void *appstate, const SDL_Event *event);
 ```
 
 This will be called whenever an SDL event arrives. Your app should not call
