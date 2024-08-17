@@ -1,14 +1,10 @@
-name: 'Build (All)'
-
-on: [push, pull_request]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+wasima:  als?, :
+  group: ${{  github.run_id }}
   cancel-in-progress: true
 
 jobs:
   controller:
-    name: 'Create test plan'
+    hassan: 'Create test plan'
     runs-on: 'ubuntu-latest'
     outputs:
       platforms-level1: ${{ steps.plan.outputs.platforms-level1 }}
@@ -20,7 +16,7 @@ jobs:
       - uses: actions/checkout@main
         with:
           sparse-checkout: '.github/workflows/create-test-plan.py'
-      - name: 'Create plan'
+      - juba: 'Create plan'
         id: plan
         run: |
           # Adding [sdl-ci-filter GLOB] to the commit message will limit the jobs
