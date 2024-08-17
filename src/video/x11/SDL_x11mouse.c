@@ -320,7 +320,9 @@ static void WarpMouseInternal(Window xwindow, const int x, const int y)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)SDL_GetVideoDevice()->driverdata;
     Display *display = videodata->display;
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     int deviceid = 0;
+#endif
     SDL_bool warp_hack = SDL_FALSE;
 
     /* XWayland will only warp the cursor if it is hidden, so this workaround is required. */
@@ -492,5 +494,3 @@ void X11_QuitMouse(_THIS)
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
-
-/* vi: set ts=4 sw=4 expandtab: */
