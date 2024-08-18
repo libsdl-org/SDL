@@ -8,6 +8,7 @@
 #include "SDL_main.h"
 #include <pspkernel.h>
 #include <pspthreadman.h>
+#include "../../events/SDL_events_c.h"
 
 #ifdef main
 #undef main
@@ -28,7 +29,7 @@ PSP_MAIN_THREAD_ATTR(THREAD_ATTR_VFPU | THREAD_ATTR_USER);
 
 int sdl_psp_exit_callback(int arg1, int arg2, void *common)
 {
-    sceKernelExitGame();
+    SDL_SendQuit();
     return 0;
 }
 
