@@ -27,6 +27,7 @@
 
 #include <pspkernel.h>
 #include <pspthreadman.h>
+#include "../../events/SDL_events_c.h"
 
 /* If application's main() is redefined as SDL_main, and libSDL_main is
    linked, then this file will create the standard exit callback,
@@ -43,7 +44,7 @@ PSP_MAIN_THREAD_ATTR(THREAD_ATTR_VFPU | THREAD_ATTR_USER);
 
 int sdl_psp_exit_callback(int arg1, int arg2, void *common)
 {
-    sceKernelExitGame();
+    SDL_SendQuit();
     return 0;
 }
 
