@@ -32,7 +32,7 @@
 #include <psputils.h>
 #include <pspdisplay.h>
 
-static unsigned int __attribute__((aligned(16))) list[262144];
+#define GPU_LIST_SIZE 256 * 1024
 
 typedef struct
 {
@@ -42,13 +42,14 @@ typedef struct
 
 typedef struct
 {
+    uint32_t __attribute__((aligned(16))) guList[2][GPU_LIST_SIZE];
     void *frontbuffer;         /**< main screen buffer */
     void *backbuffer;          /**< buffer presented to display */
+    PSP_BlendInfo blendInfo;   /**< current blend info */
     uint8_t drawBufferFormat;  /**< GU_PSM_8888 or GU_PSM_5650 or GU_PSM_4444 */
     uint8_t currentDrawBufferFormat;  /**< GU_PSM_8888 or GU_PSM_5650 or GU_PSM_4444 */
-    uint64_t drawColor;
-    PSP_BlendInfo blendInfo;   /**< current blend info */
     uint8_t vsync; /* 0 (Disabled), 1 (Enabled), 2 (Dynamic) */
+    uint8_t list_idx;
     SDL_bool vblank_not_reached; /**< whether vblank wasn't reached */
 } PSP_RenderData;
 
@@ -69,7 +70,6 @@ typedef struct
     uint8_t format;         /**< Image format - one of ::pgePixelFormat. */
     uint8_t filter;         /**< Image filter - one of GU_NEAREST or GU_LINEAR. */
     uint8_t swizzled;       /**< Whether the image is swizzled or not. */
-
 } PSP_Texture;
 
 typedef struct
@@ -539,7 +539,7 @@ static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         sceGuScissor(0,0,psp_tex->width, psp_tex->height);
 
     } else {
-        sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
+        sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
         data->currentDrawBufferFormat = data->drawBufferFormat;
     }
 
@@ -1018,8 +1018,12 @@ static int PSP_RenderPresent(SDL_Renderer *renderer)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
 
-    sceGuFinish();
-    sceGuSync(0,0);
+    int g_packet_size = sceGuFinish();
+    void *pkt = data->guList[data->list_idx];
+    SDL_assert(g_packet_size < GPU_LIST_SIZE);
+    sceKernelDcacheWritebackRange(pkt, g_packet_size) ;
+
+    sceGuSync(GU_SYNC_FINISH, GU_SYNC_WHAT_DONE);
 
     if (((data->vsync == 2) && (data->vblank_not_reached)) || // Dynamic
         (data->vsync == 1)) { // Normal VSync
@@ -1030,8 +1034,14 @@ static int PSP_RenderPresent(SDL_Renderer *renderer)
     data->backbuffer = data->frontbuffer;
     data->frontbuffer = vabsptr(sceGuSwapBuffers());
 
+    // Send the packet to the GPU
+    sceGuSendList(GU_TAIL, data->guList[data->list_idx], NULL);
+
     // Starting a new frame
-    sceGuStart(GU_DIRECT,list);
+    data->list_idx = (data->list_idx != 0) ? 0 : 1;
+
+    sceGuStart(GU_SEND, data->guList[data->list_idx]);
+    sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
 
     return 0;
 }
@@ -1093,7 +1103,6 @@ static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
 static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
 {
     PSP_RenderData *data;
-    void *doublebuffer = NULL;
     uint32_t bufferSize = 0;
     SDL_bool dynamicVsync;
 
@@ -1111,15 +1120,13 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
 
     /* Specific GU init */
     bufferSize = getMemorySize(PSP_FRAME_BUFFER_WIDTH, PSP_SCREEN_HEIGHT, data->drawBufferFormat);
-    doublebuffer = vramalloc(bufferSize * 2);
-    data->backbuffer = doublebuffer;
-    data->frontbuffer = ((uint8_t *)doublebuffer) + bufferSize;
+    data->frontbuffer = vramalloc(bufferSize);
+    data->backbuffer = vramalloc(bufferSize);
 
     sceGuInit();
-    sceGuStart(GU_DIRECT, list);
+    sceGuStart(GU_DIRECT, data->guList[0]);
     sceGuDrawBuffer(data->drawBufferFormat, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
     sceGuDispBuffer(PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
-    sceGuDepthBuffer(vrelptr(data->backbuffer), 0); // Set the depth buffer to the same space as the framebuffer
 	
     sceGuOffset(2048 - (PSP_SCREEN_WIDTH >> 1), 2048 - (PSP_SCREEN_HEIGHT >> 1));
     sceGuViewport(2048, 2048, PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT);
@@ -1130,12 +1137,16 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
 	sceGuEnable(GU_SCISSOR_TEST);
 	
 	sceGuFinish();
-	sceGuSync(0,0);
+	sceGuSync(GU_SYNC_FINISH, GU_SYNC_WHAT_DONE);
 
 	sceDisplayWaitVblankStart();
 	sceGuDisplay(GU_TRUE);
 
-    sceGuStart(GU_DIRECT,list);
+    // Starting the first frame
+    data->list_idx = 0;
+
+    sceGuStart(GU_SEND, data->guList[data->list_idx]);
+    sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
     
     // Clear the screen
     sceGuClearColor(0);
