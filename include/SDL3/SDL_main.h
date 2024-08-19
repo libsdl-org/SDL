@@ -584,7 +584,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
     /* include header-only SDL_main implementations */
     #if defined(SDL_MAIN_USE_CALLBACKS) \
         || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) \
-        || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP)
+        || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_NGAGE) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP) \
+        || defined(SDL_PLATFORM_EMSCRIPTEN)
 
         /* platforms which main (-equivalent) can be implemented in plain C */
         #include <SDL3/SDL_main_impl.h>
