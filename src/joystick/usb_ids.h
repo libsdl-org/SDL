@@ -54,6 +54,7 @@
 #define USB_VENDOR_SONY         0x054c
 #define USB_VENDOR_THRUSTMASTER 0x044f
 #define USB_VENDOR_TURTLE_BEACH 0x10f5
+#define USB_VENDOR_SWITCH       0x2563
 #define USB_VENDOR_VALVE        0x28de
 #define USB_VENDOR_ZEROPLUS     0x0c12
 
@@ -116,6 +117,7 @@
 #define USB_PRODUCT_SONY_DS4_STRIKEPAD                    0x05c5
 #define USB_PRODUCT_SONY_DS5                              0x0ce6
 #define USB_PRODUCT_SONY_DS5_EDGE                         0x0df2
+#define USB_PRODUCT_SWITCH_RETROBIT_CONTROLLER            0x0575
 #define USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO               0xd012
 #define USB_PRODUCT_TURTLE_BEACH_SERIES_X_REACT_R         0x7013
 #define USB_PRODUCT_TURTLE_BEACH_SERIES_X_RECON           0x7009
