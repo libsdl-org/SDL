@@ -149,7 +149,6 @@ static SDL_NORETURN void SDL_AbortAssertion(void)
 
 static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, void *userdata)
 {
-    const char *envr;
     SDL_AssertState state = SDL_ASSERTION_ABORT;
     SDL_Window *window;
     SDL_MessageBoxData messagebox;
@@ -197,21 +196,21 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
     debug_print("\n\n%s\n\n", message);
 
     /* let env. variable override, so unit tests won't block in a GUI. */
-    envr = SDL_getenv("SDL_ASSERT");
-    if (envr) {
+    const char *hint = SDL_GetHint(SDL_HINT_ASSERT);
+    if (hint) {
         if (message != stack_buf) {
             SDL_free(message);
         }
 
-        if (SDL_strcmp(envr, "abort") == 0) {
+        if (SDL_strcmp(hint, "abort") == 0) {
             return SDL_ASSERTION_ABORT;
-        } else if (SDL_strcmp(envr, "break") == 0) {
+        } else if (SDL_strcmp(hint, "break") == 0) {
             return SDL_ASSERTION_BREAK;
-        } else if (SDL_strcmp(envr, "retry") == 0) {
+        } else if (SDL_strcmp(hint, "retry") == 0) {
             return SDL_ASSERTION_RETRY;
-        } else if (SDL_strcmp(envr, "ignore") == 0) {
+        } else if (SDL_strcmp(hint, "ignore") == 0) {
             return SDL_ASSERTION_IGNORE;
-        } else if (SDL_strcmp(envr, "always_ignore") == 0) {
+        } else if (SDL_strcmp(hint, "always_ignore") == 0) {
             return SDL_ASSERTION_ALWAYS_IGNORE;
         } else {
             return SDL_ASSERTION_ABORT; /* oh well. */

@@ -303,9 +303,6 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
  * "break" so that your debugger takes control as soon as assert is triggered,
  * instead of risking a bad UI interaction (deadlock, etc) in the application.
  *
- * Note that SDL_ASSERT is an _environment variable_ and not an SDL hint!
- * Please refer to your platform's documentation for how to set it!
- *
  * \param condition boolean value to test.
  *
  * \since This macro is available since SDL 3.0.0.
@@ -335,10 +332,7 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
  * an assertion in a background thread, it might be desirable to set this to
  * "break" so that your debugger takes control as soon as assert is triggered,
  * instead of risking a bad UI interaction (deadlock, etc) in the application.
- *
- * Note that SDL_ASSERT is an _environment variable_ and not an SDL hint!
- * Please refer to your platform's documentation for how to set it!
- *
+ * *
  * \param condition boolean value to test.
  *
  * \since This macro is available since SDL 3.0.0.
@@ -365,9 +359,6 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
  * an assertion in a background thread, it might be desirable to set this to
  * "break" so that your debugger takes control as soon as assert is triggered,
  * instead of risking a bad UI interaction (deadlock, etc) in the application.
- *
- * Note that SDL_ASSERT is an _environment variable_ and not an SDL hint!
- * Please refer to your platform's documentation for how to set it!
  *
  * \param condition boolean value to test.
  *
@@ -411,9 +402,6 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
  * an assertion in a background thread, it might be desirable to set this to
  * "break" so that your debugger takes control as soon as assert is triggered,
  * instead of risking a bad UI interaction (deadlock, etc) in the application.
- *
- * Note that SDL_ASSERT is an _environment variable_ and not an SDL hint!
- * Please refer to your platform's documentation for how to set it!
  *
  * \param condition boolean value to test.
  *
