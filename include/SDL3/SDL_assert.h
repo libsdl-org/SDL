@@ -333,6 +333,7 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
  * "break" so that your debugger takes control as soon as assert is triggered,
  * instead of risking a bad UI interaction (deadlock, etc) in the application.
  * *
+ *
  * \param condition boolean value to test.
  *
  * \since This macro is available since SDL 3.0.0.

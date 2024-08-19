@@ -4128,15 +4128,17 @@ extern "C" {
  * - "abort": Program terminates immediately.
  * - "break": Program triggers a debugger breakpoint.
  * - "retry": Program reruns the SDL_assert's test again.
- * - "ignore": Program continues on, ignoring this assertion failure this time.
- * - "always_ignore": Program continues on, ignoring this assertion failure for the rest of the run.
+ * - "ignore": Program continues on, ignoring this assertion failure this
+ *   time.
+ * - "always_ignore": Program continues on, ignoring this assertion failure
+ *   for the rest of the run.
  *
  * Note that SDL_SetAssertionHandler offers a programmatic means to deal with
  * assertion failures through a callback, and this hint is largely intended to
  * be used via environment variables by end users and automated tools.
  *
- * This hint should be set before an assertion failure is triggered and can
- * be changed at any time.
+ * This hint should be set before an assertion failure is triggered and can be
+ * changed at any time.
  *
  * \since This hint is available since SDL 3.0.0.
  */
