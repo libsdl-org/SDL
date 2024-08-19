@@ -90,7 +90,6 @@ static void EMSCRIPTENCAMERA_CloseDevice(SDL_Camera *device)
                 return;  // camera was closed and/or subsystem was shut down, we're already done.
             }
             SDL3.camera.stream.getTracks().forEach(track => track.stop());  // stop all recording.
-            _SDL_free(SDL3.camera.rgba);
             SDL3.camera = {};  // dump our references to everything.
         });
         SDL_free(device->hidden);
@@ -104,6 +103,10 @@ static void SDLEmscriptenCameraPermissionOutcome(SDL_Camera *device, int approve
     device->spec.height = device->actual_spec.height = h;
     device->spec.framerate_numerator = device->actual_spec.framerate_numerator = fps;
     device->spec.framerate_denominator = device->actual_spec.framerate_denominator = 1;
+    if (device->acquire_surface) {
+        device->acquire_surface->w = w;
+        device->acquire_surface->h = h;
+    }
     SDL_CameraPermissionOutcome(device, approved ? SDL_TRUE : SDL_FALSE);
 }
 
@@ -187,7 +190,6 @@ static int EMSCRIPTENCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec 
                 SDL3.camera.video = video;
                 SDL3.camera.canvas = canvas;
                 SDL3.camera.ctx2d = ctx2d;
-                SDL3.camera.rgba = 0;
                 SDL3.camera.next_frame_time = performance.now();
 
                 video.play();

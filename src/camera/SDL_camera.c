@@ -309,7 +309,7 @@ void RefPhysicalCamera(SDL_Camera *device)
     SDL_AtomicIncRef(&device->refcount);
 }
 
-static void ObtainPhysicalCameraObj(SDL_Camera *device) SDL_NO_THREAD_SAFETY_ANALYSIS  // !!! FIXMEL SDL_ACQUIRE
+static void ObtainPhysicalCameraObj(SDL_Camera *device) SDL_NO_THREAD_SAFETY_ANALYSIS  // !!! FIXME: SDL_ACQUIRE
 {
     if (device) {
         RefPhysicalCamera(device);
