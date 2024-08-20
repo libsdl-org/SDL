@@ -659,7 +659,7 @@ static SDL_bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
 
 static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
-    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
+    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx ? frame->hw_frames_ctx->data : NULL);
     const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
     int i, j, k, image_index;
     EGLDisplay display = eglGetCurrentDisplay();
@@ -695,9 +695,9 @@ static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     attr[k++] = EGL_LINUX_DRM_FOURCC_EXT;
     attr[k++] = desc->layers[0].format;
     attr[k++] = EGL_WIDTH;
-    attr[k++] = frames->width;
+    attr[k++] = frames ? frames->width : frame->width;
     attr[k++] = EGL_HEIGHT;
-    attr[k++] = frames->height;
+    attr[k++] = frames ? frames->height : frame->height;
     image_index = 0;
     for (i = 0; i < desc->nb_layers; ++i) {
         const AVDRMLayerDescriptor *layer = &desc->layers[i];
@@ -842,7 +842,7 @@ static SDL_bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef HAVE_EGL
-    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
+    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx ? frame->hw_frames_ctx->data : NULL);
     const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
     int i, j, image_index, num_planes;
     EGLDisplay display = eglGetCurrentDisplay();
@@ -906,10 +906,10 @@ static SDL_bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
             attr[k++] = formats[i];
 
             attr[k++] = EGL_WIDTH;
-            attr[k++] = frames->width / (image_index + 1); /* half size for chroma */
+            attr[k++] = (frames ? frames->width : frame->width) / (image_index + 1); /* half size for chroma */
 
             attr[k++] = EGL_HEIGHT;
-            attr[k++] = frames->height / (image_index + 1);
+            attr[k++] = (frames ? frames->height : frame->height) / (image_index + 1);
 
             attr[k++] = EGL_DMA_BUF_PLANE0_FD_EXT;
             attr[k++] = object->fd;
