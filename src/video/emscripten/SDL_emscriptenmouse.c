@@ -104,7 +104,7 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
             ? "url(" + canvas.toDataURL() + "), auto"
             : "url(" + canvas.toDataURL() + ") " + hot_x + " " + hot_y + ", auto";
 
-        var urlBuf = _malloc(url.length + 1);
+        var urlBuf = _SDL_malloc(url.length + 1);
         stringToUTF8(url, urlBuf, url.length + 1);
 
         return urlBuf;

@@ -5196,6 +5196,17 @@ static void  SDLCALL real_free(void *p) { free(p); }
 #define real_free dlfree
 #endif
 
+// mark the allocator entry points as KEEPALIVE so we can call these from JavaScript.
+// otherwise they could could get so aggressively inlined that their symbols
+// don't exist at all in the final binary!
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+extern SDL_DECLSPEC SDL_MALLOC EMSCRIPTEN_KEEPALIVE void * SDLCALL SDL_malloc(size_t size);
+extern SDL_DECLSPEC SDL_MALLOC SDL_ALLOC_SIZE2(1, 2) EMSCRIPTEN_KEEPALIVE void * SDLCALL SDL_calloc(size_t nmemb, size_t size);
+extern SDL_DECLSPEC SDL_ALLOC_SIZE(2) EMSCRIPTEN_KEEPALIVE void * SDLCALL SDL_realloc(void *mem, size_t size);
+extern SDL_DECLSPEC EMSCRIPTEN_KEEPALIVE void SDLCALL SDL_free(void *mem);
+#endif
+
 /* Memory functions used by SDL that can be replaced by the application */
 static struct
 {

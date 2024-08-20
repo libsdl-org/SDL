@@ -740,7 +740,7 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
             var makePointerEventCStruct = function(event) {
                 var ptr = 0;
                 if (event.pointerType == "pen") {
-                    ptr = _malloc($2);
+                    ptr = _SDL_malloc($2);
                     if (ptr != 0) {
                         var rect = target.getBoundingClientRect();
                         var idx = ptr >> 2;
@@ -762,18 +762,18 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
             };
 
             SDL3.eventHandlerPointerEnter = function(event) {
-                var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerEnter(data, d); _free(d); }
+                var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerEnter(data, d); _SDL_free(d); }
             };
             target.addEventListener("pointerenter", SDL3.eventHandlerPointerEnter);
 
             SDL3.eventHandlerPointerLeave = function(event) {
-                var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerLeave(data, d); _free(d); }
+                var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerLeave(data, d); _SDL_free(d); }
             };
             target.addEventListener("pointerleave", SDL3.eventHandlerPointerLeave);
             target.addEventListener("pointercancel", SDL3.eventHandlerPointerLeave);  /* catch this, just in case. */
 
             SDL3.eventHandlerPointerGeneric = function(event) {
-                var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerGeneric(data, d); _free(d); }
+                var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerGeneric(data, d); _SDL_free(d); }
             };
             target.addEventListener("pointerdown", SDL3.eventHandlerPointerGeneric);
             target.addEventListener("pointerup", SDL3.eventHandlerPointerGeneric);
