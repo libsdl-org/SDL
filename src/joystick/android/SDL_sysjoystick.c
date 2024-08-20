@@ -589,6 +589,9 @@ static int ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
 static int ANDROID_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+    if (!item) {
+        return SDL_SetError("Rumble failed, device disconnected");
+    }
     if (!item->can_rumble) {
         return SDL_Unsupported();
     }
