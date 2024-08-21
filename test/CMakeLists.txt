@@ -615,12 +615,22 @@ if(APPLE)
   endforeach()
 endif()
 
-set(TESTS_ENVIRONMENT
-    SDL_AUDIO_DRIVER=dummy
-    SDL_VIDEO_DRIVER=dummy
-)
-
 set(SDLTEST_TIMEOUT_MULTIPLIER "1" CACHE STRING "SDL test time-out multiplier")
+
+set(SDLTEST_AUDIO_DRIVER_DEFAULT "dummy")
+set(SDLTEST_VIDEO_DRIVER_DEFAULT "dummy")
+if(EMSCRIPTEN)
+    set(SDLTEST_AUDIO_DRIVER_DEFAULT "emscripten")
+    set(SDLTEST_VIDEO_DRIVER_DEFAULT "emscripten")
+endif()
+set(SDLTEST_AUDIO_DRIVER "${SDLTEST_AUDIO_DRIVER_DEFAULT}" CACHE STRING "SDL audio driver for CTest")
+set(SDLTEST_VIDEO_DRIVER "${SDLTEST_VIDEO_DRIVER_DEFAULT}" CACHE STRING "SDL video driver for CTest")
+
+set(TESTS_ENVIRONMENT
+    "SDL_AUDIO_DRIVER=${SDLTEST_AUDIO_DRIVER}"
+    "SDL_VIDEO_DRIVER=${SDLTEST_VIDEO_DRIVER}"
+    "SDL_ASSERT=abort"
+)
 
 function(add_sdl_test TEST TARGET)
     cmake_parse_arguments(ast "INSTALL" "" "" ${ARGN})

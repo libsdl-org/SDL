@@ -3,12 +3,13 @@
 import argparse
 import contextlib
 import logging
-import urllib.parse
+import os
+import pathlib
 import shlex
 import sys
 import time
-import pathlib
 from typing import Optional
+import urllib.parse
 
 from selenium import webdriver
 import selenium.common.exceptions
@@ -68,6 +69,9 @@ class SDLSeleniumTestDriver:
             "loghtml": "1",
             "SDL_ASSERT": "abort",
         }
+        for key, value in os.environ.items():
+            if key.startswith("SDL_"):
+                req[key] = value
         req.update({f"arg_{i}": a for i, a in enumerate(self.arguments, 1) })
         req_str = urllib.parse.urlencode(req)
         return f"{self.server}/{self.test}.html?{req_str}"
