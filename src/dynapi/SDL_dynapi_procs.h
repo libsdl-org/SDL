@@ -832,6 +832,7 @@ SDL_DYNAPI_PROC(void,SDL_SetWindowsMessageHook,(SDL_WindowsMessageHook a, void *
 SDL_DYNAPI_PROC(void,SDL_SetX11EventHook,(SDL_X11EventHook a, void *b),(a,b),)
 SDL_DYNAPI_PROC(int,SDL_SetiOSAnimationCallback,(SDL_Window *a, int b, SDL_iOSAnimationCallback c, void *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_SetiOSEventPump,(SDL_bool a),(a),)
+SDL_DYNAPI_PROC(int,SDL_SetmacOSAnimationCallback,(SDL_Window *a, int b, SDL_macOSAnimationCallback c, void *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_ShowAndroidToast,(const char *a, int b, int c, int d, int e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_ShowCursor,(void),(),return)
 SDL_DYNAPI_PROC(int,SDL_ShowMessageBox,(const SDL_MessageBoxData *a, int *b),(a,b),return)

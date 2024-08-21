@@ -188,6 +188,64 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threa
 #endif /* SDL_PLATFORM_LINUX */
 
 /*
+ * Platform specific functions for macOS
+ */
+#ifdef SDL_PLATFORM_MACOS
+/**
+ * The prototype for an Apple macOS animation callback.
+ *
+ * This datatype is only useful on Apple macOS.
+ *
+ * After passing a function pointer of this type to
+ * SDL_SetmacOSAnimationCallback, the system will call that function pointer
+ * at a regular interval.
+ *
+ * \param userdata what was passed as `callbackParam` to
+ *                 SDL_SetmacOSAnimationCallback as `callbackParam`.
+ *
+ * \since This datatype is available since SDL 3.0.0.
+ *
+ * \sa SDL_SetmacOSAnimationCallback
+ */
+typedef void (SDLCALL *SDL_macOSAnimationCallback)(void *userdata);
+
+/**
+ * Use this function to set the animation callback on Apple macOS.
+ *
+ * The function prototype for `callback` is:
+ *
+ * ```c
+ * void SDLCALL callback(void *callbackParam);
+ * ```
+ *
+ * Where its parameter, `callbackParam`, is what was passed as `callbackParam`
+ * to SDL_SetmacOSAnimationCallback().
+ *
+ * This function is only available on Apple macOS.
+ *
+ * Note that if you use the "main callbacks" instead of a standard C `main`
+ * function, you don't have to use this API, as SDL will manage this for you.
+ *
+ * Details on main callbacks are here:
+ *
+ * https://wiki.libsdl.org/SDL3/README/main-functions
+ *
+ * \param window the window for which the animation callback should be set.
+ * \param interval the number of frames after which **callback** will be
+ *                 called.
+ * \param callback the function to call for every frame.
+ * \param callbackParam a pointer that is passed to `callback`.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_SetmacOSAnimationCallback(SDL_Window *window, int interval, SDL_macOSAnimationCallback callback, void *callbackParam);
+
+#endif /* SDL_PLATFORM_MACOS */
+
+
+/*
  * Platform specific functions for iOS
  */
 #ifdef SDL_PLATFORM_IOS
@@ -216,7 +274,7 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  * The function prototype for `callback` is:
  *
  * ```c
- * void callback(void *callbackParam);
+ * void SDLCALL callback(void *callbackParam);
  * ```
  *
  * Where its parameter, `callbackParam`, is what was passed as `callbackParam`

@@ -27,6 +27,7 @@
 #endif /* MAC_OS_X_VERSION_MAX_ALLOWED < 1090 */
 
 #include <float.h> /* For FLT_MAX */
+#import <QuartzCore/QuartzCore.h>
 
 #include "../../events/SDL_dropevents_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -77,9 +78,25 @@
 
 /* This is available as of 10.13.2, but isn't in public headers */
 @property(nonatomic) NSRect mouseConfinementRect;
+
+- (void)setAnimationCallback:(int)interval
+                    callback:(void (*)(void *))callback
+               callbackParam:(void *)callbackParam;
+
+- (void)startAnimation;
+- (void)stopAnimation;
+
+- (void)doLoop:(CVDisplayLinkRef)sender;
 @end
 
 @interface SDL3Window : NSWindow <NSDraggingDestination>
+{
+    CVDisplayLinkRef displayLink;
+    int animationInterval;
+    void (*animationCallback)(void *);
+    void *animationCallbackParam;
+}
+
 /* These are needed for borderless/fullscreen windows */
 - (BOOL)canBecomeKeyWindow;
 - (BOOL)canBecomeMainWindow;
@@ -114,6 +131,39 @@
         }
     }
     return [super validateMenuItem:menuItem];
+}
+
+
+- (void)setAnimationCallback:(int)interval
+                    callback:(void (*)(void *))callback
+               callbackParam:(void *)callbackParam
+{
+    [self stopAnimation];
+
+    animationInterval = interval;
+    animationCallback = callback;
+    animationCallbackParam = callbackParam;
+
+    if (animationCallback) {
+        [self startAnimation];
+    }
+}
+
+- (void)startAnimation
+{
+    displayLink = [self displayLinkWithTarget:self selector:@selector(doLoop:)];
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+}
+
+- (void)stopAnimation
+{
+    [displayLink invalidate];
+    displayLink = nil;
+}
+
+- (void)doLoop:(CVDisplayLinkRef)sender
+{
+    animationCallback(animationCallbackParam);
 }
 
 - (BOOL)canBecomeKeyWindow
@@ -3143,6 +3193,22 @@ int Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     return ret;
+}
+
+int SDL_SetmacOSAnimationCallback(SDL_Window *window, int interval, SDL_macOSAnimationCallback callback, void *callbackParam)
+{
+    if (!window || !window->internal) {
+        return SDL_SetError("Invalid window");
+    }
+
+    @autoreleasepool {
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+        [data.nswindow setAnimationCallback:interval
+                                   callback:callback
+                              callbackParam:callbackParam];
+    }
+
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */

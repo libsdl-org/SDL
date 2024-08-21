@@ -111,3 +111,16 @@ void SDL_SetiOSEventPump(SDL_bool enabled)
 }
 #endif
 
+#ifndef SDL_VIDEO_DRIVER_COCOA
+
+typedef void (SDLCALL *SDL_macOSAnimationCallback)(void *userdata);
+SDL_DECLSPEC int SDLCALL SDL_SetmacOSAnimationCallback(SDL_Window *window, int interval, SDL_macOSAnimationCallback callback, void *callbackParam);
+int SDL_SetmacOSAnimationCallback(SDL_Window *window, int interval, SDL_macOSAnimationCallback callback, void *callbackParam)
+{
+    (void)window;
+    (void)interval;
+    (void)callback;
+    (void)callbackParam;
+    return SDL_Unsupported();
+}
+#endif
