@@ -272,7 +272,7 @@ float SDL_fmodf(float x, float y)
 #endif
 }
 
-SDL_bool SDL_isinf(double x)
+int SDL_isinf(double x)
 {
 #ifdef HAVE_ISINF
     return isinf(x);
@@ -281,7 +281,7 @@ SDL_bool SDL_isinf(double x)
 #endif
 }
 
-SDL_bool SDL_isinff(float x)
+int SDL_isinff(float x)
 {
 #ifdef HAVE_ISINF_FLOAT_MACRO
     return isinf(x);
@@ -292,7 +292,7 @@ SDL_bool SDL_isinff(float x)
 #endif
 }
 
-SDL_bool SDL_isnan(double x)
+int SDL_isnan(double x)
 {
 #ifdef HAVE_ISNAN
     return isnan(x);
@@ -301,7 +301,7 @@ SDL_bool SDL_isnan(double x)
 #endif
 }
 
-SDL_bool SDL_isnanf(float x)
+int SDL_isnanf(float x)
 {
 #ifdef HAVE_ISNAN_FLOAT_MACRO
     return isnan(x);

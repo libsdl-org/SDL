@@ -792,7 +792,7 @@ SDL_DYNAPI_PROC(int,SDL_SetStringProperty,(SDL_PropertiesID a, const char *b, co
 SDL_DYNAPI_PROC(int,SDL_SetSurfaceAlphaMod,(SDL_Surface *a, Uint8 b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetSurfaceBlendMode,(SDL_Surface *a, SDL_BlendMode b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_SetSurfaceClipRect,(SDL_Surface *a, const SDL_Rect *b),(a,b),return)
-SDL_DYNAPI_PROC(int,SDL_SetSurfaceColorKey,(SDL_Surface *a, int b, Uint32 c),(a,b,c),return)
+SDL_DYNAPI_PROC(int,SDL_SetSurfaceColorKey,(SDL_Surface *a, SDL_bool b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_SetSurfaceColorMod,(SDL_Surface *a, Uint8 b, Uint8 c, Uint8 d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_SetSurfaceColorspace,(SDL_Surface *a, SDL_Colorspace b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetSurfacePalette,(SDL_Surface *a, SDL_Palette *b),(a,b),return)
