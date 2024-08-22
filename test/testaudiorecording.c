@@ -113,7 +113,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for playback: %s!\n", SDL_GetError());
         SDL_free(devices);
         return SDL_APP_FAILURE;
-    } else if (SDL_BindAudioStream(device, stream_out) == -1) {
+    } else if (SDL_BindAudioStream(device, stream_out) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't bind an audio stream for playback: %s!\n", SDL_GetError());
         SDL_free(devices);
         return SDL_APP_FAILURE;
@@ -137,7 +137,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
     if (!stream_in) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for recording: %s!\n", SDL_GetError());
         return SDL_APP_FAILURE;
-    } else if (SDL_BindAudioStream(device, stream_in) == -1) {
+    } else if (SDL_BindAudioStream(device, stream_in) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't bind an audio stream for recording: %s!\n", SDL_GetError());
         return SDL_APP_FAILURE;
     }

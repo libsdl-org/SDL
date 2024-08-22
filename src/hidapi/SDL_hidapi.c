@@ -1303,7 +1303,7 @@ Uint32 SDL_hid_device_change_count(void)
     Uint32 counter = 0;
 
 #ifndef SDL_HIDAPI_DISABLED
-    if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
+    if (SDL_hidapi_refcount == 0 && SDL_hid_init() < 0) {
         return 0;
     }
 
@@ -1414,7 +1414,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
     struct hid_device_info *dev;
     struct SDL_hid_device_info *devs = NULL, *last = NULL;
 
-    if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
+    if (SDL_hidapi_refcount == 0 && SDL_hid_init() < 0) {
         return NULL;
     }
 
@@ -1504,7 +1504,7 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
 #if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
     void *pDevice = NULL;
 
-    if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
+    if (SDL_hidapi_refcount == 0 && SDL_hid_init() < 0) {
         return NULL;
     }
 
@@ -1543,7 +1543,7 @@ SDL_hid_device *SDL_hid_open_path(const char *path)
 #if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
     void *pDevice = NULL;
 
-    if (SDL_hidapi_refcount == 0 && SDL_hid_init() != 0) {
+    if (SDL_hidapi_refcount == 0 && SDL_hid_init() < 0) {
         return NULL;
     }
 

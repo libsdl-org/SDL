@@ -1079,7 +1079,7 @@ static int HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ct
         SDL_memcpy(&data[report_size - sizeof(unCRC)], &unCRC, sizeof(unCRC));
     }
 
-    if (SDL_HIDAPI_LockRumble() != 0) {
+    if (SDL_HIDAPI_LockRumble() < 0) {
         return -1;
     }
 

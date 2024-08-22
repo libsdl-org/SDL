@@ -1228,7 +1228,7 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
 
     EGLSurface surface;
 
-    if (SDL_EGL_ChooseConfig(_this) != 0) {
+    if (SDL_EGL_ChooseConfig(_this) < 0) {
         return EGL_NO_SURFACE;
     }
 
@@ -1319,7 +1319,7 @@ SDL_EGL_CreateOffscreenSurface(SDL_VideoDevice *_this, int width, int height)
     attributes[1] = width;
     attributes[3] = height;
 
-    if (SDL_EGL_ChooseConfig(_this) != 0) {
+    if (SDL_EGL_ChooseConfig(_this) < 0) {
         return EGL_NO_SURFACE;
     }
 

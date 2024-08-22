@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 
         SDL_Log("Testing audio device: %s\n", devname);
 
-        if (SDL_GetAudioDeviceFormat(devices[i], &spec, NULL) != 0) {
+        if (SDL_GetAudioDeviceFormat(devices[i], &spec, NULL) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioDeviceFormat() failed: %s\n", SDL_GetError());
             continue;
         }

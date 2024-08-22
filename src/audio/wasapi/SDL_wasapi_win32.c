@@ -179,7 +179,7 @@ int WASAPI_ActivateDevice(SDL_AudioDevice *device)
     }
 
     SDL_assert(device->hidden->client != NULL);
-    if (WASAPI_PrepDevice(device) == -1) { // not async, fire it right away.
+    if (WASAPI_PrepDevice(device) < 0) { // not async, fire it right away.
         return -1;
     }
 

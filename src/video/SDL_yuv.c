@@ -1174,7 +1174,7 @@ int SDL_ConvertPixels_RGB_to_YUV(int width, int height,
 
         /* convert src/src_format to tmp/XBGR2101010 */
         ret = SDL_ConvertPixelsAndColorspace(width, height, src_format, src_colorspace, src_properties, src, src_pitch, SDL_PIXELFORMAT_XBGR2101010, dst_colorspace, dst_properties, tmp, tmp_pitch);
-        if (ret == -1) {
+        if (ret < 0) {
             SDL_free(tmp);
             return ret;
         }
@@ -1198,7 +1198,7 @@ int SDL_ConvertPixels_RGB_to_YUV(int width, int height,
 
         /* convert src/src_format to tmp/ARGB8888 */
         ret = SDL_ConvertPixelsAndColorspace(width, height, src_format, src_colorspace, src_properties, src, src_pitch, SDL_PIXELFORMAT_ARGB8888, dst_colorspace, dst_properties, tmp, tmp_pitch);
-        if (ret == -1) {
+        if (ret < 0) {
             SDL_free(tmp);
             return ret;
         }

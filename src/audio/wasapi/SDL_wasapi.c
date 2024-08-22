@@ -157,7 +157,7 @@ int WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, in
 
 static int ManagementThreadPrepare(void)
 {
-    if (WASAPI_PlatformInit() == -1) {
+    if (WASAPI_PlatformInit() < 0) {
         return -1;
     }
 
@@ -402,7 +402,7 @@ static SDL_bool RecoverWasapiDevice(SDL_AudioDevice *device)
     ResetWasapiDevice(device); // dump the lost device's handles.
 
     // This handles a non-default device that simply had its format changed in the Windows Control Panel.
-    if (ActivateWasapiDevice(device) == -1) {
+    if (ActivateWasapiDevice(device) < 0) {
         WASAPI_DisconnectDevice(device);
         return SDL_FALSE;
     }

@@ -99,7 +99,7 @@ SDL_AppResult SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func app
     const SDL_AppResult rc = appinit(&SDL_main_appstate, argc, argv);
     if (SDL_AtomicCompareAndSwap(&apprc, SDL_APP_CONTINUE, rc) && (rc == SDL_APP_CONTINUE)) { // bounce if SDL_AppInit already said abort, otherwise...
         // make sure we definitely have events initialized, even if the app didn't do it.
-        if (SDL_InitSubSystem(SDL_INIT_EVENTS) == -1) {
+        if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
             SDL_AtomicSet(&apprc, SDL_APP_FAILURE);
             return -1;
         }
