@@ -76,12 +76,12 @@ typedef struct SDL_evdevlist_item
     int udev_class;
 
     // TODO: use this for every device, not just touchscreen
-    SDL_bool out_of_sync;
+    bool out_of_sync;
 
     /* TODO: expand on this to have data for every possible class (mouse,
        keyboard, touchpad, etc.). Also there's probably some things in here we
        can pull out to the SDL_evdevlist_item i.e. name */
-    SDL_bool is_touchscreen;
+    bool is_touchscreen;
     struct
     {
         char *name;
@@ -108,9 +108,9 @@ typedef struct SDL_evdevlist_item
     } *touchscreen_data;
 
     // Mouse state
-    SDL_bool high_res_wheel;
-    SDL_bool high_res_hwheel;
-    SDL_bool relative_mouse;
+    bool high_res_wheel;
+    bool high_res_hwheel;
+    bool relative_mouse;
     int mouse_x, mouse_y;
     int mouse_wheel, mouse_hwheel;
     int min_x, max_x, range_x;
@@ -150,7 +150,7 @@ static Uint8 EVDEV_MouseButtons[] = {
     SDL_BUTTON_X2 + 3  // BTN_TASK        0x117
 };
 
-static int SDL_EVDEV_SetRelativeMouseMode(SDL_bool enabled)
+static int SDL_EVDEV_SetRelativeMouseMode(bool enabled)
 {
     // Mice already send relative events through this interface
     return 0;
@@ -159,9 +159,9 @@ static int SDL_EVDEV_SetRelativeMouseMode(SDL_bool enabled)
 static void SDL_EVDEV_UpdateKeyboardMute(void)
 {
     if (SDL_EVDEV_GetDeviceCount(SDL_UDEV_DEVICE_KEYBOARD) > 0) {
-        SDL_EVDEV_kbd_set_muted(_this->kbd, SDL_TRUE);
+        SDL_EVDEV_kbd_set_muted(_this->kbd, true);
     } else {
-        SDL_EVDEV_kbd_set_muted(_this->kbd, SDL_FALSE);
+        SDL_EVDEV_kbd_set_muted(_this->kbd, false);
     }
 }
 
@@ -544,11 +544,11 @@ void SDL_EVDEV_Poll(void)
                              * be window-relative in that case. */
                             switch (item->touchscreen_data->slots[j].delta) {
                             case EVDEV_TOUCH_SLOTDELTA_DOWN:
-                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_TRUE, norm_x, norm_y, norm_pressure);
+                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, true, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             case EVDEV_TOUCH_SLOTDELTA_UP:
-                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_FALSE, norm_x, norm_y, norm_pressure);
+                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, false, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].tracking_id = 0;
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
@@ -562,12 +562,12 @@ void SDL_EVDEV_Poll(void)
                         }
 
                         if (item->out_of_sync) {
-                            item->out_of_sync = SDL_FALSE;
+                            item->out_of_sync = false;
                         }
                         break;
                     case SYN_DROPPED:
                         if (item->is_touchscreen) {
-                            item->out_of_sync = SDL_TRUE;
+                            item->out_of_sync = true;
                         }
                         SDL_EVDEV_sync_device(item);
                         break;
@@ -610,14 +610,14 @@ static int SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
     name[0] = '\0';
     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
 
-    SDL_AddKeyboard((SDL_KeyboardID)item->fd, name, SDL_TRUE);
+    SDL_AddKeyboard((SDL_KeyboardID)item->fd, name, true);
 
     return 0;
 }
 
 static void SDL_EVDEV_destroy_keyboard(SDL_evdevlist_item *item)
 {
-    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd, SDL_TRUE);
+    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd, true);
 }
 
 static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
@@ -629,7 +629,7 @@ static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
     name[0] = '\0';
     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
 
-    SDL_AddMouse((SDL_MouseID)item->fd, name, SDL_TRUE);
+    SDL_AddMouse((SDL_MouseID)item->fd, name, true);
 
     ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
     if (ret < 0) {
@@ -654,7 +654,7 @@ static int SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
 
 static void SDL_EVDEV_destroy_mouse(SDL_evdevlist_item *item)
 {
-    SDL_RemoveMouse((SDL_MouseID)item->fd, SDL_TRUE);
+    SDL_RemoveMouse((SDL_MouseID)item->fd, true);
 }
 
 static int SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
@@ -932,7 +932,7 @@ static int SDL_EVDEV_device_added(const char *dev_path, int udev_class)
     // For now, we just treat a touchpad like a touchscreen
     if (udev_class & (SDL_UDEV_DEVICE_TOUCHSCREEN | SDL_UDEV_DEVICE_TOUCHPAD)) {
         int ret;
-        item->is_touchscreen = SDL_TRUE;
+        item->is_touchscreen = true;
         ret = SDL_EVDEV_init_touchscreen(item, udev_class);
         if (ret < 0) {
             close(item->fd);

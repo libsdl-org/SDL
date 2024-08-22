@@ -137,10 +137,10 @@ static void PS2AUDIO_Deinitialize(void)
     deinit_audio_driver();
 }
 
-static SDL_bool PS2AUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool PS2AUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     if (init_audio_driver() < 0) {
-        return SDL_FALSE;
+        return false;
     }
 
     impl->OpenDevice = PS2AUDIO_OpenDevice;
@@ -150,10 +150,10 @@ static SDL_bool PS2AUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice = PS2AUDIO_CloseDevice;
     impl->ThreadInit = PS2AUDIO_ThreadInit;
     impl->Deinitialize = PS2AUDIO_Deinitialize;
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
-    return SDL_TRUE; // this audio target is available.
+    impl->OnlyHasDefaultPlaybackDevice = true;
+    return true; // this audio target is available.
 }
 
 AudioBootStrap PS2AUDIO_bootstrap = {
-    "ps2", "PS2 audio driver", PS2AUDIO_Init, SDL_FALSE
+    "ps2", "PS2 audio driver", PS2AUDIO_Init, false
 };

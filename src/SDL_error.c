@@ -30,7 +30,7 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     if (fmt) {
         va_list ap;
         int result;
-        SDL_error *error = SDL_GetErrBuf(SDL_TRUE);
+        SDL_error *error = SDL_GetErrBuf(true);
 
         error->error = SDL_ErrorCodeGeneric;
 
@@ -61,7 +61,7 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 
 const char *SDL_GetError(void)
 {
-    const SDL_error *error = SDL_GetErrBuf(SDL_FALSE);
+    const SDL_error *error = SDL_GetErrBuf(false);
 
     if (!error) {
         return "";
@@ -79,7 +79,7 @@ const char *SDL_GetError(void)
 
 int SDL_ClearError(void)
 {
-    SDL_error *error = SDL_GetErrBuf(SDL_FALSE);
+    SDL_error *error = SDL_GetErrBuf(false);
 
     if (error) {
         error->error = SDL_ErrorCodeNone;
@@ -89,7 +89,7 @@ int SDL_ClearError(void)
 
 int SDL_OutOfMemory(void)
 {
-    SDL_error *error = SDL_GetErrBuf(SDL_TRUE);
+    SDL_error *error = SDL_GetErrBuf(true);
 
     if (error) {
         error->error = SDL_ErrorCodeOutOfMemory;

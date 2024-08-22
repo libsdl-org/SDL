@@ -520,13 +520,13 @@ static void SDLCALL CameraPermissionCallback(void *userdata, const char *permiss
     SDL_Camera *device = (SDL_Camera *) userdata;
     if (device->hidden != NULL) {   // if device was already closed, don't send an event.
         if (!granted) {
-            SDL_CameraPermissionOutcome(device, SDL_FALSE);  // sorry, permission denied.
+            SDL_CameraPermissionOutcome(device, false);  // sorry, permission denied.
         } else if (PrepareCamera(device) < 0) {  // permission given? Actually open the camera now.
             // uhoh, setup failed; since the app thinks we already "opened" the device, mark it as disconnected and don't report the permission.
             SDL_CameraDisconnected(device);
         } else {
             // okay! We have permission to use the camera _and_ opening the hardware worked out, report that the camera is usable!
-            SDL_CameraPermissionOutcome(device, SDL_TRUE);  // go go go!
+            SDL_CameraPermissionOutcome(device, true);  // go go go!
         }
     }
 
@@ -666,7 +666,7 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
     pACameraMetadata_free(metadata);
 }
 
-static SDL_bool FindAndroidCameraByID(SDL_Camera *device, void *userdata)
+static bool FindAndroidCameraByID(SDL_Camera *device, void *userdata)
 {
     const char *devid = (const char *) userdata;
     return (SDL_strcmp(devid, (const char *) device->handle) == 0);
@@ -800,25 +800,25 @@ static void ANDROIDCAMERA_Deinitialize(void)
     pAImageReader_new = NULL;
 }
 
-static SDL_bool ANDROIDCAMERA_Init(SDL_CameraDriverImpl *impl)
+static bool ANDROIDCAMERA_Init(SDL_CameraDriverImpl *impl)
 {
     // !!! FIXME: slide this off into a subroutine
     // system libraries are in android-24 and later; we currently target android-16 and later, so check if they exist at runtime.
     void *libcamera2 = dlopen("libcamera2ndk.so", RTLD_NOW | RTLD_LOCAL);
     if (!libcamera2) {
         SDL_Log("CAMERA: libcamera2ndk.so can't be loaded: %s", dlerror());
-        return SDL_FALSE;
+        return false;
     }
 
     void *libmedia = dlopen("libmediandk.so", RTLD_NOW | RTLD_LOCAL);
     if (!libmedia) {
         SDL_Log("CAMERA: libmediandk.so can't be loaded: %s", dlerror());
         dlclose(libcamera2);
-        return SDL_FALSE;
+        return false;
     }
 
-    SDL_bool okay = SDL_TRUE;
-    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) dlsym(lib, #fn); if (!p##fn) { SDL_Log("CAMERA: symbol '%s' can't be found in %s: %s", #fn, #lib "ndk.so", dlerror()); okay = SDL_FALSE; } }
+    bool okay = true;
+    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) dlsym(lib, #fn); if (!p##fn) { SDL_Log("CAMERA: symbol '%s' can't be found in %s: %s", #fn, #lib "ndk.so", dlerror()); okay = false; } }
     //#define LOADSYM(lib, fn) p##fn = (pfn##fn) fn
     LOADSYM(libcamera2, ACameraManager_create);
     LOADSYM(libcamera2, ACameraManager_registerAvailabilityCallback);
@@ -867,7 +867,7 @@ static SDL_bool ANDROIDCAMERA_Init(SDL_CameraDriverImpl *impl)
     if (CreateCameraManager() < 0) {
         dlclose(libmedia);
         dlclose(libcamera2);
-        return SDL_FALSE;
+        return false;
     }
 
     libcamera2ndk = libcamera2;
@@ -882,13 +882,13 @@ static SDL_bool ANDROIDCAMERA_Init(SDL_CameraDriverImpl *impl)
     impl->FreeDeviceHandle = ANDROIDCAMERA_FreeDeviceHandle;
     impl->Deinitialize = ANDROIDCAMERA_Deinitialize;
 
-    impl->ProvidesOwnCallbackThread = SDL_TRUE;
+    impl->ProvidesOwnCallbackThread = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 CameraBootStrap ANDROIDCAMERA_bootstrap = {
-    "android", "SDL Android camera driver", ANDROIDCAMERA_Init, SDL_FALSE
+    "android", "SDL Android camera driver", ANDROIDCAMERA_Init, false
 };
 
 #endif

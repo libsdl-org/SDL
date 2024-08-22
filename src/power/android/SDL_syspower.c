@@ -27,7 +27,7 @@
 
 #include "../../core/android/SDL_android.h"
 
-SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *state, int *seconds, int *percent)
+bool SDL_GetPowerInfo_Android(SDL_PowerState *state, int *seconds, int *percent)
 {
     int battery;
     int plugged;
@@ -53,7 +53,7 @@ SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *state, int *seconds, int *perc
         *percent = -1;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 #endif // SDL_POWER_ANDROID

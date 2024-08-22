@@ -33,7 +33,7 @@ static SDL_Touch **SDL_touchDevices = NULL;
 #define SYNTHESIZE_TOUCH_TO_MOUSE 1
 
 #if SYNTHESIZE_TOUCH_TO_MOUSE
-static SDL_bool finger_touching = SDL_FALSE;
+static bool finger_touching = false;
 static SDL_FingerID track_fingerid;
 static SDL_TouchID track_touchid;
 #endif
@@ -44,7 +44,7 @@ int SDL_InitTouch(void)
     return 0;
 }
 
-SDL_bool SDL_TouchDevicesAvailable(void)
+bool SDL_TouchDevicesAvailable(void)
 {
     return SDL_num_touch > 0;
 }
@@ -255,7 +255,7 @@ static int SDL_DelFinger(SDL_Touch *touch, SDL_FingerID fingerid)
     return 0;
 }
 
-int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, SDL_bool down, float x, float y, float pressure)
+int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, bool down, float x, float y, float pressure)
 {
     int posted;
     SDL_Finger *finger;
@@ -281,7 +281,7 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
             if (id != SDL_MOUSE_TOUCHID) {
                 if (window) {
                     if (down) {
-                        if (finger_touching == SDL_FALSE) {
+                        if (finger_touching == false) {
                             float pos_x = (x * (float)window->w);
                             float pos_y = (y * (float)window->h);
                             if (pos_x < 0) {
@@ -296,24 +296,24 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
                             if (pos_y > (float)(window->h - 1)) {
                                 pos_y = (float)(window->h - 1);
                             }
-                            SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, SDL_FALSE, pos_x, pos_y);
+                            SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, false, pos_x, pos_y);
                             SDL_SendMouseButton(timestamp, window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
                         }
                     } else {
-                        if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
+                        if (finger_touching == true && track_touchid == id && track_fingerid == fingerid) {
                             SDL_SendMouseButton(timestamp, window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
                         }
                     }
                 }
                 if (down) {
-                    if (finger_touching == SDL_FALSE) {
-                        finger_touching = SDL_TRUE;
+                    if (finger_touching == false) {
+                        finger_touching = true;
                         track_touchid = id;
                         track_fingerid = fingerid;
                     }
                 } else {
-                    if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
-                        finger_touching = SDL_FALSE;
+                    if (finger_touching == true && track_touchid == id && track_fingerid == fingerid) {
+                        finger_touching = false;
                     }
                 }
             }
@@ -333,7 +333,7 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
         if (finger) {
             /* This finger is already down.
                Assume the finger-up for the previous touch was lost, and send it. */
-            SDL_SendTouch(timestamp, id, fingerid, window, SDL_FALSE, x, y, pressure);
+            SDL_SendTouch(timestamp, id, fingerid, window, false, x, y, pressure);
         }
 
         if (SDL_AddFinger(touch, fingerid, x, y, pressure) < 0) {
@@ -405,7 +405,7 @@ int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid,
         if (mouse->touch_mouse_events) {
             if (id != SDL_MOUSE_TOUCHID) {
                 if (window) {
-                    if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
+                    if (finger_touching == true && track_touchid == id && track_fingerid == fingerid) {
                         float pos_x = (x * (float)window->w);
                         float pos_y = (y * (float)window->h);
                         if (pos_x < 0.0f) {
@@ -420,7 +420,7 @@ int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid,
                         if (pos_y > (float)(window->h - 1)) {
                             pos_y = (float)(window->h - 1);
                         }
-                        SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, SDL_FALSE, pos_x, pos_y);
+                        SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, false, pos_x, pos_y);
                     }
                 }
             }
@@ -437,7 +437,7 @@ int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid,
 
     finger = SDL_GetFinger(touch, fingerid);
     if (!finger) {
-        return SDL_SendTouch(timestamp, id, fingerid, window, SDL_TRUE, x, y, pressure);
+        return SDL_SendTouch(timestamp, id, fingerid, window, true, x, y, pressure);
     }
 
     xrel = x - finger->x;

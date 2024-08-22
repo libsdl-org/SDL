@@ -107,15 +107,15 @@ void HAIKU_SetWindowSize(SDL_VideoDevice *_this, SDL_Window * window) {
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window * window, SDL_bool bordered) {
+void HAIKU_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window * window, bool bordered) {
     BMessage msg(BWIN_SET_BORDERED);
-    msg.AddBool("window-border", bordered != SDL_FALSE);
+    msg.AddBool("window-border", bordered != false);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window * window, SDL_bool resizable) {
+void HAIKU_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window * window, bool resizable) {
     BMessage msg(BWIN_SET_RESIZABLE);
-    msg.AddBool("window-resizable", resizable != SDL_FALSE);
+    msg.AddBool("window-resizable", resizable != false);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
@@ -166,7 +166,7 @@ void HAIKU_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window * window) {
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-int HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window * window, SDL_bool grabbed) {
+int HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window * window, bool grabbed) {
     // TODO: Implement this!
     return SDL_Unsupported();
 }

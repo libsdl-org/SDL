@@ -28,7 +28,7 @@ void N3DS_SwkbInit();
 void N3DS_SwkbPoll();
 void N3DS_SwkbQuit();
 
-SDL_bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
+bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 
 int N3DS_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 int N3DS_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);

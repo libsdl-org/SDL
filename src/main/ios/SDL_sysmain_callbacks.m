@@ -50,7 +50,7 @@ static SDLIosMainCallbacksDisplayLink *globalDisplayLink;
 
 - (void)appIteration:(CADisplayLink *)sender
 {
-    const SDL_AppResult rc = SDL_IterateMainCallbacks(SDL_TRUE);
+    const SDL_AppResult rc = SDL_IterateMainCallbacks(true);
     if (rc != SDL_APP_CONTINUE) {
         [self.displayLink invalidate];
         self.displayLink = nil;

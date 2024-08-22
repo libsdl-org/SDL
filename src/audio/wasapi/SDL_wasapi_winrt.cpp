@@ -53,7 +53,7 @@ using namespace Microsoft::WRL;
 static Platform::String ^ SDL_PKEY_AudioEngine_DeviceFormat = L"{f19f064d-082c-4e27-bc73-6882a1bb8e4c} 0";
 
 
-static SDL_bool FindWinRTAudioDeviceCallback(SDL_AudioDevice *device, void *userdata)
+static bool FindWinRTAudioDeviceCallback(SDL_AudioDevice *device, void *userdata)
 {
     return (SDL_wcscmp((LPCWSTR) device->handle, (LPCWSTR) userdata) == 0);
 }
@@ -66,7 +66,7 @@ static SDL_AudioDevice *FindWinRTAudioDevice(LPCWSTR devid)
 class SDL_WasapiDeviceEventHandler
 {
   public:
-    SDL_WasapiDeviceEventHandler(const SDL_bool _recording);
+    SDL_WasapiDeviceEventHandler(const bool _recording);
     ~SDL_WasapiDeviceEventHandler();
     void OnDeviceAdded(DeviceWatcher ^ sender, DeviceInformation ^ args);
     void OnDeviceRemoved(DeviceWatcher ^ sender, DeviceInformationUpdate ^ args);
@@ -78,7 +78,7 @@ class SDL_WasapiDeviceEventHandler
 
   private:
     SDL_Semaphore *completed_semaphore;
-    const SDL_bool recording;
+    const bool recording;
     DeviceWatcher ^ watcher;
     Windows::Foundation::EventRegistrationToken added_handler;
     Windows::Foundation::EventRegistrationToken removed_handler;
@@ -87,7 +87,7 @@ class SDL_WasapiDeviceEventHandler
     Windows::Foundation::EventRegistrationToken default_changed_handler;
 };
 
-SDL_WasapiDeviceEventHandler::SDL_WasapiDeviceEventHandler(const SDL_bool _recording)
+SDL_WasapiDeviceEventHandler::SDL_WasapiDeviceEventHandler(const bool _recording)
     : recording(_recording), completed_semaphore(SDL_CreateSemaphore(0))
 {
     if (!completed_semaphore) {
@@ -245,14 +245,14 @@ void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_playback, SDL_AudioDevi
     // DeviceWatchers will fire an Added event for each existing device at
     //  startup, so we don't need to enumerate them separately before
     //  listening for updates.
-    playback_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_FALSE);
+    playback_device_event_handler = new SDL_WasapiDeviceEventHandler(false);
     playback_device_event_handler->WaitForCompletion();
     defdevid = MediaDevice::GetDefaultAudioRenderId(AudioDeviceRole::Default);
     if (defdevid) {
         *default_playback = FindWinRTAudioDevice(defdevid->Data());
     }
 
-    recording_device_event_handler = new SDL_WasapiDeviceEventHandler(SDL_TRUE);
+    recording_device_event_handler = new SDL_WasapiDeviceEventHandler(true);
     recording_device_event_handler->WaitForCompletion();
     defdevid = MediaDevice::GetDefaultAudioCaptureId(AudioDeviceRole::Default);
     if (defdevid) {

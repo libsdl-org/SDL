@@ -282,7 +282,7 @@ static void AAUDIO_CloseDevice(SDL_AudioDevice *device)
 static int BuildAAudioStream(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
-    const SDL_bool recording = device->recording;
+    const bool recording = device->recording;
     aaudio_result_t res;
 
     SDL_AtomicSet(&hidden->error_callback_triggered, 0);
@@ -322,7 +322,7 @@ static int BuildAAudioStream(SDL_AudioDevice *device)
     ctx.AAudioStreamBuilder_setErrorCallback(builder, AAUDIO_errorCallback, device);
     ctx.AAudioStreamBuilder_setDataCallback(builder, AAUDIO_dataCallback, device);
     // Some devices have flat sounding audio when low latency mode is enabled, but this is a better experience for most people
-    if (SDL_GetHintBoolean("SDL_ANDROID_LOW_LATENCY_AUDIO", SDL_TRUE)) {
+    if (SDL_GetHintBoolean("SDL_ANDROID_LOW_LATENCY_AUDIO", true)) {
         ctx.AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
     }
 
@@ -431,7 +431,7 @@ static int AAUDIO_OpenDevice(SDL_AudioDevice *device)
     return BuildAAudioStream(device);
 }
 
-static SDL_bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
+static bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
 {
     struct SDL_PrivateAudioData *hidden = (struct SDL_PrivateAudioData *)device->hidden;
     if (hidden) {
@@ -451,7 +451,7 @@ static SDL_bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
             }
         }
     }
-    return SDL_FALSE;  // keep enumerating.
+    return false;  // keep enumerating.
 }
 
 // Pause (block) all non already paused audio devices by taking their mixer lock
@@ -463,7 +463,7 @@ void AAUDIO_PauseDevices(void)
 }
 
 // Resume (unblock) all non already paused audio devices by releasing their mixer lock
-static SDL_bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
+static bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
     if (hidden) {
@@ -475,7 +475,7 @@ static SDL_bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
             }
         }
     }
-    return SDL_FALSE;  // keep enumerating.
+    return false;  // keep enumerating.
 }
 
 void AAUDIO_ResumeDevices(void)
@@ -498,7 +498,7 @@ static void AAUDIO_Deinitialize(void)
 }
 
 
-static SDL_bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     LOGI(__func__);
 
@@ -508,7 +508,7 @@ static SDL_bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
      * See https://github.com/google/oboe/issues/40 for more information.
      */
     if (SDL_GetAndroidSDKVersion() < 27) {
-        return SDL_FALSE;
+        return false;
     }
 
     SDL_zero(ctx);
@@ -516,13 +516,13 @@ static SDL_bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
     ctx.handle = SDL_LoadObject(LIB_AAUDIO_SO);
     if (!ctx.handle) {
         LOGI("SDL couldn't find " LIB_AAUDIO_SO);
-        return SDL_FALSE;
+        return false;
     }
 
     if (AAUDIO_LoadFunctions(&ctx) < 0) {
         SDL_UnloadObject(ctx.handle);
         SDL_zero(ctx);
-        return SDL_FALSE;
+        return false;
     }
 
     impl->ThreadInit = Android_AudioThreadInit;
@@ -535,21 +535,21 @@ static SDL_bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->WaitRecordingDevice = AAUDIO_WaitDevice;
     impl->RecordDevice = AAUDIO_RecordDevice;
 
-    impl->HasRecordingSupport = SDL_TRUE;
+    impl->HasRecordingSupport = true;
 
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
     impl->DetectDevices = Android_StartAudioHotplug;
 #else
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
-    impl->OnlyHasDefaultRecordingDevice = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = true;
+    impl->OnlyHasDefaultRecordingDevice = true;
 #endif
 
     LOGI("SDL AAUDIO_Init OK");
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap AAUDIO_bootstrap = {
-    "AAudio", "AAudio audio driver", AAUDIO_Init, SDL_FALSE
+    "AAudio", "AAudio audio driver", AAUDIO_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_AAUDIO

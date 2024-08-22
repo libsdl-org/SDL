@@ -47,7 +47,7 @@ static void N3DSAUD_DspHook(DSP_HookType hook)
 {
     if (hook == DSPHOOK_ONCANCEL) {
         contextLock(audio_device);
-        audio_device->hidden->isCancelled = SDL_TRUE;
+        audio_device->hidden->isCancelled = true;
         SDL_AudioDeviceDisconnected(audio_device);
         CondVar_Broadcast(&audio_device->hidden->cv);
         contextUnlock(audio_device);
@@ -65,7 +65,7 @@ static void AudioFrameFinished(void *vdevice)
     for (i = 0; i < NUM_BUFFERS; i++) {
         if (device->hidden->waveBuf[i].status == NDSP_WBUF_DONE) {
             device->hidden->waveBuf[i].status = NDSP_WBUF_FREE;
-            shouldBroadcast = SDL_TRUE;
+            shouldBroadcast = true;
         }
     }
 
@@ -261,7 +261,7 @@ static void N3DSAUDIO_ThreadInit(SDL_AudioDevice *device)
     svcSetThreadPriority(CUR_THREAD_HANDLE, current_priority);
 }
 
-static SDL_bool N3DSAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool N3DSAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     impl->OpenDevice = N3DSAUDIO_OpenDevice;
     impl->PlayDevice = N3DSAUDIO_PlayDevice;
@@ -269,12 +269,12 @@ static SDL_bool N3DSAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = N3DSAUDIO_GetDeviceBuf;
     impl->CloseDevice = N3DSAUDIO_CloseDevice;
     impl->ThreadInit = N3DSAUDIO_ThreadInit;
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = true;
 
     // Should be possible, but micInit would fail
-    impl->HasRecordingSupport = SDL_FALSE;
+    impl->HasRecordingSupport = false;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap N3DSAUDIO_bootstrap = {

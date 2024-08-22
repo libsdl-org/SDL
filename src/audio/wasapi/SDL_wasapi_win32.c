@@ -43,7 +43,7 @@ typedef BOOL(WINAPI *pfnAvRevertMmThreadCharacteristics)(HANDLE);
 static pfnAvSetMmThreadCharacteristicsW pAvSetMmThreadCharacteristicsW = NULL;
 static pfnAvRevertMmThreadCharacteristics pAvRevertMmThreadCharacteristics = NULL;
 
-static SDL_bool immdevice_initialized = SDL_FALSE;
+static bool immdevice_initialized = false;
 
 // Some GUIDs we need to know without linking to libraries that aren't available before Vista.
 static const IID SDL_IID_IAudioClient = { 0x1cb9ad4c, 0xdbfa, 0x4c32, { 0xb1, 0x78, 0xc2, 0xf5, 0x68, 0xa7, 0x03, 0xb2 } };
@@ -91,7 +91,7 @@ int WASAPI_PlatformInit(void)
         return -1; // Error string is set by SDL_IMMDevice_Init
     }
 
-    immdevice_initialized = SDL_TRUE;
+    immdevice_initialized = true;
 
     libavrt = LoadLibrary(TEXT("avrt.dll")); // this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now!
     if (libavrt) {
@@ -106,7 +106,7 @@ static void StopWasapiHotplug(void)
 {
     if (immdevice_initialized) {
         SDL_IMMDevice_Quit();
-        immdevice_initialized = SDL_FALSE;
+        immdevice_initialized = false;
     }
 }
 
@@ -134,7 +134,7 @@ void WASAPI_PlatformThreadInit(SDL_AudioDevice *device)
 {
     // this thread uses COM.
     if (SUCCEEDED(WIN_CoInitialize())) { // can't report errors, hope it worked!
-        device->hidden->coinitialized = SDL_TRUE;
+        device->hidden->coinitialized = true;
     }
 
     // Set this thread to very high "Pro Audio" priority.
@@ -157,7 +157,7 @@ void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device)
 
     if (device->hidden->coinitialized) {
         WIN_CoUninitialize();
-        device->hidden->coinitialized = SDL_FALSE;
+        device->hidden->coinitialized = false;
     }
 }
 

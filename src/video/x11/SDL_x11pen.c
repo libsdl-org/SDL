@@ -29,7 +29,7 @@
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 
 // Does this device have a valuator for pressure sensitivity?
-static SDL_bool X11_XInput2DeviceIsPen(SDL_VideoDevice *_this, const XIDeviceInfo *dev)
+static bool X11_XInput2DeviceIsPen(SDL_VideoDevice *_this, const XIDeviceInfo *dev)
 {
     const SDL_VideoData *data = (SDL_VideoData *)_this->internal;
     for (int i = 0; i < dev->num_classes; i++) {
@@ -37,16 +37,16 @@ static SDL_bool X11_XInput2DeviceIsPen(SDL_VideoDevice *_this, const XIDeviceInf
         if (classinfo->type == XIValuatorClass) {
             const XIValuatorClassInfo *val_classinfo = (const XIValuatorClassInfo *)classinfo;
             if (val_classinfo->label == data->pen_atom_abs_pressure) {
-                return SDL_TRUE;
+                return true;
             }
         }
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 // Heuristically determines if device is an eraser
-static SDL_bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, char *devicename)
+static bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, char *devicename)
 {
     #define PEN_ERASER_NAME_TAG  "eraser" // String constant to identify erasers
     SDL_VideoData *data = (SDL_VideoData *)_this->internal;
@@ -67,7 +67,7 @@ static SDL_bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, cha
                                          &tooltype_name_info) &&
             tooltype_name_info != NULL && num_items_return > 0) {
 
-            SDL_bool result = SDL_FALSE;
+            bool result = false;
             char *tooltype_name = NULL;
 
             if (type_return == XA_ATOM) {
@@ -82,7 +82,7 @@ static SDL_bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, cha
 
             if (tooltype_name) {
                 if (0 == SDL_strcasecmp(tooltype_name, PEN_ERASER_NAME_TAG)) {
-                    result = SDL_TRUE;
+                    result = true;
                 }
                 X11_XFree(tooltype_name_info);
 
@@ -95,7 +95,7 @@ static SDL_bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, cha
 
     /* We assume that a device is an eraser if its name contains the string "eraser".
      * Unfortunately there doesn't seem to be a clean way to distinguish these cases (as of 2022-03). */
-    return (SDL_strcasestr(devicename, PEN_ERASER_NAME_TAG)) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_strcasestr(devicename, PEN_ERASER_NAME_TAG)) ? true : false;
 }
 
 // Read out an integer property and store into a preallocated Sint32 array, extending 8 and 16 bit values suitably.
@@ -147,8 +147,8 @@ static size_t X11_XInput2PenGetIntProperty(SDL_VideoDevice *_this, int deviceid,
     return 0; // type mismatch
 }
 
-// Identify Wacom devices (if SDL_TRUE is returned) and extract their device type and serial IDs
-static SDL_bool X11_XInput2PenWacomDeviceID(SDL_VideoDevice *_this, int deviceid, Uint32 *wacom_devicetype_id, Uint32 *wacom_serial)
+// Identify Wacom devices (if true is returned) and extract their device type and serial IDs
+static bool X11_XInput2PenWacomDeviceID(SDL_VideoDevice *_this, int deviceid, Uint32 *wacom_devicetype_id, Uint32 *wacom_serial)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->internal;
     Sint32 serial_id_buf[3];
@@ -157,11 +157,11 @@ static SDL_bool X11_XInput2PenWacomDeviceID(SDL_VideoDevice *_this, int deviceid
     if ((result = X11_XInput2PenGetIntProperty(_this, deviceid, data->pen_atom_wacom_serial_ids, serial_id_buf, 3)) == 3) {
         *wacom_devicetype_id = serial_id_buf[2];
         *wacom_serial = serial_id_buf[1];
-        return SDL_TRUE;
+        return true;
     }
 
     *wacom_devicetype_id = *wacom_serial = 0;
-    return SDL_FALSE;
+    return false;
 }
 
 
@@ -171,15 +171,15 @@ typedef struct FindPenByDeviceIDData
     void *handle;
 } FindPenByDeviceIDData;
 
-static SDL_bool FindPenByDeviceID(void *handle, void *userdata)
+static bool FindPenByDeviceID(void *handle, void *userdata)
 {
     const X11_PenHandle *x11_handle = (const X11_PenHandle *) handle;
     FindPenByDeviceIDData *data = (FindPenByDeviceIDData *) userdata;
     if (x11_handle->x11_deviceid != data->x11_deviceid) {
-        return SDL_FALSE;
+        return false;
     }
     data->handle = handle;
-    return SDL_TRUE;
+    return true;
 }
 
 X11_PenHandle *X11_FindPenByDeviceID(int deviceid)
@@ -221,7 +221,7 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
             const Atom vname = val_classinfo->label;
             const float min = (float)val_classinfo->min;
             const float max = (float)val_classinfo->max;
-            SDL_bool use_this_axis = SDL_TRUE;
+            bool use_this_axis = true;
             SDL_PenAxis axis = SDL_PEN_NUM_AXES;
 
             // afaict, SDL_PEN_AXIS_DISTANCE is never reported by XInput2 (Wayland can offer it, though)
@@ -232,7 +232,7 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
             } else if (vname == data->pen_atom_abs_tilt_y) {
                 axis = SDL_PEN_AXIS_YTILT;
             } else {
-                use_this_axis = SDL_FALSE;
+                use_this_axis = false;
             }
 
             // !!! FIXME: there are wacom-specific hacks for getting SDL_PEN_AXIS_(ROTATION|SLIDER) on some devices, but for simplicity, we're skipping all that for now.
@@ -250,7 +250,7 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
     // We checked this in X11_XInput2DeviceIsPen, so just assert it here.
     SDL_assert(capabilities & SDL_PEN_CAPABILITY_PRESSURE);
 
-    const SDL_bool is_eraser = X11_XInput2PenIsEraser(_this, dev->deviceid, dev->name);
+    const bool is_eraser = X11_XInput2PenIsEraser(_this, dev->deviceid, dev->name);
     Uint32 wacom_devicetype_id = 0;
     Uint32 wacom_serial = 0;
     X11_XInput2PenWacomDeviceID(_this, dev->deviceid, &wacom_devicetype_id, &wacom_serial);

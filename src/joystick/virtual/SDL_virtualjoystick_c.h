@@ -47,7 +47,7 @@ typedef struct VirtualSensorEvent
 typedef struct joystick_hwdata
 {
     SDL_JoystickID instance_id;
-    SDL_bool attached;
+    bool attached;
     char *name;
     SDL_JoystickType type;
     SDL_GUID guid;
@@ -59,7 +59,7 @@ typedef struct joystick_hwdata
     SDL_JoystickBallData *balls;
     SDL_JoystickTouchpadInfo *touchpads;
     SDL_JoystickSensorInfo *sensors;
-    SDL_bool sensors_enabled;
+    bool sensors_enabled;
     int num_sensor_events;
     int max_sensor_events;
     VirtualSensorEvent *sensor_events;

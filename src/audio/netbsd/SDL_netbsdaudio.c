@@ -41,7 +41,7 @@
 
 static void NETBSDAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
-    SDL_EnumUnixAudioDevices(SDL_FALSE, NULL);
+    SDL_EnumUnixAudioDevices(false, NULL);
 }
 
 static void NETBSDAUDIO_Status(SDL_AudioDevice *device)
@@ -116,7 +116,7 @@ static void NETBSDAUDIO_Status(SDL_AudioDevice *device)
 
 static int NETBSDAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
-    const SDL_bool recording = device->recording;
+    const bool recording = device->recording;
     while (!SDL_AtomicGet(&device->shutdown)) {
         audio_info_t info;
         const int rc = ioctl(device->hidden->audio_fd, AUDIO_GETINFO, &info);
@@ -208,7 +208,7 @@ static void NETBSDAUDIO_CloseDevice(SDL_AudioDevice *device)
 
 static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    const SDL_bool recording = device->recording;
+    const bool recording = device->recording;
     int encoding = AUDIO_ENCODING_NONE;
     audio_info_t info, hwinfo;
     struct audio_prinfo *prinfo = recording ? &info.record : &info.play;
@@ -304,7 +304,7 @@ static int NETBSDAUDIO_OpenDevice(SDL_AudioDevice *device)
     return 0;  // We're ready to rock and roll. :-)
 }
 
-static SDL_bool NETBSDAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool NETBSDAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     impl->DetectDevices = NETBSDAUDIO_DetectDevices;
     impl->OpenDevice = NETBSDAUDIO_OpenDevice;
@@ -316,13 +316,13 @@ static SDL_bool NETBSDAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->RecordDevice = NETBSDAUDIO_RecordDevice;
     impl->FlushRecording = NETBSDAUDIO_FlushRecording;
 
-    impl->HasRecordingSupport = SDL_TRUE;
+    impl->HasRecordingSupport = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap NETBSDAUDIO_bootstrap = {
-    "netbsd", "NetBSD audio", NETBSDAUDIO_Init, SDL_FALSE
+    "netbsd", "NetBSD audio", NETBSDAUDIO_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_NETBSD

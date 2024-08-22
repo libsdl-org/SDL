@@ -25,10 +25,10 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-SDL_bool SDL_GetPowerInfo_Windows(SDL_PowerState *state, int *seconds, int *percent)
+bool SDL_GetPowerInfo_Windows(SDL_PowerState *state, int *seconds, int *percent)
 {
     SYSTEM_POWER_STATUS status;
-    SDL_bool need_details = SDL_FALSE;
+    bool need_details = false;
 
     // This API should exist back to Win95.
     if (!GetSystemPowerStatus(&status)) {
@@ -40,13 +40,13 @@ SDL_bool SDL_GetPowerInfo_Windows(SDL_PowerState *state, int *seconds, int *perc
         *state = SDL_POWERSTATE_NO_BATTERY;
     } else if (status.BatteryFlag & (1 << 3)) { // charging
         *state = SDL_POWERSTATE_CHARGING;
-        need_details = SDL_TRUE;
+        need_details = true;
     } else if (status.ACLineStatus == 1) {
         *state = SDL_POWERSTATE_CHARGED; // on AC, not charging.
-        need_details = SDL_TRUE;
+        need_details = true;
     } else {
         *state = SDL_POWERSTATE_ON_BATTERY; // not on AC.
-        need_details = SDL_TRUE;
+        need_details = true;
     }
 
     *percent = -1;
@@ -63,7 +63,7 @@ SDL_bool SDL_GetPowerInfo_Windows(SDL_PowerState *state, int *seconds, int *perc
         }
     }
 
-    return SDL_TRUE; // always the definitive answer on Windows.
+    return true; // always the definitive answer on Windows.
 }
 
 #endif // SDL_POWER_WINDOWS

@@ -38,10 +38,10 @@ typedef struct SDL_JoystickAxisInfo
     Sint16 initial_value;           // Initial axis state
     Sint16 value;                   // Current axis state
     Sint16 zero;                    // Zero point on the axis (-32768 for triggers)
-    SDL_bool has_initial_value;     // Whether we've seen a value on the axis yet
-    SDL_bool has_second_value;      // Whether we've seen a second value on the axis yet
-    SDL_bool sent_initial_value;    // Whether we've sent the initial axis value
-    SDL_bool sending_initial_value; // Whether we are sending the initial axis value
+    bool has_initial_value;     // Whether we've seen a value on the axis yet
+    bool has_second_value;      // Whether we've seen a second value on the axis yet
+    bool sent_initial_value;    // Whether we've sent the initial axis value
+    bool sending_initial_value; // Whether we are sending the initial axis value
 } SDL_JoystickAxisInfo;
 
 typedef struct SDL_JoystickBallData
@@ -67,7 +67,7 @@ typedef struct SDL_JoystickTouchpadInfo
 typedef struct SDL_JoystickSensorInfo
 {
     SDL_SensorType type;
-    SDL_bool enabled;
+    bool enabled;
     float rate;
     float data[3]; // If this needs to expand, update SDL_GamepadSensorEvent
 } SDL_JoystickSensorInfo;
@@ -117,12 +117,12 @@ struct SDL_Joystick
     Uint8 led_blue _guarded;
     Uint64 led_expiration _guarded;
 
-    SDL_bool attached _guarded;
+    bool attached _guarded;
     SDL_JoystickConnectionState connection_state _guarded;
     SDL_PowerState battery_state _guarded;
     int battery_percent _guarded;
 
-    SDL_bool delayed_guide_button _guarded;      // SDL_TRUE if this device has the guide button event delayed
+    bool delayed_guide_button _guarded;      // true if this device has the guide button event delayed
 
     SDL_SensorID accel_sensor _guarded;
     SDL_Sensor *accel _guarded;
@@ -169,7 +169,7 @@ typedef struct SDL_JoystickDriver
     void (*Detect)(void);
 
     // Function to determine whether a device is currently detected by this driver
-    SDL_bool (*IsDevicePresent)(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+    bool (*IsDevicePresent)(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
     // Function to get the device-dependent name of a joystick
     const char *(*GetDeviceName)(int device_index);
@@ -210,7 +210,7 @@ typedef struct SDL_JoystickDriver
     int (*SendEffect)(SDL_Joystick *joystick, const void *data, int size);
 
     // Sensor functionality
-    int (*SetSensorsEnabled)(SDL_Joystick *joystick, SDL_bool enabled);
+    int (*SetSensorsEnabled)(SDL_Joystick *joystick, bool enabled);
 
     /* Function to update the state of a joystick - called as a device poll.
      * This function shouldn't update the joystick structure directly,
@@ -226,7 +226,7 @@ typedef struct SDL_JoystickDriver
     void (*Quit)(void);
 
     // Function to get the autodetected controller mapping; returns false if there isn't any.
-    SDL_bool (*GetGamepadMapping)(int device_index, SDL_GamepadMapping *out);
+    bool (*GetGamepadMapping)(int device_index, SDL_GamepadMapping *out);
 
 } SDL_JoystickDriver;
 

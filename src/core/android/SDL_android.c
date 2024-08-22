@@ -388,9 +388,9 @@ static jmethodID midHapticStop;
 static SDL_DisplayOrientation displayNaturalOrientation;
 static SDL_DisplayOrientation displayCurrentOrientation;
 static float fLastAccelerometer[3];
-static SDL_bool bHasNewData;
+static bool bHasNewData;
 
-static SDL_bool bHasEnvironmentVariables;
+static bool bHasEnvironmentVariables;
 
 // Android AssetManager
 static void Internal_Android_Create_AssetManager(void);
@@ -557,7 +557,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
     register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
     register_methods(env, "org/libsdl/app/HIDDeviceManager", HIDDeviceManager_tab, SDL_arraysize(HIDDeviceManager_tab));
-    SDL_AtomicSet(&bAllowRecreateActivity, SDL_FALSE);
+    SDL_AtomicSet(&bAllowRecreateActivity, false);
 
     return JNI_VERSION_1_4;
 }
@@ -759,10 +759,10 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter)(
 
 static void SDLCALL SDL_AllowRecreateActivityChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    if (SDL_GetStringBoolean(hint, SDL_FALSE)) {
-        SDL_AtomicSet(&bAllowRecreateActivity, SDL_TRUE);
+    if (SDL_GetStringBoolean(hint, false)) {
+        SDL_AtomicSet(&bAllowRecreateActivity, true);
     } else {
-        SDL_AtomicSet(&bAllowRecreateActivity, SDL_FALSE);
+        SDL_AtomicSet(&bAllowRecreateActivity, false);
     }
 }
 
@@ -824,7 +824,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
             int argc;
             int len;
             char **argv;
-            SDL_bool isstack;
+            bool isstack;
 
             // Prepare the arguments.
             len = (*env)->GetArrayLength(env, array);
@@ -902,14 +902,14 @@ void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event)
     SDL_LockMutex(Android_LifecycleMutex);
     {
         int index;
-        SDL_bool add_event = SDL_TRUE;
+        bool add_event = true;
 
         switch (event) {
         case SDL_ANDROID_LIFECYCLE_WAKE:
             // We don't need more than one wake queued
             index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
             if (index >= 0) {
-                add_event = SDL_FALSE;
+                add_event = false;
             }
             break;
         case SDL_ANDROID_LIFECYCLE_PAUSE:
@@ -917,7 +917,7 @@ void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event)
             index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_RESUME);
             if (index >= 0) {
                 RemoveLifecycleEvent(index);
-                add_event = SDL_FALSE;
+                add_event = false;
             }
             break;
         case SDL_ANDROID_LIFECYCLE_RESUME:
@@ -925,14 +925,14 @@ void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event)
             index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_PAUSE);
             if (index >= 0) {
                 RemoveLifecycleEvent(index);
-                add_event = SDL_FALSE;
+                add_event = false;
             }
             break;
         case SDL_ANDROID_LIFECYCLE_LOWMEMORY:
             // We don't need more than one low memory event queued
             index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_LOWMEMORY);
             if (index >= 0) {
-                add_event = SDL_FALSE;
+                add_event = false;
             }
             break;
         case SDL_ANDROID_LIFECYCLE_DESTROY:
@@ -943,7 +943,7 @@ void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event)
             break;
         default:
             SDL_assert(!"Sending unexpected lifecycle event");
-            add_event = SDL_FALSE;
+            add_event = false;
             break;
         }
 
@@ -956,9 +956,9 @@ void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event)
     SDL_UnlockMutex(Android_LifecycleMutex);
 }
 
-SDL_bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS)
+bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS)
 {
-    SDL_bool got_event = SDL_FALSE;
+    bool got_event = false;
 
     while (!got_event && SDL_WaitSemaphoreTimeoutNS(Android_LifecycleEventSem, timeoutNS) == 0) {
         SDL_LockMutex(Android_LifecycleMutex);
@@ -966,7 +966,7 @@ SDL_bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 tim
             if (Android_NumLifecycleEvents > 0) {
                 *event = Android_LifecycleEvents[0];
                 RemoveLifecycleEvent(0);
-                got_event = SDL_TRUE;
+                got_event = true;
             }
         }
         SDL_UnlockMutex(Android_LifecycleMutex);
@@ -1333,7 +1333,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyUp)(
 JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(onNativeSoftReturnKey)(
     JNIEnv *env, jclass jcls)
 {
-    if (SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
+    if (SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, false)) {
         SDL_StopTextInput(Android_Window);
         return JNI_TRUE;
     }
@@ -1381,7 +1381,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
     fLastAccelerometer[0] = x;
     fLastAccelerometer[1] = y;
     fLastAccelerometer[2] = z;
-    bHasNewData = SDL_TRUE;
+    bHasNewData = true;
 }
 
 // Clipboard
@@ -1563,16 +1563,16 @@ static struct LocalReferenceHolder LocalReferenceHolder_Setup(const char *func)
     return refholder;
 }
 
-static SDL_bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env)
+static bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env)
 {
     const int capacity = 16;
     if ((*env)->PushLocalFrame(env, capacity) < 0) {
         SDL_SetError("Failed to allocate enough JVM local references");
-        return SDL_FALSE;
+        return false;
     }
     SDL_AtomicIncRef(&s_active);
     refholder->m_env = env;
-    return SDL_TRUE;
+    return true;
 }
 
 static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
@@ -1611,7 +1611,7 @@ void Android_JNI_SetActivityTitle(const char *title)
     (*env)->DeleteLocalRef(env, jtitle);
 }
 
-void Android_JNI_SetWindowStyle(SDL_bool fullscreen)
+void Android_JNI_SetWindowStyle(bool fullscreen)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midSetWindowStyle, fullscreen ? 1 : 0);
@@ -1642,23 +1642,23 @@ void Android_JNI_MinizeWindow(void)
     (*env)->CallStaticVoidMethod(env, mActivityClass, midMinimizeWindow);
 }
 
-SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss(void)
+bool Android_JNI_ShouldMinimizeOnFocusLoss(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midShouldMinimizeOnFocusLoss);
 }
 
-SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
+bool Android_JNI_GetAccelerometerValues(float values[3])
 {
-    SDL_bool retval = SDL_FALSE;
+    bool retval = false;
 
     if (bHasNewData) {
         int i;
         for (i = 0; i < 3; ++i) {
             values[i] = fLastAccelerometer[i];
         }
-        bHasNewData = SDL_FALSE;
-        retval = SDL_TRUE;
+        bHasNewData = false;
+        retval = true;
     }
 
     return retval;
@@ -1694,7 +1694,7 @@ void Android_AudioThreadInit(SDL_AudioDevice *device)
 
 // Test for an exception and call SDL_SetError with its detail if one occurs
 // If the parameter silent is truthy then SDL_SetError() will not be called.
-static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
+static bool Android_JNI_ExceptionOccurred(bool silent)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jthrowable exception;
@@ -1734,10 +1734,10 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
             (*env)->ReleaseStringUTFChars(env, exceptionName, exceptionNameUTF8);
         }
 
-        return SDL_TRUE;
+        return true;
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 static void Internal_Android_Create_AssetManager(void)
@@ -1773,7 +1773,7 @@ static void Internal_Android_Create_AssetManager(void)
 
     if (!asset_manager) {
         (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
-        Android_JNI_ExceptionOccurred(SDL_TRUE);
+        Android_JNI_ExceptionOccurred(true);
     }
 
     LocalReferenceHolder_Cleanup(&refs);
@@ -1872,7 +1872,7 @@ char *Android_JNI_GetClipboardText(void)
     return (!text) ? SDL_strdup("") : text;
 }
 
-SDL_bool Android_JNI_HasClipboardText(void)
+bool Android_JNI_HasClipboardText(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midClipboardHasText);
@@ -2055,9 +2055,9 @@ int Android_JNI_SendMessage(int command, int param)
     return success ? 0 : -1;
 }
 
-int Android_JNI_SuspendScreenSaver(SDL_bool suspend)
+int Android_JNI_SuspendScreenSaver(bool suspend)
 {
-    return Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == SDL_FALSE) ? 0 : 1);
+    return Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == false) ? 0 : 1);
 }
 
 void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect)
@@ -2078,7 +2078,7 @@ void Android_JNI_HideScreenKeyboard(void)
     Android_JNI_SendMessage(COMMAND_TEXTEDIT_HIDE, 0);
 }
 
-SDL_bool Android_JNI_IsScreenKeyboardShown(void)
+bool Android_JNI_IsScreenKeyboardShown(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jboolean is_shown = 0;
@@ -2216,7 +2216,7 @@ int SDL_GetAndroidSDKVersion(void)
     return sdk_version;
 }
 
-SDL_bool SDL_IsAndroidTablet(void)
+bool SDL_IsAndroidTablet(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
@@ -2286,7 +2286,7 @@ const char *SDL_GetAndroidInternalStoragePath(void)
         mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, fileObject),
                                   "getCanonicalPath", "()Ljava/lang/String;");
         pathString = (jstring)(*env)->CallObjectMethod(env, fileObject, mid);
-        if (Android_JNI_ExceptionOccurred(SDL_FALSE)) {
+        if (Android_JNI_ExceptionOccurred(false)) {
             LocalReferenceHolder_Cleanup(&refs);
             return NULL;
         }
@@ -2445,9 +2445,9 @@ void Android_JNI_GetManifestEnvironmentVariables(void)
 
     if (!bHasEnvironmentVariables) {
         JNIEnv *env = Android_JNI_GetEnv();
-        SDL_bool ret = (*env)->CallStaticBooleanMethod(env, mActivityClass, midGetManifestEnvironmentVariables);
+        bool ret = (*env)->CallStaticBooleanMethod(env, mActivityClass, midGetManifestEnvironmentVariables);
         if (ret) {
-            bHasEnvironmentVariables = SDL_TRUE;
+            bHasEnvironmentVariables = true;
         }
     }
 }
@@ -2474,25 +2474,25 @@ void Android_JNI_DestroyCustomCursor(int cursorID)
     (*env)->CallStaticVoidMethod(env, mActivityClass, midDestroyCustomCursor, cursorID);
 }
 
-SDL_bool Android_JNI_SetCustomCursor(int cursorID)
+bool Android_JNI_SetCustomCursor(int cursorID)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSetCustomCursor, cursorID);
 }
 
-SDL_bool Android_JNI_SetSystemCursor(int cursorID)
+bool Android_JNI_SetSystemCursor(int cursorID)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSetSystemCursor, cursorID);
 }
 
-SDL_bool Android_JNI_SupportsRelativeMouse(void)
+bool Android_JNI_SupportsRelativeMouse(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSupportsRelativeMouse);
 }
 
-SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
+bool Android_JNI_SetRelativeMouseEnabled(bool enabled)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSetRelativeMouseEnabled, (enabled == 1));
@@ -2519,7 +2519,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
         if (info->request_code == (int) requestCode) {
             prev->next = info->next;
             SDL_UnlockMutex(Android_ActivityMutex);
-            info->callback(info->userdata, info->permission, result ? SDL_TRUE : SDL_FALSE);
+            info->callback(info->userdata, info->permission, result ? true : false);
             SDL_free(info->permission);
             SDL_free(info);
             return;
@@ -2776,18 +2776,18 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
     }
 }
 
-SDL_bool Android_JNI_OpenFileDialog(
+bool Android_JNI_OpenFileDialog(
     SDL_DialogFileCallback callback, void* userdata,
-    const SDL_DialogFileFilter *filters, int nfilters, SDL_bool forwrite,
-    SDL_bool multiple)
+    const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
+    bool multiple)
 {
     if (mAndroidFileDialogData.callback != NULL) {
         SDL_SetError("Only one file dialog can be run at a time.");
-        return SDL_FALSE;
+        return false;
     }
 
     if (forwrite) {
-        multiple = SDL_FALSE;
+        multiple = false;
     }
 
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2821,10 +2821,10 @@ SDL_bool Android_JNI_OpenFileDialog(
         SDL_AtomicAdd(&next_request_code, -1);
         SDL_SetError("Unspecified error in JNI");
 
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 #endif // SDL_PLATFORM_ANDROID

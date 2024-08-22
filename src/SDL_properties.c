@@ -33,7 +33,7 @@ typedef struct
         char *string_value;
         Sint64 number_value;
         float float_value;
-        SDL_bool boolean_value;
+        bool boolean_value;
     } value;
 
     char *string_storage;
@@ -54,7 +54,7 @@ static SDL_PropertiesID SDL_last_properties_id;
 static SDL_PropertiesID SDL_global_properties;
 
 
-static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void *data, SDL_bool cleanup)
+static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void *data, bool cleanup)
 {
     SDL_Property *property = (SDL_Property *)value;
     if (property) {
@@ -78,7 +78,7 @@ static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void
 
 static void SDL_FreeProperty(const void *key, const void *value, void *data)
 {
-    SDL_FreePropertyWithCleanup(key, value, data, SDL_TRUE);
+    SDL_FreePropertyWithCleanup(key, value, data, true);
 }
 
 static void SDL_FreeProperties(const void *key, const void *value, void *data)
@@ -106,7 +106,7 @@ int SDL_InitProperties(void)
         }
     }
     if (!SDL_properties) {
-        SDL_properties = SDL_CreateHashTable(NULL, 16, SDL_HashID, SDL_KeyMatchID, SDL_FreeProperties, SDL_FALSE);
+        SDL_properties = SDL_CreateHashTable(NULL, 16, SDL_HashID, SDL_KeyMatchID, SDL_FreeProperties, false);
         if (!SDL_properties) {
             return -1;
         }
@@ -142,7 +142,7 @@ SDL_PropertiesID SDL_CreateProperties(void)
 {
     SDL_PropertiesID props = 0;
     SDL_Properties *properties = NULL;
-    SDL_bool inserted = SDL_FALSE;
+    bool inserted = false;
 
     if (!SDL_properties && SDL_InitProperties() < 0) {
         return 0;
@@ -152,7 +152,7 @@ SDL_PropertiesID SDL_CreateProperties(void)
     if (!properties) {
         goto error;
     }
-    properties->props = SDL_CreateHashTable(NULL, 4, SDL_HashString, SDL_KeyMatchString, SDL_FreeProperty, SDL_FALSE);
+    properties->props = SDL_CreateHashTable(NULL, 4, SDL_HashString, SDL_KeyMatchString, SDL_FreeProperty, false);
     if (!properties->props) {
         goto error;
     }
@@ -172,7 +172,7 @@ SDL_PropertiesID SDL_CreateProperties(void)
     }
     props = SDL_last_properties_id;
     if (SDL_InsertIntoHashTable(SDL_properties, (const void *)(uintptr_t)props, properties)) {
-        inserted = SDL_TRUE;
+        inserted = true;
     }
     SDL_UnlockMutex(SDL_properties_lock);
 
@@ -247,7 +247,7 @@ int SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
                 dst_property->value.string_value = SDL_strdup(src_property->value.string_value);
             }
             if (!SDL_InsertIntoHashTable(dst_properties->props, dst_name, dst_property)) {
-                SDL_FreePropertyWithCleanup(dst_name, dst_property, NULL, SDL_FALSE);
+                SDL_FreePropertyWithCleanup(dst_name, dst_property, NULL, false);
                 result = -1;
             }
         }
@@ -303,11 +303,11 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     int result = 0;
 
     if (!props) {
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_TRUE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, true);
         return SDL_InvalidParamError("props");
     }
     if (!name || !*name) {
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_TRUE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, true);
         return SDL_InvalidParamError("name");
     }
 
@@ -316,7 +316,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
     SDL_UnlockMutex(SDL_properties_lock);
 
     if (!properties) {
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_TRUE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, true);
         return SDL_InvalidParamError("props");
     }
 
@@ -326,7 +326,7 @@ static int SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL_
         if (property) {
             char *key = SDL_strdup(name);
             if (!SDL_InsertIntoHashTable(properties->props, key, property)) {
-                SDL_FreePropertyWithCleanup(key, property, NULL, SDL_TRUE);
+                SDL_FreePropertyWithCleanup(key, property, NULL, true);
                 result = -1;
             }
         }
@@ -352,7 +352,7 @@ int SDL_SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char *name, 
         if (cleanup) {
             cleanup(userdata, value);
         }
-        SDL_FreePropertyWithCleanup(NULL, property, NULL, SDL_FALSE);
+        SDL_FreePropertyWithCleanup(NULL, property, NULL, false);
         return -1;
     }
     property->type = SDL_PROPERTY_TYPE_POINTER;
@@ -451,7 +451,7 @@ int SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool va
         return -1;
     }
     property->type = SDL_PROPERTY_TYPE_BOOLEAN;
-    property->value.boolean_value = value ? SDL_TRUE : SDL_FALSE;
+    property->value.boolean_value = value ? true : false;
     return SDL_PrivateSetProperty(props, name, property);
 }
 
@@ -688,7 +688,7 @@ float SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float defau
 SDL_bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, SDL_bool default_value)
 {
     SDL_Properties *properties = NULL;
-    SDL_bool value = default_value;
+    bool value = default_value ? true : false;
 
     if (!props) {
         return value;
@@ -790,7 +790,7 @@ static void SDLCALL SDL_DumpPropertiesCallback(void *userdata, SDL_PropertiesID 
         SDL_Log("%s: %g\n", name, SDL_GetFloatProperty(props, name, 0.0f));
         break;
     case SDL_PROPERTY_TYPE_BOOLEAN:
-        SDL_Log("%s: %s\n", name, SDL_GetBooleanProperty(props, name, SDL_FALSE) ? "true" : "false");
+        SDL_Log("%s: %s\n", name, SDL_GetBooleanProperty(props, name, false) ? "true" : "false");
         break;
     default:
         SDL_Log("%s UNKNOWN TYPE\n", name);

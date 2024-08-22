@@ -111,44 +111,44 @@ WINRT_TransformCursorPosition(SDL_Window *window,
     return outputPosition;
 }
 
-SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt, Uint8 *button, Uint8 *pressed)
+bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt, Uint8 *button, Uint8 *pressed)
 {
     using namespace Windows::UI::Input;
 
 #if SDL_WINAPI_FAMILY_PHONE
     *button = SDL_BUTTON_LEFT;
-    return SDL_TRUE;
+    return true;
 #else
     switch (pt->Properties->PointerUpdateKind) {
     case PointerUpdateKind::LeftButtonPressed:
     case PointerUpdateKind::LeftButtonReleased:
         *button = SDL_BUTTON_LEFT;
         *pressed = (pt->Properties->PointerUpdateKind == PointerUpdateKind::LeftButtonPressed);
-        return SDL_TRUE;
+        return true;
 
     case PointerUpdateKind::RightButtonPressed:
     case PointerUpdateKind::RightButtonReleased:
         *button = SDL_BUTTON_RIGHT;
         *pressed = (pt->Properties->PointerUpdateKind == PointerUpdateKind::RightButtonPressed);
-        return SDL_TRUE;
+        return true;
 
     case PointerUpdateKind::MiddleButtonPressed:
     case PointerUpdateKind::MiddleButtonReleased:
         *button = SDL_BUTTON_MIDDLE;
         *pressed = (pt->Properties->PointerUpdateKind == PointerUpdateKind::MiddleButtonPressed);
-        return SDL_TRUE;
+        return true;
 
     case PointerUpdateKind::XButton1Pressed:
     case PointerUpdateKind::XButton1Released:
         *button = SDL_BUTTON_X1;
         *pressed = (pt->Properties->PointerUpdateKind == PointerUpdateKind::XButton1Pressed);
-        return SDL_TRUE;
+        return true;
 
     case PointerUpdateKind::XButton2Pressed:
     case PointerUpdateKind::XButton2Released:
         *button = SDL_BUTTON_X2;
         *pressed = (pt->Properties->PointerUpdateKind == PointerUpdateKind::XButton2Pressed);
-        return SDL_TRUE;
+        return true;
 
     default:
         break;
@@ -157,7 +157,7 @@ SDL_bool WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^ pt
 
     *button = 0;
     *pressed = 0;
-    return SDL_FALSE;
+    return false;
 }
 
 // const char *
@@ -229,7 +229,7 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
             WINRT_TouchID,
             (SDL_FingerID)(pointerPoint->PointerId + 1),
             window,
-            SDL_TRUE,
+            true,
             normalizedPoint.X,
             normalizedPoint.Y,
             pointerPoint->Properties->Pressure);
@@ -252,7 +252,7 @@ void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::Poin
             SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, pressed, button);
         }
 
-        SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, SDL_FALSE, windowPoint.X, windowPoint.Y);
+        SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, false, windowPoint.X, windowPoint.Y);
     } else {
         SDL_SendTouchMotion(0,
             WINRT_TouchID,
@@ -282,7 +282,7 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
             WINRT_TouchID,
             (SDL_FingerID)(pointerPoint->PointerId + 1),
             window,
-            SDL_FALSE,
+            false,
             normalizedPoint.X,
             normalizedPoint.Y,
             pointerPoint->Properties->Pressure);
@@ -383,7 +383,7 @@ void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::M
     //
     const Windows::Foundation::Point mouseDeltaInDIPs((float)args->MouseDelta.X, (float)args->MouseDelta.Y);
     const Windows::Foundation::Point mouseDeltaInSDLWindowCoords = WINRT_TransformCursorPosition(window, mouseDeltaInDIPs, TransformToSDLWindowSize);
-    SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, SDL_TRUE, mouseDeltaInSDLWindowCoords.X, mouseDeltaInSDLWindowCoords.Y);
+    SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, true, mouseDeltaInSDLWindowCoords.X, mouseDeltaInSDLWindowCoords.Y);
 }
 
 #endif // SDL_VIDEO_DRIVER_WINRT

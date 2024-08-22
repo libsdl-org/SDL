@@ -509,10 +509,10 @@ static void BSD_JoystickDetect(void)
 {
 }
 
-static SDL_bool BSD_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool BSD_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     // We don't override any other drivers
-    return SDL_FALSE;
+    return false;
 }
 
 static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
@@ -822,9 +822,9 @@ static int BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble
     return SDL_Unsupported();
 }
 
-static SDL_bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 static int BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -837,7 +837,7 @@ static int BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int 
     return SDL_Unsupported();
 }
 
-static int BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }

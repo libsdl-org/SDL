@@ -144,17 +144,17 @@ static void touch_del(SDL_TouchID id, wl_fixed_t *fx, wl_fixed_t *fy, struct wl_
     }
 }
 
-static SDL_bool Wayland_SurfaceHasActiveTouches(struct wl_surface *surface)
+static bool Wayland_SurfaceHasActiveTouches(struct wl_surface *surface)
 {
     struct SDL_WaylandTouchPoint *tp;
 
     wl_list_for_each (tp, &touch_points, link) {
         if (tp->surface == surface) {
-            return SDL_TRUE;
+            return true;
         }
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 static Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
@@ -261,10 +261,10 @@ void Wayland_CreateCursorShapeDevice(struct SDL_WaylandInput *input)
     }
 }
 
-// Returns SDL_TRUE if a key repeat event was due
-static SDL_bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint64 elapsed)
+// Returns true if a key repeat event was due
+static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint64 elapsed)
 {
-    SDL_bool ret = SDL_FALSE;
+    bool ret = false;
     while (elapsed >= repeat_info->next_repeat_ns) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             const Uint64 timestamp = repeat_info->wl_press_time_ns + repeat_info->next_repeat_ns;
@@ -274,7 +274,7 @@ static SDL_bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, U
             SDL_SendKeyboardText(repeat_info->text);
         }
         repeat_info->next_repeat_ns += SDL_NS_PER_SECOND / (Uint64)repeat_info->repeat_rate;
-        ret = SDL_TRUE;
+        ret = true;
     }
     return ret;
 }
@@ -284,16 +284,16 @@ static void keyboard_repeat_clear(SDL_WaylandKeyboardRepeat *repeat_info)
     if (!repeat_info->is_initialized) {
         return;
     }
-    repeat_info->is_key_down = SDL_FALSE;
+    repeat_info->is_key_down = false;
 }
 
 static void keyboard_repeat_set(SDL_WaylandKeyboardRepeat *repeat_info, Uint32 keyboard_id, uint32_t key, Uint64 wl_press_time_ns,
-                                uint32_t scancode, SDL_bool has_text, char text[8])
+                                uint32_t scancode, bool has_text, char text[8])
 {
     if (!repeat_info->is_initialized || !repeat_info->repeat_rate) {
         return;
     }
-    repeat_info->is_key_down = SDL_TRUE;
+    repeat_info->is_key_down = true;
     repeat_info->keyboard_id = keyboard_id;
     repeat_info->key = key;
     repeat_info->wl_press_time_ns = wl_press_time_ns;
@@ -323,12 +323,12 @@ static void keyboard_repeat_set_text(SDL_WaylandKeyboardRepeat *repeat_info, con
     }
 }
 
-static SDL_bool keyboard_repeat_is_set(SDL_WaylandKeyboardRepeat *repeat_info)
+static bool keyboard_repeat_is_set(SDL_WaylandKeyboardRepeat *repeat_info)
 {
     return repeat_info->is_initialized && repeat_info->is_key_down;
 }
 
-static SDL_bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat *repeat_info, uint32_t key)
+static bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat *repeat_info, uint32_t key)
 {
     return repeat_info->is_initialized && repeat_info->is_key_down && key == repeat_info->key;
 }
@@ -377,7 +377,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 {
     SDL_VideoData *d = _this->internal;
     struct SDL_WaylandInput *input = d->input;
-    SDL_bool key_repeat_active = SDL_FALSE;
+    bool key_repeat_active = false;
 
     WAYLAND_wl_display_flush(d->display);
 
@@ -405,7 +405,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
             } else {
                 timeoutNS = next_repeat_wait_time;
             }
-            key_repeat_active = SDL_TRUE;
+            key_repeat_active = true;
         }
     }
 
@@ -523,7 +523,7 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
     if (input->pointer_focus) {
         float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale.x);
         float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale.y);
-        SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window_data->sdlwindow, input->pointer_id, SDL_FALSE, sx, sy);
+        SDL_SendMouseMotion(Wayland_GetPointerTimestamp(input, time), window_data->sdlwindow, input->pointer_id, false, sx, sy);
     }
 
     if (window && window->hit_test) {
@@ -611,7 +611,7 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
     }
 }
 
-static SDL_bool ProcessHitTest(SDL_WindowData *window_data,
+static bool ProcessHitTest(SDL_WindowData *window_data,
 			       struct wl_seat *seat,
 			       wl_fixed_t sx_w, wl_fixed_t sy_w,
 			       uint32_t serial)
@@ -653,7 +653,7 @@ static SDL_bool ProcessHitTest(SDL_WindowData *window_data,
                                       serial);
                 }
             }
-            return SDL_TRUE;
+            return true;
 
         case SDL_HITTEST_RESIZE_TOPLEFT:
         case SDL_HITTEST_RESIZE_TOP:
@@ -681,14 +681,14 @@ static SDL_bool ProcessHitTest(SDL_WindowData *window_data,
                                         directions[window_data->hit_test_result - SDL_HITTEST_RESIZE_TOPLEFT]);
                 }
             }
-            return SDL_TRUE;
+            return true;
 
         default:
-            return SDL_FALSE;
+            return false;
         }
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
@@ -697,7 +697,7 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_button_state state = state_w;
     uint32_t sdl_button;
-    SDL_bool ignore_click = SDL_FALSE;
+    bool ignore_click = false;
 
     if (window) {
         SDL_VideoData *viddata = window->waylandData;
@@ -728,7 +728,7 @@ static void pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_
         if (window->last_focus_event_time_ns) {
             if (state == WL_POINTER_BUTTON_STATE_PRESSED &&
                 (SDL_GetTicksNS() - window->last_focus_event_time_ns) < WAYLAND_FOCUS_CLICK_TIMEOUT_NS) {
-                ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
+                ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, false);
             }
 
             window->last_focus_event_time_ns = 0;
@@ -1025,7 +1025,7 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
         SDL_SetMouseFocus(window_data->sdlwindow);
 
         SDL_SendTouch(Wayland_GetTouchTimestamp(input, timestamp), (SDL_TouchID)(uintptr_t)touch,
-                      (SDL_FingerID)(id + 1), window_data->sdlwindow, SDL_TRUE, x, y, 1.0f);
+                      (SDL_FingerID)(id + 1), window_data->sdlwindow, true, x, y, 1.0f);
     }
 }
 
@@ -1046,7 +1046,7 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
             const float y = (float)wl_fixed_to_double(fy) / window_data->current.logical_height;
 
             SDL_SendTouch(Wayland_GetTouchTimestamp(input, timestamp), (SDL_TouchID)(uintptr_t)touch,
-                          (SDL_FingerID)(id + 1), window_data->sdlwindow, SDL_FALSE, x, y, 0.0f);
+                          (SDL_FingerID)(id + 1), window_data->sdlwindow, false, x, y, 0.0f);
 
             /* If the seat lacks pointer focus, the seat's keyboard focus is another window or NULL, this window curently
              * has mouse focus, and the surface has no active touch events, consider mouse focus to be lost.
@@ -1200,10 +1200,10 @@ static void Wayland_UpdateKeymap(struct SDL_WaylandInput *input)
         }
 
         WAYLAND_xkb_state_unref(keymap.state);
-        SDL_SetKeymap(keymap.keymap, SDL_TRUE);
+        SDL_SetKeymap(keymap.keymap, true);
     } else {
         // Virtual keyboards use the default keymap.
-        SDL_SetKeymap(NULL, SDL_TRUE);
+        SDL_SetKeymap(NULL, true);
     }
 }
 
@@ -1455,9 +1455,9 @@ static void Wayland_ReconcileModifiers(struct SDL_WaylandInput *input)
     SDL_SetModState(input->pressed_modifiers | input->locked_modifiers);
 }
 
-static void Wayland_HandleModifierKeys(struct SDL_WaylandInput *input, SDL_Scancode scancode, SDL_bool pressed)
+static void Wayland_HandleModifierKeys(struct SDL_WaylandInput *input, SDL_Scancode scancode, bool pressed)
 {
-    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, SDL_FALSE);
+    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false);
     SDL_Keymod mod;
 
     switch (keycode) {
@@ -1528,7 +1528,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 
 #ifdef SDL_USE_IME
     if (!input->text_input) {
-        SDL_IME_SetFocus(SDL_TRUE);
+        SDL_IME_SetFocus(true);
     }
 #endif
 
@@ -1536,7 +1536,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 
     wl_array_for_each (key, keys) {
         const SDL_Scancode scancode = Wayland_get_scancode_from_key(input, *key + 8);
-        const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, SDL_FALSE);
+        const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false);
 
         switch (keycode) {
         case SDLK_LSHIFT:
@@ -1548,7 +1548,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         case SDLK_LGUI:
         case SDLK_RGUI:
         case SDLK_MODE:
-            Wayland_HandleModifierKeys(input, scancode, SDL_TRUE);
+            Wayland_HandleModifierKeys(input, scancode, true);
             SDL_SendKeyboardKeyIgnoreModifiers(0, input->keyboard_id, *key, scancode, SDL_PRESSED);
             break;
         default:
@@ -1588,7 +1588,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
 
 #ifdef SDL_USE_IME
     if (!input->text_input) {
-        SDL_IME_SetFocus(SDL_FALSE);
+        SDL_IME_SetFocus(false);
     }
 #endif
 
@@ -1600,42 +1600,42 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     }
 }
 
-static SDL_bool keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, Uint8 state, SDL_bool *handled_by_ime)
+static bool keyboard_input_get_text(char text[8], const struct SDL_WaylandInput *input, uint32_t key, Uint8 state, bool *handled_by_ime)
 {
     SDL_WindowData *window = input->keyboard_focus;
     const xkb_keysym_t *syms;
     xkb_keysym_t sym;
 
     if (!window || window->keyboard_device != input || !input->xkb.state) {
-        return SDL_FALSE;
+        return false;
     }
 
     // TODO: Can this happen?
     if (WAYLAND_xkb_state_key_get_syms(input->xkb.state, key + 8, &syms) != 1) {
-        return SDL_FALSE;
+        return false;
     }
     sym = syms[0];
 
 #ifdef SDL_USE_IME
     if (SDL_IME_ProcessKeyEvent(sym, key + 8, state)) {
         if (handled_by_ime) {
-            *handled_by_ime = SDL_TRUE;
+            *handled_by_ime = true;
         }
-        return SDL_TRUE;
+        return true;
     }
 #endif
 
     if (state == SDL_RELEASED) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (input->xkb.compose_state && WAYLAND_xkb_compose_state_feed(input->xkb.compose_state, sym) == XKB_COMPOSE_FEED_ACCEPTED) {
         switch (WAYLAND_xkb_compose_state_get_status(input->xkb.compose_state)) {
         case XKB_COMPOSE_COMPOSING:
             if (handled_by_ime) {
-                *handled_by_ime = SDL_TRUE;
+                *handled_by_ime = true;
             }
-            return SDL_TRUE;
+            return true;
         case XKB_COMPOSE_CANCELLED:
         default:
             sym = XKB_KEY_NoSymbol;
@@ -1659,8 +1659,8 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     enum wl_keyboard_key_state state = state_w;
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
     char text[8];
-    SDL_bool has_text = SDL_FALSE;
-    SDL_bool handled_by_ime = SDL_FALSE;
+    bool has_text = false;
+    bool handled_by_ime = false;
     const Uint64 timestamp_raw_ns = Wayland_GetKeyboardTimestampRaw(input, time);
 
     Wayland_UpdateImplicitGrabSerial(input, serial);
@@ -1745,7 +1745,7 @@ static void keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keybo
     struct SDL_WaylandInput *input = data;
     input->keyboard_repeat.repeat_rate = SDL_clamp(rate, 0, 1000);
     input->keyboard_repeat.repeat_delay_ms = delay;
-    input->keyboard_repeat.is_initialized = SDL_TRUE;
+    input->keyboard_repeat.is_initialized = true;
 }
 
 static const struct wl_keyboard_listener keyboard_listener = {
@@ -1773,7 +1773,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         wl_pointer_add_listener(input->pointer, &pointer_listener, input);
 
         input->pointer_id = SDL_GetNextObjectID();
-        SDL_AddMouse(input->pointer_id, WAYLAND_DEFAULT_POINTER_NAME, SDL_TRUE);
+        SDL_AddMouse(input->pointer_id, WAYLAND_DEFAULT_POINTER_NAME, true);
     } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
         if (input->cursor_shape) {
             wp_cursor_shape_device_v1_destroy(input->cursor_shape);
@@ -1783,7 +1783,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         input->pointer = NULL;
         input->display->pointer = NULL;
 
-        SDL_RemoveMouse(input->pointer_id, SDL_TRUE);
+        SDL_RemoveMouse(input->pointer_id, true);
         input->pointer_id = 0;
     }
 
@@ -1806,12 +1806,12 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
                                  input);
 
         input->keyboard_id = SDL_GetNextObjectID();
-        SDL_AddKeyboard(input->keyboard_id, WAYLAND_DEFAULT_KEYBOARD_NAME, SDL_TRUE);
+        SDL_AddKeyboard(input->keyboard_id, WAYLAND_DEFAULT_KEYBOARD_NAME, true);
     } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
         wl_keyboard_destroy(input->keyboard);
         input->keyboard = NULL;
 
-        SDL_RemoveKeyboard(input->keyboard_id, SDL_TRUE);
+        SDL_RemoveKeyboard(input->keyboard_id, true);
         input->keyboard_id = 0;
     }
 
@@ -2022,8 +2022,8 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
                                      wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id)
 {
     SDL_WaylandDataDevice *data_device = data;
-    data_device->has_mime_file = SDL_FALSE;
-    data_device->has_mime_text = SDL_FALSE;
+    data_device->has_mime_file = false;
+    data_device->has_mime_text = false;
     uint32_t dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
 
     data_device->drag_serial = serial;
@@ -2034,17 +2034,17 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
         // TODO: SDL Support more mime types
 #ifdef SDL_USE_LIBDBUS
         if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_PORTAL_MIME)) {
-            data_device->has_mime_file = SDL_TRUE;
+            data_device->has_mime_file = true;
             wl_data_offer_accept(id, serial, FILE_PORTAL_MIME);
         }
 #endif
         if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_MIME)) {
-            data_device->has_mime_file = SDL_TRUE;
+            data_device->has_mime_file = true;
             wl_data_offer_accept(id, serial, FILE_MIME);
         }
 
         if (Wayland_data_offer_has_mime(data_device->drag_offer, TEXT_MIME)) {
-            data_device->has_mime_text = SDL_TRUE;
+            data_device->has_mime_text = true;
             wl_data_offer_accept(id, serial, TEXT_MIME);
         }
 
@@ -2116,8 +2116,8 @@ static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_
                      ". In wl_data_device_listener . data_device_handle_leave on data_offer 0x%08x for serial %d\n",
                      -1, -1);
     }
-    data_device->has_mime_file = SDL_FALSE;
-    data_device->has_mime_text = SDL_FALSE;
+    data_device->has_mime_file = false;
+    data_device->has_mime_text = false;
 }
 
 static void data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,
@@ -2157,7 +2157,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                      SDL_GetWindowID(data_device->dnd_window), data_device->drag_serial);
         // TODO: SDL Support more mime types
         size_t length;
-        SDL_bool drop_handled = SDL_FALSE;
+        bool drop_handled = false;
 #ifdef SDL_USE_LIBDBUS
         if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_PORTAL_MIME)) {
             void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
@@ -2175,7 +2175,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                         }
                         dbus->free_string_array(paths);
                         SDL_SendDropComplete(data_device->dnd_window);
-                        drop_handled = SDL_TRUE;
+                        drop_handled = true;
                     }
                 }
                 SDL_free(buffer);
@@ -2205,7 +2205,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                 } else {
                     SDL_SendDropComplete(data_device->dnd_window);
                 }
-                drop_handled = SDL_TRUE;
+                drop_handled = true;
             } else if (data_device->has_mime_text) {
                 if (buffer) {
                     char *saveptr = NULL;
@@ -2225,7 +2225,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                      */
                     SDL_SendDropComplete(data_device->dnd_window);
                 }
-                drop_handled = SDL_TRUE;
+                drop_handled = true;
             }
         }
 
@@ -2335,7 +2335,7 @@ static void text_input_preedit_string(void *data,
                                       int32_t cursor_end)
 {
     SDL_WaylandTextInput *text_input = data;
-    text_input->has_preedit = SDL_TRUE;
+    text_input->has_preedit = true;
     if (text) {
         int cursor_begin_utf8 = cursor_begin >= 0 ? (int)SDL_utf8strnlen(text, cursor_begin) : -1;
         int cursor_end_utf8 = cursor_end >= 0 ? (int)SDL_utf8strnlen(text, cursor_end) : -1;
@@ -2378,7 +2378,7 @@ static void text_input_done(void *data,
     if (!text_input->has_preedit) {
         SDL_SendEditingText("", 0, 0);
     }
-    text_input->has_preedit = SDL_FALSE;
+    text_input->has_preedit = false;
 }
 
 static const struct zwp_text_input_v3_listener text_input_listener = {
@@ -2485,7 +2485,7 @@ typedef struct SDL_WaylandPenTool  // a stylus, etc, on a tablet.
     struct zwp_tablet_tool_v2 *wltool;
     float x;
     float y;
-    SDL_bool frame_motion_set;
+    bool frame_motion_set;
     float frame_axes[SDL_PEN_NUM_AXES];
     Uint32 frame_axes_set;
     int frame_pen_down;
@@ -2596,7 +2596,7 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
         const float sy = sy_f * windowdata->pointer_scale.y;
         sdltool->x = sx;
         sdltool->y = sy;
-        sdltool->frame_motion_set = SDL_TRUE;
+        sdltool->frame_motion_set = true;
     }
 }
 
@@ -2721,7 +2721,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
 
     // reset for next frame.
     sdltool->frame_pen_down = -1;
-    sdltool->frame_motion_set = SDL_FALSE;
+    sdltool->frame_motion_set = false;
     sdltool->frame_axes_set = 0;
 }
 
@@ -2984,7 +2984,7 @@ static void relative_pointer_handle_relative_motion(void *data,
     dy_unaccel = wl_fixed_to_double(dy_unaccel_w);
 
     if (input->pointer_focus && d->relative_mouse_mode) {
-        SDL_SendMouseMotion(Wayland_GetEventTimestamp(timestamp), window->sdlwindow, input->pointer_id, SDL_TRUE, (float)dx_unaccel, (float)dy_unaccel);
+        SDL_SendMouseMotion(Wayland_GetEventTimestamp(timestamp), window->sdlwindow, input->pointer_id, true, (float)dx_unaccel, (float)dy_unaccel);
     }
 }
 

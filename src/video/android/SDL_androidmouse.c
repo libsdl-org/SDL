@@ -155,7 +155,7 @@ static int Android_ShowCursor(SDL_Cursor *cursor)
     }
 }
 
-static int Android_SetRelativeMouseMode(SDL_bool enabled)
+static int Android_SetRelativeMouseMode(bool enabled)
 {
     if (!Android_JNI_SupportsRelativeMouse()) {
         return SDL_Unsupported();
@@ -206,7 +206,7 @@ static Uint8 TranslateButton(int state)
     }
 }
 
-void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y, SDL_bool relative)
+void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y, bool relative)
 {
     int changes;
     Uint8 button;

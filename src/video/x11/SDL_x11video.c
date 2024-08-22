@@ -75,13 +75,13 @@ static void X11_DeleteDevice(SDL_VideoDevice *device)
 }
 
 // An error handler to reset the vidmode and then call the default handler.
-static SDL_bool safety_net_triggered = SDL_FALSE;
+static bool safety_net_triggered = false;
 static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
 {
     SDL_VideoDevice *device = NULL;
     // if we trigger an error in our error handler, don't try again.
     if (!safety_net_triggered) {
-        safety_net_triggered = SDL_TRUE;
+        safety_net_triggered = true;
         device = SDL_GetVideoDevice();
         if (device) {
             int i;
@@ -101,7 +101,7 @@ static int X11_SafetyNetErrHandler(Display *d, XErrorEvent *e)
     return 0;
 }
 
-static SDL_bool X11_IsXWayland(Display *d)
+static bool X11_IsXWayland(Display *d)
 {
     int opcode, event, error;
     return X11_XQueryExtension(d, "XWAYLAND", &opcode, &event, &error) == True;
@@ -142,7 +142,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     }
     device->internal = data;
 
-    data->global_mouse_changed = SDL_TRUE;
+    data->global_mouse_changed = true;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
     data->active_cursor_confined_window = NULL;
@@ -165,13 +165,13 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 #endif
 
     // Hook up an X11 error handler to recover the desktop resolution.
-    safety_net_triggered = SDL_FALSE;
+    safety_net_triggered = false;
     orig_x11_errhandler = X11_XSetErrorHandler(X11_SafetyNetErrHandler);
 
     /* Steam Deck will have an on-screen keyboard, so check their environment
      * variable so we can make use of SDL_StartTextInput.
      */
-    data->is_steam_deck = SDL_GetHintBoolean("SteamDeck", SDL_FALSE);
+    data->is_steam_deck = SDL_GetHintBoolean("SteamDeck", false);
 
     // Set the function pointers
     device->VideoInit = X11_VideoInit;
@@ -240,7 +240,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 #endif
 #ifdef SDL_VIDEO_OPENGL_EGL
 #ifdef SDL_VIDEO_OPENGL_GLX
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, false)) {
 #endif
         device->GL_LoadLibrary = X11_GLES_LoadLibrary;
         device->GL_GetProcAddress = X11_GLES_GetProcAddress;
@@ -367,7 +367,7 @@ static void X11_CheckWindowManager(SDL_VideoDevice *_this)
 #endif
         return;
     }
-    data->net_wm = SDL_TRUE;
+    data->net_wm = true;
 
 #ifdef DEBUG_WINDOW_MANAGER
     wm_name = X11_GetWindowTitle(_this, wm_window);
@@ -435,8 +435,8 @@ int X11_VideoInit(SDL_VideoDevice *_this)
 
     if (!X11_InitXinput2(_this)) {
         // Assume a mouse and keyboard are attached
-        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
-        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
+        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
+        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
     }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
@@ -488,12 +488,12 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     X11_QuitXsettings(_this);
 }
 
-SDL_bool X11_UseDirectColorVisuals(void)
+bool X11_UseDirectColorVisuals(void)
 {
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_NODIRECTCOLOR, SDL_FALSE)) {
-        return SDL_FALSE;
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_NODIRECTCOLOR, false)) {
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_X11

@@ -179,7 +179,7 @@ static float sRGBfromLinear(float v)
     return v <= 0.0031308f ? (v * 12.92f) : (SDL_powf(v, 1.0f / 2.4f) * 1.055f - 0.055f);
 }
 
-SDL_bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
+bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
 {
     SDL_Colorspace colorspace;
 
@@ -189,9 +189,9 @@ SDL_bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
         colorspace = renderer->output_colorspace;
     }
     if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 void SDL_ConvertToLinear(SDL_FColor *color)
@@ -332,10 +332,10 @@ static int FlushRenderCommands(SDL_Renderer *renderer)
     }
     renderer->vertex_data_used = 0;
     renderer->render_command_generation++;
-    renderer->color_queued = SDL_FALSE;
-    renderer->color_scale_queued = SDL_FALSE;
-    renderer->viewport_queued = SDL_FALSE;
-    renderer->cliprect_queued = SDL_FALSE;
+    renderer->color_queued = false;
+    renderer->color_scale_queued = false;
+    renderer->viewport_queued = false;
+    renderer->cliprect_queued = false;
     return retval;
 }
 
@@ -454,7 +454,7 @@ static int QueueCmdSetViewport(SDL_Renderer *renderer)
                 cmd->command = SDL_RENDERCMD_NO_OP;
             } else {
                 SDL_copyp(&renderer->last_queued_viewport, &viewport);
-                renderer->viewport_queued = SDL_TRUE;
+                renderer->viewport_queued = true;
             }
         } else {
             retval = -1;
@@ -488,7 +488,7 @@ static int QueueCmdSetClipRect(SDL_Renderer *renderer)
             SDL_copyp(&cmd->data.cliprect.rect, &clip_rect);
             SDL_copyp(&renderer->last_queued_cliprect, &clip_rect);
             renderer->last_queued_cliprect_enabled = renderer->view->clipping_enabled;
-            renderer->cliprect_queued = SDL_TRUE;
+            renderer->cliprect_queued = true;
         } else {
             retval = -1;
         }
@@ -518,7 +518,7 @@ static int QueueCmdSetDrawColor(SDL_Renderer *renderer, SDL_FColor *color)
                 cmd->command = SDL_RENDERCMD_NO_OP;
             } else {
                 renderer->last_queued_color = *color;
-                renderer->color_queued = SDL_TRUE;
+                renderer->color_queued = true;
             }
         }
     }
@@ -619,8 +619,8 @@ static int QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, con
 
     if (cmd) {
         if (use_rendergeometry) {
-            SDL_bool isstack1;
-            SDL_bool isstack2;
+            bool isstack1;
+            bool isstack2;
             float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
             int *indices = SDL_small_alloc(int, 6 * count, &isstack2);
 
@@ -781,9 +781,9 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
     }
 
     if (renderer->HDR_headroom > 1.0f) {
-        SDL_SetBooleanProperty(renderer_props, SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN, SDL_TRUE);
+        SDL_SetBooleanProperty(renderer_props, SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN, true);
     } else {
-        SDL_SetBooleanProperty(renderer_props, SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN, SDL_FALSE);
+        SDL_SetBooleanProperty(renderer_props, SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN, false);
     }
     SDL_SetFloatProperty(renderer_props, SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point);
     SDL_SetFloatProperty(renderer_props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, renderer->HDR_headroom);
@@ -835,17 +835,17 @@ static SDL_bool SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 UpdateMainViewDimensions(renderer);
                 UpdateLogicalPresentation(renderer);
             } else if (event->type == SDL_EVENT_WINDOW_HIDDEN) {
-                renderer->hidden = SDL_TRUE;
+                renderer->hidden = true;
             } else if (event->type == SDL_EVENT_WINDOW_SHOWN) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)) {
-                    renderer->hidden = SDL_FALSE;
+                    renderer->hidden = false;
                 }
             } else if (event->type == SDL_EVENT_WINDOW_MINIMIZED) {
-                renderer->hidden = SDL_TRUE;
+                renderer->hidden = true;
             } else if (event->type == SDL_EVENT_WINDOW_RESTORED ||
                        event->type == SDL_EVENT_WINDOW_MAXIMIZED) {
                 if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN)) {
-                    renderer->hidden = SDL_FALSE;
+                    renderer->hidden = false;
                 }
             } else if (event->type == SDL_EVENT_WINDOW_DISPLAY_CHANGED) {
                 UpdateHDRProperties(renderer);
@@ -855,12 +855,12 @@ static SDL_bool SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
         UpdateHDRProperties(renderer);
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 int SDL_CreateWindowAndRenderer(const char *title, int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer)
 {
-    SDL_bool hidden = (window_flags & SDL_WINDOW_HIDDEN) != 0;
+    bool hidden = (window_flags & SDL_WINDOW_HIDDEN) != 0;
 
     if (!window) {
         return SDL_InvalidParamError("window");
@@ -973,7 +973,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         goto error;
     }
 
-    SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_TRUE);
+    SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, true);
 
     if ((!window && !surface) || (window && surface)) {
         SDL_InvalidParamError("window");
@@ -992,7 +992,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
     if (hint && *hint) {
-        SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE));
+        SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, true));
     }
 
     if (surface) {
@@ -1087,11 +1087,11 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     if (window) {
         if (SDL_GetWindowFlags(window) & SDL_WINDOW_TRANSPARENT) {
-            renderer->transparent_window = SDL_TRUE;
+            renderer->transparent_window = true;
         }
 
         if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) {
-            renderer->hidden = SDL_TRUE;
+            renderer->hidden = true;
         }
     }
 
@@ -1256,7 +1256,7 @@ int SDL_GetCurrentRenderOutputSize(SDL_Renderer *renderer, int *w, int *h)
     return 0;
 }
 
-static SDL_bool IsSupportedBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
+static bool IsSupportedBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     switch (blendMode) {
     // These are required to be supported by all renderers
@@ -1267,23 +1267,23 @@ static SDL_bool IsSupportedBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend
     case SDL_BLENDMODE_ADD_PREMULTIPLIED:
     case SDL_BLENDMODE_MOD:
     case SDL_BLENDMODE_MUL:
-        return SDL_TRUE;
+        return true;
 
     default:
         return renderer->SupportsBlendMode && renderer->SupportsBlendMode(renderer, blendMode);
     }
 }
 
-static SDL_bool IsSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat format)
+static bool IsSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat format)
 {
     int i;
 
     for (i = 0; i < renderer->num_texture_formats; ++i) {
         if (renderer->texture_formats[i] == format) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 static Uint32 GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat format)
@@ -1311,7 +1311,7 @@ static Uint32 GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat 
             }
         }
     } else {
-        SDL_bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(format);
+        bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(format);
 
         // We just want to match the first format that has the same channels
         for (i = 0; i < renderer->num_texture_formats; ++i) {
@@ -1332,7 +1332,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     int w = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, 0);
     int h = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, 0);
     SDL_Colorspace default_colorspace;
-    SDL_bool texture_is_fourcc_and_target;
+    bool texture_is_fourcc_and_target;
 
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
@@ -1365,7 +1365,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     if (!texture) {
         return NULL;
     }
-    SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, SDL_TRUE);
+    SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, true);
     texture->colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, default_colorspace);
     texture->format = format;
     texture->access = access;
@@ -1498,7 +1498,7 @@ SDL_Texture *SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormat format, S
 static int SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, SDL_Surface *surface)
 {
     SDL_TextureAccess access;
-    SDL_bool direct_update;
+    bool direct_update;
     SDL_PixelFormat tex_format;
     SDL_PropertiesID surface_props;
     SDL_PropertiesID tex_props;
@@ -1544,14 +1544,14 @@ static int SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, SD
         if (SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_SurfaceHasColorKey(surface)) {
             /* Surface and Renderer formats are identical.
              * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
-            direct_update = SDL_FALSE;
+            direct_update = false;
         } else {
             // Update Texture directly
-            direct_update = SDL_TRUE;
+            direct_update = true;
         }
     } else {
         // Surface and Renderer formats are different, it needs an intermediate conversion.
-        direct_update = SDL_FALSE;
+        direct_update = false;
     }
 
     if (direct_update) {
@@ -1599,7 +1599,7 @@ static int SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, SD
 
 SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
 {
-    SDL_bool needAlpha;
+    bool needAlpha;
     int i;
     SDL_PixelFormat format = SDL_PIXELFORMAT_UNKNOWN;
     SDL_Palette *palette;
@@ -1617,18 +1617,18 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
 
     // See what the best texture format is
     if (SDL_ISPIXELFORMAT_ALPHA(surface->format) || SDL_SurfaceHasColorKey(surface)) {
-        needAlpha = SDL_TRUE;
+        needAlpha = true;
     } else {
-        needAlpha = SDL_FALSE;
+        needAlpha = false;
     }
 
     // If Palette contains alpha values, promotes to alpha format
     palette = SDL_GetSurfacePalette(surface);
     if (palette) {
-        SDL_bool is_opaque, has_alpha_channel;
+        bool is_opaque, has_alpha_channel;
         SDL_DetectPalette(palette, &is_opaque, &has_alpha_channel);
         if (!is_opaque) {
-            needAlpha = SDL_TRUE;
+            needAlpha = true;
         }
     }
 
@@ -3028,9 +3028,9 @@ SDL_bool SDL_RenderViewportSet(SDL_Renderer *renderer)
 
     if (renderer->view->viewport.w >= 0 &&
         renderer->view->viewport.h >= 0) {
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
@@ -3101,10 +3101,10 @@ int SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
     CHECK_RENDERER_MAGIC(renderer, -1)
 
     if (rect && rect->w >= 0 && rect->h >= 0) {
-        renderer->view->clipping_enabled = SDL_TRUE;
+        renderer->view->clipping_enabled = true;
         SDL_copyp(&renderer->view->clip_rect, rect);
     } else {
-        renderer->view->clipping_enabled = SDL_FALSE;
+        renderer->view->clipping_enabled = false;
         SDL_zero(renderer->view->clip_rect);
     }
     UpdatePixelClipRect(renderer, renderer->view);
@@ -3128,7 +3128,7 @@ int SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
 
 SDL_bool SDL_RenderClipEnabled(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer, SDL_FALSE)
+    CHECK_RENDERER_MAGIC(renderer, false)
     return renderer->view->clipping_enabled;
 }
 
@@ -3340,7 +3340,7 @@ int SDL_RenderPoint(SDL_Renderer *renderer, float x, float y)
 static int RenderPointsWithRects(SDL_Renderer *renderer, const SDL_FPoint *fpoints, const int count)
 {
     int retval;
-    SDL_bool isstack;
+    bool isstack;
     SDL_FRect *frects;
     int i;
 
@@ -3405,7 +3405,7 @@ int SDL_RenderLine(SDL_Renderer *renderer, float x1, float y1, float x2, float y
     return SDL_RenderLines(renderer, points, 2);
 }
 
-static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, SDL_bool draw_last)
+static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, int y2, bool draw_last)
 {
     const int MAX_PIXELS = SDL_max(renderer->view->pixel_w, renderer->view->pixel_h) * 4;
     int i, deltax, deltay, numpixels;
@@ -3413,7 +3413,7 @@ static int RenderLineBresenham(SDL_Renderer *renderer, int x1, int y1, int x2, i
     int x, xinc1, xinc2;
     int y, yinc1, yinc2;
     int retval;
-    SDL_bool isstack;
+    bool isstack;
     SDL_FPoint *points;
     SDL_Rect viewport;
 
@@ -3509,9 +3509,9 @@ static int RenderLinesWithRectsF(SDL_Renderer *renderer,
     SDL_FRect *frects;
     int i, nrects = 0;
     int retval = 0;
-    SDL_bool isstack;
-    SDL_bool drew_line = SDL_FALSE;
-    SDL_bool draw_last = SDL_FALSE;
+    bool isstack;
+    bool drew_line = false;
+    bool draw_last = false;
 
     frects = SDL_small_alloc(SDL_FRect, count - 1, &isstack);
     if (!frects) {
@@ -3519,12 +3519,12 @@ static int RenderLinesWithRectsF(SDL_Renderer *renderer,
     }
 
     for (i = 0; i < count - 1; ++i) {
-        SDL_bool same_x = (points[i].x == points[i + 1].x);
-        SDL_bool same_y = (points[i].y == points[i + 1].y);
+        bool same_x = (points[i].x == points[i + 1].x);
+        bool same_y = (points[i].y == points[i + 1].y);
 
         if (i == (count - 2)) {
             if (!drew_line || points[i + 1].x != points[0].x || points[i + 1].y != points[0].y) {
-                draw_last = SDL_TRUE;
+                draw_last = true;
             }
         } else {
             if (same_x && same_y) {
@@ -3559,7 +3559,7 @@ static int RenderLinesWithRectsF(SDL_Renderer *renderer,
             retval += RenderLineBresenham(renderer, (int)SDL_roundf(points[i].x), (int)SDL_roundf(points[i].y),
                                               (int)SDL_roundf(points[i + 1].x), (int)SDL_roundf(points[i + 1].y), draw_last);
         }
-        drew_line = SDL_TRUE;
+        drew_line = true;
     }
 
     if (nrects) {
@@ -3597,8 +3597,8 @@ int SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count)
     if (renderer->line_method == SDL_RENDERLINEMETHOD_POINTS) {
         retval = RenderLinesWithRectsF(renderer, points, count);
     } else if (renderer->line_method == SDL_RENDERLINEMETHOD_GEOMETRY) {
-        SDL_bool isstack1;
-        SDL_bool isstack2;
+        bool isstack1;
+        bool isstack2;
         const float scale_x = renderer->view->scale.x;
         const float scale_y = renderer->view->scale.y;
         float *xy = SDL_small_alloc(float, 4 * 2 * count, &isstack1);
@@ -3798,7 +3798,7 @@ int SDL_RenderFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, int coun
     SDL_FRect *frects;
     int i;
     int retval;
-    SDL_bool isstack;
+    bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -3837,7 +3837,7 @@ int SDL_RenderFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, int coun
 static int SDL_RenderTextureInternal(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect)
 {
     int retval;
-    SDL_bool use_rendergeometry = (!renderer->QueueCopy);
+    bool use_rendergeometry = (!renderer->QueueCopy);
 
     if (use_rendergeometry) {
         float xy[8];
@@ -4998,7 +4998,7 @@ static void SDL_SimulateRenderVSync(SDL_Renderer *renderer)
 
 int SDL_RenderPresent(SDL_Renderer *renderer)
 {
-    SDL_bool presented = SDL_TRUE;
+    bool presented = true;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -5016,11 +5016,11 @@ int SDL_RenderPresent(SDL_Renderer *renderer)
 #if DONT_DRAW_WHILE_HIDDEN
     // Don't present while we're hidden
     if (renderer->hidden) {
-        presented = SDL_FALSE;
+        presented = false;
     } else
 #endif
     if (renderer->RenderPresent(renderer) < 0) {
-        presented = SDL_FALSE;
+        presented = false;
     }
 
     if (renderer->logical_target) {
@@ -5034,7 +5034,7 @@ int SDL_RenderPresent(SDL_Renderer *renderer)
     return 0;
 }
 
-static int SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroying)
+static int SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
 {
     SDL_Renderer *renderer;
 
@@ -5063,7 +5063,7 @@ static int SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroyi
         renderer->logical_target = NULL;
     }
 
-    SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, SDL_FALSE);
+    SDL_SetObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE, false);
 
     if (texture->next) {
         texture->next->prev = texture->prev;
@@ -5095,7 +5095,7 @@ static int SDL_DestroyTextureInternal(SDL_Texture *texture, SDL_bool is_destroyi
 
 void SDL_DestroyTexture(SDL_Texture *texture)
 {
-    SDL_DestroyTextureInternal(texture, SDL_FALSE /* is_destroying */);
+    SDL_DestroyTextureInternal(texture, false /* is_destroying */);
 }
 
 static void SDL_DiscardAllCommands(SDL_Renderer *renderer)
@@ -5125,7 +5125,7 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
     SDL_assert(renderer != NULL);
     SDL_assert(!renderer->destroyed);
 
-    renderer->destroyed = SDL_TRUE;
+    renderer->destroyed = true;
 
     SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
 
@@ -5141,7 +5141,7 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
     // Free existing textures for this renderer
     while (renderer->textures) {
         SDL_Texture *tex = renderer->textures;
-        SDL_DestroyTextureInternal(renderer->textures, SDL_TRUE /* is_destroying */);
+        SDL_DestroyTextureInternal(renderer->textures, true /* is_destroying */);
         SDL_assert(tex != renderer->textures); // satisfy static analysis.
     }
 
@@ -5194,7 +5194,7 @@ void SDL_DestroyRenderer(SDL_Renderer *renderer)
         curr = curr->next;
     }
 
-    SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, SDL_FALSE);  // It's no longer magical...
+    SDL_SetObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER, false);  // It's no longer magical...
 
     SDL_free(renderer);
 }
@@ -5333,7 +5333,7 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
-    renderer->wanted_vsync = vsync ? SDL_TRUE : SDL_FALSE;
+    renderer->wanted_vsync = vsync ? true : false;
 
     // for the software renderer, forward the call to the WindowTexture renderer
 #if SDL_VIDEO_RENDER_SW
@@ -5346,7 +5346,7 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
             }
         }
         if (SDL_SetWindowTextureVSync(NULL, renderer->window, vsync) == 0) {
-            renderer->simulate_vsync = SDL_FALSE;
+            renderer->simulate_vsync = false;
             return 0;
         }
     }
@@ -5355,17 +5355,17 @@ int SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
     if (!renderer->SetVSync) {
         switch (vsync) {
         case 0:
-            renderer->simulate_vsync = SDL_FALSE;
+            renderer->simulate_vsync = false;
             break;
         case 1:
-            renderer->simulate_vsync = SDL_TRUE;
+            renderer->simulate_vsync = true;
             break;
         default:
             return SDL_Unsupported();
         }
     } else if (renderer->SetVSync(renderer, vsync) < 0) {
         if (vsync == 1) {
-            renderer->simulate_vsync = SDL_TRUE;
+            renderer->simulate_vsync = true;
         } else {
             return -1;
         }

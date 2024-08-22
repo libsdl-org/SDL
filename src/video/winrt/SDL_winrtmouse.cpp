@@ -43,7 +43,7 @@ extern "C" {
 #include "SDL_winrtvideo_cpp.h"
 #include "SDL_winrtmouse_c.h"
 
-extern "C" SDL_bool WINRT_UsingRelativeMouseMode = SDL_FALSE;
+extern "C" bool WINRT_UsingRelativeMouseMode = false;
 
 static SDL_Cursor *WINRT_CreateSystemCursor(SDL_SystemCursor id)
 {
@@ -220,7 +220,7 @@ static int WINRT_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-static int WINRT_SetRelativeMouseMode(SDL_bool enabled)
+static int WINRT_SetRelativeMouseMode(bool enabled)
 {
     WINRT_UsingRelativeMouseMode = enabled;
     return 0;

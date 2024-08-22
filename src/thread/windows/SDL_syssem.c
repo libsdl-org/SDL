@@ -330,7 +330,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
         const SDL_sem_impl_t *impl = &SDL_sem_impl_kern;
 
 #if !SDL_WINAPI_FAMILY_PHONE
-        if (!SDL_GetHintBoolean(SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL, SDL_FALSE)) {
+        if (!SDL_GetHintBoolean(SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL, false)) {
 #ifdef SDL_PLATFORM_WINRT
             // Link statically on this platform
             impl = &SDL_sem_impl_atom;

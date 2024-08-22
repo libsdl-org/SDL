@@ -46,7 +46,7 @@ static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, S
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
 
-static SDL_bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode);
+static bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode);
 
 static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
 
@@ -143,7 +143,7 @@ void StartDrawing(SDL_Renderer *renderer)
     data->drawstate.vertex_program = NULL;
     data->drawstate.fragment_program = NULL;
     data->drawstate.last_command = -1;
-    data->drawstate.viewport_dirty = SDL_TRUE;
+    data->drawstate.viewport_dirty = true;
 
     // reset blend mode
     //    data->currentBlendMode = SDL_BLENDMODE_BLEND;
@@ -177,16 +177,16 @@ void StartDrawing(SDL_Renderer *renderer)
 
     //    unset_clip_rectangle(data);
 
-    data->drawing = SDL_TRUE;
+    data->drawing = true;
 }
 
 static int VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
     VITA_GXM_RenderData *data = renderer->internal;
     if (vsync) {
-        data->displayData.wait_vblank = SDL_TRUE;
+        data->displayData.wait_vblank = true;
     } else {
-        data->displayData.wait_vblank = SDL_FALSE;
+        data->displayData.wait_vblank = false;
     }
     return 0;
 }
@@ -246,7 +246,7 @@ static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, S
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 4096);
 
-    data->initialized = SDL_TRUE;
+    data->initialized = true;
 
 #ifdef DEBUG_RAZOR
     sceSysmoduleLoadModule(SCE_SYSMODULE_RAZOR_HUD);
@@ -264,10 +264,10 @@ static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *
 {
 }
 
-static SDL_bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
+static bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     // only for custom modes. we build all modes on init, so no custom modes, sorry
-    return SDL_FALSE;
+    return false;
 }
 
 static int VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
@@ -821,7 +821,7 @@ static int VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     sceGxmSetVertexStream(data->gxm_context, 0, data->clearVertices);
     sceGxmDraw(data->gxm_context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, data->linearIndices, 3);
 
-    data->drawstate.cliprect_dirty = SDL_TRUE;
+    data->drawstate.cliprect_dirty = true;
     return 0;
 }
 
@@ -831,8 +831,8 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SceGxmFragmentProgram *fragment_program;
     SceGxmVertexProgram *vertex_program;
-    SDL_bool matrix_updated = SDL_FALSE;
-    SDL_bool program_updated = SDL_FALSE;
+    bool matrix_updated = false;
+    bool program_updated = false;
 
     if (data->drawstate.viewport_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
@@ -854,23 +854,23 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
                                      (float)viewport->h,
                                      (float)0,
                                      0.0f, 1.0f);
-            matrix_updated = SDL_TRUE;
+            matrix_updated = true;
         }
 
-        data->drawstate.viewport_dirty = SDL_FALSE;
+        data->drawstate.viewport_dirty = false;
     }
 
     if (data->drawstate.cliprect_enabled_dirty) {
         if (!data->drawstate.cliprect_enabled) {
             unset_clip_rectangle(data);
         }
-        data->drawstate.cliprect_enabled_dirty = SDL_FALSE;
+        data->drawstate.cliprect_enabled_dirty = false;
     }
 
     if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
         const SDL_Rect *rect = &data->drawstate.cliprect;
         set_clip_rectangle(data, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h);
-        data->drawstate.cliprect_dirty = SDL_FALSE;
+        data->drawstate.cliprect_dirty = false;
     }
 
     VITA_GXM_SetBlendMode(data, blend); // do that first, to select appropriate shaders
@@ -886,13 +886,13 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
     if (data->drawstate.vertex_program != vertex_program) {
         data->drawstate.vertex_program = vertex_program;
         sceGxmSetVertexProgram(data->gxm_context, vertex_program);
-        program_updated = SDL_TRUE;
+        program_updated = true;
     }
 
     if (data->drawstate.fragment_program != fragment_program) {
         data->drawstate.fragment_program = fragment_program;
         sceGxmSetFragmentProgram(data->gxm_context, fragment_program);
-        program_updated = SDL_TRUE;
+        program_updated = true;
     }
 
     if (program_updated || matrix_updated) {
@@ -936,8 +936,8 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
         int w, h;
         SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
         if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
-            data->drawstate.viewport_dirty = SDL_TRUE; // if the window dimensions changed, invalidate the current viewport, etc.
-            data->drawstate.cliprect_dirty = SDL_TRUE;
+            data->drawstate.viewport_dirty = true; // if the window dimensions changed, invalidate the current viewport, etc.
+            data->drawstate.cliprect_dirty = true;
             data->drawstate.drawablew = w;
             data->drawstate.drawableh = h;
         }
@@ -951,8 +951,8 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
             SDL_Rect *viewport = &data->drawstate.viewport;
             if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof(cmd->data.viewport.rect)) != 0) {
                 SDL_copyp(viewport, &cmd->data.viewport.rect);
-                data->drawstate.viewport_dirty = SDL_TRUE;
-                data->drawstate.cliprect_dirty = SDL_TRUE;
+                data->drawstate.viewport_dirty = true;
+                data->drawstate.cliprect_dirty = true;
             }
             break;
         }
@@ -962,12 +962,12 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
             const SDL_Rect *rect = &cmd->data.cliprect.rect;
             if (data->drawstate.cliprect_enabled != cmd->data.cliprect.enabled) {
                 data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
-                data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
+                data->drawstate.cliprect_enabled_dirty = true;
             }
 
             if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
                 SDL_copyp(&data->drawstate.cliprect, rect);
-                data->drawstate.cliprect_dirty = SDL_TRUE;
+                data->drawstate.cliprect_dirty = true;
             }
             break;
         }
@@ -1048,7 +1048,7 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
     }
 
     sceGxmEndScene(data->gxm_context, NULL, NULL);
-    data->drawing = SDL_FALSE;
+    data->drawing = false;
 
     return 0;
 }
@@ -1102,7 +1102,7 @@ static SDL_Surface *VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_
     // Flip the rows to be top-down if necessary
 
     if (!renderer->target) {
-        SDL_bool isstack;
+        bool isstack;
         int length = rect->w * SDL_BYTESPERPIXEL(format);
         Uint8 *src = (Uint8 *)surface->pixels + (rect->h - 1) * surface->pitch;
         Uint8 *dst = (Uint8 *)surface->pixels;
@@ -1198,8 +1198,8 @@ static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
 
         gxm_finish(renderer);
 
-        data->initialized = SDL_FALSE;
-        data->drawing = SDL_FALSE;
+        data->initialized = false;
+        data->drawing = false;
         SDL_free(data);
     }
 }

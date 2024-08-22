@@ -86,13 +86,13 @@
 + (void)screenConnected:(NSNotification *)notification
 {
     UIScreen *uiscreen = [notification object];
-    UIKit_AddDisplay(uiscreen, SDL_TRUE);
+    UIKit_AddDisplay(uiscreen, true);
 }
 
 + (void)screenDisconnected:(NSNotification *)notification
 {
     UIScreen *uiscreen = [notification object];
-    UIKit_DelDisplay(uiscreen, SDL_TRUE);
+    UIKit_DelDisplay(uiscreen, true);
 }
 
 @end
@@ -164,7 +164,7 @@ static int UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
 }
 
 static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
-                                UIScreen *uiscreen, UIScreenMode *uiscreenmode, SDL_bool addRotation)
+                                UIScreen *uiscreen, UIScreenMode *uiscreenmode, bool addRotation)
 {
     if (UIKit_AddSingleDisplayMode(display, w, h, uiscreen, uiscreenmode) < 0) {
         return -1;
@@ -203,7 +203,7 @@ static CGSize GetUIScreenModeSize(UIScreen *uiscreen, UIScreenMode *mode)
     return size;
 }
 
-int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
+int UIKit_AddDisplay(UIScreen *uiscreen, bool send_event)
 {
     UIScreenMode *uiscreenmode = uiscreen.currentMode;
     CGSize size = GetUIScreenModeSize(uiscreen, uiscreenmode);
@@ -275,7 +275,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
 #endif
 
 #ifdef SDL_PLATFORM_VISIONOS
-int UIKit_AddDisplay(SDL_bool send_event){
+int UIKit_AddDisplay(bool send_event){
     CGSize size = CGSizeMake(SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
@@ -308,7 +308,7 @@ int UIKit_AddDisplay(SDL_bool send_event){
 
 #ifndef SDL_PLATFORM_VISIONOS
 
-void UIKit_DelDisplay(UIScreen *uiscreen, SDL_bool send_event)
+void UIKit_DelDisplay(UIScreen *uiscreen, bool send_event)
 {
     SDL_DisplayID *displays;
     int i;
@@ -330,7 +330,7 @@ void UIKit_DelDisplay(UIScreen *uiscreen, SDL_bool send_event)
     }
 }
 
-SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen)
+bool UIKit_IsDisplayLandscape(UIScreen *uiscreen)
 {
 #ifndef SDL_PLATFORM_TVOS
     if (uiscreen == [UIScreen mainScreen]) {
@@ -347,10 +347,10 @@ int UIKit_InitModes(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
 #ifdef SDL_PLATFORM_VISIONOS
-        UIKit_AddDisplay(SDL_FALSE);
+        UIKit_AddDisplay(false);
 #else
         for (UIScreen *uiscreen in [UIScreen screens]) {
-            if (UIKit_AddDisplay(uiscreen, SDL_FALSE) < 0) {
+            if (UIKit_AddDisplay(uiscreen, false) < 0) {
                 return -1;
             }
         }
@@ -374,12 +374,12 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     @autoreleasepool {
         SDL_UIKitDisplayData *data = (__bridge SDL_UIKitDisplayData *)display->internal;
 
-        SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
-        SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
+        bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
+        bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
         NSArray *availableModes = nil;
 
 #ifdef SDL_PLATFORM_TVOS
-        addRotation = SDL_FALSE;
+        addRotation = false;
         availableModes = @[ data.uiscreen.currentMode ];
 #else
         availableModes = data.uiscreen.availableModes;

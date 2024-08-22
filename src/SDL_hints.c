@@ -38,7 +38,7 @@ typedef struct SDL_Hint
 
 static SDL_PropertiesID SDL_hint_props = 0;
 
-static SDL_PropertiesID GetHintProperties(SDL_bool create)
+static SDL_PropertiesID GetHintProperties(bool create)
 {
     if (!SDL_hint_props && create) {
         SDL_hint_props = SDL_CreateProperties();
@@ -49,7 +49,7 @@ static SDL_PropertiesID GetHintProperties(SDL_bool create)
 void SDL_InitHints(void)
 {
     // Just make sure the hint properties are created on the main thread
-    (void)GetHintProperties(SDL_TRUE);
+    (void)GetHintProperties(true);
 }
 
 static void SDLCALL CleanupHintProperty(void *userdata, void *value)
@@ -77,7 +77,7 @@ int SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriorit
         return SDL_SetError("An environment variable is taking priority");
     }
 
-    const SDL_PropertiesID hints = GetHintProperties(SDL_TRUE);
+    const SDL_PropertiesID hints = GetHintProperties(true);
     if (!hints) {
         return -1;
     }
@@ -128,7 +128,7 @@ int SDL_ResetHint(const char *name)
 
     const char *env = SDL_getenv(name);
 
-    const SDL_PropertiesID hints = GetHintProperties(SDL_FALSE);
+    const SDL_PropertiesID hints = GetHintProperties(false);
     if (!hints) {
         return -1;
     }
@@ -182,7 +182,7 @@ static void SDLCALL ResetHintsCallback(void *userdata, SDL_PropertiesID hints, c
 
 void SDL_ResetHints(void)
 {
-    SDL_EnumerateProperties(GetHintProperties(SDL_FALSE), ResetHintsCallback, NULL);
+    SDL_EnumerateProperties(GetHintProperties(false), ResetHintsCallback, NULL);
 }
 
 int SDL_SetHint(const char *name, const char *value)
@@ -198,7 +198,7 @@ const char *SDL_GetHint(const char *name)
 
     const char *retval = SDL_getenv(name);
 
-    const SDL_PropertiesID hints = GetHintProperties(SDL_FALSE);
+    const SDL_PropertiesID hints = GetHintProperties(false);
     if (hints) {
         SDL_LockProperties(hints);
 
@@ -232,15 +232,15 @@ int SDL_GetStringInteger(const char *value, int default_value)
     return default_value;
 }
 
-SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value)
+bool SDL_GetStringBoolean(const char *value, bool default_value)
 {
     if (!value || !*value) {
         return default_value;
     }
     if (*value == '0' || SDL_strcasecmp(value, "false") == 0) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 SDL_bool SDL_GetHintBoolean(const char *name, SDL_bool default_value)
@@ -257,7 +257,7 @@ int SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userd
         return SDL_InvalidParamError("callback");
     }
 
-    const SDL_PropertiesID hints = GetHintProperties(SDL_TRUE);
+    const SDL_PropertiesID hints = GetHintProperties(true);
     if (!hints) {
         return -1;
     }
@@ -311,7 +311,7 @@ void SDL_DelHintCallback(const char *name, SDL_HintCallback callback, void *user
         return;
     }
 
-    const SDL_PropertiesID hints = GetHintProperties(SDL_FALSE);
+    const SDL_PropertiesID hints = GetHintProperties(false);
     if (!hints) {
         return;
     }

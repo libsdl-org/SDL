@@ -57,7 +57,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 static void SDL_ResetLogPrefixes(void);
 
 static SDL_LogLevel *SDL_loglevels;
-static SDL_bool SDL_forced_priority = SDL_FALSE;
+static bool SDL_forced_priority = false;
 static SDL_LogPriority SDL_forced_priority_level;
 static SDL_LogOutputFunction SDL_log_function = SDL_LogOutput;
 static void *SDL_log_userdata = NULL;
@@ -139,7 +139,7 @@ void SDL_SetLogPriorities(SDL_LogPriority priority)
         entry->priority = priority;
     }
 
-    SDL_forced_priority = SDL_TRUE;
+    SDL_forced_priority = true;
     SDL_forced_priority_level = priority;
 }
 
@@ -164,30 +164,30 @@ void SDL_SetLogPriority(int category, SDL_LogPriority priority)
     }
 }
 
-static SDL_bool SDL_ParseLogCategory(const char *string, size_t length, int *category)
+static bool SDL_ParseLogCategory(const char *string, size_t length, int *category)
 {
     int i;
 
     if (SDL_isdigit(*string)) {
         *category = SDL_atoi(string);
-        return SDL_TRUE;
+        return true;
     }
 
     if (*string == '*') {
         *category = DEFAULT_CATEGORY;
-        return SDL_TRUE;
+        return true;
     }
 
     for (i = 0; i < SDL_arraysize(SDL_category_names); ++i) {
         if (SDL_strncasecmp(string, SDL_category_names[i], length) == 0) {
             *category = i;
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
-static SDL_bool SDL_ParseLogPriority(const char *string, size_t length, SDL_LogPriority *priority)
+static bool SDL_ParseLogPriority(const char *string, size_t length, SDL_LogPriority *priority)
 {
     int i;
 
@@ -196,30 +196,30 @@ static SDL_bool SDL_ParseLogPriority(const char *string, size_t length, SDL_LogP
         if (i == 0) {
             // 0 has a special meaning of "disable this category"
             *priority = SDL_NUM_LOG_PRIORITIES;
-            return SDL_TRUE;
+            return true;
         }
         if (i >= SDL_LOG_PRIORITY_VERBOSE && i < SDL_NUM_LOG_PRIORITIES) {
             *priority = (SDL_LogPriority)i;
-            return SDL_TRUE;
+            return true;
         }
-        return SDL_FALSE;
+        return false;
     }
 
     if (SDL_strncasecmp(string, "quiet", length) == 0) {
         *priority = SDL_NUM_LOG_PRIORITIES;
-        return SDL_TRUE;
+        return true;
     }
 
     for (i = SDL_LOG_PRIORITY_VERBOSE; i < SDL_NUM_LOG_PRIORITIES; ++i) {
         if (SDL_strncasecmp(string, SDL_priority_names[i], length) == 0) {
             *priority = (SDL_LogPriority)i;
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
-static SDL_bool SDL_ParseLogCategoryPriority(const char *hint, int category, SDL_LogPriority *priority)
+static bool SDL_ParseLogCategoryPriority(const char *hint, int category, SDL_LogPriority *priority)
 {
     const char *name, *next;
     int current_category;
@@ -251,7 +251,7 @@ static SDL_bool SDL_ParseLogCategoryPriority(const char *hint, int category, SDL
             }
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 static SDL_LogPriority SDL_GetDefaultLogPriority(int category)
@@ -306,7 +306,7 @@ void SDL_ResetLogPriorities(void)
         SDL_loglevels = entry->next;
         SDL_free(entry);
     }
-    SDL_forced_priority = SDL_FALSE;
+    SDL_forced_priority = false;
 }
 
 static void SDL_ResetLogPrefixes(void)
@@ -533,7 +533,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         char *output;
         size_t length;
         LPTSTR tstr;
-        SDL_bool isstack;
+        bool isstack;
 
 #if !defined(SDL_PLATFORM_WINRT) && !defined(SDL_PLATFORM_GDK)
         BOOL attachResult;

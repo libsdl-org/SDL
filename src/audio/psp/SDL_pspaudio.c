@@ -33,7 +33,7 @@
 #include <pspaudio.h>
 #include <pspthreadman.h>
 
-static inline SDL_bool isBasicAudioConfig(const SDL_AudioSpec *spec)
+static bool isBasicAudioConfig(const SDL_AudioSpec *spec)
 {
     return spec->freq == 44100;
 }
@@ -162,7 +162,7 @@ static void PSPAUDIO_ThreadInit(SDL_AudioDevice *device)
     }
 }
 
-static SDL_bool PSPAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool PSPAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     impl->OpenDevice = PSPAUDIO_OpenDevice;
     impl->PlayDevice = PSPAUDIO_PlayDevice;
@@ -170,14 +170,14 @@ static SDL_bool PSPAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = PSPAUDIO_GetDeviceBuf;
     impl->CloseDevice = PSPAUDIO_CloseDevice;
     impl->ThreadInit = PSPAUDIO_ThreadInit;
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
-    //impl->HasRecordingSupport = SDL_TRUE;
-    //impl->OnlyHasDefaultRecordingDevice = SDL_TRUE;
-    return SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = true;
+    //impl->HasRecordingSupport = true;
+    //impl->OnlyHasDefaultRecordingDevice = true;
+    return true;
 }
 
 AudioBootStrap PSPAUDIO_bootstrap = {
-    "psp", "PSP audio driver", PSPAUDIO_Init, SDL_FALSE
+    "psp", "PSP audio driver", PSPAUDIO_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_PSP

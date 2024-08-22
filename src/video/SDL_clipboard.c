@@ -197,16 +197,16 @@ void *SDL_GetClipboardData(const char *mime_type, size_t *size)
     }
 }
 
-SDL_bool SDL_HasInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type)
+bool SDL_HasInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type)
 {
     size_t i;
 
     for (i = 0; i < _this->num_clipboard_mime_types; ++i) {
         if (SDL_strcmp(mime_type, _this->clipboard_mime_types[i]) == 0) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_bool SDL_HasClipboardData(const char *mime_type)
@@ -215,12 +215,12 @@ SDL_bool SDL_HasClipboardData(const char *mime_type)
 
     if (!_this) {
         SDL_SetError("Video subsystem must be initialized to check clipboard data");
-        return SDL_FALSE;
+        return false;
     }
 
     if (!mime_type) {
         SDL_InvalidParamError("mime_type");
-        return SDL_FALSE;
+        return false;
     }
 
     if (_this->HasClipboardData) {
@@ -234,7 +234,7 @@ SDL_bool SDL_HasClipboardData(const char *mime_type)
 
 // Clipboard text
 
-SDL_bool SDL_IsTextMimeType(const char *mime_type)
+bool SDL_IsTextMimeType(const char *mime_type)
 {
     return (SDL_strncmp(mime_type, "text", 4) == 0);
 }
@@ -318,16 +318,16 @@ SDL_bool SDL_HasClipboardText(void)
 
     if (!_this) {
         SDL_SetError("Video subsystem must be initialized to check clipboard text");
-        return SDL_FALSE;
+        return false;
     }
 
     text_mime_types = SDL_GetTextMimeTypes(_this, &num_mime_types);
     for (i = 0; i < num_mime_types; ++i) {
         if (SDL_HasClipboardData(text_mime_types[i])) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 // Primary selection text
@@ -382,16 +382,16 @@ SDL_bool SDL_HasPrimarySelectionText(void)
 
     if (!_this) {
         SDL_SetError("Video subsystem must be initialized to check primary selection text");
-        return SDL_FALSE;
+        return false;
     }
 
     if (_this->HasPrimarySelectionText) {
         return _this->HasPrimarySelectionText(_this);
     } else {
         if (_this->primary_selection_text && _this->primary_selection_text[0] != '\0') {
-            return SDL_TRUE;
+            return true;
         } else {
-            return SDL_FALSE;
+            return false;
         }
     }
 }

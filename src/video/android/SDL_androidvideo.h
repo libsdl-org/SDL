@@ -29,7 +29,7 @@
 extern void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float density, float rate);
 extern void Android_SetFormat(int format_wanted, int format_got);
 extern void Android_SendResize(SDL_Window *window);
-extern void Android_SetDarkMode(SDL_bool enabled);
+extern void Android_SetDarkMode(bool enabled);
 
 // Private display data
 

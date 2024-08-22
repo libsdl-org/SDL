@@ -27,7 +27,7 @@
 int WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->internal;
-    SDL_bool isstack;
+    bool isstack;
     size_t size;
     LPBITMAPINFO info;
     HBITMAP hbm;

@@ -30,7 +30,7 @@ typedef struct SDL_SteamVirtualGamepadInfo
 } SDL_SteamVirtualGamepadInfo;
 
 void SDL_InitSteamVirtualGamepadInfo(void);
-SDL_bool SDL_SteamVirtualGamepadEnabled(void);
-SDL_bool SDL_UpdateSteamVirtualGamepadInfo(void);
+bool SDL_SteamVirtualGamepadEnabled(void);
+bool SDL_UpdateSteamVirtualGamepadInfo(void);
 const SDL_SteamVirtualGamepadInfo *SDL_GetSteamVirtualGamepadInfo(int slot);
 void SDL_QuitSteamVirtualGamepadInfo(void);

@@ -50,7 +50,7 @@
 #define LCS_WINDOWS_COLOR_SPACE 0x57696E20
 #endif
 
-static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
+static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
 {
     /*
     | Sets the surface pixels from src.  A bmp image is upside down.
@@ -72,7 +72,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle
     // !!! FIXME: for all these reads, handle error vs eof? handle -2 if non-blocking?
     for (;;) {
         if (!SDL_ReadU8(src, &ch)) {
-            return SDL_TRUE;
+            return true;
         }
         /*
         | encoded mode starts with a run length, and then a byte
@@ -81,7 +81,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle
         if (ch) {
             Uint8 pixel;
             if (!SDL_ReadU8(src, &pixel)) {
-                return SDL_TRUE;
+                return true;
             }
             if (isRle8) { // 256-color bitmap, compressed
                 do {
@@ -108,7 +108,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle
             | zero tag may be absolute mode or an escape
             */
             if (!SDL_ReadU8(src, &ch)) {
-                return SDL_TRUE;
+                return true;
             }
             switch (ch) {
             case 0: // end of line
@@ -116,14 +116,14 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle
                 bits -= pitch; // go to previous
                 break;
             case 1:               // end of bitmap
-                return SDL_FALSE; // success!
+                return false; // success!
             case 2:               // delta
                 if (!SDL_ReadU8(src, &ch)) {
-                    return SDL_TRUE;
+                    return true;
                 }
                 ofs += ch;
                 if (!SDL_ReadU8(src, &ch)) {
-                    return SDL_TRUE;
+                    return true;
                 }
                 bits -= (ch * pitch);
                 break;
@@ -133,7 +133,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle
                     do {
                         Uint8 pixel;
                         if (!SDL_ReadU8(src, &pixel)) {
-                            return SDL_TRUE;
+                            return true;
                         }
                         COPY_PIXEL(pixel);
                     } while (--ch);
@@ -142,7 +142,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle
                     for (;;) {
                         Uint8 pixel;
                         if (!SDL_ReadU8(src, &pixel)) {
-                            return SDL_TRUE;
+                            return true;
                         }
                         COPY_PIXEL(pixel >> 4);
                         if (!--ch) {
@@ -156,7 +156,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle
                 }
                 // pad at even boundary
                 if (needsPad && !SDL_ReadU8(src, &ch)) {
-                    return SDL_TRUE;
+                    return true;
                 }
                 break;
             }
@@ -167,7 +167,7 @@ static SDL_bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle
 static void CorrectAlphaChannel(SDL_Surface *surface)
 {
     // Check to see if there is any alpha channel data
-    SDL_bool hasAlpha = SDL_FALSE;
+    bool hasAlpha = false;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     int alphaChannelOffset = 0;
 #else
@@ -178,7 +178,7 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
 
     while (alpha < end) {
         if (*alpha != 0) {
-            hasAlpha = SDL_TRUE;
+            hasAlpha = true;
             break;
         }
         alpha += 4;
@@ -195,7 +195,7 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
 
 SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
 {
-    SDL_bool was_error = SDL_TRUE;
+    bool was_error = true;
     Sint64 fp_offset = 0;
     int i, pad;
     SDL_Surface *surface;
@@ -205,10 +205,10 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
     Uint32 Amask = 0;
     Uint8 *bits;
     Uint8 *top, *end;
-    SDL_bool topDown;
-    SDL_bool haveRGBMasks = SDL_FALSE;
-    SDL_bool haveAlphaMask = SDL_FALSE;
-    SDL_bool correctAlpha = SDL_FALSE;
+    bool topDown;
+    bool haveRGBMasks = false;
+    bool haveAlphaMask = false;
+    bool correctAlpha = false;
 
     // The Win32 BMP file header (14 bytes)
     char magic[2];
@@ -302,7 +302,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
                speaking, this is the bmiColors field in BITMAPINFO immediately
                following the legacy v1 info header, just past biSize. */
             if (biCompression == BI_BITFIELDS) {
-                haveRGBMasks = SDL_TRUE;
+                haveRGBMasks = true;
                 if (!SDL_ReadU32LE(src, &Rmask) ||
                     !SDL_ReadU32LE(src, &Gmask) ||
                     !SDL_ReadU32LE(src, &Bmask)) {
@@ -311,7 +311,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
 
                 // ...v3 adds an alpha mask.
                 if (biSize >= 56) { // BITMAPV3INFOHEADER; adds alpha mask
-                    haveAlphaMask = SDL_TRUE;
+                    haveAlphaMask = true;
                     if (!SDL_ReadU32LE(src, &Amask)) {
                         goto done;
                     }
@@ -351,10 +351,10 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
         goto done;
     }
     if (biHeight < 0) {
-        topDown = SDL_TRUE;
+        topDown = true;
         biHeight = -biHeight;
     } else {
-        topDown = SDL_FALSE;
+        topDown = false;
     }
 
     // Check for read error
@@ -405,7 +405,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
             break;
         case 32:
             // We don't know if this has alpha channel or not
-            correctAlpha = SDL_TRUE;
+            correctAlpha = true;
             // SDL_PIXELFORMAT_RGBA8888
             Amask = 0xFF000000;
             Rmask = 0x00FF0000;
@@ -570,7 +570,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, SDL_bool closeio)
         CorrectAlphaChannel(surface);
     }
 
-    was_error = SDL_FALSE;
+    was_error = false;
 
 done:
     if (was_error) {
@@ -593,13 +593,13 @@ SDL_Surface *SDL_LoadBMP(const char *file)
 
 int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
 {
-    SDL_bool was_error = SDL_TRUE;
+    bool was_error = true;
     Sint64 fp_offset, new_offset;
     int i, pad;
     SDL_Surface *intermediate_surface;
     Uint8 *bits;
-    SDL_bool save32bit = SDL_FALSE;
-    SDL_bool saveLegacyBMP = SDL_FALSE;
+    bool save32bit = false;
+    bool saveLegacyBMP = false;
 
     // The Win32 BMP file header (14 bytes)
     char magic[2] = { 'B', 'M' };
@@ -645,7 +645,7 @@ int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
         if (SDL_BITSPERPIXEL(surface->format) >= 8 &&
             (SDL_ISPIXELFORMAT_ALPHA(surface->format) ||
              surface->internal->map.info.flags & SDL_COPY_COLORKEY)) {
-            save32bit = SDL_TRUE;
+            save32bit = true;
         }
 #endif // SAVE_32BIT_BMP
 
@@ -693,7 +693,7 @@ int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
     }
 
     if (save32bit) {
-        saveLegacyBMP = SDL_GetHintBoolean(SDL_HINT_BMP_SAVE_LEGACY_FORMAT, SDL_FALSE);
+        saveLegacyBMP = SDL_GetHintBoolean(SDL_HINT_BMP_SAVE_LEGACY_FORMAT, false);
     }
 
     if (SDL_LockSurface(intermediate_surface) == 0) {
@@ -852,7 +852,7 @@ int SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, SDL_bool closeio)
         // Close it up..
         SDL_UnlockSurface(intermediate_surface);
 
-        was_error = SDL_FALSE;
+        was_error = false;
     }
 
 done:
@@ -861,7 +861,7 @@ done:
     }
     if (closeio && dst) {
         if (SDL_CloseIO(dst) < 0) {
-            was_error = SDL_TRUE;
+            was_error = true;
         }
     }
     if (was_error) {

@@ -29,7 +29,7 @@ static SDL_AtomicInt apprc;  // use an atomic, since events might land from any 
 static void *SDL_main_appstate = NULL;
 
 // Return true if this event needs to be processed before returning from the event watcher
-static SDL_bool ShouldDispatchImmediately(SDL_Event *event)
+static bool ShouldDispatchImmediately(SDL_Event *event)
 {
     switch (event->type) {
     case SDL_EVENT_TERMINATING:
@@ -38,9 +38,9 @@ static SDL_bool ShouldDispatchImmediately(SDL_Event *event)
     case SDL_EVENT_DID_ENTER_BACKGROUND:
     case SDL_EVENT_WILL_ENTER_FOREGROUND:
     case SDL_EVENT_DID_ENTER_FOREGROUND:
-        return SDL_TRUE;
+        return true;
     default:
-        return SDL_FALSE;
+        return false;
     }
 }
 
@@ -78,15 +78,15 @@ static SDL_bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *
     } else {
         // We'll process this event later from the main event queue
     }
-    return SDL_TRUE;
+    return true;
 }
 
-SDL_bool SDL_HasMainCallbacks(void)
+bool SDL_HasMainCallbacks(void)
 {
     if (SDL_main_iteration_callback) {
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_AppResult SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
@@ -113,7 +113,7 @@ SDL_AppResult SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func app
     return SDL_AtomicGet(&apprc);
 }
 
-SDL_AppResult SDL_IterateMainCallbacks(SDL_bool pump_events)
+SDL_AppResult SDL_IterateMainCallbacks(bool pump_events)
 {
     if (pump_events) {
         SDL_PumpEvents();

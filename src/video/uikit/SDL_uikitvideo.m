@@ -178,12 +178,12 @@ int UIKit_SuspendScreenSaver(SDL_VideoDevice *_this)
         UIApplication *app = [UIApplication sharedApplication];
 
         // Prevent the display from dimming and going to sleep.
-        app.idleTimerDisabled = (_this->suspend_screensaver != SDL_FALSE);
+        app.idleTimerDisabled = (_this->suspend_screensaver != false);
     }
     return 0;
 }
 
-SDL_bool UIKit_IsSystemVersionAtLeast(double version)
+bool UIKit_IsSystemVersionAtLeast(double version)
 {
     return [[UIDevice currentDevice].systemVersion doubleValue] >= version;
 }
@@ -302,7 +302,7 @@ void SDL_NSLog(const char *prefix, const char *text)
  * This doesn't really have anything to do with the interfaces of the SDL video
  * subsystem, but we need to stuff this into an Objective-C source code file.
  */
-SDL_bool SDL_IsIPad(void)
+bool SDL_IsIPad(void)
 {
     return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad);
 }

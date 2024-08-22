@@ -24,11 +24,11 @@
 #include "SDL_ibus.h"
 #include "SDL_fcitx.h"
 
-typedef SDL_bool (*SDL_IME_Init_t)(void);
+typedef bool (*SDL_IME_Init_t)(void);
 typedef void (*SDL_IME_Quit_t)(void);
-typedef void (*SDL_IME_SetFocus_t)(SDL_bool);
+typedef void (*SDL_IME_SetFocus_t)(bool);
 typedef void (*SDL_IME_Reset_t)(void);
-typedef SDL_bool (*SDL_IME_ProcessKeyEvent_t)(Uint32, Uint32, Uint8 state);
+typedef bool (*SDL_IME_ProcessKeyEvent_t)(Uint32, Uint32, Uint8 state);
 typedef void (*SDL_IME_UpdateTextInputArea_t)(SDL_Window *window);
 typedef void (*SDL_IME_PumpEvents_t)(void);
 
@@ -42,17 +42,17 @@ static SDL_IME_PumpEvents_t SDL_IME_PumpEvents_Real = NULL;
 
 static void InitIME(void)
 {
-    static SDL_bool inited = SDL_FALSE;
+    static bool inited = false;
 #ifdef HAVE_FCITX
     const char *im_module = SDL_getenv("SDL_IM_MODULE");
     const char *xmodifiers = SDL_getenv("XMODIFIERS");
 #endif
 
-    if (inited == SDL_TRUE) {
+    if (inited == true) {
         return;
     }
 
-    inited = SDL_TRUE;
+    inited = true;
 
     // See if fcitx IME support is being requested
 #ifdef HAVE_FCITX
@@ -83,13 +83,13 @@ static void InitIME(void)
 #endif // HAVE_IBUS_IBUS_H
 }
 
-SDL_bool SDL_IME_Init(void)
+bool SDL_IME_Init(void)
 {
     InitIME();
 
     if (SDL_IME_Init_Real) {
         if (SDL_IME_Init_Real()) {
-            return SDL_TRUE;
+            return true;
         }
 
         // uhoh, the IME implementation's init failed! Disable IME support.
@@ -102,7 +102,7 @@ SDL_bool SDL_IME_Init(void)
         SDL_IME_PumpEvents_Real = NULL;
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 void SDL_IME_Quit(void)
@@ -112,7 +112,7 @@ void SDL_IME_Quit(void)
     }
 }
 
-void SDL_IME_SetFocus(SDL_bool focused)
+void SDL_IME_SetFocus(bool focused)
 {
     if (SDL_IME_SetFocus_Real) {
         SDL_IME_SetFocus_Real(focused);
@@ -126,13 +126,13 @@ void SDL_IME_Reset(void)
     }
 }
 
-SDL_bool SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
+bool SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
     if (SDL_IME_ProcessKeyEvent_Real) {
         return SDL_IME_ProcessKeyEvent_Real(keysym, keycode, state);
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 void SDL_IME_UpdateTextInputArea(SDL_Window *window)

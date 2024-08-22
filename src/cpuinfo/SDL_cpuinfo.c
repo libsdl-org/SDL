@@ -276,14 +276,14 @@ done:
 
 static int CPU_CPUIDFeatures[4];
 static int CPU_CPUIDMaxFunction = 0;
-static SDL_bool CPU_OSSavesYMM = SDL_FALSE;
-static SDL_bool CPU_OSSavesZMM = SDL_FALSE;
+static bool CPU_OSSavesYMM = false;
+static bool CPU_OSSavesZMM = false;
 
 static void CPU_calcCPUIDFeatures(void)
 {
-    static SDL_bool checked = SDL_FALSE;
+    static bool checked = false;
     if (!checked) {
-        checked = SDL_TRUE;
+        checked = true;
         if (CPU_haveCPUID()) {
             int a, b, c, d;
             cpuid(0, a, b, c, d);
@@ -313,8 +313,8 @@ static void CPU_calcCPUIDFeatures(void)
                         mov a, eax
                         }
 #endif
-                    CPU_OSSavesYMM = ((a & 6) == 6) ? SDL_TRUE : SDL_FALSE;
-                    CPU_OSSavesZMM = (CPU_OSSavesYMM && ((a & 0xe0) == 0xe0)) ? SDL_TRUE : SDL_FALSE;
+                    CPU_OSSavesYMM = ((a & 6) == 6) ? true : false;
+                    CPU_OSSavesZMM = (CPU_OSSavesYMM && ((a & 0xe0) == 0xe0)) ? true : false;
                 }
             }
         }
@@ -888,7 +888,7 @@ int SDL_GetCPUCacheLineSize(void)
 static Uint32 SDL_CPUFeatures = SDL_CPUFEATURES_RESET_VALUE;
 static Uint32 SDL_SIMDAlignment = 0xFFFFFFFF;
 
-static SDL_bool ref_string_equals(const char *ref, const char *test, const char *end_test) {
+static bool ref_string_equals(const char *ref, const char *test, const char *end_test) {
     size_t len_test = end_test - test;
     return SDL_strncmp(ref, test, len_test) == 0 && ref[len_test] == '\0' && (test[len_test] == '\0' || test[len_test] == ',');
 }
@@ -903,7 +903,7 @@ static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
         for (const char *spot = hint, *next; *spot; spot = next) {
             const char *end = SDL_strchr(spot, ',');
             Uint32 spot_mask;
-            SDL_bool add_spot_mask = SDL_TRUE;
+            bool add_spot_mask = true;
             if (end) {
                 next = end + 1;
             } else {
@@ -912,10 +912,10 @@ static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
                 next = end;
             }
             if (spot[0] == '+') {
-                add_spot_mask = SDL_TRUE;
+                add_spot_mask = true;
                 spot += 1;
             } else if (spot[0] == '-') {
-                add_spot_mask = SDL_FALSE;
+                add_spot_mask = false;
                 spot += 1;
             }
             if (ref_string_equals("all", spot, end)) {
@@ -1033,7 +1033,7 @@ void SDL_QuitCPUInfo(void) {
     SDL_CPUFeatures = SDL_CPUFEATURES_RESET_VALUE;
 }
 
-#define CPU_FEATURE_AVAILABLE(f) ((SDL_GetCPUFeatures() & (f)) ? SDL_TRUE : SDL_FALSE)
+#define CPU_FEATURE_AVAILABLE(f) ((SDL_GetCPUFeatures() & (f)) ? true : false)
 
 SDL_bool SDL_HasAltiVec(void)
 {

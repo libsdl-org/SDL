@@ -52,7 +52,7 @@ static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint
 
 void SDL_BlitCopy(SDL_BlitInfo *info)
 {
-    SDL_bool overlap;
+    bool overlap;
     Uint8 *src, *dst;
     int w, h;
     int srcskip, dstskip;

@@ -41,9 +41,9 @@ static void DUMMY_JoystickDetect(void)
 {
 }
 
-static SDL_bool DUMMY_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool DUMMY_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 static const char *DUMMY_JoystickGetDeviceName(int device_index)
@@ -107,7 +107,7 @@ static int DUMMY_JoystickSendEffect(SDL_Joystick *joystick, const void *data, in
     return SDL_Unsupported();
 }
 
-static int DUMMY_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int DUMMY_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -124,9 +124,9 @@ static void DUMMY_JoystickQuit(void)
 {
 }
 
-static SDL_bool DUMMY_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool DUMMY_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_JoystickDriver SDL_DUMMY_JoystickDriver = {

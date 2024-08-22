@@ -249,10 +249,10 @@ static void SDLCALL Fcitx_SetCapabilities(void *data,
     SDL_DBus_CallVoidMethod(FCITX_DBUS_SERVICE, client->ic_path, FCITX_IC_DBUS_INTERFACE, "SetCapability", DBUS_TYPE_UINT64, &caps, DBUS_TYPE_INVALID);
 }
 
-static SDL_bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appname, char **ic_path)
+static bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appname, char **ic_path)
 {
     const char *program = "program";
-    SDL_bool retval = SDL_FALSE;
+    bool retval = false;
 
     if (dbus && dbus->session_conn) {
         DBusMessage *msg = dbus->message_new_method_call(FCITX_DBUS_SERVICE, FCITX_IM_DBUS_PATH, FCITX_IM_DBUS_INTERFACE, "CreateInputContext");
@@ -269,7 +269,7 @@ static SDL_bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appna
             reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, 300, NULL);
             if (reply) {
                 if (dbus->message_get_args(reply, NULL, DBUS_TYPE_OBJECT_PATH, ic_path, DBUS_TYPE_INVALID)) {
-                    retval = SDL_TRUE;
+                    retval = true;
                 }
                 dbus->message_unref(reply);
             }
@@ -279,7 +279,7 @@ static SDL_bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appna
     return retval;
 }
 
-static SDL_bool FcitxClientCreateIC(FcitxClient *client)
+static bool FcitxClientCreateIC(FcitxClient *client)
 {
     char *appname = GetAppName();
     char *ic_path = NULL;
@@ -305,10 +305,10 @@ static SDL_bool FcitxClientCreateIC(FcitxClient *client)
         dbus->connection_flush(dbus->session_conn);
 
         SDL_AddHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, Fcitx_SetCapabilities, client);
-        return SDL_TRUE;
+        return true;
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 static Uint32 Fcitx_ModState(void)
@@ -344,7 +344,7 @@ static Uint32 Fcitx_ModState(void)
     return fcitx_mods;
 }
 
-SDL_bool SDL_Fcitx_Init(void)
+bool SDL_Fcitx_Init(void)
 {
     fcitx_client.dbus = SDL_DBus_GetContext();
 
@@ -365,7 +365,7 @@ void SDL_Fcitx_Quit(void)
     }
 }
 
-void SDL_Fcitx_SetFocus(SDL_bool focused)
+void SDL_Fcitx_SetFocus(bool focused)
 {
     if (focused) {
         FcitxClientICCallMethod(&fcitx_client, "FocusIn");
@@ -379,15 +379,15 @@ void SDL_Fcitx_Reset(void)
     FcitxClientICCallMethod(&fcitx_client, "Reset");
 }
 
-SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
+bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
 {
     Uint32 mod_state = Fcitx_ModState();
-    Uint32 handled = SDL_FALSE;
+    Uint32 handled = false;
     Uint32 is_release = (state == SDL_RELEASED);
     Uint32 event_time = 0;
 
     if (!fcitx_client.ic_path) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (SDL_DBus_CallMethod(FCITX_DBUS_SERVICE, fcitx_client.ic_path, FCITX_IC_DBUS_INTERFACE, "ProcessKeyEvent",
@@ -395,11 +395,11 @@ SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state)
                             DBUS_TYPE_BOOLEAN, &handled, DBUS_TYPE_INVALID)) {
         if (handled) {
             SDL_Fcitx_UpdateTextInputArea(SDL_GetKeyboardFocus());
-            return SDL_TRUE;
+            return true;
         }
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window)

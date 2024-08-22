@@ -85,7 +85,7 @@ typedef struct SDL_MessageBoxDataX11
     Window window;
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
     XdbeBackBuffer buf;
-    SDL_bool xdbe; // Whether Xdbe is present or not
+    bool xdbe; // Whether Xdbe is present or not
 #endif
     long event_mask;
     Atom wm_protocols;
@@ -508,10 +508,10 @@ static int X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
     if (SDL_X11_HAVE_XDBE) {
         int xdbe_major, xdbe_minor;
         if (X11_XdbeQueryExtension(display, &xdbe_major, &xdbe_minor) != 0) {
-            data->xdbe = SDL_TRUE;
+            data->xdbe = true;
             data->buf = X11_XdbeAllocateBackBufferName(display, data->window, XdbeUndefined);
         } else {
-            data->xdbe = SDL_FALSE;
+            data->xdbe = false;
         }
     }
 #endif
@@ -610,8 +610,8 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
 {
     GC ctx;
     XGCValues ctx_vals;
-    SDL_bool close_dialog = SDL_FALSE;
-    SDL_bool has_focus = SDL_TRUE;
+    bool close_dialog = false;
+    bool has_focus = true;
     KeySym last_key_pressed = XK_VoidSymbol;
     unsigned long gcflags = GCForeground | GCBackground;
 #ifdef X_HAVE_UTF8_STRING
@@ -639,7 +639,7 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
 
     while (!close_dialog) {
         XEvent e;
-        SDL_bool draw = SDL_TRUE;
+        bool draw = true;
 
         // can't use XWindowEvent() because it can't handle ClientMessage events.
         // can't use XNextEvent() because we only want events for this window.
@@ -654,18 +654,18 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
         switch (e.type) {
         case Expose:
             if (e.xexpose.count > 0) {
-                draw = SDL_FALSE;
+                draw = false;
             }
             break;
 
         case FocusIn:
             // Got focus.
-            has_focus = SDL_TRUE;
+            has_focus = true;
             break;
 
         case FocusOut:
             // lost focus. Reset button and mouse info.
-            has_focus = SDL_FALSE;
+            has_focus = false;
             data->button_press_index = -1;
             data->mouse_over_index = -1;
             break;
@@ -676,7 +676,7 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
                 const int previndex = data->mouse_over_index;
                 data->mouse_over_index = GetHitButtonIndex(data, e.xbutton.x, e.xbutton.y);
                 if (data->mouse_over_index == previndex) {
-                    draw = SDL_FALSE;
+                    draw = false;
                 }
             }
             break;
@@ -685,7 +685,7 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
             if (e.xclient.message_type == data->wm_protocols &&
                 e.xclient.format == 32 &&
                 e.xclient.data.l[0] == data->wm_delete_message) {
-                close_dialog = SDL_TRUE;
+                close_dialog = true;
             }
             break;
 
@@ -719,7 +719,7 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
 
                     if (buttondatax11->buttondata->flags & mask) {
                         *data->pbuttonid = buttondatax11->buttondata->buttonID;
-                        close_dialog = SDL_TRUE;
+                        close_dialog = true;
                         break;
                     }
                 }
@@ -744,7 +744,7 @@ static int X11_MessageBoxLoop(SDL_MessageBoxDataX11 *data)
                     SDL_MessageBoxButtonDataX11 *buttondatax11 = &data->buttonpos[button];
 
                     *data->pbuttonid = buttondatax11->buttondata->buttonID;
-                    close_dialog = SDL_TRUE;
+                    close_dialog = true;
                 }
             }
             data->button_press_index = -1;

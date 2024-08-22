@@ -29,14 +29,14 @@
 
 static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *source, const char *data, float x, float y)
 {
-    static SDL_bool app_is_dropping = SDL_FALSE;
+    static bool app_is_dropping = false;
     static float last_drop_x = 0;
     static float last_drop_y = 0;
     int posted = 0;
 
     // Post the event, if desired
     if (SDL_EventEnabled(evtype)) {
-        const SDL_bool need_begin = window ? !window->is_dropping : !app_is_dropping;
+        const bool need_begin = window ? !window->is_dropping : !app_is_dropping;
         SDL_Event event;
 
         if (need_begin) {
@@ -49,9 +49,9 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
                 return 0;
             }
             if (window) {
-                window->is_dropping = SDL_TRUE;
+                window->is_dropping = true;
             } else {
-                app_is_dropping = SDL_TRUE;
+                app_is_dropping = true;
             }
         }
 
@@ -82,9 +82,9 @@ static int SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const ch
 
         if (posted && (evtype == SDL_EVENT_DROP_COMPLETE)) {
             if (window) {
-                window->is_dropping = SDL_FALSE;
+                window->is_dropping = false;
             } else {
-                app_is_dropping = SDL_FALSE;
+                app_is_dropping = false;
             }
 
             last_drop_x = 0;

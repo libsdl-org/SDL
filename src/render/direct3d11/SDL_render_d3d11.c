@@ -145,14 +145,14 @@ typedef struct
     const float *YCbCr_matrix;
 #if SDL_HAVE_YUV
     // YV12 texture support
-    SDL_bool yuv;
+    bool yuv;
     ID3D11Texture2D *mainTextureU;
     ID3D11ShaderResourceView *mainTextureResourceViewU;
     ID3D11Texture2D *mainTextureV;
     ID3D11ShaderResourceView *mainTextureResourceViewV;
 
     // NV12 texture support
-    SDL_bool nv12;
+    bool nv12;
     ID3D11ShaderResourceView *mainTextureResourceViewNV;
 
     Uint8 *pixels;
@@ -193,7 +193,7 @@ typedef struct
     D3D11_BlendMode *blendModes;
     ID3D11SamplerState *samplers[SDL_NUM_D3D11_SAMPLERS];
     D3D_FEATURE_LEVEL featureLevel;
-    SDL_bool pixelSizeChanged;
+    bool pixelSizeChanged;
 
     // Rasterizers
     ID3D11RasterizerState *mainRasterizer;
@@ -212,12 +212,12 @@ typedef struct
     PixelShaderState currentShaderState[NUM_SHADERS];
     ID3D11ShaderResourceView *currentShaderResource;
     ID3D11SamplerState *currentSampler;
-    SDL_bool cliprectDirty;
-    SDL_bool currentCliprectEnabled;
+    bool cliprectDirty;
+    bool currentCliprectEnabled;
     SDL_Rect currentCliprect;
     SDL_Rect currentViewport;
     int currentViewportRotation;
-    SDL_bool viewportDirty;
+    bool viewportDirty;
     Float4X4 identity;
     int currentVertexBuffer;
 } D3D11_RenderData;
@@ -531,7 +531,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     IDXGIDevice1 *dxgiDevice = NULL;
     HRESULT result = S_OK;
     UINT creationFlags = 0;
-    SDL_bool createDebug;
+    bool createDebug;
 
     /* This array defines the set of DirectX hardware feature levels this app will support.
      * Note the ordering should be preserved.
@@ -553,7 +553,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     D3D11_RASTERIZER_DESC rasterDesc;
 
     // See if we need debug interfaces
-    createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE);
+    createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, false);
 
 #ifdef SDL_PLATFORM_WINRT
     CreateDXGIFactory2Func = CreateDXGIFactory2;
@@ -646,7 +646,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     }
 
     // Create a single-threaded device unless the app requests otherwise.
-    if (!SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D_THREADSAFE, SDL_FALSE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D_THREADSAFE, false)) {
         creationFlags |= D3D11_CREATE_DEVICE_SINGLETHREADED;
     }
 
@@ -1200,7 +1200,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
                                            &data->mainRenderTargetView,
                                            NULL);
 
-    data->viewportDirty = SDL_TRUE;
+    data->viewportDirty = true;
 
 done:
     SAFE_RELEASE(backBuffer);
@@ -1238,11 +1238,11 @@ static void D3D11_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *eve
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
 
     if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-        data->pixelSizeChanged = SDL_TRUE;
+        data->pixelSizeChanged = true;
     }
 }
 
-static SDL_bool D3D11_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
+static bool D3D11_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
     SDL_BlendFactor srcAlphaFactor = SDL_GetBlendModeSrcAlphaFactor(blendMode);
@@ -1255,9 +1255,9 @@ static SDL_bool D3D11_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode bl
         !GetBlendEquation(colorOperation) ||
         !GetBlendFunc(dstColorFactor) || !GetBlendFunc(dstAlphaFactor) ||
         !GetBlendEquation(alphaOperation)) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 static int GetTextureProperty(SDL_PropertiesID props, const char *name, ID3D11Texture2D **texture)
@@ -1349,7 +1349,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 #if SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
-        textureData->yuv = SDL_TRUE;
+        textureData->yuv = true;
 
         textureDesc.Width = (textureDesc.Width + 1) / 2;
         textureDesc.Height = (textureDesc.Height + 1) / 2;
@@ -1392,7 +1392,7 @@ static int D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
         texture->format == SDL_PIXELFORMAT_P010) {
         int bits_per_pixel;
 
-        textureData->nv12 = SDL_TRUE;
+        textureData->nv12 = true;
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_P010:
@@ -1958,7 +1958,7 @@ static int D3D11_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
     SDL_FColor color = cmd->data.draw.color;
-    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
+    bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     if (!verts) {
         return -1;
@@ -1990,7 +1990,7 @@ static int D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
     int i;
     int count = indices ? num_indices : num_vertices;
     VertexPositionColor *verts = (VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertexPositionColor), 0, &cmd->data.draw.first);
-    SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
+    bool convert_color = SDL_RenderingLinearSpace(renderer);
     D3D11_TextureData *textureData = texture ? (D3D11_TextureData *)texture->internal : NULL;
     float u_scale = textureData ? (float)texture->w / textureData->w : 0.0f;
     float v_scale = textureData ? (float)texture->h / textureData->h : 0.0f;
@@ -2194,7 +2194,7 @@ static int D3D11_UpdateViewport(SDL_Renderer *renderer)
     // SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}\n", __FUNCTION__, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height);
     ID3D11DeviceContext_RSSetViewports(data->d3dContext, 1, &d3dviewport);
 
-    data->viewportDirty = SDL_FALSE;
+    data->viewportDirty = false;
 
     return 0;
 }
@@ -2284,7 +2284,7 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     ID3D11ShaderResourceView *shaderResource;
     const SDL_BlendMode blendMode = cmd->data.draw.blend;
     ID3D11BlendState *blendState = NULL;
-    SDL_bool updateSubresource = SDL_FALSE;
+    bool updateSubresource = false;
     PixelShaderState *shader_state = &rendererData->currentShaderState[shader];
     PixelShaderConstants solid_constants;
 
@@ -2312,7 +2312,7 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
     if (rendererData->viewportDirty) {
         if (D3D11_UpdateViewport(renderer) == 0) {
             // vertexShaderConstantsData.projectionAndView has changed
-            updateSubresource = SDL_TRUE;
+            updateSubresource = true;
         }
     }
 
@@ -2327,7 +2327,7 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
             }
             ID3D11DeviceContext_RSSetScissorRects(rendererData->d3dContext, 1, &scissorRect);
         }
-        rendererData->cliprectDirty = SDL_FALSE;
+        rendererData->cliprectDirty = false;
     }
 
     if (!rendererData->currentCliprectEnabled) {
@@ -2410,7 +2410,7 @@ static int D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *c
         rendererData->currentSampler = sampler;
     }
 
-    if (updateSubresource == SDL_TRUE || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix)) != 0) {
+    if (updateSubresource == true || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix)) != 0) {
         SDL_copyp(&rendererData->vertexShaderConstantsData.model, newmatrix);
         ID3D11DeviceContext_UpdateSubresource(rendererData->d3dContext,
                                               (ID3D11Resource *)rendererData->vertexShaderConstants,
@@ -2507,8 +2507,8 @@ static void D3D11_InvalidateCachedState(SDL_Renderer *renderer)
     data->currentShader = SHADER_NONE;
     data->currentShaderResource = NULL;
     data->currentSampler = NULL;
-    data->cliprectDirty = SDL_TRUE;
-    data->viewportDirty = SDL_TRUE;
+    data->cliprectDirty = true;
+    data->viewportDirty = true;
 }
 
 static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
@@ -2518,12 +2518,12 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 
     if (rendererData->pixelSizeChanged) {
         D3D11_UpdateForWindowSizeChange(renderer);
-        rendererData->pixelSizeChanged = SDL_FALSE;
+        rendererData->pixelSizeChanged = false;
     }
 
     if (rendererData->currentViewportRotation != viewportRotation) {
         rendererData->currentViewportRotation = viewportRotation;
-        rendererData->viewportDirty = SDL_TRUE;
+        rendererData->viewportDirty = true;
     }
 
     if (D3D11_UpdateVertexBuffer(renderer, vertices, vertsize) < 0) {
@@ -2542,8 +2542,8 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             SDL_Rect *viewport = &rendererData->currentViewport;
             if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof(cmd->data.viewport.rect)) != 0) {
                 SDL_copyp(viewport, &cmd->data.viewport.rect);
-                rendererData->viewportDirty = SDL_TRUE;
-                rendererData->cliprectDirty = SDL_TRUE;
+                rendererData->viewportDirty = true;
+                rendererData->cliprectDirty = true;
             }
             break;
         }
@@ -2553,18 +2553,18 @@ static int D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
             const SDL_Rect *rect = &cmd->data.cliprect.rect;
             if (rendererData->currentCliprectEnabled != cmd->data.cliprect.enabled) {
                 rendererData->currentCliprectEnabled = cmd->data.cliprect.enabled;
-                rendererData->cliprectDirty = SDL_TRUE;
+                rendererData->cliprectDirty = true;
             }
             if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof(*rect)) != 0) {
                 SDL_copyp(&rendererData->currentCliprect, rect);
-                rendererData->cliprectDirty = SDL_TRUE;
+                rendererData->cliprectDirty = true;
             }
             break;
         }
 
         case SDL_RENDERCMD_CLEAR:
         {
-            SDL_bool convert_color = SDL_RenderingLinearSpace(renderer);
+            bool convert_color = SDL_RenderingLinearSpace(renderer);
             SDL_FColor color = cmd->data.color.color;
             if (convert_color) {
                 SDL_ConvertToLinear(&color);

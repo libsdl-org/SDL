@@ -450,7 +450,7 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL
     args->nfilters = nfilters;
     args->default_file = default_location;
     args->parent = window;
-    args->flags = (allow_many == SDL_TRUE) ? OFN_ALLOWMULTISELECT : 0;
+    args->flags = (allow_many == true) ? OFN_ALLOWMULTISELECT : 0;
     args->callback = callback;
     args->userdata = userdata;
 

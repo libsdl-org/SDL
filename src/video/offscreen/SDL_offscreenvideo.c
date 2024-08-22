@@ -51,15 +51,15 @@ static void OFFSCREEN_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static SDL_bool OFFSCREEN_Available(const char *enable_hint)
+static bool OFFSCREEN_Available(const char *enable_hint)
 {
     const char *hint = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
     if (hint) {
         if (SDL_strcmp(hint, enable_hint) == 0) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)

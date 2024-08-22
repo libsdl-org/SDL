@@ -79,7 +79,7 @@
 
 @end
 
-static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
+static int SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->internal;
@@ -173,9 +173,9 @@ int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
         const CGSize origsize = data.uiscreen.currentMode.size;
         if ((origsize.width == 0.0f) && (origsize.height == 0.0f)) {
             SDL_DisplayMode bestmode;
-            SDL_bool include_high_density_modes = SDL_FALSE;
+            bool include_high_density_modes = false;
             if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-                include_high_density_modes = SDL_TRUE;
+                include_high_density_modes = true;
             }
             if (SDL_GetClosestFullscreenDisplayMode(display->id, window->w, window->h, 0.0f, include_high_density_modes, &bestmode) == 0) {
                 SDL_UIKitDisplayModeData *modedata = (__bridge SDL_UIKitDisplayModeData *)bestmode.internal;
@@ -212,7 +212,7 @@ int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propertie
         }
 #endif
 
-        if (SetupWindowData(_this, window, uiwindow, SDL_TRUE) < 0) {
+        if (SetupWindowData(_this, window, uiwindow, true) < 0) {
             return -1;
         }
     }
@@ -293,7 +293,7 @@ static void UIKit_UpdateWindowBorder(SDL_VideoDevice *_this, SDL_Window *window)
     [viewcontroller.view layoutIfNeeded];
 }
 
-void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered)
+void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered)
 {
     @autoreleasepool {
         if (bordered) {

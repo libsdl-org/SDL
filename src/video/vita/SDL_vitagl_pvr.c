@@ -49,7 +49,7 @@ int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     char *default_path = "app0:module";
     char target_path[MAX_PATH];
 
-    if (SDL_GetHintBoolean(SDL_HINT_VITA_PVR_INIT, SDL_TRUE)) {
+    if (SDL_GetHintBoolean(SDL_HINT_VITA_PVR_INIT, true)) {
         const char *override = SDL_GetHint(SDL_HINT_VITA_MODULE_PATH);
 
         if (override && *override) {

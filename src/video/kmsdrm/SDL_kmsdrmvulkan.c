@@ -46,8 +46,8 @@ int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasDisplayExtension = SDL_FALSE;
+    bool hasSurfaceExtension = false;
+    bool hasDisplayExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
 
     if (_this->vulkan_config.loader_handle) {
@@ -98,9 +98,9 @@ int KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
     for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasSurfaceExtension = SDL_TRUE;
+            hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasDisplayExtension = SDL_TRUE;
+            hasDisplayExtension = true;
         }
     }
 
@@ -190,10 +190,10 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     VkDisplayPlaneAlphaFlagBitsKHR alpha_mode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
 
     VkResult result;
-    SDL_bool ret = -1;
-    SDL_bool valid_gpu = SDL_FALSE;
-    SDL_bool mode_found = SDL_FALSE;
-    SDL_bool plane_supports_display = SDL_FALSE;
+    bool ret = -1;
+    bool valid_gpu = false;
+    bool mode_found = false;
+    bool plane_supports_display = false;
 
     // Get the display index from the display being used by the window.
     int display_index = SDL_GetDisplayIndex(SDL_GetDisplayForWindow(window));
@@ -292,7 +292,7 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         if (device_props->apiVersion >= 1 &&
             (device_props->deviceType == 1 || device_props->deviceType == 2)) {
             gpu = physical_devices[i];
-            valid_gpu = SDL_TRUE;
+            valid_gpu = true;
             break;
         }
     }
@@ -346,7 +346,7 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         if (mode_props[i].parameters.visibleRegion.width == window->w &&
             mode_props[i].parameters.visibleRegion.height == window->h) {
             display_mode_props = mode_props[i];
-            mode_found = SDL_TRUE;
+            mode_found = true;
             break;
         }
     }
@@ -426,10 +426,10 @@ int KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
 
         /* Iterate the list of displays supported by this plane
            in order to find out if the chosen display is among them. */
-        plane_supports_display = SDL_FALSE;
+        plane_supports_display = false;
         for (j = 0; j < supported_displays_count; j++) {
             if (supported_displays[j] == display) {
-                plane_supports_display = SDL_TRUE;
+                plane_supports_display = true;
                 break;
             }
         }

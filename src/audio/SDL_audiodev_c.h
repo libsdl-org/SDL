@@ -36,6 +36,6 @@
 #define OPEN_FLAGS_INPUT  (O_RDONLY | O_NONBLOCK)
 #endif
 
-extern void SDL_EnumUnixAudioDevices(const SDL_bool classic, SDL_bool (*test)(int));
+extern void SDL_EnumUnixAudioDevices(const bool classic, bool (*test)(int));
 
 #endif // SDL_audiodev_c_h_

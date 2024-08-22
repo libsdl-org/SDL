@@ -183,7 +183,7 @@ static void AddDispManXDisplay(const int display_id)
 
     display.internal = data;
 
-    SDL_AddVideoDisplay(&display, SDL_FALSE);
+    SDL_AddVideoDisplay(&display, false);
 }
 
 int RPI_VideoInit(SDL_VideoDevice *_this)
@@ -296,11 +296,11 @@ int RPI_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesI
     }
 
     // Start generating vsync callbacks if necessary
-    wdata->double_buffer = SDL_FALSE;
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
+    wdata->double_buffer = false;
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, false)) {
         wdata->vsync_cond = SDL_CreateCondition();
         wdata->vsync_cond_mutex = SDL_CreateMutex();
-        wdata->double_buffer = SDL_TRUE;
+        wdata->double_buffer = true;
         vc_dispmanx_vsync_callback(displaydata->dispman_display, RPI_vsync_callback, (void *)wdata);
     }
 

@@ -33,9 +33,9 @@ static SDL_bool SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *
     if (event->type == new_event->type &&
         event->window.windowID == new_event->window.windowID) {
         // We're about to post a new move event, drop the old one
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
@@ -68,8 +68,8 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         window->flags &= ~SDL_WINDOW_OCCLUDED;
         break;
     case SDL_EVENT_WINDOW_MOVED:
-        window->undefined_x = SDL_FALSE;
-        window->undefined_y = SDL_FALSE;
+        window->undefined_x = false;
+        window->undefined_y = false;
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.x = data1;
             window->windowed.y = data2;
@@ -257,7 +257,7 @@ int SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent,
         }
 
         if (toplevel_count <= 1) {
-            if (SDL_GetHintBoolean(SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE, SDL_TRUE)) {
+            if (SDL_GetHintBoolean(SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE, true)) {
                 SDL_SendQuit(); // This is the last toplevel window in the list so send the SDL_EVENT_QUIT event
             }
         }

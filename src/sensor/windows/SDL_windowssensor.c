@@ -52,7 +52,7 @@ typedef struct
 
 } SDL_Windows_Sensor;
 
-static SDL_bool SDL_windowscoinit;
+static bool SDL_windowscoinit;
 static ISensorManager *SDL_sensor_manager;
 static int SDL_num_sensors;
 static SDL_Windows_Sensor *SDL_sensors;
@@ -358,7 +358,7 @@ static int SDL_WINDOWS_SensorInit(void)
     ISensorCollection *sensor_collection = NULL;
 
     if (WIN_CoInitialize() == S_OK) {
-        SDL_windowscoinit = SDL_TRUE;
+        SDL_windowscoinit = true;
     }
 
     hr = CoCreateInstance(&SDL_CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_SensorManager, (LPVOID *)&SDL_sensor_manager);

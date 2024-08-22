@@ -93,10 +93,10 @@ extern "C"
     {
     }
 
-    static SDL_bool HAIKU_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+    static bool HAIKU_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
     {
         // We don't override any other drivers
-        return SDL_FALSE;
+        return false;
     }
 
     static const char *HAIKU_JoystickGetDeviceName(int device_index)
@@ -273,10 +273,10 @@ extern "C"
         return SDL_Unsupported();
     }
 
-    static SDL_bool
+    static bool
     HAIKU_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
     {
-        return SDL_FALSE;
+        return false;
     }
 
     static int HAIKU_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -290,7 +290,7 @@ extern "C"
         return SDL_Unsupported();
     }
 
-    static int HAIKU_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+    static int HAIKU_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
     {
         return SDL_Unsupported();
     }

@@ -117,10 +117,10 @@ int SDL_SetAppMetadata(const char *appname, const char *appversion, const char *
     return 0;
 }
 
-static SDL_bool SDL_ValidMetadataProperty(const char *name)
+static bool SDL_ValidMetadataProperty(const char *name)
 {
     if (!name || !*name) {
-        return SDL_FALSE;
+        return false;
     }
 
     if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0 ||
@@ -130,9 +130,9 @@ static SDL_bool SDL_ValidMetadataProperty(const char *name)
         SDL_strcmp(name, SDL_PROP_APP_METADATA_COPYRIGHT_STRING) == 0 ||
         SDL_strcmp(name, SDL_PROP_APP_METADATA_URL_STRING) == 0 ||
         SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_SetAppMetadataProperty(const char *name, const char *value)
@@ -173,11 +173,11 @@ const char *SDL_GetAppMetadataProperty(const char *name)
 
 // The initialized subsystems
 #ifdef SDL_MAIN_NEEDED
-static SDL_bool SDL_MainIsReady = SDL_FALSE;
+static bool SDL_MainIsReady = false;
 #else
-static SDL_bool SDL_MainIsReady = SDL_TRUE;
+static bool SDL_MainIsReady = true;
 #endif
-static SDL_bool SDL_bInMainQuit = SDL_FALSE;
+static bool SDL_bInMainQuit = false;
 static Uint8 SDL_SubsystemRefCount[32];
 
 // Private helper to increment a subsystem's ref counter.
@@ -204,7 +204,7 @@ static void SDL_DecrementSubsystemRefCount(Uint32 subsystem)
 }
 
 // Private helper to check if a system needs init.
-static SDL_bool SDL_ShouldInitSubsystem(Uint32 subsystem)
+static bool SDL_ShouldInitSubsystem(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
@@ -212,11 +212,11 @@ static SDL_bool SDL_ShouldInitSubsystem(Uint32 subsystem)
 }
 
 // Private helper to check if a system needs to be quit.
-static SDL_bool SDL_ShouldQuitSubsystem(Uint32 subsystem)
+static bool SDL_ShouldQuitSubsystem(Uint32 subsystem)
 {
     const int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     if ((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 0)) {
-        return SDL_FALSE;
+        return false;
     }
 
     /* If we're in SDL_Quit, we shut down every subsystem, even if refcount
@@ -227,23 +227,23 @@ static SDL_bool SDL_ShouldQuitSubsystem(Uint32 subsystem)
 
 /* Private helper to either increment's existing ref counter,
  * or fully init a new subsystem. */
-static SDL_bool SDL_InitOrIncrementSubsystem(Uint32 subsystem)
+static bool SDL_InitOrIncrementSubsystem(Uint32 subsystem)
 {
     int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert((subsystem_index < 0) || (SDL_SubsystemRefCount[subsystem_index] < 255));
     if (subsystem_index < 0) {
-        return SDL_FALSE;
+        return false;
     }
     if (SDL_SubsystemRefCount[subsystem_index] > 0) {
         ++SDL_SubsystemRefCount[subsystem_index];
-        return SDL_TRUE;
+        return true;
     }
     return SDL_InitSubSystem(subsystem) == 0;
 }
 
 void SDL_SetMainReady(void)
 {
-    SDL_MainIsReady = SDL_TRUE;
+    SDL_MainIsReady = true;
 }
 
 // Initialize all the subsystems that require initialization before threads start
@@ -612,7 +612,7 @@ Uint32 SDL_WasInit(SDL_InitFlags flags)
 
 void SDL_Quit(void)
 {
-    SDL_bInMainQuit = SDL_TRUE;
+    SDL_bInMainQuit = true;
 
     // Quit all subsystems
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
@@ -638,7 +638,7 @@ void SDL_Quit(void)
 
     SDL_QuitMainThread();
 
-    SDL_bInMainQuit = SDL_FALSE;
+    SDL_bInMainQuit = false;
 }
 
 // Get the library version number
@@ -726,13 +726,13 @@ const char *SDL_GetPlatform(void)
 SDL_bool SDL_IsTablet(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
-    extern SDL_bool SDL_IsAndroidTablet(void);
+    extern bool SDL_IsAndroidTablet(void);
     return SDL_IsAndroidTablet();
 #elif defined(SDL_PLATFORM_IOS)
-    extern SDL_bool SDL_IsIPad(void);
+    extern bool SDL_IsIPad(void);
     return SDL_IsIPad();
 #else
-    return SDL_FALSE;
+    return false;
 #endif
 }
 

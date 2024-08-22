@@ -1374,7 +1374,7 @@ int SDL_RLESurface(SDL_Surface *surface)
 
     // Clear any previous RLE conversion
     if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(surface, SDL_TRUE);
+        SDL_UnRLESurface(surface, true);
     }
 
     // We don't support RLE encoding of bitmaps
@@ -1435,7 +1435,7 @@ int SDL_RLESurface(SDL_Surface *surface)
  * completely transparent pixels will be lost, and color and alpha depth
  * may have been reduced (when encoding for 16bpp targets).
  */
-static SDL_bool UnRLEAlpha(SDL_Surface *surface)
+static bool UnRLEAlpha(SDL_Surface *surface)
 {
     Uint8 *srcbuf;
     Uint32 *dst;
@@ -1457,12 +1457,12 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
     }
 
     if (SDL_size_mul_overflow(surface->h, surface->pitch, &size)) {
-        return SDL_FALSE;
+        return false;
     }
 
     surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
     if (!surface->pixels) {
-        return SDL_FALSE;
+        return false;
     }
     surface->flags |= SDL_SURFACE_SIMD_ALIGNED;
     // fill background with transparent pixels
@@ -1513,10 +1513,10 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
     }
 
 end_function:
-    return SDL_TRUE;
+    return true;
 }
 
-void SDL_UnRLESurface(SDL_Surface *surface, SDL_bool recode)
+void SDL_UnRLESurface(SDL_Surface *surface, bool recode)
 {
     if (surface->internal->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         surface->internal->flags &= ~SDL_INTERNAL_SURFACE_RLEACCEL;

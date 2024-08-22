@@ -33,15 +33,15 @@
 #endif
 
 #ifdef HAVE_SIGNAL_SUPPORT
-static SDL_bool disable_signals = SDL_FALSE;
-static SDL_bool send_quit_pending = SDL_FALSE;
+static bool disable_signals = false;
+static bool send_quit_pending = false;
 
 #ifdef SDL_BACKGROUNDING_SIGNAL
-static SDL_bool send_backgrounding_pending = SDL_FALSE;
+static bool send_backgrounding_pending = false;
 #endif
 
 #ifdef SDL_FOREGROUNDING_SIGNAL
-static SDL_bool send_foregrounding_pending = SDL_FALSE;
+static bool send_foregrounding_pending = false;
 #endif
 
 static void SDL_HandleSIG(int sig)
@@ -52,18 +52,18 @@ static void SDL_HandleSIG(int sig)
     // Send a quit event next time the event loop pumps.
     // We can't send it in signal handler; SDL_malloc() might be interrupted!
     if ((sig == SIGINT) || (sig == SIGTERM)) {
-        send_quit_pending = SDL_TRUE;
+        send_quit_pending = true;
     }
 
 #ifdef SDL_BACKGROUNDING_SIGNAL
     else if (sig == SDL_BACKGROUNDING_SIGNAL) {
-        send_backgrounding_pending = SDL_TRUE;
+        send_backgrounding_pending = true;
     }
 #endif
 
 #ifdef SDL_FOREGROUNDING_SIGNAL
     else if (sig == SDL_FOREGROUNDING_SIGNAL) {
-        send_foregrounding_pending = SDL_TRUE;
+        send_foregrounding_pending = true;
     }
 #endif
 }
@@ -145,7 +145,7 @@ static void SDL_QuitQuit_Internal(void)
 int SDL_InitQuit(void)
 {
 #ifdef HAVE_SIGNAL_SUPPORT
-    if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, false)) {
         return SDL_QuitInit_Internal();
     }
 #endif
@@ -171,14 +171,14 @@ void SDL_SendPendingSignalEvents(void)
 
 #ifdef SDL_BACKGROUNDING_SIGNAL
     if (send_backgrounding_pending) {
-        send_backgrounding_pending = SDL_FALSE;
+        send_backgrounding_pending = false;
         SDL_OnApplicationWillEnterBackground();
     }
 #endif
 
 #ifdef SDL_FOREGROUNDING_SIGNAL
     if (send_foregrounding_pending) {
-        send_foregrounding_pending = SDL_FALSE;
+        send_foregrounding_pending = false;
         SDL_OnApplicationDidEnterForeground();
     }
 #endif
@@ -189,7 +189,7 @@ void SDL_SendPendingSignalEvents(void)
 int SDL_SendQuit(void)
 {
 #ifdef HAVE_SIGNAL_SUPPORT
-    send_quit_pending = SDL_FALSE;
+    send_quit_pending = false;
 #endif
     return SDL_SendAppEvent(SDL_EVENT_QUIT);
 }

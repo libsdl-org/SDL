@@ -654,7 +654,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 {
     SDL_SendKeyboardKeyAutoRelease(0, SDL_SCANCODE_RETURN);
     if (keyboardVisible &&
-        SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
+        SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, false)) {
         SDL_StopTextInput(window);
     }
     return YES;
@@ -679,9 +679,9 @@ static SDL_uikitviewcontroller *GetWindowViewController(SDL_Window *window)
     return data.viewcontroller;
 }
 
-SDL_bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
-    return SDL_TRUE;
+    return true;
 }
 
 void UIKit_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
@@ -701,14 +701,14 @@ void UIKit_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-SDL_bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
+bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
         if (vc != nil) {
             return vc.keyboardVisible;
         }
-        return SDL_FALSE;
+        return false;
     }
 }
 

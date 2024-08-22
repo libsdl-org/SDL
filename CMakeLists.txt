@@ -972,6 +972,7 @@ if(SDL_LIBC)
     memory.h
     signal.h
     stdarg.h
+    stdbool.h
     stddef.h
     stdint.h
     stdio.h

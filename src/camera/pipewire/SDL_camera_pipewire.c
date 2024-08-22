@@ -54,7 +54,7 @@ enum PW_READY_FLAGS
 #define PW_ID_TO_HANDLE(x) (void *)((uintptr_t)x)
 #define PW_HANDLE_TO_ID(x) (uint32_t)((uintptr_t)x)
 
-static SDL_bool pipewire_initialized = SDL_FALSE;
+static bool pipewire_initialized = false;
 
 // Pipewire entry points
 static const char *(*PIPEWIRE_pw_get_library_version)(void);
@@ -232,9 +232,9 @@ static struct
 
     struct spa_list global_list;
 
-    SDL_bool have_1_0_5;
-    SDL_bool init_complete;
-    SDL_bool events_enabled;
+    bool have_1_0_5;
+    bool init_complete;
+    bool events_enabled;
 } hotplug;
 
 struct global
@@ -258,7 +258,7 @@ struct global
     struct spa_list pending_list;
     struct spa_list param_list;
 
-    SDL_bool added;
+    bool added;
 };
 
 struct global_class
@@ -434,7 +434,7 @@ static void on_stream_state_changed(void *data, enum pw_stream_state old,
     case PW_STREAM_STATE_UNCONNECTED:
         break;
     case PW_STREAM_STATE_STREAMING:
-        SDL_CameraPermissionOutcome(device, SDL_TRUE);
+        SDL_CameraPermissionOutcome(device, true);
         break;
     default:
         break;
@@ -722,7 +722,7 @@ static void add_device(struct global *g)
     }
     SDL_free(data.specs);
 
-    g->added = SDL_TRUE;
+    g->added = true;
 }
 
 static void PIPEWIRECAMERA_DetectDevices(void)
@@ -742,7 +742,7 @@ static void PIPEWIRECAMERA_DetectDevices(void)
 	    }
     }
 
-    hotplug.events_enabled = SDL_TRUE;
+    hotplug.events_enabled = true;
 
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 }
@@ -954,7 +954,7 @@ static void hotplug_core_done_callback(void *object, uint32_t id, int seq)
                  add_device(g);
 	     }
         }
-	hotplug.init_complete = SDL_TRUE;
+	hotplug.init_complete = true;
         PIPEWIRE_pw_thread_loop_signal(hotplug.loop, false);
     }
 }
@@ -968,7 +968,7 @@ static const struct pw_core_events hotplug_core_events =
 /* When in a container, the library version can differ from the underlying core version,
  * so make sure the underlying Pipewire implementation meets the version requirement.
  */
-static SDL_bool pipewire_server_version_at_least(int major, int minor, int patch)
+static bool pipewire_server_version_at_least(int major, int minor, int patch)
 {
     return (hotplug.server_major >= major) &&
            (hotplug.server_major > major || hotplug.server_minor >= minor) &&
@@ -1055,23 +1055,23 @@ static void PIPEWIRECAMERA_Deinitialize(void)
 	}
         deinit_pipewire_library();
 	spa_zero(hotplug);
-        pipewire_initialized = SDL_FALSE;
+        pipewire_initialized = false;
     }
 }
 
-static SDL_bool PIPEWIRECAMERA_Init(SDL_CameraDriverImpl *impl)
+static bool PIPEWIRECAMERA_Init(SDL_CameraDriverImpl *impl)
 {
     if (!pipewire_initialized) {
 
         if (init_pipewire_library() < 0) {
-            return SDL_FALSE;
+            return false;
         }
 
-        pipewire_initialized = SDL_TRUE;
+        pipewire_initialized = true;
 
         if (hotplug_loop_init() < 0) {
             PIPEWIRECAMERA_Deinitialize();
-            return SDL_FALSE;
+            return false;
         }
     }
 
@@ -1084,11 +1084,11 @@ static SDL_bool PIPEWIRECAMERA_Init(SDL_CameraDriverImpl *impl)
     impl->FreeDeviceHandle = PIPEWIRECAMERA_FreeDeviceHandle;
     impl->Deinitialize = PIPEWIRECAMERA_Deinitialize;
 
-    return SDL_TRUE;
+    return true;
 }
 
 CameraBootStrap PIPEWIRECAMERA_bootstrap = {
-    "pipewire", "SDL PipeWire camera driver", PIPEWIRECAMERA_Init, SDL_FALSE
+    "pipewire", "SDL PipeWire camera driver", PIPEWIRECAMERA_Init, false
 };
 
 #endif  // SDL_CAMERA_DRIVER_PIPEWIRE

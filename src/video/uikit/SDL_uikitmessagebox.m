@@ -27,9 +27,9 @@
 
 // Display a UIKit message box
 
-static SDL_bool s_showingMessageBox = SDL_FALSE;
+static bool s_showingMessageBox = false;
 
-SDL_bool UIKit_ShowingMessageBox(void)
+bool UIKit_ShowingMessageBox(void)
 {
     return s_showingMessageBox;
 }
@@ -41,11 +41,11 @@ static void UIKit_WaitUntilMessageBoxClosed(const SDL_MessageBoxData *messagebox
     @autoreleasepool {
         // Run the main event loop until the alert has finished
         // Note that this needs to be done on the main thread
-        s_showingMessageBox = SDL_TRUE;
+        s_showingMessageBox = true;
         while ((*clickedindex) == messageboxdata->numbuttons) {
             [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         }
-        s_showingMessageBox = SDL_FALSE;
+        s_showingMessageBox = false;
     }
 }
 

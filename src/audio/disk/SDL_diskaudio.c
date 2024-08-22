@@ -91,7 +91,7 @@ static void DISKAUDIO_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-static const char *get_filename(const SDL_bool recording)
+static const char *get_filename(const bool recording)
 {
     const char *devname = SDL_GetHint(recording ? SDL_HINT_AUDIO_DISK_INPUT_FILE : SDL_HINT_AUDIO_DISK_OUTPUT_FILE);
     if (!devname) {
@@ -102,7 +102,7 @@ static const char *get_filename(const SDL_bool recording)
 
 static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    SDL_bool recording = device->recording;
+    bool recording = device->recording;
     const char *fname = get_filename(recording);
 
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
@@ -143,11 +143,11 @@ static int DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
 
 static void DISKAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
-    *default_playback = SDL_AddAudioDevice(SDL_FALSE, DEFAULT_PLAYBACK_DEVNAME, NULL, (void *)0x1);
-    *default_recording = SDL_AddAudioDevice(SDL_TRUE, DEFAULT_RECORDING_DEVNAME, NULL, (void *)0x2);
+    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, (void *)0x1);
+    *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, (void *)0x2);
 }
 
-static SDL_bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     impl->OpenDevice = DISKAUDIO_OpenDevice;
     impl->WaitDevice = DISKAUDIO_WaitDevice;
@@ -159,13 +159,13 @@ static SDL_bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice = DISKAUDIO_CloseDevice;
     impl->DetectDevices = DISKAUDIO_DetectDevices;
 
-    impl->HasRecordingSupport = SDL_TRUE;
+    impl->HasRecordingSupport = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap DISKAUDIO_bootstrap = {
-    "disk", "direct-to-disk audio", DISKAUDIO_Init, SDL_TRUE
+    "disk", "direct-to-disk audio", DISKAUDIO_Init, true
 };
 
 #endif // SDL_AUDIO_DRIVER_DISK

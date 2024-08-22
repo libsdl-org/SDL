@@ -35,9 +35,9 @@
 typedef struct
 {
     SDL_HIDAPI_Device *device;
-    SDL_bool connected;
+    bool connected;
     int player_index;
-    SDL_bool player_lights;
+    bool player_lights;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverXbox360W_Context;
 
@@ -55,49 +55,49 @@ static void HIDAPI_DriverXbox360W_UnregisterHints(SDL_HintCallback callback, voi
     SDL_DelHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS, callback, userdata);
 }
 
-static SDL_bool HIDAPI_DriverXbox360W_IsEnabled(void)
+static bool HIDAPI_DriverXbox360W_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS,
                               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT))));
 }
 
-static SDL_bool HIDAPI_DriverXbox360W_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
+static bool HIDAPI_DriverXbox360W_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     const int XB360W_IFACE_PROTOCOL = 129; // Wireless
 
     if ((vendor_id == USB_VENDOR_MICROSOFT && (product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY2 || product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY1 || product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER) && interface_protocol == 0) ||
         (type == SDL_GAMEPAD_TYPE_XBOX360 && interface_protocol == XB360W_IFACE_PROTOCOL)) {
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
-static SDL_bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, SDL_bool on)
+static bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, bool on)
 {
-    const SDL_bool blink = SDL_FALSE;
+    const bool blink = false;
     Uint8 mode = on ? ((blink ? 0x02 : 0x06) + slot) : 0;
     Uint8 led_packet[] = { 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
     led_packet[3] = 0x40 + (mode % 0x0e);
     if (SDL_hid_write(dev, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 static void UpdateSlotLED(SDL_DriverXbox360W_Context *ctx)
 {
     if (ctx->player_lights && ctx->player_index >= 0) {
-        SetSlotLED(ctx->device->dev, (ctx->player_index % 4), SDL_TRUE);
+        SetSlotLED(ctx->device->dev, (ctx->player_index % 4), true);
     } else {
-        SetSlotLED(ctx->device->dev, 0, SDL_FALSE);
+        SetSlotLED(ctx->device->dev, 0, false);
     }
 }
 
 static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)userdata;
-    SDL_bool player_lights = SDL_GetStringBoolean(hint, SDL_TRUE);
+    bool player_lights = SDL_GetStringBoolean(hint, true);
 
     if (player_lights != ctx->player_lights) {
         ctx->player_lights = player_lights;
@@ -113,7 +113,7 @@ static void UpdatePowerLevel(SDL_Joystick *joystick, Uint8 level)
     SDL_SendJoystickPowerInfo(joystick, SDL_POWERSTATE_ON_BATTERY, percent);
 }
 
-static SDL_bool HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverXbox360W_Context *ctx;
 
@@ -124,7 +124,7 @@ static SDL_bool HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
 
     ctx = (SDL_DriverXbox360W_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
-        return SDL_FALSE;
+        return false;
     }
     ctx->device = device;
 
@@ -132,12 +132,12 @@ static SDL_bool HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
 
     if (SDL_hid_write(device->dev, init_packet, sizeof(init_packet)) != sizeof(init_packet)) {
         SDL_SetError("Couldn't write init packet");
-        return SDL_FALSE;
+        return false;
     }
 
     device->type = SDL_GAMEPAD_TYPE_XBOX360;
 
-    return SDL_TRUE;
+    return true;
 }
 
 static int HIDAPI_DriverXbox360W_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
@@ -158,7 +158,7 @@ static void HIDAPI_DriverXbox360W_SetDevicePlayerIndex(SDL_HIDAPI_Device *device
     UpdateSlotLED(ctx);
 }
 
-static SDL_bool HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static bool HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
 
@@ -168,7 +168,7 @@ static SDL_bool HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SD
 
     // Initialize player index (needed for setting LEDs)
     ctx->player_index = SDL_GetJoystickPlayerIndex(joystick);
-    ctx->player_lights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED, SDL_TRUE);
+    ctx->player_lights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED, true);
     UpdateSlotLED(ctx);
 
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED,
@@ -178,7 +178,7 @@ static SDL_bool HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SD
     joystick->nbuttons = 15;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
 
-    return SDL_TRUE;
+    return true;
 }
 
 static int HIDAPI_DriverXbox360W_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
@@ -220,7 +220,7 @@ static int HIDAPI_DriverXbox360W_SendJoystickEffect(SDL_HIDAPI_Device *device, S
     return SDL_Unsupported();
 }
 
-static int HIDAPI_DriverXbox360W_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+static int HIDAPI_DriverXbox360W_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -228,7 +228,7 @@ static int HIDAPI_DriverXbox360W_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *de
 static void HIDAPI_DriverXbox360W_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverXbox360W_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
-    const SDL_bool invert_y_axes = SDL_TRUE;
+    const bool invert_y_axes = true;
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (ctx->last_state[2] != data[2]) {
@@ -286,7 +286,7 @@ static void HIDAPI_DriverXbox360W_HandleStatePacket(SDL_Joystick *joystick, SDL_
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static SDL_bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
+static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
     SDL_Joystick *joystick = NULL;
@@ -302,7 +302,7 @@ static SDL_bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
         HIDAPI_DumpPacket("Xbox 360 wireless packet: size = %d", data, size);
 #endif
         if (size == 2 && data[0] == 0x08) {
-            SDL_bool connected = (data[1] & 0x80) ? SDL_TRUE : SDL_FALSE;
+            bool connected = (data[1] & 0x80) ? true : false;
 #ifdef DEBUG_JOYSTICK
             SDL_Log("Connected = %s\n", connected ? "TRUE" : "FALSE");
 #endif
@@ -361,7 +361,7 @@ static void HIDAPI_DriverXbox360W_FreeDevice(SDL_HIDAPI_Device *device)
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W = {
     SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS,
-    SDL_TRUE,
+    true,
     HIDAPI_DriverXbox360W_RegisterHints,
     HIDAPI_DriverXbox360W_UnregisterHints,
     HIDAPI_DriverXbox360W_IsEnabled,

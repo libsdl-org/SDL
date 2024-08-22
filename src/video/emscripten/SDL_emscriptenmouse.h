@@ -25,7 +25,7 @@
 struct SDL_CursorData
 {
     const char *system_cursor;
-    SDL_bool is_custom;
+    bool is_custom;
 };
 
 extern void Emscripten_InitMouse(void);

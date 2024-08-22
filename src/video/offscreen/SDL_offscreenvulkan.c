@@ -60,8 +60,8 @@ int OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasHeadlessSurfaceExtension = SDL_FALSE;
+    bool hasSurfaceExtension = false;
+    bool hasHeadlessSurfaceExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     Uint32 i;
     const char **paths;
@@ -134,9 +134,9 @@ int OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     }
     for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasSurfaceExtension = SDL_TRUE;
+            hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasHeadlessSurfaceExtension = SDL_TRUE;
+            hasHeadlessSurfaceExtension = true;
         }
     }
     SDL_free(extensions);
@@ -175,7 +175,7 @@ char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this
 #if (HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD == 0)
     VkExtensionProperties *enumerateExtensions = NULL;
     Uint32 enumerateExtensionCount = 0;
-    SDL_bool hasHeadlessSurfaceExtension = SDL_FALSE;
+    bool hasHeadlessSurfaceExtension = false;
     Uint32 i;
 #endif
 
@@ -194,12 +194,12 @@ char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this
                     &enumerateExtensionCount);
                 for (i = 0; i < enumerateExtensionCount; i++) {
                     if (SDL_strcmp(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME, enumerateExtensions[i].extensionName) == 0) {
-                        hasHeadlessSurfaceExtension = SDL_TRUE;
+                        hasHeadlessSurfaceExtension = true;
                     }
                 }
                 SDL_free(enumerateExtensions);
             }
-            if ( hasHeadlessSurfaceExtension == SDL_TRUE ) {
+            if ( hasHeadlessSurfaceExtension == true ) {
                 *count = SDL_arraysize(returnExtensions);
             } else {
                 *count = SDL_arraysize(returnExtensions) - 1; // assumes VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME is last

@@ -206,19 +206,19 @@ static int LoadALSALibrary(void)
 typedef struct ALSA_Device
 {
     char *name;
-    SDL_bool recording;
+    bool recording;
     struct ALSA_Device *next;
 } ALSA_Device;
 
 static const ALSA_Device default_playback_handle = {
     "default",
-    SDL_FALSE,
+    false,
     NULL
 };
 
 static const ALSA_Device default_recording_handle = {
     "default",
-    SDL_TRUE,
+    true,
     NULL
 };
 
@@ -436,7 +436,7 @@ static int ALSA_set_buffer_size(SDL_AudioDevice *device, snd_pcm_hw_params_t *pa
 
 static int ALSA_OpenDevice(SDL_AudioDevice *device)
 {
-    const SDL_bool recording = device->recording;
+    const bool recording = device->recording;
     int status = 0;
 
     // Initialize all variables that we clean on shutdown
@@ -622,7 +622,7 @@ static int ALSA_OpenDevice(SDL_AudioDevice *device)
     return 0;  // We're ready to rock and roll. :-)
 }
 
-static void add_device(const SDL_bool recording, const char *name, void *hint, ALSA_Device **pSeen)
+static void add_device(const bool recording, const char *name, void *hint, ALSA_Device **pSeen)
 {
     ALSA_Device *dev = SDL_malloc(sizeof(ALSA_Device));
     char *desc;
@@ -683,7 +683,7 @@ static void add_device(const SDL_bool recording, const char *name, void *hint, A
 
 static ALSA_Device *hotplug_devices = NULL;
 
-static void ALSA_HotplugIteration(SDL_bool *has_default_playback, SDL_bool *has_default_recording)
+static void ALSA_HotplugIteration(bool *has_default_playback, bool *has_default_recording)
 {
     void **hints = NULL;
     ALSA_Device *unseen = NULL;
@@ -741,13 +741,13 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_playback, SDL_bool *has_
                 }
 
                 // only want physical hardware interfaces
-                const SDL_bool is_default = (has_default == i);
+                const bool is_default = (has_default == i);
                 if (is_default || (match && SDL_strncmp(name, match, match_len) == 0)) {
                     char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
-                    const SDL_bool isoutput = (!ioid) || (SDL_strcmp(ioid, "Output") == 0);
-                    const SDL_bool isinput = (!ioid) || (SDL_strcmp(ioid, "Input") == 0);
-                    SDL_bool have_output = SDL_FALSE;
-                    SDL_bool have_input = SDL_FALSE;
+                    const bool isoutput = (!ioid) || (SDL_strcmp(ioid, "Output") == 0);
+                    const bool isinput = (!ioid) || (SDL_strcmp(ioid, "Input") == 0);
+                    bool have_output = false;
+                    bool have_input = false;
 
                     free(ioid); // This should NOT be SDL_free()
 
@@ -758,9 +758,9 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_playback, SDL_bool *has_
 
                     if (is_default) {
                         if (has_default_playback && isoutput) {
-                            *has_default_playback = SDL_TRUE;
+                            *has_default_playback = true;
                         } else if (has_default_recording && isinput) {
-                            *has_default_recording = SDL_TRUE;
+                            *has_default_recording = true;
                         }
                         free(name); // This should NOT be SDL_free()
                         continue;
@@ -779,10 +779,10 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_playback, SDL_bool *has_
                             dev->next = seen;
                             seen = dev;
                             if (isinput) {
-                                have_input = SDL_TRUE;
+                                have_input = true;
                             }
                             if (isoutput) {
-                                have_output = SDL_TRUE;
+                                have_output = true;
                             }
                         } else {
                             prev = dev;
@@ -790,10 +790,10 @@ static void ALSA_HotplugIteration(SDL_bool *has_default_playback, SDL_bool *has_
                     }
 
                     if (isinput && !have_input) {
-                        add_device(SDL_TRUE, name, hints[i], &seen);
+                        add_device(true, name, hints[i], &seen);
                     }
                     if (isoutput && !have_output) {
-                        add_device(SDL_FALSE, name, hints[i], &seen);
+                        add_device(false, name, hints[i], &seen);
                     }
                 }
 
@@ -843,13 +843,13 @@ static void ALSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevi
 {
     // ALSA doesn't have a concept of a changeable default device, afaik, so we expose a generic default
     // device here. It's the best we can do at this level.
-    SDL_bool has_default_playback = SDL_FALSE, has_default_recording = SDL_FALSE;
+    bool has_default_playback = false, has_default_recording = false;
     ALSA_HotplugIteration(&has_default_playback, &has_default_recording); // run once now before a thread continues to check.
     if (has_default_playback) {
-        *default_playback = SDL_AddAudioDevice(/*recording=*/SDL_FALSE, "ALSA default playback device", NULL, (void*)&default_playback_handle);
+        *default_playback = SDL_AddAudioDevice(/*recording=*/false, "ALSA default playback device", NULL, (void*)&default_playback_handle);
     }
     if (has_default_recording) {
-        *default_recording = SDL_AddAudioDevice(/*recording=*/SDL_TRUE, "ALSA default recording device", NULL, (void*)&default_recording_handle);
+        *default_recording = SDL_AddAudioDevice(/*recording=*/true, "ALSA default recording device", NULL, (void*)&default_recording_handle);
     }
 
 #if SDL_ALSA_HOTPLUG_THREAD
@@ -887,10 +887,10 @@ static void ALSA_Deinitialize(void)
     UnloadALSALibrary();
 }
 
-static SDL_bool ALSA_Init(SDL_AudioDriverImpl *impl)
+static bool ALSA_Init(SDL_AudioDriverImpl *impl)
 {
     if (LoadALSALibrary() < 0) {
-        return SDL_FALSE;
+        return false;
     }
 
     impl->DetectDevices = ALSA_DetectDevices;
@@ -905,13 +905,13 @@ static SDL_bool ALSA_Init(SDL_AudioDriverImpl *impl)
     impl->RecordDevice = ALSA_RecordDevice;
     impl->FlushRecording = ALSA_FlushRecording;
 
-    impl->HasRecordingSupport = SDL_TRUE;
+    impl->HasRecordingSupport = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap ALSA_bootstrap = {
-    "alsa", "ALSA PCM audio", ALSA_Init, SDL_FALSE
+    "alsa", "ALSA PCM audio", ALSA_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_ALSA

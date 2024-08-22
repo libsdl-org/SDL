@@ -92,17 +92,17 @@ void SDL_CalculateFraction(float x, int *numerator, int *denominator)
     }
 }
 
-SDL_bool SDL_endswith(const char *string, const char *suffix)
+bool SDL_endswith(const char *string, const char *suffix)
 {
     size_t string_length = string ? SDL_strlen(string) : 0;
     size_t suffix_length = suffix ? SDL_strlen(suffix) : 0;
 
     if (suffix_length > 0 && suffix_length <= string_length) {
         if (SDL_memcmp(string + string_length - suffix_length, suffix, suffix_length) == 0) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 // Assume we can wrap SDL_AtomicInt values and cast to Uint32
@@ -126,18 +126,18 @@ static Uint32 SDL_HashObject(const void *key, void *unused)
     return (Uint32)(uintptr_t)key;
 }
 
-static SDL_bool SDL_KeyMatchObject(const void *a, const void *b, void *unused)
+static bool SDL_KeyMatchObject(const void *a, const void *b, void *unused)
 {
     return (a == b);
 }
 
-void SDL_SetObjectValid(void *object, SDL_ObjectType type, SDL_bool valid)
+void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
 {
     SDL_assert(object != NULL);
 
     if (valid) {
         if (!SDL_objects) {
-            SDL_objects = SDL_CreateHashTable(NULL, 32, SDL_HashObject, SDL_KeyMatchObject, NULL, SDL_FALSE);
+            SDL_objects = SDL_CreateHashTable(NULL, 32, SDL_HashObject, SDL_KeyMatchObject, NULL, false);
         }
 
         SDL_InsertIntoHashTable(SDL_objects, object, (void *)(uintptr_t)type);
@@ -148,15 +148,15 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, SDL_bool valid)
     }
 }
 
-SDL_bool SDL_ObjectValid(void *object, SDL_ObjectType type)
+bool SDL_ObjectValid(void *object, SDL_ObjectType type)
 {
     if (!object) {
-        return SDL_FALSE;
+        return false;
     }
 
     const void *object_type;
     if (!SDL_FindInHashTable(SDL_objects, object, &object_type)) {
-        return SDL_FALSE;
+        return false;
     }
 
     return (((SDL_ObjectType)(uintptr_t)object_type) == type);
@@ -277,7 +277,7 @@ int SDL_URIToLocal(const char *src, char *dst)
         return -1; // wrong scheme
     }
 
-    SDL_bool local = src[0] != '/' || (src[0] != '\0' && src[1] == '/');
+    bool local = src[0] != '/' || (src[0] != '\0' && src[1] == '/');
 
     // Check the hostname, if present. RFC 3986 states that the hostname component of a URI is not case-sensitive.
     if (!local && src[0] == '/' && src[2] != '/') {
@@ -293,7 +293,7 @@ int SDL_URIToLocal(const char *src, char *dst)
                 hostname_len = SDL_strlen(hostname);
                 if (hostname_len == src_len && SDL_strncasecmp(src + 1, hostname, src_len) == 0) {
                     src = hostname_end + 1;
-                    local = SDL_TRUE;
+                    local = true;
                 }
             }
 #endif
@@ -303,7 +303,7 @@ int SDL_URIToLocal(const char *src, char *dst)
                 hostname_len = SDL_strlen(localhost);
                 if (hostname_len == src_len && SDL_strncasecmp(src + 1, localhost, src_len) == 0) {
                     src = hostname_end + 1;
-                    local = SDL_TRUE;
+                    local = true;
                 }
             }
         }
@@ -344,7 +344,7 @@ const char *SDL_GetPersistentString(const char *string)
 
     SDL_HashTable *strings = (SDL_HashTable *)SDL_GetTLS(&SDL_string_storage);
     if (!strings) {
-        strings = SDL_CreateHashTable(NULL, 32, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeValue, SDL_FALSE);
+        strings = SDL_CreateHashTable(NULL, 32, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeValue, false);
         if (!strings) {
             return NULL;
         }

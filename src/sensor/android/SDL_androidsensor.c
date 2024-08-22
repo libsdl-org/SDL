@@ -93,7 +93,7 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
 
 static void SDL_ANDROID_StopSensorThread(SDL_AndroidSensorThreadContext *ctx)
 {
-    SDL_AtomicSet(&ctx->running, SDL_FALSE);
+    SDL_AtomicSet(&ctx->running, false);
 
     if (ctx->thread) {
         int result;
@@ -119,7 +119,7 @@ static int SDL_ANDROID_StartSensorThread(SDL_AndroidSensorThreadContext *ctx)
         return -1;
     }
 
-    SDL_AtomicSet(&ctx->running, SDL_TRUE);
+    SDL_AtomicSet(&ctx->running, true);
     ctx->thread = SDL_CreateThread(SDL_ANDROID_SensorThread, "Sensors", ctx);
     if (!ctx->thread) {
         SDL_ANDROID_StopSensorThread(ctx);

@@ -351,7 +351,7 @@ size_t SDL_iconv(SDL_iconv_t cd,
         {
             Uint8 *p = (Uint8 *)src;
             size_t left = 0;
-            SDL_bool overlong = SDL_FALSE;
+            bool overlong = false;
             if (p[0] >= 0xF0) {
                 if ((p[0] & 0xF8) != 0xF0) {
                     /* Skip illegal sequences
@@ -360,7 +360,7 @@ size_t SDL_iconv(SDL_iconv_t cd,
                     ch = UNKNOWN_UNICODE;
                 } else {
                     if (p[0] == 0xF0 && srclen > 1 && (p[1] & 0xF0) == 0x80) {
-                        overlong = SDL_TRUE;
+                        overlong = true;
                     }
                     ch = (Uint32)(p[0] & 0x07);
                     left = 3;
@@ -373,7 +373,7 @@ size_t SDL_iconv(SDL_iconv_t cd,
                     ch = UNKNOWN_UNICODE;
                 } else {
                     if (p[0] == 0xE0 && srclen > 1 && (p[1] & 0xE0) == 0x80) {
-                        overlong = SDL_TRUE;
+                        overlong = true;
                     }
                     ch = (Uint32)(p[0] & 0x0F);
                     left = 2;
@@ -386,7 +386,7 @@ size_t SDL_iconv(SDL_iconv_t cd,
                     ch = UNKNOWN_UNICODE;
                 } else {
                     if ((p[0] & 0xDE) == 0xC0) {
-                        overlong = SDL_TRUE;
+                        overlong = true;
                     }
                     ch = (Uint32)(p[0] & 0x1F);
                     left = 1;

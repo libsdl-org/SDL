@@ -69,7 +69,7 @@ extern void SDL_SetupAudioResampler(void);
 /* Backends should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern SDL_AudioDevice *SDL_AddAudioDevice(SDL_bool recording, const char *name, const SDL_AudioSpec *spec, void *handle);
+extern SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const SDL_AudioSpec *spec, void *handle);
 
 /* Backends should call this if an opened audio device is lost.
    This can happen due to i/o errors, or a device being unplugged, etc. */
@@ -88,7 +88,7 @@ extern int SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, co
 extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle);
 
 // Find an SDL_AudioDevice, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
-extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(SDL_bool (*callback)(SDL_AudioDevice *device, void *userdata), void *userdata);
+extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(bool (*callback)(SDL_AudioDevice *device, void *userdata), void *userdata);
 
 // Backends should call this if they change the device format, channels, freq, or sample_frames to keep other state correct.
 extern void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device);
@@ -102,10 +102,10 @@ extern void UnrefPhysicalAudioDevice(SDL_AudioDevice *device);
 
 // These functions are the heart of the audio threads. Backends can call them directly if they aren't using the SDL-provided thread.
 extern void SDL_PlaybackAudioThreadSetup(SDL_AudioDevice *device);
-extern SDL_bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device);
+extern bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device);
 extern void SDL_PlaybackAudioThreadShutdown(SDL_AudioDevice *device);
 extern void SDL_RecordingAudioThreadSetup(SDL_AudioDevice *device);
-extern SDL_bool SDL_RecordingAudioThreadIterate(SDL_AudioDevice *device);
+extern bool SDL_RecordingAudioThreadIterate(SDL_AudioDevice *device);
 extern void SDL_RecordingAudioThreadShutdown(SDL_AudioDevice *device);
 extern void SDL_AudioThreadFinalize(SDL_AudioDevice *device);
 
@@ -113,8 +113,8 @@ extern void ConvertAudioToFloat(float *dst, const void *src, int num_samples, SD
 extern void ConvertAudioFromFloat(void *dst, const float *src, int num_samples, SDL_AudioFormat dst_fmt);
 extern void ConvertAudioSwapEndian(void* dst, const void* src, int num_samples, int bitsize);
 
-extern SDL_bool SDL_ChannelMapIsDefault(const int *map, int channels);
-extern SDL_bool SDL_ChannelMapIsBogus(const int *map, int channels);
+extern bool SDL_ChannelMapIsDefault(const int *map, int channels);
+extern bool SDL_ChannelMapIsBogus(const int *map, int channels);
 
 // this gets used from the audio device threads. It has rules, don't use this if you don't know how to use it!
 extern void ConvertAudio(int num_frames,
@@ -122,10 +122,10 @@ extern void ConvertAudio(int num_frames,
                          void *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
                          void* scratch, float gain);
 
-// Compare two SDL_AudioSpecs, return SDL_TRUE if they match exactly.
+// Compare two SDL_AudioSpecs, return true if they match exactly.
 // Using SDL_memcmp directly isn't safe, since potential padding might not be initialized.
 // either channel maps can be NULL for the default (and both should be if you don't care about them).
-extern SDL_bool SDL_AudioSpecsEqual(const SDL_AudioSpec *a, const SDL_AudioSpec *b, const int *channel_map_a, const int *channel_map_b);
+extern bool SDL_AudioSpecsEqual(const SDL_AudioSpec *a, const SDL_AudioSpec *b, const int *channel_map_a, const int *channel_map_b);
 
 // allocate+copy a channel map.
 extern int *SDL_ChannelMapDup(const int *origchmap, int channels);
@@ -159,10 +159,10 @@ typedef struct SDL_AudioDriverImpl
     void (*Deinitialize)(void);
 
     // Some flags to push duplicate code into the core and reduce #ifdefs.
-    SDL_bool ProvidesOwnCallbackThread;  // !!! FIXME: rename this, it's not a callback thread anymore.
-    SDL_bool HasRecordingSupport;
-    SDL_bool OnlyHasDefaultPlaybackDevice;
-    SDL_bool OnlyHasDefaultRecordingDevice;   // !!! FIXME: is there ever a time where you'd have a default playback and not a default recording (or vice versa)?
+    bool ProvidesOwnCallbackThread;  // !!! FIXME: rename this, it's not a callback thread anymore.
+    bool HasRecordingSupport;
+    bool OnlyHasDefaultPlaybackDevice;
+    bool OnlyHasDefaultRecordingDevice;   // !!! FIXME: is there ever a time where you'd have a default playback and not a default recording (or vice versa)?
 } SDL_AudioDriverImpl;
 
 
@@ -222,7 +222,7 @@ struct SDL_AudioStream
     Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
     size_t work_buffer_allocation;
 
-    SDL_bool simplified;  // SDL_TRUE if created via SDL_OpenAudioDeviceStream
+    bool simplified;  // true if created via SDL_OpenAudioDeviceStream
 
     SDL_LogicalAudioDevice *bound_device;
     SDL_AudioStream *next_binding;
@@ -253,11 +253,11 @@ struct SDL_LogicalAudioDevice
     // double-linked list of all audio streams currently bound to this opened device.
     SDL_AudioStream *bound_streams;
 
-    // SDL_TRUE if this was opened as a default device.
-    SDL_bool opened_as_default;
+    // true if this was opened as a default device.
+    bool opened_as_default;
 
-    // SDL_TRUE if device was opened with SDL_OpenAudioDeviceStream (so it forbids binding changes, etc).
-    SDL_bool simplified;
+    // true if device was opened with SDL_OpenAudioDeviceStream (so it forbids binding changes, etc).
+    bool simplified;
 
     // If non-NULL, callback into the app that lets them access the final postmix buffer.
     SDL_AudioPostmixCallback postmix;
@@ -319,11 +319,11 @@ struct SDL_AudioDevice
     // non-zero if this was a disconnected device and we're waiting for it to be decommissioned.
     SDL_AtomicInt zombie;
 
-    // SDL_TRUE if this is a recording device instead of an playback device
-    SDL_bool recording;
+    // true if this is a recording device instead of an playback device
+    bool recording;
 
-    // SDL_TRUE if audio thread can skip silence/mix/convert stages and just do a basic memcpy.
-    SDL_bool simple_copy;
+    // true if audio thread can skip silence/mix/convert stages and just do a basic memcpy.
+    bool simple_copy;
 
     // Scratch buffers used for mixing.
     Uint8 *work_buffer;
@@ -336,8 +336,8 @@ struct SDL_AudioDevice
     // A thread to feed the audio device
     SDL_Thread *thread;
 
-    // SDL_TRUE if this physical device is currently opened by the backend.
-    SDL_bool currently_opened;
+    // true if this physical device is currently opened by the backend.
+    bool currently_opened;
 
     // Data private to this driver
     struct SDL_PrivateAudioData *hidden;
@@ -350,8 +350,8 @@ typedef struct AudioBootStrap
 {
     const char *name;
     const char *desc;
-    SDL_bool (*init)(SDL_AudioDriverImpl *impl);
-    SDL_bool demand_only; // if SDL_TRUE: request explicitly, or it won't be available.
+    bool (*init)(SDL_AudioDriverImpl *impl);
+    bool demand_only; // if true: request explicitly, or it won't be available.
 } AudioBootStrap;
 
 // Not all of these are available in a given build. Use #ifdefs, etc.

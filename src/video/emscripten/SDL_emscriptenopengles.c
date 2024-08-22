@@ -131,7 +131,7 @@ int Emscripten_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 
 int Emscripten_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
+    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
         // give back control to browser for screen refresh
         emscripten_sleep(0);
     }

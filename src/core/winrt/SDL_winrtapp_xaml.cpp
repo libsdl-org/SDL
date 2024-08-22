@@ -35,7 +35,7 @@
 #include "SDL_winrtapp_xaml.h"
 
 // SDL-internal globals:
-SDL_bool WINRT_XAMLWasEnabled = SDL_FALSE;
+bool WINRT_XAMLWasEnabled = false;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
 extern "C" ISwapChainBackgroundPanelNative *WINRT_GlobalSwapChainBackgroundPanelNative = NULL;
@@ -127,8 +127,8 @@ int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void *backgroundPane
     SDL_SetMainReady();
 
     // Make sure video-init knows that we're initializing XAML:
-    SDL_bool oldXAMLWasEnabledValue = WINRT_XAMLWasEnabled;
-    WINRT_XAMLWasEnabled = SDL_TRUE;
+    bool oldXAMLWasEnabledValue = WINRT_XAMLWasEnabled;
+    WINRT_XAMLWasEnabled = true;
 
     // Make sure video modes are detected now, while we still have access to the WinRT
     // CoreWindow.  WinRT will not allow the app's CoreWindow to be accessed via the

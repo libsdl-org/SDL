@@ -38,7 +38,7 @@ static int query_xfixes_version(Display *display, int major, int minor)
     return (major * 1000) + minor;
 }
 
-static SDL_bool xfixes_version_atleast(const int version, const int wantmajor, const int wantminor)
+static bool xfixes_version_atleast(const int version, const int wantmajor, const int wantminor)
 {
     return version >= ((wantmajor * 1000) + wantminor);
 }
@@ -97,7 +97,7 @@ int X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 
             SDL_memcpy(&wdata->barrier_rect, &window->mouse_rect, sizeof(wdata->barrier_rect));
 
-            wdata->pointer_barrier_active = SDL_TRUE;
+            wdata->pointer_barrier_active = true;
         }
     }
 
@@ -181,13 +181,13 @@ int X11_ConfineCursorWithFlags(SDL_VideoDevice *_this, SDL_Window *window, const
 
         /* User activated the confinement for this window. We use this later to reactivate
          * the confinement if it got deactivated by FocusOut or UnmapNotify */
-        wdata->pointer_barrier_active = SDL_TRUE;
+        wdata->pointer_barrier_active = true;
     } else {
         X11_DestroyPointerBarrier(_this, window);
 
         // Only set barrier inactive when user specified NULL and not handled by focus out.
         if (flags != X11_BARRIER_HANDLED_BY_EVENT) {
-            wdata->pointer_barrier_active = SDL_FALSE;
+            wdata->pointer_barrier_active = false;
         }
     }
     return 0;

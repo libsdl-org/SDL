@@ -45,7 +45,7 @@ int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, 
 
         Uint64 next_iteration = callback_rate_increment ? (SDL_GetTicksNS() + callback_rate_increment) : 0;
 
-        while ((rc = SDL_IterateMainCallbacks(SDL_TRUE)) == SDL_APP_CONTINUE) {
+        while ((rc = SDL_IterateMainCallbacks(true)) == SDL_APP_CONTINUE) {
             // !!! FIXME: this can be made more complicated if we decide to
             // !!! FIXME: optionally hand off callback responsibility to the
             // !!! FIXME: video subsystem (for example, if Wayland has a

@@ -39,10 +39,10 @@ static int shm_errhandler(Display *d, XErrorEvent *e)
     return X_handler(d, e);
 }
 
-static SDL_bool have_mitshm(Display *dpy)
+static bool have_mitshm(Display *dpy)
 {
     // Only use shared memory on local X servers
-    return X11_XShmQueryExtension(dpy) ? SDL_X11_HAVE_SHM : SDL_FALSE;
+    return X11_XShmQueryExtension(dpy) ? SDL_X11_HAVE_SHM : false;
 }
 
 #endif // !NO_SHARED_MEMORY
@@ -118,7 +118,7 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
             } else {
                 // Done!
                 data->ximage->byte_order = (SDL_BYTEORDER == SDL_BIG_ENDIAN) ? MSBFirst : LSBFirst;
-                data->use_mitshm = SDL_TRUE;
+                data->use_mitshm = true;
                 *pixels = shminfo->shmaddr;
                 return 0;
             }
@@ -241,7 +241,7 @@ void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
             X11_XShmDetach(display, &data->shminfo);
             X11_XSync(display, False);
             shmdt(data->shminfo.shmaddr);
-            data->use_mitshm = SDL_FALSE;
+            data->use_mitshm = false;
         }
 #endif // !NO_SHARED_MEMORY
 

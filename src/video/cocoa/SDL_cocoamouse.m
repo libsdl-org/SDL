@@ -302,7 +302,7 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
         SDL_SetMouseFocus(win);
         if (win) {
             SDL_assert(win == mouse->focus);
-            SDL_SendMouseMotion(0, win, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x - win->x, y - win->y);
+            SDL_SendMouseMotion(0, win, SDL_GLOBAL_MOUSE_ID, false, x - win->x, y - win->y);
         }
     }
 
@@ -314,7 +314,7 @@ static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
     return Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
 }
 
-static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
+static int Cocoa_SetRelativeMouseMode(bool enabled)
 {
     CGError result;
 
@@ -449,7 +449,7 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     NSPoint location;
     CGFloat lastMoveX, lastMoveY;
     float deltaX, deltaY;
-    SDL_bool seenWarp;
+    bool seenWarp;
     switch ([event type]) {
     case NSEventTypeMouseMoved:
     case NSEventTypeLeftMouseDragged:
@@ -516,7 +516,7 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, SDL_TRUE, deltaX, deltaY);
+    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, true, deltaX, deltaY);
 }
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
@@ -559,7 +559,7 @@ void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y)
     SDL_MouseData *data = (SDL_MouseData *)SDL_GetMouse()->internal;
     data->lastWarpX = x;
     data->lastWarpY = y;
-    data->seenWarp = SDL_TRUE;
+    data->seenWarp = true;
 
     DLog("(%g, %g)", x, y);
 }

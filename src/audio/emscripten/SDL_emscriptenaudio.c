@@ -297,9 +297,9 @@ static int EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
     return 0;
 }
 
-static SDL_bool EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    SDL_bool available, recording_available;
+    bool available, recording_available;
 
     impl->OpenDevice = EMSCRIPTENAUDIO_OpenDevice;
     impl->CloseDevice = EMSCRIPTENAUDIO_CloseDevice;
@@ -308,10 +308,10 @@ static SDL_bool EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->FlushRecording = EMSCRIPTENAUDIO_FlushRecording;
     impl->RecordDevice = EMSCRIPTENAUDIO_RecordDevice;
 
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = true;
 
     // technically, this is just runs in idle time in the main thread, but it's close enough to a "thread" for our purposes.
-    impl->ProvidesOwnCallbackThread = SDL_TRUE;
+    impl->ProvidesOwnCallbackThread = true;
 
     // check availability
     available = MAIN_THREAD_EM_ASM_INT({
@@ -343,7 +343,7 @@ static SDL_bool EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap EMSCRIPTENAUDIO_bootstrap = {
-    "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, SDL_FALSE
+    "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, false
 };
 
 /* *INDENT-ON* */ // clang-format on

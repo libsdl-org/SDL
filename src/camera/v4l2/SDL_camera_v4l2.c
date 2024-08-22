@@ -601,7 +601,7 @@ static int V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     }
 
     size_t size, pitch;
-    SDL_CalculateSurfaceSize(device->spec.format, device->spec.width, device->spec.height, &size, &pitch, SDL_FALSE);
+    SDL_CalculateSurfaceSize(device->spec.format, device->spec.width, device->spec.height, &size, &pitch, false);
 
     int rc = 0;
     switch (io) {
@@ -634,12 +634,12 @@ static int V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     }
 
     // Currently there is no user permission prompt for camera access, but maybe there will be a D-Bus portal interface at some point.
-    SDL_CameraPermissionOutcome(device, SDL_TRUE);
+    SDL_CameraPermissionOutcome(device, true);
 
     return 0;
 }
 
-static SDL_bool FindV4L2CameraByBusInfoCallback(SDL_Camera *device, void *userdata)
+static bool FindV4L2CameraByBusInfoCallback(SDL_Camera *device, void *userdata)
 {
     const V4L2DeviceHandle *handle = (const V4L2DeviceHandle *) device->handle;
     return (SDL_strcmp(handle->bus_info, (const char *) userdata) == 0);
@@ -820,7 +820,7 @@ static void V4L2_FreeDeviceHandle(SDL_Camera *device)
 }
 
 #ifdef SDL_USE_LIBUDEV
-static SDL_bool FindV4L2CameraByPathCallback(SDL_Camera *device, void *userdata)
+static bool FindV4L2CameraByPathCallback(SDL_Camera *device, void *userdata)
 {
     const V4L2DeviceHandle *handle = (const V4L2DeviceHandle *) device->handle;
     return (SDL_strcmp(handle->path, (const char *) userdata) == 0);
@@ -878,7 +878,7 @@ static void V4L2_DetectDevices(void)
 #endif // SDL_USE_LIBUDEV
 }
 
-static SDL_bool V4L2_Init(SDL_CameraDriverImpl *impl)
+static bool V4L2_Init(SDL_CameraDriverImpl *impl)
 {
     impl->DetectDevices = V4L2_DetectDevices;
     impl->OpenDevice = V4L2_OpenDevice;
@@ -889,11 +889,11 @@ static SDL_bool V4L2_Init(SDL_CameraDriverImpl *impl)
     impl->FreeDeviceHandle = V4L2_FreeDeviceHandle;
     impl->Deinitialize = V4L2_Deinitialize;
 
-    return SDL_TRUE;
+    return true;
 }
 
 CameraBootStrap V4L2_bootstrap = {
-    "v4l2", "SDL Video4Linux2 camera driver", V4L2_Init, SDL_FALSE
+    "v4l2", "SDL Video4Linux2 camera driver", V4L2_Init, false
 };
 
 #endif // SDL_CAMERA_DRIVER_V4L2

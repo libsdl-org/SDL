@@ -180,7 +180,7 @@ int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
                                      fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
 
         if (ret == 0) {
-            windata->waiting_for_flip = SDL_TRUE;
+            windata->waiting_for_flip = true;
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
         }

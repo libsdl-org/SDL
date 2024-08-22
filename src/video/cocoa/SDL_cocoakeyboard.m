@@ -274,7 +274,7 @@ static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned 
     }
 }
 
-static void UpdateKeymap(SDL_CocoaVideoData *data, SDL_bool send_event)
+static void UpdateKeymap(SDL_CocoaVideoData *data, bool send_event)
 {
     TISInputSourceRef key_layout;
     UCKeyboardLayout *keyLayoutPtr = NULL;
@@ -367,7 +367,7 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
 {
     SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
 
-    UpdateKeymap(data, SDL_FALSE);
+    UpdateKeymap(data, false);
 
     // Set our own names for the platform-dependent but layout-independent keys
     // This key is NumLock on the MacBook keyboard. :)
@@ -378,7 +378,7 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
     SDL_SetScancodeName(SDL_SCANCODE_RGUI, "Right Command");
 
     data.modifierFlags = (unsigned int)[NSEvent modifierFlags];
-    SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE);
+    SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? true : false);
 }
 
 int Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
@@ -458,7 +458,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     case NSEventTypeKeyDown:
         if (![event isARepeat]) {
             // See if we need to rebuild the keyboard layout
-            UpdateKeymap(data, SDL_TRUE);
+            UpdateKeymap(data, true);
         }
 
 #ifdef DEBUG_SCANCODES
@@ -509,7 +509,7 @@ typedef enum
 extern CGSConnection _CGSDefaultConnection(void);
 extern CGError CGSSetGlobalHotKeyOperatingMode(CGSConnection connection, CGSGlobalHotKeyOperatingMode mode);
 
-int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed)
+int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
 #ifdef SDL_MAC_NO_SANDBOX
     CGSSetGlobalHotKeyOperatingMode(_CGSDefaultConnection(), grabbed ? CGSGlobalHotKeyDisable : CGSGlobalHotKeyEnable);

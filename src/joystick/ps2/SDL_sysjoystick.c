@@ -141,10 +141,10 @@ static void PS2_JoystickDetect(void)
 {
 }
 
-static SDL_bool PS2_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool PS2_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     // We don't override any other drivers
-    return SDL_FALSE;
+    return false;
 }
 
 // Function to get the device-dependent name of a joystick
@@ -216,7 +216,7 @@ static int PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->naxes = PS2_TOTAL_AXIS;
     joystick->nhats = 0;
 
-    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
     return 0;
 }
@@ -264,7 +264,7 @@ static int PS2_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int 
 }
 
 // Sensor functionality
-static int PS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int PS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -338,9 +338,9 @@ static void PS2_JoystickQuit(void)
     deinit_joystick_driver(true);
 }
 
-static SDL_bool PS2_GetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool PS2_GetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_JoystickDriver SDL_PS2_JoystickDriver = {

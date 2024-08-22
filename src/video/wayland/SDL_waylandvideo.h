@@ -48,7 +48,7 @@ typedef struct
 
 struct SDL_VideoData
 {
-    SDL_bool initializing;
+    bool initializing;
     struct wl_display *display;
     int display_disconnected;
     struct wl_registry *registry;
@@ -90,12 +90,12 @@ struct SDL_VideoData
     struct wl_list output_list;
     struct wl_list output_order;
 
-    SDL_bool output_order_finalized;
+    bool output_order_finalized;
 
     int relative_mouse_mode;
-    SDL_bool display_externally_owned;
+    bool display_externally_owned;
 
-    SDL_bool scale_to_display_enabled;
+    bool scale_to_display_enabled;
 };
 
 struct SDL_DisplayData
@@ -110,7 +110,7 @@ struct SDL_DisplayData
     int x, y, screen_width, screen_height, refresh, transform;
     SDL_DisplayOrientation orientation;
     int physical_width, physical_height;
-    SDL_bool has_logical_position, has_logical_size;
+    bool has_logical_position, has_logical_size;
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
     int wl_output_done_count;
@@ -122,15 +122,15 @@ struct SDL_DisplayData
 
 extern void SDL_WAYLAND_register_surface(struct wl_surface *surface);
 extern void SDL_WAYLAND_register_output(struct wl_output *output);
-extern SDL_bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
-extern SDL_bool SDL_WAYLAND_own_output(struct wl_output *output);
+extern bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
+extern bool SDL_WAYLAND_own_output(struct wl_output *output);
 
 extern SDL_WindowData *Wayland_GetWindowDataForOwnedSurface(struct wl_surface *surface);
 void Wayland_AddWindowDataToExternalList(SDL_WindowData *data);
 void Wayland_RemoveWindowDataFromExternalList(SDL_WindowData *data);
 
-extern SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg);
+extern bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg);
 
-extern SDL_bool Wayland_VideoReconnect(SDL_VideoDevice *_this);
+extern bool Wayland_VideoReconnect(SDL_VideoDevice *_this);
 
 #endif // SDL_waylandvideo_h_

@@ -315,7 +315,7 @@ add_sdl_test_executable(testerror NONINTERACTIVE DISABLE_THREADS_ARGS "--no-thre
 
 set(build_options_dependent_tests )
 
-add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c)
+add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE NO_C90 SOURCES testevdev.c)
 
 if(MACOS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS

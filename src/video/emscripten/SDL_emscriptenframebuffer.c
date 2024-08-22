@@ -142,7 +142,7 @@ int Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
     }, surface->w, surface->h, surface->pixels, data->canvas_id);
     /* *INDENT-ON* */ // clang-format on
 
-    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
+    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
         // give back control to browser for screen refresh
         emscripten_sleep(0);
     }

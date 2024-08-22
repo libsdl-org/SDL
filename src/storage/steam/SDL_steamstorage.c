@@ -57,7 +57,7 @@ static int STEAM_CloseStorage(void *userdata)
 
 static SDL_bool STEAM_StorageReady(void *userdata)
 {
-    return SDL_TRUE;
+    return true;
 }
 
 static int STEAM_GetStoragePathInfo(void *userdata, const char *path, SDL_PathInfo *info)

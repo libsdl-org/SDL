@@ -101,10 +101,10 @@ static void PSP_JoystickDetect(void)
 {
 }
 
-static SDL_bool PSP_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool PSP_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     // We don't override any other drivers
-    return SDL_FALSE;
+    return false;
 }
 
 // Function to get the device-dependent name of a joystick
@@ -184,7 +184,7 @@ static int PSP_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int 
     return SDL_Unsupported();
 }
 
-static int PSP_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int PSP_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -245,9 +245,9 @@ static void PSP_JoystickQuit(void)
 {
 }
 
-static SDL_bool PSP_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool PSP_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_JoystickDriver SDL_PSP_JoystickDriver = {

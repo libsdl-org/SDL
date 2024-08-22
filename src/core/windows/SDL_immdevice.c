@@ -56,16 +56,16 @@ static const PROPERTYKEY SDL_PKEY_AudioEngine_DeviceFormat = { { 0xf19f064d, 0x8
 static const PROPERTYKEY SDL_PKEY_AudioEndpoint_GUID = { { 0x1da5d803, 0xd492, 0x4edd,{ 0x8c, 0x23, 0xe0, 0xc0, 0xff, 0xee, 0x7f, 0x0e, } }, 4 };
 /* *INDENT-ON* */ // clang-format on
 
-static SDL_bool FindByDevIDCallback(SDL_AudioDevice *device, void *userdata)
+static bool FindByDevIDCallback(SDL_AudioDevice *device, void *userdata)
 {
     LPCWSTR devid = (LPCWSTR)userdata;
     if (devid && device && device->handle) {
         const SDL_IMMDevice_HandleData *handle = (const SDL_IMMDevice_HandleData *)device->handle;
         if (handle->immdevice_id && SDL_wcscmp(handle->immdevice_id, devid) == 0) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 static SDL_AudioDevice *SDL_IMMDevice_FindByDevID(LPCWSTR devid)
@@ -120,7 +120,7 @@ void SDL_IMMDevice_FreeDeviceHandle(SDL_AudioDevice *device)
     }
 }
 
-static SDL_AudioDevice *SDL_IMMDevice_Add(const SDL_bool recording, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid, GUID *dsoundguid)
+static SDL_AudioDevice *SDL_IMMDevice_Add(const bool recording, const char *devname, WAVEFORMATEXTENSIBLE *fmt, LPCWSTR devid, GUID *dsoundguid)
 {
     /* You can have multiple endpoints on a device that are mutually exclusive ("Speakers" vs "Line Out" or whatever).
        In a perfect world, things that are unplugged won't be in this collection. The only gotcha is probably for
@@ -248,7 +248,7 @@ static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceStateChanged(IM
         if (SUCCEEDED(IMMDevice_QueryInterface(device, &SDL_IID_IMMEndpoint, (void **)&endpoint))) {
             EDataFlow flow;
             if (SUCCEEDED(IMMEndpoint_GetDataFlow(endpoint, &flow))) {
-                const SDL_bool recording = (flow == eCapture);
+                const bool recording = (flow == eCapture);
                 if (dwNewState == DEVICE_STATE_ACTIVE) {
                     char *utf8dev;
                     WAVEFORMATEXTENSIBLE fmt;
@@ -336,7 +336,7 @@ void SDL_IMMDevice_Quit(void)
     WIN_CoUninitialize();
 }
 
-int SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, SDL_bool recording)
+int SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, bool recording)
 {
     const Uint64 timeout = SDL_GetTicks() + 8000;  // intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep.
 
@@ -361,7 +361,7 @@ int SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, SDL_bool r
 
 }
 
-static void EnumerateEndpointsForFlow(const SDL_bool recording, SDL_AudioDevice **default_device)
+static void EnumerateEndpointsForFlow(const bool recording, SDL_AudioDevice **default_device)
 {
     /* Note that WASAPI separates "adapter devices" from "audio endpoint devices"
        ...one adapter device ("SoundBlaster Pro") might have multiple endpoint devices ("Speakers", "Line-Out"). */
@@ -422,8 +422,8 @@ static void EnumerateEndpointsForFlow(const SDL_bool recording, SDL_AudioDevice 
 
 void SDL_IMMDevice_EnumerateEndpoints(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
-    EnumerateEndpointsForFlow(SDL_FALSE, default_playback);
-    EnumerateEndpointsForFlow(SDL_TRUE, default_recording);
+    EnumerateEndpointsForFlow(false, default_playback);
+    EnumerateEndpointsForFlow(true, default_recording);
 
     // if this fails, we just won't get hotplug events. Carry on anyhow.
     IMMDeviceEnumerator_RegisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *)&notification_client);

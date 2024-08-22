@@ -75,8 +75,8 @@ char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
     return result;
 }
 
-SDL_bool HAIKU_HasClipboardText(SDL_VideoDevice *_this) {
-    SDL_bool result = SDL_FALSE;
+bool HAIKU_HasClipboardText(SDL_VideoDevice *_this) {
+    bool result = false;
     char *text = HAIKU_GetClipboardText(_this);
     if (text) {
         result = (text[0] != '\0');

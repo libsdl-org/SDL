@@ -40,8 +40,8 @@ SDL_Keymap *SDL_CreateKeymap(void)
         return NULL;
     }
 
-    keymap->scancode_to_keycode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, SDL_FALSE);
-    keymap->keycode_to_scancode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, SDL_FALSE);
+    keymap->scancode_to_keycode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, false);
+    keymap->keycode_to_scancode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, false);
     if (!keymap->scancode_to_keycode || !keymap->keycode_to_scancode) {
         SDL_DestroyKeymap(keymap);
         return NULL;
@@ -202,11 +202,11 @@ static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keym
     }
 
     if (scancode < SDL_SCANCODE_1) {
-        SDL_bool shifted = (modstate & SDL_KMOD_SHIFT) ? SDL_TRUE : SDL_FALSE;
+        bool shifted = (modstate & SDL_KMOD_SHIFT) ? true : false;
 #ifdef SDL_PLATFORM_APPLE
         // Apple maps to upper case for either shift or capslock inclusive
         if (modstate & SDL_KMOD_CAPS) {
-            shifted = SDL_TRUE;
+            shifted = true;
         }
 #else
         if (modstate & SDL_KMOD_CAPS) {
@@ -224,7 +224,7 @@ static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keym
     }
 
     if (scancode < SDL_SCANCODE_CAPSLOCK) {
-        SDL_bool shifted = (modstate & SDL_KMOD_SHIFT) ? SDL_TRUE : SDL_FALSE;
+        bool shifted = (modstate & SDL_KMOD_SHIFT) ? true : false;
 
         if (modstate & SDL_KMOD_MODE) {
             return SDLK_UNKNOWN;
@@ -983,7 +983,7 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
 
 const char *SDL_GetKeyName(SDL_Keycode key)
 {
-    const SDL_bool uppercase = SDL_TRUE;
+    const bool uppercase = true;
     char name[8];
     char *end;
 
@@ -1030,7 +1030,7 @@ const char *SDL_GetKeyName(SDL_Keycode key)
 
 SDL_Keycode SDL_GetKeyFromName(const char *name)
 {
-    const SDL_bool uppercase = SDL_TRUE;
+    const bool uppercase = true;
     SDL_Keycode key;
 
     // Check input
@@ -1088,5 +1088,5 @@ SDL_Keycode SDL_GetKeyFromName(const char *name)
         return key;
     }
 
-    return SDL_GetKeyFromScancode(SDL_GetScancodeFromName(name), SDL_KMOD_NONE, SDL_FALSE);
+    return SDL_GetKeyFromScancode(SDL_GetScancodeFromName(name), SDL_KMOD_NONE, false);
 }

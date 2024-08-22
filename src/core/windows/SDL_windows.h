@@ -135,16 +135,16 @@ extern void WIN_CoUninitialize(void);
 extern HRESULT WIN_RoInitialize(void);
 extern void WIN_RoUninitialize(void);
 
-// Returns SDL_TRUE if we're running on Windows XP (any service pack). DOES NOT CHECK XP "OR GREATER"!
+// Returns true if we're running on Windows XP (any service pack). DOES NOT CHECK XP "OR GREATER"!
 extern BOOL WIN_IsWindowsXP(void);
 
-// Returns SDL_TRUE if we're running on Windows Vista and newer
+// Returns true if we're running on Windows Vista and newer
 extern BOOL WIN_IsWindowsVistaOrGreater(void);
 
-// Returns SDL_TRUE if we're running on Windows 7 and newer
+// Returns true if we're running on Windows 7 and newer
 extern BOOL WIN_IsWindows7OrGreater(void);
 
-// Returns SDL_TRUE if we're running on Windows 8 and newer
+// Returns true if we're running on Windows 8 and newer
 extern BOOL WIN_IsWindows8OrGreater(void);
 
 // You need to SDL_free() the result of this call.
@@ -158,7 +158,7 @@ extern BOOL WIN_IsEqualIID(REFIID a, REFIID b);
 extern void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect);
 extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 
-// Returns SDL_TRUE if the rect is empty
+// Returns true if the rect is empty
 extern BOOL WIN_IsRectEmpty(const RECT *rect);
 
 extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);

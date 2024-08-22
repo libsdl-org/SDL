@@ -44,7 +44,7 @@ int SDL_InitHaptics(void)
     return status;
 }
 
-static SDL_bool SDL_GetHapticIndex(SDL_HapticID instance_id, int *driver_index)
+static bool SDL_GetHapticIndex(SDL_HapticID instance_id, int *driver_index)
 {
     int num_haptics, device_index;
 
@@ -54,13 +54,13 @@ static SDL_bool SDL_GetHapticIndex(SDL_HapticID instance_id, int *driver_index)
             SDL_HapticID haptic_id = SDL_SYS_HapticInstanceID(device_index);
             if (haptic_id == instance_id) {
                 *driver_index = device_index;
-                return SDL_TRUE;
+                return true;
             }
         }
     }
 
     SDL_SetError("Haptic device %" SDL_PRIu32 " not found", instance_id);
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_HapticID *SDL_GetHaptics(int *count)
@@ -134,7 +134,7 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
     }
 
     // Initialize the haptic device
-    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, SDL_TRUE);
+    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, true);
     haptic->instance_id = instance_id;
     haptic->rumble_id = -1;
     if (SDL_SYS_HapticOpen(haptic) < 0) {
@@ -195,9 +195,9 @@ const char *SDL_GetHapticName(SDL_Haptic *haptic)
 SDL_bool SDL_IsMouseHaptic(void)
 {
     if (SDL_SYS_HapticMouse() < 0) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 SDL_Haptic *SDL_OpenHapticFromMouse(void)
@@ -216,7 +216,7 @@ SDL_Haptic *SDL_OpenHapticFromMouse(void)
 
 SDL_bool SDL_IsJoystickHaptic(SDL_Joystick *joystick)
 {
-    SDL_bool result = SDL_FALSE;
+    bool result = false;
 
     SDL_LockJoysticks();
     {
@@ -315,7 +315,7 @@ void SDL_CloseHaptic(SDL_Haptic *haptic)
         }
     }
     SDL_SYS_HapticClose(haptic);
-    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, SDL_FALSE);
+    SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, false);
 
     // Remove from the list
     hapticlist = SDL_haptics;
@@ -379,16 +379,16 @@ int SDL_GetNumHapticAxes(SDL_Haptic *haptic)
 
 SDL_bool SDL_HapticEffectSupported(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
 {
-    CHECK_HAPTIC_MAGIC(haptic, SDL_FALSE);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     if (!effect) {
-        return SDL_FALSE;
+        return false;
     }
 
     if ((haptic->supported & effect->type) != 0) {
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
@@ -402,7 +402,7 @@ int SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
     }
 
     // Check to see if effect is supported
-    if (SDL_HapticEffectSupported(haptic, effect) == SDL_FALSE) {
+    if (SDL_HapticEffectSupported(haptic, effect) == false) {
         return SDL_SetError("Haptic: Effect not supported by haptic device.");
     }
 
@@ -614,7 +614,7 @@ int SDL_StopHapticEffects(SDL_Haptic *haptic)
 
 SDL_bool SDL_HapticRumbleSupported(SDL_Haptic *haptic)
 {
-    CHECK_HAPTIC_MAGIC(haptic, SDL_FALSE);
+    CHECK_HAPTIC_MAGIC(haptic, false);
 
     // Most things can use SINE, but XInput only has LEFTRIGHT.
     return (haptic->supported & (SDL_HAPTIC_SINE | SDL_HAPTIC_LEFTRIGHT)) != 0;

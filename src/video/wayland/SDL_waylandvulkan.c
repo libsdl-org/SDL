@@ -45,8 +45,8 @@ int Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasWaylandSurfaceExtension = SDL_FALSE;
+    bool hasSurfaceExtension = false;
+    bool hasWaylandSurfaceExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
@@ -86,9 +86,9 @@ int Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     }
     for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasSurfaceExtension = SDL_TRUE;
+            hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasWaylandSurfaceExtension = SDL_TRUE;
+            hasWaylandSurfaceExtension = true;
         }
     }
     SDL_free(extensions);
@@ -175,7 +175,7 @@ void Wayland_Vulkan_DestroySurface(SDL_VideoDevice *_this,
     }
 }
 
-SDL_bool Wayland_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
+bool Wayland_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
                                                VkInstance instance,
                                                VkPhysicalDevice physicalDevice,
                                                Uint32 queueFamilyIndex)
@@ -189,13 +189,13 @@ SDL_bool Wayland_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
 
     if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
+        return false;
     }
 
     if (!vkGetPhysicalDeviceWaylandPresentationSupportKHR) {
         SDL_SetError(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
-        return SDL_FALSE;
+        return false;
     }
 
     return vkGetPhysicalDeviceWaylandPresentationSupportKHR(physicalDevice,

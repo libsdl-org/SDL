@@ -35,7 +35,7 @@
 
 // For Vista+, we can enumerate DSound devices with IMMDevice
 #ifdef HAVE_MMDEVICEAPI_H
-static SDL_bool SupportsIMMDevice = SDL_FALSE;
+static bool SupportsIMMDevice = false;
 #endif
 
 // DirectX function pointers for audio
@@ -170,7 +170,7 @@ static void DSOUND_FreeDeviceHandle(SDL_AudioDevice *device)
 // FindAllDevs is presumably only used on WinXP; Vista and later can use IMMDevice for better results.
 typedef struct FindAllDevsData
 {
-    SDL_bool recording;
+    bool recording;
     SDL_AudioDevice **default_device;
     LPCGUID default_device_guid;
 } FindAllDevsData;
@@ -216,12 +216,12 @@ static void DSOUND_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDe
         FindAllDevsData data;
         GUID guid;
 
-        data.recording = SDL_TRUE;
+        data.recording = true;
         data.default_device = default_recording;
         data.default_device_guid = (pGetDeviceID(&SDL_DSDEVID_DefaultCapture, &guid) == DS_OK) ? &guid : NULL;
         pDirectSoundCaptureEnumerateW(FindAllDevs, &data);
 
-        data.recording = SDL_FALSE;
+        data.recording = false;
         data.default_device = default_playback;
         data.default_device_guid = (pGetDeviceID(&SDL_DSDEVID_DefaultPlayback, &guid) == DS_OK) ? &guid : NULL;
         pDirectSoundEnumerateW(FindAllDevs, &data);
@@ -533,7 +533,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
 
     const DWORD numchunks = 8;
     DWORD bufsize;
-    SDL_bool tried_format = SDL_FALSE;
+    bool tried_format = false;
     SDL_AudioFormat test_format;
     const SDL_AudioFormat *closefmts = SDL_ClosestAudioFormats(device->spec.format);
     while ((test_format = *(closefmts++)) != 0) {
@@ -542,7 +542,7 @@ static int DSOUND_OpenDevice(SDL_AudioDevice *device)
         case SDL_AUDIO_S16:
         case SDL_AUDIO_S32:
         case SDL_AUDIO_F32:
-            tried_format = SDL_TRUE;
+            tried_format = true;
 
             device->spec.format = test_format;
 
@@ -641,14 +641,14 @@ static void DSOUND_Deinitialize(void)
 {
     DSOUND_Unload();
 #ifdef HAVE_MMDEVICEAPI_H
-    SupportsIMMDevice = SDL_FALSE;
+    SupportsIMMDevice = false;
 #endif
 }
 
-static SDL_bool DSOUND_Init(SDL_AudioDriverImpl *impl)
+static bool DSOUND_Init(SDL_AudioDriverImpl *impl)
 {
     if (!DSOUND_Load()) {
-        return SDL_FALSE;
+        return false;
     }
 
 #ifdef HAVE_MMDEVICEAPI_H
@@ -668,13 +668,13 @@ static SDL_bool DSOUND_Init(SDL_AudioDriverImpl *impl)
     impl->DeinitializeStart = DSOUND_DeinitializeStart;
     impl->Deinitialize = DSOUND_Deinitialize;
 
-    impl->HasRecordingSupport = SDL_TRUE;
+    impl->HasRecordingSupport = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap DSOUND_bootstrap = {
-    "directsound", "DirectSound", DSOUND_Init, SDL_FALSE
+    "directsound", "DirectSound", DSOUND_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_DSOUND

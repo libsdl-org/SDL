@@ -228,7 +228,7 @@ static int HAIKU_ShowCursor(SDL_Cursor *cursor)
 	return 0;
 }
 
-static int HAIKU_SetRelativeMouseMode(SDL_bool enabled)
+static int HAIKU_SetRelativeMouseMode(bool enabled)
 {
     SDL_Window *window = SDL_GetMouseFocus();
     if (!window) {
@@ -279,8 +279,8 @@ int HAIKU_VideoInit(SDL_VideoDevice *_this)
     HAIKU_MouseInit(_this);
 
     // Assume we have a mouse and keyboard
-    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
-    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
+    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
+    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
 
 #ifdef SDL_VIDEO_OPENGL
         // testgl application doesn't load library, just tries to load symbols

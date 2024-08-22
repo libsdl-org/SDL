@@ -267,7 +267,7 @@ static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_
        straight-alpha pixels, so we always have to convert. */
     SDL_PremultiplyAlpha(surface->w, surface->h,
                          surface->format, surface->pixels, surface->pitch,
-                         SDL_PIXELFORMAT_ARGB8888, curdata->buffer, surface->w * 4, SDL_TRUE);
+                         SDL_PIXELFORMAT_ARGB8888, curdata->buffer, surface->w * 4, true);
 
     cursor->internal = curdata;
 
@@ -351,7 +351,7 @@ static int KMSDRM_WarpMouseGlobal(float x, float y)
         SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
 
         // Update internal mouse position.
-        SDL_SendMouseMotion(0, mouse->focus, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
+        SDL_SendMouseMotion(0, mouse->focus, SDL_GLOBAL_MOUSE_ID, false, x, y);
 
         // And now update the cursor graphic position on screen.
         if (dispdata->cursor_bo) {
@@ -396,7 +396,7 @@ void KMSDRM_InitMouse(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
        we don't want several cursors to be created for the same display. */
     if (!dispdata->default_cursor_init) {
         SDL_SetDefaultCursor(KMSDRM_CreateDefaultCursor());
-        dispdata->default_cursor_init = SDL_TRUE;
+        dispdata->default_cursor_init = true;
     }
 }
 

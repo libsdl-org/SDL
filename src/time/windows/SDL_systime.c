@@ -89,7 +89,7 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
     GetSystemTimePreciseAsFileTime(&ft);
 #else
     static pfnGetSystemTimePreciseAsFileTime pGetSystemTimePreciseAsFileTime = NULL;
-    static SDL_bool load_attempted = SDL_FALSE;
+    static bool load_attempted = false;
 
     // Only available in Win8/Server 2012 or higher.
     if (!pGetSystemTimePreciseAsFileTime && !load_attempted) {
@@ -97,7 +97,7 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
         if (kernel32) {
             pGetSystemTimePreciseAsFileTime = (pfnGetSystemTimePreciseAsFileTime)GetProcAddress(kernel32, "GetSystemTimePreciseAsFileTime");
         }
-        load_attempted = SDL_TRUE;
+        load_attempted = true;
     }
 
     if (pGetSystemTimePreciseAsFileTime) {

@@ -34,7 +34,7 @@ extern void Cocoa_QuitMouse(SDL_VideoDevice *_this);
 typedef struct
 {
     // Whether we've seen a cursor warp since the last move event.
-    SDL_bool seenWarp;
+    bool seenWarp;
     // What location our last cursor warp was to.
     CGFloat lastWarpX;
     CGFloat lastWarpY;

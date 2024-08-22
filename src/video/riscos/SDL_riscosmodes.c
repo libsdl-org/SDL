@@ -105,7 +105,7 @@ static int read_mode_variable(int *block, int var)
     return regs.r[2];
 }
 
-static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool extended)
+static bool read_mode_block(int *block, SDL_DisplayMode *mode, bool extended)
 {
     int xres, yres, ncolour, modeflags, log2bpp, rate;
 
@@ -124,7 +124,7 @@ static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool exte
         log2bpp = block[5];
         rate = block[6];
     } else {
-        return SDL_FALSE;
+        return false;
     }
 
     if (extended) {
@@ -141,7 +141,7 @@ static SDL_bool read_mode_block(int *block, SDL_DisplayMode *mode, SDL_bool exte
     mode->format = RISCOS_ModeToPixelFormat(ncolour, modeflags, log2bpp);
     mode->refresh_rate = (float)rate;
 
-    return SDL_TRUE;
+    return true;
 }
 
 static void *convert_mode_block(const int *block)
@@ -213,7 +213,7 @@ int RISCOS_InitModes(SDL_VideoDevice *_this)
     }
 
     current_mode = (int *)regs.r[1];
-    if (!read_mode_block(current_mode, &mode, SDL_TRUE)) {
+    if (!read_mode_block(current_mode, &mode, true)) {
         return SDL_SetError("Unsupported mode block format %d", current_mode[0]);
     }
 
@@ -259,7 +259,7 @@ int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     }
 
     for (pos = block; pos < (void *)regs.r[6]; pos += *((int *)pos)) {
-        if (!read_mode_block(pos + 4, &mode, SDL_FALSE)) {
+        if (!read_mode_block(pos + 4, &mode, false)) {
             continue;
         }
 

@@ -107,7 +107,7 @@ static void SDLEmscriptenCameraPermissionOutcome(SDL_Camera *device, int approve
         device->acquire_surface->w = w;
         device->acquire_surface->h = h;
     }
-    SDL_CameraPermissionOutcome(device, approved ? SDL_TRUE : SDL_FALSE);
+    SDL_CameraPermissionOutcome(device, approved ? true : false);
 }
 
 static int EMSCRIPTENCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
@@ -234,7 +234,7 @@ static void EMSCRIPTENCAMERA_DetectDevices(void)
     }
 }
 
-static SDL_bool EMSCRIPTENCAMERA_Init(SDL_CameraDriverImpl *impl)
+static bool EMSCRIPTENCAMERA_Init(SDL_CameraDriverImpl *impl)
 {
     MAIN_THREAD_EM_ASM({
         if (typeof(Module['SDL3']) === 'undefined') {
@@ -252,13 +252,13 @@ static SDL_bool EMSCRIPTENCAMERA_Init(SDL_CameraDriverImpl *impl)
     impl->FreeDeviceHandle = EMSCRIPTENCAMERA_FreeDeviceHandle;
     impl->Deinitialize = EMSCRIPTENCAMERA_Deinitialize;
 
-    impl->ProvidesOwnCallbackThread = SDL_TRUE;
+    impl->ProvidesOwnCallbackThread = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 CameraBootStrap EMSCRIPTENCAMERA_bootstrap = {
-    "emscripten", "SDL Emscripten MediaStream camera driver", EMSCRIPTENCAMERA_Init, SDL_FALSE
+    "emscripten", "SDL Emscripten MediaStream camera driver", EMSCRIPTENCAMERA_Init, false
 };
 
 /* *INDENT-ON* */ // clang-format on

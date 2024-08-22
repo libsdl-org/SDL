@@ -31,7 +31,7 @@ typedef enum
     FDT_OPENFOLDER
 } cocoa_FileDialogType;
 
-void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, SDL_bool allow_many)
+void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
 {
 #if defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_IOS)
     SDL_SetError("tvOS and iOS don't support path-based file dialogs");
@@ -63,14 +63,14 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
         break;
     case FDT_OPEN:
         dialog_as_open = [NSOpenPanel openPanel];
-        [dialog_as_open setAllowsMultipleSelection:((allow_many == SDL_TRUE) ? YES : NO)];
+        [dialog_as_open setAllowsMultipleSelection:((allow_many == true) ? YES : NO)];
         dialog = dialog_as_open;
         break;
     case FDT_OPENFOLDER:
         dialog_as_open = [NSOpenPanel openPanel];
         [dialog_as_open setCanChooseFiles:NO];
         [dialog_as_open setCanChooseDirectories:YES];
-        [dialog_as_open setAllowsMultipleSelection:((allow_many == SDL_TRUE) ? YES : NO)];
+        [dialog_as_open setAllowsMultipleSelection:((allow_many == true) ? YES : NO)];
         dialog = dialog_as_open;
         break;
     };

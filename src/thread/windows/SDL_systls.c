@@ -40,7 +40,7 @@
 #endif
 
 static DWORD thread_local_storage = TLS_OUT_OF_INDEXES;
-static SDL_bool generic_local_storage = SDL_FALSE;
+static bool generic_local_storage = false;
 
 void SDL_SYS_InitTLSData(void)
 {
@@ -48,7 +48,7 @@ void SDL_SYS_InitTLSData(void)
         thread_local_storage = TlsAlloc();
         if (thread_local_storage == TLS_OUT_OF_INDEXES) {
             SDL_Generic_InitTLSData();
-            generic_local_storage = SDL_TRUE;
+            generic_local_storage = true;
         }
     }
 }
@@ -81,7 +81,7 @@ void SDL_SYS_QuitTLSData(void)
 {
     if (generic_local_storage) {
         SDL_Generic_QuitTLSData();
-        generic_local_storage = SDL_FALSE;
+        generic_local_storage = false;
     } else {
         if (thread_local_storage != TLS_OUT_OF_INDEXES) {
             TlsFree(thread_local_storage);

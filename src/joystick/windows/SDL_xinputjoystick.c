@@ -37,19 +37,19 @@ extern "C" {
 /*
  * Internal stuff.
  */
-static SDL_bool s_bXInputEnabled = SDL_TRUE;
+static bool s_bXInputEnabled = true;
 
-SDL_bool SDL_XINPUT_Enabled(void)
+bool SDL_XINPUT_Enabled(void)
 {
     return s_bXInputEnabled;
 }
 
 int SDL_XINPUT_JoystickInit(void)
 {
-    s_bXInputEnabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE);
+    s_bXInputEnabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, true);
 
     if (s_bXInputEnabled && WIN_LoadXInputDLL() < 0) {
-        s_bXInputEnabled = SDL_FALSE; // oh well.
+        s_bXInputEnabled = false; // oh well.
     }
     return 0;
 }
@@ -92,7 +92,7 @@ static const char *GetXInputName(const Uint8 userid, BYTE SubType)
     return name;
 }
 
-static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
+static bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 {
     SDL_XINPUT_CAPABILITIES_EX capabilities;
 
@@ -104,7 +104,7 @@ static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Ui
         if (pPID) {
             *pPID = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
         }
-        return SDL_FALSE;
+        return false;
     }
 
     // Fixup for Wireless Xbox 360 Controller
@@ -122,7 +122,7 @@ static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Ui
     if (pVersion) {
         *pVersion = capabilities.ProductVersion;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
@@ -190,7 +190,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
 
     name = GetXInputName(userid, SubType);
     GetXInputDeviceInfo(userid, &vendor, &product, &version);
-    pNewJoystick->bXInputDevice = SDL_TRUE;
+    pNewJoystick->bXInputDevice = true;
     pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
     if (!pNewJoystick->joystickname) {
         SDL_free(pNewJoystick);
@@ -232,12 +232,12 @@ void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
     }
 }
 
-SDL_bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
+bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
 {
     int iuserid;
 
     if (!s_bXInputEnabled) {
-        return SDL_FALSE;
+        return false;
     }
 
     // iterate in reverse, so these are in the final list in ascending numeric order.
@@ -248,11 +248,11 @@ SDL_bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 versio
         Uint16 slot_version;
         if (GetXInputDeviceInfo(userid, &slot_vendor, &slot_product, &slot_version)) {
             if (vendor == slot_vendor && product == slot_product && version == slot_version) {
-                return SDL_TRUE;
+                return true;
             }
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
@@ -266,7 +266,7 @@ int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
     SDL_assert(XINPUTSETSTATE);
     SDL_assert(userId < XUSER_MAX_COUNT);
 
-    joystick->hwdata->bXInputDevice = SDL_TRUE;
+    joystick->hwdata->bXInputDevice = true;
 
     if (XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities) != ERROR_SUCCESS) {
         SDL_free(joystick->hwdata);
@@ -282,7 +282,7 @@ int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystic
     joystick->nbuttons = 11;
     joystick->nhats = 1;
 
-    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
     return 0;
 }
@@ -417,7 +417,7 @@ void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick)
 void SDL_XINPUT_JoystickQuit(void)
 {
     if (s_bXInputEnabled) {
-        s_bXInputEnabled = SDL_FALSE;
+        s_bXInputEnabled = false;
         WIN_UnloadXInputDLL();
     }
 }
@@ -431,9 +431,9 @@ void SDL_XINPUT_JoystickQuit(void)
 
 typedef struct JoyStick_DeviceData JoyStick_DeviceData;
 
-SDL_bool SDL_XINPUT_Enabled(void)
+bool SDL_XINPUT_Enabled(void)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_XINPUT_JoystickInit(void)
@@ -445,9 +445,9 @@ void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
 }
 
-SDL_bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
+bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 int SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)

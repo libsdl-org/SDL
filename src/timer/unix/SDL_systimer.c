@@ -64,22 +64,22 @@
 #if !defined(HAVE_CLOCK_GETTIME) && defined(SDL_PLATFORM_APPLE)
 mach_timebase_info_data_t mach_base_info;
 #endif
-static SDL_bool checked_monotonic_time = SDL_FALSE;
-static SDL_bool has_monotonic_time = SDL_FALSE;
+static bool checked_monotonic_time = false;
+static bool has_monotonic_time = false;
 
 static void CheckMonotonicTime(void)
 {
 #ifdef HAVE_CLOCK_GETTIME
     struct timespec value;
     if (clock_gettime(SDL_MONOTONIC_CLOCK, &value) == 0) {
-        has_monotonic_time = SDL_TRUE;
+        has_monotonic_time = true;
     } else
 #elif defined(SDL_PLATFORM_APPLE)
     if (mach_timebase_info(&mach_base_info) == 0) {
-        has_monotonic_time = SDL_TRUE;
+        has_monotonic_time = true;
     }
 #endif
-    checked_monotonic_time = SDL_TRUE;
+    checked_monotonic_time = true;
 }
 
 Uint64 SDL_GetPerformanceCounter(void)
@@ -101,7 +101,7 @@ Uint64 SDL_GetPerformanceCounter(void)
 #elif defined(SDL_PLATFORM_APPLE)
         ticks = mach_absolute_time();
 #else
-        SDL_assert(SDL_FALSE);
+        SDL_assert(false);
         ticks = 0;
 #endif
     } else {
@@ -147,7 +147,7 @@ void SDL_SYS_DelayNS(Uint64 ns)
 #endif
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
-    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
+    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
         // pseudo-synchronous pause, used directly or through e.g. SDL_WaitEvent
         emscripten_sleep(ns / SDL_NS_PER_MS);
         return;

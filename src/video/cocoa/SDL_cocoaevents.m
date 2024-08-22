@@ -62,7 +62,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
     SDL_SendQuit();
 }
 
-static SDL_bool s_bShouldHandleEventsInSDLApplication = SDL_FALSE;
+static bool s_bShouldHandleEventsInSDLApplication = false;
 
 static void Cocoa_DispatchEvent(NSEvent *theEvent)
 {
@@ -142,7 +142,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     self = [super init];
     if (self) {
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-        SDL_bool registerActivationHandlers = SDL_GetHintBoolean("SDL_MAC_REGISTER_ACTIVATION_HANDLERS", SDL_TRUE);
+        bool registerActivationHandlers = SDL_GetHintBoolean("SDL_MAC_REGISTER_ACTIVATION_HANDLERS", true);
 
         seenFirstActivate = NO;
 
@@ -310,7 +310,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    if (!SDL_GetHintBoolean("SDL_MAC_REGISTER_ACTIVATION_HANDLERS", SDL_TRUE))
+    if (!SDL_GetHintBoolean("SDL_MAC_REGISTER_ACTIVATION_HANDLERS", true))
         return;
 
     /* The menu bar of SDL apps which don't have the typical .app bundle
@@ -318,7 +318,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
      * de-focused and re-focused), if this call is in Cocoa_RegisterApp instead
      * of here. https://bugzilla.libsdl.org/show_bug.cgi?id=3051
      */
-    if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, false)) {
         // Get more aggressive for Catalina: activate the Dock first so we definitely reset all activation state.
         for (NSRunningApplication *i in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
             [i activateWithOptions:NSApplicationActivateIgnoringOtherApps];
@@ -504,9 +504,9 @@ void Cocoa_RegisterApp(void)
             [SDL3Application sharedApplication];
             SDL_assert(NSApp != nil);
 
-            s_bShouldHandleEventsInSDLApplication = SDL_TRUE;
+            s_bShouldHandleEventsInSDLApplication = true;
 
-            if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
+            if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, false)) {
                 [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
             }
 

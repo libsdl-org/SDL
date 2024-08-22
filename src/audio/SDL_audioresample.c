@@ -533,7 +533,7 @@ static void Transpose4x4(Cubic *data)
 static void SetupAudioResampler(void)
 {
     int i, j;
-    SDL_bool transpose = SDL_FALSE;
+    bool transpose = false;
 
     GenerateResamplerFilter();
 
@@ -542,7 +542,7 @@ static void SetupAudioResampler(void)
         for (i = 0; i < 8; ++i) {
             ResampleFrame[i] = ResampleFrame_Generic_SSE;
         }
-        transpose = SDL_TRUE;
+        transpose = true;
     } else
 #endif
 #ifdef SDL_NEON_INTRINSICS
@@ -550,7 +550,7 @@ static void SetupAudioResampler(void)
         for (i = 0; i < 8; ++i) {
             ResampleFrame[i] = ResampleFrame_Generic_NEON;
         }
-        transpose = SDL_TRUE;
+        transpose = true;
     } else
 #endif
     {

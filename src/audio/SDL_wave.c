@@ -1776,7 +1776,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
     Uint32 chunkcountlimit = 10000;
     const char *hint;
     Sint64 RIFFstart, RIFFend, lastchunkpos;
-    SDL_bool RIFFlengthknown = SDL_FALSE;
+    bool RIFFlengthknown = false;
     WaveFormat *format = &file->format;
     WaveChunk *chunk = &file->chunk;
     WaveChunk RIFFchunk;
@@ -1842,7 +1842,7 @@ static int WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uint
         SDL_FALLTHROUGH;
     case RiffSizeForce:
         RIFFend = RIFFchunk.position + RIFFchunk.length;
-        RIFFlengthknown = SDL_TRUE;
+        RIFFlengthknown = true;
         break;
     case RiffSizeMaximum:
         RIFFend = SDL_MAX_SINT64;

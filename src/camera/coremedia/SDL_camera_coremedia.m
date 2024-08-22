@@ -83,16 +83,16 @@ static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormat *pixel_format
 @end
 
 
-static SDL_bool CheckCameraPermissions(SDL_Camera *device)
+static bool CheckCameraPermissions(SDL_Camera *device)
 {
     if (device->permission == 0) {  // still expecting a permission result.
         if (@available(macOS 14, *)) {
             const AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
             if (status != AVAuthorizationStatusNotDetermined) {   // NotDetermined == still waiting for an answer from the user.
-                SDL_CameraPermissionOutcome(device, (status == AVAuthorizationStatusAuthorized) ? SDL_TRUE : SDL_FALSE);
+                SDL_CameraPermissionOutcome(device, (status == AVAuthorizationStatusAuthorized) ? true : false);
             }
         } else {
-            SDL_CameraPermissionOutcome(device, SDL_TRUE);  // always allowed (or just unqueryable...?) on older macOS.
+            SDL_CameraPermissionOutcome(device, true);  // always allowed (or just unqueryable...?) on older macOS.
         }
     }
 
@@ -408,11 +408,11 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
     }
 }
 
-static SDL_bool FindCoreMediaCameraByUniqueID(SDL_Camera *device, void *userdata)
+static bool FindCoreMediaCameraByUniqueID(SDL_Camera *device, void *userdata)
 {
     NSString *uniqueid = (__bridge NSString *) userdata;
     AVCaptureDevice *avdev = (__bridge AVCaptureDevice *) device->handle;
-    return ([uniqueid isEqualToString:avdev.uniqueID]) ? SDL_TRUE : SDL_FALSE;
+    return ([uniqueid isEqualToString:avdev.uniqueID]) ? true : false;
 }
 
 static void MaybeAddDevice(AVCaptureDevice *avdevice)
@@ -484,7 +484,7 @@ static void COREMEDIA_Deinitialize(void)
     // !!! FIXME: disable hotplug.
 }
 
-static SDL_bool COREMEDIA_Init(SDL_CameraDriverImpl *impl)
+static bool COREMEDIA_Init(SDL_CameraDriverImpl *impl)
 {
     impl->DetectDevices = COREMEDIA_DetectDevices;
     impl->OpenDevice = COREMEDIA_OpenDevice;
@@ -495,13 +495,13 @@ static SDL_bool COREMEDIA_Init(SDL_CameraDriverImpl *impl)
     impl->FreeDeviceHandle = COREMEDIA_FreeDeviceHandle;
     impl->Deinitialize = COREMEDIA_Deinitialize;
 
-    impl->ProvidesOwnCallbackThread = SDL_TRUE;
+    impl->ProvidesOwnCallbackThread = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 CameraBootStrap COREMEDIA_bootstrap = {
-    "coremedia", "SDL Apple CoreMedia camera driver", COREMEDIA_Init, SDL_FALSE
+    "coremedia", "SDL Apple CoreMedia camera driver", COREMEDIA_Init, false
 };
 
 #endif // SDL_CAMERA_DRIVER_COREMEDIA

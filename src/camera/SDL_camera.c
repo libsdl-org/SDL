@@ -542,7 +542,7 @@ void SDL_CameraDisconnected(SDL_Camera *device)
 
     ObtainPhysicalCameraObj(device);
 
-    const SDL_bool first_disconnect = SDL_AtomicCompareAndSwap(&device->zombie, 0, 1);
+    const bool first_disconnect = SDL_AtomicCompareAndSwap(&device->zombie, 0, 1);
     if (first_disconnect) {   // if already disconnected this device, don't do it twice.
         // Swap in "Zombie" versions of the usual platform interfaces, so the device will keep
         // making progress until the app closes it. Otherwise, streams might continue to
@@ -580,7 +580,7 @@ void SDL_CameraDisconnected(SDL_Camera *device)
     }
 }
 
-void SDL_CameraPermissionOutcome(SDL_Camera *device, SDL_bool approved)
+void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved)
 {
     if (!device) {
         return;
@@ -618,7 +618,7 @@ void SDL_CameraPermissionOutcome(SDL_Camera *device, SDL_bool approved)
 }
 
 
-SDL_Camera *SDL_FindPhysicalCameraByCallback(SDL_bool (*callback)(SDL_Camera *device, void *userdata), void *userdata)
+SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(SDL_Camera *device, void *userdata), void *userdata)
 {
     if (!SDL_GetCurrentCameraDriver()) {
         SDL_SetError("Camera subsystem is not initialized");
@@ -784,22 +784,22 @@ void SDL_CameraThreadSetup(SDL_Camera *device)
 #endif
 }
 
-SDL_bool SDL_CameraThreadIterate(SDL_Camera *device)
+bool SDL_CameraThreadIterate(SDL_Camera *device)
 {
     SDL_LockMutex(device->lock);
 
     if (SDL_AtomicGet(&device->shutdown)) {
         SDL_UnlockMutex(device->lock);
-        return SDL_FALSE;  // we're done, shut it down.
+        return false;  // we're done, shut it down.
     }
 
     const int permission = device->permission;
     if (permission <= 0) {
         SDL_UnlockMutex(device->lock);
-        return (permission < 0) ? SDL_FALSE : SDL_TRUE;  // if permission was denied, shut it down. if undecided, we're done for now.
+        return (permission < 0) ? false : true;  // if permission was denied, shut it down. if undecided, we're done for now.
     }
 
-    SDL_bool failed = SDL_FALSE;  // set to true if disaster worthy of treating the device as lost has happened.
+    bool failed = false;  // set to true if disaster worthy of treating the device as lost has happened.
     SDL_Surface *acquired = NULL;
     SDL_Surface *output_surface = NULL;
     SurfaceList *slist = NULL;
@@ -851,7 +851,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_Camera *device)
         #if DEBUG_CAMERA
         SDL_Log("CAMERA: dev[%p] error AcquireFrame: %s", device, SDL_GetError());
         #endif
-        failed = SDL_TRUE;
+        failed = true;
     }
 
     // we can let go of the lock once we've tried to grab a frame of video and maybe moved the output frame off the empty list.
@@ -908,7 +908,7 @@ SDL_bool SDL_CameraThreadIterate(SDL_Camera *device)
         SDL_UnlockMutex(device->lock);
     }
 
-    return SDL_TRUE;  // always go on if not shutting down, even if device failed.
+    return true;  // always go on if not shutting down, even if device failed.
 }
 
 void SDL_CameraThreadShutdown(SDL_Camera *device)
@@ -1140,7 +1140,7 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
 
     // if we have to scale _and_ convert, we need a middleman surface, since we can't do both changes at once.
     if (device->needs_scaling && device->needs_conversion) {
-        const SDL_bool downsampling_first = (device->needs_scaling < 0);
+        const bool downsampling_first = (device->needs_scaling < 0);
         const SDL_CameraSpec *s = downsampling_first ? &device->spec : &closest;
         const SDL_PixelFormat fmt = downsampling_first ? closest.format : device->spec.format;
         device->conversion_surface = SDL_CreateSurface(s->width, s->height, fmt);
@@ -1229,7 +1229,7 @@ SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
         slist = slist->next;
     }
 
-    const SDL_bool list_is_empty = (slist == slistprev);
+    const bool list_is_empty = (slist == slistprev);
     if (!list_is_empty) { // report the oldest frame.
         if (timestampNS) {
             *timestampNS = slist->timestampNS;
@@ -1398,7 +1398,7 @@ static Uint32 HashCameraID(const void *key, void *data)
     return ((Uint32) ((uintptr_t) key)) - 1;
 }
 
-static SDL_bool MatchCameraID(const void *a, const void *b, void *data)
+static bool MatchCameraID(const void *a, const void *b, void *data)
 {
     return (a == b);  // simple integers, just compare them as pointer values.
 }
@@ -1419,7 +1419,7 @@ int SDL_CameraInit(const char *driver_name)
         return -1;
     }
 
-    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashCameraID, MatchCameraID, NukeCameraHashItem, SDL_FALSE);
+    SDL_HashTable *device_hash = SDL_CreateHashTable(NULL, 8, HashCameraID, MatchCameraID, NukeCameraHashItem, false);
     if (!device_hash) {
         SDL_DestroyRWLock(device_hash_lock);
         return -1;
@@ -1430,8 +1430,8 @@ int SDL_CameraInit(const char *driver_name)
         driver_name = SDL_GetHint(SDL_HINT_CAMERA_DRIVER);
     }
 
-    SDL_bool initialized = SDL_FALSE;
-    SDL_bool tried_to_init = SDL_FALSE;
+    bool initialized = false;
+    bool tried_to_init = false;
 
     if (driver_name && (*driver_name != 0)) {
         char *driver_name_copy = SDL_strdup(driver_name);
@@ -1451,7 +1451,7 @@ int SDL_CameraInit(const char *driver_name)
 
             for (int i = 0; bootstrap[i]; i++) {
                 if (SDL_strcasecmp(bootstrap[i]->name, driver_attempt) == 0) {
-                    tried_to_init = SDL_TRUE;
+                    tried_to_init = true;
                     SDL_zero(camera_driver);
                     camera_driver.pending_events_tail = &camera_driver.pending_events;
                     camera_driver.device_hash_lock = device_hash_lock;
@@ -1459,7 +1459,7 @@ int SDL_CameraInit(const char *driver_name)
                     if (bootstrap[i]->init(&camera_driver.impl)) {
                         camera_driver.name = bootstrap[i]->name;
                         camera_driver.desc = bootstrap[i]->desc;
-                        initialized = SDL_TRUE;
+                        initialized = true;
                     }
                     break;
                 }
@@ -1475,7 +1475,7 @@ int SDL_CameraInit(const char *driver_name)
                 continue;
             }
 
-            tried_to_init = SDL_TRUE;
+            tried_to_init = true;
             SDL_zero(camera_driver);
             camera_driver.pending_events_tail = &camera_driver.pending_events;
             camera_driver.device_hash_lock = device_hash_lock;
@@ -1483,7 +1483,7 @@ int SDL_CameraInit(const char *driver_name)
             if (bootstrap[i]->init(&camera_driver.impl)) {
                 camera_driver.name = bootstrap[i]->name;
                 camera_driver.desc = bootstrap[i]->desc;
-                initialized = SDL_TRUE;
+                initialized = true;
             }
         }
     }

@@ -165,7 +165,7 @@ static Atom X11_PickTargetFromAtoms(Display *disp, Atom a0, Atom a1, Atom a2)
 struct KeyRepeatCheckData
 {
     XEvent *event;
-    SDL_bool found;
+    bool found;
 };
 
 static Bool X11_KeyRepeatCheckIfEvent(Display *display, XEvent *chkev,
@@ -173,7 +173,7 @@ static Bool X11_KeyRepeatCheckIfEvent(Display *display, XEvent *chkev,
 {
     struct KeyRepeatCheckData *d = (struct KeyRepeatCheckData *)arg;
     if (chkev->type == KeyPress && chkev->xkey.keycode == d->event->xkey.keycode && chkev->xkey.time - d->event->xkey.time < 2) {
-        d->found = SDL_TRUE;
+        d->found = true;
     }
     return False;
 }
@@ -181,19 +181,19 @@ static Bool X11_KeyRepeatCheckIfEvent(Display *display, XEvent *chkev,
 /* Check to see if this is a repeated key.
    (idea shamelessly lifted from GII -- thanks guys! :)
  */
-static SDL_bool X11_KeyRepeat(Display *display, XEvent *event)
+static bool X11_KeyRepeat(Display *display, XEvent *event)
 {
     XEvent dummyev;
     struct KeyRepeatCheckData d;
     d.event = event;
-    d.found = SDL_FALSE;
+    d.found = false;
     if (X11_XPending(display)) {
         X11_XCheckIfEvent(display, &dummyev, X11_KeyRepeatCheckIfEvent, (XPointer)&d);
     }
     return d.found;
 }
 
-static SDL_bool X11_IsWheelEvent(Display *display, int button, int *xticks, int *yticks)
+static bool X11_IsWheelEvent(Display *display, int button, int *xticks, int *yticks)
 {
     /* according to the xlib docs, no specific mouse wheel events exist.
        However, the defacto standard is that the vertical wheel is X buttons
@@ -203,20 +203,20 @@ static SDL_bool X11_IsWheelEvent(Display *display, int button, int *xticks, int 
     switch (button) {
     case 4:
         *yticks = 1;
-        return SDL_TRUE;
+        return true;
     case 5:
         *yticks = -1;
-        return SDL_TRUE;
+        return true;
     case 6:
         *xticks = 1;
-        return SDL_TRUE;
+        return true;
     case 7:
         *xticks = -1;
-        return SDL_TRUE;
+        return true;
     default:
         break;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 // An X11 event hook
@@ -310,20 +310,20 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
 
     // Sync up the keyboard modifier state
     if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
-        SDL_ToggleModState(SDL_KMOD_CAPS, (mask & LockMask) ? SDL_TRUE : SDL_FALSE);
-        SDL_ToggleModState(SDL_KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) ? SDL_TRUE : SDL_FALSE);
-        SDL_ToggleModState(SDL_KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) ? SDL_TRUE : SDL_FALSE);
+        SDL_ToggleModState(SDL_KMOD_CAPS, (mask & LockMask) ? true : false);
+        SDL_ToggleModState(SDL_KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) ? true : false);
+        SDL_ToggleModState(SDL_KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) ? true : false);
     }
 
     keyboardState = SDL_GetKeyboardState(0);
     for (keycode = 0; keycode < SDL_arraysize(videodata->key_layout); ++keycode) {
         SDL_Scancode scancode = videodata->key_layout[keycode];
-        SDL_bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
-        SDL_bool sdlKeyPressed = keyboardState[scancode] == SDL_PRESSED;
+        bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
+        bool sdlKeyPressed = keyboardState[scancode] == SDL_PRESSED;
 
         if (x11KeyPressed && !sdlKeyPressed) {
             // Only update modifier state for keys that are pressed in another application
-            switch (SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, SDL_FALSE)) {
+            switch (SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false)) {
             case SDLK_LCTRL:
             case SDLK_RCTRL:
             case SDLK_LSHIFT:
@@ -357,7 +357,7 @@ static void X11_DispatchFocusIn(SDL_VideoDevice *_this, SDL_WindowData *data)
     }
 #endif
 #ifdef SDL_USE_IME
-    SDL_IME_SetFocus(SDL_TRUE);
+    SDL_IME_SetFocus(true);
 #endif
     if (data->flashing_window) {
         X11_FlashWindow(_this, data->window, SDL_FLASH_CANCEL);
@@ -382,7 +382,7 @@ static void X11_DispatchFocusOut(SDL_VideoDevice *_this, SDL_WindowData *data)
     }
 #endif
 #ifdef SDL_USE_IME
-    SDL_IME_SetFocus(SDL_FALSE);
+    SDL_IME_SetFocus(false);
 #endif
 }
 
@@ -429,7 +429,7 @@ static void DispatchWindowMove(SDL_VideoDevice *_this, const SDL_WindowData *dat
 
 static void ScheduleWindowMove(SDL_VideoDevice *_this, SDL_WindowData *data, const SDL_Point *point)
 {
-    data->pending_move = SDL_TRUE;
+    data->pending_move = true;
     data->pending_move_point = *point;
 }
 
@@ -462,21 +462,21 @@ static void InitiateWindowResize(SDL_VideoDevice *_this, const SDL_WindowData *d
     X11_XSync(display, 0);
 }
 
-SDL_bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y, SDL_bool force_new_result)
+bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y, bool force_new_result)
 {
     SDL_Window *window = data->window;
-    if (!window->hit_test) return SDL_FALSE;
+    if (!window->hit_test) return false;
     const SDL_Point point = { (int)x, (int)y };
     SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
     if (!force_new_result && rc == data->hit_test_result) {
-        return SDL_TRUE;
+        return true;
     }
     X11_SetHitTestCursor(rc);
     data->hit_test_result = rc;
-    return SDL_TRUE;
+    return true;
 }
 
-SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y)
+bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y)
 {
     SDL_Window *window = data->window;
 
@@ -499,7 +499,7 @@ SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, 
             } else {
                 ScheduleWindowMove(_this, data, &point);
             }
-            return SDL_TRUE;
+            return true;
 
         case SDL_HITTEST_RESIZE_TOPLEFT:
         case SDL_HITTEST_RESIZE_TOP:
@@ -510,14 +510,14 @@ SDL_bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, 
         case SDL_HITTEST_RESIZE_BOTTOMLEFT:
         case SDL_HITTEST_RESIZE_LEFT:
             InitiateWindowResize(_this, data, &point, directions[data->hit_test_result - SDL_HITTEST_RESIZE_TOPLEFT]);
-            return SDL_TRUE;
+            return true;
 
         default:
-            return SDL_FALSE;
+            return false;
         }
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
 static void X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
@@ -631,7 +631,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         SDL_Log("window CLIPBOARD: SelectionNotify (requestor = 0x%lx, target = 0x%lx)\n",
                xevent->xselection.requestor, xevent->xselection.target);
 #endif
-        videodata->selection_waiting = SDL_FALSE;
+        videodata->selection_waiting = false;
     } break;
 
     case SelectionClear:
@@ -665,7 +665,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         char *name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
 
         if (SDL_strncmp(name_of_atom, "SDL_SELECTION", sizeof("SDL_SELECTION") - 1) == 0 && xevent->xproperty.state == PropertyNewValue) {
-            videodata->selection_incr_waiting = SDL_FALSE;
+            videodata->selection_incr_waiting = false;
         }
 
         if (name_of_atom) {
@@ -707,16 +707,16 @@ static Bool isReparentNotify(Display *display, XEvent *ev, XPointer arg)
            ev->xreparent.serial == unmap->serial;
 }
 
-static SDL_bool IsHighLatin1(const char *string, int length)
+static bool IsHighLatin1(const char *string, int length)
 {
     while (length-- > 0) {
         Uint8 ch = (Uint8)*string;
         if (ch >= 0x80) {
-            return SDL_TRUE;
+            return true;
         }
         ++string;
     }
-    return SDL_FALSE;
+    return false;
 }
 
 static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int bytes_buffer, KeySym *keysym_return, XComposeStatus *status_in_out)
@@ -760,7 +760,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     int text_length = 0;
     char text[64];
     Status status = 0;
-    SDL_bool handled_by_ime = SDL_FALSE;
+    bool handled_by_ime = false;
 
 #ifdef DEBUG_XEVENTS
     SDL_Log("window 0x%lx %s (X11 keycode = 0x%X)\n", xevent->xany.window, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
@@ -862,7 +862,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
     if (X11_IsWheelEvent(display, button, &xticks, &yticks)) {
         SDL_SendMouseWheel(0, window, mouseID, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
     } else {
-        SDL_bool ignore_click = SDL_FALSE;
+        bool ignore_click = false;
         if (button == Button1) {
             if (X11_TriggerHitTestAction(_this, windowdata, x, y)) {
                 SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
@@ -876,7 +876,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
         if (windowdata->last_focus_event_time) {
             const int X11_FOCUS_CLICK_TIMEOUT = 10;
             if (SDL_GetTicks() < (windowdata->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
-                ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
+                ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, false);
             }
             windowdata->last_focus_event_time = 0;
         }
@@ -1032,7 +1032,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     if (X11_XkbGetState(videodata->display, XkbUseCoreKbd, &state) == Success) {
                         if (state.group != videodata->xkb_group) {
                             // Only rebuild the keymap if the layout has changed.
-                            X11_UpdateKeymap(_this, SDL_TRUE);
+                            X11_UpdateKeymap(_this, true);
                         }
                     }
                 }
@@ -1050,7 +1050,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 X11_XRefreshKeyboardMapping(&xevent->xmapping);
             }
 
-            X11_UpdateKeymap(_this, SDL_TRUE);
+            X11_UpdateKeymap(_this, true);
         } else if (xevent->type == PropertyNotify && videodata && videodata->windowlist) {
             char *name_of_atom = X11_XGetAtomName(display, xevent->xproperty.atom);
 
@@ -1109,20 +1109,20 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         {
             // Only create the barriers if we have input focus
             SDL_WindowData *windowdata = data->window->internal;
-            if ((data->pointer_barrier_active == SDL_TRUE) && windowdata->window->flags & SDL_WINDOW_INPUT_FOCUS) {
+            if ((data->pointer_barrier_active == true) && windowdata->window->flags & SDL_WINDOW_INPUT_FOCUS) {
                 X11_ConfineCursorWithFlags(_this, windowdata->window, &windowdata->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
             }
         }
 #endif
 
         if (!mouse->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, false, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
         // We ungrab in LeaveNotify, so we may need to grab again here
         SDL_UpdateWindowGrab(data->window);
 
-        X11_ProcessHitTest(_this, data, mouse->last_x, mouse->last_y, SDL_TRUE);
+        X11_ProcessHitTest(_this, data, mouse->last_x, mouse->last_y, true);
     } break;
         // Losing mouse coverage?
     case LeaveNotify:
@@ -1140,7 +1140,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         }
 #endif
         if (!SDL_GetMouse()->relative_mode) {
-            SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
+            SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, false, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
         if (xevent->xcrossing.mode != NotifyGrab &&
@@ -1150,7 +1150,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             /* In order for interaction with the window decorations and menu to work properly
                on Mutter, we need to ungrab the keyboard when the the mouse leaves. */
             if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-                X11_SetWindowKeyboardGrab(_this, data->window, SDL_FALSE);
+                X11_SetWindowKeyboardGrab(_this, data->window, false);
             }
 
             SDL_SetMouseFocus(NULL);
@@ -1221,7 +1221,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         // Disable confinement if it is activated.
-        if (data->pointer_barrier_active == SDL_TRUE) {
+        if (data->pointer_barrier_active == true) {
             X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
         }
 #endif // SDL_VIDEO_DRIVER_X11_XFIXES
@@ -1245,7 +1245,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         // Disable confinement if the window gets hidden.
-        if (data->pointer_barrier_active == SDL_TRUE) {
+        if (data->pointer_barrier_active == true) {
             X11_ConfineCursorWithFlags(_this, data->window, NULL, X11_BARRIER_HANDLED_BY_EVENT);
         }
 #endif // SDL_VIDEO_DRIVER_X11_XFIXES
@@ -1261,7 +1261,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
         // Enable confinement if it was activated.
-        if (data->pointer_barrier_active == SDL_TRUE) {
+        if (data->pointer_barrier_active == true) {
             X11_ConfineCursorWithFlags(_this, data->window, &data->barrier_rect, X11_BARRIER_HANDLED_BY_EVENT);
         }
 #endif // SDL_VIDEO_DRIVER_X11_XFIXES
@@ -1310,7 +1310,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 for (w = data->window->first_child; w; w = w->next_sibling) {
                     // Don't update hidden child windows, their relative position doesn't change
                     if (!(w->flags & SDL_WINDOW_HIDDEN)) {
-                        X11_UpdateWindowPosition(w, SDL_TRUE);
+                        X11_UpdateWindowPosition(w, true);
                     }
                 }
             }
@@ -1336,7 +1336,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
         if (xevent->xclient.message_type == videodata->XdndEnter) {
 
-            SDL_bool use_list = xevent->xclient.data.l[1] & 1;
+            bool use_list = xevent->xclient.data.l[1] & 1;
             data->xdnd_source = xevent->xclient.data.l[0];
             xdnd_version = (xevent->xclient.data.l[1] >> 24);
 #ifdef DEBUG_XEVENTS
@@ -1479,8 +1479,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             SDL_Log("window 0x%lx: X11 motion: %d,%d\n", xevent->xany.window, xevent->xmotion.x, xevent->xmotion.y);
 #endif
 
-            X11_ProcessHitTest(_this, data, (float)xevent->xmotion.x, (float)xevent->xmotion.y, SDL_FALSE);
-            SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, (float)xevent->xmotion.x, (float)xevent->xmotion.y);
+            X11_ProcessHitTest(_this, data, (float)xevent->xmotion.x, (float)xevent->xmotion.y, false);
+            SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, false, (float)xevent->xmotion.x, (float)xevent->xmotion.y);
         }
     } break;
 
@@ -1617,7 +1617,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
                     if (flags & SDL_WINDOW_FULLSCREEN) {
                         if (!(flags & SDL_WINDOW_MINIMIZED)) {
-                            const SDL_bool commit = SDL_memcmp(&data->window->current_fullscreen_mode, &data->requested_fullscreen_mode, sizeof(SDL_DisplayMode)) != 0;
+                            const bool commit = SDL_memcmp(&data->window->current_fullscreen_mode, &data->requested_fullscreen_mode, sizeof(SDL_DisplayMode)) != 0;
 
                             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
                             if (commit) {
@@ -1625,14 +1625,14 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                                  * becoming fullscreen. Switch to the application requested mode if necessary.
                                  */
                                 SDL_copyp(&data->window->current_fullscreen_mode, &data->window->requested_fullscreen_mode);
-                                SDL_UpdateFullscreenMode(data->window, SDL_FULLSCREEN_OP_UPDATE, SDL_TRUE);
+                                SDL_UpdateFullscreenMode(data->window, SDL_FULLSCREEN_OP_UPDATE, true);
                             } else {
-                                SDL_UpdateFullscreenMode(data->window, SDL_FULLSCREEN_OP_ENTER, SDL_FALSE);
+                                SDL_UpdateFullscreenMode(data->window, SDL_FULLSCREEN_OP_ENTER, false);
                             }
                         }
                     } else {
                         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
-                        SDL_UpdateFullscreenMode(data->window, SDL_FALSE, SDL_FALSE);
+                        SDL_UpdateFullscreenMode(data->window, false, false);
 
                         SDL_zero(data->requested_fullscreen_mode);
 
@@ -1641,8 +1641,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
                         // Toggle the borders if they were forced on while creating a borderless fullscreen window.
                         if (data->fullscreen_borders_forced_on) {
-                            data->toggle_borders = SDL_TRUE;
-                            data->fullscreen_borders_forced_on = SDL_FALSE;
+                            data->toggle_borders = true;
+                            data->fullscreen_borders_forced_on = false;
                         }
                     }
 
@@ -1653,8 +1653,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                          * shut off to avoid bogus window sizes and positions, and
                          * note that the old borders were non-zero for restoration.
                          */
-                        data->disable_size_position_events = SDL_TRUE;
-                        data->previous_borders_nonzero = SDL_TRUE;
+                        data->disable_size_position_events = true;
+                        data->previous_borders_nonzero = true;
                     } else if (!(flags & SDL_WINDOW_FULLSCREEN) &&
                                data->previous_borders_nonzero &&
                                (!data->border_top && !data->border_left && !data->border_bottom && !data->border_right)) {
@@ -1663,14 +1663,14 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                          * off size events until the borders come back to avoid bogus
                          * window sizes and positions.
                          */
-                        data->disable_size_position_events = SDL_TRUE;
-                        data->previous_borders_nonzero = SDL_FALSE;
+                        data->disable_size_position_events = true;
+                        data->previous_borders_nonzero = false;
                     } else {
-                        data->disable_size_position_events = SDL_FALSE;
-                        data->previous_borders_nonzero = SDL_FALSE;
+                        data->disable_size_position_events = false;
+                        data->previous_borders_nonzero = false;
 
                         if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
-                            data->toggle_borders = SDL_FALSE;
+                            data->toggle_borders = false;
                             X11_SetWindowBordered(_this, data->window, !(data->window->flags & SDL_WINDOW_BORDERLESS));
                         }
                     }
@@ -1706,7 +1706,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 if ((flags & SDL_WINDOW_INPUT_FOCUS)) {
                     if (data->pending_move) {
                         DispatchWindowMove(_this, data, &data->pending_move_point);
-                        data->pending_move = SDL_FALSE;
+                        data->pending_move = false;
                     }
                 }
             }
@@ -1720,13 +1720,13 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                icon). Since it changes the XKLAVIER_STATE property, we
                notice and reinit our keymap here. This might not be the
                right approach, but it seems to work. */
-            X11_UpdateKeymap(_this, SDL_TRUE);
+            X11_UpdateKeymap(_this, true);
         } else if (xevent->xproperty.atom == videodata->_NET_FRAME_EXTENTS) {
             if (data->disable_size_position_events) {
                 /* Re-enable size events if they were turned off waiting for the borders to come back
                  * when leaving fullscreen.
                  */
-                data->disable_size_position_events = SDL_FALSE;
+                data->disable_size_position_events = false;
                 X11_GetBorderValues(data);
                 if (data->border_top != 0 || data->border_left != 0 || data->border_right != 0 || data->border_bottom != 0) {
                     // Adjust if the window size/position changed to accommodate the borders.
@@ -1745,7 +1745,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 }
             }
             if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
-                data->toggle_borders = SDL_FALSE;
+                data->toggle_borders = false;
                 X11_SetWindowBordered(_this, data->window, !(data->window->flags & SDL_WINDOW_BORDERLESS));
             }
         }
@@ -1840,13 +1840,13 @@ static Bool isAnyEvent(Display *display, XEvent *ev, XPointer arg)
     return True;
 }
 
-static SDL_bool X11_PollEvent(Display *display, XEvent *event)
+static bool X11_PollEvent(Display *display, XEvent *event)
 {
     if (!X11_XCheckIfEvent(display, event, isAnyEvent, NULL)) {
-        return SDL_FALSE;
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
 void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1996,8 +1996,8 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     }
 
     if (data->xinput_hierarchy_changed) {
-        X11_Xinput2UpdateDevices(_this, SDL_FALSE);
-        data->xinput_hierarchy_changed = SDL_FALSE;
+        X11_Xinput2UpdateDevices(_this, false);
+        data->xinput_hierarchy_changed = false;
     }
 }
 

@@ -38,10 +38,10 @@ struct SDL_PrivateAudioData
     IAudioCaptureClient *capture;
     HANDLE event;
     HANDLE task;
-    SDL_bool coinitialized;
+    bool coinitialized;
     int framesize;
-    SDL_bool device_lost;
-    SDL_bool device_dead;
+    bool device_lost;
+    bool device_dead;
     void *activation_handler;
 };
 

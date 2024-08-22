@@ -44,7 +44,7 @@ static SDL_ScancodeTable scancode_set[] = {
     SDL_SCANCODE_TABLE_XVNC,
 };
 
-static SDL_bool X11_ScancodeIsRemappable(SDL_Scancode scancode)
+static bool X11_ScancodeIsRemappable(SDL_Scancode scancode)
 {
     /*
      * XKB remappings can assign different keysyms for these scancodes, but
@@ -63,9 +63,9 @@ static SDL_bool X11_ScancodeIsRemappable(SDL_Scancode scancode)
     case SDL_SCANCODE_RALT:
     case SDL_SCANCODE_LGUI:
     case SDL_SCANCODE_RGUI:
-        return SDL_FALSE;
+        return false;
     default:
-        return SDL_TRUE;
+        return true;
     }
 }
 
@@ -170,7 +170,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
         char *prev_xmods = X11_XSetLocaleModifiers(NULL);
         const char *new_xmods = "";
         const char *env_xmods = SDL_getenv("XMODIFIERS");
-        SDL_bool has_dbus_ime_support = SDL_FALSE;
+        bool has_dbus_ime_support = false;
 
         if (prev_locale) {
             prev_locale = SDL_strdup(prev_locale);
@@ -185,10 +185,10 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
            @im=none if XMODIFIERS contains @im=ibus. IBus can still be used via
            the DBus implementation, which also has support for pre-editing. */
         if (env_xmods && SDL_strstr(env_xmods, "@im=ibus") != NULL) {
-            has_dbus_ime_support = SDL_TRUE;
+            has_dbus_ime_support = true;
         }
         if (env_xmods && SDL_strstr(env_xmods, "@im=fcitx") != NULL) {
-            has_dbus_ime_support = SDL_TRUE;
+            has_dbus_ime_support = true;
         }
         if (has_dbus_ime_support || !xkb_repeat) {
             new_xmods = "@im=none";
@@ -313,7 +313,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
         }
     }
 
-    X11_UpdateKeymap(_this, SDL_FALSE);
+    X11_UpdateKeymap(_this, false);
 
     SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
 
@@ -326,7 +326,7 @@ int X11_InitKeyboard(SDL_VideoDevice *_this)
     return 0;
 }
 
-void X11_UpdateKeymap(SDL_VideoDevice *_this, SDL_bool send_event)
+void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
 {
     struct Keymod_masks
     {
@@ -445,7 +445,7 @@ int X11_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
     return 0;
 }
 
-SDL_bool X11_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+bool X11_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->internal;
     return videodata->is_steam_deck;
@@ -487,7 +487,7 @@ void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
                            "steam://open/keyboard?XPosition=0&YPosition=0&Width=0&Height=0&Mode=%d",
                            mode);
         SDL_OpenURL(deeplink);
-        videodata->steam_keyboard_open = SDL_TRUE;
+        videodata->steam_keyboard_open = true;
     }
 }
 
@@ -497,11 +497,11 @@ void X11_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (videodata->is_steam_deck) {
         SDL_OpenURL("steam://close/keyboard");
-        videodata->steam_keyboard_open = SDL_FALSE;
+        videodata->steam_keyboard_open = false;
     }
 }
 
-SDL_bool X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
+bool X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = _this->internal;
 

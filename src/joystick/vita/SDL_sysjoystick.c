@@ -143,10 +143,10 @@ static void VITA_JoystickDetect(void)
 {
 }
 
-static SDL_bool VITA_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool VITA_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     // We don't override any other drivers
-    return SDL_FALSE;
+    return false;
 }
 
 // Function to perform the mapping from device index to the instance id for this index
@@ -207,8 +207,8 @@ static int VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->naxes = 6;
     joystick->nhats = 0;
 
-    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, SDL_TRUE);
-    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
+    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
     return 0;
 }
@@ -364,14 +364,14 @@ static int VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int
     return SDL_Unsupported();
 }
 
-static int VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
 
-static SDL_bool VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_JoystickDriver SDL_VITA_JoystickDriver = {

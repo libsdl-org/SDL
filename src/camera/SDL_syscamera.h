@@ -39,10 +39,10 @@ extern SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, 
 extern void SDL_CameraDisconnected(SDL_Camera *device);
 
 // Find an SDL_Camera, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
-extern SDL_Camera *SDL_FindPhysicalCameraByCallback(SDL_bool (*callback)(SDL_Camera *device, void *userdata), void *userdata);
+extern SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(SDL_Camera *device, void *userdata), void *userdata);
 
 // Backends should call this when the user has approved/denied access to a camera.
-extern void SDL_CameraPermissionOutcome(SDL_Camera *device, SDL_bool approved);
+extern void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved);
 
 // Backends can call this to get a standardized name for a thread to power a specific camera device.
 extern char *SDL_GetCameraThreadName(SDL_Camera *device, char *buf, size_t buflen);
@@ -53,7 +53,7 @@ extern void UnrefPhysicalCamera(SDL_Camera *device);
 
 // These functions are the heart of the camera threads. Backends can call them directly if they aren't using the SDL-provided thread.
 extern void SDL_CameraThreadSetup(SDL_Camera *device);
-extern SDL_bool SDL_CameraThreadIterate(SDL_Camera *device);
+extern bool SDL_CameraThreadIterate(SDL_Camera *device);
 extern void SDL_CameraThreadShutdown(SDL_Camera *device);
 
 // common utility functionality to gather up camera specs. Not required!
@@ -138,8 +138,8 @@ struct SDL_Camera
     // non-zero if acquire_surface needs to be scaled for final output.
     int needs_scaling;  // -1: downscale, 0: no scaling, 1: upscale
 
-    // SDL_TRUE if acquire_surface needs to be converted for final output.
-    SDL_bool needs_conversion;
+    // true if acquire_surface needs to be converted for final output.
+    bool needs_conversion;
 
     // Current state flags
     SDL_AtomicInt shutdown;
@@ -169,7 +169,7 @@ typedef struct SDL_CameraDriverImpl
     void (*FreeDeviceHandle)(SDL_Camera *device); // SDL is done with this device; free the handle from SDL_AddCamera()
     void (*Deinitialize)(void);
 
-    SDL_bool ProvidesOwnCallbackThread;
+    bool ProvidesOwnCallbackThread;
 } SDL_CameraDriverImpl;
 
 typedef struct SDL_PendingCameraEvent
@@ -198,8 +198,8 @@ typedef struct CameraBootStrap
 {
     const char *name;
     const char *desc;
-    SDL_bool (*init)(SDL_CameraDriverImpl *impl);
-    SDL_bool demand_only; // if SDL_TRUE: request explicitly, or it won't be available.
+    bool (*init)(SDL_CameraDriverImpl *impl);
+    bool demand_only; // if true: request explicitly, or it won't be available.
 } CameraBootStrap;
 
 // Not all of these are available in a given build. Use #ifdefs, etc.

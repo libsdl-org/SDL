@@ -177,12 +177,12 @@ int SDL_CloseStorage(SDL_Storage *storage)
 
 SDL_bool SDL_StorageReady(SDL_Storage *storage)
 {
-    CHECK_STORAGE_MAGIC_RET(SDL_FALSE)
+    CHECK_STORAGE_MAGIC_RET(false)
 
     if (storage->iface.ready) {
         return storage->iface.ready(storage->userdata);
     }
-    return SDL_TRUE;
+    return true;
 }
 
 int SDL_GetStorageFileSize(SDL_Storage *storage, const char *path, Uint64 *length)

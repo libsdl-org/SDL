@@ -750,12 +750,12 @@ static void OPENSLES_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
-static SDL_bool OPENSLES_Init(SDL_AudioDriverImpl *impl)
+static bool OPENSLES_Init(SDL_AudioDriverImpl *impl)
 {
     LOGI("OPENSLES_Init() called");
 
     if (!OPENSLES_CreateEngine()) {
-        return SDL_FALSE;
+        return false;
     }
 
     LOGI("OPENSLES_Init() - set pointers");
@@ -773,18 +773,18 @@ static SDL_bool OPENSLES_Init(SDL_AudioDriverImpl *impl)
     impl->Deinitialize = OPENSLES_DestroyEngine;
 
     // and the capabilities
-    impl->HasRecordingSupport = SDL_TRUE;
-    impl->OnlyHasDefaultPlaybackDevice = SDL_TRUE;
-    impl->OnlyHasDefaultRecordingDevice = SDL_TRUE;
+    impl->HasRecordingSupport = true;
+    impl->OnlyHasDefaultPlaybackDevice = true;
+    impl->OnlyHasDefaultRecordingDevice = true;
 
     LOGI("OPENSLES_Init() - success");
 
     // this audio target is available.
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap OPENSLES_bootstrap = {
-    "openslES", "OpenSL ES audio driver", OPENSLES_Init, SDL_FALSE
+    "openslES", "OpenSL ES audio driver", OPENSLES_Init, false
 };
 
 void OPENSLES_ResumeDevices(void)

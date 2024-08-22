@@ -105,10 +105,10 @@ DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIRawGameController, 0x7cad6d91,
 DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIRawGameController2, 0x43c0c035, 0xbb73, 0x4756, 0xa7, 0x87, 0x3e, 0xd6, 0xbe, 0xa6, 0x17, 0xbd);
 DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics, 0xeb8d0792, 0xe95a, 0x4b19, 0xaf, 0xc7, 0x0a, 0x59, 0xf8, 0xbf, 0x75, 0x9e);
 
-extern SDL_bool SDL_XINPUT_Enabled(void);
+extern bool SDL_XINPUT_Enabled(void);
 
 
-static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
+static bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 {
 #if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
     PRAWINPUTDEVICELIST raw_devices = NULL;
@@ -121,24 +121,24 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
         && !RAWINPUT_IsEnabled()
 #endif
     ) {
-        return SDL_FALSE;
+        return false;
     }
 
     // Go through RAWINPUT (WinXP and later) to find HID devices.
     if ((GetRawInputDeviceList(NULL, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!raw_device_count)) {
-        return SDL_FALSE; // oh well.
+        return false; // oh well.
     }
 
     raw_devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * raw_device_count);
     if (!raw_devices) {
-        return SDL_FALSE;
+        return false;
     }
 
     raw_device_count = GetRawInputDeviceList(raw_devices, &raw_device_count, sizeof(RAWINPUTDEVICELIST));
     if (raw_device_count == (UINT)-1) {
         SDL_free(raw_devices);
         raw_devices = NULL;
-        return SDL_FALSE; // oh well.
+        return false; // oh well.
     }
 
     for (i = 0; i < raw_device_count; i++) {
@@ -163,7 +163,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
         // First check for a simple VID/PID match. This will work for Xbox 360 controllers.
         if (MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == vidpid) {
             SDL_free(raw_devices);
-            return SDL_TRUE;
+            return true;
         }
 
         /* For Xbox One controllers, Microsoft doesn't propagate the VID/PID down to the HID stack.
@@ -202,7 +202,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
                 (SDL_strstr(deviceId, devVidPidString) != NULL)) {
                 // The VID/PID matched a parent device
                 SDL_free(raw_devices);
-                return SDL_TRUE;
+                return true;
             }
         }
     }
@@ -210,7 +210,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     SDL_free(raw_devices);
 #endif // SDL_JOYSTICK_XINPUT || SDL_JOYSTICK_RAWINPUT
 
-    return SDL_FALSE;
+    return false;
 }
 
 static void WGI_LoadRawGameControllerStatics(void)
@@ -408,7 +408,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         SDL_JoystickType type = SDL_JOYSTICK_TYPE_UNKNOWN;
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController2 *controller2 = NULL;
         __x_ABI_CWindows_CGaming_CInput_CIGameController *game_controller = NULL;
-        SDL_bool ignore_joystick = SDL_FALSE;
+        bool ignore_joystick = false;
 
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareVendorId(controller, &vendor);
         __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_HardwareProductId(controller, &product);
@@ -448,12 +448,12 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         }
 
         if (!ignore_joystick && SDL_JoystickHandledByAnotherDriver(&SDL_WGI_JoystickDriver, vendor, product, version, name)) {
-            ignore_joystick = SDL_TRUE;
+            ignore_joystick = true;
         }
 
         if (!ignore_joystick && SDL_IsXInputDevice(vendor, product)) {
             // This hasn't been detected by the RAWINPUT driver yet, but it will be picked up later.
-            ignore_joystick = SDL_TRUE;
+            ignore_joystick = true;
         }
 
         if (!ignore_joystick) {
@@ -464,7 +464,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, name, 'w', (Uint8)type);
 
             if (SDL_ShouldIgnoreJoystick(name, guid)) {
-                ignore_joystick = SDL_TRUE;
+                ignore_joystick = true;
             }
         }
 
@@ -584,7 +584,7 @@ static int WGI_JoystickInit(void)
 {
     HRESULT hr;
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, SDL_TRUE)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, true)) {
         return 0;
     }
 
@@ -673,10 +673,10 @@ static void WGI_JoystickDetect(void)
 {
 }
 
-static SDL_bool WGI_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static bool WGI_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     // We don't override any other drivers
-    return SDL_FALSE;
+    return false;
 }
 
 static const char *WGI_JoystickGetDeviceName(int device_index)
@@ -717,7 +717,7 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     WindowsGamingInputControllerState *state = &wgi.controllers[device_index];
     struct joystick_hwdata *hwdata;
-    boolean wireless = SDL_FALSE;
+    boolean wireless = false;
 
     hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));
     if (!hwdata) {
@@ -750,8 +750,8 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     if (hwdata->gamepad) {
         // FIXME: Can WGI even tell us if trigger rumble is supported?
-        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
-        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, SDL_TRUE);
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
     }
     return 0;
 }
@@ -808,7 +808,7 @@ static int WGI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int 
     return SDL_Unsupported();
 }
 
-static int WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static int WGI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -862,16 +862,16 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
     hr = __x_ABI_CWindows_CGaming_CInput_CIRawGameController_GetCurrentReading(hwdata->controller, nbuttons, buttons, nhats, hats, naxes, axes, &timestamp);
     if (SUCCEEDED(hr) && (!timestamp || timestamp != hwdata->timestamp)) {
         UINT32 i;
-        SDL_bool all_zero = SDL_FALSE;
+        bool all_zero = false;
 
         hwdata->timestamp = timestamp;
 
         // The axes are all zero when the application loses focus
         if (naxes > 0) {
-            all_zero = SDL_TRUE;
+            all_zero = true;
             for (i = 0; i < naxes; ++i) {
                 if (axes[i] != 0.0f) {
-                    all_zero = SDL_FALSE;
+                    all_zero = false;
                     break;
                 }
             }
@@ -1016,9 +1016,9 @@ static void WGI_JoystickQuit(void)
     SDL_zero(wgi);
 }
 
-static SDL_bool WGI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool WGI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    return false;
 }
 
 SDL_JoystickDriver SDL_WGI_JoystickDriver = {

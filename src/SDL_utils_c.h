@@ -30,7 +30,7 @@ extern int SDL_powerof2(int x);
 
 extern void SDL_CalculateFraction(float x, int *numerator, int *denominator);
 
-extern SDL_bool SDL_endswith(const char *string, const char *suffix);
+extern bool SDL_endswith(const char *string, const char *suffix);
 
 /** Convert URI to a local filename, stripping the "file://"
  *  preamble and hostname if present, and writes the result
@@ -61,8 +61,8 @@ typedef enum
 } SDL_ObjectType;
 
 extern Uint32 SDL_GetNextObjectID(void);
-extern void SDL_SetObjectValid(void *object, SDL_ObjectType type, SDL_bool valid);
-extern SDL_bool SDL_ObjectValid(void *object, SDL_ObjectType type);
+extern void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid);
+extern bool SDL_ObjectValid(void *object, SDL_ObjectType type);
 extern void SDL_SetObjectsInvalid(void);
 
 extern const char *SDL_GetPersistentString(const char *string);
