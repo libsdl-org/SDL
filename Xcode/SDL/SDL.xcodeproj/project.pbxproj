@@ -2949,6 +2949,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					../../include,
+					../../include/build_config,
 					../../src,
 					../../src/hidapi/hidapi,
 					../../src/video/khronos,
@@ -3006,6 +3007,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					../../include,
+					../../include/build_config,
 					../../src,
 					../../src/hidapi/hidapi,
 					../../src/video/khronos,

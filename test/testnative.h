@@ -16,7 +16,7 @@
 
 #include <SDL3/SDL.h>
 
-#include "build_config/SDL_build_config.h"
+#include "SDL_build_config.h"
 
 typedef struct
 {

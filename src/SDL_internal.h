@@ -60,7 +60,7 @@
         SDL_free(ptr);               \
     }
 
-#include "build_config/SDL_build_config.h"
+#include "SDL_build_config.h"
 
 #include "dynapi/SDL_dynapi.h"
 

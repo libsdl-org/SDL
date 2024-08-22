@@ -2,12 +2,21 @@
 # CMake script for building the SDL tests
 #
 
+cmake_minimum_required(VERSION 3.16)
+
+set(SDL3_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake")
 
 include(CheckIncludeFile)
 include(CheckStructHasMember)
 include(CMakePushCheckState)
 include(sdlcompilers)
+
+find_package(Python3 COMPONENTS Interpreter)
+if(NOT PYTHON3_EXECUTABLE)
+    set(PYTHON3_EXECUTABLE "python3")
+endif()
 
 if(SDL_TESTS_LINK_SHARED)
     set(sdl_name_component SDL3-shared)
@@ -56,13 +65,12 @@ if(EMSCRIPTEN)
     set(SDLTEST_BROWSER "firefox" CACHE STRING "Browser in which to run SDL unit tests (chrome or firefox)")
     set(SDLTEST_PORT "8080" CACHE STRING "Port on which to serve the tests")
     set(SDLTEST_CHROME_BINARY "" CACHE STRING "Chrome/Chromium browser binary (optional)")
-    find_package(Python3 COMPONENTS Interpreter)
     if(TARGET Python3::Interpreter)
         add_custom_target(serve-sdl-tests
                 COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/emscripten/server.py"
                 "${SDLTEST_PORT}"
                 -d "${CMAKE_CURRENT_BINARY_DIR}"
-                --map "${CMAKE_CURRENT_SOURCE_DIR}/..:/SDL")
+                --map "${SDL3_SOURCE_DIR}:/SDL")
     endif()
 endif()
 
@@ -213,6 +221,9 @@ macro(add_sdl_test_executable TARGET)
     if(AST_BUILD_DEPENDENT)
         target_include_directories(${TARGET} BEFORE PRIVATE $<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>)
         target_include_directories(${TARGET} BEFORE PRIVATE ${SDL3_SOURCE_DIR}/src)
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.20")
+            target_include_directories(${TARGET} AFTER PRIVATE "${SDL3_SOURCE_DIR}/include/build_config")
+        endif()
     endif()
 
     if(WINDOWS)
@@ -297,7 +308,7 @@ add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c)
 add_sdl_test_executable(testaudiostreamdynamicresample NEEDS_RESOURCES TESTUTILS SOURCES testaudiostreamdynamicresample.c)
 
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
-add_sdl_test_executable(testautomation NONINTERACTIVE NONINTERACTIVE_TIMEOUT 120 NEEDS_RESOURCES NO_C90 SOURCES ${TESTAUTOMATION_SOURCE_FILES})
+add_sdl_test_executable(testautomation NONINTERACTIVE NONINTERACTIVE_TIMEOUT 120 NEEDS_RESOURCES BUILD_DEPENDENT NO_C90 SOURCES ${TESTAUTOMATION_SOURCE_FILES})
 if(EMSCRIPTEN)
     target_link_options(testautomation PRIVATE -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=1gb)
 endif()
@@ -342,9 +353,8 @@ elseif(HAVE_X11 OR HAVE_WAYLAND)
     endif ()
 endif()
 
-find_package(Python3 COMPONENTS Interpreter)
 function(files2headers OUTPUT)
-    set(xxd "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/xxd.py")
+    set(xxd "${SDL3_SOURCE_DIR}/cmake/xxd.py")
     set(inputs ${ARGN})
     set(outputs )
     foreach(input IN LISTS inputs)
@@ -352,7 +362,7 @@ function(files2headers OUTPUT)
         set(intermediate "${CMAKE_CURRENT_BINARY_DIR}/${file_we}.h")
         set(output "${CMAKE_CURRENT_SOURCE_DIR}/${file_we}.h")
         list(APPEND outputs "${output}")
-        if(Python3_FOUND AND Python3_VERSION VERSION_GREATER_EQUAL "3.2")
+        if(TARGET Python3::Interpreter AND NOT CMAKE_CROSSCOMPILING)
             list(APPEND outputs  "${intermediate}")
             # Don't add the 'output' header to the output, to avoid marking them as GENERATED
             # (generated files are removed when running the CLEAN target)
@@ -637,9 +647,6 @@ function(add_sdl_test TEST TARGET)
     get_property(noninteractive TARGET ${TARGET} PROPERTY SDL_NONINTERACTIVE)
     if(noninteractive)
         if(EMSCRIPTEN)
-            if(NOT PYTHON3_EXECUTABLE)
-                set(PYTHON3_EXECUTABLE "python3")
-            endif()
             set(command "${PYTHON3_EXECUTABLE};${CMAKE_CURRENT_SOURCE_DIR}/emscripten/driver.py;--server;http://localhost:${SDLTEST_PORT};--browser;${SDLTEST_BROWSER}")
             if(SDLTEST_CHROME_BINARY)
                 list(APPEND command "--chrome-binary;${SDLTEST_CHROME_BINARY}")

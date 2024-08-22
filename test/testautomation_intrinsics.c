@@ -4,7 +4,7 @@
 
 #ifndef NO_BUILD_CONFIG
 /* Disable intrinsics that are unsupported by the current compiler */
-#include <build_config/SDL_build_config.h>
+#include "SDL_build_config.h"
 #endif
 
 #include <SDL3/SDL.h>
