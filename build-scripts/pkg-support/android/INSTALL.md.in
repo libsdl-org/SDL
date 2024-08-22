@@ -4,7 +4,7 @@ For integration with CMake/ndk-build, it uses [prefab](https://google.github.io/
 
 Copy this archive (@PROJECT_NAME@-@PROJECT_VERSION@.aar) to a `app/libs` directory of your project.
 
-In `app/gradle.build` of your Android project, add:
+In `app/build.gradle` of your Android project, add:
 ```
 android {
     /* ... */
