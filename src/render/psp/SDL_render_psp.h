@@ -22,6 +22,12 @@
 /* this header is meant to be included after the other related internal SDL
    headers. it's the interface between psp renderer and video driver code. */
 
+#define PSP_SCREEN_WIDTH  480
+#define PSP_SCREEN_HEIGHT 272
+
+#define PSP_FRAME_BUFFER_WIDTH 512
+#define PSP_FRAME_BUFFER_SIZE  (PSP_FRAME_BUFFER_WIDTH * PSP_SCREEN_HEIGHT)
+
 enum SDL_PSP_RenderProps
 {
     SDL_PSP_RENDERPROPS_FRONTBUFFER,
