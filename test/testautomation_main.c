@@ -9,7 +9,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
-#include "build_config/SDL_build_config.h"
+#include "SDL_build_config.h"
 
 /**
  * Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
