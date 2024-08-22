@@ -30,7 +30,7 @@
 
 struct SDL_VideoData
 {
-    uint32_t egl_refcount; /* OpenGL ES reference count              */
+    uint32_t egl_refcount; // OpenGL ES reference count
 };
 
 struct SDL_DisplayData
@@ -45,20 +45,20 @@ struct SDL_WindowData
     EGLSurface egl_surface;
 #endif
 
-    /* Vsync callback cond and mutex */
+    // Vsync callback cond and mutex
     SDL_Condition *vsync_cond;
     SDL_Mutex *vsync_cond_mutex;
     SDL_bool double_buffer;
 };
 
-#define SDL_RPI_VIDEOLAYER 10000 /* High enough so to occlude everything */
+#define SDL_RPI_VIDEOLAYER 10000 // High enough so to occlude everything
 #define SDL_RPI_MOUSELAYER SDL_RPI_VIDEOLAYER + 1
 
 /****************************************************************************/
-/* SDL_VideoDevice functions declaration                                    */
+// SDL_VideoDevice functions declaration
 /****************************************************************************/
 
-/* Display and window functions */
+// Display and window functions
 int RPI_VideoInit(SDL_VideoDevice *_this);
 void RPI_VideoQuit(SDL_VideoDevice *_this);
 int RPI_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
@@ -75,7 +75,7 @@ void RPI_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void RPI_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
 void RPI_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-/* OpenGL/OpenGL ES functions */
+// OpenGL/OpenGL ES functions
 int RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 SDL_FunctionPointer RPI_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 void RPI_GLES_UnloadLibrary(SDL_VideoDevice *_this);
@@ -86,4 +86,4 @@ int RPI_GLES_GetSwapInterval(SDL_VideoDevice *_this);
 int RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 int RPI_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 
-#endif /* SDL_rpivideo_h */
+#endif // SDL_rpivideo_h

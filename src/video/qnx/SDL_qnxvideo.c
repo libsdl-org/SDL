@@ -52,7 +52,7 @@ static int videoInit(SDL_VideoDevice *_this)
         return -1;
     }
 
-    /* Assume we have a mouse and keyboard */
+    // Assume we have a mouse and keyboard
     SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, SDL_FALSE);
     SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, SDL_FALSE);
 
@@ -346,5 +346,5 @@ static SDL_VideoDevice *createDevice(void)
 VideoBootStrap QNX_bootstrap = {
     "qnx", "QNX Screen",
     createDevice,
-    NULL /* no ShowMessageBox implementation */
+    NULL // no ShowMessageBox implementation
 };

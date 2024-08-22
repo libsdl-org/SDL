@@ -33,8 +33,8 @@
 
 struct SDL_VideoData
 {
-    SDL_bool egl_initialized; /* OpenGL device initialization status */
-    uint32_t egl_refcount;    /* OpenGL reference count              */
+    SDL_bool egl_initialized; // OpenGL device initialization status
+    uint32_t egl_refcount;    // OpenGL reference count
 
     SceWChar16 ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
     SDL_bool ime_active;
@@ -54,10 +54,10 @@ struct SDL_WindowData
 extern SDL_Window *Vita_Window;
 
 /****************************************************************************/
-/* SDL_VideoDevice functions declaration                                    */
+// SDL_VideoDevice functions declaration
 /****************************************************************************/
 
-/* Display and window functions */
+// Display and window functions
 int VITA_VideoInit(SDL_VideoDevice *_this);
 void VITA_VideoQuit(SDL_VideoDevice *_this);
 int VITA_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
@@ -77,13 +77,13 @@ void VITA_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 #ifdef SDL_VIDEO_DRIVER_VITA
 #ifdef SDL_VIDEO_VITA_PVR_OGL
-/* OpenGL functions */
+// OpenGL functions
 int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
 SDL_FunctionPointer VITA_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 #endif
 
-/* OpenGLES functions */
+// OpenGLES functions
 int VITA_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 SDL_FunctionPointer VITA_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 void VITA_GLES_UnloadLibrary(SDL_VideoDevice *_this);
@@ -95,7 +95,7 @@ int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 int VITA_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 #endif
 
-/* VITA on screen keyboard */
+// VITA on screen keyboard
 SDL_bool VITA_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
@@ -103,4 +103,4 @@ SDL_bool VITA_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 
 void VITA_PumpEvents(SDL_VideoDevice *_this);
 
-#endif /* SDL_pspvideo_h */
+#endif // SDL_pspvideo_h

@@ -40,7 +40,7 @@ static void android_egl_context_restore(SDL_Window *window)
         SDL_WindowData *data = window->internal;
         SDL_GL_MakeCurrent(window, NULL);
         if (SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context) < 0) {
-            /* The context is no longer valid, create a new one */
+            // The context is no longer valid, create a new one
             data->egl_context = (EGLContext)SDL_GL_CreateContext(window);
             SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context);
             event.type = SDL_EVENT_RENDER_DEVICE_RESET;
@@ -60,17 +60,17 @@ static void android_egl_context_backup(SDL_Window *window)
 {
     if (window) {
         int interval = 0;
-        /* Keep a copy of the EGL Context so we can try to restore it when we resume */
+        // Keep a copy of the EGL Context so we can try to restore it when we resume
         SDL_WindowData *data = window->internal;
         data->egl_context = SDL_GL_GetCurrentContext();
 
-        /* Save/Restore the swap interval / vsync */
+        // Save/Restore the swap interval / vsync
         if (SDL_GL_GetSwapInterval(&interval) == 0) {
             data->has_swap_interval = 1;
             data->swap_interval = interval;
         }
 
-        /* We need to do this so the EGLSurface can be freed */
+        // We need to do this so the EGLSurface can be freed
         SDL_GL_MakeCurrent(window, NULL);
         data->backup_done = SDL_TRUE;
     }
@@ -131,7 +131,7 @@ static void Android_OnPause(void)
 #endif
 
     if (Android_BlockOnPause) {
-        /* We're blocking, also pause audio */
+        // We're blocking, also pause audio
         Android_PauseAudio();
     }
 
@@ -147,7 +147,7 @@ static void Android_OnResume(void)
     Android_ResumeAudio();
 
 #ifdef SDL_VIDEO_OPENGL_EGL
-    /* Restore the GL Context from here, as this operation is thread dependent */
+    // Restore the GL Context from here, as this operation is thread dependent
     if (Android_Window && !Android_Window->external_graphics_context && !SDL_HasEvent(SDL_EVENT_QUIT)) {
         Android_LockActivityMutex();
         android_egl_context_restore(Android_Window);
@@ -155,7 +155,7 @@ static void Android_OnResume(void)
     }
 #endif
 
-    /* Make sure SW Keyboard is restored when an app becomes foreground */
+    // Make sure SW Keyboard is restored when an app becomes foreground
     if (Android_Window) {
         Android_RestoreScreenKeyboardOnResume(SDL_GetVideoDevice(), Android_Window);
     }
@@ -170,7 +170,7 @@ static void Android_OnLowMemory(void)
 
 static void Android_OnDestroy(void)
 {
-    /* Make sure we unblock any audio processing before we quit */
+    // Make sure we unblock any audio processing before we quit
     Android_ResumeAudio();
 
     /* Discard previous events. The user should have handled state storage
@@ -265,4 +265,4 @@ void Android_QuitEvents(void)
     Android_EventsInitialized = SDL_FALSE;
 }
 
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif // SDL_VIDEO_DRIVER_ANDROID

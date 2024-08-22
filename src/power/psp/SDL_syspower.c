@@ -54,8 +54,8 @@ SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *state, int *seconds, int *percent)
         *seconds = scePowerGetBatteryLifeTime() * 60;
     }
 
-    return SDL_TRUE; /* always the definitive answer on PSP. */
+    return SDL_TRUE; // always the definitive answer on PSP.
 }
 
-#endif /* SDL_POWER_PSP */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_PSP
+#endif // SDL_POWER_DISABLED

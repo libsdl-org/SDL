@@ -22,7 +22,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
-#include <limits.h> /* For INT_MAX */
+#include <limits.h> // For INT_MAX
 
 #include "SDL_x11video.h"
 #include "SDL_x11clipboard.h"
@@ -37,7 +37,7 @@ static const char *text_mime_types[] = {
     "STRING"
 };
 
-/* Get any application owned window handle for clipboard association */
+// Get any application owned window handle for clipboard association
 static Window GetWindow(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
@@ -83,7 +83,7 @@ static int SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_Clipboar
 
     clipboard_owner = X11_XGetSelectionOwner(display, selection) == window;
 
-    /* If we are cancelling our own data we need to clean it up */
+    // If we are cancelling our own data we need to clean it up
     if (clipboard_owner && clipboard->sequence == 0) {
         SDL_free(clipboard->userdata);
     }
@@ -141,7 +141,7 @@ static SDL_bool WaitForSelection(SDL_VideoDevice *_this, Atom selection_type, SD
     while (*flag) {
         SDL_PumpEvents();
         waitElapsed = SDL_GetTicks() - waitStart;
-        /* Wait one second for a selection response. */
+        // Wait one second for a selection response.
         if (waitElapsed > 1000) {
             *flag = SDL_FALSE;
             SDL_SetError("Selection timeout");
@@ -178,11 +178,11 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
 
     *length = 0;
 
-    /* Get the window that holds the selection */
+    // Get the window that holds the selection
     window = GetWindow(_this);
     owner = X11_XGetSelectionOwner(display, selection_type);
     if (owner == None) {
-        /* This requires a fallback to ancient X10 cut-buffers. We will just skip those for now */
+        // This requires a fallback to ancient X10 cut-buffers. We will just skip those for now
         data = NULL;
     } else if (owner == window) {
         owner = DefaultRootWindow(display);
@@ -197,7 +197,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
             data = CloneDataBuffer(clipboard_data, *length);
         }
     } else {
-        /* Request that the selection owner copy the data to our window */
+        // Request that the selection owner copy the data to our window
         owner = window;
         selection = X11_XInternAtom(display, "SDL_SELECTION", False);
         X11_XConvertSelection(display, selection_type, XA_MIME, selection, owner,
@@ -337,4 +337,4 @@ void X11_QuitClipboard(SDL_VideoDevice *_this)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_VIDEO_DRIVER_X11

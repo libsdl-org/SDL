@@ -31,7 +31,7 @@ typedef struct SDL_PrivateGLESData
     int dummy;
 } SDL_PrivateGLESData;
 
-/* OpenGLES functions */
+// OpenGLES functions
 #define Wayland_GLES_GetAttribute   SDL_EGL_GetAttribute
 #define Wayland_GLES_GetProcAddress SDL_EGL_GetProcAddressInternal
 #define Wayland_GLES_UnloadLibrary  SDL_EGL_UnloadLibrary
@@ -45,4 +45,4 @@ extern int Wayland_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, 
 extern int Wayland_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 extern SDL_EGLSurface Wayland_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_waylandopengles_h_ */
+#endif // SDL_waylandopengles_h_

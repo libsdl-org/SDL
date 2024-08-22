@@ -28,7 +28,7 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
-/* OpenGLES functions */
+// OpenGLES functions
 #define WIN_GLES_GetAttribute    SDL_EGL_GetAttribute
 #define WIN_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
 #define WIN_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
@@ -43,6 +43,6 @@ extern int WIN_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 extern int WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_EGLSurface WIN_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_OPENGL_EGL
 
-#endif /* SDL_winopengles_h_ */
+#endif // SDL_winopengles_h_

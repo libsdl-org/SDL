@@ -48,10 +48,10 @@ static const struct
     SDL_PixelFormat pixel_format;
     int modeflags, ncolour, log2bpp;
 } mode_to_pixelformat[] = {
-    /* { SDL_PIXELFORMAT_INDEX1LSB, 0, 1, 0 }, */
-    /* { SDL_PIXELFORMAT_INDEX2LSB, 0, 3, 1 }, */
-    /* { SDL_PIXELFORMAT_INDEX4LSB, 0, 15, 2 }, */
-    /* { SDL_PIXELFORMAT_INDEX8,    MODE_FLAG_565, 255, 3 }, */
+    // { SDL_PIXELFORMAT_INDEX1LSB, 0, 1, 0 },
+    // { SDL_PIXELFORMAT_INDEX2LSB, 0, 3, 1 },
+    // { SDL_PIXELFORMAT_INDEX4LSB, 0, 15, 2 },
+    // { SDL_PIXELFORMAT_INDEX8,    MODE_FLAG_565, 255, 3 },
     { SDL_PIXELFORMAT_XBGR1555, MODE_FLAG_TBGR, 65535, 4 },
     { SDL_PIXELFORMAT_XRGB1555, MODE_FLAG_TRGB, 65535, 4 },
     { SDL_PIXELFORMAT_ABGR1555, MODE_FLAG_ABGR, 65535, 4 },
@@ -296,15 +296,15 @@ int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL
         return SDL_SetError("Unable to set the current screen mode: %s (%i)", error->errmess, error->errnum);
     }
 
-    /* Turn the text cursor off */
+    // Turn the text cursor off
     for (i = 0; i < SDL_arraysize(disable_cursor); i++) {
         _kernel_oswrch(disable_cursor[i]);
     }
 
-    /* Update cursor visibility, since it may have been disabled by the mode change. */
+    // Update cursor visibility, since it may have been disabled by the mode change.
     SDL_SetCursor(NULL);
 
     return 0;
 }
 
-#endif /* SDL_VIDEO_DRIVER_RISCOS */
+#endif // SDL_VIDEO_DRIVER_RISCOS

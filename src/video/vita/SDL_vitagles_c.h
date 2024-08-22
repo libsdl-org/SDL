@@ -50,4 +50,4 @@ extern void VITA_GLES_UnloadLibrary(SDL_VideoDevice *_this);
 extern int VITA_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
 extern int VITA_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
 
-#endif /* SDL_vitagles_c_h_ */
+#endif // SDL_vitagles_c_h_

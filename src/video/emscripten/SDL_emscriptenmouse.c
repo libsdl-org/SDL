@@ -32,7 +32,7 @@
 #include "../SDL_video_c.h"
 #include "../../events/SDL_mouse_c.h"
 
-/* older Emscriptens don't have this, but we need to for wasm64 compatibility. */
+// older Emscriptens don't have this, but we need to for wasm64 compatibility.
 #ifndef MAIN_THREAD_EM_ASM_PTR
     #ifdef __wasm64__
         #error You need to upgrade your Emscripten compiler to support wasm64
@@ -78,7 +78,7 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
         return NULL;
     }
 
-    /* *INDENT-OFF* */ /* clang-format off */
+    /* *INDENT-OFF* */ // clang-format off
     cursor_url = (const char *)MAIN_THREAD_EM_ASM_PTR({
         var w = $0;
         var h = $1;
@@ -109,7 +109,7 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
 
         return urlBuf;
     }, surface->w, surface->h, hot_x, hot_y, conv_surf->pixels);
-    /* *INDENT-ON* */ /* clang-format on */
+    /* *INDENT-ON* */ // clang-format on
 
     SDL_DestroySurface(conv_surf);
 
@@ -148,22 +148,22 @@ static int Emscripten_ShowCursor(SDL_Cursor *cursor)
             curdata = cursor->internal;
 
             if (curdata->system_cursor) {
-                /* *INDENT-OFF* */ /* clang-format off */
+                /* *INDENT-OFF* */ // clang-format off
                 MAIN_THREAD_EM_ASM({
                     if (Module['canvas']) {
                         Module['canvas'].style['cursor'] = UTF8ToString($0);
                     }
                 }, curdata->system_cursor);
-                /* *INDENT-ON* */ /* clang-format on */
+                /* *INDENT-ON* */ // clang-format on
             }
         } else {
-            /* *INDENT-OFF* */ /* clang-format off */
+            /* *INDENT-OFF* */ // clang-format off
             MAIN_THREAD_EM_ASM(
                 if (Module['canvas']) {
                     Module['canvas'].style['cursor'] = 'none';
                 }
             );
-            /* *INDENT-ON* */ /* clang-format on */
+            /* *INDENT-ON* */ // clang-format on
         }
     }
     return 0;
@@ -174,7 +174,7 @@ static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
     SDL_Window *window;
     SDL_WindowData *window_data;
 
-    /* TODO: pointer lock isn't actually enabled yet */
+    // TODO: pointer lock isn't actually enabled yet
     if (enabled) {
         window = SDL_GetMouseFocus();
         if (!window) {
@@ -211,4 +211,4 @@ void Emscripten_QuitMouse(void)
 {
 }
 
-#endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
+#endif // SDL_VIDEO_DRIVER_EMSCRIPTEN

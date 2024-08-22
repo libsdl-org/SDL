@@ -22,7 +22,7 @@
 
 #if defined(SDL_VIDEO_DRIVER_ANDROID) && defined(SDL_VIDEO_OPENGL_EGL)
 
-/* Android SDL video driver implementation */
+// Android SDL video driver implementation
 
 #include "../SDL_egl_c.h"
 #include "SDL_androidwindow.h"
@@ -85,4 +85,4 @@ int Android_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
 }
 
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif // SDL_VIDEO_DRIVER_ANDROID

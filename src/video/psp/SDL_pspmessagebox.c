@@ -33,18 +33,18 @@
 
 static void configure_dialog(pspUtilityMsgDialogParams *dialog, size_t dialog_size)
 {
-	/* clear structure and setup size */
+	// clear structure and setup size
 	SDL_memset(dialog, 0, dialog_size);
 	dialog->base.size = dialog_size;
 
-	/* set language */
+	// set language
 	sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_LANGUAGE, &dialog->base.language);
 
-	/* set X/O swap */
+	// set X/O swap
 	sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_UNKNOWN, &dialog->base.buttonSwap);
 
-	/* set thread priorities */
-	/* TODO: understand how these work */
+	// set thread priorities
+	// TODO: understand how these work
 	dialog->base.soundThread = 0x10;
 	dialog->base.graphicsThread = 0x11;
 	dialog->base.fontThread = 0x12;
@@ -57,33 +57,33 @@ int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 	pspUtilityMsgDialogParams dialog;
 	int status;
 
-	/* check if it's possible to do a messagebox now */
+	// check if it's possible to do a messagebox now
 	if (SDL_GetKeyboardFocus() == NULL)
 		return SDL_SetError("No video context is available");
 
-	/* configure dialog */
+	// configure dialog
 	configure_dialog(&dialog, sizeof(dialog));
 
-	/* setup dialog options for text */
+	// setup dialog options for text
 	dialog.mode = PSP_UTILITY_MSGDIALOG_MODE_TEXT;
 	dialog.options = PSP_UTILITY_MSGDIALOG_OPTION_TEXT;
 
-	/* copy the message in, 512 bytes max */
+	// copy the message in, 512 bytes max
 	SDL_snprintf(dialog.message, sizeof(dialog.message), "%s\r\n\r\n%s", messageboxdata->title, messageboxdata->message);
 
-	/* too many buttons */
+	// too many buttons
 	if (messageboxdata->numbuttons > 2)
 		return SDL_SetError("messageboxdata->numbuttons valid values are 0, 1, 2");
 
-	/* we only have two options, "yes/no" or "ok" */
+	// we only have two options, "yes/no" or "ok"
 	if (messageboxdata->numbuttons == 2)
 		dialog.options |= PSP_UTILITY_MSGDIALOG_OPTION_YESNO_BUTTONS | PSP_UTILITY_MSGDIALOG_OPTION_DEFAULT_NO;
 
-	/* start dialog */
+	// start dialog
 	if (sceUtilityMsgDialogInitStart(&dialog) != 0)
 		return SDL_SetError("sceUtilityMsgDialogInitStart() failed for some reason");
 
-	/* loop while the dialog is active */
+	// loop while the dialog is active
 	status = PSP_UTILITY_DIALOG_NONE;
 	do
 	{
@@ -112,7 +112,7 @@ int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 
 	} while (status != PSP_UTILITY_DIALOG_NONE);
 
-	/* success */
+	// success
 	if (dialog.buttonPressed == PSP_UTILITY_MSGDIALOG_RESULT_YES)
 		*buttonID = messageboxdata->buttons[0].buttonID;
 	else if (dialog.buttonPressed == PSP_UTILITY_MSGDIALOG_RESULT_NO)
@@ -123,4 +123,4 @@ int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 	return 0;
 }
 
-#endif /* SDL_VIDEO_DRIVER_PSP */
+#endif // SDL_VIDEO_DRIVER_PSP

@@ -24,7 +24,7 @@
 #if defined(SDL_FSOPS_POSIX)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 
@@ -180,7 +180,7 @@ int SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     }
 
 #if defined(HAVE_ST_MTIM)
-    /* POSIX.1-2008 standard */
+    // POSIX.1-2008 standard
     info->create_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_ctim.tv_sec) + statbuf.st_ctim.tv_nsec;
     info->modify_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_mtim.tv_sec) + statbuf.st_mtim.tv_nsec;
     info->access_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_atim.tv_sec) + statbuf.st_atim.tv_nsec;

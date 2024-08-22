@@ -27,4 +27,4 @@ freely, subject to the following restrictions:
 extern const char *SDL_GetExeName();
 extern const char *SDL_GetAppID();
 
-#endif /* SDL_appid_h_ */
+#endif // SDL_appid_h_

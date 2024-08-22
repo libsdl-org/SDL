@@ -126,4 +126,4 @@ no_key:
     return res;
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_VIDEO_DRIVER_X11

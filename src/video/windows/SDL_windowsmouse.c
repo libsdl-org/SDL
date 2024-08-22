@@ -87,12 +87,12 @@ static SDL_bool IsMonochromeSurface(SDL_Surface *surface)
         for (x = 0; x < surface->w; x++) {
             SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
 
-            /* Black or white pixel. */
+            // Black or white pixel.
             if (!((r == 0x00 && g == 0x00 && b == 0x00) || (r == 0xff && g == 0xff && b == 0xff))) {
                 return SDL_FALSE;
             }
 
-            /* Transparent or opaque pixel. */
+            // Transparent or opaque pixel.
             if (!(a == 0x00 || a == 0xff)) {
                 return SDL_FALSE;
             }
@@ -113,7 +113,7 @@ static HBITMAP CreateColorBitmap(SDL_Surface *surface)
     SDL_zero(bi);
     bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bi.bmiHeader.biWidth = surface->w;
-    bi.bmiHeader.biHeight = -surface->h; /* Invert height to make the top-down DIB. */
+    bi.bmiHeader.biHeight = -surface->h; // Invert height to make the top-down DIB.
     bi.bmiHeader.biPlanes = 1;
     bi.bmiHeader.biBitCount = 32;
     bi.bmiHeader.biCompression = BI_RGB;
@@ -155,7 +155,7 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, SDL_bool is_monochrome)
 
     dst = (Uint8 *)pixels;
 
-    /* Make the mask completely transparent. */
+    // Make the mask completely transparent.
     SDL_memset(dst, 0xff, size);
     if (is_monochrome) {
         SDL_memset(dst + size, 0x00, size);
@@ -166,12 +166,12 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, SDL_bool is_monochrome)
             SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
 
             if (a != 0) {
-                /* Reset bit of an opaque pixel. */
+                // Reset bit of an opaque pixel.
                 dst[x >> 3] &= ~masks[x & 7];
             }
 
             if (is_monochrome && !(r == 0x00 && g == 0x00 && b == 0x00)) {
-                /* Set bit of white or inverted pixel. */
+                // Set bit of white or inverted pixel.
                 dst[size + (x >> 3)] |= masks[x & 7];
             }
         }
@@ -428,13 +428,13 @@ static int WIN_ShowCursor(SDL_Cursor *cursor)
 
 void WIN_SetCursorPos(int x, int y)
 {
-    /* We need to jitter the value because otherwise Windows will occasionally inexplicably ignore the SetCursorPos() or SendInput() */
+    // We need to jitter the value because otherwise Windows will occasionally inexplicably ignore the SetCursorPos() or SendInput()
     SetCursorPos(x, y);
     SetCursorPos(x + 1, y);
     SetCursorPos(x, y);
 
-    /* Flush any mouse motion prior to or associated with this warp */
-#ifdef _MSC_VER /* We explicitly want to use GetTickCount(), not GetTickCount64() */
+    // Flush any mouse motion prior to or associated with this warp
+#ifdef _MSC_VER // We explicitly want to use GetTickCount(), not GetTickCount64()
 #pragma warning(push)
 #pragma warning(disable : 28159)
 #endif
@@ -453,7 +453,7 @@ static int WIN_WarpMouse(SDL_Window *window, float x, float y)
     HWND hwnd = data->hwnd;
     POINT pt;
 
-    /* Don't warp the mouse while we're doing a modal interaction */
+    // Don't warp the mouse while we're doing a modal interaction
     if (data->in_title_click || data->focus_click_pending) {
         return 0;
     }
@@ -463,7 +463,7 @@ static int WIN_WarpMouse(SDL_Window *window, float x, float y)
     ClientToScreen(hwnd, &pt);
     WIN_SetCursorPos(pt.x, pt.y);
 
-    /* Send the exact mouse motion associated with this warp */
+    // Send the exact mouse motion associated with this warp
     SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
     return 0;
 }
@@ -650,4 +650,4 @@ void WIN_UpdateMouseSystemScale(void)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINDOWS */
+#endif // SDL_VIDEO_DRIVER_WINDOWS

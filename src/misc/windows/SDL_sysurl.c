@@ -28,17 +28,17 @@
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 int SDL_SYS_OpenURL(const char *url)
 {
-    /* Not supported */
+    // Not supported
     return SDL_Unsupported();
 }
 #else
-/* https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx */
+// https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
 int SDL_SYS_OpenURL(const char *url)
 {
     WCHAR *wurl;
     HINSTANCE rc;
 
-    /* MSDN says for safety's sake, make sure COM is initialized. */
+    // MSDN says for safety's sake, make sure COM is initialized.
     const HRESULT hr = WIN_CoInitialize();
     if (FAILED(hr)) {
         return WIN_SetErrorFromHRESULT("CoInitialize failed", hr);
@@ -50,7 +50,7 @@ int SDL_SYS_OpenURL(const char *url)
         return -1;
     }
 
-    /* Success returns value greater than 32. Less is an error. */
+    // Success returns value greater than 32. Less is an error.
     rc = ShellExecuteW(NULL, L"open", wurl, NULL, NULL, SW_SHOWNORMAL);
     SDL_free(wurl);
     WIN_CoUninitialize();

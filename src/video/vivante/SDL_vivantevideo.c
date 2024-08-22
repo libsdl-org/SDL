@@ -22,7 +22,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_VIVANTE
 
-/* SDL internals */
+// SDL internals
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 
@@ -46,13 +46,13 @@ static SDL_VideoDevice *VIVANTE_Create(void)
     SDL_VideoDevice *device;
     SDL_VideoData *data;
 
-    /* Initialize SDL_VideoDevice structure */
+    // Initialize SDL_VideoDevice structure
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         return NULL;
     }
 
-    /* Initialize internal data */
+    // Initialize internal data
     data = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!data) {
         SDL_free(device);
@@ -61,13 +61,13 @@ static SDL_VideoDevice *VIVANTE_Create(void)
 
     device->internal = data;
 
-    /* Setup amount of available displays */
+    // Setup amount of available displays
     device->num_displays = 0;
 
-    /* Set device free function */
+    // Set device free function
     device->free = VIVANTE_Destroy;
 
-    /* Setup all functions which we can handle */
+    // Setup all functions which we can handle
     device->VideoInit = VIVANTE_VideoInit;
     device->VideoQuit = VIVANTE_VideoQuit;
     device->CreateSDLWindow = VIVANTE_CreateWindow;
@@ -107,11 +107,11 @@ VideoBootStrap VIVANTE_bootstrap = {
     "vivante",
     "Vivante EGL Video Driver",
     VIVANTE_Create,
-    NULL /* no ShowMessageBox implementation */
+    NULL // no ShowMessageBox implementation
 };
 
 /*****************************************************************************/
-/* SDL Video and Display initialization/handling functions                   */
+// SDL Video and Display initialization/handling functions
 /*****************************************************************************/
 
 static int VIVANTE_AddVideoDisplays(SDL_VideoDevice *_this)
@@ -139,10 +139,10 @@ static int VIVANTE_AddVideoDisplays(SDL_VideoDevice *_this)
 
     videodata->fbGetDisplayInfo(data->native_display, &mode.w, &mode.h,
                                 &pixels, &pitch, &bpp);
-#endif /* SDL_VIDEO_DRIVER_VIVANTE_VDK */
+#endif // SDL_VIDEO_DRIVER_VIVANTE_VDK
 
     switch (bpp) {
-    default: /* Is another format used? */
+    default: // Is another format used?
     case 32:
         mode.format = SDL_PIXELFORMAT_ARGB8888;
         break;
@@ -150,7 +150,7 @@ static int VIVANTE_AddVideoDisplays(SDL_VideoDevice *_this)
         mode.format = SDL_PIXELFORMAT_RGB565;
         break;
     }
-    /* FIXME: How do we query refresh rate? */
+    // FIXME: How do we query refresh rate?
     mode.refresh_rate = 60.0f;
 
     SDL_zero(display);
@@ -246,13 +246,13 @@ int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
 
     displaydata = SDL_GetDisplayDriverData(SDL_GetPrimaryDisplay());
 
-    /* Allocate window internal data */
+    // Allocate window internal data
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (!data) {
         return -1;
     }
 
-    /* Setup driver data for this window */
+    // Setup driver data for this window
     window->internal = data;
 
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
@@ -280,7 +280,7 @@ int VIVANTE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER, data->egl_surface);
 #endif
 
-    /* Window has been successfully created */
+    // Window has been successfully created
     return 0;
 }
 
@@ -320,13 +320,13 @@ void VIVANTE_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 
 int VIVANTE_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* FIXME */
+    // FIXME
     return SDL_Unsupported();
 }
 
 void VIVANTE_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* FIXME */
+    // FIXME
 }
 
 void VIVANTE_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -350,7 +350,7 @@ void VIVANTE_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 /*****************************************************************************/
-/* SDL event functions                                                       */
+// SDL event functions
 /*****************************************************************************/
 void VIVANTE_PumpEvents(SDL_VideoDevice *_this)
 {
@@ -359,4 +359,4 @@ void VIVANTE_PumpEvents(SDL_VideoDevice *_this)
 #endif
 }
 
-#endif /* SDL_VIDEO_DRIVER_VIVANTE */
+#endif // SDL_VIDEO_DRIVER_VIVANTE

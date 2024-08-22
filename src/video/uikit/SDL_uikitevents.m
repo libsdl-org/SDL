@@ -158,18 +158,18 @@ void UIKit_PumpEvents(SDL_VideoDevice *_this)
     */
     const CFTimeInterval seconds = 0.000002;
 
-    /* Pump most event types. */
+    // Pump most event types.
     SInt32 result;
     do {
         result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, seconds, TRUE);
     } while (result == kCFRunLoopRunHandledSource);
 
-    /* Make sure UIScrollView objects scroll properly. */
+    // Make sure UIScrollView objects scroll properly.
     do {
         result = CFRunLoopRunInMode((CFStringRef)UITrackingRunLoopMode, seconds, TRUE);
     } while (result == kCFRunLoopRunHandledSource);
 
-    /* See the comment in the function definition. */
+    // See the comment in the function definition.
 #if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
     UIKit_GL_RestoreCurrentContext();
 #endif
@@ -266,7 +266,7 @@ void SDL_QuitGCKeyboard(void)
 {
 }
 
-#endif /* ENABLE_GCKEYBOARD */
+#endif // ENABLE_GCKEYBOARD
 
 #ifdef ENABLE_GCMOUSE
 
@@ -277,7 +277,7 @@ static SDL_MouseWheelDirection mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
 
 static void UpdateScrollDirection(void)
 {
-#if 0 /* This code doesn't work for some reason */
+#if 0 // This code doesn't work for some reason
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if ([userDefaults boolForKey:@"com.apple.swipescrolldirection"]) {
         mouse_scroll_direction = SDL_MOUSEWHEEL_FLIPPED;
@@ -288,7 +288,7 @@ static void UpdateScrollDirection(void)
     Boolean keyExistsAndHasValidFormat = NO;
     Boolean naturalScrollDirection = CFPreferencesGetAppBooleanValue(CFSTR("com.apple.swipescrolldirection"), kCFPreferencesAnyApplication, &keyExistsAndHasValidFormat);
     if (!keyExistsAndHasValidFormat) {
-        /* Couldn't read the preference, assume natural scrolling direction */
+        // Couldn't read the preference, assume natural scrolling direction
         naturalScrollDirection = YES;
     }
     if (naturalScrollDirection) {
@@ -360,7 +360,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
         float vertical = -xValue;
         float horizontal = yValue;
         if (mouse_scroll_direction == SDL_MOUSEWHEEL_FLIPPED) {
-            /* Since these are raw values, we need to flip them ourselves */
+            // Since these are raw values, we need to flip them ourselves
             vertical = -vertical;
             horizontal = -horizontal;
         }
@@ -397,7 +397,7 @@ static void OnGCMouseDisconnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios
 void SDL_InitGCMouse(void)
 {
     @autoreleasepool {
-        /* There is a bug where mouse accumulates duplicate deltas over time in iOS 14.0 */
+        // There is a bug where mouse accumulates duplicate deltas over time in iOS 14.0
         if (@available(iOS 14.1, tvOS 14.1, *)) {
             /* iOS will not send the new pointer touch events if you don't have this key,
              * and we need them to differentiate between mouse events and real touch events.
@@ -479,6 +479,6 @@ void SDL_QuitGCMouse(void)
 {
 }
 
-#endif /* ENABLE_GCMOUSE */
+#endif // ENABLE_GCMOUSE
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

@@ -64,4 +64,4 @@ extern int UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay
 #define SDL_XR_SCREENHEIGHT 720
 #endif
 
-#endif /* SDL_uikitmodes_h_ */
+#endif // SDL_uikitmodes_h_

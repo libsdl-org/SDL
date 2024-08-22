@@ -28,7 +28,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 
-/* Does this device have a valuator for pressure sensitivity? */
+// Does this device have a valuator for pressure sensitivity?
 static SDL_bool X11_XInput2DeviceIsPen(SDL_VideoDevice *_this, const XIDeviceInfo *dev)
 {
     const SDL_VideoData *data = (SDL_VideoData *)_this->internal;
@@ -45,10 +45,10 @@ static SDL_bool X11_XInput2DeviceIsPen(SDL_VideoDevice *_this, const XIDeviceInf
     return SDL_FALSE;
 }
 
-/* Heuristically determines if device is an eraser */
+// Heuristically determines if device is an eraser
 static SDL_bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, char *devicename)
 {
-    #define PEN_ERASER_NAME_TAG  "eraser" /* String constant to identify erasers */
+    #define PEN_ERASER_NAME_TAG  "eraser" // String constant to identify erasers
     SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
     if (data->pen_atom_wacom_tool_type != None) {
@@ -58,7 +58,7 @@ static SDL_bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, cha
         unsigned long bytes_after_return;
         unsigned char *tooltype_name_info = NULL;
 
-        /* Try Wacom-specific method */
+        // Try Wacom-specific method
         if (Success == X11_XIGetProperty(data->display, deviceid,
                                          data->pen_atom_wacom_tool_type,
                                          0, 32, False,
@@ -71,7 +71,7 @@ static SDL_bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, cha
             char *tooltype_name = NULL;
 
             if (type_return == XA_ATOM) {
-                /* Atom instead of string?  Un-intern */
+                // Atom instead of string?  Un-intern
                 Atom atom = *((Atom *)tooltype_name_info);
                 if (atom != None) {
                     tooltype_name = X11_XGetAtomName(data->display, atom);
@@ -91,7 +91,7 @@ static SDL_bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, cha
         }
     }
 
-    /* Non-Wacom device? */
+    // Non-Wacom device?
 
     /* We assume that a device is an eraser if its name contains the string "eraser".
      * Unfortunately there doesn't seem to be a clean way to distinguish these cases (as of 2022-03). */
@@ -335,7 +335,7 @@ void X11_QuitPen(SDL_VideoDevice *_this)
 
 static void X11_XInput2NormalizePenAxes(const X11_PenHandle *pen, float *coords)
 {
-    /* Normalise axes */
+    // Normalise axes
     for (int axis = 0; axis < SDL_PEN_NUM_AXES; ++axis) {
         const int valuator = pen->valuator_for_axis[axis];
         if (valuator == SDL_X11_PEN_AXIS_VALUATOR_MISSING) {

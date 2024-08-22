@@ -22,7 +22,7 @@
 
 #if defined(SDL_VIDEO_DRIVER_WINRT) && defined(SDL_VIDEO_OPENGL_EGL)
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
 #include "SDL_winrtvideo_cpp.h"
 extern "C" {
@@ -30,11 +30,11 @@ extern "C" {
 #include "../SDL_egl_c.h"
 }
 
-/* Windows includes */
+// Windows includes
 #include <wrl/client.h>
 using namespace Windows::UI::Core;
 
-/* ANGLE/WinRT constants */
+// ANGLE/WinRT constants
 static const int ANGLE_D3D_FEATURE_LEVEL_ANY = 0;
 #define EGL_PLATFORM_ANGLE_ANGLE                       0x3202
 #define EGL_PLATFORM_ANGLE_TYPE_ANGLE                  0x3203
@@ -60,7 +60,7 @@ WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return -1;
     }
 
-    /* Load ANGLE/WinRT-specific functions */
+    // Load ANGLE/WinRT-specific functions
     CreateWinrtEglWindow_Old_Function CreateWinrtEglWindow = (CreateWinrtEglWindow_Old_Function)SDL_LoadFunction(_this->egl_data->opengl_dll_handle, "CreateWinrtEglWindow");
     if (CreateWinrtEglWindow) {
         /* 'CreateWinrtEglWindow' was found, which means that an an older
@@ -68,8 +68,8 @@ WINRT_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
          * as appropriate to this version of ANGLE.
          */
 
-        /* Create an ANGLE/WinRT EGL-window */
-        /* TODO, WinRT: check for XAML usage before accessing the CoreWindow, as not doing so could lead to a crash */
+        // Create an ANGLE/WinRT EGL-window
+        // TODO, WinRT: check for XAML usage before accessing the CoreWindow, as not doing so could lead to a crash
         CoreWindow ^ native_win = CoreWindow::GetForCurrentThread();
         Microsoft::WRL::ComPtr<IUnknown> cpp_win = reinterpret_cast<IUnknown *>(native_win);
         HRESULT result = CreateWinrtEglWindow(cpp_win, ANGLE_D3D_FEATURE_LEVEL_ANY, &(video_data->winrtEglWindow));
@@ -188,13 +188,13 @@ WINRT_GLES_UnloadLibrary(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->internal;
 
-    /* Release SDL's own COM reference to the ANGLE/WinRT IWinrtEglWindow */
+    // Release SDL's own COM reference to the ANGLE/WinRT IWinrtEglWindow
     if (video_data->winrtEglWindow) {
         video_data->winrtEglWindow->Release();
         video_data->winrtEglWindow = nullptr;
     }
 
-    /* Perform the bulk of the unloading */
+    // Perform the bulk of the unloading
     SDL_EGL_UnloadLibrary(_this);
 }
 
@@ -204,4 +204,4 @@ SDL_EGL_CreateContext_impl(WINRT)
         SDL_EGL_MakeCurrent_impl(WINRT)
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL

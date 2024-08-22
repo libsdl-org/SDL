@@ -52,25 +52,25 @@ int HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
         return -1;
     }
 
-    /* Make sure we have exclusive access to frame buffer data */
+    // Make sure we have exclusive access to frame buffer data
     bwin->LockBuffer();
 
     bwin->CreateView();
 
-    /* format */
+    // format
     display_mode bmode;
     bscreen.GetMode(&bmode);
     *format = HAIKU_ColorSpaceToSDLPxFormat(bmode.space);
 
-    /* Create the new bitmap object */
+    // Create the new bitmap object
     BBitmap *bitmap = bwin->GetBitmap();
 
     if (bitmap) {
         delete bitmap;
     }
     bitmap = new BBitmap(bwin->Bounds(), (color_space)bmode.space,
-            false,    /* Views not accepted */
-            true);    /* Contiguous memory required */
+            false,    // Views not accepted
+            true);    // Contiguous memory required
 
     if (bitmap->InitCheck() != B_OK) {
         delete bitmap;
@@ -80,10 +80,10 @@ int HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
 
     bwin->SetBitmap(bitmap);
 
-    /* Set the pixel pointer */
+    // Set the pixel pointer
     *pixels = bitmap->Bits();
 
-    /* pitch = width of window, in bytes */
+    // pitch = width of window, in bytes
     *pitch = bitmap->BytesPerRow();
 
     bwin->UnlockBuffer();
@@ -110,7 +110,7 @@ void HAIKU_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window)
 
     bwin->LockBuffer();
 
-    /* Free and clear the window buffer */
+    // Free and clear the window buffer
     BBitmap *bitmap = bwin->GetBitmap();
     delete bitmap;
     bwin->SetBitmap(NULL);
@@ -124,4 +124,4 @@ void HAIKU_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window)
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU

@@ -53,4 +53,4 @@ SDL_bool WIN_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
 
 #endif
 
-#endif /* SDL_windowsvulkan_h_ */
+#endif // SDL_windowsvulkan_h_

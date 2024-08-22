@@ -77,7 +77,7 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(void *callback, void *userdata); /* SDL_WindowsMessageHook callback */
+SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(void *callback, void *userdata); // SDL_WindowsMessageHook callback
 void SDL_SetWindowsMessageHook(void *callback, void *userdata)
 {
     (void)callback;
@@ -95,15 +95,15 @@ void SDL_UnregisterApp(void)
 
 #ifndef SDL_PLATFORM_WINRT
 
-/* Returns SDL_WinRT_DeviceFamily enum */
+// Returns SDL_WinRT_DeviceFamily enum
 SDL_DECLSPEC int SDLCALL SDL_GetWinRTDeviceFamily(void);
 int SDL_GetWinRTDeviceFamily(void)
 {
     SDL_Unsupported();
-    return 0; /* SDL_WINRT_DEVICEFAMILY_UNKNOWN */
+    return 0; // SDL_WINRT_DEVICEFAMILY_UNKNOWN
 }
 
-SDL_DECLSPEC const char *SDLCALL SDL_GetWinRTFSPath(int pathType); /* SDL_WinRT_Path pathType */
+SDL_DECLSPEC const char *SDLCALL SDL_GetWinRTFSPath(int pathType); // SDL_WinRT_Path pathType
 const char *SDL_GetWinRTFSPath(int pathType)
 {
     (void)pathType;
@@ -224,6 +224,6 @@ Sint32 JNI_OnLoad(void *vm, void *reserved)
     (void)vm;
     (void)reserved;
     SDL_Unsupported();
-    return -1; /* JNI_ERR */
+    return -1; // JNI_ERR
 }
 #endif

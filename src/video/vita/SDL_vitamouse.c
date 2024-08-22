@@ -86,4 +86,4 @@ void VITA_PollMouse(void)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA */
+#endif // SDL_VIDEO_DRIVER_VITA

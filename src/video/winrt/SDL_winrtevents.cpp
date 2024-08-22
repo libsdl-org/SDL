@@ -43,10 +43,10 @@ extern "C" {
 #include "../../events/SDL_events_c.h"
 }
 
-/* Forward declarations */
+// Forward declarations
 static void WINRT_YieldXAMLThread();
 
-/* Global event management */
+// Global event management
 
 void WINRT_PumpEvents(SDL_VideoDevice *_this)
 {
@@ -57,7 +57,7 @@ void WINRT_PumpEvents(SDL_VideoDevice *_this)
     }
 }
 
-/* XAML Thread management */
+// XAML Thread management
 
 enum SDL_XAMLAppThreadState
 {
@@ -140,4 +140,4 @@ void WINRT_CycleXAMLThread(void)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINRT */
+#endif // SDL_VIDEO_DRIVER_WINRT

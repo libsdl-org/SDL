@@ -40,4 +40,4 @@ void SDL_SYS_DelayNS(Uint64 ns)
     snooze((bigtime_t)SDL_NS_TO_US(ns));
 }
 
-#endif /* SDL_TIMER_HAIKU */
+#endif // SDL_TIMER_HAIKU

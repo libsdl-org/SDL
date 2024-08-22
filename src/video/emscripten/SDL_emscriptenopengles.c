@@ -86,7 +86,7 @@ SDL_GLContext Emscripten_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *
     attribs.antialias = _this->gl_config.multisamplebuffers == 1;
 
     if (_this->gl_config.major_version == 3)
-        attribs.majorVersion = 2; /* WebGL 2.0 ~= GLES 3.0 */
+        attribs.majorVersion = 2; // WebGL 2.0 ~= GLES 3.0
 
     window_data = window->internal;
 
@@ -116,7 +116,7 @@ int Emscripten_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 {
     SDL_Window *window;
 
-    /* remove the context from its window */
+    // remove the context from its window
     for (window = _this->windows; window; window = window->next) {
         SDL_WindowData *window_data = window->internal;
 
@@ -132,7 +132,7 @@ int Emscripten_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
 int Emscripten_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
-        /* give back control to browser for screen refresh */
+        // give back control to browser for screen refresh
         emscripten_sleep(0);
     }
     return 0;
@@ -140,7 +140,7 @@ int Emscripten_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 int Emscripten_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
-    /* it isn't possible to reuse contexts across canvases */
+    // it isn't possible to reuse contexts across canvases
     if (window && context) {
         SDL_WindowData *window_data = window->internal;
 
@@ -155,4 +155,4 @@ int Emscripten_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     return 0;
 }
 
-#endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
+#endif // SDL_VIDEO_DRIVER_EMSCRIPTEN

@@ -29,15 +29,15 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/default_cursor.h"
 
-/* Copied from vc_vchi_dispmanx.h which is bugged and tries to include a non existing file */
-/* Attributes changes flag mask */
+// Copied from vc_vchi_dispmanx.h which is bugged and tries to include a non existing file
+// Attributes changes flag mask
 #define ELEMENT_CHANGE_LAYER         (1 << 0)
 #define ELEMENT_CHANGE_OPACITY       (1 << 1)
 #define ELEMENT_CHANGE_DEST_RECT     (1 << 2)
 #define ELEMENT_CHANGE_SRC_RECT      (1 << 3)
 #define ELEMENT_CHANGE_MASK_RESOURCE (1 << 4)
 #define ELEMENT_CHANGE_TRANSFORM     (1 << 5)
-/* End copied from vc_vchi_dispmanx.h */
+// End copied from vc_vchi_dispmanx.h
 
 static SDL_Cursor *RPI_CreateDefaultCursor(void);
 static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y);
@@ -52,7 +52,7 @@ static SDL_Cursor *RPI_CreateDefaultCursor(void)
     return SDL_CreateCursor(default_cdata, default_cmask, DEFAULT_CWIDTH, DEFAULT_CHEIGHT, DEFAULT_CHOTX, DEFAULT_CHOTY);
 }
 
-/* Create a cursor from a surface */
+// Create a cursor from a surface
 static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     SDL_CursorData *curdata;
@@ -79,7 +79,7 @@ static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     curdata->w = surface->w;
     curdata->h = surface->h;
 
-    /* This usage is inspired by Wayland/Weston RPI code, how they figured this out is anyone's guess */
+    // This usage is inspired by Wayland/Weston RPI code, how they figured this out is anyone's guess
     curdata->resource = vc_dispmanx_resource_create(VC_IMAGE_ARGB8888, surface->w | (surface->pitch << 16), surface->h | (surface->h << 16), &dummy);
     SDL_assert(curdata->resource);
     vc_dispmanx_rect_set(&dst_rect, 0, 0, curdata->w, curdata->h);
@@ -97,7 +97,7 @@ static SDL_Cursor *RPI_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
     return cursor;
 }
 
-/* Show the specified cursor, or hide if cursor is NULL */
+// Show the specified cursor, or hide if cursor is NULL
 static int RPI_ShowCursor(SDL_Cursor *cursor)
 {
     int ret;
@@ -179,7 +179,7 @@ static int RPI_ShowCursor(SDL_Cursor *cursor)
     return 0;
 }
 
-/* Free a window manager cursor */
+// Free a window manager cursor
 static void RPI_FreeCursor(SDL_Cursor *cursor)
 {
     int ret;
@@ -259,7 +259,7 @@ static int RPI_WarpMouseGlobalGraphically(float x, float y)
         return SDL_SetError("vc_dispmanx_element_change_attributes() failed");
     }
 
-    /* Submit asynchronously, otherwise the performance suffers a lot */
+    // Submit asynchronously, otherwise the performance suffers a lot
     ret = vc_dispmanx_update_submit(update, 0, NULL);
     if (ret != DISPMANX_SUCCESS) {
         return SDL_SetError("vc_dispmanx_update_submit() failed");
@@ -275,7 +275,7 @@ static int RPI_WarpMouseGlobal(float x, float y)
         return 0;
     }
 
-    /* Update internal mouse position. */
+    // Update internal mouse position.
     SDL_SendMouseMotion(0, mouse->focus, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, x, y);
 
     return RPI_WarpMouseGlobalGraphically(x, y);
@@ -307,7 +307,7 @@ void RPI_QuitMouse(SDL_VideoDevice *_this)
 {
 }
 
-/* This is called when a mouse motion event occurs */
+// This is called when a mouse motion event occurs
 static int RPI_MoveCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -316,4 +316,4 @@ static int RPI_MoveCursor(SDL_Cursor *cursor)
     return RPI_WarpMouseGlobalGraphically(mouse->x, mouse->y);
 }
 
-#endif /* SDL_VIDEO_DRIVER_RPI */
+#endif // SDL_VIDEO_DRIVER_RPI

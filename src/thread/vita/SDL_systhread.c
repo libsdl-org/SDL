@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_VITA
 
-/* VITA thread management routines for SDL */
+// VITA thread management routines for SDL
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -71,7 +71,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
         stack_size = thread->stacksize;
     }
 
-    /* Create new thread with the same priority as the current thread */
+    // Create new thread with the same priority as the current thread
     thread->handle = sceKernelCreateThread(
         thread_name, // name
         ThreadEntry, // function to run
@@ -92,7 +92,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
 
 void SDL_SYS_SetupThread(const char *name)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
 SDL_ThreadID SDL_GetCurrentThreadID(void)
@@ -108,7 +108,7 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
 
 void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
@@ -133,4 +133,4 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     return sceKernelChangeThreadPriority(0, value);
 }
 
-#endif /* SDL_THREAD_VITA */
+#endif // SDL_THREAD_VITA

@@ -75,7 +75,7 @@ D3D12_XBOX_CreateDevice(ID3D12Device **device, SDL_bool createDebug)
         goto done;
     }
 
-    /* Set frame interval */
+    // Set frame interval
     result = (*device)->SetFrameIntervalX(dxgiOutput, D3D12XBOX_FRAME_INTERVAL_60_HZ, 1, D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("[xbox] SetFrameIntervalX"), result);

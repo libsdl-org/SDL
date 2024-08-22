@@ -20,8 +20,8 @@
 */
 #include "SDL_internal.h"
 
-/* uses BeOS euc.jp apm driver. */
-/* !!! FIXME: does this thing even work on Haiku? */
+// uses BeOS euc.jp apm driver.
+// !!! FIXME: does this thing even work on Haiku?
 
 #ifndef SDL_POWER_DISABLED
 #ifdef SDL_POWER_HAIKU
@@ -33,7 +33,7 @@
 #include <ctype.h>
 #include <drivers/Drivers.h>
 
-/* These values are from apm.h ... */
+// These values are from apm.h ...
 #define APM_DEVICE_PATH           "/dev/misc/apm"
 #define APM_FUNC_OFFSET           0x5300
 #define APM_FUNC_GET_POWER_STATUS 10
@@ -53,7 +53,7 @@ SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percen
     int rc;
 
     if (fd == -1) {
-        return SDL_FALSE; /* maybe some other method will work? */
+        return SDL_FALSE; // maybe some other method will work?
     }
 
     SDL_memset(regs, '\0', sizeof(regs));
@@ -72,8 +72,8 @@ SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percen
     battery_life = regs[2] & 0xFF;
     battery_time = (uint32)regs[3];
 
-    /* in theory, _something_ should be set in battery_flags, right? */
-    if (battery_flags == 0x00) { /* older APM BIOS? Less fields. */
+    // in theory, _something_ should be set in battery_flags, right?
+    if (battery_flags == 0x00) { // older APM BIOS? Less fields.
         battery_time = 0xFFFF;
         if (battery_status == 0xFF) {
             battery_flags = 0xFF;
@@ -83,22 +83,22 @@ SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percen
     }
 
     if ((battery_time != 0xFFFF) && (battery_time & (1 << 15))) {
-        /* time is in minutes, not seconds */
+        // time is in minutes, not seconds
         battery_time = (battery_time & 0x7FFF) * 60;
     }
 
-    if (battery_flags == 0xFF) { /* unknown state */
+    if (battery_flags == 0xFF) { // unknown state
         *state = SDL_POWERSTATE_UNKNOWN;
-    } else if (battery_flags & (1 << 7)) { /* no battery */
+    } else if (battery_flags & (1 << 7)) { // no battery
         *state = SDL_POWERSTATE_NO_BATTERY;
-    } else if (battery_flags & (1 << 3)) { /* charging */
+    } else if (battery_flags & (1 << 3)) { // charging
         *state = SDL_POWERSTATE_CHARGING;
         need_details = SDL_TRUE;
     } else if (ac_status == 1) {
-        *state = SDL_POWERSTATE_CHARGED; /* on AC, not charging. */
+        *state = SDL_POWERSTATE_CHARGED; // on AC, not charging.
         need_details = SDL_TRUE;
     } else {
-        *state = SDL_POWERSTATE_ON_BATTERY; /* not on AC. */
+        *state = SDL_POWERSTATE_ON_BATTERY; // not on AC.
         need_details = SDL_TRUE;
     }
 
@@ -108,16 +108,16 @@ SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percen
         const int pct = (int)battery_life;
         const int secs = (int)battery_time;
 
-        if (pct != 255) {                       /* 255 == unknown */
-            *percent = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
+        if (pct != 255) {                       // 255 == unknown
+            *percent = (pct > 100) ? 100 : pct; // clamp between 0%, 100%
         }
-        if (secs != 0xFFFF) { /* 0xFFFF == unknown */
+        if (secs != 0xFFFF) { // 0xFFFF == unknown
             *seconds = secs;
         }
     }
 
-    return SDL_TRUE; /* the definitive answer if APM driver replied. */
+    return SDL_TRUE; // the definitive answer if APM driver replied.
 }
 
-#endif /* SDL_POWER_HAIKU */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_HAIKU
+#endif // SDL_POWER_DISABLED

@@ -34,7 +34,7 @@ extern "C" {
 
 Uint64 SDL_GetPerformanceCounter(void)
 {
-    /* FIXME: Need to account for 32-bit wrapping */
+    // FIXME: Need to account for 32-bit wrapping
     return (Uint64)User::TickCount();
 }
 
@@ -56,4 +56,4 @@ void SDL_SYS_DelayNS(Uint64 ns)
 }
 #endif
 
-#endif /* SDL_TIMER_NGAGE */
+#endif // SDL_TIMER_NGAGE

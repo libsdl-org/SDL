@@ -47,4 +47,4 @@ struct SDL_WindowData
     SDL_bool has_pointer_lock;
 };
 
-#endif /* SDL_emscriptenvideo_h_ */
+#endif // SDL_emscriptenvideo_h_

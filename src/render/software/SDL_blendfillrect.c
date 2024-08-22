@@ -243,14 +243,14 @@ int SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect,
         return SDL_InvalidParamError("SDL_BlendFillRect(): dst");
     }
 
-    /* This function doesn't work on surfaces < 8 bpp */
+    // This function doesn't work on surfaces < 8 bpp
     if (SDL_BITSPERPIXEL(dst->format) < 8) {
         return SDL_SetError("SDL_BlendFillRect(): Unsupported surface format");
     }
 
-    /* If 'rect' == NULL, then fill the whole surface */
+    // If 'rect' == NULL, then fill the whole surface
     if (rect) {
-        /* Perform clipping */
+        // Perform clipping
         if (!SDL_GetRectIntersection(rect, &dst->internal->clip_rect, &clipped)) {
             return 0;
         }
@@ -286,7 +286,7 @@ int SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect,
             } else {
                 return SDL_BlendFillRect_ARGB8888(dst, rect, blendMode, r, g, b, a);
             }
-            /* break; -Wunreachable-code-break */
+            // break; -Wunreachable-code-break
         }
         break;
     default:
@@ -313,7 +313,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         return SDL_InvalidParamError("SDL_BlendFillRects(): dst");
     }
 
-    /* This function doesn't work on surfaces < 8 bpp */
+    // This function doesn't work on surfaces < 8 bpp
     if (dst->internal->format->bits_per_pixel < 8) {
         return SDL_SetError("SDL_BlendFillRects(): Unsupported surface format");
     }
@@ -324,7 +324,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
         b = DRAW_MUL(b, a);
     }
 
-    /* FIXME: Does this function pointer slow things down significantly? */
+    // FIXME: Does this function pointer slow things down significantly?
     switch (dst->internal->format->bits_per_pixel) {
     case 15:
         switch (dst->internal->format->Rmask) {
@@ -362,7 +362,7 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     }
 
     for (i = 0; i < count; ++i) {
-        /* Perform clipping */
+        // Perform clipping
         if (!SDL_GetRectIntersection(&rects[i], &dst->internal->clip_rect, &rect)) {
             continue;
         }
@@ -371,4 +371,4 @@ int SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count,
     return status;
 }
 
-#endif /* SDL_VIDEO_RENDER_SW */
+#endif // SDL_VIDEO_RENDER_SW

@@ -38,7 +38,7 @@ extern "C" {
 #endif
 
 
-#define WRAP_BMODE 1 /* FIXME: Some debate as to whether this is necessary */
+#define WRAP_BMODE 1 // FIXME: Some debate as to whether this is necessary
 
 #if WRAP_BMODE
 /* This wrapper is here so that the internal can be freed without freeing
@@ -64,7 +64,7 @@ static SDL_INLINE display_mode * _ExtractBMode(SDL_DisplayMode *mode) {
 #endif
 }
 
-/* Copied from haiku/trunk/src/preferences/screen/ScreenMode.cpp */
+// Copied from haiku/trunk/src/preferences/screen/ScreenMode.cpp
 static void get_refresh_rate(display_mode &mode, int *numerator, int *denominator)
 {
     *numerator = (mode.timing.pixel_clock * 1000);
@@ -161,7 +161,7 @@ SDL_PixelFormat HAIKU_ColorSpaceToSDLPxFormat(uint32 colorspace)
         break;
     }
 
-    /* May never get here, but safer and needed to shut up compiler */
+    // May never get here, but safer and needed to shut up compiler
     SDL_SetError("Invalid color space");
     return SDL_PIXELFORMAT_UNKNOWN;
 }
@@ -181,11 +181,11 @@ static void _BDisplayModeToSdlDisplayMode(display_mode *bmode, SDL_DisplayMode *
     mode->internal = bmode;
 #endif
 
-    /* Set the format */
+    // Set the format
     mode->format = HAIKU_ColorSpaceToSDLPxFormat(bmode->space);
 }
 
-/* Later, there may be more than one monitor available */
+// Later, there may be more than one monitor available
 static void _AddDisplay(BScreen *screen) {
     SDL_DisplayMode mode;
     display_mode bmode;
@@ -210,7 +210,7 @@ int HAIKU_InitModes(SDL_VideoDevice *_this) {
 }
 
 int HAIKU_QuitModes(SDL_VideoDevice *_this) {
-    /* FIXME: Nothing really needs to be done here at the moment? */
+    // FIXME: Nothing really needs to be done here at the moment?
     return 0;
 }
 
@@ -226,16 +226,16 @@ int HAIKU_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SD
 }
 
 int HAIKU_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display) {
-    /* Get the current screen */
+    // Get the current screen
     BScreen bscreen;
 
-    /* Iterate through all of the modes */
+    // Iterate through all of the modes
     SDL_DisplayMode mode;
     display_mode this_bmode;
     display_mode *bmodes;
     uint32 count, i;
 
-    /* Get graphics-hardware supported modes */
+    // Get graphics-hardware supported modes
     bscreen.GetModeList(&bmodes, &count);
     bscreen.GetMode(&this_bmode);
 
@@ -246,23 +246,23 @@ int HAIKU_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display) {
             SDL_AddFullscreenDisplayMode(display, &mode);
         }
     }
-    free(bmodes); /* This should not be SDL_free() */
+    free(bmodes); // This should not be SDL_free()
     return 0;
 }
 
 
 int HAIKU_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode) {
-    /* Get the current screen */
+    // Get the current screen
     BScreen bscreen;
     if (!bscreen.IsValid()) {
         printf(__FILE__": %d - ERROR: BAD SCREEN\n", __LINE__);
     }
 
-    /* Set the mode using the driver data */
+    // Set the mode using the driver data
     display_mode *bmode = _ExtractBMode(mode);
 
 
-    /* FIXME: Is the first option always going to be the right one? */
+    // FIXME: Is the first option always going to be the right one?
     uint32 c = 0, i;
     display_mode *bmode_list;
     bscreen.GetModeList(&bmode_list, &c);
@@ -279,7 +279,7 @@ int HAIKU_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
         return SDL_SetError("Bad video mode");
     }
 
-    free(bmode_list); /* This should not be SDL_free() */
+    free(bmode_list); // This should not be SDL_free()
 
 #ifdef SDL_VIDEO_OPENGL
     /* FIXME: Is there some way to reboot the OpenGL context?  This doesn't
@@ -294,4 +294,4 @@ int HAIKU_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU

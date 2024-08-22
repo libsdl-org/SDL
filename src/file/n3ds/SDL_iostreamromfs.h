@@ -25,4 +25,4 @@
 
 FILE *N3DS_FileOpen(const char *file, const char *mode);
 
-#endif /* SDL_iostreamromfs_h_ */
+#endif // SDL_iostreamromfs_h_

@@ -53,4 +53,4 @@ SDL_bool Wayland_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
 
 #endif
 
-#endif /* SDL_waylandvulkan_h_ */
+#endif // SDL_waylandvulkan_h_

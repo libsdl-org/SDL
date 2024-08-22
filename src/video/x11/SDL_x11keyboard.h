@@ -35,4 +35,4 @@ extern void X11_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_bool X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 extern KeySym X11_KeyCodeToSym(SDL_VideoDevice *_this, KeyCode, unsigned char group, unsigned int mod_mask);
 
-#endif /* SDL_x11keyboard_h_ */
+#endif // SDL_x11keyboard_h_

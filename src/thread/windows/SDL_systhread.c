@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_WINDOWS
 
-/* Win32 thread management routines for SDL */
+// Win32 thread management routines for SDL
 
 #include "../SDL_thread_c.h"
 #include "../SDL_systhread.h"
@@ -66,10 +66,10 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
 
     const DWORD flags = thread->stacksize ? STACK_SIZE_PARAM_IS_A_RESERVATION : 0;
 
-    /* Save the function which we will have to call to clear the RTL of calling app! */
+    // Save the function which we will have to call to clear the RTL of calling app!
     thread->endfunc = vpfnEndThread;
 
-    /* thread->stacksize == 0 means "system default", same as win32 expects */
+    // thread->stacksize == 0 means "system default", same as win32 expects
     if (pfnBeginThread) {
         unsigned threadid = 0;
         thread->handle = (SYS_ThreadHandle)((size_t)pfnBeginThread(NULL, (unsigned int)thread->stacksize,
@@ -90,10 +90,10 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
 #pragma pack(push, 8)
 typedef struct tagTHREADNAME_INFO
 {
-    DWORD dwType;     /* must be 0x1000 */
-    LPCSTR szName;    /* pointer to name (in user addr space) */
-    DWORD dwThreadID; /* thread ID (-1=caller thread) */
-    DWORD dwFlags;    /* reserved for future use, must be zero */
+    DWORD dwType;     // must be 0x1000
+    LPCSTR szName;    // pointer to name (in user addr space)
+    DWORD dwThreadID; // thread ID (-1=caller thread)
+    DWORD dwFlags;    // reserved for future use, must be zero
 } THREADNAME_INFO;
 #pragma pack(pop)
 
@@ -109,7 +109,7 @@ void SDL_SYS_SetupThread(const char *name)
 {
     if (name) {
         PVOID exceptionHandlerHandle;
-#ifndef SDL_PLATFORM_WINRT /* !!! FIXME: There's no LoadLibrary() in WinRT; don't know if SetThreadDescription is available there at all at the moment. */
+#ifndef SDL_PLATFORM_WINRT // !!! FIXME: There's no LoadLibrary() in WinRT; don't know if SetThreadDescription is available there at all at the moment.
         static pfnSetThreadDescription pSetThreadDescription = NULL;
         static HMODULE kernel32 = NULL;
 
@@ -142,14 +142,14 @@ void SDL_SYS_SetupThread(const char *name)
         exceptionHandlerHandle = AddVectoredExceptionHandler(1, EmptyVectoredExceptionHandler);
         if (exceptionHandlerHandle) {
             THREADNAME_INFO inf;
-            /* This magic tells the debugger to name a thread if it's listening. */
+            // This magic tells the debugger to name a thread if it's listening.
             SDL_zero(inf);
             inf.dwType = 0x1000;
             inf.szName = name;
             inf.dwThreadID = (DWORD)-1;
             inf.dwFlags = 0;
 
-            /* The debugger catches this, renames the thread, continues on. */
+            // The debugger catches this, renames the thread, continues on.
             RaiseException(0x406D1388, 0, sizeof(inf) / sizeof(ULONG), (const ULONG_PTR *)&inf);
             RemoveVectoredExceptionHandler(exceptionHandlerHandle);
         }
@@ -191,4 +191,4 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
     CloseHandle(thread->handle);
 }
 
-#endif /* SDL_THREAD_WINDOWS */
+#endif // SDL_THREAD_WINDOWS

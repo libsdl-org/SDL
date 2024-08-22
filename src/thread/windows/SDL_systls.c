@@ -90,4 +90,4 @@ void SDL_SYS_QuitTLSData(void)
     }
 }
 
-#endif /* SDL_THREAD_WINDOWS */
+#endif // SDL_THREAD_WINDOWS

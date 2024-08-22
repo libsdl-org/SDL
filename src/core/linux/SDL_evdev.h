@@ -36,6 +36,6 @@ extern int SDL_EVDEV_GetDeviceCount(int device_class);
 extern void SDL_EVDEV_Poll(void);
 extern Uint64 SDL_EVDEV_GetEventTimestamp(struct input_event *event);
 
-#endif /* SDL_INPUT_LINUXEV */
+#endif // SDL_INPUT_LINUXEV
 
-#endif /* SDL_evdev_h_ */
+#endif // SDL_evdev_h_

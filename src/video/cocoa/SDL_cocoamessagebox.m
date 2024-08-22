@@ -40,7 +40,7 @@
     if (self) {
         clicked = -1;
 
-        /* Retain the NSWindow because we'll show the alert later on the main thread */
+        // Retain the NSWindow because we'll show the alert later on the main thread
         if (window) {
             nswindow = ((__bridge SDL_CocoaWindowData *)window->internal).nswindow;
         } else {
@@ -125,7 +125,7 @@ static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, i
     }
 }
 
-/* Display a Cocoa message box */
+// Display a Cocoa message box
 int Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     @autoreleasepool {
@@ -142,4 +142,4 @@ int Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

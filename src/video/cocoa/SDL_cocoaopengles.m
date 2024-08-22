@@ -26,11 +26,11 @@
 #include "SDL_cocoaopengles.h"
 #include "SDL_cocoaopengl.h"
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
 int Cocoa_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    /* If the profile requested is not GL ES, switch over to WIN_GL functions  */
+    // If the profile requested is not GL ES, switch over to WIN_GL functions
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
 #ifdef SDL_VIDEO_OPENGL_CGL
         Cocoa_GLES_UnloadLibrary(_this);
@@ -65,7 +65,7 @@ SDL_GLContext Cocoa_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *windo
 
 #ifdef SDL_VIDEO_OPENGL_CGL
         if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
-            /* Switch to CGL based functions */
+            // Switch to CGL based functions
             Cocoa_GLES_UnloadLibrary(_this);
             _this->GL_LoadLibrary = Cocoa_GL_LoadLibrary;
             _this->GL_GetProcAddress = Cocoa_GL_GetProcAddress;
@@ -117,14 +117,14 @@ int Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         NSView *v;
-        /* The current context is lost in here; save it and reset it. */
+        // The current context is lost in here; save it and reset it.
         SDL_CocoaWindowData *windowdata = (__bridge SDL_CocoaWindowData *)window->internal;
         SDL_Window *current_win = SDL_GL_GetCurrentWindow();
         SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
 
         if (_this->egl_data == NULL) {
-/* !!! FIXME: commenting out this assertion is (I think) incorrect; figure out why driver_loaded is wrong for ANGLE instead. --ryan. */
-#if 0 /* When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function. */
+// !!! FIXME: commenting out this assertion is (I think) incorrect; figure out why driver_loaded is wrong for ANGLE instead. --ryan.
+#if 0 // When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function.
         SDL_assert(!_this->gl_config.driver_loaded);
 #endif
             if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform) < 0) {
@@ -134,7 +134,7 @@ int Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
             _this->gl_config.driver_loaded = 1;
         }
 
-        /* Create the GLES window surface */
+        // Create the GLES window surface
         v = windowdata.nswindow.contentView;
         windowdata.egl_surface = SDL_EGL_CreateSurface(_this, window, (__bridge NativeWindowType)[v layer]);
 
@@ -153,4 +153,4 @@ SDL_EGLSurface Cocoa_GLES_GetEGLSurface(SDL_VideoDevice *_this, SDL_Window *wind
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_COCOA && SDL_VIDEO_OPENGL_EGL

@@ -20,9 +20,9 @@
 */
 #include "SDL_internal.h"
 
-/* D3D12 shader implementation */
+// D3D12 shader implementation
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -48,7 +48,7 @@ extern void D3D12_GetPixelShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *out
 extern D3D12_RootSignature D3D12_GetRootSignatureType(D3D12_Shader shader);
 extern void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECODE *outBytecode);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif

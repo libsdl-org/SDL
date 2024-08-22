@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_PS2
 
-/* PS2 thread management routines for SDL */
+// PS2 thread management routines for SDL
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,7 +64,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
     size_t stack_size;
     int priority = 32;
 
-    /* Set priority of new thread to the same as the current thread */
+    // Set priority of new thread to the same as the current thread
     // status.size = sizeof(ee_thread_t);
     if (ReferThreadStatus(GetThreadId(), &status) == 0) {
         priority = status.current_priority;
@@ -72,7 +72,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
 
     stack_size = thread->stacksize ? ((int)thread->stacksize) : 0x1800;
 
-    /* Create EE Thread */
+    // Create EE Thread
     eethread.attr = 0;
     eethread.option = 0;
     eethread.func = &childThread;
@@ -97,7 +97,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
 
 void SDL_SYS_SetupThread(const char *name)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
 SDL_ThreadID SDL_GetCurrentThreadID(void)
@@ -114,7 +114,7 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
 
 void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
@@ -134,4 +134,4 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     return ChangeThreadPriority(GetThreadId(), value);
 }
 
-#endif /* SDL_THREAD_PS2 */
+#endif // SDL_THREAD_PS2

@@ -89,4 +89,4 @@ int VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return SDL_EGL_SwapBuffers(_this, window->internal->egl_surface);
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR */
+#endif // SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR

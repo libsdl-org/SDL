@@ -82,7 +82,7 @@ static int GENERIC_ReadStorageFile(void *userdata, const char *path, void *desti
     if (fullpath) {
         SDL_IOStream *stream = SDL_IOFromFile(fullpath, "rb");
         if (stream) {
-            /* FIXME: Should SDL_ReadIO use u64 now...? */
+            // FIXME: Should SDL_ReadIO use u64 now...?
             if (SDL_ReadIO(stream, destination, (size_t)length) == length) {
                 result = 0;
             }
@@ -95,7 +95,7 @@ static int GENERIC_ReadStorageFile(void *userdata, const char *path, void *desti
 
 static int GENERIC_WriteStorageFile(void *userdata, const char *path, const void *source, Uint64 length)
 {
-    /* TODO: Recursively create subdirectories with SDL_CreateDirectory */
+    // TODO: Recursively create subdirectories with SDL_CreateDirectory
     int result = -1;
 
     if (length > SDL_SIZE_MAX) {
@@ -107,7 +107,7 @@ static int GENERIC_WriteStorageFile(void *userdata, const char *path, const void
         SDL_IOStream *stream = SDL_IOFromFile(fullpath, "wb");
 
         if (stream) {
-            /* FIXME: Should SDL_WriteIO use u64 now...? */
+            // FIXME: Should SDL_WriteIO use u64 now...?
             if (SDL_WriteIO(stream, source, (size_t)length) == length) {
                 result = 0;
             }
@@ -120,7 +120,7 @@ static int GENERIC_WriteStorageFile(void *userdata, const char *path, const void
 
 static int GENERIC_CreateStorageDirectory(void *userdata, const char *path)
 {
-    /* TODO: Recursively create subdirectories with SDL_CreateDirectory */
+    // TODO: Recursively create subdirectories with SDL_CreateDirectory
     int result = -1;
 
     char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
@@ -177,22 +177,22 @@ static int GENERIC_CopyStorageFile(void *userdata, const char *oldpath, const ch
 
 static Uint64 GENERIC_GetStorageSpaceRemaining(void *userdata)
 {
-    /* TODO: There's totally a way to query a folder root's quota... */
+    // TODO: There's totally a way to query a folder root's quota...
     return SDL_MAX_UINT64;
 }
 
 static const SDL_StorageInterface GENERIC_title_iface = {
     GENERIC_CloseStorage,
-    NULL,   /* ready */
+    NULL,   // ready
     GENERIC_EnumerateStorageDirectory,
     GENERIC_GetStoragePathInfo,
     GENERIC_ReadStorageFile,
-    NULL,   /* write_file */
-    NULL,   /* mkdir */
-    NULL,   /* remove */
-    NULL,   /* rename */
-    NULL,   /* copy */
-    NULL    /* space_remaining */
+    NULL,   // write_file
+    NULL,   // mkdir
+    NULL,   // remove
+    NULL,   // rename
+    NULL,   // copy
+    NULL    // space_remaining
 };
 
 static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID props)
@@ -225,7 +225,7 @@ TitleStorageBootStrap GENERIC_titlebootstrap = {
 
 static const SDL_StorageInterface GENERIC_user_iface = {
     GENERIC_CloseStorage,
-    NULL,   /* ready */
+    NULL,   // ready
     GENERIC_EnumerateStorageDirectory,
     GENERIC_GetStoragePathInfo,
     GENERIC_ReadStorageFile,
@@ -260,7 +260,7 @@ UserStorageBootStrap GENERIC_userbootstrap = {
 
 static const SDL_StorageInterface GENERIC_file_iface = {
     GENERIC_CloseStorage,
-    NULL,   /* ready */
+    NULL,   // ready
     GENERIC_EnumerateStorageDirectory,
     GENERIC_GetStoragePathInfo,
     GENERIC_ReadStorageFile,

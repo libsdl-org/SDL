@@ -117,7 +117,7 @@ struct SDL_DisplayData
     struct wl_list link;
 };
 
-/* Needed here to get wl_surface declaration, fixes GitHub#4594 */
+// Needed here to get wl_surface declaration, fixes GitHub#4594
 #include "SDL_waylanddyn.h"
 
 extern void SDL_WAYLAND_register_surface(struct wl_surface *surface);
@@ -133,4 +133,4 @@ extern SDL_bool Wayland_LoadLibdecor(SDL_VideoData *data, SDL_bool ignore_xdg);
 
 extern SDL_bool Wayland_VideoReconnect(SDL_VideoDevice *_this);
 
-#endif /* SDL_waylandvideo_h_ */
+#endif // SDL_waylandvideo_h_

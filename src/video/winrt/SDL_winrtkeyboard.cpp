@@ -22,11 +22,11 @@
 
 #ifdef SDL_VIDEO_DRIVER_WINRT
 
-/* Windows-specific includes */
+// Windows-specific includes
 #include <Windows.h>
 #include <agile.h>
 
-/* SDL-specific includes */
+// SDL-specific includes
 #include "SDL_winrtevents_c.h"
 
 extern "C" {
@@ -49,7 +49,7 @@ static SDL_Scancode WINRT_TranslateKeycode(Windows::System::VirtualKey virtualKe
         scanCode = 0xe046;
     }
 
-    /* Pack scan code into one byte to make the index. */
+    // Pack scan code into one byte to make the index.
     index = LOBYTE(scanCode) | (HIBYTE(scanCode) ? 0x80 : 0x00);
     code = windows_scancode_table[index];
     *rawcode = scanCode;

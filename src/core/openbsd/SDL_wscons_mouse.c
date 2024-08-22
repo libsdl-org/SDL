@@ -78,13 +78,13 @@ void updateMouse(SDL_WSCONS_mouse_input_data *input)
             case WSCONS_EVENT_MOUSE_DOWN:
             {
                 switch (events[i].value) {
-                case 0: /* Left Mouse Button. */
+                case 0: // Left Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_PRESSED, SDL_BUTTON_LEFT);
                     break;
-                case 1: /* Middle Mouse Button. */
+                case 1: // Middle Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_PRESSED, SDL_BUTTON_MIDDLE);
                     break;
-                case 2: /* Right Mouse Button. */
+                case 2: // Right Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_PRESSED, SDL_BUTTON_RIGHT);
                     break;
                 }
@@ -92,13 +92,13 @@ void updateMouse(SDL_WSCONS_mouse_input_data *input)
             case WSCONS_EVENT_MOUSE_UP:
             {
                 switch (events[i].value) {
-                case 0: /* Left Mouse Button. */
+                case 0: // Left Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_RELEASED, SDL_BUTTON_LEFT);
                     break;
-                case 1: /* Middle Mouse Button. */
+                case 1: // Middle Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_RELEASED, SDL_BUTTON_MIDDLE);
                     break;
-                case 2: /* Right Mouse Button. */
+                case 2: // Right Mouse Button.
                     SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_RELEASED, SDL_BUTTON_RIGHT);
                     break;
                 }

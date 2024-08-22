@@ -104,7 +104,7 @@ void VITA_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->internal;
 
     if (!data) {
-        /* The window wasn't fully initialized */
+        // The window wasn't fully initialized
         return;
     }
 
@@ -113,4 +113,4 @@ void VITA_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
     return;
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA */
+#endif // SDL_VIDEO_DRIVER_VITA

@@ -36,4 +36,4 @@ extern void WIN_PumpEvents(SDL_VideoDevice *_this);
 extern void WIN_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
 extern int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 
-#endif /* SDL_windowsevents_h_ */
+#endif // SDL_windowsevents_h_

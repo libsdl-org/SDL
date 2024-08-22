@@ -52,7 +52,7 @@ int Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return SDL_SetError("Vulkan already loaded");
     }
 
-    /* Load the Vulkan loader library */
+    // Load the Vulkan loader library
     if (!path) {
         path = SDL_GetHint(SDL_HINT_VULKAN_LIBRARY);
     }

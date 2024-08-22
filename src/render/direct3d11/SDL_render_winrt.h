@@ -33,4 +33,4 @@ DXGI_MODE_ROTATION D3D11_GetCurrentRotation();
 }
 #endif
 
-#endif /* SDL_VIDEO_RENDER_D3D11 */
+#endif // SDL_VIDEO_RENDER_D3D11

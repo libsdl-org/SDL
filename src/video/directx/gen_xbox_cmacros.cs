@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* Build and run this any time you update d3d12.h/d3d12sdklayers.h! */
+// Build and run this any time you update d3d12.h/d3d12sdklayers.h!
 
 using System.IO;
 

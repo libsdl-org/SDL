@@ -28,7 +28,7 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
-/* OpenGLES functions */
+// OpenGLES functions
 #define VIVANTE_GLES_GetAttribute    SDL_EGL_GetAttribute
 #define VIVANTE_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
 #define VIVANTE_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
@@ -41,6 +41,6 @@ extern SDL_GLContext VIVANTE_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Wind
 extern int VIVANTE_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int VIVANTE_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 
-#endif /* SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL
 
-#endif /* SDL_vivanteopengles_h_ */
+#endif // SDL_vivanteopengles_h_

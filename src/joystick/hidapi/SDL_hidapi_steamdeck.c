@@ -337,7 +337,7 @@ static SDL_bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
         r = SDL_hid_read(device->dev, data, sizeof(data));
 
         if (r < 0) {
-            /* Failed to read from controller */
+            // Failed to read from controller
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
             return SDL_FALSE;
         } else if (r == 64 &&
@@ -446,6 +446,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamDeck = {
     HIDAPI_DriverSteamDeck_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_STEAMDECK */
+#endif // SDL_JOYSTICK_HIDAPI_STEAMDECK
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

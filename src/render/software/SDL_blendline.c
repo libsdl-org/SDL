@@ -900,7 +900,7 @@ static BlendLineFunc SDL_CalculateBlendLineFunc(const SDL_PixelFormatDetails *fm
         } else {
             return SDL_BlendLine_RGB2;
         }
-        /* break; -Wunreachable-code-break */
+        // break; -Wunreachable-code-break
     case 4:
         if (fmt->Rmask == 0x00FF0000) {
             if (fmt->Amask) {
@@ -933,8 +933,8 @@ int SDL_BlendLine(SDL_Surface *dst, int x1, int y1, int x2, int y2,
         return SDL_SetError("SDL_BlendLine(): Unsupported surface format");
     }
 
-    /* Perform clipping */
-    /* FIXME: We don't actually want to clip, as it may change line slope */
+    // Perform clipping
+    // FIXME: We don't actually want to clip, as it may change line slope
     if (!SDL_GetRectAndLineIntersection(&dst->internal->clip_rect, &x1, &y1, &x2, &y2)) {
         return 0;
     }
@@ -967,13 +967,13 @@ int SDL_BlendLines(SDL_Surface *dst, const SDL_Point *points, int count,
         x2 = points[i].x;
         y2 = points[i].y;
 
-        /* Perform clipping */
-        /* FIXME: We don't actually want to clip, as it may change line slope */
+        // Perform clipping
+        // FIXME: We don't actually want to clip, as it may change line slope
         if (!SDL_GetRectAndLineIntersection(&dst->internal->clip_rect, &x1, &y1, &x2, &y2)) {
             continue;
         }
 
-        /* Draw the end if it was clipped */
+        // Draw the end if it was clipped
         draw_end = (x2 != points[i].x || y2 != points[i].y);
 
         func(dst, x1, y1, x2, y2, blendMode, r, g, b, a, draw_end);
@@ -985,4 +985,4 @@ int SDL_BlendLines(SDL_Surface *dst, const SDL_Point *points, int count,
     return 0;
 }
 
-#endif /* SDL_VIDEO_RENDER_SW */
+#endif // SDL_VIDEO_RENDER_SW

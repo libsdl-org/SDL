@@ -21,12 +21,12 @@
 #ifndef SDL_internal_h_
 #define SDL_internal_h_
 
-/* Many of SDL's features require _GNU_SOURCE on various platforms */
+// Many of SDL's features require _GNU_SOURCE on various platforms
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 
-/* Need this so Linux systems define fseek64o, ftell64o and off64_t */
+// Need this so Linux systems define fseek64o, ftell64o and off64_t
 #ifndef _LARGEFILE64_SOURCE
 #define _LARGEFILE64_SOURCE 1
 #endif
@@ -44,11 +44,11 @@
 #define HAVE_GCC_DIAGNOSTIC_PRAGMA 1
 #endif
 
-#ifdef _MSC_VER /* We use constant comparison for generated code */
+#ifdef _MSC_VER // We use constant comparison for generated code
 #pragma warning(disable : 6326)
 #endif
 
-#ifdef _MSC_VER /* SDL_MAX_SMALL_ALLOC_STACKSIZE is smaller than _ALLOCA_S_THRESHOLD and should be generally safe */
+#ifdef _MSC_VER // SDL_MAX_SMALL_ALLOC_STACKSIZE is smaller than _ALLOCA_S_THRESHOLD and should be generally safe
 #pragma warning(disable : 6255)
 #endif
 #define SDL_MAX_SMALL_ALLOC_STACKSIZE          128
@@ -76,7 +76,7 @@
 
 #ifdef SDL_PLATFORM_APPLE
 #ifndef _DARWIN_C_SOURCE
-#define _DARWIN_C_SOURCE 1 /* for memset_pattern4() */
+#define _DARWIN_C_SOURCE 1 // for memset_pattern4()
 #endif
 #endif
 
@@ -121,7 +121,7 @@
 #include <float.h>
 #endif
 
-/* If you run into a warning that O_CLOEXEC is redefined, update the SDL configuration header for your platform to add HAVE_O_CLOEXEC */
+// If you run into a warning that O_CLOEXEC is redefined, update the SDL configuration header for your platform to add HAVE_O_CLOEXEC
 #ifndef HAVE_O_CLOEXEC
 #define O_CLOEXEC 0
 #endif
@@ -192,7 +192,7 @@
 #endif
 
 #ifndef SDL_RENDER_DISABLED
-/* define the not defined ones as 0 */
+// define the not defined ones as 0
 #ifndef SDL_VIDEO_RENDER_D3D
 #define SDL_VIDEO_RENDER_D3D 0
 #endif
@@ -223,7 +223,7 @@
 #ifndef SDL_VIDEO_RENDER_VULKAN
 #define SDL_VIDEO_RENDER_VULKAN 0
 #endif
-#else /* define all as 0 */
+#else // define all as 0
 #undef SDL_VIDEO_RENDER_SW
 #define SDL_VIDEO_RENDER_SW 0
 #undef SDL_VIDEO_RENDER_D3D
@@ -246,7 +246,7 @@
 #define SDL_VIDEO_RENDER_VITA_GXM 0
 #undef SDL_VIDEO_RENDER_VULKAN
 #define SDL_VIDEO_RENDER_VULKAN 0
-#endif /* SDL_RENDER_DISABLED */
+#endif // SDL_RENDER_DISABLED
 
 #define SDL_HAS_RENDER_DRIVER \
        (SDL_VIDEO_RENDER_SW       | \
@@ -276,17 +276,17 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_intrin.h>
 
-#define SDL_MAIN_NOIMPL /* don't drag in header-only implementation of SDL_main */
+#define SDL_MAIN_NOIMPL // don't drag in header-only implementation of SDL_main
 #include <SDL3/SDL_main.h>
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "SDL_utils_c.h"
 
-/* Do any initialization that needs to happen before threads are started */
+// Do any initialization that needs to happen before threads are started
 extern void SDL_InitMainThread(void);
 
 /* The internal implementations of these functions have up to nanosecond precision.
@@ -296,9 +296,9 @@ extern int SDLCALL SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeout
 extern int SDLCALL SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
 extern SDL_bool SDLCALL SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_internal_h_ */
+#endif // SDL_internal_h_

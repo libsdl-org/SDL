@@ -27,7 +27,7 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../thread/SDL_systhread.h"
 
-/* If this number is too small, selecting too many files will give an error */
+// If this number is too small, selecting too many files will give an error
 #define SELECTLIST_SIZE 65536
 
 typedef struct
@@ -56,7 +56,7 @@ int getFilterIndex(int as_reported_by_windows)
     return as_reported_by_windows - 1;
 }
 
-/* TODO: The new version of file dialogs */
+// TODO: The new version of file dialogs
 void windows_ShowFileDialog(void *ptr)
 {
     winArgs *args = (winArgs *) ptr;
@@ -104,14 +104,14 @@ void windows_ShowFileDialog(void *ptr)
         window = (HWND) SDL_GetPointerProperty(SDL_GetWindowProperties(parent), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     }
 
-    wchar_t *filebuffer; /* lpstrFile */
-    wchar_t initfolder[MAX_PATH] = L""; /* lpstrInitialDir */
+    wchar_t *filebuffer; // lpstrFile
+    wchar_t initfolder[MAX_PATH] = L""; // lpstrInitialDir
 
     /* If SELECTLIST_SIZE is too large, putting filebuffer on the stack might
        cause an overflow */
     filebuffer = (wchar_t *) SDL_malloc(SELECTLIST_SIZE * sizeof(wchar_t));
 
-    /* Necessary for the return code below */
+    // Necessary for the return code below
     SDL_memset(filebuffer, 0, SELECTLIST_SIZE * sizeof(wchar_t));
 
     if (default_file) {
@@ -151,8 +151,8 @@ void windows_ShowFileDialog(void *ptr)
     wchar_t *filter_wchar = NULL;
 
     if (filters) {
-        /* '\x01' is used in place of a null byte */
-        /* suffix needs two null bytes in case the filter list is empty */
+        // '\x01' is used in place of a null byte
+        // suffix needs two null bytes in case the filter list is empty
         char *filterlist = convert_filters(filters, nfilters, NULL, "", "",
                                            "\x01\x01", "", "\x01", "\x01",
                                            "*.", ";*.", "");
@@ -206,7 +206,7 @@ void windows_ShowFileDialog(void *ptr)
     dialog.lCustData = 0;
     dialog.lpfnHook = NULL;
     dialog.lpTemplateName = NULL;
-    /* Skipped many mac-exclusive and reserved members */
+    // Skipped many mac-exclusive and reserved members
     dialog.FlagsEx = 0;
 
     BOOL result = pGetAnyFileName(&dialog);
@@ -215,7 +215,7 @@ void windows_ShowFileDialog(void *ptr)
 
     if (result) {
         if (!(flags & OFN_ALLOWMULTISELECT)) {
-            /* File is a C string stored in dialog.lpstrFile */
+            // File is a C string stored in dialog.lpstrFile
             char *chosen_file = WIN_StringToUTF8W(dialog.lpstrFile);
             const char* opts[2] = { chosen_file, NULL };
             callback(userdata, opts, getFilterIndex(dialog.nFilterIndex));
@@ -306,7 +306,7 @@ void windows_ShowFileDialog(void *ptr)
                 }
             }
 
-            /* If the user chose only one file, it's all just one string */
+            // If the user chose only one file, it's all just one string
             if (nfiles == 0) {
                 nfiles++;
                 char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char*) * (nfiles + 1));
@@ -340,7 +340,7 @@ void windows_ShowFileDialog(void *ptr)
         }
     } else {
         DWORD error = pCommDlgExtendedError();
-        /* Error code 0 means the user clicked the cancel button. */
+        // Error code 0 means the user clicked the cancel button.
         if (error == 0) {
             /* Unlike SDL's handling of errors, Windows does reset the error
                code to 0 after calling GetOpenFileName if another Windows
@@ -399,7 +399,7 @@ void windows_ShowFolderDialog(void* ptr)
     BROWSEINFOW dialog;
     dialog.hwndOwner = parent;
     dialog.pidlRoot = NULL;
-    /* Windows docs say this is `LPTSTR` - apparently it's actually `LPWSTR`*/
+    // Windows docs say this is `LPTSTR` - apparently it's actually `LPWSTR`
     dialog.pszDisplayName = buffer;
     dialog.lpszTitle = NULL;
     dialog.ulFlags = BIF_USENEWUI;

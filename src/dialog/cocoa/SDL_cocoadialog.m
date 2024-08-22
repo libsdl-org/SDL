@@ -53,7 +53,7 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
         return;
     }
 
-    /* NSOpenPanel inherits from NSSavePanel */
+    // NSOpenPanel inherits from NSSavePanel
     NSSavePanel *dialog;
     NSOpenPanel *dialog_as_open;
 
@@ -120,7 +120,7 @@ void show_file_dialog(cocoa_FileDialogType type, SDL_DialogFileCallback callback
         }
     }
 
-    /* Keep behavior consistent with other platforms */
+    // Keep behavior consistent with other platforms
     [dialog setAllowsOtherFileTypes:YES];
 
     if (default_location) {

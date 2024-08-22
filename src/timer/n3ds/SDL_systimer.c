@@ -40,4 +40,4 @@ void SDL_SYS_DelayNS(Uint64 ns)
     svcSleepThread(ns);
 }
 
-#endif /* SDL_TIMER_N3DS */
+#endif // SDL_TIMER_N3DS

@@ -22,7 +22,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 
-/* Android SDL video driver implementation */
+// Android SDL video driver implementation
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
@@ -42,7 +42,7 @@
 
 #define ANDROID_VID_DRIVER_NAME "android"
 
-/* Initialization/Query functions */
+// Initialization/Query functions
 static int Android_VideoInit(SDL_VideoDevice *_this);
 static void Android_VideoQuit(SDL_VideoDevice *_this);
 
@@ -53,14 +53,14 @@ static void Android_VideoQuit(SDL_VideoDevice *_this);
 #define Android_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 #define Android_GLES_DeleteContext   SDL_EGL_DeleteContext
 
-/* Android driver bootstrap functions */
+// Android driver bootstrap functions
 
-/* These are filled in with real values in Android_SetScreenResolution on init (before SDL_main()) */
+// These are filled in with real values in Android_SetScreenResolution on init (before SDL_main())
 int Android_SurfaceWidth = 0;
 int Android_SurfaceHeight = 0;
 static int Android_DeviceWidth = 0;
 static int Android_DeviceHeight = 0;
-static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; /* Default SurfaceView format, in case this is queried before being filled */
+static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; // Default SurfaceView format, in case this is queried before being filled
 float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
 static SDL_SystemTheme Android_SystemTheme;
@@ -81,7 +81,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     SDL_VideoDevice *device;
     SDL_VideoData *data;
 
-    /* Initialize all variables that we clean on shutdown */
+    // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         return NULL;
@@ -96,7 +96,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->internal = data;
     device->system_theme = Android_SystemTheme;
 
-    /* Set the function pointers */
+    // Set the function pointers
     device->VideoInit = Android_VideoInit;
     device->VideoQuit = Android_VideoQuit;
 
@@ -109,7 +109,7 @@ static SDL_VideoDevice *Android_CreateDevice(void)
 
     device->free = Android_DeleteDevice;
 
-    /* GL pointers */
+    // GL pointers
 #ifdef SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = Android_GLES_LoadLibrary;
     device->GL_GetProcAddress = Android_GLES_GetProcAddress;
@@ -130,16 +130,16 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->Vulkan_DestroySurface = Android_Vulkan_DestroySurface;
 #endif
 
-    /* Screensaver */
+    // Screensaver
     device->SuspendScreenSaver = Android_SuspendScreenSaver;
 
-    /* Screen keyboard */
+    // Screen keyboard
     device->HasScreenKeyboardSupport = Android_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = Android_ShowScreenKeyboard;
     device->HideScreenKeyboard = Android_HideScreenKeyboard;
     device->IsScreenKeyboardShown = Android_IsScreenKeyboardShown;
 
-    /* Clipboard */
+    // Clipboard
     device->SetClipboardText = Android_SetClipboardText;
     device->GetClipboardText = Android_GetClipboardText;
     device->HasClipboardText = Android_HasClipboardText;
@@ -184,7 +184,7 @@ int Android_VideoInit(SDL_VideoDevice *_this)
 
     Android_InitMouse();
 
-    /* We're done! */
+    // We're done!
     return 0;
 }
 
@@ -207,13 +207,13 @@ void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int device
 static Uint32 format_to_pixelFormat(int format)
 {
     Uint32 pf;
-    if (format == AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM) { /* 1 */
+    if (format == AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM) { // 1
         pf = SDL_PIXELFORMAT_RGBA8888;
-    } else if (format == AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM) { /* 2 */
+    } else if (format == AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM) { // 2
         pf = SDL_PIXELFORMAT_RGBX8888;
-    } else if (format == AHARDWAREBUFFER_FORMAT_R8G8B8_UNORM) { /* 3 */
+    } else if (format == AHARDWAREBUFFER_FORMAT_R8G8B8_UNORM) { // 3
         pf = SDL_PIXELFORMAT_RGB24;
-    } else if (format == AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM) { /* 4*/
+    } else if (format == AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM) { // 4
         pf = SDL_PIXELFORMAT_RGB565;
     } else if (format == 5) {
         pf = SDL_PIXELFORMAT_BGRA8888;
@@ -222,7 +222,7 @@ static Uint32 format_to_pixelFormat(int format)
     } else if (format == 7) {
         pf = SDL_PIXELFORMAT_RGBA4444;
     } else if (format == 0x115) {
-        /* HAL_PIXEL_FORMAT_BGR_565 */
+        // HAL_PIXEL_FORMAT_BGR_565
         pf = SDL_PIXELFORMAT_RGB565;
     } else {
         pf = SDL_PIXELFORMAT_UNKNOWN;
@@ -286,4 +286,4 @@ void Android_SetDarkMode(SDL_bool enabled)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif // SDL_VIDEO_DRIVER_ANDROID

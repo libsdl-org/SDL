@@ -23,7 +23,7 @@
 #if defined(SDL_LOADSO_DUMMY)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent library loading routines                           */
+// System dependent library loading routines
 
 void *SDL_LoadObject(const char *sofile)
 {
@@ -41,7 +41,7 @@ SDL_FunctionPointer SDL_LoadFunction(void *handle, const char *name)
 
 void SDL_UnloadObject(void *handle)
 {
-    /* no-op. */
+    // no-op.
 }
 
-#endif /* SDL_LOADSO_DUMMY */
+#endif // SDL_LOADSO_DUMMY

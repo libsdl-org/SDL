@@ -26,10 +26,10 @@
 #include <sys/time.h>
 #include <time.h>
 
-/* Wrapper around POSIX 1003.1b semaphores */
+// Wrapper around POSIX 1003.1b semaphores
 
 #if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)
-/* macOS doesn't support sem_getvalue() as of version 10.4 */
+// macOS doesn't support sem_getvalue() as of version 10.4
 #include "../generic/SDL_syssem.c"
 #else
 
@@ -38,7 +38,7 @@ struct SDL_Semaphore
     sem_t sem;
 };
 
-/* Create a semaphore, initialized with value */
+// Create a semaphore, initialized with value
 SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_Semaphore *sem = (SDL_Semaphore *)SDL_malloc(sizeof(SDL_Semaphore));
@@ -76,7 +76,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return SDL_InvalidParamError("sem");
     }
 
-    /* Try the easy cases first */
+    // Try the easy cases first
     if (timeoutNS == 0) {
         retval = SDL_MUTEX_TIMEDOUT;
         if (sem_trywait(&sem->sem) == 0) {
@@ -103,24 +103,24 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 #ifdef HAVE_CLOCK_GETTIME
     clock_gettime(CLOCK_REALTIME, &ts_timeout);
 
-    /* Add our timeout to current time */
+    // Add our timeout to current time
     ts_timeout.tv_sec += (timeoutNS / SDL_NS_PER_SECOND);
     ts_timeout.tv_nsec += (timeoutNS % SDL_NS_PER_SECOND);
 #else
     gettimeofday(&now, NULL);
 
-    /* Add our timeout to current time */
+    // Add our timeout to current time
     ts_timeout.tv_sec = now.tv_sec + (timeoutNS / SDL_NS_PER_SECOND);
     ts_timeout.tv_nsec = SDL_US_TO_NS(now.tv_usec) + (timeoutNS % SDL_NS_PER_SECOND);
 #endif
 
-    /* Wrap the second if needed */
+    // Wrap the second if needed
     while (ts_timeout.tv_nsec >= 1000000000) {
         ts_timeout.tv_sec += 1;
         ts_timeout.tv_nsec -= 1000000000;
     }
 
-    /* Wait. */
+    // Wait.
     do {
         retval = sem_timedwait(&sem->sem, &ts_timeout);
     } while (retval < 0 && errno == EINTR);
@@ -141,7 +141,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         }
         SDL_DelayNS(100);
     }
-#endif /* HAVE_SEM_TIMEDWAIT */
+#endif // HAVE_SEM_TIMEDWAIT
 
     return retval;
 }
@@ -177,4 +177,4 @@ int SDL_SignalSemaphore(SDL_Semaphore *sem)
     return retval;
 }
 
-#endif /* SDL_PLATFORM_MACOS */
+#endif // SDL_PLATFORM_MACOS

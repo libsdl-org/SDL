@@ -69,7 +69,7 @@ void NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 /*****************************************************************************/
-/* Internal                                                                  */
+// Internal
 /*****************************************************************************/
 
 void DisableKeyBlocking(SDL_VideoDevice *_this)
@@ -122,4 +122,4 @@ void ConstructWindowL(SDL_VideoDevice *_this)
     DisableKeyBlocking(_this);
 }
 
-#endif /* SDL_VIDEO_DRIVER_NGAGE */
+#endif // SDL_VIDEO_DRIVER_NGAGE

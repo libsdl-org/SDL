@@ -40,11 +40,11 @@
 
 @end
 
-/* Initialization/Query functions */
+// Initialization/Query functions
 static int Cocoa_VideoInit(SDL_VideoDevice *_this);
 static void Cocoa_VideoQuit(SDL_VideoDevice *_this);
 
-/* Cocoa driver bootstrap functions */
+// Cocoa driver bootstrap functions
 
 static void Cocoa_DeleteDevice(SDL_VideoDevice *device)
 {
@@ -65,7 +65,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 
         Cocoa_RegisterApp();
 
-        /* Initialize all variables that we clean on shutdown */
+        // Initialize all variables that we clean on shutdown
         device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
         if (device) {
             data = [[SDL_CocoaVideoData alloc] init];
@@ -80,7 +80,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->wakeup_lock = SDL_CreateMutex();
         device->system_theme = Cocoa_GetSystemTheme();
 
-        /* Set the function pointers */
+        // Set the function pointers
         device->VideoInit = Cocoa_VideoInit;
         device->VideoQuit = Cocoa_VideoQuit;
         device->GetDisplayBounds = Cocoa_GetDisplayBounds;
@@ -235,10 +235,10 @@ void Cocoa_VideoQuit(SDL_VideoDevice *_this)
     }
 }
 
-/* This function assumes that it's called from within an autorelease pool */
+// This function assumes that it's called from within an autorelease pool
 SDL_SystemTheme Cocoa_GetSystemTheme(void)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400 /* Added in the 10.14.0 SDK. */
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400 // Added in the 10.14.0 SDK.
     if ([[NSApplication sharedApplication] respondsToSelector:@selector(effectiveAppearance)]) {
         NSAppearance* appearance = [[NSApplication sharedApplication] effectiveAppearance];
 
@@ -250,7 +250,7 @@ SDL_SystemTheme Cocoa_GetSystemTheme(void)
     return SDL_SYSTEM_THEME_LIGHT;
 }
 
-/* This function assumes that it's called from within an autorelease pool */
+// This function assumes that it's called from within an autorelease pool
 NSImage *Cocoa_CreateImage(SDL_Surface *surface)
 {
     NSImage *img;
@@ -272,7 +272,7 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
             return nil;
         }
 
-        /* Premultiply the alpha channel */
+        // Premultiply the alpha channel
         SDL_PremultiplySurfaceAlpha(converted, SDL_FALSE);
 
         NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
@@ -291,12 +291,12 @@ NSImage *Cocoa_CreateImage(SDL_Surface *surface)
             return nil;
         }
 
-        /* Copy the pixels */
+        // Copy the pixels
         Uint8 *pixels = [imgrep bitmapData];
         SDL_memcpy(pixels, converted->pixels, (size_t)converted->h * converted->pitch);
         SDL_DestroySurface(converted);
 
-        /* Add the image representation */
+        // Add the image representation
         [img addRepresentation:imgrep];
     }
     SDL_free(images);
@@ -327,4 +327,4 @@ void SDL_NSLog(const char *prefix, const char *text)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

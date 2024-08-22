@@ -55,7 +55,7 @@ int SDL_CopyFile(const char *oldpath, const char *newpath)
 
 int SDL_CreateDirectory(const char *path)
 {
-    /* TODO: Recursively create subdirectories */
+    // TODO: Recursively create subdirectories
     if (!path) {
         return SDL_InvalidParamError("path");
     }

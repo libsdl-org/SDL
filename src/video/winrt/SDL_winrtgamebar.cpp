@@ -22,12 +22,12 @@
 
 #ifdef SDL_VIDEO_DRIVER_WINRT
 
-/* Windows includes */
+// Windows includes
 #include <roapi.h>
 #include <windows.foundation.h>
 #include <windows.system.h>
 
-/* SDL includes */
+// SDL includes
 extern "C" {
 #include "../SDL_sysvideo.h"
 }
@@ -69,7 +69,7 @@ IGameBarStatics_ : public IInspectable
         boolean * value) = 0;
 };
 
-/* Declare the game bar's COM GUID */
+// Declare the game bar's COM GUID
 static GUID IID_IGameBarStatics_ = { MAKELONG(0xA292, 0x1DB9), 0xCC78, 0x4173, { 0xBE, 0x45, 0xB6, 0x1E, 0x67, 0x28, 0x3E, 0xA7 } };
 
 /* Retrieves a pointer to the game bar, or NULL if it is not available.
@@ -111,12 +111,12 @@ static void WINRT_HandleGameBarIsInputRedirected_MainThread()
     IGameBarStatics_ *gameBar;
     boolean isInputRedirected = 0;
     if (!WINRT_MainThreadDispatcher) {
-        /* The game bar event handler has been deregistered! */
+        // The game bar event handler has been deregistered!
         return;
     }
     gameBar = WINRT_GetGameBar();
     if (!gameBar) {
-        /* Shouldn't happen, but just in case... */
+        // Shouldn't happen, but just in case...
         return;
     }
     if (SUCCEEDED(gameBar->get_IsInputRedirected(&isInputRedirected))) {
@@ -182,4 +182,4 @@ void WINRT_QuitGameBar(SDL_VideoDevice *_this)
     gameBar->Release();
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINRT */
+#endif // SDL_VIDEO_DRIVER_WINRT

@@ -35,7 +35,7 @@
 #include <initguid.h>
 
 #ifdef ____FIReference_1_INT32_INTERFACE_DEFINED__
-/* MinGW-64 uses __FIReference_1_INT32 instead of Microsoft's __FIReference_1_int */
+// MinGW-64 uses __FIReference_1_INT32 instead of Microsoft's __FIReference_1_int
 #define __FIReference_1_int           __FIReference_1_INT32
 #define __FIReference_1_int_get_Value __FIReference_1_INT32_get_Value
 #define __FIReference_1_int_Release   __FIReference_1_INT32_Release
@@ -115,7 +115,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     UINT i, raw_device_count = 0;
     LONG vidpid = MAKELONG(vendor, product);
 
-    /* XInput and RawInput backends will pick up XInput-compatible devices */
+    // XInput and RawInput backends will pick up XInput-compatible devices
     if (!SDL_XINPUT_Enabled()
 #ifdef SDL_JOYSTICK_RAWINPUT
         && !RAWINPUT_IsEnabled()
@@ -124,9 +124,9 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
         return SDL_FALSE;
     }
 
-    /* Go through RAWINPUT (WinXP and later) to find HID devices. */
+    // Go through RAWINPUT (WinXP and later) to find HID devices.
     if ((GetRawInputDeviceList(NULL, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!raw_device_count)) {
-        return SDL_FALSE; /* oh well. */
+        return SDL_FALSE; // oh well.
     }
 
     raw_devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * raw_device_count);
@@ -138,7 +138,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     if (raw_device_count == (UINT)-1) {
         SDL_free(raw_devices);
         raw_devices = NULL;
-        return SDL_FALSE; /* oh well. */
+        return SDL_FALSE; // oh well.
     }
 
     for (i = 0; i < raw_device_count; i++) {
@@ -156,11 +156,11 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
             (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) == ((UINT)-1)) ||
             (GetRawInputDeviceInfoA(raw_devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) == ((UINT)-1)) ||
             (SDL_strstr(devName, "IG_") == NULL)) {
-            /* Skip non-XInput devices */
+            // Skip non-XInput devices
             continue;
         }
 
-        /* First check for a simple VID/PID match. This will work for Xbox 360 controllers. */
+        // First check for a simple VID/PID match. This will work for Xbox 360 controllers.
         if (MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == vidpid) {
             SDL_free(raw_devices);
             return SDL_TRUE;
@@ -169,13 +169,13 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
         /* For Xbox One controllers, Microsoft doesn't propagate the VID/PID down to the HID stack.
          * We'll have to walk the device tree upwards searching for a match for our VID/PID. */
 
-        /* Make sure the device interface string is something we know how to parse */
-        /* Example: \\?\HID#VID_045E&PID_02FF&IG_00#9&2c203035&2&0000#{4d1e55b2-f16f-11cf-88cb-001111000030} */
+        // Make sure the device interface string is something we know how to parse
+        // Example: \\?\HID#VID_045E&PID_02FF&IG_00#9&2c203035&2&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
         if ((SDL_strstr(devName, "\\\\?\\") != devName) || (SDL_strstr(devName, "#{") == NULL)) {
             continue;
         }
 
-        /* Unescape the backslashes in the string and terminate before the GUID portion */
+        // Unescape the backslashes in the string and terminate before the GUID portion
         for (j = 0; devName[j] != '\0'; j++) {
             if (devName[j] == '#') {
                 if (devName[j + 1] == '{') {
@@ -200,7 +200,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 
             if ((CM_Get_Device_IDA(devNode, deviceId, SDL_arraysize(deviceId), 0) == CR_SUCCESS) &&
                 (SDL_strstr(deviceId, devVidPidString) != NULL)) {
-                /* The VID/PID matched a parent device */
+                // The VID/PID matched a parent device
                 SDL_free(raw_devices);
                 return SDL_TRUE;
             }
@@ -208,7 +208,7 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
     }
 
     SDL_free(raw_devices);
-#endif /* SDL_JOYSTICK_XINPUT || SDL_JOYSTICK_RAWINPUT */
+#endif // SDL_JOYSTICK_XINPUT || SDL_JOYSTICK_RAWINPUT
 
     return SDL_FALSE;
 }
@@ -334,7 +334,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_QueryInter
         __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController_AddRef(This);
         return S_OK;
     } else if (WIN_IsEqualIID(riid, &IID_IMarshal)) {
-        /* This seems complicated. Let's hope it doesn't happen. */
+        // This seems complicated. Let's hope it doesn't happen.
         return E_OUTOFMEMORY;
     } else {
         return E_NOINTERFACE;
@@ -351,7 +351,7 @@ static ULONG STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_Release(__FI
 {
     RawGameControllerDelegate *self = (RawGameControllerDelegate *)This;
     int rc = SDL_AtomicAdd(&self->refcount, -1) - 1;
-    /* Should never free the static delegate objects */
+    // Should never free the static delegate objects
     SDL_assert(rc > 0);
     return rc;
 }
@@ -391,7 +391,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
 
     SDL_LockJoysticks();
 
-    /* We can get delayed calls to InvokeAdded() after WGI_JoystickQuit() */
+    // We can get delayed calls to InvokeAdded() after WGI_JoystickQuit()
     if (SDL_JoysticksQuitting() || !SDL_JoysticksInitialized()) {
         SDL_UnlockJoysticks();
         return S_OK;
@@ -420,7 +420,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             if (SUCCEEDED(hr) && wireless) {
                 bus = SDL_HARDWARE_BUS_BLUETOOTH;
 
-                /* Fixup for Wireless Xbox 360 Controller */
+                // Fixup for Wireless Xbox 360 Controller
                 if (product == 0) {
                     vendor = USB_VENDOR_MICROSOFT;
                     product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
@@ -452,7 +452,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         }
 
         if (!ignore_joystick && SDL_IsXInputDevice(vendor, product)) {
-            /* This hasn't been detected by the RAWINPUT driver yet, but it will be picked up later. */
+            // This hasn't been detected by the RAWINPUT driver yet, but it will be picked up later.
             ignore_joystick = SDL_TRUE;
         }
 
@@ -469,7 +469,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
         }
 
         if (!ignore_joystick) {
-            /* New device, add it */
+            // New device, add it
             WindowsGamingInputControllerState *controllers = SDL_realloc(wgi.controllers, sizeof(wgi.controllers[0]) * (wgi.controller_count + 1));
             if (controllers) {
                 WindowsGamingInputControllerState *state = &controllers[wgi.controller_count];
@@ -511,7 +511,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
 
     SDL_LockJoysticks();
 
-    /* Can we get delayed calls to InvokeRemoved() after WGI_JoystickQuit()? */
+    // Can we get delayed calls to InvokeRemoved() after WGI_JoystickQuit()?
     if (!SDL_JoysticksInitialized()) {
         SDL_UnlockJoysticks();
         return S_OK;
@@ -550,8 +550,8 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeRemo
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable : 4028) /* formal parameter 3 different from declaration, when using older buggy WGI headers */
-#pragma warning(disable : 4113) /* formal parameter 3 different from declaration (a more specific warning added in VS 2022), when using older buggy WGI headers */
+#pragma warning(disable : 4028) // formal parameter 3 different from declaration, when using older buggy WGI headers
+#pragma warning(disable : 4113) // formal parameter 3 different from declaration (a more specific warning added in VS 2022), when using older buggy WGI headers
 #endif
 
 static __FIEventHandler_1_Windows__CGaming__CInput__CRawGameControllerVtbl controller_added_vtbl = {
@@ -606,7 +606,7 @@ static int WGI_JoystickInit(void)
     RESOLVE(WindowsDeleteString);
     RESOLVE(WindowsGetStringRawBuffer);
 #undef RESOLVE
-#endif /* SDL_PLATFORM_WINRT */
+#endif // SDL_PLATFORM_WINRT
 
 #ifndef SDL_PLATFORM_WINRT
     {
@@ -675,7 +675,7 @@ static void WGI_JoystickDetect(void)
 
 static SDL_bool WGI_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    /* We don't override any other drivers */
+    // We don't override any other drivers
     return SDL_FALSE;
 }
 
@@ -738,7 +738,7 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
         __x_ABI_CWindows_CGaming_CInput_CIGameController_get_IsWireless(hwdata->game_controller, &wireless);
     }
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     if (wireless) {
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
     } else {
@@ -749,7 +749,7 @@ static int WGI_JoystickOpen(SDL_Joystick *joystick, int device_index)
     __x_ABI_CWindows_CGaming_CInput_CIRawGameController_get_SwitchCount(hwdata->controller, &joystick->nhats);
 
     if (hwdata->gamepad) {
-        /* FIXME: Can WGI even tell us if trigger rumble is supported? */
+        // FIXME: Can WGI even tell us if trigger rumble is supported?
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_TRUE);
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, SDL_TRUE);
     }
@@ -763,7 +763,7 @@ static int WGI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumbl
     if (hwdata->gamepad) {
         HRESULT hr;
 
-        /* Note: reusing partially filled vibration data struct */
+        // Note: reusing partially filled vibration data struct
         hwdata->vibration.LeftMotor = (DOUBLE)low_frequency_rumble / SDL_MAX_UINT16;
         hwdata->vibration.RightMotor = (DOUBLE)high_frequency_rumble / SDL_MAX_UINT16;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
@@ -784,7 +784,7 @@ static int WGI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble
     if (hwdata->gamepad) {
         HRESULT hr;
 
-        /* Note: reusing partially filled vibration data struct */
+        // Note: reusing partially filled vibration data struct
         hwdata->vibration.LeftTrigger = (DOUBLE)left_rumble / SDL_MAX_UINT16;
         hwdata->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(hwdata->gamepad, hwdata->vibration);
@@ -866,7 +866,7 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
 
         hwdata->timestamp = timestamp;
 
-        /* The axes are all zero when the application loses focus */
+        // The axes are all zero when the application loses focus
         if (naxes > 0) {
             all_zero = SDL_TRUE;
             for (i = 0; i < naxes; ++i) {
@@ -879,7 +879,7 @@ static void WGI_JoystickUpdate(SDL_Joystick *joystick)
         if (all_zero) {
             SDL_PrivateJoystickForceRecentering(joystick);
         } else {
-            /* FIXME: What units are the timestamp we get from GetCurrentReading()? */
+            // FIXME: What units are the timestamp we get from GetCurrentReading()?
             timestamp = SDL_GetTicksNS();
             for (i = 0; i < nbuttons; ++i) {
                 SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, buttons[i]);
@@ -1045,4 +1045,4 @@ SDL_JoystickDriver SDL_WGI_JoystickDriver = {
     WGI_JoystickGetGamepadMapping
 };
 
-#endif /* SDL_JOYSTICK_WGI */
+#endif // SDL_JOYSTICK_WGI

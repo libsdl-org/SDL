@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <vram.h>
 
-/* PSP renderer implementation, based on the PGE  */
+// PSP renderer implementation, based on the PGE
 
 #define PSP_SCREEN_WIDTH  480
 #define PSP_SCREEN_HEIGHT 272
@@ -170,7 +170,7 @@ static inline int InVram(void *data)
     return data < (void *)0x04200000;
 }
 
-/* Return next power of 2 */
+// Return next power of 2
 static int TextureNextPow2(unsigned int w)
 {
     unsigned int n = 2;
@@ -547,15 +547,15 @@ static void TextureActivate(SDL_Texture *texture)
     PSP_TextureData *psp_texture = (PSP_TextureData *)texture->internal;
     int scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GU_NEAREST : GU_LINEAR;
 
-    /* Swizzling is useless with small textures. */
+    // Swizzling is useless with small textures.
     if (TextureShouldSwizzle(psp_texture, texture)) {
         TextureSwizzle(psp_texture, NULL);
     }
 
     sceGuTexWrap(GU_REPEAT, GU_REPEAT);
     sceGuTexMode(psp_texture->format, 0, 0, psp_texture->swizzled);
-    sceGuTexFilter(scaleMode, scaleMode); /* GU_NEAREST good for tile-map */
-    /* GU_LINEAR good for scaling */
+    sceGuTexFilter(scaleMode, scaleMode); // GU_NEAREST good for tile-map
+    // GU_LINEAR good for scaling
     sceGuTexImage(0, psp_texture->textureWidth, psp_texture->textureHeight, psp_texture->textureWidth, psp_texture->data);
 }
 
@@ -604,7 +604,7 @@ static void PSP_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     PSP_TextureData *psp_texture = (PSP_TextureData *)texture->internal;
     SDL_Rect rect;
 
-    /* We do whole texture updates, at least for now */
+    // We do whole texture updates, at least for now
     rect.x = 0;
     rect.y = 0;
     rect.w = texture->w;
@@ -614,7 +614,7 @@ static void PSP_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static void PSP_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
-    /* Nothing to do because TextureActivate takes care of it */
+    // Nothing to do because TextureActivate takes care of it
 }
 
 static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -624,7 +624,7 @@ static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
 static int PSP_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    return 0; /* nothing to do in this backend. */
+    return 0; // nothing to do in this backend.
 }
 
 static int PSP_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
@@ -1012,7 +1012,7 @@ static void PSP_SetBlendState(PSP_RenderData *data, PSP_BlendState *state)
             break;
         case SDL_BLENDMODE_MUL:
             sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-            /* FIXME SDL_BLENDMODE_MUL is simplified, and dstA is in fact un-changed.*/
+            // FIXME SDL_BLENDMODE_MUL is simplified, and dstA is in fact un-changed.
             sceGuBlendFunc(GU_ADD, GU_DST_COLOR, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
             sceGuEnable(GU_BLEND);
             break;
@@ -1043,7 +1043,7 @@ static void PSP_SetBlendState(PSP_RenderData *data, PSP_BlendState *state)
 
 static void PSP_InvalidateCachedState(SDL_Renderer *renderer)
 {
-    /* currently this doesn't do anything. If this needs to do something (and someone is mixing their own rendering calls in!), update this. */
+    // currently this doesn't do anything. If this needs to do something (and someone is mixing their own rendering calls in!), update this.
 }
 
 static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
@@ -1086,7 +1086,7 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             sceGuOffset(2048 - (viewport->w >> 1), 2048 - (viewport->h >> 1));
             sceGuViewport(2048, 2048, viewport->w, viewport->h);
             sceGuScissor(viewport->x, viewport->y, viewport->w, viewport->h);
-            /* FIXME: We need to update the clip rect too, see https://github.com/libsdl-org/SDL/issues/9094 */
+            // FIXME: We need to update the clip rect too, see https://github.com/libsdl-org/SDL/issues/9094
             break;
         }
 
@@ -1194,7 +1194,7 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             if (!cmd->data.draw.texture) {
                 const VertCV *verts = (VertCV *)(gpumem + cmd->data.draw.first);
                 sceGuDisable(GU_TEXTURE_2D);
-                /* In GU_SMOOTH mode */
+                // In GU_SMOOTH mode
                 sceGuDrawArray(GU_TRIANGLES, GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
                 sceGuEnable(GU_TEXTURE_2D);
             } else {
@@ -1319,7 +1319,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     renderer->QueueSetViewport = PSP_QueueNoOp;
     renderer->QueueSetDrawColor = PSP_QueueNoOp;
     renderer->QueueDrawPoints = PSP_QueueDrawPoints;
-    renderer->QueueDrawLines = PSP_QueueDrawPoints; /* lines and points queue vertices the same way. */
+    renderer->QueueDrawLines = PSP_QueueDrawPoints; // lines and points queue vertices the same way.
     renderer->QueueGeometry = PSP_QueueGeometry;
     renderer->QueueFillRects = PSP_QueueFillRects;
     renderer->QueueCopy = PSP_QueueCopy;
@@ -1364,7 +1364,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     data->frontbuffer = ((uint8_t *)doublebuffer) + PSP_FRAME_BUFFER_SIZE * data->bpp;
 
     sceGuInit();
-    /* setup GU */
+    // setup GU
     sceGuStart(GU_DIRECT, DisplayList);
     sceGuDrawBuffer(data->psm, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
     sceGuDispBuffer(PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
@@ -1374,11 +1374,11 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
 
     sceGuDisable(GU_DEPTH_TEST);
 
-    /* Scissoring */
+    // Scissoring
     sceGuScissor(0, 0, PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT);
     sceGuEnable(GU_SCISSOR_TEST);
 
-    /* Backface culling */
+    // Backface culling
     /*
     FIXME: Culling probably un-needed ? It can conflict with SDL_RENDERCMD_GEOMETRY
     sceGuFrontFace(GU_CCW);
@@ -1393,7 +1393,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     sceDisplayWaitVblankStartCB();
     sceGuDisplay(GU_TRUE);
 
-    /* Improve performance when VSYC is enabled and it is not reaching the 60 FPS */
+    // Improve performance when VSYC is enabled and it is not reaching the 60 FPS
     data->vblank_not_reached = SDL_TRUE;
     sceKernelRegisterSubIntrHandler(PSP_VBLANK_INT, 0, psp_on_vblank, data);
     sceKernelEnableSubIntr(PSP_VBLANK_INT, 0);
@@ -1405,4 +1405,4 @@ SDL_RenderDriver PSP_RenderDriver = {
     PSP_CreateRenderer, "PSP"
 };
 
-#endif /* SDL_VIDEO_RENDER_PSP */
+#endif // SDL_VIDEO_RENDER_PSP

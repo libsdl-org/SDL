@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* SDL event categories */
+// SDL event categories
 
 #include "SDL_events_c.h"
 #include "SDL_categories_c.h"
@@ -233,8 +233,8 @@ SDL_Window *SDL_GetWindowFromEvent(const SDL_Event *event)
         windowID = event->drop.windowID;
         break;
     default:
-        /* < 0  -> invalid event type (error is set by SDL_GetEventCategory) */
-        /* else -> event has no associated window (not an error) */
+        // < 0  -> invalid event type (error is set by SDL_GetEventCategory)
+        // else -> event has no associated window (not an error)
         return NULL;
     }
     return SDL_GetWindowFromID(windowID);

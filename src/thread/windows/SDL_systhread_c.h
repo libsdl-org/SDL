@@ -27,4 +27,4 @@
 
 typedef HANDLE SYS_ThreadHandle;
 
-#endif /* SDL_systhread_c_h_ */
+#endif // SDL_systhread_c_h_

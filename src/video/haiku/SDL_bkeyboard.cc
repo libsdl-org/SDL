@@ -148,7 +148,7 @@ void HAIKU_InitOSKeymap(void)
         keymap[0x66]        = SDL_SCANCODE_LGUI;
         keymap[0x67]        = SDL_SCANCODE_RGUI;
         keymap[0x68]        = SDL_SCANCODE_MENU;
-        keymap[0x69]        = SDL_SCANCODE_2; /* SDLK_EURO */
+        keymap[0x69]        = SDL_SCANCODE_2; // SDLK_EURO
         keymap[0x6a]        = SDL_SCANCODE_KP_EQUALS;
         keymap[0x6b]        = SDL_SCANCODE_POWER;
 }
@@ -165,4 +165,4 @@ SDL_Scancode HAIKU_GetScancodeFromBeKey(int32 bkey) {
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU

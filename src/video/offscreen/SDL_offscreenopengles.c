@@ -26,7 +26,7 @@
 #include "SDL_offscreenvideo.h"
 #include "SDL_offscreenwindow.h"
 
-/* EGL implementation of SDL OpenGL support */
+// EGL implementation of SDL OpenGL support
 
 int OFFSCREEN_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -81,4 +81,4 @@ int OFFSCREEN_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return SDL_EGL_SwapBuffers(_this, offscreen_wind->egl_surface);
 }
 
-#endif /* SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL

@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_N3DS
 
-/* An implementation of condition variables using libctru's CondVar */
+// An implementation of condition variables using libctru's CondVar
 
 #include "SDL_sysmutex_c.h"
 
@@ -31,7 +31,7 @@ struct SDL_Condition
     CondVar cond_variable;
 };
 
-/* Create a condition variable */
+// Create a condition variable
 SDL_Condition *SDL_CreateCondition(void)
 {
     SDL_Condition *cond = (SDL_Condition *)SDL_malloc(sizeof(SDL_Condition));
@@ -41,7 +41,7 @@ SDL_Condition *SDL_CreateCondition(void)
     return cond;
 }
 
-/* Destroy a condition variable */
+// Destroy a condition variable
 void SDL_DestroyCondition(SDL_Condition *cond)
 {
     if (cond) {
@@ -49,7 +49,7 @@ void SDL_DestroyCondition(SDL_Condition *cond)
     }
 }
 
-/* Restart one of the threads that are waiting on the condition variable */
+// Restart one of the threads that are waiting on the condition variable
 int SDL_SignalCondition(SDL_Condition *cond)
 {
     if (!cond) {
@@ -60,7 +60,7 @@ int SDL_SignalCondition(SDL_Condition *cond)
     return 0;
 }
 
-/* Restart all threads that are waiting on the condition variable */
+// Restart all threads that are waiting on the condition variable
 int SDL_BroadcastCondition(SDL_Condition *cond)
 {
     if (!cond) {
@@ -113,4 +113,4 @@ int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 tim
     return R_SUCCEEDED(res) ? 0 : SDL_MUTEX_TIMEDOUT;
 }
 
-#endif /* SDL_THREAD_N3DS */
+#endif // SDL_THREAD_N3DS

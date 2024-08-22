@@ -20,9 +20,9 @@
 */
 #include "SDL_internal.h"
 
-/* Vulkan shader implementation */
+// Vulkan shader implementation
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,7 +38,7 @@ typedef enum
 extern void VULKAN_GetVertexShader(VULKAN_Shader shader, const uint32_t **outBytecode, size_t *outSize);
 extern void VULKAN_GetPixelShader(VULKAN_Shader shader, const uint32_t **outBytecode, size_t *outSize);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif

@@ -33,7 +33,7 @@ struct wl_display;
 struct wl_surface;
 struct wl_shm;
 
-/* We also need some for libdecor */
+// We also need some for libdecor
 struct wl_seat;
 struct wl_output;
 struct libdecor;
@@ -52,7 +52,7 @@ enum libdecor_window_state;
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
 
-/* Must be included before our #defines, see Bugzilla #4957 */
+// Must be included before our #defines, see Bugzilla #4957
 #include "wayland-client-core.h"
 
 #define SDL_WAYLAND_CHECK_VERSION(x, y, z)                        \
@@ -137,7 +137,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #include "wayland-egl.h"
 
 #ifdef HAVE_LIBDECOR_H
-/* Must be included before our defines */
+// Must be included before our defines
 #include <libdecor.h>
 
 #define libdecor_unref                          (*WAYLAND_libdecor_unref)
@@ -177,7 +177,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define libdecor_dispatch                       (*WAYLAND_libdecor_dispatch)
 #endif
 
-#else /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
+#else // SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 
 /*
  * These must be included before libdecor.h, otherwise the libdecor header
@@ -190,6 +190,6 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #include <libdecor.h>
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
+#endif // SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 
-#endif /* SDL_waylanddyn_h_ */
+#endif // SDL_waylanddyn_h_

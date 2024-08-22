@@ -44,7 +44,7 @@ extern void WINRT_PumpEvents(SDL_VideoDevice *_this);
  */
 #ifdef __cplusplus_winrt
 
-/* Pointers (Mice, Touch, etc.) */
+// Pointers (Mice, Touch, etc.)
 typedef enum
 {
     NormalizeZeroToOne,
@@ -62,7 +62,7 @@ extern void WINRT_ProcessPointerExitedEvent(SDL_Window *window, Windows::UI::Inp
 extern void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^ pointerPoint);
 extern void WINRT_ProcessMouseMovedEvent(SDL_Window *window, Windows::Devices::Input::MouseEventArgs ^ args);
 
-/* Keyboard */
+// Keyboard
 extern void WINRT_ProcessAcceleratorKeyActivated(Windows::UI::Core::AcceleratorKeyEventArgs ^ args);
 extern void WINRT_ProcessCharacterReceivedEvent(SDL_Window *window, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
 
@@ -74,7 +74,7 @@ extern void WINRT_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 extern SDL_bool WINRT_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 #endif // NTDDI_VERSION >= ...
 
-/* XAML Thread Management */
+// XAML Thread Management
 extern void WINRT_CycleXAMLThread(void);
 
 #endif // ifdef __cplusplus_winrt

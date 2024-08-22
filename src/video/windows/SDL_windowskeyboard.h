@@ -37,4 +37,4 @@ extern int WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, struct SDL_VideoData *videodata);
 extern void WIN_UpdateIMECandidates(SDL_VideoDevice *_this);
 
-#endif /* SDL_windowskeyboard_h_ */
+#endif // SDL_windowskeyboard_h_

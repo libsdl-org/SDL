@@ -26,6 +26,6 @@
 
 int PSP_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
-#endif /* SDL_VIDEO_DRIVER_PSP */
+#endif // SDL_VIDEO_DRIVER_PSP
 
-#endif /* SDL_pspmessagebox_h_ */
+#endif // SDL_pspmessagebox_h_

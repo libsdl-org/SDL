@@ -424,7 +424,7 @@
 
 #define ABS(_x) ((_x) < 0 ? -(_x) : (_x))
 
-/* Horizontal line */
+// Horizontal line
 #define HLINE(type, op, draw_end)                              \
     {                                                          \
         int length;                                            \
@@ -446,7 +446,7 @@
         }                                                      \
     }
 
-/* Vertical line */
+// Vertical line
 #define VLINE(type, op, draw_end)                              \
     {                                                          \
         int length;                                            \
@@ -468,7 +468,7 @@
         }                                                      \
     }
 
-/* Diagonal line */
+// Diagonal line
 #define DLINE(type, op, draw_end)                              \
     {                                                          \
         int length;                                            \
@@ -503,7 +503,7 @@
         }                                                      \
     }
 
-/* Bresenham's line algorithm */
+// Bresenham's line algorithm
 #define BLINE(x1, y1, x2, y2, op, draw_end) \
     {                                       \
         int i, deltax, deltay, numpixels;   \
@@ -563,7 +563,7 @@
         }                                   \
     }
 
-/* Xiaolin Wu's line algorithm, based on Michael Abrash's implementation */
+// Xiaolin Wu's line algorithm, based on Michael Abrash's implementation
 #define WULINE(x1, y1, x2, y2, opaque_op, blend_op, draw_end)                       \
     {                                                                               \
         Uint16 ErrorAdj, ErrorAcc;                                                  \

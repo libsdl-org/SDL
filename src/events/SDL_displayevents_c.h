@@ -25,4 +25,4 @@
 
 extern int SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1, int data2);
 
-#endif /* SDL_displayevents_c_h_ */
+#endif // SDL_displayevents_c_h_

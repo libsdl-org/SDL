@@ -43,10 +43,10 @@ static SDL_INLINE SDL_BLooper *_GetBeLooper() {
     return SDL_Looper;
 }
 
-/* Passing a NULL path means load pointers from the application */
+// Passing a NULL path means load pointers from the application
 int HAIKU_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-/* FIXME: Is this working correctly? */
+// FIXME: Is this working correctly?
     image_info info;
             int32 cookie = 0;
     while (get_next_image_info(0, &cookie, &info) == B_OK) {
@@ -156,7 +156,7 @@ int HAIKU_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context) {
 
 
 int HAIKU_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval) {
-    /* TODO: Implement this, if necessary? */
+    // TODO: Implement this, if necessary?
     return SDL_Unsupported();
 }
 
@@ -166,7 +166,7 @@ int HAIKU_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval) {
 
 
 void HAIKU_GL_UnloadLibrary(SDL_VideoDevice *_this) {
-    /* TODO: Implement this, if necessary? */
+    // TODO: Implement this, if necessary?
 }
 
 
@@ -192,4 +192,4 @@ void HAIKU_GL_RebootContexts(SDL_VideoDevice *_this) {
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL */
+#endif // SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL

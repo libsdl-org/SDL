@@ -105,7 +105,7 @@ static int UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
     SDL_UIKitDisplayModeData *data = nil;
 
     if (uiscreenmode != nil) {
-        /* Allocate the display mode data */
+        // Allocate the display mode data
         data = [[SDL_UIKitDisplayModeData alloc] init];
         if (!data) {
             return SDL_OutOfMemory();
@@ -171,7 +171,7 @@ static int UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
     }
 
     if (addRotation) {
-        /* Add the rotated version */
+        // Add the rotated version
         if (UIKit_AddSingleDisplayMode(display, h, w, uiscreen, uiscreenmode) < 0) {
             return -1;
         }
@@ -210,7 +210,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
 
-    /* Make sure the width/height are oriented correctly */
+    // Make sure the width/height are oriented correctly
     if (UIKit_IsDisplayLandscape(uiscreen) != (size.width > size.height)) {
         CGFloat height = size.width;
         size.width = size.height;
@@ -231,7 +231,7 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
     SDL_zero(display);
 #ifndef SDL_PLATFORM_TVOS
     if (uiscreen == [UIScreen mainScreen]) {
-        /* The natural orientation (used by sensors) is portrait */
+        // The natural orientation (used by sensors) is portrait
         display.natural_orientation = SDL_ORIENTATION_PORTRAIT;
     } else
 #endif
@@ -253,9 +253,9 @@ int UIKit_AddDisplay(UIScreen *uiscreen, SDL_bool send_event)
             display.HDR.HDR_headroom = uiscreen.potentialEDRHeadroom;
         }
     }
-#endif /* !SDL_PLATFORM_TVOS */
+#endif // !SDL_PLATFORM_TVOS
 
-    /* Allocate the display data */
+    // Allocate the display data
 #ifdef SDL_PLATFORM_VISIONOS
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
 #else
@@ -336,7 +336,7 @@ SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen)
     if (uiscreen == [UIScreen mainScreen]) {
         return UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
     } else
-#endif /* !SDL_PLATFORM_TVOS */
+#endif // !SDL_PLATFORM_TVOS
     {
         CGSize size = uiscreen.bounds.size;
         return (size.width > size.height);
@@ -390,7 +390,7 @@ int UIKit_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
             int w = (int)size.width;
             int h = (int)size.height;
 
-            /* Make sure the width/height are oriented correctly */
+            // Make sure the width/height are oriented correctly
             if (isLandscape != (w > h)) {
                 int tmp = w;
                 w = h;
@@ -465,7 +465,7 @@ void UIKit_QuitModes(SDL_VideoDevice *_this)
     [SDL_DisplayWatch stop];
 #endif
 
-    /* Release Objective-C objects, so higher level doesn't free() them. */
+    // Release Objective-C objects, so higher level doesn't free() them.
     int i, j;
     @autoreleasepool {
         for (i = 0; i < _this->num_displays; i++) {
@@ -506,7 +506,7 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
             mode->h = height;
         }
 
-        /* Same deal with the fullscreen modes */
+        // Same deal with the fullscreen modes
         for (i = 0; i < display->num_fullscreen_modes; ++i) {
             mode = &display->fullscreen_modes[i];
             if (isLandscape != (mode->w > mode->h)) {
@@ -524,11 +524,11 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
             orientation = SDL_ORIENTATION_PORTRAIT_FLIPPED;
             break;
         case UIInterfaceOrientationLandscapeLeft:
-            /* Bug: UIInterfaceOrientationLandscapeLeft/Right are reversed - http://openradar.appspot.com/7216046 */
+            // Bug: UIInterfaceOrientationLandscapeLeft/Right are reversed - http://openradar.appspot.com/7216046
             orientation = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
             break;
         case UIInterfaceOrientationLandscapeRight:
-            /* Bug: UIInterfaceOrientationLandscapeLeft/Right are reversed - http://openradar.appspot.com/7216046 */
+            // Bug: UIInterfaceOrientationLandscapeLeft/Right are reversed - http://openradar.appspot.com/7216046
             orientation = SDL_ORIENTATION_LANDSCAPE;
             break;
         default:
@@ -537,6 +537,6 @@ void SDL_OnApplicationDidChangeStatusBarOrientation(void)
         SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, orientation, 0);
     }
 }
-#endif /* !SDL_PLATFORM_TVOS */
+#endif // !SDL_PLATFORM_TVOS
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

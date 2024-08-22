@@ -47,4 +47,4 @@ extern void PSP_GL_UnloadLibrary(SDL_VideoDevice *_this);
 extern int PSP_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
 extern int PSP_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
 
-#endif /* SDL_pspgl_c_h_ */
+#endif // SDL_pspgl_c_h_

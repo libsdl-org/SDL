@@ -30,4 +30,4 @@ extern SDL_bool UIKit_HasClipboardText(SDL_VideoDevice *_this);
 extern void UIKit_InitClipboard(SDL_VideoDevice *_this);
 extern void UIKit_QuitClipboard(SDL_VideoDevice *_this);
 
-#endif /* SDL_uikitclipboard_h_ */
+#endif // SDL_uikitclipboard_h_

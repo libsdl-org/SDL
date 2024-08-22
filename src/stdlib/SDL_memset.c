@@ -40,7 +40,7 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
     Uint8 value1;
     Uint32 value4;
 
-    /* The value used in memset() is a byte, passed as an int */
+    // The value used in memset() is a byte, passed as an int
     c &= 0xff;
 
     /* The destination pointer needs to be aligned on a 4-byte boundary to
@@ -76,10 +76,10 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
     }
 
     return dst;
-#endif /* HAVE_MEMSET */
+#endif // HAVE_MEMSET
 }
 
-/* Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent. */
+// Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent.
 void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
 {
 #if defined(__APPLE__) && defined(HAVE_STRING_H)
@@ -121,7 +121,7 @@ void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
 /* The optimizer on Visual Studio 2005 and later generates memcpy() and memset() calls.
    We will provide our own implementation if we're not building with a C runtime. */
 #ifndef HAVE_LIBC
-/* NOLINTNEXTLINE(readability-redundant-declaration) */
+// NOLINTNEXTLINE(readability-redundant-declaration)
 extern void *memset(void *dst, int c, size_t len);
 #if defined(_MSC_VER) && !defined(__INTEL_LLVM_COMPILER)
 #pragma intrinsic(memset)
@@ -130,10 +130,10 @@ extern void *memset(void *dst, int c, size_t len);
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma function(memset)
 #endif
-/* NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) */
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 void *memset(void *dst, int c, size_t len)
 {
     return SDL_memset(dst, c, len);
 }
-#endif /* !HAVE_LIBC */
+#endif // !HAVE_LIBC
 

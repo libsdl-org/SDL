@@ -24,7 +24,7 @@
 #include "../../stdlib/SDL_vacopy.h"
 
 #ifdef SDL_USE_LIBDBUS
-/* we never link directly to libdbus. */
+// we never link directly to libdbus.
 static const char *dbus_library = "libdbus-1.so.3";
 static void *dbus_handle = NULL;
 static char *inhibit_handle = NULL;
@@ -111,7 +111,7 @@ static int LoadDBUSLibrary(void)
         dbus_handle = SDL_LoadObject(dbus_library);
         if (!dbus_handle) {
             retval = -1;
-            /* Don't call SDL_SetError(): SDL_LoadObject already did. */
+            // Don't call SDL_SetError(): SDL_LoadObject already did.
         } else {
             retval = LoadDBUSSyms();
             if (retval < 0) {
@@ -125,19 +125,19 @@ static int LoadDBUSLibrary(void)
 
 static SDL_SpinLock spinlock_dbus_init = 0;
 
-/* you must hold spinlock_dbus_init before calling this! */
+// you must hold spinlock_dbus_init before calling this!
 static void SDL_DBus_Init_Spinlocked(void)
 {
     static SDL_bool is_dbus_available = SDL_TRUE;
     if (!is_dbus_available) {
-        return; /* don't keep trying if this fails. */
+        return; // don't keep trying if this fails.
     }
 
     if (!dbus.session_conn) {
         DBusError err;
 
         if (LoadDBUSLibrary() == -1) {
-            is_dbus_available = SDL_FALSE; /* can't load at all? Don't keep trying. */
+            is_dbus_available = SDL_FALSE; // can't load at all? Don't keep trying.
             return;
         }
 
@@ -147,18 +147,18 @@ static void SDL_DBus_Init_Spinlocked(void)
         }
 
         dbus.error_init(&err);
-        /* session bus is required */
+        // session bus is required
 
         dbus.session_conn = dbus.bus_get_private(DBUS_BUS_SESSION, &err);
         if (dbus.error_is_set(&err)) {
             dbus.error_free(&err);
             SDL_DBus_Quit();
             is_dbus_available = SDL_FALSE;
-            return; /* oh well */
+            return; // oh well
         }
         dbus.connection_set_exit_on_disconnect(dbus.session_conn, 0);
 
-        /* system bus is optional */
+        // system bus is optional
         dbus.system_conn = dbus.bus_get_private(DBUS_BUS_SYSTEM, &err);
         if (!dbus.error_is_set(&err)) {
             dbus.connection_set_exit_on_disconnect(dbus.system_conn, 0);
@@ -170,7 +170,7 @@ static void SDL_DBus_Init_Spinlocked(void)
 
 void SDL_DBus_Init(void)
 {
-    SDL_LockSpinlock(&spinlock_dbus_init); /* make sure two threads can't init at same time, since this can happen before SDL_Init. */
+    SDL_LockSpinlock(&spinlock_dbus_init); // make sure two threads can't init at same time, since this can happen before SDL_Init.
     SDL_DBus_Init_Spinlocked();
     SDL_UnlockSpinlock(&spinlock_dbus_init);
 }
@@ -216,14 +216,14 @@ static SDL_bool SDL_DBus_CallMethodInternal(DBusConnection *conn, const char *no
         if (msg) {
             int firstarg;
             va_list ap_reply;
-            va_copy(ap_reply, ap); /* copy the arg list so we don't compete with D-Bus for it */
+            va_copy(ap_reply, ap); // copy the arg list so we don't compete with D-Bus for it
             firstarg = va_arg(ap, int);
             if ((firstarg == DBUS_TYPE_INVALID) || dbus.message_append_args_valist(msg, firstarg, ap)) {
                 DBusMessage *reply = dbus.connection_send_with_reply_and_block(conn, msg, 300, NULL);
                 if (reply) {
-                    /* skip any input args, get to output args. */
+                    // skip any input args, get to output args.
                     while ((firstarg = va_arg(ap_reply, int)) != DBUS_TYPE_INVALID) {
-                        /* we assume D-Bus already validated all this. */
+                        // we assume D-Bus already validated all this.
                         {
                             void *dumpptr = va_arg(ap_reply, void *);
                             (void)dumpptr;
@@ -361,8 +361,8 @@ SDL_bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *
 
 void SDL_DBus_ScreensaverTickle(void)
 {
-    if (screensaver_cookie == 0 && !inhibit_handle) { /* no need to tickle if we're inhibiting. */
-        /* org.gnome.ScreenSaver is the legacy interface, but it'll either do nothing or just be a second harmless tickle on newer systems, so we leave it for now. */
+    if (screensaver_cookie == 0 && !inhibit_handle) { // no need to tickle if we're inhibiting.
+        // org.gnome.ScreenSaver is the legacy interface, but it'll either do nothing or just be a second harmless tickle on newer systems, so we leave it for now.
         SDL_DBus_CallVoidMethod("org.gnome.ScreenSaver", "/org/gnome/ScreenSaver", "org.gnome.ScreenSaver", "SimulateUserActivity", DBUS_TYPE_INVALID);
         SDL_DBus_CallVoidMethod("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver", "SimulateUserActivity", DBUS_TYPE_INVALID);
     }
@@ -443,8 +443,8 @@ SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
         const char *bus_name = "org.freedesktop.portal.Desktop";
         const char *path = "/org/freedesktop/portal/desktop";
         const char *interface = "org.freedesktop.portal.Inhibit";
-        const char *window = "";                    /* As a future improvement we could gather the X11 XID or Wayland surface identifier */
-        static const unsigned int INHIBIT_IDLE = 8; /* Taken from the portal API reference */
+        const char *window = "";                    // As a future improvement we could gather the X11 XID or Wayland surface identifier
+        static const unsigned int INHIBIT_IDLE = 8; // Taken from the portal API reference
         DBusMessageIter iterInit;
 
         if (inhibit) {
@@ -469,7 +469,7 @@ SDL_bool SDL_DBus_ScreensaverInhibit(SDL_bool inhibit)
 
             dbus.message_iter_init_append(msg, &iterInit);
 
-            /* a{sv} */
+            // a{sv}
             if (!SDL_DBus_AppendDictWithKeyValue(&iterInit, key, reason)) {
                 dbus.message_unref(msg);
                 return SDL_FALSE;
@@ -524,7 +524,7 @@ void SDL_DBus_PumpEvents(void)
         dbus.connection_read_write(dbus.session_conn, 0);
 
         while (dbus.connection_dispatch(dbus.session_conn) == DBUS_DISPATCH_DATA_REMAINS) {
-            /* Do nothing, actual work happens in DBus_MessageFilter */
+            // Do nothing, actual work happens in DBus_MessageFilter
             SDL_DelayNS(SDL_US_TO_NS(10));
         }
     }
@@ -541,7 +541,7 @@ char *SDL_DBus_GetLocalMachineId(void)
     dbus.error_init(&err);
 
     if (dbus.try_get_local_machine_id) {
-        /* Available since dbus 1.12.0, has proper error-handling */
+        // Available since dbus 1.12.0, has proper error-handling
         result = dbus.try_get_local_machine_id(&err);
     } else {
         /* Available since time immemorial, but has no error-handling:
@@ -575,12 +575,12 @@ char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *path_count)
     DBusMessageIter iter, iterDict;
     char **paths = NULL;
     DBusMessage *reply = NULL;
-    DBusMessage *msg = dbus.message_new_method_call("org.freedesktop.portal.Documents",    /* Node */
-                                                    "/org/freedesktop/portal/documents",   /* Path */
-                                                    "org.freedesktop.portal.FileTransfer", /* Interface */
-                                                    "RetrieveFiles");                      /* Method */
+    DBusMessage *msg = dbus.message_new_method_call("org.freedesktop.portal.Documents",    // Node
+                                                    "/org/freedesktop/portal/documents",   // Path
+                                                    "org.freedesktop.portal.FileTransfer", // Interface
+                                                    "RetrieveFiles");                      // Method
 
-    /* Make sure we have a connection to the dbus session bus */
+    // Make sure we have a connection to the dbus session bus
     if (!SDL_DBus_GetContext() || !dbus.session_conn) {
         /* We either cannot connect to the session bus or were unable to
          * load the D-Bus library at all. */
@@ -589,7 +589,7 @@ char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *path_count)
 
     dbus.error_init(&err);
 
-    /* First argument is a "application/vnd.portal.filetransfer" key from a DnD or clipboard event */
+    // First argument is a "application/vnd.portal.filetransfer" key from a DnD or clipboard event
     if (!dbus.message_append_args(msg, DBUS_TYPE_STRING, &key, DBUS_TYPE_INVALID)) {
         SDL_OutOfMemory();
         dbus.message_unref(msg);

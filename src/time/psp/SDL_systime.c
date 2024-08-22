@@ -28,7 +28,7 @@
 
 #include "../SDL_time_c.h"
 
-/* Sony seems to use 0001-01-01T00:00:00 as an epoch. */
+// Sony seems to use 0001-01-01T00:00:00 as an epoch.
 #define DELTA_EPOCH_0001_OFFSET 62135596800ULL
 
 void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
@@ -82,7 +82,7 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
         const Uint64 scetime_min = (Uint64)((SDL_MIN_TIME / div) + epoch_offset);
         const Uint64 scetime_max = (Uint64)((SDL_MAX_TIME / div) + epoch_offset);
 
-        /* Clamp to the valid SDL_Time range. */
+        // Clamp to the valid SDL_Time range.
         sceTicks = SDL_clamp(sceTicks, scetime_min, scetime_max);
 
         *ticks = (SDL_Time)(sceTicks - epoch_offset) * div;
@@ -134,4 +134,4 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
     return SDL_SetError("Local time conversion failed (%i)", ret);
 }
 
-#endif /* SDL_TIME_PSP */
+#endif // SDL_TIME_PSP

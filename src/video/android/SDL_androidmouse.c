@@ -29,7 +29,7 @@
 
 #include "../../core/android/SDL_android.h"
 
-/* See Android's MotionEvent class for constants */
+// See Android's MotionEvent class for constants
 #define ACTION_DOWN       0
 #define ACTION_UP         1
 #define ACTION_MOVE       2
@@ -47,10 +47,10 @@ struct SDL_CursorData
     int system_cursor;
 };
 
-/* Last known Android mouse button state (includes all buttons) */
+// Last known Android mouse button state (includes all buttons)
 static int last_state;
 
-/* Blank cursor */
+// Blank cursor
 static SDL_Cursor *empty_cursor;
 
 static SDL_Cursor *Android_WrapCursor(int custom_cursor, int system_cursor)
@@ -150,7 +150,7 @@ static int Android_ShowCursor(SDL_Cursor *cursor)
         }
         return 0;
     } else {
-        /* SDL error set inside Android_CreateEmptyCursor() */
+        // SDL error set inside Android_CreateEmptyCursor()
         return -1;
     }
 }
@@ -188,7 +188,7 @@ void Android_QuitMouse(void)
     Android_DestroyEmptyCursor();
 }
 
-/* Translate Android mouse button state to SDL mouse button */
+// Translate Android mouse button state to SDL mouse button
 static Uint8 TranslateButton(int state)
 {
     if (state & BUTTON_PRIMARY) {
@@ -246,4 +246,4 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif // SDL_VIDEO_DRIVER_ANDROID

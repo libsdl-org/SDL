@@ -27,9 +27,9 @@
 /* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
   based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
 
-#include <shellapi.h> /* CommandLineToArgvW() */
+#include <shellapi.h> // CommandLineToArgvW()
 
-/* Pop up an out of memory message, returns to Windows */
+// Pop up an out of memory message, returns to Windows
 static int OutOfMemory(void)
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
@@ -57,7 +57,7 @@ int MINGW32_FORCEALIGN SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFu
      * SDL_free() to use the same allocator after SDL_main() returns.
      */
 
-    /* Parse it into argv and argc */
+    // Parse it into argv and argc
     argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
     if (!argv) {
         return OutOfMemory();
@@ -84,10 +84,10 @@ int MINGW32_FORCEALIGN SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFu
 
     SDL_SetMainReady();
 
-    /* Run the application main() code */
+    // Run the application main() code
     result = mainFunction(argc, argv);
 
-    /* Free argv, to avoid memory leak */
+    // Free argv, to avoid memory leak
     for (i = 0; i < argc; ++i) {
         HeapFree(GetProcessHeap(), 0, argv[i]);
     }
@@ -96,4 +96,4 @@ int MINGW32_FORCEALIGN SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFu
     return result;
 }
 
-#endif /* SDL_PLATFORM_WIN32 */
+#endif // SDL_PLATFORM_WIN32

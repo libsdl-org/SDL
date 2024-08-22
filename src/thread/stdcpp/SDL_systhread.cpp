@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* Thread management routines for SDL */
+// Thread management routines for SDL
 
 extern "C" {
 #include "../SDL_thread_c.h"
@@ -58,7 +58,7 @@ SDL_SYS_CreateThread(SDL_Thread *thread,
 extern "C" void
 SDL_SYS_SetupThread(const char *name)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
 extern "C" SDL_ThreadID

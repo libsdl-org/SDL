@@ -28,20 +28,20 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_SHIELD
 
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_SHIELD_PROTOCOL*/
+// Define this if you want to log all packets from the controller
+// #define DEBUG_SHIELD_PROTOCOL
 
 #define CMD_BATTERY_STATE 0x07
 #define CMD_RUMBLE        0x39
 #define CMD_CHARGE_STATE  0x3A
 
-/* Milliseconds between polls of battery state */
+// Milliseconds between polls of battery state
 #define BATTERY_POLL_INTERVAL_MS 60000
 
-/* Milliseconds between retransmission of rumble to keep motors running */
+// Milliseconds between retransmission of rumble to keep motors running
 #define RUMBLE_REFRESH_INTERVAL_MS 500
 
-/* Reports that are too small are dropped over Bluetooth */
+// Reports that are too small are dropped over Bluetooth
 #define HID_REPORT_SIZE 33
 
 enum
@@ -63,7 +63,7 @@ typedef enum
     k_ShieldReportIdCommandRequest = 0x04,
 } EShieldReportId;
 
-/* This same report structure is used for both requests and responses */
+// This same report structure is used for both requests and responses
 typedef struct
 {
     Uint8 report_id;
@@ -156,7 +156,7 @@ static int HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd,
         SDL_memcpy(cmd_pkt.payload, data, size);
     }
 
-    /* Zero unused data in the payload */
+    // Zero unused data in the payload
     if (size != sizeof(cmd_pkt.payload)) {
         SDL_memset(&cmd_pkt.payload[size], 0, sizeof(cmd_pkt.payload) - size);
     }
@@ -181,7 +181,7 @@ static SDL_bool HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
     ctx->last_rumble_time = 0;
     SDL_zeroa(ctx->last_state);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     if (device->product_id == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
         joystick->nbuttons = SDL_GAMEPAD_NUM_SHIELD_V103_BUTTONS;
         joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
@@ -194,7 +194,7 @@ static SDL_bool HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
         joystick->nhats = 1;
     }
 
-    /* Request battery and charging info */
+    // Request battery and charging info
     ctx->last_battery_query_time = SDL_GetTicks();
     HIDAPI_DriverShield_SendCommand(device, CMD_CHARGE_STATE, NULL, 0);
     HIDAPI_DriverShield_SendCommand(device, CMD_BATTERY_STATE, NULL, 0);
@@ -211,7 +211,7 @@ static int HIDAPI_DriverShield_SendNextRumble(SDL_HIDAPI_Device *device)
         return 0;
     }
 
-    rumble_data[0] = 0x01; /* enable */
+    rumble_data[0] = 0x01; // enable
     rumble_data[1] = ctx->left_motor_amplitude;
     rumble_data[2] = ctx->right_motor_amplitude;
 
@@ -237,13 +237,13 @@ static int HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     } else {
         SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
 
-        /* The rumble motors are quite intense, so tone down the intensity like the official driver does */
+        // The rumble motors are quite intense, so tone down the intensity like the official driver does
         ctx->left_motor_amplitude = low_frequency_rumble >> 11;
         ctx->right_motor_amplitude = high_frequency_rumble >> 11;
         ctx->rumble_update_pending = SDL_TRUE;
 
         if (ctx->rumble_report_pending) {
-            /* We will service this after the hardware acknowledges the previous request */
+            // We will service this after the hardware acknowledges the previous request
             return 0;
         }
 
@@ -271,10 +271,10 @@ static int HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL
     const Uint8 *data_bytes = (const Uint8 *)data;
 
     if (size > 1) {
-        /* Single command byte followed by a variable length payload */
+        // Single command byte followed by a variable length payload
         return HIDAPI_DriverShield_SendCommand(device, data_bytes[0], &data_bytes[1], size - 1);
     } else if (size == 1) {
-        /* Single command byte with no payload */
+        // Single command byte with no payload
         return HIDAPI_DriverShield_SendCommand(device, data_bytes[0], NULL, 0);
     } else {
         return SDL_SetError("Effect data must at least contain a command byte");
@@ -368,7 +368,7 @@ static void HIDAPI_DriverShield_HandleTouchPacketV103(SDL_Joystick *joystick, SD
 
     SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SHIELD_V103_TOUCHPAD, (data[1] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
 
-    /* It's a triangular pad, but just use the center as the usable touch area */
+    // It's a triangular pad, but just use the center as the usable touch area
     touchpad_state = !(data[1] & 0x80) ? SDL_PRESSED : SDL_RELEASED;
     touchpad_x = clamp((float)(data[2] - 0x70) / 0x50, 0.0f, 1.0f);
     touchpad_y = clamp((float)(data[4] - 0x40) / 0x15, 0.0f, 1.0f);
@@ -481,7 +481,7 @@ static SDL_bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
         HIDAPI_DumpPacket("NVIDIA SHIELD packet: size = %d", data, size);
 #endif
 
-        /* Byte 0 is HID report ID */
+        // Byte 0 is HID report ID
         switch (data[0]) {
         case k_ShieldReportIdControllerState:
             if (!joystick) {
@@ -521,13 +521,13 @@ static SDL_bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    /* Ask for battery state again if we're due for an update */
+    // Ask for battery state again if we're due for an update
     if (joystick && SDL_GetTicks() >= (ctx->last_battery_query_time + BATTERY_POLL_INTERVAL_MS)) {
         ctx->last_battery_query_time = SDL_GetTicks();
         HIDAPI_DriverShield_SendCommand(device, CMD_BATTERY_STATE, NULL, 0);
     }
 
-    /* Retransmit rumble packets if they've lasted longer than the hardware supports */
+    // Retransmit rumble packets if they've lasted longer than the hardware supports
     if ((ctx->left_motor_amplitude != 0 || ctx->right_motor_amplitude != 0) &&
         SDL_GetTicks() >= (ctx->last_rumble_time + RUMBLE_REFRESH_INTERVAL_MS)) {
         ctx->rumble_update_pending = SDL_TRUE;
@@ -535,7 +535,7 @@ static SDL_bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (size < 0) {
-        /* Read error, device is disconnected */
+        // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return size >= 0;
@@ -571,6 +571,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverShield = {
     HIDAPI_DriverShield_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_SHIELD */
+#endif // SDL_JOYSTICK_HIDAPI_SHIELD
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

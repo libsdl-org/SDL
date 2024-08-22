@@ -33,4 +33,4 @@ extern int Cocoa_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 
 extern int Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
 
-#endif /* SDL_cocoakeyboard_h_ */
+#endif // SDL_cocoakeyboard_h_

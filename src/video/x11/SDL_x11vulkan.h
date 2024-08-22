@@ -50,4 +50,4 @@ SDL_bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
 
 #endif
 
-#endif /* SDL_x11vulkan_h_ */
+#endif // SDL_x11vulkan_h_

@@ -54,8 +54,8 @@ SDL_bool SDL_GetPowerInfo_VITA(SDL_PowerState *state, int *seconds, int *percent
         *seconds = scePowerGetBatteryLifeTime() * 60;
     }
 
-    return SDL_TRUE; /* always the definitive answer on VITA. */
+    return SDL_TRUE; // always the definitive answer on VITA.
 }
 
-#endif /* SDL_POWER_VITA */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_VITA
+#endif // SDL_POWER_DISABLED

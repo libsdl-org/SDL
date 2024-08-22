@@ -1033,12 +1033,12 @@ SDL_Keycode SDL_GetKeyFromName(const char *name)
     const SDL_bool uppercase = SDL_TRUE;
     SDL_Keycode key;
 
-    /* Check input */
+    // Check input
     if (!name) {
         return SDLK_UNKNOWN;
     }
 
-    /* If it's a single UTF-8 character, then that's the keycode itself */
+    // If it's a single UTF-8 character, then that's the keycode itself
     key = *(const unsigned char *)name;
     if (key >= 0xF0) {
         if (SDL_strlen(name) == 4) {

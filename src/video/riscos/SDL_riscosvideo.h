@@ -33,4 +33,4 @@ struct SDL_VideoData
     Uint8 key_pressed[RISCOS_MAX_KEYS_PRESSED];
 };
 
-#endif /* SDL_riscosvideo_h_ */
+#endif // SDL_riscosvideo_h_

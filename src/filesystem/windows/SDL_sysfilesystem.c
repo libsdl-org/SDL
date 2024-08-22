@@ -23,7 +23,7 @@
 #ifdef SDL_FILESYSTEM_WINDOWS
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 
@@ -31,7 +31,7 @@
 #include <shlobj.h>
 #include <initguid.h>
 
-/* These aren't all defined in older SDKs, so define them here */
+// These aren't all defined in older SDKs, so define them here
 DEFINE_GUID(SDL_FOLDERID_Profile, 0x5E6C858F, 0x0E22, 0x4760, 0x9A, 0xFE, 0xEA, 0x33, 0x17, 0xB6, 0x71, 0x73);
 DEFINE_GUID(SDL_FOLDERID_Desktop, 0xB4BFCC3A, 0xDB2C, 0x424C, 0xB0, 0x29, 0x7F, 0xE9, 0x9A, 0x87, 0xC6, 0x41);
 DEFINE_GUID(SDL_FOLDERID_Documents, 0xFDD39AD0, 0x238F, 0x46AF, 0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7);
@@ -61,13 +61,13 @@ char *SDL_SYS_GetBasePath(void)
         path = (WCHAR *)ptr;
 
         len = GetModuleFileNameW(NULL, path, buflen);
-        /* if it truncated, then len >= buflen - 1 */
-        /* if there was enough room (or failure), len < buflen - 1 */
+        // if it truncated, then len >= buflen - 1
+        // if there was enough room (or failure), len < buflen - 1
         if (len < buflen - 1) {
             break;
         }
 
-        /* buffer too small? Try again. */
+        // buffer too small? Try again.
         buflen *= 2;
     }
 
@@ -83,8 +83,8 @@ char *SDL_SYS_GetBasePath(void)
         }
     }
 
-    SDL_assert(i > 0);  /* Should have been an absolute path. */
-    path[i + 1] = '\0'; /* chop off filename. */
+    SDL_assert(i > 0);  // Should have been an absolute path.
+    path[i + 1] = '\0'; // chop off filename.
 
     retval = WIN_StringToUTF8W(path);
     SDL_free(path);
@@ -188,7 +188,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     }
 
     if (pSHGetKnownFolderPath) {
-        GUID type; /* KNOWNFOLDERID */
+        GUID type; // KNOWNFOLDERID
         HRESULT result;
         wchar_t *path;
 
@@ -304,11 +304,11 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
             goto done;
         };
 
-        /* Create the OS-specific folder if it doesn't already exist */
+        // Create the OS-specific folder if it doesn't already exist
         type |= CSIDL_FLAG_CREATE;
 
 #if 0
-        /* Apparently the oldest, but not supported in modern Windows */
+        // Apparently the oldest, but not supported in modern Windows
         HRESULT result = SHGetSpecialFolderPath(NULL, path, type, TRUE);
 #endif
 
@@ -316,7 +316,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
            available), available in Wine (tested 6.0.3) */
         result = SHGetFolderPathW(NULL, type, NULL, SHGFP_TYPE_CURRENT, path);
 
-        /* use `== TRUE` for SHGetSpecialFolderPath */
+        // use `== TRUE` for SHGetSpecialFolderPath
         if (SUCCEEDED(result)) {
             retval = WIN_StringToUTF8W(path);
         } else {
@@ -329,7 +329,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 
         if (!newretval) {
             SDL_free(retval);
-            retval = NULL; /* will be returned */
+            retval = NULL; // will be returned
             goto done;
         }
 
@@ -343,4 +343,4 @@ done:
     }
     return retval;
 }
-#endif /* SDL_FILESYSTEM_WINDOWS */
+#endif // SDL_FILESYSTEM_WINDOWS

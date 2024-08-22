@@ -227,7 +227,7 @@ int glSetSwapInterval(SDL_VideoDevice *_this, int interval)
  */
 int glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    /* !!! FIXME: should we migrate this all over to use SDL_egl.c? */
+    // !!! FIXME: should we migrate this all over to use SDL_egl.c?
     window_impl_t   *impl = (window_impl_t *)window->internal;
     return eglSwapBuffers(egl_disp, impl->surface) == EGL_TRUE ? 0 : -1;
 }

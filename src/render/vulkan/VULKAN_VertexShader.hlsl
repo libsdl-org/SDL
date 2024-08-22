@@ -5,7 +5,7 @@ struct VertexShaderConstants
     matrix model;
     matrix projectionAndView;
 };
-[[vk::push_constant]] 
+[[vk::push_constant]]
 ConstantBuffer<VertexShaderConstants> pushConstants;
 
 struct VertexShaderInput

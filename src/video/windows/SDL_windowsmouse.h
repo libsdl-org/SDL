@@ -31,4 +31,4 @@ extern void WIN_QuitMouse(SDL_VideoDevice *_this);
 extern void WIN_SetCursorPos(int x, int y);
 extern void WIN_UpdateMouseSystemScale();
 
-#endif /* SDL_windowsmouse_h_ */
+#endif // SDL_windowsmouse_h_

@@ -31,7 +31,7 @@
 
 #define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
 
-/* Shader blob headers are generated with a pre-build step using compile_shaders_xbox.bat */
+// Shader blob headers are generated with a pre-build step using compile_shaders_xbox.bat
 
 #define g_main D3D12_PixelShader_Colors
 #include "D3D12_PixelShader_Colors_One.h"
@@ -128,6 +128,6 @@ D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECODE *o
     outBytecode->BytecodeLength = D3D12_rootsigs[rootSig].rs_shader_size;
 }
 
-#endif  /* SDL_VIDEO_RENDER_D3D12 && defined(SDL_PLATFORM_XBOXONE) */
+#endif  // SDL_VIDEO_RENDER_D3D12 && defined(SDL_PLATFORM_XBOXONE)
 
-/* vi: set ts=4 sw=4 expandtab: */
+// vi: set ts=4 sw=4 expandtab:

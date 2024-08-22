@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,7 +34,7 @@ extern void SDL_DINPUT_JoystickUpdate(SDL_Joystick *joystick);
 extern void SDL_DINPUT_JoystickClose(SDL_Joystick *joystick);
 extern void SDL_DINPUT_JoystickQuit(void);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif

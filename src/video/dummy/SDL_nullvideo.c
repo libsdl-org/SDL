@@ -51,7 +51,7 @@
 #define DUMMYVID_DRIVER_NAME       "dummy"
 #define DUMMYVID_DRIVER_EVDEV_NAME "evdev"
 
-/* Initialization/Query functions */
+// Initialization/Query functions
 static int DUMMY_VideoInit(SDL_VideoDevice *_this);
 static void DUMMY_VideoQuit(SDL_VideoDevice *_this);
 
@@ -66,7 +66,7 @@ static void DUMMY_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
 }
 
-/* DUMMY driver bootstrap functions */
+// DUMMY driver bootstrap functions
 
 static SDL_bool DUMMY_Available(const char *enable_hint)
 {
@@ -92,14 +92,14 @@ static SDL_VideoDevice *DUMMY_InternalCreateDevice(const char *enable_hint)
         return NULL;
     }
 
-    /* Initialize all variables that we clean on shutdown */
+    // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         return NULL;
     }
     device->is_dummy = SDL_TRUE;
 
-    /* Set the function pointers */
+    // Set the function pointers
     device->VideoInit = DUMMY_VideoInit;
     device->VideoQuit = DUMMY_VideoQuit;
     device->PumpEvents = DUMMY_PumpEvents;
@@ -121,7 +121,7 @@ static SDL_VideoDevice *DUMMY_CreateDevice(void)
 VideoBootStrap DUMMY_bootstrap = {
     DUMMYVID_DRIVER_NAME, "SDL dummy video driver",
     DUMMY_CreateDevice,
-    NULL /* no ShowMessageBox implementation */
+    NULL // no ShowMessageBox implementation
 };
 
 #ifdef SDL_INPUT_LINUXEV
@@ -144,16 +144,16 @@ static SDL_VideoDevice *DUMMY_EVDEV_CreateDevice(void)
 VideoBootStrap DUMMY_evdev_bootstrap = {
     DUMMYVID_DRIVER_EVDEV_NAME, "SDL dummy video driver with evdev",
     DUMMY_EVDEV_CreateDevice,
-    NULL /* no ShowMessageBox implementation */
+    NULL // no ShowMessageBox implementation
 };
 
-#endif /* SDL_INPUT_LINUXEV */
+#endif // SDL_INPUT_LINUXEV
 
 int DUMMY_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;
 
-    /* Use a fake 32-bpp desktop mode */
+    // Use a fake 32-bpp desktop mode
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_XRGB8888;
     mode.w = 1024;
@@ -166,7 +166,7 @@ int DUMMY_VideoInit(SDL_VideoDevice *_this)
     SDL_EVDEV_Init();
 #endif
 
-    /* We're done! */
+    // We're done!
     return 0;
 }
 
@@ -177,4 +177,4 @@ void DUMMY_VideoQuit(SDL_VideoDevice *_this)
 #endif
 }
 
-#endif /* SDL_VIDEO_DRIVER_DUMMY */
+#endif // SDL_VIDEO_DRIVER_DUMMY

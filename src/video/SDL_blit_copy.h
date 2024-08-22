@@ -24,4 +24,4 @@
 
 void SDL_BlitCopy(SDL_BlitInfo *info);
 
-#endif /* SDL_blit_copy_h_ */
+#endif // SDL_blit_copy_h_

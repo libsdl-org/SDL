@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* An implementation of semaphores using mutexes and condition variables */
+// An implementation of semaphores using mutexes and condition variables
 
 #include "SDL_systhread_c.h"
 
@@ -111,7 +111,7 @@ int SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return SDL_InvalidParamError("sem");
     }
 
-    /* A timeout of 0 is an easy case */
+    // A timeout of 0 is an easy case
     if (timeoutNS == 0) {
         retval = SDL_MUTEX_TIMEDOUT;
         SDL_LockMutex(sem->count_lock);
@@ -169,4 +169,4 @@ int SDL_SignalSemaphore(SDL_Semaphore *sem)
     return 0;
 }
 
-#endif /* SDL_THREADS_DISABLED */
+#endif // SDL_THREADS_DISABLED

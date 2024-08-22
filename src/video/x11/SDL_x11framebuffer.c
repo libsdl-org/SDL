@@ -27,7 +27,7 @@
 
 #ifndef NO_SHARED_MEMORY
 
-/* Shared memory error handler routine */
+// Shared memory error handler routine
 static int shm_error;
 static int (*X_handler)(Display *, XErrorEvent *) = NULL;
 static int shm_errhandler(Display *d, XErrorEvent *e)
@@ -41,11 +41,11 @@ static int shm_errhandler(Display *d, XErrorEvent *e)
 
 static SDL_bool have_mitshm(Display *dpy)
 {
-    /* Only use shared memory on local X servers */
+    // Only use shared memory on local X servers
     return X11_XShmQueryExtension(dpy) ? SDL_X11_HAVE_SHM : SDL_FALSE;
 }
 
-#endif /* !NO_SHARED_MEMORY */
+#endif // !NO_SHARED_MEMORY
 
 int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format,
                                 void **pixels, int *pitch)
@@ -58,17 +58,17 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    /* Free the old framebuffer surface */
+    // Free the old framebuffer surface
     X11_DestroyWindowFramebuffer(_this, window);
 
-    /* Create the graphics context for drawing */
+    // Create the graphics context for drawing
     gcv.graphics_exposures = False;
     data->gc = X11_XCreateGC(display, data->xwindow, GCGraphicsExposures, &gcv);
     if (!data->gc) {
         return SDL_SetError("Couldn't create graphics context");
     }
 
-    /* Find out the pixel format and depth */
+    // Find out the pixel format and depth
     if (X11_GetVisualInfoFromVisual(display, data->visual, &vinfo) < 0) {
         return SDL_SetError("Couldn't get window visual information");
     }
@@ -78,10 +78,10 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
         return SDL_SetError("Unknown window pixel format");
     }
 
-    /* Calculate pitch */
+    // Calculate pitch
     *pitch = (((w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
 
-    /* Create the actual image */
+    // Create the actual image
 #ifndef NO_SHARED_MEMORY
     if (have_mitshm(display)) {
         XShmSegmentInfo *shminfo = &data->shminfo;
@@ -116,7 +116,7 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
                 X11_XSync(display, False);
                 shmdt(shminfo->shmaddr);
             } else {
-                /* Done! */
+                // Done!
                 data->ximage->byte_order = (SDL_BYTEORDER == SDL_BIG_ENDIAN) ? MSBFirst : LSBFirst;
                 data->use_mitshm = SDL_TRUE;
                 *pixels = shminfo->shmaddr;
@@ -124,7 +124,7 @@ int X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_
             }
         }
     }
-#endif /* not NO_SHARED_MEMORY */
+#endif // not NO_SHARED_MEMORY
 
     *pixels = SDL_malloc((size_t)h * (*pitch));
     if (!*pixels) {
@@ -162,7 +162,7 @@ int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, cons
             h = rects[i].h;
 
             if (w <= 0 || h <= 0 || (x + w) <= 0 || (y + h) <= 0) {
-                /* Clipped? */
+                // Clipped?
                 continue;
             }
             if (x < 0) {
@@ -184,7 +184,7 @@ int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, cons
                              x, y, x, y, w, h, False);
         }
     } else
-#endif /* !NO_SHARED_MEMORY */
+#endif // !NO_SHARED_MEMORY
     {
         for (i = 0; i < numrects; ++i) {
             x = rects[i].x;
@@ -193,7 +193,7 @@ int X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, cons
             h = rects[i].h;
 
             if (w <= 0 || h <= 0 || (x + w) <= 0 || (y + h) <= 0) {
-                /* Clipped? */
+                // Clipped?
                 continue;
             }
             if (x < 0) {
@@ -227,7 +227,7 @@ void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
     Display *display;
 
     if (!data) {
-        /* The window wasn't fully initialized */
+        // The window wasn't fully initialized
         return;
     }
 
@@ -243,7 +243,7 @@ void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
             shmdt(data->shminfo.shmaddr);
             data->use_mitshm = SDL_FALSE;
         }
-#endif /* !NO_SHARED_MEMORY */
+#endif // !NO_SHARED_MEMORY
 
         data->ximage = NULL;
     }
@@ -253,4 +253,4 @@ void X11_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_VIDEO_DRIVER_X11

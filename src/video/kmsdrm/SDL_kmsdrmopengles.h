@@ -28,7 +28,7 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
-/* OpenGLES functions */
+// OpenGLES functions
 #define KMSDRM_GLES_GetAttribute    SDL_EGL_GetAttribute
 #define KMSDRM_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
 #define KMSDRM_GLES_DeleteContext   SDL_EGL_DeleteContext
@@ -41,6 +41,6 @@ extern SDL_GLContext KMSDRM_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Windo
 extern int KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int KMSDRM_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM */
+#endif // SDL_VIDEO_DRIVER_KMSDRM
 
-#endif /* SDL_kmsdrmopengles_h_ */
+#endif // SDL_kmsdrmopengles_h_

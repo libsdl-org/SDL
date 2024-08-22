@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* This is the system specific header for the SDL locale API */
+// This is the system specific header for the SDL locale API
 
 #ifdef __cplusplus
 extern "C" {

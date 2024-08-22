@@ -108,7 +108,7 @@ static void AddVirtualGamepadInfo(int slot, SDL_SteamVirtualGamepadInfo *info)
     }
 
     if (SDL_steam_virtual_gamepad_info[slot]) {
-        /* We already have this slot info */
+        // We already have this slot info
         return;
     }
 

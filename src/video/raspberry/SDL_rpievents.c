@@ -40,4 +40,4 @@ void RPI_PumpEvents(SDL_VideoDevice *_this)
 #endif
 }
 
-#endif /* SDL_VIDEO_DRIVER_RPI */
+#endif // SDL_VIDEO_DRIVER_RPI

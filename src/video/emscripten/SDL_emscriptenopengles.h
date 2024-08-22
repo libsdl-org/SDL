@@ -27,7 +27,7 @@
 
 #include "../SDL_sysvideo.h"
 
-/* OpenGLES functions */
+// OpenGLES functions
 extern int Emscripten_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern void Emscripten_GLES_UnloadLibrary(SDL_VideoDevice *_this);
 extern SDL_FunctionPointer Emscripten_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
@@ -38,6 +38,6 @@ extern int Emscripten_GLES_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext c
 extern int Emscripten_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern int Emscripten_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 
-#endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
+#endif // SDL_VIDEO_DRIVER_EMSCRIPTEN
 
-#endif /* SDL_emscriptenopengles_h_ */
+#endif // SDL_emscriptenopengles_h_

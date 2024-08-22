@@ -31,7 +31,7 @@ typedef enum
     SDL_SANDBOX_SNAP,
 } SDL_Sandbox;
 
-/* Return the sandbox type currently in use, if any */
+// Return the sandbox type currently in use, if any
 SDL_Sandbox SDL_DetectSandbox(void);
 
-#endif /* SDL_SANDBOX_H */
+#endif // SDL_SANDBOX_H

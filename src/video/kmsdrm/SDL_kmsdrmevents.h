@@ -26,4 +26,4 @@
 
 extern void KMSDRM_PumpEvents(SDL_VideoDevice *_this);
 
-#endif /* SDL_kmsdrmevents_h_ */
+#endif // SDL_kmsdrmevents_h_

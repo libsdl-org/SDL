@@ -23,14 +23,14 @@
 #ifdef SDL_HAPTIC_DINPUT
 
 #include "../SDL_syshaptic.h"
-#include "../../joystick/SDL_sysjoystick.h"               /* For the real SDL_Joystick */
-#include "../../joystick/windows/SDL_windowsjoystick_c.h" /* For joystick hwdata */
-#include "../../joystick/windows/SDL_xinputjoystick_c.h"  /* For xinput rumble */
+#include "../../joystick/SDL_sysjoystick.h"               // For the real SDL_Joystick
+#include "../../joystick/windows/SDL_windowsjoystick_c.h" // For joystick hwdata
+#include "../../joystick/windows/SDL_xinputjoystick_c.h"  // For xinput rumble
 
 #include "SDL_windowshaptic_c.h"
 #include "SDL_dinputhaptic_c.h"
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -74,7 +74,7 @@ int SDL_SYS_AddHapticDevice(SDL_hapticlist_item *item)
         SDL_hapticlist_tail = item;
     }
 
-    /* Device has been added. */
+    // Device has been added.
     ++numhaptics;
 
     return numhaptics;
@@ -93,7 +93,7 @@ int SDL_SYS_RemoveHapticDevice(SDL_hapticlist_item *prev, SDL_hapticlist_item *i
         SDL_hapticlist_tail = prev;
     }
     --numhaptics;
-    /* !!! TODO: Send a haptic remove event? */
+    // !!! TODO: Send a haptic remove event?
     SDL_free(item);
     return retval;
 }
@@ -166,14 +166,14 @@ int SDL_SYS_HapticMouse(void)
     SDL_hapticlist_item *item;
     int index = 0;
 
-    /* Grab the first mouse haptic device we find. */
+    // Grab the first mouse haptic device we find.
     for (item = SDL_hapticlist; item; item = item->next) {
         if (item->capabilities.dwDevType == DI8DEVCLASS_POINTER) {
             return index;
         }
         ++index;
     }
-#endif /* SDL_HAPTIC_DINPUT */
+#endif // SDL_HAPTIC_DINPUT
     return -1;
 }
 
@@ -219,15 +219,15 @@ void SDL_SYS_HapticClose(SDL_Haptic *haptic)
 {
     if (haptic->hwdata) {
 
-        /* Free effects. */
+        // Free effects.
         SDL_free(haptic->effects);
         haptic->effects = NULL;
         haptic->neffects = 0;
 
-        /* Clean up */
+        // Clean up
         SDL_DINPUT_HapticClose(haptic);
 
-        /* Free */
+        // Free
         SDL_free(haptic->hwdata);
         haptic->hwdata = NULL;
     }
@@ -244,7 +244,7 @@ void SDL_SYS_HapticQuit(void)
     for (item = SDL_hapticlist; item; item = next) {
         /* Opened and not closed haptics are leaked, this is on purpose.
          * Close your haptic devices after usage. */
-        /* !!! FIXME: (...is leaking on purpose a good idea?) - No, of course not. */
+        // !!! FIXME: (...is leaking on purpose a good idea?) - No, of course not.
         next = item->next;
         SDL_free(item->name);
         SDL_free(item);
@@ -265,7 +265,7 @@ int SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
 {
     int result;
 
-    /* Alloc the effect. */
+    // Alloc the effect.
     effect->hweffect = (struct haptic_hweffect *) SDL_calloc(1, sizeof(struct haptic_hweffect));
     if (!effect->hweffect) {
         return -1;
@@ -361,9 +361,9 @@ int SDL_SYS_HapticStopAll(SDL_Haptic *haptic)
     return SDL_DINPUT_HapticStopAll(haptic);
 }
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_HAPTIC_DINPUT */
+#endif // SDL_HAPTIC_DINPUT

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* Windows includes */
+// Windows includes
 #include "ppltasks.h"
 using namespace concurrency;
 using namespace Windows::ApplicationModel;
@@ -37,7 +37,7 @@ using namespace Windows::UI::Input;
 using namespace Windows::Phone::UI::Input;
 #endif
 
-/* SDL includes */
+// SDL includes
 extern "C" {
 #include "../../video/SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
@@ -354,7 +354,7 @@ static bool IsSDLWindowEventPending(SDL_EventType windowEventID)
 
 bool SDL_WinRTApp::ShouldWaitForAppResumeEvents()
 {
-    /* Don't wait if the app is visible: */
+    // Don't wait if the app is visible:
     if (m_windowVisible) {
         return false;
     }
@@ -541,10 +541,10 @@ void SDL_WinRTApp::OnWindowActivated(CoreWindow ^ sender, WindowActivatedEventAr
             SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, SDL_FALSE, cursorPos.X, cursorPos.Y);
 #endif
 
-            /* TODO, WinRT: see if the Win32 bugfix from https://hg.libsdl.org/SDL/rev/d278747da408 needs to be applied (on window activation) */
+            // TODO, WinRT: see if the Win32 bugfix from https://hg.libsdl.org/SDL/rev/d278747da408 needs to be applied (on window activation)
             // WIN_CheckAsyncMouseRelease(data);
 
-            /* TODO, WinRT: implement clipboard support, if possible */
+            // TODO, WinRT: implement clipboard support, if possible
             ///*
             // * FIXME: Update keyboard state
             // */

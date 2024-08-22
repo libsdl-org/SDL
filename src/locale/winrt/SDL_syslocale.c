@@ -24,7 +24,7 @@
 
 #include "../SDL_syslocale.h"
 
-/*using namespace Windows::Graphics::Display;*/
+// using namespace Windows::Graphics::Display;
 #include <wchar.h>
 
 int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
@@ -32,7 +32,7 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     WCHAR wbuffer[128] = L"";
     int ret = 0;
 
-    /* !!! FIXME: do we not have GetUserPreferredUILanguages on WinPhone or UWP? */
+    // !!! FIXME: do we not have GetUserPreferredUILanguages on WinPhone or UWP?
 #if SDL_WINAPI_FAMILY_PHONE
     ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_SNAME, wbuffer, SDL_arraysize(wbuffer));
 #else
@@ -40,14 +40,14 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 #endif
 
     if (ret > 0) {
-        /* Need to convert LPWSTR to LPSTR, that is wide char to char. */
+        // Need to convert LPWSTR to LPSTR, that is wide char to char.
         int i;
 
         if (((size_t)ret) >= (buflen - 1)) {
             ret = (int)(buflen - 1);
         }
         for (i = 0; i < ret; i++) {
-            buf[i] = (char)wbuffer[i]; /* assume this was ASCII anyhow. */
+            buf[i] = (char)wbuffer[i]; // assume this was ASCII anyhow.
         }
     }
     return 0;

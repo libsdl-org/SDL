@@ -175,4 +175,4 @@ void Cocoa_QuitPen(SDL_VideoDevice *_this)
     SDL_RemoveAllPenDevices(Cocoa_FreePenHandle, NULL);
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

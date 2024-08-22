@@ -50,4 +50,4 @@ void UIKit_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 
 #endif
 
-#endif /* SDL_uikitvulkan_h_ */
+#endif // SDL_uikitvulkan_h_

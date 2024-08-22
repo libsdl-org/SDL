@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* An implementation of condition variables using semaphores and mutexes */
+// An implementation of condition variables using semaphores and mutexes
 /*
    This implementation borrows heavily from the BeOS condition variable
    implementation, written by Christopher Tate and Owen Smith.  Thanks!
@@ -49,7 +49,7 @@ typedef struct SDL_cond_generic
     SDL_Semaphore *wait_done;
 } SDL_cond_generic;
 
-/* Create a condition variable */
+// Create a condition variable
 SDL_Condition *SDL_CreateCondition_generic(void)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)SDL_calloc(1, sizeof(*cond));
@@ -70,7 +70,7 @@ SDL_Condition *SDL_CreateCondition_generic(void)
     return (SDL_Condition *)cond;
 }
 
-/* Destroy a condition variable */
+// Destroy a condition variable
 void SDL_DestroyCondition_generic(SDL_Condition *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
@@ -88,7 +88,7 @@ void SDL_DestroyCondition_generic(SDL_Condition *_cond)
     }
 }
 
-/* Restart one of the threads that are waiting on the condition variable */
+// Restart one of the threads that are waiting on the condition variable
 int SDL_SignalCondition_generic(SDL_Condition *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
@@ -114,7 +114,7 @@ int SDL_SignalCondition_generic(SDL_Condition *_cond)
     return 0;
 }
 
-/* Restart all threads that are waiting on the condition variable */
+// Restart all threads that are waiting on the condition variable
 int SDL_BroadcastCondition_generic(SDL_Condition *_cond)
 {
     SDL_cond_generic *cond = (SDL_cond_generic *)_cond;
@@ -189,10 +189,10 @@ int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, S
     ++cond->waiting;
     SDL_UnlockMutex(cond->lock);
 
-    /* Unlock the mutex, as is required by condition variable semantics */
+    // Unlock the mutex, as is required by condition variable semantics
     SDL_UnlockMutex(mutex);
 
-    /* Wait for a signal */
+    // Wait for a signal
     retval = SDL_WaitSemaphoreTimeoutNS(cond->wait_sem, timeoutNS);
 
     /* Let the signaler know we have completed the wait, otherwise
@@ -203,20 +203,20 @@ int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *_cond, SDL_Mutex *mutex, S
      */
     SDL_LockMutex(cond->lock);
     if (cond->signals > 0) {
-        /* If we timed out, we need to eat a condition signal */
+        // If we timed out, we need to eat a condition signal
         if (retval > 0) {
             SDL_WaitSemaphore(cond->wait_sem);
         }
-        /* We always notify the signal thread that we are done */
+        // We always notify the signal thread that we are done
         SDL_SignalSemaphore(cond->wait_done);
 
-        /* Signal handshake complete */
+        // Signal handshake complete
         --cond->signals;
     }
     --cond->waiting;
     SDL_UnlockMutex(cond->lock);
 
-    /* Lock the mutex, as is required by condition variable semantics */
+    // Lock the mutex, as is required by condition variable semantics
     SDL_LockMutex(mutex);
 #endif
 

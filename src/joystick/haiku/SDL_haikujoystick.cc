@@ -22,7 +22,7 @@
 
 #ifdef SDL_JOYSTICK_HAIKU
 
-/* This is the Haiku implementation of the SDL joystick API */
+// This is the Haiku implementation of the SDL joystick API
 
 #include <support/String.h>
 #include <device/Joystick.h>
@@ -34,14 +34,14 @@ extern "C"
 #include "../SDL_joystick_c.h"
 
 
-/* The maximum number of joysticks we'll detect */
+// The maximum number of joysticks we'll detect
 #define MAX_JOYSTICKS   16
 
-/* A list of available joysticks */
+// A list of available joysticks
     static char *SDL_joyport[MAX_JOYSTICKS];
     static char *SDL_joyname[MAX_JOYSTICKS];
 
-/* The private structure used to keep track of a joystick */
+// The private structure used to keep track of a joystick
     struct joystick_hwdata
     {
         BJoystick *stick;
@@ -62,7 +62,7 @@ extern "C"
         int32 nports;
         char name[B_OS_NAME_LENGTH];
 
-        /* Search for attached joysticks */
+        // Search for attached joysticks
         nports = joystick.CountDevices();
         numjoysticks = 0;
         SDL_memset(SDL_joyport, 0, sizeof(SDL_joyport));
@@ -95,7 +95,7 @@ extern "C"
 
     static SDL_bool HAIKU_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
     {
-        /* We don't override any other drivers */
+        // We don't override any other drivers
         return SDL_FALSE;
     }
 
@@ -123,7 +123,7 @@ extern "C"
     {
     }
 
-/* Function to perform the mapping from device index to the instance id for this index */
+// Function to perform the mapping from device index to the instance id for this index
     static SDL_JoystickID HAIKU_JoystickGetDeviceInstanceID(int device_index)
     {
         return device_index + 1;
@@ -140,7 +140,7 @@ extern "C"
     {
         BJoystick *stick;
 
-        /* Create the joystick data structure */
+        // Create the joystick data structure
         joystick->hwdata = (struct joystick_hwdata *) SDL_calloc(1, sizeof(*joystick->hwdata));
         if (joystick->hwdata == NULL) {
             return -1;
@@ -148,16 +148,16 @@ extern "C"
         stick = new BJoystick;
         joystick->hwdata->stick = stick;
 
-        /* Open the requested joystick for use */
+        // Open the requested joystick for use
         if (stick->Open(SDL_joyport[device_index]) == B_ERROR) {
             HAIKU_JoystickClose(joystick);
             return SDL_SetError("Unable to open joystick");
         }
 
-        /* Set the joystick to calibrated mode */
+        // Set the joystick to calibrated mode
         stick->EnableCalibration();
 
-        /* Get the number of buttons, hats, and axes on the joystick */
+        // Get the number of buttons, hats, and axes on the joystick
         joystick->nbuttons = stick->CountButtons();
         joystick->naxes = stick->CountAxes();
         joystick->nhats = stick->CountHats();
@@ -169,7 +169,7 @@ extern "C"
             return -1;
         }
 
-        /* We're done! */
+        // We're done!
         return 0;
     }
 
@@ -199,35 +199,35 @@ extern "C"
         uint32 buttons;
         Uint64 timestamp = SDL_GetTicksNS();
 
-        /* Set up data pointers */
+        // Set up data pointers
         stick = joystick->hwdata->stick;
         axes = joystick->hwdata->new_axes;
         hats = joystick->hwdata->new_hats;
 
-        /* Get the new joystick state */
+        // Get the new joystick state
         stick->Update();
         stick->GetAxisValues(axes);
         stick->GetHatValues(hats);
         buttons = stick->ButtonValues();
 
-        /* Generate axis motion events */
+        // Generate axis motion events
         for (i = 0; i < joystick->naxes; ++i) {
             SDL_SendJoystickAxis(timestamp, joystick, i, axes[i]);
         }
 
-        /* Generate hat change events */
+        // Generate hat change events
         for (i = 0; i < joystick->nhats; ++i) {
             SDL_SendJoystickHat(timestamp, joystick, i, hat_map[hats[i]]);
         }
 
-        /* Generate button events */
+        // Generate button events
         for (i = 0; i < joystick->nbuttons; ++i) {
             SDL_SendJoystickButton(timestamp, joystick, i, (buttons & 0x01));
             buttons >>= 1;
         }
     }
 
-/* Function to close a joystick after use */
+// Function to close a joystick after use
     static void HAIKU_JoystickClose(SDL_Joystick *joystick)
     {
         if (joystick->hwdata) {
@@ -239,7 +239,7 @@ extern "C"
         }
     }
 
-/* Function to perform any system-specific joystick related cleanup */
+// Function to perform any system-specific joystick related cleanup
     static void HAIKU_JoystickQuit(void)
     {
         int i;
@@ -257,7 +257,7 @@ extern "C"
 
     static SDL_GUID HAIKU_JoystickGetDeviceGUID(int device_index)
     {
-        /* the GUID is just the name for now */
+        // the GUID is just the name for now
         const char *name = HAIKU_JoystickGetDeviceName(device_index);
         return SDL_CreateJoystickGUIDForName(name);
     }
@@ -322,4 +322,4 @@ extern "C"
 
 }                              // extern "C"
 
-#endif /* SDL_JOYSTICK_HAIKU */
+#endif // SDL_JOYSTICK_HAIKU

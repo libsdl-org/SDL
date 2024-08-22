@@ -25,7 +25,7 @@
 #define HAVE_MSC_ATOMICS 1
 #endif
 
-#ifdef SDL_PLATFORM_MACOS /* !!! FIXME: should we favor gcc atomics? */
+#ifdef SDL_PLATFORM_MACOS // !!! FIXME: should we favor gcc atomics?
 #include <libkern/OSAtomic.h>
 #endif
 
@@ -33,7 +33,7 @@
 #include <atomic.h>
 #endif
 
-/* The __atomic_load_n() intrinsic showed up in different times for different compilers. */
+// The __atomic_load_n() intrinsic showed up in different times for different compilers.
 #ifdef __clang__
 #if __has_builtin(__atomic_load_n) || defined(HAVE_GCC_ATOMICS)
 /* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
@@ -48,7 +48,7 @@
 #endif
 #endif
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(intsize, 4==sizeof(int));
 #define HAVE_WATCOM_ATOMICS
@@ -74,8 +74,8 @@ extern __inline int _SDL_xadd_watcom(volatile int *a, int v);
   value [eax] \
   modify exact [eax];
 
-#endif /* __WATCOMC__ && __386__ */
-/* *INDENT-ON* */ /* clang-format on */
+#endif // __WATCOMC__ && __386__
+/* *INDENT-ON* */ // clang-format on
 
 /*
   If any of the operations are not provided then we must emulate some
@@ -131,7 +131,7 @@ SDL_bool SDL_AtomicCompareAndSwap(SDL_AtomicInt *a, int oldval, int newval)
     return _SDL_cmpxchg_watcom(&a->value, newval, oldval);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_bool_compare_and_swap(&a->value, oldval, newval);
-#elif defined(SDL_PLATFORM_MACOS) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+#elif defined(SDL_PLATFORM_MACOS) // this is deprecated in 10.12 sdk; favor gcc atomics.
     return OSAtomicCompareAndSwap32Barrier(oldval, newval, &a->value);
 #elif defined(SDL_PLATFORM_SOLARIS)
     return ((int)atomic_cas_uint((volatile uint_t *)&a->value, (uint_t)oldval, (uint_t)newval) == oldval);
@@ -159,9 +159,9 @@ SDL_bool SDL_AtomicCompareAndSwapPointer(void **a, void *oldval, void *newval)
     return _SDL_cmpxchg_watcom((int *)a, (long)newval, (long)oldval);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_bool_compare_and_swap(a, oldval, newval);
-#elif defined(SDL_PLATFORM_MACOS) && defined(__LP64__)  /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+#elif defined(SDL_PLATFORM_MACOS) && defined(__LP64__)  // this is deprecated in 10.12 sdk; favor gcc atomics.
     return OSAtomicCompareAndSwap64Barrier((int64_t)oldval, (int64_t)newval, (int64_t *)a);
-#elif defined(SDL_PLATFORM_MACOS) && !defined(__LP64__) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+#elif defined(SDL_PLATFORM_MACOS) && !defined(__LP64__) // this is deprecated in 10.12 sdk; favor gcc atomics.
     return OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t *)a);
 #elif defined(SDL_PLATFORM_SOLARIS)
     return (atomic_cas_ptr(a, oldval, newval) == oldval);
@@ -254,7 +254,7 @@ int SDL_AtomicGet(SDL_AtomicInt *a)
     return _SDL_xadd_watcom(&a->value, 0);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_or_and_fetch(&a->value, 0);
-#elif defined(SDL_PLATFORM_MACOS) /* this is deprecated in 10.12 sdk; favor gcc atomics. */
+#elif defined(SDL_PLATFORM_MACOS) // this is deprecated in 10.12 sdk; favor gcc atomics.
     return sizeof(a->value) == sizeof(uint32_t) ? OSAtomicOr32Barrier(0, (volatile uint32_t *)&a->value) : OSAtomicAdd64Barrier(0, (volatile int64_t *)&a->value);
 #elif defined(SDL_PLATFORM_SOLARIS)
     return atomic_or_uint_nv((volatile uint_t *)&a->value, 0);

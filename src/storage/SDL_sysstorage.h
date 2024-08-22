@@ -38,14 +38,14 @@ typedef struct UserStorageBootStrap
     SDL_Storage *(*create)(const char*, const char*, SDL_PropertiesID);
 } UserStorageBootStrap;
 
-/* Not all of these are available in a given build. Use #ifdefs, etc. */
+// Not all of these are available in a given build. Use #ifdefs, etc.
 
 extern TitleStorageBootStrap GENERIC_titlebootstrap;
-/* Steam does not have title storage APIs */
+// Steam does not have title storage APIs
 
 extern UserStorageBootStrap GENERIC_userbootstrap;
 extern UserStorageBootStrap STEAM_userbootstrap;
 
 extern SDL_Storage *GENERIC_OpenFileStorage(const char *path);
 
-#endif /* SDL_sysstorage_h_ */
+#endif // SDL_sysstorage_h_

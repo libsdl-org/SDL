@@ -76,7 +76,7 @@ static char *GetAppName(void)
             return SDL_strdup(linkfile);
         }
     }
-#endif /* SDL_PLATFORM_LINUX || SDL_PLATFORM_FREEBSD */
+#endif // SDL_PLATFORM_LINUX || SDL_PLATFORM_FREEBSD
 
     return SDL_strdup("SDL_App");
 }
@@ -94,10 +94,10 @@ static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
     Sint32 p_end_pos = -1;
 
     dbus->message_iter_init(msg, &iter);
-    /* Message type is a(si)i, we only need string part */
+    // Message type is a(si)i, we only need string part
     if (dbus->message_iter_get_arg_type(&iter) == DBUS_TYPE_ARRAY) {
         size_t pos = 0;
-        /* First pass: calculate string length */
+        // First pass: calculate string length
         dbus->message_iter_recurse(&iter, &array);
         while (dbus->message_iter_get_arg_type(&array) == DBUS_TYPE_STRUCT) {
             dbus->message_iter_recurse(&array, &sub);
@@ -110,12 +110,12 @@ static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
             }
             dbus->message_iter_next(&sub);
             if (dbus->message_iter_get_arg_type(&sub) == DBUS_TYPE_INT32 && p_end_pos == -1) {
-                /* Type is a bit field defined as follows:                */
-                /* bit 3: Underline, bit 4: HighLight, bit 5: DontCommit, */
-                /* bit 6: Bold,      bit 7: Strike,    bit 8: Italic      */
+                // Type is a bit field defined as follows:
+                // bit 3: Underline, bit 4: HighLight, bit 5: DontCommit,
+                // bit 6: Bold,      bit 7: Strike,    bit 8: Italic
                 Sint32 type;
                 dbus->message_iter_get_basic(&sub, &type);
-                /* We only consider highlight */
+                // We only consider highlight
                 if (type & (1 << 4)) {
                     if (p_start_pos == -1) {
                         p_start_pos = pos;
@@ -138,7 +138,7 @@ static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
 
         if (text) {
             char *pivot = text;
-            /* Second pass: join all the sub string */
+            // Second pass: join all the sub string
             dbus->message_iter_recurse(&iter, &array);
             while (dbus->message_iter_get_arg_type(&array) == DBUS_TYPE_STRUCT) {
                 dbus->message_iter_recurse(&array, &sub);
@@ -239,8 +239,8 @@ static void SDLCALL Fcitx_SetCapabilities(void *data,
     }
 
     if (hint && SDL_strstr(hint, "composition")) {
-        caps |= (1 << 1); /* Preedit Flag */
-        caps |= (1 << 4); /* Formatted Preedit Flag */
+        caps |= (1 << 1); // Preedit Flag
+        caps |= (1 << 4); // Formatted Preedit Flag
     }
     if (hint && SDL_strstr(hint, "candidates")) {
         // FIXME, turn off native candidate rendering
@@ -285,9 +285,9 @@ static SDL_bool FcitxClientCreateIC(FcitxClient *client)
     char *ic_path = NULL;
     SDL_DBusContext *dbus = client->dbus;
 
-    /* SDL_DBus_CallMethod cannot handle a(ss) type, call dbus function directly */
+    // SDL_DBus_CallMethod cannot handle a(ss) type, call dbus function directly
     if (!FcitxCreateInputContext(dbus, appname, &ic_path)) {
-        ic_path = NULL; /* just in case. */
+        ic_path = NULL; // just in case.
     }
 
     SDL_free(appname);
@@ -433,7 +433,7 @@ void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window)
 #endif
 
     if (cursor->x == -1 && cursor->y == -1 && cursor->w == 0 && cursor->h == 0) {
-        /* move to bottom left */
+        // move to bottom left
         int w = 0, h = 0;
         SDL_GetWindowSize(window, &w, &h);
         cursor->x = 0;
@@ -455,6 +455,6 @@ void SDL_Fcitx_PumpEvents(void)
     dbus->connection_read_write(conn, 0);
 
     while (dbus->connection_dispatch(conn) == DBUS_DISPATCH_DATA_REMAINS) {
-        /* Do nothing, actual work happens in DBus_MessageFilter */
+        // Do nothing, actual work happens in DBus_MessageFilter
     }
 }

@@ -24,7 +24,7 @@
 #if defined(SDL_FSOPS_DUMMY)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
 

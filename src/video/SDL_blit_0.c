@@ -24,7 +24,7 @@
 
 #include "SDL_blit.h"
 
-/* Functions to blit from bitmaps to other surfaces */
+// Functions to blit from bitmaps to other surfaces
 
 SDL_FORCE_INLINE void BlitBto1(SDL_BlitInfo *info, const Uint32 srcbpp)
 {
@@ -36,7 +36,7 @@ SDL_FORCE_INLINE void BlitBto1(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *src, *map, *dst;
     int srcskip, dstskip;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     width = info->dst_w;
     height = info->dst_h;
     src = info->src;
@@ -138,7 +138,7 @@ SDL_FORCE_INLINE void BlitBto2(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint16 *map, *dst;
     int srcskip, dstskip;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     width = info->dst_w;
     height = info->dst_h;
     src = info->src;
@@ -201,7 +201,7 @@ SDL_FORCE_INLINE void BlitBto3(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *src, *map, *dst;
     int srcskip, dstskip;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     width = info->dst_w;
     height = info->dst_h;
     src = info->src;
@@ -271,7 +271,7 @@ SDL_FORCE_INLINE void BlitBto4(SDL_BlitInfo *info, const Uint32 srcbpp)
     int srcskip, dstskip;
     int c;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     width = info->dst_w;
     height = info->dst_h;
     src = info->src;
@@ -339,7 +339,7 @@ SDL_FORCE_INLINE void BlitBto1Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *palmap = info->table;
     int c;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -437,7 +437,7 @@ SDL_FORCE_INLINE void BlitBto2Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *palmap = info->table;
     int c;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -498,7 +498,7 @@ SDL_FORCE_INLINE void BlitBto3Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *palmap = info->table;
     int c;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -558,7 +558,7 @@ SDL_FORCE_INLINE void BlitBto4Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *palmap = info->table;
     int c;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -624,7 +624,7 @@ SDL_FORCE_INLINE void BlitBtoNAlpha(SDL_BlitInfo *info, const Uint32 srcbpp)
     unsigned dR, dG, dB, dA;
     const unsigned A = info->a;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     dstbpp = dstfmt->bytes_per_pixel;
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
@@ -701,7 +701,7 @@ SDL_FORCE_INLINE void BlitBtoNAlphaKey(SDL_BlitInfo *info, const Uint32 srcbpp)
     const unsigned A = info->a;
     Uint32 ckey = info->colorkey;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     dstbpp = dstfmt->bytes_per_pixel;
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
@@ -997,4 +997,4 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
     return NULL;
 }
 
-#endif /* SDL_HAVE_BLIT_0 */
+#endif // SDL_HAVE_BLIT_0

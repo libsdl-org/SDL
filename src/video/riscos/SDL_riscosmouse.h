@@ -25,4 +25,4 @@
 
 extern int RISCOS_InitMouse(SDL_VideoDevice *_this);
 
-#endif /* SDL_riscosmouse_h_ */
+#endif // SDL_riscosmouse_h_

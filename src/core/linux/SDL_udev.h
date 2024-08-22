@@ -92,7 +92,7 @@ typedef struct SDL_UDEV_PrivateData
     int ref_count;
     SDL_UDEV_CallbackList *first, *last;
 
-    /* Function pointers */
+    // Function pointers
     SDL_UDEV_Symbols syms;
 } SDL_UDEV_PrivateData;
 
@@ -108,6 +108,6 @@ extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
 extern const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void);
 extern void SDL_UDEV_ReleaseUdevSyms(void);
 
-#endif /* HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H */
+#endif // HAVE_LIBUDEV_H && HAVE_LINUX_INPUT_H
 
-#endif /* SDL_udev_h_ */
+#endif // SDL_udev_h_

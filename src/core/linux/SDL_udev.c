@@ -52,7 +52,7 @@ static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(_this->udev_handle, fn);
     if (!*addr) {
-        /* Don't call SDL_SetError(): SDL_LoadFunction already did. */
+        // Don't call SDL_SetError(): SDL_LoadFunction already did.
         return SDL_FALSE;
     }
 
@@ -146,7 +146,7 @@ int SDL_UDEV_Init(void)
         _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "video4linux", NULL);
         _this->syms.udev_monitor_enable_receiving(_this->udev_mon);
 
-        /* Do an initial scan of existing devices */
+        // Do an initial scan of existing devices
         SDL_UDEV_Scan();
     }
 
@@ -174,7 +174,7 @@ void SDL_UDEV_Quit(void)
             _this->udev = NULL;
         }
 
-        /* Remove existing devices */
+        // Remove existing devices
         while (_this->first) {
             SDL_UDEV_CallbackList *item = _this->first;
             _this->first = _this->first->next;
@@ -299,13 +299,13 @@ int SDL_UDEV_LoadLibrary(void)
         return SDL_SetError("UDEV not initialized");
     }
 
-    /* See if there is a udev library already loaded */
+    // See if there is a udev library already loaded
     if (SDL_UDEV_load_syms() == 0) {
         return 0;
     }
 
 #ifdef SDL_UDEV_DYNAMIC
-    /* Check for the build environment's libudev first */
+    // Check for the build environment's libudev first
     if (!_this->udev_handle) {
         _this->udev_handle = SDL_LoadObject(SDL_UDEV_DYNAMIC);
         if (_this->udev_handle) {
@@ -332,7 +332,7 @@ int SDL_UDEV_LoadLibrary(void)
 
         if (!_this->udev_handle) {
             retval = -1;
-            /* Don't call SDL_SetError(): SDL_LoadObject already did. */
+            // Don't call SDL_SetError(): SDL_LoadObject already did.
         }
     }
 
@@ -420,7 +420,7 @@ static int device_class(struct udev_device *dev)
             devclass = SDL_UDEV_DEVICE_VIDEO_CAPTURE;
         }
     } else if (SDL_strcmp(subsystem, "input") == 0) {
-        /* udev rules reference: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c */
+        // udev rules reference: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c
 
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK");
         if (val && SDL_strcmp(val, "1") == 0) {
@@ -459,7 +459,7 @@ static int device_class(struct udev_device *dev)
         }
 
         if (devclass == 0) {
-            /* Fall back to old style input classes */
+            // Fall back to old style input classes
             val = _this->syms.udev_device_get_property_value(dev, "ID_CLASS");
             if (val) {
                 if (SDL_strcmp(val, "joystick") == 0) {
@@ -470,7 +470,7 @@ static int device_class(struct udev_device *dev)
                     devclass = SDL_UDEV_DEVICE_HAS_KEYS | SDL_UDEV_DEVICE_KEYBOARD;
                 }
             } else {
-                /* We could be linked with libudev on a system that doesn't have udev running */
+                // We could be linked with libudev on a system that doesn't have udev running
                 devclass = guess_device_class(dev);
             }
         }
@@ -495,7 +495,7 @@ static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
          return;
     }
 
-    /* Process callbacks */
+    // Process callbacks
     for (item = _this->first; item; item = item->next) {
         item->callback(type, devclass, path);
     }
@@ -559,7 +559,7 @@ void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
     }
 
     for (item = _this->first; item; item = item->next) {
-        /* found it, remove it. */
+        // found it, remove it.
         if (item->callback == cb) {
             if (prev) {
                 prev->next = item->next;
@@ -592,4 +592,4 @@ void SDL_UDEV_ReleaseUdevSyms(void)
     SDL_UDEV_Quit();
 }
 
-#endif /* SDL_USE_LIBUDEV */
+#endif // SDL_USE_LIBUDEV

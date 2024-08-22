@@ -31,4 +31,4 @@ struct SDL_CursorData
 extern void Emscripten_InitMouse(void);
 extern void Emscripten_QuitMouse(void);
 
-#endif /* SDL_emscriptenmouse_h_ */
+#endif // SDL_emscriptenmouse_h_

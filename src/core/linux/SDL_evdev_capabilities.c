@@ -25,7 +25,7 @@
 
 #ifdef HAVE_LINUX_INPUT_H
 
-/* missing defines in older Linux kernel headers */
+// missing defines in older Linux kernel headers
 #ifndef BTN_TRIGGER_HAPPY
 #define BTN_TRIGGER_HAPPY 0x2c0
 #endif
@@ -49,7 +49,7 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
         unsigned end;
     };
 
-    /* key code ranges above BTN_MISC (start is inclusive, stop is exclusive)*/
+    // key code ranges above BTN_MISC (start is inclusive, stop is exclusive)
     static const struct range high_key_blocks[] = {
         { KEY_OK, BTN_DPAD_UP },
         { KEY_ALS_TOGGLE, BTN_TRIGGER_HAPPY }
@@ -58,24 +58,24 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
     int devclass = 0;
     unsigned long keyboard_mask;
 
-    /* If the kernel specifically says it's an accelerometer, believe it */
+    // If the kernel specifically says it's an accelerometer, believe it
     if (test_bit(INPUT_PROP_ACCELEROMETER, bitmask_props)) {
         return SDL_UDEV_DEVICE_ACCELEROMETER;
     }
 
-    /* We treat pointing sticks as indistinguishable from mice */
+    // We treat pointing sticks as indistinguishable from mice
     if (test_bit(INPUT_PROP_POINTING_STICK, bitmask_props)) {
         return SDL_UDEV_DEVICE_MOUSE;
     }
 
-    /* We treat buttonpads as equivalent to touchpads */
+    // We treat buttonpads as equivalent to touchpads
     if (test_bit(INPUT_PROP_TOPBUTTONPAD, bitmask_props) ||
         test_bit(INPUT_PROP_BUTTONPAD, bitmask_props) ||
         test_bit(INPUT_PROP_SEMI_MT, bitmask_props)) {
         return SDL_UDEV_DEVICE_TOUCHPAD;
     }
 
-    /* X, Y, Z axes but no buttons probably means an accelerometer */
+    // X, Y, Z axes but no buttons probably means an accelerometer
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_X, bitmask_abs) &&
         test_bit(ABS_Y, bitmask_abs) &&
@@ -97,15 +97,15 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_X, bitmask_abs) && test_bit(ABS_Y, bitmask_abs)) {
         if (test_bit(BTN_STYLUS, bitmask_key) || test_bit(BTN_TOOL_PEN, bitmask_key)) {
-            ; /* ID_INPUT_TABLET */
+            ; // ID_INPUT_TABLET
         } else if (test_bit(BTN_TOOL_FINGER, bitmask_key) && !test_bit(BTN_TOOL_PEN, bitmask_key)) {
-            devclass |= SDL_UDEV_DEVICE_TOUCHPAD; /* ID_INPUT_TOUCHPAD */
+            devclass |= SDL_UDEV_DEVICE_TOUCHPAD; // ID_INPUT_TOUCHPAD
         } else if (test_bit(BTN_MOUSE, bitmask_key)) {
-            devclass |= SDL_UDEV_DEVICE_MOUSE; /* ID_INPUT_MOUSE */
+            devclass |= SDL_UDEV_DEVICE_MOUSE; // ID_INPUT_MOUSE
         } else if (test_bit(BTN_TOUCH, bitmask_key)) {
             /* TODO: better determining between touchscreen and multitouch touchpad,
                see https://github.com/systemd/systemd/blob/master/src/udev/udev-builtin-input_id.c */
-            devclass |= SDL_UDEV_DEVICE_TOUCHSCREEN; /* ID_INPUT_TOUCHSCREEN */
+            devclass |= SDL_UDEV_DEVICE_TOUCHSCREEN; // ID_INPUT_TOUCHSCREEN
         }
 
         if (test_bit(BTN_TRIGGER, bitmask_key) ||
@@ -119,14 +119,14 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
             test_bit(ABS_WHEEL, bitmask_abs) ||
             test_bit(ABS_GAS, bitmask_abs) ||
             test_bit(ABS_BRAKE, bitmask_abs)) {
-            devclass |= SDL_UDEV_DEVICE_JOYSTICK; /* ID_INPUT_JOYSTICK */
+            devclass |= SDL_UDEV_DEVICE_JOYSTICK; // ID_INPUT_JOYSTICK
         }
     }
 
     if (test_bit(EV_REL, bitmask_ev) &&
         test_bit(REL_X, bitmask_rel) && test_bit(REL_Y, bitmask_rel) &&
         test_bit(BTN_MOUSE, bitmask_key)) {
-        devclass |= SDL_UDEV_DEVICE_MOUSE; /* ID_INPUT_MOUSE */
+        devclass |= SDL_UDEV_DEVICE_MOUSE; // ID_INPUT_MOUSE
     }
 
     if (test_bit(EV_KEY, bitmask_ev)) {
@@ -136,7 +136,7 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
         for (i = 0; i < BTN_MISC / BITS_PER_LONG; ++i) {
             found |= bitmask_key[i];
         }
-        /* If there are no keys in the lower block, check the higher blocks */
+        // If there are no keys in the lower block, check the higher blocks
         if (!found) {
             unsigned block;
             for (block = 0; block < (sizeof(high_key_blocks) / sizeof(struct range)); ++block) {
@@ -150,7 +150,7 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
         }
 
         if (found > 0) {
-            devclass |= SDL_UDEV_DEVICE_HAS_KEYS; /* ID_INPUT_KEY */
+            devclass |= SDL_UDEV_DEVICE_HAS_KEYS; // ID_INPUT_KEY
         }
     }
 
@@ -159,10 +159,10 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
      * do not test KEY_RESERVED, though */
     keyboard_mask = 0xFFFFFFFE;
     if ((bitmask_key[0] & keyboard_mask) == keyboard_mask) {
-        devclass |= SDL_UDEV_DEVICE_KEYBOARD; /* ID_INPUT_KEYBOARD */
+        devclass |= SDL_UDEV_DEVICE_KEYBOARD; // ID_INPUT_KEYBOARD
     }
 
     return devclass;
 }
 
-#endif /* HAVE_LINUX_INPUT_H */
+#endif // HAVE_LINUX_INPUT_H

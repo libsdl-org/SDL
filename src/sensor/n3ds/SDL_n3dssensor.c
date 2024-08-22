@@ -27,7 +27,7 @@
 
 #include "../SDL_syssensor.h"
 
-/* 1 accelerometer and 1 gyroscope */
+// 1 accelerometer and 1 gyroscope
 #define N3DS_SENSOR_COUNT 2
 
 typedef struct
@@ -200,4 +200,4 @@ SDL_SensorDriver SDL_N3DS_SensorDriver = {
     .Quit = N3DS_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_N3DS */
+#endif // SDL_SENSOR_N3DS

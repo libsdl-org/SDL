@@ -20,13 +20,13 @@
 */
 #include "SDL_internal.h"
 
-/* System independent thread management routines for SDL */
+// System independent thread management routines for SDL
 
 #include "SDL_thread_c.h"
 #include "SDL_systhread.h"
 #include "../SDL_error_c.h"
 
-/* The storage is local to the thread, but the IDs are global for the process */
+// The storage is local to the thread, but the IDs are global for the process
 
 static SDL_AtomicInt SDL_tls_allocated;
 static SDL_AtomicInt SDL_tls_id;
@@ -69,7 +69,7 @@ int SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback destr
      */
     SDL_InitTLSData();
 
-    /* Get the storage index associated with the ID in a thread-safe way */
+    // Get the storage index associated with the ID in a thread-safe way
     storage_index = SDL_AtomicGet(id) - 1;
     if (storage_index < 0) {
         int new_id = (SDL_AtomicIncRef(&SDL_tls_id) + 1);
@@ -82,7 +82,7 @@ int SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback destr
         storage_index = SDL_AtomicGet(id) - 1;
     }
 
-    /* Get the storage for the current thread */
+    // Get the storage for the current thread
     storage = SDL_SYS_GetTLSData();
     if (!storage || storage_index >= storage->limit) {
         unsigned int i, oldlimit, newlimit;
@@ -116,7 +116,7 @@ void SDL_CleanupTLS(void)
 {
     SDL_TLSData *storage;
 
-    /* Cleanup the storage for the current thread */
+    // Cleanup the storage for the current thread
     storage = SDL_SYS_GetTLSData();
     if (storage) {
         int i;
@@ -138,7 +138,7 @@ void SDL_QuitTLSData(void)
     if (SDL_AtomicGet(&SDL_tls_allocated) == 0) {
         SDL_SYS_QuitTLSData();
     } else {
-        /* Some thread hasn't called SDL_CleanupTLS() */
+        // Some thread hasn't called SDL_CleanupTLS()
     }
 }
 
@@ -229,7 +229,7 @@ void SDL_Generic_QuitTLSData(void)
 {
     SDL_TLSEntry *entry;
 
-    /* This should have been cleaned up by the time we get here */
+    // This should have been cleaned up by the time we get here
     SDL_assert(!SDL_generic_TLS);
     if (SDL_generic_TLS) {
         SDL_LockMutex(SDL_generic_TLS_mutex);
@@ -249,7 +249,7 @@ void SDL_Generic_QuitTLSData(void)
     }
 }
 
-/* Non-thread-safe global error variable */
+// Non-thread-safe global error variable
 static SDL_error *SDL_GetStaticErrBuf(void)
 {
     static SDL_error SDL_global_error;
@@ -271,7 +271,7 @@ static void SDLCALL SDL_FreeErrBuf(void *data)
 }
 #endif
 
-/* Routine to get the thread-specific error variable */
+// Routine to get the thread-specific error variable
 SDL_error *SDL_GetErrBuf(SDL_bool create)
 {
 #ifdef SDL_THREADS_DISABLED
@@ -303,7 +303,7 @@ SDL_error *SDL_GetErrBuf(SDL_bool create)
         SDL_SetTLS(&tls_errbuf, errbuf, SDL_FreeErrBuf);
     }
     return errbuf;
-#endif /* SDL_THREADS_DISABLED */
+#endif // SDL_THREADS_DISABLED
 }
 
 void SDL_RunThread(SDL_Thread *thread)
@@ -313,23 +313,23 @@ void SDL_RunThread(SDL_Thread *thread)
 
     int *statusloc = &thread->status;
 
-    /* Perform any system-dependent setup - this function may not fail */
+    // Perform any system-dependent setup - this function may not fail
     SDL_SYS_SetupThread(thread->name);
 
-    /* Get the thread id */
+    // Get the thread id
     thread->threadid = SDL_GetCurrentThreadID();
 
-    /* Run the function */
+    // Run the function
     *statusloc = userfunc(userdata);
 
-    /* Clean up thread-local storage */
+    // Clean up thread-local storage
     SDL_CleanupTLS();
 
-    /* Mark us as ready to be joined (or detached) */
+    // Mark us as ready to be joined (or detached)
     if (!SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
-        /* Clean up if something already detached us. */
+        // Clean up if something already detached us.
         if (SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_DETACHED, SDL_THREAD_STATE_CLEANED)) {
-            SDL_free(thread->name); /* Can't free later, we've already cleaned up TLS */
+            SDL_free(thread->name); // Can't free later, we've already cleaned up TLS
             SDL_free(thread);
         }
     }
@@ -462,16 +462,16 @@ void SDL_DetachThread(SDL_Thread *thread)
         return;
     }
 
-    /* Grab dibs if the state is alive+joinable. */
+    // Grab dibs if the state is alive+joinable.
     if (SDL_AtomicCompareAndSwap(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_DETACHED)) {
         SDL_SYS_DetachThread(thread);
     } else {
-        /* all other states are pretty final, see where we landed. */
+        // all other states are pretty final, see where we landed.
         const int thread_state = SDL_AtomicGet(&thread->state);
         if ((thread_state == SDL_THREAD_STATE_DETACHED) || (thread_state == SDL_THREAD_STATE_CLEANED)) {
-            return; /* already detached (you shouldn't call this twice!) */
+            return; // already detached (you shouldn't call this twice!)
         } else if (thread_state == SDL_THREAD_STATE_ZOMBIE) {
-            SDL_WaitThread(thread, NULL); /* already done, clean it up. */
+            SDL_WaitThread(thread, NULL); // already done, clean it up.
         } else {
             SDL_assert(0 && "Unexpected thread state");
         }

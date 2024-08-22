@@ -31,10 +31,10 @@
 extern SDL_bool SDL_IBus_Init(void);
 extern void SDL_IBus_Quit(void);
 
-/* Lets the IBus server know about changes in window focus */
+// Lets the IBus server know about changes in window focus
 extern void SDL_IBus_SetFocus(SDL_bool focused);
 
-/* Closes the candidate list and resets any text currently being edited */
+// Closes the candidate list and resets any text currently being edited
 extern void SDL_IBus_Reset(void);
 
 /* Sends a keypress event to IBus, returns SDL_TRUE if IBus used this event to
@@ -50,6 +50,6 @@ extern void SDL_IBus_UpdateTextInputArea(SDL_Window *window);
    SDL_SendEditingText for each event it finds */
 extern void SDL_IBus_PumpEvents(void);
 
-#endif /* HAVE_IBUS_IBUS_H */
+#endif // HAVE_IBUS_IBUS_H
 
-#endif /* SDL_ibus_h_ */
+#endif // SDL_ibus_h_

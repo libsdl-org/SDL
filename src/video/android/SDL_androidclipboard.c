@@ -41,4 +41,4 @@ SDL_bool Android_HasClipboardText(SDL_VideoDevice *_this)
     return Android_JNI_HasClipboardText();
 }
 
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif // SDL_VIDEO_DRIVER_ANDROID

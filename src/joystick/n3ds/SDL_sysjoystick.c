@@ -22,7 +22,7 @@
 
 #ifdef SDL_JOYSTICK_N3DS
 
-/* This is the N3DS implementation of the SDL joystick API */
+// This is the N3DS implementation of the SDL joystick API
 
 #include <3ds.h>
 
@@ -190,7 +190,7 @@ static void N3DS_JoystickQuit(void)
 
 static SDL_bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    /* There is only one possible mapping. */
+    // There is only one possible mapping.
     *out = (SDL_GamepadMapping){
         .a = { EMappingKind_Button, 0 },
         .b = { EMappingKind_Button, 1 },
@@ -228,7 +228,7 @@ static void N3DS_JoystickDetect(void)
 
 static SDL_bool N3DS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-    /* We don't override any other drivers */
+    // We don't override any other drivers
     return SDL_FALSE;
 }
 
@@ -295,4 +295,4 @@ SDL_JoystickDriver SDL_N3DS_JoystickDriver = {
     N3DS_JoystickGetGamepadMapping
 };
 
-#endif /* SDL_JOYSTICK_N3DS */
+#endif // SDL_JOYSTICK_N3DS

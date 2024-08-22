@@ -28,4 +28,4 @@ extern void Android_InitMouse(void);
 extern void Android_OnMouse(SDL_Window *window, int button, int action, float x, float y, SDL_bool relative);
 extern void Android_QuitMouse(void);
 
-#endif /* SDL_androidmouse_h_ */
+#endif // SDL_androidmouse_h_

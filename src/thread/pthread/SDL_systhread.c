@@ -36,7 +36,7 @@
 #include <unistd.h>
 
 #include "../../core/linux/SDL_dbus.h"
-#endif /* SDL_PLATFORM_LINUX */
+#endif // SDL_PLATFORM_LINUX
 
 #if (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)) && defined(HAVE_DLOPEN)
 #include <dlfcn.h>
@@ -55,7 +55,7 @@
 #include <kernel/OS.h>
 #endif
 
-/* List of signals to mask in the subthreads */
+// List of signals to mask in the subthreads
 static const int sig_list[] = {
     SIGHUP, SIGINT, SIGQUIT, SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGWINCH,
     SIGVTALRM, SIGPROF, 0
@@ -83,7 +83,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
 {
     pthread_attr_t type;
 
-/* do this here before any threads exist, so there's no race condition. */
+// do this here before any threads exist, so there's no race condition.
 #if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX)) && defined(HAVE_DLOPEN)
     if (!checked_setname) {
         void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
@@ -96,18 +96,18 @@ int SDL_SYS_CreateThread(SDL_Thread *thread,
     }
 #endif
 
-    /* Set the thread attributes */
+    // Set the thread attributes
     if (pthread_attr_init(&type) != 0) {
         return SDL_SetError("Couldn't initialize pthread attributes");
     }
     pthread_attr_setdetachstate(&type, PTHREAD_CREATE_JOINABLE);
 
-    /* Set caller-requested stack size. Otherwise: use the system default. */
+    // Set caller-requested stack size. Otherwise: use the system default.
     if (thread->stacksize) {
         pthread_attr_setstacksize(&type, thread->stacksize);
     }
 
-    /* Create the thread and go! */
+    // Create the thread and go!
     if (pthread_create(&thread->handle, &type, RunThread, thread) != 0) {
         return SDL_SetError("Not enough resources to create thread");
     }
@@ -128,7 +128,7 @@ void SDL_SYS_SetupThread(const char *name)
             ppthread_setname_np(name);
 #elif defined(SDL_PLATFORM_LINUX)
             if (ppthread_setname_np(pthread_self(), name) == ERANGE) {
-                char namebuf[16]; /* Limited to 16 char */
+                char namebuf[16]; // Limited to 16 char
                 SDL_strlcpy(namebuf, name, sizeof(namebuf));
                 ppthread_setname_np(pthread_self(), namebuf);
             }
@@ -139,7 +139,7 @@ void SDL_SYS_SetupThread(const char *name)
         pthread_setname_np(pthread_self(), "%s", name);
 #else
         if (pthread_setname_np(pthread_self(), name) == ERANGE) {
-            char namebuf[16]; /* Limited to 16 char */
+            char namebuf[16]; // Limited to 16 char
             SDL_strlcpy(namebuf, name, sizeof(namebuf));
             pthread_setname_np(pthread_self(), namebuf);
         }
@@ -147,14 +147,14 @@ void SDL_SYS_SetupThread(const char *name)
 #elif defined(HAVE_PTHREAD_SET_NAME_NP)
         pthread_set_name_np(pthread_self(), name);
 #elif defined(SDL_PLATFORM_HAIKU)
-        /* The docs say the thread name can't be longer than B_OS_NAME_LENGTH. */
+        // The docs say the thread name can't be longer than B_OS_NAME_LENGTH.
         char namebuf[B_OS_NAME_LENGTH];
         SDL_strlcpy(namebuf, name, sizeof(namebuf));
         rename_thread(find_thread(NULL), namebuf);
 #endif
     }
 
-    /* Mask asynchronous signals for this thread */
+    // Mask asynchronous signals for this thread
     sigemptyset(&mask);
     for (i = 0; sig_list[i]; ++i) {
         sigaddset(&mask, sig_list[i]);
@@ -162,7 +162,7 @@ void SDL_SYS_SetupThread(const char *name)
     pthread_sigmask(SIG_BLOCK, &mask, 0);
 
 #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
-    /* Allow ourselves to be asynchronously cancelled */
+    // Allow ourselves to be asynchronously cancelled
     {
         int oldstate;
         pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldstate);
@@ -178,7 +178,7 @@ SDL_ThreadID SDL_GetCurrentThreadID(void)
 int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
 #ifdef SDL_PLATFORM_RISCOS
-    /* FIXME: Setting thread priority does not seem to be supported */
+    // FIXME: Setting thread priority does not seem to be supported
     return 0;
 #else
     struct sched_param sched;
@@ -203,7 +203,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     case SDL_THREAD_PRIORITY_HIGH:
     case SDL_THREAD_PRIORITY_TIME_CRITICAL:
 #if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
-        /* Apple requires SCHED_RR for high priority threads */
+        // Apple requires SCHED_RR for high priority threads
         pri_policy = SCHED_RR;
         break;
 #else
@@ -221,7 +221,7 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 
     if (policyhint) {
         if (SDL_strcmp(policyhint, "current") == 0) {
-            /* Leave current thread scheduler policy unchanged */
+            // Leave current thread scheduler policy unchanged
         } else if (SDL_strcmp(policyhint, "other") == 0) {
             policy = SCHED_OTHER;
         } else if (SDL_strcmp(policyhint, "rr") == 0) {
@@ -251,14 +251,14 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 
 #if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
         if (min_priority == 15 && max_priority == 47) {
-            /* Apple has a specific set of thread priorities */
+            // Apple has a specific set of thread priorities
             if (priority == SDL_THREAD_PRIORITY_HIGH) {
                 sched.sched_priority = 45;
             } else {
                 sched.sched_priority = 37;
             }
         } else
-#endif /* SDL_PLATFORM_MACOS || SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS */
+#endif // SDL_PLATFORM_MACOS || SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS
         {
             sched.sched_priority = (min_priority + (max_priority - min_priority) / 2);
             if (priority == SDL_THREAD_PRIORITY_HIGH) {
@@ -270,8 +270,8 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         return SDL_SetError("pthread_setschedparam() failed");
     }
     return 0;
-#endif /* linux */
-#endif /* #if SDL_PLATFORM_RISCOS */
+#endif // linux
+#endif // #if SDL_PLATFORM_RISCOS
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)

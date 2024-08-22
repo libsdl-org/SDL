@@ -36,7 +36,7 @@ DEFINE_GUID(SDL_IID_SensorManager, 0xBD77DB67, 0x45A8, 0x42DC, 0x8D, 0x00, 0x6D,
 DEFINE_GUID(SDL_IID_SensorManagerEvents, 0x9B3B0B86, 0x266A, 0x4AAD, 0xB2, 0x1F, 0xFD, 0xE5, 0x50, 0x10, 0x01, 0xB7);
 DEFINE_GUID(SDL_IID_SensorEvents, 0x5D8DCC91, 0x4641, 0x47E7, 0xB7, 0xC3, 0xB7, 0x4F, 0x48, 0xA6, 0xC3, 0x91);
 
-/* These constants aren't available in Visual Studio 2015 or earlier Windows SDK  */
+// These constants aren't available in Visual Studio 2015 or earlier Windows SDK
 DEFINE_PROPERTYKEY(SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_X_DEGREES_PER_SECOND, 0X3F8A69A2, 0X7C5, 0X4E48, 0XA9, 0X65, 0XCD, 0X79, 0X7A, 0XAB, 0X56, 0XD5, 10); //[VT_R8]
 DEFINE_PROPERTYKEY(SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Y_DEGREES_PER_SECOND, 0X3F8A69A2, 0X7C5, 0X4E48, 0XA9, 0X65, 0XCD, 0X79, 0X7A, 0XAB, 0X56, 0XD5, 11); //[VT_R8]
 DEFINE_PROPERTYKEY(SDL_SENSOR_DATA_TYPE_ANGULAR_VELOCITY_Z_DEGREES_PER_SECOND, 0X3F8A69A2, 0X7C5, 0X4E48, 0XA9, 0X65, 0XCD, 0X79, 0X7A, 0XAB, 0X56, 0XD5, 12); //[VT_R8]
@@ -199,7 +199,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                     }
                     break;
                 default:
-                    /* FIXME: Need to know how to interpret the data for this sensor */
+                    // FIXME: Need to know how to interpret the data for this sensor
                     break;
                 }
             }
@@ -337,7 +337,7 @@ static int DisconnectSensor(ISensor *sensor)
             /* This call hangs for some reason:
              * https://github.com/libsdl-org/SDL/issues/5288
              */
-            /*ISensor_SetEventSink(sensor, NULL);*/
+            // ISensor_SetEventSink(sensor, NULL);
             ISensor_Release(sensor);
             SDL_free(old_sensor->name);
             --SDL_num_sensors;
@@ -363,8 +363,8 @@ static int SDL_WINDOWS_SensorInit(void)
 
     hr = CoCreateInstance(&SDL_CLSID_SensorManager, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_SensorManager, (LPVOID *)&SDL_sensor_manager);
     if (FAILED(hr)) {
-        /* If we can't create a sensor manager (i.e. on Wine), we won't have any sensors, but don't fail the init */
-        return 0; /* WIN_SetErrorFromHRESULT("Couldn't create the sensor manager", hr); */
+        // If we can't create a sensor manager (i.e. on Wine), we won't have any sensors, but don't fail the init
+        return 0; // WIN_SetErrorFromHRESULT("Couldn't create the sensor manager", hr);
     }
 
     hr = ISensorManager_SetEventSink(SDL_sensor_manager, &sensor_manager_events);
@@ -482,4 +482,4 @@ SDL_SensorDriver SDL_WINDOWS_SensorDriver = {
     SDL_WINDOWS_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_WINDOWS */
+#endif // SDL_SENSOR_WINDOWS

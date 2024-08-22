@@ -39,6 +39,6 @@ extern SDL_GLContext OFFSCREEN_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Wi
 extern int OFFSCREEN_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
 extern int OFFSCREEN_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL */
+#endif // SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL
 
-#endif /* SDL_offscreenopengles_h */
+#endif // SDL_offscreenopengles_h

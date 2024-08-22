@@ -61,7 +61,7 @@ static HRGN GenerateSpanListRegion(SDL_Surface *shape, int offset_x, int offset_
             a += 4;
         }
         if (span_start != -1) {
-            /* Add the final span */
+            // Add the final span
             AddRegion(&mask, offset_x + span_start, offset_y + y, offset_x + x, offset_y + y + 1);
             span_start = -1;
         }
@@ -74,7 +74,7 @@ int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfac
     SDL_WindowData *data = window->internal;
     HRGN mask = NULL;
 
-    /* Generate a set of spans for the region */
+    // Generate a set of spans for the region
     if (shape) {
         SDL_Surface *stretched = NULL;
         RECT rect;
@@ -102,14 +102,14 @@ int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfac
         mask = GenerateSpanListRegion(shape, -rect.left, -rect.top);
 
         if (!(SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS)) {
-            /* Add the window borders */
-            /* top */
+            // Add the window borders
+            // top
             AddRegion(&mask, 0, 0, -rect.left + shape->w + rect.right + 1, -rect.top + 1);
-            /* left */
+            // left
             AddRegion(&mask, 0, -rect.top, -rect.left + 1, -rect.top + shape->h + 1);
-            /* right */
+            // right
             AddRegion(&mask, -rect.left + shape->w, -rect.top, -rect.left + shape->w + rect.right + 1, -rect.top + shape->h + 1);
-            /* bottom */
+            // bottom
             AddRegion(&mask, 0, -rect.top + shape->h, -rect.left + shape->w + rect.right + 1, -rect.top + shape->h + rect.bottom + 1);
         }
 
@@ -123,4 +123,4 @@ int WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfac
     return 0;
 }
 
-#endif /* defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) */
+#endif // defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

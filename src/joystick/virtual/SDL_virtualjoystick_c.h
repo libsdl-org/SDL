@@ -79,6 +79,6 @@ extern int SDL_SetJoystickVirtualHatInner(SDL_Joystick *joystick, int hat, Uint8
 extern int SDL_SetJoystickVirtualTouchpadInner(SDL_Joystick *joystick, int touchpad, int finger, Uint8 state, float x, float y, float pressure);
 extern int SDL_SendJoystickVirtualSensorDataInner(SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
 
-#endif /* SDL_JOYSTICK_VIRTUAL */
+#endif // SDL_JOYSTICK_VIRTUAL
 
-#endif /* SDL_VIRTUALJOYSTICK_C_H */
+#endif // SDL_VIRTUALJOYSTICK_C_H

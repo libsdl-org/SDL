@@ -25,7 +25,7 @@
    - Apple USB keyboard driver source <http://darwinsource.opendarwin.org/10.4.6.ppc/IOHIDFamily-172.8/IOHIDFamily/Cosmo_USB2ADB.c>
    - experimentation on various ADB and USB ISO keyboards and one ADB ANSI keyboard
 */
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 static const SDL_Scancode darwin_scancode_table[] = {
     /*   0 */   SDL_SCANCODE_A,
     /*   1 */   SDL_SCANCODE_S,
@@ -37,7 +37,7 @@ static const SDL_Scancode darwin_scancode_table[] = {
     /*   7 */   SDL_SCANCODE_X,
     /*   8 */   SDL_SCANCODE_C,
     /*   9 */   SDL_SCANCODE_V,
-    /*  10 */   SDL_SCANCODE_NONUSBACKSLASH, /* SDL_SCANCODE_NONUSBACKSLASH on ANSI and JIS keyboards (if this key would exist there), SDL_SCANCODE_GRAVE on ISO. (The USB keyboard driver actually translates these usage codes to different virtual key codes depending on whether the keyboard is ISO/ANSI/JIS. That's why you have to help it identify the keyboard type when you plug in a PC USB keyboard. It's a historical thing - ADB keyboards are wired this way.) */
+    /*  10 */   SDL_SCANCODE_NONUSBACKSLASH, // SDL_SCANCODE_NONUSBACKSLASH on ANSI and JIS keyboards (if this key would exist there), SDL_SCANCODE_GRAVE on ISO. (The USB keyboard driver actually translates these usage codes to different virtual key codes depending on whether the keyboard is ISO/ANSI/JIS. That's why you have to help it identify the keyboard type when you plug in a PC USB keyboard. It's a historical thing - ADB keyboards are wired this way.)
     /*  11 */   SDL_SCANCODE_B,
     /*  12 */   SDL_SCANCODE_Q,
     /*  13 */   SDL_SCANCODE_W,
@@ -77,9 +77,9 @@ static const SDL_Scancode darwin_scancode_table[] = {
     /*  47 */   SDL_SCANCODE_PERIOD,
     /*  48 */   SDL_SCANCODE_TAB,
     /*  49 */   SDL_SCANCODE_SPACE,
-    /*  50 */   SDL_SCANCODE_GRAVE, /* SDL_SCANCODE_GRAVE on ANSI and JIS keyboards, SDL_SCANCODE_NONUSBACKSLASH on ISO (see comment about virtual key code 10 above) */
+    /*  50 */   SDL_SCANCODE_GRAVE, // SDL_SCANCODE_GRAVE on ANSI and JIS keyboards, SDL_SCANCODE_NONUSBACKSLASH on ISO (see comment about virtual key code 10 above)
     /*  51 */   SDL_SCANCODE_BACKSPACE,
-    /*  52 */   SDL_SCANCODE_KP_ENTER, /* keyboard enter on portables */
+    /*  52 */   SDL_SCANCODE_KP_ENTER, // keyboard enter on portables
     /*  53 */   SDL_SCANCODE_ESCAPE,
     /*  54 */   SDL_SCANCODE_RGUI,
     /*  55 */   SDL_SCANCODE_LGUI,
@@ -90,21 +90,21 @@ static const SDL_Scancode darwin_scancode_table[] = {
     /*  60 */   SDL_SCANCODE_RSHIFT,
     /*  61 */   SDL_SCANCODE_RALT,
     /*  62 */   SDL_SCANCODE_RCTRL,
-    /*  63 */   SDL_SCANCODE_RGUI, /* fn on portables, acts as a hardware-level modifier already, so we don't generate events for it, also XK_Meta_R */
+    /*  63 */   SDL_SCANCODE_RGUI, // fn on portables, acts as a hardware-level modifier already, so we don't generate events for it, also XK_Meta_R
     /*  64 */   SDL_SCANCODE_F17,
     /*  65 */   SDL_SCANCODE_KP_PERIOD,
-    /*  66 */   SDL_SCANCODE_UNKNOWN, /* unknown (unused?) */
+    /*  66 */   SDL_SCANCODE_UNKNOWN, // unknown (unused?)
     /*  67 */   SDL_SCANCODE_KP_MULTIPLY,
-    /*  68 */   SDL_SCANCODE_UNKNOWN, /* unknown (unused?) */
+    /*  68 */   SDL_SCANCODE_UNKNOWN, // unknown (unused?)
     /*  69 */   SDL_SCANCODE_KP_PLUS,
-    /*  70 */   SDL_SCANCODE_UNKNOWN, /* unknown (unused?) */
+    /*  70 */   SDL_SCANCODE_UNKNOWN, // unknown (unused?)
     /*  71 */   SDL_SCANCODE_NUMLOCKCLEAR,
     /*  72 */   SDL_SCANCODE_VOLUMEUP,
     /*  73 */   SDL_SCANCODE_VOLUMEDOWN,
     /*  74 */   SDL_SCANCODE_MUTE,
     /*  75 */   SDL_SCANCODE_KP_DIVIDE,
-    /*  76 */   SDL_SCANCODE_KP_ENTER, /* keypad enter on external keyboards, fn-return on portables */
-    /*  77 */   SDL_SCANCODE_UNKNOWN, /* unknown (unused?) */
+    /*  76 */   SDL_SCANCODE_KP_ENTER, // keypad enter on external keyboards, fn-return on portables
+    /*  77 */   SDL_SCANCODE_UNKNOWN, // unknown (unused?)
     /*  78 */   SDL_SCANCODE_KP_MINUS,
     /*  79 */   SDL_SCANCODE_F18,
     /*  80 */   SDL_SCANCODE_F19,
@@ -117,31 +117,31 @@ static const SDL_Scancode darwin_scancode_table[] = {
     /*  87 */   SDL_SCANCODE_KP_5,
     /*  88 */   SDL_SCANCODE_KP_6,
     /*  89 */   SDL_SCANCODE_KP_7,
-    /*  90 */   SDL_SCANCODE_UNKNOWN, /* unknown (unused?) */
+    /*  90 */   SDL_SCANCODE_UNKNOWN, // unknown (unused?)
     /*  91 */   SDL_SCANCODE_KP_8,
     /*  92 */   SDL_SCANCODE_KP_9,
-    /*  93 */   SDL_SCANCODE_INTERNATIONAL3, /* Cosmo_USB2ADB.c says "Yen (JIS)" */
-    /*  94 */   SDL_SCANCODE_INTERNATIONAL1, /* Cosmo_USB2ADB.c says "Ro (JIS)" */
-    /*  95 */   SDL_SCANCODE_KP_COMMA, /* Cosmo_USB2ADB.c says ", JIS only" */
+    /*  93 */   SDL_SCANCODE_INTERNATIONAL3, // Cosmo_USB2ADB.c says "Yen (JIS)"
+    /*  94 */   SDL_SCANCODE_INTERNATIONAL1, // Cosmo_USB2ADB.c says "Ro (JIS)"
+    /*  95 */   SDL_SCANCODE_KP_COMMA, // Cosmo_USB2ADB.c says ", JIS only"
     /*  96 */   SDL_SCANCODE_F5,
     /*  97 */   SDL_SCANCODE_F6,
     /*  98 */   SDL_SCANCODE_F7,
     /*  99 */   SDL_SCANCODE_F3,
     /* 100 */   SDL_SCANCODE_F8,
     /* 101 */   SDL_SCANCODE_F9,
-    /* 102 */   SDL_SCANCODE_LANG2, /* Cosmo_USB2ADB.c says "Eisu" */
+    /* 102 */   SDL_SCANCODE_LANG2, // Cosmo_USB2ADB.c says "Eisu"
     /* 103 */   SDL_SCANCODE_F11,
-    /* 104 */   SDL_SCANCODE_LANG1, /* Cosmo_USB2ADB.c says "Kana" */
-    /* 105 */   SDL_SCANCODE_PRINTSCREEN, /* On ADB keyboards, this key is labeled "F13/print screen". Problem: USB has different usage codes for these two functions. On Apple USB keyboards, the key is labeled "F13" and sends the F13 usage code (SDL_SCANCODE_F13). I decided to use SDL_SCANCODE_PRINTSCREEN here nevertheless since SDL applications are more likely to assume the presence of a print screen key than an F13 key. */
+    /* 104 */   SDL_SCANCODE_LANG1, // Cosmo_USB2ADB.c says "Kana"
+    /* 105 */   SDL_SCANCODE_PRINTSCREEN, // On ADB keyboards, this key is labeled "F13/print screen". Problem: USB has different usage codes for these two functions. On Apple USB keyboards, the key is labeled "F13" and sends the F13 usage code (SDL_SCANCODE_F13). I decided to use SDL_SCANCODE_PRINTSCREEN here nevertheless since SDL applications are more likely to assume the presence of a print screen key than an F13 key.
     /* 106 */   SDL_SCANCODE_F16,
-    /* 107 */   SDL_SCANCODE_SCROLLLOCK, /* F14/scroll lock, see comment about F13/print screen above */
-    /* 108 */   SDL_SCANCODE_UNKNOWN, /* unknown (unused?) */
+    /* 107 */   SDL_SCANCODE_SCROLLLOCK, // F14/scroll lock, see comment about F13/print screen above
+    /* 108 */   SDL_SCANCODE_UNKNOWN, // unknown (unused?)
     /* 109 */   SDL_SCANCODE_F10,
-    /* 110 */   SDL_SCANCODE_APPLICATION, /* windows contextual menu key, fn-enter on portables */
+    /* 110 */   SDL_SCANCODE_APPLICATION, // windows contextual menu key, fn-enter on portables
     /* 111 */   SDL_SCANCODE_F12,
-    /* 112 */   SDL_SCANCODE_UNKNOWN, /* unknown (unused?) */
-    /* 113 */   SDL_SCANCODE_PAUSE, /* F15/pause, see comment about F13/print screen above */
-    /* 114 */   SDL_SCANCODE_INSERT, /* the key is actually labeled "help" on Apple keyboards, and works as such in Mac OS, but it sends the "insert" usage code even on Apple USB keyboards */
+    /* 112 */   SDL_SCANCODE_UNKNOWN, // unknown (unused?)
+    /* 113 */   SDL_SCANCODE_PAUSE, // F15/pause, see comment about F13/print screen above
+    /* 114 */   SDL_SCANCODE_INSERT, // the key is actually labeled "help" on Apple keyboards, and works as such in Mac OS, but it sends the "insert" usage code even on Apple USB keyboards
     /* 115 */   SDL_SCANCODE_HOME,
     /* 116 */   SDL_SCANCODE_PAGEUP,
     /* 117 */   SDL_SCANCODE_DELETE,
@@ -156,4 +156,4 @@ static const SDL_Scancode darwin_scancode_table[] = {
     /* 126 */   SDL_SCANCODE_UP,
     /* 127 */   SDL_SCANCODE_POWER
 };
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on

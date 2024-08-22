@@ -25,7 +25,7 @@
 
 #include "SDL_yuv_sw_c.h"
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -48,11 +48,11 @@ typedef struct SDL_DRect
     double h;
 } SDL_DRect;
 
-/* The SDL 2D rendering system */
+// The SDL 2D rendering system
 
 typedef struct SDL_RenderDriver SDL_RenderDriver;
 
-/* Rendering view state */
+// Rendering view state
 typedef struct SDL_RenderViewState
 {
     int pixel_w;
@@ -66,7 +66,7 @@ typedef struct SDL_RenderViewState
 
 } SDL_RenderViewState;
 
-/* Define the SDL texture structure */
+// Define the SDL texture structure
 struct SDL_Texture
 {
     SDL_Colorspace colorspace;  /**< The colorspace of the texture */
@@ -83,7 +83,7 @@ struct SDL_Texture
 
     SDL_Renderer *renderer;
 
-    /* Support for formats not supported directly by the renderer */
+    // Support for formats not supported directly by the renderer
     SDL_Texture *native;
     SDL_SW_YUVTexture *yuv;
     void *pixels;
@@ -91,7 +91,7 @@ struct SDL_Texture
     SDL_Rect locked_rect;
     SDL_Surface *locked_surface; /**< Locked region exposed as a SDL surface */
 
-    Uint32 last_command_generation; /* last command queue generation this texture was in. */
+    Uint32 last_command_generation; // last command queue generation this texture was in.
 
     SDL_PropertiesID props;
 
@@ -164,7 +164,7 @@ typedef enum
     SDL_RENDERLINEMETHOD_GEOMETRY,
 } SDL_RenderLineMethod;
 
-/* Define the SDL renderer structure */
+// Define the SDL renderer structure
 struct SDL_Renderer
 {
     void (*WindowEvent)(SDL_Renderer *renderer, const SDL_WindowEvent *event);
@@ -223,23 +223,23 @@ struct SDL_Renderer
 
     int (*AddVulkanRenderSemaphores)(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore);
 
-    /* The current renderer info */
+    // The current renderer info
     const char *name;
     SDL_PixelFormat *texture_formats;
     int num_texture_formats;
     SDL_bool software;
 
-    /* The window associated with the renderer */
+    // The window associated with the renderer
     SDL_Window *window;
     SDL_bool hidden;
 
-    /* Whether we should simulate vsync */
+    // Whether we should simulate vsync
     SDL_bool wanted_vsync;
     SDL_bool simulate_vsync;
     Uint64 simulate_vsync_interval_ns;
     Uint64 last_present;
 
-    /* Support for logical output coordinates */
+    // Support for logical output coordinates
     SDL_Texture *logical_target;
     SDL_RendererLogicalPresentation logical_presentation_mode;
     SDL_ScaleMode logical_scale_mode;
@@ -249,16 +249,16 @@ struct SDL_Renderer
     SDL_RenderViewState *view;
     SDL_RenderViewState main_view;
 
-    /* The window pixel to point coordinate scale */
+    // The window pixel to point coordinate scale
     SDL_FPoint dpi_scale;
 
-    /* The method of drawing lines */
+    // The method of drawing lines
     SDL_RenderLineMethod line_method;
 
-    /* List of triangle indices to draw rects */
+    // List of triangle indices to draw rects
     int rect_index_order[6];
 
-    /* The list of textures */
+    // The list of textures
     SDL_Texture *textures;
     SDL_Texture *target;
     SDL_Mutex *target_mutex;
@@ -290,7 +290,7 @@ struct SDL_Renderer
     size_t vertex_data_used;
     size_t vertex_data_allocation;
 
-    /* Shaped window support */
+    // Shaped window support
     SDL_bool transparent_window;
     SDL_Surface *shape_surface;
     SDL_Texture *shape_texture;
@@ -304,7 +304,7 @@ struct SDL_Renderer
     SDL_Renderer *next;
 };
 
-/* Define the SDL render driver structure */
+// Define the SDL render driver structure
 struct SDL_RenderDriver
 {
     int (*CreateRenderer)(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID props);
@@ -312,7 +312,7 @@ struct SDL_RenderDriver
     const char *name;
 };
 
-/* Not all of these are available in a given build. Use #ifdefs, etc. */
+// Not all of these are available in a given build. Use #ifdefs, etc.
 extern SDL_RenderDriver D3D_RenderDriver;
 extern SDL_RenderDriver D3D11_RenderDriver;
 extern SDL_RenderDriver D3D12_RenderDriver;
@@ -325,21 +325,21 @@ extern SDL_RenderDriver PSP_RenderDriver;
 extern SDL_RenderDriver SW_RenderDriver;
 extern SDL_RenderDriver VITA_GXM_RenderDriver;
 
-/* Clean up any renderers at shutdown */
+// Clean up any renderers at shutdown
 extern void SDL_QuitRender(void);
 
-/* Add a supported texture format to a renderer */
+// Add a supported texture format to a renderer
 extern int SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormat format);
 
-/* Setup colorspace conversion */
+// Setup colorspace conversion
 extern void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props);
 
-/* Colorspace conversion functions */
+// Colorspace conversion functions
 extern SDL_bool SDL_RenderingLinearSpace(SDL_Renderer *renderer);
 extern void SDL_ConvertToLinear(SDL_FColor *color);
 extern void SDL_ConvertFromLinear(SDL_FColor *color);
 
-/* Blend mode functions */
+// Blend mode functions
 extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);
 extern SDL_BlendFactor SDL_GetBlendModeDstColorFactor(SDL_BlendMode blendMode);
 extern SDL_BlendOperation SDL_GetBlendModeColorOperation(SDL_BlendMode blendMode);
@@ -355,9 +355,9 @@ extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t num
 // Let the video subsystem destroy a renderer without making its pointer invalid.
 extern void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_sysrender_h_ */
+#endif // SDL_sysrender_h_

@@ -883,7 +883,7 @@ static int COREAUDIO_OpenDevice(SDL_AudioDevice *device)
         }
         #else
         // Calling setPreferredOutputNumberOfChannels seems to break audio output on iOS
-        #endif /* SDL_PLATFORM_TVOS */
+        #endif // SDL_PLATFORM_TVOS
     }
     #endif
 

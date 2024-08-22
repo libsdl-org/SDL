@@ -27,7 +27,7 @@
 #include "../core/windows/SDL_windows.h"
 #endif
 
-/* CPU feature detection for SDL */
+// CPU feature detection for SDL
 
 #ifdef HAVE_SYSCONF
 #include <unistd.h>
@@ -37,10 +37,10 @@
 #include <sys/sysctl.h>
 #endif
 #if defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))
-#include <sys/sysctl.h> /* For AltiVec check */
+#include <sys/sysctl.h> // For AltiVec check
 #elif defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__)
 #include <sys/types.h>
-#include <sys/sysctl.h> /* For AltiVec check */
+#include <sys/sysctl.h> // For AltiVec check
 #include <machine/cpu.h>
 #elif defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__)
 #include <machine/cpu.h>
@@ -57,7 +57,7 @@
 #include <fcntl.h>
 #include <elf.h>
 
-/*#include <asm/hwcap.h>*/
+// #include <asm/hwcap.h>
 #ifndef AT_HWCAP
 #define AT_HWCAP 16
 #endif
@@ -122,13 +122,13 @@ static void illegal_instruction(int sig)
 {
     longjmp(jmpbuf, 1);
 }
-#endif /* HAVE_SETJMP */
+#endif // HAVE_SETJMP
 
 static int CPU_haveCPUID(void)
 {
     int has_CPUID = 0;
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 #ifndef SDL_PLATFORM_EMSCRIPTEN
 #if (defined(__GNUC__) || defined(__llvm__)) && defined(__i386__)
     __asm__ (
@@ -216,8 +216,8 @@ done:
 "1:                            \n"
     );
 #endif
-#endif /* !SDL_PLATFORM_EMSCRIPTEN */
-/* *INDENT-ON* */ /* clang-format on */
+#endif // !SDL_PLATFORM_EMSCRIPTEN
+/* *INDENT-ON* */ // clang-format on
     return has_CPUID;
 }
 
@@ -253,7 +253,7 @@ done:
         __asm mov d, edx                   \
     }
 #elif (defined(_MSC_VER) && defined(_M_X64))
-/* Use __cpuidex instead of __cpuid because ICL does not clear ecx register */
+// Use __cpuidex instead of __cpuid because ICL does not clear ecx register
 #define cpuid(func, a, b, c, d)      \
     {                                \
         int CPUInfo[4];              \
@@ -295,15 +295,15 @@ static void CPU_calcCPUIDFeatures(void)
                 CPU_CPUIDFeatures[2] = c;
                 CPU_CPUIDFeatures[3] = d;
 
-                /* Check to make sure we can call xgetbv */
+                // Check to make sure we can call xgetbv
                 if (c & 0x08000000) {
-                    /* Call xgetbv to see if YMM (etc) register state is saved */
+                    // Call xgetbv to see if YMM (etc) register state is saved
 #if (defined(__GNUC__) || defined(__llvm__)) && (defined(__i386__) || defined(__x86_64__))
                     __asm__(".byte 0x0f, 0x01, 0xd0"
                             : "=a"(a)
                             : "c"(0)
                             : "%edx");
-#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) && (_MSC_FULL_VER >= 160040219) /* VS2010 SP1 */
+#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) && (_MSC_FULL_VER >= 160040219) // VS2010 SP1
                     a = (int)_xgetbv(0);
 #elif (defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)
                     __asm
@@ -447,28 +447,28 @@ static int CPU_haveNEON(void)
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
 #if defined(SDL_PLATFORM_WINDOWS) && (defined(_M_ARM) || defined(_M_ARM64))
-/* Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first. */
-/* Seems to have been removed */
+// Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first.
+// Seems to have been removed
 #ifndef PF_ARM_NEON_INSTRUCTIONS_AVAILABLE
 #define PF_ARM_NEON_INSTRUCTIONS_AVAILABLE 19
 #endif
-    /* All WinRT ARM devices are required to support NEON, but just in case. */
+    // All WinRT ARM devices are required to support NEON, but just in case.
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
 #elif (defined(__ARM_ARCH) && (__ARM_ARCH >= 8)) || defined(__aarch64__)
-    return 1; /* ARMv8 always has non-optional NEON support. */
+    return 1; // ARMv8 always has non-optional NEON support.
 #elif defined(SDL_PLATFORM_VITA)
     return 1;
 #elif defined(SDL_PLATFORM_3DS)
     return 0;
 #elif defined(SDL_PLATFORM_APPLE) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
-    /* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
-    return 1; /* all Apple ARMv7 chips and later have NEON. */
+    // (note that sysctlbyname("hw.optional.neon") doesn't work!)
+    return 1; // all Apple ARMv7 chips and later have NEON.
 #elif defined(SDL_PLATFORM_APPLE)
-    return 0; /* assume anything else from Apple doesn't have NEON. */
+    return 0; // assume anything else from Apple doesn't have NEON.
 #elif !defined(__arm__)
-    return 0; /* not an ARM CPU at all. */
+    return 0; // not an ARM CPU at all.
 #elif defined(SDL_PLATFORM_OPENBSD)
-    return 1; /* OpenBSD only supports ARMv7 CPUs that have NEON. */
+    return 1; // OpenBSD only supports ARMv7 CPUs that have NEON.
 #elif defined(HAVE_ELF_AUX_INFO)
     unsigned long hasneon = 0;
     if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0) {
@@ -480,7 +480,7 @@ static int CPU_haveNEON(void)
 #elif defined(SDL_PLATFORM_LINUX)
     return readProcAuxvForNeon();
 #elif defined(SDL_PLATFORM_ANDROID)
-    /* Use NDK cpufeatures to read either /proc/self/auxv or /proc/cpuinfo */
+    // Use NDK cpufeatures to read either /proc/self/auxv or /proc/cpuinfo
     {
         AndroidCpuFamily cpu_family = android_getCpuFamily();
         if (cpu_family == ANDROID_CPU_FAMILY_ARM) {
@@ -492,7 +492,7 @@ static int CPU_haveNEON(void)
         return 0;
     }
 #elif defined(SDL_PLATFORM_RISCOS)
-    /* Use the VFPSupport_Features SWI to access the MVFR registers */
+    // Use the VFPSupport_Features SWI to access the MVFR registers
     {
         _kernel_swi_regs regs;
         regs.r[0] = 0;
@@ -590,7 +590,7 @@ static int CPU_haveAVX2(void)
         (void)a;
         (void)b;
         (void)c;
-        (void)d; /* compiler warnings... */
+        (void)d; // compiler warnings...
         cpuid(7, a, b, c, d);
         return b & 0x00000020;
     }
@@ -612,7 +612,7 @@ static int CPU_haveAVX512F(void)
         (void)a;
         (void)b;
         (void)c;
-        (void)d; /* compiler warnings... */
+        (void)d; // compiler warnings...
         cpuid(7, a, b, c, d);
         return b & 0x00010000;
     }
@@ -643,7 +643,7 @@ int SDL_GetCPUCount(void)
             SDL_CPUCount = info.dwNumberOfProcessors;
         }
 #endif
-        /* There has to be at least 1, right? :) */
+        // There has to be at least 1, right? :)
         if (SDL_CPUCount <= 0) {
             SDL_CPUCount = 1;
         }
@@ -662,7 +662,7 @@ SDL_GetCPUType(void)
     return SDL_CPUType;
 }
 #else
-/* Oh, such a sweet sweet trick, just not very useful. :) */
+// Oh, such a sweet sweet trick, just not very useful. :)
 static const char *SDL_GetCPUType(void)
 {
     static char SDL_CPUType[13];
@@ -671,7 +671,7 @@ static const char *SDL_GetCPUType(void)
         int i = 0;
 
         CPU_calcCPUIDFeatures();
-        if (CPU_CPUIDMaxFunction > 0) { /* do we have CPUID at all? */
+        if (CPU_CPUIDMaxFunction > 0) { // do we have CPUID at all?
             int a, b, c, d;
             cpuid(0x00000000, a, b, c, d);
             (void)a;
@@ -729,7 +729,7 @@ static const char *SDL_GetCPUName(void)
         int a, b, c, d;
 
         CPU_calcCPUIDFeatures();
-        if (CPU_CPUIDMaxFunction > 0) { /* do we have CPUID at all? */
+        if (CPU_CPUIDMaxFunction > 0) { // do we have CPUID at all?
             cpuid(0x80000000, a, b, c, d);
             if (a >= 0x80000004) {
                 cpuid(0x80000002, a, b, c, d);
@@ -845,7 +845,7 @@ static const char *SDL_GetCPUName(void)
 int SDL_GetCPUCacheLineSize(void)
 {
     const char *cpuType = SDL_GetCPUType();
-    int cacheline_size = SDL_CACHELINE_SIZE; /* initial guess */
+    int cacheline_size = SDL_CACHELINE_SIZE; // initial guess
     int a, b, c, d;
     (void)a;
     (void)b;
@@ -949,7 +949,7 @@ static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
             } else if (ref_string_equals("lasx", spot, end)) {
                 spot_mask = CPU_HAS_LASX;
             } else {
-                /* Ignore unknown/incorrect cpu feature(s) */
+                // Ignore unknown/incorrect cpu feature(s)
                 continue;
             }
             if (add_spot_mask) {
@@ -967,7 +967,7 @@ static Uint32 SDL_GetCPUFeatures(void)
     if (SDL_CPUFeatures == SDL_CPUFEATURES_RESET_VALUE) {
         CPU_calcCPUIDFeatures();
         SDL_CPUFeatures = 0;
-        SDL_SIMDAlignment = sizeof(void *); /* a good safe base value */
+        SDL_SIMDAlignment = sizeof(void *); // a good safe base value
         if (CPU_haveAltiVec()) {
             SDL_CPUFeatures |= CPU_HAS_ALTIVEC;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
@@ -1118,18 +1118,18 @@ int SDL_GetSystemRAM(void)
 #ifdef HAVE_SYSCTLBYNAME
         if (SDL_SystemRAM <= 0) {
 #ifdef HW_PHYSMEM64
-            /* (64-bit): NetBSD since 2003, OpenBSD */
+            // (64-bit): NetBSD since 2003, OpenBSD
             int mib[2] = { CTL_HW, HW_PHYSMEM64 };
 #elif defined(HW_REALMEM)
-            /* (64-bit): FreeBSD since 2005, DragonFly */
+            // (64-bit): FreeBSD since 2005, DragonFly
             int mib[2] = { CTL_HW, HW_REALMEM };
 #elif defined(HW_MEMSIZE)
-            /* (64-bit): Darwin */
+            // (64-bit): Darwin
             int mib[2] = { CTL_HW, HW_MEMSIZE };
 #else
-            /* (32-bit): very old BSD, might only report up to 2 GiB */
+            // (32-bit): very old BSD, might only report up to 2 GiB
             int mib[2] = { CTL_HW, HW_PHYSMEM };
-#endif /* HW_PHYSMEM64 */
+#endif // HW_PHYSMEM64
             Uint64 memsize = 0;
             size_t len = sizeof(memsize);
 
@@ -1165,7 +1165,7 @@ int SDL_GetSystemRAM(void)
 #endif
 #ifdef SDL_PLATFORM_PS2
         if (SDL_SystemRAM <= 0) {
-            /* PlayStation 2 has 32MiB however there are some special models with 64 and 128 */
+            // PlayStation 2 has 32MiB however there are some special models with 64 and 128
             SDL_SystemRAM = GetMemorySize();
         }
 #endif
@@ -1186,7 +1186,7 @@ int SDL_GetSystemRAM(void)
 size_t SDL_GetSIMDAlignment(void)
 {
     if (SDL_SIMDAlignment == 0xFFFFFFFF) {
-        SDL_GetCPUFeatures(); /* make sure this has been calculated */
+        SDL_GetCPUFeatures(); // make sure this has been calculated
     }
     SDL_assert(SDL_SIMDAlignment != 0);
     return SDL_SIMDAlignment;

@@ -252,4 +252,4 @@ void WINRT_QuitMouse(SDL_VideoDevice *_this)
 {
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINRT */
+#endif // SDL_VIDEO_DRIVER_WINRT

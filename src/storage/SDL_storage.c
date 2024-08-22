@@ -24,13 +24,13 @@
 #include "SDL_sysstorage.h"
 #include "../filesystem/SDL_sysfilesystem.h"
 
-/* Available title storage drivers */
+// Available title storage drivers
 static TitleStorageBootStrap *titlebootstrap[] = {
     &GENERIC_titlebootstrap,
     NULL
 };
 
-/* Available user storage drivers */
+// Available user storage drivers
 static UserStorageBootStrap *userbootstrap[] = {
 #ifdef SDL_STORAGE_STEAM
     &STEAM_userbootstrap,
@@ -61,7 +61,7 @@ SDL_Storage *SDL_OpenTitleStorage(const char *override, SDL_PropertiesID props)
     SDL_Storage *storage = NULL;
     int i = 0;
 
-    /* Select the proper storage driver */
+    // Select the proper storage driver
     const char *driver_name = SDL_GetHint(SDL_HINT_STORAGE_TITLE_DRIVER);
     if (driver_name && *driver_name != 0) {
         const char *driver_attempt = driver_name;
@@ -103,7 +103,7 @@ SDL_Storage *SDL_OpenUserStorage(const char *org, const char *app, SDL_Propertie
     SDL_Storage *storage = NULL;
     int i = 0;
 
-    /* Select the proper storage driver */
+    // Select the proper storage driver
     const char *driver_name = SDL_GetHint(SDL_HINT_STORAGE_USER_DRIVER);
     if (driver_name && *driver_name != 0) {
         const char *driver_attempt = driver_name;

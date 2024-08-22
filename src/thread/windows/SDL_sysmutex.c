@@ -32,7 +32,7 @@
 
 #include "SDL_sysmutex_c.h"
 
-/* Implementation will be chosen at runtime based on available Kernel features */
+// Implementation will be chosen at runtime based on available Kernel features
 SDL_mutex_impl_t SDL_mutex_impl_active = { 0 };
 
 /**
@@ -40,7 +40,7 @@ SDL_mutex_impl_t SDL_mutex_impl_active = { 0 };
  */
 
 #ifdef SDL_PLATFORM_WINRT
-/* Functions are guaranteed to be available */
+// Functions are guaranteed to be available
 #define pInitializeSRWLock InitializeSRWLock
 #define pReleaseSRWLockExclusive    ReleaseSRWLockExclusive
 #define pAcquireSRWLockExclusive    AcquireSRWLockExclusive
@@ -67,7 +67,7 @@ static SDL_Mutex *SDL_CreateMutex_srw(void)
 
 static void SDL_DestroyMutex_srw(SDL_Mutex *mutex)
 {
-    /* There are no kernel allocated resources */
+    // There are no kernel allocated resources
     SDL_free(mutex);
 }
 

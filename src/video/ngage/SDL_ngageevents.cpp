@@ -57,7 +57,7 @@ void NGAGE_PumpEvents(SDL_VideoDevice *_this)
 }
 
 /*****************************************************************************/
-/* Internal                                                                  */
+// Internal
 /*****************************************************************************/
 
 #include <bautils.h>
@@ -153,19 +153,19 @@ int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
     int posted = 0;
 
     switch (aWsEvent.Type()) {
-    case EEventKeyDown: /* Key events */
+    case EEventKeyDown: // Key events
         SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, aWsEvent.Key()->iScanCode, ConvertScancode(_this, aWsEvent.Key()->iScanCode), SDL_PRESSED);
         break;
-    case EEventKeyUp: /* Key events */
+    case EEventKeyUp: // Key events
         SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, aWsEvent.Key()->iScanCode, ConvertScancode(_this, aWsEvent.Key()->iScanCode), SDL_RELEASED);
         break;
-    case EEventFocusGained: /* SDL window got focus */
+    case EEventFocusGained: // SDL window got focus
         data->NGAGE_IsWindowFocused = ETrue;
-        /* Draw window background and screen buffer */
+        // Draw window background and screen buffer
         DisableKeyBlocking(_this);
         RedrawWindowL(_this);
         break;
-    case EEventFocusLost: /* SDL window lost focus */
+    case EEventFocusLost: // SDL window lost focus
     {
         data->NGAGE_IsWindowFocused = EFalse;
         RWsSession s;
@@ -191,4 +191,4 @@ int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
     return posted;
 }
 
-#endif /* SDL_VIDEO_DRIVER_NGAGE */
+#endif // SDL_VIDEO_DRIVER_NGAGE

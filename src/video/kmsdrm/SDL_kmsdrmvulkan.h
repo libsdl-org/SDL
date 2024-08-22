@@ -50,4 +50,4 @@ void KMSDRM_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 
 #endif
 
-#endif /* SDL_kmsdrm_vulkan_h_ */
+#endif // SDL_kmsdrm_vulkan_h_

@@ -25,7 +25,7 @@
 #ifdef SDL_VIDEO_DRIVER_HAIKU
 
 
-/* For application signature. */
+// For application signature.
 #include "../../core/haiku/SDL_BeApp.h"
 
 #include <Alert.h>
@@ -380,4 +380,4 @@ int HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU

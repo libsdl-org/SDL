@@ -28,4 +28,4 @@ extern int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *disp
 extern int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display,
                                  SDL_DisplayMode *mode);
 
-#endif /* SDL_riscosmodes_h_ */
+#endif // SDL_riscosmodes_h_

@@ -28,8 +28,8 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_STADIA
 
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_STADIA_PROTOCOL*/
+// Define this if you want to log all packets from the controller
+// #define DEBUG_STADIA_PROTOCOL
 
 enum
 {
@@ -74,7 +74,7 @@ static SDL_bool HIDAPI_DriverStadia_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
-    /* Check whether rumble is supported */
+    // Check whether rumble is supported
     {
         Uint8 rumble_packet[] = { 0x05, 0x00, 0x00, 0x00, 0x00 };
 
@@ -105,7 +105,7 @@ static SDL_bool HIDAPI_DriverStadia_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
 
     SDL_zeroa(ctx->last_state);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     joystick->nbuttons = SDL_GAMEPAD_NUM_STADIA_BUTTONS;
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
     joystick->nhats = 1;
@@ -173,7 +173,7 @@ static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 
     // The format is the same but the original FW will send 10 bytes and January '21 FW update will send 11
     if (size < 10 || data[0] != 0x03) {
-        /* We don't know how to handle this report */
+        // We don't know how to handle this report
         return;
     }
 
@@ -283,7 +283,7 @@ static SDL_bool HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (size < 0) {
-        /* Read error, device is disconnected */
+        // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return size >= 0;
@@ -319,6 +319,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia = {
     HIDAPI_DriverStadia_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_STADIA */
+#endif // SDL_JOYSTICK_HIDAPI_STADIA
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

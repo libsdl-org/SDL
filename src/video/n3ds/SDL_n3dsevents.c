@@ -42,4 +42,4 @@ void N3DS_PumpEvents(SDL_VideoDevice *_this)
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_N3DS */
+#endif // SDL_VIDEO_DRIVER_N3DS

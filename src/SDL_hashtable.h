@@ -21,7 +21,7 @@
 #ifndef SDL_hashtable_h_
 #define SDL_hashtable_h_
 
-/* this is not (currently) a public API. But maybe it should be! */
+// this is not (currently) a public API. But maybe it should be!
 
 struct SDL_HashTable;
 typedef struct SDL_HashTable SDL_HashTable;
@@ -57,4 +57,4 @@ extern SDL_bool SDL_KeyMatchID(const void *a, const void *b, void *unused);
 
 extern void SDL_NukeFreeValue(const void *key, const void *value, void *unused);
 
-#endif /* SDL_hashtable_h_ */
+#endif // SDL_hashtable_h_

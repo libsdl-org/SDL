@@ -25,9 +25,9 @@
 #include <SDL3/SDL_opengl.h>
 #include "SDL_shaders_gl.h"
 
-/* OpenGL shader implementation */
+// OpenGL shader implementation
 
-/* #define DEBUG_SHADERS */
+// #define DEBUG_SHADERS
 
 typedef struct
 {
@@ -61,7 +61,7 @@ struct GL_ShaderContext
     const float *shader_params[NUM_SHADERS];
 };
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 #define COLOR_VERTEX_SHADER                                     \
 "varying vec4 v_color;\n"                                       \
@@ -237,14 +237,14 @@ struct GL_ShaderContext
  *  texture_rectangle versions if we choose to use that extension.
  */
 static const char *shader_source[NUM_SHADERS][2] = {
-    /* SHADER_NONE */
+    // SHADER_NONE
     { NULL, NULL },
 
-    /* SHADER_SOLID */
+    // SHADER_SOLID
     {
-        /* vertex shader */
+        // vertex shader
         COLOR_VERTEX_SHADER,
-        /* fragment shader */
+        // fragment shader
 "varying vec4 v_color;\n"
 "\n"
 "void main()\n"
@@ -253,11 +253,11 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "}"
     },
 
-    /* SHADER_RGB */
+    // SHADER_RGB
     {
-        /* vertex shader */
+        // vertex shader
         TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
+        // fragment shader
 "varying vec4 v_color;\n"
 "varying vec2 v_texCoord;\n"
 "uniform sampler2D tex0;\n"
@@ -270,11 +270,11 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "}"
     },
 
-    /* SHADER_RGBA */
+    // SHADER_RGBA
     {
-        /* vertex shader */
+        // vertex shader
         TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
+        // fragment shader
 "varying vec4 v_color;\n"
 "varying vec2 v_texCoord;\n"
 "uniform sampler2D tex0;\n"
@@ -285,50 +285,50 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "}"
     },
 #if SDL_HAVE_YUV
-    /* SHADER_YUV */
+    // SHADER_YUV
     {
-        /* vertex shader */
+        // vertex shader
         TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
+        // fragment shader
         YUV_SHADER_PROLOGUE
         YUV_SHADER_BODY
     },
-    /* SHADER_NV12_RA */
+    // SHADER_NV12_RA
     {
-        /* vertex shader */
+        // vertex shader
         TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
+        // fragment shader
         NV12_SHADER_PROLOGUE
         NV12_RA_SHADER_BODY
     },
-    /* SHADER_NV12_RG */
+    // SHADER_NV12_RG
     {
-        /* vertex shader */
+        // vertex shader
         TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
+        // fragment shader
         NV12_SHADER_PROLOGUE
         NV12_RG_SHADER_BODY
     },
-    /* SHADER_NV21_RA */
+    // SHADER_NV21_RA
     {
-        /* vertex shader */
+        // vertex shader
         TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
+        // fragment shader
         NV12_SHADER_PROLOGUE
         NV21_RA_SHADER_BODY
     },
-    /* SHADER_NV21_RG */
+    // SHADER_NV21_RG
     {
-        /* vertex shader */
+        // vertex shader
         TEXTURE_VERTEX_SHADER,
-        /* fragment shader */
+        // fragment shader
         NV12_SHADER_PROLOGUE
         NV21_RG_SHADER_BODY
     },
-#endif /* SDL_HAVE_YUV */
+#endif // SDL_HAVE_YUV
 };
 
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on
 
 static SDL_bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, const char *source)
 {
@@ -377,7 +377,7 @@ static SDL_bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_Shader
 
     ctx->glGetError();
 
-    /* Make sure we use the correct sampler type for our texture type */
+    // Make sure we use the correct sampler type for our texture type
     if (ctx->GL_ARB_texture_rectangle_supported) {
         frag_defines =
             "#define sampler2D sampler2DRect\n"
@@ -388,27 +388,27 @@ static SDL_bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_Shader
             "#define UVCoordScale 1.0\n";
     }
 
-    /* Create one program object to rule them all */
+    // Create one program object to rule them all
     data->program = ctx->glCreateProgramObjectARB();
 
-    /* Create the vertex shader */
+    // Create the vertex shader
     data->vert_shader = ctx->glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
     if (!CompileShader(ctx, data->vert_shader, vert_defines, shader_source[index][0])) {
         return SDL_FALSE;
     }
 
-    /* Create the fragment shader */
+    // Create the fragment shader
     data->frag_shader = ctx->glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
     if (!CompileShader(ctx, data->frag_shader, frag_defines, shader_source[index][1])) {
         return SDL_FALSE;
     }
 
-    /* ... and in the darkness bind them */
+    // ... and in the darkness bind them
     ctx->glAttachObjectARB(data->program, data->vert_shader);
     ctx->glAttachObjectARB(data->program, data->frag_shader);
     ctx->glLinkProgramARB(data->program);
 
-    /* Set up some uniform variables */
+    // Set up some uniform variables
     ctx->glUseProgramObjectARB(data->program);
     for (i = 0; i < num_tmus_bound; ++i) {
         char tex_name[10];
@@ -447,7 +447,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
         ctx->GL_ARB_texture_rectangle_supported = SDL_TRUE;
     }
 
-    /* Check for shader support */
+    // Check for shader support
     shaders_supported = SDL_FALSE;
     if (SDL_GL_ExtensionSupported("GL_ARB_shader_objects") &&
         SDL_GL_ExtensionSupported("GL_ARB_shading_language_100") &&
@@ -492,7 +492,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
         return NULL;
     }
 
-    /* Compile all the shaders */
+    // Compile all the shaders
     for (i = 0; i < NUM_SHADERS; ++i) {
         if (!CompileShaderProgram(ctx, i, &ctx->shaders[i])) {
             GL_DestroyShaderContext(ctx);
@@ -500,7 +500,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
         }
     }
 
-    /* We're done! */
+    // We're done!
     return ctx;
 }
 
@@ -512,7 +512,7 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
     ctx->glUseProgramObjectARB(program);
 
     if (shader_params && shader_params != ctx->shader_params[shader]) {
-        /* YUV shader params are Yoffset, 0, Rcoeff, 0, Gcoeff, 0, Bcoeff, 0 */
+        // YUV shader params are Yoffset, 0, Rcoeff, 0, Gcoeff, 0, Bcoeff, 0
         location = ctx->glGetUniformLocationARB(program, "Yoffset");
         if (location >= 0) {
             ctx->glUniform3fARB(location, shader_params[0], shader_params[1], shader_params[2]);
@@ -543,4 +543,4 @@ void GL_DestroyShaderContext(GL_ShaderContext *ctx)
     SDL_free(ctx);
 }
 
-#endif /* SDL_VIDEO_RENDER_OGL */
+#endif // SDL_VIDEO_RENDER_OGL

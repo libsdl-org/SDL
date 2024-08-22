@@ -45,16 +45,16 @@ int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         return SDL_SetError("Vulkan already loaded");
     }
 
-    /* Load the Vulkan loader library */
+    // Load the Vulkan loader library
     if (!path) {
         path = SDL_GetHint(SDL_HINT_VULKAN_LIBRARY);
     }
     if (!path) {
-        /* If no path set, try Vivante fb vulkan driver explicitly */
+        // If no path set, try Vivante fb vulkan driver explicitly
         path = "libvulkan-fb.so";
         _this->vulkan_config.loader_handle = SDL_LoadObject(path);
         if (!_this->vulkan_config.loader_handle) {
-            /* If that couldn't be loaded, fall back to default name */
+            // If that couldn't be loaded, fall back to default name
             path = "libvulkan.so";
             _this->vulkan_config.loader_handle = SDL_LoadObject(path);
         }

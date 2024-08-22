@@ -65,15 +65,15 @@ static void *KMSDRM_GetSym(const char *fnname, int *pHasModule)
 #endif
 
     if (!fn) {
-        *pHasModule = 0; /* kill this module. */
+        *pHasModule = 0; // kill this module.
     }
 
     return fn;
 }
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC */
+#endif // SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC
 
-/* Define all the function pointers and wrappers... */
+// Define all the function pointers and wrappers...
 #define SDL_KMSDRM_MODULE(modname)       int SDL_KMSDRM_HAVE_##modname = 0;
 #define SDL_KMSDRM_SYM(rc, fn, params)   SDL_DYNKMSDRMFN_##fn KMSDRM_##fn = NULL;
 #define SDL_KMSDRM_SYM_CONST(type, name) SDL_DYNKMSDRMCONST_##name KMSDRM_##name = NULL;
@@ -83,14 +83,14 @@ static int kmsdrm_load_refcount = 0;
 
 void SDL_KMSDRM_UnloadSymbols(void)
 {
-    /* Don't actually unload if more than one module is using the libs... */
+    // Don't actually unload if more than one module is using the libs...
     if (kmsdrm_load_refcount > 0) {
         if (--kmsdrm_load_refcount == 0) {
 #ifdef SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC
             int i;
 #endif
 
-            /* set all the function pointers to NULL. */
+            // set all the function pointers to NULL.
 #define SDL_KMSDRM_MODULE(modname)       SDL_KMSDRM_HAVE_##modname = 0;
 #define SDL_KMSDRM_SYM(rc, fn, params)   KMSDRM_##fn = NULL;
 #define SDL_KMSDRM_SYM_CONST(type, name) KMSDRM_##name = NULL;
@@ -108,12 +108,12 @@ void SDL_KMSDRM_UnloadSymbols(void)
     }
 }
 
-/* returns non-zero if all needed symbols were loaded. */
+// returns non-zero if all needed symbols were loaded.
 int SDL_KMSDRM_LoadSymbols(void)
 {
-    int rc = 1; /* always succeed if not using Dynamic KMSDRM stuff. */
+    int rc = 1; // always succeed if not using Dynamic KMSDRM stuff.
 
-    /* deal with multiple modules needing these symbols... */
+    // deal with multiple modules needing these symbols...
     if (kmsdrm_load_refcount++ == 0) {
 #ifdef SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC
         int i;
@@ -124,7 +124,7 @@ int SDL_KMSDRM_LoadSymbols(void)
             }
         }
 
-#define SDL_KMSDRM_MODULE(modname) SDL_KMSDRM_HAVE_##modname = 1; /* default yes */
+#define SDL_KMSDRM_MODULE(modname) SDL_KMSDRM_HAVE_##modname = 1; // default yes
 #include "SDL_kmsdrmsym.h"
 
 #define SDL_KMSDRM_MODULE(modname)       thismod = &SDL_KMSDRM_HAVE_##modname;
@@ -133,17 +133,17 @@ int SDL_KMSDRM_LoadSymbols(void)
 #include "SDL_kmsdrmsym.h"
 
         if ((SDL_KMSDRM_HAVE_LIBDRM) && (SDL_KMSDRM_HAVE_GBM)) {
-            /* all required symbols loaded. */
+            // all required symbols loaded.
             SDL_ClearError();
         } else {
-            /* in case something got loaded... */
+            // in case something got loaded...
             SDL_KMSDRM_UnloadSymbols();
             rc = 0;
         }
 
-#else /* no dynamic KMSDRM */
+#else // no dynamic KMSDRM
 
-#define SDL_KMSDRM_MODULE(modname)       SDL_KMSDRM_HAVE_##modname = 1; /* default yes */
+#define SDL_KMSDRM_MODULE(modname)       SDL_KMSDRM_HAVE_##modname = 1; // default yes
 #define SDL_KMSDRM_SYM(rc, fn, params)   KMSDRM_##fn = fn;
 #define SDL_KMSDRM_SYM_CONST(type, name) KMSDRM_##name = name;
 #include "SDL_kmsdrmsym.h"
@@ -154,4 +154,4 @@ int SDL_KMSDRM_LoadSymbols(void)
     return rc;
 }
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM */
+#endif // SDL_VIDEO_DRIVER_KMSDRM

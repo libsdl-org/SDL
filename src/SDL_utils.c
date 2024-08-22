@@ -26,18 +26,18 @@
 #include <unistd.h>
 #endif
 
-/* Common utility functions that aren't in the public API */
+// Common utility functions that aren't in the public API
 
 int SDL_powerof2(int x)
 {
     int value;
 
     if (x <= 0) {
-        /* Return some sane value - we shouldn't hit this in our use cases */
+        // Return some sane value - we shouldn't hit this in our use cases
         return 1;
     }
 
-    /* This trick works for 32-bit values */
+    // This trick works for 32-bit values
     {
         SDL_COMPILE_TIME_ASSERT(SDL_powerof2, sizeof(x) == sizeof(Uint32));
     }
@@ -105,7 +105,7 @@ SDL_bool SDL_endswith(const char *string, const char *suffix)
     return SDL_FALSE;
 }
 
-/* Assume we can wrap SDL_AtomicInt values and cast to Uint32 */
+// Assume we can wrap SDL_AtomicInt values and cast to Uint32
 SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
 
 Uint32 SDL_GetNextObjectID(void)
@@ -165,7 +165,7 @@ SDL_bool SDL_ObjectValid(void *object, SDL_ObjectType type)
 void SDL_SetObjectsInvalid(void)
 {
     if (SDL_objects) {
-        /* Log any leaked objects */
+        // Log any leaked objects
         const void *object, *object_type;
         void *iter = NULL;
         while (SDL_IterateHashTable(SDL_objects, &object, &object_type, &iter)) {
@@ -223,13 +223,13 @@ static int SDL_URIDecode(const char *src, char *dst, int len)
     }
     for (ri = 0, wi = 0, di = 0; ri < len && wi < len; ri += 1) {
         if (di == 0) {
-            /* start decoding */
+            // start decoding
             if (src[ri] == '%') {
                 decode = '\0';
                 di += 1;
                 continue;
             }
-            /* normal write */
+            // normal write
             dst[wi] = src[ri];
             wi += 1;
         } else if (di == 1 || di == 2) {
@@ -238,7 +238,7 @@ static int SDL_URIDecode(const char *src, char *dst, int len)
             char isA = src[ri] >= 'A' && src[ri] <= 'F';
             char isn = src[ri] >= '0' && src[ri] <= '9';
             if (!(isa || isA || isn)) {
-                /* not a hexadecimal */
+                // not a hexadecimal
                 int sri;
                 for (sri = ri - di; sri <= ri; sri += 1) {
                     dst[wi] = src[sri];
@@ -247,7 +247,7 @@ static int SDL_URIDecode(const char *src, char *dst, int len)
                 di = 0;
                 continue;
             }
-            /* itsy bitsy magicsy */
+            // itsy bitsy magicsy
             if (isn) {
                 off = 0 - '0';
             } else if (isa) {
@@ -272,14 +272,14 @@ static int SDL_URIDecode(const char *src, char *dst, int len)
 int SDL_URIToLocal(const char *src, char *dst)
 {
     if (SDL_memcmp(src, "file:/", 6) == 0) {
-        src += 6; /* local file? */
+        src += 6; // local file?
     } else if (SDL_strstr(src, ":/") != NULL) {
-        return -1; /* wrong scheme */
+        return -1; // wrong scheme
     }
 
     SDL_bool local = src[0] != '/' || (src[0] != '\0' && src[1] == '/');
 
-    /* Check the hostname, if present. RFC 3986 states that the hostname component of a URI is not case-sensitive. */
+    // Check the hostname, if present. RFC 3986 states that the hostname component of a URI is not case-sensitive.
     if (!local && src[0] == '/' && src[2] != '/') {
         char *hostname_end = SDL_strchr(src + 1, '/');
         if (hostname_end) {
@@ -310,7 +310,7 @@ int SDL_URIToLocal(const char *src, char *dst)
     }
 
     if (local) {
-        /* Convert URI escape sequences to real characters */
+        // Convert URI escape sequences to real characters
         if (src[0] == '/') {
             src++;
         } else {

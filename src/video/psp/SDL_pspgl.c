@@ -29,7 +29,7 @@
 #include "SDL_pspgl_c.h"
 
 /*****************************************************************************/
-/* SDL OpenGL/OpenGL ES functions                                            */
+// SDL OpenGL/OpenGL ES functions
 /*****************************************************************************/
 #define EGLCHK(stmt)                           \
     do {                                       \
@@ -80,13 +80,13 @@ SDL_GLContext PSP_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     EGLint num_configs;
     int i;
 
-    /* EGL init taken from glutCreateWindow() in PSPGL's glut.c. */
+    // EGL init taken from glutCreateWindow() in PSPGL's glut.c.
     EGLCHK(display = eglGetDisplay(0));
     EGLCHK(eglInitialize(display, NULL, NULL));
     wdata->uses_gles = SDL_TRUE;
     window->flags |= SDL_WINDOW_FULLSCREEN;
 
-    /* Setup the config based on SDL's current values. */
+    // Setup the config based on SDL's current values.
     i = 0;
     attribs[i++] = EGL_RED_SIZE;
     attribs[i++] = _this->gl_config.red_size;
@@ -143,11 +143,11 @@ int PSP_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
     EGLBoolean status;
     status = eglSwapInterval(_this->gl_data->display, interval);
     if (status == EGL_TRUE) {
-        /* Return success to upper level */
+        // Return success to upper level
         _this->gl_data->swapinterval = interval;
         return 0;
     }
-    /* Failed to set swap interval */
+    // Failed to set swap interval
     return SDL_SetError("Unable to set the EGL swap interval");
 }
 
@@ -174,12 +174,12 @@ int PSP_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
         return SDL_SetError("PSP: GLES initialization failed, no OpenGL ES support");
     }
 
-    /* Check if OpenGL ES connection has been initialized */
+    // Check if OpenGL ES connection has been initialized
     if (_this->gl_data->display != EGL_NO_DISPLAY) {
         if (context != EGL_NO_CONTEXT) {
             status = eglDestroyContext(_this->gl_data->display, context);
             if (status != EGL_TRUE) {
-                /* Error during OpenGL ES context destroying */
+                // Error during OpenGL ES context destroying
                 return SDL_SetError("PSP: OpenGL ES context destroy error");
             }
         }
@@ -187,4 +187,4 @@ int PSP_GL_DeleteContext(SDL_VideoDevice *_this, SDL_GLContext context)
     return 0;
 }
 
-#endif /* SDL_VIDEO_DRIVER_PSP */
+#endif // SDL_VIDEO_DRIVER_PSP

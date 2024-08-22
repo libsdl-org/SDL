@@ -23,7 +23,7 @@
 #ifdef SDL_FILESYSTEM_HAIKU
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
 extern "C" {
 #include "../SDL_sysfilesystem.h"
@@ -46,9 +46,9 @@ char *SDL_SYS_GetBasePath(void)
 
     BEntry entry(name, true);
     BPath path;
-    status_t rc = entry.GetPath(&path);  /* (path) now has binary's path. */
+    status_t rc = entry.GetPath(&path);  // (path) now has binary's path.
     SDL_assert(rc == B_OK);
-    rc = path.GetParent(&path); /* chop filename, keep directory. */
+    rc = path.GetParent(&path); // chop filename, keep directory.
     SDL_assert(rc == B_OK);
     const char *str = path.Path();
     SDL_assert(str != NULL);
@@ -123,7 +123,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 
         return retval;
 
-        /* TODO: Is Haiku's desktop folder always ~/Desktop/ ? */
+        // TODO: Is Haiku's desktop folder always ~/Desktop/ ?
     case SDL_FOLDER_DESKTOP:
         retval = (char *) SDL_malloc(SDL_strlen(home) + 10);
         if (!retval) {
@@ -153,4 +153,4 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     }
 }
 
-#endif /* SDL_FILESYSTEM_HAIKU */
+#endif // SDL_FILESYSTEM_HAIKU

@@ -28,4 +28,4 @@ extern int SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window 
 extern int SDL_DUMMY_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
 extern void SDL_DUMMY_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_nullframebuffer_c_h_ */
+#endif // SDL_nullframebuffer_c_h_

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* D3D9 shader implementation */
+// D3D9 shader implementation
 
 typedef enum
 {

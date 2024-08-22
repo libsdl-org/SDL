@@ -30,8 +30,8 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_WII
 
-/* Define this if you want to log all packets from the controller */
-/*#define DEBUG_WII_PROTOCOL*/
+// Define this if you want to log all packets from the controller
+// #define DEBUG_WII_PROTOCOL
 
 #define ENABLE_CONTINUOUS_REPORTING SDL_TRUE
 
@@ -95,9 +95,9 @@ typedef enum
 
 typedef enum
 {
-    k_eWiiCommunicationState_None,                  /* No special communications happening */
-    k_eWiiCommunicationState_CheckMotionPlusStage1, /* Sent standard extension identify request */
-    k_eWiiCommunicationState_CheckMotionPlusStage2, /* Sent Motion Plus extension identify request */
+    k_eWiiCommunicationState_None,                  // No special communications happening
+    k_eWiiCommunicationState_CheckMotionPlusStage1, // Sent standard extension identify request
+    k_eWiiCommunicationState_CheckMotionPlusStage2, // Sent Motion Plus extension identify request
 } EWiiCommunicationState;
 
 typedef enum
@@ -170,7 +170,7 @@ static void HIDAPI_DriverWii_UnregisterHints(SDL_HintCallback callback, void *us
 
 static SDL_bool HIDAPI_DriverWii_IsEnabled(void)
 {
-#if 1 /* This doesn't work with the dolphinbar, so don't enable by default right now */
+#if 1 // This doesn't work with the dolphinbar, so don't enable by default right now
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII, SDL_FALSE);
 #else
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII,
@@ -193,7 +193,7 @@ static int ReadInput(SDL_DriverWii_Context *ctx)
 {
     int size;
 
-    /* Make sure we don't try to read at the same time a write is happening */
+    // Make sure we don't try to read at the same time a write is happening
     if (SDL_AtomicGet(&ctx->device->rumble_pending) > 0) {
         return 0;
     }
@@ -217,7 +217,7 @@ static SDL_bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int s
     if (sync) {
         return SDL_hid_write(ctx->device->dev, data, size) >= 0;
     } else {
-        /* Use the rumble thread for general asynchronous writes */
+        // Use the rumble thread for general asynchronous writes
         if (SDL_HIDAPI_LockRumble() < 0) {
             return SDL_FALSE;
         }
@@ -227,7 +227,7 @@ static SDL_bool WriteOutput(SDL_DriverWii_Context *ctx, const Uint8 *data, int s
 
 static SDL_bool ReadInputSync(SDL_DriverWii_Context *ctx, EWiiInputReportIDs expectedID, SDL_bool (*isMine)(const Uint8 *))
 {
-    Uint64 endTicks = SDL_GetTicks() + 250; /* Seeing successful reads after about 200 ms */
+    Uint64 endTicks = SDL_GetTicks() + 250; // Seeing successful reads after about 200 ms
 
     int nRead = 0;
     while ((nRead = ReadInput(ctx)) != -1) {
@@ -269,7 +269,7 @@ static SDL_bool WriteRegister(SDL_DriverWii_Context *ctx, Uint32 address, const 
         return SDL_FALSE;
     }
     if (sync) {
-        /* Wait for response */
+        // Wait for response
         if (!ReadInputSync(ctx, k_eWiiInputReportIDs_Acknowledge, IsWriteMemoryResponse)) {
             return SDL_FALSE;
         }
@@ -299,8 +299,8 @@ static SDL_bool ReadRegister(SDL_DriverWii_Context *ctx, Uint32 address, int siz
         return SDL_FALSE;
     }
     if (sync) {
-        SDL_assert(size <= 16); /* Only waiting for one packet is supported right now */
-        /* Wait for response */
+        SDL_assert(size <= 16); // Only waiting for one packet is supported right now
+        // Wait for response
         if (!ReadInputSync(ctx, k_eWiiInputReportIDs_ReadMemory, NULL)) {
             return SDL_FALSE;
         }
@@ -331,7 +331,7 @@ static SDL_bool ParseExtensionIdentifyResponse(SDL_DriverWii_Context *ctx, Uint1
         Uint8 error = (ctx->m_rgucReadBuffer[3] & 0xF);
 
         if (error == 7) {
-            /* The extension memory isn't mapped */
+            // The extension memory isn't mapped
             *extension = WII_EXTENSION_NONE;
             return SDL_TRUE;
         }
@@ -374,7 +374,7 @@ static SDL_bool SendExtensionReset(SDL_DriverWii_Context *ctx, SDL_bool sync)
         Uint8 data = 0x55;
         result = result && WriteRegister(ctx, 0xA400F0, &data, sizeof(data), sync);
     }
-    /* This write will fail if there is no extension connected, that's fine */
+    // This write will fail if there is no extension connected, that's fine
     {
         Uint8 data = 0x00;
         (void)WriteRegister(ctx, 0xA400FB, &data, sizeof(data), sync);
@@ -394,14 +394,14 @@ static SDL_bool GetMotionPlusState(SDL_DriverWii_Context *ctx, SDL_bool *connect
     }
 
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
-        /* The Wii U Pro controller never has the Motion Plus extension */
+        // The Wii U Pro controller never has the Motion Plus extension
         return SDL_TRUE;
     }
 
     if (SendExtensionIdentify(ctx, SDL_TRUE) &&
         ParseExtensionIdentifyResponse(ctx, &extension)) {
         if ((extension & WII_EXTENSION_MOTIONPLUS_MASK) == WII_EXTENSION_MOTIONPLUS_ID) {
-            /* Motion Plus is currently active */
+            // Motion Plus is currently active
             if (connected) {
                 *connected = SDL_TRUE;
             }
@@ -415,7 +415,7 @@ static SDL_bool GetMotionPlusState(SDL_DriverWii_Context *ctx, SDL_bool *connect
     if (ReadRegister(ctx, 0xA600FE, 2, SDL_TRUE) &&
         ParseExtensionIdentifyResponse(ctx, &extension)) {
         if ((extension & WII_EXTENSION_MOTIONPLUS_MASK) == WII_EXTENSION_MOTIONPLUS_ID) {
-            /* Motion Plus is currently connected */
+            // Motion Plus is currently connected
             if (connected) {
                 *connected = SDL_TRUE;
             }
@@ -423,19 +423,19 @@ static SDL_bool GetMotionPlusState(SDL_DriverWii_Context *ctx, SDL_bool *connect
         return SDL_TRUE;
     }
 
-    /* Failed to read the register or parse the response */
+    // Failed to read the register or parse the response
     return SDL_FALSE;
 }
 
 static SDL_bool NeedsPeriodicMotionPlusCheck(SDL_DriverWii_Context *ctx, SDL_bool status_update)
 {
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
-        /* The Wii U Pro controller never has the Motion Plus extension */
+        // The Wii U Pro controller never has the Motion Plus extension
         return SDL_FALSE;
     }
 
     if (ctx->m_ucMotionPlusMode != WII_MOTIONPLUS_MODE_NONE && !status_update) {
-        /* We'll get a status update when Motion Plus is disconnected */
+        // We'll get a status update when Motion Plus is disconnected
         return SDL_FALSE;
     }
 
@@ -464,14 +464,14 @@ static void ActivateMotionPlusWithMode(SDL_DriverWii_Context *ctx, Uint8 mode)
     WriteRegister(ctx, 0xA600FE, &mode, sizeof(mode), SDL_TRUE);
 
     ctx->m_ucMotionPlusMode = mode;
-#endif /* LINUX */
+#endif // LINUX
 }
 
 static void ActivateMotionPlus(SDL_DriverWii_Context *ctx)
 {
     Uint8 mode = WII_MOTIONPLUS_MODE_STANDARD;
 
-    /* Pick the pass-through mode based on the connected controller */
+    // Pick the pass-through mode based on the connected controller
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_Nunchuk) {
         mode = WII_MOTIONPLUS_MODE_NUNCHUK;
     } else if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_Gamepad) {
@@ -485,7 +485,7 @@ static void DeactivateMotionPlus(SDL_DriverWii_Context *ctx)
     Uint8 data = 0x55;
     WriteRegister(ctx, 0xA400F0, &data, sizeof(data), SDL_TRUE);
 
-    /* Wait for the deactivation status message */
+    // Wait for the deactivation status message
     ReadInputSync(ctx, k_eWiiInputReportIDs_Status, NULL);
 
     ctx->m_ucMotionPlusMode = WII_MOTIONPLUS_MODE_NONE;
@@ -573,7 +573,7 @@ static SDL_bool RequestButtonPacketType(SDL_DriverWii_Context *ctx, EWiiInputRep
     Uint8 data[3];
     Uint8 tt = (Uint8)ctx->m_bRumbleActive;
 
-    /* Continuous reporting off, tt & 4 == 0 */
+    // Continuous reporting off, tt & 4 == 0
     if (ENABLE_CONTINUOUS_REPORTING) {
         tt |= 4;
     }
@@ -634,11 +634,11 @@ static void UpdateSlotLED(SDL_DriverWii_Context *ctx)
     Uint8 leds;
     Uint8 data[2];
 
-    /* The lowest bit needs to have the rumble status */
+    // The lowest bit needs to have the rumble status
     leds = (Uint8)ctx->m_bRumbleActive;
 
     if (ctx->m_bPlayerLights) {
-        /* Use the same LED codes as Smash 8-player for 5-7 */
+        // Use the same LED codes as Smash 8-player for 5-7
         if (ctx->m_nPlayerIndex == 0 || ctx->m_nPlayerIndex > 3) {
             leds |= k_eWiiPlayerLEDs_P1;
         }
@@ -651,7 +651,7 @@ static void UpdateSlotLED(SDL_DriverWii_Context *ctx)
         if (ctx->m_nPlayerIndex == 3 || ctx->m_nPlayerIndex == 6) {
             leds |= k_eWiiPlayerLEDs_P4;
         }
-        /* Turn on all lights for other player indexes */
+        // Turn on all lights for other player indexes
         if (ctx->m_nPlayerIndex < 0 || ctx->m_nPlayerIndex > 6) {
             leds |= k_eWiiPlayerLEDs_P1 | k_eWiiPlayerLEDs_P2 | k_eWiiPlayerLEDs_P3 | k_eWiiPlayerLEDs_P4;
         }
@@ -681,7 +681,7 @@ static EWiiExtensionControllerType ReadExtensionControllerType(SDL_HIDAPI_Device
     const int MAX_ATTEMPTS = 20;
     int attempts = 0;
 
-    /* Create enough of a context to read the controller type from the device */
+    // Create enough of a context to read the controller type from the device
     for (attempts = 0; attempts < MAX_ATTEMPTS; ++attempts) {
         Uint16 extension;
         if (SendExtensionIdentify(ctx, SDL_TRUE) &&
@@ -699,7 +699,7 @@ static EWiiExtensionControllerType ReadExtensionControllerType(SDL_HIDAPI_Device
 
             eExtensionControllerType = GetExtensionType(extension);
 
-            /* Reset the Motion Plus controller if needed */
+            // Reset the Motion Plus controller if needed
             if (motion_plus_mode) {
                 ActivateMotionPlusWithMode(ctx, motion_plus_mode);
             }
@@ -798,7 +798,7 @@ static SDL_bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         }
     }
 
-    /* Initialize player index (needed for setting LEDs) */
+    // Initialize player index (needed for setting LEDs)
     ctx->m_nPlayerIndex = SDL_GetJoystickPlayerIndex(joystick);
     ctx->m_bPlayerLights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED, SDL_TRUE);
     UpdateSlotLED(ctx);
@@ -806,11 +806,11 @@ static SDL_bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
                         SDL_PlayerLEDHintChanged, ctx);
 
-    /* Initialize the joystick capabilities */
+    // Initialize the joystick capabilities
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
         joystick->nbuttons = 15;
     } else {
-        /* Maximum is Classic Controller + Wiimote */
+        // Maximum is Classic Controller + Wiimote
         joystick->nbuttons = k_eWiiButtons_Max;
     }
     joystick->naxes = SDL_GAMEPAD_AXIS_MAX;
@@ -881,7 +881,7 @@ static void PostStickCalibrated(Uint64 timestamp, SDL_Joystick *joystick, StickC
 {
     Sint16 value = 0;
     if (!calibration->center) {
-        /* Center on first read */
+        // Center on first read
         calibration->center = data;
         return;
     }
@@ -1034,22 +1034,22 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
         return;
     }
 
-    /* Buttons */
+    // Buttons
     PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucExtension + 8, 3, SDL_RELEASED, SDL_PRESSED);
 
-    /* Triggers */
+    // Triggers
     zl = data->rgucExtension[9] & 0x80;
     zr = data->rgucExtension[9] & 0x04;
     SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, zl ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
     SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, zr ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
 
-    /* Sticks */
+    // Sticks
     for (i = 0; i < 4; i++) {
         Uint16 value = data->rgucExtension[i * 2] | (data->rgucExtension[i * 2 + 1] << 8);
         PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[i], axes[i], value);
     }
 
-    /* Power */
+    // Power
     UpdatePowerLevelWiiU(joystick, data->rgucExtension[10]);
 }
 
@@ -1062,19 +1062,19 @@ static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Jo
         return;
     }
 
-    /* Buttons */
+    // Buttons
     PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucExtension + 4, 2, SDL_RELEASED, SDL_PRESSED);
     if (ctx->m_ucMotionPlusMode == WII_MOTIONPLUS_MODE_GAMEPAD) {
         PostPackedButtonData(ctx->timestamp, joystick, MP_FIXUP_DPAD_BUTTON_DEFS, data->rgucExtension, 2, SDL_RELEASED, SDL_PRESSED);
     }
 
-    /* Triggers */
+    // Triggers
     zl = data->rgucExtension[5] & 0x80;
     zr = data->rgucExtension[5] & 0x04;
     SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, zl ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
     SDL_SendJoystickAxis(ctx->timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, zr ? SDL_JOYSTICK_AXIS_MIN : SDL_JOYSTICK_AXIS_MAX);
 
-    /* Sticks */
+    // Sticks
     if (ctx->m_ucMotionPlusMode == WII_MOTIONPLUS_MODE_GAMEPAD) {
         lx = data->rgucExtension[0] & 0x3E;
         ly = data->rgucExtension[1] & 0x3E;
@@ -1215,24 +1215,24 @@ static void HandleMotionPlusData(SDL_DriverWii_Context *ctx, SDL_Joystick *joyst
         z = (data->rgucExtension[2] | ((data->rgucExtension[5] << 6) & 0xFF00)) - 8192;
 
         if (data->rgucExtension[3] & 0x02) {
-            /* Slow rotation rate: 8192/440 units per deg/s */
+            // Slow rotation rate: 8192/440 units per deg/s
             x *= 440;
         } else {
-            /* Fast rotation rate: 8192/2000 units per deg/s */
+            // Fast rotation rate: 8192/2000 units per deg/s
             x *= 2000;
         }
         if (data->rgucExtension[4] & 0x02) {
-            /* Slow rotation rate: 8192/440 units per deg/s */
+            // Slow rotation rate: 8192/440 units per deg/s
             y *= 440;
         } else {
-            /* Fast rotation rate: 8192/2000 units per deg/s */
+            // Fast rotation rate: 8192/2000 units per deg/s
             y *= 2000;
         }
         if (data->rgucExtension[3] & 0x01) {
-            /* Slow rotation rate: 8192/440 units per deg/s */
+            // Slow rotation rate: 8192/440 units per deg/s
             z *= 440;
         } else {
-            /* Fast rotation rate: 8192/2000 units per deg/s */
+            // Fast rotation rate: 8192/2000 units per deg/s
             z *= 2000;
         }
 
@@ -1273,18 +1273,18 @@ static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick,
     if (ctx->m_ucMotionPlusMode != WII_MOTIONPLUS_MODE_NONE &&
         data->ucNExtensionBytes > 5) {
         if (data->rgucExtension[5] & 0x01) {
-            /* The data is invalid, possibly during a hotplug */
+            // The data is invalid, possibly during a hotplug
             return;
         }
 
         if (data->rgucExtension[4] & 0x01) {
             if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_None) {
-                /* Something was plugged into the extension port, reinitialize to get new state */
+                // Something was plugged into the extension port, reinitialize to get new state
                 ctx->m_bDisconnected = SDL_TRUE;
             }
         } else {
             if (ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_None) {
-                /* Something was removed from the extension port, reinitialize to get new state */
+                // Something was removed from the extension port, reinitialize to get new state
                 ctx->m_bDisconnected = SDL_TRUE;
             }
         }
@@ -1292,7 +1292,7 @@ static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick,
         if (data->rgucExtension[5] & 0x02) {
             HandleMotionPlusData(ctx, joystick, data);
 
-            /* The extension data is consumed */
+            // The extension data is consumed
             data->ucNExtensionBytes = 0;
         }
     }
@@ -1357,11 +1357,11 @@ static void HandleStatus(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
     HandleButtonData(ctx, joystick, &data);
 
     if (ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_WiiUPro) {
-        /* Wii U has separate battery level tracking */
+        // Wii U has separate battery level tracking
         UpdatePowerLevelWii(joystick, ctx->m_rgucReadBuffer[6]);
     }
 
-    /* The report data format has been reset, need to update it */
+    // The report data format has been reset, need to update it
     ResetButtonPacketType(ctx);
 
     SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Status update, extension %s\n", hasExtension ? "CONNECTED" : "DISCONNECTED");
@@ -1379,7 +1379,7 @@ static void HandleStatus(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
         }
 
     } else if (hadExtension != hasExtension) {
-        /* Reinitialize to get new state */
+        // Reinitialize to get new state
         ctx->m_bDisconnected = SDL_TRUE;
     }
 }
@@ -1403,27 +1403,27 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
         Uint16 extension = 0;
         if (ParseExtensionIdentifyResponse(ctx, &extension)) {
             if ((extension & WII_EXTENSION_MOTIONPLUS_MASK) == WII_EXTENSION_MOTIONPLUS_ID) {
-                /* Motion Plus is currently active */
+                // Motion Plus is currently active
                 SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Motion Plus CONNECTED (stage %d)\n", ctx->m_eCommState == k_eWiiCommunicationState_CheckMotionPlusStage1 ? 1 : 2);
 
                 if (!ctx->m_bMotionPlusPresent) {
-                    /* Reinitialize to get new sensor availability */
+                    // Reinitialize to get new sensor availability
                     ctx->m_bDisconnected = SDL_TRUE;
                 }
                 ctx->m_eCommState = k_eWiiCommunicationState_None;
 
             } else if (ctx->m_eCommState == k_eWiiCommunicationState_CheckMotionPlusStage1) {
-                /* Check to see if Motion Plus is present */
+                // Check to see if Motion Plus is present
                 ReadRegister(ctx, 0xA600FE, 2, SDL_FALSE);
 
                 ctx->m_eCommState = k_eWiiCommunicationState_CheckMotionPlusStage2;
 
             } else {
-                /* Motion Plus is not present */
+                // Motion Plus is not present
                 SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Motion Plus DISCONNECTED (stage %d)\n", ctx->m_eCommState == k_eWiiCommunicationState_CheckMotionPlusStage1 ? 1 : 2);
 
                 if (ctx->m_bMotionPlusPresent) {
-                    /* Reinitialize to get new sensor availability */
+                    // Reinitialize to get new sensor availability
                     ctx->m_bDisconnected = SDL_TRUE;
                 }
                 ctx->m_eCommState = k_eWiiCommunicationState_None;
@@ -1431,7 +1431,7 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
         }
     } break;
     default:
-        /* Should never happen */
+        // Should never happen
         break;
     }
 }
@@ -1441,45 +1441,45 @@ static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystic
     EWiiInputReportIDs eExpectedReport = GetButtonPacketType(ctx);
     WiiButtonData data;
 
-    /* FIXME: This should see if the data format is compatible rather than equal */
+    // FIXME: This should see if the data format is compatible rather than equal
     if (eExpectedReport != ctx->m_rgucReadBuffer[0]) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Resetting report mode to %d\n", eExpectedReport);
         RequestButtonPacketType(ctx, eExpectedReport);
     }
 
-    /* IR camera data is not supported */
+    // IR camera data is not supported
     SDL_zero(data);
     switch (ctx->m_rgucReadBuffer[0]) {
-    case k_eWiiInputReportIDs_ButtonData0: /* 30 BB BB */
+    case k_eWiiInputReportIDs_ButtonData0: // 30 BB BB
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
         break;
-    case k_eWiiInputReportIDs_ButtonData1: /* 31 BB BB AA AA AA */
-    case k_eWiiInputReportIDs_ButtonData3: /* 33 BB BB AA AA AA II II II II II II II II II II II II */
+    case k_eWiiInputReportIDs_ButtonData1: // 31 BB BB AA AA AA
+    case k_eWiiInputReportIDs_ButtonData3: // 33 BB BB AA AA AA II II II II II II II II II II II II
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
         GetAccelerometer(&data, ctx->m_rgucReadBuffer + 3);
         break;
-    case k_eWiiInputReportIDs_ButtonData2: /* 32 BB BB EE EE EE EE EE EE EE EE */
+    case k_eWiiInputReportIDs_ButtonData2: // 32 BB BB EE EE EE EE EE EE EE EE
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
         GetExtensionData(&data, ctx->m_rgucReadBuffer + 3, 8);
         break;
-    case k_eWiiInputReportIDs_ButtonData4: /* 34 BB BB EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE */
+    case k_eWiiInputReportIDs_ButtonData4: // 34 BB BB EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
         GetExtensionData(&data, ctx->m_rgucReadBuffer + 3, 19);
         break;
-    case k_eWiiInputReportIDs_ButtonData5: /* 35 BB BB AA AA AA EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE */
+    case k_eWiiInputReportIDs_ButtonData5: // 35 BB BB AA AA AA EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
         GetAccelerometer(&data, ctx->m_rgucReadBuffer + 3);
         GetExtensionData(&data, ctx->m_rgucReadBuffer + 6, 16);
         break;
-    case k_eWiiInputReportIDs_ButtonData6: /* 36 BB BB II II II II II II II II II II EE EE EE EE EE EE EE EE EE */
+    case k_eWiiInputReportIDs_ButtonData6: // 36 BB BB II II II II II II II II II II EE EE EE EE EE EE EE EE EE
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
         GetExtensionData(&data, ctx->m_rgucReadBuffer + 13, 9);
         break;
-    case k_eWiiInputReportIDs_ButtonData7: /* 37 BB BB AA AA AA II II II II II II II II II II EE EE EE EE EE EE */
+    case k_eWiiInputReportIDs_ButtonData7: // 37 BB BB AA AA AA II II II II II II II II II II EE EE EE EE EE EE
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
         GetExtensionData(&data, ctx->m_rgucReadBuffer + 16, 6);
         break;
-    case k_eWiiInputReportIDs_ButtonDataD: /* 3d EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE */
+    case k_eWiiInputReportIDs_ButtonDataD: // 3d EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE
         GetExtensionData(&data, ctx->m_rgucReadBuffer + 1, 21);
         break;
     case k_eWiiInputReportIDs_ButtonDataE:
@@ -1495,7 +1495,7 @@ static void HandleInput(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
 {
     EWiiInputReportIDs type = (EWiiInputReportIDs)ctx->m_rgucReadBuffer[0];
 
-    /* Set up for handling input */
+    // Set up for handling input
     ctx->timestamp = SDL_GetTicksNS();
 
     if (type == k_eWiiInputReportIDs_Status) {
@@ -1538,15 +1538,15 @@ static SDL_bool HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
         SDL_COMPILE_TIME_ASSERT(ENABLE_CONTINUOUS_REPORTING, ENABLE_CONTINUOUS_REPORTING);
     }
     if (now >= (ctx->m_ulLastInput + INPUT_WAIT_TIMEOUT_MS)) {
-        /* Bluetooth may have disconnected, try reopening the controller */
+        // Bluetooth may have disconnected, try reopening the controller
         size = -1;
     }
 
     if (joystick) {
-        /* These checks aren't needed on the Wii U Pro Controller */
+        // These checks aren't needed on the Wii U Pro Controller
         if (ctx->m_eExtensionControllerType != k_eWiiExtensionControllerType_WiiUPro) {
 
-            /* Check to see if the Motion Plus extension status has changed */
+            // Check to see if the Motion Plus extension status has changed
             if (ctx->m_ulNextMotionPlusCheck && now >= ctx->m_ulNextMotionPlusCheck) {
                 CheckMotionPlusConnection(ctx);
                 if (NeedsPeriodicMotionPlusCheck(ctx, SDL_FALSE)) {
@@ -1556,7 +1556,7 @@ static SDL_bool HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
                 }
             }
 
-            /* Request a status update periodically to make sure our battery value is up to date */
+            // Request a status update periodically to make sure our battery value is up to date
             if (!ctx->m_ulLastStatus || now >= (ctx->m_ulLastStatus + STATUS_UPDATE_TIME_MS)) {
                 Uint8 data[2];
 
@@ -1570,7 +1570,7 @@ static SDL_bool HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (size < 0 || ctx->m_bDisconnected) {
-        /* Read error, device is disconnected */
+        // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
     return size >= 0;
@@ -1612,6 +1612,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii = {
     HIDAPI_DriverWii_FreeDevice,
 };
 
-#endif /* SDL_JOYSTICK_HIDAPI_WII */
+#endif // SDL_JOYSTICK_HIDAPI_WII
 
-#endif /* SDL_JOYSTICK_HIDAPI */
+#endif // SDL_JOYSTICK_HIDAPI

@@ -37,4 +37,4 @@ extern void UIKit_GL_RestoreCurrentContext(void);
 
 #endif // SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
 
-#endif /* SDL_uikitopengles_ */
+#endif // SDL_uikitopengles_

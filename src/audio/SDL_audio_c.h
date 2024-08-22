@@ -24,4 +24,4 @@
 
 extern void SDL_UpdateAudio(void);
 
-#endif /* SDL_audio_c_h_ */
+#endif // SDL_audio_c_h_

@@ -54,7 +54,7 @@ static void InitIME(void)
 
     inited = SDL_TRUE;
 
-    /* See if fcitx IME support is being requested */
+    // See if fcitx IME support is being requested
 #ifdef HAVE_FCITX
     if (!SDL_IME_Init_Real &&
         ((im_module && SDL_strcmp(im_module, "fcitx") == 0) ||
@@ -67,9 +67,9 @@ static void InitIME(void)
         SDL_IME_UpdateTextInputArea_Real = SDL_Fcitx_UpdateTextInputArea;
         SDL_IME_PumpEvents_Real = SDL_Fcitx_PumpEvents;
     }
-#endif /* HAVE_FCITX */
+#endif // HAVE_FCITX
 
-    /* default to IBus */
+    // default to IBus
 #ifdef HAVE_IBUS_IBUS_H
     if (!SDL_IME_Init_Real) {
         SDL_IME_Init_Real = SDL_IBus_Init;
@@ -80,7 +80,7 @@ static void InitIME(void)
         SDL_IME_UpdateTextInputArea_Real = SDL_IBus_UpdateTextInputArea;
         SDL_IME_PumpEvents_Real = SDL_IBus_PumpEvents;
     }
-#endif /* HAVE_IBUS_IBUS_H */
+#endif // HAVE_IBUS_IBUS_H
 }
 
 SDL_bool SDL_IME_Init(void)
@@ -92,7 +92,7 @@ SDL_bool SDL_IME_Init(void)
             return SDL_TRUE;
         }
 
-        /* uhoh, the IME implementation's init failed! Disable IME support. */
+        // uhoh, the IME implementation's init failed! Disable IME support.
         SDL_IME_Init_Real = NULL;
         SDL_IME_Quit_Real = NULL;
         SDL_IME_SetFocus_Real = NULL;

@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* This file defines useful function for working with SDL logging */
+// This file defines useful function for working with SDL logging
 
 #ifndef SDL_log_c_h_
 #define SDL_log_c_h_
@@ -28,4 +28,4 @@
 extern void SDL_InitLog(void);
 extern void SDL_QuitLog(void);
 
-#endif /* SDL_log_c_h_ */
+#endif // SDL_log_c_h_

@@ -33,10 +33,10 @@
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
 
-/* The maximum number of mouse buttons we support */
+// The maximum number of mouse buttons we support
 #define MAX_MOUSE_BUTTONS 5
 
-/* This is defined in SDL_sysjoystick.m */
+// This is defined in SDL_sysjoystick.m
 #ifndef SDL_JOYSTICK_DISABLED
 extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #endif
@@ -53,7 +53,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
     if ((self = [super initWithFrame:frame])) {
 #ifdef SDL_PLATFORM_TVOS
-        /* Apple TV Remote touchpad swipe gestures. */
+        // Apple TV Remote touchpad swipe gestures.
         UISwipeGestureRecognizer *swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
         [self addGestureRecognizer:swipeUp];
@@ -100,7 +100,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         return;
     }
 
-    /* Remove ourself from the old window. */
+    // Remove ourself from the old window.
     if (sdlwindow) {
         SDL_uikitview *view = nil;
         data = (__bridge SDL_UIKitWindowData *)sdlwindow->internal;
@@ -109,7 +109,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
         [self removeFromSuperview];
 
-        /* Restore the next-oldest view in the old window. */
+        // Restore the next-oldest view in the old window.
         view = data.views.lastObject;
 
         data.viewcontroller.view = view;
@@ -122,14 +122,14 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     sdlwindow = window;
 
-    /* Add ourself to the new window. */
+    // Add ourself to the new window.
     if (window) {
         data = (__bridge SDL_UIKitWindowData *)window->internal;
 
-        /* Make sure the SDL window has a strong reference to this view. */
+        // Make sure the SDL window has a strong reference to this view.
         [data.views addObject:self];
 
-        /* Replace the view controller's old view with this one. */
+        // Replace the view controller's old view with this one.
         [data.viewcontroller.view removeFromSuperview];
         data.viewcontroller.view = self;
 
@@ -176,7 +176,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         return [UIPointerStyle hiddenPointerStyle];
     }
 }
-#endif /* !defined(SDL_PLATFORM_TVOS) && __IPHONE_13_4 */
+#endif // !defined(SDL_PLATFORM_TVOS) && __IPHONE_13_4
 
 - (SDL_TouchDeviceType)touchTypeForTouch:(UITouch *)touch
 {
@@ -272,7 +272,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                 continue;
             }
 
-            /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
+            // FIXME, need to send: int clicks = (int) touch.tapCount; ?
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
@@ -328,7 +328,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                 continue;
             }
 
-            /* FIXME, need to send: int clicks = (int) touch.tapCount; ? */
+            // FIXME, need to send: int clicks = (int) touch.tapCount; ?
 
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
             SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
@@ -351,7 +351,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
-                /* Already handled in pointerInteraction callback */
+                // Already handled in pointerInteraction callback
                 handled = YES;
             }
         }
@@ -397,7 +397,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #endif
 
 #ifndef SDL_JOYSTICK_DISABLED
-    /* Presses from Apple TV remote */
+    // Presses from Apple TV remote
     if (!SDL_AppleTVRemoteOpenedAsJoystick) {
         switch (press.type) {
         case UIPressTypeUpArrow:
@@ -409,19 +409,19 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         case UIPressTypeRightArrow:
             return SDL_SCANCODE_RIGHT;
         case UIPressTypeSelect:
-            /* HIG says: "primary button behavior" */
+            // HIG says: "primary button behavior"
             return SDL_SCANCODE_RETURN;
         case UIPressTypeMenu:
-            /* HIG says: "returns to previous screen" */
+            // HIG says: "returns to previous screen"
             return SDL_SCANCODE_ESCAPE;
         case UIPressTypePlayPause:
-            /* HIG says: "secondary button behavior" */
+            // HIG says: "secondary button behavior"
             return SDL_SCANCODE_PAUSE;
         default:
             break;
         }
     }
-#endif /* !SDL_JOYSTICK_DISABLED */
+#endif // !SDL_JOYSTICK_DISABLED
 
     return SDL_SCANCODE_UNKNOWN;
 }
@@ -467,18 +467,18 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 - (void)pressesChanged:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    /* This is only called when the force of a press changes. */
+    // This is only called when the force of a press changes.
     if (SDL_TextInputActive(sdlwindow)) {
         [super pressesChanged:presses withEvent:event];
     }
 }
 
-#endif /* defined(SDL_PLATFORM_TVOS) || defined(__IPHONE_9_1) */
+#endif // defined(SDL_PLATFORM_TVOS) || defined(__IPHONE_9_1)
 
 #ifdef SDL_PLATFORM_TVOS
 - (void)swipeGesture:(UISwipeGestureRecognizer *)gesture
 {
-    /* Swipe gestures don't trigger begin states. */
+    // Swipe gestures don't trigger begin states.
     if (gesture.state == UIGestureRecognizerStateEnded) {
 #ifndef SDL_JOYSTICK_DISABLED
         if (!SDL_AppleTVRemoteOpenedAsJoystick) {
@@ -499,11 +499,11 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                 break;
             }
         }
-#endif /* !SDL_JOYSTICK_DISABLED */
+#endif // !SDL_JOYSTICK_DISABLED
     }
 }
-#endif /* SDL_PLATFORM_TVOS */
+#endif // SDL_PLATFORM_TVOS
 
 @end
 
-#endif /* SDL_VIDEO_DRIVER_UIKIT */
+#endif // SDL_VIDEO_DRIVER_UIKIT

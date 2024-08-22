@@ -43,7 +43,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
     if (df) {
         const char *s = nl_langinfo(D_FMT);
 
-        /* Figure out the preferred system date format from the first format character. */
+        // Figure out the preferred system date format from the first format character.
         if (s) {
             while (*s) {
                 switch (*s++) {
@@ -75,7 +75,7 @@ found_date:
     if (tf) {
         const char *s = nl_langinfo(T_FMT);
 
-        /* Figure out the preferred system date format. */
+        // Figure out the preferred system date format.
         if (s) {
             while (*s) {
                 switch (*s++) {
@@ -123,7 +123,7 @@ int SDL_GetCurrentTime(SDL_Time *ticks)
         SDL_zero(mts);
         ret = clock_get_time(cclock, &mts);
         if (ret == 0) {
-            /* mach_timespec_t tv_sec is 32-bit, so no overflow possible */
+            // mach_timespec_t tv_sec is 32-bit, so no overflow possible
             *ticks = SDL_SECONDS_TO_NS(mts.tv_sec) + mts.tv_nsec;
         }
         mach_port_deallocate(mach_task_self(), cclock);
@@ -194,4 +194,4 @@ int SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, SDL_bool localTime)
     return SDL_SetError("SDL_DateTime conversion failed (%i)", errno);
 }
 
-#endif /* SDL_TIME_UNIX */
+#endif // SDL_TIME_UNIX

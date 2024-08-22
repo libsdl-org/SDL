@@ -48,7 +48,7 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
         return SDL_FALSE;
     }
 
-    /* Initialize to empty rect */
+    // Initialize to empty rect
     span_y1 = height;
     span_y2 = 0;
 
@@ -56,7 +56,7 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
         rect_y1 = rects[i].y;
         rect_y2 = rect_y1 + rects[i].h;
 
-        /* Clip out of bounds rectangles, and expand span rect */
+        // Clip out of bounds rectangles, and expand span rect
         if (rect_y1 < 0) {
             span_y1 = 0;
         } else if (rect_y1 < span_y1) {
@@ -78,13 +78,13 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
     return SDL_FALSE;
 }
 
-/* For use with the Cohen-Sutherland algorithm for line clipping, in SDL_rect_impl.h */
+// For use with the Cohen-Sutherland algorithm for line clipping, in SDL_rect_impl.h
 #define CODE_BOTTOM 1
 #define CODE_TOP    2
 #define CODE_LEFT   4
 #define CODE_RIGHT  8
 
-/* Same code twice, for float and int versions... */
+// Same code twice, for float and int versions...
 #define RECTTYPE                 SDL_Rect
 #define POINTTYPE                SDL_Point
 #define SCALARTYPE               int

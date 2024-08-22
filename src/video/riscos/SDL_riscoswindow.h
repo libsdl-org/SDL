@@ -35,4 +35,4 @@ struct SDL_WindowData
 extern int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_riscoswindow_h_ */
+#endif // SDL_riscoswindow_h_

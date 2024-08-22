@@ -41,4 +41,4 @@ extern int Cocoa_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *displ
 extern int Cocoa_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void Cocoa_QuitModes(SDL_VideoDevice *_this);
 
-#endif /* SDL_cocoamodes_h_ */
+#endif // SDL_cocoamodes_h_

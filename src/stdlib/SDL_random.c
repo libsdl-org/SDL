@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* This file contains portable random functions for SDL */
+// This file contains portable random functions for SDL
 
 static Uint64 SDL_rand_state;
 static SDL_bool SDL_rand_initialized = SDL_FALSE;

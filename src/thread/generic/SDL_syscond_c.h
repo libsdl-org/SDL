@@ -31,6 +31,6 @@ int SDL_SignalCondition_generic(SDL_Condition *cond);
 int SDL_BroadcastCondition_generic(SDL_Condition *cond);
 int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
 
-#endif /* SDL_THREAD_GENERIC_COND_SUFFIX */
+#endif // SDL_THREAD_GENERIC_COND_SUFFIX
 
-#endif /* SDL_syscond_generic_h_ */
+#endif // SDL_syscond_generic_h_

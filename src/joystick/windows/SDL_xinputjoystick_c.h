@@ -22,7 +22,7 @@
 
 #include "../../core/windows/SDL_xinput.h"
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,7 +38,7 @@ extern void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick);
 extern void SDL_XINPUT_JoystickQuit(void);
 extern int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif

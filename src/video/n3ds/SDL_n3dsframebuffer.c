@@ -78,7 +78,7 @@ int SDL_N3DS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
         return SDL_SetError("%s: Unable to get the window surface.", __func__);
     }
 
-    /* Get the N3DS internal framebuffer and its size */
+    // Get the N3DS internal framebuffer and its size
     framebuffer = gfxGetFramebuffer(drv_data->screen, GFX_LEFT, &width, &height);
     bufsize = width * height * 4;
 
@@ -158,4 +158,4 @@ void SDL_N3DS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
     SDL_ClearProperty(SDL_GetWindowProperties(window), N3DS_SURFACE);
 }
 
-#endif /* SDL_VIDEO_DRIVER_N3DS */
+#endif // SDL_VIDEO_DRIVER_N3DS

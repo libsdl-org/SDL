@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* General quit handling code for SDL */
+// General quit handling code for SDL
 
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
@@ -46,11 +46,11 @@ static SDL_bool send_foregrounding_pending = SDL_FALSE;
 
 static void SDL_HandleSIG(int sig)
 {
-    /* Reset the signal handler */
+    // Reset the signal handler
     (void)signal(sig, SDL_HandleSIG);
 
-    /* Send a quit event next time the event loop pumps. */
-    /* We can't send it in signal handler; SDL_malloc() might be interrupted! */
+    // Send a quit event next time the event loop pumps.
+    // We can't send it in signal handler; SDL_malloc() might be interrupted!
     if ((sig == SIGINT) || (sig == SIGTERM)) {
         send_quit_pending = SDL_TRUE;
     }
@@ -104,14 +104,14 @@ static void SDL_EventSignal_Quit(const int sig)
     if (ohandler != SDL_HandleSIG) {
         signal(sig, ohandler);
     }
-#endif /* HAVE_SIGNAL_H */
+#endif // HAVE_SIGNAL_H
 }
 
-/* Public functions */
+// Public functions
 static int SDL_QuitInit_Internal(void)
 {
-    /* Both SIGINT and SIGTERM are translated into quit interrupts */
-    /* and SDL can be built to simulate iOS/Android semantics with arbitrary signals. */
+    // Both SIGINT and SIGTERM are translated into quit interrupts
+    // and SDL can be built to simulate iOS/Android semantics with arbitrary signals.
     SDL_EventSignal_Init(SIGINT);
     SDL_EventSignal_Init(SIGTERM);
 
@@ -123,7 +123,7 @@ static int SDL_QuitInit_Internal(void)
     SDL_EventSignal_Init(SDL_FOREGROUNDING_SIGNAL);
 #endif
 
-    /* That's it! */
+    // That's it!
     return 0;
 }
 
@@ -185,7 +185,7 @@ void SDL_SendPendingSignalEvents(void)
 #endif
 }
 
-/* This function returns 1 if it's okay to close the application window */
+// This function returns 1 if it's okay to close the application window
 int SDL_SendQuit(void)
 {
 #ifdef HAVE_SIGNAL_SUPPORT
